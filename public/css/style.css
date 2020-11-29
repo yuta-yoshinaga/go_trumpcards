@@ -1,0 +1,12 @@
+body{
+    height: 100%;
+}
+
+.trumpcards_field{
+    margin: auto;
+    background-color: #008000;
+}
+
+.btn_field{
+    margin: 20px auto;
+}
