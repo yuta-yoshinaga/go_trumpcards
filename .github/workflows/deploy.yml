@@ -1,0 +1,120 @@
+name: deploy
+
+on:
+  pull_request:
+    branches:
+      - master
+      - develop
+    types: [closed]
+
+jobs:
+  production:
+    if: github.ref == 'master' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: /home/runner/work/go
+      GO111MODULE: off
+    steps:
+      # GOPATHなどのセットアップ
+      - name: set up
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+        id: go
+      # repositoryの中身にアクセスするためのチェックアウト
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{github.ref}}
+      # tag情報取得
+      - name: Unshallow
+        run: git fetch --prune --unshallow --tags
+      # GOPATHにコピー
+      - name: gopath copy
+        run: mkdir $GOPATH/src && cp -r ../go_trumpcards $GOPATH/src/go_trumpcards
+      # cache store
+      - name: cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      # lint
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.32
+          working-directory: ${{env.GOPATH}}/src/go_trumpcards/
+      # test
+      - name: test
+        run: cd $GOPATH/src/go_trumpcards && go test ./... -v
+      # Heroku prod環境へデプロイ
+      - name: Heroku Deploy
+        uses: akhileshns/heroku-deploy@v3.4.6
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+      - name: Get Next Version TAG
+        id: get-next-version-tag
+        run: |
+          MajorVersion=`git describe --tags $(git rev-list --tags --max-count=1) | awk '{split($0, version, "."); print version[1]}'`
+          MinorVersion=`git describe --tags $(git rev-list --tags --max-count=1) | awk '{split($0, version, "."); print version[2]}'`
+          PatchVersion=`git describe --tags $(git rev-list --tags --max-count=1) | awk '{split($0, version, "."); print version[3]}'`
+          CurrentVersion=`git describe --tags $(git rev-list --tags --max-count=1)`
+          echo "::set-output name=tag::$(git diff --name-status $CurrentVersion origin/master -w --ignore-blank-lines | awk -v v1=$MajorVersion -v v2=$MinorVersion -v v3=$PatchVersion 'BEGIN{b1=0;b2=0;}{if($1=="A" || $1=="M"){if($2~/(entities|usecases)\//){b1++}else if($2~/(interfaceadapters|frameworksanddrivers)\//){b2++}}}END{if(b1!=0){v1++;v2=0;v3=0;}else if(b2!=0){v2++;v3=0;}else{v3++}printf "%s.%s.%s\n",v1,v2,v3}')"
+      - name: Tag snapshot
+        uses: tvdias/github-tagger@v0.0.1
+        with:
+          repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
+          tag: ${{ steps.get-next-version-tag.outputs.tag }}
+  develop:
+    if: github.ref == 'develop' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: /home/runner/work/go
+      GO111MODULE: off
+    steps:
+      # GOPATHなどのセットアップ
+      - name: set up
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+        id: go
+      # repositoryの中身にアクセスするためのチェックアウト
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{github.ref}}
+      # tag情報取得
+      - name: Unshallow
+        run: git fetch --prune --unshallow --tags
+      # GOPATHにコピー
+      - name: gopath copy
+        run: mkdir $GOPATH/src && cp -r ../go_trumpcards $GOPATH/src/go_trumpcards
+      # cache store
+      - name: cache
+        uses: actions/cache@v1
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      # lint
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.32
+          working-directory: ${{env.GOPATH}}/src/go_trumpcards/
+      # test
+      - name: test
+        run: cd $GOPATH/src/go_trumpcards && go test ./... -v
+      # Heroku dev環境へデプロイ
+      - name: Heroku Deploy
+        uses: akhileshns/heroku-deploy@v3.4.6
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY_DEV}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME_DEV}}
+          heroku_email: ${{secrets.HEROKU_EMAIL_DEV}}
+
