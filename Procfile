@@ -1,1 +1,1 @@
-web: go-trumpcards
+web: go_trumpcards web
