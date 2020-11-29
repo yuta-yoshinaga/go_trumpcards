@@ -1,11 +1,12 @@
 package web
 
 import (
-	"log"
-	"net/http"
 	"go_trumpcards/interface_adapters/controllers"
 	"go_trumpcards/interface_adapters/presenters"
 	"go_trumpcards/usecases"
+	"log"
+	"net/http"
+	"os"
 
 	"github.com/ant0ine/go-json-rest/rest"
 )
@@ -35,5 +36,13 @@ func (web *BlackJackWeb) Exec() {
 	api.SetApp(router)
 	http.Handle("/", http.FileServer(http.Dir("public")))
 	http.Handle("/blackjac/exec", api.MakeHandler())
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(http.ListenAndServe(getListenPort(), nil))
+}
+
+func getListenPort() string {
+	port := os.Getenv("PORT")
+	if port != "" {
+		return ":" + port
+	}
+	return ":80"
 }
