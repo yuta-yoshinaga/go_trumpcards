@@ -5,7 +5,7 @@ import "math/rand"
 // TrumpCards トランプカードクラス
 type TrumpCards struct {
 	deck        []*Card // 山札
-	deckDrowCnt int     // 山札配った枚数
+	deckDrawCnt int     // 山札配った枚数
 	deckCnt     int     // 山札枚数
 }
 
@@ -51,12 +51,12 @@ func (t *TrumpCards) cardsInit() {
 
 // deckInit 山札初期化
 func (t *TrumpCards) deckInit() {
-	t.deckDrowFlagInit()
-	t.deckDrowCnt = 0
+	t.deckDrawFlagInit()
+	t.deckDrawCnt = 0
 }
 
-// deckDrowFlagInit 山札ドローフラグ初期化
-func (t *TrumpCards) deckDrowFlagInit() {
+// deckDrawFlagInit 山札ドローフラグ初期化
+func (t *TrumpCards) deckDrawFlagInit() {
 	for _, v := range t.deck {
 		v.SetDraw(false)
 	}
@@ -75,10 +75,10 @@ func (t *TrumpCards) Shuffle() {
 // DrawCard 山札配る
 func (t *TrumpCards) DrawCard() *Card {
 	var res *Card = nil
-	if t.deckDrowCnt < t.deckCnt {
-		t.deck[t.deckDrowCnt].SetDraw(true)
-		res = t.deck[t.deckDrowCnt]
-		t.deckDrowCnt++
+	if t.deckDrawCnt < t.deckCnt {
+		t.deck[t.deckDrawCnt].SetDraw(true)
+		res = t.deck[t.deckDrawCnt]
+		t.deckDrawCnt++
 	}
 	return res
 }
