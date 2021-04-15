@@ -64,11 +64,16 @@ jobs:
           PatchVersion=`git describe --tags $(git rev-list --tags --max-count=1) | awk '{split($0, version, "."); print version[3]}'`
           CurrentVersion=`git describe --tags $(git rev-list --tags --max-count=1)`
           echo "::set-output name=tag::$(git diff --name-status $CurrentVersion origin/master -w --ignore-blank-lines | awk -v v1=$MajorVersion -v v2=$MinorVersion -v v3=$PatchVersion 'BEGIN{b1=0;b2=0;}{if($1=="A" || $1=="M"){if($2~/(entities|usecases)\//){b1++}else if($2~/(interfaceadapters|frameworksanddrivers)\//){b2++}}}END{if(b1!=0){v1++;v2=0;v3=0;}else if(b2!=0){v2++;v3=0;}else{v3++}printf "%s.%s.%s\n",v1,v2,v3}')"
-      - name: Tag snapshot
-        uses: tvdias/github-tagger@v0.0.1
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         with:
-          repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
-          tag: ${{ steps.get-next-version-tag.outputs.tag }}
+          tag_name: ${{ steps.get-next-version-tag.outputs.tag }}
+          release_name: Release ${{ steps.get-next-version-tag.outputs.tag }}
+          draft: false
+          prerelease: false
   develop:
     if: github.ref == 'develop' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
