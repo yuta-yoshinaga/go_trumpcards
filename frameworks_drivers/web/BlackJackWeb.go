@@ -1,12 +1,13 @@
 package web
 
 import (
-	"go_trumpcards/interface_adapters/controllers"
-	"go_trumpcards/interface_adapters/presenters"
-	"go_trumpcards/usecases"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/presenters"
+	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
 	"github.com/ant0ine/go-json-rest/rest"
 )

@@ -2,8 +2,9 @@ package usecases_test
 
 import (
 	"testing"
-	"go_trumpcards/usecases"
-	"go_trumpcards/usecases/presenters"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
+	"github.com/yuta-yoshinaga/go_trumpcards/usecases/presenters"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
