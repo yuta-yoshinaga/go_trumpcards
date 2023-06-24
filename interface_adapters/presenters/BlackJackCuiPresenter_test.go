@@ -2,8 +2,9 @@ package presenters_test
 
 import (
 	"testing"
-	"go_trumpcards/entities"
-	"go_trumpcards/interface_adapters/presenters"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/presenters"
 
 	"github.com/stretchr/testify/assert"
 )

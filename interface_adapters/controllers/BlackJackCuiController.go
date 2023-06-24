@@ -1,6 +1,6 @@
 package controllers
 
-import "go_trumpcards/usecases"
+import "github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
 // BlackJackCuiController ブラックジャックCUIコントローラークラス
 type BlackJackCuiController struct {

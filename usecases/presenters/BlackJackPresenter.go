@@ -1,7 +1,7 @@
 package presenters
 
 import (
-	"go_trumpcards/entities"
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
 )
 
 // BlackJackPresenter ブラックジャックプレゼンターインタフェース

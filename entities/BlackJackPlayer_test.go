@@ -2,7 +2,8 @@ package entities_test
 
 import (
 	"testing"
-	"go_trumpcards/entities"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
 
 	"github.com/stretchr/testify/assert"
 )

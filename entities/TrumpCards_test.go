@@ -3,7 +3,8 @@ package entities_test
 import (
 	"fmt"
 	"testing"
-	"go_trumpcards/entities"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
 )
 
 func TestTrumpCards_Method(t *testing.T) {
