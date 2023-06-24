@@ -3,7 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"go_trumpcards/usecases"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
 	"github.com/ant0ine/go-json-rest/rest"
 )

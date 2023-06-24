@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"testing"
-	"go_trumpcards/interface_adapters/controllers"
-	"go_trumpcards/interface_adapters/controllers/usecases"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers/usecases"
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ant0ine/go-json-rest/rest/test"

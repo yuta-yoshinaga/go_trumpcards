@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"go_trumpcards/frameworks_drivers/ui"
-	"go_trumpcards/frameworks_drivers/web"
 	"log"
 	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/frameworks_drivers/ui"
+	"github.com/yuta-yoshinaga/go_trumpcards/frameworks_drivers/web"
 )
 
 func main() {

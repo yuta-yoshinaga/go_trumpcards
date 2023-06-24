@@ -2,7 +2,8 @@ package presenters
 
 import (
 	"strconv"
-	"go_trumpcards/entities"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
 )
 
 // BlackJackCuiPresenter ブラックジャックCUIプレゼンタークラス

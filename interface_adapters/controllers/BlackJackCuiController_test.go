@@ -2,8 +2,9 @@ package controllers_test
 
 import (
 	"testing"
-	"go_trumpcards/interface_adapters/controllers"
-	"go_trumpcards/interface_adapters/controllers/usecases"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers/usecases"
 
 	"github.com/stretchr/testify/assert"
 )

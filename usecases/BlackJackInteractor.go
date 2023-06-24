@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"go_trumpcards/entities"
-	"go_trumpcards/usecases/presenters"
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
+	"github.com/yuta-yoshinaga/go_trumpcards/usecases/presenters"
 )
 
 // BlackJackInteractorIF ブラックジャックインタラクターインタフェース

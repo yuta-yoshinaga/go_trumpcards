@@ -13,8 +13,8 @@ go run main.go cui
 ```
 
 ### Deploy
-![herokubutton](https://www.herokucdn.com/deploy/button.svg)  
-[Heroku](https://go-trumpcards.herokuapp.com/)
+[render live](https://go-trumpcards.onrender.com/)
+[render dev](https://go-trumpcards-dev.onrender.com/)
 
 ## Future Releases
 その他のトランプカードも実装したい。

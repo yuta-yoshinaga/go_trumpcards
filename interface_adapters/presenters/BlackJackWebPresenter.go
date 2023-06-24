@@ -2,8 +2,9 @@ package presenters
 
 import (
 	"encoding/json"
-	"go_trumpcards/entities"
-	"go_trumpcards/interface_adapters/controllers"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
 )
 
 // BlackJackWebPresenter ブラックジャックWebプレゼンタークラス
