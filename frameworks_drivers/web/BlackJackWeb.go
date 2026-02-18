@@ -16,6 +16,7 @@ import (
 type BlackJackWeb struct {
 	bjc *controllers.BlackJackWebController
 	pkc *controllers.PokerWebController
+	omc *controllers.OldMaidWebController
 }
 
 // NewBlackJackWeb コンストラクタ
@@ -23,6 +24,7 @@ func NewBlackJackWeb() *BlackJackWeb {
 	return &BlackJackWeb{
 		bjc: controllers.NewBlackJackWebController(usecases.NewBlackJackInteractor(presenters.NewBlackJackWebPresenter())),
 		pkc: controllers.NewPokerWebController(usecases.NewPokerInteractor(presenters.NewPokerWebPresenter())),
+		omc: controllers.NewOldMaidWebController(usecases.NewOldMaidInteractor(presenters.NewOldMaidWebPresenter())),
 	}
 }
 
@@ -33,6 +35,7 @@ func (web *BlackJackWeb) Exec() {
 	router, err := rest.MakeRouter(
 		rest.Post("/blackjac/exec", web.bjc.Exec),
 		rest.Post("/poker/exec", web.pkc.Exec),
+		rest.Post("/oldmaid/exec", web.omc.Exec),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -41,6 +44,7 @@ func (web *BlackJackWeb) Exec() {
 	http.Handle("/", http.FileServer(http.Dir("public")))
 	http.Handle("/blackjac/exec", api.MakeHandler())
 	http.Handle("/poker/exec", api.MakeHandler())
+	http.Handle("/oldmaid/exec", api.MakeHandler())
 	log.Fatal(http.ListenAndServe(getListenPort(), nil))
 }
 
