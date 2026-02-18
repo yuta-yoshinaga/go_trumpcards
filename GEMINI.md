@@ -4,7 +4,11 @@ This file provides guidance to GEMINI when working with code in this repository.
 
 ## Repository Overview
 
-This repository contains a Go implementation of a trump card game algorithm. The project is structured following the principles of Clean Architecture. The main application can be run as a command-line user interface (CUI).
+This repository contains a Go implementation of trump card game algorithms. The project is structured following the principles of Clean Architecture. The following games are implemented:
+
+- **BlackJack**: CLI and Web GUI
+- **Poker (5-card Draw)**: CLI and Web GUI
+- **Old Maid (Babanuki)**: CLI and Web GUI
 
 ## Architecture
 
@@ -19,9 +23,12 @@ When adding new features, ensure that code is placed in the appropriate layer an
 
 ## Common Commands
 
-- **Run the application (CUI):**
+- **Run the application:**
   ```sh
-  go run main.go cui
+  go run main.go cui      # BlackJack CLI
+  go run main.go poker    # 5-card Draw Poker CLI
+  go run main.go oldmaid  # Old Maid CLI
+  go run main.go web      # Start REST API + web GUI server
   ```
 
 - **Run all tests:**
