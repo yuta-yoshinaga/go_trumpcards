@@ -40,3 +40,43 @@ When adding new features, ensure that code is placed in the appropriate layer an
 
 - **Development Branch:** `develop`. All pull requests should target this branch. CodeQL analysis is run on pushes and PRs to `develop`.
 - **Release Branch:** `master`. A push to `master` automatically triggers a workflow that bumps the version, creates a git tag, and generates a GitHub Release.
+
+## Commit Message Format
+
+All commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+
+| Type | Description |
+|------|-------------|
+| `feat` | A new feature |
+| `fix` | A bug fix |
+| `docs` | Documentation only changes |
+| `style` | Changes that do not affect code meaning (formatting, etc.) |
+| `refactor` | A code change that neither fixes a bug nor adds a feature |
+| `perf` | A code change that improves performance |
+| `test` | Adding missing tests or correcting existing tests |
+| `chore` | Changes to the build process or auxiliary tools |
+
+**Examples:**
+
+```
+feat(entities): add new card type to BlackJack
+fix(poker): correct hand ranking for flush detection
+docs: update README with web deployment instructions
+test(blackjack): add tests for dealer bust scenario
+refactor(usecases): simplify interactor dependency injection
+```
+
+**Rules:**
+- The description must be in lowercase and not end with a period.
+- Use the imperative mood in the description (e.g., "add feature" not "added feature").
+- Breaking changes must include `BREAKING CHANGE:` in the footer or append `!` after the type/scope.
