@@ -19,6 +19,9 @@ func main() {
 	case "poker":
 		poker := ui.NewPokerCui()
 		poker.Exec()
+	case "oldmaid":
+		oldmaid := ui.NewOldMaidCui()
+		oldmaid.Exec()
 	case "web":
 		web := web.NewBlackJackWeb()
 		web.Exec()
