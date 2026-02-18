@@ -57,3 +57,43 @@ public/                        # Static web assets (HTML/CSS/JS)
 
 - **`develop`**: Default branch; target for all PRs. CodeQL analysis runs on push/PR.
 - **`master`**: Triggers automatic version bump, git tag, and GitHub Release.
+
+## Commit Message Format
+
+All commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+
+| Type | Description |
+|------|-------------|
+| `feat` | A new feature |
+| `fix` | A bug fix |
+| `docs` | Documentation only changes |
+| `style` | Changes that do not affect code meaning (formatting, etc.) |
+| `refactor` | A code change that neither fixes a bug nor adds a feature |
+| `perf` | A code change that improves performance |
+| `test` | Adding missing tests or correcting existing tests |
+| `chore` | Changes to the build process or auxiliary tools |
+
+**Examples:**
+
+```
+feat(entities): add new card type to BlackJack
+fix(poker): correct hand ranking for flush detection
+docs: update README with web deployment instructions
+test(blackjack): add tests for dealer bust scenario
+refactor(usecases): simplify interactor dependency injection
+```
+
+**Rules:**
+- The description must be in lowercase and not end with a period.
+- Use the imperative mood in the description (e.g., "add feature" not "added feature").
+- Breaking changes must include `BREAKING CHANGE:` in the footer or append `!` after the type/scope.
