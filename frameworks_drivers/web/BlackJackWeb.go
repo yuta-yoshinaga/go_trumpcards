@@ -15,12 +15,14 @@ import (
 // BlackJackWeb ブラックジャックWebクラス
 type BlackJackWeb struct {
 	bjc *controllers.BlackJackWebController
+	pkc *controllers.PokerWebController
 }
 
 // NewBlackJackWeb コンストラクタ
 func NewBlackJackWeb() *BlackJackWeb {
 	return &BlackJackWeb{
 		bjc: controllers.NewBlackJackWebController(usecases.NewBlackJackInteractor(presenters.NewBlackJackWebPresenter())),
+		pkc: controllers.NewPokerWebController(usecases.NewPokerInteractor(presenters.NewPokerWebPresenter())),
 	}
 }
 
@@ -30,6 +32,7 @@ func (web *BlackJackWeb) Exec() {
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		rest.Post("/blackjac/exec", web.bjc.Exec),
+		rest.Post("/poker/exec", web.pkc.Exec),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -37,6 +40,7 @@ func (web *BlackJackWeb) Exec() {
 	api.SetApp(router)
 	http.Handle("/", http.FileServer(http.Dir("public")))
 	http.Handle("/blackjac/exec", api.MakeHandler())
+	http.Handle("/poker/exec", api.MakeHandler())
 	log.Fatal(http.ListenAndServe(getListenPort(), nil))
 }
 
