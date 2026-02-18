@@ -55,6 +55,20 @@ public/                        # Static web assets (HTML/CSS/JS)
 - **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`
 - **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
 
+## Documentation Maintenance
+
+**When making code changes, always update the following documentation in the same commit:**
+
+| Change type | Documents to update |
+|-------------|---------------------|
+| Add/remove a game | `README.md` (Description, Run section), `CLAUDE.md` (Commands, Games implemented), `GEMINI.md` (Repository Overview, Common Commands) |
+| Add/remove a CLI command (`main.go`) | `README.md` (Run section), `CLAUDE.md` (Commands), `GEMINI.md` (Common Commands) |
+| Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns) |
+| Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `GEMINI.md` (Architecture) |
+| Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `GEMINI.md` (Git Workflow & CI/CD) |
+
+Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
+
 ## Git Workflow
 
 - **`develop`**: Default branch; target for all PRs. CodeQL analysis runs on push/PR.
