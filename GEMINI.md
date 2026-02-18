@@ -49,11 +49,11 @@ When adding new features, ensure that code is placed in the appropriate layer an
 
 | Change type | Documents to update |
 |-------------|---------------------|
-| Add/remove a game | `README.md` (Description, Run section), `CLAUDE.md` (Commands, Games implemented), `GEMINI.md` (Repository Overview, Common Commands) |
-| Add/remove a CLI command (`main.go`) | `README.md` (Run section), `CLAUDE.md` (Commands), `GEMINI.md` (Common Commands) |
-| Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns) |
-| Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `GEMINI.md` (Architecture) |
-| Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `GEMINI.md` (Git Workflow & CI/CD) |
+| Add/remove a game | `README.md` (Description, Run section), `CLAUDE.md` (Commands, Games implemented), `GEMINI.md` (Repository Overview, Common Commands), `AGENTS.md` (Repository Overview, Games implemented) |
+| Add/remove a CLI command (`main.go`) | `README.md` (Run section), `CLAUDE.md` (Commands), `GEMINI.md` (Common Commands), `AGENTS.md` (Common Commands) |
+| Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns), `AGENTS.md` (Web API in Key patterns) |
+| Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `GEMINI.md` (Architecture), `AGENTS.md` (Architecture) |
+| Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `GEMINI.md` (Git Workflow & CI/CD), `AGENTS.md` (Git Workflow & CI/CD) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 

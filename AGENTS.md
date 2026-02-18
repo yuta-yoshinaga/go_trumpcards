@@ -1,8 +1,16 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI coding agents when working with code in this repository.
 
-## Commands
+## Repository Overview
+
+This repository contains a Go implementation of trump card game algorithms. The project is structured following the principles of Clean Architecture. The following games are implemented:
+
+- **BlackJack**: CLI and Web GUI
+- **Poker (5-card Draw)**: CLI and Web GUI
+- **Old Maid (Babanuki)**: CLI and Web GUI
+
+## Common Commands
 
 **Run the application:**
 ```sh
@@ -12,14 +20,14 @@ go run main.go oldmaid  # Old Maid CLI
 go run main.go web      # Start REST API + web GUI server
 ```
 
-**Test:**
+**Run tests:**
 ```sh
 go test ./...                          # Run all tests
 go test ./entities/...                 # Run tests in a specific package
 go test ./entities/ -run TestBlackJack # Run a single test by name
 ```
 
-**Dependencies:**
+**Manage dependencies:**
 ```sh
 go mod tidy
 ```
@@ -69,7 +77,7 @@ public/                        # Static web assets (HTML/CSS/JS)
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
-## Git Workflow
+## Git Workflow & CI/CD
 
 - **`develop`**: Default branch; target for all PRs. CodeQL analysis runs on push/PR.
 - **`master`**: Triggers automatic version bump, git tag, and GitHub Release.
