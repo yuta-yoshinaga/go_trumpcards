@@ -14,7 +14,7 @@ This repository contains a Go implementation of trump card game algorithms. The 
 
 **Run the application:**
 ```sh
-go run main.go cui      # BlackJack CLI
+go run main.go blackjack  # BlackJack CLI
 go run main.go poker    # 5-card Draw Poker CLI
 go run main.go oldmaid  # Old Maid CLI
 go run main.go web      # Start REST API + web GUI server

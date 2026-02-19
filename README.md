@@ -19,7 +19,7 @@ cd go_trumpcards
 
 ### Run
 ```sh
-go run main.go cui      # ブラックジャック CLI
+go run main.go blackjack  # ブラックジャック CLI
 go run main.go poker    # 5枚ドローポーカー CLI
 go run main.go oldmaid  # ババ抜き CLI
 go run main.go web      # REST API + Web GUI サーバー起動
