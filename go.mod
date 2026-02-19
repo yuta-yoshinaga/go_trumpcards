@@ -1,6 +1,6 @@
 module github.com/yuta-yoshinaga/go_trumpcards
 
-go 1.20
+go 1.24.7
 
 require (
 	github.com/ant0ine/go-json-rest v3.3.3-0.20170913041208-ebb33769ae01+incompatible
