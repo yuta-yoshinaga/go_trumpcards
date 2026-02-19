@@ -72,6 +72,7 @@ func TestDaifugo_CanPlay(t *testing.T) {
 	}
 
 	// Pairs
+	d.lastPlay = nil // Ensure field is empty
 	c3h := NewCard(CardDesignHeart, 3, false)
 	c4h := NewCard(CardDesignHeart, 4, false)
 	if !d.CanPlay([]*Card{c3s, c3h}) {
