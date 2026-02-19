@@ -7,9 +7,9 @@ import (
 
 // DaifugoInteractorIF 大富豪インタラクターインタフェース
 type DaifugoInteractorIF interface {
-	Reset() string
-	Play(cardIndices []int) string
-	Pass() string
+	Reset() interface{}
+	Play(cardIndices []int) interface{}
+	Pass() interface{}
 }
 
 // DaifugoInteractor 大富豪インタラクタークラス
@@ -34,14 +34,14 @@ func NewDaifugoInteractor(dp presenters.DaifugoPresenter) *DaifugoInteractor {
 }
 
 // Reset ゲーム初期化
-func (di *DaifugoInteractor) Reset() string {
+func (di *DaifugoInteractor) Reset() interface{} {
 	di.d.Reset()
 	di.runCpuTurns()
 	return di.dp.Output(di.d)
 }
 
 // Play 人間プレイヤーがカードを出す
-func (di *DaifugoInteractor) Play(cardIndices []int) string {
+func (di *DaifugoInteractor) Play(cardIndices []int) interface{} {
 	if di.d.GetGameEndFlag() {
 		return di.dp.Output(di.d)
 	}
@@ -56,7 +56,7 @@ func (di *DaifugoInteractor) Play(cardIndices []int) string {
 }
 
 // Pass 人間プレイヤーがパスする
-func (di *DaifugoInteractor) Pass() string {
+func (di *DaifugoInteractor) Pass() interface{} {
 	if di.d.GetGameEndFlag() {
 		return di.dp.Output(di.d)
 	}

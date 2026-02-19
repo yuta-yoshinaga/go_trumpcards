@@ -76,17 +76,13 @@ func (d *Daifugo) Reset() {
 
 	// ダイヤの3を持っているプレイヤーが最初の手番
 	d.currentTurn = 0
-	found := false
+playerFound:
 	for i, p := range d.players {
 		for _, c := range p.GetCards() {
 			if c.GetDesign() == CardDesignDiamond && c.GetValue() == 3 {
 				d.currentTurn = i
-				found = true
-				break
+				break playerFound
 			}
-		}
-		if found {
-			break
 		}
 	}
 }
@@ -110,7 +106,10 @@ func (d *Daifugo) PlayCards(playerIdx int, cardIndices []int) bool {
 	// 出せるかチェック
 	cards := make([]*Card, 0, len(cardIndices))
 	for _, idx := range cardIndices {
-		cards = append(cards, player.GetCards()[idx])
+		if idx < 0 || idx >= player.GetCardsSize() {
+			return false
+		}
+		cards = append(cards, player.GetCard(idx))
 	}
 
 	if !d.CanPlay(cards) {

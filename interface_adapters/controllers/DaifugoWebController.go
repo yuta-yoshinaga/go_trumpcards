@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
@@ -55,32 +54,28 @@ func NewDaifugoWebController(di usecases.DaifugoInteractorIF) *DaifugoWebControl
 func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param DaifugoWebInput
 	status := http.StatusOK
-	responseStr := ""
+	var response interface{}
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" {
 		status = http.StatusBadRequest
-		responseStr = `{"message":"param error."}`
+		response = &DaifugoWebOutput{Message: "param error."}
 	} else {
 		switch param.Command {
 		case "q", "quit":
-			responseStr = `{"message":"bye."}`
+			response = &DaifugoWebOutput{Message: "bye."}
 		case "r", "reset":
-			responseStr = dwc.di.Reset()
+			response = dwc.di.Reset()
 		case "p", "play":
-			responseStr = dwc.di.Play(param.CardIndices)
+			response = dwc.di.Play(param.CardIndices)
 		case "s", "pass":
-			responseStr = dwc.di.Pass()
+			response = dwc.di.Pass()
 		default:
-			responseStr = `{"message":"Unsupported command."}`
+			response = &DaifugoWebOutput{Message: "Unsupported command."}
 		}
 	}
-	response := new(DaifugoWebOutput)
-	response.Players = make([]*DaifugoWebOutputPlayer, 0)
-	response.LastPlay = make([]*DaifugoWebOutputCard, 0)
-	err = json.Unmarshal([]byte(responseStr), &response)
-	if err != nil || responseStr == "" {
+	if response == nil {
 		status = http.StatusBadRequest
-		response.Message = "error."
+		response = &DaifugoWebOutput{Message: "error."}
 	}
 	w.WriteHeader(status)
 	_ = w.WriteJson(response)

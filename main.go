@@ -4,13 +4,16 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/frameworks_drivers/ui"
 	"github.com/yuta-yoshinaga/go_trumpcards/frameworks_drivers/web"
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	flag.Parse()
 	switch strings.ToLower(flag.Arg(0)) {
 	case "blackjack":

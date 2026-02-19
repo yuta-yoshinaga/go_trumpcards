@@ -1,7 +1,6 @@
 package presenters
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/entities"
@@ -17,7 +16,7 @@ func NewDaifugoWebPresenter() *DaifugoWebPresenter {
 }
 
 // Output ゲーム状態をJSON出力
-func (dwp *DaifugoWebPresenter) Output(d *entities.Daifugo) string {
+func (dwp *DaifugoWebPresenter) Output(d *entities.Daifugo) interface{} {
 	resObj := new(controllers.DaifugoWebOutput)
 	resObj.Players = make([]*controllers.DaifugoWebOutputPlayer, 0)
 	resObj.CurrentTurn = d.GetCurrentTurn()
@@ -66,8 +65,7 @@ func (dwp *DaifugoWebPresenter) Output(d *entities.Daifugo) string {
 		}
 	}
 
-	res, _ := json.Marshal(resObj)
-	return string(res)
+	return resObj
 }
 
 // getCardObj カード情報オブジェクト取得

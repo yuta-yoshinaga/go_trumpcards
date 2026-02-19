@@ -11,7 +11,7 @@ type MockDaifugoPresenter struct {
 }
 
 // Output モック実装
-func (m *MockDaifugoPresenter) Output(d *entities.Daifugo) string {
+func (m *MockDaifugoPresenter) Output(d *entities.Daifugo) interface{} {
 	args := m.Called(d)
-	return args.String(0)
+	return args.Get(0)
 }

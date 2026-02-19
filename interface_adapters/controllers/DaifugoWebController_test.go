@@ -13,7 +13,14 @@ import (
 )
 
 func TestDaifugoWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"currentTurn":0,"lastPlay":[],"isRevolution":false,"gameEndFlag":false,"message":""}`
+	mockOutput := &controllers.DaifugoWebOutput{
+		Players:      make([]*controllers.DaifugoWebOutputPlayer, 0),
+		CurrentTurn:  0,
+		LastPlay:     make([]*controllers.DaifugoWebOutputCard, 0),
+		IsRevolution: false,
+		GameEndFlag:  false,
+		Message:      "",
+	}
 	expectedBody := `{"players":[],"currentTurn":0,"lastPlay":[],"isRevolution":false,"gameEndFlag":false,"message":""}`
 	diMock := new(usecases.MockDaifugoInteractor)
 	diMock.On("Reset").Return(mockOutput).Times(2)

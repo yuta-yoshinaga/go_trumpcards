@@ -10,19 +10,19 @@ type MockDaifugoInteractor struct {
 }
 
 // Reset モック実装
-func (m *MockDaifugoInteractor) Reset() string {
+func (m *MockDaifugoInteractor) Reset() interface{} {
 	args := m.Called()
-	return args.Get(0).(string)
+	return args.Get(0)
 }
 
 // Play モック実装
-func (m *MockDaifugoInteractor) Play(cardIndices []int) string {
+func (m *MockDaifugoInteractor) Play(cardIndices []int) interface{} {
 	args := m.Called(cardIndices)
-	return args.Get(0).(string)
+	return args.Get(0)
 }
 
 // Pass モック実装
-func (m *MockDaifugoInteractor) Pass() string {
+func (m *MockDaifugoInteractor) Pass() interface{} {
 	args := m.Called()
-	return args.Get(0).(string)
+	return args.Get(0)
 }
