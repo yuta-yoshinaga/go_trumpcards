@@ -36,19 +36,28 @@ func (p *DaifugoPlayer) GetRank() int { return p.rank }
 func (p *DaifugoPlayer) SetRank(r int) { p.rank = r }
 
 // RemoveCards 指定インデックスのカードを手札から取り除いて返す (昇順ソートされた順で返す)
+// 重複するインデックスは無視される。
 func (p *DaifugoPlayer) RemoveCards(indices []int) []*Card {
 	sorted := make([]int, len(indices))
 	copy(sorted, indices)
 	sort.Ints(sorted)
 
-	removed := make([]*Card, len(sorted))
+	// 重複排除
+	unique := make([]int, 0, len(sorted))
 	for i, idx := range sorted {
+		if i == 0 || idx != sorted[i-1] {
+			unique = append(unique, idx)
+		}
+	}
+
+	removed := make([]*Card, len(unique))
+	for i, idx := range unique {
 		removed[i] = p.cards[idx]
 	}
 
 	// 後ろから削除してインデックスのズレを防ぐ
-	for i := len(sorted) - 1; i >= 0; i-- {
-		idx := sorted[i]
+	for i := len(unique) - 1; i >= 0; i-- {
+		idx := unique[i]
 		p.cards = append(p.cards[:idx], p.cards[idx+1:]...)
 	}
 	return removed

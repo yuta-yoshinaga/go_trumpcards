@@ -85,13 +85,20 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 	response := new(DaifugoWebOutput)
-	response.Players = make([]*DaifugoWebOutputPlayer, 0)
-	response.TableCards = make([]*DaifugoWebOutputCard, 0)
-	response.CpuActions = make([]*DaifugoWebOutputAction, 0)
 	err = json.Unmarshal([]byte(responseStr), &response)
 	if err != nil || responseStr == "" {
 		status = http.StatusBadRequest
 		response.Message = "error."
+	}
+	// nil スライスは JSON で null になるので空スライスに統一する
+	if response.Players == nil {
+		response.Players = make([]*DaifugoWebOutputPlayer, 0)
+	}
+	if response.TableCards == nil {
+		response.TableCards = make([]*DaifugoWebOutputCard, 0)
+	}
+	if response.CpuActions == nil {
+		response.CpuActions = make([]*DaifugoWebOutputAction, 0)
 	}
 	w.WriteHeader(status)
 	_ = w.WriteJson(response)

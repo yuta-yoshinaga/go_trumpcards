@@ -60,9 +60,7 @@ func (d *Daifugo) Reset() {
 	d.humanAction = nil
 
 	// シャッフル
-	for i := 0; i < 10; i++ {
-		d.trumpCards.Shuffle()
-	}
+	d.trumpCards.Shuffle()
 
 	// 全プレイヤーのカードリセット
 	for _, p := range d.players {

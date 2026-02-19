@@ -82,6 +82,20 @@ func TestDaifugoPlayer_Method(t *testing.T) {
 		assert.Equal(t, 9, p.GetCard(1).GetValue())
 	})
 
+	t.Run("success RemoveCards deduplicates indices", func(t *testing.T) {
+		p := entities.NewDaifugoPlayer(true)
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
+		// Duplicate index 1 must not cause a panic or double-remove
+		removed := p.RemoveCards([]int{1, 1})
+		assert.Len(t, removed, 1)
+		assert.Equal(t, 5, removed[0].GetValue())
+		assert.Equal(t, 2, p.GetCardsSize())
+		assert.Equal(t, 3, p.GetCard(0).GetValue())
+		assert.Equal(t, 7, p.GetCard(1).GetValue())
+	})
+
 	t.Run("success RemoveCards indices unordered", func(t *testing.T) {
 		p := entities.NewDaifugoPlayer(true)
 		p.AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
