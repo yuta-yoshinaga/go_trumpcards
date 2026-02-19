@@ -32,6 +32,15 @@ go test ./entities/ -run TestBlackJack # Run a single test by name
 go mod tidy
 ```
 
+**Build frontend (React):**
+```sh
+cd frontend && npm install && npm run build  # Build React app to public/
+```
+
+> **Important:** The built assets in `public/assets/` and `public/index.html` are committed to the
+> repository. **Whenever you modify anything under `frontend/`, you must run `npm run build` and
+> include the updated `public/assets/` and `public/index.html` in the same commit.**
+
 ## Architecture
 
 The project implements Clean Architecture with strict layer dependency rules (outer depends on inner, never the reverse):
@@ -46,7 +55,16 @@ interface_adapters/            # Convert data between layers
 frameworks_drivers/            # Outermost layer
   ui/                          # CLI runner
   web/                         # REST API server (go-json-rest)
-public/                        # Static web assets (HTML/CSS/JS)
+frontend/                      # React frontend source (Vite + React + TypeScript)
+  src/
+    api/                       # API client functions (fetch wrappers)
+    components/                # Shared React components (NavBar, CardImage, CardBack)
+    pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
+    types/                     # TypeScript type definitions for card/game data
+public/                        # Built frontend assets served by Go web server
+  assets/                      # Vite-compiled JS/CSS bundles
+  images/                      # Card images (PNG)
+  css/                         # Bootstrap CSS
 ```
 
 **Data flow:** `frameworks_drivers` → `interface_adapters` → `usecases` → `entities`
@@ -111,6 +129,7 @@ go test ./...
 | Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns), `AGENTS.md` (Web API in Key patterns) |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
+| Modify anything under `frontend/` | Run `npm run build` and commit updated `public/assets/` and `public/index.html` in the same commit |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 

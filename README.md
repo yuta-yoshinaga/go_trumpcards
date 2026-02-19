@@ -42,7 +42,8 @@ entities/             # コアビジネスロジック（最内層）
 usecases/             # アプリケーションビジネスルール
 interface_adapters/   # レイヤー間のデータ変換
 frameworks_drivers/   # 最外層（CLI・Webサーバー）
-public/               # Webフロントエンド（HTML/CSS/JS）
+frontend/             # Reactフロントエンドソース（Vite + React + TypeScript）
+public/               # Webフロントエンドビルド済みアセット（Reactビルド出力 + 静的ファイル）
 ```
 
 ## Future Releases
