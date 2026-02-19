@@ -58,3 +58,28 @@ export interface OldMaidResponse {
   cpuActions: CpuAction[]
   message: string
 }
+
+export interface DaifugoPlayerData {
+  id: number
+  isHuman: boolean
+  isFinished: boolean
+  rank: number
+  cardCount: number
+  cards: Card[]
+}
+
+export interface DaifugoAction {
+  playerIdx: number
+  playedCards: Card[] | null // null = pass
+}
+
+export interface DaifugoResponse {
+  players: DaifugoPlayerData[]
+  currentTurn: number
+  tableCards: Card[]
+  lastPlayPlayerIdx: number
+  gameEndFlag: boolean
+  cpuActions: DaifugoAction[]
+  humanAction: DaifugoAction | null
+  message: string
+}

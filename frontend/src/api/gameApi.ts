@@ -1,4 +1,4 @@
-import type { BlackJackResponse, PokerResponse, OldMaidResponse } from '../types/card'
+import type { BlackJackResponse, PokerResponse, OldMaidResponse, DaifugoResponse } from '../types/card'
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -23,4 +23,9 @@ export const pokerApi = {
 export const oldmaidApi = {
   exec: (command: 'reset' | 'draw', drawIdx?: number) =>
     postJson<OldMaidResponse>('/oldmaid/exec', { command, drawIdx }),
+}
+
+export const daifugoApi = {
+  exec: (command: 'reset' | 'play', indices?: number[]) =>
+    postJson<DaifugoResponse>('/daifugo/exec', { command, indices }),
 }

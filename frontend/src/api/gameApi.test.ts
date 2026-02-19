@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { blackjackApi, pokerApi, oldmaidApi } from './gameApi'
+import { blackjackApi, pokerApi, oldmaidApi, daifugoApi } from './gameApi'
 
 describe('gameApi', () => {
   const mockFetch = vi.fn()
@@ -151,6 +151,70 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 404))
       await expect(oldmaidApi.exec('reset')).rejects.toThrow('HTTP error: 404')
+    })
+  })
+
+  describe('daifugoApi.exec', () => {
+    it('calls the correct URL with reset command', async () => {
+      const payload = {
+        players: [],
+        currentTurn: 0,
+        tableCards: [],
+        lastPlayPlayerIdx: -1,
+        gameEndFlag: false,
+        cpuActions: [],
+        humanAction: null,
+        message: '',
+      }
+      mockFetch.mockReturnValue(makeResponse(payload))
+
+      const result = await daifugoApi.exec('reset')
+
+      expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', indices: undefined }),
+      })
+      expect(result).toEqual(payload)
+    })
+
+    it('calls with play command and indices', async () => {
+      mockFetch.mockReturnValue(makeResponse({
+        players: [],
+        currentTurn: 1,
+        tableCards: [{ design: 'SPADE', value: 5 }],
+        lastPlayPlayerIdx: 0,
+        gameEndFlag: false,
+        cpuActions: [],
+        humanAction: { playerIdx: 0, playedCards: [{ design: 'SPADE', value: 5 }] },
+        message: '',
+      }))
+      await daifugoApi.exec('play', [0])
+      expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', expect.objectContaining({
+        body: JSON.stringify({ command: 'play', indices: [0] }),
+      }))
+    })
+
+    it('calls with play command and empty indices for pass', async () => {
+      mockFetch.mockReturnValue(makeResponse({
+        players: [],
+        currentTurn: 1,
+        tableCards: [],
+        lastPlayPlayerIdx: -1,
+        gameEndFlag: false,
+        cpuActions: [],
+        humanAction: { playerIdx: 0, playedCards: null },
+        message: '',
+      }))
+      await daifugoApi.exec('play', [])
+      expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', expect.objectContaining({
+        body: JSON.stringify({ command: 'play', indices: [] }),
+      }))
+    })
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500))
+      await expect(daifugoApi.exec('reset')).rejects.toThrow('HTTP error: 500')
     })
   })
 })
