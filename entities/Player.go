@@ -35,3 +35,8 @@ func (p *Player) GetCard(idx int) *Card {
 func (p *Player) Reset() {
 	p.cards = make([]*Card, 0)
 }
+
+// GetCards 手札全取得
+func (p *Player) GetCards() []*Card {
+	return p.cards
+}

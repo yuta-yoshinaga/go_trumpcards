@@ -69,10 +69,10 @@ func GetDaifugoStrength(c *Card) int {
 
 // RemoveCards 指定したインデックスのカードを手札から取り除く
 func (p *DaifugoPlayer) RemoveCards(indices []int) []*Card {
-	removed := make([]*Card, 0, len(indices))
 	// インデックスを降順にソートして、後ろから取り除く
 	sort.Sort(sort.Reverse(sort.IntSlice(indices)))
 
+	removed := make([]*Card, 0, len(indices))
 	for _, idx := range indices {
 		if idx < 0 || idx >= len(p.cards) {
 			continue

@@ -77,12 +77,17 @@ func (d *Daifugo) Reset() {
 
 	// ダイヤの3を持っているプレイヤーが最初の手番
 	d.currentTurn = 0
+	found := false
 	for i, p := range d.players {
 		for _, c := range p.GetCards() {
 			if c.GetDesign() == CardDesignDiamond && c.GetValue() == 3 {
 				d.currentTurn = i
+				found = true
 				break
 			}
+		}
+		if found {
+			break
 		}
 	}
 }
