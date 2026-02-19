@@ -13,7 +13,7 @@ import (
 func main() {
 	flag.Parse()
 	switch strings.ToLower(flag.Arg(0)) {
-	case "cui":
+	case "blackjack":
 		cui := ui.NewBlackJackCui()
 		cui.Exec()
 	case "poker":
