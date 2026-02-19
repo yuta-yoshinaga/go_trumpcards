@@ -78,6 +78,7 @@ public/                        # Built frontend assets served by Go web server
 - **BlackJack**: Entities in `entities/BlackJack.go`, `entities/BlackJackPlayer.go`; interactor in `usecases/BlackJackInteractor.go`
 - **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`
 - **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
+- **Daifugo (Millionaire)**: Entities in `entities/Daifugo.go`, `entities/DaifugoPlayer.go`; interactor in `usecases/DaifugoInteractor.go`
 
 ## Testing Policy
 

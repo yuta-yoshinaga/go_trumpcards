@@ -9,6 +9,7 @@
 - **ブラックジャック (BlackJack)**: CLI および Web GUIで遊べます
 - **ポーカー (5-card Draw Poker)**: CLIで遊べます
 - **ババ抜き (Old Maid)**: CLI および Web GUIで遊べます
+- **大富豪 (Daifugo)**: Web GUIで遊べます
 
 ## Usage
 ### Install

@@ -9,6 +9,7 @@ This repository contains a Go implementation of trump card game algorithms. The 
 - **BlackJack**: CLI and Web GUI
 - **Poker (5-card Draw)**: CLI and Web GUI
 - **Old Maid (Babanuki)**: CLI and Web GUI
+- **Daifugo (Millionaire)**: Web GUI
 
 ## Common Commands
 
@@ -60,7 +61,7 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
   src/
     api/                       # API client functions (fetch wrappers)
     components/                # Shared React components (NavBar, CardImage, CardBack)
-    pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
+    pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage, DaifugoPage)
     types/                     # TypeScript type definitions for card/game data
 public/                        # Built frontend assets served by Go web server
   assets/                      # Vite-compiled JS/CSS bundles
@@ -74,13 +75,14 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `usecases/presenters/` defines output interfaces (e.g., `BlackJackPresenter`). `interface_adapters/presenters/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `interface_adapters/presenters/` and `usecases/presenters/` are used in tests to avoid I/O.
-- **Web API**: Three endpoints — `POST /blackjac/exec` (BlackJack), `POST /poker/exec` (Poker), and `POST /oldmaid/exec` (Old Maid) — accept JSON with a `Cmd` field and game state.
+- **Web API**: Four endpoints — `POST /blackjac/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), and `POST /daifugo/exec` (Daifugo) — accept JSON with a `Cmd` field and game state.
 
 ### Games implemented
 
 - **BlackJack**: Entities in `entities/BlackJack.go`, `entities/BlackJackPlayer.go`; interactor in `usecases/BlackJackInteractor.go`
 - **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`
 - **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
+- **Daifugo (Millionaire)**: Entities in `entities/Daifugo.go`, `entities/DaifugoPlayer.go`; interactor in `usecases/DaifugoInteractor.go`
 
 ## Testing Policy
 

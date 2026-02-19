@@ -4,6 +4,7 @@ const games = [
   { path: '/', label: 'ブラックジャック' },
   { path: '/poker', label: 'ポーカー' },
   { path: '/oldmaid', label: 'ババ抜き' },
+  { path: '/daifugo', label: '大富豪' },
 ]
 
 export function NavBar() {
