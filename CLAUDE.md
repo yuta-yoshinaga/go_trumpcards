@@ -32,6 +32,11 @@ npm run build      # Build React app to public/ (run before starting the web ser
 npm run dev        # Start Vite dev server (proxies API to localhost:80)
 ```
 
+> **Important:** The built assets in `public/assets/` and `public/index.html` are committed to the
+> repository so the Go web server can serve them without a separate build step on the server.
+> **Whenever you modify anything under `frontend/`, you must run `npm run build` and include the
+> updated `public/assets/` and `public/index.html` in the same commit.**
+
 ## Architecture
 
 The project implements Clean Architecture with strict layer dependency rules (outer depends on inner, never the reverse):
@@ -120,6 +125,7 @@ go test ./...
 | Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns), `AGENTS.md` (Web API in Key patterns) |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
+| Modify anything under `frontend/` | Run `npm run build` and commit updated `public/assets/` and `public/index.html` in the same commit |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
