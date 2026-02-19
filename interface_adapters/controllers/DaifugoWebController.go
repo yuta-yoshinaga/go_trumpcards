@@ -58,11 +58,19 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" {
 		status = http.StatusBadRequest
-		response = &DaifugoWebOutput{Message: "param error."}
+		response = &DaifugoWebOutput{
+			Message: "param error.",
+			Players: make([]*DaifugoWebOutputPlayer, 0),
+			LastPlay: make([]*DaifugoWebOutputCard, 0),
+		}
 	} else {
 		switch param.Command {
 		case "q", "quit":
-			response = &DaifugoWebOutput{Message: "bye."}
+			response = &DaifugoWebOutput{
+				Message: "bye.",
+				Players: make([]*DaifugoWebOutputPlayer, 0),
+				LastPlay: make([]*DaifugoWebOutputCard, 0),
+			}
 		case "r", "reset":
 			response = dwc.di.Reset()
 		case "p", "play":
@@ -70,12 +78,20 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		case "s", "pass":
 			response = dwc.di.Pass()
 		default:
-			response = &DaifugoWebOutput{Message: "Unsupported command."}
+			response = &DaifugoWebOutput{
+				Message: "Unsupported command.",
+				Players: make([]*DaifugoWebOutputPlayer, 0),
+				LastPlay: make([]*DaifugoWebOutputCard, 0),
+			}
 		}
 	}
 	if response == nil {
 		status = http.StatusBadRequest
-		response = &DaifugoWebOutput{Message: "error."}
+		response = &DaifugoWebOutput{
+			Message: "error.",
+			Players: make([]*DaifugoWebOutputPlayer, 0),
+			LastPlay: make([]*DaifugoWebOutputCard, 0),
+		}
 	}
 	w.WriteHeader(status)
 	_ = w.WriteJson(response)
