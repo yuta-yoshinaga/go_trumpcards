@@ -22,6 +22,9 @@ func main() {
 	case "oldmaid":
 		oldmaid := ui.NewOldMaidCui()
 		oldmaid.Exec()
+	case "daifugo":
+		daifugo := ui.NewDaifugoCui()
+		daifugo.Exec()
 	case "web":
 		web := web.NewTrumpCardsWeb()
 		web.Exec()
