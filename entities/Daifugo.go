@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"math/rand"
 	"sort"
 )
 
