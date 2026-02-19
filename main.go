@@ -22,6 +22,9 @@ func main() {
 	case "oldmaid":
 		oldmaid := ui.NewOldMaidCui()
 		oldmaid.Exec()
+	case "daifugo":
+		// CUI is not implemented yet, but for consistency with others
+		fmt.Println("Daifugo CUI is not implemented yet. Please use 'web' mode.")
 	case "web":
 		web := web.NewTrumpCardsWeb()
 		web.Exec()

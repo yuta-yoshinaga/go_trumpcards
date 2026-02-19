@@ -187,10 +187,11 @@ func (d *Daifugo) ClearField() {
 	if d.lastPlayPlayer != -1 && !d.players[d.lastPlayPlayer].GetIsFinished() {
 		d.currentTurn = d.lastPlayPlayer
 	} else {
-		// 最後にカードを出した人が上がっている場合は、
-		// d.advanceTurn() は既に呼ばれているはずだが、
-		// 場を流した後の最初の手番を適切に設定する必要がある。
-		// ここでは、現在のターンの人がそのまま始める。
+		// すでに次のプレイヤーに進んでいるはずなので、そのままにする
+		// または、現在手番の人が上がっていないことを確認
+		if d.players[d.currentTurn].GetIsFinished() {
+			d.advanceTurn()
+		}
 	}
 }
 

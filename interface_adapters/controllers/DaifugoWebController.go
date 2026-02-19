@@ -76,6 +76,7 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 	response := new(DaifugoWebOutput)
 	response.Players = make([]*DaifugoWebOutputPlayer, 0)
+	response.LastPlay = make([]*DaifugoWebOutputCard, 0)
 	err = json.Unmarshal([]byte(responseStr), &response)
 	if err != nil || responseStr == "" {
 		status = http.StatusBadRequest
