@@ -32,6 +32,11 @@ go test ./entities/ -run TestBlackJack # Run a single test by name
 go mod tidy
 ```
 
+**Build frontend (React):**
+```sh
+cd frontend && npm install && npm run build  # Build React app to public/
+```
+
 ## Architecture
 
 The project implements Clean Architecture with strict layer dependency rules (outer depends on inner, never the reverse):
@@ -46,7 +51,16 @@ interface_adapters/            # Convert data between layers
 frameworks_drivers/            # Outermost layer
   ui/                          # CLI runner
   web/                         # REST API server (go-json-rest)
-public/                        # Static web assets (HTML/CSS/JS)
+frontend/                      # React frontend source (Vite + React + TypeScript)
+  src/
+    api/                       # API client functions (fetch wrappers)
+    components/                # Shared React components (NavBar, CardImage, CardBack)
+    pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
+    types/                     # TypeScript type definitions for card/game data
+public/                        # Built frontend assets served by Go web server
+  assets/                      # Vite-compiled JS/CSS bundles
+  images/                      # Card images (PNG)
+  css/                         # Bootstrap CSS
 ```
 
 **Data flow:** `frameworks_drivers` → `interface_adapters` → `usecases` → `entities`
