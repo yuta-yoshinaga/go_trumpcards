@@ -143,7 +143,7 @@ func TestOldMaid_Method(t *testing.T) {
 		om.Reset()
 		if !om.IsHumanTurn() {
 			prevHasDrawn := om.GetHasDrawn()
-			om.PlayerDraw()
+			om.PlayerDraw(0)
 			assert.Equal(t, prevHasDrawn, om.GetHasDrawn())
 		}
 	})

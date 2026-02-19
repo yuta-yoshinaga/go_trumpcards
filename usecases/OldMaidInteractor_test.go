@@ -20,6 +20,6 @@ func TestOldMaidInteractor_Method(t *testing.T) {
 		assert.Equal(t, mockOutput, toi.Reset())
 	})
 	t.Run("success Draw", func(t *testing.T) {
-		assert.Equal(t, mockOutput, toi.Draw())
+		assert.Equal(t, mockOutput, toi.Draw(-1))
 	})
 }

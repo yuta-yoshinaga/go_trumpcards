@@ -8,7 +8,7 @@ import (
 // OldMaidInteractorIF ババ抜きインタラクターインタフェース
 type OldMaidInteractorIF interface {
 	Reset() string
-	Draw() string
+	Draw(cardIdx int) string
 }
 
 // OldMaidInteractor ババ抜きインタラクタークラス
@@ -39,14 +39,15 @@ func (oi *OldMaidInteractor) Reset() string {
 }
 
 // Draw 人間プレイヤーがカードを引く
-func (oi *OldMaidInteractor) Draw() string {
+// cardIdx: 引くカードのインデックス。-1 の場合はランダム選択。
+func (oi *OldMaidInteractor) Draw(cardIdx int) string {
 	if oi.om.GetGameEndFlag() {
 		return oi.omp.Output(oi.om)
 	}
 	if !oi.om.IsHumanTurn() {
 		return oi.omp.Output(oi.om)
 	}
-	oi.om.PlayerDraw()
+	oi.om.PlayerDraw(cardIdx)
 	if !oi.om.GetGameEndFlag() {
 		oi.runCpuTurns()
 	}

@@ -12,6 +12,7 @@ import (
 // OldMaidWebInput ババ抜きWebインプット
 type OldMaidWebInput struct {
 	Command string `json:"command"`
+	DrawIdx *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
 }
 
 // OldMaidWebOutputCard ババ抜きWebアウトプットカード
@@ -29,18 +30,28 @@ type OldMaidWebOutputPlayer struct {
 	Cards      []*OldMaidWebOutputCard `json:"cards"`
 }
 
+// OldMaidWebOutputCpuAction CPUターンの行動記録
+type OldMaidWebOutputCpuAction struct {
+	DrawPlayerIdx  int                   `json:"drawPlayerIdx"`
+	DrawFromIdx    int                   `json:"drawFromIdx"`
+	DrawnCard      *OldMaidWebOutputCard `json:"drawnCard"`
+	DiscardedPairs int                   `json:"discardedPairs"`
+}
+
 // OldMaidWebOutput ババ抜きWebアウトプット
 type OldMaidWebOutput struct {
-	Players           []*OldMaidWebOutputPlayer `json:"players"`
-	CurrentTurn       int                       `json:"currentTurn"`
-	NextDrawTargetIdx int                       `json:"nextDrawTargetIdx"`
-	GameEndFlag       bool                      `json:"gameEndFlag"`
-	LoserIdx          int                       `json:"loserIdx"`
-	LastDrawPlayerIdx int                       `json:"lastDrawPlayerIdx"`
-	LastDrawFromIdx   int                       `json:"lastDrawFromIdx"`
-	LastDiscardedPairs int                      `json:"lastDiscardedPairs"`
-	HasDrawn          bool                      `json:"hasDrawn"`
-	Message           string                    `json:"message"`
+	Players            []*OldMaidWebOutputPlayer    `json:"players"`
+	CurrentTurn        int                          `json:"currentTurn"`
+	NextDrawTargetIdx  int                          `json:"nextDrawTargetIdx"`
+	GameEndFlag        bool                         `json:"gameEndFlag"`
+	LoserIdx           int                          `json:"loserIdx"`
+	LastDrawPlayerIdx  int                          `json:"lastDrawPlayerIdx"`
+	LastDrawFromIdx    int                          `json:"lastDrawFromIdx"`
+	LastDrawCard       *OldMaidWebOutputCard        `json:"lastDrawCard"`
+	LastDiscardedPairs int                          `json:"lastDiscardedPairs"`
+	HasDrawn           bool                         `json:"hasDrawn"`
+	CpuActions         []*OldMaidWebOutputCpuAction `json:"cpuActions"`
+	Message            string                       `json:"message"`
 }
 
 // OldMaidWebController ババ抜きWebコントローラークラス
@@ -63,19 +74,24 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		status = http.StatusBadRequest
 		responseStr = `{"message":"param error."}`
 	} else {
+		drawIdx := -1
+		if param.DrawIdx != nil {
+			drawIdx = *param.DrawIdx
+		}
 		switch param.Command {
 		case "q", "quit":
 			responseStr = `{"message":"bye."}`
 		case "r", "reset":
 			responseStr = owc.omi.Reset()
 		case "d", "draw":
-			responseStr = owc.omi.Draw()
+			responseStr = owc.omi.Draw(drawIdx)
 		default:
 			responseStr = `{"message":"Unsupported command."}`
 		}
 	}
 	response := new(OldMaidWebOutput)
 	response.Players = make([]*OldMaidWebOutputPlayer, 0)
+	response.CpuActions = make([]*OldMaidWebOutputCpuAction, 0)
 	err = json.Unmarshal([]byte(responseStr), &response)
 	if err != nil || responseStr == "" {
 		status = http.StatusBadRequest

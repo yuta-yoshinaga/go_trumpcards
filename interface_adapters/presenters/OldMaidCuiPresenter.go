@@ -52,11 +52,33 @@ func (p *OldMaidCuiPresenter) Output(om *entities.OldMaid) string {
 		discarded := om.GetLastDiscardedPairs()
 		drawPlayerName := p.getPlayerName(om, drawPlayerIdx)
 		drawFromName := p.getPlayerName(om, drawFromIdx)
+		drawnCard := om.GetLastDrawCard()
 		res += fmt.Sprintf("%sが%sから1枚引きました", drawPlayerName, drawFromName)
+		if drawnCard != nil {
+			res += fmt.Sprintf(" (%s)", p.getCardStr(drawnCard))
+		}
 		if discarded > 0 {
 			res += fmt.Sprintf("。%d組捨てました", discarded)
 		}
 		res += "\n"
+	}
+
+	// CPUの行動履歴を表示
+	cpuActions := om.GetCpuActions()
+	if len(cpuActions) > 0 {
+		res += "[CPUの行動]\n"
+		for _, action := range cpuActions {
+			actPlayerName := p.getPlayerName(om, action.DrawPlayerIdx)
+			actFromName := p.getPlayerName(om, action.DrawFromIdx)
+			res += fmt.Sprintf("%sが%sから1枚引きました", actPlayerName, actFromName)
+			if action.DrawnCard != nil {
+				res += fmt.Sprintf(" (%s)", p.getCardStr(action.DrawnCard))
+			}
+			if action.DiscardedPairs > 0 {
+				res += fmt.Sprintf("。%d組捨てました", action.DiscardedPairs)
+			}
+			res += "\n"
+		}
 	}
 
 	if om.GetGameEndFlag() {

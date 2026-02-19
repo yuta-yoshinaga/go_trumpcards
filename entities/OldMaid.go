@@ -5,31 +5,43 @@ import "math/rand"
 // OldMaidPlayerCnt ババ抜きプレイヤー数
 const OldMaidPlayerCnt = 4
 
+// OldMaidCpuAction CPUの1ターン分の行動記録
+type OldMaidCpuAction struct {
+	DrawPlayerIdx  int   // 引いたプレイヤーインデックス
+	DrawFromIdx    int   // 引かれた相手のインデックス
+	DrawnCard      *Card // 引いたカード
+	DiscardedPairs int   // 捨てたペア数
+}
+
 // OldMaid ババ抜きゲームクラス
 type OldMaid struct {
 	trumpCards         *TrumpCards
 	players            []*OldMaidPlayer
-	currentTurn        int  // 現在の手番プレイヤーインデックス
-	gameEndFlag        bool // ゲーム終了フラグ
-	loserIdx           int  // 負けたプレイヤーインデックス
-	lastDrawPlayerIdx  int  // 最後に引いたプレイヤーのインデックス (-1=まだなし)
-	lastDrawFromIdx    int  // 最後に引いた相手のインデックス (-1=まだなし)
-	lastDiscardedPairs int  // 最後に捨てたペア数
-	hasDrawn           bool // 引きが発生したか
+	currentTurn        int                // 現在の手番プレイヤーインデックス
+	gameEndFlag        bool               // ゲーム終了フラグ
+	loserIdx           int                // 負けたプレイヤーインデックス
+	lastDrawPlayerIdx  int                // 最後に引いたプレイヤーのインデックス (-1=まだなし)
+	lastDrawFromIdx    int                // 最後に引いた相手のインデックス (-1=まだなし)
+	lastDrawCard       *Card              // 最後に引いたカード
+	lastDiscardedPairs int                // 最後に捨てたペア数
+	hasDrawn           bool               // 引きが発生したか
+	cpuActions         []*OldMaidCpuAction // CPUターンの行動履歴 (人間のターン後にリセット)
 }
 
 // NewOldMaid コンストラクタ
 func NewOldMaid(trumpCards *TrumpCards, players []*OldMaidPlayer) *OldMaid {
 	return &OldMaid{
-		trumpCards:        trumpCards,
-		players:           players,
-		currentTurn:       0,
-		gameEndFlag:       false,
-		loserIdx:          -1,
-		lastDrawPlayerIdx: -1,
-		lastDrawFromIdx:   -1,
+		trumpCards:         trumpCards,
+		players:            players,
+		currentTurn:        0,
+		gameEndFlag:        false,
+		loserIdx:           -1,
+		lastDrawPlayerIdx:  -1,
+		lastDrawFromIdx:    -1,
+		lastDrawCard:       nil,
 		lastDiscardedPairs: 0,
-		hasDrawn:          false,
+		hasDrawn:           false,
+		cpuActions:         nil,
 	}
 }
 
@@ -40,8 +52,10 @@ func (o *OldMaid) Reset() {
 	o.currentTurn = 0
 	o.lastDrawPlayerIdx = -1
 	o.lastDrawFromIdx = -1
+	o.lastDrawCard = nil
 	o.lastDiscardedPairs = 0
 	o.hasDrawn = false
+	o.cpuActions = nil
 
 	// シャッフル
 	for i := 0; i < 10; i++ {
@@ -127,32 +141,37 @@ func (o *OldMaid) checkGameEnd() bool {
 }
 
 // drawCard playerIdxがカードを引く (内部処理)
-func (o *OldMaid) drawCard(playerIdx int) {
+// cardIdx: 引くカードのインデックス。-1 の場合はランダム選択。
+func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 	if o.gameEndFlag {
-		return
+		return nil
 	}
 	player := o.players[playerIdx]
 	if player.GetIsFinished() {
-		return
+		return nil
 	}
 
 	targetIdx := o.getNextActivePlayer(playerIdx)
 	if targetIdx < 0 {
-		return
+		return nil
 	}
 	target := o.players[targetIdx]
 	if target.GetCardsSize() == 0 {
-		return
+		return nil
 	}
 
-	// ランダムにカードを選ぶ
-	randomIdx := rand.Intn(target.GetCardsSize())
-	card := target.RemoveCard(randomIdx)
+	// カードインデックスの決定
+	idx := cardIdx
+	if idx < 0 || idx >= target.GetCardsSize() {
+		idx = rand.Intn(target.GetCardsSize())
+	}
+	card := target.RemoveCard(idx)
 	player.AddCard(card)
 
 	// 最後の引き情報を更新
 	o.lastDrawPlayerIdx = playerIdx
 	o.lastDrawFromIdx = targetIdx
+	o.lastDrawCard = card
 	o.hasDrawn = true
 
 	// ペアを捨てる
@@ -169,6 +188,8 @@ func (o *OldMaid) drawCard(playerIdx int) {
 
 	// ゲーム終了チェック
 	o.checkGameEnd()
+
+	return card
 }
 
 // advanceTurn 手番を次のアクティブなプレイヤーへ進める
@@ -183,11 +204,14 @@ func (o *OldMaid) advanceTurn() {
 }
 
 // PlayerDraw 人間プレイヤーがカードを引く
-func (o *OldMaid) PlayerDraw() {
+// cardIdx: 引くカードのインデックス。-1 の場合はランダム選択。
+func (o *OldMaid) PlayerDraw(cardIdx int) {
 	if o.gameEndFlag || !o.players[o.currentTurn].GetIsHuman() {
 		return
 	}
-	o.drawCard(o.currentTurn)
+	// 人間のターン開始時にCPU行動履歴をリセット
+	o.cpuActions = nil
+	o.drawCard(o.currentTurn, cardIdx)
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
@@ -198,7 +222,15 @@ func (o *OldMaid) CpuDraw() {
 	if o.gameEndFlag || o.players[o.currentTurn].GetIsHuman() {
 		return
 	}
-	o.drawCard(o.currentTurn)
+	playerIdx := o.currentTurn
+	card := o.drawCard(playerIdx, -1)
+	action := &OldMaidCpuAction{
+		DrawPlayerIdx:  playerIdx,
+		DrawFromIdx:    o.lastDrawFromIdx,
+		DrawnCard:      card,
+		DiscardedPairs: o.lastDiscardedPairs,
+	}
+	o.cpuActions = append(o.cpuActions, action)
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
@@ -252,6 +284,11 @@ func (o *OldMaid) GetLastDrawFromIdx() int {
 	return o.lastDrawFromIdx
 }
 
+// GetLastDrawCard 最後に引いたカード
+func (o *OldMaid) GetLastDrawCard() *Card {
+	return o.lastDrawCard
+}
+
 // GetLastDiscardedPairs 最後に捨てたペア数
 func (o *OldMaid) GetLastDiscardedPairs() int {
 	return o.lastDiscardedPairs
@@ -260,4 +297,9 @@ func (o *OldMaid) GetLastDiscardedPairs() int {
 // GetHasDrawn 引きが発生したかどうか
 func (o *OldMaid) GetHasDrawn() bool {
 	return o.hasDrawn
+}
+
+// GetCpuActions CPUターンの行動履歴取得
+func (o *OldMaid) GetCpuActions() []*OldMaidCpuAction {
+	return o.cpuActions
 }

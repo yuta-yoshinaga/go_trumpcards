@@ -14,9 +14,11 @@ import (
 
 func TestOldMaidWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
+	// After controller unmarshal+remarshal, new fields are included
+	expectedBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"hasDrawn":false,"cpuActions":[],"message":""}`
 	omiMock := new(usecases.MockOldMaidInteractor)
 	omiMock.On("Reset").Return(mockOutput).Times(2)
-	omiMock.On("Draw").Return(mockOutput)
+	omiMock.On("Draw", -1).Return(mockOutput)
 
 	towc := controllers.NewOldMaidWebController(omiMock)
 
@@ -28,7 +30,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 
 	var jsonInput controllers.OldMaidWebInput
 	// When "q" / "quit": responseStr = {"message":"bye."} → all other fields default to zero
-	qBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDiscardedPairs":0,"hasDrawn":false,"message":"bye."}`
+	qBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"hasDrawn":false,"cpuActions":[],"message":"bye."}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q"}`), &jsonInput)
@@ -55,7 +57,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
+		recorded.BodyIs(expectedBody)
 	})
 	t.Run("success Exec reset", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset"}`), &jsonInput)
@@ -64,7 +66,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
+		recorded.BodyIs(expectedBody)
 	})
 	t.Run("success Exec d", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "d"}`), &jsonInput)
@@ -73,7 +75,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
+		recorded.BodyIs(expectedBody)
 	})
 	t.Run("success Exec draw", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "draw"}`), &jsonInput)
@@ -82,7 +84,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
+		recorded.BodyIs(expectedBody)
 	})
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other"}`), &jsonInput)
@@ -91,7 +93,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDiscardedPairs":0,"hasDrawn":false,"message":"Unsupported command."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"hasDrawn":false,"cpuActions":[],"message":"Unsupported command."}`)
 	})
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": ""}`), &jsonInput)
@@ -100,7 +102,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDiscardedPairs":0,"hasDrawn":false,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"hasDrawn":false,"cpuActions":[],"message":"param error."}`)
 	})
 	t.Run("failed Exec response empty", func(t *testing.T) {
 		omiMock.On("Reset").Return(``)
@@ -110,6 +112,6 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDiscardedPairs":0,"hasDrawn":false,"message":"error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"hasDrawn":false,"cpuActions":[],"message":"error."}`)
 	})
 }

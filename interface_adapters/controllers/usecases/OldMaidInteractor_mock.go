@@ -14,7 +14,7 @@ func (_m *MockOldMaidInteractor) Reset() string {
 }
 
 // Draw モック
-func (_m *MockOldMaidInteractor) Draw() string {
-	ret := _m.Called()
+func (_m *MockOldMaidInteractor) Draw(cardIdx int) string {
+	ret := _m.Called(cardIdx)
 	return ret.Get(0).(string)
 }
