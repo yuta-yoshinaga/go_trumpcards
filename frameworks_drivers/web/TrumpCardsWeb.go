@@ -12,16 +12,16 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
-// BlackJackWeb ブラックジャックWebクラス
-type BlackJackWeb struct {
+// TrumpCardsWeb トランプカードゲームWebクラス
+type TrumpCardsWeb struct {
 	bjc *controllers.BlackJackWebController
 	pkc *controllers.PokerWebController
 	omc *controllers.OldMaidWebController
 }
 
-// NewBlackJackWeb コンストラクタ
-func NewBlackJackWeb() *BlackJackWeb {
-	return &BlackJackWeb{
+// NewTrumpCardsWeb コンストラクタ
+func NewTrumpCardsWeb() *TrumpCardsWeb {
+	return &TrumpCardsWeb{
 		bjc: controllers.NewBlackJackWebController(usecases.NewBlackJackInteractor(presenters.NewBlackJackWebPresenter())),
 		pkc: controllers.NewPokerWebController(usecases.NewPokerInteractor(presenters.NewPokerWebPresenter())),
 		omc: controllers.NewOldMaidWebController(usecases.NewOldMaidInteractor(presenters.NewOldMaidWebPresenter())),
@@ -29,7 +29,7 @@ func NewBlackJackWeb() *BlackJackWeb {
 }
 
 // Exec ゲーム実行
-func (web *BlackJackWeb) Exec() {
+func (web *TrumpCardsWeb) Exec() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(

@@ -23,7 +23,7 @@ func main() {
 		oldmaid := ui.NewOldMaidCui()
 		oldmaid.Exec()
 	case "web":
-		web := web.NewBlackJackWeb()
+		web := web.NewTrumpCardsWeb()
 		web.Exec()
 	default:
 		log.Fatal(fmt.Errorf("Error: param not found %s", flag.Arg(0)))
