@@ -35,6 +35,7 @@ go mod tidy
 **Build frontend (React):**
 ```sh
 cd frontend && npm install && npm run build  # Build React app to public/
+cd frontend && npm test                      # Run frontend unit tests (Vitest)
 ```
 
 > **Important:** The built assets in `public/assets/` and `public/index.html` are committed to the
@@ -118,6 +119,29 @@ Always run the full test suite before committing and ensure it passes:
 go test ./...
 ```
 
+### Frontend testing
+
+Frontend unit tests are also mandatory. The test stack is **Vitest + React Testing Library + jest-dom**.
+
+| Layer | Location | What to test |
+|-------|----------|--------------|
+| API client | `frontend/src/api/*.test.ts` | Correct URL, request body, and error handling for every API method |
+| Components | `frontend/src/components/*.test.tsx` | Rendered output, props, event handlers |
+| Pages | `frontend/src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
+
+**Patterns:**
+
+- **Mock the API module**: use `vi.mock('../api/gameApi', ...)` inside page test files; access the typed mock with `vi.mocked(api.exec)`
+- **Wrap router-dependent components**: render `NavBar` (and any component using `useLocation`) inside `<MemoryRouter initialEntries={['/path']}>`
+- **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
+- **Query buttons by role**: when a text string appears in multiple elements, use `screen.getByRole('button', { name: '...' })` instead of `getByText`
+
+**Run frontend tests before committing:**
+
+```sh
+cd frontend && npm test
+```
+
 ## Documentation Maintenance
 
 **When making code changes, always update the following documentation in the same commit:**
@@ -130,6 +154,7 @@ go test ./...
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
 | Modify anything under `frontend/` | Run `npm run build` and commit updated `public/assets/` and `public/index.html` in the same commit |
+| Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
