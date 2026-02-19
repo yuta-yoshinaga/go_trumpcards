@@ -254,6 +254,58 @@ func TestDaifugo_Method(t *testing.T) {
 		assert.Equal(t, 1, players[0].GetCardsSize()) // 1 card (3) remains
 	})
 
+	t.Run("success PlayerPlay deduplicates indices so only unique cards are played", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players)
+		// Human has 3 cards. [0,0] must be treated as [0] — only 1 card goes to the table.
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false)) // idx0
+		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false)) // idx1
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // idx2
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+
+		ok := dg.PlayerPlay([]int{0, 0}) // duplicate → deduped to [0]
+		assert.True(t, ok)
+		assert.Len(t, dg.GetTableCards(), 1)
+		assert.Equal(t, 5, dg.GetTableCards()[0].GetValue())
+		assert.Equal(t, 2, players[0].GetCardsSize()) // 2 cards remain
+	})
+
+	t.Run("success PlayerPlay rejects fake pair from duplicate indices when table has a pair", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players)
+		// Human plays pair of 3s; CPU 1 responds with stronger pair of 5s;
+		// CPUs 2 & 3 have singles so they cannot beat a pair → they pass.
+		// Turn returns to human with pair of 5s on the table.
+		// CPU 1 gets a spare card (9) so it does not finish when it plays the pair of 5s
+		// (finishing would clear the table immediately, breaking the test scenario).
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))   // idx0 – played first
+		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 3, false))   // idx1 – played first
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))   // idx2 – remains
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))   // pair of 5s (beats 3s pair)
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 9, false))   // spare – keeps CPU 1 alive
+		players[2].AddCard(entities.NewCard(entities.CardDesignClover, 6, false))  // single – cannot beat pair
+		players[3].AddCard(entities.NewCard(entities.CardDesignDiamond, 6, false))
+
+		dg.PlayerPlay([]int{0, 1}) // human plays pair of 3s → table=[3,3], turn→CPU 1
+		dg.CpuPlay()               // CPU 1 plays pair of 5s → table=[5,5], turn→CPU 2
+		dg.CpuPlay()               // CPU 2 passes (single cannot beat pair)
+		dg.CpuPlay()               // CPU 3 passes; currentTurn→0, lastPlay=1 → no clear
+		assert.True(t, dg.IsHumanTurn())
+		assert.Len(t, dg.GetTableCards(), 2) // pair of 5s still on table
+
+		// Human has [7♦] at idx0; tries [0,0] as a fake pair → deduped to [0] (1 card)
+		// isPlayable([7]) fails: 1 card ≠ 2 needed
+		ok := dg.PlayerPlay([]int{0, 0})
+		assert.False(t, ok)                         // correctly rejected
+		assert.Len(t, dg.GetTableCards(), 2)         // table unchanged
+		assert.Equal(t, 1, players[0].GetCardsSize()) // hand unchanged
+	})
+
 	t.Run("success finishPlayer rank based on already-finished count", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()

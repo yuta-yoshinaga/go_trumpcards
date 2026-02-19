@@ -1,5 +1,7 @@
 package entities
 
+import "sort"
+
 // DaifugoPlayerCnt 大富豪プレイヤー数
 const DaifugoPlayerCnt = 4
 
@@ -209,6 +211,20 @@ func (d *Daifugo) PlayerPlay(indices []int) bool {
 		d.advanceTurn()
 		d.checkPassClear()
 		return true
+	}
+
+	// 重複インデックスを除去 (重複があると isPlayable の枚数チェックが狂うため)
+	{
+		cp := make([]int, len(indices))
+		copy(cp, indices)
+		sort.Ints(cp)
+		unique := make([]int, 0, len(cp))
+		for i, idx := range cp {
+			if i == 0 || idx != cp[i-1] {
+				unique = append(unique, idx)
+			}
+		}
+		indices = unique
 	}
 
 	// 指定カードの値を収集
