@@ -12,10 +12,10 @@ function renderNavBar(initialPath = '/') {
 }
 
 describe('NavBar', () => {
-  it('renders three navigation links', () => {
+  it('renders four navigation links', () => {
     renderNavBar()
     const links = screen.getAllByRole('link')
-    expect(links).toHaveLength(3)
+    expect(links).toHaveLength(4)
   })
 
   it('renders BlackJack link', () => {
@@ -33,12 +33,18 @@ describe('NavBar', () => {
     expect(screen.getByText('ババ抜き')).toBeInTheDocument()
   })
 
+  it('renders Daifugo link', () => {
+    renderNavBar()
+    expect(screen.getByText('大富豪')).toBeInTheDocument()
+  })
+
   it('marks BlackJack link as active when on root path', () => {
     renderNavBar('/')
     const blackjackLink = screen.getByText('ブラックジャック')
     expect(blackjackLink).toHaveClass('active')
     expect(screen.getByText('ポーカー')).not.toHaveClass('active')
     expect(screen.getByText('ババ抜き')).not.toHaveClass('active')
+    expect(screen.getByText('大富豪')).not.toHaveClass('active')
   })
 
   it('marks Poker link as active when on /poker path', () => {
@@ -46,6 +52,7 @@ describe('NavBar', () => {
     expect(screen.getByText('ポーカー')).toHaveClass('active')
     expect(screen.getByText('ブラックジャック')).not.toHaveClass('active')
     expect(screen.getByText('ババ抜き')).not.toHaveClass('active')
+    expect(screen.getByText('大富豪')).not.toHaveClass('active')
   })
 
   it('marks OldMaid link as active when on /oldmaid path', () => {
@@ -53,6 +60,15 @@ describe('NavBar', () => {
     expect(screen.getByText('ババ抜き')).toHaveClass('active')
     expect(screen.getByText('ブラックジャック')).not.toHaveClass('active')
     expect(screen.getByText('ポーカー')).not.toHaveClass('active')
+    expect(screen.getByText('大富豪')).not.toHaveClass('active')
+  })
+
+  it('marks Daifugo link as active when on /daifugo path', () => {
+    renderNavBar('/daifugo')
+    expect(screen.getByText('大富豪')).toHaveClass('active')
+    expect(screen.getByText('ブラックジャック')).not.toHaveClass('active')
+    expect(screen.getByText('ポーカー')).not.toHaveClass('active')
+    expect(screen.getByText('ババ抜き')).not.toHaveClass('active')
   })
 
   it('links point to correct hrefs', () => {
@@ -61,5 +77,6 @@ describe('NavBar', () => {
     expect(links[0]).toHaveAttribute('href', '/')
     expect(links[1]).toHaveAttribute('href', '/poker')
     expect(links[2]).toHaveAttribute('href', '/oldmaid')
+    expect(links[3]).toHaveAttribute('href', '/daifugo')
   })
 })

@@ -13,15 +13,16 @@ function getImagePath(card: Card): string {
   return `/images/${prefix}${zeroPad(card.value)}.png`
 }
 
-interface CardImageProps {
+interface CardImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   card: Card
   style?: React.CSSProperties
   className?: string
 }
 
-export function CardImage({ card, style, className }: CardImageProps) {
+export function CardImage({ card, style, className, ...props }: CardImageProps) {
   return (
     <img
+      {...props}
       src={getImagePath(card)}
       alt={`${card.design} ${card.value}`}
       style={{ width: 80, borderRadius: 6, display: 'block', ...style }}

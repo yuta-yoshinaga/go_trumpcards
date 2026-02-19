@@ -85,6 +85,7 @@ function PlayerArea({ player, isTurn, gameEndFlag, selectedIndices, onToggleCard
               <div key={i} onClick={() => onToggleCard(i)} style={{ cursor: 'pointer' }}>
                 <CardImage
                   card={card}
+                  data-selected={String(isSelected)}
                   style={{ 
                     width: 60, 
                     transform: isSelected ? 'translateY(-10px)' : 'none',
