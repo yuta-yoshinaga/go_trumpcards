@@ -99,6 +99,32 @@
             align-self: center;
         }
 
+        /* Selectable card back: shown when human can choose which card to draw */
+        .card-wrap.selectable {
+            cursor: pointer;
+            border-radius: 6px;
+            border: 2px solid transparent;
+            transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+        }
+
+        .card-wrap.selectable:hover {
+            border-color: #fff176;
+            box-shadow: 0 0 8px rgba(255, 241, 118, 0.85);
+            transform: translateY(-4px);
+        }
+
+        .card-wrap.selectable img {
+            display: block;
+        }
+
+        /* Hint label shown above selectable cards */
+        .select-hint {
+            color: #fff176;
+            font-size: 0.82em;
+            margin-bottom: 4px;
+            font-style: italic;
+        }
+
         /* Human area: full width at the bottom */
         .human-area {
             margin-top: 12px;
@@ -122,6 +148,18 @@
             font-size: 0.95em;
             margin: 10px 0 4px;
             min-height: 36px;
+            white-space: pre-line;
+        }
+
+        .cpu-log-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            color: #aad4ff;
+            padding: 8px 14px;
+            font-size: 0.88em;
+            margin: 4px 0;
+            white-space: pre-line;
+            display: none;
         }
 
         .result-box {
@@ -166,16 +204,19 @@
             <div class="player-area" id="player-area-1">
                 <div class="player-label" id="label-1">CPU 1</div>
                 <div class="card-count-label" id="count-1"></div>
+                <div id="select-hint-1" class="select-hint" style="display:none;">クリックして引く</div>
                 <div class="cards-row" id="cards-1"></div>
             </div>
             <div class="player-area" id="player-area-2">
                 <div class="player-label" id="label-2">CPU 2</div>
                 <div class="card-count-label" id="count-2"></div>
+                <div id="select-hint-2" class="select-hint" style="display:none;">クリックして引く</div>
                 <div class="cards-row" id="cards-2"></div>
             </div>
             <div class="player-area" id="player-area-3">
                 <div class="player-label" id="label-3">CPU 3</div>
                 <div class="card-count-label" id="count-3"></div>
+                <div id="select-hint-3" class="select-hint" style="display:none;">クリックして引く</div>
                 <div class="cards-row" id="cards-3"></div>
             </div>
         </div>
@@ -189,14 +230,15 @@
             <div class="cards-row" id="cards-0"></div>
         </div>
 
-        <!-- Status & Result -->
+        <!-- Status & CPU log & Result -->
         <div class="status-box" id="status-box"></div>
+        <div class="cpu-log-box" id="cpu-log-box"></div>
         <div class="result-box" id="result-box"></div>
 
         <!-- Buttons -->
         <div class="btn_field">
             <button type="button" class="btn btn-primary btn-sm" id="btn-reset">リセット</button>
-            <button type="button" class="btn btn-warning btn-sm" id="btn-draw" disabled>引く</button>
+            <button type="button" class="btn btn-warning btn-sm" id="btn-draw" disabled>ランダムに引く</button>
         </div>
     </div>
 

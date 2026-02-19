@@ -26,8 +26,21 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 	resObj.LoserIdx = om.GetLoserIdx()
 	resObj.LastDrawPlayerIdx = om.GetLastDrawPlayerIdx()
 	resObj.LastDrawFromIdx = om.GetLastDrawFromIdx()
+	resObj.LastDrawCard = owp.getCardObj(om.GetLastDrawCard())
 	resObj.LastDiscardedPairs = om.GetLastDiscardedPairs()
 	resObj.HasDrawn = om.GetHasDrawn()
+
+	// CPU行動履歴
+	resObj.CpuActions = make([]*controllers.OldMaidWebOutputCpuAction, 0)
+	for _, action := range om.GetCpuActions() {
+		a := &controllers.OldMaidWebOutputCpuAction{
+			DrawPlayerIdx:  action.DrawPlayerIdx,
+			DrawFromIdx:    action.DrawFromIdx,
+			DrawnCard:      owp.getCardObj(action.DrawnCard),
+			DiscardedPairs: action.DiscardedPairs,
+		}
+		resObj.CpuActions = append(resObj.CpuActions, a)
+	}
 
 	for i := 0; i < om.GetPlayerCnt(); i++ {
 		player := om.GetPlayer(i)
@@ -58,8 +71,11 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 	return string(res)
 }
 
-// getCardObj カード情報オブジェクト取得
+// getCardObj カード情報オブジェクト取得 (nil の場合は nil を返す)
 func (owp *OldMaidWebPresenter) getCardObj(card *entities.Card) *controllers.OldMaidWebOutputCard {
+	if card == nil {
+		return nil
+	}
 	res := new(controllers.OldMaidWebOutputCard)
 	switch card.GetDesign() {
 	case entities.CardDesignSpade:

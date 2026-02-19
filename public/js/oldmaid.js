@@ -7,6 +7,7 @@ $(document).ready(function () {
     });
 
     $('#btn-draw').on('click', function () {
+        // ランダムに引く (drawIdx 未指定 = サーバー側でランダム選択)
         oldmaidRequest({ command: 'draw' });
     });
 
@@ -31,27 +32,31 @@ $(document).ready(function () {
     function updateUi(response) {
         if (!response || !response.players) return;
 
+        var isHumanTurn = !response.gameEndFlag && response.currentTurn === 0;
+
         response.players.forEach(function (player) {
-            updatePlayerArea(player, response);
+            updatePlayerArea(player, response, isHumanTurn);
         });
 
         updateStatus(response);
+        updateCpuLog(response);
         updateResult(response);
-        updateButtons(response);
+        updateButtons(response, isHumanTurn);
     }
 
-    function updatePlayerArea(player, response) {
+    function updatePlayerArea(player, response, isHumanTurn) {
         var id = player.id;
         var $area = $('#player-area-' + id);
         var $label = $('#label-' + id);
         var $count = $('#count-' + id);
         var $cards = $('#cards-' + id);
+        var isTarget = !response.gameEndFlag && response.nextDrawTargetIdx === id;
 
         // Finished / draw-target styling
         $area.removeClass('draw-target finished-area');
         if (player.isFinished) {
             $area.addClass('finished-area');
-        } else if (!response.gameEndFlag && response.nextDrawTargetIdx === id) {
+        } else if (isTarget) {
             $area.addClass('draw-target');
         }
 
@@ -59,7 +64,7 @@ $(document).ready(function () {
         $label.find('.finished-badge, .draw-target-badge').remove();
         if (player.isFinished) {
             $label.append('<span class="finished-badge">上がり</span>');
-        } else if (!response.gameEndFlag && response.nextDrawTargetIdx === id && !player.isHuman) {
+        } else if (isTarget && !player.isHuman) {
             $label.append('<span class="draw-target-badge">← 引く相手</span>');
         }
 
@@ -68,6 +73,14 @@ $(document).ready(function () {
             $count.text('');
         } else {
             $count.text(player.cardCount + '枚');
+        }
+
+        // Select hint for CPU target
+        if (!player.isHuman) {
+            var $hint = $('#select-hint-' + id);
+            if ($hint.length) {
+                $hint.toggle(isHumanTurn && isTarget && !player.isFinished);
+            }
         }
 
         // Render cards
@@ -85,8 +98,25 @@ $(document).ready(function () {
                     $cards.append($wrap);
                 });
             }
+        } else if (isHumanTurn && isTarget) {
+            // Show selectable (clickable) card backs so player can choose which to draw
+            var showCount = Math.min(player.cardCount, 10);
+            for (var i = 0; i < showCount; i++) {
+                var $img = $('<img>').attr('src', './images/z01.png').attr('alt', 'card');
+                var $wrap = $('<div class="card-wrap selectable"></div>').append($img);
+                // Capture index in closure
+                $wrap.on('click', (function (idx) {
+                    return function () {
+                        oldmaidRequest({ command: 'draw', drawIdx: idx });
+                    };
+                })(i));
+                $cards.append($wrap);
+            }
+            if (player.cardCount > 10) {
+                $cards.append('<span class="card-count-extra">+' + (player.cardCount - 10) + '</span>');
+            }
         } else {
-            // Show card backs (max 10 visible)
+            // Show non-clickable card backs (max 10 visible)
             var showCount = Math.min(player.cardCount, 10);
             for (var i = 0; i < showCount; i++) {
                 var $img = $('<img>').attr('src', './images/z01.png').attr('alt', 'card');
@@ -105,22 +135,45 @@ $(document).ready(function () {
             $status.text('');
             return;
         }
-        var msg = '';
+        var lines = [];
         if (response.hasDrawn) {
             var drawName = playerName(response.lastDrawPlayerIdx);
             var fromName = playerName(response.lastDrawFromIdx);
-            msg = drawName + 'が' + fromName + 'から1枚引きました';
+            var msg = drawName + 'が' + fromName + 'から1枚引きました';
+            if (response.lastDrawCard) {
+                msg += ' (' + cardLabel(response.lastDrawCard) + ')';
+            }
             if (response.lastDiscardedPairs > 0) {
                 msg += '。' + response.lastDiscardedPairs + '組捨てました';
             }
-            msg += '\n';
+            lines.push(msg);
         }
         // Turn hint
         if (response.currentTurn === 0) {
             var targetName = playerName(response.nextDrawTargetIdx);
-            msg += 'あなたの番！ ' + targetName + 'から引いてください。';
+            lines.push('あなたの番！ ' + targetName + 'のカードをクリックして引いてください。');
         }
-        $status.text(msg);
+        $status.text(lines.join('\n'));
+    }
+
+    function updateCpuLog(response) {
+        var $log = $('#cpu-log-box');
+        if (!response.cpuActions || response.cpuActions.length === 0) {
+            $log.hide().text('');
+            return;
+        }
+        var lines = ['[CPUの行動]'];
+        response.cpuActions.forEach(function (action) {
+            var msg = playerName(action.drawPlayerIdx) + 'が' + playerName(action.drawFromIdx) + 'から1枚引きました';
+            if (action.drawnCard) {
+                msg += ' (' + cardLabel(action.drawnCard) + ')';
+            }
+            if (action.discardedPairs > 0) {
+                msg += '。' + action.discardedPairs + '組捨てました';
+            }
+            lines.push(msg);
+        });
+        $log.text(lines.join('\n')).show();
     }
 
     function updateResult(response) {
@@ -132,12 +185,11 @@ $(document).ready(function () {
         }
     }
 
-    function updateButtons(response) {
+    function updateButtons(response, isHumanTurn) {
         if (response.gameEndFlag) {
             $('#btn-draw').prop('disabled', true);
             $('#btn-reset').prop('disabled', false);
         } else {
-            var isHumanTurn = (response.currentTurn === 0);
             $('#btn-draw').prop('disabled', !isHumanTurn);
             $('#btn-reset').prop('disabled', false);
         }
@@ -151,6 +203,7 @@ $(document).ready(function () {
     }
 
     function cardLabel(card) {
+        if (!card) return '';
         if (card.design === 'JOKER') return 'JOKER';
         return card.design + ' ' + card.value;
     }
