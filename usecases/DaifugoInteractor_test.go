@@ -11,7 +11,7 @@ import (
 )
 
 func TestDaifugoInteractor_Method(t *testing.T) {
-	mockOutput := `{"players":[],"currentTurn":0,"lastPlay":null,"isRevolution":false,"gameEndFlag":false,"message":""}`
+	mockOutput := `{"players":[],"currentTurn":0,"lastPlay":[],"isRevolution":false,"gameEndFlag":false,"message":""}`
 	dpMock := new(presenters.MockDaifugoPresenter)
 	dpMock.On("Output", mock.Anything).Return(mockOutput)
 	di := usecases.NewDaifugoInteractor(dpMock)

@@ -34,7 +34,7 @@ func NewDaifugo(trumpCards *TrumpCards, players []*DaifugoPlayer) *Daifugo {
 		passCount:      0,
 		isRevolution:   false,
 		finishedCount:  0,
-		rankHistory:    nil,
+		rankHistory:    make([]int, 0),
 	}
 }
 
