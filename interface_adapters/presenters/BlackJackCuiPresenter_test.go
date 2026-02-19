@@ -57,10 +57,11 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.Reset()
 		player.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
 		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
+		// Dealer score 19 (>= 17) so no additional cards drawn — deterministic output
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 9, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
 		bj.PlayerStand()
-		assert.Equal(t, "----------\ndealer score 19\nCLOVER 2,CLOVER 10,CLOVER 7\n----------\nplayer score 21\nSPADE 1,SPADE 10\n----------\nYou are the winner.\n\n----------\n", tbp.Output(bj))
+		assert.Equal(t, "----------\ndealer score 19\nCLOVER 9,CLOVER 10\n----------\nplayer score 21\nSPADE 1,SPADE 10\n----------\nYou are the winner.\n\n----------\n", tbp.Output(bj))
 	})
 	t.Run("success GetCardStr", func(t *testing.T) {
 		assert.Equal(t, "SPADE 1", tbp.GetCardStr(entities.NewCard(entities.CardDesignSpade, 1, false)))
