@@ -57,10 +57,11 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.Reset()
 		player.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
 		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
+		// Dealer score 19 (>= 17) so no additional cards drawn — deterministic output
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 9, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
 		bj.PlayerStand()
-		assert.Equal(t, `{"dealer":{"score":19,"cards":[{"design":"CLOVER","value":2},{"design":"CLOVER","value":10},{"design":"CLOVER","value":7}]},"player":{"score":21,"cards":[{"design":"SPADE","value":1},{"design":"SPADE","value":10}]},"message":"You are the winner."}`, tbp.Output(bj))
+		assert.Equal(t, `{"dealer":{"score":19,"cards":[{"design":"CLOVER","value":9},{"design":"CLOVER","value":10}]},"player":{"score":21,"cards":[{"design":"SPADE","value":1},{"design":"SPADE","value":10}]},"message":"You are the winner."}`, tbp.Output(bj))
 	})
 	t.Run("success GetCardStr", func(t *testing.T) {
 		card := tbp.GetCardObj(entities.NewCard(entities.CardDesignSpade, 1, false))

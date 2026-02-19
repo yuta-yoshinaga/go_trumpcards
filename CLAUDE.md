@@ -55,6 +55,43 @@ public/                        # Static web assets (HTML/CSS/JS)
 - **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`
 - **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
 
+## Testing Policy
+
+**Unit tests are mandatory. Every implementation must ship with tests in the same commit.**
+
+### Coverage requirements
+
+When adding or modifying any game logic, provide tests for all four layers:
+
+| Layer | Location | What to test |
+|-------|----------|--------------|
+| Entities | `entities/*_test.go` | All public methods, edge cases, boundary values |
+| Use cases | `usecases/*Interactor_test.go` | Each interactor method via a mock presenter |
+| Presenters | `interface_adapters/presenters/*_test.go` | CUI text output and Web JSON output for every game phase |
+| Controllers | `interface_adapters/controllers/*_test.go` | Every supported command including unknown/empty input |
+
+### Mock pattern
+
+- **Presenter mocks**: `usecases/presenters/*_mock.go` — implement the presenter interface using `testify/mock`
+- **Interactor mocks**: `interface_adapters/controllers/usecases/*_mock.go` — implement the interactor interface using `testify/mock`
+- Follow the existing `BlackJack*_mock.go` files as the reference pattern
+
+### Writing deterministic tests
+
+Card games involve shuffling, so tests must not depend on random outcomes:
+
+- **Avoid auto-hit/draw**: Give the dealer/CPU a score that prevents automatic card draws (e.g., BlackJack dealer ≥ 17, Poker dealer rank ≥ Two Pair so `dealerExchange` is skipped)
+- **Force deterministic draws in OldMaid**: Give the target player exactly 1 card so `rand.Intn(1)` always returns 0
+- **Never assert on shuffled deck order**: Set up game state manually via `AddCard` instead of relying on `Reset`/`Shuffle`
+
+### Verifying tests
+
+Always run the full test suite before committing and ensure it passes:
+
+```sh
+go test ./...
+```
+
 ## Documentation Maintenance
 
 **When making code changes, always update the following documentation in the same commit:**

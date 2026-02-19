@@ -1,0 +1,25 @@
+package usecases_test
+
+import (
+	"testing"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
+	"github.com/yuta-yoshinaga/go_trumpcards/usecases/presenters"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func TestOldMaidInteractor_Method(t *testing.T) {
+	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
+	ompMock := new(presenters.MockOldMaidPresenter)
+	ompMock.On("Output", mock.AnythingOfType("string")).Return(mockOutput)
+	toi := usecases.NewOldMaidInteractor(ompMock)
+
+	t.Run("success Reset", func(t *testing.T) {
+		assert.Equal(t, mockOutput, toi.Reset())
+	})
+	t.Run("success Draw", func(t *testing.T) {
+		assert.Equal(t, mockOutput, toi.Draw())
+	})
+}
