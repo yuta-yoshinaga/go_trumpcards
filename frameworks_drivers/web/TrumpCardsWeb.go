@@ -12,27 +12,30 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
-// BlackJackWeb ブラックジャックWebクラス
-type BlackJackWeb struct {
+// TrumpCardsWeb トランプカードゲームWebクラス
+type TrumpCardsWeb struct {
 	bjc *controllers.BlackJackWebController
 	pkc *controllers.PokerWebController
+	omc *controllers.OldMaidWebController
 }
 
-// NewBlackJackWeb コンストラクタ
-func NewBlackJackWeb() *BlackJackWeb {
-	return &BlackJackWeb{
+// NewTrumpCardsWeb コンストラクタ
+func NewTrumpCardsWeb() *TrumpCardsWeb {
+	return &TrumpCardsWeb{
 		bjc: controllers.NewBlackJackWebController(usecases.NewBlackJackInteractor(presenters.NewBlackJackWebPresenter())),
 		pkc: controllers.NewPokerWebController(usecases.NewPokerInteractor(presenters.NewPokerWebPresenter())),
+		omc: controllers.NewOldMaidWebController(usecases.NewOldMaidInteractor(presenters.NewOldMaidWebPresenter())),
 	}
 }
 
 // Exec ゲーム実行
-func (web *BlackJackWeb) Exec() {
+func (web *TrumpCardsWeb) Exec() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		rest.Post("/blackjac/exec", web.bjc.Exec),
 		rest.Post("/poker/exec", web.pkc.Exec),
+		rest.Post("/oldmaid/exec", web.omc.Exec),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -41,6 +44,7 @@ func (web *BlackJackWeb) Exec() {
 	http.Handle("/", http.FileServer(http.Dir("public")))
 	http.Handle("/blackjac/exec", api.MakeHandler())
 	http.Handle("/poker/exec", api.MakeHandler())
+	http.Handle("/oldmaid/exec", api.MakeHandler())
 	log.Fatal(http.ListenAndServe(getListenPort(), nil))
 }
 
