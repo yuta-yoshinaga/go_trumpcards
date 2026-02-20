@@ -24,11 +24,21 @@ type TrumpCardsWeb struct {
 // NewTrumpCardsWeb コンストラクタ
 func NewTrumpCardsWeb() *TrumpCardsWeb {
 	return &TrumpCardsWeb{
-		bjc: controllers.NewBlackJackWebController(usecases.NewBlackJackInteractor(presenters.NewBlackJackWebPresenter())),
-		pkc: controllers.NewPokerWebController(usecases.NewPokerInteractor(presenters.NewPokerWebPresenter())),
-		omc: controllers.NewOldMaidWebController(usecases.NewOldMaidInteractor(presenters.NewOldMaidWebPresenter())),
-		dgc: controllers.NewDaifugoWebController(usecases.NewDaifugoInteractor(presenters.NewDaifugoWebPresenter())),
-		sgc: controllers.NewSevensWebController(usecases.NewSevensInteractor(presenters.NewSevensWebPresenter())),
+		bjc: controllers.NewBlackJackWebController(func() usecases.BlackJackInteractorIF {
+			return usecases.NewBlackJackInteractor(presenters.NewBlackJackWebPresenter())
+		}),
+		pkc: controllers.NewPokerWebController(func() usecases.PokerInteractorIF {
+			return usecases.NewPokerInteractor(presenters.NewPokerWebPresenter())
+		}),
+		omc: controllers.NewOldMaidWebController(func() usecases.OldMaidInteractorIF {
+			return usecases.NewOldMaidInteractor(presenters.NewOldMaidWebPresenter())
+		}),
+		dgc: controllers.NewDaifugoWebController(func() usecases.DaifugoInteractorIF {
+			return usecases.NewDaifugoInteractor(presenters.NewDaifugoWebPresenter())
+		}),
+		sgc: controllers.NewSevensWebController(func() usecases.SevensInteractorIF {
+			return usecases.NewSevensInteractor(presenters.NewSevensWebPresenter())
+		}),
 	}
 }
 
