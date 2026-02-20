@@ -11,8 +11,9 @@ import (
 
 // SevensWebInput 7並べWebインプット
 type SevensWebInput struct {
-	Command string `json:"command"`
-	Index   int    `json:"index"` // 出すカードのインデックス。play コマンド用。-1 でパス。
+	Command   string `json:"command"`
+	Index     int    `json:"index"` // 出すカードのインデックス。play コマンド用。-1 でパス。
+	SessionId string `json:"sessionId"`
 }
 
 // SevensWebOutputCard 7並べWebアウトプットカード
@@ -53,31 +54,43 @@ type SevensWebOutput struct {
 
 // SevensWebController 7並べWebコントローラークラス
 type SevensWebController struct {
-	sgi usecases.SevensInteractorIF
+	factory func() usecases.SevensInteractorIF
+	store   *SessionStore[usecases.SevensInteractorIF]
 }
 
 // NewSevensWebController コンストラクタ
-func NewSevensWebController(sgi usecases.SevensInteractorIF) *SevensWebController {
-	return &SevensWebController{sgi: sgi}
+func NewSevensWebController(factory func() usecases.SevensInteractorIF) *SevensWebController {
+	return &SevensWebController{
+		factory: factory,
+		store:   NewSessionStore[usecases.SevensInteractorIF](),
+	}
 }
 
 // Exec ゲーム実行
 func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param SevensWebInput
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(swc.newDefaultOutput("param error."))
+		return
+	}
+	if param.Command == "q" || param.Command == "quit" {
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(swc.newDefaultOutput("bye."))
+		return
+	}
+	sgi, ok := swc.store.Get(param.SessionId, swc.factory)
+	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = w.WriteJson(swc.newDefaultOutput("param error."))
 		return
 	}
 	switch param.Command {
-	case "q", "quit":
-		w.WriteHeader(http.StatusOK)
-		_ = w.WriteJson(swc.newDefaultOutput("bye."))
 	case "r", "reset":
-		swc.writePresenterResponse(w, swc.sgi.Reset())
+		swc.writePresenterResponse(w, sgi.Reset())
 	case "p", "play":
-		swc.writePresenterResponse(w, swc.sgi.Play(param.Index))
+		swc.writePresenterResponse(w, sgi.Play(param.Index))
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))

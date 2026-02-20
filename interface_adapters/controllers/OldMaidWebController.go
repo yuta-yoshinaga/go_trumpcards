@@ -11,8 +11,9 @@ import (
 
 // OldMaidWebInput ババ抜きWebインプット
 type OldMaidWebInput struct {
-	Command string `json:"command"`
-	DrawIdx *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
+	Command   string `json:"command"`
+	DrawIdx   *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
+	SessionId string `json:"sessionId"`
 }
 
 // OldMaidWebOutputCard ババ抜きWebアウトプットカード
@@ -56,12 +57,16 @@ type OldMaidWebOutput struct {
 
 // OldMaidWebController ババ抜きWebコントローラークラス
 type OldMaidWebController struct {
-	omi usecases.OldMaidInteractorIF
+	factory func() usecases.OldMaidInteractorIF
+	store   *SessionStore[usecases.OldMaidInteractorIF]
 }
 
 // NewOldMaidWebController コンストラクタ
-func NewOldMaidWebController(omi usecases.OldMaidInteractorIF) *OldMaidWebController {
-	return &OldMaidWebController{omi: omi}
+func NewOldMaidWebController(factory func() usecases.OldMaidInteractorIF) *OldMaidWebController {
+	return &OldMaidWebController{
+		factory: factory,
+		store:   NewSessionStore[usecases.OldMaidInteractorIF](),
+	}
 }
 
 // Exec ゲーム実行
@@ -70,23 +75,29 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	status := http.StatusOK
 	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" {
 		status = http.StatusBadRequest
 		responseStr = `{"message":"param error."}`
+	} else if param.Command == "q" || param.Command == "quit" {
+		responseStr = `{"message":"bye."}`
 	} else {
-		drawIdx := -1
-		if param.DrawIdx != nil {
-			drawIdx = *param.DrawIdx
-		}
-		switch param.Command {
-		case "q", "quit":
-			responseStr = `{"message":"bye."}`
-		case "r", "reset":
-			responseStr = owc.omi.Reset()
-		case "d", "draw":
-			responseStr = owc.omi.Draw(drawIdx)
-		default:
-			responseStr = `{"message":"Unsupported command."}`
+		omi, ok := owc.store.Get(param.SessionId, owc.factory)
+		if !ok {
+			status = http.StatusBadRequest
+			responseStr = `{"message":"param error."}`
+		} else {
+			drawIdx := -1
+			if param.DrawIdx != nil {
+				drawIdx = *param.DrawIdx
+			}
+			switch param.Command {
+			case "r", "reset":
+				responseStr = omi.Reset()
+			case "d", "draw":
+				responseStr = omi.Draw(drawIdx)
+			default:
+				responseStr = `{"message":"Unsupported command."}`
+			}
 		}
 	}
 	response := new(OldMaidWebOutput)

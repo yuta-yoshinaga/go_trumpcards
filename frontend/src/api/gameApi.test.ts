@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { blackjackApi, pokerApi, oldmaidApi, daifugoApi, sevensApi } from './gameApi'
+import { blackjackApi, pokerApi, oldmaidApi, daifugoApi, sevensApi, sessionId } from './gameApi'
 
 describe('gameApi', () => {
   const mockFetch = vi.fn()
@@ -21,6 +21,13 @@ describe('gameApi', () => {
     })
   }
 
+  describe('sessionId', () => {
+    it('is a non-empty string', () => {
+      expect(typeof sessionId).toBe('string')
+      expect(sessionId.length).toBeGreaterThan(0)
+    })
+  })
+
   describe('blackjackApi.exec', () => {
     it('calls the correct URL with reset command', async () => {
       const payload = {
@@ -35,7 +42,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/blackjac/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset' }),
+        body: JSON.stringify({ command: 'reset', sessionId }),
       })
       expect(result).toEqual(payload)
     })
@@ -44,7 +51,7 @@ describe('gameApi', () => {
       mockFetch.mockReturnValue(makeResponse({ dealer: { score: 0, cards: [] }, player: { score: 20, cards: [] }, message: '' }))
       await blackjackApi.exec('hit')
       expect(mockFetch).toHaveBeenCalledWith('/blackjac/exec', expect.objectContaining({
-        body: JSON.stringify({ command: 'hit' }),
+        body: JSON.stringify({ command: 'hit', sessionId }),
       }))
     })
 
@@ -52,7 +59,7 @@ describe('gameApi', () => {
       mockFetch.mockReturnValue(makeResponse({ dealer: { score: 18, cards: [] }, player: { score: 19, cards: [] }, message: 'win' }))
       await blackjackApi.exec('stand')
       expect(mockFetch).toHaveBeenCalledWith('/blackjac/exec', expect.objectContaining({
-        body: JSON.stringify({ command: 'stand' }),
+        body: JSON.stringify({ command: 'stand', sessionId }),
       }))
     })
 
@@ -77,7 +84,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/poker/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', indices: undefined }),
+        body: JSON.stringify({ command: 'reset', indices: undefined, sessionId }),
       })
       expect(result).toEqual(payload)
     })
@@ -91,7 +98,7 @@ describe('gameApi', () => {
       }))
       await pokerApi.exec('exchange', [0, 2, 4])
       expect(mockFetch).toHaveBeenCalledWith('/poker/exec', expect.objectContaining({
-        body: JSON.stringify({ command: 'exchange', indices: [0, 2, 4] }),
+        body: JSON.stringify({ command: 'exchange', indices: [0, 2, 4], sessionId }),
       }))
     })
 
@@ -123,7 +130,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/oldmaid/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', drawIdx: undefined }),
+        body: JSON.stringify({ command: 'reset', drawIdx: undefined, sessionId }),
       })
       expect(result).toEqual(payload)
     })
@@ -144,7 +151,7 @@ describe('gameApi', () => {
       }))
       await oldmaidApi.exec('draw', 2)
       expect(mockFetch).toHaveBeenCalledWith('/oldmaid/exec', expect.objectContaining({
-        body: JSON.stringify({ command: 'draw', drawIdx: 2 }),
+        body: JSON.stringify({ command: 'draw', drawIdx: 2, sessionId }),
       }))
     })
 
@@ -173,7 +180,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', indices: undefined }),
+        body: JSON.stringify({ command: 'reset', indices: undefined, sessionId }),
       })
       expect(result).toEqual(payload)
     })
@@ -191,7 +198,7 @@ describe('gameApi', () => {
       }))
       await daifugoApi.exec('play', [0])
       expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', expect.objectContaining({
-        body: JSON.stringify({ command: 'play', indices: [0] }),
+        body: JSON.stringify({ command: 'play', indices: [0], sessionId }),
       }))
     })
 
@@ -208,7 +215,7 @@ describe('gameApi', () => {
       }))
       await daifugoApi.exec('play', [])
       expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', expect.objectContaining({
-        body: JSON.stringify({ command: 'play', indices: [] }),
+        body: JSON.stringify({ command: 'play', indices: [], sessionId }),
       }))
     })
 
@@ -237,7 +244,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', index: -1 }),
+        body: JSON.stringify({ command: 'reset', index: -1, sessionId }),
       })
       expect(result).toEqual(payload)
     })
@@ -255,7 +262,7 @@ describe('gameApi', () => {
       }))
       await sevensApi.exec('play', 2)
       expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', expect.objectContaining({
-        body: JSON.stringify({ command: 'play', index: 2 }),
+        body: JSON.stringify({ command: 'play', index: 2, sessionId }),
       }))
     })
 
@@ -272,7 +279,7 @@ describe('gameApi', () => {
       }))
       await sevensApi.exec('play', -1)
       expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', expect.objectContaining({
-        body: JSON.stringify({ command: 'play', index: -1 }),
+        body: JSON.stringify({ command: 'play', index: -1, sessionId }),
       }))
     })
 

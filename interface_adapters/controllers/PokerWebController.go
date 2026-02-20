@@ -11,8 +11,9 @@ import (
 
 // PokerWebInput ポーカーWebインプット
 type PokerWebInput struct {
-	Command string `json:"command"`
-	Indices []int  `json:"indices,omitempty"`
+	Command   string `json:"command"`
+	Indices   []int  `json:"indices,omitempty"`
+	SessionId string `json:"sessionId"`
 }
 
 // PokerWebOutputCard ポーカーWebアウトプットカード
@@ -38,13 +39,15 @@ type PokerWebOutput struct {
 
 // PokerWebController ポーカーWebコントローラークラス
 type PokerWebController struct {
-	pi usecases.PokerInteractorIF
+	factory func() usecases.PokerInteractorIF
+	store   *SessionStore[usecases.PokerInteractorIF]
 }
 
 // NewPokerWebController コンストラクタ
-func NewPokerWebController(pi usecases.PokerInteractorIF) *PokerWebController {
+func NewPokerWebController(factory func() usecases.PokerInteractorIF) *PokerWebController {
 	return &PokerWebController{
-		pi: pi,
+		factory: factory,
+		store:   NewSessionStore[usecases.PokerInteractorIF](),
 	}
 }
 
@@ -54,25 +57,31 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	status := http.StatusOK
 	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" {
 		status = http.StatusBadRequest
 		responseStr = `{"message":"param error."}`
+	} else if param.Command == "q" || param.Command == "quit" {
+		responseStr = `{"message":"bye."}`
 	} else {
-		switch param.Command {
-		case "q", "quit":
-			responseStr = `{"message":"bye."}`
-		case "r", "reset":
-			responseStr = pwc.pi.Reset()
-		case "e", "exchange":
-			indices := param.Indices
-			if indices == nil {
-				indices = []int{}
+		pi, ok := pwc.store.Get(param.SessionId, pwc.factory)
+		if !ok {
+			status = http.StatusBadRequest
+			responseStr = `{"message":"param error."}`
+		} else {
+			switch param.Command {
+			case "r", "reset":
+				responseStr = pi.Reset()
+			case "e", "exchange":
+				indices := param.Indices
+				if indices == nil {
+					indices = []int{}
+				}
+				responseStr = pi.Exchange(indices)
+			case "s", "stand":
+				responseStr = pi.Stand()
+			default:
+				responseStr = `{"message":"Unsupported command."}`
 			}
-			responseStr = pwc.pi.Exchange(indices)
-		case "s", "stand":
-			responseStr = pwc.pi.Stand()
-		default:
-			responseStr = `{"message":"Unsupported command."}`
 		}
 	}
 	response := new(PokerWebOutput)

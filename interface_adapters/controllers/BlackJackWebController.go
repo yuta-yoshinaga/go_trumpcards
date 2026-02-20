@@ -11,7 +11,8 @@ import (
 
 // BlackJackWebInput ブラックジャックWebインプット
 type BlackJackWebInput struct {
-	Command string `json:"command"`
+	Command   string `json:"command"`
+	SessionId string `json:"sessionId"`
 }
 
 // BlackJackWebOutputCard ブラックジャックWebアウトプットカード
@@ -35,13 +36,15 @@ type BlackJackWebOutput struct {
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
 type BlackJackWebController struct {
-	bji usecases.BlackJackInteractorIF
+	factory func() usecases.BlackJackInteractorIF
+	store   *SessionStore[usecases.BlackJackInteractorIF]
 }
 
 // NewBlackJackWebController コンストラクタ
-func NewBlackJackWebController(bji usecases.BlackJackInteractorIF) *BlackJackWebController {
+func NewBlackJackWebController(factory func() usecases.BlackJackInteractorIF) *BlackJackWebController {
 	return &BlackJackWebController{
-		bji: bji,
+		factory: factory,
+		store:   NewSessionStore[usecases.BlackJackInteractorIF](),
 	}
 }
 
@@ -51,21 +54,27 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	status := http.StatusOK
 	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" {
 		status = http.StatusBadRequest
 		responseStr = `{"message":"param error."}`
+	} else if param.Command == "q" || param.Command == "quit" {
+		responseStr = `{"message":"bye."}`
 	} else {
-		switch param.Command {
-		case "q", "quit":
-			responseStr = `{"message":"bye."}`
-		case "r", "reset":
-			responseStr = bwc.bji.Reset()
-		case "h", "hit":
-			responseStr = bwc.bji.Hit()
-		case "s", "stand":
-			responseStr = bwc.bji.Stand()
-		default:
-			responseStr = `{"message":"Unsupported command."}`
+		bji, ok := bwc.store.Get(param.SessionId, bwc.factory)
+		if !ok {
+			status = http.StatusBadRequest
+			responseStr = `{"message":"param error."}`
+		} else {
+			switch param.Command {
+			case "r", "reset":
+				responseStr = bji.Reset()
+			case "h", "hit":
+				responseStr = bji.Hit()
+			case "s", "stand":
+				responseStr = bji.Stand()
+			default:
+				responseStr = `{"message":"Unsupported command."}`
+			}
 		}
 	}
 	response := new(BlackJackWebOutput)
