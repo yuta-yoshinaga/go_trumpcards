@@ -37,7 +37,7 @@ COPY entities/ ./entities/
 COPY usecases/ ./usecases/
 COPY interface_adapters/ ./interface_adapters/
 COPY frameworks_drivers/ ./frameworks_drivers/
-RUN CGO_ENABLED=0 GOOS=linux go build -o go_trumpcards .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o go_trumpcards .
 
 # Stage 3: Final production image
 # Pinned to a specific digest for reproducible builds
