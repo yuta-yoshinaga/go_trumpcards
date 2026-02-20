@@ -1,5 +1,6 @@
 # Stage 1: Build React frontend
-FROM node:24-alpine AS frontend-builder
+# Pinned to a specific digest for reproducible builds
+FROM node:24-alpine@sha256:d88d203cab4ee6fa4897d8286f3caea2e9cf48db77176042fca2f4ac4a4414ce AS frontend-builder
 
 WORKDIR /app
 
@@ -20,7 +21,8 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Build Go binary
-FROM golang:1.24-alpine AS go-builder
+# Pinned to a specific digest for reproducible builds
+FROM golang:1.24-alpine@sha256:757779acac4af1b349a20f357c7296097b4a0b89da4ad0e370b339060077282a AS go-builder
 
 WORKDIR /app
 COPY go.mod go.sum ./
@@ -35,13 +37,16 @@ COPY frameworks_drivers/ ./frameworks_drivers/
 RUN CGO_ENABLED=0 GOOS=linux go build -o go_trumpcards .
 
 # Stage 3: Final production image
-FROM alpine:3.21
+# Pinned to a specific digest for reproducible builds
+FROM alpine:3.21@sha256:22e0ec13c0db6b3e1ba3280e831fc50ba7bffe58e81f31670a64b1afede247bc
 
 WORKDIR /app
 
-RUN apk --no-cache add ca-certificates && \
-    addgroup -S appgroup && \
-    adduser -S appuser -G appgroup
+# Create non-root user/group first, then install packages — all in one
+# layer to minimise image size
+RUN addgroup -S appgroup && \
+    adduser -S appuser -G appgroup && \
+    apk --no-cache add ca-certificates
 
 COPY --from=go-builder --chown=appuser:appgroup /app/go_trumpcards .
 COPY --from=frontend-builder --chown=appuser:appgroup /app/public ./public
