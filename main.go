@@ -25,6 +25,9 @@ func main() {
 	case "daifugo":
 		daifugo := ui.NewDaifugoCui()
 		daifugo.Exec()
+	case "sevens":
+		sevens := ui.NewSevensCui()
+		sevens.Exec()
 	case "web":
 		web := web.NewTrumpCardsWeb()
 		web.Exec()

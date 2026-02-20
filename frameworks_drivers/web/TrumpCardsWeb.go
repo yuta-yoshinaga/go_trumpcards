@@ -18,6 +18,7 @@ type TrumpCardsWeb struct {
 	pkc *controllers.PokerWebController
 	omc *controllers.OldMaidWebController
 	dgc *controllers.DaifugoWebController
+	sgc *controllers.SevensWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -27,6 +28,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 		pkc: controllers.NewPokerWebController(usecases.NewPokerInteractor(presenters.NewPokerWebPresenter())),
 		omc: controllers.NewOldMaidWebController(usecases.NewOldMaidInteractor(presenters.NewOldMaidWebPresenter())),
 		dgc: controllers.NewDaifugoWebController(usecases.NewDaifugoInteractor(presenters.NewDaifugoWebPresenter())),
+		sgc: controllers.NewSevensWebController(usecases.NewSevensInteractor(presenters.NewSevensWebPresenter())),
 	}
 }
 
@@ -39,6 +41,7 @@ func (web *TrumpCardsWeb) Exec() {
 		rest.Post("/poker/exec", web.pkc.Exec),
 		rest.Post("/oldmaid/exec", web.omc.Exec),
 		rest.Post("/daifugo/exec", web.dgc.Exec),
+		rest.Post("/sevens/exec", web.sgc.Exec),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -49,6 +52,7 @@ func (web *TrumpCardsWeb) Exec() {
 	http.Handle("/poker/exec", api.MakeHandler())
 	http.Handle("/oldmaid/exec", api.MakeHandler())
 	http.Handle("/daifugo/exec", api.MakeHandler())
+	http.Handle("/sevens/exec", api.MakeHandler())
 	log.Fatal(http.ListenAndServe(getListenPort(), nil))
 }
 

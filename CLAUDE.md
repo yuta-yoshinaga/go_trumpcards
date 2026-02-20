@@ -10,6 +10,7 @@ go run main.go blackjack  # BlackJack CLI
 go run main.go poker    # 5-card Draw Poker CLI
 go run main.go oldmaid  # Old Maid CLI
 go run main.go daifugo  # Daifugo CLI
+go run main.go sevens   # Sevens (7並べ) CLI
 go run main.go web      # Start REST API + web GUI server
 ```
 
@@ -72,7 +73,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `usecases/presenters/` defines output interfaces (e.g., `BlackJackPresenter`). `interface_adapters/presenters/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `interface_adapters/presenters/` and `usecases/presenters/` are used in tests to avoid I/O.
-- **Web API**: Four endpoints — `POST /blackjac/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), and `POST /daifugo/exec` (Daifugo) — accept JSON with a `Cmd` field and game state.
+- **Web API**: Five endpoints — `POST /blackjac/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), and `POST /sevens/exec` (Sevens) — accept JSON with a `Cmd` field and game state.
 
 ### Games implemented
 
@@ -80,6 +81,7 @@ public/                        # Built frontend assets served by Go web server
 - **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`
 - **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
 - **Daifugo**: Entities in `entities/Daifugo.go`, `entities/DaifugoPlayer.go`; interactor in `usecases/DaifugoInteractor.go`
+- **Sevens (7並べ)**: Entities in `entities/Sevens.go`, `entities/SevensPlayer.go`; interactor in `usecases/SevensInteractor.go`
 
 ## Testing Policy
 

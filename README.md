@@ -10,6 +10,7 @@
 - **ポーカー (5-card Draw Poker)**: CLIで遊べます
 - **ババ抜き (Old Maid)**: CLI および Web GUIで遊べます
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます
+- **7並べ (Sevens)**: CLI および Web GUIで遊べます
 
 ## Usage
 ### Install
@@ -24,6 +25,7 @@ go run main.go blackjack  # ブラックジャック CLI
 go run main.go poker    # 5枚ドローポーカー CLI
 go run main.go oldmaid  # ババ抜き CLI
 go run main.go daifugo  # 大富豪 CLI
+go run main.go sevens   # 7並べ CLI
 go run main.go web      # REST API + Web GUI サーバー起動
 ```
 
