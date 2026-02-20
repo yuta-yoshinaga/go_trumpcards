@@ -24,7 +24,12 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY . .
+# Copy only Go source files for better layer cache efficiency
+COPY main.go .
+COPY entities/ ./entities/
+COPY usecases/ ./usecases/
+COPY interface_adapters/ ./interface_adapters/
+COPY frameworks_drivers/ ./frameworks_drivers/
 RUN CGO_ENABLED=0 GOOS=linux go build -o go_trumpcards .
 
 # Stage 3: Final production image
@@ -32,11 +37,17 @@ FROM alpine:3.21
 
 WORKDIR /app
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates && \
+    addgroup -S appgroup && \
+    adduser -S appuser -G appgroup
 
-COPY --from=go-builder /app/go_trumpcards .
-COPY --from=frontend-builder /app/public ./public
+COPY --from=go-builder --chown=appuser:appgroup /app/go_trumpcards .
+COPY --from=frontend-builder --chown=appuser:appgroup /app/public ./public
 
-EXPOSE 80
+USER appuser
+
+# Use a non-privileged port; the server reads the PORT environment variable
+ENV PORT=8080
+EXPOSE 8080
 
 CMD ["./go_trumpcards", "web"]

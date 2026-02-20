@@ -6,6 +6,10 @@
 frontend/node_modules/
 frontend/.vite/
 
+# Debug logs
+npm-debug.log*
+yarn-error.log*
+
 # Git
 .git/
 .gitignore
