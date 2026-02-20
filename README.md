@@ -12,6 +12,14 @@
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます
 - **7並べ (Sevens)**: CLI および Web GUIで遊べます
 
+## Requirements
+
+| Tool | Version |
+|------|---------|
+| [Go](https://go.dev/) | 1.24.x |
+| [Node.js](https://nodejs.org/) | 22.x |
+| [npm](https://www.npmjs.com/) | 10.x |
+
 ## Usage
 ### Install
 ```sh
