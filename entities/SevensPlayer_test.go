@@ -14,6 +14,7 @@ func TestSevensPlayer_Method(t *testing.T) {
 		assert.NotNil(t, p)
 		assert.True(t, p.GetIsHuman())
 		assert.False(t, p.GetIsFinished())
+		assert.False(t, p.GetIsEliminated())
 		assert.Equal(t, -1, p.GetRank())
 		assert.Equal(t, 0, p.GetPassesUsed())
 		assert.Equal(t, entities.SevensMaxPasses, p.GetMaxPasses())
@@ -31,6 +32,15 @@ func TestSevensPlayer_Method(t *testing.T) {
 		assert.True(t, p.GetIsFinished())
 		p.SetIsFinished(false)
 		assert.False(t, p.GetIsFinished())
+	})
+
+	t.Run("success SetIsEliminated and GetIsEliminated", func(t *testing.T) {
+		p := entities.NewSevensPlayer(true)
+		assert.False(t, p.GetIsEliminated()) // default false
+		p.SetIsEliminated(true)
+		assert.True(t, p.GetIsEliminated())
+		p.SetIsEliminated(false)
+		assert.False(t, p.GetIsEliminated())
 	})
 
 	t.Run("success SetRank and GetRank", func(t *testing.T) {

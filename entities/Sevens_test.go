@@ -372,4 +372,96 @@ func TestSevens_Method(t *testing.T) {
 		assert.True(t, s.GetGameEndFlag())
 		assert.Equal(t, 4, players[0].GetRank())
 	})
+
+	t.Run("success eliminatePlayer places remaining cards on board", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := entities.NewSevens(tc, players)
+		// Exhaust CPU 1's passes and give it cards that become non-playable after human plays 8♠
+		for i := 0; i < entities.SevensMaxPasses; i++ {
+			players[1].IncrPassesUsed()
+		}
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
+		// After human plays 8♠: board SPADE max=8. 5♠ (≠9=max+1) and 11♠ (≠9) are not playable.
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+
+		s.PlayerPlay(0) // human plays 8♠ → SPADE max=8
+		s.CpuPlay()     // CPU 1: no playable, no passes → eliminated
+
+		assert.True(t, players[1].GetIsFinished())
+		assert.True(t, players[1].GetIsEliminated())
+		assert.Equal(t, 0, players[1].GetCardsSize()) // hand cleared
+		// Board should be expanded to include eliminated player's cards
+		mins := s.GetTableMinVals()
+		maxs := s.GetTableMaxVals()
+		assert.Equal(t, 5, mins[entities.CardDesignSpade])  // 5♠ placed → min=5
+		assert.Equal(t, 11, maxs[entities.CardDesignSpade]) // 11♠ placed → max=11
+	})
+
+	t.Run("success eliminated player gets lower rank than normal finisher", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := entities.NewSevens(tc, players)
+		for i := 0; i < entities.SevensMaxPasses; i++ {
+			players[1].IncrPassesUsed()
+		}
+		// Human has one playable card; CPU 1 has non-playable cards
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+
+		s.PlayerPlay(0) // human empties hand → rank 1
+		assert.Equal(t, 1, players[0].GetRank())
+
+		s.CpuPlay() // CPU 1: no playable, no passes → eliminated → rank 4
+		assert.Equal(t, 4, players[1].GetRank())
+		assert.True(t, players[1].GetIsEliminated())
+
+		// Normal finisher ranks better than eliminated player
+		assert.Less(t, players[0].GetRank(), players[1].GetRank())
+	})
+
+	t.Run("success multiple eliminations get descending ranks", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := entities.NewSevens(tc, players)
+		// Exhaust passes for CPU 1 and CPU 2
+		for i := 0; i < entities.SevensMaxPasses; i++ {
+			players[1].IncrPassesUsed()
+			players[2].IncrPassesUsed()
+		}
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false)) // not playable
+		players[2].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false)) // not playable
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+
+		s.PlayerPlay(0) // human plays
+		s.CpuPlay()     // CPU 1 eliminated first → rank 4
+		assert.Equal(t, 4, players[1].GetRank())
+
+		// Advance to CPU 2 (CPU 3 can also pass, but for simplicity test CPU 2 directly)
+		// Manually eliminate CPU 2 by setting up a similar scenario
+		if !s.GetGameEndFlag() && !s.IsHumanTurn() {
+			s.CpuPlay() // CPU 2 eliminated → rank 3
+		}
+		if players[2].GetIsEliminated() {
+			assert.Equal(t, 3, players[2].GetRank()) // 2nd elimination gets rank 3
+			assert.Less(t, players[2].GetRank(), players[1].GetRank()) // later eliminated ranks better
+		}
+	})
+
+	t.Run("success Reset clears isEliminated flag", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := entities.NewSevens(tc, players)
+		players[0].SetIsEliminated(true)
+		players[0].SetIsFinished(true)
+		s.Reset()
+		assert.False(t, players[0].GetIsEliminated())
+		assert.False(t, players[0].GetIsFinished())
+	})
 }

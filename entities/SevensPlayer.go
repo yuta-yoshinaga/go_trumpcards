@@ -8,11 +8,12 @@ const SevensMaxPasses = 5
 // SevensPlayer 7並べプレイヤークラス
 type SevensPlayer struct {
 	Player
-	isHuman    bool
-	isFinished bool
-	rank       int // -1 = 未確定, 1 = 1位, ...
-	passesUsed int // 使用済みパス回数
-	maxPasses  int // 最大パス回数
+	isHuman      bool
+	isFinished   bool
+	isEliminated bool // パス切れによる失格フラグ
+	rank         int  // -1 = 未確定, 1 = 1位, ...
+	passesUsed   int  // 使用済みパス回数
+	maxPasses    int  // 最大パス回数
 }
 
 // NewSevensPlayer コンストラクタ
@@ -35,6 +36,12 @@ func (p *SevensPlayer) GetIsFinished() bool { return p.isFinished }
 
 // SetIsFinished 終了状態設定
 func (p *SevensPlayer) SetIsFinished(v bool) { p.isFinished = v }
+
+// GetIsEliminated 失格かどうか
+func (p *SevensPlayer) GetIsEliminated() bool { return p.isEliminated }
+
+// SetIsEliminated 失格フラグ設定
+func (p *SevensPlayer) SetIsEliminated(v bool) { p.isEliminated = v }
 
 // GetRank ランク取得 (-1 = 未確定)
 func (p *SevensPlayer) GetRank() int { return p.rank }

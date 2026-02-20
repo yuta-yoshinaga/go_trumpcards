@@ -64,37 +64,42 @@ func NewSevensWebController(sgi usecases.SevensInteractorIF) *SevensWebControlle
 // Exec ゲーム実行
 func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param SevensWebInput
-	status := http.StatusOK
-	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" {
-		status = http.StatusBadRequest
-		responseStr = `{"message":"param error."}`
-	} else {
-		switch param.Command {
-		case "q", "quit":
-			responseStr = `{"message":"bye."}`
-		case "r", "reset":
-			responseStr = swc.sgi.Reset()
-		case "p", "play":
-			responseStr = swc.sgi.Play(param.Index)
-		default:
-			responseStr = `{"message":"Unsupported command."}`
-		}
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(swc.newDefaultOutput("param error."))
+		return
 	}
-	response := new(SevensWebOutput)
-	err = json.Unmarshal([]byte(responseStr), &response)
-	if err != nil || responseStr == "" {
-		status = http.StatusBadRequest
-		response.Message = "error."
+	switch param.Command {
+	case "q", "quit":
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(swc.newDefaultOutput("bye."))
+	case "r", "reset":
+		swc.writePresenterResponse(w, swc.sgi.Reset())
+	case "p", "play":
+		swc.writePresenterResponse(w, swc.sgi.Play(param.Index))
+	default:
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))
 	}
-	// nil スライスは JSON で null になるので空スライスに統一する
-	if response.Players == nil {
-		response.Players = make([]*SevensWebOutputPlayer, 0)
+}
+
+// writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
+func (swc *SevensWebController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
+	if responseStr == "" || !json.Valid([]byte(responseStr)) {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(swc.newDefaultOutput("error."))
+		return
 	}
-	if response.CpuActions == nil {
-		response.CpuActions = make([]*SevensWebOutputAction, 0)
+	w.WriteHeader(http.StatusOK)
+	_ = w.WriteJson(json.RawMessage(responseStr))
+}
+
+// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
+func (swc *SevensWebController) newDefaultOutput(msg string) *SevensWebOutput {
+	return &SevensWebOutput{
+		Players:    make([]*SevensWebOutputPlayer, 0),
+		CpuActions: make([]*SevensWebOutputAction, 0),
+		Message:    msg,
 	}
-	w.WriteHeader(status)
-	_ = w.WriteJson(response)
 }

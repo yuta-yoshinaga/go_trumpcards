@@ -54,6 +54,7 @@ func (s *Sevens) Reset() {
 	for _, p := range s.players {
 		p.Reset()
 		p.SetIsFinished(false)
+		p.SetIsEliminated(false)
 		p.SetRank(-1)
 		p.ResetPasses()
 	}
@@ -92,6 +93,28 @@ func (s *Sevens) countFinished() int {
 	return cnt
 }
 
+// countNormalFinished 正常上がり (手札0枚) プレイヤー数を返す
+func (s *Sevens) countNormalFinished() int {
+	cnt := 0
+	for _, p := range s.players {
+		if p.GetIsFinished() && !p.GetIsEliminated() {
+			cnt++
+		}
+	}
+	return cnt
+}
+
+// countEliminated 失格プレイヤー数を返す
+func (s *Sevens) countEliminated() int {
+	cnt := 0
+	for _, p := range s.players {
+		if p.GetIsEliminated() {
+			cnt++
+		}
+	}
+	return cnt
+}
+
 // getActivePlayerCnt アクティブ (未終了) プレイヤー数取得
 func (s *Sevens) getActivePlayerCnt() int {
 	return len(s.players) - s.countFinished()
@@ -124,9 +147,9 @@ func (s *Sevens) checkGameEnd() bool {
 	return false
 }
 
-// assignRank プレイヤーにランクを付与 (現在の終了済み数+1)
+// assignRank 正常上がりプレイヤーにランクを付与 (現在の正常上がり数+1)
 func (s *Sevens) assignRank(idx int) {
-	rank := s.countFinished() + 1
+	rank := s.countNormalFinished() + 1
 	s.players[idx].SetIsFinished(true)
 	s.players[idx].SetRank(rank)
 }
@@ -283,9 +306,24 @@ func (s *Sevens) CpuPlay() {
 	}
 }
 
-// eliminatePlayer プレイヤーを失格にしてランクを付与
+// eliminatePlayer プレイヤーを失格にする
+// 残り手札をボードに強制配置して他プレイヤーのデッドロックを防ぎ、
+// 失格プレイヤーには下位ランクを付与する (最初の失格=最下位)
 func (s *Sevens) eliminatePlayer(idx int) {
-	s.assignRank(idx)
+	player := s.players[idx]
+	// 残り手札をボードに強制配置してシーケンスのブロックを解除する
+	for i := 0; i < player.GetCardsSize(); i++ {
+		s.placeCard(player.GetCard(i))
+	}
+	// 手札をクリア
+	for player.GetCardsSize() > 0 {
+		player.RemoveCard(0)
+	}
+	// 失格ランクは下位から割り当て (最初の失格=最下位)
+	rank := SevensPlayerCnt - s.countEliminated()
+	player.SetIsEliminated(true)
+	player.SetIsFinished(true)
+	player.SetRank(rank)
 }
 
 // AutoHandleNoOption 現在のプレイヤーに選択肢がない場合の自動処理
