@@ -1,0 +1,27 @@
+# Go build artifacts
+*.test
+*.out
+go_trumpcards
+
+# Frontend build tools / caches
+frontend/node_modules/
+frontend/.vite/
+
+# Stale frontend build output — always rebuilt fresh inside Docker
+public/assets/
+
+# Debug logs
+npm-debug.log*
+yarn-error.log*
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# IDE
+.idea/
+.vscode/
