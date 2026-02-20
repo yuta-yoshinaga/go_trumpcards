@@ -1,0 +1,19 @@
+# Go build artifacts
+*.test
+*.out
+
+# Frontend build tools / caches
+frontend/node_modules/
+frontend/.vite/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# IDE
+.idea/
+.vscode/
