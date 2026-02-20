@@ -9,6 +9,8 @@ This repository contains a Go implementation of trump card game algorithms. The 
 - **BlackJack**: CLI and Web GUI
 - **Poker (5-card Draw)**: CLI and Web GUI
 - **Old Maid (Babanuki)**: CLI and Web GUI
+- **Daifugo**: CLI and Web GUI
+- **Sevens (7並べ)**: CLI and Web GUI
 
 ## Common Commands
 
@@ -17,6 +19,8 @@ This repository contains a Go implementation of trump card game algorithms. The 
 go run main.go blackjack  # BlackJack CLI
 go run main.go poker    # 5-card Draw Poker CLI
 go run main.go oldmaid  # Old Maid CLI
+go run main.go daifugo  # Daifugo CLI
+go run main.go sevens   # Sevens (7並べ) CLI
 go run main.go web      # Start REST API + web GUI server
 ```
 
@@ -35,6 +39,7 @@ go mod tidy
 **Build frontend (React):**
 ```sh
 cd frontend && npm install && npm run build  # Build React app to public/
+cd frontend && npm test                      # Run frontend unit tests (Vitest)
 ```
 
 > **Important:** The built assets in `public/assets/` and `public/index.html` are committed to the
@@ -59,7 +64,7 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
   src/
     api/                       # API client functions (fetch wrappers)
     components/                # Shared React components (NavBar, CardImage, CardBack)
-    pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
+    pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage, DaifugoPage)
     types/                     # TypeScript type definitions for card/game data
 public/                        # Built frontend assets served by Go web server
   assets/                      # Vite-compiled JS/CSS bundles
@@ -73,13 +78,15 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `usecases/presenters/` defines output interfaces (e.g., `BlackJackPresenter`). `interface_adapters/presenters/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `interface_adapters/presenters/` and `usecases/presenters/` are used in tests to avoid I/O.
-- **Web API**: Three endpoints — `POST /blackjac/exec` (BlackJack), `POST /poker/exec` (Poker), and `POST /oldmaid/exec` (Old Maid) — accept JSON with a `Cmd` field and game state.
+- **Web API**: Five endpoints — `POST /blackjac/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), and `POST /sevens/exec` (Sevens) — accept JSON with a `Cmd` field and game state.
 
 ### Games implemented
 
 - **BlackJack**: Entities in `entities/BlackJack.go`, `entities/BlackJackPlayer.go`; interactor in `usecases/BlackJackInteractor.go`
 - **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`
 - **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
+- **Daifugo**: Entities in `entities/Daifugo.go`, `entities/DaifugoPlayer.go`; interactor in `usecases/DaifugoInteractor.go`
+- **Sevens (7並べ)**: Entities in `entities/Sevens.go`, `entities/SevensPlayer.go`; interactor in `usecases/SevensInteractor.go`
 
 ## Testing Policy
 
@@ -118,6 +125,29 @@ Always run the full test suite before committing and ensure it passes:
 go test ./...
 ```
 
+### Frontend testing
+
+Frontend unit tests are also mandatory. The test stack is **Vitest + React Testing Library + jest-dom**.
+
+| Layer | Location | What to test |
+|-------|----------|--------------|
+| API client | `frontend/src/api/*.test.ts` | Correct URL, request body, and error handling for every API method |
+| Components | `frontend/src/components/*.test.tsx` | Rendered output, props, event handlers |
+| Pages | `frontend/src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
+
+**Patterns:**
+
+- **Mock the API module**: use `vi.mock('../api/gameApi', ...)` inside page test files; access the typed mock with `vi.mocked(api.exec)`
+- **Wrap router-dependent components**: render `NavBar` (and any component using `useLocation`) inside `<MemoryRouter initialEntries={['/path']}>`
+- **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
+- **Query buttons by role**: when a text string appears in multiple elements, use `screen.getByRole('button', { name: '...' })` instead of `getByText`
+
+**Run frontend tests before committing:**
+
+```sh
+cd frontend && npm test
+```
+
 ## Documentation Maintenance
 
 **When making code changes, always update the following documentation in the same commit:**
@@ -130,6 +160,7 @@ go test ./...
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
 | Modify anything under `frontend/` | Run `npm run build` and commit updated `public/assets/` and `public/index.html` in the same commit |
+| Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
