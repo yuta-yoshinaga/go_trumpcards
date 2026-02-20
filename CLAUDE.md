@@ -7,8 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Tool | Version |
 |------|---------|
 | [Go](https://go.dev/) | 1.24.x |
-| [Node.js](https://nodejs.org/) | 22.x |
-| [npm](https://www.npmjs.com/) | 10.x |
+| [Node.js](https://nodejs.org/) | 24.x |
+| [npm](https://www.npmjs.com/) | 11.x |
 
 ## Commands
 
