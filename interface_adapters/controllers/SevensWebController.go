@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
@@ -11,8 +12,9 @@ import (
 
 // SevensWebInput 7並べWebインプット
 type SevensWebInput struct {
-	Command string `json:"command"`
-	Index   int    `json:"index"` // 出すカードのインデックス。play コマンド用。-1 でパス。
+	Command   string `json:"command"`
+	Index     int    `json:"index"` // 出すカードのインデックス。play コマンド用。-1 でパス。
+	SessionId string `json:"sessionId"`
 }
 
 // SevensWebOutputCard 7並べWebアウトプットカード
@@ -53,19 +55,36 @@ type SevensWebOutput struct {
 
 // SevensWebController 7並べWebコントローラークラス
 type SevensWebController struct {
-	sgi usecases.SevensInteractorIF
+	factory  func() usecases.SevensInteractorIF
+	sessions map[string]usecases.SevensInteractorIF
+	mu       sync.Mutex
 }
 
 // NewSevensWebController コンストラクタ
-func NewSevensWebController(sgi usecases.SevensInteractorIF) *SevensWebController {
-	return &SevensWebController{sgi: sgi}
+func NewSevensWebController(factory func() usecases.SevensInteractorIF) *SevensWebController {
+	return &SevensWebController{
+		factory:  factory,
+		sessions: make(map[string]usecases.SevensInteractorIF),
+	}
+}
+
+// getOrCreateSession セッションIDに対応するインタラクターを取得または生成する
+func (swc *SevensWebController) getOrCreateSession(sessionId string) usecases.SevensInteractorIF {
+	swc.mu.Lock()
+	defer swc.mu.Unlock()
+	sgi, ok := swc.sessions[sessionId]
+	if !ok {
+		sgi = swc.factory()
+		swc.sessions[sessionId] = sgi
+	}
+	return sgi
 }
 
 // Exec ゲーム実行
 func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param SevensWebInput
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = w.WriteJson(swc.newDefaultOutput("param error."))
 		return
@@ -75,9 +94,9 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("bye."))
 	case "r", "reset":
-		swc.writePresenterResponse(w, swc.sgi.Reset())
+		swc.writePresenterResponse(w, swc.getOrCreateSession(param.SessionId).Reset())
 	case "p", "play":
-		swc.writePresenterResponse(w, swc.sgi.Play(param.Index))
+		swc.writePresenterResponse(w, swc.getOrCreateSession(param.SessionId).Play(param.Index))
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))

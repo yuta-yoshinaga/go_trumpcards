@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
@@ -11,7 +12,8 @@ import (
 
 // BlackJackWebInput ブラックジャックWebインプット
 type BlackJackWebInput struct {
-	Command string `json:"command"`
+	Command   string `json:"command"`
+	SessionId string `json:"sessionId"`
 }
 
 // BlackJackWebOutputCard ブラックジャックWebアウトプットカード
@@ -35,14 +37,29 @@ type BlackJackWebOutput struct {
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
 type BlackJackWebController struct {
-	bji usecases.BlackJackInteractorIF
+	factory  func() usecases.BlackJackInteractorIF
+	sessions map[string]usecases.BlackJackInteractorIF
+	mu       sync.Mutex
 }
 
 // NewBlackJackWebController コンストラクタ
-func NewBlackJackWebController(bji usecases.BlackJackInteractorIF) *BlackJackWebController {
+func NewBlackJackWebController(factory func() usecases.BlackJackInteractorIF) *BlackJackWebController {
 	return &BlackJackWebController{
-		bji: bji,
+		factory:  factory,
+		sessions: make(map[string]usecases.BlackJackInteractorIF),
 	}
+}
+
+// getOrCreateSession セッションIDに対応するインタラクターを取得または生成する
+func (bwc *BlackJackWebController) getOrCreateSession(sessionId string) usecases.BlackJackInteractorIF {
+	bwc.mu.Lock()
+	defer bwc.mu.Unlock()
+	bji, ok := bwc.sessions[sessionId]
+	if !ok {
+		bji = bwc.factory()
+		bwc.sessions[sessionId] = bji
+	}
+	return bji
 }
 
 // Exec ゲーム実行
@@ -51,7 +68,7 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	status := http.StatusOK
 	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" {
 		status = http.StatusBadRequest
 		responseStr = `{"message":"param error."}`
 	} else {
@@ -59,11 +76,11 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 		case "q", "quit":
 			responseStr = `{"message":"bye."}`
 		case "r", "reset":
-			responseStr = bwc.bji.Reset()
+			responseStr = bwc.getOrCreateSession(param.SessionId).Reset()
 		case "h", "hit":
-			responseStr = bwc.bji.Hit()
+			responseStr = bwc.getOrCreateSession(param.SessionId).Hit()
 		case "s", "stand":
-			responseStr = bwc.bji.Stand()
+			responseStr = bwc.getOrCreateSession(param.SessionId).Stand()
 		default:
 			responseStr = `{"message":"Unsupported command."}`
 		}

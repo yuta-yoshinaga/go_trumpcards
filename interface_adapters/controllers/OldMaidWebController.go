@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
@@ -11,8 +12,9 @@ import (
 
 // OldMaidWebInput ババ抜きWebインプット
 type OldMaidWebInput struct {
-	Command string `json:"command"`
-	DrawIdx *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
+	Command   string `json:"command"`
+	DrawIdx   *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
+	SessionId string `json:"sessionId"`
 }
 
 // OldMaidWebOutputCard ババ抜きWebアウトプットカード
@@ -56,12 +58,29 @@ type OldMaidWebOutput struct {
 
 // OldMaidWebController ババ抜きWebコントローラークラス
 type OldMaidWebController struct {
-	omi usecases.OldMaidInteractorIF
+	factory  func() usecases.OldMaidInteractorIF
+	sessions map[string]usecases.OldMaidInteractorIF
+	mu       sync.Mutex
 }
 
 // NewOldMaidWebController コンストラクタ
-func NewOldMaidWebController(omi usecases.OldMaidInteractorIF) *OldMaidWebController {
-	return &OldMaidWebController{omi: omi}
+func NewOldMaidWebController(factory func() usecases.OldMaidInteractorIF) *OldMaidWebController {
+	return &OldMaidWebController{
+		factory:  factory,
+		sessions: make(map[string]usecases.OldMaidInteractorIF),
+	}
+}
+
+// getOrCreateSession セッションIDに対応するインタラクターを取得または生成する
+func (owc *OldMaidWebController) getOrCreateSession(sessionId string) usecases.OldMaidInteractorIF {
+	owc.mu.Lock()
+	defer owc.mu.Unlock()
+	omi, ok := owc.sessions[sessionId]
+	if !ok {
+		omi = owc.factory()
+		owc.sessions[sessionId] = omi
+	}
+	return omi
 }
 
 // Exec ゲーム実行
@@ -70,7 +89,7 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	status := http.StatusOK
 	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" {
 		status = http.StatusBadRequest
 		responseStr = `{"message":"param error."}`
 	} else {
@@ -82,9 +101,9 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		case "q", "quit":
 			responseStr = `{"message":"bye."}`
 		case "r", "reset":
-			responseStr = owc.omi.Reset()
+			responseStr = owc.getOrCreateSession(param.SessionId).Reset()
 		case "d", "draw":
-			responseStr = owc.omi.Draw(drawIdx)
+			responseStr = owc.getOrCreateSession(param.SessionId).Draw(drawIdx)
 		default:
 			responseStr = `{"message":"Unsupported command."}`
 		}

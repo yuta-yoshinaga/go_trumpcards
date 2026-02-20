@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
+	"sync"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
@@ -11,8 +12,9 @@ import (
 
 // DaifugoWebInput 大富豪Webインプット
 type DaifugoWebInput struct {
-	Command string `json:"command"`
-	Indices []int  `json:"indices"` // 出すカードのインデックス。play コマンド用。空の場合はパス。
+	Command   string `json:"command"`
+	Indices   []int  `json:"indices"` // 出すカードのインデックス。play コマンド用。空の場合はパス。
+	SessionId string `json:"sessionId"`
 }
 
 // DaifugoWebOutputCard 大富豪Webアウトプットカード
@@ -51,12 +53,29 @@ type DaifugoWebOutput struct {
 
 // DaifugoWebController 大富豪Webコントローラークラス
 type DaifugoWebController struct {
-	dgi usecases.DaifugoInteractorIF
+	factory  func() usecases.DaifugoInteractorIF
+	sessions map[string]usecases.DaifugoInteractorIF
+	mu       sync.Mutex
 }
 
 // NewDaifugoWebController コンストラクタ
-func NewDaifugoWebController(dgi usecases.DaifugoInteractorIF) *DaifugoWebController {
-	return &DaifugoWebController{dgi: dgi}
+func NewDaifugoWebController(factory func() usecases.DaifugoInteractorIF) *DaifugoWebController {
+	return &DaifugoWebController{
+		factory:  factory,
+		sessions: make(map[string]usecases.DaifugoInteractorIF),
+	}
+}
+
+// getOrCreateSession セッションIDに対応するインタラクターを取得または生成する
+func (dwc *DaifugoWebController) getOrCreateSession(sessionId string) usecases.DaifugoInteractorIF {
+	dwc.mu.Lock()
+	defer dwc.mu.Unlock()
+	dgi, ok := dwc.sessions[sessionId]
+	if !ok {
+		dgi = dwc.factory()
+		dwc.sessions[sessionId] = dgi
+	}
+	return dgi
 }
 
 // Exec ゲーム実行
@@ -65,7 +84,7 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	status := http.StatusOK
 	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" {
 		status = http.StatusBadRequest
 		responseStr = `{"message":"param error."}`
 	} else {
@@ -73,13 +92,13 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		case "q", "quit":
 			responseStr = `{"message":"bye."}`
 		case "r", "reset":
-			responseStr = dwc.dgi.Reset()
+			responseStr = dwc.getOrCreateSession(param.SessionId).Reset()
 		case "p", "play":
 			indices := param.Indices
 			if indices == nil {
 				indices = []int{}
 			}
-			responseStr = dwc.dgi.Play(indices)
+			responseStr = dwc.getOrCreateSession(param.SessionId).Play(indices)
 		default:
 			responseStr = `{"message":"Unsupported command."}`
 		}
