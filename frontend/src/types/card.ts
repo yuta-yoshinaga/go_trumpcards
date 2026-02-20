@@ -83,3 +83,30 @@ export interface DaifugoResponse {
   humanAction: DaifugoAction | null
   message: string
 }
+
+export interface SevensPlayerData {
+  id: number
+  isHuman: boolean
+  isFinished: boolean
+  rank: number
+  cardCount: number
+  passesUsed: number
+  maxPasses: number
+  cards: Card[]
+}
+
+export interface SevensAction {
+  playerIdx: number
+  playedCard: Card | null // null = pass
+}
+
+export interface SevensResponse {
+  players: SevensPlayerData[]
+  currentTurn: number
+  tableMinVals: number[] // index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
+  tableMaxVals: number[]
+  gameEndFlag: boolean
+  cpuActions: SevensAction[]
+  humanAction: SevensAction | null
+  message: string
+}

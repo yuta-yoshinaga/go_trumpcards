@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { blackjackApi, pokerApi, oldmaidApi, daifugoApi } from './gameApi'
+import { blackjackApi, pokerApi, oldmaidApi, daifugoApi, sevensApi } from './gameApi'
 
 describe('gameApi', () => {
   const mockFetch = vi.fn()
@@ -215,6 +215,70 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500))
       await expect(daifugoApi.exec('reset')).rejects.toThrow('HTTP error: 500')
+    })
+  })
+
+  describe('sevensApi.exec', () => {
+    it('calls the correct URL with reset command', async () => {
+      const payload = {
+        players: [],
+        currentTurn: 0,
+        tableMinVals: [0, 7, 7, 7, 7],
+        tableMaxVals: [0, 7, 7, 7, 7],
+        gameEndFlag: false,
+        cpuActions: [],
+        humanAction: null,
+        message: '',
+      }
+      mockFetch.mockReturnValue(makeResponse(payload))
+
+      const result = await sevensApi.exec('reset')
+
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', index: -1 }),
+      })
+      expect(result).toEqual(payload)
+    })
+
+    it('calls with play command and card index', async () => {
+      mockFetch.mockReturnValue(makeResponse({
+        players: [],
+        currentTurn: 1,
+        tableMinVals: [0, 6, 7, 7, 7],
+        tableMaxVals: [0, 7, 7, 7, 7],
+        gameEndFlag: false,
+        cpuActions: [],
+        humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 } },
+        message: '',
+      }))
+      await sevensApi.exec('play', 2)
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', expect.objectContaining({
+        body: JSON.stringify({ command: 'play', index: 2 }),
+      }))
+    })
+
+    it('calls with play command and -1 for pass', async () => {
+      mockFetch.mockReturnValue(makeResponse({
+        players: [],
+        currentTurn: 1,
+        tableMinVals: [0, 7, 7, 7, 7],
+        tableMaxVals: [0, 7, 7, 7, 7],
+        gameEndFlag: false,
+        cpuActions: [],
+        humanAction: { playerIdx: 0, playedCard: null },
+        message: '',
+      }))
+      await sevensApi.exec('play', -1)
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', expect.objectContaining({
+        body: JSON.stringify({ command: 'play', index: -1 }),
+      }))
+    })
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500))
+      await expect(sevensApi.exec('reset')).rejects.toThrow('HTTP error: 500')
     })
   })
 })
