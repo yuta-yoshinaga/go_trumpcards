@@ -10,6 +10,9 @@ COPY public/ ./public/
 
 WORKDIR /app/frontend
 
+# Upgrade npm to 11.x to match the version required by package.json
+RUN npm install -g npm@11
+
 # Install dependencies in a separate layer so this step is only
 # re-run when package.json or package-lock.json changes
 COPY frontend/package.json frontend/package-lock.json ./
