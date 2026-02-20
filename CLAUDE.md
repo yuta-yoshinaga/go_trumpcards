@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Requirements
+
+| Tool | Version |
+|------|---------|
+| [Go](https://go.dev/) | 1.24.x |
+| [Node.js](https://nodejs.org/) | 22.x |
+| [npm](https://www.npmjs.com/) | 10.x |
+
 ## Commands
 
 **Run the application:**

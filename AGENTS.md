@@ -12,6 +12,14 @@ This repository contains a Go implementation of trump card game algorithms. The 
 - **Daifugo**: CLI and Web GUI
 - **Sevens (7並べ)**: CLI and Web GUI
 
+## Requirements
+
+| Tool | Version |
+|------|---------|
+| [Go](https://go.dev/) | 1.24.x |
+| [Node.js](https://nodejs.org/) | 22.x |
+| [npm](https://www.npmjs.com/) | 10.x |
+
 ## Common Commands
 
 **Run the application:**
