@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
@@ -109,6 +110,18 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonInput)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"hasDrawn":false,"cpuActions":[],"message":"param error."}`)
+	})
+	t.Run("failed Exec sessionId too long", func(t *testing.T) {
+		input := controllers.OldMaidWebInput{
+			Command:   "reset",
+			SessionId: strings.Repeat("a", controllers.SessionMaxIDLen+1),
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)

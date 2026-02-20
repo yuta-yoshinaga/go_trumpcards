@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"sync"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
@@ -37,29 +36,16 @@ type BlackJackWebOutput struct {
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
 type BlackJackWebController struct {
-	factory  func() usecases.BlackJackInteractorIF
-	sessions map[string]usecases.BlackJackInteractorIF
-	mu       sync.Mutex
+	factory func() usecases.BlackJackInteractorIF
+	store   *SessionStore[usecases.BlackJackInteractorIF]
 }
 
 // NewBlackJackWebController コンストラクタ
 func NewBlackJackWebController(factory func() usecases.BlackJackInteractorIF) *BlackJackWebController {
 	return &BlackJackWebController{
-		factory:  factory,
-		sessions: make(map[string]usecases.BlackJackInteractorIF),
+		factory: factory,
+		store:   NewSessionStore[usecases.BlackJackInteractorIF](),
 	}
-}
-
-// getOrCreateSession セッションIDに対応するインタラクターを取得または生成する
-func (bwc *BlackJackWebController) getOrCreateSession(sessionId string) usecases.BlackJackInteractorIF {
-	bwc.mu.Lock()
-	defer bwc.mu.Unlock()
-	bji, ok := bwc.sessions[sessionId]
-	if !ok {
-		bji = bwc.factory()
-		bwc.sessions[sessionId] = bji
-	}
-	return bji
 }
 
 // Exec ゲーム実行
@@ -71,18 +57,24 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	if err != nil || param.Command == "" || param.SessionId == "" {
 		status = http.StatusBadRequest
 		responseStr = `{"message":"param error."}`
+	} else if param.Command == "q" || param.Command == "quit" {
+		responseStr = `{"message":"bye."}`
 	} else {
-		switch param.Command {
-		case "q", "quit":
-			responseStr = `{"message":"bye."}`
-		case "r", "reset":
-			responseStr = bwc.getOrCreateSession(param.SessionId).Reset()
-		case "h", "hit":
-			responseStr = bwc.getOrCreateSession(param.SessionId).Hit()
-		case "s", "stand":
-			responseStr = bwc.getOrCreateSession(param.SessionId).Stand()
-		default:
-			responseStr = `{"message":"Unsupported command."}`
+		bji, ok := bwc.store.Get(param.SessionId, bwc.factory)
+		if !ok {
+			status = http.StatusBadRequest
+			responseStr = `{"message":"param error."}`
+		} else {
+			switch param.Command {
+			case "r", "reset":
+				responseStr = bji.Reset()
+			case "h", "hit":
+				responseStr = bji.Hit()
+			case "s", "stand":
+				responseStr = bji.Stand()
+			default:
+				responseStr = `{"message":"Unsupported command."}`
+			}
 		}
 	}
 	response := new(BlackJackWebOutput)

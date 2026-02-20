@@ -3,6 +3,7 @@ package controllers_test
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
@@ -121,6 +122,18 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonCase1)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"param error."}`)
+	})
+	t.Run("failed Exec sessionId too long", func(t *testing.T) {
+		input := controllers.BlackJackWebInput{
+			Command:   "reset",
+			SessionId: strings.Repeat("a", controllers.SessionMaxIDLen+1),
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)

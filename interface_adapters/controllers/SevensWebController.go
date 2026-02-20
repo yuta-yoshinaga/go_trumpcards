@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"sync"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 
@@ -55,29 +54,16 @@ type SevensWebOutput struct {
 
 // SevensWebController 7並べWebコントローラークラス
 type SevensWebController struct {
-	factory  func() usecases.SevensInteractorIF
-	sessions map[string]usecases.SevensInteractorIF
-	mu       sync.Mutex
+	factory func() usecases.SevensInteractorIF
+	store   *SessionStore[usecases.SevensInteractorIF]
 }
 
 // NewSevensWebController コンストラクタ
 func NewSevensWebController(factory func() usecases.SevensInteractorIF) *SevensWebController {
 	return &SevensWebController{
-		factory:  factory,
-		sessions: make(map[string]usecases.SevensInteractorIF),
+		factory: factory,
+		store:   NewSessionStore[usecases.SevensInteractorIF](),
 	}
-}
-
-// getOrCreateSession セッションIDに対応するインタラクターを取得または生成する
-func (swc *SevensWebController) getOrCreateSession(sessionId string) usecases.SevensInteractorIF {
-	swc.mu.Lock()
-	defer swc.mu.Unlock()
-	sgi, ok := swc.sessions[sessionId]
-	if !ok {
-		sgi = swc.factory()
-		swc.sessions[sessionId] = sgi
-	}
-	return sgi
 }
 
 // Exec ゲーム実行
@@ -89,14 +75,22 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		_ = w.WriteJson(swc.newDefaultOutput("param error."))
 		return
 	}
-	switch param.Command {
-	case "q", "quit":
+	if param.Command == "q" || param.Command == "quit" {
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("bye."))
+		return
+	}
+	sgi, ok := swc.store.Get(param.SessionId, swc.factory)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(swc.newDefaultOutput("param error."))
+		return
+	}
+	switch param.Command {
 	case "r", "reset":
-		swc.writePresenterResponse(w, swc.getOrCreateSession(param.SessionId).Reset())
+		swc.writePresenterResponse(w, sgi.Reset())
 	case "p", "play":
-		swc.writePresenterResponse(w, swc.getOrCreateSession(param.SessionId).Play(param.Index))
+		swc.writePresenterResponse(w, sgi.Play(param.Index))
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))
