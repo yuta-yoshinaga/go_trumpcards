@@ -18,7 +18,7 @@ func DaifugoCardStrength(v int) int {
 }
 
 // DaifugoCardStrengthRevolution 革命中のカードの強さを返す (2が最弱、3が最強)
-// 2 < A < K < Q < J < 10 < 9 < 8 < 7 < 6 < 5 < 4 < 3
+// 2 < A(1) < K(13) < Q(12) < J(11) < 10 < 9 < 8 < 7 < 6 < 5 < 4 < 3
 func DaifugoCardStrengthRevolution(v int) int {
 	return 18 - DaifugoCardStrength(v)
 }

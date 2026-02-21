@@ -492,32 +492,29 @@ func TestDaifugo_Method(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
 		dg := entities.NewDaifugo(tc, players)
-		// Human passes, CPU1 has four 5s and triggers revolution
-		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // human has one card
-		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
-		players[1].AddCard(entities.NewCard(entities.CardDesignClover, 5, false))
-		players[1].AddCard(entities.NewCard(entities.CardDesignDiamond, 5, false))
-		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
-		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false)) // spare
-		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 3, false))
-		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 4, false))
-		// Human passes → CPU1 plays on clear table → findBestPlay picks index 0 (weakest in sorted hand)
-		// CPU1 sorted normally (before revolution): 5,5,5,5,2 → but findBestPlay picks index 0 = single 5? No:
-		// findBestPlay on clear table returns [0] (single card). But CPU1 has 5,5,5,5 as a group.
-		// Actually findBestPlay on clear table returns []int{0} regardless.
-		// We need CPU1 to play ALL four 5s. But findBestPlay on clear table only returns 1 card.
-		// This scenario doesn't directly test CPU triggering revolution via findBestPlay.
-		// Instead, let's set up: table has a 3, CPU1 has four 5s that beat 3 → plays 4 cards.
-		// Set table manually by having human play a single 3 first.
-		dg.PlayerPlay([]int{0}) // human plays 3 → table = [3]
-		// CPU1: table has 1 card (3), findBestPlay looks for 1 card group stronger than 3
-		// CPU1 has [5,5,5,5,2] sorted. First group is 5 (4 cards), count(5)=4 >= needed(1), strength(5)>strength(3) → plays index 0 (single 5)
-		// So CPU1 would only play 1 five, not all four. Revolution won't trigger from single card play.
-		// So we need needed=4 on table. Let's skip this test approach.
-		// This test verifies that CpuPlay triggers revolution when it plays 4 cards.
-		// We need: table has 4 cards, CPU has 4 stronger cards.
-		// Actually the test above for "playing 4 cards triggers revolution" covers human side.
-		// Let's just verify the revolution flag after a series of plays.
+		// Human plays four 5s → revolution active (rev-strength(5)=13)
+		// CPU1 has four 4s: rev-strength(4)=14 > rev-strength(5)=13 → can beat four 5s in revolution
+		// CPU1 playing four 4s triggers a second revolution, reverting to normal order.
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignClover, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignDiamond, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // spare keeps human alive
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 4, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignClover, 4, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignDiamond, 4, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 4, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false)) // spare keeps CPU1 alive
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+
+		dg.PlayerPlay([]int{0, 1, 2, 3}) // human plays four 5s → revolution active
+		assert.True(t, dg.GetRevolutionActive())
+
+		// CPU1's hand after revolution: sorted by rev-strength ascending → [2(rev=3), 4(rev=14), 4, 4, 4]
+		// findBestPlay: table has 4 cards (needed=4), tableStrength=rev(5)=13
+		// Group of 4s at indices 1-4, count=4 >= 4, rev(4)=14 > 13 → plays four 4s
+		dg.CpuPlay() // CPU1 plays four 4s → double revolution (back to normal)
 		assert.False(t, dg.GetRevolutionActive())
 	})
 }
