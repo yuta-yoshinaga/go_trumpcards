@@ -7,13 +7,9 @@ const PHASE_INIT = 0
 const PHASE_DEAL = 1
 const PHASE_END = 2
 
-const tableStyle: React.CSSProperties = {
-  backgroundColor: '#1a6b1a',
-  borderRadius: 16,
-  padding: 20,
-  margin: '10px auto',
-  maxWidth: 900,
-}
+const btnPrimary = 'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
+const btnWarning = 'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
+const btnSuccess = 'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -50,7 +46,7 @@ export function PokerPage() {
   }
 
   return (
-    <div style={tableStyle}>
+    <div className="bg-[#1a6b1a] rounded-2xl p-5 my-2.5 mx-auto max-w-[900px]">
       {/* Dealer area */}
       <div style={{ marginBottom: 8 }}>
         <div style={{ color: '#fff', fontSize: '1.1em', marginBottom: 6 }}>
@@ -164,19 +160,25 @@ export function PokerPage() {
       </div>
 
       {/* Buttons */}
-      <div style={{ textAlign: 'center', margin: '14px 0 4px 0' }}>
-        <button className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" style={{ margin: '0 6px', minWidth: 90 }}
-          onClick={() => exec('reset')}>
+      <div className="text-center mt-3.5 mb-1">
+        <button
+          className={`${btnPrimary} min-w-[90px]`}
+          onClick={() => exec('reset')}
+        >
           リセット
         </button>
-        <button className="px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed" style={{ margin: '0 6px', minWidth: 90 }}
+        <button
+          className={`${btnWarning} min-w-[90px]`}
           disabled={phase !== PHASE_DEAL}
-          onClick={() => exec('exchange', selected)}>
+          onClick={() => exec('exchange', selected)}
+        >
           交換
         </button>
-        <button className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" style={{ margin: '0 6px', minWidth: 90 }}
+        <button
+          className={`${btnSuccess} min-w-[90px]`}
           disabled={phase !== PHASE_DEAL}
-          onClick={() => exec('stand')}>
+          onClick={() => exec('stand')}
+        >
           スタンド
         </button>
       </div>

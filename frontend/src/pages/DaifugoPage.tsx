@@ -7,22 +7,7 @@ const btnPrimary = 'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 round
 const btnWarning = 'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
 const btnSuccess = 'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
 
-const tableStyle: React.CSSProperties = {
-  backgroundColor: '#1a5c1a',
-  borderRadius: 16,
-  padding: 20,
-  margin: '10px auto',
-  maxWidth: 960,
-}
-
-const playerAreaBase: React.CSSProperties = {
-  background: 'rgba(0,0,0,0.35)',
-  borderRadius: 10,
-  padding: 10,
-  border: '2px solid transparent',
-  flex: '1 1 180px',
-  minWidth: 150,
-}
+const playerAreaBaseClass = 'bg-black/35 rounded-[10px] p-[10px] border-2 border-transparent flex-[1_1_180px] min-w-[150px]'
 
 function playerName(idx: number): string {
   return idx === 0 ? 'あなた' : `CPU ${idx}`
@@ -57,17 +42,14 @@ interface CpuPlayerAreaProps {
 }
 
 function CpuPlayerArea({ player, isCurrentTurn }: CpuPlayerAreaProps) {
-  const areaStyle: React.CSSProperties = {
-    ...playerAreaBase,
-    ...(player.isFinished
-      ? { opacity: 0.5 }
-      : isCurrentTurn
-      ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
-      : {}),
-  }
+  const conditionalStyle: React.CSSProperties = player.isFinished
+    ? { opacity: 0.5 }
+    : isCurrentTurn
+    ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
+    : {}
   const showCount = Math.min(player.cardCount, 10)
   return (
-    <div id={`player-area-${player.id}`} style={areaStyle}>
+    <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
       <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
         {playerName(player.id)}
         {player.isFinished && (
@@ -114,16 +96,13 @@ interface HumanPlayerAreaProps {
 }
 
 function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: HumanPlayerAreaProps) {
-  const areaStyle: React.CSSProperties = {
-    ...playerAreaBase,
-    ...(player.isFinished
-      ? { opacity: 0.5 }
-      : isCurrentTurn
-      ? { border: '2px solid #5cb85c', boxShadow: '0 0 12px #5cb85c' }
-      : {}),
-  }
+  const conditionalStyle: React.CSSProperties = player.isFinished
+    ? { opacity: 0.5 }
+    : isCurrentTurn
+    ? { border: '2px solid #5cb85c', boxShadow: '0 0 12px #5cb85c' }
+    : {}
   return (
-    <div id="player-area-0" style={areaStyle}>
+    <div id="player-area-0" className={playerAreaBaseClass} style={conditionalStyle}>
       <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
         {playerName(0)}
         {player.isFinished && (
@@ -188,7 +167,7 @@ export function DaifugoPage() {
   }
 
   return (
-    <div style={tableStyle}>
+    <div className="bg-[#1a5c1a] rounded-2xl p-5 my-2.5 mx-auto max-w-[960px]">
       {/* CPU row */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
         {cpuPlayers.map(player => (
@@ -275,7 +254,7 @@ export function DaifugoPage() {
       )}
 
       {/* Buttons */}
-      <div style={{ textAlign: 'center', margin: '14px 0 4px 0' }}>
+      <div className="text-center mt-3.5 mb-1">
         <button
           className={`${btnPrimary} min-w-[90px]`}
           onClick={() => exec('reset')}
