@@ -49,6 +49,18 @@ go test ./...  # 全テスト実行
 [render live](https://go-trumpcards.onrender.com/)
 [render dev](https://go-trumpcards-dev.onrender.com/)
 
+### Docker
+#### Build
+```sh
+docker build -t go_trumpcards .
+```
+
+#### Run
+```sh
+docker run -p 8080:8080 go_trumpcards
+```
+Open [http://localhost:8080](http://localhost:8080) in your browser.
+
 ## Architecture
 Clean Architectureを採用しています。依存の方向は外側から内側への一方向です。
 
