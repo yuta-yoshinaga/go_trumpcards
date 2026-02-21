@@ -1,7 +1,7 @@
 $(document).ready(function () {
     $('.btn_field').on('click', '.reset', function () {
         $.ajax({
-            url: "./blackjac/exec",
+            url: "./blackjack/exec",
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
@@ -22,7 +22,7 @@ $(document).ready(function () {
     });
     $('.btn_field').on('click', '.hit', function () {
         $.ajax({
-            url: "./blackjac/exec",
+            url: "./blackjack/exec",
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
@@ -43,7 +43,7 @@ $(document).ready(function () {
     });
     $('.btn_field').on('click', '.stand', function () {
         $.ajax({
-            url: "./blackjac/exec",
+            url: "./blackjack/exec",
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
