@@ -21,8 +21,15 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run backend tests
-        run: go test ./...
+      - name: Run backend tests with coverage
+        run: go test -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Upload backend coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.out
+          flags: backend
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   test-frontend:
     name: Frontend Tests
@@ -41,6 +48,13 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Run frontend tests
+      - name: Run frontend tests with coverage
         working-directory: frontend
-        run: npm test
+        run: npm run test:coverage
+
+      - name: Upload frontend coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: frontend/coverage/lcov.info
+          flags: frontend
+          token: ${{ secrets.CODECOV_TOKEN }}

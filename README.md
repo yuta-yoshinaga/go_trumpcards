@@ -1,6 +1,9 @@
 # go_trumpcards
 トランプカードゲームアルゴリズムをGoで実装
 
+[![Backend Coverage](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards/graph/badge.svg?flag=backend)](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards)
+[![Frontend Coverage](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards/graph/badge.svg?flag=frontend)](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards)
+
 ## Description
 トランプカードのアルゴリズムをGo+Clean Architectureで実装したプロジェクトです。
 
