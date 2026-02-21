@@ -57,7 +57,7 @@ docker build -t go_trumpcards .
 
 #### Run
 ```sh
-docker run -p 8080:8080 go_trumpcards
+docker run --rm -p 8080:8080 go_trumpcards
 ```
 Open [http://localhost:8080](http://localhost:8080) in your browser.
 
