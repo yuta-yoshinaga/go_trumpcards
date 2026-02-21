@@ -27,6 +27,8 @@ public/assets/
 *.exe
 *.dll
 *.so
+go_trumpcards
+*.log
 
 # Dependencies
 node_modules/
