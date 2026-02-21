@@ -3,6 +3,8 @@ import { blackjackApi } from '../api/gameApi'
 import { CardImage, CardBack } from '../components/CardImage'
 import type { BlackJackResponse } from '../types/card'
 
+const btnPrimary = 'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
+
 export function BlackJackPage() {
   const [state, setState] = useState<BlackJackResponse | null>(null)
   const [message, setMessage] = useState('')
@@ -21,16 +23,13 @@ export function BlackJackPage() {
 
   return (
     <div>
-      <div
-        
-        style={{ margin: 'auto', backgroundColor: '#008000', padding: 16 }}
-      >
+      <div className="mx-auto bg-[#008000] p-4">
         {state && (
           <>
             {/* Dealer area */}
-            <div style={{ marginBottom: 16 }}>
-              <h3  style={{ color: '#fff' }}>ディーラー手札</h3>
-              <h3  style={{ color: '#fff' }}>
+            <div className="mb-4">
+              <h3 className="text-white">ディーラー手札</h3>
+              <h3 className="text-white">
                 スコア {state.dealer.score !== 0 ? state.dealer.score : ''}
               </h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -43,8 +42,8 @@ export function BlackJackPage() {
 
             {/* Player area */}
             <div>
-              <h3  style={{ color: '#fff' }}>プレイヤー手札</h3>
-              <h3  style={{ color: '#fff' }}>
+              <h3 className="text-white">プレイヤー手札</h3>
+              <h3 className="text-white">
                 スコア {state.player.score}
               </h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -77,14 +76,14 @@ export function BlackJackPage() {
       )}
 
       {/* Buttons */}
-      <div  style={{ textAlign: 'center', margin: '20px auto' }}>
-        <button className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" style={{ margin: '0 6px' }} onClick={() => exec('reset')}>
+      <div className="text-center my-5">
+        <button className={btnPrimary} onClick={() => exec('reset')}>
           リセット
         </button>
-        <button className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" style={{ margin: '0 6px' }} onClick={() => exec('hit')}>
+        <button className={btnPrimary} onClick={() => exec('hit')}>
           ヒット
         </button>
-        <button className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" style={{ margin: '0 6px' }} onClick={() => exec('stand')}>
+        <button className={btnPrimary} onClick={() => exec('stand')}>
           スタンド
         </button>
       </div>

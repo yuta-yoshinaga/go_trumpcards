@@ -3,6 +3,10 @@ import { daifugoApi } from '../api/gameApi'
 import { CardImage, CardBack } from '../components/CardImage'
 import type { DaifugoResponse, DaifugoPlayerData, DaifugoAction, Card } from '../types/card'
 
+const btnPrimary = 'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
+const btnWarning = 'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
+const btnSuccess = 'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
+
 const tableStyle: React.CSSProperties = {
   backgroundColor: '#1a5c1a',
   borderRadius: 16,
@@ -273,23 +277,20 @@ export function DaifugoPage() {
       {/* Buttons */}
       <div style={{ textAlign: 'center', margin: '14px 0 4px 0' }}>
         <button
-          className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ margin: '0 6px', minWidth: 90 }}
+          className={`${btnPrimary} min-w-[90px]`}
           onClick={() => exec('reset')}
         >
           リセット
         </button>
         <button
-          className="px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ margin: '0 6px', minWidth: 90 }}
+          className={`${btnWarning} min-w-[90px]`}
           disabled={!isHumanTurn || state.gameEndFlag}
           onClick={() => exec('play', [])}
         >
           パス
         </button>
         <button
-          className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ margin: '0 6px', minWidth: 120 }}
+          className={`${btnSuccess} min-w-[120px]`}
           disabled={!isHumanTurn || state.gameEndFlag || selectedIndices.length === 0}
           onClick={() => exec('play', [...selectedIndices].sort((a, b) => a - b))}
         >
