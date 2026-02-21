@@ -118,11 +118,39 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		// Player 0 draws CLOVER 10 from Player 1.
 		// Player 0 discards SPADE 10 + CLOVER 10.
 		om.CpuDraw()
-		
+
 		result := towp.Output(om)
-		// Check that cpuActions contains discardedCards
-		assert.Contains(t, result, `"cpuActions":[{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"CLOVER","value":10},"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":10},{"design":"CLOVER","value":10}]}]`)
+		// drawnCard must be null in cpuActions to preserve game fairness
+		assert.Contains(t, result, `"cpuActions":[{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":null,"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":10},{"design":"CLOVER","value":10}]}]`)
 		// No human draw happened, so humanAction is null
 		assert.Contains(t, result, `"humanAction":null`)
+	})
+
+	t.Run("success Output cpuActions drawnCard is nil when no pair discarded", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		// Use all CPU players for this test to enable CpuDraw
+		players := []*entities.OldMaidPlayer{
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+		}
+		om := entities.NewOldMaid(tc, players)
+		// Player 0: JOKER
+		// Player 1: SPADE 5 (1 card, deterministic draw at index 0)
+		// Players 2, 3: finished
+		om.GetPlayer(0).AddCard(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
+		om.GetPlayer(1).AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		om.GetPlayer(2).SetIsFinished(true)
+		om.GetPlayer(3).SetIsFinished(true)
+
+		// Player 0 draws SPADE 5, no pair → keeps it (drawnCard must not be revealed)
+		om.CpuDraw()
+
+		result := towp.Output(om)
+		// drawnCard must be null regardless of whether a pair was discarded
+		assert.Contains(t, result, `"drawnCard":null`)
+		assert.NotContains(t, result, `"drawnCard":{"design`)
+		assert.Contains(t, result, `"discardedPairs":0`)
 	})
 }

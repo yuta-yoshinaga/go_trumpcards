@@ -114,4 +114,59 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "CPU 2: 上がり")
 		assert.Contains(t, result, "CPU 3: 上がり")
 	})
+
+	t.Run("success Output cpu actions drawn card not revealed", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		// Use all CPU players to enable CpuDraw
+		cpuPlayers := []*entities.OldMaidPlayer{
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+		}
+		om := entities.NewOldMaid(tc, cpuPlayers)
+		// Player 0: JOKER
+		// Player 1: SPADE 5 (1 card, deterministic draw at index 0)
+		// Players 2, 3: finished
+		cpuPlayers[0].AddCard(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
+		cpuPlayers[1].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		cpuPlayers[2].SetIsFinished(true)
+		cpuPlayers[3].SetIsFinished(true)
+
+		// Player 0 draws SPADE 5, no pair → keeps it
+		om.CpuDraw()
+
+		result := top.Output(om)
+		// CPU action should show who drew from whom but NOT which card was drawn
+		assert.Contains(t, result, "[CPUの行動]")
+		assert.Contains(t, result, "CPU 0がCPU 1から1枚引きました")
+		assert.NotContains(t, result, "SPADE 5")
+	})
+
+	t.Run("success Output cpu actions with discard does not reveal drawn card", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		cpuPlayers := []*entities.OldMaidPlayer{
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+		}
+		om := entities.NewOldMaid(tc, cpuPlayers)
+		// Player 0: SPADE 10
+		// Player 1: CLOVER 10 (1 card, deterministic draw at index 0)
+		// Players 2, 3: finished
+		cpuPlayers[0].AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		cpuPlayers[1].AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		cpuPlayers[2].SetIsFinished(true)
+		cpuPlayers[3].SetIsFinished(true)
+
+		// Player 0 draws CLOVER 10, discards pair SPADE 10 + CLOVER 10
+		om.CpuDraw()
+
+		result := top.Output(om)
+		assert.Contains(t, result, "[CPUの行動]")
+		assert.Contains(t, result, "CPU 0がCPU 1から1枚引きました。1組捨てました")
+		// Drawn card must not appear even when a pair was discarded
+		assert.NotContains(t, result, "CLOVER 10")
+	})
 }
