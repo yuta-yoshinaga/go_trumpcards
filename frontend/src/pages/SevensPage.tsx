@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
-import { CardBack, CardImage } from '../components/CardImage';
+import { CardImage } from '../components/CardImage';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
 
 // Design → suit index (matches Go backend: 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND)
@@ -136,7 +136,6 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
     : isCurrentTurn
       ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
       : {};
-  const showCount = Math.min(player.cardCount, 10);
   return (
     <div className={playerAreaBaseClass} style={conditionalStyle}>
       <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
@@ -172,20 +171,10 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
         )}
       </div>
       {!player.isFinished && (
-        <div style={{ color: '#ccc', fontSize: '0.85em', marginBottom: 4 }}>
+        <div style={{ color: '#ccc', fontSize: '0.85em' }}>
           {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses}
         </div>
       )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-        {!player.isFinished &&
-          Array.from({ length: showCount }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-            <CardBack key={i} style={{ width: 50 }} />
-          ))}
-        {player.cardCount > 10 && (
-          <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 4 }}>+{player.cardCount - 10}</span>
-        )}
-      </div>
     </div>
   );
 }
@@ -251,7 +240,7 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
                 boxSizing: 'border-box',
               }}
             >
-              <CardImage card={card} style={{ width: 60 }} />
+              <CardImage card={card} style={{ width: 52 }} />
             </button>
           );
         })}
@@ -286,94 +275,108 @@ export function SevensPage() {
   const canPass = isHumanTurn && (humanPlayer?.passesUsed ?? 0) < (humanPlayer?.maxPasses ?? 5);
 
   return (
-    <div className="bg-[#1a5c1a] rounded-2xl p-5 my-2.5 mx-auto max-w-[1000px]">
-      {/* CPU row */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-        {cpuPlayers.map((player) => (
-          <CpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
-        ))}
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: '#1a5c1a' }}>
+      {/* Scrollable: CPU rows + board + action logs + result */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 0' }}>
+        {/* CPU row */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+          {cpuPlayers.map((player) => (
+            <CpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+          ))}
+        </div>
+
+        {/* Board */}
+        <Board tableMinVals={state.tableMinVals} tableMaxVals={state.tableMaxVals} />
+
+        {/* Human action log */}
+        {state.humanAction && (
+          <div
+            style={{
+              background: 'rgba(0,0,0,0.4)',
+              borderRadius: 8,
+              color: '#cfc',
+              padding: '8px 14px',
+              margin: '8px 0',
+              fontSize: '0.85em',
+            }}
+          >
+            {actionDesc(state.humanAction)}
+          </div>
+        )}
+
+        {/* CPU action log */}
+        {state.cpuActions && state.cpuActions.length > 0 && (
+          <div
+            style={{
+              background: 'rgba(0,0,0,0.4)',
+              borderRadius: 8,
+              color: '#ccc',
+              padding: '8px 14px',
+              margin: '8px 0',
+              whiteSpace: 'pre-line',
+              fontSize: '0.85em',
+            }}
+          >
+            {['[CPUの行動]', ...state.cpuActions.map(actionDesc)].join('\n')}
+          </div>
+        )}
+
+        {/* Result message */}
+        {state.message && (
+          <div
+            style={{
+              background: 'rgba(0,0,0,0.55)',
+              borderRadius: 10,
+              color: '#fff',
+              textAlign: 'center',
+              padding: '10px 16px',
+              fontSize: '1.2em',
+              fontWeight: 'bold',
+              margin: '8px 0',
+            }}
+          >
+            {state.message}
+          </div>
+        )}
       </div>
 
-      {/* Board */}
-      <Board tableMinVals={state.tableMinVals} tableMaxVals={state.tableMaxVals} />
+      {/* Sticky footer: human player hand + buttons */}
+      <div
+        style={{
+          flexShrink: 0,
+          background: '#163e16',
+          borderTop: '1px solid rgba(255,255,255,0.2)',
+          padding: '10px 16px',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)',
+        }}
+      >
+        {/* Human player */}
+        {humanPlayer && (
+          <div style={{ marginBottom: 8 }}>
+            <HumanArea
+              player={humanPlayer}
+              isCurrentTurn={isHumanTurn}
+              tableMinVals={state.tableMinVals}
+              tableMaxVals={state.tableMaxVals}
+              onPlay={(idx) => exec('play', idx)}
+            />
+          </div>
+        )}
 
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', margin: '12px 0' }} />
-
-      {/* Human player */}
-      {humanPlayer && (
-        <HumanArea
-          player={humanPlayer}
-          isCurrentTurn={isHumanTurn}
-          tableMinVals={state.tableMinVals}
-          tableMaxVals={state.tableMaxVals}
-          onPlay={(idx) => exec('play', idx)}
-        />
-      )}
-
-      {/* Human action log */}
-      {state.humanAction && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.4)',
-            borderRadius: 8,
-            color: '#cfc',
-            padding: '8px 14px',
-            margin: '8px 0',
-            fontSize: '0.85em',
-          }}
-        >
-          {actionDesc(state.humanAction)}
+        {/* Buttons */}
+        <div className="text-center">
+          <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
+            リセット
+          </button>
+          <button
+            type="button"
+            className={`${btnWarning} min-w-[90px]`}
+            disabled={!canPass}
+            onClick={() => exec('play', -1)}
+          >
+            パス
+          </button>
         </div>
-      )}
-
-      {/* CPU action log */}
-      {state.cpuActions && state.cpuActions.length > 0 && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.4)',
-            borderRadius: 8,
-            color: '#ccc',
-            padding: '8px 14px',
-            margin: '8px 0',
-            whiteSpace: 'pre-line',
-            fontSize: '0.85em',
-          }}
-        >
-          {['[CPUの行動]', ...state.cpuActions.map(actionDesc)].join('\n')}
-        </div>
-      )}
-
-      {/* Result message */}
-      {state.message && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.55)',
-            borderRadius: 10,
-            color: '#fff',
-            textAlign: 'center',
-            padding: '12px 20px',
-            fontSize: '1.3em',
-            fontWeight: 'bold',
-            margin: '10px 0',
-          }}
-        >
-          {state.message}
-        </div>
-      )}
-
-      {/* Buttons */}
-      <div className="text-center mt-3.5 mb-1">
-        <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
-          リセット
-        </button>
-        <button
-          type="button"
-          className={`${btnWarning} min-w-[90px]`}
-          disabled={!canPass}
-          onClick={() => exec('play', -1)}
-        >
-          パス
-        </button>
       </div>
     </div>
   );

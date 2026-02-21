@@ -315,110 +315,126 @@ export function OldMaidPage() {
   }
 
   return (
-    <div className="bg-[#1a5c1a] rounded-2xl p-4 my-2.5 mx-auto max-w-[800px] shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-      {/* CPU row */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, justifyContent: 'center' }}>
-        {cpuPlayers.map((player) => (
-          <PlayerArea
-            key={player.id}
-            player={player}
-            isTarget={state.nextDrawTargetIdx === player.id}
-            isHumanTurn={isHumanTurn}
-            gameEndFlag={state.gameEndFlag}
-            onDraw={(drawIdx) => exec('draw', drawIdx)}
-          />
-        ))}
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: '#1a5c1a' }}>
+      {/* Scrollable: CPU rows + discard + status + logs + result */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 0' }}>
+        {/* CPU row */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, justifyContent: 'center' }}>
+          {cpuPlayers.map((player) => (
+            <PlayerArea
+              key={player.id}
+              player={player}
+              isTarget={state.nextDrawTargetIdx === player.id}
+              isHumanTurn={isHumanTurn}
+              gameEndFlag={state.gameEndFlag}
+              onDraw={(drawIdx) => exec('draw', drawIdx)}
+            />
+          ))}
+        </div>
+
+        {/* Discarded Area */}
+        <DiscardedArea cards={state.lastDiscardedCards} />
+
+        {/* Status */}
+        {statusLines.length > 0 && (
+          <div
+            style={{
+              background: 'rgba(0,0,0,0.5)',
+              borderRadius: 8,
+              color: '#fff',
+              padding: '8px 12px',
+              margin: '8px 0',
+              whiteSpace: 'pre-line',
+              fontSize: '0.9em',
+            }}
+          >
+            {statusLines.join('\n')}
+          </div>
+        )}
+
+        {/* CPU log */}
+        {state.cpuActions && state.cpuActions.length > 0 && (
+          <div
+            style={{
+              background: 'rgba(0,0,0,0.4)',
+              borderRadius: 8,
+              color: '#ccc',
+              padding: '6px 10px',
+              margin: '6px 0',
+              whiteSpace: 'pre-line',
+              fontSize: '0.8em',
+              maxHeight: 120,
+              overflowY: 'auto',
+            }}
+          >
+            {[
+              '[CPUの行動]',
+              ...state.cpuActions.map((action: CpuAction) => {
+                let msg = `${playerName(action.drawPlayerIdx)}が${playerName(action.drawFromIdx)}から1枚引きました`;
+                // CPU drawn card is intentionally hidden to preserve game fairness
+                if (action.discardedPairs > 0) msg += `。${action.discardedPairs}組捨てました`;
+                return msg;
+              }),
+            ].join('\n')}
+          </div>
+        )}
+
+        {/* Result */}
+        {state.message && (
+          <div
+            style={{
+              background: 'rgba(0,0,0,0.6)',
+              borderRadius: 10,
+              color: '#fff',
+              textAlign: 'center',
+              padding: '10px 16px',
+              fontSize: '1.2em',
+              fontWeight: 'bold',
+              margin: '8px 0',
+            }}
+          >
+            {state.message}
+          </div>
+        )}
       </div>
 
-      {/* Discarded Area */}
-      <DiscardedArea cards={state.lastDiscardedCards} />
+      {/* Sticky footer: human player hand + buttons */}
+      <div
+        style={{
+          flexShrink: 0,
+          background: '#163e16',
+          borderTop: '1px solid rgba(255,255,255,0.2)',
+          padding: '10px 16px',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)',
+        }}
+      >
+        {/* Human player */}
+        {humanPlayer && (
+          <div style={{ marginBottom: 8 }}>
+            <PlayerArea
+              player={humanPlayer}
+              isTarget={false}
+              isHumanTurn={isHumanTurn}
+              gameEndFlag={state.gameEndFlag}
+              onDraw={(drawIdx) => exec('draw', drawIdx)}
+            />
+          </div>
+        )}
 
-      {/* Human player */}
-      {humanPlayer && (
-        <PlayerArea
-          player={humanPlayer}
-          isTarget={false}
-          isHumanTurn={isHumanTurn}
-          gameEndFlag={state.gameEndFlag}
-          onDraw={(drawIdx) => exec('draw', drawIdx)}
-        />
-      )}
-
-      {/* Status */}
-      {statusLines.length > 0 && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.5)',
-            borderRadius: 8,
-            color: '#fff',
-            padding: '8px 12px',
-            margin: '8px 0',
-            whiteSpace: 'pre-line',
-            fontSize: '0.9em',
-          }}
-        >
-          {statusLines.join('\n')}
+        {/* Buttons */}
+        <div className="text-center">
+          <button type="button" className={`${btnPrimary} min-w-[80px]`} onClick={() => exec('reset')}>
+            リセット
+          </button>
+          <button
+            type="button"
+            className={`${btnWarning} min-w-[110px]`}
+            disabled={!isHumanTurn || state.gameEndFlag}
+            onClick={() => exec('draw')}
+          >
+            ランダムに引く
+          </button>
         </div>
-      )}
-
-      {/* CPU log */}
-      {state.cpuActions && state.cpuActions.length > 0 && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.4)',
-            borderRadius: 8,
-            color: '#ccc',
-            padding: '6px 10px',
-            margin: '6px 0',
-            whiteSpace: 'pre-line',
-            fontSize: '0.8em',
-            maxHeight: 120,
-            overflowY: 'auto',
-          }}
-        >
-          {[
-            '[CPUの行動]',
-            ...state.cpuActions.map((action: CpuAction) => {
-              let msg = `${playerName(action.drawPlayerIdx)}が${playerName(action.drawFromIdx)}から1枚引きました`;
-              // CPU drawn card is intentionally hidden to preserve game fairness
-              if (action.discardedPairs > 0) msg += `。${action.discardedPairs}組捨てました`;
-              return msg;
-            }),
-          ].join('\n')}
-        </div>
-      )}
-
-      {/* Result */}
-      {state.message && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.6)',
-            borderRadius: 10,
-            color: '#fff',
-            textAlign: 'center',
-            padding: '10px 16px',
-            fontSize: '1.2em',
-            fontWeight: 'bold',
-            margin: '8px 0',
-          }}
-        >
-          {state.message}
-        </div>
-      )}
-
-      {/* Buttons */}
-      <div className="text-center mt-3 mb-1">
-        <button type="button" className={`${btnPrimary} min-w-[80px]`} onClick={() => exec('reset')}>
-          リセット
-        </button>
-        <button
-          type="button"
-          className={`${btnWarning} min-w-[110px]`}
-          disabled={!isHumanTurn || state.gameEndFlag}
-          onClick={() => exec('draw')}
-        >
-          ランダムに引く
-        </button>
       </div>
     </div>
   );
