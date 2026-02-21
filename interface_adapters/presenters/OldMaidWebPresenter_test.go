@@ -95,4 +95,31 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":true,"cardCount":0,"cards":[]},{"id":1,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":2,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":3,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":2,"gameEndFlag":true,"loserIdx":2,"lastDrawPlayerIdx":0,"lastDrawFromIdx":1,"lastDrawCard":{"design":"CLOVER","value":3},"lastDiscardedPairs":1,"lastDiscardedCards":[{"design":"SPADE","value":3},{"design":"CLOVER","value":3}],"hasDrawn":true,"cpuActions":[],"message":"ゲーム終了！ CPU 2の負け！"}`
 		assert.Equal(t, expected, towp.Output(om))
 	})
+
+	t.Run("success Output with CpuActions and discarded cards", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		// Use all CPU players for this test to enable CpuDraw
+		players := []*entities.OldMaidPlayer{
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+			entities.NewOldMaidPlayer(false),
+		}
+		om := entities.NewOldMaid(tc, players)
+		// Player 0: SPADE 10
+		// Player 1: CLOVER 10
+		om.GetPlayer(0).AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		om.GetPlayer(1).AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		om.GetPlayer(2).SetIsFinished(true)
+		om.GetPlayer(3).SetIsFinished(true)
+
+		// Turn is 0 (CPU). Call CpuDraw.
+		// Player 0 draws CLOVER 10 from Player 1.
+		// Player 0 discards SPADE 10 + CLOVER 10.
+		om.CpuDraw()
+		
+		result := towp.Output(om)
+		// Check that cpuActions contains discardedCards
+		assert.Contains(t, result, `"cpuActions":[{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"CLOVER","value":10},"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":10},{"design":"CLOVER","value":10}]}]`)
+	})
 }
