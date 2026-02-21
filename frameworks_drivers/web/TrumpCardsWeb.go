@@ -47,7 +47,7 @@ func (web *TrumpCardsWeb) Exec() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		rest.Post("/blackjac/exec", web.bjc.Exec),
+		rest.Post("/blackjack/exec", web.bjc.Exec),
 		rest.Post("/poker/exec", web.pkc.Exec),
 		rest.Post("/oldmaid/exec", web.omc.Exec),
 		rest.Post("/daifugo/exec", web.dgc.Exec),
@@ -58,7 +58,7 @@ func (web *TrumpCardsWeb) Exec() {
 	}
 	api.SetApp(router)
 	http.Handle("/", http.FileServer(http.Dir("public")))
-	http.Handle("/blackjac/exec", api.MakeHandler())
+	http.Handle("/blackjack/exec", api.MakeHandler())
 	http.Handle("/poker/exec", api.MakeHandler())
 	http.Handle("/oldmaid/exec", api.MakeHandler())
 	http.Handle("/daifugo/exec", api.MakeHandler())

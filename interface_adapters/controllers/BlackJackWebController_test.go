@@ -25,13 +25,13 @@ func TestBlackJackWebController_Method(t *testing.T) {
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
-		rest.Post("/blackjac/exec", tbc.Exec),
+		rest.Post("/blackjack/exec", tbc.Exec),
 	)
 	api.SetApp(router)
 	var jsonCase1 controllers.BlackJackWebInput
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -40,7 +40,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec quit", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "quit", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -49,7 +49,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec r", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -58,7 +58,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec reset", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -67,7 +67,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec h", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "h", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -76,7 +76,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec hit", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "hit", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -85,7 +85,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec s", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "s", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -94,7 +94,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec stand", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "stand", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -103,7 +103,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -112,7 +112,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
@@ -121,7 +121,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
@@ -133,7 +133,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 			Command:   "reset",
 			SessionId: strings.Repeat("a", controllers.SessionMaxIDLen+1),
 		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
@@ -143,7 +143,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	t.Run("failed Exec response empty", func(t *testing.T) {
 		bjiMock.On("Reset").Return(``)
 		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
@@ -170,14 +170,14 @@ func TestBlackJackWebController_SessionIsolation(t *testing.T) {
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
-		rest.Post("/blackjac/exec", isoController.Exec),
+		rest.Post("/blackjack/exec", isoController.Exec),
 	)
 	api.SetApp(router)
 
 	t.Run("session-A reset calls mockA", func(t *testing.T) {
 		var input controllers.BlackJackWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -188,7 +188,7 @@ func TestBlackJackWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
 		var input controllers.BlackJackWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-B"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
@@ -198,7 +198,7 @@ func TestBlackJackWebController_SessionIsolation(t *testing.T) {
 	t.Run("session-A second call reuses mockA not mockB", func(t *testing.T) {
 		var input controllers.BlackJackWebInput
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "session-A"}`), &input)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjac/exec", &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)

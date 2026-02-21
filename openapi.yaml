@@ -26,7 +26,7 @@ tags:
     description: Sevens (7並べ) game
 
 paths:
-  /blackjac/exec:
+  /blackjack/exec:
     post:
       tags:
         - blackjack
@@ -34,10 +34,6 @@ paths:
       description: |
         Send a command to advance the BlackJack game session identified by
         `sessionId`.
-
-        > **Note on the path:** The route is intentionally `/blackjac/exec`
-        > (without a trailing `k`) — this matches the registered route in the
-        > server source code.
 
         | Command | Aliases | Description |
         |---------|---------|-------------|
