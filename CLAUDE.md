@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Tool | Version |
 |------|---------|
-| [Go](https://go.dev/) | 1.24.x |
+| [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [npm](https://www.npmjs.com/) | 11.x |
 
@@ -47,17 +47,13 @@ docker run --rm -d -p 8080:8080 go_trumpcards  # Run Docker container
 ```sh
 cd frontend
 npm install              # Install Node.js dependencies
-npm run build            # Build React app to public/ (run before starting the web server)
+npm run build            # Build React app to public/ (for local testing with Go server; Docker handles this automatically)
 npm run dev              # Start Vite dev server (proxies API to localhost:80)
 npm test                 # Run frontend unit tests (Vitest)
 npm run test:coverage    # Run frontend unit tests with coverage report (outputs to frontend/coverage/)
 npm run test:watch       # Run frontend tests in watch mode
 ```
 
-> **Important:** The built assets in `public/assets/` and `public/index.html` are committed to the
-> repository so the Go web server can serve them without a separate build step on the server.
-> **Whenever you modify anything under `frontend/`, you must run `npm run build` and include the
-> updated `public/assets/` and `public/index.html` in the same commit.**
 
 ## Architecture
 
@@ -173,7 +169,7 @@ cd frontend && npm test
 | Change request/response schema of a Web API endpoint | `openapi.yaml` |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
-| Modify anything under `frontend/` | Run `npm run build` and commit updated `public/assets/` and `public/index.html` in the same commit |
+| Modify anything under `frontend/` | Run `cd frontend && npm test` and ensure all tests pass before committing |
 | Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.

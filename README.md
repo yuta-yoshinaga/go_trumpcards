@@ -19,7 +19,7 @@
 
 | Tool | Version |
 |------|---------|
-| [Go](https://go.dev/) | 1.24.x |
+| [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [npm](https://www.npmjs.com/) | 11.x |
 
@@ -48,6 +48,17 @@ go test ./...  # 全テスト実行
 ### Deploy
 [render live](https://go-trumpcards.onrender.com/)
 [render dev](https://go-trumpcards-dev.onrender.com/)
+
+### GitHub Pages (Repomix)
+
+When code is merged into the `master` branch, a GitHub Actions workflow automatically runs [repomix](https://github.com/yamadashy/repomix) and deploys the packed XML output to GitHub Pages at:
+
+```
+https://yuta-yoshinaga.github.io/go_trumpcards/repomix-output.xml
+```
+
+**One-time repository setup required:**
+Go to **Settings > Pages** in the repository and set the "Build and deployment" Source to **GitHub Actions**.
 
 ### Docker
 #### Build

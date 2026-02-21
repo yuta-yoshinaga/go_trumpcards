@@ -5,23 +5,9 @@ import type { OldMaidResponse, OldMaidPlayerData, CpuAction, Card } from '../typ
 
 const REPLAY_DELAY_MS = 800
 
-const tableStyle: React.CSSProperties = {
-  backgroundColor: '#1a5c1a',
-  borderRadius: 16,
-  padding: 16,
-  margin: '10px auto',
-  maxWidth: 800,
-  boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-}
-
-const playerAreaBase: React.CSSProperties = {
-  background: 'rgba(0,0,0,0.35)',
-  borderRadius: 10,
-  padding: 8,
-  border: '2px solid transparent',
-  flex: '1 1 140px',
-  minWidth: 120,
-}
+const playerAreaBaseClass = 'bg-black/35 rounded-[10px] p-2 border-2 border-transparent flex-[1_1_140px] min-w-[120px]'
+const btnPrimary = 'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1'
+const btnWarning = 'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1'
 
 function playerName(idx: number): string {
   return idx === 0 ? 'あなた' : `CPU ${idx}`
@@ -128,20 +114,17 @@ interface PlayerAreaProps {
 }
 
 function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: PlayerAreaProps) {
-  const areaStyle: React.CSSProperties = {
-    ...playerAreaBase,
-    ...(player.isFinished
-      ? { opacity: 0.5 }
-      : isTarget && !gameEndFlag
-      ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
-      : {}),
-  }
+  const conditionalStyle: React.CSSProperties = player.isFinished
+    ? { opacity: 0.5 }
+    : isTarget && !gameEndFlag
+    ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
+    : {}
 
   const showSelectable = isHumanTurn && isTarget && !player.isFinished && !player.isHuman && !gameEndFlag
   const showCount = Math.min(player.cardCount, 10)
 
   return (
-    <div id={`player-area-${player.id}`} style={areaStyle}>
+    <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
       <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4, fontSize: '0.9em' }}>
         {playerName(player.id)}
         {player.isFinished && (
@@ -315,7 +298,7 @@ export function OldMaidPage() {
   }
 
   return (
-    <div style={tableStyle}>
+    <div className="bg-[#1a5c1a] rounded-2xl p-4 my-2.5 mx-auto max-w-[800px] shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
       {/* CPU row */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, justifyContent: 'center' }}>
         {cpuPlayers.map(player => (
@@ -398,14 +381,18 @@ export function OldMaidPage() {
       )}
 
       {/* Buttons */}
-      <div style={{ textAlign: 'center', margin: '12px 0 4px 0' }}>
-        <button className="btn btn-primary btn-sm" style={{ margin: '0 4px', minWidth: 80 }}
-          onClick={() => exec('reset')}>
+      <div className="text-center mt-3 mb-1">
+        <button
+          className={`${btnPrimary} min-w-[80px]`}
+          onClick={() => exec('reset')}
+        >
           リセット
         </button>
-        <button className="btn btn-warning btn-sm" style={{ margin: '0 4px', minWidth: 110 }}
+        <button
+          className={`${btnWarning} min-w-[110px]`}
           disabled={!isHumanTurn || state.gameEndFlag}
-          onClick={() => exec('draw')}>
+          onClick={() => exec('draw')}
+        >
           ランダムに引く
         </button>
       </div>
