@@ -40,7 +40,7 @@ go mod tidy
 **Docker:**
 ```sh
 docker build -t go_trumpcards .           # Build Docker image
-docker run --rm -p 8080:8080 go_trumpcards     # Run Docker container
+docker run --rm -d -p 8080:8080 go_trumpcards  # Run Docker container
 ```
 
 **Frontend (React):**
