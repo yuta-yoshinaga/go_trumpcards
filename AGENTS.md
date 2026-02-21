@@ -34,9 +34,12 @@ go run main.go web      # Start REST API + web GUI server
 
 **Run tests:**
 ```sh
-go test ./...                          # Run all tests
-go test ./entities/...                 # Run tests in a specific package
-go test ./entities/ -run TestBlackJack # Run a single test by name
+go test ./...                                              # Run all tests
+go test ./entities/...                                     # Run tests in a specific package
+go test ./entities/ -run TestBlackJack                     # Run a single test by name
+go test -coverprofile=coverage.out -covermode=atomic ./... # Run all tests with coverage report
+go tool cover -func=coverage.out                           # Show coverage summary by function
+go tool cover -html=coverage.out -o coverage.html          # Generate HTML coverage report
 ```
 
 **Manage dependencies:**
@@ -46,8 +49,9 @@ go mod tidy
 
 **Build frontend (React):**
 ```sh
-cd frontend && npm install && npm run build  # Build React app to public/
-cd frontend && npm test                      # Run frontend unit tests (Vitest)
+cd frontend && npm install && npm run build   # Build React app to public/
+cd frontend && npm test                       # Run frontend unit tests (Vitest)
+cd frontend && npm run test:coverage          # Run frontend tests with coverage (outputs to frontend/coverage/)
 ```
 
 > **Important:** The built assets in `public/assets/` and `public/index.html` are committed to the
