@@ -89,6 +89,36 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "パスしました")
 	})
 
+	t.Run("success Output shows revolution status when active", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		dg := entities.NewDaifugo(tc, players)
+		// Human plays four 5s → revolution active
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignClover, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignDiamond, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // spare
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		dg.PlayerPlay([]int{0, 1, 2, 3}) // play four 5s
+		result := tdp.Output(dg)
+		assert.Contains(t, result, "革命中")
+	})
+
+	t.Run("success Output does not show revolution status when not active", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		dg := entities.NewDaifugo(tc, players)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 7, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 9, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 11, false))
+		result := tdp.Output(dg)
+		assert.NotContains(t, result, "革命中")
+	})
+
 	t.Run("success Output shows CPU actions", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()

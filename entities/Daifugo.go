@@ -17,6 +17,12 @@ func DaifugoCardStrength(v int) int {
 	return v
 }
 
+// DaifugoCardStrengthRevolution 革命中のカードの強さを返す (2が最弱、3が最強)
+// 2 < A < K < Q < J < 10 < 9 < 8 < 7 < 6 < 5 < 4 < 3
+func DaifugoCardStrengthRevolution(v int) int {
+	return 18 - DaifugoCardStrength(v)
+}
+
 // DaifugoCpuAction CPUまたは人間の1ターン分の行動記録
 type DaifugoCpuAction struct {
 	PlayerIdx   int     // 行動したプレイヤーインデックス
@@ -34,6 +40,7 @@ type Daifugo struct {
 	passCount         int               // 最後の出し以降の連続パス数
 	cpuActions        []*DaifugoCpuAction // 人間ターン後のCPUの行動履歴
 	humanAction       *DaifugoCpuAction   // 人間の最後の行動
+	revolutionActive  bool              // 革命フラグ (true = 革命中)
 }
 
 // NewDaifugo コンストラクタ
@@ -48,6 +55,7 @@ func NewDaifugo(trumpCards *TrumpCards, players []*DaifugoPlayer) *Daifugo {
 		passCount:         0,
 		cpuActions:        nil,
 		humanAction:       nil,
+		revolutionActive:  false,
 	}
 }
 
@@ -60,6 +68,7 @@ func (d *Daifugo) Reset() {
 	d.passCount = 0
 	d.cpuActions = nil
 	d.humanAction = nil
+	d.revolutionActive = false
 
 	// シャッフル
 	d.trumpCards.Shuffle()
@@ -85,6 +94,27 @@ func (d *Daifugo) Reset() {
 	// 各プレイヤーの手札をソート
 	for _, p := range d.players {
 		p.SortCards()
+	}
+}
+
+// cardStrength 現在の革命状態に応じたカードの強さを返す
+func (d *Daifugo) cardStrength(v int) int {
+	if d.revolutionActive {
+		return DaifugoCardStrengthRevolution(v)
+	}
+	return DaifugoCardStrength(v)
+}
+
+// triggerRevolutionIfNeeded 4枚出しで革命が起きるか判定し、起きた場合は革命フラグを切り替えて全プレイヤーの手札を再ソートする
+func (d *Daifugo) triggerRevolutionIfNeeded(cards []*Card) {
+	if len(cards) != 4 {
+		return
+	}
+	d.revolutionActive = !d.revolutionActive
+	for _, p := range d.players {
+		if !p.GetIsFinished() {
+			p.SortCardsByStrength(d.cardStrength)
+		}
 	}
 }
 
@@ -189,8 +219,8 @@ func (d *Daifugo) isPlayable(cardValues []int) bool {
 		return false
 	}
 	// 場より強いか
-	tableStrength := DaifugoCardStrength(d.tableCards[0].GetValue())
-	proposedStrength := DaifugoCardStrength(cardValues[0])
+	tableStrength := d.cardStrength(d.tableCards[0].GetValue())
+	proposedStrength := d.cardStrength(cardValues[0])
 	return proposedStrength > tableStrength
 }
 
@@ -247,6 +277,7 @@ func (d *Daifugo) PlayerPlay(indices []int) bool {
 	d.lastPlayPlayerIdx = d.currentTurn
 	d.passCount = 0
 	d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: cards}
+	d.triggerRevolutionIfNeeded(cards)
 
 	if player.GetCardsSize() == 0 {
 		d.finishPlayer(d.currentTurn)
@@ -282,6 +313,7 @@ func (d *Daifugo) CpuPlay() {
 		d.passCount = 0
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		d.cpuActions = append(d.cpuActions, action)
+		d.triggerRevolutionIfNeeded(cards)
 
 		if player.GetCardsSize() == 0 {
 			d.finishPlayer(playerIdx)
@@ -303,7 +335,7 @@ func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 		return nil
 	}
 	needed := len(d.tableCards)
-	tableStrength := DaifugoCardStrength(d.tableCards[0].GetValue())
+	tableStrength := d.cardStrength(d.tableCards[0].GetValue())
 
 	// 手札は強さ順でソート済み。同じ値の連続するグループを探す。
 	i := 0
@@ -314,7 +346,7 @@ func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 			j++
 		}
 		count := j - i
-		if count >= needed && DaifugoCardStrength(v) > tableStrength {
+		if count >= needed && d.cardStrength(v) > tableStrength {
 			indices := make([]int, needed)
 			for k := 0; k < needed; k++ {
 				indices[k] = i + k
@@ -362,3 +394,6 @@ func (d *Daifugo) GetHumanAction() *DaifugoCpuAction { return d.humanAction }
 
 // GetPassCount 現在のパスカウント取得
 func (d *Daifugo) GetPassCount() int { return d.passCount }
+
+// GetRevolutionActive 革命フラグ取得
+func (d *Daifugo) GetRevolutionActive() bool { return d.revolutionActive }

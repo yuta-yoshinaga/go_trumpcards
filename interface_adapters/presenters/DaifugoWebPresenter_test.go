@@ -185,6 +185,42 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		}
 	})
 
+	t.Run("success Output revolutionActive is false initially", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := entities.NewDaifugo(tc, players)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 7, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 9, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 11, false))
+
+		result := tdwp.Output(dg)
+		var resObj controllers.DaifugoWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.False(t, resObj.RevolutionActive)
+	})
+
+	t.Run("success Output revolutionActive is true after 4-card play", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := entities.NewDaifugo(tc, players)
+		// Human plays four 5s → revolution
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignClover, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignDiamond, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // spare
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		dg.PlayerPlay([]int{0, 1, 2, 3}) // play four 5s
+
+		result := tdwp.Output(dg)
+		var resObj controllers.DaifugoWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.True(t, resObj.RevolutionActive)
+	})
+
 	t.Run("success Output player rank reflects finished order", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()

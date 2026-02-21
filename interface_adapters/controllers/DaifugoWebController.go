@@ -45,6 +45,7 @@ type DaifugoWebOutput struct {
 	TableCards        []*DaifugoWebOutputCard   `json:"tableCards"`
 	LastPlayPlayerIdx int                       `json:"lastPlayPlayerIdx"`
 	GameEndFlag       bool                      `json:"gameEndFlag"`
+	RevolutionActive  bool                      `json:"revolutionActive"`
 	CpuActions        []*DaifugoWebOutputAction `json:"cpuActions"`
 	HumanAction       *DaifugoWebOutputAction   `json:"humanAction"`
 	Message           string                    `json:"message"`
