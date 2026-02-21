@@ -28,6 +28,10 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 	resObj.LastDrawFromIdx = om.GetLastDrawFromIdx()
 	resObj.LastDrawCard = owp.getCardObj(om.GetLastDrawCard())
 	resObj.LastDiscardedPairs = om.GetLastDiscardedPairs()
+	resObj.LastDiscardedCards = make([]*controllers.OldMaidWebOutputCard, 0)
+	for _, card := range om.GetLastDiscardedCards() {
+		resObj.LastDiscardedCards = append(resObj.LastDiscardedCards, owp.getCardObj(card))
+	}
 	resObj.HasDrawn = om.GetHasDrawn()
 
 	// CPU行動履歴
@@ -38,6 +42,10 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 			DrawFromIdx:    action.DrawFromIdx,
 			DrawnCard:      owp.getCardObj(action.DrawnCard),
 			DiscardedPairs: action.DiscardedPairs,
+			DiscardedCards: make([]*controllers.OldMaidWebOutputCard, 0),
+		}
+		for _, card := range action.DiscardedCards {
+			a.DiscardedCards = append(a.DiscardedCards, owp.getCardObj(card))
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
 	}
