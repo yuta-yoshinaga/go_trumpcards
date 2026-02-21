@@ -1,0 +1,1122 @@
+openapi: 3.1.0
+info:
+  title: go_trumpcards API
+  description: |
+    REST API for the go_trumpcards card game server.
+
+    Each endpoint manages game state on the server using a session identifier
+    (`sessionId`) supplied by the client.  Sessions expire after 1 hour of
+    inactivity and the server supports up to 10 000 concurrent sessions.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:80
+    description: Local development server (default port; override with PORT env var)
+
+tags:
+  - name: blackjack
+    description: BlackJack game
+  - name: poker
+    description: 5-card Draw Poker game
+  - name: oldmaid
+    description: Old Maid (Babanuki) game
+  - name: daifugo
+    description: Daifugo (大富豪) game
+  - name: sevens
+    description: Sevens (7並べ) game
+
+paths:
+  /blackjac/exec:
+    post:
+      tags:
+        - blackjack
+      summary: Execute a BlackJack game command
+      description: |
+        Send a command to advance the BlackJack game session identified by
+        `sessionId`.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `hit`   | `h`     | Draw an additional card |
+        | `stand` | `s`     | End the player turn; trigger dealer play and judgment |
+        | `quit`  | `q`     | End the session |
+      operationId: blackjackExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackJackRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              hit:
+                summary: Draw a card
+                value:
+                  command: hit
+                  sessionId: my-session-001
+              stand:
+                summary: Stand and end turn
+                value:
+                  command: stand
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlackJackResponse'
+              examples:
+                inProgress:
+                  summary: Game in progress
+                  value:
+                    dealer:
+                      score: 15
+                      cards:
+                        - design: SPADE
+                          value: 10
+                        - design: HEART
+                          value: 5
+                    player:
+                      score: 18
+                      cards:
+                        - design: CLOVER
+                          value: 8
+                        - design: DIAMOND
+                          value: 10
+                    message: ""
+                playerWins:
+                  summary: Player wins
+                  value:
+                    dealer:
+                      score: 22
+                      cards:
+                        - design: SPADE
+                          value: 10
+                        - design: HEART
+                          value: 5
+                        - design: CLOVER
+                          value: 7
+                    player:
+                      score: 20
+                      cards:
+                        - design: DIAMOND
+                          value: 10
+                        - design: HEART
+                          value: 10
+                    message: You are the winner.
+                quit:
+                  summary: Quit command response
+                  value:
+                    dealer:
+                      score: 0
+                      cards: []
+                    player:
+                      score: 0
+                      cards: []
+                    message: bye.
+        '400':
+          description: Bad request (missing/invalid parameters or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                paramError:
+                  summary: Missing required parameter
+                  value:
+                    dealer:
+                      score: 0
+                      cards: []
+                    player:
+                      score: 0
+                      cards: []
+                    message: param error.
+
+  /poker/exec:
+    post:
+      tags:
+        - poker
+      summary: Execute a 5-card Draw Poker game command
+      description: |
+        Send a command to advance the Poker game session identified by
+        `sessionId`.
+
+        The game proceeds through three phases:
+
+        | Phase | Value | Description |
+        |-------|-------|-------------|
+        | Init  | `0`   | Before any cards are dealt |
+        | Deal  | `1`   | Cards dealt; player may exchange |
+        | End   | `2`   | Showdown; final hands revealed |
+
+        | Command    | Aliases | Description |
+        |------------|---------|-------------|
+        | `reset`    | `r`     | Start / restart a game |
+        | `exchange` | `e`     | Exchange selected cards (use `indices` to specify which) |
+        | `stand`    | `s`     | Keep current hand; trigger dealer play and judgment |
+        | `quit`     | `q`     | End the session |
+      operationId: pokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              exchange:
+                summary: Exchange cards at positions 0 and 2
+                value:
+                  command: exchange
+                  indices: [0, 2]
+                  sessionId: my-session-001
+              stand:
+                summary: Stand (no exchange)
+                value:
+                  command: stand
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PokerResponse'
+              examples:
+                dealPhase:
+                  summary: Cards dealt (phase 1)
+                  value:
+                    dealer:
+                      handRank: 0
+                      handName: ""
+                      cards: []
+                    player:
+                      handRank: 2
+                      handName: Two Pair
+                      cards:
+                        - design: SPADE
+                          value: 5
+                        - design: HEART
+                          value: 5
+                        - design: CLOVER
+                          value: 9
+                        - design: DIAMOND
+                          value: 9
+                        - design: SPADE
+                          value: 2
+                    phase: 1
+                    message: ""
+                endPhase:
+                  summary: Showdown (phase 2)
+                  value:
+                    dealer:
+                      handRank: 1
+                      handName: One Pair
+                      cards:
+                        - design: SPADE
+                          value: 3
+                        - design: HEART
+                          value: 3
+                        - design: CLOVER
+                          value: 7
+                        - design: DIAMOND
+                          value: 10
+                        - design: SPADE
+                          value: 1
+                    player:
+                      handRank: 2
+                      handName: Two Pair
+                      cards:
+                        - design: SPADE
+                          value: 5
+                        - design: HEART
+                          value: 5
+                        - design: CLOVER
+                          value: 9
+                        - design: DIAMOND
+                          value: 9
+                        - design: SPADE
+                          value: 2
+                    phase: 2
+                    message: You are the winner.
+        '400':
+          description: Bad request (missing/invalid parameters or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PokerResponse'
+              examples:
+                paramError:
+                  value:
+                    dealer:
+                      handRank: 0
+                      handName: ""
+                      cards: []
+                    player:
+                      handRank: 0
+                      handName: ""
+                      cards: []
+                    phase: 0
+                    message: param error.
+
+  /oldmaid/exec:
+    post:
+      tags:
+        - oldmaid
+      summary: Execute an Old Maid (Babanuki) game command
+      description: |
+        Send a command to advance the Old Maid game session identified by
+        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
+        CPU).
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `draw`  | `d`     | Draw a card from the next target player; use `drawIdx` to specify which card slot to draw from (omit for random) |
+        | `quit`  | `q`     | End the session |
+      operationId: oldmaidExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OldMaidRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw the card at index 1 from the target player
+                value:
+                  command: draw
+                  drawIdx: 1
+                  sessionId: my-session-001
+              drawRandom:
+                summary: Draw a random card from the target player
+                value:
+                  command: draw
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OldMaidResponse'
+        '400':
+          description: Bad request (missing/invalid parameters or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OldMaidResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    currentTurn: 0
+                    nextDrawTargetIdx: 0
+                    gameEndFlag: false
+                    loserIdx: -1
+                    lastDrawPlayerIdx: 0
+                    lastDrawFromIdx: 0
+                    lastDrawCard: null
+                    lastDiscardedPairs: 0
+                    hasDrawn: false
+                    cpuActions: []
+                    message: param error.
+
+  /daifugo/exec:
+    post:
+      tags:
+        - daifugo
+      summary: Execute a Daifugo (大富豪) game command
+      description: |
+        Send a command to advance the Daifugo game session identified by
+        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
+        CPU).
+
+        Final player ranks: 1 = 大富豪, 2 = 富豪, 3 = 平民, 4 = 大貧民.
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play cards specified by `indices`; pass with an empty array |
+        | `quit`  | `q`     | End the session |
+      operationId: daifugoExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DaifugoRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  indices: []
+                  sessionId: my-session-001
+              play:
+                summary: Play cards at hand positions 0 and 2
+                value:
+                  command: play
+                  indices: [0, 2]
+                  sessionId: my-session-001
+              pass:
+                summary: Pass (empty indices)
+                value:
+                  command: play
+                  indices: []
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaifugoResponse'
+        '400':
+          description: Bad request (missing/invalid parameters or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaifugoResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    currentTurn: 0
+                    tableCards: []
+                    lastPlayPlayerIdx: 0
+                    gameEndFlag: false
+                    cpuActions: []
+                    humanAction: null
+                    message: param error.
+
+  /sevens/exec:
+    post:
+      tags:
+        - sevens
+      summary: Execute a Sevens (7並べ) game command
+      description: |
+        Send a command to advance the Sevens game session identified by
+        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
+        CPU).
+
+        Each suit builds outward from 7.  The board state is represented by
+        `tableMinVals` and `tableMaxVals` — arrays of 5 integers indexed by suit
+        (0 = unused, 1 = SPADE, 2 = CLOVER, 3 = HEART, 4 = DIAMOND).
+
+        Players have a maximum of 3 passes (`maxPasses`).
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play the card at hand position `index`; pass with `index: -1` |
+        | `quit`  | `q`     | End the session |
+      operationId: sevensExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SevensRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  index: -1
+                  sessionId: my-session-001
+              playCard:
+                summary: Play the card at hand index 3
+                value:
+                  command: play
+                  index: 3
+                  sessionId: my-session-001
+              pass:
+                summary: Pass (index -1)
+                value:
+                  command: play
+                  index: -1
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevensResponse'
+        '400':
+          description: Bad request (missing/invalid parameters or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SevensResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    currentTurn: 0
+                    tableMinVals: [0, 0, 0, 0, 0]
+                    tableMaxVals: [0, 0, 0, 0, 0]
+                    gameEndFlag: false
+                    cpuActions: []
+                    humanAction: null
+                    message: param error.
+
+components:
+  schemas:
+    # -------------------------------------------------------------------------
+    # Shared types
+    # -------------------------------------------------------------------------
+    Card:
+      type: object
+      description: A single playing card
+      required:
+        - design
+        - value
+      properties:
+        design:
+          type: string
+          description: |
+            Card suit.  `JOKER` is only present in games that use a Joker
+            (Old Maid, Daifugo, Sevens).
+          enum: [SPADE, CLOVER, HEART, DIAMOND, JOKER]
+          example: HEART
+        value:
+          type: integer
+          description: |
+            Card rank.  1 = Ace, 2–10 = pip, 11 = Jack, 12 = Queen, 13 = King.
+            0 indicates the Joker.
+          minimum: 0
+          maximum: 13
+          example: 7
+
+    # -------------------------------------------------------------------------
+    # BlackJack
+    # -------------------------------------------------------------------------
+    BlackJackRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `hit` (`h`),
+            `stand` (`s`), `quit` (`q`).
+          enum: [r, reset, h, hit, s, stand, q, quit]
+          example: hit
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+
+    BlackJackPlayer:
+      type: object
+      required:
+        - score
+        - cards
+      properties:
+        score:
+          type: integer
+          description: Current hand score (Ace counted optimally as 1 or 11)
+          example: 18
+        cards:
+          type: array
+          description: Cards currently held by this player
+          items:
+            $ref: '#/components/schemas/Card'
+
+    BlackJackResponse:
+      type: object
+      required:
+        - dealer
+        - player
+        - message
+      properties:
+        dealer:
+          $ref: '#/components/schemas/BlackJackPlayer'
+        player:
+          $ref: '#/components/schemas/BlackJackPlayer'
+        message:
+          type: string
+          description: |
+            Game result message.  One of:
+            - `""` — game in progress
+            - `"It is a draw."` — tie
+            - `"You are the winner."` — player wins
+            - `"It is your loss."` — player loses
+            - `"bye."` — session ended by quit command
+            - `"param error."` — invalid request
+            - `"error."` — internal error
+          example: You are the winner.
+
+    # -------------------------------------------------------------------------
+    # Poker
+    # -------------------------------------------------------------------------
+    PokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `exchange` (`e`),
+            `stand` (`s`), `quit` (`q`).
+          enum: [r, reset, e, exchange, s, stand, q, quit]
+          example: exchange
+        indices:
+          type: array
+          description: |
+            Zero-based indices of cards to exchange (for the `exchange` command).
+            Omit or send an empty array to keep all cards.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          example: [0, 2]
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+
+    PokerPlayer:
+      type: object
+      required:
+        - handRank
+        - handName
+        - cards
+      properties:
+        handRank:
+          type: integer
+          description: |
+            Numeric hand rank:
+            0 = High Card, 1 = One Pair, 2 = Two Pair, 3 = Three of a Kind,
+            4 = Straight, 5 = Flush, 6 = Full House, 7 = Four of a Kind,
+            8 = Straight Flush.
+
+            Dealer values are hidden (0 / empty) until phase 2.
+          minimum: 0
+          maximum: 8
+          example: 2
+        handName:
+          type: string
+          description: Human-readable hand name (empty while hidden)
+          example: Two Pair
+        cards:
+          type: array
+          description: Cards held.  Dealer cards are hidden (empty array) until phase 2.
+          items:
+            $ref: '#/components/schemas/Card'
+
+    PokerResponse:
+      type: object
+      required:
+        - dealer
+        - player
+        - phase
+        - message
+      properties:
+        dealer:
+          $ref: '#/components/schemas/PokerPlayer'
+        player:
+          $ref: '#/components/schemas/PokerPlayer'
+        phase:
+          type: integer
+          description: |
+            Current game phase:
+            - `0` — Init (no cards dealt yet)
+            - `1` — Deal (player can exchange cards)
+            - `2` — End (showdown; all hands visible)
+          enum: [0, 1, 2]
+          example: 1
+        message:
+          type: string
+          description: |
+            Game result message.  One of:
+            - `""` — game in progress
+            - `"It is a draw."` — tie
+            - `"You are the winner."` — player wins
+            - `"It is your loss."` — player loses
+            - `"Unsupported command."` — unknown command
+            - `"bye."` — session ended by quit command
+            - `"param error."` — invalid request
+            - `"error."` — internal error
+          example: ""
+
+    # -------------------------------------------------------------------------
+    # Old Maid
+    # -------------------------------------------------------------------------
+    OldMaidRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
+            `quit` (`q`).
+          enum: [r, reset, d, draw, q, quit]
+          example: draw
+        drawIdx:
+          type: integer
+          description: |
+            Zero-based index of the card to draw from the target player's hand.
+            Omit (or send `null`) for random selection.
+          nullable: true
+          example: 1
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+
+    OldMaidPlayer:
+      type: object
+      required:
+        - id
+        - isHuman
+        - isFinished
+        - cardCount
+        - cards
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1–3 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this is the human player
+          example: true
+        isFinished:
+          type: boolean
+          description: Whether this player has finished (all cards matched and discarded)
+          example: false
+        cardCount:
+          type: integer
+          description: Number of cards remaining in hand
+          example: 13
+        cards:
+          type: array
+          description: Cards in hand.  CPU players' cards are always an empty array.
+          items:
+            $ref: '#/components/schemas/Card'
+
+    OldMaidCpuAction:
+      type: object
+      description: Record of a CPU player's draw action during their turn
+      required:
+        - drawPlayerIdx
+        - drawFromIdx
+        - drawnCard
+        - discardedPairs
+      properties:
+        drawPlayerIdx:
+          type: integer
+          description: Index of the CPU player who performed the draw
+          example: 1
+        drawFromIdx:
+          type: integer
+          description: Index of the player the card was drawn from
+          example: 0
+        drawnCard:
+          $ref: '#/components/schemas/Card'
+        discardedPairs:
+          type: integer
+          description: Number of pairs discarded as a result of this draw
+          example: 1
+
+    OldMaidResponse:
+      type: object
+      required:
+        - players
+        - currentTurn
+        - nextDrawTargetIdx
+        - gameEndFlag
+        - loserIdx
+        - lastDrawPlayerIdx
+        - lastDrawFromIdx
+        - lastDrawCard
+        - lastDiscardedPairs
+        - hasDrawn
+        - cpuActions
+        - message
+      properties:
+        players:
+          type: array
+          description: State of all 4 players
+          items:
+            $ref: '#/components/schemas/OldMaidPlayer'
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        nextDrawTargetIdx:
+          type: integer
+          description: Index of the player the human must draw from on their next turn
+          example: 1
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+          example: false
+        loserIdx:
+          type: integer
+          description: Index of the losing player (-1 while game is in progress)
+          example: -1
+        lastDrawPlayerIdx:
+          type: integer
+          description: Index of the player who last drew a card
+          example: 0
+        lastDrawFromIdx:
+          type: integer
+          description: Index of the player the last card was drawn from
+          example: 1
+        lastDrawCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: The card drawn most recently (null before any draw)
+        lastDiscardedPairs:
+          type: integer
+          description: Number of pairs discarded after the last draw
+          example: 0
+        hasDrawn:
+          type: boolean
+          description: Whether the human player has drawn this turn
+          example: false
+        cpuActions:
+          type: array
+          description: List of CPU actions that occurred since the last human action
+          items:
+            $ref: '#/components/schemas/OldMaidCpuAction'
+        message:
+          type: string
+          description: |
+            Game result or status message.  Empty while the game is in progress.
+          example: ""
+
+    # -------------------------------------------------------------------------
+    # Daifugo
+    # -------------------------------------------------------------------------
+    DaifugoRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `play` (`p`),
+            `quit` (`q`).
+          enum: [r, reset, p, play, q, quit]
+          example: play
+        indices:
+          type: array
+          description: |
+            Zero-based indices of cards to play (for the `play` command).
+            Send an empty array to pass.
+          items:
+            type: integer
+            minimum: 0
+          example: [0, 1]
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+
+    DaifugoPlayer:
+      type: object
+      required:
+        - id
+        - isHuman
+        - isFinished
+        - rank
+        - cardCount
+        - cards
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1–3 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this is the human player
+          example: true
+        isFinished:
+          type: boolean
+          description: Whether this player has played all their cards
+          example: false
+        rank:
+          type: integer
+          description: |
+            Final rank once the game ends (-1 while game is in progress).
+            1 = 大富豪, 2 = 富豪, 3 = 平民, 4 = 大貧民.
+          example: -1
+        cardCount:
+          type: integer
+          description: Number of cards remaining in hand
+          example: 8
+        cards:
+          type: array
+          description: Cards in hand (only populated for the human player)
+          items:
+            $ref: '#/components/schemas/Card'
+
+    DaifugoAction:
+      type: object
+      description: Record of a player's action (play or pass)
+      required:
+        - playerIdx
+        - playedCards
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who acted
+          example: 1
+        playedCards:
+          type: array
+          description: Cards played.  Null indicates a pass.
+          nullable: true
+          items:
+            $ref: '#/components/schemas/Card'
+
+    DaifugoResponse:
+      type: object
+      required:
+        - players
+        - currentTurn
+        - tableCards
+        - lastPlayPlayerIdx
+        - gameEndFlag
+        - cpuActions
+        - humanAction
+        - message
+      properties:
+        players:
+          type: array
+          description: State of all 4 players
+          items:
+            $ref: '#/components/schemas/DaifugoPlayer'
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        tableCards:
+          type: array
+          description: Cards currently on the table (last played set)
+          items:
+            $ref: '#/components/schemas/Card'
+        lastPlayPlayerIdx:
+          type: integer
+          description: Index of the player who last played cards
+          example: 0
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+          example: false
+        cpuActions:
+          type: array
+          description: CPU actions that occurred after the human's last action
+          items:
+            $ref: '#/components/schemas/DaifugoAction'
+        humanAction:
+          allOf:
+            - $ref: '#/components/schemas/DaifugoAction'
+          nullable: true
+          description: The human player's most recent action (null before first play)
+        message:
+          type: string
+          description: |
+            Game result or status message.  Empty while the game is in progress.
+          example: ""
+
+    # -------------------------------------------------------------------------
+    # Sevens
+    # -------------------------------------------------------------------------
+    SevensRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `play` (`p`),
+            `quit` (`q`).
+          enum: [r, reset, p, play, q, quit]
+          example: play
+        index:
+          type: integer
+          description: |
+            Zero-based index of the card to play (for the `play` command).
+            Use `-1` to pass.
+          default: -1
+          example: 3
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+
+    SevensPlayer:
+      type: object
+      required:
+        - id
+        - isHuman
+        - isFinished
+        - rank
+        - cardCount
+        - passesUsed
+        - maxPasses
+        - cards
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1–3 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this is the human player
+          example: true
+        isFinished:
+          type: boolean
+          description: Whether this player has played all their cards
+          example: false
+        rank:
+          type: integer
+          description: |
+            Final rank once the player finishes (-1 while still playing).
+          example: -1
+        cardCount:
+          type: integer
+          description: Number of cards remaining in hand
+          example: 5
+        passesUsed:
+          type: integer
+          description: Number of passes the player has used
+          example: 0
+        maxPasses:
+          type: integer
+          description: Maximum number of passes allowed
+          example: 3
+        cards:
+          type: array
+          description: Cards in hand (only populated for the human player)
+          items:
+            $ref: '#/components/schemas/Card'
+
+    SevensAction:
+      type: object
+      description: Record of a player's action (play or pass)
+      required:
+        - playerIdx
+        - playedCard
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who acted
+          example: 1
+        playedCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: The card played.  Null indicates a pass.
+
+    SevensResponse:
+      type: object
+      required:
+        - players
+        - currentTurn
+        - tableMinVals
+        - tableMaxVals
+        - gameEndFlag
+        - cpuActions
+        - humanAction
+        - message
+      properties:
+        players:
+          type: array
+          description: State of all 4 players
+          items:
+            $ref: '#/components/schemas/SevensPlayer'
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        tableMinVals:
+          type: array
+          description: |
+            Minimum card value currently placed on the board per suit.
+            Array of 5 integers indexed by suit (0 = unused/no suit,
+            1 = SPADE, 2 = CLOVER, 3 = HEART, 4 = DIAMOND).
+            A value of 0 means no card has been placed for that suit yet.
+          items:
+            type: integer
+          minItems: 5
+          maxItems: 5
+          example: [0, 6, 7, 7, 7]
+        tableMaxVals:
+          type: array
+          description: |
+            Maximum card value currently placed on the board per suit.
+            Uses the same indexing as `tableMinVals`.
+          items:
+            type: integer
+          minItems: 5
+          maxItems: 5
+          example: [0, 8, 7, 7, 7]
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+          example: false
+        cpuActions:
+          type: array
+          description: CPU actions that occurred after the human's last action
+          items:
+            $ref: '#/components/schemas/SevensAction'
+        humanAction:
+          allOf:
+            - $ref: '#/components/schemas/SevensAction'
+          nullable: true
+          description: The human player's most recent action (null before first play)
+        message:
+          type: string
+          description: |
+            Game result or status message.  Empty while the game is in progress.
+          example: ""
+
+    # -------------------------------------------------------------------------
+    # Generic error (used when JSON structure cannot be populated)
+    # -------------------------------------------------------------------------
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: param error.
