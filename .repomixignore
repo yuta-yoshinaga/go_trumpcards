@@ -1,0 +1,47 @@
+# Repomix exclusion list
+# Sensitive / credential files
+.env
+.env.*
+*.secret
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+*_rsa
+*_dsa
+*_ecdsa
+*_ed25519
+
+# Secrets / token files
+secrets/
+credentials/
+
+# Build artifacts and generated files
+coverage.out
+coverage.html
+frontend/coverage/
+public/assets/
+*.out
+*.exe
+*.dll
+*.so
+go_trumpcards
+*.log
+
+# Dependencies
+node_modules/
+
+# IDE / editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Repomix own output (prevent recursive inclusion)
+repomix-output.*
