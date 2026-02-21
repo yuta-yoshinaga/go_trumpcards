@@ -27,12 +27,12 @@ jobs:
 
       - name: Run repomix
         # .repomixignore is picked up automatically by repomix
-        run: npx --yes repomix --output repomix-output.xml --style xml
+        run: npx --yes repomix --output repomix-output.txt --style xml
 
       - name: Prepare pages directory
         run: |
           mkdir -p _site
-          cp repomix-output.xml _site/repomix-output.xml
+          cp repomix-output.txt _site/repomix-output.txt
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3

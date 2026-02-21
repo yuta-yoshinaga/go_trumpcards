@@ -54,7 +54,7 @@ go test ./...  # 全テスト実行
 When code is merged into the `master` branch, a GitHub Actions workflow automatically runs [repomix](https://github.com/yamadashy/repomix) and deploys the packed XML output to GitHub Pages at:
 
 ```
-https://yuta-yoshinaga.github.io/go_trumpcards/repomix-output.xml
+https://yuta-yoshinaga.github.io/go_trumpcards/repomix-output.txt
 ```
 
 **One-time repository setup required:**
