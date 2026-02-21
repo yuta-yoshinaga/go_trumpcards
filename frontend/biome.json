@@ -21,10 +21,7 @@
       "suspicious": {
         "noArrayIndexKey": "off"
       },
-      "a11y": {
-        "noStaticElementInteractions": "off",
-        "useSemanticElements": "off"
-      }
+      "a11y": {}
     }
   },
   "javascript": {

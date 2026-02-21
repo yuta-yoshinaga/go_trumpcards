@@ -114,13 +114,14 @@ export function PokerPage() {
           {state?.player?.cards?.map((card, i) => {
             const isSelected = selected.includes(i);
             return (
-              <div
+              <button
                 key={i}
-                role="button"
-                tabIndex={0}
+                type="button"
                 onClick={() => toggleSelect(i)}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleSelect(i)}
                 style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
                   ...cardWrapBase,
                   cursor: phase === PHASE_DEAL ? 'pointer' : 'default',
                 }}
@@ -147,7 +148,7 @@ export function PokerPage() {
                 >
                   交換
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

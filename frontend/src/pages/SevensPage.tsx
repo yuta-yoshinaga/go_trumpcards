@@ -232,14 +232,15 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
         {player.cards?.map((card, i) => {
           const playable = isCurrentTurn && isCardPlayable(card, tableMinVals, tableMaxVals);
           return (
-            <div
+            <button
               key={i}
-              role={playable ? 'button' : undefined}
-              tabIndex={playable ? 0 : undefined}
-              onClick={playable ? () => onPlay(i) : undefined}
-              onKeyDown={playable ? (e) => (e.key === 'Enter' || e.key === ' ') && onPlay(i) : undefined}
+              type="button"
+              disabled={!playable}
+              onClick={() => onPlay(i)}
               title={playable ? `出す: ${card.design} ${valueName(card.value)}` : undefined}
               style={{
+                background: 'none',
+                padding: 0,
                 cursor: playable ? 'pointer' : 'default',
                 borderRadius: 8,
                 border: playable ? '3px solid #5cb85c' : '3px solid transparent',
@@ -248,7 +249,7 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
               }}
             >
               <CardImage card={card} style={{ width: 60 }} />
-            </div>
+            </button>
           );
         })}
       </div>

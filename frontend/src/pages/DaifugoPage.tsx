@@ -150,13 +150,14 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
       )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         {player.cards?.map((card, i) => (
-          <div
+          <button
             key={i}
-            role={isCurrentTurn ? 'button' : undefined}
-            tabIndex={isCurrentTurn ? 0 : undefined}
-            onClick={isCurrentTurn ? () => onToggle(i) : undefined}
-            onKeyDown={isCurrentTurn ? (e) => (e.key === 'Enter' || e.key === ' ') && onToggle(i) : undefined}
+            type="button"
+            disabled={!isCurrentTurn}
+            onClick={() => onToggle(i)}
             style={{
+              background: 'none',
+              padding: 0,
               cursor: isCurrentTurn ? 'pointer' : 'default',
               borderRadius: 8,
               border: selectedIndices.includes(i) ? '3px solid #f0ad4e' : '3px solid transparent',
@@ -164,7 +165,7 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
             }}
           >
             <CardImage card={card} style={{ width: 60 }} />
-          </div>
+          </button>
         ))}
       </div>
     </div>

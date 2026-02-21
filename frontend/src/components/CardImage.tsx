@@ -37,16 +37,24 @@ interface CardBackProps {
 }
 
 export function CardBack({ style, className, onClick }: CardBackProps) {
-  return (
+  const img = (
     <img
       src="/images/z01.png"
       alt="card back"
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      style={{ width: 80, borderRadius: 6, display: 'block', cursor: onClick ? 'pointer' : undefined, ...style }}
+      style={{ width: 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
-      onClick={onClick}
-      onKeyDown={onClick ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
     />
   );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0 }}
+      >
+        {img}
+      </button>
+    );
+  }
+  return img;
 }
