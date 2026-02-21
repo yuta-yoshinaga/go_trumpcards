@@ -273,14 +273,14 @@ export function DaifugoPage() {
       {/* Buttons */}
       <div style={{ textAlign: 'center', margin: '14px 0 4px 0' }}>
         <button
-          className="btn btn-primary btn-sm"
+          className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ margin: '0 6px', minWidth: 90 }}
           onClick={() => exec('reset')}
         >
           リセット
         </button>
         <button
-          className="btn btn-warning btn-sm"
+          className="px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ margin: '0 6px', minWidth: 90 }}
           disabled={!isHumanTurn || state.gameEndFlag}
           onClick={() => exec('play', [])}
@@ -288,7 +288,7 @@ export function DaifugoPage() {
           パス
         </button>
         <button
-          className="btn btn-success btn-sm"
+          className="px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ margin: '0 6px', minWidth: 120 }}
           disabled={!isHumanTurn || state.gameEndFlag || selectedIndices.length === 0}
           onClick={() => exec('play', [...selectedIndices].sort((a, b) => a - b))}

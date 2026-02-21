@@ -399,11 +399,11 @@ export function OldMaidPage() {
 
       {/* Buttons */}
       <div style={{ textAlign: 'center', margin: '12px 0 4px 0' }}>
-        <button className="btn btn-primary btn-sm" style={{ margin: '0 4px', minWidth: 80 }}
+        <button className="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" style={{ margin: '0 4px', minWidth: 80 }}
           onClick={() => exec('reset')}>
           リセット
         </button>
-        <button className="btn btn-warning btn-sm" style={{ margin: '0 4px', minWidth: 110 }}
+        <button className="px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed" style={{ margin: '0 4px', minWidth: 110 }}
           disabled={!isHumanTurn || state.gameEndFlag}
           onClick={() => exec('draw')}>
           ランダムに引く
