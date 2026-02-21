@@ -102,6 +102,7 @@ func TestOldMaid_Method(t *testing.T) {
 		// But we can simulate a state where checkGameEnd would return true if called.
 		// Actually, PlayerDraw calls checkGameEnd at the end.
 		// Let's just trust the logic or invoke a sequence that ends the game.
+		assert.False(t, om.GetGameEndFlag())
 	})
 
 	t.Run("success CpuDraw does nothing when human turn", func(t *testing.T) {
@@ -163,45 +164,6 @@ func TestOldMaid_Method(t *testing.T) {
 
 	t.Run("success CpuDraw populates DiscardedCards in action", func(t *testing.T) {
 		tc := entities.NewTrumpCards(1)
-		players := makePlayers()
-		om := entities.NewOldMaid(tc, players)
-		// Player 0: Finished
-		// Player 1 (CPU): HEART 10
-		// Player 2 (CPU): DIAMOND 10
-		// Player 3: Finished
-		players[0].SetIsFinished(true)
-		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 10, false))
-		players[2].AddCard(entities.NewCard(entities.CardDesignDiamond, 10, false))
-		players[3].SetIsFinished(true)
-		
-		// Advance turn to Player 1 manually? No public setter.
-		// Reset sets turn to 0. 
-		// We need to loop turns until it's Player 1.
-		// But Player 0 is finished, so Reset logic:
-		// "currentTurnがフィニッシュしていたら次へ" -> Reset will advance to 1.
-		
-		// However, we are manually setting up the state *after* creation, 
-		// but we can't easily invoke "Reset" logic on custom state without clearing it.
-		// We have to rely on the fact that if we start fresh, turn is 0.
-		// If 0 is finished, we need to call something to advance?
-		// `advanceTurn` is private.
-		// Use `om` created with `NewOldMaid`.
-		// Constructor sets turn = 0.
-		// If we set player 0 finished, `CpuDraw` check `if players[currentTurn].GetIsHuman()` might fail or succeed.
-		// But `CpuDraw` checks `if o.players[o.currentTurn].GetIsHuman()`.
-		// Player 0 is Human (created with `true`).
-		// If Player 0 is finished, we still need to advance turn.
-		// `PlayerDraw` checks `if player.GetIsFinished() { return nil }`.
-		
-		// Workaround: Make Player 0 NOT human for this test, so we can use CpuDraw?
-		// Or keep Player 0 human but finished.
-		// Calling `PlayerDraw` on finished player returns immediately.
-		// But we want to test `CpuDraw`.
-		// We need `currentTurn` to be a CPU player.
-		// Since we cannot set `currentTurn`, we must ensure `currentTurn` starts at 0 (Human).
-		// If we want `CpuDraw` to run, we need `currentTurn` to be a CPU.
-		// We can make Player 0 a CPU in `makePlayers`.
-		
 		// Custom players for this test
 		cpuPlayers := []*entities.OldMaidPlayer{
 			entities.NewOldMaidPlayer(false), // Player 0 is CPU
