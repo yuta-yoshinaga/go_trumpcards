@@ -30,7 +30,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 3, false))
 		players[2].SetIsFinished(true)
 		players[3].AddCard(entities.NewCard(entities.CardDesignDiamond, 4, false))
-		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"SPADE","value":1},{"design":"CLOVER","value":2}]},{"id":1,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":[],"hasDrawn":false,"cpuActions":[],"message":""}`
+		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"SPADE","value":1},{"design":"CLOVER","value":2}]},{"id":1,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":[],"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":""}`
 		assert.Equal(t, expected, towp.Output(om))
 	})
 
@@ -50,7 +50,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		// PlayerDraw(0): draws HEART 7 (only card), discards SPADE5+CLOVER5 pair (1 pair)
 		// player 0 left: JOKER, HEART 7; player 1 finished; game ends; loserIdx=0
 		om.PlayerDraw(0)
-		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"JOKER","value":0},{"design":"HEART","value":7}]},{"id":1,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":true,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":1,"lastDrawCard":{"design":"HEART","value":7},"lastDiscardedPairs":1,"lastDiscardedCards":[{"design":"SPADE","value":5},{"design":"CLOVER","value":5}],"hasDrawn":true,"cpuActions":[],"message":"ゲーム終了！ あなたの負け！"}`
+		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"JOKER","value":0},{"design":"HEART","value":7}]},{"id":1,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":true,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":1,"lastDrawCard":{"design":"HEART","value":7},"lastDiscardedPairs":1,"lastDiscardedCards":[{"design":"SPADE","value":5},{"design":"CLOVER","value":5}],"hasDrawn":true,"cpuActions":[],"humanAction":{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"HEART","value":7},"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":5},{"design":"CLOVER","value":5}]},"message":"ゲーム終了！ あなたの負け！"}`
 		assert.Equal(t, expected, towp.Output(om))
 	})
 
@@ -75,6 +75,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, `"gameEndFlag":false`)
 		assert.Contains(t, result, `"lastDrawCard":{"design":"CLOVER","value":7}`)
 		assert.Contains(t, result, `"cpuActions":[]`)
+		assert.Contains(t, result, `"humanAction":{"drawPlayerIdx":0,"drawFromIdx":1`)
 	})
 
 	t.Run("success Output game ended cpu loses", func(t *testing.T) {
@@ -92,7 +93,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[2].AddCard(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
 		players[3].SetIsFinished(true)
 		om.PlayerDraw(0)
-		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":true,"cardCount":0,"cards":[]},{"id":1,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":2,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":3,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":2,"gameEndFlag":true,"loserIdx":2,"lastDrawPlayerIdx":0,"lastDrawFromIdx":1,"lastDrawCard":{"design":"CLOVER","value":3},"lastDiscardedPairs":1,"lastDiscardedCards":[{"design":"SPADE","value":3},{"design":"CLOVER","value":3}],"hasDrawn":true,"cpuActions":[],"message":"ゲーム終了！ CPU 2の負け！"}`
+		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":true,"cardCount":0,"cards":[]},{"id":1,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":2,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":3,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":2,"gameEndFlag":true,"loserIdx":2,"lastDrawPlayerIdx":0,"lastDrawFromIdx":1,"lastDrawCard":{"design":"CLOVER","value":3},"lastDiscardedPairs":1,"lastDiscardedCards":[{"design":"SPADE","value":3},{"design":"CLOVER","value":3}],"hasDrawn":true,"cpuActions":[],"humanAction":{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"CLOVER","value":3},"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":3},{"design":"CLOVER","value":3}]},"message":"ゲーム終了！ CPU 2の負け！"}`
 		assert.Equal(t, expected, towp.Output(om))
 	})
 
@@ -121,5 +122,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		result := towp.Output(om)
 		// Check that cpuActions contains discardedCards
 		assert.Contains(t, result, `"cpuActions":[{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"CLOVER","value":10},"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":10},{"design":"CLOVER","value":10}]}]`)
+		// No human draw happened, so humanAction is null
+		assert.Contains(t, result, `"humanAction":null`)
 	})
 }

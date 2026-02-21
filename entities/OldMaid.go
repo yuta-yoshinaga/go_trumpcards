@@ -28,6 +28,7 @@ type OldMaid struct {
 	lastDiscardedCards []*Card             // 最後に捨てたカード
 	hasDrawn           bool                // 引きが発生したか
 	cpuActions         []*OldMaidCpuAction // CPUターンの行動履歴 (人間のターン後にリセット)
+	humanAction        *OldMaidCpuAction   // 人間プレイヤーの最後の行動記録
 }
 
 // NewOldMaid コンストラクタ
@@ -45,6 +46,7 @@ func NewOldMaid(trumpCards *TrumpCards, players []*OldMaidPlayer) *OldMaid {
 		lastDiscardedCards: nil,
 		hasDrawn:           false,
 		cpuActions:         nil,
+		humanAction:        nil,
 	}
 }
 
@@ -60,6 +62,7 @@ func (o *OldMaid) Reset() {
 	o.lastDiscardedCards = nil
 	o.hasDrawn = false
 	o.cpuActions = nil
+	o.humanAction = nil
 
 	// シャッフル
 	for i := 0; i < 10; i++ {
@@ -217,6 +220,14 @@ func (o *OldMaid) PlayerDraw(cardIdx int) {
 	// 人間のターン開始時にCPU行動履歴をリセット
 	o.cpuActions = nil
 	o.drawCard(o.currentTurn, cardIdx)
+	// 人間の行動を記録
+	o.humanAction = &OldMaidCpuAction{
+		DrawPlayerIdx:  o.lastDrawPlayerIdx,
+		DrawFromIdx:    o.lastDrawFromIdx,
+		DrawnCard:      o.lastDrawCard,
+		DiscardedPairs: o.lastDiscardedPairs,
+		DiscardedCards: o.lastDiscardedCards,
+	}
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
@@ -313,4 +324,9 @@ func (o *OldMaid) GetHasDrawn() bool {
 // GetCpuActions CPUターンの行動履歴取得
 func (o *OldMaid) GetCpuActions() []*OldMaidCpuAction {
 	return o.cpuActions
+}
+
+// GetHumanAction 人間プレイヤーの最後の行動記録取得
+func (o *OldMaid) GetHumanAction() *OldMaidCpuAction {
+	return o.humanAction
 }

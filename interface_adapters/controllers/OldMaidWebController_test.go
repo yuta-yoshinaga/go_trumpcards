@@ -17,7 +17,7 @@ import (
 func TestOldMaidWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
 	// After controller unmarshal+remarshal, new fields are included
-	expectedBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"message":""}`
+	expectedBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":""}`
 	omiMock := new(usecases.MockOldMaidInteractor)
 	omiMock.On("Reset").Return(mockOutput).Times(2)
 	omiMock.On("Draw", -1).Return(mockOutput)
@@ -33,7 +33,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 
 	var jsonInput controllers.OldMaidWebInput
 	// When "q" / "quit": responseStr = {"message":"bye."} → all other fields default to zero
-	qBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"message":"bye."}`
+	qBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"bye."}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
@@ -96,7 +96,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"message":"Unsupported command."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"Unsupported command."}`)
 	})
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonInput)
@@ -105,7 +105,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
 	})
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonInput)
@@ -114,7 +114,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controllers.OldMaidWebInput{
@@ -126,7 +126,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
 	})
 	t.Run("failed Exec response empty", func(t *testing.T) {
 		omiMock.On("Reset").Return(``)
@@ -136,7 +136,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"message":"error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"error."}`)
 	})
 }
 

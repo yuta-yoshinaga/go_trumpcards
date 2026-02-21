@@ -27,6 +27,7 @@ func TestOldMaid_Method(t *testing.T) {
 		assert.False(t, om.GetGameEndFlag())
 		assert.Equal(t, -1, om.GetLoserIdx())
 		assert.Nil(t, om.GetLastDiscardedCards())
+		assert.Nil(t, om.GetHumanAction())
 	})
 
 	t.Run("success Reset distributes cards", func(t *testing.T) {
@@ -51,6 +52,7 @@ func TestOldMaid_Method(t *testing.T) {
 		assert.Equal(t, 0, om.GetLastDiscardedPairs())
 		assert.Nil(t, om.GetLastDiscardedCards())
 		assert.False(t, om.GetHasDrawn())
+		assert.Nil(t, om.GetHumanAction())
 	})
 
 	t.Run("success GetPlayer valid index", func(t *testing.T) {
@@ -148,10 +150,10 @@ func TestOldMaid_Method(t *testing.T) {
 		players[1].AddCard(entities.NewCard(entities.CardDesignClover, 5, false))
 		players[2].SetIsFinished(true)
 		players[3].SetIsFinished(true)
-		
+
 		// Player 0 draws CLOVER 5 from Player 1
 		om.PlayerDraw(0)
-		
+
 		assert.True(t, om.GetHasDrawn())
 		assert.Equal(t, 1, om.GetLastDiscardedPairs())
 		discarded := om.GetLastDiscardedCards()
@@ -160,6 +162,13 @@ func TestOldMaid_Method(t *testing.T) {
 		values := []int{discarded[0].GetValue(), discarded[1].GetValue()}
 		assert.Equal(t, 5, values[0])
 		assert.Equal(t, 5, values[1])
+		// Check humanAction is populated
+		ha := om.GetHumanAction()
+		assert.NotNil(t, ha)
+		assert.Equal(t, 0, ha.DrawPlayerIdx)
+		assert.Equal(t, 1, ha.DrawFromIdx)
+		assert.Equal(t, 1, ha.DiscardedPairs)
+		assert.Equal(t, 2, len(ha.DiscardedCards))
 	})
 
 	t.Run("success CpuDraw populates DiscardedCards in action", func(t *testing.T) {
