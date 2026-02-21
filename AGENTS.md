@@ -56,6 +56,8 @@ docker run --rm -d -p 8080:8080 go_trumpcards  # Run Docker container
 **Build frontend (React):**
 ```sh
 cd frontend && npm install && npm run build   # Build React app to public/ (for local testing with Go server; Docker handles this automatically)
+cd frontend && npm run check                  # Run Biome lint + format check
+cd frontend && npm run check:write            # Run Biome lint + format check and auto-fix
 cd frontend && npm test                       # Run frontend unit tests (Vitest)
 cd frontend && npm run test:coverage          # Run frontend tests with coverage (outputs to frontend/coverage/)
 ```
@@ -156,9 +158,10 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 - **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
 - **Query buttons by role**: when a text string appears in multiple elements, use `screen.getByRole('button', { name: '...' })` instead of `getByText`
 
-**Run frontend tests before committing:**
+**Run Biome check and frontend tests before committing:**
 
 ```sh
+cd frontend && npm run check
 cd frontend && npm test
 ```
 
@@ -174,7 +177,7 @@ cd frontend && npm test
 | Change request/response schema of a Web API endpoint | `openapi.yaml` |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
-| Modify anything under `frontend/` | Run `cd frontend && npm test` and ensure all tests pass before committing |
+| Modify anything under `frontend/` | Run `cd frontend && npm run check` and `cd frontend && npm test` and ensure both pass before committing |
 | Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.

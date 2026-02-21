@@ -1,22 +1,22 @@
-import type { Card } from '../types/card'
+import type { Card } from '../types/card';
 
 function getImagePath(card: Card): string {
-  const zeroPad = (n: number) => String(n).padStart(2, '0')
+  const zeroPad = (n: number) => String(n).padStart(2, '0');
   const prefixMap: Record<string, string> = {
     SPADE: 's',
     CLOVER: 'c',
     HEART: 'h',
     DIAMOND: 'd',
     JOKER: 'x',
-  }
-  const prefix = prefixMap[card.design] ?? 'x'
-  return `/images/${prefix}${zeroPad(card.value)}.png`
+  };
+  const prefix = prefixMap[card.design] ?? 'x';
+  return `/images/${prefix}${zeroPad(card.value)}.png`;
 }
 
 interface CardImageProps {
-  card: Card
-  style?: React.CSSProperties
-  className?: string
+  card: Card;
+  style?: React.CSSProperties;
+  className?: string;
 }
 
 export function CardImage({ card, style, className }: CardImageProps) {
@@ -27,13 +27,13 @@ export function CardImage({ card, style, className }: CardImageProps) {
       style={{ width: 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
     />
-  )
+  );
 }
 
 interface CardBackProps {
-  style?: React.CSSProperties
-  className?: string
-  onClick?: () => void
+  style?: React.CSSProperties;
+  className?: string;
+  onClick?: () => void;
 }
 
 export function CardBack({ style, className, onClick }: CardBackProps) {
@@ -41,9 +41,12 @@ export function CardBack({ style, className, onClick }: CardBackProps) {
     <img
       src="/images/z01.png"
       alt="card back"
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
       style={{ width: 80, borderRadius: 6, display: 'block', cursor: onClick ? 'pointer' : undefined, ...style }}
       className={className}
       onClick={onClick}
+      onKeyDown={onClick ? (e) => (e.key === 'Enter' || e.key === ' ') && onClick() : undefined}
     />
-  )
+  );
 }

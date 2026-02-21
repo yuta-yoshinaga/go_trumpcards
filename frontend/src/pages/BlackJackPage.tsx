@@ -1,25 +1,28 @@
-import { useCallback, useEffect, useState } from 'react'
-import { blackjackApi } from '../api/gameApi'
-import { CardImage, CardBack } from '../components/CardImage'
-import type { BlackJackResponse } from '../types/card'
+import { useCallback, useEffect, useState } from 'react';
+import { blackjackApi } from '../api/gameApi';
+import { CardBack, CardImage } from '../components/CardImage';
+import type { BlackJackResponse } from '../types/card';
 
-const btnPrimary = 'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
+const btnPrimary =
+  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
 
 export function BlackJackPage() {
-  const [state, setState] = useState<BlackJackResponse | null>(null)
-  const [message, setMessage] = useState('')
+  const [state, setState] = useState<BlackJackResponse | null>(null);
+  const [message, setMessage] = useState('');
 
   const exec = useCallback(async (command: 'reset' | 'hit' | 'stand') => {
     try {
-      const res = await blackjackApi.exec(command)
-      setState(res)
-      setMessage(res.message ?? '')
+      const res = await blackjackApi.exec(command);
+      setState(res);
+      setMessage(res.message ?? '');
     } catch {
-      console.error('blackjack request failed')
+      console.error('blackjack request failed');
     }
-  }, [])
+  }, []);
 
-  useEffect(() => { exec('reset') }, [exec])
+  useEffect(() => {
+    exec('reset');
+  }, [exec]);
 
   return (
     <div>
@@ -29,9 +32,7 @@ export function BlackJackPage() {
             {/* Dealer area */}
             <div className="mb-4">
               <h3 className="text-white">ディーラー手札</h3>
-              <h3 className="text-white">
-                スコア {state.dealer.score !== 0 ? state.dealer.score : ''}
-              </h3>
+              <h3 className="text-white">スコア {state.dealer.score !== 0 ? state.dealer.score : ''}</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {state.dealer.cards.map((card, i) => (
                   <CardImage key={i} card={card} />
@@ -43,9 +44,7 @@ export function BlackJackPage() {
             {/* Player area */}
             <div>
               <h3 className="text-white">プレイヤー手札</h3>
-              <h3 className="text-white">
-                スコア {state.player.score}
-              </h3>
+              <h3 className="text-white">スコア {state.player.score}</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {state.player.cards.map((card, i) => (
                   <CardImage key={i} card={card} />
@@ -77,16 +76,16 @@ export function BlackJackPage() {
 
       {/* Buttons */}
       <div className="text-center my-5">
-        <button className={btnPrimary} onClick={() => exec('reset')}>
+        <button type="button" className={btnPrimary} onClick={() => exec('reset')}>
           リセット
         </button>
-        <button className={btnPrimary} onClick={() => exec('hit')}>
+        <button type="button" className={btnPrimary} onClick={() => exec('hit')}>
           ヒット
         </button>
-        <button className={btnPrimary} onClick={() => exec('stand')}>
+        <button type="button" className={btnPrimary} onClick={() => exec('stand')}>
           スタンド
         </button>
       </div>
     </div>
-  )
+  );
 }
