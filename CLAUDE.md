@@ -49,6 +49,10 @@ cd frontend
 npm install              # Install Node.js dependencies
 npm run build            # Build React app to public/ (for local testing with Go server; Docker handles this automatically)
 npm run dev              # Start Vite dev server (proxies API to localhost:80)
+npm run check            # Run Biome lint + format check
+npm run check:write      # Run Biome lint + format check and auto-fix
+npm run lint             # Run Biome linter only
+npm run format           # Run Biome formatter (auto-fix)
 npm test                 # Run frontend unit tests (Vitest)
 npm run test:coverage    # Run frontend unit tests with coverage report (outputs to frontend/coverage/)
 npm run test:watch       # Run frontend tests in watch mode
@@ -151,9 +155,10 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 - **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
 - **Query buttons by role**: when a text string appears in multiple elements (e.g., "交換" appears on both cards and a button), use `screen.getByRole('button', { name: '交換' })` instead of `getByText`
 
-**Run frontend tests before committing:**
+**Run Biome check and frontend tests before committing:**
 
 ```sh
+cd frontend && npm run check
 cd frontend && npm test
 ```
 
@@ -169,7 +174,7 @@ cd frontend && npm test
 | Change request/response schema of a Web API endpoint | `openapi.yaml` |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
-| Modify anything under `frontend/` | Run `cd frontend && npm test` and ensure all tests pass before committing |
+| Modify anything under `frontend/` | Run `cd frontend && npm run check` and `cd frontend && npm test` and ensure both pass before committing |
 | Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.

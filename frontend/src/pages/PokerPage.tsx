@@ -1,15 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
-import { pokerApi } from '../api/gameApi'
-import { CardImage, CardBack } from '../components/CardImage'
-import type { PokerResponse } from '../types/card'
+import { useCallback, useEffect, useState } from 'react';
+import { pokerApi } from '../api/gameApi';
+import { CardBack, CardImage } from '../components/CardImage';
+import type { PokerResponse } from '../types/card';
 
-const PHASE_INIT = 0
-const PHASE_DEAL = 1
-const PHASE_END = 2
+const PHASE_INIT = 0;
+const PHASE_DEAL = 1;
+const PHASE_END = 2;
 
-const btnPrimary = 'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
-const btnWarning = 'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
-const btnSuccess = 'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5'
+const btnPrimary =
+  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
+const btnWarning =
+  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
+const btnSuccess =
+  'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -18,32 +21,32 @@ const cardWrapBase: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-}
+};
 
 export function PokerPage() {
-  const [state, setState] = useState<PokerResponse | null>(null)
-  const [selected, setSelected] = useState<number[]>([])
+  const [state, setState] = useState<PokerResponse | null>(null);
+  const [selected, setSelected] = useState<number[]>([]);
 
   const exec = useCallback(async (command: 'reset' | 'exchange' | 'stand', indices?: number[]) => {
     try {
-      const res = await pokerApi.exec(command, indices)
-      setState(res)
-      setSelected([])
+      const res = await pokerApi.exec(command, indices);
+      setState(res);
+      setSelected([]);
     } catch {
-      console.error('poker request failed')
+      console.error('poker request failed');
     }
-  }, [])
+  }, []);
 
-  useEffect(() => { exec('reset') }, [exec])
+  useEffect(() => {
+    exec('reset');
+  }, [exec]);
 
-  const phase = state?.phase ?? PHASE_INIT
+  const phase = state?.phase ?? PHASE_INIT;
 
   const toggleSelect = (idx: number) => {
-    if (phase !== PHASE_DEAL) return
-    setSelected(prev =>
-      prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
-    )
-  }
+    if (phase !== PHASE_DEAL) return;
+    setSelected((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
+  };
 
   return (
     <div className="bg-[#1a6b1a] rounded-2xl p-5 my-2.5 mx-auto max-w-[900px]">
@@ -52,31 +55,33 @@ export function PokerPage() {
         <div style={{ color: '#fff', fontSize: '1.1em', marginBottom: 6 }}>
           ディーラー手札
           {phase === PHASE_END && state?.dealer?.handName && (
-            <span style={{
-              display: 'inline-block',
-              background: '#f0ad4e',
-              color: '#222',
-              fontWeight: 'bold',
-              borderRadius: 8,
-              padding: '2px 12px',
-              marginLeft: 8,
-              fontSize: '0.95em',
-            }}>
+            <span
+              style={{
+                display: 'inline-block',
+                background: '#f0ad4e',
+                color: '#222',
+                fontWeight: 'bold',
+                borderRadius: 8,
+                padding: '2px 12px',
+                marginLeft: 8,
+                fontSize: '0.95em',
+              }}
+            >
               {state.dealer.handName}
             </span>
           )}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
           {phase === PHASE_END && state?.dealer?.cards?.length
-            ? state.dealer.cards.map((card, i) => (
-              <div key={i} style={{ ...cardWrapBase, cursor: 'default' }}>
-                <CardImage card={card} style={{ border: '3px solid transparent' }} />
-              </div>
-            ))
+            ? state.dealer.cards.map((card) => (
+                <div key={`${card.design}-${card.value}`} style={{ ...cardWrapBase, cursor: 'default' }}>
+                  <CardImage card={card} style={{ border: '3px solid transparent' }} />
+                </div>
+              ))
             : Array.from({ length: 5 }).map((_, i) => (
-              <CardBack key={i} />
-            ))
-          }
+                // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
+                <CardBack key={i} />
+              ))}
         </div>
       </div>
 
@@ -87,16 +92,18 @@ export function PokerPage() {
         <div style={{ color: '#fff', fontSize: '1.1em', marginBottom: 6 }}>
           プレイヤー手札
           {phase === PHASE_END && state?.player?.handName && (
-            <span style={{
-              display: 'inline-block',
-              background: '#f0ad4e',
-              color: '#222',
-              fontWeight: 'bold',
-              borderRadius: 8,
-              padding: '2px 12px',
-              marginLeft: 8,
-              fontSize: '0.95em',
-            }}>
+            <span
+              style={{
+                display: 'inline-block',
+                background: '#f0ad4e',
+                color: '#222',
+                fontWeight: 'bold',
+                borderRadius: 8,
+                padding: '2px 12px',
+                marginLeft: 8,
+                fontSize: '0.95em',
+              }}
+            >
               {state.player.handName}
             </span>
           )}
@@ -108,12 +115,16 @@ export function PokerPage() {
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
           {state?.player?.cards?.map((card, i) => {
-            const isSelected = selected.includes(i)
+            const isSelected = selected.includes(i);
             return (
-              <div
-                key={i}
+              <button
+                key={`${card.design}-${card.value}`}
+                type="button"
                 onClick={() => toggleSelect(i)}
                 style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
                   ...cardWrapBase,
                   cursor: phase === PHASE_DEAL ? 'pointer' : 'default',
                 }}
@@ -130,44 +141,46 @@ export function PokerPage() {
                     transition: 'transform 0.15s',
                   }}
                 />
-                <div style={{
-                  color: '#f0ad4e',
-                  fontSize: '0.75em',
-                  fontWeight: 'bold',
-                  visibility: isSelected ? 'visible' : 'hidden',
-                }}>
+                <div
+                  style={{
+                    color: '#f0ad4e',
+                    fontSize: '0.75em',
+                    fontWeight: 'bold',
+                    visibility: isSelected ? 'visible' : 'hidden',
+                  }}
+                >
                   交換
                 </div>
-              </div>
-            )
+              </button>
+            );
           })}
         </div>
       </div>
 
       {/* Result */}
-      <div style={{
-        background: 'rgba(0,0,0,0.55)',
-        borderRadius: 10,
-        color: '#fff',
-        textAlign: 'center',
-        padding: '12px 20px',
-        fontSize: '1.3em',
-        fontWeight: 'bold',
-        margin: '10px 0',
-        minHeight: 48,
-      }}>
+      <div
+        style={{
+          background: 'rgba(0,0,0,0.55)',
+          borderRadius: 10,
+          color: '#fff',
+          textAlign: 'center',
+          padding: '12px 20px',
+          fontSize: '1.3em',
+          fontWeight: 'bold',
+          margin: '10px 0',
+          minHeight: 48,
+        }}
+      >
         {state?.message ?? ''}
       </div>
 
       {/* Buttons */}
       <div className="text-center mt-3.5 mb-1">
-        <button
-          className={`${btnPrimary} min-w-[90px]`}
-          onClick={() => exec('reset')}
-        >
+        <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
           リセット
         </button>
         <button
+          type="button"
           className={`${btnWarning} min-w-[90px]`}
           disabled={phase !== PHASE_DEAL}
           onClick={() => exec('exchange', selected)}
@@ -175,6 +188,7 @@ export function PokerPage() {
           交換
         </button>
         <button
+          type="button"
           className={`${btnSuccess} min-w-[90px]`}
           disabled={phase !== PHASE_DEAL}
           onClick={() => exec('stand')}
@@ -183,12 +197,16 @@ export function PokerPage() {
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 function cardPrefix(design: string): string {
   const map: Record<string, string> = {
-    SPADE: 's', CLOVER: 'c', HEART: 'h', DIAMOND: 'd', JOKER: 'x',
-  }
-  return map[design] ?? 'x'
+    SPADE: 's',
+    CLOVER: 'c',
+    HEART: 'h',
+    DIAMOND: 'd',
+    JOKER: 'x',
+  };
+  return map[design] ?? 'x';
 }
