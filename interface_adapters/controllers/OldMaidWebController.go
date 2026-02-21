@@ -54,6 +54,7 @@ type OldMaidWebOutput struct {
 	LastDiscardedCards []*OldMaidWebOutputCard      `json:"lastDiscardedCards"`
 	HasDrawn           bool                         `json:"hasDrawn"`
 	CpuActions         []*OldMaidWebOutputCpuAction `json:"cpuActions"`
+	HumanAction        *OldMaidWebOutputCpuAction   `json:"humanAction"`
 	Message            string                       `json:"message"`
 }
 

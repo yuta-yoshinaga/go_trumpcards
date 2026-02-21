@@ -58,6 +58,7 @@ export interface OldMaidResponse {
   lastDiscardedPairs: number
   lastDiscardedCards?: Card[]
   cpuActions: CpuAction[]
+  humanAction?: CpuAction | null
   message: string
 }
 

@@ -50,6 +50,21 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 		resObj.CpuActions = append(resObj.CpuActions, a)
 	}
 
+	// 人間プレイヤーの行動記録
+	if ha := om.GetHumanAction(); ha != nil {
+		haObj := &controllers.OldMaidWebOutputCpuAction{
+			DrawPlayerIdx:  ha.DrawPlayerIdx,
+			DrawFromIdx:    ha.DrawFromIdx,
+			DrawnCard:      owp.getCardObj(ha.DrawnCard),
+			DiscardedPairs: ha.DiscardedPairs,
+			DiscardedCards: make([]*controllers.OldMaidWebOutputCard, 0),
+		}
+		for _, card := range ha.DiscardedCards {
+			haObj.DiscardedCards = append(haObj.DiscardedCards, owp.getCardObj(card))
+		}
+		resObj.HumanAction = haObj
+	}
+
 	for i := 0; i < om.GetPlayerCnt(); i++ {
 		player := om.GetPlayer(i)
 		pObj := new(controllers.OldMaidWebOutputPlayer)
