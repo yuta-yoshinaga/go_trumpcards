@@ -26,8 +26,17 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 	resObj.LoserIdx = om.GetLoserIdx()
 	resObj.LastDrawPlayerIdx = om.GetLastDrawPlayerIdx()
 	resObj.LastDrawFromIdx = om.GetLastDrawFromIdx()
-	resObj.LastDrawCard = owp.getCardObj(om.GetLastDrawCard())
+	// Only reveal drawn card for human players to preserve CPU game fairness
+	lastDrawPlayerIdx := om.GetLastDrawPlayerIdx()
+	lastDrawPlayer := om.GetPlayer(lastDrawPlayerIdx)
+	if lastDrawPlayer != nil && lastDrawPlayer.GetIsHuman() {
+		resObj.LastDrawCard = owp.getCardObj(om.GetLastDrawCard())
+	}
 	resObj.LastDiscardedPairs = om.GetLastDiscardedPairs()
+	resObj.LastDiscardedCards = make([]*controllers.OldMaidWebOutputCard, 0)
+	for _, card := range om.GetLastDiscardedCards() {
+		resObj.LastDiscardedCards = append(resObj.LastDiscardedCards, owp.getCardObj(card))
+	}
 	resObj.HasDrawn = om.GetHasDrawn()
 
 	// CPU行動履歴
@@ -36,10 +45,29 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 		a := &controllers.OldMaidWebOutputCpuAction{
 			DrawPlayerIdx:  action.DrawPlayerIdx,
 			DrawFromIdx:    action.DrawFromIdx,
-			DrawnCard:      owp.getCardObj(action.DrawnCard),
+			DrawnCard:      nil, // CPU drawn card is hidden to preserve game fairness
 			DiscardedPairs: action.DiscardedPairs,
+			DiscardedCards: make([]*controllers.OldMaidWebOutputCard, 0),
+		}
+		for _, card := range action.DiscardedCards {
+			a.DiscardedCards = append(a.DiscardedCards, owp.getCardObj(card))
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
+	}
+
+	// 人間プレイヤーの行動記録
+	if ha := om.GetHumanAction(); ha != nil {
+		haObj := &controllers.OldMaidWebOutputCpuAction{
+			DrawPlayerIdx:  ha.DrawPlayerIdx,
+			DrawFromIdx:    ha.DrawFromIdx,
+			DrawnCard:      owp.getCardObj(ha.DrawnCard),
+			DiscardedPairs: ha.DiscardedPairs,
+			DiscardedCards: make([]*controllers.OldMaidWebOutputCard, 0),
+		}
+		for _, card := range ha.DiscardedCards {
+			haObj.DiscardedCards = append(haObj.DiscardedCards, owp.getCardObj(card))
+		}
+		resObj.HumanAction = haObj
 	}
 
 	for i := 0; i < om.GetPlayerCnt(); i++ {

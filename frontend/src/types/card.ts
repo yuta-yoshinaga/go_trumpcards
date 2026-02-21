@@ -43,6 +43,7 @@ export interface CpuAction {
   drawFromIdx: number
   drawnCard: Card | null
   discardedPairs: number
+  discardedCards?: Card[]
 }
 
 export interface OldMaidResponse {
@@ -55,7 +56,9 @@ export interface OldMaidResponse {
   lastDrawFromIdx: number
   lastDrawCard: Card | null
   lastDiscardedPairs: number
+  lastDiscardedCards?: Card[]
   cpuActions: CpuAction[]
+  humanAction?: CpuAction | null
   message: string
 }
 

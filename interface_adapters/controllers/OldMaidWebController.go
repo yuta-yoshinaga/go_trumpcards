@@ -33,10 +33,11 @@ type OldMaidWebOutputPlayer struct {
 
 // OldMaidWebOutputCpuAction CPUターンの行動記録
 type OldMaidWebOutputCpuAction struct {
-	DrawPlayerIdx  int                   `json:"drawPlayerIdx"`
-	DrawFromIdx    int                   `json:"drawFromIdx"`
-	DrawnCard      *OldMaidWebOutputCard `json:"drawnCard"`
-	DiscardedPairs int                   `json:"discardedPairs"`
+	DrawPlayerIdx  int                     `json:"drawPlayerIdx"`
+	DrawFromIdx    int                     `json:"drawFromIdx"`
+	DrawnCard      *OldMaidWebOutputCard   `json:"drawnCard"`
+	DiscardedPairs int                     `json:"discardedPairs"`
+	DiscardedCards []*OldMaidWebOutputCard `json:"discardedCards"`
 }
 
 // OldMaidWebOutput ババ抜きWebアウトプット
@@ -50,8 +51,10 @@ type OldMaidWebOutput struct {
 	LastDrawFromIdx    int                          `json:"lastDrawFromIdx"`
 	LastDrawCard       *OldMaidWebOutputCard        `json:"lastDrawCard"`
 	LastDiscardedPairs int                          `json:"lastDiscardedPairs"`
+	LastDiscardedCards []*OldMaidWebOutputCard      `json:"lastDiscardedCards"`
 	HasDrawn           bool                         `json:"hasDrawn"`
 	CpuActions         []*OldMaidWebOutputCpuAction `json:"cpuActions"`
+	HumanAction        *OldMaidWebOutputCpuAction   `json:"humanAction"`
 	Message            string                       `json:"message"`
 }
 

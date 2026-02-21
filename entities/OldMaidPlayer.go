@@ -31,8 +31,9 @@ func (p *OldMaidPlayer) SetIsFinished(v bool) {
 	p.isFinished = v
 }
 
-// DiscardPairs ペアのカードを捨てる (捨てたペア数を返す)
-func (p *OldMaidPlayer) DiscardPairs() int {
+// DiscardPairs ペアのカードを捨てる (捨てたカードとペア数を返す)
+func (p *OldMaidPlayer) DiscardPairs() ([]*Card, int) {
+	discardedCards := make([]*Card, 0)
 	pairs := 0
 	for {
 		found := false
@@ -54,6 +55,7 @@ func (p *OldMaidPlayer) DiscardPairs() int {
 						}
 					}
 					p.cards = newCards
+					discardedCards = append(discardedCards, c1, c2)
 					pairs++
 					found = true
 					break
@@ -67,7 +69,7 @@ func (p *OldMaidPlayer) DiscardPairs() int {
 			break
 		}
 	}
-	return pairs
+	return discardedCards, pairs
 }
 
 // RemoveCard 指定インデックスのカードを手札から取り除いて返す

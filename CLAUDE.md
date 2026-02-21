@@ -37,6 +37,12 @@ go tool cover -html=coverage.out -o coverage.html          # Generate HTML cover
 go mod tidy
 ```
 
+**Docker:**
+```sh
+docker build -t go_trumpcards .           # Build Docker image
+docker run --rm -d -p 8080:8080 go_trumpcards  # Run Docker container
+```
+
 **Frontend (React):**
 ```sh
 cd frontend
@@ -176,6 +182,7 @@ Use commit type `docs` (or include doc changes in the same commit as the code ch
 
 - **`develop`**: Default branch; target for all PRs. CodeQL analysis runs on push/PR.
 - **`master`**: Triggers automatic version bump, git tag, and GitHub Release.
+- **PR Summary**: When creating a PR, if there is an associated issue, the PR description must explicitly close the issue (e.g., `Closes #123`).
 
 ## Commit Message Format
 
