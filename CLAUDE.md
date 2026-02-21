@@ -182,6 +182,7 @@ Use commit type `docs` (or include doc changes in the same commit as the code ch
 
 - **`develop`**: Default branch; target for all PRs. CodeQL analysis runs on push/PR.
 - **`master`**: Triggers automatic version bump, git tag, and GitHub Release.
+- **PR Summary**: When creating a PR, if there is an associated issue, the PR summary comment must explicitly close the issue (e.g., `Closes #123`).
 
 ## Commit Message Format
 
