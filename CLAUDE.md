@@ -37,6 +37,12 @@ go tool cover -html=coverage.out -o coverage.html          # Generate HTML cover
 go mod tidy
 ```
 
+**Docker:**
+```sh
+docker build -t go_trumpcards .           # Build Docker image
+docker run --rm -d -p 8080:8080 go_trumpcards  # Run Docker container
+```
+
 **Frontend (React):**
 ```sh
 cd frontend
