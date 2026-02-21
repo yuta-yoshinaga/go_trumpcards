@@ -39,7 +39,7 @@ describe('gameApi', () => {
 
       const result = await blackjackApi.exec('reset')
 
-      expect(mockFetch).toHaveBeenCalledWith('/blackjac/exec', {
+      expect(mockFetch).toHaveBeenCalledWith('/blackjack/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: 'reset', sessionId }),
@@ -50,7 +50,7 @@ describe('gameApi', () => {
     it('calls with hit command', async () => {
       mockFetch.mockReturnValue(makeResponse({ dealer: { score: 0, cards: [] }, player: { score: 20, cards: [] }, message: '' }))
       await blackjackApi.exec('hit')
-      expect(mockFetch).toHaveBeenCalledWith('/blackjac/exec', expect.objectContaining({
+      expect(mockFetch).toHaveBeenCalledWith('/blackjack/exec', expect.objectContaining({
         body: JSON.stringify({ command: 'hit', sessionId }),
       }))
     })
@@ -58,7 +58,7 @@ describe('gameApi', () => {
     it('calls with stand command', async () => {
       mockFetch.mockReturnValue(makeResponse({ dealer: { score: 18, cards: [] }, player: { score: 19, cards: [] }, message: 'win' }))
       await blackjackApi.exec('stand')
-      expect(mockFetch).toHaveBeenCalledWith('/blackjac/exec', expect.objectContaining({
+      expect(mockFetch).toHaveBeenCalledWith('/blackjack/exec', expect.objectContaining({
         body: JSON.stringify({ command: 'stand', sessionId }),
       }))
     })

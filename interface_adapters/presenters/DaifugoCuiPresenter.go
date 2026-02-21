@@ -47,6 +47,11 @@ func (p *DaifugoCuiPresenter) Output(dg *entities.Daifugo) string {
 
 	res += "----------\n"
 
+	// 革命フラグ
+	if dg.GetRevolutionActive() {
+		res += "【革命中】2が最弱、3が最強\n"
+	}
+
 	// 場のカード
 	tableCards := dg.GetTableCards()
 	if len(tableCards) > 0 {

@@ -1,6 +1,9 @@
 # go_trumpcards
 トランプカードゲームアルゴリズムをGoで実装
 
+[![Backend Coverage](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards/graph/badge.svg?flag=backend)](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards)
+[![Frontend Coverage](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards/graph/badge.svg?flag=frontend)](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards)
+
 ## Description
 トランプカードのアルゴリズムをGo+Clean Architectureで実装したプロジェクトです。
 
@@ -11,6 +14,14 @@
 - **ババ抜き (Old Maid)**: CLI および Web GUIで遊べます
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます
 - **7並べ (Sevens)**: CLI および Web GUIで遊べます
+
+## Requirements
+
+| Tool | Version |
+|------|---------|
+| [Go](https://go.dev/) | 1.24.x |
+| [Node.js](https://nodejs.org/) | 24.x |
+| [npm](https://www.npmjs.com/) | 11.x |
 
 ## Usage
 ### Install

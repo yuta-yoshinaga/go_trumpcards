@@ -2,6 +2,14 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Requirements
+
+| Tool | Version |
+|------|---------|
+| [Go](https://go.dev/) | 1.24.x |
+| [Node.js](https://nodejs.org/) | 24.x |
+| [npm](https://www.npmjs.com/) | 11.x |
+
 ## Commands
 
 **Run the application:**
@@ -16,9 +24,12 @@ go run main.go web      # Start REST API + web GUI server
 
 **Test:**
 ```sh
-go test ./...                          # Run all tests
-go test ./entities/...                 # Run tests in a specific package
-go test ./entities/ -run TestBlackJack # Run a single test by name
+go test ./...                                              # Run all tests
+go test ./entities/...                                     # Run tests in a specific package
+go test ./entities/ -run TestBlackJack                     # Run a single test by name
+go test -coverprofile=coverage.out -covermode=atomic ./... # Run all tests with coverage report
+go tool cover -func=coverage.out                           # Show coverage summary by function
+go tool cover -html=coverage.out -o coverage.html          # Generate HTML coverage report
 ```
 
 **Dependencies:**
@@ -29,11 +40,12 @@ go mod tidy
 **Frontend (React):**
 ```sh
 cd frontend
-npm install        # Install Node.js dependencies
-npm run build      # Build React app to public/ (run before starting the web server)
-npm run dev        # Start Vite dev server (proxies API to localhost:80)
-npm test           # Run frontend unit tests (Vitest)
-npm run test:watch # Run frontend tests in watch mode
+npm install              # Install Node.js dependencies
+npm run build            # Build React app to public/ (run before starting the web server)
+npm run dev              # Start Vite dev server (proxies API to localhost:80)
+npm test                 # Run frontend unit tests (Vitest)
+npm run test:coverage    # Run frontend unit tests with coverage report (outputs to frontend/coverage/)
+npm run test:watch       # Run frontend tests in watch mode
 ```
 
 > **Important:** The built assets in `public/assets/` and `public/index.html` are committed to the
@@ -73,7 +85,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `usecases/presenters/` defines output interfaces (e.g., `BlackJackPresenter`). `interface_adapters/presenters/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `interface_adapters/presenters/` and `usecases/presenters/` are used in tests to avoid I/O.
-- **Web API**: Five endpoints — `POST /blackjac/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), and `POST /sevens/exec` (Sevens) — accept JSON with a `Cmd` field and game state.
+- **Web API**: Five endpoints — `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), and `POST /sevens/exec` (Sevens) — accept JSON with a `Cmd` field and game state.
 
 ### Games implemented
 
@@ -151,7 +163,8 @@ cd frontend && npm test
 |-------------|---------------------|
 | Add/remove a game | `README.md` (Description, Run section), `CLAUDE.md` (Commands, Games implemented), `AGENTS.md` (Repository Overview, Games implemented) |
 | Add/remove a CLI command (`main.go`) | `README.md` (Run section), `CLAUDE.md` (Commands), `AGENTS.md` (Common Commands) |
-| Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns), `AGENTS.md` (Web API in Key patterns) |
+| Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns), `AGENTS.md` (Web API in Key patterns), `openapi.yaml` |
+| Change request/response schema of a Web API endpoint | `openapi.yaml` |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
 | Modify anything under `frontend/` | Run `npm run build` and commit updated `public/assets/` and `public/index.html` in the same commit |

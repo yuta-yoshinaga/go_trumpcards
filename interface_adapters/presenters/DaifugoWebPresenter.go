@@ -24,6 +24,7 @@ func (dwp *DaifugoWebPresenter) Output(dg *entities.Daifugo) string {
 	resObj.CurrentTurn = dg.GetCurrentTurn()
 	resObj.LastPlayPlayerIdx = dg.GetLastPlayPlayerIdx()
 	resObj.GameEndFlag = dg.GetGameEndFlag()
+	resObj.RevolutionActive = dg.GetRevolutionActive()
 
 	// 場のカード
 	for _, c := range dg.GetTableCards() {

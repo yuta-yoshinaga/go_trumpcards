@@ -63,9 +63,14 @@ func (p *DaifugoPlayer) RemoveCards(indices []int) []*Card {
 	return removed
 }
 
-// SortCards カードを大富豪のルールに従った強さ順 (弱い順) にソート
-func (p *DaifugoPlayer) SortCards() {
+// SortCardsByStrength カードを指定強さ関数で弱い順にソート
+func (p *DaifugoPlayer) SortCardsByStrength(strengthFn func(int) int) {
 	sort.Slice(p.cards, func(i, j int) bool {
-		return DaifugoCardStrength(p.cards[i].GetValue()) < DaifugoCardStrength(p.cards[j].GetValue())
+		return strengthFn(p.cards[i].GetValue()) < strengthFn(p.cards[j].GetValue())
 	})
+}
+
+// SortCards カードを大富豪の通常ルールに従った強さ順 (弱い順) にソート
+func (p *DaifugoPlayer) SortCards() {
+	p.SortCardsByStrength(DaifugoCardStrength)
 }

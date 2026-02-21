@@ -111,6 +111,23 @@ func TestDaifugoPlayer_Method(t *testing.T) {
 	})
 }
 
+func TestDaifugoPlayer_SortCardsByStrength(t *testing.T) {
+	t.Run("sorts by custom strength function (revolution order)", func(t *testing.T) {
+		p := entities.NewDaifugoPlayer(true)
+		// Add cards: 3, K(13), A(1), 2
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))  // revolution strength 15 (strongest)
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 13, false)) // revolution strength 5
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))  // revolution strength 4
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))  // revolution strength 3 (weakest)
+		p.SortCardsByStrength(entities.DaifugoCardStrengthRevolution)
+		// Expected order by revolution strength (weakest first): 2, A, K, 3
+		assert.Equal(t, 2, p.GetCard(0).GetValue())
+		assert.Equal(t, 1, p.GetCard(1).GetValue())
+		assert.Equal(t, 13, p.GetCard(2).GetValue())
+		assert.Equal(t, 3, p.GetCard(3).GetValue())
+	})
+}
+
 func TestDaifugoCardStrength(t *testing.T) {
 	t.Run("3 is weakest playable card", func(t *testing.T) {
 		assert.Equal(t, 3, entities.DaifugoCardStrength(3))
@@ -126,5 +143,26 @@ func TestDaifugoCardStrength(t *testing.T) {
 	})
 	t.Run("King is 13", func(t *testing.T) {
 		assert.Equal(t, 13, entities.DaifugoCardStrength(13))
+	})
+}
+
+func TestDaifugoCardStrengthRevolution(t *testing.T) {
+	t.Run("3 is strongest in revolution", func(t *testing.T) {
+		assert.Equal(t, 15, entities.DaifugoCardStrengthRevolution(3))
+	})
+	t.Run("2 is weakest in revolution", func(t *testing.T) {
+		assert.Equal(t, 3, entities.DaifugoCardStrengthRevolution(2))
+	})
+	t.Run("Ace is revolution strength 4", func(t *testing.T) {
+		assert.Equal(t, 4, entities.DaifugoCardStrengthRevolution(1))
+	})
+	t.Run("King is revolution strength 5", func(t *testing.T) {
+		assert.Equal(t, 5, entities.DaifugoCardStrengthRevolution(13))
+	})
+	t.Run("Jack is revolution strength 7", func(t *testing.T) {
+		assert.Equal(t, 7, entities.DaifugoCardStrengthRevolution(11))
+	})
+	t.Run("4 is revolution strength 14", func(t *testing.T) {
+		assert.Equal(t, 14, entities.DaifugoCardStrengthRevolution(4))
 	})
 }

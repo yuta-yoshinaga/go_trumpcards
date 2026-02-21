@@ -14,7 +14,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 
 export const blackjackApi = {
   exec: (command: 'reset' | 'hit' | 'stand') =>
-    postJson<BlackJackResponse>('/blackjac/exec', { command, sessionId }),
+    postJson<BlackJackResponse>('/blackjack/exec', { command, sessionId }),
 }
 
 export const pokerApi = {
