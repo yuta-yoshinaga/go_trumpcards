@@ -35,6 +35,10 @@ paths:
         Send a command to advance the BlackJack game session identified by
         `sessionId`.
 
+        > **Note on the path:** The route is intentionally `/blackjac/exec`
+        > (without a trailing `k`) — this matches the registered route in the
+        > server source code.
+
         | Command | Aliases | Description |
         |---------|---------|-------------|
         | `reset` | `r`     | Start / restart a game |
@@ -73,15 +77,13 @@ paths:
                 $ref: '#/components/schemas/BlackJackResponse'
               examples:
                 inProgress:
-                  summary: Game in progress
+                  summary: Game in progress (dealer hole card is hidden)
                   value:
                     dealer:
-                      score: 15
+                      score: 0
                       cards:
                         - design: SPADE
                           value: 10
-                        - design: HEART
-                          value: 5
                     player:
                       score: 18
                       cards:
@@ -91,7 +93,7 @@ paths:
                           value: 10
                     message: ""
                 playerWins:
-                  summary: Player wins
+                  summary: Game over — player wins (all dealer cards revealed)
                   value:
                     dealer:
                       score: 22
@@ -125,7 +127,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/BlackJackResponse'
               examples:
                 paramError:
                   summary: Missing required parameter
@@ -535,11 +537,20 @@ components:
       properties:
         score:
           type: integer
-          description: Current hand score (Ace counted optimally as 1 or 11)
+          description: |
+            Hand score.  For the **player** this is always the current score
+            (Ace counted optimally as 1 or 11).  For the **dealer** this is
+            `0` while the game is in progress and the actual score only after
+            the game ends (`gameEndFlag` would be `true` in a future field, or
+            equivalently when `message` is non-empty).
           example: 18
         cards:
           type: array
-          description: Cards currently held by this player
+          description: |
+            Cards currently held.  For the **player** all cards are always
+            returned.  For the **dealer**, only the face-up card (index 0) is
+            returned while the game is in progress; all cards are returned once
+            the game ends.
           items:
             $ref: '#/components/schemas/Card'
 
