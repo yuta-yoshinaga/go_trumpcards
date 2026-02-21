@@ -73,12 +73,15 @@ export function PokerPage() {
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
           {phase === PHASE_END && state?.dealer?.cards?.length
-            ? state.dealer.cards.map((card, i) => (
-                <div key={i} style={{ ...cardWrapBase, cursor: 'default' }}>
+            ? state.dealer.cards.map((card) => (
+                <div key={`${card.design}-${card.value}`} style={{ ...cardWrapBase, cursor: 'default' }}>
                   <CardImage card={card} style={{ border: '3px solid transparent' }} />
                 </div>
               ))
-            : Array.from({ length: 5 }).map((_, i) => <CardBack key={i} />)}
+            : Array.from({ length: 5 }).map((_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
+                <CardBack key={i} />
+              ))}
         </div>
       </div>
 
@@ -115,7 +118,7 @@ export function PokerPage() {
             const isSelected = selected.includes(i);
             return (
               <button
-                key={i}
+                key={`${card.design}-${card.value}`}
                 type="button"
                 onClick={() => toggleSelect(i)}
                 style={{

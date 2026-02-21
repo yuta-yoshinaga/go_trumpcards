@@ -98,6 +98,7 @@ function CpuPlayerArea({ player, isCurrentTurn }: CpuPlayerAreaProps) {
         {player.isFinished ? null : (
           <>
             {Array.from({ length: showCount }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
               <CardBack key={i} style={{ width: 60 }} />
             ))}
             {player.cardCount > 10 && (
@@ -151,7 +152,7 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         {player.cards?.map((card, i) => (
           <button
-            key={i}
+            key={`${card.design}-${card.value}`}
             type="button"
             disabled={!isCurrentTurn}
             onClick={() => onToggle(i)}
@@ -223,7 +224,9 @@ export function DaifugoPage() {
           {!state.tableCards || state.tableCards.length === 0 ? (
             <span style={{ color: '#aaa' }}>（なし）</span>
           ) : (
-            state.tableCards.map((card, i) => <CardImage key={i} card={card} style={{ width: 60 }} />)
+            state.tableCards.map((card) => (
+              <CardImage key={`${card.design}-${card.value}`} card={card} style={{ width: 60 }} />
+            ))
           )}
         </div>
       </div>

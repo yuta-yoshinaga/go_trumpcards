@@ -178,7 +178,10 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
       )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         {!player.isFinished &&
-          Array.from({ length: showCount }).map((_, i) => <CardBack key={i} style={{ width: 50 }} />)}
+          Array.from({ length: showCount }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
+            <CardBack key={i} style={{ width: 50 }} />
+          ))}
         {player.cardCount > 10 && (
           <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 4 }}>+{player.cardCount - 10}</span>
         )}
@@ -233,7 +236,7 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
           const playable = isCurrentTurn && isCardPlayable(card, tableMinVals, tableMaxVals);
           return (
             <button
-              key={i}
+              key={`${card.design}-${card.value}`}
               type="button"
               disabled={!playable}
               onClick={() => onPlay(i)}

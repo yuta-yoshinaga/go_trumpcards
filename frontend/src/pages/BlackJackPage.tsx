@@ -34,8 +34,8 @@ export function BlackJackPage() {
               <h3 className="text-white">ディーラー手札</h3>
               <h3 className="text-white">スコア {state.dealer.score !== 0 ? state.dealer.score : ''}</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {state.dealer.cards.map((card, i) => (
-                  <CardImage key={i} card={card} />
+                {state.dealer.cards.map((card) => (
+                  <CardImage key={`${card.design}-${card.value}`} card={card} />
                 ))}
                 {state.dealer.score === 0 && <CardBack />}
               </div>
@@ -46,8 +46,8 @@ export function BlackJackPage() {
               <h3 className="text-white">プレイヤー手札</h3>
               <h3 className="text-white">スコア {state.player.score}</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {state.player.cards.map((card, i) => (
-                  <CardImage key={i} card={card} />
+                {state.player.cards.map((card) => (
+                  <CardImage key={`${card.design}-${card.value}`} card={card} />
                 ))}
               </div>
             </div>

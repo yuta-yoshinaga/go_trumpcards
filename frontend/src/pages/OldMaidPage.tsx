@@ -166,21 +166,16 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
       )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
         {player.isFinished ? null : player.isHuman ? (
-          player.cards?.map((card, i) => <CardImage key={i} card={card} style={{ width: 50 }} />)
+          player.cards?.map((card) => (
+            <CardImage key={`${card.design}-${card.value}`} card={card} style={{ width: 50 }} />
+          ))
         ) : showSelectable ? (
           <>
-            {Array.from({ length: showCount }).map((_, i) => (
-              <CardBack
-                key={i}
-                style={{
-                  width: 40,
-                  border: '2px solid transparent',
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                }}
-                onClick={() => onDraw(i)}
-              />
-            ))}
+            {Array.from({ length: showCount }, (_, i) => {
+              const cardStyle = { width: 40, border: '2px solid transparent', borderRadius: 4, cursor: 'pointer' };
+              // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
+              return <CardBack key={i} style={cardStyle} onClick={() => onDraw(i)} />;
+            })}
             {player.cardCount > 10 && (
               <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
                 +{player.cardCount - 10}
@@ -190,6 +185,7 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
         ) : (
           <>
             {Array.from({ length: showCount }).map((_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
               <CardBack key={i} style={{ width: 40 }} />
             ))}
             {player.cardCount > 10 && (
@@ -247,8 +243,8 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
     >
       <div style={{ color: '#ccc', fontSize: '0.8em', marginBottom: 6 }}>直前に捨てられたカード</div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 20, alignItems: 'flex-end' }}>
-        {pairs.map(([c1, c2], i) => (
-          <div key={i} style={{ position: 'relative', width: 65, height: 82 }}>
+        {pairs.map(([c1, c2]) => (
+          <div key={`${c1.design}-${c1.value}`} style={{ position: 'relative', width: 65, height: 82 }}>
             <CardImage card={c1} style={{ width: 55, position: 'absolute', left: 0, top: 0 }} />
             <CardImage card={c2} style={{ width: 55, position: 'absolute', left: 10, top: 6 }} />
           </div>
