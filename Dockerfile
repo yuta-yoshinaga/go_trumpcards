@@ -25,7 +25,7 @@ RUN npm run build
 
 # Stage 2: Build Go binary
 # Pinned to a specific digest for reproducible builds
-FROM golang:1.24-alpine@sha256:757779acac4af1b349a20f357c7296097b4a0b89da4ad0e370b339060077282a AS go-builder
+FROM golang:1.26-alpine@sha256:d4c4845f5d60c6a974c6000ce58ae079328d03ab7f721a0734277e69905473e5 AS go-builder
 
 WORKDIR /app
 COPY go.mod go.sum ./

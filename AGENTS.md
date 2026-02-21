@@ -16,7 +16,7 @@ This repository contains a Go implementation of trump card game algorithms. The 
 
 | Tool | Version |
 |------|---------|
-| [Go](https://go.dev/) | 1.24.x |
+| [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [npm](https://www.npmjs.com/) | 11.x |
 
