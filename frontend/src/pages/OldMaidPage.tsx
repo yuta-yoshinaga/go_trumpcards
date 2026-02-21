@@ -287,6 +287,8 @@ export function OldMaidPage() {
         await delay(REPLAY_DELAY_MS)
         if (myGen !== replayGenRef.current) return
       }
+      // Restore the actual final state so currentTurn reflects the server response
+      setDisplayState(res)
     } catch {
       console.error('oldmaid request failed')
     }
@@ -372,9 +374,7 @@ export function OldMaidPage() {
         }}>
           {['[CPUの行動]', ...state.cpuActions.map((action: CpuAction) => {
             let msg = `${playerName(action.drawPlayerIdx)}が${playerName(action.drawFromIdx)}から1枚引きました`
-            if (action.drawnCard) {
-              msg += ` (${cardLabel(action.drawnCard)})`
-            }
+            // CPU drawn card is intentionally hidden to preserve game fairness
             if (action.discardedPairs > 0) msg += `。${action.discardedPairs}組捨てました`
             return msg
           })].join('\n')}

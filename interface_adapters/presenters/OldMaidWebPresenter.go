@@ -26,7 +26,12 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 	resObj.LoserIdx = om.GetLoserIdx()
 	resObj.LastDrawPlayerIdx = om.GetLastDrawPlayerIdx()
 	resObj.LastDrawFromIdx = om.GetLastDrawFromIdx()
-	resObj.LastDrawCard = owp.getCardObj(om.GetLastDrawCard())
+	// Only reveal drawn card for human players to preserve CPU game fairness
+	lastDrawPlayerIdx := om.GetLastDrawPlayerIdx()
+	lastDrawPlayer := om.GetPlayer(lastDrawPlayerIdx)
+	if lastDrawPlayer != nil && lastDrawPlayer.GetIsHuman() {
+		resObj.LastDrawCard = owp.getCardObj(om.GetLastDrawCard())
+	}
 	resObj.LastDiscardedPairs = om.GetLastDiscardedPairs()
 	resObj.LastDiscardedCards = make([]*controllers.OldMaidWebOutputCard, 0)
 	for _, card := range om.GetLastDiscardedCards() {
@@ -40,7 +45,7 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 		a := &controllers.OldMaidWebOutputCpuAction{
 			DrawPlayerIdx:  action.DrawPlayerIdx,
 			DrawFromIdx:    action.DrawFromIdx,
-			DrawnCard:      owp.getCardObj(action.DrawnCard),
+			DrawnCard:      nil, // CPU drawn card is hidden to preserve game fairness
 			DiscardedPairs: action.DiscardedPairs,
 			DiscardedCards: make([]*controllers.OldMaidWebOutputCard, 0),
 		}

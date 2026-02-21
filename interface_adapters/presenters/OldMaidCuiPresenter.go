@@ -53,8 +53,10 @@ func (p *OldMaidCuiPresenter) Output(om *entities.OldMaid) string {
 		drawPlayerName := p.getPlayerName(om, drawPlayerIdx)
 		drawFromName := p.getPlayerName(om, drawFromIdx)
 		drawnCard := om.GetLastDrawCard()
+		drawPlayer := om.GetPlayer(drawPlayerIdx)
 		res += fmt.Sprintf("%sが%sから1枚引きました", drawPlayerName, drawFromName)
-		if drawnCard != nil {
+		// Only reveal drawn card for human players to preserve CPU game fairness
+		if drawnCard != nil && drawPlayer != nil && drawPlayer.GetIsHuman() {
 			res += fmt.Sprintf(" (%s)", p.getCardStr(drawnCard))
 		}
 		if discarded > 0 {
@@ -71,9 +73,7 @@ func (p *OldMaidCuiPresenter) Output(om *entities.OldMaid) string {
 			actPlayerName := p.getPlayerName(om, action.DrawPlayerIdx)
 			actFromName := p.getPlayerName(om, action.DrawFromIdx)
 			res += fmt.Sprintf("%sが%sから1枚引きました", actPlayerName, actFromName)
-			if action.DrawnCard != nil {
-				res += fmt.Sprintf(" (%s)", p.getCardStr(action.DrawnCard))
-			}
+			// CPU drawn card is intentionally hidden to preserve game fairness
 			if action.DiscardedPairs > 0 {
 				res += fmt.Sprintf("。%d組捨てました", action.DiscardedPairs)
 			}
