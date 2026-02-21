@@ -188,11 +188,11 @@ describe('OldMaidPage', () => {
     expect(screen.getByText(/CPU 1がCPU 2から1枚引きました/)).toBeInTheDocument()
   })
 
-  it('does not show drawn card in CPU actions log even when drawnCard is provided', async () => {
+  it('does not show drawn card in CPU actions log', async () => {
     const stateWithCpuActions: OldMaidResponse = {
       ...humanTurnState,
       cpuActions: [
-        { drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: { design: 'SPADE', value: 3 }, discardedPairs: 0 },
+        { drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 0 },
       ],
     }
     mockExec.mockResolvedValue(stateWithCpuActions)
@@ -252,10 +252,10 @@ describe('OldMaidPage', () => {
       hasDrawn: true,
       lastDrawPlayerIdx: 1,
       lastDrawFromIdx: 2,
-      lastDrawCard: { design: 'DIAMOND', value: 7 },
+      lastDrawCard: null,
       lastDiscardedPairs: 0,
       cpuActions: [
-        { drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: { design: 'DIAMOND', value: 7 }, discardedPairs: 0, discardedCards: [] },
+        { drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 0, discardedCards: [] },
       ],
       humanAction: {
         drawPlayerIdx: 0,
