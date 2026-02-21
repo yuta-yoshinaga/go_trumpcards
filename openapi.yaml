@@ -368,7 +368,6 @@ paths:
                 summary: Start a new game
                 value:
                   command: reset
-                  indices: []
                   sessionId: my-session-001
               play:
                 summary: Play cards at hand positions 0 and 2
@@ -440,7 +439,6 @@ paths:
                 summary: Start a new game
                 value:
                   command: reset
-                  index: -1
                   sessionId: my-session-001
               playCard:
                 summary: Play the card at hand index 3
@@ -540,9 +538,8 @@ components:
           description: |
             Hand score.  For the **player** this is always the current score
             (Ace counted optimally as 1 or 11).  For the **dealer** this is
-            `0` while the game is in progress and the actual score only after
-            the game ends (`gameEndFlag` would be `true` in a future field, or
-            equivalently when `message` is non-empty).
+            `0` while the game is in progress and the actual score only once
+            the game ends (i.e. when `message` is non-empty).
           example: 18
         cards:
           type: array
@@ -696,6 +693,7 @@ components:
             Zero-based index of the card to draw from the target player's hand.
             Omit (or send `null`) for random selection.
           nullable: true
+          minimum: 0
           example: 1
         sessionId:
           type: string
@@ -851,6 +849,7 @@ components:
           items:
             type: integer
             minimum: 0
+          maxItems: 13
           example: [0, 1]
         sessionId:
           type: string
@@ -1120,14 +1119,3 @@ components:
             Game result or status message.  Empty while the game is in progress.
           example: ""
 
-    # -------------------------------------------------------------------------
-    # Generic error (used when JSON structure cannot be populated)
-    # -------------------------------------------------------------------------
-    ErrorResponse:
-      type: object
-      required:
-        - message
-      properties:
-        message:
-          type: string
-          example: param error.
