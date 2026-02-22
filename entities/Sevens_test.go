@@ -684,10 +684,9 @@ func TestSevens_Joker(t *testing.T) {
 		assert.Greater(t, actions[0].TargetValue, 0)
 	})
 
-	t.Run("success eliminatePlayer skips joker cards on forced placement", func(t *testing.T) {
+	t.Run("success eliminatePlayer places normal card on board", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		// Use no-joker config but manually give CPU a joker to test elimination behavior
 		noJokerCfg := entities.DefaultSevensConfig()
 		s := entities.NewSevens(tc, players, noJokerCfg)
 		for i := 0; i < entities.SevensMaxPasses; i++ {
@@ -695,11 +694,6 @@ func TestSevens_Joker(t *testing.T) {
 		}
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 9, false))
-		// Give CPU1 a joker and a non-playable card. Joker is not playable
-		// when design is Joker and no playable positions exist? No, there are positions.
-		// Actually, with default config, joker IsPlayable returns true if positions exist.
-		// The joker IS playable, so CPU will play it. For elimination test, we need
-		// CPU to have ONLY non-playable normal cards (no joker).
 		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false)) // not playable
 		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
 		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -709,9 +703,57 @@ func TestSevens_Joker(t *testing.T) {
 
 		assert.True(t, players[1].GetIsEliminated())
 		assert.Equal(t, 0, players[1].GetCardsSize())
-		// 5♠ should be placed on board
+		// 5♠ should be force-placed on board
 		mins := s.GetTableMinVals()
 		assert.Equal(t, 5, mins[entities.CardDesignSpade])
+	})
+
+	t.Run("success eliminatePlayer skips joker cards on forced placement", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := entities.NewSevens(tc, players, jokerConfig)
+
+		// Give CPU1 a joker + non-playable normal card (3♥ — not adjacent to 7 after joker is played)
+		players[1].AddCard(entities.NewCard(entities.CardDesignJoker, 1, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 3, false))
+		for i := 0; i < entities.SevensMaxPasses; i++ {
+			players[1].IncrPassesUsed()
+		}
+
+		// Give human playable cards, other CPUs dummy non-playable cards with passes remaining
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 9, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+
+		// Round 1: human plays 8♠ → CPU1 plays joker (playable) → CPU2 passes → CPU3 passes
+		s.PlayerPlay(0) // human: 8♠
+		assert.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay() // CPU1: plays joker (board has open positions)
+		actions := s.GetCpuActions()
+		assert.Equal(t, entities.CardDesignJoker, actions[0].PlayedCard.GetDesign())
+		// CPU1 now has only 5♠ (not playable) and no passes left
+		assert.Equal(t, 1, players[1].GetCardsSize())
+
+		s.CpuPlay() // CPU2: passes
+		s.CpuPlay() // CPU3: passes
+
+		// Round 2: human plays 9♠ → CPU1: 5♠ not playable, no passes → eliminated
+		assert.Equal(t, 0, s.GetCurrentTurn())
+		placedBefore := s.GetTablePlaced()
+		s.PlayerPlay(0) // human: 9♠
+		assert.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay() // CPU1: eliminated
+
+		assert.True(t, players[1].GetIsEliminated())
+		assert.Equal(t, 0, players[1].GetCardsSize())
+		// 3♥ should be force-placed on board (normal card placement)
+		placedAfter := s.GetTablePlaced()
+		assert.True(t, placedAfter[entities.CardDesignHeart]&(1<<3) != 0, "3♥ should be placed on board")
+		// Joker suit index (0) should be unchanged — no joker artifact on board
+		assert.Equal(t, placedBefore[entities.CardDesignJoker], placedAfter[entities.CardDesignJoker], "joker suit should not change in tablePlaced")
 	})
 
 	t.Run("success joker is not playable when board is full", func(t *testing.T) {
