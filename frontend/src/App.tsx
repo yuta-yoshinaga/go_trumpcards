@@ -9,14 +9,18 @@ import { SevensPage } from './pages/SevensPage';
 export default function App() {
   return (
     <HashRouter>
-      <NavBar />
-      <Routes>
-        <Route path="/" element={<BlackJackPage />} />
-        <Route path="/poker" element={<PokerPage />} />
-        <Route path="/oldmaid" element={<OldMaidPage />} />
-        <Route path="/daifugo" element={<DaifugoPage />} />
-        <Route path="/sevens" element={<SevensPage />} />
-      </Routes>
+      <div className="flex flex-col h-full">
+        <NavBar />
+        <div className="flex-1 flex flex-col min-h-0">
+          <Routes>
+            <Route path="/" element={<BlackJackPage />} />
+            <Route path="/poker" element={<PokerPage />} />
+            <Route path="/oldmaid" element={<OldMaidPage />} />
+            <Route path="/daifugo" element={<DaifugoPage />} />
+            <Route path="/sevens" element={<SevensPage />} />
+          </Routes>
+        </div>
+      </div>
     </HashRouter>
   );
 }

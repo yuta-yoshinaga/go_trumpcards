@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
-import { CardBack, CardImage } from '../components/CardImage';
+import { CardImage } from '../components/CardImage';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
 
 // Design → suit index (matches Go backend: 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND)
@@ -64,33 +64,16 @@ interface BoardProps {
 
 function Board({ tableMinVals, tableMaxVals }: BoardProps) {
   return (
-    <div
-      style={{
-        background: 'rgba(0,0,0,0.3)',
-        borderRadius: 10,
-        padding: '10px 14px',
-        margin: '8px 0',
-      }}
-    >
-      <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 8 }}>ボード</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+    <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
+      <div className="text-white font-bold mb-2">ボード</div>
+      <div className="grid grid-cols-2 gap-2">
         {SUITS.map(({ idx, name, label, color }) => {
           const min = tableMinVals[idx] ?? 7;
           const max = tableMaxVals[idx] ?? 7;
           return (
-            <div
-              key={name}
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                borderRadius: 8,
-                padding: '6px 10px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
+            <div key={name} className="bg-white/[0.08] rounded-lg py-1.5 px-2.5 flex items-center gap-2">
               <span style={{ color, fontWeight: 'bold', fontSize: '1.1em', minWidth: 18 }}>{label}</span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+              <div className="flex flex-wrap gap-[3px]">
                 {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
                   const placed = v >= min && v <= max;
                   const isCenter = v === 7;
@@ -136,10 +119,9 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
     : isCurrentTurn
       ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
       : {};
-  const showCount = Math.min(player.cardCount, 10);
   return (
     <div className={playerAreaBaseClass} style={conditionalStyle}>
-      <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
+      <div className="text-white font-bold mb-1">
         {playerName(player.id)}
         {player.isFinished && (
           <span
@@ -172,20 +154,10 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
         )}
       </div>
       {!player.isFinished && (
-        <div style={{ color: '#ccc', fontSize: '0.85em', marginBottom: 4 }}>
+        <div className="text-[#ccc] text-[0.85em]">
           {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses}
         </div>
       )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-        {!player.isFinished &&
-          Array.from({ length: showCount }).map((_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-            <CardBack key={i} style={{ width: 50 }} />
-          ))}
-        {player.cardCount > 10 && (
-          <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 4 }}>+{player.cardCount - 10}</span>
-        )}
-      </div>
     </div>
   );
 }
@@ -208,7 +180,7 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
       : {};
   return (
     <div className={playerAreaBaseClass} style={conditionalStyle}>
-      <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
+      <div className="text-white font-bold mb-1">
         {playerName(0)}
         {player.isFinished && (
           <span
@@ -226,12 +198,12 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
         )}
       </div>
       {!player.isFinished && (
-        <div style={{ color: '#ccc', fontSize: '0.85em', marginBottom: 4 }}>
+        <div className="text-[#ccc] text-[0.85em] mb-1">
           {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses}
           {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>出せるカードをクリック</span>}
         </div>
       )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+      <div className="flex flex-wrap gap-1">
         {player.cards?.map((card, i) => {
           const playable = isCurrentTurn && isCardPlayable(card, tableMinVals, tableMaxVals);
           return (
@@ -251,7 +223,7 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
                 boxSizing: 'border-box',
               }}
             >
-              <CardImage card={card} style={{ width: 60 }} />
+              <CardImage card={card} width={52} />
             </button>
           );
         })}
@@ -286,94 +258,73 @@ export function SevensPage() {
   const canPass = isHumanTurn && (humanPlayer?.passesUsed ?? 0) < (humanPlayer?.maxPasses ?? 5);
 
   return (
-    <div className="bg-[#1a5c1a] rounded-2xl p-5 my-2.5 mx-auto max-w-[1000px]">
-      {/* CPU row */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-        {cpuPlayers.map((player) => (
-          <CpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
-        ))}
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
+      {/* Scrollable: CPU rows + board + action logs + result */}
+      <div className="flex-1 overflow-y-auto pt-3 px-4">
+        {/* CPU row */}
+        <div className="flex gap-2.5 flex-wrap mb-2.5">
+          {cpuPlayers.map((player) => (
+            <CpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+          ))}
+        </div>
+
+        {/* Board */}
+        <Board tableMinVals={state.tableMinVals} tableMaxVals={state.tableMaxVals} />
+
+        {/* Human action log */}
+        {state.humanAction && (
+          <div className="bg-black/40 rounded-lg text-[#cfc] py-2 px-3.5 my-2 text-[0.85em]">
+            {actionDesc(state.humanAction)}
+          </div>
+        )}
+
+        {/* CPU action log */}
+        {state.cpuActions && state.cpuActions.length > 0 && (
+          <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+            {['[CPUの行動]', ...state.cpuActions.map(actionDesc)].join('\n')}
+          </div>
+        )}
+
+        {/* Result message */}
+        {state.message && (
+          <div className="bg-black/55 rounded-[10px] text-white text-center py-2.5 px-4 text-[1.2em] font-bold my-2">
+            {state.message}
+          </div>
+        )}
       </div>
 
-      {/* Board */}
-      <Board tableMinVals={state.tableMinVals} tableMaxVals={state.tableMaxVals} />
+      {/* Sticky footer: human player hand + buttons */}
+      <div
+        className="shrink-0 bg-[#163e16] border-t border-white/20 px-4 py-2.5"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
+      >
+        {/* Human player */}
+        {humanPlayer && (
+          <div className="mb-2">
+            <HumanArea
+              player={humanPlayer}
+              isCurrentTurn={isHumanTurn}
+              tableMinVals={state.tableMinVals}
+              tableMaxVals={state.tableMaxVals}
+              onPlay={(idx) => exec('play', idx)}
+            />
+          </div>
+        )}
 
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', margin: '12px 0' }} />
-
-      {/* Human player */}
-      {humanPlayer && (
-        <HumanArea
-          player={humanPlayer}
-          isCurrentTurn={isHumanTurn}
-          tableMinVals={state.tableMinVals}
-          tableMaxVals={state.tableMaxVals}
-          onPlay={(idx) => exec('play', idx)}
-        />
-      )}
-
-      {/* Human action log */}
-      {state.humanAction && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.4)',
-            borderRadius: 8,
-            color: '#cfc',
-            padding: '8px 14px',
-            margin: '8px 0',
-            fontSize: '0.85em',
-          }}
-        >
-          {actionDesc(state.humanAction)}
+        {/* Buttons */}
+        <div className="text-center">
+          <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
+            リセット
+          </button>
+          <button
+            type="button"
+            className={`${btnWarning} min-w-[90px]`}
+            disabled={!canPass}
+            onClick={() => exec('play', -1)}
+          >
+            パス
+          </button>
         </div>
-      )}
-
-      {/* CPU action log */}
-      {state.cpuActions && state.cpuActions.length > 0 && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.4)',
-            borderRadius: 8,
-            color: '#ccc',
-            padding: '8px 14px',
-            margin: '8px 0',
-            whiteSpace: 'pre-line',
-            fontSize: '0.85em',
-          }}
-        >
-          {['[CPUの行動]', ...state.cpuActions.map(actionDesc)].join('\n')}
-        </div>
-      )}
-
-      {/* Result message */}
-      {state.message && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.55)',
-            borderRadius: 10,
-            color: '#fff',
-            textAlign: 'center',
-            padding: '12px 20px',
-            fontSize: '1.3em',
-            fontWeight: 'bold',
-            margin: '10px 0',
-          }}
-        >
-          {state.message}
-        </div>
-      )}
-
-      {/* Buttons */}
-      <div className="text-center mt-3.5 mb-1">
-        <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
-          リセット
-        </button>
-        <button
-          type="button"
-          className={`${btnWarning} min-w-[90px]`}
-          disabled={!canPass}
-          onClick={() => exec('play', -1)}
-        >
-          パス
-        </button>
       </div>
     </div>
   );

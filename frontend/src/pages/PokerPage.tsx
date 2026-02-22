@@ -49,164 +49,144 @@ export function PokerPage() {
   };
 
   return (
-    <div className="bg-[#1a6b1a] rounded-2xl p-5 my-2.5 mx-auto max-w-[900px]">
-      {/* Dealer area */}
-      <div style={{ marginBottom: 8 }}>
-        <div style={{ color: '#fff', fontSize: '1.1em', marginBottom: 6 }}>
-          ディーラー手札
-          {phase === PHASE_END && state?.dealer?.handName && (
-            <span
-              style={{
-                display: 'inline-block',
-                background: '#f0ad4e',
-                color: '#222',
-                fontWeight: 'bold',
-                borderRadius: 8,
-                padding: '2px 12px',
-                marginLeft: 8,
-                fontSize: '0.95em',
-              }}
-            >
-              {state.dealer.handName}
-            </span>
-          )}
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-          {phase === PHASE_END && state?.dealer?.cards?.length
-            ? state.dealer.cards.map((card) => (
-                <div key={`${card.design}-${card.value}`} style={{ ...cardWrapBase, cursor: 'default' }}>
-                  <CardImage card={card} style={{ border: '3px solid transparent' }} />
-                </div>
-              ))
-            : Array.from({ length: 5 }).map((_, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-                <CardBack key={i} />
-              ))}
-        </div>
-      </div>
-
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.2)', margin: '14px 0' }} />
-
-      {/* Player area */}
-      <div>
-        <div style={{ color: '#fff', fontSize: '1.1em', marginBottom: 6 }}>
-          プレイヤー手札
-          {phase === PHASE_END && state?.player?.handName && (
-            <span
-              style={{
-                display: 'inline-block',
-                background: '#f0ad4e',
-                color: '#222',
-                fontWeight: 'bold',
-                borderRadius: 8,
-                padding: '2px 12px',
-                marginLeft: 8,
-                fontSize: '0.95em',
-              }}
-            >
-              {state.player.handName}
-            </span>
-          )}
-        </div>
-        {phase === PHASE_DEAL && (
-          <div style={{ color: '#cfc', fontSize: '0.9em', marginBottom: 4 }}>
-            交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。
-          </div>
-        )}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-          {state?.player?.cards?.map((card, i) => {
-            const isSelected = selected.includes(i);
-            return (
-              <button
-                key={`${card.design}-${card.value}`}
-                type="button"
-                onClick={() => toggleSelect(i)}
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]">
+      {/* Scrollable: dealer area */}
+      <div className="flex-1 overflow-y-auto pt-4 px-5">
+        <div className="mb-2">
+          <div className="text-white text-[1.1em] mb-1.5">
+            ディーラー手札
+            {phase === PHASE_END && state?.dealer?.handName && (
+              <span
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  ...cardWrapBase,
-                  cursor: phase === PHASE_DEAL ? 'pointer' : 'default',
+                  display: 'inline-block',
+                  background: '#f0ad4e',
+                  color: '#222',
+                  fontWeight: 'bold',
+                  borderRadius: 8,
+                  padding: '2px 12px',
+                  marginLeft: 8,
+                  fontSize: '0.95em',
                 }}
               >
-                <img
-                  src={`/images/${cardPrefix(card.design)}${String(card.value).padStart(2, '0')}.png`}
-                  alt={`${card.design} ${card.value}`}
-                  style={{
-                    width: 80,
-                    borderRadius: 6,
-                    border: isSelected ? '3px solid #f0ad4e' : '3px solid transparent',
-                    transform: isSelected ? 'translateY(-12px)' : undefined,
-                    display: 'block',
-                    transition: 'transform 0.15s',
-                  }}
-                />
-                <div
-                  style={{
-                    color: '#f0ad4e',
-                    fontSize: '0.75em',
-                    fontWeight: 'bold',
-                    visibility: isSelected ? 'visible' : 'hidden',
-                  }}
-                >
-                  交換
-                </div>
-              </button>
-            );
-          })}
+                {state.dealer.handName}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2 mb-2.5">
+            {phase === PHASE_END && state?.dealer?.cards?.length
+              ? state.dealer.cards.map((card) => (
+                  <div key={`${card.design}-${card.value}`} style={{ ...cardWrapBase, cursor: 'default' }}>
+                    <CardImage card={card} width={60} style={{ border: '3px solid transparent' }} />
+                  </div>
+                ))
+              : Array.from({ length: 5 }).map((_, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
+                  <CardBack key={i} width={60} />
+                ))}
+          </div>
         </div>
       </div>
 
-      {/* Result */}
+      {/* Sticky footer: player hand + result + buttons */}
       <div
-        style={{
-          background: 'rgba(0,0,0,0.55)',
-          borderRadius: 10,
-          color: '#fff',
-          textAlign: 'center',
-          padding: '12px 20px',
-          fontSize: '1.3em',
-          fontWeight: 'bold',
-          margin: '10px 0',
-          minHeight: 48,
-        }}
+        className="shrink-0 bg-[#155715] border-t border-white/20 px-5 py-3"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
-        {state?.message ?? ''}
-      </div>
+        {/* Player area */}
+        <div>
+          <div className="text-white text-[1.1em] mb-1">
+            プレイヤー手札
+            {phase === PHASE_END && state?.player?.handName && (
+              <span
+                style={{
+                  display: 'inline-block',
+                  background: '#f0ad4e',
+                  color: '#222',
+                  fontWeight: 'bold',
+                  borderRadius: 8,
+                  padding: '2px 12px',
+                  marginLeft: 8,
+                  fontSize: '0.95em',
+                }}
+              >
+                {state.player.handName}
+              </span>
+            )}
+          </div>
+          {phase === PHASE_DEAL && (
+            <div className="text-[#cfc] text-[0.85em] mb-1">
+              交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。
+            </div>
+          )}
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {state?.player?.cards?.map((card, i) => {
+              const isSelected = selected.includes(i);
+              return (
+                <button
+                  key={`${card.design}-${card.value}`}
+                  type="button"
+                  onClick={() => toggleSelect(i)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    ...cardWrapBase,
+                    cursor: phase === PHASE_DEAL ? 'pointer' : 'default',
+                  }}
+                >
+                  <CardImage
+                    card={card}
+                    width={60}
+                    style={{
+                      border: isSelected ? '3px solid #f0ad4e' : '3px solid transparent',
+                      transform: isSelected ? 'translateY(-10px)' : undefined,
+                      transition: 'transform 0.15s',
+                    }}
+                  />
+                  <div
+                    style={{
+                      color: '#f0ad4e',
+                      fontSize: '0.75em',
+                      fontWeight: 'bold',
+                      visibility: isSelected ? 'visible' : 'hidden',
+                    }}
+                  >
+                    交換
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      {/* Buttons */}
-      <div className="text-center mt-3.5 mb-1">
-        <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
-          リセット
-        </button>
-        <button
-          type="button"
-          className={`${btnWarning} min-w-[90px]`}
-          disabled={phase !== PHASE_DEAL}
-          onClick={() => exec('exchange', selected)}
-        >
-          交換
-        </button>
-        <button
-          type="button"
-          className={`${btnSuccess} min-w-[90px]`}
-          disabled={phase !== PHASE_DEAL}
-          onClick={() => exec('stand')}
-        >
-          スタンド
-        </button>
+        {/* Result */}
+        <div className="bg-black/55 rounded-lg text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 min-h-[36px]">
+          {state?.message ?? ''}
+        </div>
+
+        {/* Buttons */}
+        <div className="text-center">
+          <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
+            リセット
+          </button>
+          <button
+            type="button"
+            className={`${btnWarning} min-w-[90px]`}
+            disabled={phase !== PHASE_DEAL}
+            onClick={() => exec('exchange', selected)}
+          >
+            交換
+          </button>
+          <button
+            type="button"
+            className={`${btnSuccess} min-w-[90px]`}
+            disabled={phase !== PHASE_DEAL}
+            onClick={() => exec('stand')}
+          >
+            スタンド
+          </button>
+        </div>
       </div>
     </div>
   );
-}
-
-function cardPrefix(design: string): string {
-  const map: Record<string, string> = {
-    SPADE: 's',
-    CLOVER: 'c',
-    HEART: 'h',
-    DIAMOND: 'd',
-    JOKER: 'x',
-  };
-  return map[design] ?? 'x';
 }
