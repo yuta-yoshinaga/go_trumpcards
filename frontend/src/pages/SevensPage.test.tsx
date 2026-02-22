@@ -11,7 +11,11 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(sevensApi.exec);
 
 // tableMinVals/tableMaxVals: index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
-// With all 7s placed: min=7, max=7 → value 6 or 8 of any suit is playable
+// tablePlaced: bitmask per suit; bit i = value i placed. 7 placed = 1<<7 = 128
+// With all 7s placed: value 6 or 8 of any suit is playable
+const defaultConfig = { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false };
+const allSevensPlaced = [0, 128, 128, 128, 128]; // bit 7 set = 128
+
 const humanTurnState: SevensResponse = {
   players: [
     {
@@ -35,6 +39,8 @@ const humanTurnState: SevensResponse = {
   currentTurn: 0,
   tableMinVals: [0, 7, 7, 7, 7],
   tableMaxVals: [0, 7, 7, 7, 7],
+  tablePlaced: allSevensPlaced,
+  config: defaultConfig,
   gameEndFlag: false,
   cpuActions: [],
   humanAction: null,
@@ -44,9 +50,10 @@ const humanTurnState: SevensResponse = {
 const cpuTurnState: SevensResponse = {
   ...humanTurnState,
   currentTurn: 1,
-  humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 } },
+  humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 }, targetSuit: 0, targetValue: 0 },
   tableMinVals: [0, 6, 7, 7, 7],
   tableMaxVals: [0, 7, 7, 7, 7],
+  tablePlaced: [0, 128 | 64, 128, 128, 128], // spade 6+7 placed
 };
 
 const gameEndState: SevensResponse = {
@@ -73,7 +80,7 @@ describe('SevensPage', () => {
 
   it('calls reset command on mount', async () => {
     render(<SevensPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, undefined));
   });
 
   it('renders human player area labeled あなた', async () => {
@@ -133,7 +140,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1, 0, 0, undefined));
   });
 
   it('calls play with card index when a playable card is clicked', async () => {
@@ -142,7 +149,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByAltText('SPADE 6'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0, 0, undefined));
   });
 
   it('does not call play when a non-playable card is clicked', async () => {
@@ -159,7 +166,13 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        jokerCount: 0,
+        cpuStrategy: false,
+      }),
+    );
   });
 
   it('shows human action log after play', async () => {
@@ -171,7 +184,7 @@ describe('SevensPage', () => {
   it('shows pass action log for human pass', async () => {
     const passState: SevensResponse = {
       ...cpuTurnState,
-      humanAction: { playerIdx: 0, playedCard: null },
+      humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0 },
     };
     mockExec.mockResolvedValue(passState);
     render(<SevensPage />);
@@ -182,8 +195,8 @@ describe('SevensPage', () => {
     const stateWithCpuActions: SevensResponse = {
       ...humanTurnState,
       cpuActions: [
-        { playerIdx: 1, playedCard: { design: 'SPADE', value: 8 } },
-        { playerIdx: 2, playedCard: null },
+        { playerIdx: 1, playedCard: { design: 'SPADE', value: 8 }, targetSuit: 0, targetValue: 0 },
+        { playerIdx: 2, playedCard: null, targetSuit: 0, targetValue: 0 },
       ],
     };
     mockExec.mockResolvedValue(stateWithCpuActions);
@@ -225,6 +238,125 @@ describe('SevensPage', () => {
     await waitFor(() => {
       // CPU 2 has passesUsed=1
       expect(screen.getByText(/パス: 1\/5/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows rule header when config has features enabled', async () => {
+    const stateWithConfig: SevensResponse = {
+      ...humanTurnState,
+      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true },
+    };
+    mockExec.mockResolvedValue(stateWithConfig);
+    render(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getAllByText(/\[トンネル\]/).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(/\[ジョーカー×2\]/)).toBeInTheDocument();
+      expect(screen.getByText(/\[CPU戦略\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('does not show rule header with default config', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    expect(screen.queryByText(/ルール:/)).not.toBeInTheDocument();
+  });
+
+  it('shows joker card as playable when board has open positions', async () => {
+    const jokerState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1 },
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cardCount: 2,
+          cards: [
+            { design: 'JOKER', value: 0 },
+            { design: 'SPADE', value: 6 },
+          ],
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jokerState);
+    render(<SevensPage />);
+    await waitFor(() => {
+      const jokerBtn = screen.getByAltText('JOKER 0').closest('button');
+      expect(jokerBtn).not.toBeDisabled();
+    });
+  });
+
+  it('shows joker target description in action log', async () => {
+    const jokerActionState: SevensResponse = {
+      ...humanTurnState,
+      currentTurn: 1,
+      humanAction: {
+        playerIdx: 0,
+        playedCard: { design: 'JOKER', value: 0 },
+        targetSuit: 1,
+        targetValue: 6,
+      },
+    };
+    mockExec.mockResolvedValue(jokerActionState);
+    render(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/JOKER/)).toBeInTheDocument();
+      expect(screen.getByText(/SPADE 6/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows tunnel indicator on board', async () => {
+    const tunnelState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelEnabled: true },
+    };
+    mockExec.mockResolvedValue(tunnelState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('[トンネル]')).toBeInTheDocument());
+  });
+
+  it('renders config panel with default values', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+    expect(screen.getByLabelText('トンネル')).not.toBeChecked();
+    expect(screen.getByLabelText('CPU戦略')).not.toBeChecked();
+    expect(screen.getByRole('combobox')).toHaveValue('0');
+  });
+
+  it('sends config to API when reset button is clicked with config toggled', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('トンネル'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '1' } });
+    fireEvent.click(screen.getByLabelText('CPU戦略'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { tunnelEnabled: true, jokerCount: 1, cpuStrategy: true },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: true,
+        jokerCount: 1,
+        cpuStrategy: true,
+      }),
+    );
+  });
+
+  it('syncs config state from server response', async () => {
+    const configState: SevensResponse = {
+      ...humanTurnState,
+      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true },
+    };
+    mockExec.mockResolvedValue(configState);
+    render(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText('トンネル')).toBeChecked();
+      expect(screen.getByLabelText('CPU戦略')).toBeChecked();
+      expect(screen.getByRole('combobox')).toHaveValue('2');
     });
   });
 });

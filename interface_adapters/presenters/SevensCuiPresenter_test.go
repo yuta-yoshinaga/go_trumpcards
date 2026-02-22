@@ -24,7 +24,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output initial state", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		s := entities.NewSevens(tc, players)
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 6, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 8, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignClover, 9, false))
@@ -42,7 +42,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output shows pass count", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		s := entities.NewSevens(tc, players)
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false)) // not playable
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 8, false))
 		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -58,7 +58,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output shows board state after play", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		s := entities.NewSevens(tc, players)
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 6, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -73,7 +73,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output game ended", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		s := entities.NewSevens(tc, players)
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
 		players[1].SetIsFinished(true)
 		players[1].SetRank(1)
@@ -90,7 +90,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output shows CPU actions", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		s := entities.NewSevens(tc, players)
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 9, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false)) // not playable → pass
@@ -107,7 +107,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output finished player shows rank", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		s := entities.NewSevens(tc, players)
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
 		players[1].SetIsFinished(true)
 		players[1].SetRank(1)
@@ -116,5 +116,81 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 
 		result := tsp.Output(s)
 		assert.Contains(t, result, "上がり/失格 (ランク: 1位)")
+	})
+
+	t.Run("success Output joker card in hand", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
+		players[0].AddCard(entities.NewCard(entities.CardDesignJoker, 0, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "[0]JOKER")
+		assert.Contains(t, result, "[1]SPADE 6")
+	})
+
+	t.Run("success Output rule header with tunnel", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := entities.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: false}
+		s := entities.NewSevens(tc, players, cfg)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[トンネル]")
+	})
+
+	t.Run("success Output rule header with joker", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := entities.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+		s := entities.NewSevens(tc, players, cfg)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[ジョーカー×2]")
+		assert.Contains(t, result, "j [カードインデックス]")
+	})
+
+	t.Run("success Output rule header with CPU strategy", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := entities.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+		s := entities.NewSevens(tc, players, cfg)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[CPU戦略]")
+	})
+
+	t.Run("success Output no rule header with default config", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.NotContains(t, result, "ルール:")
+	})
+
+	t.Run("success Output joker play action with target", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := entities.NewSevens(tc, players, entities.DefaultSevensConfig())
+		players[0].AddCard(entities.NewCard(entities.CardDesignJoker, 0, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 9, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		s.PlayerPlayJoker(0, entities.CardDesignSpade, 6) // joker → SPADE 6
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "JOKER")
+		assert.Contains(t, result, "SPADE 6")
+		assert.Contains(t, result, "を出しました")
 	})
 }

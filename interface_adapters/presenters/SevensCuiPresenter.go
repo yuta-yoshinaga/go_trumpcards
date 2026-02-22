@@ -19,6 +19,20 @@ func NewSevensCuiPresenter() *SevensCuiPresenter {
 func (p *SevensCuiPresenter) Output(s *entities.Sevens) string {
 	res := "==========\n"
 	res += "Sevens (7並べ)\n"
+	config := s.GetConfig()
+	if config.TunnelEnabled || config.JokerCount > 0 || config.CpuStrategy {
+		res += "ルール:"
+		if config.TunnelEnabled {
+			res += " [トンネル]"
+		}
+		if config.JokerCount > 0 {
+			res += fmt.Sprintf(" [ジョーカー×%d]", config.JokerCount)
+		}
+		if config.CpuStrategy {
+			res += " [CPU戦略]"
+		}
+		res += "\n"
+	}
 	res += "==========\n"
 
 	for i := 0; i < s.GetPlayerCnt(); i++ {
@@ -63,9 +77,12 @@ func (p *SevensCuiPresenter) Output(s *entities.Sevens) string {
 		if humanAction.PlayedCard == nil {
 			res += fmt.Sprintf("%sがパスしました\n", p.getPlayerName(s, humanAction.PlayerIdx))
 		} else {
+			cardStr := p.getCardStr(humanAction.PlayedCard)
+			if humanAction.PlayedCard.GetDesign() == entities.CardDesignJoker && humanAction.TargetSuit > 0 {
+				cardStr += fmt.Sprintf(" → %s %d", p.getSuitName(humanAction.TargetSuit), humanAction.TargetValue)
+			}
 			res += fmt.Sprintf("%sが %s を出しました\n",
-				p.getPlayerName(s, humanAction.PlayerIdx),
-				p.getCardStr(humanAction.PlayedCard))
+				p.getPlayerName(s, humanAction.PlayerIdx), cardStr)
 		}
 	}
 
@@ -78,7 +95,11 @@ func (p *SevensCuiPresenter) Output(s *entities.Sevens) string {
 			if action.PlayedCard == nil {
 				res += fmt.Sprintf("%sがパスしました\n", actPlayerName)
 			} else {
-				res += fmt.Sprintf("%sが %s を出しました\n", actPlayerName, p.getCardStr(action.PlayedCard))
+				cardStr := p.getCardStr(action.PlayedCard)
+				if action.PlayedCard.GetDesign() == entities.CardDesignJoker && action.TargetSuit > 0 {
+					cardStr += fmt.Sprintf(" → %s %d", p.getSuitName(action.TargetSuit), action.TargetValue)
+				}
+				res += fmt.Sprintf("%sが %s を出しました\n", actPlayerName, cardStr)
 			}
 		}
 	}
@@ -94,6 +115,9 @@ func (p *SevensCuiPresenter) Output(s *entities.Sevens) string {
 		currentName := p.getPlayerName(s, currentTurn)
 		res += fmt.Sprintf("手番: %s\n", currentName)
 		res += "p [インデックス] でカードを出す / p でパス\n"
+		if config.JokerCount > 0 {
+			res += "j [カードインデックス] [スート] [値] でジョーカーを配置\n"
+		}
 	}
 
 	res += "==========\n"
@@ -126,6 +150,24 @@ func (p *SevensCuiPresenter) getCardStr(card *entities.Card) string {
 		return "HEART " + strconv.Itoa(card.GetValue())
 	case entities.CardDesignDiamond:
 		return "DIAMOND " + strconv.Itoa(card.GetValue())
+	case entities.CardDesignJoker:
+		return "JOKER"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+// getSuitName スート名取得
+func (p *SevensCuiPresenter) getSuitName(suit int) string {
+	switch suit {
+	case entities.CardDesignSpade:
+		return "SPADE"
+	case entities.CardDesignClover:
+		return "CLOVER"
+	case entities.CardDesignHeart:
+		return "HEART"
+	case entities.CardDesignDiamond:
+		return "DIAMOND"
 	default:
 		return "UNKNOWN"
 	}

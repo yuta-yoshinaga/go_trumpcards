@@ -262,6 +262,8 @@ describe('gameApi', () => {
         currentTurn: 0,
         tableMinVals: [0, 7, 7, 7, 7],
         tableMaxVals: [0, 7, 7, 7, 7],
+        tablePlaced: [0, 128, 128, 128, 128],
+        config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
         gameEndFlag: false,
         cpuActions: [],
         humanAction: null,
@@ -274,7 +276,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', index: -1, sessionId }),
+        body: JSON.stringify({ command: 'reset', index: -1, jokerTargetSuit: 0, jokerTargetValue: 0, sessionId }),
       });
       expect(result).toEqual(payload);
     });
@@ -286,9 +288,11 @@ describe('gameApi', () => {
           currentTurn: 1,
           tableMinVals: [0, 6, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 192, 128, 128, 128],
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
           gameEndFlag: false,
           cpuActions: [],
-          humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 } },
+          humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 }, targetSuit: 0, targetValue: 0 },
           message: '',
         }),
       );
@@ -296,7 +300,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         '/sevens/exec',
         expect.objectContaining({
-          body: JSON.stringify({ command: 'play', index: 2, sessionId }),
+          body: JSON.stringify({ command: 'play', index: 2, jokerTargetSuit: 0, jokerTargetValue: 0, sessionId }),
         }),
       );
     });
@@ -308,9 +312,11 @@ describe('gameApi', () => {
           currentTurn: 1,
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 128, 128, 128, 128],
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
           gameEndFlag: false,
           cpuActions: [],
-          humanAction: { playerIdx: 0, playedCard: null },
+          humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0 },
           message: '',
         }),
       );
@@ -318,7 +324,36 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         '/sevens/exec',
         expect.objectContaining({
-          body: JSON.stringify({ command: 'play', index: -1, sessionId }),
+          body: JSON.stringify({ command: 'play', index: -1, jokerTargetSuit: 0, jokerTargetValue: 0, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with joker command and target position', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 1,
+          tableMinVals: [0, 6, 7, 7, 7],
+          tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 192, 128, 128, 128],
+          config: { tunnelEnabled: false, jokerCount: 1, cpuStrategy: false },
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: {
+            playerIdx: 0,
+            playedCard: { design: 'JOKER', value: 0 },
+            targetSuit: 1,
+            targetValue: 6,
+          },
+          message: '',
+        }),
+      );
+      await sevensApi.exec('joker', 0, 1, 6);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/sevens/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'joker', index: 0, jokerTargetSuit: 1, jokerTargetValue: 6, sessionId }),
         }),
       );
     });
@@ -326,6 +361,61 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(sevensApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+
+    it('sends config fields in body when config is provided', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableMinVals: [0, 7, 7, 7, 7],
+          tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 128, 128, 128, 128],
+          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true },
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await sevensApi.exec('reset', -1, 0, 0, { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true });
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          index: -1,
+          jokerTargetSuit: 0,
+          jokerTargetValue: 0,
+          sessionId,
+          tunnelEnabled: true,
+          jokerCount: 2,
+          cpuStrategy: true,
+        }),
+      });
+    });
+
+    it('does not send config fields when config is omitted', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableMinVals: [0, 7, 7, 7, 7],
+          tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 128, 128, 128, 128],
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await sevensApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', index: -1, jokerTargetSuit: 0, jokerTargetValue: 0, sessionId }),
+      });
     });
   });
 });

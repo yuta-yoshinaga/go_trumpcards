@@ -20,11 +20,35 @@ func TestSevensInteractor_Method(t *testing.T) {
 		assert.Equal(t, mockOutput, tsi.Reset())
 	})
 
+	t.Run("success ResetWithConfig all enabled", func(t *testing.T) {
+		result := tsi.ResetWithConfig(true, 2, true)
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("success ResetWithConfig default values", func(t *testing.T) {
+		result := tsi.ResetWithConfig(false, 0, false)
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("success ResetWithConfig jokerCount clamped to 0", func(t *testing.T) {
+		result := tsi.ResetWithConfig(false, -5, false)
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("success ResetWithConfig jokerCount clamped to 2", func(t *testing.T) {
+		result := tsi.ResetWithConfig(false, 10, false)
+		assert.Equal(t, mockOutput, result)
+	})
+
 	t.Run("success Play with pass (idx -1)", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tsi.Play(-1))
 	})
 
 	t.Run("success Play with index", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tsi.Play(0))
+	})
+
+	t.Run("success PlayJoker", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tsi.PlayJoker(0, 1, 6))
 	})
 }
