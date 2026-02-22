@@ -11,9 +11,14 @@ import (
 
 // SevensWebInput 7並べWebインプット
 type SevensWebInput struct {
-	Command   string `json:"command"`
-	Index     int    `json:"index"` // 出すカードのインデックス。play コマンド用。-1 でパス。
-	SessionId string `json:"sessionId"`
+	Command          string `json:"command"`
+	Index            int    `json:"index"`                                      // 出すカードのインデックス。play コマンド用。-1 でパス。
+	JokerTargetSuit  int    `json:"jokerTargetSuit"`                            // ジョーカー配置先スート
+	JokerTargetValue int    `json:"jokerTargetValue"`                           // ジョーカー配置先値
+	TunnelEnabled    *bool  `json:"tunnelEnabled,omitempty"`                    // トンネルルール (reset時のみ)
+	JokerCount       *int   `json:"jokerCount,omitempty"`                       // ジョーカー枚数 (reset時のみ)
+	CpuStrategy      *bool  `json:"cpuStrategy,omitempty"`                      // CPU戦略 (reset時のみ)
+	SessionId        string `json:"sessionId"`
 }
 
 // SevensWebOutputCard 7並べWebアウトプットカード
@@ -36,8 +41,17 @@ type SevensWebOutputPlayer struct {
 
 // SevensWebOutputAction 7並べのプレイヤー行動記録
 type SevensWebOutputAction struct {
-	PlayerIdx  int                  `json:"playerIdx"`
-	PlayedCard *SevensWebOutputCard `json:"playedCard"` // nil = パス
+	PlayerIdx   int                  `json:"playerIdx"`
+	PlayedCard  *SevensWebOutputCard `json:"playedCard"` // nil = パス
+	TargetSuit  int                  `json:"targetSuit"`
+	TargetValue int                  `json:"targetValue"`
+}
+
+// SevensWebOutputConfig 7並べゲーム設定出力
+type SevensWebOutputConfig struct {
+	TunnelEnabled bool `json:"tunnelEnabled"`
+	JokerCount    int  `json:"jokerCount"`
+	CpuStrategy   bool `json:"cpuStrategy"`
 }
 
 // SevensWebOutput 7並べWebアウトプット
@@ -46,6 +60,8 @@ type SevensWebOutput struct {
 	CurrentTurn  int                      `json:"currentTurn"`
 	TableMinVals [5]int                   `json:"tableMinVals"`
 	TableMaxVals [5]int                   `json:"tableMaxVals"`
+	TablePlaced  [5]int                   `json:"tablePlaced"`
+	Config       SevensWebOutputConfig    `json:"config"`
 	GameEndFlag  bool                     `json:"gameEndFlag"`
 	CpuActions   []*SevensWebOutputAction `json:"cpuActions"`
 	HumanAction  *SevensWebOutputAction   `json:"humanAction"`
@@ -88,9 +104,15 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 	switch param.Command {
 	case "r", "reset":
-		swc.writePresenterResponse(w, sgi.Reset())
+		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil {
+			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), derefInt(param.JokerCount), derefBool(param.CpuStrategy)))
+		} else {
+			swc.writePresenterResponse(w, sgi.Reset())
+		}
 	case "p", "play":
 		swc.writePresenterResponse(w, sgi.Play(param.Index))
+	case "j", "joker":
+		swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue))
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))
@@ -106,6 +128,20 @@ func (swc *SevensWebController) writePresenterResponse(w rest.ResponseWriter, re
 	}
 	w.WriteHeader(http.StatusOK)
 	_ = w.WriteJson(json.RawMessage(responseStr))
+}
+
+func derefBool(p *bool) bool {
+	if p == nil {
+		return false
+	}
+	return *p
+}
+
+func derefInt(p *int) int {
+	if p == nil {
+		return 0
+	}
+	return *p
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
