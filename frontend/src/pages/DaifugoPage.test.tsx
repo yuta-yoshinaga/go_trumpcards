@@ -10,6 +10,15 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(daifugoApi.exec);
 
+const defaultConfig = {
+  jokerCount: 2,
+  eightCutEnabled: true,
+  suitLockEnabled: true,
+  elevenBackEnabled: true,
+  sequenceEnabled: true,
+  cardExchangeEnabled: true,
+};
+
 const humanTurnState: DaifugoResponse = {
   players: [
     {
@@ -32,6 +41,13 @@ const humanTurnState: DaifugoResponse = {
   tableCards: [],
   lastPlayPlayerIdx: -1,
   gameEndFlag: false,
+  revolutionActive: false,
+  elevenBackActive: false,
+  suitLocked: false,
+  lockedSuit: '',
+  tableIsSequence: false,
+  config: defaultConfig,
+  exchangeActions: [],
   cpuActions: [],
   humanAction: null,
   message: '',
@@ -224,5 +240,62 @@ describe('DaifugoPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     render(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('考え中...')).toBeInTheDocument());
+  });
+
+  it('shows revolution badge when revolutionActive is true', async () => {
+    const revolutionState: DaifugoResponse = {
+      ...humanTurnState,
+      revolutionActive: true,
+    };
+    mockExec.mockResolvedValue(revolutionState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('革命中')).toBeInTheDocument());
+  });
+
+  it('shows 11-back badge when elevenBackActive is true', async () => {
+    const elevenBackState: DaifugoResponse = {
+      ...humanTurnState,
+      elevenBackActive: true,
+    };
+    mockExec.mockResolvedValue(elevenBackState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('11バック')).toBeInTheDocument());
+  });
+
+  it('shows suit lock badge when suitLocked is true', async () => {
+    const suitLockedState: DaifugoResponse = {
+      ...humanTurnState,
+      suitLocked: true,
+      lockedSuit: 'SPADE',
+    };
+    mockExec.mockResolvedValue(suitLockedState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('スート縛り: SPADE')).toBeInTheDocument());
+  });
+
+  it('shows sequence badge when tableIsSequence is true', async () => {
+    const seqState: DaifugoResponse = {
+      ...humanTurnState,
+      tableIsSequence: true,
+    };
+    mockExec.mockResolvedValue(seqState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('階段')).toBeInTheDocument());
+  });
+
+  it('shows card exchange log when exchangeActions is non-empty', async () => {
+    const exchangeState: DaifugoResponse = {
+      ...humanTurnState,
+      exchangeActions: [
+        {
+          fromPlayerIdx: 3,
+          toPlayerIdx: 0,
+          cards: [{ design: 'SPADE', value: 2 }],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(exchangeState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/カード交換/)).toBeInTheDocument());
   });
 });

@@ -119,12 +119,33 @@ func TestDaifugoPlayer_SortCardsByStrength(t *testing.T) {
 		p.AddCard(entities.NewCard(entities.CardDesignSpade, 13, false)) // revolution strength 5
 		p.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))  // revolution strength 4
 		p.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))  // revolution strength 3 (weakest)
-		p.SortCardsByStrength(entities.DaifugoCardStrengthRevolution)
+		p.SortCardsByStrength(func(c *entities.Card) int {
+			return entities.DaifugoCardStrengthRevolution(c.GetValue())
+		})
 		// Expected order by revolution strength (weakest first): 2, A, K, 3
 		assert.Equal(t, 2, p.GetCard(0).GetValue())
 		assert.Equal(t, 1, p.GetCard(1).GetValue())
 		assert.Equal(t, 13, p.GetCard(2).GetValue())
 		assert.Equal(t, 3, p.GetCard(3).GetValue())
+	})
+
+	t.Run("success SetPrevRank and GetPrevRank", func(t *testing.T) {
+		p := entities.NewDaifugoPlayer(true)
+		assert.Equal(t, -1, p.GetPrevRank())
+		p.SetPrevRank(2)
+		assert.Equal(t, 2, p.GetPrevRank())
+	})
+
+	t.Run("success SortCards with joker puts joker last", func(t *testing.T) {
+		p := entities.NewDaifugoPlayer(true)
+		p.AddCard(entities.NewCard(entities.CardDesignJoker, 1, false))
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		p.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
+		p.SortCards()
+		// Expected: 3(str=3), 2(str=15), Joker(str=16)
+		assert.Equal(t, 3, p.GetCard(0).GetValue())
+		assert.Equal(t, 2, p.GetCard(1).GetValue())
+		assert.Equal(t, entities.CardDesignJoker, p.GetCard(2).GetDesign())
 	})
 }
 

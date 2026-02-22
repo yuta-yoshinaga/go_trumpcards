@@ -47,9 +47,34 @@ func (p *DaifugoCuiPresenter) Output(dg *entities.Daifugo) string {
 
 	res += "----------\n"
 
-	// 革命フラグ
+	// ローカルルール状態
 	if dg.GetRevolutionActive() {
 		res += "【革命中】2が最弱、3が最強\n"
+	}
+	if dg.GetElevenBackActive() {
+		res += "【11バック】強さが逆転中\n"
+	}
+	if dg.GetSuitLocked() {
+		res += fmt.Sprintf("【スート縛り】%s\n", p.getSuitName(dg.GetLockedSuit()))
+	}
+	if dg.GetTableIsSequence() {
+		res += "【階段】\n"
+	}
+
+	// カード交換記録
+	exchangeActions := dg.GetExchangeActions()
+	if len(exchangeActions) > 0 {
+		res += "[カード交換]\n"
+		for _, ex := range exchangeActions {
+			cardStrs := make([]string, len(ex.Cards))
+			for i, c := range ex.Cards {
+				cardStrs[i] = p.getCardStr(c)
+			}
+			res += fmt.Sprintf("%s → %s: %s\n",
+				p.getPlayerName(dg, ex.FromPlayerIdx),
+				p.getPlayerName(dg, ex.ToPlayerIdx),
+				strings.Join(cardStrs, ", "))
+		}
 	}
 
 	// 場のカード
@@ -143,8 +168,26 @@ func (p *DaifugoCuiPresenter) getCardStr(card *entities.Card) string {
 		return "HEART " + strconv.Itoa(card.GetValue())
 	case entities.CardDesignDiamond:
 		return "DIAMOND " + strconv.Itoa(card.GetValue())
+	case entities.CardDesignJoker:
+		return "JOKER"
 	default:
 		return "UNKNOWN"
+	}
+}
+
+// getSuitName スート名取得
+func (p *DaifugoCuiPresenter) getSuitName(suit int) string {
+	switch suit {
+	case entities.CardDesignSpade:
+		return "SPADE"
+	case entities.CardDesignClover:
+		return "CLOVER"
+	case entities.CardDesignHeart:
+		return "HEART"
+	case entities.CardDesignDiamond:
+		return "DIAMOND"
+	default:
+		return "不明"
 	}
 }
 

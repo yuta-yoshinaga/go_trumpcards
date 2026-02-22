@@ -76,12 +76,34 @@ export interface DaifugoAction {
   playedCards: Card[] | null; // null = pass
 }
 
+export interface DaifugoConfig {
+  jokerCount: number;
+  eightCutEnabled: boolean;
+  suitLockEnabled: boolean;
+  elevenBackEnabled: boolean;
+  sequenceEnabled: boolean;
+  cardExchangeEnabled: boolean;
+}
+
+export interface DaifugoExchangeAction {
+  fromPlayerIdx: number;
+  toPlayerIdx: number;
+  cards: Card[];
+}
+
 export interface DaifugoResponse {
   players: DaifugoPlayerData[];
   currentTurn: number;
   tableCards: Card[];
   lastPlayPlayerIdx: number;
   gameEndFlag: boolean;
+  revolutionActive: boolean;
+  elevenBackActive: boolean;
+  suitLocked: boolean;
+  lockedSuit: string;
+  tableIsSequence: boolean;
+  config: DaifugoConfig;
+  exchangeActions: DaifugoExchangeAction[];
   cpuActions: DaifugoAction[];
   humanAction: DaifugoAction | null;
   message: string;

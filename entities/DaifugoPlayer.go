@@ -8,6 +8,7 @@ type DaifugoPlayer struct {
 	isHuman    bool
 	isFinished bool
 	rank       int // -1 = まだ確定していない, 1 = 大富豪, 2 = 富豪, 3 = 平民, 4 = 大貧民
+	prevRank   int // 前回のランク (-1 = なし)
 }
 
 // NewDaifugoPlayer コンストラクタ
@@ -17,6 +18,7 @@ func NewDaifugoPlayer(isHuman bool) *DaifugoPlayer {
 		isHuman:    isHuman,
 		isFinished: false,
 		rank:       -1,
+		prevRank:   -1,
 	}
 }
 
@@ -34,6 +36,12 @@ func (p *DaifugoPlayer) GetRank() int { return p.rank }
 
 // SetRank ランク設定
 func (p *DaifugoPlayer) SetRank(r int) { p.rank = r }
+
+// GetPrevRank 前回のランク取得 (-1 = なし)
+func (p *DaifugoPlayer) GetPrevRank() int { return p.prevRank }
+
+// SetPrevRank 前回のランク設定
+func (p *DaifugoPlayer) SetPrevRank(r int) { p.prevRank = r }
 
 // RemoveCards 指定インデックスのカードを手札から取り除いて返す (昇順ソートされた順で返す)
 // 重複するインデックスは無視される。
@@ -64,13 +72,18 @@ func (p *DaifugoPlayer) RemoveCards(indices []int) []*Card {
 }
 
 // SortCardsByStrength カードを指定強さ関数で弱い順にソート
-func (p *DaifugoPlayer) SortCardsByStrength(strengthFn func(int) int) {
+func (p *DaifugoPlayer) SortCardsByStrength(strengthFn func(*Card) int) {
 	sort.Slice(p.cards, func(i, j int) bool {
-		return strengthFn(p.cards[i].GetValue()) < strengthFn(p.cards[j].GetValue())
+		return strengthFn(p.cards[i]) < strengthFn(p.cards[j])
 	})
 }
 
 // SortCards カードを大富豪の通常ルールに従った強さ順 (弱い順) にソート
 func (p *DaifugoPlayer) SortCards() {
-	p.SortCardsByStrength(DaifugoCardStrength)
+	p.SortCardsByStrength(func(c *Card) int {
+		if c.GetDesign() == CardDesignJoker {
+			return DaifugoJokerStrength
+		}
+		return DaifugoCardStrength(c.GetValue())
+	})
 }

@@ -38,17 +38,40 @@ type DaifugoWebOutputAction struct {
 	PlayedCards []*DaifugoWebOutputCard `json:"playedCards"` // nil = パス
 }
 
+// DaifugoWebOutputExchangeAction カード交換記録
+type DaifugoWebOutputExchangeAction struct {
+	FromPlayerIdx int                     `json:"fromPlayerIdx"`
+	ToPlayerIdx   int                     `json:"toPlayerIdx"`
+	Cards         []*DaifugoWebOutputCard `json:"cards"`
+}
+
+// DaifugoWebOutputConfig ローカルルール設定
+type DaifugoWebOutputConfig struct {
+	JokerCount          int  `json:"jokerCount"`
+	EightCutEnabled     bool `json:"eightCutEnabled"`
+	SuitLockEnabled     bool `json:"suitLockEnabled"`
+	ElevenBackEnabled   bool `json:"elevenBackEnabled"`
+	SequenceEnabled     bool `json:"sequenceEnabled"`
+	CardExchangeEnabled bool `json:"cardExchangeEnabled"`
+}
+
 // DaifugoWebOutput 大富豪Webアウトプット
 type DaifugoWebOutput struct {
-	Players           []*DaifugoWebOutputPlayer `json:"players"`
-	CurrentTurn       int                       `json:"currentTurn"`
-	TableCards        []*DaifugoWebOutputCard   `json:"tableCards"`
-	LastPlayPlayerIdx int                       `json:"lastPlayPlayerIdx"`
-	GameEndFlag       bool                      `json:"gameEndFlag"`
-	RevolutionActive  bool                      `json:"revolutionActive"`
-	CpuActions        []*DaifugoWebOutputAction `json:"cpuActions"`
-	HumanAction       *DaifugoWebOutputAction   `json:"humanAction"`
-	Message           string                    `json:"message"`
+	Players           []*DaifugoWebOutputPlayer        `json:"players"`
+	CurrentTurn       int                              `json:"currentTurn"`
+	TableCards        []*DaifugoWebOutputCard          `json:"tableCards"`
+	LastPlayPlayerIdx int                              `json:"lastPlayPlayerIdx"`
+	GameEndFlag       bool                             `json:"gameEndFlag"`
+	RevolutionActive  bool                             `json:"revolutionActive"`
+	ElevenBackActive  bool                             `json:"elevenBackActive"`
+	SuitLocked        bool                             `json:"suitLocked"`
+	LockedSuit        string                           `json:"lockedSuit"`
+	TableIsSequence   bool                             `json:"tableIsSequence"`
+	Config            DaifugoWebOutputConfig           `json:"config"`
+	ExchangeActions   []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
+	CpuActions        []*DaifugoWebOutputAction        `json:"cpuActions"`
+	HumanAction       *DaifugoWebOutputAction          `json:"humanAction"`
+	Message           string                           `json:"message"`
 }
 
 // DaifugoWebController 大富豪Webコントローラークラス
@@ -111,6 +134,9 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 	if response.CpuActions == nil {
 		response.CpuActions = make([]*DaifugoWebOutputAction, 0)
+	}
+	if response.ExchangeActions == nil {
+		response.ExchangeActions = make([]*DaifugoWebOutputExchangeAction, 0)
 	}
 	w.WriteHeader(status)
 	_ = w.WriteJson(response)
