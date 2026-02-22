@@ -31,7 +31,26 @@ export const daifugoApi = {
     postJson<DaifugoResponse>('/daifugo/exec', { command, indices, sessionId }),
 };
 
+export interface SevensConfigInput {
+  tunnelEnabled?: boolean;
+  jokerCount?: number;
+  cpuStrategy?: boolean;
+}
+
 export const sevensApi = {
-  exec: (command: 'reset' | 'play' | 'joker', index = -1, jokerTargetSuit = 0, jokerTargetValue = 0) =>
-    postJson<SevensResponse>('/sevens/exec', { command, index, jokerTargetSuit, jokerTargetValue, sessionId }),
+  exec: (
+    command: 'reset' | 'play' | 'joker',
+    index = -1,
+    jokerTargetSuit = 0,
+    jokerTargetValue = 0,
+    config?: SevensConfigInput,
+  ) =>
+    postJson<SevensResponse>('/sevens/exec', {
+      command,
+      index,
+      jokerTargetSuit,
+      jokerTargetValue,
+      sessionId,
+      ...config,
+    }),
 };

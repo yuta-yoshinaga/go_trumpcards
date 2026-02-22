@@ -80,7 +80,7 @@ describe('SevensPage', () => {
 
   it('calls reset command on mount', async () => {
     render(<SevensPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, undefined));
   });
 
   it('renders human player area labeled あなた', async () => {
@@ -140,7 +140,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1, 0, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1, 0, 0, undefined));
   });
 
   it('calls play with card index when a playable card is clicked', async () => {
@@ -149,7 +149,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByAltText('SPADE 6'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0, 0, undefined));
   });
 
   it('does not call play when a non-playable card is clicked', async () => {
@@ -166,7 +166,13 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        jokerCount: 0,
+        cpuStrategy: false,
+      }),
+    );
   });
 
   it('shows human action log after play', async () => {
@@ -307,5 +313,50 @@ describe('SevensPage', () => {
     mockExec.mockResolvedValue(tunnelState);
     render(<SevensPage />);
     await waitFor(() => expect(screen.getByText('[トンネル]')).toBeInTheDocument());
+  });
+
+  it('renders config panel with default values', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+    expect(screen.getByLabelText('トンネル')).not.toBeChecked();
+    expect(screen.getByLabelText('CPU戦略')).not.toBeChecked();
+    expect(screen.getByRole('combobox')).toHaveValue('0');
+  });
+
+  it('sends config to API when reset button is clicked with config toggled', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('トンネル'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '1' } });
+    fireEvent.click(screen.getByLabelText('CPU戦略'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { tunnelEnabled: true, jokerCount: 1, cpuStrategy: true },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: true,
+        jokerCount: 1,
+        cpuStrategy: true,
+      }),
+    );
+  });
+
+  it('syncs config state from server response', async () => {
+    const configState: SevensResponse = {
+      ...humanTurnState,
+      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true },
+    };
+    mockExec.mockResolvedValue(configState);
+    render(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByLabelText('トンネル')).toBeChecked();
+      expect(screen.getByLabelText('CPU戦略')).toBeChecked();
+      expect(screen.getByRole('combobox')).toHaveValue('2');
+    });
   });
 });

@@ -1075,6 +1075,23 @@ components:
             Range: 1–13.
           default: 0
           example: 6
+        tunnelEnabled:
+          type: boolean
+          description: |
+            Enable tunnel rule (A↔K circular). Only used with `reset` command.
+          example: false
+        jokerCount:
+          type: integer
+          description: |
+            Number of jokers in the deck (0–2). Only used with `reset` command.
+          minimum: 0
+          maximum: 2
+          example: 0
+        cpuStrategy:
+          type: boolean
+          description: |
+            Enable CPU strategic card selection. Only used with `reset` command.
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)

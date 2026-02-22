@@ -7,6 +7,12 @@ type MockSevensInteractor struct {
 	mock.Mock
 }
 
+// ResetWithConfig モック
+func (_m *MockSevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool) string {
+	ret := _m.Called(tunnelEnabled, jokerCount, cpuStrategy)
+	return ret.Get(0).(string)
+}
+
 // Reset モック
 func (_m *MockSevensInteractor) Reset() string {
 	ret := _m.Called()

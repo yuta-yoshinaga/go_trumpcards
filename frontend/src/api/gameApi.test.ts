@@ -362,5 +362,60 @@ describe('gameApi', () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(sevensApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
+
+    it('sends config fields in body when config is provided', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableMinVals: [0, 7, 7, 7, 7],
+          tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 128, 128, 128, 128],
+          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true },
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await sevensApi.exec('reset', -1, 0, 0, { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true });
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          index: -1,
+          jokerTargetSuit: 0,
+          jokerTargetValue: 0,
+          sessionId,
+          tunnelEnabled: true,
+          jokerCount: 2,
+          cpuStrategy: true,
+        }),
+      });
+    });
+
+    it('does not send config fields when config is omitted', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableMinVals: [0, 7, 7, 7, 7],
+          tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 128, 128, 128, 128],
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await sevensApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', index: -1, jokerTargetSuit: 0, jokerTargetValue: 0, sessionId }),
+      });
+    });
   });
 });

@@ -12,9 +12,12 @@ import (
 // SevensWebInput 7並べWebインプット
 type SevensWebInput struct {
 	Command          string `json:"command"`
-	Index            int    `json:"index"`            // 出すカードのインデックス。play コマンド用。-1 でパス。
-	JokerTargetSuit  int    `json:"jokerTargetSuit"`  // ジョーカー配置先スート
-	JokerTargetValue int    `json:"jokerTargetValue"` // ジョーカー配置先値
+	Index            int    `json:"index"`                                      // 出すカードのインデックス。play コマンド用。-1 でパス。
+	JokerTargetSuit  int    `json:"jokerTargetSuit"`                            // ジョーカー配置先スート
+	JokerTargetValue int    `json:"jokerTargetValue"`                           // ジョーカー配置先値
+	TunnelEnabled    *bool  `json:"tunnelEnabled,omitempty"`                    // トンネルルール (reset時のみ)
+	JokerCount       *int   `json:"jokerCount,omitempty"`                       // ジョーカー枚数 (reset時のみ)
+	CpuStrategy      *bool  `json:"cpuStrategy,omitempty"`                      // CPU戦略 (reset時のみ)
 	SessionId        string `json:"sessionId"`
 }
 
@@ -101,7 +104,11 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 	switch param.Command {
 	case "r", "reset":
-		swc.writePresenterResponse(w, sgi.Reset())
+		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil {
+			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), derefInt(param.JokerCount), derefBool(param.CpuStrategy)))
+		} else {
+			swc.writePresenterResponse(w, sgi.Reset())
+		}
 	case "p", "play":
 		swc.writePresenterResponse(w, sgi.Play(param.Index))
 	case "j", "joker":
@@ -121,6 +128,20 @@ func (swc *SevensWebController) writePresenterResponse(w rest.ResponseWriter, re
 	}
 	w.WriteHeader(http.StatusOK)
 	_ = w.WriteJson(json.RawMessage(responseStr))
+}
+
+func derefBool(p *bool) bool {
+	if p == nil {
+		return false
+	}
+	return *p
+}
+
+func derefInt(p *int) int {
+	if p == nil {
+		return 0
+	}
+	return *p
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す

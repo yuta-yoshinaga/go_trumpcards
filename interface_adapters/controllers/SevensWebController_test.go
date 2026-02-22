@@ -160,6 +160,74 @@ func TestSevensWebController_Method(t *testing.T) {
 	})
 }
 
+func TestSevensWebController_ResetWithConfig(t *testing.T) {
+	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":true,"jokerCount":2,"cpuStrategy":true},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+
+	t.Run("reset with all config fields calls ResetWithConfig", func(t *testing.T) {
+		sgiMock := new(usecases.MockSevensInteractor)
+		sgiMock.On("ResetWithConfig", true, 2, true).Return(mockOutput)
+		factory := func() uc.SevensInteractorIF { return sgiMock }
+		tswc := controllers.NewSevensWebController(factory)
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
+		api.SetApp(router)
+
+		var jsonInput controllers.SevensWebInput
+		_ = json.Unmarshal([]byte(`{"command": "reset", "tunnelEnabled": true, "jokerCount": 2, "cpuStrategy": true, "sessionId": "test-cfg-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+		sgiMock.AssertCalled(t, "ResetWithConfig", true, 2, true)
+		sgiMock.AssertNotCalled(t, "Reset")
+	})
+
+	t.Run("reset without config fields calls Reset", func(t *testing.T) {
+		defaultOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+		sgiMock := new(usecases.MockSevensInteractor)
+		sgiMock.On("Reset").Return(defaultOutput)
+		factory := func() uc.SevensInteractorIF { return sgiMock }
+		tswc := controllers.NewSevensWebController(factory)
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
+		api.SetApp(router)
+
+		var jsonInput controllers.SevensWebInput
+		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-cfg-2"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(defaultOutput)
+		sgiMock.AssertCalled(t, "Reset")
+		sgiMock.AssertNotCalled(t, "ResetWithConfig")
+	})
+
+	t.Run("reset with partial config calls ResetWithConfig with defaults", func(t *testing.T) {
+		partialOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":true,"jokerCount":0,"cpuStrategy":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+		sgiMock := new(usecases.MockSevensInteractor)
+		sgiMock.On("ResetWithConfig", true, 0, false).Return(partialOutput)
+		factory := func() uc.SevensInteractorIF { return sgiMock }
+		tswc := controllers.NewSevensWebController(factory)
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
+		api.SetApp(router)
+
+		var jsonInput controllers.SevensWebInput
+		_ = json.Unmarshal([]byte(`{"command": "reset", "tunnelEnabled": true, "sessionId": "test-cfg-3"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(partialOutput)
+		sgiMock.AssertCalled(t, "ResetWithConfig", true, 0, false)
+	})
+}
+
 func TestSevensWebController_SessionIsolation(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 	mockA := new(usecases.MockSevensInteractor)

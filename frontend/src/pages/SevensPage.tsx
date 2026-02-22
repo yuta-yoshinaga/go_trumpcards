@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { SevensConfigInput } from '../api/gameApi';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
@@ -282,16 +283,27 @@ function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, onPlay }
 export function SevensPage() {
   const [state, setState] = useState<SevensResponse | null>(null);
   const [jokerCardIdx, setJokerCardIdx] = useState<number | null>(null);
+  const [cfgTunnel, setCfgTunnel] = useState(false);
+  const [cfgJokerCount, setCfgJokerCount] = useState(0);
+  const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
 
-  const exec = useCallback(async (command: 'reset' | 'play' | 'joker', index = -1, suit = 0, value = 0) => {
-    try {
-      const res = await sevensApi.exec(command, index, suit, value);
-      setState(res);
-      setJokerCardIdx(null);
-    } catch {
-      console.error('sevens request failed');
-    }
-  }, []);
+  const exec = useCallback(
+    async (command: 'reset' | 'play' | 'joker', index = -1, suit = 0, value = 0, config?: SevensConfigInput) => {
+      try {
+        const res = await sevensApi.exec(command, index, suit, value, config);
+        setState(res);
+        setJokerCardIdx(null);
+        if (res.config) {
+          setCfgTunnel(res.config.tunnelEnabled);
+          setCfgJokerCount(res.config.jokerCount);
+          setCfgCpuStrategy(res.config.cpuStrategy);
+        }
+      } catch {
+        console.error('sevens request failed');
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     exec('reset');
@@ -390,9 +402,44 @@ export function SevensPage() {
           </div>
         )}
 
+        {/* Config panel */}
+        <div className="bg-black/30 rounded-lg py-1.5 px-3 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.85em] text-white/80">
+          <span className="text-yellow-300 font-bold">ルール設定 (リセット時に適用)</span>
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" checked={cfgTunnel} onChange={(e) => setCfgTunnel(e.target.checked)} />
+            トンネル
+          </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            ジョーカー
+            <select
+              value={cfgJokerCount}
+              onChange={(e) => setCfgJokerCount(Number(e.target.value))}
+              className="bg-black/50 text-white rounded px-1 py-0.5"
+            >
+              <option value={0}>0</option>
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" checked={cfgCpuStrategy} onChange={(e) => setCfgCpuStrategy(e.target.checked)} />
+            CPU戦略
+          </label>
+        </div>
+
         {/* Buttons */}
         <div className="text-center">
-          <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[90px]`}
+            onClick={() =>
+              exec('reset', -1, 0, 0, {
+                tunnelEnabled: cfgTunnel,
+                jokerCount: cfgJokerCount,
+                cpuStrategy: cfgCpuStrategy,
+              })
+            }
+          >
             リセット
           </button>
           <button

@@ -31,6 +31,24 @@ func (c *SevensCuiController) Exec(command string) string {
 	case "q", "quit":
 		return "bye."
 	case "r", "reset":
+		if len(fields) > 1 {
+			tunnelEnabled := false
+			jokerCount := 0
+			cpuStrategy := false
+			for _, f := range fields[1:] {
+				switch {
+				case f == "tunnel":
+					tunnelEnabled = true
+				case strings.HasPrefix(f, "joker="):
+					if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "joker=")); err == nil {
+						jokerCount = parsed
+					}
+				case f == "strategy":
+					cpuStrategy = true
+				}
+			}
+			return c.sgi.ResetWithConfig(tunnelEnabled, jokerCount, cpuStrategy)
+		}
 		return c.sgi.Reset()
 	case "p", "play":
 		idx := -1 // デフォルトはパス
