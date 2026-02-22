@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
 	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
 	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/presenters"
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
@@ -25,7 +26,10 @@ type TrumpCardsWeb struct {
 func NewTrumpCardsWeb() *TrumpCardsWeb {
 	return &TrumpCardsWeb{
 		bjc: controllers.NewBlackJackWebController(func() usecases.BlackJackInteractorIF {
-			return usecases.NewBlackJackInteractor(presenters.NewBlackJackWebPresenter())
+			return usecases.NewBlackJackInteractor(
+				entities.NewBlackJack(entities.NewTrumpCards(0), entities.NewBlackJackPlayer(), entities.NewBlackJackPlayer()),
+				presenters.NewBlackJackWebPresenter(),
+			)
 		}),
 		pkc: controllers.NewPokerWebController(func() usecases.PokerInteractorIF {
 			return usecases.NewPokerInteractor(presenters.NewPokerWebPresenter())

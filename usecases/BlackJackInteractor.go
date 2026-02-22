@@ -19,9 +19,9 @@ type BlackJackInteractor struct {
 }
 
 // NewBlackJackInteractor コンストラクタ
-func NewBlackJackInteractor(bjp presenters.BlackJackPresenter) *BlackJackInteractor {
+func NewBlackJackInteractor(bj *entities.BlackJack, bjp presenters.BlackJackPresenter) *BlackJackInteractor {
 	return &BlackJackInteractor{
-		bj:  entities.NewBlackJack(entities.NewTrumpCards(0), entities.NewBlackJackPlayer(), entities.NewBlackJackPlayer()),
+		bj:  bj,
 		bjp: bjp,
 	}
 }
