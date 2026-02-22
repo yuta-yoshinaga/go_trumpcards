@@ -41,9 +41,9 @@ func (bjp *BlackJackWebPresenter) Output(bj *entities.BlackJack) string {
 	}
 	if bj.GetGameEndFlag() {
 		switch bj.GameJudgment() {
-		case 0:
+		case entities.GameResultDraw:
 			resObj.Message = "It is a draw."
-		case 1:
+		case entities.GameResultWin:
 			resObj.Message = "You are the winner."
 		default:
 			resObj.Message = "It is your loss."

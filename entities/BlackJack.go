@@ -1,5 +1,14 @@
 package entities
 
+// GameResult ゲーム勝敗結果
+type GameResult int
+
+const (
+	GameResultWin  GameResult = 1
+	GameResultDraw GameResult = 0
+	GameResultLose GameResult = -1
+)
+
 // BlackJack ブラックジャッククラス
 type BlackJack struct {
 	trumpCards  *TrumpCards      // トランプカード
@@ -76,35 +85,35 @@ func (b *BlackJack) DealerStand() {
 }
 
 // GameJudgment ゲーム勝敗判定
-func (b *BlackJack) GameJudgment() int {
-	res := 0
+func (b *BlackJack) GameJudgment() GameResult {
+	res := GameResultDraw
 	score1 := b.player.GetScore()
 	score2 := b.dealer.GetScore()
 	diff1 := 21 - score1
 	diff2 := 21 - score2
 	if 22 <= score1 && 22 <= score2 {
 		// プレイヤー・ディーラー共にバーストしているので負け
-		res = -1
+		res = GameResultLose
 	} else if 22 <= score1 && score2 <= 21 {
 		// プレイヤーバーストしているので負け
-		res = -1
+		res = GameResultLose
 	} else if score1 <= 21 && 22 <= score2 {
 		// ディーラーバーストしているので勝ち
-		res = 1
+		res = GameResultWin
 	} else {
 		if diff1 == diff2 {
 			// 同スコアなら引き分け
-			res = 0
+			res = GameResultDraw
 			if score1 == 21 && b.player.GetCardsSize() == 2 && b.dealer.GetCardsSize() != 2 {
 				// プレイヤーのみがピュアブラックジャックならプレイヤーの勝ち
-				res = 1
+				res = GameResultWin
 			}
 		} else if diff1 < diff2 {
 			// プレイヤーの方が21に近いので勝ち
-			res = 1
+			res = GameResultWin
 		} else {
 			// ディーラーの方が21に近いので負け
-			res = -1
+			res = GameResultLose
 		}
 	}
 	return res
