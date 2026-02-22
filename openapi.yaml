@@ -909,6 +909,51 @@ components:
           items:
             $ref: '#/components/schemas/Card'
 
+    DaifugoConfig:
+      type: object
+      properties:
+        jokerCount:
+          type: integer
+          description: Number of jokers in the deck
+          example: 2
+        eightCutEnabled:
+          type: boolean
+          description: Whether 8切り (eight-cut) rule is enabled
+          example: true
+        suitLockEnabled:
+          type: boolean
+          description: Whether スート縛り (suit lock) rule is enabled
+          example: true
+        elevenBackEnabled:
+          type: boolean
+          description: Whether 11バック (eleven-back) rule is enabled
+          example: true
+        sequenceEnabled:
+          type: boolean
+          description: Whether 階段 (sequence/straight) rule is enabled
+          example: true
+        cardExchangeEnabled:
+          type: boolean
+          description: Whether カード交換 (card exchange) based on previous ranks is enabled
+          example: true
+
+    DaifugoExchangeAction:
+      type: object
+      properties:
+        fromPlayerIdx:
+          type: integer
+          description: Index of the player who gave cards
+          example: 3
+        toPlayerIdx:
+          type: integer
+          description: Index of the player who received cards
+          example: 0
+        cards:
+          type: array
+          description: Cards that were exchanged
+          items:
+            $ref: '#/components/schemas/Card'
+
     DaifugoResponse:
       type: object
       required:
@@ -917,6 +962,13 @@ components:
         - tableCards
         - lastPlayPlayerIdx
         - gameEndFlag
+        - revolutionActive
+        - elevenBackActive
+        - suitLocked
+        - lockedSuit
+        - tableIsSequence
+        - config
+        - exchangeActions
         - cpuActions
         - humanAction
         - message
@@ -943,6 +995,33 @@ components:
           type: boolean
           description: Whether the game has ended
           example: false
+        revolutionActive:
+          type: boolean
+          description: Whether revolution is active (strength order reversed)
+          example: false
+        elevenBackActive:
+          type: boolean
+          description: Whether 11-back is active (temporary strength reversal)
+          example: false
+        suitLocked:
+          type: boolean
+          description: Whether suit lock is active
+          example: false
+        lockedSuit:
+          type: string
+          description: The locked suit name (e.g. SPADE, HEART) when suitLocked is true
+          example: ""
+        tableIsSequence:
+          type: boolean
+          description: Whether the current table play is a sequence (階段)
+          example: false
+        config:
+          $ref: '#/components/schemas/DaifugoConfig'
+        exchangeActions:
+          type: array
+          description: Card exchange actions that occurred at game start (based on previous rankings)
+          items:
+            $ref: '#/components/schemas/DaifugoExchangeAction'
         cpuActions:
           type: array
           description: CPU actions that occurred after the human's last action

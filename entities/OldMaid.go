@@ -75,6 +75,11 @@ func (o *OldMaid) Reset() {
 		p.SetIsFinished(false)
 	}
 
+	// プレイ順をランダムにする
+	rand.Shuffle(len(o.players), func(i, j int) {
+		o.players[i], o.players[j] = o.players[j], o.players[i]
+	})
+
 	// 全カードを配る
 	idx := 0
 	for {
@@ -174,6 +179,8 @@ func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 	}
 	card := target.RemoveCard(idx)
 	player.AddCard(card)
+	// 引いたカードの位置がわからないよう手札をシャッフル
+	player.ShuffleCards()
 
 	// 最後の引き情報を更新
 	o.lastDrawPlayerIdx = playerIdx
@@ -233,13 +240,42 @@ func (o *OldMaid) PlayerDraw(cardIdx int) {
 	}
 }
 
+// CPU戦略用定数
+const (
+	cpuEdgeSelectThreshold = 3  // 端のカードを選ぶ閾値 (30% = 3/10)
+	cpuSelectTotalCases    = 10 // 乱数の全選択肢数
+	cpuEdgeSides           = 2  // 先頭か末尾か
+)
+
+// cpuSelectCardIdx 対象プレイヤーの手札枚数を受け取り、引くカードのインデックスを戦略的に選択する。
+// 30%の確率で端のカード（先頭または末尾）を選択し、残りはランダム選択。
+// 「誰から引くか」の解決は呼び出し元が担う。
+func cpuSelectCardIdx(size int) int {
+	if size <= 1 {
+		return 0
+	}
+	// 30%の確率で端のカードを狙う
+	if rand.Intn(cpuSelectTotalCases) < cpuEdgeSelectThreshold {
+		if rand.Intn(cpuEdgeSides) == 0 {
+			return 0 // 先頭のカード
+		}
+		return size - 1 // 末尾のカード
+	}
+	return rand.Intn(size)
+}
+
 // CpuDraw 現在の手番がCPUの場合に1ターン実行
 func (o *OldMaid) CpuDraw() {
 	if o.gameEndFlag || o.players[o.currentTurn].GetIsHuman() {
 		return
 	}
 	playerIdx := o.currentTurn
-	card := o.drawCard(playerIdx, -1)
+	targetIdx := o.getNextActivePlayer(playerIdx)
+	if targetIdx < 0 || targetIdx >= len(o.players) {
+		return
+	}
+	cardIdx := cpuSelectCardIdx(o.players[targetIdx].GetCardsSize())
+	card := o.drawCard(playerIdx, cardIdx)
 	action := &OldMaidCpuAction{
 		DrawPlayerIdx:  playerIdx,
 		DrawFromIdx:    o.lastDrawFromIdx,

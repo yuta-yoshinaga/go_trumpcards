@@ -3,6 +3,7 @@ package usecases_test
 import (
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases/presenters"
 
@@ -13,7 +14,7 @@ import (
 func TestBlackJackInteractor_Method(t *testing.T) {
 	bjpMock := new(presenters.MockBlackJackPresenter)
 	bjpMock.On("Output", mock.AnythingOfType("string")).Return("----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n")
-	tbj := usecases.NewBlackJackInteractor(bjpMock)
+	tbj := usecases.NewBlackJackInteractor(entities.NewDefaultBlackJack(), bjpMock)
 	t.Run("success Reset", func(t *testing.T) {
 		assert.Equal(t, "----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n", tbj.Reset())
 	})

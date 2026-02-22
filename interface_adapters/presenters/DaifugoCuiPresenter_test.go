@@ -24,7 +24,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output initial state", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 7, false))
@@ -43,7 +43,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output with table cards", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// Human plays a 5
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
@@ -61,7 +61,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output game ended", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// Simulate game end: finish all CPU players, human has 1 card, game ends
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[1].SetIsFinished(true)
@@ -79,7 +79,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output shows human action pass", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
 		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -92,7 +92,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output shows revolution status when active", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// Human plays four 5s → revolution active
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
@@ -110,7 +110,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output does not show revolution status when not active", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 7, false))
 		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 9, false))
@@ -122,7 +122,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output shows CPU actions", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// Human plays 2 (strongest) → CPUs pass → back to human
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 3, false))

@@ -26,7 +26,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output initial state", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 7, false))
@@ -50,7 +50,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output shows human cards", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 7, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignClover, 9, false))
@@ -69,7 +69,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output shows CPU card count but not cards", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 7, false))
@@ -86,7 +86,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output table cards after play", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// Human has 2 cards → play index 0 → table gets [5], human keeps [7]
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
@@ -106,7 +106,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output game ended message", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[1].SetIsFinished(true)
 		players[1].SetRank(1)
@@ -126,7 +126,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output human action after play", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// Human has 2 cards → play index 0 (5)
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
@@ -147,7 +147,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output human action pass has nil cards", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
 		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -164,7 +164,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output CPU actions all pass after unbeatable play", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// Human has 2 cards: [2 (idx0), 3 (idx1)] — play 2 (strongest), keep 3
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 2, false)) // idx0 → play
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // idx1 → kept
@@ -188,7 +188,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output revolutionActive is false initially", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 7, false))
 		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 9, false))
@@ -203,7 +203,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output revolutionActive is true after 4-card play", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// Human plays four 5s → revolution
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
@@ -224,7 +224,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	t.Run("success Output player rank reflects finished order", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDGPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, entities.DaifugoConfig{})
 		// 3 CPUs already finished (manually), human plays last card → gets rank 4
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[1].SetIsFinished(true)

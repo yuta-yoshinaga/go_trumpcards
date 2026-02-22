@@ -464,4 +464,39 @@ func TestSevens_Method(t *testing.T) {
 		assert.False(t, players[0].GetIsEliminated())
 		assert.False(t, players[0].GetIsFinished())
 	})
+
+	t.Run("success Reset shuffles player order", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := entities.NewSevens(tc, players)
+
+		humanNotAtZero := false
+		for i := 0; i < 50; i++ {
+			s.Reset()
+			if !s.GetPlayer(0).GetIsHuman() {
+				humanNotAtZero = true
+				break
+			}
+		}
+		assert.True(t, humanNotAtZero, "player order should be randomized after Reset")
+	})
+
+	t.Run("success Reset preserves all players after shuffle", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := entities.NewSevens(tc, players)
+		s.Reset()
+
+		humanCnt := 0
+		cpuCnt := 0
+		for i := 0; i < s.GetPlayerCnt(); i++ {
+			if s.GetPlayer(i).GetIsHuman() {
+				humanCnt++
+			} else {
+				cpuCnt++
+			}
+		}
+		assert.Equal(t, 1, humanCnt)
+		assert.Equal(t, 3, cpuCnt)
+	})
 }

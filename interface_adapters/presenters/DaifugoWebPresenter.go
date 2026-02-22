@@ -25,6 +25,32 @@ func (dwp *DaifugoWebPresenter) Output(dg *entities.Daifugo) string {
 	resObj.LastPlayPlayerIdx = dg.GetLastPlayPlayerIdx()
 	resObj.GameEndFlag = dg.GetGameEndFlag()
 	resObj.RevolutionActive = dg.GetRevolutionActive()
+	resObj.ElevenBackActive = dg.GetElevenBackActive()
+	resObj.SuitLocked = dg.GetSuitLocked()
+	resObj.LockedSuit = dwp.getSuitName(dg.GetLockedSuit())
+	resObj.TableIsSequence = dg.GetTableIsSequence()
+
+	// ローカルルール設定
+	config := dg.GetConfig()
+	resObj.Config = controllers.DaifugoWebOutputConfig{
+		JokerCount:          config.JokerCount,
+		EightCutEnabled:     config.EightCutEnabled,
+		SuitLockEnabled:     config.SuitLockEnabled,
+		ElevenBackEnabled:   config.ElevenBackEnabled,
+		SequenceEnabled:     config.SequenceEnabled,
+		CardExchangeEnabled: config.CardExchangeEnabled,
+	}
+
+	// カード交換記録
+	resObj.ExchangeActions = make([]*controllers.DaifugoWebOutputExchangeAction, 0)
+	for _, ex := range dg.GetExchangeActions() {
+		exObj := &controllers.DaifugoWebOutputExchangeAction{
+			FromPlayerIdx: ex.FromPlayerIdx,
+			ToPlayerIdx:   ex.ToPlayerIdx,
+			Cards:         dwp.getCardObjs(ex.Cards),
+		}
+		resObj.ExchangeActions = append(resObj.ExchangeActions, exObj)
+	}
 
 	// 場のカード
 	for _, c := range dg.GetTableCards() {
@@ -96,6 +122,22 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg *entities.Daifugo) string 
 		msg += fmt.Sprintf("%s:%s ", name, rankNames[rank-1])
 	}
 	return msg
+}
+
+// getSuitName スート名取得
+func (dwp *DaifugoWebPresenter) getSuitName(suit int) string {
+	switch suit {
+	case entities.CardDesignSpade:
+		return "SPADE"
+	case entities.CardDesignClover:
+		return "CLOVER"
+	case entities.CardDesignHeart:
+		return "HEART"
+	case entities.CardDesignDiamond:
+		return "DIAMOND"
+	default:
+		return ""
+	}
 }
 
 // getCardObjs カードオブジェクトの配列取得 (nil → nil)

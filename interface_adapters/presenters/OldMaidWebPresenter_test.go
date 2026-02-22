@@ -48,10 +48,22 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[2].SetIsFinished(true)
 		players[3].SetIsFinished(true)
 		// PlayerDraw(0): draws HEART 7 (only card), discards SPADE5+CLOVER5 pair (1 pair)
-		// player 0 left: JOKER, HEART 7; player 1 finished; game ends; loserIdx=0
+		// player 0 left: JOKER, HEART 7 (shuffled order); player 1 finished; game ends; loserIdx=0
 		om.PlayerDraw(0)
-		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"JOKER","value":0},{"design":"HEART","value":7}]},{"id":1,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":true,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":1,"lastDrawCard":{"design":"HEART","value":7},"lastDiscardedPairs":1,"lastDiscardedCards":[{"design":"SPADE","value":5},{"design":"CLOVER","value":5}],"hasDrawn":true,"cpuActions":[],"humanAction":{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"HEART","value":7},"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":5},{"design":"CLOVER","value":5}]},"message":"ゲーム終了！ あなたの負け！"}`
-		assert.Equal(t, expected, towp.Output(om))
+		result := towp.Output(om)
+		// Card order in player 0's hand is non-deterministic due to ShuffleCards; verify presence
+		assert.Contains(t, result, `"cardCount":2`)
+		assert.Contains(t, result, `{"design":"JOKER","value":0}`)
+		assert.Contains(t, result, `{"design":"HEART","value":7}`)
+		assert.Contains(t, result, `"gameEndFlag":true`)
+		assert.Contains(t, result, `"loserIdx":0`)
+		assert.Contains(t, result, `"lastDrawPlayerIdx":0`)
+		assert.Contains(t, result, `"lastDrawFromIdx":1`)
+		assert.Contains(t, result, `"lastDrawCard":{"design":"HEART","value":7}`)
+		assert.Contains(t, result, `"lastDiscardedPairs":1`)
+		assert.Contains(t, result, `"hasDrawn":true`)
+		assert.Contains(t, result, `"humanAction":{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"HEART","value":7},"discardedPairs":1`)
+		assert.Contains(t, result, `"message":"ゲーム終了！ あなたの負け！"`)
 	})
 
 	t.Run("success Output game not ended with draw and no discard", func(t *testing.T) {
@@ -93,8 +105,19 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[2].AddCard(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
 		players[3].SetIsFinished(true)
 		om.PlayerDraw(0)
-		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":true,"cardCount":0,"cards":[]},{"id":1,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":2,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":3,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":2,"gameEndFlag":true,"loserIdx":2,"lastDrawPlayerIdx":0,"lastDrawFromIdx":1,"lastDrawCard":{"design":"CLOVER","value":3},"lastDiscardedPairs":1,"lastDiscardedCards":[{"design":"SPADE","value":3},{"design":"CLOVER","value":3}],"hasDrawn":true,"cpuActions":[],"humanAction":{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"CLOVER","value":3},"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":3},{"design":"CLOVER","value":3}]},"message":"ゲーム終了！ CPU 2の負け！"}`
-		assert.Equal(t, expected, towp.Output(om))
+		result := towp.Output(om)
+		// discardedCards order is non-deterministic due to ShuffleCards before DiscardPairs
+		assert.Contains(t, result, `"isFinished":true,"cardCount":0,"cards":[]`)
+		assert.Contains(t, result, `"gameEndFlag":true`)
+		assert.Contains(t, result, `"loserIdx":2`)
+		assert.Contains(t, result, `"lastDrawPlayerIdx":0`)
+		assert.Contains(t, result, `"lastDrawFromIdx":1`)
+		assert.Contains(t, result, `"lastDrawCard":{"design":"CLOVER","value":3}`)
+		assert.Contains(t, result, `"lastDiscardedPairs":1`)
+		assert.Contains(t, result, `{"design":"SPADE","value":3}`)
+		assert.Contains(t, result, `{"design":"CLOVER","value":3}`)
+		assert.Contains(t, result, `"hasDrawn":true`)
+		assert.Contains(t, result, `"message":"ゲーム終了！ CPU 2の負け！"`)
 	})
 
 	t.Run("success Output with CpuActions and discarded cards", func(t *testing.T) {
@@ -121,9 +144,61 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 
 		result := towp.Output(om)
 		// drawnCard must be null in cpuActions to preserve game fairness
-		assert.Contains(t, result, `"cpuActions":[{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":null,"discardedPairs":1,"discardedCards":[{"design":"SPADE","value":10},{"design":"CLOVER","value":10}]}]`)
+		// discardedCards order is non-deterministic due to ShuffleCards before DiscardPairs
+		assert.Contains(t, result, `"cpuActions":[{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":null,"discardedPairs":1,"discardedCards":[`)
+		assert.Contains(t, result, `{"design":"SPADE","value":10}`)
+		assert.Contains(t, result, `{"design":"CLOVER","value":10}`)
 		// No human draw happened, so humanAction is null
 		assert.Contains(t, result, `"humanAction":null`)
+	})
+
+	t.Run("success Output game ended human loses at non-zero index", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		// Human is at index 2 (simulates shuffled player order)
+		players := []*entities.OldMaidPlayer{
+			entities.NewOldMaidPlayer(false), // CPU at index 0
+			entities.NewOldMaidPlayer(false), // CPU at index 1
+			entities.NewOldMaidPlayer(true),  // Human at index 2
+			entities.NewOldMaidPlayer(false), // CPU at index 3
+		}
+		om := entities.NewOldMaid(tc, players)
+		// Player 0 (CPU, turn=0): SPADE 3
+		// Player 1 (CPU): CLOVER 3 (1 card → deterministic draw)
+		// Player 2 (Human): JOKER → will be the last remaining (loser)
+		// Player 3: finished
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignClover, 3, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
+		players[3].SetIsFinished(true)
+		// CpuDraw: player 0 draws CLOVER 3, forms pair, both 0 and 1 finish → loserIdx=2 (human)
+		om.CpuDraw()
+		result := towp.Output(om)
+		assert.Contains(t, result, `"message":"ゲーム終了！ あなたの負け！"`)
+	})
+
+	t.Run("success Output game ended cpu loses at index 0", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		// Human is at index 2 (simulates shuffled player order)
+		players := []*entities.OldMaidPlayer{
+			entities.NewOldMaidPlayer(false), // CPU at index 0
+			entities.NewOldMaidPlayer(false), // CPU at index 1
+			entities.NewOldMaidPlayer(true),  // Human at index 2
+			entities.NewOldMaidPlayer(false), // CPU at index 3
+		}
+		om := entities.NewOldMaid(tc, players)
+		// Player 0 (CPU, turn=0): JOKER → will be the last remaining (loser)
+		// Player 1 (CPU): SPADE 3 (1 card → deterministic draw)
+		// Player 2: Human, finished
+		// Player 3: finished
+		players[0].AddCard(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[2].SetIsFinished(true)
+		players[3].SetIsFinished(true)
+		// CpuDraw: player 0 draws SPADE 3 from player 1, no pair → player 1 finishes (0 cards)
+		// active = {player 0} → game ends, loserIdx=0 (CPU)
+		om.CpuDraw()
+		result := towp.Output(om)
+		assert.Contains(t, result, `"message":"ゲーム終了！ CPU 0の負け！"`)
 	})
 
 	t.Run("success Output cpuActions drawnCard is nil when no pair discarded", func(t *testing.T) {

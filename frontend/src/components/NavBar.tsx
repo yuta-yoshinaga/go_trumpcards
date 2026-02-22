@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom';
 
 const games = [
   { path: '/', label: 'ブラックジャック' },
@@ -6,10 +6,10 @@ const games = [
   { path: '/oldmaid', label: 'ババ抜き' },
   { path: '/daifugo', label: '大富豪' },
   { path: '/sevens', label: '7並べ' },
-]
+];
 
 export function NavBar() {
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
 
   return (
     <nav style={{ textAlign: 'right', margin: '8px 10px' }}>
@@ -24,5 +24,5 @@ export function NavBar() {
         </Link>
       ))}
     </nav>
-  )
+  );
 }
