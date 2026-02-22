@@ -88,10 +88,13 @@ func (owp *OldMaidWebPresenter) Output(om *entities.OldMaid) string {
 
 	if om.GetGameEndFlag() {
 		loserIdx := om.GetLoserIdx()
-		if loserIdx == 0 {
-			resObj.Message = "ゲーム終了！ あなたの負け！"
-		} else if loserIdx > 0 {
-			resObj.Message = fmt.Sprintf("ゲーム終了！ CPU %dの負け！", loserIdx)
+		if loserIdx >= 0 {
+			loser := om.GetPlayer(loserIdx)
+			if loser != nil && loser.GetIsHuman() {
+				resObj.Message = "ゲーム終了！ あなたの負け！"
+			} else {
+				resObj.Message = fmt.Sprintf("ゲーム終了！ CPU %dの負け！", loserIdx)
+			}
 		}
 	}
 

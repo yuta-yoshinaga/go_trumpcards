@@ -1,6 +1,9 @@
 package entities
 
-import "sort"
+import (
+	"math/rand"
+	"sort"
+)
 
 // DaifugoPlayerCnt 大富豪プレイヤー数
 const DaifugoPlayerCnt = 4
@@ -79,6 +82,11 @@ func (d *Daifugo) Reset() {
 		p.SetIsFinished(false)
 		p.SetRank(-1)
 	}
+
+	// プレイ順をランダムにする
+	rand.Shuffle(len(d.players), func(i, j int) {
+		d.players[i], d.players[j] = d.players[j], d.players[i]
+	})
 
 	// 全カードを配る (ジョーカーなしの52枚)
 	idx := 0

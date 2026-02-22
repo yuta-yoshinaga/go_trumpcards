@@ -75,6 +75,11 @@ func (o *OldMaid) Reset() {
 		p.SetIsFinished(false)
 	}
 
+	// プレイ順をランダムにする
+	rand.Shuffle(len(o.players), func(i, j int) {
+		o.players[i], o.players[j] = o.players[j], o.players[i]
+	})
+
 	// 全カードを配る
 	idx := 0
 	for {

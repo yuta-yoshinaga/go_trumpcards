@@ -1,5 +1,7 @@
 package entities
 
+import "math/rand"
+
 // SevensPlayerCnt 7並べプレイヤー数
 const SevensPlayerCnt = 4
 
@@ -58,6 +60,11 @@ func (s *Sevens) Reset() {
 		p.SetRank(-1)
 		p.ResetPasses()
 	}
+
+	// プレイ順をランダムにする
+	rand.Shuffle(len(s.players), func(i, j int) {
+		s.players[i], s.players[j] = s.players[j], s.players[i]
+	})
 
 	// シャッフルして配る
 	s.trumpCards.Shuffle()

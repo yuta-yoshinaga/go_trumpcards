@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 
 // Design → suit index (matches Go backend: 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND)
 const designToSuit: Record<CardDesign, number> = {
@@ -36,14 +37,10 @@ function isCardPlayable(card: Card, tableMinVals: number[], tableMaxVals: number
   return leftOk || rightOk;
 }
 
-function playerName(idx: number): string {
-  return idx === 0 ? 'あなた' : `CPU ${idx}`;
-}
-
-function actionDesc(action: SevensAction): string {
-  if (!action.playedCard) return `${playerName(action.playerIdx)}がパスしました`;
+function actionDesc(players: { id: number; isHuman: boolean }[], action: SevensAction): string {
+  if (!action.playedCard) return `${findPlayerName(players, action.playerIdx)}がパスしました`;
   const c = action.playedCard;
-  return `${playerName(action.playerIdx)}が出しました: ${c.design} ${valueName(c.value)}`;
+  return `${findPlayerName(players, action.playerIdx)}が出しました: ${c.design} ${valueName(c.value)}`;
 }
 
 // ── styles ──────────────────────────────────────────────────────────────────
@@ -122,7 +119,7 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
   return (
     <div className={playerAreaBaseClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
-        {playerName(player.id)}
+        {playerName(player.id, player.isHuman)}
         {player.isFinished && (
           <span
             style={{
@@ -181,7 +178,7 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
   return (
     <div className={playerAreaBaseClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
-        {playerName(0)}
+        {playerName(player.id, player.isHuman)}
         {player.isFinished && (
           <span
             style={{
@@ -252,7 +249,7 @@ export function SevensPage() {
 
   if (!state) return null;
 
-  const isHumanTurn = !state.gameEndFlag && state.currentTurn === 0;
+  const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const canPass = isHumanTurn && (humanPlayer?.passesUsed ?? 0) < (humanPlayer?.maxPasses ?? 5);
@@ -274,14 +271,14 @@ export function SevensPage() {
         {/* Human action log */}
         {state.humanAction && (
           <div className="bg-black/40 rounded-lg text-[#cfc] py-2 px-3.5 my-2 text-[0.85em]">
-            {actionDesc(state.humanAction)}
+            {actionDesc(state.players, state.humanAction)}
           </div>
         )}
 
         {/* CPU action log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
           <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
-            {['[CPUの行動]', ...state.cpuActions.map(actionDesc)].join('\n')}
+            {['[CPUの行動]', ...state.cpuActions.map((a) => actionDesc(state.players, a))].join('\n')}
           </div>
         )}
 

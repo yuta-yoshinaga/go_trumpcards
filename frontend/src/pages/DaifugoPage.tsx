@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import type { Card, DaifugoAction, DaifugoPlayerData, DaifugoResponse } from '../types/card';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const btnPrimary =
   'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
@@ -12,10 +13,6 @@ const btnSuccess =
 
 const playerAreaBaseClass =
   'bg-black/35 rounded-[10px] p-[10px] border-2 border-transparent flex-[1_1_180px] min-w-[150px]';
-
-function playerName(idx: number): string {
-  return idx === 0 ? 'あなた' : `CPU ${idx}`;
-}
 
 function rankName(rank: number): string {
   switch (rank) {
@@ -37,12 +34,12 @@ function cardLabel(card: Card | null): string {
   return `${card.design} ${card.value}`;
 }
 
-function actionDescription(action: DaifugoAction): string {
+function actionDescription(players: { id: number; isHuman: boolean }[], action: DaifugoAction): string {
   if (!action.playedCards || action.playedCards.length === 0) {
-    return `${playerName(action.playerIdx)}がパスしました`;
+    return `${findPlayerName(players, action.playerIdx)}がパスしました`;
   }
   const cards = action.playedCards.map(cardLabel).join(', ');
-  return `${playerName(action.playerIdx)}が出しました: ${cards}`;
+  return `${findPlayerName(players, action.playerIdx)}が出しました: ${cards}`;
 }
 
 interface CpuPlayerAreaProps {
@@ -59,7 +56,7 @@ function CpuPlayerArea({ player, isCurrentTurn }: CpuPlayerAreaProps) {
   return (
     <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
-        {playerName(player.id)}
+        {playerName(player.id, player.isHuman)}
         {player.isFinished && (
           <span
             style={{
@@ -109,9 +106,9 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
       ? { border: '2px solid #5cb85c', boxShadow: '0 0 12px #5cb85c' }
       : {};
   return (
-    <div id="player-area-0" className={playerAreaBaseClass} style={conditionalStyle}>
+    <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
-        {playerName(0)}
+        {playerName(player.id, player.isHuman)}
         {player.isFinished && (
           <span
             style={{
@@ -177,7 +174,7 @@ export function DaifugoPage() {
 
   if (!state) return null;
 
-  const isHumanTurn = !state.gameEndFlag && state.currentTurn === 0;
+  const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
 
@@ -211,14 +208,14 @@ export function DaifugoPage() {
         {/* Human action log */}
         {state.humanAction && (
           <div className="bg-black/40 rounded-lg text-[#cfc] py-2 px-3.5 my-2 text-[0.85em]">
-            {actionDescription(state.humanAction)}
+            {actionDescription(state.players, state.humanAction)}
           </div>
         )}
 
         {/* CPU action log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
           <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
-            {['[CPUの行動]', ...state.cpuActions.map(actionDescription)].join('\n')}
+            {['[CPUの行動]', ...state.cpuActions.map((a) => actionDescription(state.players, a))].join('\n')}
           </div>
         )}
 

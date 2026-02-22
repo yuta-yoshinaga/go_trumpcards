@@ -126,6 +126,55 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, `"humanAction":null`)
 	})
 
+	t.Run("success Output game ended human loses at non-zero index", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		// Human is at index 2 (simulates shuffled player order)
+		players := []*entities.OldMaidPlayer{
+			entities.NewOldMaidPlayer(false), // CPU at index 0
+			entities.NewOldMaidPlayer(false), // CPU at index 1
+			entities.NewOldMaidPlayer(true),  // Human at index 2
+			entities.NewOldMaidPlayer(false), // CPU at index 3
+		}
+		om := entities.NewOldMaid(tc, players)
+		// Player 0 (CPU, turn=0): SPADE 3
+		// Player 1 (CPU): CLOVER 3 (1 card → deterministic draw)
+		// Player 2 (Human): JOKER → will be the last remaining (loser)
+		// Player 3: finished
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignClover, 3, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
+		players[3].SetIsFinished(true)
+		// CpuDraw: player 0 draws CLOVER 3, forms pair, both 0 and 1 finish → loserIdx=2 (human)
+		om.CpuDraw()
+		result := towp.Output(om)
+		assert.Contains(t, result, `"message":"ゲーム終了！ あなたの負け！"`)
+	})
+
+	t.Run("success Output game ended cpu loses at index 0", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		// Human is at index 2 (simulates shuffled player order)
+		players := []*entities.OldMaidPlayer{
+			entities.NewOldMaidPlayer(false), // CPU at index 0
+			entities.NewOldMaidPlayer(false), // CPU at index 1
+			entities.NewOldMaidPlayer(true),  // Human at index 2
+			entities.NewOldMaidPlayer(false), // CPU at index 3
+		}
+		om := entities.NewOldMaid(tc, players)
+		// Player 0 (CPU, turn=0): JOKER → will be the last remaining (loser)
+		// Player 1 (CPU): SPADE 3 (1 card → deterministic draw)
+		// Player 2: Human, finished
+		// Player 3: finished
+		players[0].AddCard(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[2].SetIsFinished(true)
+		players[3].SetIsFinished(true)
+		// CpuDraw: player 0 draws SPADE 3 from player 1, no pair → player 1 finishes (0 cards)
+		// active = {player 0} → game ends, loserIdx=0 (CPU)
+		om.CpuDraw()
+		result := towp.Output(om)
+		assert.Contains(t, result, `"message":"ゲーム終了！ CPU 0の負け！"`)
+	})
+
 	t.Run("success Output cpuActions drawnCard is nil when no pair discarded", func(t *testing.T) {
 		tc := entities.NewTrumpCards(1)
 		// Use all CPU players for this test to enable CpuDraw
