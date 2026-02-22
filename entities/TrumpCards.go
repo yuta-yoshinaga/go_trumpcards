@@ -20,31 +20,28 @@ func NewTrumpCards(jokerCnt int) *TrumpCards {
 
 // cardsInit カード初期化
 func (t *TrumpCards) cardsInit() {
-	t.deck = make([]*Card, 0)
-	for i := 0; i < t.deckCnt; i++ {
-		var design, value int
-		if 0 <= i && i <= 12 {
-			// スペード
-			design = CardDesignSpade
-			value = i + 1
-		} else if 13 <= i && i <= 25 {
-			// クローバー
-			design = CardDesignClover
-			value = (i - 13) + 1
-		} else if 26 <= i && i <= 38 {
-			// ハート
-			design = CardDesignHeart
-			value = (i - 26) + 1
-		} else if 39 <= i && i <= 51 {
-			// ダイアモンド
-			design = CardDesignDiamond
-			value = (i - 39) + 1
-		} else {
-			// ジョーカー
-			design = CardValueJoker
-			value = (i - 52) + 1
+	t.deck = make([]*Card, 0, t.deckCnt)
+
+	// デザインのリスト
+	designs := []int{
+		CardDesignSpade,
+		CardDesignClover,
+		CardDesignHeart,
+		CardDesignDiamond,
+	}
+
+	// 通常カード (各スート 1-13)
+	for _, design := range designs {
+		for val := 1; val <= CardValueMax; val++ {
+			card := NewCard(design, val, false)
+			t.deck = append(t.deck, card)
 		}
-		card := NewCard(design, value, false)
+	}
+
+	// ジョーカー (残り枚数分)
+	jokerCount := t.deckCnt - CardCnt
+	for i := 1; i <= jokerCount; i++ {
+		card := NewCard(CardDesignJoker, i, false)
 		t.deck = append(t.deck, card)
 	}
 }
