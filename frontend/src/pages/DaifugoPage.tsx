@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
-import type { Card, DaifugoAction, DaifugoPlayerData, DaifugoResponse } from '../types/card';
+import type { Card, DaifugoAction, DaifugoExchangeAction, DaifugoPlayerData, DaifugoResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const btnPrimary =
@@ -154,6 +154,63 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
   );
 }
 
+const badgeStyle: React.CSSProperties = {
+  display: 'inline-block',
+  borderRadius: 6,
+  padding: '2px 10px',
+  marginRight: 6,
+  marginBottom: 4,
+  fontSize: '0.8em',
+  fontWeight: 'bold',
+};
+
+function RulesBadges({ state }: { state: DaifugoResponse }) {
+  const badges: { label: string; bg: string; color: string }[] = [];
+  if (state.revolutionActive) {
+    badges.push({ label: '革命中', bg: '#d9534f', color: '#fff' });
+  }
+  if (state.elevenBackActive) {
+    badges.push({ label: '11バック', bg: '#f0ad4e', color: '#222' });
+  }
+  if (state.suitLocked) {
+    badges.push({ label: `スート縛り: ${state.lockedSuit}`, bg: '#5bc0de', color: '#222' });
+  }
+  if (state.tableIsSequence) {
+    badges.push({ label: '階段', bg: '#9b59b6', color: '#fff' });
+  }
+  if (badges.length === 0) return null;
+  return (
+    <div className="my-1 px-1">
+      {badges.map((b) => (
+        <span key={b.label} style={{ ...badgeStyle, background: b.bg, color: b.color }}>
+          {b.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function exchangeDescription(players: { id: number; isHuman: boolean }[], action: DaifugoExchangeAction): string {
+  const from = findPlayerName(players, action.fromPlayerIdx);
+  const to = findPlayerName(players, action.toPlayerIdx);
+  const cards = action.cards.map(cardLabel).join(', ');
+  return `${from} → ${to}: ${cards}`;
+}
+
+function ExchangeLog({
+  players,
+  actions,
+}: {
+  players: { id: number; isHuman: boolean }[];
+  actions: DaifugoExchangeAction[];
+}) {
+  return (
+    <div className="bg-black/40 rounded-lg text-[#ffd] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+      {['[カード交換]', ...actions.map((a) => exchangeDescription(players, a))].join('\n')}
+    </div>
+  );
+}
+
 export function DaifugoPage() {
   const [state, setState] = useState<DaifugoResponse | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
@@ -204,6 +261,14 @@ export function DaifugoPage() {
             )}
           </div>
         </div>
+
+        {/* Local rules status badges */}
+        <RulesBadges state={state} />
+
+        {/* Card exchange actions */}
+        {state.exchangeActions && state.exchangeActions.length > 0 && (
+          <ExchangeLog players={state.players} actions={state.exchangeActions} />
+        )}
 
         {/* Human action log */}
         {state.humanAction && (

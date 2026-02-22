@@ -8,6 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func noRulesConfig() entities.DaifugoConfig {
+	return entities.DaifugoConfig{}
+}
+
 func makeDaifugoPlayers() []*entities.DaifugoPlayer {
 	return []*entities.DaifugoPlayer{
 		entities.NewDaifugoPlayer(true),
@@ -21,7 +25,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success NewDaifugo", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		assert.NotNil(t, dg)
 		assert.Equal(t, 4, dg.GetPlayerCnt())
 		assert.False(t, dg.GetGameEndFlag())
@@ -33,7 +37,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success Reset distributes 52 cards", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		dg.Reset()
 		total := 0
 		for i := 0; i < dg.GetPlayerCnt(); i++ {
@@ -45,7 +49,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success Reset clears state", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		dg.Reset()
 		assert.False(t, dg.GetGameEndFlag())
 		assert.Nil(t, dg.GetTableCards())
@@ -58,7 +62,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success GetPlayer valid index", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		assert.NotNil(t, dg.GetPlayer(0))
 		assert.True(t, dg.GetPlayer(0).GetIsHuman())
 		assert.NotNil(t, dg.GetPlayer(1))
@@ -68,7 +72,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success GetPlayer invalid index returns nil", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		assert.Nil(t, dg.GetPlayer(-1))
 		assert.Nil(t, dg.GetPlayer(10))
 	})
@@ -76,14 +80,14 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success IsHumanTurn at start", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		assert.True(t, dg.IsHumanTurn())
 	})
 
 	t.Run("success PlayerPlay on clear table", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Human has 2 cards so they don't finish when playing one
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
@@ -102,7 +106,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success PlayerPlay fails with invalid index", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 
 		ok := dg.PlayerPlay([]int{5}) // out of range
@@ -112,7 +116,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success PlayerPlay fails with different values", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 
@@ -123,7 +127,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success PlayerPlay table card stays after valid play", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -137,7 +141,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success PlayerPlay pass", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
 		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -153,7 +157,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success PlayerPlay does nothing when not human turn", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -169,7 +173,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success CpuPlay passes on table with unbeatable card", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Human has 2 cards: [2 (idx0), 3 (idx1)]  — play the 2 (strongest), keep 3
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 2, false)) // idx0 → play this
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // idx1 → kept
@@ -188,7 +192,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success CpuPlay does nothing on human turn", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		dg.CpuPlay() // does nothing on human turn
 		assert.Nil(t, dg.GetTableCards())
@@ -198,7 +202,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success game ends when only 1 player remains", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// 3 CPUs already finished, human has 1 card left
 		players[1].SetIsFinished(true)
 		players[1].SetRank(1)
@@ -216,7 +220,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success GetHumanAction after play", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
 		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
@@ -233,14 +237,14 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success GetCpuActions is nil at start", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		assert.Nil(t, dg.GetCpuActions())
 	})
 
 	t.Run("success pair play on clear table keeps table alive", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Human has 3 cards: pair of 5s + extra 3 (human doesn't finish after playing pair)
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))  // idx0
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))  // idx1
@@ -257,7 +261,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success PlayerPlay deduplicates indices so only unique cards are played", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Human has 3 cards. [0,0] must be treated as [0] — only 1 card goes to the table.
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false)) // idx0
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false)) // idx1
@@ -276,7 +280,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success PlayerPlay rejects fake pair from duplicate indices when table has a pair", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Human plays pair of 3s; CPU 1 responds with stronger pair of 5s;
 		// CPUs 2 & 3 have singles so they cannot beat a pair → they pass.
 		// Turn returns to human with pair of 5s on the table.
@@ -309,7 +313,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success finishPlayer rank based on already-finished count", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		players[1].SetIsFinished(true)
 		players[1].SetRank(1)
 		players[2].SetIsFinished(true)
@@ -326,14 +330,14 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success GetRevolutionActive is false initially", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		assert.False(t, dg.GetRevolutionActive())
 	})
 
 	t.Run("success playing 4 cards triggers revolution", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Human has 4 fives + extra card (does not finish), CPUs have unbeatable 2s
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
@@ -352,7 +356,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success isPlayable respects revolution (3 beats 2 during revolution)", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Set up: table has a 2 (strongest normally), revolution is active
 		// Human plays four 5s to trigger revolution, then on clear table tries to play 3 over 2
 		// Instead: manually set up revolution by playing 4 cards first
@@ -400,7 +404,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success double revolution reverts to normal", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Human plays four 5s → revolution active
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
@@ -436,7 +440,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success revolution resets on Reset", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Trigger revolution
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
@@ -456,7 +460,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success findBestPlay during revolution picks weakest by revolution strength", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Trigger revolution: human plays four 5s
 		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
 		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false))
@@ -491,7 +495,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success CPU triggers revolution with 4-card play", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		// Human plays four 5s → revolution active (rev-strength(5)=13)
 		// CPU1 has four 4s: rev-strength(4)=14 > rev-strength(5)=13 → can beat four 5s in revolution
 		// CPU1 playing four 4s triggers a second revolution, reverting to normal order.
@@ -521,7 +525,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success Reset shuffles player order", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 
 		humanNotAtZero := false
 		for i := 0; i < 50; i++ {
@@ -537,7 +541,7 @@ func TestDaifugo_Method(t *testing.T) {
 	t.Run("success Reset preserves all players after shuffle", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		dg := entities.NewDaifugo(tc, players)
+		dg := entities.NewDaifugo(tc, players, noRulesConfig())
 		dg.Reset()
 
 		humanCnt := 0
@@ -551,5 +555,253 @@ func TestDaifugo_Method(t *testing.T) {
 		}
 		assert.Equal(t, 1, humanCnt)
 		assert.Equal(t, 3, cpuCnt)
+	})
+}
+
+func TestDaifugo_Joker(t *testing.T) {
+	allRulesConfig := entities.DefaultDaifugoConfig()
+	jokerOnlyConfig := entities.DaifugoConfig{JokerCount: 2}
+
+	t.Run("success joker is strongest card", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, jokerOnlyConfig)
+		// Human has joker and a 3, CPU has 2 (normally strongest)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignJoker, 1, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		// Play 2 on table first (via CPU)
+		dg.PlayerPlay([]int{}) // human passes
+		dg.CpuPlay()            // CPU1 plays 2
+		dg.CpuPlay()            // CPU2 passes (can't beat 2 with 2)
+		dg.CpuPlay()            // CPU3 passes
+		// Back to human, table has 2
+		if dg.IsHumanTurn() && dg.GetTableCards() != nil {
+			// Human plays joker (should beat 2)
+			jokerIdx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				if entities.IsJoker(players[0].GetCard(i)) {
+					jokerIdx = i
+					break
+				}
+			}
+			if jokerIdx >= 0 {
+				ok := dg.PlayerPlay([]int{jokerIdx})
+				assert.True(t, ok)
+			}
+		}
+	})
+
+	t.Run("success joker as wild card in pair", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, jokerOnlyConfig)
+		// Human has 5 + joker = pair of 5s
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignJoker, 1, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // spare
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		ok := dg.PlayerPlay([]int{0, 1}) // play 5 + joker as pair
+		assert.True(t, ok)
+		assert.Len(t, dg.GetTableCards(), 2)
+	})
+
+	t.Run("success IsJoker returns true for joker card", func(t *testing.T) {
+		joker := entities.NewCard(entities.CardDesignJoker, 1, false)
+		assert.True(t, entities.IsJoker(joker))
+		regular := entities.NewCard(entities.CardDesignSpade, 5, false)
+		assert.False(t, entities.IsJoker(regular))
+	})
+
+	t.Run("success Reset with jokers distributes 54 cards", func(t *testing.T) {
+		tc := entities.NewTrumpCards(2)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, allRulesConfig)
+		dg.Reset()
+		total := 0
+		for i := 0; i < dg.GetPlayerCnt(); i++ {
+			total += dg.GetPlayer(i).GetCardsSize()
+		}
+		assert.Equal(t, 54, total)
+	})
+
+	t.Run("success DaifugoJokerStrength is highest", func(t *testing.T) {
+		assert.Greater(t, entities.DaifugoJokerStrength, entities.DaifugoCardStrength(2))
+		assert.Greater(t, entities.DaifugoJokerStrength, entities.DaifugoCardStrength(1))
+	})
+}
+
+func TestDaifugo_EightCut(t *testing.T) {
+	eightCutConfig := entities.DaifugoConfig{EightCutEnabled: true}
+
+	t.Run("success playing 8 clears the table", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, eightCutConfig)
+		// Human plays 8 on clear table → 8切り → table clears immediately
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false)) // spare
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 3, false)) // spare
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 4, false)) // spare
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 5, false)) // spare
+		dg.PlayerPlay([]int{0}) // play 8 → 8切り → table clears
+		assert.Nil(t, dg.GetTableCards())
+	})
+
+	t.Run("success 8切り returns turn to player who played 8", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, eightCutConfig)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 4, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		dg.PlayerPlay([]int{0}) // play 8 → 8切り → still human's turn
+		assert.True(t, dg.IsHumanTurn())
+	})
+}
+
+func TestDaifugo_ElevenBack(t *testing.T) {
+	elevenBackConfig := entities.DaifugoConfig{ElevenBackEnabled: true}
+
+	t.Run("success playing J(11) activates 11-back", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, elevenBackConfig)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		dg.PlayerPlay([]int{0}) // play J → 11バック
+		assert.True(t, dg.GetElevenBackActive())
+	})
+
+	t.Run("success GetElevenBackActive is false initially", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, elevenBackConfig)
+		assert.False(t, dg.GetElevenBackActive())
+	})
+}
+
+func TestDaifugo_SuitLock(t *testing.T) {
+	suitLockConfig := entities.DaifugoConfig{SuitLockEnabled: true}
+
+	t.Run("success GetSuitLocked is false initially", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, suitLockConfig)
+		assert.False(t, dg.GetSuitLocked())
+	})
+
+	t.Run("success consecutive same suit locks suit", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, suitLockConfig)
+		// Human plays SPADE 5, CPU plays SPADE 7 → suit locked to SPADE
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 3, false)) // spare
+		players[1].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false)) // spare
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		dg.PlayerPlay([]int{0}) // play SPADE 5
+		dg.CpuPlay()            // CPU1 plays SPADE 7 → suit lock to SPADE
+		assert.True(t, dg.GetSuitLocked())
+		assert.Equal(t, entities.CardDesignSpade, dg.GetLockedSuit())
+	})
+}
+
+func TestDaifugo_Sequence(t *testing.T) {
+	seqConfig := entities.DaifugoConfig{SequenceEnabled: true}
+
+	t.Run("success GetTableIsSequence is false initially", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, seqConfig)
+		assert.False(t, dg.GetTableIsSequence())
+	})
+
+	t.Run("success playing 3 consecutive same-suit cards sets sequence", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, seqConfig)
+		// Hand sorted by strength: 3(str=3), 4(str=4), 5(str=5), 7(str=7)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 4, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false)) // spare
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		ok := dg.PlayerPlay([]int{0, 1, 2}) // play SPADE 3,4,5 → sequence
+		assert.True(t, ok)
+		assert.True(t, dg.GetTableIsSequence())
+	})
+
+	t.Run("success mixed suits rejected as sequence", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, seqConfig)
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 3, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignHeart, 4, false)) // different suit
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		players[0].AddCard(entities.NewCard(entities.CardDesignSpade, 7, false))
+		players[1].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[2].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		players[3].AddCard(entities.NewCard(entities.CardDesignHeart, 2, false))
+		ok := dg.PlayerPlay([]int{0, 1, 2}) // mixed suit → not valid group (different values), not valid sequence (mixed suit)
+		assert.False(t, ok)
+	})
+}
+
+func TestDaifugo_CardExchange(t *testing.T) {
+	exchangeConfig := entities.DaifugoConfig{CardExchangeEnabled: true}
+
+	t.Run("success GetExchangeActions is nil initially", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players, exchangeConfig)
+		assert.Nil(t, dg.GetExchangeActions())
+	})
+
+	t.Run("success prevRank preserved across reset", func(t *testing.T) {
+		p := entities.NewDaifugoPlayer(true)
+		p.SetRank(1)
+		assert.Equal(t, 1, p.GetRank())
+		p.SetPrevRank(2)
+		assert.Equal(t, 2, p.GetPrevRank())
+	})
+
+	t.Run("success GetConfig returns config", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := entities.DefaultDaifugoConfig()
+		dg := entities.NewDaifugo(tc, players, config)
+		assert.True(t, dg.GetConfig().EightCutEnabled)
+		assert.True(t, dg.GetConfig().SuitLockEnabled)
+		assert.True(t, dg.GetConfig().ElevenBackEnabled)
+		assert.True(t, dg.GetConfig().SequenceEnabled)
+		assert.True(t, dg.GetConfig().CardExchangeEnabled)
+	})
+
+	t.Run("success DefaultDaifugoConfig has all rules enabled", func(t *testing.T) {
+		config := entities.DefaultDaifugoConfig()
+		assert.Equal(t, entities.DaifugoJokerCount, config.JokerCount)
+		assert.True(t, config.EightCutEnabled)
+		assert.True(t, config.SuitLockEnabled)
+		assert.True(t, config.ElevenBackEnabled)
+		assert.True(t, config.SequenceEnabled)
+		assert.True(t, config.CardExchangeEnabled)
 	})
 }

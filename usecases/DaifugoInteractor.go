@@ -19,6 +19,7 @@ type DaifugoInteractor struct {
 
 // NewDaifugoInteractor コンストラクタ
 func NewDaifugoInteractor(dgp presenters.DaifugoPresenter) *DaifugoInteractor {
+	config := entities.DefaultDaifugoConfig()
 	players := []*entities.DaifugoPlayer{
 		entities.NewDaifugoPlayer(true),  // player 0: 人間
 		entities.NewDaifugoPlayer(false), // player 1: CPU
@@ -26,7 +27,7 @@ func NewDaifugoInteractor(dgp presenters.DaifugoPresenter) *DaifugoInteractor {
 		entities.NewDaifugoPlayer(false), // player 3: CPU
 	}
 	return &DaifugoInteractor{
-		dg:  entities.NewDaifugo(entities.NewTrumpCards(0), players),
+		dg:  entities.NewDaifugo(entities.NewTrumpCards(config.JokerCount), players, config),
 		dgp: dgp,
 	}
 }
