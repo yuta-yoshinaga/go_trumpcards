@@ -126,7 +126,7 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
 
   return (
     <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
-      <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4, fontSize: '0.9em' }}>
+      <div className="text-white font-bold mb-1 text-[0.9em]">
         {playerName(player.id)}
         {player.isFinished && (
           <span
@@ -158,13 +158,9 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
           </span>
         )}
       </div>
-      {!player.isFinished && (
-        <div style={{ color: '#ccc', fontSize: '0.8em', marginBottom: 4 }}>{player.cardCount}枚</div>
-      )}
-      {showSelectable && !player.isFinished && (
-        <div style={{ color: '#cfc', fontSize: '0.75em', marginBottom: 4 }}>引く</div>
-      )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+      {!player.isFinished && <div className="text-[#ccc] text-[0.8em] mb-1">{player.cardCount}枚</div>}
+      {showSelectable && !player.isFinished && <div className="text-[#cfc] text-[0.75em] mb-1">引く</div>}
+      <div className="flex flex-wrap gap-0.5 justify-center">
         {player.isFinished ? null : player.isHuman ? (
           player.cards?.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={50} />)
         ) : showSelectable ? (
@@ -202,19 +198,7 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
 function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
   if (!cards || cards.length === 0) {
     return (
-      <div
-        style={{
-          height: 90,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '2px dashed rgba(255,255,255,0.15)',
-          borderRadius: 10,
-          margin: '8px 0',
-          color: 'rgba(255,255,255,0.3)',
-          fontSize: '0.9em',
-        }}
-      >
+      <div className="h-[90px] flex items-center justify-center border-2 border-dashed border-white/15 rounded-[10px] my-2 text-white/30 text-[0.9em]">
         捨て札エリア
       </div>
     );
@@ -229,18 +213,9 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
   const remainder = cards.length % 2 === 1 ? cards[cards.length - 1] : null;
 
   return (
-    <div
-      style={{
-        margin: '8px 0',
-        padding: '8px',
-        background: 'rgba(0,0,0,0.2)',
-        borderRadius: 10,
-        textAlign: 'center',
-        minHeight: 90,
-      }}
-    >
-      <div style={{ color: '#ccc', fontSize: '0.8em', marginBottom: 6 }}>直前に捨てられたカード</div>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 20, alignItems: 'flex-end' }}>
+    <div className="my-2 p-2 bg-black/20 rounded-[10px] text-center min-h-[90px]">
+      <div className="text-[#ccc] text-[0.8em] mb-1.5">直前に捨てられたカード</div>
+      <div className="flex justify-center gap-5 items-end">
         {pairs.map(([c1, c2]) => (
           <div key={`${c1.design}-${c1.value}`} style={{ position: 'relative', width: 65, height: 82 }}>
             <CardImage card={c1} width={55} style={{ position: 'absolute', left: 0, top: 0 }} />
@@ -313,11 +288,11 @@ export function OldMaidPage() {
   }
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: '#1a5c1a' }}>
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
       {/* Scrollable: CPU rows + discard + status + logs + result */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 0' }}>
+      <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* CPU row */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, justifyContent: 'center' }}>
+        <div className="flex gap-2 flex-wrap mb-2 justify-center">
           {cpuPlayers.map((player) => (
             <PlayerArea
               key={player.id}
@@ -335,36 +310,14 @@ export function OldMaidPage() {
 
         {/* Status */}
         {statusLines.length > 0 && (
-          <div
-            style={{
-              background: 'rgba(0,0,0,0.5)',
-              borderRadius: 8,
-              color: '#fff',
-              padding: '8px 12px',
-              margin: '8px 0',
-              whiteSpace: 'pre-line',
-              fontSize: '0.9em',
-            }}
-          >
+          <div className="bg-black/50 rounded-lg text-white py-2 px-3 my-2 whitespace-pre-line text-[0.9em]">
             {statusLines.join('\n')}
           </div>
         )}
 
         {/* CPU log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div
-            style={{
-              background: 'rgba(0,0,0,0.4)',
-              borderRadius: 8,
-              color: '#ccc',
-              padding: '6px 10px',
-              margin: '6px 0',
-              whiteSpace: 'pre-line',
-              fontSize: '0.8em',
-              maxHeight: 120,
-              overflowY: 'auto',
-            }}
-          >
+          <div className="bg-black/40 rounded-lg text-[#ccc] py-1.5 px-2.5 my-1.5 whitespace-pre-line text-[0.8em] max-h-[120px] overflow-y-auto">
             {[
               '[CPUの行動]',
               ...state.cpuActions.map((action: CpuAction) => {
@@ -379,18 +332,7 @@ export function OldMaidPage() {
 
         {/* Result */}
         {state.message && (
-          <div
-            style={{
-              background: 'rgba(0,0,0,0.6)',
-              borderRadius: 10,
-              color: '#fff',
-              textAlign: 'center',
-              padding: '10px 16px',
-              fontSize: '1.2em',
-              fontWeight: 'bold',
-              margin: '8px 0',
-            }}
-          >
+          <div className="bg-black/60 rounded-[10px] text-white text-center py-2.5 px-4 text-[1.2em] font-bold my-2">
             {state.message}
           </div>
         )}
@@ -398,17 +340,12 @@ export function OldMaidPage() {
 
       {/* Sticky footer: human player hand + buttons */}
       <div
-        style={{
-          flexShrink: 0,
-          background: '#163e16',
-          borderTop: '1px solid rgba(255,255,255,0.2)',
-          padding: '10px 16px',
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)',
-        }}
+        className="shrink-0 bg-[#163e16] border-t border-white/20 px-4 py-2.5"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
       >
         {/* Human player */}
         {humanPlayer && (
-          <div style={{ marginBottom: 8 }}>
+          <div className="mb-2">
             <PlayerArea
               player={humanPlayer}
               isTarget={false}

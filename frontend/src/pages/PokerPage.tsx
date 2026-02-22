@@ -49,11 +49,11 @@ export function PokerPage() {
   };
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: '#1a6b1a' }}>
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]">
       {/* Scrollable: dealer area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 0' }}>
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ color: '#fff', fontSize: '1.1em', marginBottom: 6 }}>
+      <div className="flex-1 overflow-y-auto pt-4 px-5">
+        <div className="mb-2">
+          <div className="text-white text-[1.1em] mb-1.5">
             ディーラー手札
             {phase === PHASE_END && state?.dealer?.handName && (
               <span
@@ -72,7 +72,7 @@ export function PokerPage() {
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+          <div className="flex flex-wrap gap-2 mb-2.5">
             {phase === PHASE_END && state?.dealer?.cards?.length
               ? state.dealer.cards.map((card) => (
                   <div key={`${card.design}-${card.value}`} style={{ ...cardWrapBase, cursor: 'default' }}>
@@ -89,17 +89,12 @@ export function PokerPage() {
 
       {/* Sticky footer: player hand + result + buttons */}
       <div
-        style={{
-          flexShrink: 0,
-          background: '#155715',
-          borderTop: '1px solid rgba(255,255,255,0.2)',
-          padding: '12px 20px',
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)',
-        }}
+        className="shrink-0 bg-[#155715] border-t border-white/20 px-5 py-3"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
         {/* Player area */}
         <div>
-          <div style={{ color: '#fff', fontSize: '1.1em', marginBottom: 4 }}>
+          <div className="text-white text-[1.1em] mb-1">
             プレイヤー手札
             {phase === PHASE_END && state?.player?.handName && (
               <span
@@ -119,11 +114,11 @@ export function PokerPage() {
             )}
           </div>
           {phase === PHASE_DEAL && (
-            <div style={{ color: '#cfc', fontSize: '0.85em', marginBottom: 4 }}>
+            <div className="text-[#cfc] text-[0.85em] mb-1">
               交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。
             </div>
           )}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+          <div className="flex flex-wrap gap-1.5 mb-2">
             {state?.player?.cards?.map((card, i) => {
               const isSelected = selected.includes(i);
               return (
@@ -165,19 +160,7 @@ export function PokerPage() {
         </div>
 
         {/* Result */}
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.55)',
-            borderRadius: 8,
-            color: '#fff',
-            textAlign: 'center',
-            padding: '8px 16px',
-            fontSize: '1.1em',
-            fontWeight: 'bold',
-            marginBottom: 8,
-            minHeight: 36,
-          }}
-        >
+        <div className="bg-black/55 rounded-lg text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 min-h-[36px]">
           {state?.message ?? ''}
         </div>
 

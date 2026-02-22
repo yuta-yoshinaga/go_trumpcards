@@ -25,14 +25,14 @@ export function BlackJackPage() {
   }, [exec]);
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: '#008000' }}>
+    <div className="flex-1 flex flex-col min-h-0 bg-[#008000]">
       {/* Scrollable: dealer area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+      <div className="flex-1 overflow-y-auto p-4">
         {state && (
           <div>
             <h3 className="text-white">ディーラー手札</h3>
             <h3 className="text-white">スコア {state.dealer.score !== 0 ? state.dealer.score : ''}</h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div className="flex flex-wrap gap-2">
               {state.dealer.cards.map((card) => (
                 <CardImage key={`${card.design}-${card.value}`} card={card} />
               ))}
@@ -44,23 +44,14 @@ export function BlackJackPage() {
 
       {/* Sticky footer: player hand + result + buttons */}
       <div
-        style={{
-          flexShrink: 0,
-          background: '#005a00',
-          borderTop: '1px solid rgba(255,255,255,0.15)',
-          padding: '12px 16px',
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)',
-        }}
+        className="shrink-0 bg-[#005a00] border-t border-white/15 px-4 py-3"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
         {state && (
-          <div style={{ marginBottom: 8 }}>
-            <h3 className="text-white" style={{ margin: '0 0 2px' }}>
-              プレイヤー手札
-            </h3>
-            <h3 className="text-white" style={{ margin: '0 0 8px' }}>
-              スコア {state.player.score}
-            </h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <div className="mb-2">
+            <h3 className="text-white mt-0 mb-0.5">プレイヤー手札</h3>
+            <h3 className="text-white mt-0 mb-2">スコア {state.player.score}</h3>
+            <div className="flex flex-wrap gap-1.5">
               {state.player.cards.map((card) => (
                 <CardImage key={`${card.design}-${card.value}`} card={card} width={60} />
               ))}
@@ -70,18 +61,7 @@ export function BlackJackPage() {
 
         {/* Result message */}
         {message && (
-          <div
-            style={{
-              background: 'rgba(0,0,0,0.7)',
-              color: '#fff',
-              textAlign: 'center',
-              padding: '8px 16px',
-              fontSize: '1.1em',
-              fontWeight: 'bold',
-              marginBottom: 8,
-              borderRadius: 8,
-            }}
-          >
+          <div className="bg-black/70 text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 rounded-lg">
             {message}
           </div>
         )}

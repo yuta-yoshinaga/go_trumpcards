@@ -58,7 +58,7 @@ function CpuPlayerArea({ player, isCurrentTurn }: CpuPlayerAreaProps) {
       : {};
   return (
     <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
-      <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
+      <div className="text-white font-bold mb-1">
         {playerName(player.id)}
         {player.isFinished && (
           <span
@@ -90,7 +90,7 @@ function CpuPlayerArea({ player, isCurrentTurn }: CpuPlayerAreaProps) {
           </span>
         )}
       </div>
-      {!player.isFinished && <div style={{ color: '#ccc', fontSize: '0.85em' }}>{player.cardCount}枚</div>}
+      {!player.isFinished && <div className="text-[#ccc] text-[0.85em]">{player.cardCount}枚</div>}
     </div>
   );
 }
@@ -110,7 +110,7 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
       : {};
   return (
     <div id="player-area-0" className={playerAreaBaseClass} style={conditionalStyle}>
-      <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4 }}>
+      <div className="text-white font-bold mb-1">
         {playerName(0)}
         {player.isFinished && (
           <span
@@ -133,7 +133,7 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
           {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>カードをクリックして選択</span>}
         </div>
       )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+      <div className="flex flex-wrap gap-1">
         {player.cards?.map((card, i) => (
           <button
             key={`${card.design}-${card.value}`}
@@ -186,27 +186,20 @@ export function DaifugoPage() {
   };
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: '#1a5c1a' }}>
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
       {/* Scrollable: CPU rows + table cards + action logs + result */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px 0' }}>
+      <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* CPU row */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+        <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
             <CpuPlayerArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
           ))}
         </div>
 
         {/* Table cards */}
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.3)',
-            borderRadius: 10,
-            padding: 10,
-            margin: '8px 0',
-          }}
-        >
-          <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 6 }}>場札</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        <div className="bg-black/30 rounded-[10px] p-2.5 my-2">
+          <div className="text-white font-bold mb-1.5">場札</div>
+          <div className="flex flex-wrap gap-1">
             {!state.tableCards || state.tableCards.length === 0 ? (
               <span style={{ color: '#aaa' }}>（なし）</span>
             ) : (
@@ -217,51 +210,21 @@ export function DaifugoPage() {
 
         {/* Human action log */}
         {state.humanAction && (
-          <div
-            style={{
-              background: 'rgba(0,0,0,0.4)',
-              borderRadius: 8,
-              color: '#cfc',
-              padding: '8px 14px',
-              margin: '8px 0',
-              fontSize: '0.85em',
-            }}
-          >
+          <div className="bg-black/40 rounded-lg text-[#cfc] py-2 px-3.5 my-2 text-[0.85em]">
             {actionDescription(state.humanAction)}
           </div>
         )}
 
         {/* CPU action log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div
-            style={{
-              background: 'rgba(0,0,0,0.4)',
-              borderRadius: 8,
-              color: '#ccc',
-              padding: '8px 14px',
-              margin: '8px 0',
-              whiteSpace: 'pre-line',
-              fontSize: '0.85em',
-            }}
-          >
+          <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
             {['[CPUの行動]', ...state.cpuActions.map(actionDescription)].join('\n')}
           </div>
         )}
 
         {/* Result message */}
         {state.message && (
-          <div
-            style={{
-              background: 'rgba(0,0,0,0.55)',
-              borderRadius: 10,
-              color: '#fff',
-              textAlign: 'center',
-              padding: '10px 16px',
-              fontSize: '1.2em',
-              fontWeight: 'bold',
-              margin: '8px 0',
-            }}
-          >
+          <div className="bg-black/55 rounded-[10px] text-white text-center py-2.5 px-4 text-[1.2em] font-bold my-2">
             {state.message}
           </div>
         )}
@@ -269,17 +232,12 @@ export function DaifugoPage() {
 
       {/* Sticky footer: human player hand + buttons */}
       <div
-        style={{
-          flexShrink: 0,
-          background: '#163e16',
-          borderTop: '1px solid rgba(255,255,255,0.2)',
-          padding: '10px 16px',
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)',
-        }}
+        className="shrink-0 bg-[#163e16] border-t border-white/20 px-4 py-2.5"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
       >
         {/* Human player */}
         {humanPlayer && (
-          <div style={{ marginBottom: 8 }}>
+          <div className="mb-2">
             <HumanPlayerArea
               player={humanPlayer}
               selectedIndices={selectedIndices}
