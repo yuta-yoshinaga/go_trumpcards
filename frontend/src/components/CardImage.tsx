@@ -15,33 +15,35 @@ function getImagePath(card: Card): string {
 
 interface CardImageProps {
   card: Card;
+  width?: number;
   style?: React.CSSProperties;
   className?: string;
 }
 
-export function CardImage({ card, style, className }: CardImageProps) {
+export function CardImage({ card, width, style, className }: CardImageProps) {
   return (
     <img
       src={getImagePath(card)}
       alt={`${card.design} ${card.value}`}
-      style={{ width: 80, borderRadius: 6, display: 'block', ...style }}
+      style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
     />
   );
 }
 
 interface CardBackProps {
+  width?: number;
   style?: React.CSSProperties;
   className?: string;
   onClick?: () => void;
 }
 
-export function CardBack({ style, className, onClick }: CardBackProps) {
+export function CardBack({ width, style, className, onClick }: CardBackProps) {
   const img = (
     <img
       src="/images/z01.png"
       alt="card back"
-      style={{ width: 80, borderRadius: 6, display: 'block', ...style }}
+      style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
     />
   );

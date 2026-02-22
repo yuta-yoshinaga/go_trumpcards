@@ -166,15 +166,13 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
       )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
         {player.isFinished ? null : player.isHuman ? (
-          player.cards?.map((card) => (
-            <CardImage key={`${card.design}-${card.value}`} card={card} style={{ width: 50 }} />
-          ))
+          player.cards?.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={50} />)
         ) : showSelectable ? (
           <>
             {Array.from({ length: showCount }, (_, i) => {
-              const cardStyle = { width: 40, border: '2px solid transparent', borderRadius: 4, cursor: 'pointer' };
+              const cardStyle = { border: '2px solid transparent', borderRadius: 4, cursor: 'pointer' };
               // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              return <CardBack key={i} style={cardStyle} onClick={() => onDraw(i)} />;
+              return <CardBack key={i} width={40} style={cardStyle} onClick={() => onDraw(i)} />;
             })}
             {player.cardCount > 10 && (
               <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
@@ -186,7 +184,7 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
           <>
             {Array.from({ length: showCount }).map((_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              <CardBack key={i} style={{ width: 40 }} />
+              <CardBack key={i} width={40} />
             ))}
             {player.cardCount > 10 && (
               <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
@@ -245,11 +243,11 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
       <div style={{ display: 'flex', justifyContent: 'center', gap: 20, alignItems: 'flex-end' }}>
         {pairs.map(([c1, c2]) => (
           <div key={`${c1.design}-${c1.value}`} style={{ position: 'relative', width: 65, height: 82 }}>
-            <CardImage card={c1} style={{ width: 55, position: 'absolute', left: 0, top: 0 }} />
-            <CardImage card={c2} style={{ width: 55, position: 'absolute', left: 10, top: 6 }} />
+            <CardImage card={c1} width={55} style={{ position: 'absolute', left: 0, top: 0 }} />
+            <CardImage card={c2} width={55} style={{ position: 'absolute', left: 10, top: 6 }} />
           </div>
         ))}
-        {remainder && <CardImage card={remainder} style={{ width: 55 }} />}
+        {remainder && <CardImage card={remainder} width={55} />}
       </div>
     </div>
   );

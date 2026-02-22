@@ -141,8 +141,8 @@ export function PokerPage() {
                 >
                   <CardImage
                     card={card}
+                    width={60}
                     style={{
-                      width: 60,
                       border: isSelected ? '3px solid #f0ad4e' : '3px solid transparent',
                       transform: isSelected ? 'translateY(-10px)' : undefined,
                       transition: 'transform 0.15s',

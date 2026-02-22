@@ -149,7 +149,7 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
               boxSizing: 'border-box',
             }}
           >
-            <CardImage card={card} style={{ width: 52 }} />
+            <CardImage card={card} width={52} />
           </button>
         ))}
       </div>

@@ -240,7 +240,7 @@ function HumanArea({ player, isCurrentTurn, tableMinVals, tableMaxVals, onPlay }
                 boxSizing: 'border-box',
               }}
             >
-              <CardImage card={card} style={{ width: 52 }} />
+              <CardImage card={card} width={52} />
             </button>
           );
         })}

@@ -62,7 +62,7 @@ export function BlackJackPage() {
             </h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {state.player.cards.map((card) => (
-                <CardImage key={`${card.design}-${card.value}`} card={card} style={{ width: 60 }} />
+                <CardImage key={`${card.design}-${card.value}`} card={card} width={60} />
               ))}
             </div>
           </div>
