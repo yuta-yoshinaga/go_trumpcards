@@ -9,9 +9,9 @@ import { SevensPage } from './pages/SevensPage';
 export default function App() {
   return (
     <HashRouter>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div className="flex flex-col h-full">
         <NavBar />
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <div className="flex-1 flex flex-col min-h-0">
           <Routes>
             <Route path="/" element={<BlackJackPage />} />
             <Route path="/poker" element={<PokerPage />} />

@@ -139,15 +139,12 @@ export function PokerPage() {
                     cursor: phase === PHASE_DEAL ? 'pointer' : 'default',
                   }}
                 >
-                  <img
-                    src={`/images/${cardPrefix(card.design)}${String(card.value).padStart(2, '0')}.png`}
-                    alt={`${card.design} ${card.value}`}
+                  <CardImage
+                    card={card}
                     style={{
                       width: 60,
-                      borderRadius: 6,
                       border: isSelected ? '3px solid #f0ad4e' : '3px solid transparent',
                       transform: isSelected ? 'translateY(-10px)' : undefined,
-                      display: 'block',
                       transition: 'transform 0.15s',
                     }}
                   />
@@ -209,15 +206,4 @@ export function PokerPage() {
       </div>
     </div>
   );
-}
-
-function cardPrefix(design: string): string {
-  const map: Record<string, string> = {
-    SPADE: 's',
-    CLOVER: 'c',
-    HEART: 'h',
-    DIAMOND: 'd',
-    JOKER: 'x',
-  };
-  return map[design] ?? 'x';
 }
