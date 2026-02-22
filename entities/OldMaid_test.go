@@ -197,4 +197,41 @@ func TestOldMaid_Method(t *testing.T) {
 		assert.Equal(t, 2, len(actions[0].DiscardedCards))
 		assert.Equal(t, 10, actions[0].DiscardedCards[0].GetValue())
 	})
+
+	t.Run("success Reset shuffles player order", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		players := makePlayers()
+		om := entities.NewOldMaid(tc, players)
+
+		// Run Reset many times and check that the human player
+		// does not always end up at index 0.
+		humanNotAtZero := false
+		for i := 0; i < 50; i++ {
+			om.Reset()
+			if !om.GetPlayer(0).GetIsHuman() {
+				humanNotAtZero = true
+				break
+			}
+		}
+		assert.True(t, humanNotAtZero, "player order should be randomized after Reset")
+	})
+
+	t.Run("success Reset preserves all players after shuffle", func(t *testing.T) {
+		tc := entities.NewTrumpCards(1)
+		players := makePlayers()
+		om := entities.NewOldMaid(tc, players)
+		om.Reset()
+
+		humanCnt := 0
+		cpuCnt := 0
+		for i := 0; i < om.GetPlayerCnt(); i++ {
+			if om.GetPlayer(i).GetIsHuman() {
+				humanCnt++
+			} else {
+				cpuCnt++
+			}
+		}
+		assert.Equal(t, 1, humanCnt)
+		assert.Equal(t, 3, cpuCnt)
+	})
 }

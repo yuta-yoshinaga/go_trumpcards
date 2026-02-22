@@ -11,8 +11,13 @@ const btnPrimary =
 const btnWarning =
   'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1';
 
-function playerName(idx: number): string {
-  return idx === 0 ? 'あなた' : `CPU ${idx}`;
+function playerName(id: number, isHuman: boolean): string {
+  return isHuman ? 'あなた' : `CPU ${id}`;
+}
+
+function findPlayerName(players: { id: number; isHuman: boolean }[], idx: number): string {
+  const p = players.find((pl) => pl.id === idx);
+  return p ? playerName(p.id, p.isHuman) : `Player ${idx}`;
 }
 
 function cardLabel(card: OldMaidResponse['lastDrawCard']): string {
@@ -127,7 +132,7 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
   return (
     <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
       <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4, fontSize: '0.9em' }}>
-        {playerName(player.id)}
+        {playerName(player.id, player.isHuman)}
         {player.isFinished && (
           <span
             style={{
@@ -299,19 +304,21 @@ export function OldMaidPage() {
   if (!displayState) return null;
 
   const state = displayState;
-  const isHumanTurn = !state.gameEndFlag && state.currentTurn === 0;
+  const isHumanTurn = !state.gameEndFlag && !!state.players.find((p) => p.id === state.currentTurn && p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
 
   const statusLines: string[] = [];
   if (!state.gameEndFlag && state.hasDrawn) {
-    let msg = `${playerName(state.lastDrawPlayerIdx)}が${playerName(state.lastDrawFromIdx)}から1枚引きました`;
+    let msg = `${findPlayerName(state.players, state.lastDrawPlayerIdx)}が${findPlayerName(state.players, state.lastDrawFromIdx)}から1枚引きました`;
     if (state.lastDrawCard) msg += ` (${cardLabel(state.lastDrawCard)})`;
     if (state.lastDiscardedPairs > 0) msg += `。${state.lastDiscardedPairs}組捨てました`;
     statusLines.push(msg);
   }
-  if (!state.gameEndFlag && state.currentTurn === 0) {
-    statusLines.push(`あなたの番！ ${playerName(state.nextDrawTargetIdx)}のカードをクリックして引いてください。`);
+  if (isHumanTurn) {
+    statusLines.push(
+      `あなたの番！ ${findPlayerName(state.players, state.nextDrawTargetIdx)}のカードをクリックして引いてください。`,
+    );
   }
 
   return (
@@ -379,7 +386,7 @@ export function OldMaidPage() {
           {[
             '[CPUの行動]',
             ...state.cpuActions.map((action: CpuAction) => {
-              let msg = `${playerName(action.drawPlayerIdx)}が${playerName(action.drawFromIdx)}から1枚引きました`;
+              let msg = `${findPlayerName(state.players, action.drawPlayerIdx)}が${findPlayerName(state.players, action.drawFromIdx)}から1枚引きました`;
               // CPU drawn card is intentionally hidden to preserve game fairness
               if (action.discardedPairs > 0) msg += `。${action.discardedPairs}組捨てました`;
               return msg;

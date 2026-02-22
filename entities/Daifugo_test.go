@@ -517,4 +517,39 @@ func TestDaifugo_Method(t *testing.T) {
 		dg.CpuPlay() // CPU1 plays four 4s → double revolution (back to normal)
 		assert.False(t, dg.GetRevolutionActive())
 	})
+
+	t.Run("success Reset shuffles player order", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players)
+
+		humanNotAtZero := false
+		for i := 0; i < 50; i++ {
+			dg.Reset()
+			if !dg.GetPlayer(0).GetIsHuman() {
+				humanNotAtZero = true
+				break
+			}
+		}
+		assert.True(t, humanNotAtZero, "player order should be randomized after Reset")
+	})
+
+	t.Run("success Reset preserves all players after shuffle", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := entities.NewDaifugo(tc, players)
+		dg.Reset()
+
+		humanCnt := 0
+		cpuCnt := 0
+		for i := 0; i < dg.GetPlayerCnt(); i++ {
+			if dg.GetPlayer(i).GetIsHuman() {
+				humanCnt++
+			} else {
+				cpuCnt++
+			}
+		}
+		assert.Equal(t, 1, humanCnt)
+		assert.Equal(t, 3, cpuCnt)
+	})
 }
