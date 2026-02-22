@@ -1,6 +1,9 @@
 package entities
 
-import "math/rand"
+import (
+	"math"
+	"math/rand"
+)
 
 // SevensPlayerCnt 7並べプレイヤー数
 const SevensPlayerCnt = 4
@@ -493,7 +496,7 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 func (s *Sevens) evaluateJokerPlays(player *SevensPlayer) (int, int, int) {
 	bestSuit := 0
 	bestValue := 0
-	bestScore := -999
+	bestScore := math.MinInt
 
 	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
 		for value := 1; value <= 13; value++ {

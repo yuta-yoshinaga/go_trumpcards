@@ -719,16 +719,22 @@ func TestSevens_Joker(t *testing.T) {
 		players := makeSevensPlayers()
 		s := entities.NewSevens(tc, players, jokerConfig)
 
-		// Manually fill all board positions using placeCard via PlayerPlay
-		// Give players cards to fill entire board
+		// Fill all 4 suits completely by playing cards in alternating order
+		suits := []int{entities.CardDesignSpade, entities.CardDesignClover, entities.CardDesignHeart, entities.CardDesignDiamond}
 		values := []int{6, 8, 5, 9, 4, 10, 3, 11, 2, 12, 1, 13}
-		vi := 0
-		for _, v := range values {
-			pIdx := vi % 4
-			players[pIdx].AddCard(entities.NewCard(entities.CardDesignSpade, v, false))
-			vi++
+		for _, suit := range suits {
+			for i, v := range values {
+				pIdx := i % 4
+				players[pIdx].AddCard(entities.NewCard(suit, v, false))
+			}
 		}
-		// Fill board by playing rounds
+		// Give all players extra dummy cards so they never finish
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 20; d++ {
+				players[i].AddCard(entities.NewCard(entities.CardDesignDiamond, 2, false))
+			}
+		}
+		// Play all rounds until no more playable cards
 		for !s.GetGameEndFlag() {
 			if s.IsHumanTurn() {
 				played := false
@@ -740,27 +746,32 @@ func TestSevens_Joker(t *testing.T) {
 					}
 				}
 				if !played {
-					break
+					s.PlayerPlay(-1) // pass to advance
 				}
 			} else {
 				s.CpuPlay()
 			}
+			// Safety: check if all suits are full
+			placed := s.GetTablePlaced()
+			allFull := true
+			for _, suit := range suits {
+				for v := 1; v <= 13; v++ {
+					if placed[suit]&(1<<uint(v)) == 0 {
+						allFull = false
+						break
+					}
+				}
+				if !allFull {
+					break
+				}
+			}
+			if allFull {
+				break
+			}
 		}
-		// Check remaining playability for spade suit: should be nearly filled
-		// Joker should eventually become not playable when all positions are taken
+
 		joker := entities.NewCard(entities.CardDesignJoker, 1, false)
-		// Board may not be fully filled for all suits, but spade should be full
-		placed := s.GetTablePlaced()
-		spadeAll := uint16(0)
-		for v := 1; v <= 13; v++ {
-			spadeAll |= 1 << uint(v)
-		}
-		if placed[entities.CardDesignSpade] == spadeAll {
-			// If all other suits still have only 7, joker is still playable for those suits
-			// So joker is only not playable when ALL suits are fully filled
-		}
-		// At minimum verify joker playability logic works
-		assert.NotNil(t, joker)
+		assert.False(t, s.IsPlayable(joker))
 	})
 }
 
