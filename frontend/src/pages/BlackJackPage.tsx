@@ -34,9 +34,9 @@ export function BlackJackPage() {
             <h3 className="text-white">スコア {state.dealer.score !== 0 ? state.dealer.score : ''}</h3>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards.map((card) => (
-                <CardImage key={`${card.design}-${card.value}`} card={card} />
+                <CardImage key={`${card.design}-${card.value}`} card={card} width={60} />
               ))}
-              {state.dealer.score === 0 && <CardBack />}
+              {state.dealer.score === 0 && <CardBack width={60} />}
             </div>
           </div>
         )}

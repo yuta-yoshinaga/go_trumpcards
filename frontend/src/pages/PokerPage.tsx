@@ -76,12 +76,12 @@ export function PokerPage() {
             {phase === PHASE_END && state?.dealer?.cards?.length
               ? state.dealer.cards.map((card) => (
                   <div key={`${card.design}-${card.value}`} style={{ ...cardWrapBase, cursor: 'default' }}>
-                    <CardImage card={card} style={{ border: '3px solid transparent' }} />
+                    <CardImage card={card} width={60} style={{ border: '3px solid transparent' }} />
                   </div>
                 ))
               : Array.from({ length: 5 }).map((_, i) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-                  <CardBack key={i} />
+                  <CardBack key={i} width={60} />
                 ))}
           </div>
         </div>
