@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 
 // Design → suit index (matches Go backend: 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND)
 const designToSuit: Record<CardDesign, number> = {
@@ -34,15 +35,6 @@ function isCardPlayable(card: Card, tableMinVals: number[], tableMaxVals: number
   const leftOk = v === tableMinVals[suit] - 1 && tableMinVals[suit] > 1;
   const rightOk = v === tableMaxVals[suit] + 1 && tableMaxVals[suit] < 13;
   return leftOk || rightOk;
-}
-
-function playerName(id: number, isHuman: boolean): string {
-  return isHuman ? 'あなた' : `CPU ${id}`;
-}
-
-function findPlayerName(players: { id: number; isHuman: boolean }[], idx: number): string {
-  const p = players.find((pl) => pl.id === idx);
-  return p ? playerName(p.id, p.isHuman) : `Player ${idx}`;
 }
 
 function actionDesc(players: { id: number; isHuman: boolean }[], action: SevensAction): string {
@@ -257,7 +249,7 @@ export function SevensPage() {
 
   if (!state) return null;
 
-  const isHumanTurn = !state.gameEndFlag && !!state.players.find((p) => p.id === state.currentTurn && p.isHuman);
+  const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const canPass = isHumanTurn && (humanPlayer?.passesUsed ?? 0) < (humanPlayer?.maxPasses ?? 5);

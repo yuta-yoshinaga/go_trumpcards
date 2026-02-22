@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import type { Card, DaifugoAction, DaifugoPlayerData, DaifugoResponse } from '../types/card';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const btnPrimary =
   'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
@@ -12,15 +13,6 @@ const btnSuccess =
 
 const playerAreaBaseClass =
   'bg-black/35 rounded-[10px] p-[10px] border-2 border-transparent flex-[1_1_180px] min-w-[150px]';
-
-function playerName(id: number, isHuman: boolean): string {
-  return isHuman ? 'あなた' : `CPU ${id}`;
-}
-
-function findPlayerName(players: { id: number; isHuman: boolean }[], idx: number): string {
-  const p = players.find((pl) => pl.id === idx);
-  return p ? playerName(p.id, p.isHuman) : `Player ${idx}`;
-}
 
 function rankName(rank: number): string {
   switch (rank) {
@@ -182,7 +174,7 @@ export function DaifugoPage() {
 
   if (!state) return null;
 
-  const isHumanTurn = !state.gameEndFlag && !!state.players.find((p) => p.id === state.currentTurn && p.isHuman);
+  const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
 

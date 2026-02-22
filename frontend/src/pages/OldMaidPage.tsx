@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const REPLAY_DELAY_MS = 800;
 
@@ -10,15 +11,6 @@ const btnPrimary =
   'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1';
 const btnWarning =
   'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1';
-
-function playerName(id: number, isHuman: boolean): string {
-  return isHuman ? 'あなた' : `CPU ${id}`;
-}
-
-function findPlayerName(players: { id: number; isHuman: boolean }[], idx: number): string {
-  const p = players.find((pl) => pl.id === idx);
-  return p ? playerName(p.id, p.isHuman) : `Player ${idx}`;
-}
 
 function cardLabel(card: OldMaidResponse['lastDrawCard']): string {
   if (!card) return '';
@@ -277,7 +269,7 @@ export function OldMaidPage() {
   if (!displayState) return null;
 
   const state = displayState;
-  const isHumanTurn = !state.gameEndFlag && !!state.players.find((p) => p.id === state.currentTurn && p.isHuman);
+  const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
 
