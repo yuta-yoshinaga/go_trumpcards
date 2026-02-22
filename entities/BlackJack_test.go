@@ -55,7 +55,7 @@ func TestBlackJack_Method(t *testing.T) {
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, -1, tb.GameJudgment())
+		assert.Equal(t, entities.GameResultLose, tb.GameJudgment())
 	})
 	t.Run("success GameJudgment player lose", func(t *testing.T) {
 		tb.Reset()
@@ -67,7 +67,7 @@ func TestBlackJack_Method(t *testing.T) {
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, -1, tb.GameJudgment())
+		assert.Equal(t, entities.GameResultLose, tb.GameJudgment())
 	})
 	t.Run("success GameJudgment player win", func(t *testing.T) {
 		tb.Reset()
@@ -79,7 +79,7 @@ func TestBlackJack_Method(t *testing.T) {
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, 1, tb.GameJudgment())
+		assert.Equal(t, entities.GameResultWin, tb.GameJudgment())
 	})
 	t.Run("success GameJudgment draw", func(t *testing.T) {
 		tb.Reset()
@@ -89,7 +89,7 @@ func TestBlackJack_Method(t *testing.T) {
 		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		assert.Equal(t, 0, tb.GameJudgment())
+		assert.Equal(t, entities.GameResultDraw, tb.GameJudgment())
 	})
 	t.Run("success GameJudgment player win", func(t *testing.T) {
 		tb.Reset()
@@ -100,7 +100,7 @@ func TestBlackJack_Method(t *testing.T) {
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, 1, tb.GameJudgment())
+		assert.Equal(t, entities.GameResultWin, tb.GameJudgment())
 	})
 	t.Run("success GameJudgment player win", func(t *testing.T) {
 		tb.Reset()
@@ -110,7 +110,7 @@ func TestBlackJack_Method(t *testing.T) {
 		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 9, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		assert.Equal(t, 1, tb.GameJudgment())
+		assert.Equal(t, entities.GameResultWin, tb.GameJudgment())
 	})
 	t.Run("success GameJudgment player lose", func(t *testing.T) {
 		tb.Reset()
@@ -120,6 +120,6 @@ func TestBlackJack_Method(t *testing.T) {
 		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		assert.Equal(t, -1, tb.GameJudgment())
+		assert.Equal(t, entities.GameResultLose, tb.GameJudgment())
 	})
 }
