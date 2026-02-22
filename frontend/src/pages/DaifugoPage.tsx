@@ -210,9 +210,7 @@ export function DaifugoPage() {
             {!state.tableCards || state.tableCards.length === 0 ? (
               <span style={{ color: '#aaa' }}>（なし）</span>
             ) : (
-              state.tableCards.map((card) => (
-                <CardImage key={`${card.design}-${card.value}`} card={card} style={{ width: 52 }} />
-              ))
+              state.tableCards.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={52} />)
             )}
           </div>
         </div>
