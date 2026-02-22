@@ -247,14 +247,10 @@ const (
 	cpuEdgeSides           = 2  // 先頭か末尾か
 )
 
-// cpuSelectCardIdx CPUが相手から引くカードのインデックスを戦略的に選択する。
+// cpuSelectCardIdx 対象プレイヤーの手札枚数を受け取り、引くカードのインデックスを戦略的に選択する。
 // 30%の確率で端のカード（先頭または末尾）を選択し、残りはランダム選択。
-func (o *OldMaid) cpuSelectCardIdx(playerIdx int) int {
-	targetIdx := o.getNextActivePlayer(playerIdx)
-	if targetIdx < 0 || targetIdx >= len(o.players) {
-		return -1
-	}
-	size := o.players[targetIdx].GetCardsSize()
+// 「誰から引くか」の解決は呼び出し元が担う。
+func cpuSelectCardIdx(size int) int {
 	if size <= 1 {
 		return 0
 	}
@@ -274,7 +270,11 @@ func (o *OldMaid) CpuDraw() {
 		return
 	}
 	playerIdx := o.currentTurn
-	cardIdx := o.cpuSelectCardIdx(playerIdx)
+	targetIdx := o.getNextActivePlayer(playerIdx)
+	if targetIdx < 0 || targetIdx >= len(o.players) {
+		return
+	}
+	cardIdx := cpuSelectCardIdx(o.players[targetIdx].GetCardsSize())
 	card := o.drawCard(playerIdx, cardIdx)
 	action := &OldMaidCpuAction{
 		DrawPlayerIdx:  playerIdx,
