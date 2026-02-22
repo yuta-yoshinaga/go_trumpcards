@@ -14,8 +14,7 @@ import (
 func TestBlackJackInteractor_Method(t *testing.T) {
 	bjpMock := new(presenters.MockBlackJackPresenter)
 	bjpMock.On("Output", mock.AnythingOfType("string")).Return("----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n")
-	bj := entities.NewBlackJack(entities.NewTrumpCards(0), entities.NewBlackJackPlayer(), entities.NewBlackJackPlayer())
-	tbj := usecases.NewBlackJackInteractor(bj, bjpMock)
+	tbj := usecases.NewBlackJackInteractor(entities.NewDefaultBlackJack(), bjpMock)
 	t.Run("success Reset", func(t *testing.T) {
 		assert.Equal(t, "----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n", tbj.Reset())
 	})

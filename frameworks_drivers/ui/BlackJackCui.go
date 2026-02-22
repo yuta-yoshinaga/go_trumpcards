@@ -20,7 +20,7 @@ type BlackJackCui struct {
 func NewBlackJackCui() *BlackJackCui {
 	return &BlackJackCui{
 		bjc: controllers.NewBlackJackCuiController(usecases.NewBlackJackInteractor(
-			entities.NewBlackJack(entities.NewTrumpCards(0), entities.NewBlackJackPlayer(), entities.NewBlackJackPlayer()),
+			entities.NewDefaultBlackJack(),
 			presenters.NewBlackJackCuiPresenter(),
 		)),
 	}

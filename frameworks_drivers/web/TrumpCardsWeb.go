@@ -27,7 +27,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 	return &TrumpCardsWeb{
 		bjc: controllers.NewBlackJackWebController(func() usecases.BlackJackInteractorIF {
 			return usecases.NewBlackJackInteractor(
-				entities.NewBlackJack(entities.NewTrumpCards(0), entities.NewBlackJackPlayer(), entities.NewBlackJackPlayer()),
+				entities.NewDefaultBlackJack(),
 				presenters.NewBlackJackWebPresenter(),
 			)
 		}),
