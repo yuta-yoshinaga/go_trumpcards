@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/entities"
 	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
 	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/presenters"
 	"github.com/yuta-yoshinaga/go_trumpcards/usecases"
@@ -18,7 +19,10 @@ type BlackJackCui struct {
 // NewBlackJackCui コンストラクタ
 func NewBlackJackCui() *BlackJackCui {
 	return &BlackJackCui{
-		bjc: controllers.NewBlackJackCuiController(usecases.NewBlackJackInteractor(presenters.NewBlackJackCuiPresenter())),
+		bjc: controllers.NewBlackJackCuiController(usecases.NewBlackJackInteractor(
+			entities.NewDefaultBlackJack(),
+			presenters.NewBlackJackCuiPresenter(),
+		)),
 	}
 }
 

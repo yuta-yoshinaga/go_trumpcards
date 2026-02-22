@@ -8,6 +8,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewDefaultBlackJack(t *testing.T) {
+	bj := entities.NewDefaultBlackJack()
+	assert.NotNil(t, bj)
+	assert.NotNil(t, bj.GetPlayer())
+	assert.NotNil(t, bj.GetDealer())
+	assert.Equal(t, false, bj.GetGameEndFlag())
+}
+
 func TestBlackJack_Method(t *testing.T) {
 	tc := entities.NewTrumpCards(0)
 	player := entities.NewBlackJackPlayer()

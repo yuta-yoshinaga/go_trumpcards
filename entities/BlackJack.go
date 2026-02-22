@@ -8,6 +8,11 @@ type BlackJack struct {
 	gameEndFlag bool             // ゲーム終了フラグ
 }
 
+// NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
+func NewDefaultBlackJack() *BlackJack {
+	return NewBlackJack(NewTrumpCards(0), NewBlackJackPlayer(), NewBlackJackPlayer())
+}
+
 // NewBlackJack コンストラクタ
 func NewBlackJack(trumpCards *TrumpCards, player *BlackJackPlayer, dealer *BlackJackPlayer) *BlackJack {
 	return &BlackJack{
