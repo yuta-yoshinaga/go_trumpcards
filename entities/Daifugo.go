@@ -729,11 +729,7 @@ func (d *Daifugo) CpuPlay() {
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		d.cpuActions = append(d.cpuActions, action)
 
-		if isSeq {
-			d.tableIsSequence = true
-		} else {
-			d.tableIsSequence = false
-		}
+		d.tableIsSequence = isSeq
 
 		d.triggerRevolutionIfNeeded(cards)
 		d.triggerElevenBack(cards)
