@@ -176,6 +176,7 @@ cd frontend && npm test
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
 | Modify anything under `frontend/` | Run `cd frontend && npm run check` and `cd frontend && npm test` and ensure both pass before committing |
 | Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
+| Change frontend tooling or scripts | `frontend/README.md` (Scripts, Tooling) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
