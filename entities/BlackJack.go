@@ -86,37 +86,33 @@ func (b *BlackJack) DealerStand() {
 
 // GameJudgment ゲーム勝敗判定
 func (b *BlackJack) GameJudgment() GameResult {
-	res := GameResultDraw
 	score1 := b.player.GetScore()
 	score2 := b.dealer.GetScore()
-	diff1 := 21 - score1
-	diff2 := 21 - score2
-	if 22 <= score1 && 22 <= score2 {
-		// プレイヤー・ディーラー共にバーストしているので負け
-		res = GameResultLose
-	} else if 22 <= score1 && score2 <= 21 {
-		// プレイヤーバーストしているので負け
-		res = GameResultLose
-	} else if score1 <= 21 && 22 <= score2 {
-		// ディーラーバーストしているので勝ち
-		res = GameResultWin
-	} else {
-		if diff1 == diff2 {
-			// 同スコアなら引き分け
-			res = GameResultDraw
-			if score1 == 21 && b.player.GetCardsSize() == 2 && b.dealer.GetCardsSize() != 2 {
-				// プレイヤーのみがピュアブラックジャックならプレイヤーの勝ち
-				res = GameResultWin
-			}
-		} else if diff1 < diff2 {
-			// プレイヤーの方が21に近いので勝ち
-			res = GameResultWin
-		} else {
-			// ディーラーの方が21に近いので負け
-			res = GameResultLose
-		}
+
+	// プレイヤーがバーストしているなら負け
+	if score1 > 21 {
+		return GameResultLose
 	}
-	return res
+	// ディーラーバーストしているので勝ち
+	if score2 > 21 {
+		return GameResultWin
+	}
+	// プレイヤーの方が21に近いので勝ち
+	if score1 > score2 {
+		return GameResultWin
+	}
+	// ディーラーの方が21に近いので負け
+	if score2 > score1 {
+		return GameResultLose
+	}
+
+	// スコアが同じ場合、ナチュラルブラックジャックを確認
+	if score1 == 21 && b.player.GetCardsSize() == 2 && b.dealer.GetCardsSize() != 2 {
+		// プレイヤーのみがピュアブラックジャックならプレイヤーの勝ち
+		return GameResultWin
+	}
+
+	return GameResultDraw
 }
 
 // GetGameEndFlag ゲーム終了フラグ

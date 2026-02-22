@@ -51,7 +51,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj *entities.BlackJack) string {
 			res += "It is a draw.\n"
 		case entities.GameResultWin:
 			res += "You are the winner.\n"
-		default:
+		case entities.GameResultLose:
 			res += "It is your loss.\n"
 		}
 		res += "\n----------\n"

@@ -45,7 +45,7 @@ func (bjp *BlackJackWebPresenter) Output(bj *entities.BlackJack) string {
 			resObj.Message = "It is a draw."
 		case entities.GameResultWin:
 			resObj.Message = "You are the winner."
-		default:
+		case entities.GameResultLose:
 			resObj.Message = "It is your loss."
 		}
 	}
