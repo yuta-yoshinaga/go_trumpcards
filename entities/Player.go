@@ -38,7 +38,9 @@ func (p *Player) Reset() {
 	p.cards = make([]*Card, 0)
 }
 
-// ShuffleCards 手札をランダムに並び替える
+// ShuffleCards 手札をランダムに並び替える。
+// Go 1.20 以降はグローバル乱数生成器が起動時に自動でランダムシードされるため、
+// 追加のシード設定は不要。
 func (p *Player) ShuffleCards() {
 	rand.Shuffle(len(p.cards), func(i, j int) {
 		p.cards[i], p.cards[j] = p.cards[j], p.cards[i]

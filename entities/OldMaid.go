@@ -240,11 +240,18 @@ func (o *OldMaid) PlayerDraw(cardIdx int) {
 	}
 }
 
-// cpuSelectCardIdx CPUが相手から引くカードのインデックスを戦略的に選択する
+// CPU戦略用定数
+const (
+	cpuEdgeSelectThreshold = 3  // 端のカードを選ぶ閾値 (30% = 3/10)
+	cpuSelectTotalCases    = 10 // 乱数の全選択肢数
+	cpuEdgeSides           = 2  // 先頭か末尾か
+)
+
+// cpuSelectCardIdx CPUが相手から引くカードのインデックスを戦略的に選択する。
 // 30%の確率で端のカード（先頭または末尾）を選択し、残りはランダム選択。
 func (o *OldMaid) cpuSelectCardIdx(playerIdx int) int {
 	targetIdx := o.getNextActivePlayer(playerIdx)
-	if targetIdx < 0 {
+	if targetIdx < 0 || targetIdx >= len(o.players) {
 		return -1
 	}
 	size := o.players[targetIdx].GetCardsSize()
@@ -252,11 +259,11 @@ func (o *OldMaid) cpuSelectCardIdx(playerIdx int) int {
 		return 0
 	}
 	// 30%の確率で端のカードを狙う
-	if rand.Intn(10) < 3 {
-		if rand.Intn(2) == 0 {
-			return 0
+	if rand.Intn(cpuSelectTotalCases) < cpuEdgeSelectThreshold {
+		if rand.Intn(cpuEdgeSides) == 0 {
+			return 0 // 先頭のカード
 		}
-		return size - 1
+		return size - 1 // 末尾のカード
 	}
 	return rand.Intn(size)
 }
