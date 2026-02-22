@@ -9,6 +9,7 @@ import (
 type SevensInteractorIF interface {
 	Reset() string
 	Play(idx int) string
+	PlayJoker(cardIdx, targetSuit, targetValue int) string
 }
 
 // SevensInteractor 7並べインタラクタークラス
@@ -19,6 +20,7 @@ type SevensInteractor struct {
 
 // NewSevensInteractor コンストラクタ
 func NewSevensInteractor(sp presenters.SevensPresenter) *SevensInteractor {
+	config := entities.DefaultSevensConfig()
 	players := []*entities.SevensPlayer{
 		entities.NewSevensPlayer(true),  // player 0: 人間
 		entities.NewSevensPlayer(false), // player 1: CPU
@@ -26,7 +28,7 @@ func NewSevensInteractor(sp presenters.SevensPresenter) *SevensInteractor {
 		entities.NewSevensPlayer(false), // player 3: CPU
 	}
 	return &SevensInteractor{
-		s:  entities.NewSevens(entities.NewTrumpCards(0), players),
+		s:  entities.NewSevens(entities.NewTrumpCards(config.JokerCount), players, config),
 		sp: sp,
 	}
 }
@@ -48,6 +50,21 @@ func (si *SevensInteractor) Play(idx int) string {
 		return si.sp.Output(si.s)
 	}
 	si.s.PlayerPlay(idx)
+	if !si.s.GetGameEndFlag() {
+		si.runCpuTurns()
+	}
+	return si.sp.Output(si.s)
+}
+
+// PlayJoker 人間プレイヤーがジョーカーを指定ポジションに出す
+func (si *SevensInteractor) PlayJoker(cardIdx, targetSuit, targetValue int) string {
+	if si.s.GetGameEndFlag() {
+		return si.sp.Output(si.s)
+	}
+	if !si.s.IsHumanTurn() {
+		return si.sp.Output(si.s)
+	}
+	si.s.PlayerPlayJoker(cardIdx, targetSuit, targetValue)
 	if !si.s.GetGameEndFlag() {
 		si.runCpuTurns()
 	}

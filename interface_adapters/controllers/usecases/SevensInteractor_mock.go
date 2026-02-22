@@ -18,3 +18,9 @@ func (_m *MockSevensInteractor) Play(idx int) string {
 	ret := _m.Called(idx)
 	return ret.Get(0).(string)
 }
+
+// PlayJoker モック
+func (_m *MockSevensInteractor) PlayJoker(cardIdx, targetSuit, targetValue int) string {
+	ret := _m.Called(cardIdx, targetSuit, targetValue)
+	return ret.Get(0).(string)
+}

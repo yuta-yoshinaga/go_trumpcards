@@ -32,6 +32,6 @@ export const daifugoApi = {
 };
 
 export const sevensApi = {
-  exec: (command: 'reset' | 'play', index = -1) =>
-    postJson<SevensResponse>('/sevens/exec', { command, index, sessionId }),
+  exec: (command: 'reset' | 'play' | 'joker', index = -1, jokerTargetSuit = 0, jokerTargetValue = 0) =>
+    postJson<SevensResponse>('/sevens/exec', { command, index, jokerTargetSuit, jokerTargetValue, sessionId }),
 };

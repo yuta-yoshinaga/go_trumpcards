@@ -11,9 +11,11 @@ import (
 
 // SevensWebInput 7並べWebインプット
 type SevensWebInput struct {
-	Command   string `json:"command"`
-	Index     int    `json:"index"` // 出すカードのインデックス。play コマンド用。-1 でパス。
-	SessionId string `json:"sessionId"`
+	Command          string `json:"command"`
+	Index            int    `json:"index"`            // 出すカードのインデックス。play コマンド用。-1 でパス。
+	JokerTargetSuit  int    `json:"jokerTargetSuit"`  // ジョーカー配置先スート
+	JokerTargetValue int    `json:"jokerTargetValue"` // ジョーカー配置先値
+	SessionId        string `json:"sessionId"`
 }
 
 // SevensWebOutputCard 7並べWebアウトプットカード
@@ -36,8 +38,17 @@ type SevensWebOutputPlayer struct {
 
 // SevensWebOutputAction 7並べのプレイヤー行動記録
 type SevensWebOutputAction struct {
-	PlayerIdx  int                  `json:"playerIdx"`
-	PlayedCard *SevensWebOutputCard `json:"playedCard"` // nil = パス
+	PlayerIdx   int                  `json:"playerIdx"`
+	PlayedCard  *SevensWebOutputCard `json:"playedCard"` // nil = パス
+	TargetSuit  int                  `json:"targetSuit"`
+	TargetValue int                  `json:"targetValue"`
+}
+
+// SevensWebOutputConfig 7並べゲーム設定出力
+type SevensWebOutputConfig struct {
+	TunnelEnabled bool `json:"tunnelEnabled"`
+	JokerCount    int  `json:"jokerCount"`
+	CpuStrategy   bool `json:"cpuStrategy"`
 }
 
 // SevensWebOutput 7並べWebアウトプット
@@ -46,6 +57,8 @@ type SevensWebOutput struct {
 	CurrentTurn  int                      `json:"currentTurn"`
 	TableMinVals [5]int                   `json:"tableMinVals"`
 	TableMaxVals [5]int                   `json:"tableMaxVals"`
+	TablePlaced  [5]int                   `json:"tablePlaced"`
+	Config       SevensWebOutputConfig    `json:"config"`
 	GameEndFlag  bool                     `json:"gameEndFlag"`
 	CpuActions   []*SevensWebOutputAction `json:"cpuActions"`
 	HumanAction  *SevensWebOutputAction   `json:"humanAction"`
@@ -91,6 +104,8 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		swc.writePresenterResponse(w, sgi.Reset())
 	case "p", "play":
 		swc.writePresenterResponse(w, sgi.Play(param.Index))
+	case "j", "joker":
+		swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue))
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))

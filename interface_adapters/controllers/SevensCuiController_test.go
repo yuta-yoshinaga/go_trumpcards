@@ -17,6 +17,7 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		m := new(mockUsecases.MockSevensInteractor)
 		m.On("Reset").Return(mockOutput)
 		m.On("Play", mock.Anything).Return(mockOutput)
+		m.On("PlayJoker", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		return m
 	}
 
@@ -76,6 +77,22 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		result := c.Exec("play 0")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "Play", 0)
+	})
+
+	t.Run("joker command j with args", func(t *testing.T) {
+		m := newMock()
+		c := controllers.NewSevensCuiController(m)
+		result := c.Exec("j 0 1 6")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "PlayJoker", 0, 1, 6)
+	})
+
+	t.Run("joker command joker with args", func(t *testing.T) {
+		m := newMock()
+		c := controllers.NewSevensCuiController(m)
+		result := c.Exec("joker 1 3 8")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "PlayJoker", 1, 3, 8)
 	})
 
 	t.Run("unknown command", func(t *testing.T) {

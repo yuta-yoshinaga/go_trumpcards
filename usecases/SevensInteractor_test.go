@@ -27,4 +27,8 @@ func TestSevensInteractor_Method(t *testing.T) {
 	t.Run("success Play with index", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tsi.Play(0))
 	})
+
+	t.Run("success PlayJoker", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tsi.PlayJoker(0, 1, 6))
+	})
 }

@@ -10,7 +10,7 @@ This repository contains a Go implementation of trump card game algorithms. The 
 - **Poker (5-card Draw)**: CLI and Web GUI
 - **Old Maid (Babanuki)**: CLI and Web GUI
 - **Daifugo**: CLI and Web GUI
-- **Sevens (7並べ)**: CLI and Web GUI
+- **Sevens (7並べ)**: CLI and Web GUI (optional rules: tunnel, joker, CPU strategy)
 
 ## Requirements
 
@@ -102,7 +102,7 @@ public/                        # Built frontend assets served by Go web server
 - **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`
 - **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
 - **Daifugo**: Entities in `entities/Daifugo.go`, `entities/DaifugoPlayer.go`; interactor in `usecases/DaifugoInteractor.go`
-- **Sevens (7並べ)**: Entities in `entities/Sevens.go`, `entities/SevensPlayer.go`; interactor in `usecases/SevensInteractor.go`
+- **Sevens (7並べ)**: Entities in `entities/Sevens.go`, `entities/SevensPlayer.go`, `entities/SevensConfig.go`; interactor in `usecases/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, and CPU strategy
 
 ## Testing Policy
 

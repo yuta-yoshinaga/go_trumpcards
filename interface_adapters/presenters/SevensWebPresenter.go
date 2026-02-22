@@ -25,12 +25,28 @@ func (swp *SevensWebPresenter) Output(s *entities.Sevens) string {
 	resObj.TableMaxVals = s.GetTableMaxVals()
 	resObj.GameEndFlag = s.GetGameEndFlag()
 
+	// ボードビットマスク (uint16 → int に変換)
+	placed := s.GetTablePlaced()
+	for i := 0; i < 5; i++ {
+		resObj.TablePlaced[i] = int(placed[i])
+	}
+
+	// ゲーム設定
+	cfg := s.GetConfig()
+	resObj.Config = controllers.SevensWebOutputConfig{
+		TunnelEnabled: cfg.TunnelEnabled,
+		JokerCount:    cfg.JokerCount,
+		CpuStrategy:   cfg.CpuStrategy,
+	}
+
 	// CPU行動履歴
 	resObj.CpuActions = make([]*controllers.SevensWebOutputAction, 0)
 	for _, action := range s.GetCpuActions() {
 		a := &controllers.SevensWebOutputAction{
-			PlayerIdx:  action.PlayerIdx,
-			PlayedCard: swp.getCardObj(action.PlayedCard),
+			PlayerIdx:   action.PlayerIdx,
+			PlayedCard:  swp.getCardObj(action.PlayedCard),
+			TargetSuit:  action.TargetSuit,
+			TargetValue: action.TargetValue,
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
 	}
@@ -39,8 +55,10 @@ func (swp *SevensWebPresenter) Output(s *entities.Sevens) string {
 	humanAction := s.GetHumanAction()
 	if humanAction != nil {
 		resObj.HumanAction = &controllers.SevensWebOutputAction{
-			PlayerIdx:  humanAction.PlayerIdx,
-			PlayedCard: swp.getCardObj(humanAction.PlayedCard),
+			PlayerIdx:   humanAction.PlayerIdx,
+			PlayedCard:  swp.getCardObj(humanAction.PlayedCard),
+			TargetSuit:  humanAction.TargetSuit,
+			TargetValue: humanAction.TargetValue,
 		}
 	}
 

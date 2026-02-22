@@ -13,7 +13,7 @@
 - **ポーカー (5-card Draw Poker)**: CLIで遊べます
 - **ババ抜き (Old Maid)**: CLI および Web GUIで遊べます
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます
-- **7並べ (Sevens)**: CLI および Web GUIで遊べます
+- **7並べ (Sevens)**: CLI および Web GUIで遊べます（オプションルール: トンネル、ジョーカー、CPU戦略）
 
 ## Requirements
 

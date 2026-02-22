@@ -123,6 +123,14 @@ export interface SevensPlayerData {
 export interface SevensAction {
   playerIdx: number;
   playedCard: Card | null; // null = pass
+  targetSuit: number;
+  targetValue: number;
+}
+
+export interface SevensConfig {
+  tunnelEnabled: boolean;
+  jokerCount: number;
+  cpuStrategy: boolean;
 }
 
 export interface SevensResponse {
@@ -130,6 +138,8 @@ export interface SevensResponse {
   currentTurn: number;
   tableMinVals: number[]; // index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
   tableMaxVals: number[];
+  tablePlaced: number[]; // bitmask per suit; bit i = value i placed
+  config: SevensConfig;
   gameEndFlag: boolean;
   cpuActions: SevensAction[];
   humanAction: SevensAction | null;
