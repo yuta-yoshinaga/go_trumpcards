@@ -179,6 +179,8 @@ func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 	}
 	card := target.RemoveCard(idx)
 	player.AddCard(card)
+	// 引いたカードの位置がわからないよう手札をシャッフル
+	player.ShuffleCards()
 
 	// 最後の引き情報を更新
 	o.lastDrawPlayerIdx = playerIdx
@@ -238,13 +240,35 @@ func (o *OldMaid) PlayerDraw(cardIdx int) {
 	}
 }
 
+// cpuSelectCardIdx CPUが相手から引くカードのインデックスを戦略的に選択する
+// 30%の確率で端のカード（先頭または末尾）を選択し、残りはランダム選択。
+func (o *OldMaid) cpuSelectCardIdx(playerIdx int) int {
+	targetIdx := o.getNextActivePlayer(playerIdx)
+	if targetIdx < 0 {
+		return -1
+	}
+	size := o.players[targetIdx].GetCardsSize()
+	if size <= 1 {
+		return 0
+	}
+	// 30%の確率で端のカードを狙う
+	if rand.Intn(10) < 3 {
+		if rand.Intn(2) == 0 {
+			return 0
+		}
+		return size - 1
+	}
+	return rand.Intn(size)
+}
+
 // CpuDraw 現在の手番がCPUの場合に1ターン実行
 func (o *OldMaid) CpuDraw() {
 	if o.gameEndFlag || o.players[o.currentTurn].GetIsHuman() {
 		return
 	}
 	playerIdx := o.currentTurn
-	card := o.drawCard(playerIdx, -1)
+	cardIdx := o.cpuSelectCardIdx(playerIdx)
+	card := o.drawCard(playerIdx, cardIdx)
 	action := &OldMaidCpuAction{
 		DrawPlayerIdx:  playerIdx,
 		DrawFromIdx:    o.lastDrawFromIdx,
