@@ -46,6 +46,18 @@ describe('CardImage', () => {
     const img = screen.getByRole('img');
     expect(img).toHaveStyle({ opacity: '0.5' });
   });
+
+  it('applies width prop as image width', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    render(<CardImage card={card} width={60} />);
+    expect(screen.getByRole('img')).toHaveStyle({ width: '60px' });
+  });
+
+  it('defaults to 80px width when width prop is omitted', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    render(<CardImage card={card} />);
+    expect(screen.getByRole('img')).toHaveStyle({ width: '80px' });
+  });
 });
 
 describe('CardBack', () => {
@@ -78,5 +90,15 @@ describe('CardBack', () => {
     render(<CardBack />);
     const img = screen.getByRole('img');
     expect(img.style.cursor).toBe('');
+  });
+
+  it('applies width prop as image width', () => {
+    render(<CardBack width={40} />);
+    expect(screen.getByRole('img')).toHaveStyle({ width: '40px' });
+  });
+
+  it('defaults to 80px width when width prop is omitted', () => {
+    render(<CardBack />);
+    expect(screen.getByRole('img')).toHaveStyle({ width: '80px' });
   });
 });

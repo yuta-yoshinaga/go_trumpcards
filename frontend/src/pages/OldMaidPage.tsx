@@ -131,7 +131,7 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
 
   return (
     <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
-      <div style={{ color: '#fff', fontWeight: 'bold', marginBottom: 4, fontSize: '0.9em' }}>
+      <div className="text-white font-bold mb-1 text-[0.9em]">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && (
           <span
@@ -163,23 +163,17 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
           </span>
         )}
       </div>
-      {!player.isFinished && (
-        <div style={{ color: '#ccc', fontSize: '0.8em', marginBottom: 4 }}>{player.cardCount}枚</div>
-      )}
-      {showSelectable && !player.isFinished && (
-        <div style={{ color: '#cfc', fontSize: '0.75em', marginBottom: 4 }}>引く</div>
-      )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
+      {!player.isFinished && <div className="text-[#ccc] text-[0.8em] mb-1">{player.cardCount}枚</div>}
+      {showSelectable && !player.isFinished && <div className="text-[#cfc] text-[0.75em] mb-1">引く</div>}
+      <div className="flex flex-wrap gap-0.5 justify-center">
         {player.isFinished ? null : player.isHuman ? (
-          player.cards?.map((card) => (
-            <CardImage key={`${card.design}-${card.value}`} card={card} style={{ width: 50 }} />
-          ))
+          player.cards?.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={50} />)
         ) : showSelectable ? (
           <>
             {Array.from({ length: showCount }, (_, i) => {
-              const cardStyle = { width: 40, border: '2px solid transparent', borderRadius: 4, cursor: 'pointer' };
+              const cardStyle = { border: '2px solid transparent', borderRadius: 4, cursor: 'pointer' };
               // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              return <CardBack key={i} style={cardStyle} onClick={() => onDraw(i)} />;
+              return <CardBack key={i} width={40} style={cardStyle} onClick={() => onDraw(i)} />;
             })}
             {player.cardCount > 10 && (
               <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
@@ -191,7 +185,7 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
           <>
             {Array.from({ length: showCount }).map((_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              <CardBack key={i} style={{ width: 40 }} />
+              <CardBack key={i} width={40} />
             ))}
             {player.cardCount > 10 && (
               <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
@@ -209,19 +203,7 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: Play
 function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
   if (!cards || cards.length === 0) {
     return (
-      <div
-        style={{
-          height: 90,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '2px dashed rgba(255,255,255,0.15)',
-          borderRadius: 10,
-          margin: '8px 0',
-          color: 'rgba(255,255,255,0.3)',
-          fontSize: '0.9em',
-        }}
-      >
+      <div className="h-[90px] flex items-center justify-center border-2 border-dashed border-white/15 rounded-[10px] my-2 text-white/30 text-[0.9em]">
         捨て札エリア
       </div>
     );
@@ -236,25 +218,16 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
   const remainder = cards.length % 2 === 1 ? cards[cards.length - 1] : null;
 
   return (
-    <div
-      style={{
-        margin: '8px 0',
-        padding: '8px',
-        background: 'rgba(0,0,0,0.2)',
-        borderRadius: 10,
-        textAlign: 'center',
-        minHeight: 90,
-      }}
-    >
-      <div style={{ color: '#ccc', fontSize: '0.8em', marginBottom: 6 }}>直前に捨てられたカード</div>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 20, alignItems: 'flex-end' }}>
+    <div className="my-2 p-2 bg-black/20 rounded-[10px] text-center min-h-[90px]">
+      <div className="text-[#ccc] text-[0.8em] mb-1.5">直前に捨てられたカード</div>
+      <div className="flex justify-center gap-5 items-end">
         {pairs.map(([c1, c2]) => (
           <div key={`${c1.design}-${c1.value}`} style={{ position: 'relative', width: 65, height: 82 }}>
-            <CardImage card={c1} style={{ width: 55, position: 'absolute', left: 0, top: 0 }} />
-            <CardImage card={c2} style={{ width: 55, position: 'absolute', left: 10, top: 6 }} />
+            <CardImage card={c1} width={55} style={{ position: 'absolute', left: 0, top: 0 }} />
+            <CardImage card={c2} width={55} style={{ position: 'absolute', left: 10, top: 6 }} />
           </div>
         ))}
-        {remainder && <CardImage card={remainder} style={{ width: 55 }} />}
+        {remainder && <CardImage card={remainder} width={55} />}
       </div>
     </div>
   );
@@ -322,110 +295,88 @@ export function OldMaidPage() {
   }
 
   return (
-    <div className="bg-[#1a5c1a] rounded-2xl p-4 my-2.5 mx-auto max-w-[800px] shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-      {/* CPU row */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, justifyContent: 'center' }}>
-        {cpuPlayers.map((player) => (
-          <PlayerArea
-            key={player.id}
-            player={player}
-            isTarget={state.nextDrawTargetIdx === player.id}
-            isHumanTurn={isHumanTurn}
-            gameEndFlag={state.gameEndFlag}
-            onDraw={(drawIdx) => exec('draw', drawIdx)}
-          />
-        ))}
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
+      {/* Scrollable: CPU rows + discard + status + logs + result */}
+      <div className="flex-1 overflow-y-auto pt-3 px-4">
+        {/* CPU row */}
+        <div className="flex gap-2 flex-wrap mb-2 justify-center">
+          {cpuPlayers.map((player) => (
+            <PlayerArea
+              key={player.id}
+              player={player}
+              isTarget={state.nextDrawTargetIdx === player.id}
+              isHumanTurn={isHumanTurn}
+              gameEndFlag={state.gameEndFlag}
+              onDraw={(drawIdx) => exec('draw', drawIdx)}
+            />
+          ))}
+        </div>
+
+        {/* Discarded Area */}
+        <DiscardedArea cards={state.lastDiscardedCards} />
+
+        {/* Status */}
+        {statusLines.length > 0 && (
+          <div className="bg-black/50 rounded-lg text-white py-2 px-3 my-2 whitespace-pre-line text-[0.9em]">
+            {statusLines.join('\n')}
+          </div>
+        )}
+
+        {/* CPU log */}
+        {state.cpuActions && state.cpuActions.length > 0 && (
+          <div className="bg-black/40 rounded-lg text-[#ccc] py-1.5 px-2.5 my-1.5 whitespace-pre-line text-[0.8em] max-h-[120px] overflow-y-auto">
+            {[
+              '[CPUの行動]',
+              ...state.cpuActions.map((action: CpuAction) => {
+                let msg = `${findPlayerName(state.players, action.drawPlayerIdx)}が${findPlayerName(state.players, action.drawFromIdx)}から1枚引きました`;
+                // CPU drawn card is intentionally hidden to preserve game fairness
+                if (action.discardedPairs > 0) msg += `。${action.discardedPairs}組捨てました`;
+                return msg;
+              }),
+            ].join('\n')}
+          </div>
+        )}
+
+        {/* Result */}
+        {state.message && (
+          <div className="bg-black/60 rounded-[10px] text-white text-center py-2.5 px-4 text-[1.2em] font-bold my-2">
+            {state.message}
+          </div>
+        )}
       </div>
 
-      {/* Discarded Area */}
-      <DiscardedArea cards={state.lastDiscardedCards} />
+      {/* Sticky footer: human player hand + buttons */}
+      <div
+        className="shrink-0 bg-[#163e16] border-t border-white/20 px-4 py-2.5"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
+      >
+        {/* Human player */}
+        {humanPlayer && (
+          <div className="mb-2">
+            <PlayerArea
+              player={humanPlayer}
+              isTarget={false}
+              isHumanTurn={isHumanTurn}
+              gameEndFlag={state.gameEndFlag}
+              onDraw={(drawIdx) => exec('draw', drawIdx)}
+            />
+          </div>
+        )}
 
-      {/* Human player */}
-      {humanPlayer && (
-        <PlayerArea
-          player={humanPlayer}
-          isTarget={false}
-          isHumanTurn={isHumanTurn}
-          gameEndFlag={state.gameEndFlag}
-          onDraw={(drawIdx) => exec('draw', drawIdx)}
-        />
-      )}
-
-      {/* Status */}
-      {statusLines.length > 0 && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.5)',
-            borderRadius: 8,
-            color: '#fff',
-            padding: '8px 12px',
-            margin: '8px 0',
-            whiteSpace: 'pre-line',
-            fontSize: '0.9em',
-          }}
-        >
-          {statusLines.join('\n')}
+        {/* Buttons */}
+        <div className="text-center">
+          <button type="button" className={`${btnPrimary} min-w-[80px]`} onClick={() => exec('reset')}>
+            リセット
+          </button>
+          <button
+            type="button"
+            className={`${btnWarning} min-w-[110px]`}
+            disabled={!isHumanTurn || state.gameEndFlag}
+            onClick={() => exec('draw')}
+          >
+            ランダムに引く
+          </button>
         </div>
-      )}
-
-      {/* CPU log */}
-      {state.cpuActions && state.cpuActions.length > 0 && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.4)',
-            borderRadius: 8,
-            color: '#ccc',
-            padding: '6px 10px',
-            margin: '6px 0',
-            whiteSpace: 'pre-line',
-            fontSize: '0.8em',
-            maxHeight: 120,
-            overflowY: 'auto',
-          }}
-        >
-          {[
-            '[CPUの行動]',
-            ...state.cpuActions.map((action: CpuAction) => {
-              let msg = `${findPlayerName(state.players, action.drawPlayerIdx)}が${findPlayerName(state.players, action.drawFromIdx)}から1枚引きました`;
-              // CPU drawn card is intentionally hidden to preserve game fairness
-              if (action.discardedPairs > 0) msg += `。${action.discardedPairs}組捨てました`;
-              return msg;
-            }),
-          ].join('\n')}
-        </div>
-      )}
-
-      {/* Result */}
-      {state.message && (
-        <div
-          style={{
-            background: 'rgba(0,0,0,0.6)',
-            borderRadius: 10,
-            color: '#fff',
-            textAlign: 'center',
-            padding: '10px 16px',
-            fontSize: '1.2em',
-            fontWeight: 'bold',
-            margin: '8px 0',
-          }}
-        >
-          {state.message}
-        </div>
-      )}
-
-      {/* Buttons */}
-      <div className="text-center mt-3 mb-1">
-        <button type="button" className={`${btnPrimary} min-w-[80px]`} onClick={() => exec('reset')}>
-          リセット
-        </button>
-        <button
-          type="button"
-          className={`${btnWarning} min-w-[110px]`}
-          disabled={!isHumanTurn || state.gameEndFlag}
-          onClick={() => exec('draw')}
-        >
-          ランダムに引く
-        </button>
       </div>
     </div>
   );
