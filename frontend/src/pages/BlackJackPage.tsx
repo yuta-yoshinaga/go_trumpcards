@@ -1,21 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { blackjackApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 
 const PHASE_BET = 1;
 const PHASE_INSURANCE = 3;
 const PHASE_ACTION = 4;
 const PHASE_END = 5;
-
-const btnPrimary =
-  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnWarning =
-  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnDanger =
-  'px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnSuccess =
-  'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
 
 export function BlackJackPage() {
   const [state, setState] = useState<BlackJackResponse | null>(null);

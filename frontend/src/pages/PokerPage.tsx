@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { pokerApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { PokerResponse } from '../types/card';
 
 const PHASE_INIT = 0;
@@ -8,15 +9,6 @@ const PHASE_DEAL = 1;
 const PHASE_EXCHANGE = 2;
 const PHASE_SECOND_BET = 3;
 const PHASE_END = 4;
-
-const btnPrimary =
-  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnWarning =
-  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnSuccess =
-  'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnDanger =
-  'px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
