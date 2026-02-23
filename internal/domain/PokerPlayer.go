@@ -140,16 +140,6 @@ func (pp *PokerPlayer) checkStraight(sortedValues []int) bool {
 		return true
 	}
 
-	// A-2-3-4-5 のローエーストレート (value: 1,2,3,4,5)
-	if len(sortedValues) == 5 &&
-		sortedValues[0] == 1 &&
-		sortedValues[1] == 2 &&
-		sortedValues[2] == 3 &&
-		sortedValues[3] == 4 &&
-		sortedValues[4] == 5 {
-		return true
-	}
-
 	// A-10-J-Q-K のハイエーストレート
 	if len(sortedValues) == 5 &&
 		sortedValues[0] == 1 && sortedValues[1] == 10 &&

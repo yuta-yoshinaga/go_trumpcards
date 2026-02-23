@@ -104,12 +104,8 @@ func (o *OldMaid) Reset() {
 
 	// currentTurnがフィニッシュしていたら次へ
 	if !o.gameEndFlag {
-		start := o.currentTurn
 		for o.players[o.currentTurn].GetIsFinished() {
 			o.currentTurn = (o.currentTurn + 1) % OldMaidPlayerCnt
-			if o.currentTurn == start {
-				break
-			}
 		}
 	}
 }

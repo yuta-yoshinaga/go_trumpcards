@@ -911,3 +911,367 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 		assert.False(t, bj.GetGameEndFlag())
 	})
 }
+
+func TestBlackJack_PlayerHit_NoBust(t *testing.T) {
+	// Hit that doesn't bust: player score 11 (5+6), hit a 5 → score 16 < 22
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	err := bj.PlayerHit()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, hand.GetCardsSize())
+	assert.False(t, hand.IsBusted(), "hand should not be busted")
+	assert.False(t, hand.IsFinished(), "hand should not be finished")
+}
+
+func TestBlackJack_PlayerHit_SplitHandContinue(t *testing.T) {
+	// After split, hit first hand to bust, then currentHandIdx should move to the second hand.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	// Set up 2 hands manually (simulating a split)
+	// hand0 has score 21 so any drawn card will bust it
+	hand0 := domain.NewBlackJackHand()
+	hand0.SetBet(100)
+	hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	hand0.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	hand0.AddCard(domain.NewCard(domain.CardDesignClover, 1, false)) // score = 21
+
+	hand1 := domain.NewBlackJackHand()
+	hand1.SetBet(100)
+	hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+
+	bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Hit on hand0 (score 21): any card will bust it (22+)
+	err := bj.PlayerHit()
+	assert.NoError(t, err)
+	assert.True(t, hand0.IsBusted(), "first hand should be busted")
+	// advanceHand should move to hand1 which is not finished
+	assert.Equal(t, 1, bj.GetCurrentHandIdx(), "should advance to second hand")
+	assert.False(t, hand1.IsFinished(), "second hand should not be finished")
+}
+
+func TestBlackJack_AdvanceHand_AllHandsFinished(t *testing.T) {
+	// All hands finished triggers dealerPlay. Set up 2 stood hands, stand on the last one.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(800)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand0 := domain.NewBlackJackHand()
+	hand0.SetBet(100)
+	hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	hand0.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	hand0.SetStood(true) // already stood
+
+	hand1 := domain.NewBlackJackHand()
+	hand1.SetBet(100)
+	hand1.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+
+	bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
+	dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// currentHandIdx should point to hand1 (the first unfinished one)
+	// Since hand0 is stood, we need to set the current hand to 1
+	// Actually, we just call stand which sets the current hand's stood and advances.
+	// The current index is 0 by default, but hand0 is already stood, so we need to
+	// simulate the state where we are on hand1.
+	// Let's just stand on hand1 by ensuring currentHandIdx points to it.
+	// We can call PlayerStand which will stand on hand at currentHandIdx=0,
+	// but hand0 is already stood. Let's use a clean approach:
+	// Set hand0 as NOT stood, then stand twice.
+
+	hand0.SetStood(false) // reset for clean test
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Stand on hand0
+	err := bj.PlayerStand()
+	assert.NoError(t, err)
+	assert.True(t, hand0.IsStood())
+	// advanceHand should move to hand1
+	assert.Equal(t, 1, bj.GetCurrentHandIdx())
+	assert.False(t, bj.GetGameEndFlag())
+
+	// Stand on hand1 → all finished → dealerPlay → endGame
+	err = bj.PlayerStand()
+	assert.NoError(t, err)
+	assert.True(t, hand1.IsStood())
+	assert.True(t, bj.GetGameEndFlag(), "game should end after all hands finished")
+	assert.Equal(t, domain.BJPhaseEnd, bj.GetPhase())
+}
+
+func TestBlackJack_DoubleDown_NoBust(t *testing.T) {
+	// DD where score is 17-21 after drawn card → SetStood(true) branch
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	// Score = 11, any card drawn will give 12-21 (won't bust since max card=10 → 11+10=21)
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	err := bj.PlayerDoubleDown()
+	assert.NoError(t, err)
+	assert.Equal(t, 200, hand.GetBet())
+	assert.True(t, hand.IsDoubled())
+	assert.Equal(t, 3, hand.GetCardsSize())
+	// Score is 11 + (drawn card value) ≤ 21, so should be stood not busted
+	assert.True(t, hand.IsStood(), "hand should be stood after DD without bust")
+	assert.False(t, hand.IsBusted(), "hand should not be busted")
+	// Single hand → game should end after DD
+	assert.True(t, bj.GetGameEndFlag())
+}
+
+func TestBlackJack_PlayerSplit_DeckExhausted(t *testing.T) {
+	// After split, deck is exhausted so both new hands get stood automatically.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Drain the deck completely
+	for i := 0; i < 52; i++ {
+		tc.DrawCard()
+	}
+
+	err := bj.PlayerSplit()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(bj.GetPlayerHands()))
+	// Both hands should be stood because no cards could be drawn
+	assert.True(t, bj.GetPlayerHands()[0].IsStood(), "first hand should be auto-stood")
+	assert.True(t, bj.GetPlayerHands()[1].IsStood(), "second hand should be auto-stood")
+	// Each hand should have only 1 card (the original split card, no new card drawn)
+	assert.Equal(t, 1, bj.GetPlayerHands()[0].GetCardsSize())
+	assert.Equal(t, 1, bj.GetPlayerHands()[1].GetCardsSize())
+	// All hands finished → game should end
+	assert.True(t, bj.GetGameEndFlag())
+}
+
+func TestBlackJack_PlayerInsurance_InsufficientChips(t *testing.T) {
+	// Insurance phase but player chips < bet/2.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(30) // less than bet/2 = 50
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	player.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+	bj.SetPhase(domain.BJPhaseInsurance)
+
+	err := bj.PlayerInsurance()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInsufficientChips)
+	// Phase should still be insurance
+	assert.Equal(t, domain.BJPhaseInsurance, bj.GetPhase())
+	// Chips should not change
+	assert.Equal(t, 30, player.GetChips())
+}
+
+func TestBlackJack_JudgeHand_SplitBJNo3to2(t *testing.T) {
+	// When there are multiple hands (split), a natural BJ doesn't get 3:2 payout.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(800) // already subtracted 200 (100 per hand)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	// Hand 0: natural BJ (Ace + 10) in 2 cards
+	hand0 := domain.NewBlackJackHand()
+	hand0.SetBet(100)
+	hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	hand0.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	hand0.SetStood(true)
+
+	// Hand 1: normal hand (10 + 9 = 19)
+	hand1 := domain.NewBlackJackHand()
+	hand1.SetBet(100)
+	hand1.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+	hand1.SetStood(true)
+
+	bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
+	dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Stand on any remaining unfinished hand → all are stood, so just trigger endGame via stand
+	// Both hands are already stood. We need to trigger dealerPlay.
+	// Call PlayerStand will stand the hand at currentHandIdx=0, but it's already stood.
+	// The easiest way is to unset stood on hand1 and call stand.
+	hand1.SetStood(false)
+	// currentHandIdx should be 1 since hand0 is finished
+	// Actually after SetPhase, currentHandIdx is still 0. Let's just use PlayerStand
+	// which will try to stand hand at index 0 (already stood), but it will still call advanceHand.
+	// Actually PlayerStand sets stood=true and calls advanceHand regardless.
+	// hand0 is already stood, so standing it again is fine (just sets stood=true again).
+	err := bj.PlayerStand()
+	assert.NoError(t, err)
+	// advanceHand finds hand1 is not finished, moves there
+	assert.Equal(t, 1, bj.GetCurrentHandIdx())
+
+	err = bj.PlayerStand()
+	assert.NoError(t, err)
+	assert.True(t, bj.GetGameEndFlag())
+
+	// Dealer has 18. Hand0 has 21 (BJ), Hand1 has 19.
+	// Both win. But hand0 should NOT get 3:2 because len(playerHands) == 2.
+	// Hand0 win: normal payout = 100*2 = 200
+	// Hand1 win: normal payout = 100*2 = 200
+	// Total added: 400. Chips: 800 + 400 = 1200
+	assert.Equal(t, 1200, player.GetChips())
+
+	// If hand0 had gotten 3:2, it would be 100+150=250 instead of 200, total 1250.
+	// So checking 1200 confirms no 3:2 payout for split BJ.
+}
+
+func TestBlackJack_PlayerBet_DealFailed(t *testing.T) {
+	// Bet with partially exhausted deck - deal starts but some cards are nil.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	// Drain deck to leave only 2 cards (need 4 for deal: 2 player + 2 dealer)
+	for i := 0; i < 50; i++ {
+		tc.DrawCard()
+	}
+
+	err := bj.PlayerBet(100)
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrDeckExhausted)
+	// Chips should be refunded
+	assert.Equal(t, 1000, player.GetChips())
+	assert.Equal(t, domain.BJPhaseBet, bj.GetPhase())
+}
+
+func TestBlackJack_PlayerHit_FinishedHand(t *testing.T) {
+	// Hit on already-finished hand returns ErrHandFinished.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	hand.SetStood(true) // mark as finished
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	err := bj.PlayerHit()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrHandFinished)
+	// Card count should not change
+	assert.Equal(t, 2, hand.GetCardsSize())
+}
+
+func TestBlackJack_JudgeHand_DealerBJvsPlayerNonBJ(t *testing.T) {
+	// Dealer has natural BJ (2 cards=21), player has 21 with 3+ cards → player loses.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(900)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	// Player: 7 + 7 + 7 = 21 (3 cards, not natural BJ)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+	hand.SetStood(true)
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+	player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	player.AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+
+	// Dealer: Ace + King = 21 (natural BJ, 2 cards)
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 13, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	err := bj.PlayerStand()
+	assert.NoError(t, err)
+	assert.True(t, bj.GetGameEndFlag())
+
+	// Both have score 21, but dealer has natural BJ and player does not → player loses
+	assert.Equal(t, domain.GameResultLose, bj.GameJudgment())
+	// Lose: nothing returned, chips stay at 900
+	assert.Equal(t, 900, player.GetChips())
+}
+
+// TestBlackJack_PlayerBet_DealerAceTriggersInsurance moved to
+// blackjack_internal_test.go as a deterministic test that stacks the deck
+// instead of retrying random shuffles.
+
+// TestBlackJack_PlayerDoubleDown_Bust moved to blackjack_internal_test.go
+// as a deterministic test that stacks the deck instead of retrying random shuffles.
