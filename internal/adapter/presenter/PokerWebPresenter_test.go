@@ -2,7 +2,6 @@ package presenter_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -194,13 +193,12 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		testErr := fmt.Errorf("%w: Bet is not allowed now.", domain.ErrWrongPhase)
+		testErr := domain.NewDomainError(domain.ErrWrongPhase, "Bet is not allowed now.")
 		output := tpp.Output(tp, testErr)
 		var result controller.PokerWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
-		assert.Contains(t, result.Message, "wrong game phase")
-		assert.Contains(t, result.Message, "Bet is not allowed now.")
+		assert.Equal(t, "Bet is not allowed now.", result.Message)
 	})
 
 	t.Run("success GetCardObj SPADE", func(t *testing.T) {

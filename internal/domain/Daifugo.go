@@ -648,12 +648,12 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	for i, idx := range indices {
 		card := player.GetCard(idx)
 		if card == nil {
-			return fmt.Errorf("%w: card index %d out of range", ErrInvalidCard, idx)
+			return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", idx))
 		}
 		selectedCards[i] = card
 	}
 	if !d.isPlayable(selectedCards) {
-		return fmt.Errorf("%w: selected cards cannot be played", ErrInvalidPlay)
+		return NewDomainError(ErrInvalidPlay, "selected cards cannot be played")
 	}
 
 	// スート縛り更新 (場のカードがある場合、出す前にチェック)

@@ -315,10 +315,10 @@ func (s *Sevens) PlayerPlay(idx int) error {
 	// カードを出す
 	card := player.GetCard(idx)
 	if card == nil {
-		return fmt.Errorf("%w: card index %d out of range", ErrInvalidCard, idx)
+		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", idx))
 	}
 	if !s.IsPlayable(card) {
-		return fmt.Errorf("%w: card cannot be played on the board", ErrInvalidPlay)
+		return NewDomainError(ErrInvalidPlay, "card cannot be played on the board")
 	}
 
 	s.placeCard(card)
@@ -349,13 +349,13 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 	player := s.players[s.currentTurn]
 	card := player.GetCard(cardIdx)
 	if card == nil {
-		return fmt.Errorf("%w: card index %d out of range", ErrInvalidCard, cardIdx)
+		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", cardIdx))
 	}
 	if card.GetDesign() != CardDesignJoker {
-		return fmt.Errorf("%w: card is not a joker", ErrInvalidCard)
+		return NewDomainError(ErrInvalidCard, "card is not a joker")
 	}
 	if !s.isPositionPlayable(targetSuit, targetValue) {
-		return fmt.Errorf("%w: target position is not playable", ErrInvalidPlay)
+		return NewDomainError(ErrInvalidPlay, "target position is not playable")
 	}
 
 	s.placePosition(targetSuit, targetValue)

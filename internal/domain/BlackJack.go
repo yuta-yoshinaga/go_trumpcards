@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // GameResult ゲーム勝敗結果
 type GameResult int
 
@@ -95,13 +93,13 @@ func (b *BlackJack) drawCard() *Card {
 // PlayerBet プレイヤーベット
 func (b *BlackJack) PlayerBet(amount int) error {
 	if b.phase != BJPhaseBet {
-		return fmt.Errorf("%w: Bet is only allowed during the bet phase.", ErrWrongPhase)
+		return NewDomainError(ErrWrongPhase, "Bet is only allowed during the bet phase.")
 	}
 	if amount < BJMinBet || amount%BJMinBet != 0 {
-		return fmt.Errorf("%w: Invalid bet amount.", ErrInvalidAmount)
+		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
 	}
 	if !b.player.SubtractChips(amount) {
-		return fmt.Errorf("%w: Insufficient chips.", ErrInsufficientChips)
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	b.playerHands[0].SetBet(amount)
 
@@ -144,12 +142,12 @@ func (b *BlackJack) PlayerBet(amount int) error {
 // PlayerInsurance プレイヤーインシュランス
 func (b *BlackJack) PlayerInsurance() error {
 	if b.phase != BJPhaseInsurance {
-		return fmt.Errorf("%w: Insurance is not available now.", ErrWrongPhase)
+		return NewDomainError(ErrWrongPhase, "Insurance is not available now.")
 	}
 	// ベット額はBJMinBetの倍数（偶数）なので端数は発生しない
 	cost := b.playerHands[0].GetBet() / 2
 	if !b.player.SubtractChips(cost) {
-		return fmt.Errorf("%w: Insufficient chips for insurance.", ErrInsufficientChips)
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips for insurance.")
 	}
 	b.insuranceBet = cost
 	b.phase = BJPhaseAction
@@ -160,7 +158,7 @@ func (b *BlackJack) PlayerInsurance() error {
 // PlayerDeclineInsurance プレイヤーインシュランス辞退
 func (b *BlackJack) PlayerDeclineInsurance() error {
 	if b.phase != BJPhaseInsurance {
-		return fmt.Errorf("%w: Insurance decline is not available now.", ErrWrongPhase)
+		return NewDomainError(ErrWrongPhase, "Insurance decline is not available now.")
 	}
 	b.phase = BJPhaseAction
 	b.checkNaturalBlackJack()
@@ -181,11 +179,11 @@ func (b *BlackJack) checkNaturalBlackJack() {
 // PlayerHit プレイヤーヒット
 func (b *BlackJack) PlayerHit() error {
 	if b.phase != BJPhaseAction {
-		return fmt.Errorf("%w: Hit is not allowed now.", ErrWrongPhase)
+		return NewDomainError(ErrWrongPhase, "Hit is not allowed now.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	if hand.IsFinished() {
-		return fmt.Errorf("%w: This hand is already finished.", ErrHandFinished)
+		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
 	card := b.drawCard()
 	if card == nil {
@@ -203,7 +201,7 @@ func (b *BlackJack) PlayerHit() error {
 // PlayerStand プレイヤースタンド
 func (b *BlackJack) PlayerStand() error {
 	if b.phase != BJPhaseAction {
-		return fmt.Errorf("%w: Stand is not allowed now.", ErrWrongPhase)
+		return NewDomainError(ErrWrongPhase, "Stand is not allowed now.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	hand.SetStood(true)
@@ -214,18 +212,18 @@ func (b *BlackJack) PlayerStand() error {
 // PlayerDoubleDown プレイヤーダブルダウン
 func (b *BlackJack) PlayerDoubleDown() error {
 	if b.phase != BJPhaseAction {
-		return fmt.Errorf("%w: Double down is not allowed now.", ErrWrongPhase)
+		return NewDomainError(ErrWrongPhase, "Double down is not allowed now.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	if hand.GetCardsSize() != 2 {
-		return fmt.Errorf("%w: Double down is only allowed with 2 cards.", ErrInvalidPlay)
+		return NewDomainError(ErrInvalidPlay, "Double down is only allowed with 2 cards.")
 	}
 	if hand.IsFinished() {
-		return fmt.Errorf("%w: This hand is already finished.", ErrHandFinished)
+		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
 	bet := hand.GetBet()
 	if !b.player.SubtractChips(bet) {
-		return fmt.Errorf("%w: Insufficient chips for double down.", ErrInsufficientChips)
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips for double down.")
 	}
 	hand.SetBet(bet * 2)
 	hand.SetDoubled(true)
@@ -245,18 +243,18 @@ func (b *BlackJack) PlayerDoubleDown() error {
 // PlayerSplit プレイヤースプリット
 func (b *BlackJack) PlayerSplit() error {
 	if b.phase != BJPhaseAction {
-		return fmt.Errorf("%w: Split is not allowed now.", ErrWrongPhase)
+		return NewDomainError(ErrWrongPhase, "Split is not allowed now.")
 	}
 	if len(b.playerHands) >= BJMaxHands {
-		return fmt.Errorf("%w: Maximum number of hands reached.", ErrInvalidPlay)
+		return NewDomainError(ErrInvalidPlay, "Maximum number of hands reached.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	if !hand.CanSplit() {
-		return fmt.Errorf("%w: Split is not allowed for this hand.", ErrInvalidPlay)
+		return NewDomainError(ErrInvalidPlay, "Split is not allowed for this hand.")
 	}
 	bet := hand.GetBet()
 	if !b.player.SubtractChips(bet) {
-		return fmt.Errorf("%w: Insufficient chips for split.", ErrInsufficientChips)
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips for split.")
 	}
 
 	// 2枚目のカードを取り出して新しいハンドを作る

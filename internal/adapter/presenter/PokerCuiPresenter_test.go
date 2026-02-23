@@ -1,7 +1,6 @@
 package presenter_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -168,10 +167,10 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		testErr := fmt.Errorf("%w: Bet is not allowed now.", domain.ErrWrongPhase)
+		testErr := domain.NewDomainError(domain.ErrWrongPhase, "Bet is not allowed now.")
 		output := tpp.Output(tp, testErr)
-		assert.Contains(t, output, "wrong game phase")
 		assert.Contains(t, output, "Bet is not allowed now.")
+		assert.NotContains(t, output, "wrong game phase")
 	})
 
 	t.Run("success GetCardStr SPADE", func(t *testing.T) {
