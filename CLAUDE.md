@@ -14,19 +14,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Run the application:**
 ```sh
-go run main.go blackjack  # BlackJack CLI
-go run main.go poker    # 5-card Draw Poker CLI
-go run main.go oldmaid  # Old Maid CLI
-go run main.go daifugo  # Daifugo CLI
-go run main.go sevens   # Sevens (7並べ) CLI
-go run main.go web      # Start REST API + web GUI server
+go run ./cmd/cli blackjack  # BlackJack CLI
+go run ./cmd/cli poker      # 5-card Draw Poker CLI
+go run ./cmd/cli oldmaid    # Old Maid CLI
+go run ./cmd/cli daifugo    # Daifugo CLI
+go run ./cmd/cli sevens     # Sevens (7並べ) CLI
+go run ./cmd/cli web        # Start REST API + web GUI server (via CLI)
+go run ./cmd/server         # Start REST API + web GUI server (direct)
 ```
 
 **Test:**
 ```sh
 go test ./...                                              # Run all tests
-go test ./entities/...                                     # Run tests in a specific package
-go test ./entities/ -run TestBlackJack                     # Run a single test by name
+go test ./internal/domain/...                              # Run tests in a specific package
+go test ./internal/domain/ -run TestBlackJack              # Run a single test by name
 go test -coverprofile=coverage.out -covermode=atomic ./... # Run all tests with coverage report
 go tool cover -func=coverage.out                           # Show coverage summary by function
 go tool cover -html=coverage.out -o coverage.html          # Generate HTML coverage report
@@ -61,18 +62,23 @@ npm run test:watch       # Run frontend tests in watch mode
 
 ## Architecture
 
-The project implements Clean Architecture with strict layer dependency rules (outer depends on inner, never the reverse):
+The project implements Clean Architecture with strict layer dependency rules (outer depends on inner, never the reverse). The directory layout follows `golang-standards/project-layout` (`cmd/` + `internal/`):
 
 ```
-entities/                      # Core business logic (innermost)
-usecases/                      # Application business rules (interactors)
-  presenters/                  # Presenter interfaces defined here
-interface_adapters/            # Convert data between layers
-  controllers/                 # Route commands to use cases
-  presenters/                  # Implement presenter interfaces for CUI and Web
-frameworks_drivers/            # Outermost layer
-  ui/                          # CLI runner
-  web/                         # REST API server (go-json-rest)
+cmd/
+  cli/                         # CLI entrypoint (all games + web server)
+  server/                      # Web server dedicated entrypoint
+internal/
+  domain/                      # Core business logic (innermost)
+  usecase/                     # Application business rules (interactors)
+    presenter/                 # Presenter interfaces defined here
+  adapter/                     # Convert data between layers
+    controller/                # Route commands to use cases
+    presenter/                 # Implement presenter interfaces for CUI and Web
+  infrastructure/              # Outermost layer
+    ui/                        # CLI runner
+    web/                       # REST API server (go-json-rest)
+api/                           # OpenAPI specification
 frontend/                      # React frontend source (Vite + React + TypeScript)
   src/
     api/                       # API client functions (fetch wrappers for game endpoints)
@@ -85,21 +91,21 @@ public/                        # Built frontend assets served by Go web server
   css/                         # Bootstrap CSS
 ```
 
-**Data flow:** `frameworks_drivers` → `interface_adapters` → `usecases` → `entities`
+**Data flow:** `infrastructure` → `adapter` → `usecase` → `domain`
 
 ### Key patterns
 
-- **Presenter pattern**: `usecases/presenters/` defines output interfaces (e.g., `BlackJackPresenter`). `interface_adapters/presenters/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
-- **Mock presenters**: `*_mock.go` files in `interface_adapters/presenters/` and `usecases/presenters/` are used in tests to avoid I/O.
+- **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
+- **Mock presenters**: `*_mock.go` files in `internal/adapter/presenter/` and `internal/usecase/presenter/` are used in tests to avoid I/O.
 - **Web API**: Five endpoints — `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), and `POST /sevens/exec` (Sevens) — accept JSON with a `Cmd` field and game state.
 
 ### Games implemented
 
-- **BlackJack**: Entities in `entities/BlackJack.go`, `entities/BlackJackPlayer.go`, `entities/BlackJackHand.go`; interactor in `usecases/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, and natural BJ 3:2 payout
-- **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`. Features chip/betting system with ante, bet/call/raise/check/fold, CPU betting AI, and improved CPU exchange strategy (flush/straight draw awareness)
-- **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
-- **Daifugo**: Entities in `entities/Daifugo.go`, `entities/DaifugoPlayer.go`; interactor in `usecases/DaifugoInteractor.go`
-- **Sevens (7並べ)**: Entities in `entities/Sevens.go`, `entities/SevensPlayer.go`, `entities/SevensConfig.go`; interactor in `usecases/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, and CPU strategy
+- **BlackJack**: Entities in `internal/domain/BlackJack.go`, `internal/domain/BlackJackPlayer.go`, `internal/domain/BlackJackHand.go`; interactor in `internal/usecase/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, and natural BJ 3:2 payout
+- **Poker (5-card Draw)**: Entities in `internal/domain/Poker.go`, `internal/domain/PokerPlayer.go`; interactor in `internal/usecase/PokerInteractor.go`. Features chip/betting system with ante, bet/call/raise/check/fold, CPU betting AI, and improved CPU exchange strategy (flush/straight draw awareness)
+- **Old Maid (Babanuki)**: Entities in `internal/domain/OldMaid.go`, `internal/domain/OldMaidPlayer.go`; interactor in `internal/usecase/OldMaidInteractor.go`
+- **Daifugo**: Entities in `internal/domain/Daifugo.go`, `internal/domain/DaifugoPlayer.go`; interactor in `internal/usecase/DaifugoInteractor.go`
+- **Sevens (7並べ)**: Entities in `internal/domain/Sevens.go`, `internal/domain/SevensPlayer.go`, `internal/domain/SevensConfig.go`; interactor in `internal/usecase/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, and CPU strategy
 
 ## Testing Policy
 
@@ -111,15 +117,15 @@ When adding or modifying any game logic, provide tests for all four layers:
 
 | Layer | Location | What to test |
 |-------|----------|--------------|
-| Entities | `entities/*_test.go` | All public methods, edge cases, boundary values |
-| Use cases | `usecases/*Interactor_test.go` | Each interactor method via a mock presenter |
-| Presenters | `interface_adapters/presenters/*_test.go` | CUI text output and Web JSON output for every game phase |
-| Controllers | `interface_adapters/controllers/*_test.go` | Every supported command including unknown/empty input |
+| Domain | `internal/domain/*_test.go` | All public methods, edge cases, boundary values |
+| Use cases | `internal/usecase/*Interactor_test.go` | Each interactor method via a mock presenter |
+| Presenters | `internal/adapter/presenter/*_test.go` | CUI text output and Web JSON output for every game phase |
+| Controllers | `internal/adapter/controller/*_test.go` | Every supported command including unknown/empty input |
 
 ### Mock pattern
 
-- **Presenter mocks**: `usecases/presenters/*_mock.go` — implement the presenter interface using `testify/mock`
-- **Interactor mocks**: `interface_adapters/controllers/usecases/*_mock.go` — implement the interactor interface using `testify/mock`
+- **Presenter mocks**: `internal/usecase/presenter/*_mock.go` — implement the presenter interface using `testify/mock`
+- **Interactor mocks**: `internal/adapter/controller/usecase/*_mock.go` — implement the interactor interface using `testify/mock`
 - Follow the existing `BlackJack*_mock.go` files as the reference pattern
 
 ### Writing deterministic tests
@@ -169,9 +175,9 @@ cd frontend && npm test
 | Change type | Documents to update |
 |-------------|---------------------|
 | Add/remove a game | `README.md` (Description, Run section), `CLAUDE.md` (Commands, Games implemented), `AGENTS.md` (Repository Overview, Games implemented) |
-| Add/remove a CLI command (`main.go`) | `README.md` (Run section), `CLAUDE.md` (Commands), `AGENTS.md` (Common Commands) |
-| Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns), `AGENTS.md` (Web API in Key patterns), `openapi.yaml` |
-| Change request/response schema of a Web API endpoint | `openapi.yaml` |
+| Add/remove a CLI command (`cmd/cli/main.go`) | `README.md` (Run section), `CLAUDE.md` (Commands), `AGENTS.md` (Common Commands) |
+| Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns), `AGENTS.md` (Web API in Key patterns), `api/openapi.yaml` |
+| Change request/response schema of a Web API endpoint | `api/openapi.yaml` |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
 | Modify anything under `frontend/` | Run `cd frontend && npm run check` and `cd frontend && npm test` and ensure both pass before committing |
