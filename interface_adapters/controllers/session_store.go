@@ -18,7 +18,7 @@ const (
 
 type sessionEntry[T any] struct {
 	value    T
-	mu       sync.Mutex
+	mu       *sync.Mutex
 	lastUsed time.Time
 }
 
@@ -51,7 +51,21 @@ func (s *SessionStore[T]) Get(id string, factory func() T) (T, bool) {
 		return zero, false
 	}
 	s.mu.Lock()
+	if entry, ok := s.entries[id]; ok {
+		entry.lastUsed = time.Now()
+		s.mu.Unlock()
+		return entry.value, true
+	}
+	if len(s.entries) >= SessionMaxCount {
+		s.mu.Unlock()
+		return zero, false
+	}
+	s.mu.Unlock()
+	// factory() をグローバルmutex外で実行（遅延時のブロッキングを防ぐ）
+	val := factory()
+	s.mu.Lock()
 	defer s.mu.Unlock()
+	// ダブルチェック: 他のゴルーチンが同じIDで作成していないか
 	if entry, ok := s.entries[id]; ok {
 		entry.lastUsed = time.Now()
 		return entry.value, true
@@ -59,8 +73,7 @@ func (s *SessionStore[T]) Get(id string, factory func() T) (T, bool) {
 	if len(s.entries) >= SessionMaxCount {
 		return zero, false
 	}
-	val := factory()
-	s.entries[id] = &sessionEntry[T]{value: val, lastUsed: time.Now()}
+	s.entries[id] = &sessionEntry[T]{value: val, mu: &sync.Mutex{}, lastUsed: time.Now()}
 	return val, true
 }
 
@@ -75,18 +88,31 @@ func (s *SessionStore[T]) GetWithLock(id string, factory func() T) (T, *sync.Mut
 		return zero, nil, false
 	}
 	s.mu.Lock()
-	defer s.mu.Unlock()
-	entry, ok := s.entries[id]
-	if ok {
+	if entry, ok := s.entries[id]; ok {
 		entry.lastUsed = time.Now()
-		return entry.value, &entry.mu, true
+		s.mu.Unlock()
+		return entry.value, entry.mu, true
+	}
+	if len(s.entries) >= SessionMaxCount {
+		s.mu.Unlock()
+		return zero, nil, false
+	}
+	s.mu.Unlock()
+	// factory() をグローバルmutex外で実行（遅延時のブロッキングを防ぐ）
+	val := factory()
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	// ダブルチェック: 他のゴルーチンが同じIDで作成していないか
+	if entry, ok := s.entries[id]; ok {
+		entry.lastUsed = time.Now()
+		return entry.value, entry.mu, true
 	}
 	if len(s.entries) >= SessionMaxCount {
 		return zero, nil, false
 	}
-	entry = &sessionEntry[T]{value: factory(), lastUsed: time.Now()}
+	entry := &sessionEntry[T]{value: val, mu: &sync.Mutex{}, lastUsed: time.Now()}
 	s.entries[id] = entry
-	return entry.value, &entry.mu, true
+	return entry.value, entry.mu, true
 }
 
 // EvictExpired removes sessions that have not been used within SessionTTL.

@@ -47,6 +47,8 @@ func NewDefaultBlackJack() *BlackJack {
 
 // NewBlackJack コンストラクタ
 func NewBlackJack(trumpCards *TrumpCards, player *BlackJackPlayer, dealer *BlackJackPlayer) *BlackJack {
+	// 初期状態でもシャッフルしておく（Reset前にbetが呼ばれた場合の予測可能性を防ぐ）
+	trumpCards.Shuffle()
 	return &BlackJack{
 		trumpCards:  trumpCards,
 		player:     player,
@@ -378,7 +380,7 @@ func (b *BlackJack) resolvePayouts() {
 		case GameResultWin:
 			// ナチュラルBJ（2枚で21、スプリットからでない場合）は3:2配当
 			if hand.IsBlackJack() && len(b.playerHands) == 1 {
-				// 3:2配当: ベット額 + ベット額*3/2
+				// 3:2配当: ベット額 + ベット額*3/2（ベット額はBJMinBetの倍数なので端数なし）
 				b.player.AddChips(bet + bet*3/2)
 			} else {
 				// 通常勝利: ベット額 + ベット額
