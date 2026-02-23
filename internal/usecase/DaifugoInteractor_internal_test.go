@@ -16,7 +16,8 @@ func TestDaifugoInteractor_Play_GameEndFlag(t *testing.T) {
 	dgpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	di := NewDaifugoInteractor(dgpMock)
 
-	// Drive game to ended state: mark all players as finished.
+	// Human has 1 card and all CPUs are finished. When human plays the last card,
+	// checkGameEnd sets gameEndFlag = true.
 	config := domain.DefaultDaifugoConfig()
 	players := []*domain.DaifugoPlayer{
 		domain.NewDaifugoPlayer(true),
@@ -24,40 +25,13 @@ func TestDaifugoInteractor_Play_GameEndFlag(t *testing.T) {
 		domain.NewDaifugoPlayer(false),
 		domain.NewDaifugoPlayer(false),
 	}
-	dg := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
-
-	// Set all players as finished to trigger checkGameEnd via public API.
-	for i := 0; i < dg.GetPlayerCnt(); i++ {
+	dg := domain.NewDaifugo(domain.NewTrumpCards(0), players, config)
+	for i := 1; i < dg.GetPlayerCnt(); i++ {
 		dg.GetPlayer(i).SetIsFinished(true)
-		dg.GetPlayer(i).SetRank(i + 1)
+		dg.GetPlayer(i).SetRank(i)
 	}
-	// Replace the private dg field with our prepared game.
+	dg.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 	di.dg = dg
-
-	// Now call Reset to trigger checkGameEnd which sets gameEndFlag.
-	// Actually, Reset() calls dg.Reset() which clears gameEndFlag.
-	// Instead, we need to craft a state where gameEndFlag is already true.
-	// We can do this by manually playing the game to completion.
-	// Simpler: build a game, give human 1 card, all others 0 cards (finished),
-	// then human plays that card → finishes → checkGameEnd sets flag.
-
-	// Rebuild with a controlled setup.
-	players2 := []*domain.DaifugoPlayer{
-		domain.NewDaifugoPlayer(true),
-		domain.NewDaifugoPlayer(false),
-		domain.NewDaifugoPlayer(false),
-		domain.NewDaifugoPlayer(false),
-	}
-	dg2 := domain.NewDaifugo(domain.NewTrumpCards(0), players2, config)
-	// Mark CPU players as finished.
-	for i := 1; i < dg2.GetPlayerCnt(); i++ {
-		dg2.GetPlayer(i).SetIsFinished(true)
-		dg2.GetPlayer(i).SetRank(i)
-	}
-	// Give human a single card so human can play it → finish.
-	card := domain.NewCard(domain.CardDesignSpade, 5, false)
-	dg2.GetPlayer(0).AddCard(card)
-	di.dg = dg2
 
 	// Play the card at index 0 → human finishes → checkGameEnd → gameEndFlag = true.
 	di.Play([]int{0})

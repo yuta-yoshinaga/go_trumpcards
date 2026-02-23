@@ -228,4 +228,11 @@ func TestSevensInteractor_runCpuTurns_HumanAutoHandleNoOption(t *testing.T) {
 	// Verify human was eliminated (AutoHandleNoOption path was taken).
 	assert.True(t, si.s.GetPlayer(0).GetIsEliminated())
 	assert.True(t, si.s.GetPlayer(0).GetIsFinished())
+
+	// Verify subsequent CPU turns ran and the game ended.
+	// The last remaining player is auto-finished by checkGameEnd (may still hold cards).
+	assert.True(t, si.s.GetGameEndFlag())
+	for i := 1; i < si.s.GetPlayerCnt(); i++ {
+		assert.True(t, si.s.GetPlayer(i).GetIsFinished(), "player %d should be finished", i)
+	}
 }
