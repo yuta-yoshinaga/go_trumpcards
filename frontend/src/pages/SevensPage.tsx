@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { SevensConfigInput } from '../api/gameApi';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
@@ -285,11 +286,13 @@ export function SevensPage() {
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
   const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const exec = useCallback(
     async (command: 'reset' | 'play' | 'joker', index = -1, suit = 0, value = 0, config?: SevensConfigInput) => {
       setLoading(true);
       try {
+        setError(null);
         const res = await sevensApi.exec(command, index, suit, value, config);
         setState(res);
         setJokerCardIdx(null);
@@ -299,7 +302,7 @@ export function SevensPage() {
           setCfgCpuStrategy(res.config.cpuStrategy);
         }
       } catch {
-        console.error('sevens request failed');
+        setError('通信エラーが発生しました。もう一度お試しください。');
       } finally {
         setLoading(false);
       }
@@ -429,6 +432,8 @@ export function SevensPage() {
             CPU戦略
           </label>
         </div>
+
+        <ErrorAlert message={error} />
 
         {/* Buttons */}
         <div className="text-center">

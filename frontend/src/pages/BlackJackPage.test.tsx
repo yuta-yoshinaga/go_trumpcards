@@ -309,4 +309,32 @@ describe('BlackJackPage', () => {
     resolve(actionPhaseState);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).not.toBeDisabled());
   });
+
+  it('shows error message when API call fails', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  });
+
+  it('clears error message on successful API call after failure', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+
+    mockExec.mockResolvedValueOnce(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() =>
+      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
+    );
+  });
 });

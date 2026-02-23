@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
@@ -226,12 +227,14 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
 export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const replayGenRef = useRef(0);
 
   const exec = useCallback(async (command: 'reset' | 'draw', drawIdx?: number) => {
     const myGen = ++replayGenRef.current;
     setLoading(true);
     try {
+      setError(null);
       const res = await oldmaidApi.exec(command, drawIdx);
       if (myGen !== replayGenRef.current) return;
 
@@ -258,7 +261,7 @@ export function OldMaidPage() {
       // Restore the actual final state so currentTurn reflects the server response
       setDisplayState(res);
     } catch {
-      console.error('oldmaid request failed');
+      setError('通信エラーが発生しました。もう一度お試しください。');
     } finally {
       setLoading(false);
     }
@@ -358,6 +361,8 @@ export function OldMaidPage() {
             />
           </div>
         )}
+
+        <ErrorAlert message={error} />
 
         {/* Buttons */}
         <div className="text-center">

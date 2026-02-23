@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { pokerApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { PokerResponse } from '../types/card';
 import { PokerPhase } from '../types/phases';
@@ -19,6 +20,7 @@ export function PokerPage() {
   const [selected, setSelected] = useState<number[]>([]);
   const [betAmount, setBetAmount] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const exec = useCallback(
     async (
@@ -28,11 +30,12 @@ export function PokerPage() {
     ) => {
       setLoading(true);
       try {
+        setError(null);
         const res = await pokerApi.exec(command, indices, amount);
         setState(res);
         setSelected([]);
       } catch {
-        console.error('poker request failed');
+        setError('通信エラーが発生しました。もう一度お試しください。');
       } finally {
         setLoading(false);
       }
@@ -189,6 +192,8 @@ export function PokerPage() {
         <div className="bg-black/55 rounded-lg text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 min-h-[36px]">
           {state?.message ?? ''}
         </div>
+
+        <ErrorAlert message={error} />
 
         {/* Betting controls */}
         {isBettingPhase && (
