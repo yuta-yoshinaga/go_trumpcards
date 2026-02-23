@@ -18,59 +18,61 @@ func NewDaifugoCuiPresenter() *DaifugoCuiPresenter {
 
 // Output ゲーム状態を文字列出力
 func (p *DaifugoCuiPresenter) Output(dg *domain.Daifugo) string {
-	res := "==========\n"
-	res += "Daifugo (大富豪)\n"
-	res += "==========\n"
+	var b strings.Builder
+
+	b.WriteString("==========\n")
+	b.WriteString("Daifugo (大富豪)\n")
+	b.WriteString("==========\n")
 
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
 		player := dg.GetPlayer(i)
 		if player.GetIsHuman() {
-			res += "[You]"
+			b.WriteString("[You]")
 		} else {
-			res += fmt.Sprintf("CPU %d", i)
+			fmt.Fprintf(&b, "CPU %d", i)
 		}
 		if player.GetIsFinished() {
-			res += fmt.Sprintf(": 上がり (ランク: %s)\n", p.rankName(player.GetRank()))
+			fmt.Fprintf(&b, ": 上がり (ランク: %s)\n", p.rankName(player.GetRank()))
 		} else {
-			res += fmt.Sprintf(": %d枚\n", player.GetCardsSize())
+			fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
 			if player.GetIsHuman() {
 				for j := 0; j < player.GetCardsSize(); j++ {
 					if j != 0 {
-						res += "  "
+						b.WriteString("  ")
 					}
-					res += fmt.Sprintf("[%d]%s", j, p.getCardStr(player.GetCard(j)))
+					fmt.Fprintf(&b, "[%d]%s", j, p.getCardStr(player.GetCard(j)))
 				}
-				res += "\n"
+				b.WriteString("\n")
 			}
 		}
 	}
 
-	res += "----------\n"
+	b.WriteString("----------\n")
 
 	// ローカルルール状態
 	if dg.GetRevolutionActive() {
-		res += "【革命中】2が最弱、3が最強\n"
+		b.WriteString("【革命中】2が最弱、3が最強\n")
 	}
 	if dg.GetElevenBackActive() {
-		res += "【11バック】強さが逆転中\n"
+		b.WriteString("【11バック】強さが逆転中\n")
 	}
 	if dg.GetSuitLocked() {
-		res += fmt.Sprintf("【スート縛り】%s\n", p.getSuitName(dg.GetLockedSuit()))
+		fmt.Fprintf(&b, "【スート縛り】%s\n", p.getSuitName(dg.GetLockedSuit()))
 	}
 	if dg.GetTableIsSequence() {
-		res += "【階段】\n"
+		b.WriteString("【階段】\n")
 	}
 
 	// カード交換記録
 	exchangeActions := dg.GetExchangeActions()
 	if len(exchangeActions) > 0 {
-		res += "[カード交換]\n"
+		b.WriteString("[カード交換]\n")
 		for _, ex := range exchangeActions {
 			cardStrs := make([]string, len(ex.Cards))
 			for i, c := range ex.Cards {
 				cardStrs[i] = p.getCardStr(c)
 			}
-			res += fmt.Sprintf("%s → %s: %s\n",
+			fmt.Fprintf(&b, "%s → %s: %s\n",
 				p.getPlayerName(dg, ex.FromPlayerIdx),
 				p.getPlayerName(dg, ex.ToPlayerIdx),
 				strings.Join(cardStrs, ", "))
@@ -84,24 +86,24 @@ func (p *DaifugoCuiPresenter) Output(dg *domain.Daifugo) string {
 		for i, c := range tableCards {
 			cardStrs[i] = p.getCardStr(c)
 		}
-		res += fmt.Sprintf("場: %s (出したプレイヤー: %s)\n",
+		fmt.Fprintf(&b, "場: %s (出したプレイヤー: %s)\n",
 			strings.Join(cardStrs, ", "),
 			p.getPlayerName(dg, dg.GetLastPlayPlayerIdx()))
 	} else {
-		res += "場: なし (誰でも出せます)\n"
+		b.WriteString("場: なし (誰でも出せます)\n")
 	}
 
 	// 人間の前の行動
 	humanAction := dg.GetHumanAction()
 	if humanAction != nil {
 		if len(humanAction.PlayedCards) == 0 {
-			res += fmt.Sprintf("%sがパスしました\n", p.getPlayerName(dg, humanAction.PlayerIdx))
+			fmt.Fprintf(&b, "%sがパスしました\n", p.getPlayerName(dg, humanAction.PlayerIdx))
 		} else {
 			cardStrs := make([]string, len(humanAction.PlayedCards))
 			for i, c := range humanAction.PlayedCards {
 				cardStrs[i] = p.getCardStr(c)
 			}
-			res += fmt.Sprintf("%sが %s を出しました\n",
+			fmt.Fprintf(&b, "%sが %s を出しました\n",
 				p.getPlayerName(dg, humanAction.PlayerIdx),
 				strings.Join(cardStrs, ", "))
 		}
@@ -110,36 +112,36 @@ func (p *DaifugoCuiPresenter) Output(dg *domain.Daifugo) string {
 	// CPUの行動履歴を表示
 	cpuActions := dg.GetCpuActions()
 	if len(cpuActions) > 0 {
-		res += "[CPUの行動]\n"
+		b.WriteString("[CPUの行動]\n")
 		for _, action := range cpuActions {
 			actPlayerName := p.getPlayerName(dg, action.PlayerIdx)
 			if len(action.PlayedCards) == 0 {
-				res += fmt.Sprintf("%sがパスしました\n", actPlayerName)
+				fmt.Fprintf(&b, "%sがパスしました\n", actPlayerName)
 			} else {
 				cardStrs := make([]string, len(action.PlayedCards))
 				for i, c := range action.PlayedCards {
 					cardStrs[i] = p.getCardStr(c)
 				}
-				res += fmt.Sprintf("%sが %s を出しました\n", actPlayerName, strings.Join(cardStrs, ", "))
+				fmt.Fprintf(&b, "%sが %s を出しました\n", actPlayerName, strings.Join(cardStrs, ", "))
 			}
 		}
 	}
 
 	if dg.GetGameEndFlag() {
-		res += "ゲーム終了！\n"
+		b.WriteString("ゲーム終了！\n")
 		for i := 0; i < dg.GetPlayerCnt(); i++ {
 			player := dg.GetPlayer(i)
-			res += fmt.Sprintf("  %s: %s\n", p.getPlayerName(dg, i), p.rankName(player.GetRank()))
+			fmt.Fprintf(&b, "  %s: %s\n", p.getPlayerName(dg, i), p.rankName(player.GetRank()))
 		}
 	} else {
 		currentTurn := dg.GetCurrentTurn()
 		currentName := p.getPlayerName(dg, currentTurn)
-		res += fmt.Sprintf("手番: %s\n", currentName)
-		res += "p [インデックス...] でカードを出す / p でパス\n"
+		fmt.Fprintf(&b, "手番: %s\n", currentName)
+		b.WriteString("p [インデックス...] でカードを出す / p でパス\n")
 	}
 
-	res += "==========\n"
-	return res
+	b.WriteString("==========\n")
+	return b.String()
 }
 
 // getPlayerName プレイヤー名取得
