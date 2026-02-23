@@ -1,0 +1,196 @@
+package presenter_test
+
+import (
+	"testing"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func makeSevensPlayersForPresenter() []*domain.SevensPlayer {
+	return []*domain.SevensPlayer{
+		domain.NewSevensPlayer(true),
+		domain.NewSevensPlayer(false),
+		domain.NewSevensPlayer(false),
+		domain.NewSevensPlayer(false),
+	}
+}
+
+func TestSevensCuiPresenter_Method(t *testing.T) {
+	tsp := presenter.NewSevensCuiPresenter()
+
+	t.Run("success Output initial state", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "Sevens (7並べ)")
+		assert.Contains(t, result, "[You]: 2枚")
+		assert.Contains(t, result, "[0]SPADE 6")
+		assert.Contains(t, result, "CPU 1: 1枚")
+		assert.Contains(t, result, "ボード:")
+		assert.Contains(t, result, "SPADE: 7〜7")
+		assert.Contains(t, result, "手番: あなた")
+	})
+
+	t.Run("success Output shows pass count", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // not playable
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		s.PlayerPlay(-1) // human passes
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "パス: 1/5")
+		assert.Contains(t, result, "パスしました")
+	})
+
+	t.Run("success Output shows board state after play", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s.PlayerPlay(0) // play 6♠ → minVal[Spade] = 6
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "SPADE: 6〜7")
+	})
+
+	t.Run("success Output game ended", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].SetIsFinished(true)
+		players[1].SetRank(1)
+		players[2].SetIsFinished(true)
+		players[2].SetRank(2)
+		players[3].SetIsFinished(true)
+		players[3].SetRank(3)
+		s.PlayerPlay(0)
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "ゲーム終了")
+	})
+
+	t.Run("success Output shows CPU actions", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // not playable → pass
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()    // CPU 1 passes
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "[CPUの行動]")
+		assert.Contains(t, result, "パスしました")
+	})
+
+	t.Run("success Output finished player shows rank", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].SetIsFinished(true)
+		players[1].SetRank(1)
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "上がり/失格 (ランク: 1位)")
+	})
+
+	t.Run("success Output joker card in hand", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "[0]JOKER")
+		assert.Contains(t, result, "[1]SPADE 6")
+	})
+
+	t.Run("success Output rule header with tunnel", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: false}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[トンネル]")
+	})
+
+	t.Run("success Output rule header with joker", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[ジョーカー×2]")
+		assert.Contains(t, result, "j [カードインデックス]")
+	})
+
+	t.Run("success Output rule header with CPU strategy", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[CPU戦略]")
+	})
+
+	t.Run("success Output no rule header with default config", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s)
+		assert.NotContains(t, result, "ルール:")
+	})
+
+	t.Run("success Output joker play action with target", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → SPADE 6
+
+		result := tsp.Output(s)
+		assert.Contains(t, result, "JOKER")
+		assert.Contains(t, result, "SPADE 6")
+		assert.Contains(t, result, "を出しました")
+	})
+}

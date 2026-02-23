@@ -32,12 +32,9 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy only Go source files for better layer cache efficiency
-COPY main.go .
-COPY entities/ ./entities/
-COPY usecases/ ./usecases/
-COPY interface_adapters/ ./interface_adapters/
-COPY frameworks_drivers/ ./frameworks_drivers/
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o go_trumpcards .
+COPY cmd/ ./cmd/
+COPY internal/ ./internal/
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o go_trumpcards ./cmd/server
 
 # Stage 3: Final production image
 # Pinned to a specific digest for reproducible builds
@@ -60,4 +57,4 @@ USER appuser
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["./go_trumpcards", "web"]
+CMD ["./go_trumpcards"]

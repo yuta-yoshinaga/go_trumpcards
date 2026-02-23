@@ -32,12 +32,13 @@ cd go_trumpcards
 
 ### Run
 ```sh
-go run main.go blackjack  # ブラックジャック CLI
-go run main.go poker    # 5枚ドローポーカー CLI
-go run main.go oldmaid  # ババ抜き CLI
-go run main.go daifugo  # 大富豪 CLI
-go run main.go sevens   # 7並べ CLI
-go run main.go web      # REST API + Web GUI サーバー起動
+go run ./cmd/cli blackjack  # ブラックジャック CLI
+go run ./cmd/cli poker      # 5枚ドローポーカー CLI
+go run ./cmd/cli oldmaid    # ババ抜き CLI
+go run ./cmd/cli daifugo    # 大富豪 CLI
+go run ./cmd/cli sevens     # 7並べ CLI
+go run ./cmd/cli web        # REST API + Web GUI サーバー起動 (CLI経由)
+go run ./cmd/server         # REST API + Web GUI サーバー起動 (直接)
 ```
 
 ### Test
@@ -73,13 +74,23 @@ docker run --rm -d -p 8080:8080 go_trumpcards
 Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Architecture
-Clean Architectureを採用しています。依存の方向は外側から内側への一方向です。
+Clean Architectureを採用しています。依存の方向は外側から内側への一方向です。`golang-standards/project-layout` に準拠した `cmd/` + `internal/` 構成を採用しています。
 
 ```
-entities/             # コアビジネスロジック（最内層）
-usecases/             # アプリケーションビジネスルール
-interface_adapters/   # レイヤー間のデータ変換
-frameworks_drivers/   # 最外層（CLI・Webサーバー）
+cmd/
+  cli/                # CLIエントリーポイント（全ゲーム + Webサーバー）
+  server/             # Webサーバー専用エントリーポイント
+internal/
+  domain/             # コアビジネスロジック（最内層）
+  usecase/            # アプリケーションビジネスルール
+    presenter/        # プレゼンターインターフェース
+  adapter/
+    controller/       # コマンドをユースケースにルーティング
+    presenter/        # CUI/Web向けプレゼンター実装
+  infrastructure/
+    ui/               # CLIランナー
+    web/              # REST APIサーバー (go-json-rest)
+api/                  # OpenAPI仕様
 frontend/             # Reactフロントエンドソース（Vite + React + TypeScript）
 public/               # Webフロントエンドビルド済みアセット（Reactビルド出力 + 静的ファイル）
 ```
