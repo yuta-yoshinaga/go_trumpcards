@@ -226,4 +226,43 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, "JOKER", card.Design)
 		assert.Equal(t, 0, card.Value)
 	})
+
+	t.Run("success Output dealer fold", func(t *testing.T) {
+		player.SetChips(0)
+		dealer.SetChips(0)
+		tp.Reset()
+		tp.SetPhase(domain.PokerPhaseEnd)
+		tp.SetFolded(domain.PokerFoldByDealer)
+		output := tpp.Output(tp, nil)
+		var result controller.PokerWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, domain.PokerPhaseEnd, result.Phase)
+		assert.Equal(t, "Dealer folded. You win!", result.Message)
+	})
+
+	t.Run("success Output dealer cards hidden in non-end phase", func(t *testing.T) {
+		player.SetChips(0)
+		dealer.SetChips(0)
+		tp.Reset()
+		player.Reset()
+		dealer.Reset()
+		player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		player.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		output := tpp.Output(tp, nil)
+		var result controller.PokerWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		// In non-end phase, dealer cards should be empty
+		assert.Equal(t, 0, len(result.Dealer.Cards))
+		assert.Equal(t, "", result.Dealer.HandName)
+	})
 }

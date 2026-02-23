@@ -18,6 +18,18 @@ func makeSevensPlayersForPresenter() []*domain.SevensPlayer {
 	}
 }
 
+// setupSevensCuiTest creates a Sevens game with standard setup (player[0] SPADE 6, players[1-3] HEART 2).
+func setupSevensCuiTest() (*domain.Sevens, []*domain.SevensPlayer) {
+	tc := domain.NewTrumpCards(0)
+	players := makeSevensPlayersForPresenter()
+	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	return s, players
+}
+
 func TestSevensCuiPresenter_Method(t *testing.T) {
 	tsp := presenter.NewSevensCuiPresenter()
 
@@ -202,5 +214,139 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 
 		result := tsp.Output(s, domain.ErrInvalidPlay)
 		assert.Contains(t, result, domain.ErrInvalidPlay.Error())
+	})
+
+	t.Run("success Output getCardStr nil and unknown design", func(t *testing.T) {
+		s, players := setupSevensCuiTest()
+		players[0].AddCard(nil)
+		players[0].AddCard(domain.NewCard(99, 1, false))
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "??")
+		assert.Contains(t, result, "UNKNOWN")
+	})
+
+	t.Run("success Output getCardStr all designs", func(t *testing.T) {
+		s, players := setupSevensCuiTest()
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "CLOVER 6")
+		assert.Contains(t, result, "HEART 8")
+		assert.Contains(t, result, "DIAMOND 6")
+	})
+
+	t.Run("success Output getSuitName all suits via joker play", func(t *testing.T) {
+		suitTests := []struct {
+			suit     int
+			expected string
+		}{
+			{domain.CardDesignSpade, "SPADE"},
+			{domain.CardDesignClover, "CLOVER"},
+			{domain.CardDesignHeart, "HEART"},
+			{domain.CardDesignDiamond, "DIAMOND"},
+		}
+		for _, st := range suitTests {
+			s, _ := setupSevensCuiTest()
+			s.SetHumanAction(&domain.SevensCpuAction{
+				PlayerIdx:   0,
+				PlayedCard:  domain.NewCard(domain.CardDesignJoker, 0, false),
+				TargetSuit:  st.suit,
+				TargetValue: 6,
+			})
+			result := tsp.Output(s, nil)
+			assert.Contains(t, result, st.expected)
+			assert.Contains(t, result, "を出しました")
+		}
+	})
+
+	t.Run("success Output getSuitName default case", func(t *testing.T) {
+		s, _ := setupSevensCuiTest()
+		s.SetHumanAction(&domain.SevensCpuAction{
+			PlayerIdx:   0,
+			PlayedCard:  domain.NewCard(domain.CardDesignJoker, 0, false),
+			TargetSuit:  999,
+			TargetValue: 6,
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "UNKNOWN")
+	})
+
+	t.Run("success Output getPlayerName nil player", func(t *testing.T) {
+		s, _ := setupSevensCuiTest()
+		// Set human action with out-of-bounds player idx
+		s.SetHumanAction(&domain.SevensCpuAction{
+			PlayerIdx:  99,
+			PlayedCard: nil,
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "不明")
+	})
+
+	t.Run("success Output human action pass", func(t *testing.T) {
+		s, players := setupSevensCuiTest()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		s.SetHumanAction(&domain.SevensCpuAction{
+			PlayerIdx:  0,
+			PlayedCard: nil,
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "パスしました")
+	})
+
+	t.Run("success Output human action non-joker play", func(t *testing.T) {
+		s, players := setupSevensCuiTest()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		s.SetHumanAction(&domain.SevensCpuAction{
+			PlayerIdx:  0,
+			PlayedCard: domain.NewCard(domain.CardDesignSpade, 8, false),
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "SPADE 8")
+		assert.Contains(t, result, "を出しました")
+	})
+
+	t.Run("success Output CPU action with joker and target", func(t *testing.T) {
+		s, _ := setupSevensCuiTest()
+		s.SetCpuActions([]*domain.SevensCpuAction{
+			{
+				PlayerIdx:   1,
+				PlayedCard:  domain.NewCard(domain.CardDesignJoker, 0, false),
+				TargetSuit:  domain.CardDesignSpade,
+				TargetValue: 8,
+			},
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "[CPUの行動]")
+		assert.Contains(t, result, "JOKER")
+		assert.Contains(t, result, "SPADE 8")
+		assert.Contains(t, result, "を出しました")
+	})
+
+	t.Run("success Output CPU action pass", func(t *testing.T) {
+		s, _ := setupSevensCuiTest()
+		s.SetCpuActions([]*domain.SevensCpuAction{
+			{
+				PlayerIdx:  1,
+				PlayedCard: nil,
+			},
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "[CPUの行動]")
+		assert.Contains(t, result, "パスしました")
+	})
+
+	t.Run("success Output CPU action non-joker play", func(t *testing.T) {
+		s, _ := setupSevensCuiTest()
+		s.SetCpuActions([]*domain.SevensCpuAction{
+			{
+				PlayerIdx:  1,
+				PlayedCard: domain.NewCard(domain.CardDesignHeart, 8, false),
+			},
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "[CPUの行動]")
+		assert.Contains(t, result, "HEART 8")
+		assert.Contains(t, result, "を出しました")
 	})
 }

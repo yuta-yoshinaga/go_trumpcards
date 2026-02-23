@@ -374,3 +374,15 @@ func (o *OldMaid) GetCpuActions() []*OldMaidCpuAction {
 func (o *OldMaid) GetHumanAction() *OldMaidCpuAction {
 	return o.humanAction
 }
+
+// SetLastDrawPlayerIdx 最後に引いたプレイヤーインデックス設定（テスト用）
+func (o *OldMaid) SetLastDrawPlayerIdx(idx int) { o.lastDrawPlayerIdx = idx }
+
+// SetHasDrawn 引いたフラグ設定（テスト用）
+func (o *OldMaid) SetHasDrawn(v bool) { o.hasDrawn = v }
+
+// SetHumanAction 人間プレイヤーの行動設定（テスト用）
+func (o *OldMaid) SetHumanAction(action *OldMaidCpuAction) { o.humanAction = action }
+
+// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
+func (o *OldMaid) SetGameEndFlag(v bool) { o.gameEndFlag = v }

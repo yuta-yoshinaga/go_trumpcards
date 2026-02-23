@@ -11,6 +11,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// setupBJCuiTest creates a BlackJack game with the given chip values, calls Reset, and returns the game + dealer.
+func setupBJCuiTest(playerChips, dealerChips int) (*domain.BlackJack, *domain.BlackJackPlayer) {
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(playerChips)
+	dealer.SetChips(dealerChips)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+	return bj, dealer
+}
+
 func TestBlackJackCuiPresenters_Method(t *testing.T) {
 	tbp := presenter.NewBlackJackCuiPresenter()
 
@@ -255,5 +267,100 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		// Should not contain any error-like message lines beyond normal output
 		assert.NotContains(t, output, "Invalid")
 		assert.NotContains(t, output, "Insufficient")
+	})
+	t.Run("success phaseStr BJPhaseEnd", func(t *testing.T) {
+		bj, dealer := setupBJCuiTest(900, 1000)
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseEnd)
+		output := tbp.Output(bj, nil)
+		assert.Contains(t, output, "phase: END")
+	})
+	t.Run("success phaseStr unknown phase", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		bj.SetPhase(999)
+		output := tbp.Output(bj, nil)
+		assert.Contains(t, output, "phase: UNKNOWN")
+	})
+	t.Run("success Output multi-hand split game end all results", func(t *testing.T) {
+		bj, dealer := setupBJCuiTest(800, 1000)
+		// Create 2 hands manually via SetPlayerHands
+		hand0 := domain.NewBlackJackHand()
+		hand0.SetBet(100)
+		hand0.SetStood(true)
+		hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand0.AddCard(domain.NewCard(domain.CardDesignClover, 10, false)) // score 20
+		hand1 := domain.NewBlackJackHand()
+		hand1.SetBet(100)
+		hand1.SetStood(true)
+		hand1.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false)) // score 11
+		bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
+		// Dealer: score 20 (draw for hand0, win for dealer on hand1)
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		bj.SetPhase(domain.BJPhaseEnd)
+		output := tbp.Output(bj, nil)
+		assert.Contains(t, output, "hand 1")
+		assert.Contains(t, output, "hand 2")
+		assert.Contains(t, output, "It is a draw.")
+		assert.Contains(t, output, "It is your loss.")
+	})
+	t.Run("success Output multi-hand current hand marker during non-end", func(t *testing.T) {
+		bj, dealer := setupBJCuiTest(800, 1000)
+		hand0 := domain.NewBlackJackHand()
+		hand0.SetBet(100)
+		hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		hand0.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+		hand1 := domain.NewBlackJackHand()
+		hand1.SetBet(100)
+		hand1.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		output := tbp.Output(bj, nil)
+		// currentHandIdx is 0, so hand 1 should have (*) marker
+		assert.Contains(t, output, "hand 1 (*)")
+		assert.Contains(t, output, "hand 2")
+		assert.NotContains(t, output, "hand 2 (*)")
+	})
+	t.Run("success Output multi-hand split game end with win", func(t *testing.T) {
+		bj, dealer := setupBJCuiTest(800, 1000)
+		hand0 := domain.NewBlackJackHand()
+		hand0.SetBet(100)
+		hand0.SetStood(true)
+		hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		hand0.AddCard(domain.NewCard(domain.CardDesignClover, 10, false)) // score 21
+		hand1 := domain.NewBlackJackHand()
+		hand1.SetBet(100)
+		hand1.SetStood(true)
+		hand1.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false)) // score 20
+		bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
+		// Dealer: score 20
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		bj.SetPhase(domain.BJPhaseEnd)
+		output := tbp.Output(bj, nil)
+		assert.Contains(t, output, "You are the winner.")
+		assert.Contains(t, output, "It is a draw.")
+	})
+	t.Run("success phaseStr BJPhaseDeal", func(t *testing.T) {
+		bj, dealer := setupBJCuiTest(900, 1000)
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseDeal)
+		output := tbp.Output(bj, nil)
+		assert.Contains(t, output, "phase: DEAL")
 	})
 }
