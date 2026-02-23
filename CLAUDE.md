@@ -122,7 +122,7 @@ public/                        # Built frontend assets served by Go web server
 
 ### Coverage standard
 
-**Branch coverage (C1) must be 100%** for all packages under `internal/` except `internal/infrastructure/`. The directories `cmd/` and `internal/infrastructure/` are excluded from coverage requirements.
+The `cmd/` and `internal/infrastructure/` directories are excluded from coverage requirements. For all other packages under `internal/`, **branch coverage (C1) must be 100%**.
 
 When writing tests, always verify branch coverage—not just statement coverage (C0)—by ensuring every conditional branch (if/else, switch cases, loop exit conditions, etc.) is exercised.
 
