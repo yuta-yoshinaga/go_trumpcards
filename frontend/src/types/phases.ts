@@ -1,5 +1,5 @@
 /**
- * Game phase constants for all games.
+ * Game phase enums for all games.
  *
  * These values must stay in sync with the backend domain constants:
  *   - BlackJack: internal/domain/BlackJack.go (BJPhaseBet, BJPhaseDeal, BJPhaseInsurance, BJPhaseAction, BJPhaseEnd)
@@ -7,15 +7,19 @@
  */
 
 // BlackJack phase constants (sync: internal/domain/BlackJack.go)
-export const BJ_PHASE_BET = 1;
-export const BJ_PHASE_DEAL = 2;
-export const BJ_PHASE_INSURANCE = 3;
-export const BJ_PHASE_ACTION = 4;
-export const BJ_PHASE_END = 5;
+export enum BjPhase {
+  BET = 1,
+  DEAL = 2,
+  INSURANCE = 3,
+  ACTION = 4,
+  END = 5,
+}
 
 // Poker phase constants (sync: internal/domain/Poker.go)
-export const POKER_PHASE_INIT = 0;
-export const POKER_PHASE_DEAL = 1;
-export const POKER_PHASE_EXCHANGE = 2;
-export const POKER_PHASE_SECOND_BET = 3;
-export const POKER_PHASE_END = 4;
+export enum PokerPhase {
+  INIT = 0,
+  DEAL = 1,
+  EXCHANGE = 2,
+  SECOND_BET = 3,
+  END = 4,
+}
