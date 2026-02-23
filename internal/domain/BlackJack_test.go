@@ -948,38 +948,22 @@ func TestBlackJack_PlayerHit_SplitHandContinue(t *testing.T) {
 	bj.Reset()
 
 	// Set up 2 hands manually (simulating a split)
+	// hand0 has score 21 so any drawn card will bust it
 	hand0 := domain.NewBlackJackHand()
-	hand0.SetBet(100)
-	hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
-	hand0.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
-
-	hand1 := domain.NewBlackJackHand()
-	hand1.SetBet(100)
-	hand1.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
-	hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
-
-	bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
-	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
-	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
-	bj.SetPhase(domain.BJPhaseAction)
-
-	// Hit on hand0 (score 18); the drawn card should push it over 21 (bust)
-	// The deck is shuffled, so we need to ensure a bust. Add a high card manually.
-	// Score is 18, any card with value >= 4 will bust (18+4=22).
-	// Since we're drawing from the deck, the card is random. Instead, let's set up hand0 with
-	// a score close to bust threshold.
-	hand0 = domain.NewBlackJackHand()
 	hand0.SetBet(100)
 	hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 	hand0.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
 	hand0.AddCard(domain.NewCard(domain.CardDesignClover, 1, false)) // score = 21
 
-	hand1 = domain.NewBlackJackHand()
+	hand1 := domain.NewBlackJackHand()
 	hand1.SetBet(100)
 	hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
 	hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
 
 	bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
 
 	// Hit on hand0 (score 21): any card will bust it (22+)
 	err := bj.PlayerHit()
