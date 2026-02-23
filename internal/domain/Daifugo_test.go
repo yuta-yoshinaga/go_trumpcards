@@ -989,13 +989,28 @@ func TestDaifugo_GetNonJokerSuit_MixedSuits(t *testing.T) {
 	// CPU plays 7S (idx0 after sort by strength: 7S=7, 7H=7, 9H=9)
 	dg.CpuPlay() // CPU1 plays
 
-	// The test verifies that mixed suits don't cause issues in suit lock logic.
-	// Since the CPU plays a single card, suit lock check proceeds normally.
-	// If CPU plays SPADE 7, same suit as SPADE 5 → suit lock activates
-	// If CPU plays HEART 7, different suit → no lock
-	// Either way the function works correctly.
-	// The key point: getNonJokerSuit with mixed suits returns 0.
-	// We already verified above with single cards. Let's also test pair with mixed suits directly.
+	// Verify that CpuPlay recorded an action for CPU1 (player index 1).
+	cpuActions := dg.GetCpuActions()
+	assert.Len(t, cpuActions, 1)
+	assert.Equal(t, 1, cpuActions[0].PlayerIdx)
+	// CPU1 played a single card (SPADE 7, the first card with strength > 5).
+	assert.Len(t, cpuActions[0].PlayedCards, 1)
+	assert.Equal(t, domain.CardDesignSpade, cpuActions[0].PlayedCards[0].GetDesign())
+	assert.Equal(t, 7, cpuActions[0].PlayedCards[0].GetValue())
+
+	// Table now holds the played card.
+	assert.Len(t, dg.GetTableCards(), 1)
+	assert.Equal(t, 7, dg.GetTableCards()[0].GetValue())
+
+	// CPU1's hand decreased from 3 to 2 cards.
+	assert.Equal(t, 2, players[1].GetCardsSize())
+
+	// Suit lock activates: SPADE 5 followed by SPADE 7 → same suit → locked.
+	assert.True(t, dg.GetSuitLocked())
+	assert.Equal(t, domain.CardDesignSpade, dg.GetLockedSuit())
+
+	// Turn advanced past CPU1 to CPU2 (index 2).
+	assert.Equal(t, 2, dg.GetCurrentTurn())
 }
 
 func TestDaifugo_GetBaseValue_AllJokers(t *testing.T) {

@@ -75,8 +75,8 @@ func TestPoker_DealerRespondToBet_FoldBranch_Deterministic(t *testing.T) {
 				noFoldCount++
 			}
 		}
-		assert.True(t, foldCount > 0, "dealer should fold at least once (70%% rate)")
-		assert.True(t, noFoldCount > 0, "dealer should NOT fold at least once (30%% rate)")
+		assert.True(t, foldCount > 0, "dealer should fold at least once (70% rate)")
+		assert.True(t, noFoldCount > 0, "dealer should NOT fold at least once (30% rate)")
 	})
 
 	t.Run("second fold branch: weak high card + strong bet but good pot odds", func(t *testing.T) {
@@ -121,7 +121,7 @@ func TestPoker_DealerRespondToBet_FoldBranch_Deterministic(t *testing.T) {
 				noFoldCount++
 			}
 		}
-		assert.True(t, foldCount > 0, "dealer should fold at least once (50%% rate)")
-		assert.True(t, noFoldCount > 0, "dealer should NOT fold at least once (50%% rate)")
+		assert.True(t, foldCount > 0, "dealer should fold at least once (50% rate)")
+		assert.True(t, noFoldCount > 0, "dealer should NOT fold at least once (50% rate)")
 	})
 }

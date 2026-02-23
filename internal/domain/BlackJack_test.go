@@ -1289,48 +1289,5 @@ func TestBlackJack_JudgeHand_DealerBJvsPlayerNonBJ(t *testing.T) {
 // blackjack_internal_test.go as a deterministic test that stacks the deck
 // instead of retrying random shuffles.
 
-func TestBlackJack_PlayerDoubleDown_Bust(t *testing.T) {
-	// Exercise lines 234-236: when score >= 22 after double down draw, hand should be busted.
-	// Set up a 2-card hand with score 20 (10+10). Any drawn card with BJ value >= 2 causes bust.
-	// Only an Ace (adjusts to 1 → score 21) avoids bust; probability of non-bust = 4/52 ≈ 7.7%.
-	// We retry until bust occurs (virtually certain within 100 attempts).
-	triggered := false
-	for i := 0; i < 100; i++ {
-		tc := domain.NewTrumpCards(0)
-		player := domain.NewBlackJackPlayer()
-		dealer := domain.NewBlackJackPlayer()
-		player.SetChips(1000)
-		dealer.SetChips(1000)
-		bj := domain.NewBlackJack(tc, player, dealer)
-		bj.Reset()
-
-		hand := bj.GetPlayerHands()[0]
-		hand.SetBet(100)
-		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
-		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false)) // King = BJ value 10, score = 20
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
-		bj.SetPhase(domain.BJPhaseAction)
-
-		err := bj.PlayerDoubleDown()
-		assert.NoError(t, err)
-		assert.Equal(t, 200, hand.GetBet(), "bet should be doubled")
-		assert.True(t, hand.IsDoubled(), "hand should be marked as doubled")
-		assert.Equal(t, 3, hand.GetCardsSize(), "hand should have 3 cards after DD")
-
-		if hand.IsBusted() {
-			triggered = true
-			// Verify bust-specific state
-			assert.True(t, hand.IsBusted(), "hand should be busted when score >= 22")
-			assert.False(t, hand.IsStood(), "busted hand should not be stood")
-			assert.True(t, hand.GetScore() >= 22, "score should be >= 22 for bust")
-			// Game should end (single hand, all finished)
-			assert.True(t, bj.GetGameEndFlag())
-			assert.Equal(t, domain.BJPhaseEnd, bj.GetPhase())
-			// Player should lose (busted)
-			assert.Equal(t, domain.GameResultLose, bj.GameJudgment())
-			break
-		}
-	}
-	assert.True(t, triggered, "should have triggered double-down bust within 100 attempts")
-}
+// TestBlackJack_PlayerDoubleDown_Bust moved to blackjack_internal_test.go
+// as a deterministic test that stacks the deck instead of retrying random shuffles.

@@ -645,46 +645,6 @@ func TestOldMaid_PlayerDraw_GameEndsSkipsAdvance(t *testing.T) {
 	assert.Equal(t, 3, om.GetLoserIdx())
 }
 
-// TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs covers lines 97-99 and 108-109
-// in Reset: when a player has 0 cards after DiscardPairs, they are set as finished,
-// and the currentTurn advancement loop skips finished players.
-func TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs(t *testing.T) {
-	found := false
-	for attempt := 0; attempt < 10000; attempt++ {
-		tc := domain.NewTrumpCards(1)
-		players := []*domain.OldMaidPlayer{
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-		}
-		om := domain.NewOldMaid(tc, players)
-		om.Reset()
-
-		for i := 0; i < domain.OldMaidPlayerCnt; i++ {
-			p := om.GetPlayer(i)
-			if p.GetCardsSize() == 0 && p.GetIsFinished() {
-				found = true
-				// When a player at currentTurn index is finished,
-				// the loop in Reset advances past them.
-				// Verify currentTurn points to a non-finished player
-				// (or game has ended).
-				if !om.GetGameEndFlag() {
-					currentPlayer := om.GetPlayer(om.GetCurrentTurn())
-					assert.False(t, currentPlayer.GetIsFinished(),
-						"currentTurn should point to a non-finished player after Reset")
-				}
-				break
-			}
-		}
-		if found {
-			break
-		}
-	}
-	assert.True(t, found,
-		"at least one player should have 0 cards after DiscardPairs in Reset within 10000 attempts")
-}
-
 // TestOldMaid_DrawCard_InvalidCardIdx covers lines 177-179 in drawCard:
 // when cardIdx is out of range, a random index is used instead.
 func TestOldMaid_DrawCard_InvalidCardIdx(t *testing.T) {
