@@ -20,7 +20,7 @@ func NewPokerCuiController(pi usecases.PokerInteractorIF) *PokerCuiController {
 }
 
 // Exec ゲーム実行
-// コマンド例: "r", "e 0 2 4", "s", "q"
+// コマンド例: "r", "e 0 2 4", "s", "b 20", "c", "ra 30", "f", "ck", "q"
 func (pcc *PokerCuiController) Exec(command string) string {
 	res := ""
 	parts := strings.Fields(command)
@@ -45,6 +45,24 @@ func (pcc *PokerCuiController) Exec(command string) string {
 		res = pcc.pi.Exchange(indices)
 	case "s", "stand":
 		res = pcc.pi.Stand()
+	case "b", "bet":
+		amount := 0
+		if len(parts) > 1 {
+			amount, _ = strconv.Atoi(parts[1])
+		}
+		res = pcc.pi.Bet(amount)
+	case "c", "call":
+		res = pcc.pi.Call()
+	case "ra", "raise":
+		amount := 0
+		if len(parts) > 1 {
+			amount, _ = strconv.Atoi(parts[1])
+		}
+		res = pcc.pi.Raise(amount)
+	case "f", "fold":
+		res = pcc.pi.Fold()
+	case "ck", "check":
+		res = pcc.pi.Check()
 	default:
 		res = "Unsupported command."
 	}

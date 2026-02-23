@@ -13,12 +13,18 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 }
 
 export const blackjackApi = {
-  exec: (command: 'reset' | 'hit' | 'stand') => postJson<BlackJackResponse>('/blackjack/exec', { command, sessionId }),
+  exec: (
+    command: 'reset' | 'hit' | 'stand' | 'bet' | 'doubledown' | 'split' | 'insurance' | 'declineinsurance',
+    amount?: number,
+  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId }),
 };
 
 export const pokerApi = {
-  exec: (command: 'reset' | 'exchange' | 'stand', indices?: number[]) =>
-    postJson<PokerResponse>('/poker/exec', { command, indices, sessionId }),
+  exec: (
+    command: 'reset' | 'exchange' | 'stand' | 'bet' | 'call' | 'raise' | 'fold' | 'check',
+    indices?: number[],
+    amount?: number,
+  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, sessionId }),
 };
 
 export const oldmaidApi = {

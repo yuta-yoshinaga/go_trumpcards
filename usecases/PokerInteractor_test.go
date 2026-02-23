@@ -11,7 +11,7 @@ import (
 )
 
 func TestPokerInteractor_Method(t *testing.T) {
-	mockOutput := `{"dealer":{"handRank":0,"handName":"High Card","cards":[]},"player":{"handRank":0,"handName":"High Card","cards":[]},"phase":1,"message":""}`
+	mockOutput := `{"dealer":{"handRank":0,"handName":"High Card","cards":[]},"player":{"handRank":0,"handName":"High Card","cards":[]},"phase":1,"message":"","pot":20,"ante":10}`
 	ppMock := new(presenters.MockPokerPresenter)
 	ppMock.On("Output", mock.AnythingOfType("string")).Return(mockOutput)
 	tpi := usecases.NewPokerInteractor(ppMock)
@@ -27,5 +27,20 @@ func TestPokerInteractor_Method(t *testing.T) {
 	})
 	t.Run("success Stand", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tpi.Stand())
+	})
+	t.Run("success Bet", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpi.Bet(10))
+	})
+	t.Run("success Call", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpi.Call())
+	})
+	t.Run("success Raise", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpi.Raise(20))
+	})
+	t.Run("success Fold", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpi.Fold())
+	})
+	t.Run("success Check", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpi.Check())
 	})
 }

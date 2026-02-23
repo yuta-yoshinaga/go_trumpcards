@@ -100,11 +100,13 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	} else if param.Command == "q" || param.Command == "quit" {
 		responseStr = `{"message":"bye."}`
 	} else {
-		dgi, ok := dwc.store.Get(param.SessionId, dwc.factory)
+		dgi, mu, ok := dwc.store.GetWithLock(param.SessionId, dwc.factory)
 		if !ok {
 			status = http.StatusBadRequest
 			responseStr = `{"message":"param error."}`
 		} else {
+			mu.Lock()
+			defer mu.Unlock()
 			switch param.Command {
 			case "r", "reset":
 				responseStr = dgi.Reset()

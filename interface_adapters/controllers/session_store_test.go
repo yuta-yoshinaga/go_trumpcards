@@ -112,6 +112,73 @@ func TestSessionStore_EvictExpiredDoesNotRemoveActiveSession(t *testing.T) {
 	}
 }
 
+func TestSessionStore_GetWithLock(t *testing.T) {
+	store := controllers.NewSessionStore[int]()
+	defer store.Stop()
+	calls := 0
+	factory := func() int { calls++; return calls }
+
+	v1, mu1, ok1 := store.GetWithLock("session-lock", factory)
+	if !ok1 {
+		t.Fatal("expected ok=true on first GetWithLock")
+	}
+	if v1 != 1 {
+		t.Errorf("want value 1, got %d", v1)
+	}
+	if mu1 == nil {
+		t.Fatal("expected non-nil mutex")
+	}
+
+	// Same session returns same mutex
+	v2, mu2, ok2 := store.GetWithLock("session-lock", factory)
+	if !ok2 {
+		t.Fatal("expected ok=true on second GetWithLock")
+	}
+	if v2 != 1 {
+		t.Errorf("want same value 1 on reuse, got %d", v2)
+	}
+	if mu1 != mu2 {
+		t.Error("expected same mutex pointer for same session")
+	}
+	if calls != 1 {
+		t.Errorf("factory called %d times, want exactly 1", calls)
+	}
+}
+
+func TestSessionStore_GetWithLock_TooLongID(t *testing.T) {
+	store := controllers.NewSessionStore[int]()
+	defer store.Stop()
+	longID := strings.Repeat("x", controllers.SessionMaxIDLen+1)
+	_, mu, ok := store.GetWithLock(longID, func() int { return 1 })
+	if ok {
+		t.Fatal("expected ok=false for sessionId longer than SessionMaxIDLen")
+	}
+	if mu != nil {
+		t.Error("expected nil mutex for rejected session")
+	}
+}
+
+func TestSessionStore_GetWithLock_MaxCount(t *testing.T) {
+	store := controllers.NewSessionStore[int]()
+	defer store.Stop()
+
+	for i := 0; i < controllers.SessionMaxCount; i++ {
+		id := fmt.Sprintf("lock%d", i)
+		_, _, ok := store.GetWithLock(id, func() int { return i })
+		if !ok {
+			t.Fatalf("expected ok=true at i=%d (before limit)", i)
+		}
+	}
+
+	_, mu, ok := store.GetWithLock("overflow-lock", func() int { return 0 })
+	if ok {
+		t.Fatal("expected ok=false when store is at capacity")
+	}
+	if mu != nil {
+		t.Error("expected nil mutex when at capacity")
+	}
+}
+
 func TestSessionStore_StopIsIdempotent(t *testing.T) {
 	store := controllers.NewSessionStore[int]()
 	store.Stop()

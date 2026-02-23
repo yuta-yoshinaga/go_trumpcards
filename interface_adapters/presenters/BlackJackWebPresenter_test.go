@@ -1,9 +1,11 @@
 package presenters_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/entities"
+	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/controllers"
 	"github.com/yuta-yoshinaga/go_trumpcards/interface_adapters/presenters"
 
 	"github.com/stretchr/testify/assert"
@@ -11,79 +13,226 @@ import (
 
 func TestBlackJackWebPresenters_Method(t *testing.T) {
 	tbp := presenters.NewBlackJackWebPresenter()
-	tc := entities.NewTrumpCards(0)
-	player := entities.NewBlackJackPlayer()
-	dealer := entities.NewBlackJackPlayer()
-	bj := entities.NewBlackJack(tc, player, dealer)
-	t.Run("success Output", func(t *testing.T) {
+
+	t.Run("success Output bet phase (no cards)", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
 		bj.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, `{"dealer":{"score":0,"cards":[{"design":"CLOVER","value":2}]},"player":{"score":22,"cards":[{"design":"SPADE","value":2},{"design":"SPADE","value":10},{"design":"SPADE","value":11}]},"message":""}`, tbp.Output(bj))
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, entities.BJPhaseBet, result.Phase)
+		assert.Equal(t, entities.BJDefaultChips, result.Player.Chips)
+		assert.Equal(t, entities.BJDefaultChips, result.Dealer.Chips)
+		assert.Equal(t, 0, len(result.Dealer.Cards))
+		assert.Equal(t, 1, len(result.Hands))
+		assert.Equal(t, 0, result.Hands[0].Score)
 	})
-	t.Run("success Output", func(t *testing.T) {
+	t.Run("success Output action phase", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(900)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
 		bj.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
+		bj.SetPhase(entities.BJPhaseAction)
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, result.Dealer.Score) // Not game end, so score hidden
+		assert.Equal(t, 1, len(result.Dealer.Cards))
+		assert.Equal(t, 900, result.Player.Chips)
+		assert.Equal(t, 1000, result.Dealer.Chips)
+		assert.Equal(t, entities.BJPhaseAction, result.Phase)
+		assert.Equal(t, 1, len(result.Hands))
+		assert.Equal(t, 100, result.Hands[0].Bet)
+	})
+	t.Run("success Output end phase lose", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(900)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
+		bj.SetPhase(entities.BJPhaseAction)
 		bj.PlayerStand()
-		assert.Equal(t, `{"dealer":{"score":22,"cards":[{"design":"CLOVER","value":2},{"design":"CLOVER","value":10},{"design":"CLOVER","value":11}]},"player":{"score":22,"cards":[{"design":"SPADE","value":2},{"design":"SPADE","value":10},{"design":"SPADE","value":11}]},"message":"It is your loss."}`, tbp.Output(bj))
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, 22, result.Dealer.Score)
+		assert.Equal(t, 3, len(result.Dealer.Cards))
+		assert.Equal(t, "It is your loss.", result.Message)
+		assert.Equal(t, entities.BJPhaseEnd, result.Phase)
 	})
-	t.Run("success Output", func(t *testing.T) {
+	t.Run("success Output end phase draw", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(900)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
 		bj.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		bj.SetPhase(entities.BJPhaseAction)
 		bj.PlayerStand()
-		assert.Equal(t, `{"dealer":{"score":21,"cards":[{"design":"CLOVER","value":1},{"design":"CLOVER","value":10}]},"player":{"score":21,"cards":[{"design":"SPADE","value":1},{"design":"SPADE","value":10}]},"message":"It is a draw."}`, tbp.Output(bj))
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "It is a draw.", result.Message)
 	})
-	t.Run("success Output", func(t *testing.T) {
+	t.Run("success Output end phase win", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(900)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
 		bj.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		// Dealer score 19 (>= 17) so no additional cards drawn — deterministic output
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		// Dealer score 19 (>= 17)
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 9, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		bj.SetPhase(entities.BJPhaseAction)
 		bj.PlayerStand()
-		assert.Equal(t, `{"dealer":{"score":19,"cards":[{"design":"CLOVER","value":9},{"design":"CLOVER","value":10}]},"player":{"score":21,"cards":[{"design":"SPADE","value":1},{"design":"SPADE","value":10}]},"message":"You are the winner."}`, tbp.Output(bj))
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "You are the winner.", result.Message)
 	})
-	t.Run("success GetCardStr", func(t *testing.T) {
+	t.Run("success Output hands fields", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(900)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.SetDoubled(true)
+		hand.SetBusted(true)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignHeart, 6, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignClover, 8, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignDiamond, 10, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignDiamond, 7, false))
+		bj.SetPhase(entities.BJPhaseAction)
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(result.Hands))
+		assert.True(t, result.Hands[0].Doubled)
+		assert.True(t, result.Hands[0].Busted)
+		assert.Equal(t, 100, result.Hands[0].Bet)
+		assert.Equal(t, 3, len(result.Hands[0].Cards))
+	})
+	t.Run("success Output insurance fields", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(900)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignHeart, 10, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignDiamond, 10, false))
+		bj.SetPhase(entities.BJPhaseInsurance)
+		bj.PlayerInsurance() // cost = 50
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, 50, result.InsuranceBet)
+	})
+	t.Run("success Output canSplit and isBlackJack", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(900)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignHeart, 8, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignDiamond, 7, false))
+		bj.SetPhase(entities.BJPhaseAction)
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.True(t, result.Hands[0].CanSplit)
+		assert.False(t, result.Hands[0].IsBlackJack)
+	})
+	t.Run("success Output error message on failed bet", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		bj.PlayerBet(5) // invalid amount, sets lastError
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, entities.BJPhaseBet, result.Phase)
+		assert.Equal(t, "Invalid bet amount.", result.Message)
+	})
+	t.Run("success GetCardObj SPADE", func(t *testing.T) {
 		card := tbp.GetCardObj(entities.NewCard(entities.CardDesignSpade, 1, false))
 		assert.Equal(t, "SPADE", card.Design)
 		assert.Equal(t, 1, card.Value)
 	})
-	t.Run("success GetCardStr", func(t *testing.T) {
+	t.Run("success GetCardObj CLOVER", func(t *testing.T) {
 		card := tbp.GetCardObj(entities.NewCard(entities.CardDesignClover, 1, false))
 		assert.Equal(t, "CLOVER", card.Design)
 		assert.Equal(t, 1, card.Value)
 	})
-	t.Run("success GetCardStr", func(t *testing.T) {
+	t.Run("success GetCardObj HEART", func(t *testing.T) {
 		card := tbp.GetCardObj(entities.NewCard(entities.CardDesignHeart, 1, false))
 		assert.Equal(t, "HEART", card.Design)
 		assert.Equal(t, 1, card.Value)
 	})
-	t.Run("success GetCardStr", func(t *testing.T) {
+	t.Run("success GetCardObj DIAMOND", func(t *testing.T) {
 		card := tbp.GetCardObj(entities.NewCard(entities.CardDesignDiamond, 1, false))
 		assert.Equal(t, "DIAMOND", card.Design)
 		assert.Equal(t, 1, card.Value)
 	})
-	t.Run("success GetCardStr", func(t *testing.T) {
+	t.Run("success GetCardObj unsupported", func(t *testing.T) {
 		card := tbp.GetCardObj(entities.NewCard(entities.CardDesignJoker, entities.CardValueJoker, false))
 		assert.Equal(t, "Unsupported card", card.Design)
 		assert.Equal(t, 0, card.Value)

@@ -21,6 +21,13 @@ func (pcp *PokerCuiPresenter) Output(p *entities.Poker) string {
 	dealer := p.GetDealer()
 	res := "----------\n"
 
+	// chips/pot info
+	res += "Pot: " + strconv.Itoa(p.GetPot()) + " | Player Chips: " + strconv.Itoa(player.GetChips()) + " | Dealer Chips: " + strconv.Itoa(dealer.GetChips()) + "\n"
+	if p.GetDealerBet() > 0 {
+		res += "Dealer Bet: " + strconv.Itoa(p.GetDealerBet()) + "\n"
+	}
+	res += "----------\n"
+
 	// player
 	res += "player hand"
 	if p.GetPhase() == entities.PokerPhaseEnd {
@@ -53,13 +60,19 @@ func (pcp *PokerCuiPresenter) Output(p *entities.Poker) string {
 	res += "----------\n"
 
 	if p.GetPhase() == entities.PokerPhaseEnd {
-		switch p.GameJudgment() {
-		case 0:
-			res += "It is a draw.\n"
-		case 1:
-			res += "You are the winner.\n"
-		default:
-			res += "It is your loss.\n"
+		if p.GetFolded() == 1 {
+			res += "You folded.\n"
+		} else if p.GetFolded() == 2 {
+			res += "Dealer folded. You win!\n"
+		} else {
+			switch p.GameJudgment() {
+			case 0:
+				res += "It is a draw.\n"
+			case 1:
+				res += "You are the winner.\n"
+			default:
+				res += "It is your loss.\n"
+			}
 		}
 		res += "----------\n"
 	}

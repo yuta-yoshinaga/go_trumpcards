@@ -2,7 +2,8 @@ package entities
 
 // BlackJackPlayer ブラックジャックプレイヤークラス
 type BlackJackPlayer struct {
-	Player // 親クラス
+	Player       // 親クラス
+	chips  int   // チップ
 }
 
 // NewBlackJackPlayer コンストラクタ
@@ -11,6 +12,7 @@ func NewBlackJackPlayer() *BlackJackPlayer {
 		Player: Player{
 			cards: make([]*Card, 0),
 		},
+		chips: 0,
 	}
 }
 
@@ -21,33 +23,29 @@ func (bp *BlackJackPlayer) AddCard(card *Card) {
 
 // GetScore 手札から現在のスコア計算
 func (bp *BlackJackPlayer) GetScore() int {
-	aceFlag := false
-	score := 0
-	for _, card := range bp.cards {
-		value := card.GetValue()
-		if 2 <= value && value <= 10 {
-			// 2～10
-			score += value
-		} else if 11 <= value && value <= 13 {
-			// 11～13
-			score += 10
-		} else {
-			if aceFlag {
-				// 2枚目のエースは強制的に1で換算する
-				score++
-			} else {
-				// エースは後ほど計算する
-				aceFlag = true
-			}
-		}
+	return CalculateBlackJackScore(bp.cards)
+}
+
+// GetChips チップ取得
+func (bp *BlackJackPlayer) GetChips() int {
+	return bp.chips
+}
+
+// SetChips チップ設定
+func (bp *BlackJackPlayer) SetChips(chips int) {
+	bp.chips = chips
+}
+
+// AddChips チップ追加
+func (bp *BlackJackPlayer) AddChips(amount int) {
+	bp.chips += amount
+}
+
+// SubtractChips チップ減算 (不足時はfalseを返す)
+func (bp *BlackJackPlayer) SubtractChips(amount int) bool {
+	if bp.chips < amount {
+		return false
 	}
-	if aceFlag {
-		// エース計算
-		if score+11 <= 21 {
-			score += 11
-		} else {
-			score++
-		}
-	}
-	return score
+	bp.chips -= amount
+	return true
 }

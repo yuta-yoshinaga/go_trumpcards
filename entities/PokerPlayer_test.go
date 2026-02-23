@@ -159,9 +159,7 @@ func TestPokerPlayer_Method(t *testing.T) {
 		assert.Equal(t, "Straight Flush", tpp.GetHandName())
 	})
 
-	t.Run("success EvalHand Flush A-10-J-Q-K same suit evaluates as Flush", func(t *testing.T) {
-		// Note: checkStraight does not handle high-ace straight (A-10-J-Q-K),
-		// so this hand is classified as Flush rather than Royal Flush.
+	t.Run("success EvalHand Royal Flush A-10-J-Q-K same suit", func(t *testing.T) {
 		tpp.Reset()
 		tpp.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
 		tpp.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
@@ -169,8 +167,20 @@ func TestPokerPlayer_Method(t *testing.T) {
 		tpp.AddCard(entities.NewCard(entities.CardDesignSpade, 12, false))
 		tpp.AddCard(entities.NewCard(entities.CardDesignSpade, 13, false))
 		rank := tpp.EvalHand()
-		assert.Equal(t, entities.PokerHandFlush, rank)
-		assert.Equal(t, "Flush", tpp.GetHandName())
+		assert.Equal(t, entities.PokerHandRoyalFlush, rank)
+		assert.Equal(t, "Royal Flush", tpp.GetHandName())
+	})
+
+	t.Run("success EvalHand Straight high ace A-10-J-Q-K mixed suit", func(t *testing.T) {
+		tpp.Reset()
+		tpp.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
+		tpp.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		tpp.AddCard(entities.NewCard(entities.CardDesignHeart, 11, false))
+		tpp.AddCard(entities.NewCard(entities.CardDesignDiamond, 12, false))
+		tpp.AddCard(entities.NewCard(entities.CardDesignSpade, 13, false))
+		rank := tpp.EvalHand()
+		assert.Equal(t, entities.PokerHandStraight, rank)
+		assert.Equal(t, "Straight", tpp.GetHandName())
 	})
 
 	t.Run("success ExchangeCard", func(t *testing.T) {
@@ -191,5 +201,34 @@ func TestPokerPlayer_Method(t *testing.T) {
 		newCard := entities.NewCard(entities.CardDesignHeart, 13, false)
 		tpp.ExchangeCard(10, newCard)
 		assert.Equal(t, 2, tpp.GetCard(0).GetValue())
+	})
+
+	t.Run("success GetChips initial", func(t *testing.T) {
+		assert.Equal(t, 0, tpp.GetChips())
+	})
+
+	t.Run("success SetChips", func(t *testing.T) {
+		tpp.SetChips(1000)
+		assert.Equal(t, 1000, tpp.GetChips())
+	})
+
+	t.Run("success AddChips", func(t *testing.T) {
+		tpp.SetChips(100)
+		tpp.AddChips(50)
+		assert.Equal(t, 150, tpp.GetChips())
+	})
+
+	t.Run("success SubtractChips sufficient", func(t *testing.T) {
+		tpp.SetChips(100)
+		ok := tpp.SubtractChips(30)
+		assert.True(t, ok)
+		assert.Equal(t, 70, tpp.GetChips())
+	})
+
+	t.Run("success SubtractChips insufficient", func(t *testing.T) {
+		tpp.SetChips(10)
+		ok := tpp.SubtractChips(50)
+		assert.False(t, ok)
+		assert.Equal(t, 10, tpp.GetChips())
 	})
 }
