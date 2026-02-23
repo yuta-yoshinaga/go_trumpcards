@@ -17,7 +17,7 @@ func NewDaifugoCuiPresenter() *DaifugoCuiPresenter {
 }
 
 // Output ゲーム状態を文字列出力
-func (p *DaifugoCuiPresenter) Output(dg *domain.Daifugo) string {
+func (p *DaifugoCuiPresenter) Output(dg *domain.Daifugo, lastErr error) string {
 	var b strings.Builder
 
 	b.WriteString("==========\n")
@@ -125,6 +125,11 @@ func (p *DaifugoCuiPresenter) Output(dg *domain.Daifugo) string {
 				fmt.Fprintf(&b, "%sが %s を出しました\n", actPlayerName, strings.Join(cardStrs, ", "))
 			}
 		}
+	}
+
+	// エラーメッセージ
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
 	}
 
 	if dg.GetGameEndFlag() {

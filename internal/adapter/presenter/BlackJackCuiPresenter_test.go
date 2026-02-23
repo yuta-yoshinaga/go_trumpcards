@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -21,7 +22,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.SetChips(1000)
 		bj := domain.NewBlackJack(tc, player, dealer)
 		bj.Reset()
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "chips: player=1000 dealer=1000")
 		assert.Contains(t, output, "phase: BET")
 	})
@@ -40,7 +41,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "phase: ACTION")
 		assert.Contains(t, output, "bet=100")
 		assert.Contains(t, output, "SPADE 5")
@@ -62,8 +63,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		bj.PlayerStand()
-		output := tbp.Output(bj)
+		_ = bj.PlayerStand()
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "It is your loss.")
 		assert.Contains(t, output, "phase: END")
 	})
@@ -82,8 +83,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		bj.PlayerStand()
-		output := tbp.Output(bj)
+		_ = bj.PlayerStand()
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "It is a draw.")
 	})
 	t.Run("success Output end phase win", func(t *testing.T) {
@@ -102,8 +103,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		bj.PlayerStand()
-		output := tbp.Output(bj)
+		_ = bj.PlayerStand()
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "You are the winner.")
 	})
 	t.Run("success Output insurance phase", func(t *testing.T) {
@@ -121,7 +122,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "phase: INSURANCE")
 		assert.Contains(t, output, "Insurance available!")
 	})
@@ -143,7 +144,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "[DD]")
 		assert.Contains(t, output, "[BUST]")
 	})
@@ -162,7 +163,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "[BJ]")
 	})
 	t.Run("success Output insurance bet shown", func(t *testing.T) {
@@ -180,8 +181,8 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
-		bj.PlayerInsurance() // cost = 50
-		output := tbp.Output(bj)
+		_ = bj.PlayerInsurance() // cost = 50
+		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "insurance bet: 50")
 	})
 	t.Run("success Output multi-hand results", func(t *testing.T) {
@@ -209,15 +210,15 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		bj.SetPhase(domain.BJPhaseEnd)
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		// Single hand, so no "hand 1" prefix
 		assert.NotContains(t, output, "hand 1")
 	})
-	t.Run("success Output error message on failed bet", func(t *testing.T) {
+	t.Run("success Output error message via lastErr", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		bj.PlayerBet(5) // invalid amount
-		output := tbp.Output(bj)
+		testErr := errors.New("Invalid bet amount.")
+		output := tbp.Output(bj, testErr)
 		assert.Contains(t, output, "Invalid bet amount.")
 	})
 	t.Run("success GetCardStr SPADE", func(t *testing.T) {
@@ -243,8 +244,16 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.SetChips(1000)
 		bj := domain.NewBlackJack(tc, player, dealer)
 		bj.Reset()
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		// In bet phase, dealer has no cards - should not crash
 		assert.True(t, strings.Contains(output, "dealer score"))
+	})
+	t.Run("success Output nil error produces no error line", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		output := tbp.Output(bj, nil)
+		// Should not contain any error-like message lines beyond normal output
+		assert.NotContains(t, output, "Invalid")
+		assert.NotContains(t, output, "Insufficient")
 	})
 }

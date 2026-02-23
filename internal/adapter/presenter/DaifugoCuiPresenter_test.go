@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -31,7 +32,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
-		result := tdp.Output(dg)
+		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "Daifugo (大富豪)")
 		assert.Contains(t, result, "[You]: 2枚")
 		assert.Contains(t, result, "[0]SPADE 3")
@@ -50,10 +51,10 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		dg.PlayerPlay([]int{0}) // play 5
+		_ = dg.PlayerPlay([]int{0}) // play 5
 		// CPUs all pass (2 > 5 but 1 card vs 1 card needed — actually 2 is strongest, so CPUs WILL play it)
 		// Instead just verify Output works after play
-		result := tdp.Output(dg)
+		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "Daifugo (大富豪)")
 		assert.NotEmpty(t, result)
 	})
@@ -71,8 +72,8 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
 		// Play human's last card to end game
-		dg.PlayerPlay([]int{0})
-		result := tdp.Output(dg)
+		_ = dg.PlayerPlay([]int{0})
+		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "ゲーム終了")
 	})
 
@@ -84,8 +85,8 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		dg.PlayerPlay([]int{}) // pass
-		result := tdp.Output(dg)
+		_ = dg.PlayerPlay([]int{}) // pass
+		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "パスしました")
 	})
 
@@ -102,8 +103,8 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		dg.PlayerPlay([]int{0, 1, 2, 3}) // play four 5s
-		result := tdp.Output(dg)
+		_ = dg.PlayerPlay([]int{0, 1, 2, 3}) // play four 5s
+		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "革命中")
 	})
 
@@ -115,7 +116,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
-		result := tdp.Output(dg)
+		result := tdp.Output(dg, nil)
 		assert.NotContains(t, result, "革命中")
 	})
 
@@ -128,11 +129,25 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-		dg.PlayerPlay([]int{0})
+		_ = dg.PlayerPlay([]int{0})
 		dg.CpuPlay()
 		dg.CpuPlay()
 		dg.CpuPlay()
-		result := tdp.Output(dg)
+		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "[CPUの行動]")
+	})
+
+	t.Run("success Output shows error message when lastErr is non-nil", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		dg := domain.NewDaifugo(tc, players, domain.DaifugoConfig{})
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		testErr := errors.New("test error message")
+		result := tdp.Output(dg, testErr)
+		assert.Contains(t, result, "test error message")
 	})
 }

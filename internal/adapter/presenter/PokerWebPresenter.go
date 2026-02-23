@@ -17,7 +17,7 @@ func NewPokerWebPresenter() *PokerWebPresenter {
 }
 
 // Output ゲーム状態を出力
-func (pwp *PokerWebPresenter) Output(p *domain.Poker) string {
+func (pwp *PokerWebPresenter) Output(p *domain.Poker, lastErr error) string {
 	resObj := new(controller.PokerWebOutput)
 	resObj.Phase = p.GetPhase()
 	resObj.Pot = p.GetPot()
@@ -41,6 +41,11 @@ func (pwp *PokerWebPresenter) Output(p *domain.Poker) string {
 	resObj.Dealer.Cards = make([]*controller.PokerWebOutputCard, 0)
 	resObj.Dealer.Chips = dealer.GetChips()
 	resObj.Dealer.Bet = p.GetDealerBet()
+	// エラーメッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	}
+
 	if p.GetPhase() == domain.PokerPhaseEnd {
 		resObj.Dealer.HandRank = dealer.GetHandRank()
 		resObj.Dealer.HandName = dealer.GetHandName()

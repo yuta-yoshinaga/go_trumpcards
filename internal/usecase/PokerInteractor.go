@@ -34,47 +34,47 @@ func NewPokerInteractor(pp presenter.PokerPresenter) *PokerInteractor {
 // Reset ゲーム初期化
 func (pi *PokerInteractor) Reset() string {
 	pi.p.Reset()
-	return pi.pp.Output(pi.p)
+	return pi.pp.Output(pi.p, nil)
 }
 
 // Exchange カード交換
 func (pi *PokerInteractor) Exchange(indices []int) string {
-	pi.p.PlayerExchange(indices)
-	return pi.pp.Output(pi.p)
+	err := pi.p.PlayerExchange(indices)
+	return pi.pp.Output(pi.p, err)
 }
 
 // Stand カード交換なしでショーダウン
 func (pi *PokerInteractor) Stand() string {
-	pi.p.PlayerStand()
-	return pi.pp.Output(pi.p)
+	err := pi.p.PlayerStand()
+	return pi.pp.Output(pi.p, err)
 }
 
 // Bet ベット
 func (pi *PokerInteractor) Bet(amount int) string {
-	pi.p.PlayerBet(amount)
-	return pi.pp.Output(pi.p)
+	err := pi.p.PlayerBet(amount)
+	return pi.pp.Output(pi.p, err)
 }
 
 // Call コール
 func (pi *PokerInteractor) Call() string {
-	pi.p.PlayerCall()
-	return pi.pp.Output(pi.p)
+	err := pi.p.PlayerCall()
+	return pi.pp.Output(pi.p, err)
 }
 
 // Raise レイズ
 func (pi *PokerInteractor) Raise(amount int) string {
-	pi.p.PlayerRaise(amount)
-	return pi.pp.Output(pi.p)
+	err := pi.p.PlayerRaise(amount)
+	return pi.pp.Output(pi.p, err)
 }
 
 // Fold フォールド
 func (pi *PokerInteractor) Fold() string {
-	pi.p.PlayerFold()
-	return pi.pp.Output(pi.p)
+	err := pi.p.PlayerFold()
+	return pi.pp.Output(pi.p, err)
 }
 
 // Check チェック
 func (pi *PokerInteractor) Check() string {
-	pi.p.PlayerCheck()
-	return pi.pp.Output(pi.p)
+	err := pi.p.PlayerCheck()
+	return pi.pp.Output(pi.p, err)
 }

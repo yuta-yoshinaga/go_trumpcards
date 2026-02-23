@@ -12,7 +12,7 @@ type MockDaifugoPresenter struct {
 }
 
 // Output モック
-func (_m *MockDaifugoPresenter) Output(dg *domain.Daifugo) string {
-	ret := _m.Called()
+func (_m *MockDaifugoPresenter) Output(dg *domain.Daifugo, lastErr error) string {
+	ret := _m.Called(dg, lastErr)
 	return ret.Get(0).(string)
 }

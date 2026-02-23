@@ -220,9 +220,12 @@ func (o *OldMaid) advanceTurn() {
 
 // PlayerDraw 人間プレイヤーがカードを引く
 // cardIdx: 引くカードのインデックス。-1 の場合はランダム選択。
-func (o *OldMaid) PlayerDraw(cardIdx int) {
-	if o.gameEndFlag || !o.players[o.currentTurn].GetIsHuman() {
-		return
+func (o *OldMaid) PlayerDraw(cardIdx int) error {
+	if o.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !o.players[o.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	// 人間のターン開始時にCPU行動履歴をリセット
 	o.cpuActions = nil
@@ -238,6 +241,7 @@ func (o *OldMaid) PlayerDraw(cardIdx int) {
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
+	return nil
 }
 
 // CPU戦略用定数
@@ -265,14 +269,17 @@ func cpuSelectCardIdx(size int) int {
 }
 
 // CpuDraw 現在の手番がCPUの場合に1ターン実行
-func (o *OldMaid) CpuDraw() {
-	if o.gameEndFlag || o.players[o.currentTurn].GetIsHuman() {
-		return
+func (o *OldMaid) CpuDraw() error {
+	if o.gameEndFlag {
+		return ErrGameEnded
+	}
+	if o.players[o.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	playerIdx := o.currentTurn
 	targetIdx := o.getNextActivePlayer(playerIdx)
 	if targetIdx < 0 || targetIdx >= len(o.players) {
-		return
+		return nil
 	}
 	cardIdx := cpuSelectCardIdx(o.players[targetIdx].GetCardsSize())
 	card := o.drawCard(playerIdx, cardIdx)
@@ -287,6 +294,7 @@ func (o *OldMaid) CpuDraw() {
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
+	return nil
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

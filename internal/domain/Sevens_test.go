@@ -152,8 +152,8 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		ok := s.PlayerPlay(0) // play 6♠
-		assert.True(t, ok)
+		err := s.PlayerPlay(0) // play 6♠
+		assert.NoError(t, err)
 		mins := s.GetTableMinVals()
 		assert.Equal(t, 6, mins[domain.CardDesignSpade])
 		assert.Equal(t, 1, players[0].GetCardsSize())
@@ -167,8 +167,9 @@ func TestSevens_Method(t *testing.T) {
 		players := makeSevensPlayers()
 		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // not adjacent to 7
-		ok := s.PlayerPlay(0)
-		assert.False(t, ok)
+		err := s.PlayerPlay(0)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 	})
 
 	t.Run("success PlayerPlay fails with invalid index", func(t *testing.T) {
@@ -176,8 +177,9 @@ func TestSevens_Method(t *testing.T) {
 		players := makeSevensPlayers()
 		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		ok := s.PlayerPlay(5) // out of range
-		assert.False(t, ok)
+		err := s.PlayerPlay(5) // out of range
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidCard)
 	})
 
 	t.Run("success PlayerPlay pass", func(t *testing.T) {
@@ -189,8 +191,8 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		ok := s.PlayerPlay(-1) // pass
-		assert.True(t, ok)
+		err := s.PlayerPlay(-1) // pass
+		assert.NoError(t, err)
 		assert.Equal(t, 1, players[0].GetPassesUsed())
 		action := s.GetHumanAction()
 		assert.NotNil(t, action)
@@ -206,8 +208,9 @@ func TestSevens_Method(t *testing.T) {
 			players[0].IncrPassesUsed()
 		}
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		ok := s.PlayerPlay(-1) // attempt to pass
-		assert.False(t, ok)
+		err := s.PlayerPlay(-1) // attempt to pass
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrCannotPass)
 	})
 
 	t.Run("success PlayerPlay fails when not human turn", func(t *testing.T) {
@@ -221,8 +224,9 @@ func TestSevens_Method(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.PlayerPlay(0) // human plays → advances to CPU 1
 		if !s.IsHumanTurn() && !s.GetGameEndFlag() {
-			ok := s.PlayerPlay(0)
-			assert.False(t, ok)
+			err := s.PlayerPlay(0)
+			assert.Error(t, err)
+			assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
 		}
 	})
 
@@ -242,8 +246,9 @@ func TestSevens_Method(t *testing.T) {
 		assert.True(t, s.GetGameEndFlag())
 		assert.Equal(t, 4, players[0].GetRank())
 
-		ok := s.PlayerPlay(0) // game already ended
-		assert.False(t, ok)
+		err := s.PlayerPlay(0) // game already ended
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrGameEnded)
 	})
 
 	t.Run("success CpuPlay plays valid card", func(t *testing.T) {
@@ -611,8 +616,8 @@ func TestSevens_Joker(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
 		// Play joker to SPADE 6 position
-		ok := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
-		assert.True(t, ok)
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.NoError(t, err)
 		// Board should now have SPADE 6 placed
 		placed := s.GetTablePlaced()
 		assert.True(t, placed[domain.CardDesignSpade]&(1<<6) != 0)
@@ -629,8 +634,9 @@ func TestSevens_Joker(t *testing.T) {
 		players := makeSevensPlayers()
 		s := domain.NewSevens(tc, players, jokerConfig)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		ok := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
-		assert.False(t, ok)
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidCard)
 	})
 
 	t.Run("success PlayerPlayJoker fails with invalid target position", func(t *testing.T) {
@@ -639,8 +645,9 @@ func TestSevens_Joker(t *testing.T) {
 		s := domain.NewSevens(tc, players, jokerConfig)
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
 		// SPADE 5 is not playable on fresh board (not adjacent to 7)
-		ok := s.PlayerPlayJoker(0, domain.CardDesignSpade, 5)
-		assert.False(t, ok)
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 5)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 	})
 
 	t.Run("success PlayerPlayJoker fails when game ended", func(t *testing.T) {
@@ -658,8 +665,9 @@ func TestSevens_Joker(t *testing.T) {
 		assert.True(t, s.GetGameEndFlag())
 
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
-		ok := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
-		assert.False(t, ok)
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrGameEnded)
 	})
 
 	t.Run("success CpuPlay plays joker", func(t *testing.T) {

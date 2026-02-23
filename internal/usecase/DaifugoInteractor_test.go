@@ -13,7 +13,7 @@ import (
 func TestDaifugoInteractor_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":-1,"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 	dgpMock := new(presenter.MockDaifugoPresenter)
-	dgpMock.On("Output", mock.AnythingOfType("string")).Return(mockOutput)
+	dgpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	tdi := usecase.NewDaifugoInteractor(dgpMock)
 
 	t.Run("success Reset", func(t *testing.T) {

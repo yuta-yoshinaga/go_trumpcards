@@ -30,7 +30,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		assert.NotEmpty(t, result)
 
 		var resObj controller.SevensWebOutput
@@ -59,7 +59,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		humanPlayer := resObj.Players[0]
@@ -77,7 +77,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		cpu1 := resObj.Players[1]
@@ -96,7 +96,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.PlayerPlay(-1) // pass
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		humanPlayer := resObj.Players[0]
@@ -117,7 +117,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.PlayerPlay(0) // play 6♠ → minVal[Spade] = 6
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Equal(t, 6, resObj.TableMinVals[domain.CardDesignSpade])
@@ -140,7 +140,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[3].SetRank(3)
 		s.PlayerPlay(0) // human plays last card → game ends
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.GameEndFlag)
@@ -159,7 +159,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		s.PlayerPlay(0) // human plays 8♠
 		s.CpuPlay()    // CPU 1 passes
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Len(t, resObj.CpuActions, 1)
@@ -179,7 +179,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[3].SetRank(3)
 		s.PlayerPlay(0) // human → rank 4
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		humanPlayer := resObj.Players[0]
@@ -194,7 +194,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Len(t, resObj.Players[0].Cards, 2)
@@ -208,7 +208,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true}
 		s := domain.NewSevens(tc, players, cfg)
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.Config.TunnelEnabled)
@@ -227,7 +227,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.PlayerPlay(0) // play 6♠
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		// bit 7 + bit 6 = 128 + 64 = 192
@@ -245,7 +245,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → SPADE 6
 
-		result := tswp.Output(s)
+		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.NotNil(t, resObj.HumanAction)
@@ -253,5 +253,18 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, "JOKER", resObj.HumanAction.PlayedCard.Design)
 		assert.Equal(t, domain.CardDesignSpade, resObj.HumanAction.TargetSuit)
 		assert.Equal(t, 6, resObj.HumanAction.TargetValue)
+	})
+
+	t.Run("success Output shows error message", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, domain.ErrInvalidPlay)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Contains(t, resObj.Message, domain.ErrInvalidPlay.Error())
 	})
 }

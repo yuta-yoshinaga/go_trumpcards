@@ -36,23 +36,23 @@ func NewDaifugoInteractor(dgp presenter.DaifugoPresenter) *DaifugoInteractor {
 func (di *DaifugoInteractor) Reset() string {
 	di.dg.Reset()
 	di.runCpuTurns()
-	return di.dgp.Output(di.dg)
+	return di.dgp.Output(di.dg, nil)
 }
 
 // Play 人間プレイヤーがカードを出す (または パスする)
 // indices: 出すカードのインデックス。空の場合はパス。
 func (di *DaifugoInteractor) Play(indices []int) string {
 	if di.dg.GetGameEndFlag() {
-		return di.dgp.Output(di.dg)
+		return di.dgp.Output(di.dg, nil)
 	}
 	if !di.dg.IsHumanTurn() {
-		return di.dgp.Output(di.dg)
+		return di.dgp.Output(di.dg, nil)
 	}
-	di.dg.PlayerPlay(indices)
-	if !di.dg.GetGameEndFlag() {
+	err := di.dg.PlayerPlay(indices)
+	if err == nil && !di.dg.GetGameEndFlag() {
 		di.runCpuTurns()
 	}
-	return di.dgp.Output(di.dg)
+	return di.dgp.Output(di.dg, err)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

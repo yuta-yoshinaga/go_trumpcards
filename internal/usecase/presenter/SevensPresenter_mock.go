@@ -12,7 +12,7 @@ type MockSevensPresenter struct {
 }
 
 // Output モック
-func (_m *MockSevensPresenter) Output(s *domain.Sevens) string {
-	ret := _m.Called()
+func (_m *MockSevensPresenter) Output(s *domain.Sevens, lastErr error) string {
+	ret := _m.Called(s, lastErr)
 	return ret.Get(0).(string)
 }

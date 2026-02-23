@@ -13,7 +13,7 @@ import (
 func TestOldMaidInteractor_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
 	ompMock := new(presenter.MockOldMaidPresenter)
-	ompMock.On("Output", mock.AnythingOfType("string")).Return(mockOutput)
+	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	toi := usecase.NewOldMaidInteractor(ompMock)
 
 	t.Run("success Reset", func(t *testing.T) {

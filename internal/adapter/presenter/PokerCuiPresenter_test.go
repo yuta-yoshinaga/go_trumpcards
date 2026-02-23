@@ -1,11 +1,12 @@
 package presenter_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -33,7 +34,7 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		assert.Contains(t, output, "Pot:")
 		assert.Contains(t, output, "Player Chips:")
 		assert.Contains(t, output, "Dealer Chips:")
@@ -48,9 +49,9 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		dealer.SetChips(0)
 		tp.Reset()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		player.Reset()
 		dealer.Reset()
@@ -66,13 +67,13 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		assert.Contains(t, output, "player hand [Straight Flush]")
 		assert.Contains(t, output, "dealer hand [Full House]")
 		assert.Contains(t, output, "You are the winner.")
@@ -83,9 +84,9 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		dealer.SetChips(0)
 		tp.Reset()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		player.Reset()
 		dealer.Reset()
@@ -101,13 +102,13 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		assert.Contains(t, output, "It is your loss.")
 	})
 
@@ -116,9 +117,9 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		dealer.SetChips(0)
 		tp.Reset()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		player.Reset()
 		dealer.Reset()
@@ -134,13 +135,13 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		assert.Contains(t, output, "It is a draw.")
 	})
 
@@ -148,8 +149,8 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		tp.PlayerFold()
-		output := tpp.Output(tp)
+		_ = tp.PlayerFold()
+		output := tpp.Output(tp, nil)
 		assert.Contains(t, output, "You folded.")
 	})
 
@@ -157,10 +158,20 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		if tp.GetDealerBet() > 0 {
 			assert.True(t, strings.Contains(output, "Dealer Bet:"))
 		}
+	})
+
+	t.Run("success Output displays error message", func(t *testing.T) {
+		player.SetChips(0)
+		dealer.SetChips(0)
+		tp.Reset()
+		testErr := fmt.Errorf("%w: Bet is not allowed now.", domain.ErrWrongPhase)
+		output := tpp.Output(tp, testErr)
+		assert.Contains(t, output, "wrong game phase")
+		assert.Contains(t, output, "Bet is not allowed now.")
 	})
 
 	t.Run("success GetCardStr SPADE", func(t *testing.T) {

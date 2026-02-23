@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -101,15 +102,15 @@ func (p *Poker) collectAnte() {
 }
 
 // PlayerBet プレイヤーベット (フェーズ1,3)
-func (p *Poker) PlayerBet(amount int) bool {
+func (p *Poker) PlayerBet(amount int) error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return false
+		return fmt.Errorf("%w: Bet is not allowed now.", ErrWrongPhase)
 	}
 	if amount < PokerMinBet {
-		return false
+		return fmt.Errorf("%w: Invalid bet amount.", ErrInvalidAmount)
 	}
 	if p.player.GetChips() < amount {
-		return false
+		return fmt.Errorf("%w: Insufficient chips.", ErrInsufficientChips)
 	}
 	p.player.SubtractChips(amount)
 	p.playerBet += amount
@@ -119,20 +120,20 @@ func (p *Poker) PlayerBet(amount int) bool {
 	// フォールドした場合は終了
 	if p.folded != 0 {
 		p.phase = PokerPhaseEnd
-		return true
+		return nil
 	}
 	p.advanceAfterBetting()
-	return true
+	return nil
 }
 
 // PlayerCall プレイヤーコール (ディーラーのベットに合わせる)
-func (p *Poker) PlayerCall() bool {
+func (p *Poker) PlayerCall() error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return false
+		return fmt.Errorf("%w: Call is not allowed now.", ErrWrongPhase)
 	}
 	diff := p.dealerBet - p.playerBet
 	if diff <= 0 {
-		return false
+		return fmt.Errorf("%w: Nothing to call.", ErrInvalidPlay)
 	}
 	if p.player.GetChips() < diff {
 		// オールインの場合はあるだけ出す
@@ -142,16 +143,16 @@ func (p *Poker) PlayerCall() bool {
 	p.playerBet += diff
 	p.pot += diff
 	p.advanceAfterBetting()
-	return true
+	return nil
 }
 
 // PlayerRaise プレイヤーレイズ (ディーラーのベット以上に上乗せ)
-func (p *Poker) PlayerRaise(amount int) bool {
+func (p *Poker) PlayerRaise(amount int) error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return false
+		return fmt.Errorf("%w: Raise is not allowed now.", ErrWrongPhase)
 	}
 	if amount < PokerMinBet {
-		return false
+		return fmt.Errorf("%w: Invalid raise amount.", ErrInvalidAmount)
 	}
 	diff := p.dealerBet - p.playerBet
 	if diff < 0 {
@@ -159,7 +160,7 @@ func (p *Poker) PlayerRaise(amount int) bool {
 	}
 	// オーバーフロー防止
 	if amount > p.player.GetChips()-diff {
-		return false
+		return fmt.Errorf("%w: Insufficient chips for raise.", ErrInsufficientChips)
 	}
 	totalNeeded := diff + amount
 	p.player.SubtractChips(totalNeeded)
@@ -169,35 +170,36 @@ func (p *Poker) PlayerRaise(amount int) bool {
 	p.dealerRespondToBet()
 	if p.folded != 0 {
 		p.phase = PokerPhaseEnd
-		return true
+		return nil
 	}
 	p.advanceAfterBetting()
-	return true
+	return nil
 }
 
 // PlayerFold プレイヤーフォールド
-func (p *Poker) PlayerFold() {
+func (p *Poker) PlayerFold() error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return
+		return fmt.Errorf("%w: Fold is not allowed now.", ErrWrongPhase)
 	}
 	p.folded = 1
 	// ポットをディーラーに渡す
 	p.dealer.AddChips(p.pot)
 	p.pot = 0
 	p.phase = PokerPhaseEnd
+	return nil
 }
 
 // PlayerCheck プレイヤーチェック (ベットなしでパス)
-func (p *Poker) PlayerCheck() bool {
+func (p *Poker) PlayerCheck() error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return false
+		return fmt.Errorf("%w: Check is not allowed now.", ErrWrongPhase)
 	}
 	// 未決済のベットがある場合はチェック不可
 	if p.dealerBet > p.playerBet {
-		return false
+		return fmt.Errorf("%w: Cannot check with outstanding bet.", ErrInvalidPlay)
 	}
 	p.advanceAfterBetting()
-	return true
+	return nil
 }
 
 // advanceAfterBetting ベッティング後のフェーズ遷移
@@ -210,9 +212,9 @@ func (p *Poker) advanceAfterBetting() {
 }
 
 // PlayerExchange プレイヤーカード交換
-func (p *Poker) PlayerExchange(indices []int) {
+func (p *Poker) PlayerExchange(indices []int) error {
 	if p.phase != PokerPhaseExchange {
-		return
+		return fmt.Errorf("%w: Exchange is not allowed now.", ErrWrongPhase)
 	}
 	// 指定カードを新しいカードと交換
 	for _, idx := range indices {
@@ -229,12 +231,13 @@ func (p *Poker) PlayerExchange(indices []int) {
 	// ディーラー第2ベット
 	p.dealerSecondBet()
 	p.phase = PokerPhaseSecondBet
+	return nil
 }
 
 // PlayerStand カード交換なしでショーダウン
-func (p *Poker) PlayerStand() {
+func (p *Poker) PlayerStand() error {
 	if p.phase != PokerPhaseExchange {
-		return
+		return fmt.Errorf("%w: Stand is not allowed now.", ErrWrongPhase)
 	}
 	// ディーラーの自動カード交換
 	p.dealerExchange()
@@ -244,6 +247,7 @@ func (p *Poker) PlayerStand() {
 	// ディーラー第2ベット
 	p.dealerSecondBet()
 	p.phase = PokerPhaseSecondBet
+	return nil
 }
 
 // resolveShowdown ショーダウン: ハンド評価・ポット配分

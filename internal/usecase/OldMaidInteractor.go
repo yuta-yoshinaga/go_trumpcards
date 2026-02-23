@@ -35,23 +35,23 @@ func NewOldMaidInteractor(omp presenter.OldMaidPresenter) *OldMaidInteractor {
 func (oi *OldMaidInteractor) Reset() string {
 	oi.om.Reset()
 	oi.runCpuTurns()
-	return oi.omp.Output(oi.om)
+	return oi.omp.Output(oi.om, nil)
 }
 
 // Draw 人間プレイヤーがカードを引く
 // cardIdx: 引くカードのインデックス。-1 の場合はランダム選択。
 func (oi *OldMaidInteractor) Draw(cardIdx int) string {
 	if oi.om.GetGameEndFlag() {
-		return oi.omp.Output(oi.om)
+		return oi.omp.Output(oi.om, nil)
 	}
 	if !oi.om.IsHumanTurn() {
-		return oi.omp.Output(oi.om)
+		return oi.omp.Output(oi.om, nil)
 	}
-	oi.om.PlayerDraw(cardIdx)
-	if !oi.om.GetGameEndFlag() {
+	err := oi.om.PlayerDraw(cardIdx)
+	if err == nil && !oi.om.GetGameEndFlag() {
 		oi.runCpuTurns()
 	}
-	return oi.omp.Output(oi.om)
+	return oi.omp.Output(oi.om, err)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

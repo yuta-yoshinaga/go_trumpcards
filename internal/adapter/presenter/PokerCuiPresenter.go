@@ -18,7 +18,7 @@ func NewPokerCuiPresenter() *PokerCuiPresenter {
 }
 
 // Output ゲーム状態を出力
-func (pcp *PokerCuiPresenter) Output(p *domain.Poker) string {
+func (pcp *PokerCuiPresenter) Output(p *domain.Poker, lastErr error) string {
 	player := p.GetPlayer()
 	dealer := p.GetDealer()
 	var b strings.Builder
@@ -62,6 +62,11 @@ func (pcp *PokerCuiPresenter) Output(p *domain.Poker) string {
 		b.WriteString("\n")
 	}
 	b.WriteString("----------\n")
+
+	// エラーメッセージ
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
+	}
 
 	if p.GetPhase() == domain.PokerPhaseEnd {
 		if p.GetFolded() == 1 {

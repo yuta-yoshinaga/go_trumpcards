@@ -34,47 +34,47 @@ func NewBlackJackInteractor(bj *domain.BlackJack, bjp presenter.BlackJackPresent
 // Reset ゲーム初期化
 func (bi *BlackJackInteractor) Reset() string {
 	bi.bj.Reset()
-	return bi.bjp.Output(bi.bj)
+	return bi.bjp.Output(bi.bj, nil)
 }
 
 // Hit ヒット
 func (bi *BlackJackInteractor) Hit() string {
-	bi.bj.PlayerHit()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerHit()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // Stand スタンド
 func (bi *BlackJackInteractor) Stand() string {
-	bi.bj.PlayerStand()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerStand()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // Bet ベット
 func (bi *BlackJackInteractor) Bet(amount int) string {
-	bi.bj.PlayerBet(amount)
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerBet(amount)
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // DoubleDown ダブルダウン
 func (bi *BlackJackInteractor) DoubleDown() string {
-	bi.bj.PlayerDoubleDown()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerDoubleDown()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // Split スプリット
 func (bi *BlackJackInteractor) Split() string {
-	bi.bj.PlayerSplit()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerSplit()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // Insurance インシュランス
 func (bi *BlackJackInteractor) Insurance() string {
-	bi.bj.PlayerInsurance()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerInsurance()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // DeclineInsurance インシュランス辞退
 func (bi *BlackJackInteractor) DeclineInsurance() string {
-	bi.bj.PlayerDeclineInsurance()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerDeclineInsurance()
+	return bi.bjp.Output(bi.bj, err)
 }

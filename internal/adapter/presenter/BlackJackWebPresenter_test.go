@@ -2,6 +2,7 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -17,7 +18,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 	t.Run("success Output bet phase (no cards)", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -45,7 +46,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -74,8 +75,8 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		bj.PlayerStand()
-		output := tbp.Output(bj)
+		_ = bj.PlayerStand()
+		output := tbp.Output(bj, nil)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -99,8 +100,8 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		bj.PlayerStand()
-		output := tbp.Output(bj)
+		_ = bj.PlayerStand()
+		output := tbp.Output(bj, nil)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -122,8 +123,8 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		bj.PlayerStand()
-		output := tbp.Output(bj)
+		_ = bj.PlayerStand()
+		output := tbp.Output(bj, nil)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -147,7 +148,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -172,8 +173,8 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
-		bj.PlayerInsurance() // cost = 50
-		output := tbp.Output(bj)
+		_ = bj.PlayerInsurance() // cost = 50
+		output := tbp.Output(bj, nil)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -194,23 +195,32 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		output := tbp.Output(bj)
+		output := tbp.Output(bj, nil)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
 		assert.True(t, result.Hands[0].CanSplit)
 		assert.False(t, result.Hands[0].IsBlackJack)
 	})
-	t.Run("success Output error message on failed bet", func(t *testing.T) {
+	t.Run("success Output error message via lastErr", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		bj.PlayerBet(5) // invalid amount, sets lastError
-		output := tbp.Output(bj)
+		testErr := errors.New("Invalid bet amount.")
+		output := tbp.Output(bj, testErr)
 		var result controller.BlackJackWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
 		assert.Equal(t, domain.BJPhaseBet, result.Phase)
 		assert.Equal(t, "Invalid bet amount.", result.Message)
+	})
+	t.Run("success Output nil error has no error message in bet phase", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "", result.Message)
 	})
 	t.Run("success GetCardObj SPADE", func(t *testing.T) {
 		card := tbp.GetCardObj(domain.NewCard(domain.CardDesignSpade, 1, false))
