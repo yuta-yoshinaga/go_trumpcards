@@ -3,11 +3,7 @@ import { blackjackApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
-
-const PHASE_BET = 1;
-const PHASE_INSURANCE = 3;
-const PHASE_ACTION = 4;
-const PHASE_END = 5;
+import { BjPhase } from '../types/phases';
 
 export function BlackJackPage() {
   const [state, setState] = useState<BlackJackResponse | null>(null);
@@ -34,7 +30,7 @@ export function BlackJackPage() {
     exec('reset');
   }, [exec]);
 
-  const phase = state?.phase ?? PHASE_BET;
+  const phase = state?.phase ?? BjPhase.BET;
   const hands = state?.hands ?? [];
   const currentHandIdx = state?.currentHandIdx ?? 0;
   const currentHand = hands[currentHandIdx];
@@ -52,7 +48,7 @@ export function BlackJackPage() {
 
       {/* Scrollable: dealer area */}
       <div className="flex-1 overflow-y-auto p-4">
-        {state && phase !== PHASE_BET && (
+        {state && phase !== BjPhase.BET && (
           <div>
             <h3 className="text-white">ディーラー手札</h3>
             <h3 className="text-white">スコア {state.dealer.score ? state.dealer.score : ''}</h3>
@@ -72,13 +68,13 @@ export function BlackJackPage() {
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
         {/* Player hands */}
-        {state && phase !== PHASE_BET && hands.length > 0 && (
+        {state && phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
             {hands.map((hand, handIndex) => (
               <div key={`hand-${hand.score}-${hand.bet}-${hand.cards.length}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
                   {hands.length > 1 ? `ハンド ${handIndex + 1}` : 'プレイヤー手札'}
-                  {handIndex === currentHandIdx && phase === PHASE_ACTION && ' (*)'}
+                  {handIndex === currentHandIdx && phase === BjPhase.ACTION && ' (*)'}
                   {hand.busted && ' [BUST]'}
                   {hand.doubled && ' [DD]'}
                   {hand.isBlackJack && ' [BJ]'}
@@ -110,7 +106,7 @@ export function BlackJackPage() {
 
         {/* Phase-based buttons */}
         <div className="text-center">
-          {phase === PHASE_BET && (
+          {phase === BjPhase.BET && (
             <>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <label htmlFor="bj-bet-amount" className="text-white text-sm">
@@ -132,7 +128,7 @@ export function BlackJackPage() {
             </>
           )}
 
-          {phase === PHASE_INSURANCE && (
+          {phase === BjPhase.INSURANCE && (
             <>
               <button type="button" className={btnWarning} onClick={() => exec('insurance')}>
                 インシュランス
@@ -143,7 +139,7 @@ export function BlackJackPage() {
             </>
           )}
 
-          {phase === PHASE_ACTION && (
+          {phase === BjPhase.ACTION && (
             <>
               <button type="button" className={btnPrimary} onClick={() => exec('hit')}>
                 ヒット
@@ -164,7 +160,7 @@ export function BlackJackPage() {
             </>
           )}
 
-          {phase === PHASE_END && (
+          {phase === BjPhase.END && (
             <button type="button" className={btnPrimary} onClick={() => exec('reset')}>
               リセット
             </button>
