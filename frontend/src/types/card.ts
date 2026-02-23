@@ -5,14 +5,33 @@ export interface Card {
   value: number;
 }
 
+export interface BlackJackHand {
+  score: number;
+  cards: Card[];
+  bet: number;
+  stood: boolean;
+  doubled: boolean;
+  busted: boolean;
+  isBlackJack: boolean;
+  canSplit: boolean;
+}
+
 export interface BlackJackPlayer {
   score: number;
   cards: Card[];
+  chips: number;
 }
+
+export type BlackJackPhase = 1 | 2 | 3 | 4 | 5;
 
 export interface BlackJackResponse {
   dealer: BlackJackPlayer;
   player: BlackJackPlayer;
+  hands?: BlackJackHand[];
+  currentHandIdx: number;
+  phase: BlackJackPhase;
+  insuranceBet: number;
+  insuranceAvailable: boolean;
   message: string;
 }
 

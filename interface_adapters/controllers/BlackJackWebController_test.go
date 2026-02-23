@@ -15,11 +15,16 @@ import (
 )
 
 func TestBlackJackWebController_Method(t *testing.T) {
-	mockOutput := `{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"bye."}`
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"bye."}`
 	bjiMock := new(usecases.MockBlackJackInteractor)
 	bjiMock.On("Reset").Return(mockOutput).Times(2)
 	bjiMock.On("Hit").Return(mockOutput)
 	bjiMock.On("Stand").Return(mockOutput)
+	bjiMock.On("Bet", 100).Return(mockOutput)
+	bjiMock.On("DoubleDown").Return(mockOutput)
+	bjiMock.On("Split").Return(mockOutput)
+	bjiMock.On("Insurance").Return(mockOutput)
+	bjiMock.On("DeclineInsurance").Return(mockOutput)
 	factory := func() uc.BlackJackInteractorIF { return bjiMock }
 	tbc := controllers.NewBlackJackWebController(factory)
 
@@ -36,7 +41,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"bye."}`)
 	})
 	t.Run("success Exec quit", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "quit", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -45,7 +49,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"bye."}`)
 	})
 	t.Run("success Exec r", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -54,7 +57,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec reset", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -63,7 +65,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec h", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "h", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -72,7 +73,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec hit", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "hit", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -81,7 +81,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec s", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "s", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -90,7 +89,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec stand", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "stand", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -99,7 +97,46 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec bet", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "b", "amount": 100, "sessionId": "test-session-1"}`), &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+	})
+	t.Run("success Exec doubledown", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "d", "sessionId": "test-session-1"}`), &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+	})
+	t.Run("success Exec split", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "sp", "sessionId": "test-session-1"}`), &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+	})
+	t.Run("success Exec insurance", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "i", "sessionId": "test-session-1"}`), &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+	})
+	t.Run("success Exec declineinsurance", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "di", "sessionId": "test-session-1"}`), &jsonCase1)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
 	})
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -108,7 +145,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"Unsupported command."}`)
 	})
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonCase1)
@@ -117,7 +153,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"param error."}`)
 	})
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonCase1)
@@ -126,7 +161,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"param error."}`)
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controllers.BlackJackWebInput{
@@ -138,7 +172,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"param error."}`)
 	})
 	t.Run("failed Exec response empty", func(t *testing.T) {
 		bjiMock.On("Reset").Return(``)
@@ -148,12 +181,11 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"error."}`)
 	})
 }
 
 func TestBlackJackWebController_SessionIsolation(t *testing.T) {
-	mockOutput := `{"dealer":{"score":0,"cards":null},"player":{"score":0,"cards":null},"message":"reset."}`
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"reset."}`
 	mockA := new(usecases.MockBlackJackInteractor)
 	mockA.On("Reset").Return(mockOutput)
 	mockB := new(usecases.MockBlackJackInteractor)

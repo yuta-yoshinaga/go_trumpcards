@@ -2,7 +2,8 @@ package entities
 
 // BlackJackPlayer ブラックジャックプレイヤークラス
 type BlackJackPlayer struct {
-	Player // 親クラス
+	Player       // 親クラス
+	chips  int   // チップ
 }
 
 // NewBlackJackPlayer コンストラクタ
@@ -11,6 +12,7 @@ func NewBlackJackPlayer() *BlackJackPlayer {
 		Player: Player{
 			cards: make([]*Card, 0),
 		},
+		chips: 0,
 	}
 }
 
@@ -50,4 +52,28 @@ func (bp *BlackJackPlayer) GetScore() int {
 		}
 	}
 	return score
+}
+
+// GetChips チップ取得
+func (bp *BlackJackPlayer) GetChips() int {
+	return bp.chips
+}
+
+// SetChips チップ設定
+func (bp *BlackJackPlayer) SetChips(chips int) {
+	bp.chips = chips
+}
+
+// AddChips チップ追加
+func (bp *BlackJackPlayer) AddChips(amount int) {
+	bp.chips += amount
+}
+
+// SubtractChips チップ減算 (不足時はfalseを返す)
+func (bp *BlackJackPlayer) SubtractChips(amount int) bool {
+	if bp.chips < amount {
+		return false
+	}
+	bp.chips -= amount
+	return true
 }

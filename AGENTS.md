@@ -6,7 +6,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 This repository contains a Go implementation of trump card game algorithms. The project is structured following the principles of Clean Architecture. The following games are implemented:
 
-- **BlackJack**: CLI and Web GUI
+- **BlackJack**: CLI and Web GUI (chip/betting system, split, double down, insurance)
 - **Poker (5-card Draw)**: CLI and Web GUI (chip/betting system)
 - **Old Maid (Babanuki)**: CLI and Web GUI
 - **Daifugo**: CLI and Web GUI
@@ -98,7 +98,7 @@ public/                        # Built frontend assets served by Go web server
 
 ### Games implemented
 
-- **BlackJack**: Entities in `entities/BlackJack.go`, `entities/BlackJackPlayer.go`; interactor in `usecases/BlackJackInteractor.go`
+- **BlackJack**: Entities in `entities/BlackJack.go`, `entities/BlackJackPlayer.go`, `entities/BlackJackHand.go`; interactor in `usecases/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, and natural BJ 3:2 payout
 - **Poker (5-card Draw)**: Entities in `entities/Poker.go`, `entities/PokerPlayer.go`; interactor in `usecases/PokerInteractor.go`. Features chip/betting system with ante, bet/call/raise/check/fold, CPU betting AI, and improved CPU exchange strategy (flush/straight draw awareness)
 - **Old Maid (Babanuki)**: Entities in `entities/OldMaid.go`, `entities/OldMaidPlayer.go`; interactor in `usecases/OldMaidInteractor.go`
 - **Daifugo**: Entities in `entities/Daifugo.go`, `entities/DaifugoPlayer.go`; interactor in `usecases/DaifugoInteractor.go`

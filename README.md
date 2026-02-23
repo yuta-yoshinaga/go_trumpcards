@@ -9,7 +9,7 @@
 
 以下のゲームを実装しています：
 
-- **ブラックジャック (BlackJack)**: CLI および Web GUIで遊べます
+- **ブラックジャック (BlackJack)**: CLI および Web GUIで遊べます（チップ/ベッティングシステム、スプリット、ダブルダウン、インシュランス付き）
 - **ポーカー (5-card Draw Poker)**: CLI および Web GUIで遊べます（チップ/ベッティングシステム付き）
 - **ババ抜き (Old Maid)**: CLI および Web GUIで遊べます
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます

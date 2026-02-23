@@ -12,6 +12,7 @@ import (
 // BlackJackWebInput ブラックジャックWebインプット
 type BlackJackWebInput struct {
 	Command   string `json:"command"`
+	Amount    int    `json:"amount,omitempty"`
 	SessionId string `json:"sessionId"`
 }
 
@@ -21,17 +22,35 @@ type BlackJackWebOutputCard struct {
 	Value  int    `json:"value"`
 }
 
+// BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
+type BlackJackWebOutputHand struct {
+	Score       int                       `json:"score"`
+	Cards       []*BlackJackWebOutputCard `json:"cards"`
+	Bet         int                       `json:"bet"`
+	Stood       bool                      `json:"stood"`
+	Doubled     bool                      `json:"doubled"`
+	Busted      bool                      `json:"busted"`
+	IsBlackJack bool                      `json:"isBlackJack"`
+	CanSplit    bool                      `json:"canSplit"`
+}
+
 // BlackJackWebOutputPlayer ブラックジャックWebアウトプットプレイヤー
 type BlackJackWebOutputPlayer struct {
 	Score int                       `json:"score"`
 	Cards []*BlackJackWebOutputCard `json:"cards"`
+	Chips int                       `json:"chips"`
 }
 
 // BlackJackWebOutput ブラックジャックWebアウトプット
 type BlackJackWebOutput struct {
-	Dealer  *BlackJackWebOutputPlayer `json:"dealer"`
-	Player  *BlackJackWebOutputPlayer `json:"player"`
-	Message string                    `json:"message"`
+	Dealer             *BlackJackWebOutputPlayer `json:"dealer"`
+	Player             *BlackJackWebOutputPlayer `json:"player"`
+	Hands              []*BlackJackWebOutputHand `json:"hands,omitempty"`
+	CurrentHandIdx     int                       `json:"currentHandIdx"`
+	Phase              int                       `json:"phase"`
+	InsuranceBet       int                       `json:"insuranceBet"`
+	InsuranceAvailable bool                      `json:"insuranceAvailable"`
+	Message            string                    `json:"message"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -72,6 +91,16 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 				responseStr = bji.Hit()
 			case "s", "stand":
 				responseStr = bji.Stand()
+			case "b", "bet":
+				responseStr = bji.Bet(param.Amount)
+			case "d", "doubledown":
+				responseStr = bji.DoubleDown()
+			case "sp", "split":
+				responseStr = bji.Split()
+			case "i", "insurance":
+				responseStr = bji.Insurance()
+			case "di", "declineinsurance":
+				responseStr = bji.DeclineInsurance()
 			default:
 				responseStr = `{"message":"Unsupported command."}`
 			}

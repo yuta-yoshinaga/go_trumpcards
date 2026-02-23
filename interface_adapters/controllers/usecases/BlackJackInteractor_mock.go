@@ -24,3 +24,33 @@ func (_m *MockBlackJackInteractor) Stand() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Bet モック
+func (_m *MockBlackJackInteractor) Bet(amount int) string {
+	ret := _m.Called(amount)
+	return ret.Get(0).(string)
+}
+
+// DoubleDown モック
+func (_m *MockBlackJackInteractor) DoubleDown() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// Split モック
+func (_m *MockBlackJackInteractor) Split() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// Insurance モック
+func (_m *MockBlackJackInteractor) Insurance() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// DeclineInsurance モック
+func (_m *MockBlackJackInteractor) DeclineInsurance() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
