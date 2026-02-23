@@ -99,7 +99,10 @@ func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo) string {
 		resObj.Message = dwp.buildResultMessage(dg)
 	}
 
-	res, _ := json.Marshal(resObj)
+	res, err := json.Marshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 

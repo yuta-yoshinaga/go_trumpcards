@@ -87,7 +87,10 @@ func (swp *SevensWebPresenter) Output(s *domain.Sevens) string {
 		resObj.Message = swp.buildResultMessage(s)
 	}
 
-	res, _ := json.Marshal(resObj)
+	res, err := json.Marshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 

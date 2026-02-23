@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -94,18 +95,24 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" || param.SessionId == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(dwc.newDefaultOutput("param error."))
+		if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	if param.Command == "q" || param.Command == "quit" {
 		w.WriteHeader(http.StatusOK)
-		_ = w.WriteJson(dwc.newDefaultOutput("bye."))
+		if err := w.WriteJson(dwc.newDefaultOutput("bye.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	dgi, mu, ok := dwc.store.GetWithLock(param.SessionId, dwc.factory)
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(dwc.newDefaultOutput("param error."))
+		if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	mu.Lock()
@@ -122,7 +129,9 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		dwc.writePresenterResponse(w, dgi.Play(indices), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
-		_ = w.WriteJson(dwc.newDefaultOutput("Unsupported command."))
+		if err := w.WriteJson(dwc.newDefaultOutput("Unsupported command.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 	}
 }
 

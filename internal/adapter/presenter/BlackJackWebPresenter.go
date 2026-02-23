@@ -75,7 +75,10 @@ func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack) string {
 			resObj.Message = "It is your loss."
 		}
 	}
-	res, _ := json.Marshal(resObj)
+	res, err := json.Marshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 
