@@ -52,10 +52,10 @@ func NewBlackJack(trumpCards *TrumpCards, player *BlackJackPlayer, dealer *Black
 	trumpCards.Shuffle()
 	return &BlackJack{
 		trumpCards:  trumpCards,
-		player:     player,
-		dealer:     dealer,
+		player:      player,
+		dealer:      dealer,
 		gameEndFlag: false,
-		phase:      BJPhaseBet,
+		phase:       BJPhaseBet,
 		playerHands: []*BlackJackHand{NewBlackJackHand()},
 	}
 }

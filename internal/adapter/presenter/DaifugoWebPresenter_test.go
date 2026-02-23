@@ -5,9 +5,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -173,9 +173,9 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 		_ = dg.PlayerPlay([]int{0}) // play 2 → human keeps [3], not finished
-		dg.CpuPlay()            // CPU 1 passes
-		dg.CpuPlay()            // CPU 2 passes
-		dg.CpuPlay()            // CPU 3 passes → table clears
+		dg.CpuPlay()                // CPU 1 passes
+		dg.CpuPlay()                // CPU 2 passes
+		dg.CpuPlay()                // CPU 3 passes → table clears
 
 		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput

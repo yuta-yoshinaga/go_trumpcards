@@ -25,10 +25,10 @@ type SevensCpuAction struct {
 type Sevens struct {
 	trumpCards  *TrumpCards
 	players     []*SevensPlayer
-	currentTurn int              // 現在の手番プレイヤーインデックス
-	tablePlaced [5]uint16        // tablePlaced[suit] = ビットマスク (bit i = 値iが配置済み)
-	config      SevensConfig     // ゲーム設定
-	gameEndFlag bool             // ゲーム終了フラグ
+	currentTurn int                // 現在の手番プレイヤーインデックス
+	tablePlaced [5]uint16          // tablePlaced[suit] = ビットマスク (bit i = 値iが配置済み)
+	config      SevensConfig       // ゲーム設定
+	gameEndFlag bool               // ゲーム終了フラグ
 	cpuActions  []*SevensCpuAction // 人間ターン後のCPUの行動履歴
 	humanAction *SevensCpuAction   // 人間の最後の行動
 }

@@ -39,7 +39,7 @@ const (
 
 // Poker ポーカークラス (5枚ドローポーカー)
 type Poker struct {
-	trumpCards *TrumpCards   // トランプカード
+	trumpCards *TrumpCards  // トランプカード
 	player     *PokerPlayer // プレイヤー
 	dealer     *PokerPlayer // ディーラー(CPU)
 	phase      int          // ゲームフェーズ

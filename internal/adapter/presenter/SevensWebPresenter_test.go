@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -157,7 +157,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()    // CPU 1 passes
+		s.CpuPlay()     // CPU 1 passes
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput

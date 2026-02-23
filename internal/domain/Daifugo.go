@@ -35,9 +35,9 @@ const DaifugoJokerStrength = 16
 
 // ランク定数
 const (
-	DaifugoRankDaifugo  = 1 // 大富豪
-	DaifugoRankFugo     = 2 // 富豪
-	DaifugoRankHeimin   = 3 // 平民
+	DaifugoRankDaifugo   = 1 // 大富豪
+	DaifugoRankFugo      = 2 // 富豪
+	DaifugoRankHeimin    = 3 // 平民
 	DaifugoRankDaihinmin = 4 // 大貧民
 )
 

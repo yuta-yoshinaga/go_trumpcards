@@ -57,21 +57,21 @@ type DaifugoWebOutputConfig struct {
 
 // DaifugoWebOutput 大富豪Webアウトプット
 type DaifugoWebOutput struct {
-	Players           []*DaifugoWebOutputPlayer        `json:"players"`
-	CurrentTurn       int                              `json:"currentTurn"`
-	TableCards        []*DaifugoWebOutputCard          `json:"tableCards"`
-	LastPlayPlayerIdx int                              `json:"lastPlayPlayerIdx"`
-	GameEndFlag       bool                             `json:"gameEndFlag"`
-	RevolutionActive  bool                             `json:"revolutionActive"`
-	ElevenBackActive  bool                             `json:"elevenBackActive"`
-	SuitLocked        bool                             `json:"suitLocked"`
-	LockedSuit        string                           `json:"lockedSuit"`
-	TableIsSequence   bool                             `json:"tableIsSequence"`
-	Config            DaifugoWebOutputConfig           `json:"config"`
+	Players           []*DaifugoWebOutputPlayer         `json:"players"`
+	CurrentTurn       int                               `json:"currentTurn"`
+	TableCards        []*DaifugoWebOutputCard           `json:"tableCards"`
+	LastPlayPlayerIdx int                               `json:"lastPlayPlayerIdx"`
+	GameEndFlag       bool                              `json:"gameEndFlag"`
+	RevolutionActive  bool                              `json:"revolutionActive"`
+	ElevenBackActive  bool                              `json:"elevenBackActive"`
+	SuitLocked        bool                              `json:"suitLocked"`
+	LockedSuit        string                            `json:"lockedSuit"`
+	TableIsSequence   bool                              `json:"tableIsSequence"`
+	Config            DaifugoWebOutputConfig            `json:"config"`
 	ExchangeActions   []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
-	CpuActions        []*DaifugoWebOutputAction        `json:"cpuActions"`
-	HumanAction       *DaifugoWebOutputAction          `json:"humanAction"`
-	Message           string                           `json:"message"`
+	CpuActions        []*DaifugoWebOutputAction         `json:"cpuActions"`
+	HumanAction       *DaifugoWebOutputAction           `json:"humanAction"`
+	Message           string                            `json:"message"`
 }
 
 // DaifugoWebController 大富豪Webコントローラークラス
