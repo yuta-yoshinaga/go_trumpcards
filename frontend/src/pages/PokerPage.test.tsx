@@ -12,9 +12,11 @@ const mockExec = vi.mocked(pokerApi.exec);
 
 const phase0State: PokerResponse = {
   phase: 0,
-  player: { cards: [], handName: '' },
-  dealer: { cards: [], handName: '' },
+  player: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+  dealer: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
   message: 'リセットしました',
+  pot: 0,
+  ante: 10,
 };
 
 const phase1State: PokerResponse = {
@@ -27,10 +29,36 @@ const phase1State: PokerResponse = {
       { design: 'CLOVER', value: 3 },
       { design: 'SPADE', value: 7 },
     ],
+    handRank: 0,
     handName: '',
+    chips: 990,
+    bet: 0,
   },
-  dealer: { cards: [], handName: '' },
+  dealer: { cards: [], handRank: 0, handName: '', chips: 990, bet: 0 },
   message: '',
+  pot: 20,
+  ante: 10,
+};
+
+const phase1StateWithDealerBet: PokerResponse = {
+  phase: 1,
+  player: {
+    cards: [
+      { design: 'SPADE', value: 1 },
+      { design: 'HEART', value: 5 },
+      { design: 'DIAMOND', value: 10 },
+      { design: 'CLOVER', value: 3 },
+      { design: 'SPADE', value: 7 },
+    ],
+    handRank: 0,
+    handName: '',
+    chips: 990,
+    bet: 0,
+  },
+  dealer: { cards: [], handRank: 0, handName: '', chips: 980, bet: 10 },
+  message: '',
+  pot: 30,
+  ante: 10,
 };
 
 const phase2State: PokerResponse = {
@@ -43,7 +71,31 @@ const phase2State: PokerResponse = {
       { design: 'CLOVER', value: 3 },
       { design: 'SPADE', value: 7 },
     ],
+    handRank: 0,
+    handName: '',
+    chips: 980,
+    bet: 0,
+  },
+  dealer: { cards: [], handRank: 0, handName: '', chips: 980, bet: 0 },
+  message: '',
+  pot: 40,
+  ante: 10,
+};
+
+const phase4State: PokerResponse = {
+  phase: 4,
+  player: {
+    cards: [
+      { design: 'SPADE', value: 1 },
+      { design: 'HEART', value: 5 },
+      { design: 'DIAMOND', value: 10 },
+      { design: 'CLOVER', value: 3 },
+      { design: 'SPADE', value: 7 },
+    ],
+    handRank: 0,
     handName: 'High Card',
+    chips: 960,
+    bet: 0,
   },
   dealer: {
     cards: [
@@ -53,9 +105,14 @@ const phase2State: PokerResponse = {
       { design: 'SPADE', value: 8 },
       { design: 'HEART', value: 10 },
     ],
+    handRank: 1,
     handName: 'Pair',
+    chips: 1040,
+    bet: 0,
   },
   message: 'あなたの負け',
+  pot: 0,
+  ante: 10,
 };
 
 beforeEach(() => {
@@ -65,7 +122,7 @@ beforeEach(() => {
 describe('PokerPage', () => {
   it('calls reset command on mount', async () => {
     render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
   });
 
   it('renders dealer and player section labels', async () => {
@@ -81,96 +138,162 @@ describe('PokerPage', () => {
     expect(cardBacks.length).toBeGreaterThanOrEqual(5);
   });
 
-  it('exchange button is disabled in phase 0', async () => {
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText(/ディーラー手札/)).toBeInTheDocument());
-    expect(screen.getByText('交換')).toBeDisabled();
-  });
-
-  it('stand button is disabled in phase 0', async () => {
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText(/ディーラー手札/)).toBeInTheDocument());
-    expect(screen.getByText('スタンド')).toBeDisabled();
-  });
-
-  it('exchange button is enabled in phase 1', async () => {
+  it('shows pot and chip info', async () => {
     mockExec.mockResolvedValue(phase1State);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    expect(screen.getByText(/プレイヤー チップ:/)).toBeInTheDocument();
+    expect(screen.getByText(/ディーラー チップ:/)).toBeInTheDocument();
   });
 
-  it('stand button is enabled in phase 1', async () => {
+  it('shows betting buttons in phase 1 without dealer bet', async () => {
     mockExec.mockResolvedValue(phase1State);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText('スタンド')).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
-  it('shows player hand name in phase 2', async () => {
+  it('shows call/raise buttons in phase 1 with dealer bet', async () => {
+    mockExec.mockResolvedValue(phase1StateWithDealerBet);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+  });
+
+  it('shows exchange and stand buttons in phase 2', async () => {
     mockExec.mockResolvedValue(phase2State);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument();
+  });
+
+  it('shows player hand name in phase 4', async () => {
+    mockExec.mockResolvedValue(phase4State);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText('High Card')).toBeInTheDocument());
   });
 
-  it('shows dealer hand name in phase 2', async () => {
-    mockExec.mockResolvedValue(phase2State);
+  it('shows dealer hand name in phase 4', async () => {
+    mockExec.mockResolvedValue(phase4State);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText('Pair')).toBeInTheDocument());
   });
 
-  it('shows dealer cards (not card backs) in phase 2', async () => {
-    mockExec.mockResolvedValue(phase2State);
+  it('shows dealer cards (not card backs) in phase 4', async () => {
+    mockExec.mockResolvedValue(phase4State);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText('High Card')).toBeInTheDocument());
-    // In phase 2, dealer cards are shown as real cards not card backs
     const cardBacks = screen.queryAllByAltText('card back');
     expect(cardBacks).toHaveLength(0);
   });
 
   it('shows result message', async () => {
-    mockExec.mockResolvedValue(phase2State);
+    mockExec.mockResolvedValue(phase4State);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText('あなたの負け')).toBeInTheDocument());
   });
 
   it('calls exchange with selected indices when exchange button clicked', async () => {
-    mockExec.mockResolvedValue(phase1State);
+    mockExec.mockResolvedValue(phase2State);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
 
-    // Click first two player card images to select them
     const playerCardImgs = screen.getAllByAltText(/SPADE 1|HEART 5/);
     fireEvent.click(playerCardImgs[0]);
     fireEvent.click(playerCardImgs[1]);
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue({ ...phase1State, phase: 2 });
+    mockExec.mockResolvedValue({ ...phase2State, phase: 3 });
     fireEvent.click(screen.getByRole('button', { name: '交換' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', expect.arrayContaining([0, 1])));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', expect.arrayContaining([0, 1]), undefined));
   });
 
-  it('calls stand command when stand button is clicked in phase 1', async () => {
-    mockExec.mockResolvedValue(phase1State);
+  it('calls stand command when stand button is clicked in phase 2', async () => {
+    mockExec.mockResolvedValue(phase2State);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText('スタンド')).not.toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(phase2State);
-    fireEvent.click(screen.getByText('スタンド'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand', undefined));
+    mockExec.mockResolvedValue(phase4State);
+    fireEvent.click(screen.getByRole('button', { name: 'スタンド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand', undefined, undefined));
   });
 
   it('calls reset command when reset button is clicked', async () => {
     render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
     mockExec.mockClear();
     mockExec.mockResolvedValue(phase0State);
     fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
   });
 
-  it('shows instruction text in phase 1', async () => {
-    mockExec.mockResolvedValue(phase1State);
+  it('shows instruction text in phase 2', async () => {
+    mockExec.mockResolvedValue(phase2State);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/交換したいカードをクリックして選択/)).toBeInTheDocument());
+  });
+
+  it('calls bet command with amount', async () => {
+    mockExec.mockResolvedValue(phase1State);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(phase2State);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10));
+  });
+
+  it('calls check command', async () => {
+    mockExec.mockResolvedValue(phase1State);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(phase2State);
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined));
+  });
+
+  it('calls fold command', async () => {
+    mockExec.mockResolvedValue(phase1State);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(phase4State);
+    fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined));
+  });
+
+  it('calls call command when dealer has bet', async () => {
+    mockExec.mockResolvedValue(phase1StateWithDealerBet);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(phase2State);
+    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined));
+  });
+
+  it('calls raise command with amount when dealer has bet', async () => {
+    mockExec.mockResolvedValue(phase1StateWithDealerBet);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(phase2State);
+    fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, 10));
+  });
+
+  it('shows dealer bet info when dealer has bet', async () => {
+    mockExec.mockResolvedValue(phase1StateWithDealerBet);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/ディーラー ベット:/)).toBeInTheDocument());
   });
 });

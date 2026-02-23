@@ -20,6 +20,8 @@ func NewPokerWebPresenter() *PokerWebPresenter {
 func (pwp *PokerWebPresenter) Output(p *entities.Poker) string {
 	resObj := new(controllers.PokerWebOutput)
 	resObj.Phase = p.GetPhase()
+	resObj.Pot = p.GetPot()
+	resObj.Ante = p.GetAnte()
 
 	// player
 	player := p.GetPlayer()
@@ -27,6 +29,8 @@ func (pwp *PokerWebPresenter) Output(p *entities.Poker) string {
 	resObj.Player.Cards = make([]*controllers.PokerWebOutputCard, 0)
 	resObj.Player.HandRank = player.GetHandRank()
 	resObj.Player.HandName = player.GetHandName()
+	resObj.Player.Chips = player.GetChips()
+	resObj.Player.Bet = p.GetPlayerBet()
 	for i := 0; i < player.GetCardsSize(); i++ {
 		resObj.Player.Cards = append(resObj.Player.Cards, pwp.GetCardObj(player.GetCard(i)))
 	}
@@ -35,19 +39,27 @@ func (pwp *PokerWebPresenter) Output(p *entities.Poker) string {
 	dealer := p.GetDealer()
 	resObj.Dealer = new(controllers.PokerWebOutputPlayer)
 	resObj.Dealer.Cards = make([]*controllers.PokerWebOutputCard, 0)
+	resObj.Dealer.Chips = dealer.GetChips()
+	resObj.Dealer.Bet = p.GetDealerBet()
 	if p.GetPhase() == entities.PokerPhaseEnd {
 		resObj.Dealer.HandRank = dealer.GetHandRank()
 		resObj.Dealer.HandName = dealer.GetHandName()
 		for i := 0; i < dealer.GetCardsSize(); i++ {
 			resObj.Dealer.Cards = append(resObj.Dealer.Cards, pwp.GetCardObj(dealer.GetCard(i)))
 		}
-		switch p.GameJudgment() {
-		case 0:
-			resObj.Message = "It is a draw."
-		case 1:
-			resObj.Message = "You are the winner."
-		default:
-			resObj.Message = "It is your loss."
+		if p.GetFolded() == 1 {
+			resObj.Message = "You folded."
+		} else if p.GetFolded() == 2 {
+			resObj.Message = "Dealer folded. You win!"
+		} else {
+			switch p.GameJudgment() {
+			case 0:
+				resObj.Message = "It is a draw."
+			case 1:
+				resObj.Message = "You are the winner."
+			default:
+				resObj.Message = "It is your loss."
+			}
 		}
 	}
 

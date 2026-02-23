@@ -5,7 +5,9 @@ import type { PokerResponse } from '../types/card';
 
 const PHASE_INIT = 0;
 const PHASE_DEAL = 1;
-const PHASE_END = 2;
+const PHASE_EXCHANGE = 2;
+const PHASE_SECOND_BET = 3;
+const PHASE_END = 4;
 
 const btnPrimary =
   'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
@@ -13,6 +15,8 @@ const btnWarning =
   'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
 const btnSuccess =
   'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
+const btnDanger =
+  'px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -26,30 +30,61 @@ const cardWrapBase: React.CSSProperties = {
 export function PokerPage() {
   const [state, setState] = useState<PokerResponse | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
+  const [betAmount, setBetAmount] = useState(10);
 
-  const exec = useCallback(async (command: 'reset' | 'exchange' | 'stand', indices?: number[]) => {
-    try {
-      const res = await pokerApi.exec(command, indices);
-      setState(res);
-      setSelected([]);
-    } catch {
-      console.error('poker request failed');
-    }
-  }, []);
+  const exec = useCallback(
+    async (
+      command: 'reset' | 'exchange' | 'stand' | 'bet' | 'call' | 'raise' | 'fold' | 'check',
+      indices?: number[],
+      amount?: number,
+    ) => {
+      try {
+        const res = await pokerApi.exec(command, indices, amount);
+        setState(res);
+        setSelected([]);
+      } catch {
+        console.error('poker request failed');
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     exec('reset');
   }, [exec]);
 
   const phase = state?.phase ?? PHASE_INIT;
+  const isBettingPhase = phase === PHASE_DEAL || phase === PHASE_SECOND_BET;
+  const isExchangePhase = phase === PHASE_EXCHANGE;
+  const dealerBet = state?.dealer?.bet ?? 0;
+  const playerBet = state?.player?.bet ?? 0;
+  const hasOutstandingBet = dealerBet > playerBet;
 
   const toggleSelect = (idx: number) => {
-    if (phase !== PHASE_DEAL) return;
+    if (!isExchangePhase) return;
     setSelected((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
   };
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]">
+      {/* Chip/Pot info bar */}
+      <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
+        <span>
+          ポット: <strong>{state?.pot ?? 0}</strong>
+        </span>
+        <span>
+          プレイヤー チップ: <strong>{state?.player?.chips ?? 0}</strong>
+        </span>
+        <span>
+          ディーラー チップ: <strong>{state?.dealer?.chips ?? 0}</strong>
+        </span>
+        {dealerBet > 0 && (
+          <span>
+            ディーラー ベット: <strong>{dealerBet}</strong>
+          </span>
+        )}
+      </div>
+
       {/* Scrollable: dealer area */}
       <div className="flex-1 overflow-y-auto pt-4 px-5">
         <div className="mb-2">
@@ -113,7 +148,7 @@ export function PokerPage() {
               </span>
             )}
           </div>
-          {phase === PHASE_DEAL && (
+          {isExchangePhase && (
             <div className="text-[#cfc] text-[0.85em] mb-1">
               交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。
             </div>
@@ -131,7 +166,7 @@ export function PokerPage() {
                     border: 'none',
                     padding: 0,
                     ...cardWrapBase,
-                    cursor: phase === PHASE_DEAL ? 'pointer' : 'default',
+                    cursor: isExchangePhase ? 'pointer' : 'default',
                   }}
                 >
                   <CardImage
@@ -164,26 +199,72 @@ export function PokerPage() {
           {state?.message ?? ''}
         </div>
 
-        {/* Buttons */}
+        {/* Betting controls */}
+        {isBettingPhase && (
+          <div className="text-center mb-2">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <label htmlFor="betAmount" className="text-white text-sm">
+                ベット額:
+              </label>
+              <input
+                id="betAmount"
+                type="number"
+                min={state?.ante ?? 10}
+                step={state?.ante ?? 10}
+                value={betAmount}
+                onChange={(e) => setBetAmount(Number(e.target.value))}
+                className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
+              />
+            </div>
+            {hasOutstandingBet ? (
+              <>
+                <button type="button" className={`${btnSuccess} min-w-[80px]`} onClick={() => exec('call')}>
+                  コール
+                </button>
+                <button
+                  type="button"
+                  className={`${btnWarning} min-w-[80px]`}
+                  onClick={() => exec('raise', undefined, betAmount)}
+                >
+                  レイズ
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={`${btnWarning} min-w-[80px]`}
+                  onClick={() => exec('bet', undefined, betAmount)}
+                >
+                  ベット
+                </button>
+                <button type="button" className={`${btnSuccess} min-w-[80px]`} onClick={() => exec('check')}>
+                  チェック
+                </button>
+              </>
+            )}
+            <button type="button" className={`${btnDanger} min-w-[80px]`} onClick={() => exec('fold')}>
+              フォールド
+            </button>
+          </div>
+        )}
+
+        {/* Exchange controls */}
+        {isExchangePhase && (
+          <div className="text-center mb-2">
+            <button type="button" className={`${btnWarning} min-w-[90px]`} onClick={() => exec('exchange', selected)}>
+              交換
+            </button>
+            <button type="button" className={`${btnSuccess} min-w-[90px]`} onClick={() => exec('stand')}>
+              スタンド
+            </button>
+          </div>
+        )}
+
+        {/* Always-visible buttons */}
         <div className="text-center">
           <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
             リセット
-          </button>
-          <button
-            type="button"
-            className={`${btnWarning} min-w-[90px]`}
-            disabled={phase !== PHASE_DEAL}
-            onClick={() => exec('exchange', selected)}
-          >
-            交換
-          </button>
-          <button
-            type="button"
-            className={`${btnSuccess} min-w-[90px]`}
-            disabled={phase !== PHASE_DEAL}
-            onClick={() => exec('stand')}
-          >
-            スタンド
           </button>
         </div>
       </div>

@@ -16,11 +16,16 @@ import (
 )
 
 func TestPokerWebController_Method(t *testing.T) {
-	mockOutput := `{"dealer":{"handRank":0,"handName":"","cards":null},"player":{"handRank":0,"handName":"","cards":null},"phase":1,"message":""}`
+	mockOutput := `{"dealer":{"handRank":0,"handName":"","cards":null,"chips":990,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":990,"bet":0},"phase":1,"message":"","pot":20,"ante":10}`
 	piMock := new(usecases.MockPokerInteractor)
 	piMock.On("Reset").Return(mockOutput).Times(2)
 	piMock.On("Exchange", mock.Anything).Return(mockOutput)
 	piMock.On("Stand").Return(mockOutput)
+	piMock.On("Bet", mock.Anything).Return(mockOutput)
+	piMock.On("Call").Return(mockOutput)
+	piMock.On("Raise", mock.Anything).Return(mockOutput)
+	piMock.On("Fold").Return(mockOutput)
+	piMock.On("Check").Return(mockOutput)
 
 	factory := func() uc.PokerInteractorIF { return piMock }
 	tpc := controllers.NewPokerWebController(factory)
@@ -32,7 +37,7 @@ func TestPokerWebController_Method(t *testing.T) {
 	api.SetApp(router)
 
 	var jsonInput controllers.PokerWebInput
-	emptyBody := `{"dealer":{"handRank":0,"handName":"","cards":null},"player":{"handRank":0,"handName":"","cards":null},"phase":0,"message":"bye."}`
+	emptyBody := `{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"bye.","pot":0,"ante":0}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
@@ -106,6 +111,96 @@ func TestPokerWebController_Method(t *testing.T) {
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
+	t.Run("success Exec b", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "b", "amount": 20, "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec bet", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "bet", "amount": 20, "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec c", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "c", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec call", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "call", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec ra", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "ra", "amount": 30, "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec raise", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "raise", "amount": 30, "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec f", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "f", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec fold", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "fold", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec ck", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "ck", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec check", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "check", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
@@ -113,7 +208,7 @@ func TestPokerWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null},"player":{"handRank":0,"handName":"","cards":null},"phase":0,"message":"Unsupported command."}`)
+		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"Unsupported command.","pot":0,"ante":0}`)
 	})
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonInput)
@@ -122,7 +217,7 @@ func TestPokerWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null},"player":{"handRank":0,"handName":"","cards":null},"phase":0,"message":"param error."}`)
+		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"param error.","pot":0,"ante":0}`)
 	})
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonInput)
@@ -131,7 +226,7 @@ func TestPokerWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null},"player":{"handRank":0,"handName":"","cards":null},"phase":0,"message":"param error."}`)
+		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"param error.","pot":0,"ante":0}`)
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controllers.PokerWebInput{
@@ -143,7 +238,7 @@ func TestPokerWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null},"player":{"handRank":0,"handName":"","cards":null},"phase":0,"message":"param error."}`)
+		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"param error.","pot":0,"ante":0}`)
 	})
 	t.Run("failed Exec response empty", func(t *testing.T) {
 		piMock.On("Reset").Return(``)
@@ -153,12 +248,12 @@ func TestPokerWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null},"player":{"handRank":0,"handName":"","cards":null},"phase":0,"message":"error."}`)
+		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"error.","pot":0,"ante":0}`)
 	})
 }
 
 func TestPokerWebController_SessionIsolation(t *testing.T) {
-	mockOutput := `{"dealer":{"handRank":0,"handName":"","cards":null},"player":{"handRank":0,"handName":"","cards":null},"phase":1,"message":""}`
+	mockOutput := `{"dealer":{"handRank":0,"handName":"","cards":null,"chips":990,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":990,"bet":0},"phase":1,"message":"","pot":20,"ante":10}`
 	mockA := new(usecases.MockPokerInteractor)
 	mockA.On("Reset").Return(mockOutput)
 	mockB := new(usecases.MockPokerInteractor)
