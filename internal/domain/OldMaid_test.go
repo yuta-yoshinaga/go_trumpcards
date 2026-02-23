@@ -89,25 +89,69 @@ func TestOldMaid_Method(t *testing.T) {
 		assert.True(t, turn >= 0 && turn < domain.OldMaidPlayerCnt)
 	})
 
-	t.Run("success PlayerDraw does nothing when game ended", func(t *testing.T) {
+	t.Run("success PlayerDraw returns ErrGameEnded when game ended", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makePlayers()
 		om := domain.NewOldMaid(tc, players)
-		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
-		players[1].SetIsFinished(true)
+		// Set up a game-ending scenario: player 0 draws a pair, everyone else finished
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		players[2].SetIsFinished(true)
 		players[3].SetIsFinished(true)
-		// Assuming PlayerDraw sets gameEndFlag if checked, but here we set players finished manually
-		// triggering checkGameEnd logic requires calling a method that calls it.
-		// However, the test intent is "if gameEndFlag is true, PlayerDraw does nothing".
-		// We can't easily set gameEndFlag to true directly as it's private.
-		// But we can simulate a state where checkGameEnd would return true if called.
-		// Actually, PlayerDraw calls checkGameEnd at the end.
-		// Let's just trust the logic or invoke a sequence that ends the game.
-		assert.False(t, om.GetGameEndFlag())
+		// First draw ends the game (pair discarded, all finish except joker holder)
+		err := om.PlayerDraw(0)
+		assert.NoError(t, err)
+		assert.True(t, om.GetGameEndFlag())
+		// Second draw should return ErrGameEnded
+		err = om.PlayerDraw(0)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrGameEnded)
 	})
 
-	t.Run("success CpuDraw does nothing when human turn", func(t *testing.T) {
+	t.Run("success PlayerDraw returns ErrNotHumanTurn when not human turn", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		// All CPU players so PlayerDraw should return ErrNotHumanTurn
+		cpuPlayers := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, cpuPlayers)
+		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		cpuPlayers[2].SetIsFinished(true)
+		cpuPlayers[3].SetIsFinished(true)
+		err := om.PlayerDraw(0)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
+	})
+
+	t.Run("success CpuDraw returns ErrGameEnded when game ended", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		cpuPlayers := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, cpuPlayers)
+		// Set up a game-ending scenario
+		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		cpuPlayers[2].SetIsFinished(true)
+		cpuPlayers[3].SetIsFinished(true)
+		// First draw ends the game
+		err := om.CpuDraw()
+		assert.NoError(t, err)
+		assert.True(t, om.GetGameEndFlag())
+		// Second draw should return ErrGameEnded
+		err = om.CpuDraw()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrGameEnded)
+	})
+
+	t.Run("success CpuDraw returns ErrNotHumanTurn when human turn", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makePlayers()
 		om := domain.NewOldMaid(tc, players)
@@ -116,7 +160,9 @@ func TestOldMaid_Method(t *testing.T) {
 		// (Actually Reset might set turn to 0)
 		if om.IsHumanTurn() {
 			prevTurn := om.GetCurrentTurn()
-			om.CpuDraw()
+			err := om.CpuDraw()
+			assert.Error(t, err)
+			assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
 			assert.Equal(t, prevTurn, om.GetCurrentTurn())
 		}
 	})
@@ -152,7 +198,8 @@ func TestOldMaid_Method(t *testing.T) {
 		players[3].SetIsFinished(true)
 
 		// Player 0 draws CLOVER 5 from Player 1
-		om.PlayerDraw(0)
+		err := om.PlayerDraw(0)
+		assert.NoError(t, err)
 
 		assert.True(t, om.GetHasDrawn())
 		assert.Equal(t, 1, om.GetLastDiscardedPairs())
@@ -189,8 +236,9 @@ func TestOldMaid_Method(t *testing.T) {
 		omCpu.GetPlayer(3).SetIsFinished(true)
 		
 		// Now turn is 0 (CPU). CpuDraw should work.
-		omCpu.CpuDraw()
-		
+		err := omCpu.CpuDraw()
+		assert.NoError(t, err)
+
 		actions := omCpu.GetCpuActions()
 		assert.Equal(t, 1, len(actions))
 		assert.Equal(t, 1, actions[0].DiscardedPairs)
@@ -239,7 +287,7 @@ func TestOldMaid_Method(t *testing.T) {
 			players[2].SetIsFinished(true)
 			players[3].SetIsFinished(true)
 
-			om.PlayerDraw(0)
+			_ = om.PlayerDraw(0)
 
 			// After draw player 0 has 6 cards (5 + joker, no pair discarded)
 			if om.GetPlayer(0).GetCardsSize() > 0 {
@@ -273,7 +321,8 @@ func TestOldMaid_Method(t *testing.T) {
 		cpuPlayers[2].SetIsFinished(true)
 		cpuPlayers[3].SetIsFinished(true)
 
-		om.CpuDraw()
+		err := om.CpuDraw()
+		assert.NoError(t, err)
 
 		actions := om.GetCpuActions()
 		assert.Equal(t, 1, len(actions))
@@ -308,7 +357,7 @@ func TestOldMaid_Method(t *testing.T) {
 			firstVal := cpuPlayers[1].GetCard(0).GetValue()
 			lastVal := cpuPlayers[1].GetCard(cpuPlayers[1].GetCardsSize() - 1).GetValue()
 
-			om.CpuDraw()
+			_ = om.CpuDraw()
 
 			actions := om.GetCpuActions()
 			if len(actions) == 1 && actions[0].DrawnCard != nil {

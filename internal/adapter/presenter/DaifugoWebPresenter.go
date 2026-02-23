@@ -17,7 +17,7 @@ func NewDaifugoWebPresenter() *DaifugoWebPresenter {
 }
 
 // Output ゲーム状態をJSON出力
-func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo) string {
+func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo, lastErr error) string {
 	resObj := new(controller.DaifugoWebOutput)
 	resObj.Players = make([]*controller.DaifugoWebOutputPlayer, 0)
 	resObj.TableCards = make([]*controller.DaifugoWebOutputCard, 0)
@@ -94,8 +94,10 @@ func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo) string {
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
-	// メッセージ (ゲーム終了時)
-	if dg.GetGameEndFlag() {
+	// エラーメッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else if dg.GetGameEndFlag() {
 		resObj.Message = dwp.buildResultMessage(dg)
 	}
 

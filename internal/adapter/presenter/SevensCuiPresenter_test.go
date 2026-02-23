@@ -29,7 +29,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "Sevens (7並べ)")
 		assert.Contains(t, result, "[You]: 2枚")
 		assert.Contains(t, result, "[0]SPADE 6")
@@ -50,7 +50,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 
 		s.PlayerPlay(-1) // human passes
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "パス: 1/5")
 		assert.Contains(t, result, "パスしました")
 	})
@@ -66,7 +66,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.PlayerPlay(0) // play 6♠ → minVal[Spade] = 6
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "SPADE: 6〜7")
 	})
 
@@ -83,7 +83,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[3].SetRank(3)
 		s.PlayerPlay(0)
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "ゲーム終了")
 	})
 
@@ -99,7 +99,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		s.PlayerPlay(0) // human plays 8♠
 		s.CpuPlay()    // CPU 1 passes
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "[CPUの行動]")
 		assert.Contains(t, result, "パスしました")
 	})
@@ -114,7 +114,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "上がり/失格 (ランク: 1位)")
 	})
 
@@ -125,7 +125,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "[0]JOKER")
 		assert.Contains(t, result, "[1]SPADE 6")
 	})
@@ -137,7 +137,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "ルール:")
 		assert.Contains(t, result, "[トンネル]")
 	})
@@ -149,7 +149,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "ルール:")
 		assert.Contains(t, result, "[ジョーカー×2]")
 		assert.Contains(t, result, "j [カードインデックス]")
@@ -162,7 +162,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "ルール:")
 		assert.Contains(t, result, "[CPU戦略]")
 	})
@@ -173,7 +173,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.NotContains(t, result, "ルール:")
 	})
 
@@ -188,9 +188,19 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → SPADE 6
 
-		result := tsp.Output(s)
+		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "JOKER")
 		assert.Contains(t, result, "SPADE 6")
 		assert.Contains(t, result, "を出しました")
+	})
+
+	t.Run("success Output shows error message", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, domain.ErrInvalidPlay)
+		assert.Contains(t, result, domain.ErrInvalidPlay.Error())
 	})
 }

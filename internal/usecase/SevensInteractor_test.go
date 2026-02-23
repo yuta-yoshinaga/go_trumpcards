@@ -13,7 +13,7 @@ import (
 func TestSevensInteractor_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 	spMock := new(presenter.MockSevensPresenter)
-	spMock.On("Output", mock.AnythingOfType("string")).Return(mockOutput)
+	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	tsi := usecase.NewSevensInteractor(spMock)
 
 	t.Run("success Reset", func(t *testing.T) {

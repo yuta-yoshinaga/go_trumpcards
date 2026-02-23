@@ -17,7 +17,7 @@ func NewBlackJackWebPresenter() *BlackJackWebPresenter {
 }
 
 // Output ゲーム状態を出力
-func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack) string {
+func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack, lastErr error) string {
 	resObj := new(controller.BlackJackWebOutput)
 	// dealer
 	dealer := bj.GetDealer()
@@ -63,8 +63,8 @@ func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack) string {
 	}
 
 	// エラーメッセージ（ベット失敗等）
-	if errMsg := bj.GetLastError(); errMsg != "" {
-		resObj.Message = errMsg
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
 	} else if bj.GetGameEndFlag() {
 		switch bj.GameJudgment() {
 		case domain.GameResultDraw:

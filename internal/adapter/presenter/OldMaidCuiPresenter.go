@@ -17,7 +17,7 @@ func NewOldMaidCuiPresenter() *OldMaidCuiPresenter {
 }
 
 // Output ゲーム状態を文字列出力
-func (p *OldMaidCuiPresenter) Output(om *domain.OldMaid) string {
+func (p *OldMaidCuiPresenter) Output(om *domain.OldMaid, lastErr error) string {
 	var b strings.Builder
 
 	b.WriteString("==========\n")
@@ -82,6 +82,11 @@ func (p *OldMaidCuiPresenter) Output(om *domain.OldMaid) string {
 			}
 			b.WriteString("\n")
 		}
+	}
+
+	// エラーメッセージ
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
 	}
 
 	if om.GetGameEndFlag() {

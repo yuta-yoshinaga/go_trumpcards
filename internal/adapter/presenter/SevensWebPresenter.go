@@ -17,7 +17,7 @@ func NewSevensWebPresenter() *SevensWebPresenter {
 }
 
 // Output ゲーム状態をJSON出力
-func (swp *SevensWebPresenter) Output(s *domain.Sevens) string {
+func (swp *SevensWebPresenter) Output(s *domain.Sevens, lastErr error) string {
 	resObj := new(controller.SevensWebOutput)
 	resObj.Players = make([]*controller.SevensWebOutputPlayer, 0)
 	resObj.CurrentTurn = s.GetCurrentTurn()
@@ -82,8 +82,10 @@ func (swp *SevensWebPresenter) Output(s *domain.Sevens) string {
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
-	// メッセージ (ゲーム終了時)
-	if s.GetGameEndFlag() {
+	// エラーメッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else if s.GetGameEndFlag() {
 		resObj.Message = swp.buildResultMessage(s)
 	}
 

@@ -18,7 +18,7 @@ func NewBlackJackCuiPresenter() *BlackJackCuiPresenter {
 }
 
 // Output ゲーム状態を出力
-func (bjp *BlackJackCuiPresenter) Output(bj *domain.BlackJack) string {
+func (bjp *BlackJackCuiPresenter) Output(bj *domain.BlackJack, lastErr error) string {
 	player := bj.GetPlayer()
 	dealer := bj.GetDealer()
 	var b strings.Builder
@@ -94,8 +94,8 @@ func (bjp *BlackJackCuiPresenter) Output(bj *domain.BlackJack) string {
 	}
 
 	// エラーメッセージ（ベット失敗等）
-	if errMsg := bj.GetLastError(); errMsg != "" {
-		fmt.Fprintf(&b, "%s\n", errMsg)
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
 	}
 
 	if bj.GetGameEndFlag() {

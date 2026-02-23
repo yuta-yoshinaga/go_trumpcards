@@ -12,7 +12,7 @@ type MockPokerPresenter struct {
 }
 
 // Output モック
-func (_m *MockPokerPresenter) Output(p *domain.Poker) string {
-	ret := _m.Called()
+func (_m *MockPokerPresenter) Output(p *domain.Poker, lastErr error) string {
+	ret := _m.Called(p, lastErr)
 	return ret.Get(0).(string)
 }

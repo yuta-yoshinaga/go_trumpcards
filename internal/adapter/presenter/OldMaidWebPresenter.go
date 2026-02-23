@@ -17,7 +17,7 @@ func NewOldMaidWebPresenter() *OldMaidWebPresenter {
 }
 
 // Output ゲーム状態をJSON出力
-func (owp *OldMaidWebPresenter) Output(om *domain.OldMaid) string {
+func (owp *OldMaidWebPresenter) Output(om *domain.OldMaid, lastErr error) string {
 	resObj := new(controller.OldMaidWebOutput)
 	resObj.Players = make([]*controller.OldMaidWebOutputPlayer, 0)
 	resObj.CurrentTurn = om.GetCurrentTurn()
@@ -86,7 +86,10 @@ func (owp *OldMaidWebPresenter) Output(om *domain.OldMaid) string {
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
-	if om.GetGameEndFlag() {
+	// エラーメッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else if om.GetGameEndFlag() {
 		loserIdx := om.GetLoserIdx()
 		if loserIdx >= 0 {
 			loser := om.GetPlayer(loserIdx)

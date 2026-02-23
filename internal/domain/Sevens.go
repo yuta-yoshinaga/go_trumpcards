@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -288,10 +289,12 @@ func (s *Sevens) placePosition(suit, value int) {
 
 // PlayerPlay 人間プレイヤーがカードを出す (または パスする)
 // idx: 出すカードのインデックス。-1 の場合はパス。
-// 成功した場合 true を返す。
-func (s *Sevens) PlayerPlay(idx int) bool {
-	if s.gameEndFlag || !s.players[s.currentTurn].GetIsHuman() {
-		return false
+func (s *Sevens) PlayerPlay(idx int) error {
+	if s.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !s.players[s.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	// 人間のターン開始時にCPU行動履歴をリセット
 	s.cpuActions = nil
@@ -301,21 +304,21 @@ func (s *Sevens) PlayerPlay(idx int) bool {
 	if idx < 0 {
 		// パス
 		if !player.CanPass() {
-			return false
+			return ErrCannotPass
 		}
 		player.IncrPassesUsed()
 		s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: nil}
 		s.advanceTurn()
-		return true
+		return nil
 	}
 
 	// カードを出す
 	card := player.GetCard(idx)
 	if card == nil {
-		return false
+		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", idx))
 	}
 	if !s.IsPlayable(card) {
-		return false
+		return NewDomainError(ErrInvalidPlay, "card cannot be played on the board")
 	}
 
 	s.placeCard(card)
@@ -328,29 +331,31 @@ func (s *Sevens) PlayerPlay(idx int) bool {
 	if !s.checkGameEnd() {
 		s.advanceTurn()
 	}
-	return true
+	return nil
 }
 
 // PlayerPlayJoker 人間プレイヤーがジョーカーを指定ポジションに出す
 // cardIdx: ジョーカーの手札インデックス
 // targetSuit: 配置先スート, targetValue: 配置先値
-// 成功した場合 true を返す。
-func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) bool {
-	if s.gameEndFlag || !s.players[s.currentTurn].GetIsHuman() {
-		return false
+func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
+	if s.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !s.players[s.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	s.cpuActions = nil
 
 	player := s.players[s.currentTurn]
 	card := player.GetCard(cardIdx)
 	if card == nil {
-		return false
+		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", cardIdx))
 	}
 	if card.GetDesign() != CardDesignJoker {
-		return false
+		return NewDomainError(ErrInvalidCard, "card is not a joker")
 	}
 	if !s.isPositionPlayable(targetSuit, targetValue) {
-		return false
+		return NewDomainError(ErrInvalidPlay, "target position is not playable")
 	}
 
 	s.placePosition(targetSuit, targetValue)
@@ -368,7 +373,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) bool {
 	if !s.checkGameEnd() {
 		s.advanceTurn()
 	}
-	return true
+	return nil
 }
 
 // sevensPlay CPUの1手分の情報

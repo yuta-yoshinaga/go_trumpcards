@@ -12,7 +12,7 @@ type MockOldMaidPresenter struct {
 }
 
 // Output モック
-func (_m *MockOldMaidPresenter) Output(om *domain.OldMaid) string {
-	ret := _m.Called()
+func (_m *MockOldMaidPresenter) Output(om *domain.OldMaid, lastErr error) string {
+	ret := _m.Called(om, lastErr)
 	return ret.Get(0).(string)
 }

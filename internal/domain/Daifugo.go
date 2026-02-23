@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -608,10 +609,12 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 
 // PlayerPlay 人間プレイヤーがカードを出す (または パスする)
 // indices: 出すカードのインデックス。空の場合はパス。
-// 成功した場合 true を返す。
-func (d *Daifugo) PlayerPlay(indices []int) bool {
-	if d.gameEndFlag || !d.players[d.currentTurn].GetIsHuman() {
-		return false
+func (d *Daifugo) PlayerPlay(indices []int) error {
+	if d.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !d.players[d.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	// 人間のターン開始時にCPU行動履歴をリセット
 	d.cpuActions = nil
@@ -622,7 +625,7 @@ func (d *Daifugo) PlayerPlay(indices []int) bool {
 		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
 		d.advanceTurn()
 		d.checkPassClear()
-		return true
+		return nil
 	}
 
 	// 重複インデックスを除去 (重複があると isPlayable の枚数チェックが狂うため)
@@ -645,12 +648,12 @@ func (d *Daifugo) PlayerPlay(indices []int) bool {
 	for i, idx := range indices {
 		card := player.GetCard(idx)
 		if card == nil {
-			return false
+			return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", idx))
 		}
 		selectedCards[i] = card
 	}
 	if !d.isPlayable(selectedCards) {
-		return false
+		return NewDomainError(ErrInvalidPlay, "selected cards cannot be played")
 	}
 
 	// スート縛り更新 (場のカードがある場合、出す前にチェック)
@@ -688,7 +691,7 @@ func (d *Daifugo) PlayerPlay(indices []int) bool {
 			d.advanceTurn()
 		}
 	}
-	return true
+	return nil
 }
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行

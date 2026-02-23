@@ -13,7 +13,7 @@ import (
 
 func TestBlackJackInteractor_Method(t *testing.T) {
 	bjpMock := new(presenter.MockBlackJackPresenter)
-	bjpMock.On("Output", mock.AnythingOfType("string")).Return("----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n")
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n")
 	tbj := usecase.NewBlackJackInteractor(domain.NewDefaultBlackJack(), bjpMock)
 	t.Run("success Reset", func(t *testing.T) {
 		assert.Equal(t, "----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n", tbj.Reset())

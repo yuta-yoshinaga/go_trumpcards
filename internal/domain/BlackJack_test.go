@@ -61,8 +61,8 @@ func TestBlackJack_PlayerBet(t *testing.T) {
 	t.Run("successful bet", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerBet(100)
-		assert.True(t, ok)
+		err := bj.PlayerBet(100)
+		assert.NoError(t, err)
 		assert.Equal(t, 2, bj.GetPlayerHands()[0].GetCardsSize())
 		assert.Equal(t, 2, bj.GetDealer().GetCardsSize())
 		assert.NotEqual(t, domain.BJPhaseBet, bj.GetPhase())
@@ -70,44 +70,51 @@ func TestBlackJack_PlayerBet(t *testing.T) {
 	t.Run("bet below minimum", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerBet(5)
-		assert.False(t, ok)
+		err := bj.PlayerBet(5)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 		assert.Equal(t, domain.BJPhaseBet, bj.GetPhase())
 	})
 	t.Run("bet with insufficient chips", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
 		bj.GetPlayer().SetChips(50)
-		ok := bj.PlayerBet(100)
-		assert.False(t, ok)
+		err := bj.PlayerBet(100)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInsufficientChips)
 	})
 	t.Run("bet not multiple of min bet", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerBet(15)
-		assert.False(t, ok)
+		err := bj.PlayerBet(15)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 		assert.Equal(t, domain.BJPhaseBet, bj.GetPhase())
 	})
 	t.Run("bet in wrong phase", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		bj.PlayerBet(100)
-		ok := bj.PlayerBet(100)
-		assert.False(t, ok)
+		_ = bj.PlayerBet(100)
+		err := bj.PlayerBet(100)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
 	})
 }
 
 func TestBlackJack_InsurancePhase(t *testing.T) {
-	t.Run("accept insurance in wrong phase returns false", func(t *testing.T) {
+	t.Run("accept insurance in wrong phase returns error", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerInsurance()
-		assert.False(t, ok)
+		err := bj.PlayerInsurance()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
 	})
-	t.Run("decline insurance in wrong phase does nothing", func(t *testing.T) {
+	t.Run("decline insurance in wrong phase returns error", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		bj.PlayerDeclineInsurance()
+		err := bj.PlayerDeclineInsurance()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
 		assert.Equal(t, domain.BJPhaseBet, bj.GetPhase())
 	})
 }
@@ -115,7 +122,9 @@ func TestBlackJack_InsurancePhase(t *testing.T) {
 func TestBlackJack_PlayerHitInWrongPhase(t *testing.T) {
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()
-	bj.PlayerHit()
+	err := bj.PlayerHit()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrWrongPhase)
 	assert.Equal(t, domain.BJPhaseBet, bj.GetPhase())
 }
 
@@ -130,7 +139,8 @@ func TestBlackJack_PlayerStandViaHand(t *testing.T) {
 		domain.NewCard(domain.CardDesignClover, 11, false),
 	}
 	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
-	bj.PlayerStand()
+	err := bj.PlayerStand()
+	assert.NoError(t, err)
 	// Player score 17, dealer score 22 (bust) → player wins
 	assert.Equal(t, domain.GameResultWin, bj.GameJudgment())
 }
@@ -232,15 +242,17 @@ func TestBlackJack_GameJudgmentCases(t *testing.T) {
 func TestBlackJack_DoubleDown_WrongPhase(t *testing.T) {
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()
-	ok := bj.PlayerDoubleDown()
-	assert.False(t, ok)
+	err := bj.PlayerDoubleDown()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrWrongPhase)
 }
 
 func TestBlackJack_Split_WrongPhase(t *testing.T) {
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()
-	ok := bj.PlayerSplit()
-	assert.False(t, ok)
+	err := bj.PlayerSplit()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrWrongPhase)
 }
 
 func TestBlackJack_GetterMethods(t *testing.T) {
@@ -281,9 +293,10 @@ func TestBlackJack_DrawCardNilSafety(t *testing.T) {
 			tc.DrawCard()
 		}
 
-		// デッキ枯渇時のベットはfalseを返し、チップが返却される
-		ok := bj.PlayerBet(100)
-		assert.False(t, ok)
+		// デッキ枯渇時のベットはエラーを返し、チップが返却される
+		err := bj.PlayerBet(100)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrDeckExhausted)
 		assert.Equal(t, 1000, player.GetChips())
 		assert.Equal(t, domain.BJPhaseBet, bj.GetPhase())
 	})
@@ -312,7 +325,9 @@ func TestBlackJack_DrawCardNilSafety(t *testing.T) {
 
 		// デッキ枯渇後のヒットでパニックしない
 		assert.NotPanics(t, func() {
-			bj.PlayerHit()
+			err := bj.PlayerHit()
+			assert.Error(t, err)
+			assert.ErrorIs(t, err, domain.ErrDeckExhausted)
 		})
 		// カードが追加されないことを確認
 		assert.Equal(t, 2, hand.GetCardsSize())
@@ -342,66 +357,68 @@ func TestBlackJack_DrawCardNilSafety(t *testing.T) {
 
 		// デッキ枯渇後のスタンド→ディーラーヒットでパニックしない
 		assert.NotPanics(t, func() {
-			bj.PlayerStand()
+			_ = bj.PlayerStand()
 		})
 		assert.True(t, bj.GetGameEndFlag())
 	})
 }
 
-func TestBlackJack_LastError(t *testing.T) {
-	t.Run("bet failure sets lastError", func(t *testing.T) {
+func TestBlackJack_ErrorReturns(t *testing.T) {
+	t.Run("bet failure returns ErrInvalidAmount", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerBet(5) // below minimum
-		assert.False(t, ok)
-		assert.Equal(t, "Invalid bet amount.", bj.GetLastError())
-		// GetLastError clears the message
-		assert.Equal(t, "", bj.GetLastError())
+		err := bj.PlayerBet(5) // below minimum
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+		assert.Contains(t, err.Error(), "Invalid bet amount.")
 	})
-	t.Run("bet wrong phase sets lastError", func(t *testing.T) {
+	t.Run("bet wrong phase returns ErrWrongPhase", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		bj.PlayerBet(100)
-		ok := bj.PlayerBet(100)
-		assert.False(t, ok)
-		errMsg := bj.GetLastError()
-		assert.Equal(t, "Bet is only allowed during the bet phase.", errMsg)
+		_ = bj.PlayerBet(100)
+		err := bj.PlayerBet(100)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
+		assert.Contains(t, err.Error(), "Bet is only allowed during the bet phase.")
 	})
-	t.Run("bet insufficient chips sets lastError", func(t *testing.T) {
+	t.Run("bet insufficient chips returns ErrInsufficientChips", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
 		bj.GetPlayer().SetChips(50)
-		ok := bj.PlayerBet(100)
-		assert.False(t, ok)
-		assert.Equal(t, "Insufficient chips.", bj.GetLastError())
+		err := bj.PlayerBet(100)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInsufficientChips)
+		assert.Contains(t, err.Error(), "Insufficient chips.")
 	})
-	t.Run("successful bet clears lastError", func(t *testing.T) {
+	t.Run("successful bet returns nil", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerBet(100)
-		assert.True(t, ok)
-		assert.Equal(t, "", bj.GetLastError())
+		err := bj.PlayerBet(100)
+		assert.NoError(t, err)
 	})
-	t.Run("double down failure sets lastError", func(t *testing.T) {
+	t.Run("double down failure returns ErrWrongPhase", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerDoubleDown()
-		assert.False(t, ok)
-		assert.Equal(t, "Double down is not allowed now.", bj.GetLastError())
+		err := bj.PlayerDoubleDown()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
+		assert.Contains(t, err.Error(), "Double down is not allowed now.")
 	})
-	t.Run("split failure sets lastError", func(t *testing.T) {
+	t.Run("split failure returns ErrWrongPhase", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerSplit()
-		assert.False(t, ok)
-		assert.Equal(t, "Split is not allowed now.", bj.GetLastError())
+		err := bj.PlayerSplit()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
+		assert.Contains(t, err.Error(), "Split is not allowed now.")
 	})
-	t.Run("insurance failure sets lastError", func(t *testing.T) {
+	t.Run("insurance failure returns ErrWrongPhase", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
-		ok := bj.PlayerInsurance()
-		assert.False(t, ok)
-		assert.Equal(t, "Insurance is not available now.", bj.GetLastError())
+		err := bj.PlayerInsurance()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
+		assert.Contains(t, err.Error(), "Insurance is not available now.")
 	})
 }
 
@@ -425,8 +442,8 @@ func TestBlackJack_MaxSplitHandsLimit(t *testing.T) {
 	bj.SetPhase(domain.BJPhaseAction)
 
 	// First split should succeed (1 → 2 hands)
-	ok := bj.PlayerSplit()
-	assert.True(t, ok)
+	err := bj.PlayerSplit()
+	assert.NoError(t, err)
 	assert.Equal(t, 2, len(bj.GetPlayerHands()))
 
 	// Manually add dummy hands to reach BJMaxHands
@@ -439,9 +456,10 @@ func TestBlackJack_MaxSplitHandsLimit(t *testing.T) {
 	assert.Equal(t, domain.BJMaxHands, len(bj.GetPlayerHands()))
 
 	// Now split should fail with max hands error
-	ok = bj.PlayerSplit()
-	assert.False(t, ok)
-	assert.Equal(t, "Maximum number of hands reached.", bj.GetLastError())
+	err = bj.PlayerSplit()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+	assert.Contains(t, err.Error(), "Maximum number of hands reached.")
 }
 
 func TestBlackJack_OldFlow(t *testing.T) {
@@ -462,10 +480,10 @@ func TestBlackJack_OldFlow(t *testing.T) {
 		assert.NotEmpty(t, tb.GetDealer())
 	})
 	t.Run("success PlayerHit", func(t *testing.T) {
-		tb.PlayerHit()
+		_ = tb.PlayerHit()
 	})
 	t.Run("success PlayerStand", func(t *testing.T) {
-		tb.PlayerStand()
+		_ = tb.PlayerStand()
 	})
 	t.Run("success DealerHit", func(t *testing.T) {
 		tb.DealerHit()
@@ -523,7 +541,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		bj.PlayerStand()
+		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
 		assert.Equal(t, domain.BJPhaseEnd, bj.GetPhase())
 		assert.Equal(t, domain.GameResultWin, bj.GameJudgment())
@@ -544,7 +562,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		bj.PlayerStand()
+		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
 		assert.Equal(t, domain.GameResultWin, bj.GameJudgment())
 		// Natural BJ 3:2: 100 + 150 = 250 returned, 900 + 250 = 1150
@@ -564,7 +582,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		bj.PlayerStand()
+		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
 		assert.Equal(t, domain.GameResultDraw, bj.GameJudgment())
 		// Draw: bet returned, 900 + 100 = 1000
@@ -584,7 +602,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		bj.PlayerStand()
+		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
 		assert.Equal(t, domain.GameResultLose, bj.GameJudgment())
 		// Lose: nothing returned, chips stay at 900
@@ -604,8 +622,8 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		ok := bj.PlayerDoubleDown()
-		assert.True(t, ok)
+		err := bj.PlayerDoubleDown()
+		assert.NoError(t, err)
 		hand := bj.GetPlayerHands()[0]
 		assert.Equal(t, 200, hand.GetBet())
 		assert.True(t, hand.IsDoubled())
@@ -627,8 +645,9 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		ok := bj.PlayerDoubleDown()
-		assert.False(t, ok)
+		err := bj.PlayerDoubleDown()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInsufficientChips)
 	})
 
 	t.Run("double down with 3 cards", func(t *testing.T) {
@@ -645,8 +664,9 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		ok := bj.PlayerDoubleDown()
-		assert.False(t, ok)
+		err := bj.PlayerDoubleDown()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 	})
 
 	t.Run("double down on finished hand", func(t *testing.T) {
@@ -663,8 +683,9 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			100,
 		)
 		bj.GetPlayerHands()[0].SetStood(true)
-		ok := bj.PlayerDoubleDown()
-		assert.False(t, ok)
+		err := bj.PlayerDoubleDown()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrHandFinished)
 	})
 
 	t.Run("split pair", func(t *testing.T) {
@@ -680,8 +701,8 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		ok := bj.PlayerSplit()
-		assert.True(t, ok)
+		err := bj.PlayerSplit()
+		assert.NoError(t, err)
 		assert.Equal(t, 2, len(bj.GetPlayerHands()))
 		assert.Equal(t, 2, bj.GetPlayerHands()[0].GetCardsSize())
 		assert.Equal(t, 2, bj.GetPlayerHands()[1].GetCardsSize())
@@ -704,8 +725,8 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		ok := bj.PlayerSplit()
-		assert.True(t, ok)
+		err := bj.PlayerSplit()
+		assert.NoError(t, err)
 		assert.Equal(t, 2, len(bj.GetPlayerHands()))
 		assert.True(t, bj.GetPlayerHands()[0].IsStood())
 		assert.True(t, bj.GetPlayerHands()[1].IsStood())
@@ -724,8 +745,9 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		ok := bj.PlayerSplit()
-		assert.False(t, ok)
+		err := bj.PlayerSplit()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInsufficientChips)
 	})
 
 	t.Run("split non-pair", func(t *testing.T) {
@@ -741,8 +763,9 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		ok := bj.PlayerSplit()
-		assert.False(t, ok)
+		err := bj.PlayerSplit()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 	})
 
 	t.Run("all busted skips dealer draw", func(t *testing.T) {
@@ -760,7 +783,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			100,
 		)
 		bj.GetPlayerHands()[0].SetBusted(true)
-		bj.PlayerStand()
+		_ = bj.PlayerStand()
 		assert.True(t, bj.GetGameEndFlag())
 		assert.Equal(t, 2, dealer.GetCardsSize())
 	})
@@ -778,8 +801,8 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 			},
 			100,
 		)
-		bj.PlayerHit()
-		bj.PlayerStand()
+		_ = bj.PlayerHit()
+		_ = bj.PlayerStand()
 		assert.True(t, bj.GetGameEndFlag())
 		assert.Equal(t, domain.BJPhaseEnd, bj.GetPhase())
 	})
@@ -801,7 +824,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
-		bj.PlayerInsurance() // cost = 50, chips: 800
+		assert.NoError(t, bj.PlayerInsurance()) // cost = 50, chips: 800
 		assert.Equal(t, domain.BJPhaseEnd, bj.GetPhase())
 		// Dealer has BJ, so insurance pays 3*50=150. Player loses hand (17 vs 21).
 		// chips: 800 + 150 (insurance win) + 0 (hand loss) = 950
@@ -825,9 +848,9 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
-		bj.PlayerInsurance() // cost = 50, chips: 800
+		assert.NoError(t, bj.PlayerInsurance()) // cost = 50, chips: 800
 		assert.Equal(t, domain.BJPhaseAction, bj.GetPhase())
-		bj.PlayerStand()
+		assert.NoError(t, bj.PlayerStand())
 		assert.True(t, bj.GetGameEndFlag())
 		// Dealer: A + 7 = 18, Player: 20, player wins
 		// Insurance lost (no dealer BJ), hand wins: 800 + 0 (insurance) + 200 (hand win) = 1000
@@ -851,7 +874,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
-		bj.PlayerDeclineInsurance()
+		assert.NoError(t, bj.PlayerDeclineInsurance())
 		assert.Equal(t, domain.BJPhaseAction, bj.GetPhase())
 		assert.Equal(t, 0, bj.GetInsuranceBet())
 	})
@@ -873,7 +896,7 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 13, false))
 		bj.SetPhase(domain.BJPhaseAction)
-		bj.PlayerStand()
+		_ = bj.PlayerStand()
 		assert.True(t, bj.GetGameEndFlag())
 		assert.Equal(t, domain.GameResultDraw, bj.GameJudgment())
 		// Draw: bet returned, 900 + 100 = 1000

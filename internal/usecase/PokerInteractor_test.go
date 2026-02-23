@@ -13,7 +13,7 @@ import (
 func TestPokerInteractor_Method(t *testing.T) {
 	mockOutput := `{"dealer":{"handRank":0,"handName":"High Card","cards":[]},"player":{"handRank":0,"handName":"High Card","cards":[]},"phase":1,"message":"","pot":20,"ante":10}`
 	ppMock := new(presenter.MockPokerPresenter)
-	ppMock.On("Output", mock.AnythingOfType("string")).Return(mockOutput)
+	ppMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	tpi := usecase.NewPokerInteractor(ppMock)
 
 	t.Run("success Reset", func(t *testing.T) {

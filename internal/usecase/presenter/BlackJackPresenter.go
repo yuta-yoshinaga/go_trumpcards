@@ -6,5 +6,5 @@ import (
 
 // BlackJackPresenter ブラックジャックプレゼンターインタフェース
 type BlackJackPresenter interface {
-	Output(bj *domain.BlackJack) string
+	Output(bj *domain.BlackJack, lastErr error) string
 }

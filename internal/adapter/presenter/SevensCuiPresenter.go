@@ -17,7 +17,7 @@ func NewSevensCuiPresenter() *SevensCuiPresenter {
 }
 
 // Output ゲーム状態を文字列出力
-func (p *SevensCuiPresenter) Output(s *domain.Sevens) string {
+func (p *SevensCuiPresenter) Output(s *domain.Sevens, lastErr error) string {
 	var b strings.Builder
 
 	b.WriteString("==========\n")
@@ -109,6 +109,11 @@ func (p *SevensCuiPresenter) Output(s *domain.Sevens) string {
 				}
 			}
 		}
+	}
+
+	// エラーメッセージ
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
 	}
 
 	if s.GetGameEndFlag() {

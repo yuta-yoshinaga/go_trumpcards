@@ -36,7 +36,6 @@ type BlackJack struct {
 	currentHandIdx     int              // 現在操作中のハンドインデックス
 	insuranceBet       int              // インシュランスベット額
 	insuranceAvailable bool             // インシュランス可能フラグ
-	lastError          string           // 直前の操作エラーメッセージ（プレゼンター読み取り後クリア）
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -92,19 +91,15 @@ func (b *BlackJack) drawCard() *Card {
 }
 
 // PlayerBet プレイヤーベット
-func (b *BlackJack) PlayerBet(amount int) bool {
-	b.lastError = ""
+func (b *BlackJack) PlayerBet(amount int) error {
 	if b.phase != BJPhaseBet {
-		b.lastError = "Bet is only allowed during the bet phase."
-		return false
+		return NewDomainError(ErrWrongPhase, "Bet is only allowed during the bet phase.")
 	}
 	if amount < BJMinBet || amount%BJMinBet != 0 {
-		b.lastError = "Invalid bet amount."
-		return false
+		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
 	}
 	if !b.player.SubtractChips(amount) {
-		b.lastError = "Insufficient chips."
-		return false
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	b.playerHands[0].SetBet(amount)
 
@@ -128,7 +123,7 @@ func (b *BlackJack) PlayerBet(amount int) bool {
 		b.player.AddChips(amount)
 		b.playerHands[0].Reset()
 		b.dealer.Reset()
-		return false
+		return ErrDeckExhausted
 	}
 	b.phase = BJPhaseDeal
 
@@ -141,35 +136,33 @@ func (b *BlackJack) PlayerBet(amount int) bool {
 		// ナチュラルBJチェック
 		b.checkNaturalBlackJack()
 	}
-	return true
+	return nil
 }
 
 // PlayerInsurance プレイヤーインシュランス
-func (b *BlackJack) PlayerInsurance() bool {
-	b.lastError = ""
+func (b *BlackJack) PlayerInsurance() error {
 	if b.phase != BJPhaseInsurance {
-		b.lastError = "Insurance is not available now."
-		return false
+		return NewDomainError(ErrWrongPhase, "Insurance is not available now.")
 	}
 	// ベット額はBJMinBetの倍数（偶数）なので端数は発生しない
 	cost := b.playerHands[0].GetBet() / 2
 	if !b.player.SubtractChips(cost) {
-		b.lastError = "Insufficient chips for insurance."
-		return false
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips for insurance.")
 	}
 	b.insuranceBet = cost
 	b.phase = BJPhaseAction
 	b.checkNaturalBlackJack()
-	return true
+	return nil
 }
 
 // PlayerDeclineInsurance プレイヤーインシュランス辞退
-func (b *BlackJack) PlayerDeclineInsurance() {
+func (b *BlackJack) PlayerDeclineInsurance() error {
 	if b.phase != BJPhaseInsurance {
-		return
+		return NewDomainError(ErrWrongPhase, "Insurance decline is not available now.")
 	}
 	b.phase = BJPhaseAction
 	b.checkNaturalBlackJack()
+	return nil
 }
 
 // checkNaturalBlackJack ナチュラルBJチェック（ディール直後）
@@ -184,17 +177,17 @@ func (b *BlackJack) checkNaturalBlackJack() {
 }
 
 // PlayerHit プレイヤーヒット
-func (b *BlackJack) PlayerHit() {
+func (b *BlackJack) PlayerHit() error {
 	if b.phase != BJPhaseAction {
-		return
+		return NewDomainError(ErrWrongPhase, "Hit is not allowed now.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	if hand.IsFinished() {
-		return
+		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
 	card := b.drawCard()
 	if card == nil {
-		return
+		return ErrDeckExhausted
 	}
 	hand.AddCard(card)
 	if hand.GetScore() >= 22 {
@@ -202,38 +195,35 @@ func (b *BlackJack) PlayerHit() {
 		hand.SetBusted(true)
 		b.advanceHand()
 	}
+	return nil
 }
 
 // PlayerStand プレイヤースタンド
-func (b *BlackJack) PlayerStand() {
+func (b *BlackJack) PlayerStand() error {
 	if b.phase != BJPhaseAction {
-		return
+		return NewDomainError(ErrWrongPhase, "Stand is not allowed now.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	hand.SetStood(true)
 	b.advanceHand()
+	return nil
 }
 
 // PlayerDoubleDown プレイヤーダブルダウン
-func (b *BlackJack) PlayerDoubleDown() bool {
-	b.lastError = ""
+func (b *BlackJack) PlayerDoubleDown() error {
 	if b.phase != BJPhaseAction {
-		b.lastError = "Double down is not allowed now."
-		return false
+		return NewDomainError(ErrWrongPhase, "Double down is not allowed now.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	if hand.GetCardsSize() != 2 {
-		b.lastError = "Double down is only allowed with 2 cards."
-		return false
+		return NewDomainError(ErrInvalidPlay, "Double down is only allowed with 2 cards.")
 	}
 	if hand.IsFinished() {
-		b.lastError = "This hand is already finished."
-		return false
+		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
 	bet := hand.GetBet()
 	if !b.player.SubtractChips(bet) {
-		b.lastError = "Insufficient chips for double down."
-		return false
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips for double down.")
 	}
 	hand.SetBet(bet * 2)
 	hand.SetDoubled(true)
@@ -247,29 +237,24 @@ func (b *BlackJack) PlayerDoubleDown() bool {
 		hand.SetStood(true)
 	}
 	b.advanceHand()
-	return true
+	return nil
 }
 
 // PlayerSplit プレイヤースプリット
-func (b *BlackJack) PlayerSplit() bool {
-	b.lastError = ""
+func (b *BlackJack) PlayerSplit() error {
 	if b.phase != BJPhaseAction {
-		b.lastError = "Split is not allowed now."
-		return false
+		return NewDomainError(ErrWrongPhase, "Split is not allowed now.")
 	}
 	if len(b.playerHands) >= BJMaxHands {
-		b.lastError = "Maximum number of hands reached."
-		return false
+		return NewDomainError(ErrInvalidPlay, "Maximum number of hands reached.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	if !hand.CanSplit() {
-		b.lastError = "Split is not allowed for this hand."
-		return false
+		return NewDomainError(ErrInvalidPlay, "Split is not allowed for this hand.")
 	}
 	bet := hand.GetBet()
 	if !b.player.SubtractChips(bet) {
-		b.lastError = "Insufficient chips for split."
-		return false
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips for split.")
 	}
 
 	// 2枚目のカードを取り出して新しいハンドを作る
@@ -318,7 +303,7 @@ func (b *BlackJack) PlayerSplit() bool {
 		b.advanceHand()
 	}
 
-	return true
+	return nil
 }
 
 // advanceHand 次の未完了ハンドに進む。全ハンド完了ならディーラープレイ→精算
@@ -511,13 +496,6 @@ func (b *BlackJack) IsInsuranceAvailable() bool {
 // GetTrumpCards トランプカード取得（テスト用）
 func (b *BlackJack) GetTrumpCards() *TrumpCards {
 	return b.trumpCards
-}
-
-// GetLastError 直前の操作エラーメッセージを取得しクリアする
-func (b *BlackJack) GetLastError() string {
-	msg := b.lastError
-	b.lastError = ""
-	return msg
 }
 
 // SetPlayerHands プレイヤーハンド設定（テスト用）

@@ -6,5 +6,5 @@ import (
 
 // PokerPresenter ポーカープレゼンターインタフェース
 type PokerPresenter interface {
-	Output(p *domain.Poker) string
+	Output(p *domain.Poker, lastErr error) string
 }

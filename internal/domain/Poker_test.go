@@ -45,8 +45,8 @@ func TestPoker_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		ok := tp.PlayerBet(domain.PokerMinBet)
-		assert.True(t, ok)
+		err := tp.PlayerBet(domain.PokerMinBet)
+		assert.NoError(t, err)
 		assert.Equal(t, domain.PokerPhaseExchange, tp.GetPhase())
 	})
 
@@ -56,8 +56,8 @@ func TestPoker_Method(t *testing.T) {
 		tp.Reset()
 		// ディーラーがチェック (ハイカードの場合) なら dealerBet=0
 		if tp.GetDealerBet() == 0 {
-			ok := tp.PlayerCheck()
-			assert.True(t, ok)
+			err := tp.PlayerCheck()
+			assert.NoError(t, err)
 			assert.Equal(t, domain.PokerPhaseExchange, tp.GetPhase())
 		}
 	})
@@ -68,8 +68,8 @@ func TestPoker_Method(t *testing.T) {
 		tp.Reset()
 		if tp.GetDealerBet() > 0 {
 			chipsBefore := tp.GetPlayer().GetChips()
-			ok := tp.PlayerCall()
-			assert.True(t, ok)
+			err := tp.PlayerCall()
+			assert.NoError(t, err)
 			assert.Equal(t, domain.PokerPhaseExchange, tp.GetPhase())
 			assert.True(t, tp.GetPlayer().GetChips() < chipsBefore)
 		}
@@ -79,7 +79,8 @@ func TestPoker_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		tp.PlayerFold()
+		err := tp.PlayerFold()
+		assert.NoError(t, err)
 		assert.Equal(t, domain.PokerPhaseEnd, tp.GetPhase())
 		assert.Equal(t, 1, tp.GetFolded())
 		assert.Equal(t, 0, tp.GetPot())
@@ -89,33 +90,37 @@ func TestPoker_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		tp.PlayerFold()
-		ok := tp.PlayerBet(domain.PokerMinBet)
-		assert.False(t, ok)
+		_ = tp.PlayerFold()
+		err := tp.PlayerBet(domain.PokerMinBet)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
 	})
 
 	t.Run("success PlayerBet rejected below minimum", func(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		ok := tp.PlayerBet(1)
-		assert.False(t, ok)
+		err := tp.PlayerBet(1)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 	})
 
 	t.Run("success PlayerBet rejected insufficient chips", func(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		ok := tp.PlayerBet(999999)
-		assert.False(t, ok)
+		err := tp.PlayerBet(999999)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInsufficientChips)
 	})
 
 	t.Run("success PlayerRaise rejected on overflow amount", func(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		ok := tp.PlayerRaise(1<<62)
-		assert.False(t, ok)
+		err := tp.PlayerRaise(1 << 62)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInsufficientChips)
 		assert.Equal(t, domain.PokerPhaseDeal, tp.GetPhase())
 	})
 
@@ -124,8 +129,9 @@ func TestPoker_Method(t *testing.T) {
 		dealer.SetChips(0)
 		tp.Reset()
 		if tp.GetDealerBet() > 0 {
-			ok := tp.PlayerCheck()
-			assert.False(t, ok)
+			err := tp.PlayerCheck()
+			assert.Error(t, err)
+			assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 		}
 	})
 
@@ -135,12 +141,13 @@ func TestPoker_Method(t *testing.T) {
 		tp.Reset()
 		// Move to Exchange phase
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		assert.Equal(t, domain.PokerPhaseExchange, tp.GetPhase())
-		tp.PlayerExchange([]int{0, 1})
+		err := tp.PlayerExchange([]int{0, 1})
+		assert.NoError(t, err)
 		assert.Equal(t, domain.PokerPhaseSecondBet, tp.GetPhase())
 	})
 
@@ -149,30 +156,35 @@ func TestPoker_Method(t *testing.T) {
 		dealer.SetChips(0)
 		tp.Reset()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		assert.Equal(t, domain.PokerPhaseExchange, tp.GetPhase())
-		tp.PlayerStand()
+		err := tp.PlayerStand()
+		assert.NoError(t, err)
 		assert.Equal(t, domain.PokerPhaseSecondBet, tp.GetPhase())
 	})
 
-	t.Run("success PlayerExchange ignored when not in Exchange phase", func(t *testing.T) {
+	t.Run("success PlayerExchange rejected when not in Exchange phase", func(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
 		// In Deal phase, not Exchange
-		tp.PlayerExchange([]int{0})
+		err := tp.PlayerExchange([]int{0})
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
 		assert.Equal(t, domain.PokerPhaseDeal, tp.GetPhase())
 	})
 
-	t.Run("success PlayerStand ignored when not in Exchange phase", func(t *testing.T) {
+	t.Run("success PlayerStand rejected when not in Exchange phase", func(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
 		// In Deal phase, not Exchange
-		tp.PlayerStand()
+		err := tp.PlayerStand()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
 		assert.Equal(t, domain.PokerPhaseDeal, tp.GetPhase())
 	})
 
@@ -182,18 +194,18 @@ func TestPoker_Method(t *testing.T) {
 		tp.Reset()
 		// First bet
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		// Exchange
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		assert.Equal(t, domain.PokerPhaseSecondBet, tp.GetPhase())
 		// Second bet
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		assert.Equal(t, domain.PokerPhaseEnd, tp.GetPhase())
 		assert.Equal(t, 0, tp.GetFolded())
@@ -337,8 +349,8 @@ func TestPoker_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		ok := tp.PlayerRaise(domain.PokerMinBet)
-		assert.True(t, ok)
+		err := tp.PlayerRaise(domain.PokerMinBet)
+		assert.NoError(t, err)
 		// Should advance or end depending on dealer response
 		assert.True(t, tp.GetPhase() == domain.PokerPhaseExchange || tp.GetPhase() == domain.PokerPhaseEnd)
 	})
@@ -347,8 +359,9 @@ func TestPoker_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		ok := tp.PlayerRaise(1)
-		assert.False(t, ok)
+		err := tp.PlayerRaise(1)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 	})
 
 	t.Run("success Showdown pot distribution player wins", func(t *testing.T) {
@@ -357,9 +370,9 @@ func TestPoker_Method(t *testing.T) {
 		tp.Reset()
 		// Navigate to Exchange phase
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		// Set up deterministic hands
 		player.Reset()
@@ -376,12 +389,12 @@ func TestPoker_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		// Second bet
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		assert.Equal(t, domain.PokerPhaseEnd, tp.GetPhase())
 		assert.Equal(t, 0, tp.GetPot())
@@ -406,8 +419,8 @@ func TestPoker_Method(t *testing.T) {
 		player.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
 		player.AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		// Large bet should cause dealer fold
-		ok := tp.PlayerBet(domain.PokerMinBet * 3)
-		assert.True(t, ok)
+		err := tp.PlayerBet(domain.PokerMinBet * 3)
+		assert.NoError(t, err)
 		if tp.GetFolded() == 2 {
 			assert.Equal(t, domain.PokerPhaseEnd, tp.GetPhase())
 			assert.Equal(t, 1, tp.GameJudgment())
@@ -420,9 +433,9 @@ func TestPoker_Method(t *testing.T) {
 		tp.Reset()
 		// Move to exchange phase
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		// Set up dealer with 4-card flush draw
 		dealer.Reset()
@@ -431,7 +444,7 @@ func TestPoker_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false)) // off-suit
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		// After exchange, dealer should have replaced the off-suit card
 		assert.Equal(t, domain.PokerPhaseSecondBet, tp.GetPhase())
 	})
@@ -442,9 +455,9 @@ func TestPoker_Method(t *testing.T) {
 		tp.Reset()
 		// Move to exchange phase
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		// Set up dealer with 4-card straight draw (5-6-7-8 + off card)
 		dealer.Reset()
@@ -453,7 +466,7 @@ func TestPoker_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false)) // outlier
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		assert.Equal(t, domain.PokerPhaseSecondBet, tp.GetPhase())
 	})
 }

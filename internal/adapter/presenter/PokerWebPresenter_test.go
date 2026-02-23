@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +34,7 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		var result controller.PokerWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -52,9 +52,9 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		tp.Reset()
 		// Move to exchange phase
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		player.Reset()
 		dealer.Reset()
@@ -70,14 +70,14 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		// Move to end
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		var result controller.PokerWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -93,9 +93,9 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		dealer.SetChips(0)
 		tp.Reset()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		player.Reset()
 		dealer.Reset()
@@ -111,13 +111,13 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		var result controller.PokerWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -130,9 +130,9 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		dealer.SetChips(0)
 		tp.Reset()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
 		player.Reset()
 		dealer.Reset()
@@ -148,13 +148,13 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
-		tp.PlayerStand()
+		_ = tp.PlayerStand()
 		if tp.GetDealerBet() > 0 {
-			tp.PlayerCall()
+			_ = tp.PlayerCall()
 		} else {
-			tp.PlayerCheck()
+			_ = tp.PlayerCheck()
 		}
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		var result controller.PokerWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -166,8 +166,8 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		tp.PlayerFold()
-		output := tpp.Output(tp)
+		_ = tp.PlayerFold()
+		output := tpp.Output(tp, nil)
 		var result controller.PokerWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -179,7 +179,7 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		output := tpp.Output(tp)
+		output := tpp.Output(tp, nil)
 		var result controller.PokerWebOutput
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
@@ -187,6 +187,18 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		assert.True(t, result.Dealer.Chips >= 0)
 		assert.True(t, result.Pot >= 0)
 		assert.Equal(t, domain.PokerDefaultAnte, result.Ante)
+	})
+
+	t.Run("success Output displays error message in JSON", func(t *testing.T) {
+		player.SetChips(0)
+		dealer.SetChips(0)
+		tp.Reset()
+		testErr := domain.NewDomainError(domain.ErrWrongPhase, "Bet is not allowed now.")
+		output := tpp.Output(tp, testErr)
+		var result controller.PokerWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, "Bet is not allowed now.", result.Message)
 	})
 
 	t.Run("success GetCardObj SPADE", func(t *testing.T) {
