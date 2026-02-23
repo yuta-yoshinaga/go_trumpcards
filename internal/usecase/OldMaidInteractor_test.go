@@ -10,6 +10,14 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func TestNewOldMaidInteractor_NilGuards(t *testing.T) {
+	t.Run("panics when omp is nil", func(t *testing.T) {
+		assert.PanicsWithValue(t, "OldMaidInteractor: omp must not be nil", func() {
+			usecase.NewOldMaidInteractor(nil)
+		})
+	})
+}
+
 func TestOldMaidInteractor_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
 	ompMock := new(presenter.MockOldMaidPresenter)

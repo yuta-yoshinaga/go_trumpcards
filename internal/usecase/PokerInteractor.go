@@ -25,6 +25,9 @@ type PokerInteractor struct {
 
 // NewPokerInteractor コンストラクタ
 func NewPokerInteractor(pp presenter.PokerPresenter) *PokerInteractor {
+	if pp == nil {
+		panic("PokerInteractor: pp must not be nil")
+	}
 	return &PokerInteractor{
 		p:  domain.NewPoker(domain.NewTrumpCards(0), domain.NewPokerPlayer(), domain.NewPokerPlayer()),
 		pp: pp,

@@ -11,6 +11,20 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func TestNewBlackJackInteractor_NilGuards(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	t.Run("panics when bj is nil", func(t *testing.T) {
+		assert.PanicsWithValue(t, "BlackJackInteractor: bj must not be nil", func() {
+			usecase.NewBlackJackInteractor(nil, bjpMock)
+		})
+	})
+	t.Run("panics when bjp is nil", func(t *testing.T) {
+		assert.PanicsWithValue(t, "BlackJackInteractor: bjp must not be nil", func() {
+			usecase.NewBlackJackInteractor(domain.NewDefaultBlackJack(), nil)
+		})
+	})
+}
+
 func TestBlackJackInteractor_Method(t *testing.T) {
 	bjpMock := new(presenter.MockBlackJackPresenter)
 	bjpMock.On("Output", mock.Anything, mock.Anything).Return("----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n")

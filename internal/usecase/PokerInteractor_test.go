@@ -10,6 +10,14 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func TestNewPokerInteractor_NilGuards(t *testing.T) {
+	t.Run("panics when pp is nil", func(t *testing.T) {
+		assert.PanicsWithValue(t, "PokerInteractor: pp must not be nil", func() {
+			usecase.NewPokerInteractor(nil)
+		})
+	})
+}
+
 func TestPokerInteractor_Method(t *testing.T) {
 	mockOutput := `{"dealer":{"handRank":0,"handName":"High Card","cards":[]},"player":{"handRank":0,"handName":"High Card","cards":[]},"phase":1,"message":"","pot":20,"ante":10}`
 	ppMock := new(presenter.MockPokerPresenter)

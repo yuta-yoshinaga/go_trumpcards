@@ -21,6 +21,9 @@ type SevensInteractor struct {
 
 // NewSevensInteractor コンストラクタ
 func NewSevensInteractor(sp presenter.SevensPresenter) *SevensInteractor {
+	if sp == nil {
+		panic("SevensInteractor: sp must not be nil")
+	}
 	config := domain.DefaultSevensConfig()
 	players := []*domain.SevensPlayer{
 		domain.NewSevensPlayer(true),  // player 0: 人間
