@@ -9,6 +9,9 @@ import (
 // SevensPlayerCnt 7並べプレイヤー数
 const SevensPlayerCnt = 4
 
+// sevensNoScore 評価値の初期値 (未評価を表す最小値)
+const sevensNoScore = math.MinInt
+
 // SevensCpuAction CPUまたは人間の1ターン分の行動記録
 type SevensCpuAction struct {
 	PlayerIdx   int   // 行動したプレイヤーインデックス
@@ -501,7 +504,7 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 func (s *Sevens) evaluateJokerPlays(player *SevensPlayer) (int, int, int) {
 	bestSuit := 0
 	bestValue := 0
-	bestScore := math.MinInt
+	bestScore := sevensNoScore
 
 	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
 		for value := 1; value <= 13; value++ {

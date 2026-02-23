@@ -69,9 +69,9 @@ func (pcp *PokerCuiPresenter) Output(p *domain.Poker, lastErr error) string {
 	}
 
 	if p.GetPhase() == domain.PokerPhaseEnd {
-		if p.GetFolded() == 1 {
+		if p.GetFolded() == domain.PokerFoldByPlayer {
 			b.WriteString("You folded.\n")
-		} else if p.GetFolded() == 2 {
+		} else if p.GetFolded() == domain.PokerFoldByDealer {
 			b.WriteString("Dealer folded. You win!\n")
 		} else {
 			switch p.GameJudgment() {
