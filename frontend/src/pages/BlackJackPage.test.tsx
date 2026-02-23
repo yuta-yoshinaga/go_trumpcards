@@ -273,4 +273,40 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     expect(screen.queryByText('ディーラー手札')).not.toBeInTheDocument();
   });
+
+  it('disables bet button while loading', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+
+    let resolve!: (value: typeof betPhaseState) => void;
+    const slowPromise = new Promise<typeof betPhaseState>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+
+    resolve(betPhaseState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+  });
+
+  it('disables action buttons while loading', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).not.toBeDisabled());
+
+    let resolve!: (value: typeof actionPhaseState) => void;
+    const slowPromise = new Promise<typeof actionPhaseState>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+
+    expect(screen.getByRole('button', { name: 'ヒット' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'スタンド' })).toBeDisabled();
+
+    resolve(actionPhaseState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).not.toBeDisabled());
+  });
 });

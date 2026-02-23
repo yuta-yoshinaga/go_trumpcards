@@ -212,10 +212,11 @@ interface HumanAreaProps {
   isCurrentTurn: boolean;
   tablePlaced: number[];
   tunnelEnabled: boolean;
+  loading: boolean;
   onPlay: (idx: number) => void;
 }
 
-function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, onPlay }: HumanAreaProps) {
+function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, loading, onPlay }: HumanAreaProps) {
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isCurrentTurn
@@ -248,7 +249,7 @@ function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, onPlay }
       )}
       <div className="flex flex-wrap gap-1">
         {player.cards?.map((card, i) => {
-          const playable = isCurrentTurn && isCardPlayable(card, tablePlaced, tunnelEnabled);
+          const playable = isCurrentTurn && !loading && isCardPlayable(card, tablePlaced, tunnelEnabled);
           return (
             <button
               key={`${card.design}-${card.value}`}
@@ -283,9 +284,11 @@ export function SevensPage() {
   const [cfgTunnel, setCfgTunnel] = useState(false);
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
   const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const exec = useCallback(
     async (command: 'reset' | 'play' | 'joker', index = -1, suit = 0, value = 0, config?: SevensConfigInput) => {
+      setLoading(true);
       try {
         const res = await sevensApi.exec(command, index, suit, value, config);
         setState(res);
@@ -297,6 +300,8 @@ export function SevensPage() {
         }
       } catch {
         console.error('sevens request failed');
+      } finally {
+        setLoading(false);
       }
     },
     [],
@@ -394,6 +399,7 @@ export function SevensPage() {
               isCurrentTurn={isHumanTurn}
               tablePlaced={tablePlaced}
               tunnelEnabled={tunnelEnabled}
+              loading={loading}
               onPlay={handleCardPlay}
             />
           </div>
@@ -429,6 +435,7 @@ export function SevensPage() {
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
+            disabled={loading}
             onClick={() =>
               exec('reset', -1, 0, 0, {
                 tunnelEnabled: cfgTunnel,
@@ -442,7 +449,7 @@ export function SevensPage() {
           <button
             type="button"
             className={`${btnWarning} min-w-[90px]`}
-            disabled={!canPass}
+            disabled={loading || !canPass}
             onClick={() => exec('play', -1)}
           >
             パス

@@ -296,4 +296,25 @@ describe('PokerPage', () => {
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/ディーラー ベット:/)).toBeInTheDocument());
   });
+
+  it('disables betting buttons while loading', async () => {
+    mockExec.mockResolvedValue(phase1State);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+
+    let resolve!: (value: typeof phase1State) => void;
+    const slowPromise = new Promise<typeof phase1State>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'チェック' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+
+    resolve(phase1State);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+  });
 });

@@ -359,4 +359,22 @@ describe('SevensPage', () => {
       expect(screen.getByRole('combobox')).toHaveValue('2');
     });
   });
+
+  it('disables action buttons while loading', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+
+    let resolve!: (value: typeof humanTurnState) => void;
+    const slowPromise = new Promise<typeof humanTurnState>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+
+    expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+
+    resolve(humanTurnState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+  });
 });
