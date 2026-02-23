@@ -1,6 +1,9 @@
 package entities
 
-import "sort"
+import (
+	"math/rand"
+	"sort"
+)
 
 // ポーカーゲームのフェーズ定数
 const (
@@ -278,13 +281,42 @@ func (p *Poker) dealerRespondToBet() {
 	if diff <= 0 {
 		return
 	}
-	// ハイカードで大きなベットにはフォールド
-	if rank == PokerHandHighCard && diff > PokerMinBet*2 {
-		p.folded = 2
-		p.player.AddChips(p.pot)
-		p.pot = 0
-		return
+
+	if rank == PokerHandHighCard {
+		// ハイカードの強さを評価 (A,K を持っているか)
+		hasHighCard := false
+		for i := 0; i < p.dealer.GetCardsSize(); i++ {
+			v := p.dealer.GetCard(i).GetValue()
+			if v == 1 || v >= 12 { // A, Q, K
+				hasHighCard = true
+				break
+			}
+		}
+		// ポットオッズ: コールに必要な額 vs 獲得可能なポット
+		potOdds := 0.0
+		if p.pot+diff > 0 {
+			potOdds = float64(diff) / float64(p.pot+diff)
+		}
+		// フォールド判定: ハイカードなし かつ ポットオッズが悪い かつ 大きなベット
+		if !hasHighCard && potOdds > 0.4 && diff > PokerMinBet*2 {
+			// 30%の確率でブラフコール
+			if rand.Intn(100) >= 30 {
+				p.folded = 2
+				p.player.AddChips(p.pot)
+				p.pot = 0
+				return
+			}
+		} else if !hasHighCard && diff > PokerMinBet*3 {
+			// 非常に大きなベットには50%でフォールド
+			if rand.Intn(100) >= 50 {
+				p.folded = 2
+				p.player.AddChips(p.pot)
+				p.pot = 0
+				return
+			}
+		}
 	}
+
 	// コール
 	callAmount := diff
 	if p.dealer.GetChips() < callAmount {
@@ -469,17 +501,17 @@ func (p *Poker) findStraightDrawDiscard() int {
 		return idx
 	}
 
-	// Ace low: A-2-3-4 のパターン (Aceを1として再評価)
-	cardsLow := make([]straightDrawCardInfo, p.dealer.GetCardsSize())
-	for i := 0; i < p.dealer.GetCardsSize(); i++ {
-		v := p.dealer.GetCard(i).GetValue()
-		cardsLow[i] = straightDrawCardInfo{i, v}
+	// Ace low: A-2-3-4 のパターン (Aceを1として再評価、同じスライスを再利用)
+	for i := range cards {
+		if cards[i].value == 14 {
+			cards[i].value = 1
+		}
 	}
-	sort.Slice(cardsLow, func(i, j int) bool {
-		return cardsLow[i].value < cardsLow[j].value
+	sort.Slice(cards, func(i, j int) bool {
+		return cards[i].value < cards[j].value
 	})
 
-	return findOpenEndedDraw(cardsLow, func(r []int) bool {
+	return findOpenEndedDraw(cards, func(r []int) bool {
 		return r[0] == 1 && r[3] <= 5
 	})
 }

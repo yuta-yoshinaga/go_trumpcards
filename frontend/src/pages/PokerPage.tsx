@@ -209,8 +209,8 @@ export function PokerPage() {
               <input
                 id="betAmount"
                 type="number"
-                min={10}
-                step={10}
+                min={state?.ante ?? 10}
+                step={state?.ante ?? 10}
                 value={betAmount}
                 onChange={(e) => setBetAmount(Number(e.target.value))}
                 className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
