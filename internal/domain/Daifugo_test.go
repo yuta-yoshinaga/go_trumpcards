@@ -249,9 +249,9 @@ func TestDaifugo_Method(t *testing.T) {
 		players := makeDaifugoPlayers()
 		dg := domain.NewDaifugo(tc, players, noRulesConfig())
 		// Human has 3 cards: pair of 5s + extra 3 (human doesn't finish after playing pair)
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))  // idx0
-		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))  // idx1
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))  // idx2 (kept)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // idx0
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false)) // idx1
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false)) // idx2 (kept)
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
@@ -289,28 +289,28 @@ func TestDaifugo_Method(t *testing.T) {
 		// Turn returns to human with pair of 5s on the table.
 		// CPU 1 gets a spare card (9) so it does not finish when it plays the pair of 5s
 		// (finishing would clear the table immediately, breaking the test scenario).
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))   // idx0 – played first
-		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))   // idx1 – played first
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))   // idx2 – remains
-		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))   // pair of 5s (beats 3s pair)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false)) // idx0 – played first
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false)) // idx1 – played first
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false)) // idx2 – remains
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // pair of 5s (beats 3s pair)
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))   // spare – keeps CPU 1 alive
-		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))  // single – cannot beat pair
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))  // spare – keeps CPU 1 alive
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false)) // single – cannot beat pair
 		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
 
 		_ = dg.PlayerPlay([]int{0, 1}) // human plays pair of 3s → table=[3,3], turn→CPU 1
-		dg.CpuPlay()               // CPU 1 plays pair of 5s → table=[5,5], turn→CPU 2
-		dg.CpuPlay()               // CPU 2 passes (single cannot beat pair)
-		dg.CpuPlay()               // CPU 3 passes; currentTurn→0, lastPlay=1 → no clear
+		dg.CpuPlay()                   // CPU 1 plays pair of 5s → table=[5,5], turn→CPU 2
+		dg.CpuPlay()                   // CPU 2 passes (single cannot beat pair)
+		dg.CpuPlay()                   // CPU 3 passes; currentTurn→0, lastPlay=1 → no clear
 		assert.True(t, dg.IsHumanTurn())
 		assert.Len(t, dg.GetTableCards(), 2) // pair of 5s still on table
 
 		// Human has [7♦] at idx0; tries [0,0] as a fake pair → deduped to [0] (1 card)
 		// isPlayable([7]) fails: 1 card ≠ 2 needed
 		err := dg.PlayerPlay([]int{0, 0})
-		assert.Error(t, err)                            // correctly rejected
+		assert.Error(t, err) // correctly rejected
 		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
-		assert.Len(t, dg.GetTableCards(), 2)         // table unchanged
+		assert.Len(t, dg.GetTableCards(), 2)          // table unchanged
 		assert.Equal(t, 1, players[0].GetCardsSize()) // hand unchanged
 	})
 
@@ -578,9 +578,9 @@ func TestDaifugo_Joker(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		// Play 2 on table first (via CPU)
 		_ = dg.PlayerPlay([]int{}) // human passes
-		dg.CpuPlay()            // CPU1 plays 2
-		dg.CpuPlay()            // CPU2 passes (can't beat 2 with 2)
-		dg.CpuPlay()            // CPU3 passes
+		dg.CpuPlay()               // CPU1 plays 2
+		dg.CpuPlay()               // CPU2 passes (can't beat 2 with 2)
+		dg.CpuPlay()               // CPU3 passes
 		// Back to human, table has 2
 		if dg.IsHumanTurn() && dg.GetTableCards() != nil {
 			// Human plays joker (should beat 2)
@@ -655,7 +655,7 @@ func TestDaifugo_EightCut(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false)) // spare
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false)) // spare
-		_ = dg.PlayerPlay([]int{0}) // play 8 → 8切り → table clears
+		_ = dg.PlayerPlay([]int{0})                                          // play 8 → 8切り → table clears
 		assert.Nil(t, dg.GetTableCards())
 	})
 
@@ -720,7 +720,7 @@ func TestDaifugo_SuitLock(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		_ = dg.PlayerPlay([]int{0}) // play SPADE 5
-		dg.CpuPlay()            // CPU1 plays SPADE 7 → suit lock to SPADE
+		dg.CpuPlay()                // CPU1 plays SPADE 7 → suit lock to SPADE
 		assert.True(t, dg.GetSuitLocked())
 		assert.Equal(t, domain.CardDesignSpade, dg.GetLockedSuit())
 	})

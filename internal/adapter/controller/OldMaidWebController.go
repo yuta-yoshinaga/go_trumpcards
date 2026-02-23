@@ -24,10 +24,10 @@ type OldMaidWebOutputCard struct {
 
 // OldMaidWebOutputPlayer ババ抜きWebアウトプットプレイヤー
 type OldMaidWebOutputPlayer struct {
-	ID         int                    `json:"id"`
-	IsHuman    bool                   `json:"isHuman"`
-	IsFinished bool                   `json:"isFinished"`
-	CardCount  int                    `json:"cardCount"`
+	ID         int                     `json:"id"`
+	IsHuman    bool                    `json:"isHuman"`
+	IsFinished bool                    `json:"isFinished"`
+	CardCount  int                     `json:"cardCount"`
 	Cards      []*OldMaidWebOutputCard `json:"cards"`
 }
 

@@ -329,7 +329,7 @@ func TestSevens_Method(t *testing.T) {
 		players := makeSevensPlayers()
 		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // not playable
-		assert.True(t, s.HasAnyOption(0)) // can still pass
+		assert.True(t, s.HasAnyOption(0))                                    // can still pass
 	})
 
 	t.Run("success HasAnyOption false when no options", func(t *testing.T) {

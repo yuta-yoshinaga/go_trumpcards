@@ -2,8 +2,8 @@ package domain
 
 // BlackJackPlayer ブラックジャックプレイヤークラス
 type BlackJackPlayer struct {
-	Player       // 親クラス
-	chips  int   // チップ
+	Player     // 親クラス
+	chips  int // チップ
 }
 
 // NewBlackJackPlayer コンストラクタ

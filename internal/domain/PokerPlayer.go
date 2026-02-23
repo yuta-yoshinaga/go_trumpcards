@@ -32,9 +32,9 @@ var PokerHandNames = []string{
 
 // PokerPlayer ポーカープレイヤークラス
 type PokerPlayer struct {
-	Player           // 親クラス
-	handRank int     // ハンドランク
-	chips    int     // チップ
+	Player       // 親クラス
+	handRank int // ハンドランク
+	chips    int // チップ
 }
 
 // NewPokerPlayer コンストラクタ

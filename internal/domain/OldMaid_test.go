@@ -234,7 +234,7 @@ func TestOldMaid_Method(t *testing.T) {
 		omCpu.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		omCpu.GetPlayer(2).SetIsFinished(true)
 		omCpu.GetPlayer(3).SetIsFinished(true)
-		
+
 		// Now turn is 0 (CPU). CpuDraw should work.
 		err := omCpu.CpuDraw()
 		assert.NoError(t, err)

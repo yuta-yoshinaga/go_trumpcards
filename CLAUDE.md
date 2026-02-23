@@ -33,6 +33,11 @@ go tool cover -func=coverage.out                           # Show coverage summa
 go tool cover -html=coverage.out -o coverage.html          # Generate HTML coverage report
 ```
 
+**Format Go source files:**
+```sh
+goimports -w ./...   # Format and organize imports for all Go files
+```
+
 **Dependencies:**
 ```sh
 go mod tidy
@@ -59,6 +64,10 @@ npm run test:coverage    # Run frontend unit tests with coverage report (outputs
 npm run test:watch       # Run frontend tests in watch mode
 ```
 
+
+## Go Formatting Rule
+
+**After editing any Go source file, always run `goimports -w` on the modified files before committing.** This ensures consistent code formatting and correct import organization (grouping, ordering, and removal of unused imports). Use `goimports`, not `gofmt`.
 
 ## Architecture
 

@@ -3,8 +3,8 @@ package presenter
 import (
 	"encoding/json"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
 // PokerWebPresenter ポーカーWebプレゼンタークラス
