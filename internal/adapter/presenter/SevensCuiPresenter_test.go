@@ -18,6 +18,18 @@ func makeSevensPlayersForPresenter() []*domain.SevensPlayer {
 	}
 }
 
+// setupSevensCuiTest creates a Sevens game with standard setup (player[0] SPADE 6, players[1-3] HEART 2).
+func setupSevensCuiTest() (*domain.Sevens, []*domain.SevensPlayer) {
+	tc := domain.NewTrumpCards(0)
+	players := makeSevensPlayersForPresenter()
+	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	return s, players
+}
+
 func TestSevensCuiPresenter_Method(t *testing.T) {
 	tsp := presenter.NewSevensCuiPresenter()
 
@@ -205,25 +217,19 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getCardStr nil and unknown design", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		s, players := setupSevensCuiTest()
 		players[0].AddCard(nil)
 		players[0].AddCard(domain.NewCard(99, 1, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "??")
 		assert.Contains(t, result, "UNKNOWN")
 	})
 
 	t.Run("success Output getCardStr all designs", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		s, players := setupSevensCuiTest()
 		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "CLOVER 6")
 		assert.Contains(t, result, "HEART 8")
@@ -241,13 +247,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 			{domain.CardDesignDiamond, "DIAMOND"},
 		}
 		for _, st := range suitTests {
-			tc := domain.NewTrumpCards(0)
-			players := makeSevensPlayersForPresenter()
-			s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-			players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-			players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+			s, _ := setupSevensCuiTest()
 			s.SetHumanAction(&domain.SevensCpuAction{
 				PlayerIdx:   0,
 				PlayedCard:  domain.NewCard(domain.CardDesignJoker, 0, false),
@@ -261,13 +261,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getSuitName default case", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s, _ := setupSevensCuiTest()
 		s.SetHumanAction(&domain.SevensCpuAction{
 			PlayerIdx:   0,
 			PlayedCard:  domain.NewCard(domain.CardDesignJoker, 0, false),
@@ -279,13 +273,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getPlayerName nil player", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s, _ := setupSevensCuiTest()
 		// Set human action with out-of-bounds player idx
 		s.SetHumanAction(&domain.SevensCpuAction{
 			PlayerIdx:  99,
@@ -296,13 +284,8 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output human action pass", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		s, players := setupSevensCuiTest()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.SetHumanAction(&domain.SevensCpuAction{
 			PlayerIdx:  0,
 			PlayedCard: nil,
@@ -312,13 +295,8 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output human action non-joker play", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		s, players := setupSevensCuiTest()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		s.SetHumanAction(&domain.SevensCpuAction{
 			PlayerIdx:  0,
 			PlayedCard: domain.NewCard(domain.CardDesignSpade, 8, false),
@@ -329,13 +307,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output CPU action with joker and target", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s, _ := setupSevensCuiTest()
 		s.SetCpuActions([]*domain.SevensCpuAction{
 			{
 				PlayerIdx:   1,
@@ -352,13 +324,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output CPU action pass", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s, _ := setupSevensCuiTest()
 		s.SetCpuActions([]*domain.SevensCpuAction{
 			{
 				PlayerIdx:  1,
@@ -371,13 +337,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output CPU action non-joker play", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSevensPlayersForPresenter()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s, _ := setupSevensCuiTest()
 		s.SetCpuActions([]*domain.SevensCpuAction{
 			{
 				PlayerIdx:  1,

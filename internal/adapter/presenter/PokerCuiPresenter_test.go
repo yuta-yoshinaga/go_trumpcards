@@ -216,11 +216,10 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		// When dealer bet is 0, "Dealer Bet:" line should not appear
-		if tp.GetDealerBet() == 0 {
-			output := tpp.Output(tp, nil)
-			assert.NotContains(t, output, "Dealer Bet:")
-		}
+		// Force dealer bet to 0 deterministically
+		tp.SetDealerBet(0)
+		output := tpp.Output(tp, nil)
+		assert.NotContains(t, output, "Dealer Bet:")
 	})
 
 	t.Run("success Output dealer hand hidden in non-end phase", func(t *testing.T) {

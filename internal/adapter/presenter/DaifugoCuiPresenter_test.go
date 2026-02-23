@@ -19,6 +19,18 @@ func makeDaifugoPlayersForPresenter() []*domain.DaifugoPlayer {
 	}
 }
 
+// setupDaifugoCuiTest creates a Daifugo game with DefaultDaifugoConfig and standard CPU cards.
+func setupDaifugoCuiTest() (*domain.Daifugo, []*domain.DaifugoPlayer) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayersForPresenter()
+	dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+	return dg, players
+}
+
 func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	tdp := presenter.NewDaifugoCuiPresenter()
 
@@ -152,13 +164,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output eleven back active", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDaifugoCuiTest()
 		dg.SetElevenBackActive(true)
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "11バック")
@@ -176,13 +182,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 			{999, "不明"},
 		}
 		for _, st := range suitTests {
-			tc := domain.NewTrumpCards(0)
-			players := makeDaifugoPlayersForPresenter()
-			dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-			players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-			players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+			dg, _ := setupDaifugoCuiTest()
 			dg.SetSuitLocked(true, st.suit)
 			result := tdp.Output(dg, nil)
 			assert.Contains(t, result, "スート縛り")
@@ -191,26 +191,14 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output table is sequence", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDaifugoCuiTest()
 		dg.SetTableIsSequence(true)
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "階段")
 	})
 
 	t.Run("success Output exchange actions", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDaifugoCuiTest()
 		dg.SetExchangeActions([]*domain.DaifugoExchangeAction{
 			{FromPlayerIdx: 0, ToPlayerIdx: 3, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)}},
 		})
@@ -256,13 +244,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getPlayerName nil player", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDaifugoCuiTest()
 		// Set a human action with out-of-bounds player idx to trigger nil player
 		dg.SetHumanAction(&domain.DaifugoCpuAction{PlayerIdx: 99, PlayedCards: nil})
 		result := tdp.Output(dg, nil)
@@ -289,26 +271,15 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output rankName unknown rank", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+		dg, players := setupDaifugoCuiTest()
 		players[0].SetIsFinished(true)
 		players[0].SetRank(0) // unknown rank → "不明"
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "不明")
 	})
 
 	t.Run("success Output getCardStr nil and unknown card via exchange", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDaifugoCuiTest()
 		dg.SetExchangeActions([]*domain.DaifugoExchangeAction{
 			{FromPlayerIdx: 0, ToPlayerIdx: 1, Cards: []*domain.Card{nil}},
 			{FromPlayerIdx: 1, ToPlayerIdx: 0, Cards: []*domain.Card{domain.NewCard(99, 1, false)}},

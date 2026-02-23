@@ -636,3 +636,8 @@ func (p *Poker) SetPhase(phase int) {
 func (p *Poker) SetFolded(folded int) {
 	p.folded = folded
 }
+
+// SetDealerBet ディーラーベット設定（テスト用）
+func (p *Poker) SetDealerBet(bet int) {
+	p.dealerBet = bet
+}

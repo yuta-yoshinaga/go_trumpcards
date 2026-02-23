@@ -24,6 +24,17 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		}
 	}
 
+	setupDGWebTest := func() (*domain.Daifugo, []*domain.DaifugoPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		return dg, players
+	}
+
 	t.Run("success Output initial state", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDGPlayers()
@@ -262,13 +273,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output elevenBack suitLocked tableIsSequence flags", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDGPlayers()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDGWebTest()
 		dg.SetElevenBackActive(true)
 		dg.SetSuitLocked(true, domain.CardDesignHeart)
 		dg.SetTableIsSequence(true)
@@ -293,29 +298,18 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 			{999, ""},
 		}
 		for _, st := range suitTests {
-			tc := domain.NewTrumpCards(0)
-			players := makeDGPlayers()
-			dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-			players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-			players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+			dg, _ := setupDGWebTest()
 			dg.SetSuitLocked(true, st.suit)
 			result := tdwp.Output(dg, nil)
 			var resObj controller.DaifugoWebOutput
-			_ = json.Unmarshal([]byte(result), &resObj)
+			err := json.Unmarshal([]byte(result), &resObj)
+			assert.NoError(t, err)
 			assert.Equal(t, st.expected, resObj.LockedSuit)
 		}
 	})
 
 	t.Run("success Output exchange actions in JSON", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDGPlayers()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDGWebTest()
 		dg.SetExchangeActions([]*domain.DaifugoExchangeAction{
 			{FromPlayerIdx: 0, ToPlayerIdx: 3, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)}},
 		})
@@ -331,10 +325,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output buildResultMessage with rank out of bounds", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDGPlayers()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		dg, players := setupDGWebTest()
 		players[1].SetIsFinished(true)
 		players[1].SetRank(0) // out of bounds → skip in buildResultMessage
 		players[2].SetIsFinished(true)
@@ -352,13 +343,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getCardObj nil card", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDGPlayers()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDGWebTest()
 		// Set exchange action with nil card to exercise getCardObj nil branch
 		dg.SetExchangeActions([]*domain.DaifugoExchangeAction{
 			{FromPlayerIdx: 0, ToPlayerIdx: 3, Cards: []*domain.Card{nil}},
@@ -372,13 +357,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getCardObjs nil input", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDGPlayers()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		dg, _ := setupDGWebTest()
 		// HumanAction with nil PlayedCards → exercises getCardObjs nil branch
 		dg.SetHumanAction(&domain.DaifugoCpuAction{PlayerIdx: 0, PlayedCards: nil})
 		result := tdwp.Output(dg, nil)
@@ -390,10 +369,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output buildResultMessage with rank > 4", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDGPlayers()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		dg, players := setupDGWebTest()
 		players[1].SetIsFinished(true)
 		players[1].SetRank(5) // out of bounds (> 4) → skip in buildResultMessage
 		players[2].SetIsFinished(true)

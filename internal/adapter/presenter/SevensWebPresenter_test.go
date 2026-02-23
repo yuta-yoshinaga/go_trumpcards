@@ -23,6 +23,17 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		}
 	}
 
+	setupSWebTest := func() (*domain.Sevens, []*domain.SevensPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		return s, players
+	}
+
 	t.Run("success Output initial state", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()
@@ -290,10 +301,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output humanAction nil", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSPlayers()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		s, _ := setupSWebTest()
 		// humanAction is nil by default (no play yet)
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
@@ -303,13 +311,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getCardObj nil card in cpuActions", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeSPlayers()
-		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		s, _ := setupSWebTest()
 		// CPU pass action → PlayedCard is nil → getCardObj(nil) → nil
 		s.SetCpuActions([]*domain.SevensCpuAction{
 			{PlayerIdx: 1, PlayedCard: nil},

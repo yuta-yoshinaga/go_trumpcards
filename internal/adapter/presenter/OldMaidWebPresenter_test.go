@@ -9,6 +9,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// setupOldMaidWebTest creates an OldMaid game with standard setup (player[0] SPADE 1, player[1] HEART 3, players[2,3] finished).
+func setupOldMaidWebTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	return om, players
+}
+
 func TestOldMaidWebPresenter_Method(t *testing.T) {
 	towp := presenter.NewOldMaidWebPresenter()
 
@@ -242,13 +259,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output lastDrawPlayer nil hides draw card", func(t *testing.T) {
-		tc := domain.NewTrumpCards(1)
-		players := makePlayers()
-		om := domain.NewOldMaid(tc, players)
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		players[2].SetIsFinished(true)
-		players[3].SetIsFinished(true)
+		om, _ := setupOldMaidWebTest()
 		// Simulate draw having happened with invalid player idx → GetPlayer returns nil
 		om.SetHasDrawn(true)
 		om.SetLastDrawPlayerIdx(-1)
@@ -258,13 +269,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getCardObj nil card via humanAction", func(t *testing.T) {
-		tc := domain.NewTrumpCards(1)
-		players := makePlayers()
-		om := domain.NewOldMaid(tc, players)
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		players[2].SetIsFinished(true)
-		players[3].SetIsFinished(true)
+		om, _ := setupOldMaidWebTest()
 		// HumanAction with nil DrawnCard → exercises getCardObj(nil)
 		om.SetHumanAction(&domain.OldMaidCpuAction{
 			DrawPlayerIdx:  0,

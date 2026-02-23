@@ -9,6 +9,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// setupOldMaidCuiTest creates an OldMaid game with standard CPU card setup (player[1] has HEART 5, players[2,3] finished).
+func setupOldMaidCuiTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	return om, players
+}
+
 func TestOldMaidCuiPresenter_Method(t *testing.T) {
 	top := presenter.NewOldMaidCuiPresenter()
 
@@ -183,17 +199,12 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getCardStr all designs", func(t *testing.T) {
-		tc := domain.NewTrumpCards(1)
-		players := makePlayers()
-		om := domain.NewOldMaid(tc, players)
+		om, players := setupOldMaidCuiTest()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-		players[2].SetIsFinished(true)
-		players[3].SetIsFinished(true)
 		result := top.Output(om, nil)
 		assert.Contains(t, result, "SPADE 1")
 		assert.Contains(t, result, "CLOVER 2")
@@ -219,14 +230,9 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output getCardStr nil and unknown design", func(t *testing.T) {
-		tc := domain.NewTrumpCards(1)
-		players := makePlayers()
-		om := domain.NewOldMaid(tc, players)
+		om, players := setupOldMaidCuiTest()
 		players[0].AddCard(nil)
 		players[0].AddCard(domain.NewCard(99, 1, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-		players[2].SetIsFinished(true)
-		players[3].SetIsFinished(true)
 		result := top.Output(om, nil)
 		assert.Contains(t, result, "??")
 		assert.Contains(t, result, "UNKNOWN")
