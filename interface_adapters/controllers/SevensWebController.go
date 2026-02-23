@@ -103,6 +103,7 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 	mu.Lock()
+	defer mu.Unlock()
 	switch param.Command {
 	case "r", "reset":
 		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil {
@@ -118,7 +119,6 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))
 	}
-	mu.Unlock()
 }
 
 // writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む

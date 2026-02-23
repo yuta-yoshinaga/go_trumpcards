@@ -65,28 +65,27 @@ func (s *SessionStore[T]) Get(id string, factory func() T) (T, bool) {
 }
 
 // GetWithLock returns the value for the given sessionId (creating it via factory
-// if needed) along with a per-session mutex. The caller must call mu.Lock()
-// before operating on the value and mu.Unlock() when done. This prevents
-// concurrent requests for the same session from racing on shared state.
+// if needed) along with a per-session mutex. The caller must use
+// defer mu.Unlock() after mu.Lock() to ensure the lock is always released.
+// This prevents concurrent requests for the same session from racing on
+// shared state.
 func (s *SessionStore[T]) GetWithLock(id string, factory func() T) (T, *sync.Mutex, bool) {
 	var zero T
 	if len(id) > SessionMaxIDLen {
 		return zero, nil, false
 	}
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	entry, ok := s.entries[id]
 	if ok {
 		entry.lastUsed = time.Now()
-		s.mu.Unlock()
 		return entry.value, &entry.mu, true
 	}
 	if len(s.entries) >= SessionMaxCount {
-		s.mu.Unlock()
 		return zero, nil, false
 	}
 	entry = &sessionEntry[T]{value: factory(), lastUsed: time.Now()}
 	s.entries[id] = entry
-	s.mu.Unlock()
 	return entry.value, &entry.mu, true
 }
 

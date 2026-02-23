@@ -92,7 +92,7 @@ func (b *BlackJack) PlayerBet(amount int) bool {
 	if b.phase != BJPhaseBet {
 		return false
 	}
-	if amount < BJMinBet {
+	if amount < BJMinBet || amount%BJMinBet != 0 {
 		return false
 	}
 	if !b.player.SubtractChips(amount) {
@@ -101,13 +101,26 @@ func (b *BlackJack) PlayerBet(amount int) bool {
 	b.playerHands[0].SetBet(amount)
 
 	// カードを2枚ずつ配る
+	dealFailed := false
 	for i := 0; i < 2; i++ {
 		if card := b.drawCard(); card != nil {
 			b.playerHands[0].AddCard(card)
+		} else {
+			dealFailed = true
 		}
 		if card := b.drawCard(); card != nil {
 			b.dealer.AddCard(card)
+		} else {
+			dealFailed = true
 		}
+	}
+
+	// 山札枯渇で必要な枚数を配れなかった場合、ベットを返却してリセット
+	if dealFailed {
+		b.player.AddChips(amount)
+		b.playerHands[0].Reset()
+		b.dealer.Reset()
+		return false
 	}
 	b.phase = BJPhaseDeal
 
@@ -247,12 +260,16 @@ func (b *BlackJack) PlayerSplit() bool {
 	newHand.SetBet(bet)
 	newHand.AddCard(secondCard)
 
-	// 各ハンドに1枚ずつ配る
+	// 各ハンドに1枚ずつ配る（山札枯渇時は自動スタンド）
 	if card := b.drawCard(); card != nil {
 		hand.AddCard(card)
+	} else {
+		hand.SetStood(true)
 	}
 	if card := b.drawCard(); card != nil {
 		newHand.AddCard(card)
+	} else {
+		newHand.SetStood(true)
 	}
 
 	// 新しいハンドを挿入
@@ -262,6 +279,17 @@ func (b *BlackJack) PlayerSplit() bool {
 	if firstCard.GetValue() == 1 {
 		hand.SetStood(true)
 		newHand.SetStood(true)
+	}
+
+	// 全ハンドが完了している場合（エーススプリットまたは山札枯渇）、次へ進む
+	allFinished := true
+	for _, h := range b.playerHands {
+		if !h.IsFinished() {
+			allFinished = false
+			break
+		}
+	}
+	if allFinished {
 		b.advanceHand()
 	}
 

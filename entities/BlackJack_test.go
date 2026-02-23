@@ -81,6 +81,13 @@ func TestBlackJack_PlayerBet(t *testing.T) {
 		ok := bj.PlayerBet(100)
 		assert.False(t, ok)
 	})
+	t.Run("bet not multiple of min bet", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		ok := bj.PlayerBet(15)
+		assert.False(t, ok)
+		assert.Equal(t, entities.BJPhaseBet, bj.GetPhase())
+	})
 	t.Run("bet in wrong phase", func(t *testing.T) {
 		bj := entities.NewDefaultBlackJack()
 		bj.Reset()
@@ -260,6 +267,27 @@ func TestBlackJack_GameJudgmentForHand(t *testing.T) {
 }
 
 func TestBlackJack_DrawCardNilSafety(t *testing.T) {
+	t.Run("bet with exhausted deck refunds chips", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+
+		// デッキを全て引き切る
+		for i := 0; i < 52; i++ {
+			tc.DrawCard()
+		}
+
+		// デッキ枯渇時のベットはfalseを返し、チップが返却される
+		ok := bj.PlayerBet(100)
+		assert.False(t, ok)
+		assert.Equal(t, 1000, player.GetChips())
+		assert.Equal(t, entities.BJPhaseBet, bj.GetPhase())
+	})
+
 	t.Run("hit with exhausted deck does not panic", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		player := entities.NewBlackJackPlayer()

@@ -94,6 +94,7 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				drawIdx = *param.DrawIdx
 			}
 			mu.Lock()
+			defer mu.Unlock()
 			switch param.Command {
 			case "r", "reset":
 				responseStr = omi.Reset()
@@ -102,7 +103,6 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			default:
 				responseStr = `{"message":"Unsupported command."}`
 			}
-			mu.Unlock()
 		}
 	}
 	response := new(OldMaidWebOutput)

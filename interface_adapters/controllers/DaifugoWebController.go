@@ -106,6 +106,7 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			responseStr = `{"message":"param error."}`
 		} else {
 			mu.Lock()
+			defer mu.Unlock()
 			switch param.Command {
 			case "r", "reset":
 				responseStr = dgi.Reset()
@@ -118,7 +119,6 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			default:
 				responseStr = `{"message":"Unsupported command."}`
 			}
-			mu.Unlock()
 		}
 	}
 	response := new(DaifugoWebOutput)
