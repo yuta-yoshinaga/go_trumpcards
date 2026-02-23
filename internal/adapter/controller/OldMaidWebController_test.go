@@ -16,8 +16,6 @@ import (
 
 func TestOldMaidWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
-	// After controller unmarshal+remarshal, new fields are included
-	expectedBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":""}`
 	omiMock := new(usecase.MockOldMaidInteractor)
 	omiMock.On("Reset").Return(mockOutput).Times(2)
 	omiMock.On("Draw", -1).Return(mockOutput)
@@ -32,7 +30,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	api.SetApp(router)
 
 	var jsonInput controller.OldMaidWebInput
-	// When "q" / "quit": responseStr = {"message":"bye."} → all other fields default to zero
+	// When "q" / "quit": newDefaultOutput is used
 	qBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"bye."}`
 
 	t.Run("success Exec q", func(t *testing.T) {
@@ -60,7 +58,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(expectedBody)
+		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec reset", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": "test-session-1"}`), &jsonInput)
@@ -69,7 +67,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(expectedBody)
+		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec d", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "d", "sessionId": "test-session-1"}`), &jsonInput)
@@ -78,7 +76,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(expectedBody)
+		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec draw", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "draw", "sessionId": "test-session-1"}`), &jsonInput)
@@ -87,7 +85,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(expectedBody)
+		recorded.BodyIs(mockOutput)
 	})
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)

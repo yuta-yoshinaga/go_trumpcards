@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -55,6 +54,7 @@ type BlackJackWebOutput struct {
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
 type BlackJackWebController struct {
+	baseController
 	factory func() usecase.BlackJackInteractorIF
 	store   *SessionStore[usecase.BlackJackInteractorIF]
 }
@@ -70,52 +70,54 @@ func NewBlackJackWebController(factory func() usecase.BlackJackInteractorIF) *Bl
 // Exec ゲーム実行
 func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param BlackJackWebInput
-	status := http.StatusOK
-	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" || param.SessionId == "" {
-		status = http.StatusBadRequest
-		responseStr = `{"message":"param error."}`
-	} else if param.Command == "q" || param.Command == "quit" {
-		responseStr = `{"message":"bye."}`
-	} else {
-		bji, mu, ok := bwc.store.GetWithLock(param.SessionId, bwc.factory)
-		if !ok {
-			status = http.StatusBadRequest
-			responseStr = `{"message":"param error."}`
-		} else {
-			mu.Lock()
-			defer mu.Unlock()
-			switch param.Command {
-			case "r", "reset":
-				responseStr = bji.Reset()
-			case "h", "hit":
-				responseStr = bji.Hit()
-			case "s", "stand":
-				responseStr = bji.Stand()
-			case "b", "bet":
-				responseStr = bji.Bet(param.Amount)
-			case "d", "doubledown":
-				responseStr = bji.DoubleDown()
-			case "sp", "split":
-				responseStr = bji.Split()
-			case "i", "insurance":
-				responseStr = bji.Insurance()
-			case "di", "declineinsurance":
-				responseStr = bji.DeclineInsurance()
-			default:
-				responseStr = `{"message":"Unsupported command."}`
-			}
-		}
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(bwc.newDefaultOutput("param error."))
+		return
 	}
-	response := new(BlackJackWebOutput)
-	response.Dealer = new(BlackJackWebOutputPlayer)
-	response.Player = new(BlackJackWebOutputPlayer)
-	err = json.Unmarshal([]byte(responseStr), &response)
-	if err != nil || responseStr == "" {
-		status = http.StatusBadRequest
-		response.Message = "error."
+	if param.Command == "q" || param.Command == "quit" {
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(bwc.newDefaultOutput("bye."))
+		return
 	}
-	w.WriteHeader(status)
-	_ = w.WriteJson(response)
+	bji, mu, ok := bwc.store.GetWithLock(param.SessionId, bwc.factory)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(bwc.newDefaultOutput("param error."))
+		return
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	errOutput := bwc.newDefaultOutput("error.")
+	switch param.Command {
+	case "r", "reset":
+		bwc.writePresenterResponse(w, bji.Reset(), errOutput)
+	case "h", "hit":
+		bwc.writePresenterResponse(w, bji.Hit(), errOutput)
+	case "s", "stand":
+		bwc.writePresenterResponse(w, bji.Stand(), errOutput)
+	case "b", "bet":
+		bwc.writePresenterResponse(w, bji.Bet(param.Amount), errOutput)
+	case "d", "doubledown":
+		bwc.writePresenterResponse(w, bji.DoubleDown(), errOutput)
+	case "sp", "split":
+		bwc.writePresenterResponse(w, bji.Split(), errOutput)
+	case "i", "insurance":
+		bwc.writePresenterResponse(w, bji.Insurance(), errOutput)
+	case "di", "declineinsurance":
+		bwc.writePresenterResponse(w, bji.DeclineInsurance(), errOutput)
+	default:
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(bwc.newDefaultOutput("Unsupported command."))
+	}
+}
+
+// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
+func (bwc *BlackJackWebController) newDefaultOutput(msg string) *BlackJackWebOutput {
+	return &BlackJackWebOutput{
+		Dealer:  &BlackJackWebOutputPlayer{},
+		Player:  &BlackJackWebOutputPlayer{},
+		Message: msg,
+	}
 }

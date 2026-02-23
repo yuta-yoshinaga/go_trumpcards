@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -60,6 +59,7 @@ type OldMaidWebOutput struct {
 
 // OldMaidWebController ババ抜きWebコントローラークラス
 type OldMaidWebController struct {
+	baseController
 	factory func() usecase.OldMaidInteractorIF
 	store   *SessionStore[usecase.OldMaidInteractorIF]
 }
@@ -75,44 +75,46 @@ func NewOldMaidWebController(factory func() usecase.OldMaidInteractorIF) *OldMai
 // Exec ゲーム実行
 func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param OldMaidWebInput
-	status := http.StatusOK
-	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" || param.SessionId == "" {
-		status = http.StatusBadRequest
-		responseStr = `{"message":"param error."}`
-	} else if param.Command == "q" || param.Command == "quit" {
-		responseStr = `{"message":"bye."}`
-	} else {
-		omi, mu, ok := owc.store.GetWithLock(param.SessionId, owc.factory)
-		if !ok {
-			status = http.StatusBadRequest
-			responseStr = `{"message":"param error."}`
-		} else {
-			drawIdx := -1
-			if param.DrawIdx != nil {
-				drawIdx = *param.DrawIdx
-			}
-			mu.Lock()
-			defer mu.Unlock()
-			switch param.Command {
-			case "r", "reset":
-				responseStr = omi.Reset()
-			case "d", "draw":
-				responseStr = omi.Draw(drawIdx)
-			default:
-				responseStr = `{"message":"Unsupported command."}`
-			}
-		}
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(owc.newDefaultOutput("param error."))
+		return
 	}
-	response := new(OldMaidWebOutput)
-	response.Players = make([]*OldMaidWebOutputPlayer, 0)
-	response.CpuActions = make([]*OldMaidWebOutputCpuAction, 0)
-	err = json.Unmarshal([]byte(responseStr), &response)
-	if err != nil || responseStr == "" {
-		status = http.StatusBadRequest
-		response.Message = "error."
+	if param.Command == "q" || param.Command == "quit" {
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(owc.newDefaultOutput("bye."))
+		return
 	}
-	w.WriteHeader(status)
-	_ = w.WriteJson(response)
+	omi, mu, ok := owc.store.GetWithLock(param.SessionId, owc.factory)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(owc.newDefaultOutput("param error."))
+		return
+	}
+	drawIdx := -1
+	if param.DrawIdx != nil {
+		drawIdx = *param.DrawIdx
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	errOutput := owc.newDefaultOutput("error.")
+	switch param.Command {
+	case "r", "reset":
+		owc.writePresenterResponse(w, omi.Reset(), errOutput)
+	case "d", "draw":
+		owc.writePresenterResponse(w, omi.Draw(drawIdx), errOutput)
+	default:
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(owc.newDefaultOutput("Unsupported command."))
+	}
+}
+
+// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
+func (owc *OldMaidWebController) newDefaultOutput(msg string) *OldMaidWebOutput {
+	return &OldMaidWebOutput{
+		Players:    make([]*OldMaidWebOutputPlayer, 0),
+		CpuActions: make([]*OldMaidWebOutputCpuAction, 0),
+		Message:    msg,
+	}
 }
