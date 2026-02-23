@@ -302,8 +302,8 @@ describe('PokerPage', () => {
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
-    let resolve!: (value: typeof phase1State) => void;
-    const slowPromise = new Promise<typeof phase1State>((res) => {
+    let resolve!: (value: PokerResponse) => void;
+    const slowPromise = new Promise<PokerResponse>((res) => {
       resolve = res;
     });
     mockExec.mockReturnValueOnce(slowPromise);

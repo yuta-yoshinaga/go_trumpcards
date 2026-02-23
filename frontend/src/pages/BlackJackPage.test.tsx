@@ -278,8 +278,8 @@ describe('BlackJackPage', () => {
     render(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
-    let resolve!: (value: typeof betPhaseState) => void;
-    const slowPromise = new Promise<typeof betPhaseState>((res) => {
+    let resolve!: (value: BlackJackResponse) => void;
+    const slowPromise = new Promise<BlackJackResponse>((res) => {
       resolve = res;
     });
     mockExec.mockReturnValueOnce(slowPromise);
@@ -296,8 +296,8 @@ describe('BlackJackPage', () => {
     render(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).not.toBeDisabled());
 
-    let resolve!: (value: typeof actionPhaseState) => void;
-    const slowPromise = new Promise<typeof actionPhaseState>((res) => {
+    let resolve!: (value: BlackJackResponse) => void;
+    const slowPromise = new Promise<BlackJackResponse>((res) => {
       resolve = res;
     });
     mockExec.mockReturnValueOnce(slowPromise);

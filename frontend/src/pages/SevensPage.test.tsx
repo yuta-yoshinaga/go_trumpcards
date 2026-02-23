@@ -364,8 +364,8 @@ describe('SevensPage', () => {
     render(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
-    let resolve!: (value: typeof humanTurnState) => void;
-    const slowPromise = new Promise<typeof humanTurnState>((res) => {
+    let resolve!: (value: SevensResponse) => void;
+    const slowPromise = new Promise<SevensResponse>((res) => {
       resolve = res;
     });
     mockExec.mockReturnValueOnce(slowPromise);

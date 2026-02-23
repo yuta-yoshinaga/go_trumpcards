@@ -303,8 +303,8 @@ describe('DaifugoPage', () => {
     render(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
-    let resolve!: (value: typeof humanTurnState) => void;
-    const slowPromise = new Promise<typeof humanTurnState>((res) => {
+    let resolve!: (value: DaifugoResponse) => void;
+    const slowPromise = new Promise<DaifugoResponse>((res) => {
       resolve = res;
     });
     mockExec.mockReturnValueOnce(slowPromise);
