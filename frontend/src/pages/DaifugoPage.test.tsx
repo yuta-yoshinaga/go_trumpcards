@@ -298,4 +298,23 @@ describe('DaifugoPage', () => {
     render(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/カード交換/)).toBeInTheDocument());
   });
+
+  it('disables action buttons while loading', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+
+    let resolve!: (value: DaifugoResponse) => void;
+    const slowPromise = new Promise<DaifugoResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+
+    expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
+
+    resolve(humanTurnState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+  });
 });

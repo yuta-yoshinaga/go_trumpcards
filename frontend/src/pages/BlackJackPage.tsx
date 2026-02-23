@@ -9,18 +9,22 @@ export function BlackJackPage() {
   const [state, setState] = useState<BlackJackResponse | null>(null);
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
+  const [loading, setLoading] = useState(false);
 
   const exec = useCallback(
     async (
       command: 'reset' | 'hit' | 'stand' | 'bet' | 'doubledown' | 'split' | 'insurance' | 'declineinsurance',
       amount?: number,
     ) => {
+      setLoading(true);
       try {
         const res = await blackjackApi.exec(command, amount);
         setState(res);
         setMessage(res.message ?? '');
       } catch {
         console.error('blackjack request failed');
+      } finally {
+        setLoading(false);
       }
     },
     [],
@@ -122,7 +126,7 @@ export function BlackJackPage() {
                   className="w-20 px-2 py-1 rounded text-sm"
                 />
               </div>
-              <button type="button" className={btnPrimary} onClick={() => exec('bet', betAmount)}>
+              <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('bet', betAmount)}>
                 ベット
               </button>
             </>
@@ -130,10 +134,10 @@ export function BlackJackPage() {
 
           {phase === BjPhase.INSURANCE && (
             <>
-              <button type="button" className={btnWarning} onClick={() => exec('insurance')}>
+              <button type="button" className={btnWarning} disabled={loading} onClick={() => exec('insurance')}>
                 インシュランス
               </button>
-              <button type="button" className={btnDanger} onClick={() => exec('declineinsurance')}>
+              <button type="button" className={btnDanger} disabled={loading} onClick={() => exec('declineinsurance')}>
                 辞退
               </button>
             </>
@@ -141,19 +145,19 @@ export function BlackJackPage() {
 
           {phase === BjPhase.ACTION && (
             <>
-              <button type="button" className={btnPrimary} onClick={() => exec('hit')}>
+              <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('hit')}>
                 ヒット
               </button>
-              <button type="button" className={btnPrimary} onClick={() => exec('stand')}>
+              <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('stand')}>
                 スタンド
               </button>
               {currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet && (
-                <button type="button" className={btnWarning} onClick={() => exec('doubledown')}>
+                <button type="button" className={btnWarning} disabled={loading} onClick={() => exec('doubledown')}>
                   ダブルダウン
                 </button>
               )}
               {currentHand?.canSplit && playerChips >= currentHand.bet && (
-                <button type="button" className={btnSuccess} onClick={() => exec('split')}>
+                <button type="button" className={btnSuccess} disabled={loading} onClick={() => exec('split')}>
                   スプリット
                 </button>
               )}
@@ -161,7 +165,7 @@ export function BlackJackPage() {
           )}
 
           {phase === BjPhase.END && (
-            <button type="button" className={btnPrimary} onClick={() => exec('reset')}>
+            <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('reset')}>
               リセット
             </button>
           )}

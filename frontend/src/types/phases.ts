@@ -7,19 +7,19 @@
  */
 
 // BlackJack phase constants (sync: internal/domain/BlackJack.go)
-export enum BjPhase {
-  BET = 1,
-  DEAL = 2,
-  INSURANCE = 3,
-  ACTION = 4,
-  END = 5,
-}
+export const BjPhase = {
+  BET: 1,
+  DEAL: 2,
+  INSURANCE: 3,
+  ACTION: 4,
+  END: 5,
+} as const;
 
 // Poker phase constants (sync: internal/domain/Poker.go)
-export enum PokerPhase {
-  INIT = 0,
-  DEAL = 1,
-  EXCHANGE = 2,
-  SECOND_BET = 3,
-  END = 4,
-}
+export const PokerPhase = {
+  INIT: 0,
+  DEAL: 1,
+  EXCHANGE: 2,
+  SECOND_BET: 3,
+  END: 4,
+} as const;

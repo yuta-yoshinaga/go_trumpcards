@@ -18,6 +18,7 @@ export function PokerPage() {
   const [state, setState] = useState<PokerResponse | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
   const [betAmount, setBetAmount] = useState(10);
+  const [loading, setLoading] = useState(false);
 
   const exec = useCallback(
     async (
@@ -25,12 +26,15 @@ export function PokerPage() {
       indices?: number[],
       amount?: number,
     ) => {
+      setLoading(true);
       try {
         const res = await pokerApi.exec(command, indices, amount);
         setState(res);
         setSelected([]);
       } catch {
         console.error('poker request failed');
+      } finally {
+        setLoading(false);
       }
     },
     [],
@@ -205,12 +209,18 @@ export function PokerPage() {
             </div>
             {hasOutstandingBet ? (
               <>
-                <button type="button" className={`${btnSuccess} min-w-[80px]`} onClick={() => exec('call')}>
+                <button
+                  type="button"
+                  className={`${btnSuccess} min-w-[80px]`}
+                  disabled={loading}
+                  onClick={() => exec('call')}
+                >
                   コール
                 </button>
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[80px]`}
+                  disabled={loading}
                   onClick={() => exec('raise', undefined, betAmount)}
                 >
                   レイズ
@@ -221,16 +231,27 @@ export function PokerPage() {
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[80px]`}
+                  disabled={loading}
                   onClick={() => exec('bet', undefined, betAmount)}
                 >
                   ベット
                 </button>
-                <button type="button" className={`${btnSuccess} min-w-[80px]`} onClick={() => exec('check')}>
+                <button
+                  type="button"
+                  className={`${btnSuccess} min-w-[80px]`}
+                  disabled={loading}
+                  onClick={() => exec('check')}
+                >
                   チェック
                 </button>
               </>
             )}
-            <button type="button" className={`${btnDanger} min-w-[80px]`} onClick={() => exec('fold')}>
+            <button
+              type="button"
+              className={`${btnDanger} min-w-[80px]`}
+              disabled={loading}
+              onClick={() => exec('fold')}
+            >
               フォールド
             </button>
           </div>
@@ -239,10 +260,20 @@ export function PokerPage() {
         {/* Exchange controls */}
         {isExchangePhase && (
           <div className="text-center mb-2">
-            <button type="button" className={`${btnWarning} min-w-[90px]`} onClick={() => exec('exchange', selected)}>
+            <button
+              type="button"
+              className={`${btnWarning} min-w-[90px]`}
+              disabled={loading}
+              onClick={() => exec('exchange', selected)}
+            >
               交換
             </button>
-            <button type="button" className={`${btnSuccess} min-w-[90px]`} onClick={() => exec('stand')}>
+            <button
+              type="button"
+              className={`${btnSuccess} min-w-[90px]`}
+              disabled={loading}
+              onClick={() => exec('stand')}
+            >
               スタンド
             </button>
           </div>
@@ -250,7 +281,12 @@ export function PokerPage() {
 
         {/* Always-visible buttons */}
         <div className="text-center">
-          <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[90px]`}
+            disabled={loading}
+            onClick={() => exec('reset')}
+          >
             リセット
           </button>
         </div>

@@ -208,14 +208,18 @@ function ExchangeLog({
 export function DaifugoPage() {
   const [state, setState] = useState<DaifugoResponse | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const exec = useCallback(async (command: 'reset' | 'play', indices?: number[]) => {
+    setLoading(true);
     try {
       const res = await daifugoApi.exec(command, indices);
       setState(res);
       setSelectedIndices([]);
     } catch {
       console.error('daifugo request failed');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -305,13 +309,18 @@ export function DaifugoPage() {
 
         {/* Buttons */}
         <div className="text-center">
-          <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[90px]`}
+            disabled={loading}
+            onClick={() => exec('reset')}
+          >
             リセット
           </button>
           <button
             type="button"
             className={`${btnWarning} min-w-[90px]`}
-            disabled={!isHumanTurn || state.gameEndFlag}
+            disabled={loading || !isHumanTurn || state.gameEndFlag}
             onClick={() => exec('play', [])}
           >
             パス
@@ -319,7 +328,7 @@ export function DaifugoPage() {
           <button
             type="button"
             className={`${btnSuccess} min-w-[120px]`}
-            disabled={!isHumanTurn || state.gameEndFlag || selectedIndices.length === 0}
+            disabled={loading || !isHumanTurn || state.gameEndFlag || selectedIndices.length === 0}
             onClick={() =>
               exec(
                 'play',

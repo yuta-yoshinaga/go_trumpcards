@@ -286,6 +286,24 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 4000 });
   }, 10000);
 
+  it('disables buttons while loading', async () => {
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
+
+    let resolve!: (value: OldMaidResponse) => void;
+    const slowPromise = new Promise<OldMaidResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'ランダムに引く' }));
+
+    expect(screen.getByRole('button', { name: 'ランダムに引く' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+
+    resolve(humanTurnState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
+  });
+
   it('enables random draw button after CPU replay animation completes (Bug 1 regression)', async () => {
     // Final server state has currentTurn=0 (human's turn)
     const finalState: OldMaidResponse = {

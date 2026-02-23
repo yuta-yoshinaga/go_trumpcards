@@ -105,17 +105,18 @@ interface PlayerAreaProps {
   isTarget: boolean;
   isHumanTurn: boolean;
   gameEndFlag: boolean;
+  loading: boolean;
   onDraw: (drawIdx: number) => void;
 }
 
-function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: PlayerAreaProps) {
+function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, loading, onDraw }: PlayerAreaProps) {
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isTarget && !gameEndFlag
       ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
       : {};
 
-  const showSelectable = isHumanTurn && isTarget && !player.isFinished && !player.isHuman && !gameEndFlag;
+  const showSelectable = isHumanTurn && !loading && isTarget && !player.isFinished && !player.isHuman && !gameEndFlag;
   const showCount = Math.min(player.cardCount, 10);
 
   return (
@@ -224,10 +225,12 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
 
 export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
+  const [loading, setLoading] = useState(false);
   const replayGenRef = useRef(0);
 
   const exec = useCallback(async (command: 'reset' | 'draw', drawIdx?: number) => {
     const myGen = ++replayGenRef.current;
+    setLoading(true);
     try {
       const res = await oldmaidApi.exec(command, drawIdx);
       if (myGen !== replayGenRef.current) return;
@@ -256,6 +259,8 @@ export function OldMaidPage() {
       setDisplayState(res);
     } catch {
       console.error('oldmaid request failed');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -296,6 +301,7 @@ export function OldMaidPage() {
               isTarget={state.nextDrawTargetIdx === player.id}
               isHumanTurn={isHumanTurn}
               gameEndFlag={state.gameEndFlag}
+              loading={loading}
               onDraw={(drawIdx) => exec('draw', drawIdx)}
             />
           ))}
@@ -347,6 +353,7 @@ export function OldMaidPage() {
               isTarget={false}
               isHumanTurn={isHumanTurn}
               gameEndFlag={state.gameEndFlag}
+              loading={loading}
               onDraw={(drawIdx) => exec('draw', drawIdx)}
             />
           </div>
@@ -354,13 +361,18 @@ export function OldMaidPage() {
 
         {/* Buttons */}
         <div className="text-center">
-          <button type="button" className={`${btnPrimary} min-w-[80px]`} onClick={() => exec('reset')}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[80px]`}
+            disabled={loading}
+            onClick={() => exec('reset')}
+          >
             リセット
           </button>
           <button
             type="button"
             className={`${btnWarning} min-w-[110px]`}
-            disabled={!isHumanTurn || state.gameEndFlag}
+            disabled={loading || !isHumanTurn || state.gameEndFlag}
             onClick={() => exec('draw')}
           >
             ランダムに引く
