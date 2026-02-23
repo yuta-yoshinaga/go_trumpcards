@@ -531,43 +531,9 @@ func TestPoker_CollectAnte_InsufficientChips(t *testing.T) {
 	assert.True(t, tp.GetPot() >= 8)
 }
 
-func TestPoker_PlayerBet_DealerFolds(t *testing.T) {
-	tc := domain.NewTrumpCards(0)
-	player := domain.NewPokerPlayer()
-	dealer := domain.NewPokerPlayer()
-	tp := domain.NewPoker(tc, player, dealer)
-	// Run multiple attempts since dealer fold is probabilistic
-	dealerFolded := false
-	for i := 0; i < 100; i++ {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		// Set up dealer with weak high card (no A/K/Q) after Reset dealt cards
-		dealer.Reset()
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
-		// Set up player with strong hand
-		player.Reset()
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
-		// Large bet: need potOdds > 0.4 and diff > PokerMinBet*2
-		// pot=20 (antes), bet=100 → potOdds = 100/(20+100) = 0.833 > 0.4, diff=100 > 20
-		err := tp.PlayerBet(100)
-		assert.NoError(t, err)
-		if tp.GetFolded() == domain.PokerFoldByDealer {
-			assert.Equal(t, domain.PokerPhaseEnd, tp.GetPhase())
-			dealerFolded = true
-			break
-		}
-	}
-	assert.True(t, dealerFolded, "dealer should have folded at least once in 100 attempts")
-}
+// TestPoker_PlayerBet_DealerFolds moved to poker_internal_test.go as
+// TestPoker_DealerRespondToBet_FoldBranch_Deterministic which calls
+// dealerRespondToBet() directly with controlled state.
 
 func TestPoker_PlayerCall_AllIn(t *testing.T) {
 	tc := domain.NewTrumpCards(0)

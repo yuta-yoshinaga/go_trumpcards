@@ -1285,34 +1285,9 @@ func TestBlackJack_JudgeHand_DealerBJvsPlayerNonBJ(t *testing.T) {
 	assert.Equal(t, 900, player.GetChips())
 }
 
-func TestBlackJack_PlayerBet_DealerAceTriggersInsurance(t *testing.T) {
-	// Exercise lines 131-134: when dealer's first card is an Ace (value==1),
-	// insuranceAvailable should be set to true and phase should be BJPhaseInsurance.
-	// Because the deck is shuffled randomly, we retry until the dealer's first card is an Ace.
-	bj := domain.NewDefaultBlackJack()
-	triggered := false
-	for i := 0; i < 1000; i++ {
-		bj.Reset()
-		err := bj.PlayerBet(domain.BJMinBet)
-		if err != nil {
-			continue
-		}
-		if bj.GetPhase() == domain.BJPhaseInsurance {
-			triggered = true
-			// Verify insurance-specific state
-			assert.True(t, bj.IsInsuranceAvailable(), "insuranceAvailable should be true when dealer shows Ace")
-			assert.Equal(t, domain.BJPhaseInsurance, bj.GetPhase())
-			// Confirm dealer's first card is an Ace
-			dealerCard := bj.GetDealer().GetCard(0)
-			assert.NotNil(t, dealerCard)
-			assert.Equal(t, 1, dealerCard.GetValue(), "dealer's first card should be an Ace")
-			// Confirm game has not ended yet (insurance decision pending)
-			assert.False(t, bj.GetGameEndFlag())
-			break
-		}
-	}
-	assert.True(t, triggered, "should have triggered insurance phase within 1000 attempts")
-}
+// TestBlackJack_PlayerBet_DealerAceTriggersInsurance moved to
+// blackjack_internal_test.go as a deterministic test that stacks the deck
+// instead of retrying random shuffles.
 
 func TestBlackJack_PlayerDoubleDown_Bust(t *testing.T) {
 	// Exercise lines 234-236: when score >= 22 after double down draw, hand should be busted.

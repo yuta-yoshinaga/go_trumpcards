@@ -166,11 +166,6 @@ func (pp *PokerPlayer) GetHandRank() int {
 	return pp.handRank
 }
 
-// SetHandRank ハンドランク設定（テスト用）
-func (pp *PokerPlayer) SetHandRank(rank int) {
-	pp.handRank = rank
-}
-
 // GetHandName ハンド名取得
 func (pp *PokerPlayer) GetHandName() string {
 	if 0 <= pp.handRank && pp.handRank < len(PokerHandNames) {

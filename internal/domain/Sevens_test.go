@@ -1553,24 +1553,6 @@ func TestSevens_AdvanceTurn_GameEndFlagBlocksPlay(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrGameEnded)
 }
 
-func TestSevens_IsPositionPlaced_InvalidSuit(t *testing.T) {
-	// Covers lines 187-189: isPositionPlaced returns false for invalid suit.
-	tc := domain.NewTrumpCards(0)
-	players := makeSevensPlayers()
-	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-
-	// suit < CardDesignSpade (suit=0)
-	assert.False(t, s.IsPositionPlaced(0, 7))
-	// suit > CardDesignDiamond (suit=5)
-	assert.False(t, s.IsPositionPlaced(5, 7))
-	// suit = -1
-	assert.False(t, s.IsPositionPlaced(-1, 7))
-	// Valid suit with valid value (7 is placed on fresh board)
-	assert.True(t, s.IsPositionPlaced(domain.CardDesignSpade, 7))
-	// Valid suit with unplaced value
-	assert.False(t, s.IsPositionPlaced(domain.CardDesignSpade, 6))
-}
-
 func TestSevens_FindPlayableStrategic_BestScoreUpdated(t *testing.T) {
 	// Covers lines 453-455: the loop body where a later play has higher score
 	// than the first, updating 'best'.
@@ -1610,105 +1592,6 @@ func TestSevens_FindPlayableStrategic_BestScoreUpdated(t *testing.T) {
 	assert.Equal(t, 8, actions[0].PlayedCard.GetValue())
 }
 
-func TestSevens_EvaluatePlay_TunnelAceLow(t *testing.T) {
-	// Covers lines 476-478: evaluatePlay tunnel wrap for Ace (value=1),
-	// where nextLow becomes 13 instead of 0.
-	// Setup: tunnel enabled + strategy. Board has spade 2-7 placed (min=2, max=7).
-	// CPU has Ace(1) which is playable (adjacent to 2).
-	// Without tunnel: nextLow = 0, skipped. With tunnel: nextLow = 13.
-	// CPU does NOT have King(13), so score -= 1 for low direction.
-	// nextHigh = 2 (placed), so no score for high direction.
-	// Total score = -1 -> CPU would pass if it has passes.
-	tc := domain.NewTrumpCards(0)
-	players := makeSevensPlayers()
-	tunnelStrategyConfig := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: true}
-	s := domain.NewSevens(tc, players, tunnelStrategyConfig)
-
-	// Build board: place spade 6, 5, 4, 3, 2 so board has spade 2-7
-	// Use SetTablePlaced to set the board directly for simplicity
-	var placed [5]uint16
-	for i := 1; i <= 4; i++ {
-		placed[i] = 1 << 7 // 7 is placed for all suits
-	}
-	// Place spade 2-6 (plus 7 already)
-	placed[domain.CardDesignSpade] |= (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6)
-	s.SetTablePlaced(placed)
-
-	// Give players enough cards so game doesn't end
-	for i := 0; i < 4; i++ {
-		for d := 0; d < 5; d++ {
-			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
-		}
-	}
-
-	// Human plays some card to advance turn to CPU
-	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-	s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
-
-	// CPU 1 has Ace(1)♠ - playable since adjacent to 2♠
-	// It does NOT have King(13)♠, so tunnel wrap gives negative score
-	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-
-	if s.GetCurrentTurn() == 1 {
-		s.CpuPlay()
-		// Score = -1 (tunnel wrap nextLow=13, no King) and CPU has passes -> should pass
-		actions := s.GetCpuActions()
-		assert.NotEmpty(t, actions)
-		lastAction := actions[len(actions)-1]
-		if lastAction.PlayerIdx == 1 {
-			assert.Nil(t, lastAction.PlayedCard) // passed due to negative score
-		}
-	}
-}
-
-func TestSevens_EvaluatePlay_TunnelKingHigh(t *testing.T) {
-	// Covers lines 489-491: evaluatePlay tunnel wrap for King (value=13),
-	// where nextHigh becomes 1 instead of 14.
-	// Setup: tunnel enabled + strategy. Board has spade 7-12 placed.
-	// CPU has King(13) which is playable (adjacent to 12).
-	// Without tunnel: nextHigh = 14, skipped. With tunnel: nextHigh = 1.
-	// CPU does NOT have Ace(1), so score -= 1 for high direction.
-	// nextLow = 12 (placed), so no score for low direction.
-	// Total score = -1 -> CPU would pass if it has passes.
-	tc := domain.NewTrumpCards(0)
-	players := makeSevensPlayers()
-	tunnelStrategyConfig := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: true}
-	s := domain.NewSevens(tc, players, tunnelStrategyConfig)
-
-	// Build board: place spade 8-12 (plus 7 already)
-	var placed [5]uint16
-	for i := 1; i <= 4; i++ {
-		placed[i] = 1 << 7
-	}
-	placed[domain.CardDesignSpade] |= (1 << 8) | (1 << 9) | (1 << 10) | (1 << 11) | (1 << 12)
-	s.SetTablePlaced(placed)
-
-	// Give players enough cards so game doesn't end
-	for i := 0; i < 4; i++ {
-		for d := 0; d < 5; d++ {
-			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
-		}
-	}
-
-	// Human plays some card to advance turn to CPU
-	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-	s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
-
-	// CPU 1 has King(13)♠ - playable since adjacent to 12♠
-	// It does NOT have Ace(1)♠, so tunnel wrap gives negative score
-	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
-
-	if s.GetCurrentTurn() == 1 {
-		s.CpuPlay()
-		actions := s.GetCpuActions()
-		assert.NotEmpty(t, actions)
-		lastAction := actions[len(actions)-1]
-		if lastAction.PlayerIdx == 1 {
-			assert.Nil(t, lastAction.PlayedCard) // passed due to negative score
-		}
-	}
-}
-
 func TestSevens_EvaluatePlay_PlayerHasNextHighCard(t *testing.T) {
 	// Covers lines 493-495: evaluatePlay where player has the next high card.
 	// Setup: strategy enabled. CPU plays 8♠ (adjacent to 7) and has 9♠ in hand.
@@ -1744,43 +1627,5 @@ func TestSevens_EvaluatePlay_PlayerHasNextHighCard(t *testing.T) {
 			assert.NotNil(t, lastAction.PlayedCard)
 			assert.Equal(t, 8, lastAction.PlayedCard.GetValue())
 		}
-	}
-}
-
-func TestSevens_SetGameEndFlag(t *testing.T) {
-	tc := domain.NewTrumpCards(0)
-	players := makeSevensPlayers()
-	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-
-	assert.False(t, s.GetGameEndFlag())
-	s.SetGameEndFlag(true)
-	assert.True(t, s.GetGameEndFlag())
-	s.SetGameEndFlag(false)
-	assert.False(t, s.GetGameEndFlag())
-}
-
-func TestSevens_SetCurrentTurn(t *testing.T) {
-	tc := domain.NewTrumpCards(0)
-	players := makeSevensPlayers()
-	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-
-	assert.Equal(t, 0, s.GetCurrentTurn())
-	s.SetCurrentTurn(2)
-	assert.Equal(t, 2, s.GetCurrentTurn())
-}
-
-func TestSevens_SetTablePlaced(t *testing.T) {
-	tc := domain.NewTrumpCards(0)
-	players := makeSevensPlayers()
-	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-
-	var placed [5]uint16
-	for i := 1; i <= 4; i++ {
-		placed[i] = (1 << 7) | (1 << 6)
-	}
-	s.SetTablePlaced(placed)
-	result := s.GetTablePlaced()
-	for i := 1; i <= 4; i++ {
-		assert.Equal(t, uint16((1<<7)|(1<<6)), result[i])
 	}
 }

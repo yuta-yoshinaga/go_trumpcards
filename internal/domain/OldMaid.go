@@ -382,14 +382,3 @@ func (o *OldMaid) SetHumanAction(action *OldMaidCpuAction) { o.humanAction = act
 
 // SetGameEndFlag ゲーム終了フラグ設定（テスト用）
 func (o *OldMaid) SetGameEndFlag(v bool) { o.gameEndFlag = v }
-
-// SetCurrentTurn 現在の手番設定（テスト用）
-func (o *OldMaid) SetCurrentTurn(v int) { o.currentTurn = v }
-
-// DrawCardForTest drawCardの公開ラッパー（テスト用）
-func (o *OldMaid) DrawCardForTest(playerIdx int, cardIdx int) *Card {
-	return o.drawCard(playerIdx, cardIdx)
-}
-
-// AdvanceTurnForTest advanceTurnの公開ラッパー（テスト用）
-func (o *OldMaid) AdvanceTurnForTest() { o.advanceTurn() }

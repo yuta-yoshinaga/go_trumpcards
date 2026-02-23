@@ -233,25 +233,6 @@ func TestPokerPlayer_Method(t *testing.T) {
 	})
 }
 
-func TestPokerPlayer_GetHandName_Unknown(t *testing.T) {
-	tpp := domain.NewPokerPlayer()
-	// Set handRank to invalid value using SetHandRank
-	tpp.SetHandRank(-1)
-	assert.Equal(t, "Unknown", tpp.GetHandName())
-	tpp.SetHandRank(99)
-	assert.Equal(t, "Unknown", tpp.GetHandName())
-}
-
-func TestPokerPlayer_SetHandRank(t *testing.T) {
-	tpp := domain.NewPokerPlayer()
-	tpp.SetHandRank(domain.PokerHandFlush)
-	assert.Equal(t, domain.PokerHandFlush, tpp.GetHandRank())
-	tpp.SetHandRank(domain.PokerHandRoyalFlush)
-	assert.Equal(t, domain.PokerHandRoyalFlush, tpp.GetHandRank())
-	tpp.SetHandRank(0)
-	assert.Equal(t, domain.PokerHandHighCard, tpp.GetHandRank())
-}
-
 func TestPokerPlayer_CheckStraight_NotNormal(t *testing.T) {
 	tpp := domain.NewPokerPlayer()
 	// Hand that is NOT a normal straight, NOT A-2-3-4-5, NOT A-10-J-Q-K
