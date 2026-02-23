@@ -317,4 +317,32 @@ describe('PokerPage', () => {
     resolve(phase1State);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
   });
+
+  it('shows error message when API call fails', async () => {
+    render(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByText('リセット'));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  });
+
+  it('clears error message on successful API call after failure', async () => {
+    render(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByText('リセット'));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+
+    mockExec.mockResolvedValueOnce(phase0State);
+    fireEvent.click(screen.getByText('リセット'));
+    await waitFor(() =>
+      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
+    );
+  });
 });

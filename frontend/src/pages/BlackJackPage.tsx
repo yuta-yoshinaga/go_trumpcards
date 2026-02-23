@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { blackjackApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
@@ -10,6 +11,7 @@ export function BlackJackPage() {
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const exec = useCallback(
     async (
@@ -18,11 +20,12 @@ export function BlackJackPage() {
     ) => {
       setLoading(true);
       try {
+        setError(null);
         const res = await blackjackApi.exec(command, amount);
         setState(res);
         setMessage(res.message ?? '');
       } catch {
-        console.error('blackjack request failed');
+        setError('通信エラーが発生しました。もう一度お試しください。');
       } finally {
         setLoading(false);
       }
@@ -107,6 +110,8 @@ export function BlackJackPage() {
             {message}
           </div>
         )}
+
+        <ErrorAlert message={error} />
 
         {/* Phase-based buttons */}
         <div className="text-center">

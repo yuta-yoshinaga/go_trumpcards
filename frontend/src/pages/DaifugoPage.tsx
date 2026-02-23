@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { Card, DaifugoAction, DaifugoExchangeAction, DaifugoPlayerData, DaifugoResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
@@ -209,15 +210,17 @@ export function DaifugoPage() {
   const [state, setState] = useState<DaifugoResponse | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const exec = useCallback(async (command: 'reset' | 'play', indices?: number[]) => {
     setLoading(true);
     try {
+      setError(null);
       const res = await daifugoApi.exec(command, indices);
       setState(res);
       setSelectedIndices([]);
     } catch {
-      console.error('daifugo request failed');
+      setError('通信エラーが発生しました。もう一度お試しください。');
     } finally {
       setLoading(false);
     }
@@ -306,6 +309,8 @@ export function DaifugoPage() {
             />
           </div>
         )}
+
+        <ErrorAlert message={error} />
 
         {/* Buttons */}
         <div className="text-center">

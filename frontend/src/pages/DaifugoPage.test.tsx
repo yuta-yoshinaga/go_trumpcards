@@ -317,4 +317,35 @@ describe('DaifugoPage', () => {
     resolve(humanTurnState);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
   });
+
+  it('shows error message when API call fails', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  }, 10000);
+
+  it('clears error message on successful API call after failure', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
+    );
+  }, 10000);
 });

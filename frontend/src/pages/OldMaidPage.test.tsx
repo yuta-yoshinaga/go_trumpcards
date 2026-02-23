@@ -352,4 +352,35 @@ describe('OldMaidPage', () => {
     // so the button is re-enabled for the human's next turn
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled(), { timeout: 4000 });
   }, 10000);
+
+  it('shows error message when API call fails', async () => {
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  }, 10000);
+
+  it('clears error message on successful API call after failure', async () => {
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
+    );
+  }, 10000);
 });
