@@ -52,9 +52,9 @@ func (pwp *PokerWebPresenter) Output(p *domain.Poker, lastErr error) string {
 		for i := 0; i < dealer.GetCardsSize(); i++ {
 			resObj.Dealer.Cards = append(resObj.Dealer.Cards, pwp.GetCardObj(dealer.GetCard(i)))
 		}
-		if p.GetFolded() == 1 {
+		if p.GetFolded() == domain.PokerFoldByPlayer {
 			resObj.Message = "You folded."
-		} else if p.GetFolded() == 2 {
+		} else if p.GetFolded() == domain.PokerFoldByDealer {
 			resObj.Message = "Dealer folded. You win!"
 		} else {
 			switch p.GameJudgment() {

@@ -82,7 +82,7 @@ func TestPoker_Method(t *testing.T) {
 		err := tp.PlayerFold()
 		assert.NoError(t, err)
 		assert.Equal(t, domain.PokerPhaseEnd, tp.GetPhase())
-		assert.Equal(t, 1, tp.GetFolded())
+		assert.Equal(t, domain.PokerFoldByPlayer, tp.GetFolded())
 		assert.Equal(t, 0, tp.GetPot())
 	})
 
@@ -208,7 +208,7 @@ func TestPoker_Method(t *testing.T) {
 			_ = tp.PlayerCheck()
 		}
 		assert.Equal(t, domain.PokerPhaseEnd, tp.GetPhase())
-		assert.Equal(t, 0, tp.GetFolded())
+		assert.Equal(t, domain.PokerFoldNone, tp.GetFolded())
 	})
 
 	t.Run("success GameJudgment player win higher rank", func(t *testing.T) {
@@ -421,7 +421,7 @@ func TestPoker_Method(t *testing.T) {
 		// Large bet should cause dealer fold
 		err := tp.PlayerBet(domain.PokerMinBet * 3)
 		assert.NoError(t, err)
-		if tp.GetFolded() == 2 {
+		if tp.GetFolded() == domain.PokerFoldByDealer {
 			assert.Equal(t, domain.PokerPhaseEnd, tp.GetPhase())
 			assert.Equal(t, 1, tp.GameJudgment())
 		}

@@ -21,6 +21,13 @@ const (
 	PokerMinBet       = 10
 )
 
+// ポーカーフォールド状態定数
+const (
+	PokerFoldNone     = iota // フォールドなし
+	PokerFoldByPlayer        // プレイヤーがフォールド
+	PokerFoldByDealer        // ディーラーがフォールド
+)
+
 // ディーラーAI閾値
 const (
 	dealerFoldPotOddsThreshold    = 0.4 // ポットオッズがこれを超えるとフォールド候補
@@ -40,7 +47,7 @@ type Poker struct {
 	playerBet  int          // プレイヤーの現ラウンドベット
 	dealerBet  int          // ディーラーの現ラウンドベット
 	ante       int          // アンティ
-	folded     int          // フォールド状態 (0:なし, 1:プレイヤー, 2:ディーラー)
+	folded     int          // フォールド状態 (PokerFoldNone/PokerFoldByPlayer/PokerFoldByDealer)
 }
 
 // NewPoker コンストラクタ
@@ -60,7 +67,7 @@ func (p *Poker) Reset() {
 	p.pot = 0
 	p.playerBet = 0
 	p.dealerBet = 0
-	p.folded = 0
+	p.folded = PokerFoldNone
 	for i := 0; i < 10; i++ {
 		p.trumpCards.Shuffle()
 	}
@@ -117,7 +124,7 @@ func (p *Poker) PlayerBet(amount int) error {
 	// ディーラーのベットに対する応答
 	p.dealerRespondToBet()
 	// フォールドした場合は終了
-	if p.folded != 0 {
+	if p.folded != PokerFoldNone {
 		p.phase = PokerPhaseEnd
 		return nil
 	}
@@ -167,7 +174,7 @@ func (p *Poker) PlayerRaise(amount int) error {
 	p.pot += totalNeeded
 	// ディーラーのレイズに対する応答
 	p.dealerRespondToBet()
-	if p.folded != 0 {
+	if p.folded != PokerFoldNone {
 		p.phase = PokerPhaseEnd
 		return nil
 	}
@@ -180,7 +187,7 @@ func (p *Poker) PlayerFold() error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
 		return NewDomainError(ErrWrongPhase, "Fold is not allowed now.")
 	}
-	p.folded = 1
+	p.folded = PokerFoldByPlayer
 	// ポットをディーラーに渡す
 	p.dealer.AddChips(p.pot)
 	p.pot = 0
@@ -313,7 +320,7 @@ func (p *Poker) dealerRespondToBet() {
 		if !hasHighCard && potOdds > dealerFoldPotOddsThreshold && diff > PokerMinBet*dealerFoldBetMultiplierWeak {
 			// 70%の確率でフォールドする（残りの30%でコールを試みる）
 			if rand.Intn(100) < dealerFoldRateWeak {
-				p.folded = 2
+				p.folded = PokerFoldByDealer
 				p.player.AddChips(p.pot)
 				p.pot = 0
 				return
@@ -321,7 +328,7 @@ func (p *Poker) dealerRespondToBet() {
 		} else if !hasHighCard && diff > PokerMinBet*dealerFoldBetMultiplierStrong {
 			// 50%の確率でフォールドする（残りの50%でコールを試みる）
 			if rand.Intn(100) < dealerFoldRateStrong {
-				p.folded = 2
+				p.folded = PokerFoldByDealer
 				p.player.AddChips(p.pot)
 				p.pot = 0
 				return
@@ -530,10 +537,10 @@ func (p *Poker) findStraightDrawDiscard() int {
 
 // GameJudgment ゲーム勝敗判定 (1:勝ち, 0:引き分け, -1:負け)
 func (p *Poker) GameJudgment() int {
-	if p.folded == 1 {
+	if p.folded == PokerFoldByPlayer {
 		return -1 // プレイヤーフォールド
 	}
-	if p.folded == 2 {
+	if p.folded == PokerFoldByDealer {
 		return 1 // ディーラーフォールド
 	}
 	playerRank := p.player.GetHandRank()
