@@ -16,8 +16,6 @@ import (
 
 func TestDaifugoWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":-1,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":""}`
-	// After controller unmarshal+remarshal, all fields appear
-	expectedBody := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":-1,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":""}`
 	dgiMock := new(usecase.MockDaifugoInteractor)
 	dgiMock.On("Reset").Return(mockOutput).Times(2)
 	dgiMock.On("Play", []int{}).Return(mockOutput)
@@ -62,7 +60,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(expectedBody)
+		recorded.BodyIs(mockOutput)
 	})
 
 	t.Run("success Exec reset", func(t *testing.T) {
@@ -72,7 +70,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(expectedBody)
+		recorded.BodyIs(mockOutput)
 	})
 
 	t.Run("success Exec p (pass)", func(t *testing.T) {
@@ -82,7 +80,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(expectedBody)
+		recorded.BodyIs(mockOutput)
 	})
 
 	t.Run("failed Exec other", func(t *testing.T) {

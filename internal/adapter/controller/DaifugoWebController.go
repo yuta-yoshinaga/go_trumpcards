@@ -91,55 +91,58 @@ func NewDaifugoWebController(factory func() usecase.DaifugoInteractorIF) *Daifug
 // Exec ゲーム実行
 func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param DaifugoWebInput
-	status := http.StatusOK
-	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" || param.SessionId == "" {
-		status = http.StatusBadRequest
-		responseStr = `{"message":"param error."}`
-	} else if param.Command == "q" || param.Command == "quit" {
-		responseStr = `{"message":"bye."}`
-	} else {
-		dgi, mu, ok := dwc.store.GetWithLock(param.SessionId, dwc.factory)
-		if !ok {
-			status = http.StatusBadRequest
-			responseStr = `{"message":"param error."}`
-		} else {
-			mu.Lock()
-			defer mu.Unlock()
-			switch param.Command {
-			case "r", "reset":
-				responseStr = dgi.Reset()
-			case "p", "play":
-				indices := param.Indices
-				if indices == nil {
-					indices = []int{}
-				}
-				responseStr = dgi.Play(indices)
-			default:
-				responseStr = `{"message":"Unsupported command."}`
-			}
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(dwc.newDefaultOutput("param error."))
+		return
+	}
+	if param.Command == "q" || param.Command == "quit" {
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(dwc.newDefaultOutput("bye."))
+		return
+	}
+	dgi, mu, ok := dwc.store.GetWithLock(param.SessionId, dwc.factory)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(dwc.newDefaultOutput("param error."))
+		return
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	switch param.Command {
+	case "r", "reset":
+		dwc.writePresenterResponse(w, dgi.Reset())
+	case "p", "play":
+		indices := param.Indices
+		if indices == nil {
+			indices = []int{}
 		}
+		dwc.writePresenterResponse(w, dgi.Play(indices))
+	default:
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(dwc.newDefaultOutput("Unsupported command."))
 	}
-	response := new(DaifugoWebOutput)
-	err = json.Unmarshal([]byte(responseStr), &response)
-	if err != nil || responseStr == "" {
-		status = http.StatusBadRequest
-		response.Message = "error."
+}
+
+// writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
+func (dwc *DaifugoWebController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
+	if responseStr == "" || !json.Valid([]byte(responseStr)) {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(dwc.newDefaultOutput("error."))
+		return
 	}
-	// nil スライスは JSON で null になるので空スライスに統一する
-	if response.Players == nil {
-		response.Players = make([]*DaifugoWebOutputPlayer, 0)
+	w.WriteHeader(http.StatusOK)
+	_ = w.WriteJson(json.RawMessage(responseStr))
+}
+
+// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
+func (dwc *DaifugoWebController) newDefaultOutput(msg string) *DaifugoWebOutput {
+	return &DaifugoWebOutput{
+		Players:         make([]*DaifugoWebOutputPlayer, 0),
+		TableCards:      make([]*DaifugoWebOutputCard, 0),
+		CpuActions:      make([]*DaifugoWebOutputAction, 0),
+		ExchangeActions: make([]*DaifugoWebOutputExchangeAction, 0),
+		Message:         msg,
 	}
-	if response.TableCards == nil {
-		response.TableCards = make([]*DaifugoWebOutputCard, 0)
-	}
-	if response.CpuActions == nil {
-		response.CpuActions = make([]*DaifugoWebOutputAction, 0)
-	}
-	if response.ExchangeActions == nil {
-		response.ExchangeActions = make([]*DaifugoWebOutputExchangeAction, 0)
-	}
-	w.WriteHeader(status)
-	_ = w.WriteJson(response)
 }

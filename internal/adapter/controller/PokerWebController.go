@@ -59,56 +59,68 @@ func NewPokerWebController(factory func() usecase.PokerInteractorIF) *PokerWebCo
 // Exec ゲーム実行
 func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param PokerWebInput
-	status := http.StatusOK
-	responseStr := ""
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" || param.SessionId == "" {
-		status = http.StatusBadRequest
-		responseStr = `{"message":"param error."}`
-	} else if param.Command == "q" || param.Command == "quit" {
-		responseStr = `{"message":"bye."}`
-	} else {
-		pi, mu, ok := pwc.store.GetWithLock(param.SessionId, pwc.factory)
-		if !ok {
-			status = http.StatusBadRequest
-			responseStr = `{"message":"param error."}`
-		} else {
-			mu.Lock()
-			defer mu.Unlock()
-			switch param.Command {
-			case "r", "reset":
-				responseStr = pi.Reset()
-			case "e", "exchange":
-				indices := param.Indices
-				if indices == nil {
-					indices = []int{}
-				}
-				responseStr = pi.Exchange(indices)
-			case "s", "stand":
-				responseStr = pi.Stand()
-			case "b", "bet":
-				responseStr = pi.Bet(param.Amount)
-			case "c", "call":
-				responseStr = pi.Call()
-			case "ra", "raise":
-				responseStr = pi.Raise(param.Amount)
-			case "f", "fold":
-				responseStr = pi.Fold()
-			case "ck", "check":
-				responseStr = pi.Check()
-			default:
-				responseStr = `{"message":"Unsupported command."}`
-			}
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(pwc.newDefaultOutput("param error."))
+		return
+	}
+	if param.Command == "q" || param.Command == "quit" {
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(pwc.newDefaultOutput("bye."))
+		return
+	}
+	pi, mu, ok := pwc.store.GetWithLock(param.SessionId, pwc.factory)
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(pwc.newDefaultOutput("param error."))
+		return
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	switch param.Command {
+	case "r", "reset":
+		pwc.writePresenterResponse(w, pi.Reset())
+	case "e", "exchange":
+		indices := param.Indices
+		if indices == nil {
+			indices = []int{}
 		}
+		pwc.writePresenterResponse(w, pi.Exchange(indices))
+	case "s", "stand":
+		pwc.writePresenterResponse(w, pi.Stand())
+	case "b", "bet":
+		pwc.writePresenterResponse(w, pi.Bet(param.Amount))
+	case "c", "call":
+		pwc.writePresenterResponse(w, pi.Call())
+	case "ra", "raise":
+		pwc.writePresenterResponse(w, pi.Raise(param.Amount))
+	case "f", "fold":
+		pwc.writePresenterResponse(w, pi.Fold())
+	case "ck", "check":
+		pwc.writePresenterResponse(w, pi.Check())
+	default:
+		w.WriteHeader(http.StatusOK)
+		_ = w.WriteJson(pwc.newDefaultOutput("Unsupported command."))
 	}
-	response := new(PokerWebOutput)
-	response.Dealer = new(PokerWebOutputPlayer)
-	response.Player = new(PokerWebOutputPlayer)
-	err = json.Unmarshal([]byte(responseStr), &response)
-	if err != nil || responseStr == "" {
-		status = http.StatusBadRequest
-		response.Message = "error."
+}
+
+// writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
+func (pwc *PokerWebController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
+	if responseStr == "" || !json.Valid([]byte(responseStr)) {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = w.WriteJson(pwc.newDefaultOutput("error."))
+		return
 	}
-	w.WriteHeader(status)
-	_ = w.WriteJson(response)
+	w.WriteHeader(http.StatusOK)
+	_ = w.WriteJson(json.RawMessage(responseStr))
+}
+
+// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
+func (pwc *PokerWebController) newDefaultOutput(msg string) *PokerWebOutput {
+	return &PokerWebOutput{
+		Dealer:  &PokerWebOutputPlayer{},
+		Player:  &PokerWebOutputPlayer{},
+		Message: msg,
+	}
 }
