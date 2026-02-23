@@ -19,6 +19,9 @@ type OldMaidInteractor struct {
 
 // NewOldMaidInteractor コンストラクタ
 func NewOldMaidInteractor(omp presenter.OldMaidPresenter) *OldMaidInteractor {
+	if omp == nil {
+		panic("OldMaidInteractor: omp must not be nil")
+	}
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),  // player 0: 人間
 		domain.NewOldMaidPlayer(false), // player 1: CPU

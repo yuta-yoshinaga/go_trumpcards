@@ -10,6 +10,14 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func TestNewSevensInteractor_NilGuards(t *testing.T) {
+	t.Run("panics when sp is nil", func(t *testing.T) {
+		assert.PanicsWithValue(t, "SevensInteractor: sp must not be nil", func() {
+			usecase.NewSevensInteractor(nil)
+		})
+	})
+}
+
 func TestSevensInteractor_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 	spMock := new(presenter.MockSevensPresenter)

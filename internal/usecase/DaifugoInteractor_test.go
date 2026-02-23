@@ -10,6 +10,14 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+func TestNewDaifugoInteractor_NilGuards(t *testing.T) {
+	t.Run("panics when dgp is nil", func(t *testing.T) {
+		assert.PanicsWithValue(t, "DaifugoInteractor: dgp must not be nil", func() {
+			usecase.NewDaifugoInteractor(nil)
+		})
+	})
+}
+
 func TestDaifugoInteractor_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":-1,"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 	dgpMock := new(presenter.MockDaifugoPresenter)

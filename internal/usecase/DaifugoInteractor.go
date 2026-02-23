@@ -19,6 +19,9 @@ type DaifugoInteractor struct {
 
 // NewDaifugoInteractor コンストラクタ
 func NewDaifugoInteractor(dgp presenter.DaifugoPresenter) *DaifugoInteractor {
+	if dgp == nil {
+		panic("DaifugoInteractor: dgp must not be nil")
+	}
 	config := domain.DefaultDaifugoConfig()
 	players := []*domain.DaifugoPlayer{
 		domain.NewDaifugoPlayer(true),  // player 0: 人間
