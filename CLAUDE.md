@@ -161,9 +161,10 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 - **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
 - **Query buttons by role**: when a text string appears in multiple elements (e.g., "交換" appears on both cards and a button), use `screen.getByRole('button', { name: '交換' })` instead of `getByText`
 
-**Run Biome check and frontend tests before committing:**
+**Run build, Biome check, and frontend tests before committing:**
 
 ```sh
+cd frontend && npm run build
 cd frontend && npm run check
 cd frontend && npm test
 ```
@@ -180,7 +181,7 @@ cd frontend && npm test
 | Change request/response schema of a Web API endpoint | `api/openapi.yaml` |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
-| Modify anything under `frontend/` | Run `cd frontend && npm run check` and `cd frontend && npm test` and ensure both pass before committing |
+| Modify anything under `frontend/` | Run `cd frontend && npm run build`, `cd frontend && npm run check`, and `cd frontend && npm test` and ensure all three pass before committing |
 | Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
 | Change frontend tooling or scripts | `frontend/README.md` (Scripts, Tooling) |
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game |
