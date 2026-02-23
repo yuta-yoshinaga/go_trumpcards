@@ -10,6 +10,11 @@ type BlackJackInteractorIF interface {
 	Reset() string
 	Hit() string
 	Stand() string
+	Bet(amount int) string
+	DoubleDown() string
+	Split() string
+	Insurance() string
+	DeclineInsurance() string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -41,5 +46,35 @@ func (bi *BlackJackInteractor) Hit() string {
 // Stand スタンド
 func (bi *BlackJackInteractor) Stand() string {
 	bi.bj.PlayerStand()
+	return bi.bjp.Output(bi.bj)
+}
+
+// Bet ベット
+func (bi *BlackJackInteractor) Bet(amount int) string {
+	bi.bj.PlayerBet(amount)
+	return bi.bjp.Output(bi.bj)
+}
+
+// DoubleDown ダブルダウン
+func (bi *BlackJackInteractor) DoubleDown() string {
+	bi.bj.PlayerDoubleDown()
+	return bi.bjp.Output(bi.bj)
+}
+
+// Split スプリット
+func (bi *BlackJackInteractor) Split() string {
+	bi.bj.PlayerSplit()
+	return bi.bjp.Output(bi.bj)
+}
+
+// Insurance インシュランス
+func (bi *BlackJackInteractor) Insurance() string {
+	bi.bj.PlayerInsurance()
+	return bi.bjp.Output(bi.bj)
+}
+
+// DeclineInsurance インシュランス辞退
+func (bi *BlackJackInteractor) DeclineInsurance() string {
+	bi.bj.PlayerDeclineInsurance()
 	return bi.bjp.Output(bi.bj)
 }

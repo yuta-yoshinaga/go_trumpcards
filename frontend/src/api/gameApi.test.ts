@@ -31,8 +31,12 @@ describe('gameApi', () => {
   describe('blackjackApi.exec', () => {
     it('calls the correct URL with reset command', async () => {
       const payload = {
-        dealer: { score: 17, cards: [] },
-        player: { score: 15, cards: [] },
+        dealer: { score: 17, cards: [], chips: 1000 },
+        player: { score: 15, cards: [], chips: 1000 },
+        phase: 1,
+        currentHandIdx: 0,
+        insuranceBet: 0,
+        insuranceAvailable: false,
         message: '',
       };
       mockFetch.mockReturnValue(makeResponse(payload));
@@ -42,33 +46,154 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/blackjack/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', sessionId }),
+        body: JSON.stringify({ command: 'reset', amount: undefined, sessionId }),
       });
       expect(result).toEqual(payload);
     });
 
     it('calls with hit command', async () => {
       mockFetch.mockReturnValue(
-        makeResponse({ dealer: { score: 0, cards: [] }, player: { score: 20, cards: [] }, message: '' }),
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 20, cards: [], chips: 900 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+        }),
       );
       await blackjackApi.exec('hit');
       expect(mockFetch).toHaveBeenCalledWith(
         '/blackjack/exec',
         expect.objectContaining({
-          body: JSON.stringify({ command: 'hit', sessionId }),
+          body: JSON.stringify({ command: 'hit', amount: undefined, sessionId }),
         }),
       );
     });
 
     it('calls with stand command', async () => {
       mockFetch.mockReturnValue(
-        makeResponse({ dealer: { score: 18, cards: [] }, player: { score: 19, cards: [] }, message: 'win' }),
+        makeResponse({
+          dealer: { score: 18, cards: [], chips: 1000 },
+          player: { score: 19, cards: [], chips: 1100 },
+          phase: 5,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: 'win',
+        }),
       );
       await blackjackApi.exec('stand');
       expect(mockFetch).toHaveBeenCalledWith(
         '/blackjack/exec',
         expect.objectContaining({
-          body: JSON.stringify({ command: 'stand', sessionId }),
+          body: JSON.stringify({ command: 'stand', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with bet command and amount', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 15, cards: [], chips: 900 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+        }),
+      );
+      await blackjackApi.exec('bet', 100);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'bet', amount: 100, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with doubledown command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 18, cards: [], chips: 800 },
+          phase: 5,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+        }),
+      );
+      await blackjackApi.exec('doubledown');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'doubledown', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with split command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 8, cards: [], chips: 800 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+        }),
+      );
+      await blackjackApi.exec('split');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'split', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with insurance command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 15, cards: [], chips: 850 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 50,
+          insuranceAvailable: true,
+          message: '',
+        }),
+      );
+      await blackjackApi.exec('insurance');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'insurance', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with declineinsurance command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 15, cards: [], chips: 900 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+        }),
+      );
+      await blackjackApi.exec('declineinsurance');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'declineinsurance', amount: undefined, sessionId }),
         }),
       );
     });

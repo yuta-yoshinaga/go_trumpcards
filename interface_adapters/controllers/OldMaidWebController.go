@@ -84,7 +84,7 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	} else if param.Command == "q" || param.Command == "quit" {
 		responseStr = `{"message":"bye."}`
 	} else {
-		omi, ok := owc.store.Get(param.SessionId, owc.factory)
+		omi, mu, ok := owc.store.GetWithLock(param.SessionId, owc.factory)
 		if !ok {
 			status = http.StatusBadRequest
 			responseStr = `{"message":"param error."}`
@@ -93,6 +93,8 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			if param.DrawIdx != nil {
 				drawIdx = *param.DrawIdx
 			}
+			mu.Lock()
+			defer mu.Unlock()
 			switch param.Command {
 			case "r", "reset":
 				responseStr = omi.Reset()
