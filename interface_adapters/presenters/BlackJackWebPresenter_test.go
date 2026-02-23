@@ -14,6 +14,20 @@ import (
 func TestBlackJackWebPresenters_Method(t *testing.T) {
 	tbp := presenters.NewBlackJackWebPresenter()
 
+	t.Run("success Output bet phase (no cards)", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, entities.BJPhaseBet, result.Phase)
+		assert.Equal(t, entities.BJDefaultChips, result.Player.Chips)
+		assert.Equal(t, entities.BJDefaultChips, result.Dealer.Chips)
+		assert.Equal(t, 0, len(result.Dealer.Cards))
+		assert.Equal(t, 1, len(result.Hands))
+		assert.Equal(t, 0, result.Hands[0].Score)
+	})
 	t.Run("success Output action phase", func(t *testing.T) {
 		tc := entities.NewTrumpCards(0)
 		player := entities.NewBlackJackPlayer()

@@ -29,7 +29,7 @@ func (bjp *BlackJackWebPresenter) Output(bj *entities.BlackJack) string {
 		for i := 0; i < dealer.GetCardsSize(); i++ {
 			resObj.Dealer.Cards = append(resObj.Dealer.Cards, bjp.GetCardObj(dealer.GetCard(i)))
 		}
-	} else {
+	} else if dealer.GetCardsSize() > 0 {
 		resObj.Dealer.Cards = append(resObj.Dealer.Cards, bjp.GetCardObj(dealer.GetCard(0)))
 	}
 	// player — chips only; score/cards are in hands (single source of truth)
