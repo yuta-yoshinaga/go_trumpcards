@@ -79,11 +79,12 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	} else if param.Command == "q" || param.Command == "quit" {
 		responseStr = `{"message":"bye."}`
 	} else {
-		bji, ok := bwc.store.Get(param.SessionId, bwc.factory)
+		bji, mu, ok := bwc.store.GetWithLock(param.SessionId, bwc.factory)
 		if !ok {
 			status = http.StatusBadRequest
 			responseStr = `{"message":"param error."}`
 		} else {
+			mu.Lock()
 			switch param.Command {
 			case "r", "reset":
 				responseStr = bji.Reset()
@@ -104,6 +105,7 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 			default:
 				responseStr = `{"message":"Unsupported command."}`
 			}
+			mu.Unlock()
 		}
 	}
 	response := new(BlackJackWebOutput)

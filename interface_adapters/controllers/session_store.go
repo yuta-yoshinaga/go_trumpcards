@@ -18,6 +18,7 @@ const (
 
 type sessionEntry[T any] struct {
 	value    T
+	mu       sync.Mutex
 	lastUsed time.Time
 }
 
@@ -61,6 +62,32 @@ func (s *SessionStore[T]) Get(id string, factory func() T) (T, bool) {
 	val := factory()
 	s.entries[id] = &sessionEntry[T]{value: val, lastUsed: time.Now()}
 	return val, true
+}
+
+// GetWithLock returns the value for the given sessionId (creating it via factory
+// if needed) along with a per-session mutex. The caller must call mu.Lock()
+// before operating on the value and mu.Unlock() when done. This prevents
+// concurrent requests for the same session from racing on shared state.
+func (s *SessionStore[T]) GetWithLock(id string, factory func() T) (T, *sync.Mutex, bool) {
+	var zero T
+	if len(id) > SessionMaxIDLen {
+		return zero, nil, false
+	}
+	s.mu.Lock()
+	entry, ok := s.entries[id]
+	if ok {
+		entry.lastUsed = time.Now()
+		s.mu.Unlock()
+		return entry.value, &entry.mu, true
+	}
+	if len(s.entries) >= SessionMaxCount {
+		s.mu.Unlock()
+		return zero, nil, false
+	}
+	entry = &sessionEntry[T]{value: factory(), lastUsed: time.Now()}
+	s.entries[id] = entry
+	s.mu.Unlock()
+	return entry.value, &entry.mu, true
 }
 
 // EvictExpired removes sessions that have not been used within SessionTTL.

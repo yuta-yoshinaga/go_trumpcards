@@ -40,6 +40,23 @@ func TestBlackJack_ResetChipsIfZero(t *testing.T) {
 	assert.Equal(t, entities.BJDefaultChips, bj.GetDealer().GetChips())
 }
 
+func TestBlackJack_ResetChipsBelowMinBet(t *testing.T) {
+	bj := entities.NewDefaultBlackJack()
+	// チップが最低ベット額未満ならリセットされる
+	bj.GetPlayer().SetChips(entities.BJMinBet - 1)
+	bj.GetDealer().SetChips(entities.BJMinBet - 1)
+	bj.Reset()
+	assert.Equal(t, entities.BJDefaultChips, bj.GetPlayer().GetChips())
+	assert.Equal(t, entities.BJDefaultChips, bj.GetDealer().GetChips())
+
+	// ちょうど最低ベット額ならリセットされない
+	bj.GetPlayer().SetChips(entities.BJMinBet)
+	bj.GetDealer().SetChips(entities.BJMinBet)
+	bj.Reset()
+	assert.Equal(t, entities.BJMinBet, bj.GetPlayer().GetChips())
+	assert.Equal(t, entities.BJMinBet, bj.GetDealer().GetChips())
+}
+
 func TestBlackJack_PlayerBet(t *testing.T) {
 	t.Run("successful bet", func(t *testing.T) {
 		bj := entities.NewDefaultBlackJack()
@@ -239,6 +256,67 @@ func TestBlackJack_GameJudgmentForHand(t *testing.T) {
 	})
 	t.Run("invalid hand index out of range", func(t *testing.T) {
 		assert.Equal(t, entities.GameResultLose, bj.GameJudgmentForHand(100))
+	})
+}
+
+func TestBlackJack_DrawCardNilSafety(t *testing.T) {
+	t.Run("hit with exhausted deck does not panic", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 5, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignHeart, 6, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignDiamond, 7, false))
+		bj.SetPhase(entities.BJPhaseAction)
+
+		// デッキを全て引き切る
+		for i := 0; i < 52; i++ {
+			tc.DrawCard()
+		}
+
+		// デッキ枯渇後のヒットでパニックしない
+		assert.NotPanics(t, func() {
+			bj.PlayerHit()
+		})
+		// カードが追加されないことを確認
+		assert.Equal(t, 2, hand.GetCardsSize())
+	})
+
+	t.Run("dealer hit with exhausted deck does not panic", func(t *testing.T) {
+		tc := entities.NewTrumpCards(0)
+		player := entities.NewBlackJackPlayer()
+		dealer := entities.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := entities.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
+		hand.AddCard(entities.NewCard(entities.CardDesignHeart, 10, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 5, false))
+		dealer.AddCard(entities.NewCard(entities.CardDesignDiamond, 6, false))
+		bj.SetPhase(entities.BJPhaseAction)
+
+		// デッキを全て引き切る
+		for i := 0; i < 52; i++ {
+			tc.DrawCard()
+		}
+
+		// デッキ枯渇後のスタンド→ディーラーヒットでパニックしない
+		assert.NotPanics(t, func() {
+			bj.PlayerStand()
+		})
+		assert.True(t, bj.GetGameEndFlag())
 	})
 }
 

@@ -96,12 +96,13 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		_ = w.WriteJson(swc.newDefaultOutput("bye."))
 		return
 	}
-	sgi, ok := swc.store.Get(param.SessionId, swc.factory)
+	sgi, mu, ok := swc.store.GetWithLock(param.SessionId, swc.factory)
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = w.WriteJson(swc.newDefaultOutput("param error."))
 		return
 	}
+	mu.Lock()
 	switch param.Command {
 	case "r", "reset":
 		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil {
@@ -117,6 +118,7 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))
 	}
+	mu.Unlock()
 }
 
 // writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む

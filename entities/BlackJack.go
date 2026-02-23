@@ -65,11 +65,11 @@ func (b *BlackJack) Reset() {
 	b.insuranceBet = 0
 	b.insuranceAvailable = false
 	b.playerHands = []*BlackJackHand{NewBlackJackHand()}
-	// チップが0以下ならデフォルト値にリセット
-	if b.player.GetChips() <= 0 {
+	// チップが最低ベット額未満ならデフォルト値にリセット
+	if b.player.GetChips() < BJMinBet {
 		b.player.SetChips(BJDefaultChips)
 	}
-	if b.dealer.GetChips() <= 0 {
+	if b.dealer.GetChips() < BJMinBet {
 		b.dealer.SetChips(BJDefaultChips)
 	}
 	// 山札シャッフル
@@ -79,6 +79,12 @@ func (b *BlackJack) Reset() {
 	// プレイヤー・ディーラー初期化
 	b.player.Reset()
 	b.dealer.Reset()
+}
+
+// drawCard 山札からカードを1枚引く（デッキ枯渇時はnilを返す）
+func (b *BlackJack) drawCard() *Card {
+	card := b.trumpCards.DrawCard()
+	return card
 }
 
 // PlayerBet プレイヤーベット
@@ -96,8 +102,12 @@ func (b *BlackJack) PlayerBet(amount int) bool {
 
 	// カードを2枚ずつ配る
 	for i := 0; i < 2; i++ {
-		b.playerHands[0].AddCard(b.trumpCards.DrawCard())
-		b.dealer.AddCard(b.trumpCards.DrawCard())
+		if card := b.drawCard(); card != nil {
+			b.playerHands[0].AddCard(card)
+		}
+		if card := b.drawCard(); card != nil {
+			b.dealer.AddCard(card)
+		}
 	}
 	b.phase = BJPhaseDeal
 
@@ -157,7 +167,11 @@ func (b *BlackJack) PlayerHit() {
 	if hand.IsFinished() {
 		return
 	}
-	hand.AddCard(b.trumpCards.DrawCard())
+	card := b.drawCard()
+	if card == nil {
+		return
+	}
+	hand.AddCard(card)
 	if hand.GetScore() >= 22 {
 		// バースト
 		hand.SetBusted(true)
@@ -194,7 +208,9 @@ func (b *BlackJack) PlayerDoubleDown() bool {
 	hand.SetBet(bet * 2)
 	hand.SetDoubled(true)
 	// ダブルダウンは1枚だけ引いてスタンド
-	hand.AddCard(b.trumpCards.DrawCard())
+	if card := b.drawCard(); card != nil {
+		hand.AddCard(card)
+	}
 	if hand.GetScore() >= 22 {
 		hand.SetBusted(true)
 	} else {
@@ -232,8 +248,12 @@ func (b *BlackJack) PlayerSplit() bool {
 	newHand.AddCard(secondCard)
 
 	// 各ハンドに1枚ずつ配る
-	hand.AddCard(b.trumpCards.DrawCard())
-	newHand.AddCard(b.trumpCards.DrawCard())
+	if card := b.drawCard(); card != nil {
+		hand.AddCard(card)
+	}
+	if card := b.drawCard(); card != nil {
+		newHand.AddCard(card)
+	}
 
 	// 新しいハンドを挿入
 	b.playerHands = append(b.playerHands[:b.currentHandIdx+1], append([]*BlackJackHand{newHand}, b.playerHands[b.currentHandIdx+1:]...)...)
@@ -290,7 +310,12 @@ func (b *BlackJack) DealerHit() {
 	for {
 		if b.dealer.GetScore() < 17 {
 			// ディーラーは自分の手持ちのカードの合計が「17」以上になるまでヒットし続ける（カードを引き続ける）
-			b.dealer.AddCard(b.trumpCards.DrawCard())
+			card := b.drawCard()
+			if card == nil {
+				b.DealerStand()
+				break
+			}
+			b.dealer.AddCard(card)
 		} else {
 			// ディーラーは自分の手持ちカードの合計が「17」以上になったらステイする（カードを引かない）。
 			b.DealerStand()
