@@ -213,6 +213,13 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		// Single hand, so no "hand 1" prefix
 		assert.NotContains(t, output, "hand 1")
 	})
+	t.Run("success Output error message on failed bet", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		bj.PlayerBet(5) // invalid amount
+		output := tbp.Output(bj)
+		assert.Contains(t, output, "Invalid bet amount.")
+	})
 	t.Run("success GetCardStr SPADE", func(t *testing.T) {
 		assert.Equal(t, "SPADE 1", tbp.GetCardStr(entities.NewCard(entities.CardDesignSpade, 1, false)))
 	})

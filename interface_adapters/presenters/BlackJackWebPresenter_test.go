@@ -201,6 +201,17 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		assert.True(t, result.Hands[0].CanSplit)
 		assert.False(t, result.Hands[0].IsBlackJack)
 	})
+	t.Run("success Output error message on failed bet", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		bj.PlayerBet(5) // invalid amount, sets lastError
+		output := tbp.Output(bj)
+		var result controllers.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, entities.BJPhaseBet, result.Phase)
+		assert.Equal(t, "Invalid bet amount.", result.Message)
+	})
 	t.Run("success GetCardObj SPADE", func(t *testing.T) {
 		card := tbp.GetCardObj(entities.NewCard(entities.CardDesignSpade, 1, false))
 		assert.Equal(t, "SPADE", card.Design)

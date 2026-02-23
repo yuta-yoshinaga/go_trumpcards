@@ -22,6 +22,7 @@ const (
 const (
 	BJDefaultChips = 1000 // デフォルトチップ
 	BJMinBet       = 10   // 最低ベット額
+	BJMaxHands     = 4    // スプリットによる最大ハンド数
 )
 
 // BlackJack ブラックジャッククラス
@@ -35,6 +36,7 @@ type BlackJack struct {
 	currentHandIdx     int              // 現在操作中のハンドインデックス
 	insuranceBet       int              // インシュランスベット額
 	insuranceAvailable bool             // インシュランス可能フラグ
+	lastError          string           // 直前の操作エラーメッセージ（プレゼンター読み取り後クリア）
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -91,13 +93,17 @@ func (b *BlackJack) drawCard() *Card {
 
 // PlayerBet プレイヤーベット
 func (b *BlackJack) PlayerBet(amount int) bool {
+	b.lastError = ""
 	if b.phase != BJPhaseBet {
+		b.lastError = "Bet is only allowed during the bet phase."
 		return false
 	}
 	if amount < BJMinBet || amount%BJMinBet != 0 {
+		b.lastError = "Invalid bet amount."
 		return false
 	}
 	if !b.player.SubtractChips(amount) {
+		b.lastError = "Insufficient chips."
 		return false
 	}
 	b.playerHands[0].SetBet(amount)
@@ -140,11 +146,15 @@ func (b *BlackJack) PlayerBet(amount int) bool {
 
 // PlayerInsurance プレイヤーインシュランス
 func (b *BlackJack) PlayerInsurance() bool {
+	b.lastError = ""
 	if b.phase != BJPhaseInsurance {
+		b.lastError = "Insurance is not available now."
 		return false
 	}
+	// ベット額はBJMinBetの倍数（偶数）なので端数は発生しない
 	cost := b.playerHands[0].GetBet() / 2
 	if !b.player.SubtractChips(cost) {
+		b.lastError = "Insufficient chips for insurance."
 		return false
 	}
 	b.insuranceBet = cost
@@ -206,18 +216,23 @@ func (b *BlackJack) PlayerStand() {
 
 // PlayerDoubleDown プレイヤーダブルダウン
 func (b *BlackJack) PlayerDoubleDown() bool {
+	b.lastError = ""
 	if b.phase != BJPhaseAction {
+		b.lastError = "Double down is not allowed now."
 		return false
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	if hand.GetCardsSize() != 2 {
+		b.lastError = "Double down is only allowed with 2 cards."
 		return false
 	}
 	if hand.IsFinished() {
+		b.lastError = "This hand is already finished."
 		return false
 	}
 	bet := hand.GetBet()
 	if !b.player.SubtractChips(bet) {
+		b.lastError = "Insufficient chips for double down."
 		return false
 	}
 	hand.SetBet(bet * 2)
@@ -237,15 +252,23 @@ func (b *BlackJack) PlayerDoubleDown() bool {
 
 // PlayerSplit プレイヤースプリット
 func (b *BlackJack) PlayerSplit() bool {
+	b.lastError = ""
 	if b.phase != BJPhaseAction {
+		b.lastError = "Split is not allowed now."
+		return false
+	}
+	if len(b.playerHands) >= BJMaxHands {
+		b.lastError = "Maximum number of hands reached."
 		return false
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	if !hand.CanSplit() {
+		b.lastError = "Split is not allowed for this hand."
 		return false
 	}
 	bet := hand.GetBet()
 	if !b.player.SubtractChips(bet) {
+		b.lastError = "Insufficient chips for split."
 		return false
 	}
 
@@ -488,6 +511,18 @@ func (b *BlackJack) IsInsuranceAvailable() bool {
 // GetTrumpCards トランプカード取得（テスト用）
 func (b *BlackJack) GetTrumpCards() *TrumpCards {
 	return b.trumpCards
+}
+
+// GetLastError 直前の操作エラーメッセージを取得しクリアする
+func (b *BlackJack) GetLastError() string {
+	msg := b.lastError
+	b.lastError = ""
+	return msg
+}
+
+// SetPlayerHands プレイヤーハンド設定（テスト用）
+func (b *BlackJack) SetPlayerHands(hands []*BlackJackHand) {
+	b.playerHands = hands
 }
 
 // SetPhase フェーズ設定（テスト用）

@@ -62,7 +62,10 @@ func (bjp *BlackJackWebPresenter) Output(bj *entities.BlackJack) string {
 		resObj.Hands[i] = h
 	}
 
-	if bj.GetGameEndFlag() {
+	// エラーメッセージ（ベット失敗等）
+	if errMsg := bj.GetLastError(); errMsg != "" {
+		resObj.Message = errMsg
+	} else if bj.GetGameEndFlag() {
 		switch bj.GameJudgment() {
 		case entities.GameResultDraw:
 			resObj.Message = "It is a draw."

@@ -89,6 +89,11 @@ func (bjp *BlackJackCuiPresenter) Output(bj *entities.BlackJack) string {
 		res += "Insurance available!\n"
 	}
 
+	// エラーメッセージ（ベット失敗等）
+	if errMsg := bj.GetLastError(); errMsg != "" {
+		res += errMsg + "\n"
+	}
+
 	if bj.GetGameEndFlag() {
 		if len(hands) > 1 {
 			for i, hand := range hands {

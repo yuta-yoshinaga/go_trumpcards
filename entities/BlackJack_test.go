@@ -348,6 +348,102 @@ func TestBlackJack_DrawCardNilSafety(t *testing.T) {
 	})
 }
 
+func TestBlackJack_LastError(t *testing.T) {
+	t.Run("bet failure sets lastError", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		ok := bj.PlayerBet(5) // below minimum
+		assert.False(t, ok)
+		assert.Equal(t, "Invalid bet amount.", bj.GetLastError())
+		// GetLastError clears the message
+		assert.Equal(t, "", bj.GetLastError())
+	})
+	t.Run("bet wrong phase sets lastError", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		bj.PlayerBet(100)
+		ok := bj.PlayerBet(100)
+		assert.False(t, ok)
+		errMsg := bj.GetLastError()
+		assert.Equal(t, "Bet is only allowed during the bet phase.", errMsg)
+	})
+	t.Run("bet insufficient chips sets lastError", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		bj.GetPlayer().SetChips(50)
+		ok := bj.PlayerBet(100)
+		assert.False(t, ok)
+		assert.Equal(t, "Insufficient chips.", bj.GetLastError())
+	})
+	t.Run("successful bet clears lastError", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		ok := bj.PlayerBet(100)
+		assert.True(t, ok)
+		assert.Equal(t, "", bj.GetLastError())
+	})
+	t.Run("double down failure sets lastError", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		ok := bj.PlayerDoubleDown()
+		assert.False(t, ok)
+		assert.Equal(t, "Double down is not allowed now.", bj.GetLastError())
+	})
+	t.Run("split failure sets lastError", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		ok := bj.PlayerSplit()
+		assert.False(t, ok)
+		assert.Equal(t, "Split is not allowed now.", bj.GetLastError())
+	})
+	t.Run("insurance failure sets lastError", func(t *testing.T) {
+		bj := entities.NewDefaultBlackJack()
+		bj.Reset()
+		ok := bj.PlayerInsurance()
+		assert.False(t, ok)
+		assert.Equal(t, "Insurance is not available now.", bj.GetLastError())
+	})
+}
+
+func TestBlackJack_MaxSplitHandsLimit(t *testing.T) {
+	// Test that split is rejected when playerHands already has BJMaxHands entries.
+	// We simulate this by manually adding dummy hands to the slice.
+	tc := entities.NewTrumpCards(0)
+	player := entities.NewBlackJackPlayer()
+	dealer := entities.NewBlackJackPlayer()
+	player.SetChips(10000)
+	dealer.SetChips(10000)
+	bj := entities.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(entities.NewCard(entities.CardDesignSpade, 8, false))
+	hand.AddCard(entities.NewCard(entities.CardDesignHeart, 8, false))
+	dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+	dealer.AddCard(entities.NewCard(entities.CardDesignDiamond, 7, false))
+	bj.SetPhase(entities.BJPhaseAction)
+
+	// First split should succeed (1 → 2 hands)
+	ok := bj.PlayerSplit()
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(bj.GetPlayerHands()))
+
+	// Manually add dummy hands to reach BJMaxHands
+	for len(bj.GetPlayerHands()) < entities.BJMaxHands {
+		dummyHand := entities.NewBlackJackHand()
+		dummyHand.SetBet(100)
+		dummyHand.SetStood(true)
+		bj.SetPlayerHands(append(bj.GetPlayerHands(), dummyHand))
+	}
+	assert.Equal(t, entities.BJMaxHands, len(bj.GetPlayerHands()))
+
+	// Now split should fail with max hands error
+	ok = bj.PlayerSplit()
+	assert.False(t, ok)
+	assert.Equal(t, "Maximum number of hands reached.", bj.GetLastError())
+}
+
 func TestBlackJack_OldFlow(t *testing.T) {
 	tc := entities.NewTrumpCards(0)
 	player := entities.NewBlackJackPlayer()
