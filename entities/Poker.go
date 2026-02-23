@@ -21,6 +21,15 @@ const (
 	PokerMinBet       = 10
 )
 
+// ディーラーAI閾値
+const (
+	dealerFoldPotOddsThreshold    = 0.4 // ポットオッズがこれを超えるとフォールド候補
+	dealerFoldBetMultiplierWeak   = 2   // 弱いハイカードでフォールドするベット倍率
+	dealerFoldBetMultiplierStrong = 3   // 高額ベットでフォールドするベット倍率
+	dealerFoldRateWeak            = 70  // 弱いハンド+悪いポットオッズ時のフォールド率(%)
+	dealerFoldRateStrong          = 50  // 高額ベット時のフォールド率(%)
+)
+
 // Poker ポーカークラス (5枚ドローポーカー)
 type Poker struct {
 	trumpCards *TrumpCards   // トランプカード
@@ -298,17 +307,17 @@ func (p *Poker) dealerRespondToBet() {
 			potOdds = float64(diff) / float64(p.pot+diff)
 		}
 		// フォールド判定: ハイカードなし かつ ポットオッズが悪い かつ 大きなベット
-		if !hasHighCard && potOdds > 0.4 && diff > PokerMinBet*2 {
-			// 30%の確率でブラフコール
-			if rand.Intn(100) >= 30 {
+		if !hasHighCard && potOdds > dealerFoldPotOddsThreshold && diff > PokerMinBet*dealerFoldBetMultiplierWeak {
+			// 70%の確率でフォールドする（残りの30%でコールを試みる）
+			if rand.Intn(100) < dealerFoldRateWeak {
 				p.folded = 2
 				p.player.AddChips(p.pot)
 				p.pot = 0
 				return
 			}
-		} else if !hasHighCard && diff > PokerMinBet*3 {
-			// 非常に大きなベットには50%でフォールド
-			if rand.Intn(100) >= 50 {
+		} else if !hasHighCard && diff > PokerMinBet*dealerFoldBetMultiplierStrong {
+			// 50%の確率でフォールドする（残りの50%でコールを試みる）
+			if rand.Intn(100) < dealerFoldRateStrong {
 				p.folded = 2
 				p.player.AddChips(p.pot)
 				p.pot = 0
