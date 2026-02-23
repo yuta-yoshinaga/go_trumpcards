@@ -98,7 +98,10 @@ func (owp *OldMaidWebPresenter) Output(om *domain.OldMaid) string {
 		}
 	}
 
-	res, _ := json.Marshal(resObj)
+	res, err := json.Marshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 

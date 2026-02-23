@@ -63,7 +63,10 @@ func (pwp *PokerWebPresenter) Output(p *domain.Poker) string {
 		}
 	}
 
-	res, _ := json.Marshal(resObj)
+	res, err := json.Marshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -78,18 +79,24 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" || param.SessionId == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(owc.newDefaultOutput("param error."))
+		if err := w.WriteJson(owc.newDefaultOutput("param error.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	if param.Command == "q" || param.Command == "quit" {
 		w.WriteHeader(http.StatusOK)
-		_ = w.WriteJson(owc.newDefaultOutput("bye."))
+		if err := w.WriteJson(owc.newDefaultOutput("bye.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	omi, mu, ok := owc.store.GetWithLock(param.SessionId, owc.factory)
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(owc.newDefaultOutput("param error."))
+		if err := w.WriteJson(owc.newDefaultOutput("param error.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	drawIdx := -1
@@ -106,7 +113,9 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		owc.writePresenterResponse(w, omi.Draw(drawIdx), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
-		_ = w.WriteJson(owc.newDefaultOutput("Unsupported command."))
+		if err := w.WriteJson(owc.newDefaultOutput("Unsupported command.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 	}
 }
 
