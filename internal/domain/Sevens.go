@@ -701,3 +701,9 @@ func (s *Sevens) GetCpuActions() []*SevensCpuAction { return s.cpuActions }
 
 // GetHumanAction 人間の最後の行動取得
 func (s *Sevens) GetHumanAction() *SevensCpuAction { return s.humanAction }
+
+// SetHumanAction 人間の行動設定（テスト用）
+func (s *Sevens) SetHumanAction(action *SevensCpuAction) { s.humanAction = action }
+
+// SetCpuActions CPU行動設定（テスト用）
+func (s *Sevens) SetCpuActions(actions []*SevensCpuAction) { s.cpuActions = actions }

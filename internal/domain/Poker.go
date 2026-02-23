@@ -626,3 +626,13 @@ func (p *Poker) GetAnte() int {
 func (p *Poker) GetFolded() int {
 	return p.folded
 }
+
+// SetPhase フェーズ設定（テスト用）
+func (p *Poker) SetPhase(phase int) {
+	p.phase = phase
+}
+
+// SetFolded フォールド状態設定（テスト用）
+func (p *Poker) SetFolded(folded int) {
+	p.folded = folded
+}

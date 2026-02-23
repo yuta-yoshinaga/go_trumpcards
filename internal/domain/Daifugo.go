@@ -1013,3 +1013,21 @@ func (d *Daifugo) GetTableIsSequence() bool { return d.tableIsSequence }
 
 // GetExchangeActions カード交換記録取得
 func (d *Daifugo) GetExchangeActions() []*DaifugoExchangeAction { return d.exchangeActions }
+
+// SetElevenBackActive 11バック設定（テスト用）
+func (d *Daifugo) SetElevenBackActive(active bool) { d.elevenBackActive = active }
+
+// SetSuitLocked スート縛り設定（テスト用）
+func (d *Daifugo) SetSuitLocked(locked bool, suit int) {
+	d.suitLocked = locked
+	d.lockedSuit = suit
+}
+
+// SetTableIsSequence 階段フラグ設定（テスト用）
+func (d *Daifugo) SetTableIsSequence(seq bool) { d.tableIsSequence = seq }
+
+// SetExchangeActions カード交換記録設定（テスト用）
+func (d *Daifugo) SetExchangeActions(actions []*DaifugoExchangeAction) { d.exchangeActions = actions }
+
+// SetHumanAction 人間の行動設定（テスト用）
+func (d *Daifugo) SetHumanAction(action *DaifugoCpuAction) { d.humanAction = action }

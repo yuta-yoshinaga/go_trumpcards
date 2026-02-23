@@ -267,4 +267,58 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Contains(t, resObj.Message, domain.ErrInvalidPlay.Error())
 	})
+
+	t.Run("success Output buildResultMessage with rank 0 skipped", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].SetIsFinished(true)
+		players[1].SetRank(0) // rank < 1 → skip in buildResultMessage
+		players[2].SetIsFinished(true)
+		players[2].SetRank(2)
+		players[3].SetIsFinished(true)
+		players[3].SetRank(3)
+		s.PlayerPlay(0) // human plays last card → game ends
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.NotContains(t, resObj.Message, "CPU 1") // skipped due to rank 0
+	})
+
+	t.Run("success Output humanAction nil", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		// humanAction is nil by default (no play yet)
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Nil(t, resObj.HumanAction)
+	})
+
+	t.Run("success Output getCardObj nil card in cpuActions", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		// CPU pass action → PlayedCard is nil → getCardObj(nil) → nil
+		s.SetCpuActions([]*domain.SevensCpuAction{
+			{PlayerIdx: 1, PlayedCard: nil},
+		})
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Len(t, resObj.CpuActions, 1)
+		assert.Nil(t, resObj.CpuActions[0].PlayedCard)
+	})
 }

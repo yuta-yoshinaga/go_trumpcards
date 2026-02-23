@@ -188,4 +188,61 @@ func TestPokerCuiPresenter_Method(t *testing.T) {
 	t.Run("success GetCardStr JOKER", func(t *testing.T) {
 		assert.Equal(t, "Unsupported card 0", tpp.GetCardStr(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false)))
 	})
+
+	t.Run("success Output dealer fold", func(t *testing.T) {
+		player.SetChips(0)
+		dealer.SetChips(0)
+		tp.Reset()
+		// Force dealer fold via setter
+		tp.SetPhase(domain.PokerPhaseEnd)
+		tp.SetFolded(domain.PokerFoldByDealer)
+		output := tpp.Output(tp, nil)
+		assert.Contains(t, output, "Dealer folded. You win!")
+	})
+
+	t.Run("success Output dealer bet zero", func(t *testing.T) {
+		player.SetChips(0)
+		dealer.SetChips(0)
+		tp.Reset()
+		player.Reset()
+		dealer.Reset()
+		player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		player.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		// When dealer bet is 0, "Dealer Bet:" line should not appear
+		if tp.GetDealerBet() == 0 {
+			output := tpp.Output(tp, nil)
+			assert.NotContains(t, output, "Dealer Bet:")
+		}
+	})
+
+	t.Run("success Output dealer hand hidden in non-end phase", func(t *testing.T) {
+		player.SetChips(0)
+		dealer.SetChips(0)
+		tp.Reset()
+		player.Reset()
+		dealer.Reset()
+		player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		player.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		output := tpp.Output(tp, nil)
+		// In deal phase, dealer hand name should NOT be shown
+		assert.NotContains(t, output, "Full House")
+		// "dealer hand\n" without hand name
+		assert.Contains(t, output, "dealer hand\n")
+	})
 }
