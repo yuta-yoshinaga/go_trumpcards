@@ -39,11 +39,11 @@ func (h *BlackJackHand) GetCardsSize() int {
 	return len(h.cards)
 }
 
-// GetScore 手札から現在のスコア計算（BlackJackPlayerと同じロジック）
-func (h *BlackJackHand) GetScore() int {
+// CalculateBlackJackScore カードスライスからブラックジャックスコアを計算する共通関数
+func CalculateBlackJackScore(cards []*Card) int {
 	aceFlag := false
 	score := 0
-	for _, card := range h.cards {
+	for _, card := range cards {
 		value := card.GetValue()
 		if 2 <= value && value <= 10 {
 			score += value
@@ -51,13 +51,16 @@ func (h *BlackJackHand) GetScore() int {
 			score += 10
 		} else {
 			if aceFlag {
+				// 2枚目のエースは強制的に1で換算する
 				score++
 			} else {
+				// エースは後ほど計算する
 				aceFlag = true
 			}
 		}
 	}
 	if aceFlag {
+		// エース計算
 		if score+11 <= 21 {
 			score += 11
 		} else {
@@ -65,6 +68,11 @@ func (h *BlackJackHand) GetScore() int {
 		}
 	}
 	return score
+}
+
+// GetScore 手札から現在のスコア計算
+func (h *BlackJackHand) GetScore() int {
+	return CalculateBlackJackScore(h.cards)
 }
 
 // GetBet ベット額取得

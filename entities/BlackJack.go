@@ -99,9 +99,6 @@ func (b *BlackJack) PlayerBet(amount int) bool {
 		b.playerHands[0].AddCard(b.trumpCards.DrawCard())
 		b.dealer.AddCard(b.trumpCards.DrawCard())
 	}
-	// プレイヤーのハンドをPlayerにも同期
-	b.syncPlayerCards()
-
 	b.phase = BJPhaseDeal
 
 	// ディーラーの表向きカード(1枚目)がエースならインシュランス可能
@@ -161,7 +158,6 @@ func (b *BlackJack) PlayerHit() {
 		return
 	}
 	hand.AddCard(b.trumpCards.DrawCard())
-	b.syncPlayerCards()
 	if hand.GetScore() >= 22 {
 		// バースト
 		hand.SetBusted(true)
@@ -203,7 +199,6 @@ func (b *BlackJack) PlayerDoubleDown() bool {
 	hand.SetDoubled(true)
 	// ダブルダウンは1枚だけ引いてスタンド
 	hand.AddCard(b.trumpCards.DrawCard())
-	b.syncPlayerCards()
 	if hand.GetScore() >= 22 {
 		hand.SetBusted(true)
 	} else {
@@ -251,10 +246,7 @@ func (b *BlackJack) PlayerSplit() bool {
 	if firstCard.GetValue() == 1 {
 		hand.SetStood(true)
 		newHand.SetStood(true)
-		b.syncPlayerCards()
 		b.advanceHand()
-	} else {
-		b.syncPlayerCards()
 	}
 
 	return true
@@ -266,7 +258,6 @@ func (b *BlackJack) advanceHand() {
 	for i := 0; i < len(b.playerHands); i++ {
 		if !b.playerHands[i].IsFinished() {
 			b.currentHandIdx = i
-			b.syncPlayerCards()
 			return
 		}
 	}
@@ -406,17 +397,6 @@ func (b *BlackJack) GameJudgmentForHand(handIdx int) GameResult {
 		return GameResultLose
 	}
 	return b.judgeHand(b.playerHands[handIdx])
-}
-
-// syncPlayerCards プレイヤーのcardsを現在のハンド(currentHandIdx)と同期
-func (b *BlackJack) syncPlayerCards() {
-	if b.currentHandIdx < len(b.playerHands) {
-		hand := b.playerHands[b.currentHandIdx]
-		b.player.Reset()
-		for i := 0; i < hand.GetCardsSize(); i++ {
-			b.player.AddCard(hand.GetCard(i))
-		}
-	}
 }
 
 // GetGameEndFlag ゲーム終了フラグ

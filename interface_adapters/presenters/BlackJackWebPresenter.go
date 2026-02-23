@@ -32,14 +32,18 @@ func (bjp *BlackJackWebPresenter) Output(bj *entities.BlackJack) string {
 	} else {
 		resObj.Dealer.Cards = append(resObj.Dealer.Cards, bjp.GetCardObj(dealer.GetCard(0)))
 	}
-	// player
+	// player — derive score/cards from hand 0 (single source of truth)
 	player := bj.GetPlayer()
 	resObj.Player = new(controllers.BlackJackWebOutputPlayer)
 	resObj.Player.Cards = make([]*controllers.BlackJackWebOutputCard, 0)
-	resObj.Player.Score = player.GetScore()
 	resObj.Player.Chips = player.GetChips()
-	for i := 0; i < player.GetCardsSize(); i++ {
-		resObj.Player.Cards = append(resObj.Player.Cards, bjp.GetCardObj(player.GetCard(i)))
+	hands := bj.GetPlayerHands()
+	if len(hands) > 0 {
+		hand0 := hands[0]
+		resObj.Player.Score = hand0.GetScore()
+		for j := 0; j < hand0.GetCardsSize(); j++ {
+			resObj.Player.Cards = append(resObj.Player.Cards, bjp.GetCardObj(hand0.GetCard(j)))
+		}
 	}
 
 	// phase info
@@ -49,7 +53,6 @@ func (bjp *BlackJackWebPresenter) Output(bj *entities.BlackJack) string {
 	resObj.InsuranceAvailable = bj.IsInsuranceAvailable()
 
 	// hands
-	hands := bj.GetPlayerHands()
 	resObj.Hands = make([]*controllers.BlackJackWebOutputHand, len(hands))
 	for i, hand := range hands {
 		h := new(controllers.BlackJackWebOutputHand)
