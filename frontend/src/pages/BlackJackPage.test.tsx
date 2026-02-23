@@ -11,8 +11,8 @@ vi.mock('../api/gameApi', () => ({
 const mockExec = vi.mocked(blackjackApi.exec);
 
 const betPhaseState: BlackJackResponse = {
-  dealer: { score: 0, cards: [], chips: 1000 },
-  player: { score: 0, cards: [], chips: 1000 },
+  dealer: { chips: 1000 },
+  player: { chips: 1000 },
   phase: 1,
   currentHandIdx: 0,
   insuranceBet: 0,
@@ -21,15 +21,8 @@ const betPhaseState: BlackJackResponse = {
 };
 
 const actionPhaseState: BlackJackResponse = {
-  dealer: { score: 0, cards: [{ design: 'SPADE', value: 1 }], chips: 1000 },
-  player: {
-    score: 15,
-    cards: [
-      { design: 'HEART', value: 5 },
-      { design: 'DIAMOND', value: 10 },
-    ],
-    chips: 900,
-  },
+  dealer: { cards: [{ design: 'SPADE', value: 1 }], chips: 1000 },
+  player: { chips: 900 },
   hands: [
     {
       score: 15,
@@ -53,15 +46,8 @@ const actionPhaseState: BlackJackResponse = {
 };
 
 const insurancePhaseState: BlackJackResponse = {
-  dealer: { score: 0, cards: [{ design: 'SPADE', value: 1 }], chips: 1000 },
-  player: {
-    score: 15,
-    cards: [
-      { design: 'HEART', value: 5 },
-      { design: 'DIAMOND', value: 10 },
-    ],
-    chips: 900,
-  },
+  dealer: { cards: [{ design: 'SPADE', value: 1 }], chips: 1000 },
+  player: { chips: 900 },
   hands: [
     {
       score: 15,
@@ -93,14 +79,7 @@ const endPhaseState: BlackJackResponse = {
     ],
     chips: 1000,
   },
-  player: {
-    score: 21,
-    cards: [
-      { design: 'SPADE', value: 1 },
-      { design: 'HEART', value: 10 },
-    ],
-    chips: 1150,
-  },
+  player: { chips: 1150 },
   hands: [
     {
       score: 21,

@@ -168,10 +168,6 @@ func (b *BlackJack) PlayerHit() {
 // PlayerStand プレイヤースタンド
 func (b *BlackJack) PlayerStand() {
 	if b.phase != BJPhaseAction {
-		// 後方互換: phaseがBJPhaseActionでなくてもDealerHitを呼べるようにする
-		if !b.gameEndFlag {
-			b.DealerHit()
-		}
 		return
 	}
 	hand := b.playerHands[b.currentHandIdx]
@@ -346,13 +342,8 @@ func (b *BlackJack) resolvePayouts() {
 
 // judgeHand 個別ハンドの勝敗判定
 func (b *BlackJack) judgeHand(hand *BlackJackHand) GameResult {
-	// ハンドにカードがない場合はプレイヤーのカードを使う（後方互換）
 	playerScore := hand.GetScore()
 	playerCardsSize := hand.GetCardsSize()
-	if playerCardsSize == 0 {
-		playerScore = b.player.GetScore()
-		playerCardsSize = b.player.GetCardsSize()
-	}
 	dealerScore := b.dealer.GetScore()
 
 	// プレイヤーがバーストしているなら負け

@@ -16,7 +16,6 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 	bjiMock.On("Hit").Return(mockOutput)
 	bjiMock.On("Stand").Return(mockOutput)
 	bjiMock.On("Bet", 100).Return(mockOutput)
-	bjiMock.On("Bet", 0).Return(mockOutput)
 	bjiMock.On("DoubleDown").Return(mockOutput)
 	bjiMock.On("Split").Return(mockOutput)
 	bjiMock.On("Insurance").Return(mockOutput)
@@ -52,8 +51,11 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 	t.Run("success Exec bet with amount", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("bet 100"))
 	})
-	t.Run("success Exec b without amount", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tbc.Exec("b"))
+	t.Run("error Exec b without amount", func(t *testing.T) {
+		assert.Equal(t, "Bet amount is required.", tbc.Exec("b"))
+	})
+	t.Run("error Exec b with invalid amount", func(t *testing.T) {
+		assert.Equal(t, "Invalid bet amount. Please enter a number.", tbc.Exec("b foo"))
 	})
 	t.Run("success Exec d", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("d"))

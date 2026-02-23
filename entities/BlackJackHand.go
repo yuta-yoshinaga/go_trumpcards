@@ -41,31 +41,23 @@ func (h *BlackJackHand) GetCardsSize() int {
 
 // CalculateBlackJackScore カードスライスからブラックジャックスコアを計算する共通関数
 func CalculateBlackJackScore(cards []*Card) int {
-	aceFlag := false
 	score := 0
+	aceCount := 0
 	for _, card := range cards {
 		value := card.GetValue()
-		if 2 <= value && value <= 10 {
-			score += value
-		} else if 11 <= value && value <= 13 {
+		if value == 1 {
+			aceCount++
+			score += 11
+		} else if value >= 10 {
 			score += 10
 		} else {
-			if aceFlag {
-				// 2枚目のエースは強制的に1で換算する
-				score++
-			} else {
-				// エースは後ほど計算する
-				aceFlag = true
-			}
+			score += value
 		}
 	}
-	if aceFlag {
-		// エース計算
-		if score+11 <= 21 {
-			score += 11
-		} else {
-			score++
-		}
+	// スコアが21を超えている場合、エースを1として再計算
+	for score > 21 && aceCount > 0 {
+		score -= 10
+		aceCount--
 	}
 	return score
 }

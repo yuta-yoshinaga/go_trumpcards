@@ -17,8 +17,8 @@ export interface BlackJackHand {
 }
 
 export interface BlackJackPlayer {
-  score: number;
-  cards: Card[];
+  score?: number;
+  cards?: Card[];
   chips: number;
 }
 

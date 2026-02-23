@@ -38,11 +38,16 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 	case "s", "stand":
 		res = bcc.bji.Stand()
 	case "b", "bet":
-		amount := 0
-		if len(parts) > 1 {
-			amount, _ = strconv.Atoi(parts[1])
+		if len(parts) < 2 {
+			res = "Bet amount is required."
+		} else {
+			amount, err := strconv.Atoi(parts[1])
+			if err != nil {
+				res = "Invalid bet amount. Please enter a number."
+			} else {
+				res = bcc.bji.Bet(amount)
+			}
 		}
-		res = bcc.bji.Bet(amount)
 	case "d", "doubledown":
 		res = bcc.bji.DoubleDown()
 	case "sp", "split":

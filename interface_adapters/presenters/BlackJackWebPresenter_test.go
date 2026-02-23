@@ -37,8 +37,6 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 0, result.Dealer.Score) // Not game end, so score hidden
 		assert.Equal(t, 1, len(result.Dealer.Cards))
-		assert.Equal(t, 22, result.Player.Score)  // derived from hand 0
-		assert.Equal(t, 3, len(result.Player.Cards)) // derived from hand 0
 		assert.Equal(t, 900, result.Player.Chips)
 		assert.Equal(t, 1000, result.Dealer.Chips)
 		assert.Equal(t, entities.BJPhaseAction, result.Phase)
@@ -61,6 +59,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
+		bj.SetPhase(entities.BJPhaseAction)
 		bj.PlayerStand()
 		output := tbp.Output(bj)
 		var result controllers.BlackJackWebOutput
@@ -85,6 +84,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		hand.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		bj.SetPhase(entities.BJPhaseAction)
 		bj.PlayerStand()
 		output := tbp.Output(bj)
 		var result controllers.BlackJackWebOutput
@@ -107,6 +107,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		// Dealer score 19 (>= 17)
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 9, false))
 		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
+		bj.SetPhase(entities.BJPhaseAction)
 		bj.PlayerStand()
 		output := tbp.Output(bj)
 		var result controllers.BlackJackWebOutput

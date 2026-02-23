@@ -115,12 +115,6 @@ paths:
                           value: 10
                       chips: 1000
                     player:
-                      score: 18
-                      cards:
-                        - design: CLOVER
-                          value: 8
-                        - design: DIAMOND
-                          value: 10
                       chips: 900
                     hands:
                       - score: 18
@@ -154,12 +148,6 @@ paths:
                           value: 7
                       chips: 900
                     player:
-                      score: 20
-                      cards:
-                        - design: DIAMOND
-                          value: 10
-                        - design: HEART
-                          value: 10
                       chips: 1200
                     hands:
                       - score: 20
@@ -183,12 +171,8 @@ paths:
                   summary: Quit command response
                   value:
                     dealer:
-                      score: 0
-                      cards: []
                       chips: 0
                     player:
-                      score: 0
-                      cards: []
                       chips: 0
                     phase: 1
                     currentHandIdx: 0
@@ -206,12 +190,8 @@ paths:
                   summary: Missing required parameter
                   value:
                     dealer:
-                      score: 0
-                      cards: []
                       chips: 0
                     player:
-                      score: 0
-                      cards: []
                       chips: 0
                     phase: 1
                     currentHandIdx: 0
@@ -653,25 +633,22 @@ components:
     BlackJackPlayer:
       type: object
       required:
-        - score
-        - cards
         - chips
       properties:
         score:
           type: integer
           description: |
-            Hand score.  For the **player** this is always the current score
-            (Ace counted optimally as 1 or 11).  For the **dealer** this is
-            `0` while the game is in progress and the actual score only once
-            the game ends (i.e. when `message` is non-empty).
+            Hand score.  Present only for the **dealer**.  `0` while the game
+            is in progress; the actual score once the game ends.  For the
+            **player**, score is available via the `hands` array.
           example: 18
         cards:
           type: array
           description: |
-            Cards currently held.  For the **player** all cards are always
-            returned.  For the **dealer**, only the face-up card (index 0) is
-            returned while the game is in progress; all cards are returned once
-            the game ends.
+            Cards currently held.  Present only for the **dealer**.  Only the
+            face-up card (index 0) is returned while the game is in progress;
+            all cards are returned once the game ends.  For the **player**,
+            cards are available via the `hands` array.
           items:
             $ref: '#/components/schemas/Card'
         chips:

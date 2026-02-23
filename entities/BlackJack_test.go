@@ -95,105 +95,113 @@ func TestBlackJack_PlayerHitInWrongPhase(t *testing.T) {
 	assert.Equal(t, entities.BJPhaseBet, bj.GetPhase())
 }
 
-func TestBlackJack_PlayerStandBackwardCompat(t *testing.T) {
-	tc := entities.NewTrumpCards(0)
-	player := entities.NewBlackJackPlayer()
-	dealer := entities.NewBlackJackPlayer()
-	tb := entities.NewBlackJack(tc, player, dealer)
-	tb.Reset()
-	player.Reset()
-	dealer.Reset()
-	player.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
-	player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-	player.AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
-	dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
-	dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-	dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-	assert.Equal(t, entities.GameResultLose, tb.GameJudgment())
+func TestBlackJack_PlayerStandViaHand(t *testing.T) {
+	playerCards := []*entities.Card{
+		entities.NewCard(entities.CardDesignSpade, 9, false),
+		entities.NewCard(entities.CardDesignHeart, 8, false),
+	}
+	dealerCards := []*entities.Card{
+		entities.NewCard(entities.CardDesignClover, 2, false),
+		entities.NewCard(entities.CardDesignClover, 10, false),
+		entities.NewCard(entities.CardDesignClover, 11, false),
+	}
+	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	bj.PlayerStand()
+	// Player score 17, dealer score 22 (bust) → player wins
+	assert.Equal(t, entities.GameResultWin, bj.GameJudgment())
 }
 
-func TestBlackJack_GameJudgmentBackwardCompat(t *testing.T) {
-	tc := entities.NewTrumpCards(0)
-	player := entities.NewBlackJackPlayer()
-	dealer := entities.NewBlackJackPlayer()
-	tb := entities.NewBlackJack(tc, player, dealer)
-
+func TestBlackJack_GameJudgmentCases(t *testing.T) {
 	t.Run("player lose bust", func(t *testing.T) {
-		tb.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, entities.GameResultLose, tb.GameJudgment())
+		playerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignSpade, 2, false),
+			entities.NewCard(entities.CardDesignSpade, 10, false),
+			entities.NewCard(entities.CardDesignSpade, 11, false),
+		}
+		dealerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignClover, 2, false),
+			entities.NewCard(entities.CardDesignClover, 10, false),
+			entities.NewCard(entities.CardDesignClover, 11, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		assert.Equal(t, entities.GameResultLose, bj.GameJudgment())
 	})
 	t.Run("player lose dealer higher", func(t *testing.T) {
-		tb.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 2, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, entities.GameResultLose, tb.GameJudgment())
+		playerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignSpade, 2, false),
+			entities.NewCard(entities.CardDesignSpade, 10, false),
+			entities.NewCard(entities.CardDesignSpade, 11, false),
+		}
+		dealerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignClover, 1, false),
+			entities.NewCard(entities.CardDesignClover, 10, false),
+			entities.NewCard(entities.CardDesignClover, 11, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		assert.Equal(t, entities.GameResultLose, bj.GameJudgment())
 	})
 	t.Run("player win dealer bust", func(t *testing.T) {
-		tb.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 11, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 2, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, entities.GameResultWin, tb.GameJudgment())
+		playerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignSpade, 1, false),
+			entities.NewCard(entities.CardDesignSpade, 10, false),
+			entities.NewCard(entities.CardDesignSpade, 11, false),
+		}
+		dealerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignClover, 2, false),
+			entities.NewCard(entities.CardDesignClover, 10, false),
+			entities.NewCard(entities.CardDesignClover, 11, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		assert.Equal(t, entities.GameResultWin, bj.GameJudgment())
 	})
 	t.Run("draw", func(t *testing.T) {
-		tb.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		assert.Equal(t, entities.GameResultDraw, tb.GameJudgment())
+		playerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignSpade, 1, false),
+			entities.NewCard(entities.CardDesignSpade, 10, false),
+		}
+		dealerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignClover, 1, false),
+			entities.NewCard(entities.CardDesignClover, 10, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		assert.Equal(t, entities.GameResultDraw, bj.GameJudgment())
 	})
-	t.Run("player win natural BJ", func(t *testing.T) {
-		tb.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 11, false))
-		assert.Equal(t, entities.GameResultWin, tb.GameJudgment())
+	t.Run("player win natural BJ vs dealer 3 cards", func(t *testing.T) {
+		playerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignSpade, 1, false),
+			entities.NewCard(entities.CardDesignSpade, 10, false),
+		}
+		dealerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignClover, 1, false),
+			entities.NewCard(entities.CardDesignClover, 10, false),
+			entities.NewCard(entities.CardDesignClover, 11, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		assert.Equal(t, entities.GameResultWin, bj.GameJudgment())
 	})
 	t.Run("player win higher score", func(t *testing.T) {
-		tb.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 1, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 9, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		assert.Equal(t, entities.GameResultWin, tb.GameJudgment())
+		playerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignSpade, 1, false),
+			entities.NewCard(entities.CardDesignSpade, 10, false),
+		}
+		dealerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignClover, 9, false),
+			entities.NewCard(entities.CardDesignClover, 10, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		assert.Equal(t, entities.GameResultWin, bj.GameJudgment())
 	})
-	t.Run("player lose dealer higher", func(t *testing.T) {
-		tb.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 9, false))
-		player.AddCard(entities.NewCard(entities.CardDesignSpade, 10, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 1, false))
-		dealer.AddCard(entities.NewCard(entities.CardDesignClover, 10, false))
-		assert.Equal(t, entities.GameResultLose, tb.GameJudgment())
+	t.Run("player lose dealer higher score", func(t *testing.T) {
+		playerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignSpade, 9, false),
+			entities.NewCard(entities.CardDesignSpade, 10, false),
+		}
+		dealerCards := []*entities.Card{
+			entities.NewCard(entities.CardDesignClover, 1, false),
+			entities.NewCard(entities.CardDesignClover, 10, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		assert.Equal(t, entities.GameResultLose, bj.GameJudgment())
 	})
 }
 

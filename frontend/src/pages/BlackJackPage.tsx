@@ -63,12 +63,12 @@ export function BlackJackPage() {
         {state && phase !== PHASE_BET && (
           <div>
             <h3 className="text-white">ディーラー手札</h3>
-            <h3 className="text-white">スコア {state.dealer.score !== 0 ? state.dealer.score : ''}</h3>
+            <h3 className="text-white">スコア {state.dealer.score ? state.dealer.score : ''}</h3>
             <div className="flex flex-wrap gap-2">
-              {state.dealer.cards.map((card) => (
+              {state.dealer.cards?.map((card) => (
                 <CardImage key={`${card.design}-${card.value}`} card={card} width={60} />
               ))}
-              {state.dealer.score === 0 && <CardBack width={60} />}
+              {!state.dealer.score && <CardBack width={60} />}
             </div>
           </div>
         )}
