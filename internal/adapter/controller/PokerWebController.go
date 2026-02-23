@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -44,6 +43,7 @@ type PokerWebOutput struct {
 
 // PokerWebController ポーカーWebコントローラークラス
 type PokerWebController struct {
+	baseController
 	factory func() usecase.PokerInteractorIF
 	store   *SessionStore[usecase.PokerInteractorIF]
 }
@@ -78,42 +78,32 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 	mu.Lock()
 	defer mu.Unlock()
+	errOutput := pwc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
-		pwc.writePresenterResponse(w, pi.Reset())
+		pwc.writePresenterResponse(w, pi.Reset(), errOutput)
 	case "e", "exchange":
 		indices := param.Indices
 		if indices == nil {
 			indices = []int{}
 		}
-		pwc.writePresenterResponse(w, pi.Exchange(indices))
+		pwc.writePresenterResponse(w, pi.Exchange(indices), errOutput)
 	case "s", "stand":
-		pwc.writePresenterResponse(w, pi.Stand())
+		pwc.writePresenterResponse(w, pi.Stand(), errOutput)
 	case "b", "bet":
-		pwc.writePresenterResponse(w, pi.Bet(param.Amount))
+		pwc.writePresenterResponse(w, pi.Bet(param.Amount), errOutput)
 	case "c", "call":
-		pwc.writePresenterResponse(w, pi.Call())
+		pwc.writePresenterResponse(w, pi.Call(), errOutput)
 	case "ra", "raise":
-		pwc.writePresenterResponse(w, pi.Raise(param.Amount))
+		pwc.writePresenterResponse(w, pi.Raise(param.Amount), errOutput)
 	case "f", "fold":
-		pwc.writePresenterResponse(w, pi.Fold())
+		pwc.writePresenterResponse(w, pi.Fold(), errOutput)
 	case "ck", "check":
-		pwc.writePresenterResponse(w, pi.Check())
+		pwc.writePresenterResponse(w, pi.Check(), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(pwc.newDefaultOutput("Unsupported command."))
 	}
-}
-
-// writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
-func (pwc *PokerWebController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
-	if responseStr == "" || !json.Valid([]byte(responseStr)) {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(pwc.newDefaultOutput("error."))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	_ = w.WriteJson(json.RawMessage(responseStr))
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す

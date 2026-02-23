@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -76,6 +75,7 @@ type DaifugoWebOutput struct {
 
 // DaifugoWebController 大富豪Webコントローラークラス
 type DaifugoWebController struct {
+	baseController
 	factory func() usecase.DaifugoInteractorIF
 	store   *SessionStore[usecase.DaifugoInteractorIF]
 }
@@ -110,30 +110,20 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 	mu.Lock()
 	defer mu.Unlock()
+	errOutput := dwc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
-		dwc.writePresenterResponse(w, dgi.Reset())
+		dwc.writePresenterResponse(w, dgi.Reset(), errOutput)
 	case "p", "play":
 		indices := param.Indices
 		if indices == nil {
 			indices = []int{}
 		}
-		dwc.writePresenterResponse(w, dgi.Play(indices))
+		dwc.writePresenterResponse(w, dgi.Play(indices), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(dwc.newDefaultOutput("Unsupported command."))
 	}
-}
-
-// writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
-func (dwc *DaifugoWebController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
-	if responseStr == "" || !json.Valid([]byte(responseStr)) {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(dwc.newDefaultOutput("error."))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	_ = w.WriteJson(json.RawMessage(responseStr))
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す

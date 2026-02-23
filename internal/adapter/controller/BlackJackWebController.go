@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -55,6 +54,7 @@ type BlackJackWebOutput struct {
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
 type BlackJackWebController struct {
+	baseController
 	factory func() usecase.BlackJackInteractorIF
 	store   *SessionStore[usecase.BlackJackInteractorIF]
 }
@@ -89,38 +89,28 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	}
 	mu.Lock()
 	defer mu.Unlock()
+	errOutput := bwc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
-		bwc.writePresenterResponse(w, bji.Reset())
+		bwc.writePresenterResponse(w, bji.Reset(), errOutput)
 	case "h", "hit":
-		bwc.writePresenterResponse(w, bji.Hit())
+		bwc.writePresenterResponse(w, bji.Hit(), errOutput)
 	case "s", "stand":
-		bwc.writePresenterResponse(w, bji.Stand())
+		bwc.writePresenterResponse(w, bji.Stand(), errOutput)
 	case "b", "bet":
-		bwc.writePresenterResponse(w, bji.Bet(param.Amount))
+		bwc.writePresenterResponse(w, bji.Bet(param.Amount), errOutput)
 	case "d", "doubledown":
-		bwc.writePresenterResponse(w, bji.DoubleDown())
+		bwc.writePresenterResponse(w, bji.DoubleDown(), errOutput)
 	case "sp", "split":
-		bwc.writePresenterResponse(w, bji.Split())
+		bwc.writePresenterResponse(w, bji.Split(), errOutput)
 	case "i", "insurance":
-		bwc.writePresenterResponse(w, bji.Insurance())
+		bwc.writePresenterResponse(w, bji.Insurance(), errOutput)
 	case "di", "declineinsurance":
-		bwc.writePresenterResponse(w, bji.DeclineInsurance())
+		bwc.writePresenterResponse(w, bji.DeclineInsurance(), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(bwc.newDefaultOutput("Unsupported command."))
 	}
-}
-
-// writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
-func (bwc *BlackJackWebController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
-	if responseStr == "" || !json.Valid([]byte(responseStr)) {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(bwc.newDefaultOutput("error."))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	_ = w.WriteJson(json.RawMessage(responseStr))
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す

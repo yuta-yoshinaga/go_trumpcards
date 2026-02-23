@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -70,6 +69,7 @@ type SevensWebOutput struct {
 
 // SevensWebController 7並べWebコントローラークラス
 type SevensWebController struct {
+	baseController
 	factory func() usecase.SevensInteractorIF
 	store   *SessionStore[usecase.SevensInteractorIF]
 }
@@ -104,32 +104,22 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 	mu.Lock()
 	defer mu.Unlock()
+	errOutput := swc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
 		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil {
-			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), derefInt(param.JokerCount), derefBool(param.CpuStrategy)))
+			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), derefInt(param.JokerCount), derefBool(param.CpuStrategy)), errOutput)
 		} else {
-			swc.writePresenterResponse(w, sgi.Reset())
+			swc.writePresenterResponse(w, sgi.Reset(), errOutput)
 		}
 	case "p", "play":
-		swc.writePresenterResponse(w, sgi.Play(param.Index))
+		swc.writePresenterResponse(w, sgi.Play(param.Index), errOutput)
 	case "j", "joker":
-		swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue))
+		swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(swc.newDefaultOutput("Unsupported command."))
 	}
-}
-
-// writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
-func (swc *SevensWebController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
-	if responseStr == "" || !json.Valid([]byte(responseStr)) {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(swc.newDefaultOutput("error."))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	_ = w.WriteJson(json.RawMessage(responseStr))
 }
 
 func derefBool(p *bool) bool {

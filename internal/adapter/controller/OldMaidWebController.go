@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -60,6 +59,7 @@ type OldMaidWebOutput struct {
 
 // OldMaidWebController ババ抜きWebコントローラークラス
 type OldMaidWebController struct {
+	baseController
 	factory func() usecase.OldMaidInteractorIF
 	store   *SessionStore[usecase.OldMaidInteractorIF]
 }
@@ -98,26 +98,16 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 	mu.Lock()
 	defer mu.Unlock()
+	errOutput := owc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
-		owc.writePresenterResponse(w, omi.Reset())
+		owc.writePresenterResponse(w, omi.Reset(), errOutput)
 	case "d", "draw":
-		owc.writePresenterResponse(w, omi.Draw(drawIdx))
+		owc.writePresenterResponse(w, omi.Draw(drawIdx), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
 		_ = w.WriteJson(owc.newDefaultOutput("Unsupported command."))
 	}
-}
-
-// writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
-func (owc *OldMaidWebController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
-	if responseStr == "" || !json.Valid([]byte(responseStr)) {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(owc.newDefaultOutput("error."))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	_ = w.WriteJson(json.RawMessage(responseStr))
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
