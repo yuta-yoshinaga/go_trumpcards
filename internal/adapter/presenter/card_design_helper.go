@@ -13,6 +13,8 @@ func cardDesignToString(design int) string {
 		return "HEART"
 	case domain.CardDesignDiamond:
 		return "DIAMOND"
+	case domain.CardDesignJoker:
+		return "JOKER"
 	default:
 		return "JOKER"
 	}

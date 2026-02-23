@@ -129,9 +129,14 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg *domain.Daifugo) string {
 	return msg
 }
 
-// getSuitName スート名取得
+// getSuitName スート名取得 (スート縛り用: 4スートのみ変換し、それ以外は空文字)
 func (dwp *DaifugoWebPresenter) getSuitName(suit int) string {
-	return cardDesignToString(suit)
+	switch suit {
+	case domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond:
+		return cardDesignToString(suit)
+	default:
+		return ""
+	}
 }
 
 // getCardObjs カードオブジェクトの配列取得 (nil → nil)
