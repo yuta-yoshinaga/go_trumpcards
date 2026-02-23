@@ -10,6 +10,11 @@ type PokerInteractorIF interface {
 	Reset() string
 	Exchange(indices []int) string
 	Stand() string
+	Bet(amount int) string
+	Call() string
+	Raise(amount int) string
+	Fold() string
+	Check() string
 }
 
 // PokerInteractor ポーカーインタラクタークラス
@@ -41,5 +46,35 @@ func (pi *PokerInteractor) Exchange(indices []int) string {
 // Stand カード交換なしでショーダウン
 func (pi *PokerInteractor) Stand() string {
 	pi.p.PlayerStand()
+	return pi.pp.Output(pi.p)
+}
+
+// Bet ベット
+func (pi *PokerInteractor) Bet(amount int) string {
+	pi.p.PlayerBet(amount)
+	return pi.pp.Output(pi.p)
+}
+
+// Call コール
+func (pi *PokerInteractor) Call() string {
+	pi.p.PlayerCall()
+	return pi.pp.Output(pi.p)
+}
+
+// Raise レイズ
+func (pi *PokerInteractor) Raise(amount int) string {
+	pi.p.PlayerRaise(amount)
+	return pi.pp.Output(pi.p)
+}
+
+// Fold フォールド
+func (pi *PokerInteractor) Fold() string {
+	pi.p.PlayerFold()
+	return pi.pp.Output(pi.p)
+}
+
+// Check チェック
+func (pi *PokerInteractor) Check() string {
+	pi.p.PlayerCheck()
 	return pi.pp.Output(pi.p)
 }

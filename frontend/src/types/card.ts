@@ -18,16 +18,21 @@ export interface BlackJackResponse {
 
 export interface PokerPlayer {
   cards: Card[];
+  handRank: number;
   handName: string;
+  chips: number;
+  bet: number;
 }
 
-export type PokerPhase = 0 | 1 | 2;
+export type PokerPhase = 0 | 1 | 2 | 3 | 4;
 
 export interface PokerResponse {
   phase: PokerPhase;
   player: PokerPlayer;
   dealer: PokerPlayer;
   message: string;
+  pot: number;
+  ante: number;
 }
 
 export interface OldMaidPlayerData {

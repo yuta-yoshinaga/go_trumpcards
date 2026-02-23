@@ -13,6 +13,7 @@ import (
 type PokerWebInput struct {
 	Command   string `json:"command"`
 	Indices   []int  `json:"indices,omitempty"`
+	Amount    int    `json:"amount,omitempty"`
 	SessionId string `json:"sessionId"`
 }
 
@@ -27,6 +28,8 @@ type PokerWebOutputPlayer struct {
 	HandRank int                   `json:"handRank"`
 	HandName string                `json:"handName"`
 	Cards    []*PokerWebOutputCard `json:"cards"`
+	Chips    int                   `json:"chips"`
+	Bet      int                   `json:"bet"`
 }
 
 // PokerWebOutput ポーカーWebアウトプット
@@ -35,6 +38,8 @@ type PokerWebOutput struct {
 	Player  *PokerWebOutputPlayer `json:"player"`
 	Phase   int                   `json:"phase"`
 	Message string                `json:"message"`
+	Pot     int                   `json:"pot"`
+	Ante    int                   `json:"ante"`
 }
 
 // PokerWebController ポーカーWebコントローラークラス
@@ -79,6 +84,16 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				responseStr = pi.Exchange(indices)
 			case "s", "stand":
 				responseStr = pi.Stand()
+			case "b", "bet":
+				responseStr = pi.Bet(param.Amount)
+			case "c", "call":
+				responseStr = pi.Call()
+			case "ra", "raise":
+				responseStr = pi.Raise(param.Amount)
+			case "f", "fold":
+				responseStr = pi.Fold()
+			case "ck", "check":
+				responseStr = pi.Check()
 			default:
 				responseStr = `{"message":"Unsupported command."}`
 			}

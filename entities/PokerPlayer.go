@@ -34,6 +34,7 @@ var PokerHandNames = []string{
 type PokerPlayer struct {
 	Player           // 親クラス
 	handRank int     // ハンドランク
+	chips    int     // チップ
 }
 
 // NewPokerPlayer コンストラクタ
@@ -43,6 +44,7 @@ func NewPokerPlayer() *PokerPlayer {
 			cards: make([]*Card, 0),
 		},
 		handRank: 0,
+		chips:    0,
 	}
 }
 
@@ -148,6 +150,13 @@ func (pp *PokerPlayer) checkStraight(sortedValues []int) bool {
 		return true
 	}
 
+	// A-10-J-Q-K のハイエーストレート
+	if len(sortedValues) == 5 &&
+		sortedValues[0] == 1 && sortedValues[1] == 10 &&
+		sortedValues[2] == 11 && sortedValues[3] == 12 && sortedValues[4] == 13 {
+		return true
+	}
+
 	return false
 }
 
@@ -173,4 +182,28 @@ func (pp *PokerPlayer) GetHandName() string {
 		return PokerHandNames[pp.handRank]
 	}
 	return "Unknown"
+}
+
+// GetChips チップ取得
+func (pp *PokerPlayer) GetChips() int {
+	return pp.chips
+}
+
+// SetChips チップ設定
+func (pp *PokerPlayer) SetChips(chips int) {
+	pp.chips = chips
+}
+
+// AddChips チップ追加
+func (pp *PokerPlayer) AddChips(amount int) {
+	pp.chips += amount
+}
+
+// SubtractChips チップ減算 (不足時はfalseを返す)
+func (pp *PokerPlayer) SubtractChips(amount int) bool {
+	if pp.chips < amount {
+		return false
+	}
+	pp.chips -= amount
+	return true
 }

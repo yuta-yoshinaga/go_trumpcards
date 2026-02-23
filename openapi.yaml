@@ -145,19 +145,26 @@ paths:
         Send a command to advance the Poker game session identified by
         `sessionId`.
 
-        The game proceeds through three phases:
+        The game proceeds through five phases:
 
-        | Phase | Value | Description |
-        |-------|-------|-------------|
-        | Init  | `0`   | Before any cards are dealt |
-        | Deal  | `1`   | Cards dealt; player may exchange |
-        | End   | `2`   | Showdown; final hands revealed |
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Before any cards are dealt |
+        | Deal       | `1`   | Cards dealt; first betting round |
+        | Exchange   | `2`   | Player may exchange cards |
+        | SecondBet  | `3`   | Second betting round (after exchange) |
+        | End        | `4`   | Showdown; final hands revealed |
 
         | Command    | Aliases | Description |
         |------------|---------|-------------|
         | `reset`    | `r`     | Start / restart a game |
+        | `bet`      | `b`     | Place a bet (use `amount`) |
+        | `call`     | `c`     | Match the dealer's bet |
+        | `raise`    | `ra`    | Raise (use `amount`) |
+        | `check`    | `ck`    | Pass without betting (only when no outstanding bet) |
+        | `fold`     | `f`     | Forfeit the pot |
         | `exchange` | `e`     | Exchange selected cards (use `indices` to specify which) |
-        | `stand`    | `s`     | Keep current hand; trigger dealer play and judgment |
+        | `stand`    | `s`     | Keep current hand; trigger dealer play |
         | `quit`     | `q`     | End the session |
       operationId: pokerExec
       requestBody:
@@ -171,6 +178,17 @@ paths:
                 summary: Start a new game
                 value:
                   command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 20
+                value:
+                  command: bet
+                  amount: 20
+                  sessionId: my-session-001
+              call:
+                summary: Call the dealer's bet
+                value:
+                  command: call
                   sessionId: my-session-001
               exchange:
                 summary: Exchange cards at positions 0 and 2
@@ -192,12 +210,14 @@ paths:
                 $ref: '#/components/schemas/PokerResponse'
               examples:
                 dealPhase:
-                  summary: Cards dealt (phase 1)
+                  summary: Cards dealt — first betting round (phase 1)
                   value:
                     dealer:
                       handRank: 0
                       handName: ""
                       cards: []
+                      chips: 990
+                      bet: 0
                     player:
                       handRank: 2
                       handName: Two Pair
@@ -212,10 +232,14 @@ paths:
                           value: 9
                         - design: SPADE
                           value: 2
+                      chips: 990
+                      bet: 0
                     phase: 1
                     message: ""
+                    pot: 20
+                    ante: 10
                 endPhase:
-                  summary: Showdown (phase 2)
+                  summary: Showdown (phase 4)
                   value:
                     dealer:
                       handRank: 1
@@ -231,6 +255,8 @@ paths:
                           value: 10
                         - design: SPADE
                           value: 1
+                      chips: 960
+                      bet: 0
                     player:
                       handRank: 2
                       handName: Two Pair
@@ -245,8 +271,12 @@ paths:
                           value: 9
                         - design: SPADE
                           value: 2
-                    phase: 2
+                      chips: 1040
+                      bet: 0
+                    phase: 4
                     message: You are the winner.
+                    pot: 0
+                    ante: 10
         '400':
           description: Bad request (missing/invalid parameters or session error)
           content:
@@ -260,12 +290,18 @@ paths:
                       handRank: 0
                       handName: ""
                       cards: []
+                      chips: 0
+                      bet: 0
                     player:
                       handRank: 0
                       handName: ""
                       cards: []
+                      chips: 0
+                      bet: 0
                     phase: 0
                     message: param error.
+                    pot: 0
+                    ante: 0
 
   /oldmaid/exec:
     post:
@@ -584,9 +620,10 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `exchange` (`e`),
-            `stand` (`s`), `quit` (`q`).
-          enum: [r, reset, e, exchange, s, stand, q, quit]
-          example: exchange
+            `stand` (`s`), `bet` (`b`), `call` (`c`), `raise` (`ra`),
+            `check` (`ck`), `fold` (`f`), `quit` (`q`).
+          enum: [r, reset, e, exchange, s, stand, b, bet, c, call, ra, raise, ck, check, f, fold, q, quit]
+          example: bet
         indices:
           type: array
           description: |
@@ -597,6 +634,13 @@ components:
             minimum: 0
             maximum: 4
           example: [0, 2]
+        amount:
+          type: integer
+          description: |
+            Bet/raise amount (for the `bet` and `raise` commands).
+            Minimum bet is 10.
+          minimum: 10
+          example: 20
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -609,6 +653,8 @@ components:
         - handRank
         - handName
         - cards
+        - chips
+        - bet
       properties:
         handRank:
           type: integer
@@ -616,11 +662,11 @@ components:
             Numeric hand rank:
             0 = High Card, 1 = One Pair, 2 = Two Pair, 3 = Three of a Kind,
             4 = Straight, 5 = Flush, 6 = Full House, 7 = Four of a Kind,
-            8 = Straight Flush.
+            8 = Straight Flush, 9 = Royal Flush.
 
-            Dealer values are hidden (0 / empty) until phase 2.
+            Dealer values are hidden (0 / empty) until phase 4.
           minimum: 0
-          maximum: 8
+          maximum: 9
           example: 2
         handName:
           type: string
@@ -628,9 +674,19 @@ components:
           example: Two Pair
         cards:
           type: array
-          description: Cards held.  Dealer cards are hidden (empty array) until phase 2.
+          description: Cards held.  Dealer cards are hidden (empty array) until phase 4.
           items:
             $ref: '#/components/schemas/Card'
+        chips:
+          type: integer
+          description: Current chip count for this player
+          minimum: 0
+          example: 990
+        bet:
+          type: integer
+          description: Current round bet amount
+          minimum: 0
+          example: 10
 
     PokerResponse:
       type: object
@@ -639,6 +695,8 @@ components:
         - player
         - phase
         - message
+        - pot
+        - ante
       properties:
         dealer:
           $ref: '#/components/schemas/PokerPlayer'
@@ -649,9 +707,11 @@ components:
           description: |
             Current game phase:
             - `0` — Init (no cards dealt yet)
-            - `1` — Deal (player can exchange cards)
-            - `2` — End (showdown; all hands visible)
-          enum: [0, 1, 2]
+            - `1` — Deal (first betting round)
+            - `2` — Exchange (player can exchange cards)
+            - `3` — SecondBet (second betting round)
+            - `4` — End (showdown; all hands visible)
+          enum: [0, 1, 2, 3, 4]
           example: 1
         message:
           type: string
@@ -661,11 +721,23 @@ components:
             - `"It is a draw."` — tie
             - `"You are the winner."` — player wins
             - `"It is your loss."` — player loses
+            - `"You folded."` — player folded
+            - `"Dealer folded. You win!"` — dealer folded
             - `"Unsupported command."` — unknown command
             - `"bye."` — session ended by quit command
             - `"param error."` — invalid request
             - `"error."` — internal error
           example: ""
+        pot:
+          type: integer
+          description: Current pot size (total chips at stake)
+          minimum: 0
+          example: 20
+        ante:
+          type: integer
+          description: Ante amount per round
+          minimum: 0
+          example: 10
 
     # -------------------------------------------------------------------------
     # Old Maid
