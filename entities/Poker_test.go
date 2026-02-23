@@ -25,7 +25,7 @@ func TestPoker_Method(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)
 		tp.Reset()
-		assert.Equal(t, entities.PokerDefaultChips-entities.PokerDefaultAnte, tp.GetPlayer().GetChips()+tp.GetPlayerBet())
+		assert.Equal(t, entities.PokerDefaultChips-entities.PokerDefaultAnte, tp.GetPlayer().GetChips())
 		assert.True(t, tp.GetPot() >= entities.PokerDefaultAnte*2)
 	})
 
@@ -108,6 +108,15 @@ func TestPoker_Method(t *testing.T) {
 		tp.Reset()
 		ok := tp.PlayerBet(999999)
 		assert.False(t, ok)
+	})
+
+	t.Run("success PlayerRaise rejected on overflow amount", func(t *testing.T) {
+		player.SetChips(0)
+		dealer.SetChips(0)
+		tp.Reset()
+		ok := tp.PlayerRaise(1<<62)
+		assert.False(t, ok)
+		assert.Equal(t, entities.PokerPhaseDeal, tp.GetPhase())
 	})
 
 	t.Run("success PlayerCheck rejected when dealer has bet", func(t *testing.T) {

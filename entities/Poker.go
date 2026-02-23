@@ -1,9 +1,6 @@
 package entities
 
-import (
-	"math/rand"
-	"sort"
-)
+import "sort"
 
 // ポーカーゲームのフェーズ定数
 const (
@@ -141,14 +138,18 @@ func (p *Poker) PlayerRaise(amount int) bool {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
 		return false
 	}
-	diff := p.dealerBet - p.playerBet
-	totalNeeded := diff + amount
 	if amount < PokerMinBet {
 		return false
 	}
-	if p.player.GetChips() < totalNeeded {
+	diff := p.dealerBet - p.playerBet
+	if diff < 0 {
+		diff = 0
+	}
+	// オーバーフロー防止
+	if amount > p.player.GetChips()-diff {
 		return false
 	}
+	totalNeeded := diff + amount
 	p.player.SubtractChips(totalNeeded)
 	p.playerBet += totalNeeded
 	p.pot += totalNeeded
@@ -413,25 +414,14 @@ func (p *Poker) findFlushDrawDiscard() int {
 	return -1
 }
 
-// findStraightDrawDiscard 4枚オープンエンドストレートドローの外れカード位置を返す (ドローなし: -1)
-func (p *Poker) findStraightDrawDiscard() int {
-	type cardInfo struct {
-		idx   int
-		value int
-	}
-	cards := make([]cardInfo, p.dealer.GetCardsSize())
-	for i := 0; i < p.dealer.GetCardsSize(); i++ {
-		v := p.dealer.GetCard(i).GetValue()
-		if v == 1 {
-			v = 14
-		}
-		cards[i] = cardInfo{i, v}
-	}
-	sort.Slice(cards, func(i, j int) bool {
-		return cards[i].value < cards[j].value
-	})
+// straightDrawCardInfo ストレートドロー探索用のカード情報
+type straightDrawCardInfo struct {
+	idx   int
+	value int
+}
 
-	// 各カードを除外して残り4枚が連続するか調べる
+// findOpenEndedDraw sorted cardsからskip位置を除外し、残り4枚が連続かつ条件を満たすか判定する
+func findOpenEndedDraw(cards []straightDrawCardInfo, check func(remaining []int) bool) int {
 	for skip := 0; skip < len(cards); skip++ {
 		remaining := make([]int, 0, 4)
 		for j, c := range cards {
@@ -439,53 +429,59 @@ func (p *Poker) findStraightDrawDiscard() int {
 				remaining = append(remaining, c.value)
 			}
 		}
-		if len(remaining) == 4 {
-			isConsecutive := true
-			for k := 1; k < len(remaining); k++ {
-				if remaining[k] != remaining[k-1]+1 {
-					isConsecutive = false
-					break
-				}
-			}
-			if isConsecutive {
-				// オープンエンド: 両端に拡張の余地がある (2以上 and 13以下)
-				if remaining[0] > 1 && remaining[3] < 14 {
-					return cards[skip].idx
-				}
+		if len(remaining) != 4 {
+			continue
+		}
+		isConsecutive := true
+		for k := 1; k < len(remaining); k++ {
+			if remaining[k] != remaining[k-1]+1 {
+				isConsecutive = false
+				break
 			}
 		}
+		if isConsecutive && check(remaining) {
+			return cards[skip].idx
+		}
+	}
+	return -1
+}
+
+// findStraightDrawDiscard 4枚オープンエンドストレートドローの外れカード位置を返す (ドローなし: -1)
+func (p *Poker) findStraightDrawDiscard() int {
+	// Ace high (14) として評価
+	cards := make([]straightDrawCardInfo, p.dealer.GetCardsSize())
+	for i := 0; i < p.dealer.GetCardsSize(); i++ {
+		v := p.dealer.GetCard(i).GetValue()
+		if v == 1 {
+			v = 14
+		}
+		cards[i] = straightDrawCardInfo{i, v}
+	}
+	sort.Slice(cards, func(i, j int) bool {
+		return cards[i].value < cards[j].value
+	})
+
+	// オープンエンド: 両端に拡張の余地がある (2以上 and 13以下)
+	idx := findOpenEndedDraw(cards, func(r []int) bool {
+		return r[0] > 1 && r[3] < 14
+	})
+	if idx >= 0 {
+		return idx
 	}
 
 	// Ace low: A-2-3-4 のパターン (Aceを1として再評価)
-	cardsLow := make([]cardInfo, p.dealer.GetCardsSize())
+	cardsLow := make([]straightDrawCardInfo, p.dealer.GetCardsSize())
 	for i := 0; i < p.dealer.GetCardsSize(); i++ {
 		v := p.dealer.GetCard(i).GetValue()
-		cardsLow[i] = cardInfo{i, v}
+		cardsLow[i] = straightDrawCardInfo{i, v}
 	}
 	sort.Slice(cardsLow, func(i, j int) bool {
 		return cardsLow[i].value < cardsLow[j].value
 	})
-	for skip := 0; skip < len(cardsLow); skip++ {
-		remaining := make([]int, 0, 4)
-		for j, c := range cardsLow {
-			if j != skip {
-				remaining = append(remaining, c.value)
-			}
-		}
-		if len(remaining) == 4 {
-			isConsecutive := true
-			for k := 1; k < len(remaining); k++ {
-				if remaining[k] != remaining[k-1]+1 {
-					isConsecutive = false
-					break
-				}
-			}
-			if isConsecutive && remaining[0] == 1 && remaining[3] <= 5 {
-				return cardsLow[skip].idx
-			}
-		}
-	}
-	return -1
+
+	return findOpenEndedDraw(cardsLow, func(r []int) bool {
+		return r[0] == 1 && r[3] <= 5
+	})
 }
 
 // GameJudgment ゲーム勝敗判定 (1:勝ち, 0:引き分け, -1:負け)
@@ -579,6 +575,3 @@ func (p *Poker) GetAnte() int {
 func (p *Poker) GetFolded() int {
 	return p.folded
 }
-
-// init 乱数シード初期化用 (テストで固定値を設定する場合はこの変数を差し替え)
-var pokerRand = rand.New(rand.NewSource(0))
