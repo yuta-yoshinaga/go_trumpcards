@@ -78,18 +78,7 @@ func (pwp *PokerWebPresenter) Output(p *domain.Poker, lastErr error) string {
 // GetCardObj カード情報取得
 func (pwp *PokerWebPresenter) GetCardObj(card *domain.Card) *controller.PokerWebOutputCard {
 	res := new(controller.PokerWebOutputCard)
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		res.Design = "SPADE"
-	case domain.CardDesignClover:
-		res.Design = "CLOVER"
-	case domain.CardDesignHeart:
-		res.Design = "HEART"
-	case domain.CardDesignDiamond:
-		res.Design = "DIAMOND"
-	default:
-		res.Design = "Unsupported card"
-	}
+	res.Design = cardDesignToString(card.GetDesign())
 	res.Value = card.GetValue()
 	return res
 }

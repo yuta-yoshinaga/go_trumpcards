@@ -114,18 +114,7 @@ func (owp *OldMaidWebPresenter) getCardObj(card *domain.Card) *controller.OldMai
 		return nil
 	}
 	res := new(controller.OldMaidWebOutputCard)
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		res.Design = "SPADE"
-	case domain.CardDesignClover:
-		res.Design = "CLOVER"
-	case domain.CardDesignHeart:
-		res.Design = "HEART"
-	case domain.CardDesignDiamond:
-		res.Design = "DIAMOND"
-	default:
-		res.Design = "JOKER"
-	}
+	res.Design = cardDesignToString(card.GetDesign())
 	res.Value = card.GetValue()
 	return res
 }
