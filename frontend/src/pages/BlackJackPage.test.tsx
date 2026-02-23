@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { blackjackApi } from '../api/gameApi';
-import type { BlackJackResponse } from '../types/card';
+import type { BlackJackHand, BlackJackResponse } from '../types/card';
 import { BlackJackPage } from './BlackJackPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -151,11 +151,12 @@ describe('BlackJackPage', () => {
   });
 
   it('shows split button when canSplit and sufficient chips', async () => {
-    const splitState = {
+    const baseHand = actionPhaseState.hands?.[0] as BlackJackHand;
+    const splitState: BlackJackResponse = {
       ...actionPhaseState,
       hands: [
         {
-          ...actionPhaseState.hands?.[0],
+          ...baseHand,
           canSplit: true,
         },
       ],
