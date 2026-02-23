@@ -242,9 +242,9 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		assert.Equal(t, "DIAMOND", card.Design)
 		assert.Equal(t, 1, card.Value)
 	})
-	t.Run("success GetCardObj unsupported", func(t *testing.T) {
+	t.Run("success GetCardObj JOKER", func(t *testing.T) {
 		card := tbp.GetCardObj(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
-		assert.Equal(t, "Unsupported card", card.Design)
+		assert.Equal(t, "JOKER", card.Design)
 		assert.Equal(t, 0, card.Value)
 	})
 }

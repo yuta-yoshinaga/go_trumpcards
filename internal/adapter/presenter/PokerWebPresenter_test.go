@@ -223,7 +223,7 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 	})
 	t.Run("success GetCardObj JOKER", func(t *testing.T) {
 		card := tpp.GetCardObj(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
-		assert.Equal(t, "Unsupported card", card.Design)
+		assert.Equal(t, "JOKER", card.Design)
 		assert.Equal(t, 0, card.Value)
 	})
 }
