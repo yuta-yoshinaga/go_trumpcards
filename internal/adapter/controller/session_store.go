@@ -12,9 +12,11 @@ const (
 	SessionMaxCount = 10000
 	// SessionTTL is the inactivity duration after which a session is evicted.
 	SessionTTL = 1 * time.Hour
-	// sessionCleanupInterval is how often the background goroutine runs eviction.
-	sessionCleanupInterval = 10 * time.Minute
 )
+
+// sessionCleanupInterval is how often the background goroutine runs eviction.
+// It is a var (not const) so that internal tests can shorten the interval.
+var sessionCleanupInterval = 10 * time.Minute
 
 type sessionEntry[T any] struct {
 	value    T

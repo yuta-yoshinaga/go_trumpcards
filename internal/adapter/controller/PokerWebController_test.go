@@ -85,8 +85,8 @@ func TestPokerWebController_Method(t *testing.T) {
 		recorded.BodyIs(mockOutput)
 	})
 	t.Run("success Exec exchange no indices", func(t *testing.T) {
-		_ = json.Unmarshal([]byte(`{"command": "exchange", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
+		input := controller.PokerWebInput{Command: "exchange", SessionId: "test-session-1"}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
