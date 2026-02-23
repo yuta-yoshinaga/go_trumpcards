@@ -23,9 +23,9 @@ const (
 
 // ポーカーフォールド状態定数
 const (
-	PokerFoldNone     = 0 // フォールドなし
-	PokerFoldByPlayer = 1 // プレイヤーがフォールド
-	PokerFoldByDealer = 2 // ディーラーがフォールド
+	PokerFoldNone     = iota // フォールドなし
+	PokerFoldByPlayer        // プレイヤーがフォールド
+	PokerFoldByDealer        // ディーラーがフォールド
 )
 
 // ディーラーAI閾値
