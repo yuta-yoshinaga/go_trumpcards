@@ -164,70 +164,30 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "11バック")
 	})
 
-	t.Run("success Output suit locked", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
-		dg.SetSuitLocked(true, domain.CardDesignSpade)
-		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "スート縛り")
-		assert.Contains(t, result, "SPADE")
-	})
-
-	t.Run("success Output suit locked CLOVER", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
-		dg.SetSuitLocked(true, domain.CardDesignClover)
-		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "CLOVER")
-	})
-
-	t.Run("success Output suit locked HEART", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
-		dg.SetSuitLocked(true, domain.CardDesignHeart)
-		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "HEART")
-	})
-
-	t.Run("success Output suit locked DIAMOND", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
-		dg.SetSuitLocked(true, domain.CardDesignDiamond)
-		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "DIAMOND")
-	})
-
-	t.Run("success Output suit locked unknown suit", func(t *testing.T) {
-		tc := domain.NewTrumpCards(0)
-		players := makeDaifugoPlayersForPresenter()
-		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
-		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
-		dg.SetSuitLocked(true, 999)
-		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "不明")
+	t.Run("success Output suit locked all suits", func(t *testing.T) {
+		suitTests := []struct {
+			suit     int
+			expected string
+		}{
+			{domain.CardDesignSpade, "SPADE"},
+			{domain.CardDesignClover, "CLOVER"},
+			{domain.CardDesignHeart, "HEART"},
+			{domain.CardDesignDiamond, "DIAMOND"},
+			{999, "不明"},
+		}
+		for _, st := range suitTests {
+			tc := domain.NewTrumpCards(0)
+			players := makeDaifugoPlayersForPresenter()
+			dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+			players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+			players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+			dg.SetSuitLocked(true, st.suit)
+			result := tdp.Output(dg, nil)
+			assert.Contains(t, result, "スート縛り")
+			assert.Contains(t, result, st.expected)
+		}
 	})
 
 	t.Run("success Output table is sequence", func(t *testing.T) {

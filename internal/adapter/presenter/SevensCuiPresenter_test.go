@@ -235,6 +235,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 			suit     int
 			expected string
 		}{
+			{domain.CardDesignSpade, "SPADE"},
 			{domain.CardDesignClover, "CLOVER"},
 			{domain.CardDesignHeart, "HEART"},
 			{domain.CardDesignDiamond, "DIAMOND"},
