@@ -123,6 +123,12 @@ public/                        # Built frontend assets served by Go web server
 
 **Unit tests are mandatory. Every implementation must ship with tests in the same commit.**
 
+### Coverage standard
+
+**Branch coverage (C1) must be 100%** for all packages under `internal/` except `internal/infrastructure/`. The directories `cmd/` and `internal/infrastructure/` are excluded from coverage requirements.
+
+When writing tests, always verify branch coverage—not just statement coverage (C0)—by ensuring every conditional branch (if/else, switch cases, loop exit conditions, etc.) is exercised.
+
 ### Coverage requirements
 
 When adding or modifying any game logic, provide tests for all four layers:
