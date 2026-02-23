@@ -921,11 +921,9 @@ func (d *Daifugo) findBestSequencePlay(player *DaifugoPlayer) []int {
 						lastStr = targetStr
 						sci++
 						found = true
-						break
-					} else if suitCards[sci].strength > targetStr {
-						break
 					}
-					sci++
+					// suitCards are in ascending strength order, so once strength >= targetStr, stop
+					break
 				}
 				if !found {
 					// ジョーカーで埋める

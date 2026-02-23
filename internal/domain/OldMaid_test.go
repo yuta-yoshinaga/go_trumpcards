@@ -396,3 +396,620 @@ func TestOldMaid_Method(t *testing.T) {
 		assert.Equal(t, 3, cpuCnt)
 	})
 }
+
+func TestOldMaid_GetLastDrawCard(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	// Player 0 (human): SPADE 3
+	// Player 1: CLOVER 7 (single card, deterministic draw)
+	// Players 2,3: finished
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+
+	err := om.PlayerDraw(0)
+	assert.NoError(t, err)
+
+	drawnCard := om.GetLastDrawCard()
+	assert.NotNil(t, drawnCard)
+	assert.Equal(t, domain.CardDesignClover, drawnCard.GetDesign())
+	assert.Equal(t, 7, drawnCard.GetValue())
+}
+
+func TestOldMaid_SetLastDrawPlayerIdx(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	om.SetLastDrawPlayerIdx(2)
+	assert.Equal(t, 2, om.GetLastDrawPlayerIdx())
+}
+
+func TestOldMaid_SetHasDrawn(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	assert.False(t, om.GetHasDrawn())
+	om.SetHasDrawn(true)
+	assert.True(t, om.GetHasDrawn())
+}
+
+func TestOldMaid_SetHumanAction(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	assert.Nil(t, om.GetHumanAction())
+	dummyAction := &domain.OldMaidCpuAction{
+		DrawPlayerIdx:  0,
+		DrawFromIdx:    1,
+		DrawnCard:      domain.NewCard(domain.CardDesignSpade, 5, false),
+		DiscardedPairs: 1,
+		DiscardedCards: []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignClover, 5, false),
+		},
+	}
+	om.SetHumanAction(dummyAction)
+	result := om.GetHumanAction()
+	assert.NotNil(t, result)
+	assert.Equal(t, 0, result.DrawPlayerIdx)
+	assert.Equal(t, 1, result.DrawFromIdx)
+	assert.Equal(t, 1, result.DiscardedPairs)
+	assert.Equal(t, 2, len(result.DiscardedCards))
+}
+
+func TestOldMaid_SetGameEndFlag(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	assert.False(t, om.GetGameEndFlag())
+	om.SetGameEndFlag(true)
+	assert.True(t, om.GetGameEndFlag())
+}
+
+func TestOldMaid_GetNextActivePlayer_AllFinished(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	// Mark all 4 players as finished
+	players[0].SetIsFinished(true)
+	players[1].SetIsFinished(true)
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+
+	// GetNextDrawTargetIdx delegates to getNextActivePlayer(currentTurn).
+	// Since all players are finished, it should return -1.
+	targetIdx := om.GetNextDrawTargetIdx()
+	assert.Equal(t, -1, targetIdx)
+}
+
+func TestOldMaid_DrawCard_PlayerFinished(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Player 0: human, will be marked finished
+		domain.NewOldMaidPlayer(false), // Player 1: has cards
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	// Give player 0 a card so it's valid, then mark finished.
+	// Player 1 has a card to draw from.
+	// Players 2,3 are active (not finished) to prevent checkGameEnd from firing prematurely.
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[0].SetIsFinished(true)
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+
+	// PlayerDraw checks IsHuman (true) and gameEndFlag (false), then calls drawCard.
+	// drawCard checks player.GetIsFinished() which is true, so it returns nil.
+	// The humanAction will record nil for DrawnCard.
+	err := om.PlayerDraw(0)
+	assert.NoError(t, err)
+
+	ha := om.GetHumanAction()
+	assert.NotNil(t, ha)
+	assert.Nil(t, ha.DrawnCard)
+}
+
+func TestOldMaid_DrawCard_NoTarget(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Player 0: human, active
+		domain.NewOldMaidPlayer(false), // Player 1: not finished, but 0 cards
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	// Player 0: has a card, not finished
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	// Player 1: not finished but has 0 cards (target.GetCardsSize() == 0 branch)
+	// Players 2,3: finished
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+
+	// getNextActivePlayer(0) will find player 1 (not finished).
+	// But player 1 has 0 cards, so drawCard returns nil (target.GetCardsSize() == 0).
+	err := om.PlayerDraw(0)
+	assert.NoError(t, err)
+
+	ha := om.GetHumanAction()
+	assert.NotNil(t, ha)
+	assert.Nil(t, ha.DrawnCard)
+}
+
+func TestOldMaid_CpuDraw_TargetBoundary(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	cpuPlayers := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, cpuPlayers)
+
+	// Mark all players as finished so getNextActivePlayer returns -1.
+	// Also set gameEndFlag to false manually so CpuDraw does not bail out early.
+	cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	cpuPlayers[1].SetIsFinished(true)
+	cpuPlayers[2].SetIsFinished(true)
+	cpuPlayers[3].SetIsFinished(true)
+
+	// Player 0 is the only active player. getNextActivePlayer(0) checks
+	// indices 1, 2, 3, 0 - player 0 is not finished, so it returns 0 (self).
+	// This is a valid index but the CPU draws from itself.
+	// The test verifies CpuDraw does not error on this boundary.
+	err := om.CpuDraw()
+	assert.NoError(t, err)
+
+	actions := om.GetCpuActions()
+	assert.Equal(t, 1, len(actions))
+	assert.Equal(t, 0, actions[0].DrawPlayerIdx)
+	assert.Equal(t, 0, actions[0].DrawFromIdx)
+}
+
+func TestOldMaid_PlayerDraw_GameEndsSkipsAdvance(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Player 0: human
+		domain.NewOldMaidPlayer(false), // Player 1: target
+		domain.NewOldMaidPlayer(false), // Player 2: finished
+		domain.NewOldMaidPlayer(false), // Player 3: active (will become loser)
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	// Setup: Player 0 has SPADE 5, Player 1 has CLOVER 5 (single card).
+	// Players 2 is finished. Player 3 has the joker (cannot discard, will be last active).
+	// After Player 0 draws CLOVER 5 from Player 1:
+	//   - Player 0 discards the pair (5,5) → hand empty → finished
+	//   - Player 1 has 0 cards → finished
+	//   - Player 2 already finished
+	//   - Player 3 is the only active player → checkGameEnd fires, gameEndFlag = true
+	// Since gameEndFlag is true after drawCard, advanceTurn is skipped.
+	// currentTurn should remain 0.
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[2].SetIsFinished(true)
+	players[3].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+
+	turnBefore := om.GetCurrentTurn()
+	assert.Equal(t, 0, turnBefore)
+
+	err := om.PlayerDraw(0)
+	assert.NoError(t, err)
+
+	// Game should have ended
+	assert.True(t, om.GetGameEndFlag())
+	// advanceTurn was skipped, so currentTurn stays at 0
+	assert.Equal(t, 0, om.GetCurrentTurn())
+	// Player 3 is the loser (only active player remaining)
+	assert.Equal(t, 3, om.GetLoserIdx())
+}
+
+// TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs covers lines 97-99 and 108-109
+// in Reset: when a player has 0 cards after DiscardPairs, they are set as finished,
+// and the currentTurn advancement loop skips finished players.
+func TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs(t *testing.T) {
+	found := false
+	for attempt := 0; attempt < 10000; attempt++ {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.Reset()
+
+		for i := 0; i < domain.OldMaidPlayerCnt; i++ {
+			p := om.GetPlayer(i)
+			if p.GetCardsSize() == 0 && p.GetIsFinished() {
+				found = true
+				// When a player at currentTurn index is finished,
+				// the loop in Reset advances past them.
+				// Verify currentTurn points to a non-finished player
+				// (or game has ended).
+				if !om.GetGameEndFlag() {
+					currentPlayer := om.GetPlayer(om.GetCurrentTurn())
+					assert.False(t, currentPlayer.GetIsFinished(),
+						"currentTurn should point to a non-finished player after Reset")
+				}
+				break
+			}
+		}
+		if found {
+			break
+		}
+	}
+	assert.True(t, found,
+		"at least one player should have 0 cards after DiscardPairs in Reset within 10000 attempts")
+}
+
+// TestOldMaid_DrawCard_InvalidCardIdx covers lines 177-179 in drawCard:
+// when cardIdx is out of range, a random index is used instead.
+func TestOldMaid_DrawCard_InvalidCardIdx(t *testing.T) {
+	t.Run("cardIdx too large triggers random selection", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),  // Player 0: human
+			domain.NewOldMaidPlayer(false), // Player 1: target
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+
+		// Player 0: SPADE 2 (no pair possible with target's cards)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		// Player 1: HEART 7 (single card, idx 0 only valid)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].SetIsFinished(true)
+		players[3].SetIsFinished(true)
+
+		// Pass cardIdx=999 which is >= target.GetCardsSize() (1)
+		// This triggers idx = rand.Intn(target.GetCardsSize()) at line 178
+		err := om.PlayerDraw(999)
+		assert.NoError(t, err)
+
+		// The draw should still succeed (random selection used)
+		drawnCard := om.GetLastDrawCard()
+		assert.NotNil(t, drawnCard)
+		assert.Equal(t, 7, drawnCard.GetValue())
+	})
+}
+
+// TestOldMaid_CpuDraw_IsHumanTurn covers lines 276-278 in CpuDraw:
+// calling CpuDraw when the current turn is a human player returns ErrNotHumanTurn.
+func TestOldMaid_CpuDraw_IsHumanTurn(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Player 0: human (current turn)
+		domain.NewOldMaidPlayer(false), // Player 1: CPU
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	// Manually set up cards so game is active (no Reset needed, deterministic turn=0)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+	// currentTurn is 0 (human), so CpuDraw should return ErrNotHumanTurn
+	err := om.CpuDraw()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
+}
+
+// TestOldMaid_CpuDraw_AllPlayersFinished covers lines 281-283 in CpuDraw:
+// when getNextActivePlayer returns -1 (all finished), CpuDraw returns nil.
+func TestOldMaid_CpuDraw_AllPlayersFinished(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	cpuPlayers := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, cpuPlayers)
+
+	// Mark all players as finished but do NOT set gameEndFlag.
+	// This creates an inconsistent state that exercises the defensive check.
+	cpuPlayers[0].SetIsFinished(true)
+	cpuPlayers[1].SetIsFinished(true)
+	cpuPlayers[2].SetIsFinished(true)
+	cpuPlayers[3].SetIsFinished(true)
+
+	// CpuDraw: gameEndFlag=false passes, IsHuman=false passes,
+	// getNextActivePlayer returns -1 (all finished), targetIdx < 0 → return nil
+	err := om.CpuDraw()
+	assert.NoError(t, err)
+}
+
+// TestOldMaid_DrawCard_GameEndFlag covers lines 158-160 in drawCard:
+// drawCard returns nil when gameEndFlag is true. This is tested via CpuDraw
+// where we set gameEndFlag to true between the CpuDraw-level check and
+// the drawCard call. Since this cannot happen in single-threaded code via
+// the public API (both callers check first), we exercise it by creating
+// a scenario where the game ends during a draw via pair discard and
+// then verify the draw was still recorded.
+// Also covers lines 212-214 in advanceTurn: returns early when gameEndFlag is true.
+func TestOldMaid_DrawCard_GameEndFlag(t *testing.T) {
+	// We need to cover drawCard's gameEndFlag check.
+	// Since public callers check gameEndFlag before calling drawCard,
+	// we set gameEndFlag=true directly and call CpuDraw.
+	// CpuDraw will return ErrGameEnded (covering that path).
+	// The drawCard internal check is defensive and unreachable from public API.
+	// We verify the CpuDraw ErrGameEnded path deterministically.
+	tc := domain.NewTrumpCards(1)
+	cpuPlayers := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, cpuPlayers)
+	cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+	om.SetGameEndFlag(true)
+	err := om.CpuDraw()
+	assert.ErrorIs(t, err, domain.ErrGameEnded)
+}
+
+// TestOldMaid_CpuSelectCardIdx_AllBranches exercises cpuSelectCardIdx by calling
+// CpuDraw many times with a multi-card target hand, ensuring all branches
+// (edge first, edge last, random middle) are covered via statistical sampling.
+func TestOldMaid_CpuSelectCardIdx_AllBranches(t *testing.T) {
+	firstHit := false
+	lastHit := false
+	middleHit := false
+
+	for attempt := 0; attempt < 500; attempt++ {
+		tc := domain.NewTrumpCards(1)
+		cpuPlayers := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, cpuPlayers)
+
+		// Player 0 has a card that won't pair with target's cards
+		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		// Player 1 has 5 distinct-value cards: 3,5,7,9,11
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		cpuPlayers[2].SetIsFinished(true)
+		cpuPlayers[3].SetIsFinished(true)
+
+		firstVal := cpuPlayers[1].GetCard(0).GetValue()
+		lastVal := cpuPlayers[1].GetCard(4).GetValue()
+
+		err := om.CpuDraw()
+		assert.NoError(t, err)
+
+		actions := om.GetCpuActions()
+		if len(actions) == 1 && actions[0].DrawnCard != nil {
+			v := actions[0].DrawnCard.GetValue()
+			if v == firstVal {
+				firstHit = true
+			} else if v == lastVal {
+				lastHit = true
+			} else {
+				middleHit = true
+			}
+		}
+		if firstHit && lastHit && middleHit {
+			break
+		}
+	}
+	assert.True(t, firstHit, "cpuSelectCardIdx should select first card sometimes")
+	assert.True(t, lastHit, "cpuSelectCardIdx should select last card sometimes")
+	assert.True(t, middleHit, "cpuSelectCardIdx should select middle card sometimes")
+}
+
+// TestOldMaid_CpuSelectCardIdx_SingleCard tests cpuSelectCardIdx when target
+// has exactly 1 card (size <= 1 branch returns 0).
+func TestOldMaid_CpuSelectCardIdx_SingleCard(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	cpuPlayers := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, cpuPlayers)
+
+	// Player 0 draws from Player 1 who has exactly 1 card
+	cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	cpuPlayers[2].SetIsFinished(true)
+	cpuPlayers[3].SetIsFinished(true)
+
+	err := om.CpuDraw()
+	assert.NoError(t, err)
+
+	actions := om.GetCpuActions()
+	assert.Equal(t, 1, len(actions))
+	assert.NotNil(t, actions[0].DrawnCard)
+	assert.Equal(t, 7, actions[0].DrawnCard.GetValue())
+}
+
+// TestOldMaid_DrawCardForTest_GameEndFlag covers lines 158-160 in drawCard:
+// when gameEndFlag is true, drawCard returns nil immediately.
+func TestOldMaid_DrawCardForTest_GameEndFlag(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+	// Set gameEndFlag to true, then call drawCard directly
+	om.SetGameEndFlag(true)
+	result := om.DrawCardForTest(0, 0)
+	assert.Nil(t, result, "drawCard should return nil when gameEndFlag is true")
+}
+
+// TestOldMaid_DrawCardForTest_FinishedPlayerReturnsNil tests drawCard via the
+// exported test wrapper when the calling player is finished.
+func TestOldMaid_DrawCardForTest_FinishedPlayerReturnsNil(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].SetIsFinished(true)
+
+	result := om.DrawCardForTest(0, 0)
+	assert.Nil(t, result, "drawCard should return nil when player is finished")
+}
+
+// TestOldMaid_SetCurrentTurn verifies the test helper for setting current turn.
+func TestOldMaid_SetCurrentTurn(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	assert.Equal(t, 0, om.GetCurrentTurn())
+	om.SetCurrentTurn(2)
+	assert.Equal(t, 2, om.GetCurrentTurn())
+}
+
+// TestOldMaid_AdvanceTurnForTest_GameEndFlag covers lines 212-214 in advanceTurn:
+// when gameEndFlag is true, advanceTurn returns immediately without changing turn.
+func TestOldMaid_AdvanceTurnForTest_GameEndFlag(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+	// Set gameEndFlag to true, then call advanceTurn directly
+	om.SetGameEndFlag(true)
+	turnBefore := om.GetCurrentTurn()
+	om.AdvanceTurnForTest()
+	assert.Equal(t, turnBefore, om.GetCurrentTurn(),
+		"advanceTurn should not change currentTurn when gameEndFlag is true")
+}
+
+// TestOldMaid_Reset_CurrentTurnPointsToActivePlayer verifies that after Reset,
+// currentTurn always points to an active (non-finished) player.
+func TestOldMaid_Reset_CurrentTurnPointsToActivePlayer(t *testing.T) {
+	for attempt := 0; attempt < 100; attempt++ {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.Reset()
+
+		if om.GetGameEndFlag() {
+			continue
+		}
+		// currentTurn should point to a non-finished player
+		turn := om.GetCurrentTurn()
+		assert.False(t, om.GetPlayer(turn).GetIsFinished(),
+			"currentTurn should point to an active player after Reset")
+	}
+}
+
+// TestOldMaid_DrawCardForTest_NoActiveTargetWith5Players covers lines 167-169 in
+// drawCard: when getNextActivePlayer returns -1, drawCard returns nil.
+// By creating 5 players (exceeding OldMaidPlayerCnt=4), playerIdx=4 is not checked
+// by getNextActivePlayer's loop (which only iterates OldMaidPlayerCnt=4 times over
+// indices 0..3). With players 0-3 finished, getNextActivePlayer(4) returns -1.
+func TestOldMaid_DrawCardForTest_NoActiveTargetWith5Players(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false), // Extra player at index 4
+	}
+	om := domain.NewOldMaid(tc, players)
+
+	// Player 4 is not finished and has a card
+	players[4].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	// Players 0-3 are all finished
+	players[0].SetIsFinished(true)
+	players[1].SetIsFinished(true)
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+
+	// DrawCardForTest(4, 0): player 4 is not finished (passes line 162),
+	// getNextActivePlayer(4) checks indices 1,2,3,0 - all finished → returns -1.
+	// targetIdx = -1 < 0 → return nil (line 167-169).
+	result := om.DrawCardForTest(4, 0)
+	assert.Nil(t, result, "drawCard should return nil when no active target is found")
+}

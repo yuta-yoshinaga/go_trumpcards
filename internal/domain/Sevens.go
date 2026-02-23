@@ -707,3 +707,15 @@ func (s *Sevens) SetHumanAction(action *SevensCpuAction) { s.humanAction = actio
 
 // SetCpuActions CPU行動設定（テスト用）
 func (s *Sevens) SetCpuActions(actions []*SevensCpuAction) { s.cpuActions = actions }
+
+// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
+func (s *Sevens) SetGameEndFlag(v bool) { s.gameEndFlag = v }
+
+// SetCurrentTurn 現在の手番設定（テスト用）
+func (s *Sevens) SetCurrentTurn(v int) { s.currentTurn = v }
+
+// SetTablePlaced ボードビットマスク設定（テスト用）
+func (s *Sevens) SetTablePlaced(placed [5]uint16) { s.tablePlaced = placed }
+
+// IsPositionPlaced ボード上の配置済み判定（テスト用）
+func (s *Sevens) IsPositionPlaced(suit, value int) bool { return s.isPositionPlaced(suit, value) }
