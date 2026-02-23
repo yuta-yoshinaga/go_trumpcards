@@ -80,12 +80,14 @@ func (p *SevensCuiPresenter) Output(s *domain.Sevens) string {
 		if humanAction.PlayedCard == nil {
 			fmt.Fprintf(&b, "%sがパスしました\n", p.getPlayerName(s, humanAction.PlayerIdx))
 		} else {
-			cardStr := p.getCardStr(humanAction.PlayedCard)
 			if humanAction.PlayedCard.GetDesign() == domain.CardDesignJoker && humanAction.TargetSuit > 0 {
-				cardStr += fmt.Sprintf(" → %s %d", p.getSuitName(humanAction.TargetSuit), humanAction.TargetValue)
+				fmt.Fprintf(&b, "%sが %s → %s %d を出しました\n",
+					p.getPlayerName(s, humanAction.PlayerIdx), p.getCardStr(humanAction.PlayedCard),
+					p.getSuitName(humanAction.TargetSuit), humanAction.TargetValue)
+			} else {
+				fmt.Fprintf(&b, "%sが %s を出しました\n",
+					p.getPlayerName(s, humanAction.PlayerIdx), p.getCardStr(humanAction.PlayedCard))
 			}
-			fmt.Fprintf(&b, "%sが %s を出しました\n",
-				p.getPlayerName(s, humanAction.PlayerIdx), cardStr)
 		}
 	}
 
@@ -98,11 +100,13 @@ func (p *SevensCuiPresenter) Output(s *domain.Sevens) string {
 			if action.PlayedCard == nil {
 				fmt.Fprintf(&b, "%sがパスしました\n", actPlayerName)
 			} else {
-				cardStr := p.getCardStr(action.PlayedCard)
 				if action.PlayedCard.GetDesign() == domain.CardDesignJoker && action.TargetSuit > 0 {
-					cardStr += fmt.Sprintf(" → %s %d", p.getSuitName(action.TargetSuit), action.TargetValue)
+					fmt.Fprintf(&b, "%sが %s → %s %d を出しました\n",
+						actPlayerName, p.getCardStr(action.PlayedCard),
+						p.getSuitName(action.TargetSuit), action.TargetValue)
+				} else {
+					fmt.Fprintf(&b, "%sが %s を出しました\n", actPlayerName, p.getCardStr(action.PlayedCard))
 				}
-				fmt.Fprintf(&b, "%sが %s を出しました\n", actPlayerName, cardStr)
 			}
 		}
 	}
