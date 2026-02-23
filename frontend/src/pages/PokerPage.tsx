@@ -3,12 +3,13 @@ import { pokerApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { PokerResponse } from '../types/card';
-
-const PHASE_INIT = 0;
-const PHASE_DEAL = 1;
-const PHASE_EXCHANGE = 2;
-const PHASE_SECOND_BET = 3;
-const PHASE_END = 4;
+import {
+  POKER_PHASE_DEAL,
+  POKER_PHASE_END,
+  POKER_PHASE_EXCHANGE,
+  POKER_PHASE_INIT,
+  POKER_PHASE_SECOND_BET,
+} from '../types/phases';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -45,9 +46,9 @@ export function PokerPage() {
     exec('reset');
   }, [exec]);
 
-  const phase = state?.phase ?? PHASE_INIT;
-  const isBettingPhase = phase === PHASE_DEAL || phase === PHASE_SECOND_BET;
-  const isExchangePhase = phase === PHASE_EXCHANGE;
+  const phase = state?.phase ?? POKER_PHASE_INIT;
+  const isBettingPhase = phase === POKER_PHASE_DEAL || phase === POKER_PHASE_SECOND_BET;
+  const isExchangePhase = phase === POKER_PHASE_EXCHANGE;
   const dealerBet = state?.dealer?.bet ?? 0;
   const playerBet = state?.player?.bet ?? 0;
   const hasOutstandingBet = dealerBet > playerBet;
@@ -82,7 +83,7 @@ export function PokerPage() {
         <div className="mb-2">
           <div className="text-white text-[1.1em] mb-1.5">
             ディーラー手札
-            {phase === PHASE_END && state?.dealer?.handName && (
+            {phase === POKER_PHASE_END && state?.dealer?.handName && (
               <span
                 style={{
                   display: 'inline-block',
@@ -100,7 +101,7 @@ export function PokerPage() {
             )}
           </div>
           <div className="flex flex-wrap gap-2 mb-2.5">
-            {phase === PHASE_END && state?.dealer?.cards?.length
+            {phase === POKER_PHASE_END && state?.dealer?.cards?.length
               ? state.dealer.cards.map((card) => (
                   <div key={`${card.design}-${card.value}`} style={{ ...cardWrapBase, cursor: 'default' }}>
                     <CardImage card={card} width={60} style={{ border: '3px solid transparent' }} />
@@ -123,7 +124,7 @@ export function PokerPage() {
         <div>
           <div className="text-white text-[1.1em] mb-1">
             プレイヤー手札
-            {phase === PHASE_END && state?.player?.handName && (
+            {phase === POKER_PHASE_END && state?.player?.handName && (
               <span
                 style={{
                   display: 'inline-block',
