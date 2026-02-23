@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { SevensConfigInput } from '../api/gameApi';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
+import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
@@ -77,10 +78,6 @@ function actionDesc(players: { id: number; isHuman: boolean }[], action: SevensA
 
 const playerAreaBaseClass =
   'bg-black/35 rounded-[10px] p-[10px] border-2 border-transparent flex-[1_1_180px] min-w-[150px]';
-const btnPrimary =
-  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnWarning =
-  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
 
 // ── Board component ──────────────────────────────────────────────────────────
 

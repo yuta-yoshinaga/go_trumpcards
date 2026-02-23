@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const REPLAY_DELAY_MS = 800;
 
 const playerAreaBaseClass = 'bg-black/35 rounded-[10px] p-2 border-2 border-transparent flex-[1_1_140px] min-w-[120px]';
-const btnPrimary =
-  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1';
-const btnWarning =
-  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1';
 
 function cardLabel(card: OldMaidResponse['lastDrawCard']): string {
   if (!card) return '';
