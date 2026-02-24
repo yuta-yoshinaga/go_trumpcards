@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -13,24 +13,20 @@ type DaifugoInteractorIF interface {
 
 // DaifugoInteractor 大富豪インタラクタークラス
 type DaifugoInteractor struct {
-	dg  *domain.Daifugo
+	dg  interfaces.DaifugoGame
 	dgp presenter.DaifugoPresenter
 }
 
 // NewDaifugoInteractor コンストラクタ
-func NewDaifugoInteractor(dgp presenter.DaifugoPresenter) *DaifugoInteractor {
+func NewDaifugoInteractor(dg interfaces.DaifugoGame, dgp presenter.DaifugoPresenter) *DaifugoInteractor {
+	if dg == nil {
+		panic("DaifugoInteractor: dg must not be nil")
+	}
 	if dgp == nil {
 		panic("DaifugoInteractor: dgp must not be nil")
 	}
-	config := domain.DefaultDaifugoConfig()
-	players := []*domain.DaifugoPlayer{
-		domain.NewDaifugoPlayer(true),  // player 0: 人間
-		domain.NewDaifugoPlayer(false), // player 1: CPU
-		domain.NewDaifugoPlayer(false), // player 2: CPU
-		domain.NewDaifugoPlayer(false), // player 3: CPU
-	}
 	return &DaifugoInteractor{
-		dg:  domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config),
+		dg:  dg,
 		dgp: dgp,
 	}
 }

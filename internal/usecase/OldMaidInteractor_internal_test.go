@@ -3,11 +3,10 @@ package usecase
 import (
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
 // buildOldMaidEndedGame creates an OldMaid game where human has 1 card (spade A),
@@ -44,11 +43,21 @@ func buildOldMaidCpuTurnGame() *domain.OldMaid {
 	return om
 }
 
+func newInternalTestOldMaid() *domain.OldMaid {
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	return domain.NewOldMaid(domain.NewTrumpCards(1), players)
+}
+
 func TestOldMaidInteractor_Draw_GameEndFlag(t *testing.T) {
 	mockOutput := "mock"
 	ompMock := new(presenter.MockOldMaidPresenter)
 	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	oi := NewOldMaidInteractor(ompMock)
+	oi := NewOldMaidInteractor(newInternalTestOldMaid(), ompMock)
 	oi.om = buildOldMaidEndedGame()
 
 	// Human draws from CPU1 (card index 0) → pair discarded → game ends.
@@ -64,7 +73,7 @@ func TestOldMaidInteractor_Draw_NotHumanTurn(t *testing.T) {
 	mockOutput := "mock"
 	ompMock := new(presenter.MockOldMaidPresenter)
 	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	oi := NewOldMaidInteractor(ompMock)
+	oi := NewOldMaidInteractor(newInternalTestOldMaid(), ompMock)
 	oi.om = buildOldMaidCpuTurnGame()
 
 	// currentTurn = 0, player 0 is CPU → !IsHumanTurn() is true.

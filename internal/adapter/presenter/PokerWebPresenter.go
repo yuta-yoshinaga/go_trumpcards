@@ -1,10 +1,9 @@
 package presenter
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // PokerWebPresenter ポーカーWebプレゼンタークラス
@@ -17,7 +16,7 @@ func NewPokerWebPresenter() *PokerWebPresenter {
 }
 
 // Output ゲーム状態を出力
-func (pwp *PokerWebPresenter) Output(p *domain.Poker, lastErr error) string {
+func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	resObj := new(controller.PokerWebOutput)
 	resObj.Phase = p.GetPhase()
 	resObj.Pot = p.GetPot()
@@ -68,7 +67,7 @@ func (pwp *PokerWebPresenter) Output(p *domain.Poker, lastErr error) string {
 		}
 	}
 
-	res, err := json.Marshal(resObj)
+	res, err := jsonMarshal(resObj)
 	if err != nil {
 		return `{"error":"internal server error"}`
 	}

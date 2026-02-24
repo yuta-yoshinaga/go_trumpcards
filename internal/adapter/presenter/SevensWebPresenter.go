@@ -1,11 +1,11 @@
 package presenter
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // SevensWebPresenter 7並べWebプレゼンタークラス
@@ -17,7 +17,7 @@ func NewSevensWebPresenter() *SevensWebPresenter {
 }
 
 // Output ゲーム状態をJSON出力
-func (swp *SevensWebPresenter) Output(s *domain.Sevens, lastErr error) string {
+func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) string {
 	resObj := new(controller.SevensWebOutput)
 	resObj.Players = make([]*controller.SevensWebOutputPlayer, 0)
 	resObj.CurrentTurn = s.GetCurrentTurn()
@@ -89,7 +89,7 @@ func (swp *SevensWebPresenter) Output(s *domain.Sevens, lastErr error) string {
 		resObj.Message = swp.buildResultMessage(s)
 	}
 
-	res, err := json.Marshal(resObj)
+	res, err := jsonMarshal(resObj)
 	if err != nil {
 		return `{"error":"internal server error"}`
 	}
@@ -97,7 +97,7 @@ func (swp *SevensWebPresenter) Output(s *domain.Sevens, lastErr error) string {
 }
 
 // buildResultMessage ゲーム終了メッセージを生成
-func (swp *SevensWebPresenter) buildResultMessage(s *domain.Sevens) string {
+func (swp *SevensWebPresenter) buildResultMessage(s interfaces.SevensGame) string {
 	msg := "ゲーム終了！ "
 	for i := 0; i < s.GetPlayerCnt(); i++ {
 		player := s.GetPlayer(i)

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // BlackJackCuiPresenter ブラックジャックCUIプレゼンタークラス
@@ -18,7 +19,7 @@ func NewBlackJackCuiPresenter() *BlackJackCuiPresenter {
 }
 
 // Output ゲーム状態を出力
-func (bjp *BlackJackCuiPresenter) Output(bj *domain.BlackJack, lastErr error) string {
+func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr error) string {
 	player := bj.GetPlayer()
 	dealer := bj.GetDealer()
 	var b strings.Builder

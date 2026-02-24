@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -19,12 +19,12 @@ type BlackJackInteractorIF interface {
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
 type BlackJackInteractor struct {
-	bj  *domain.BlackJack
+	bj  interfaces.BlackJackGame
 	bjp presenter.BlackJackPresenter
 }
 
 // NewBlackJackInteractor コンストラクタ
-func NewBlackJackInteractor(bj *domain.BlackJack, bjp presenter.BlackJackPresenter) *BlackJackInteractor {
+func NewBlackJackInteractor(bj interfaces.BlackJackGame, bjp presenter.BlackJackPresenter) *BlackJackInteractor {
 	if bj == nil {
 		panic("BlackJackInteractor: bj must not be nil")
 	}

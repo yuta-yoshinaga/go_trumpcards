@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -17,9 +18,16 @@ type OldMaidCui struct {
 
 // NewOldMaidCui コンストラクタ
 func NewOldMaidCui() *OldMaidCui {
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
 	return &OldMaidCui{
 		omc: controller.NewOldMaidCuiController(
-			usecase.NewOldMaidInteractor(presenter.NewOldMaidCuiPresenter()),
+			usecase.NewOldMaidInteractor(oldMaid, presenter.NewOldMaidCuiPresenter()),
 		),
 	}
 }

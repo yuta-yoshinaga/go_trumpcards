@@ -1,10 +1,8 @@
 package presenter
 
-import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-)
+import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 // PokerPresenter ポーカープレゼンターインタフェース
 type PokerPresenter interface {
-	Output(p *domain.Poker, lastErr error) string
+	Output(p interfaces.PokerGame, lastErr error) string
 }
