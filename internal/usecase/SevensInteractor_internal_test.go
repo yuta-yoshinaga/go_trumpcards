@@ -3,11 +3,10 @@ package usecase
 import (
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
 // buildSevensEndedGame creates a Sevens game where gameEndFlag is true.
@@ -62,11 +61,22 @@ func buildSevensCpuTurnGame() *domain.Sevens {
 	return s
 }
 
+func newInternalTestSevens() *domain.Sevens {
+	config := domain.DefaultSevensConfig()
+	players := []*domain.SevensPlayer{
+		domain.NewSevensPlayer(true),
+		domain.NewSevensPlayer(false),
+		domain.NewSevensPlayer(false),
+		domain.NewSevensPlayer(false),
+	}
+	return domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
+}
+
 func TestSevensInteractor_Play_GameEndFlag(t *testing.T) {
 	mockOutput := "mock"
 	spMock := new(presenter.MockSevensPresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	si := NewSevensInteractor(spMock)
+	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
 	s := buildSevensEndedGame()
 	si.s = s
@@ -84,7 +94,7 @@ func TestSevensInteractor_Play_NotHumanTurn(t *testing.T) {
 	mockOutput := "mock"
 	spMock := new(presenter.MockSevensPresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	si := NewSevensInteractor(spMock)
+	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
 	si.s = buildSevensCpuTurnGame()
 
@@ -97,7 +107,7 @@ func TestSevensInteractor_PlayJoker_GameEndFlag(t *testing.T) {
 	mockOutput := "mock"
 	spMock := new(presenter.MockSevensPresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	si := NewSevensInteractor(spMock)
+	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
 	// Build a game with joker. Human has 1 joker, CPUs finished.
 	config := domain.SevensConfig{
@@ -133,7 +143,7 @@ func TestSevensInteractor_PlayJoker_SuccessRunCpuTurns(t *testing.T) {
 	mockOutput := "mock"
 	spMock := new(presenter.MockSevensPresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	si := NewSevensInteractor(spMock)
+	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
 	// Build a game where human plays joker successfully and game does NOT end.
 	// This covers the runCpuTurns() call inside PlayJoker.
@@ -171,7 +181,7 @@ func TestSevensInteractor_PlayJoker_NotHumanTurn(t *testing.T) {
 	mockOutput := "mock"
 	spMock := new(presenter.MockSevensPresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	si := NewSevensInteractor(spMock)
+	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
 	si.s = buildSevensCpuTurnGame()
 
@@ -184,7 +194,7 @@ func TestSevensInteractor_runCpuTurns_HumanAutoHandleNoOption(t *testing.T) {
 	mockOutput := "mock"
 	spMock := new(presenter.MockSevensPresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	si := NewSevensInteractor(spMock)
+	si := NewSevensInteractor(newInternalTestSevens(), spMock)
 
 	// Build a game where the human player has no playable cards and no passes left.
 	// This triggers the AutoHandleNoOption branch in runCpuTurns.

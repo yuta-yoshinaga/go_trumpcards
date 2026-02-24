@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // DaifugoCuiPresenter 大富豪CUIプレゼンタークラス
@@ -17,7 +18,7 @@ func NewDaifugoCuiPresenter() *DaifugoCuiPresenter {
 }
 
 // Output ゲーム状態を文字列出力
-func (p *DaifugoCuiPresenter) Output(dg *domain.Daifugo, lastErr error) string {
+func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	var b strings.Builder
 
 	b.WriteString("==========\n")
@@ -150,7 +151,7 @@ func (p *DaifugoCuiPresenter) Output(dg *domain.Daifugo, lastErr error) string {
 }
 
 // getPlayerName プレイヤー名取得
-func (p *DaifugoCuiPresenter) getPlayerName(dg *domain.Daifugo, idx int) string {
+func (p *DaifugoCuiPresenter) getPlayerName(dg interfaces.DaifugoGame, idx int) string {
 	player := dg.GetPlayer(idx)
 	if player == nil {
 		return "不明"

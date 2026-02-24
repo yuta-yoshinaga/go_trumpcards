@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -19,17 +19,20 @@ type PokerInteractorIF interface {
 
 // PokerInteractor ポーカーインタラクタークラス
 type PokerInteractor struct {
-	p  *domain.Poker
+	p  interfaces.PokerGame
 	pp presenter.PokerPresenter
 }
 
 // NewPokerInteractor コンストラクタ
-func NewPokerInteractor(pp presenter.PokerPresenter) *PokerInteractor {
+func NewPokerInteractor(p interfaces.PokerGame, pp presenter.PokerPresenter) *PokerInteractor {
+	if p == nil {
+		panic("PokerInteractor: p must not be nil")
+	}
 	if pp == nil {
 		panic("PokerInteractor: pp must not be nil")
 	}
 	return &PokerInteractor{
-		p:  domain.NewPoker(domain.NewTrumpCards(0), domain.NewPokerPlayer(), domain.NewPokerPlayer()),
+		p:  p,
 		pp: pp,
 	}
 }

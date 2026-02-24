@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // PokerCuiPresenter ポーカーCUIプレゼンタークラス
@@ -18,7 +19,7 @@ func NewPokerCuiPresenter() *PokerCuiPresenter {
 }
 
 // Output ゲーム状態を出力
-func (pcp *PokerCuiPresenter) Output(p *domain.Poker, lastErr error) string {
+func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	player := p.GetPlayer()
 	dealer := p.GetDealer()
 	var b strings.Builder

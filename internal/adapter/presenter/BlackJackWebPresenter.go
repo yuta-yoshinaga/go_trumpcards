@@ -1,10 +1,9 @@
 package presenter
 
 import (
-	"encoding/json"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // BlackJackWebPresenter ブラックジャックWebプレゼンタークラス
@@ -17,7 +16,7 @@ func NewBlackJackWebPresenter() *BlackJackWebPresenter {
 }
 
 // Output ゲーム状態を出力
-func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack, lastErr error) string {
+func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr error) string {
 	resObj := new(controller.BlackJackWebOutput)
 	// dealer
 	dealer := bj.GetDealer()
@@ -75,7 +74,7 @@ func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack, lastErr error) st
 			resObj.Message = "It is your loss."
 		}
 	}
-	res, err := json.Marshal(resObj)
+	res, err := jsonMarshal(resObj)
 	if err != nil {
 		return `{"error":"internal server error"}`
 	}

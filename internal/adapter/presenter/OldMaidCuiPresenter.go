@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // OldMaidCuiPresenter ババ抜きCUIプレゼンタークラス
@@ -17,7 +18,7 @@ func NewOldMaidCuiPresenter() *OldMaidCuiPresenter {
 }
 
 // Output ゲーム状態を文字列出力
-func (p *OldMaidCuiPresenter) Output(om *domain.OldMaid, lastErr error) string {
+func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) string {
 	var b strings.Builder
 
 	b.WriteString("==========\n")
@@ -112,7 +113,7 @@ func (p *OldMaidCuiPresenter) Output(om *domain.OldMaid, lastErr error) string {
 }
 
 // getPlayerName プレイヤー名取得
-func (p *OldMaidCuiPresenter) getPlayerName(om *domain.OldMaid, idx int) string {
+func (p *OldMaidCuiPresenter) getPlayerName(om interfaces.OldMaidGame, idx int) string {
 	player := om.GetPlayer(idx)
 	if player == nil {
 		return "不明"

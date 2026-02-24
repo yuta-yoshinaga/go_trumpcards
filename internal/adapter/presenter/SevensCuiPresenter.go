@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // SevensCuiPresenter 7並べCUIプレゼンタークラス
@@ -17,7 +18,7 @@ func NewSevensCuiPresenter() *SevensCuiPresenter {
 }
 
 // Output ゲーム状態を文字列出力
-func (p *SevensCuiPresenter) Output(s *domain.Sevens, lastErr error) string {
+func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) string {
 	var b strings.Builder
 
 	b.WriteString("==========\n")
@@ -137,7 +138,7 @@ func (p *SevensCuiPresenter) Output(s *domain.Sevens, lastErr error) string {
 }
 
 // getPlayerName プレイヤー名取得
-func (p *SevensCuiPresenter) getPlayerName(s *domain.Sevens, idx int) string {
+func (p *SevensCuiPresenter) getPlayerName(s interfaces.SevensGame, idx int) string {
 	player := s.GetPlayer(idx)
 	if player == nil {
 		return "不明"

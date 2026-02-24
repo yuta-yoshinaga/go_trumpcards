@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -17,8 +18,9 @@ type PokerCui struct {
 
 // NewPokerCui コンストラクタ
 func NewPokerCui() *PokerCui {
+	poker := domain.NewPoker(domain.NewTrumpCards(0), domain.NewPokerPlayer(), domain.NewPokerPlayer())
 	return &PokerCui{
-		pc: controller.NewPokerCuiController(usecase.NewPokerInteractor(presenter.NewPokerCuiPresenter())),
+		pc: controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, presenter.NewPokerCuiPresenter())),
 	}
 }
 

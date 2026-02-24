@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -15,24 +16,20 @@ type SevensInteractorIF interface {
 
 // SevensInteractor 7並べインタラクタークラス
 type SevensInteractor struct {
-	s  *domain.Sevens
+	s  interfaces.SevensGame
 	sp presenter.SevensPresenter
 }
 
 // NewSevensInteractor コンストラクタ
-func NewSevensInteractor(sp presenter.SevensPresenter) *SevensInteractor {
+func NewSevensInteractor(s interfaces.SevensGame, sp presenter.SevensPresenter) *SevensInteractor {
+	if s == nil {
+		panic("SevensInteractor: s must not be nil")
+	}
 	if sp == nil {
 		panic("SevensInteractor: sp must not be nil")
 	}
-	config := domain.DefaultSevensConfig()
-	players := []*domain.SevensPlayer{
-		domain.NewSevensPlayer(true),  // player 0: 人間
-		domain.NewSevensPlayer(false), // player 1: CPU
-		domain.NewSevensPlayer(false), // player 2: CPU
-		domain.NewSevensPlayer(false), // player 3: CPU
-	}
 	return &SevensInteractor{
-		s:  domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config),
+		s:  s,
 		sp: sp,
 	}
 }

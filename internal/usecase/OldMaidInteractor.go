@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -13,23 +13,20 @@ type OldMaidInteractorIF interface {
 
 // OldMaidInteractor ババ抜きインタラクタークラス
 type OldMaidInteractor struct {
-	om  *domain.OldMaid
+	om  interfaces.OldMaidGame
 	omp presenter.OldMaidPresenter
 }
 
 // NewOldMaidInteractor コンストラクタ
-func NewOldMaidInteractor(omp presenter.OldMaidPresenter) *OldMaidInteractor {
+func NewOldMaidInteractor(om interfaces.OldMaidGame, omp presenter.OldMaidPresenter) *OldMaidInteractor {
+	if om == nil {
+		panic("OldMaidInteractor: om must not be nil")
+	}
 	if omp == nil {
 		panic("OldMaidInteractor: omp must not be nil")
 	}
-	players := []*domain.OldMaidPlayer{
-		domain.NewOldMaidPlayer(true),  // player 0: 人間
-		domain.NewOldMaidPlayer(false), // player 1: CPU
-		domain.NewOldMaidPlayer(false), // player 2: CPU
-		domain.NewOldMaidPlayer(false), // player 3: CPU
-	}
 	return &OldMaidInteractor{
-		om:  domain.NewOldMaid(domain.NewTrumpCards(1), players),
+		om:  om,
 		omp: omp,
 	}
 }

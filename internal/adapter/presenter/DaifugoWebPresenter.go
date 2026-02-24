@@ -1,11 +1,11 @@
 package presenter
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // DaifugoWebPresenter 大富豪Webプレゼンタークラス
@@ -17,7 +17,7 @@ func NewDaifugoWebPresenter() *DaifugoWebPresenter {
 }
 
 // Output ゲーム状態をJSON出力
-func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo, lastErr error) string {
+func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	resObj := new(controller.DaifugoWebOutput)
 	resObj.Players = make([]*controller.DaifugoWebOutputPlayer, 0)
 	resObj.TableCards = make([]*controller.DaifugoWebOutputCard, 0)
@@ -101,7 +101,7 @@ func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo, lastErr error) string
 		resObj.Message = dwp.buildResultMessage(dg)
 	}
 
-	res, err := json.Marshal(resObj)
+	res, err := jsonMarshal(resObj)
 	if err != nil {
 		return `{"error":"internal server error"}`
 	}
@@ -109,7 +109,7 @@ func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo, lastErr error) string
 }
 
 // buildResultMessage ゲーム終了メッセージを生成
-func (dwp *DaifugoWebPresenter) buildResultMessage(dg *domain.Daifugo) string {
+func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) string {
 	rankNames := []string{"大富豪", "富豪", "平民", "大貧民"}
 	msg := "ゲーム終了！ "
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
