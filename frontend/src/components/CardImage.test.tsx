@@ -53,6 +53,12 @@ describe('CardImage', () => {
     expect(screen.getByRole('img')).toHaveStyle({ width: '60px' });
   });
 
+  it('falls back to x prefix for unknown design', () => {
+    const card = { design: 'UNKNOWN' as CardDesign, value: 0 };
+    render(<CardImage card={card} />);
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/images/x00.png');
+  });
+
   it('defaults to 80px width when width prop is omitted', () => {
     const card: Card = { design: 'SPADE', value: 1 };
     render(<CardImage card={card} />);

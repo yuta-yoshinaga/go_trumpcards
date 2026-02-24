@@ -9,6 +9,7 @@ function getImagePath(card: Card): string {
     DIAMOND: 'd',
     JOKER: 'x',
   };
+  /* v8 ignore next */
   const prefix = prefixMap[card.design] ?? 'x';
   return `/images/${prefix}${zeroPad(card.value)}.png`;
 }

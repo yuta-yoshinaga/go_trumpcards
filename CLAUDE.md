@@ -169,6 +169,8 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 | Components | `frontend/src/components/*.test.tsx` | Rendered output, props, event handlers |
 | Pages | `frontend/src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
 
+**Branch coverage (C1) must be 100%** for the four directories `frontend/src/api`, `frontend/src/components`, `frontend/src/pages`, and `frontend/src/utils`. When writing tests, always verify branch coverage—not just statement coverage (C0)—by ensuring every conditional branch (if/else, ternary, `??`, `&&`/`||` short-circuits, switch cases) is exercised.
+
 **Patterns:**
 
 - **Mock the API module**: use `vi.mock('../api/gameApi', ...)` inside page test files; access the typed mock with `vi.mocked(api.exec)`

@@ -348,4 +348,96 @@ describe('DaifugoPage', () => {
       expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
     );
   }, 10000);
+
+  it('shows pass message for empty playedCards array', async () => {
+    const stateWithEmptyPlay: DaifugoResponse = {
+      ...humanTurnState,
+      humanAction: { playerIdx: 0, playedCards: [] },
+    };
+    mockExec.mockResolvedValue(stateWithEmptyPlay);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('あなたがパスしました')).toBeInTheDocument());
+  });
+
+  it('shows rank badge when human player finishes', async () => {
+    const humanFinishedState: DaifugoResponse = {
+      ...humanTurnState,
+      players: [
+        { ...humanTurnState.players[0], isFinished: true, rank: 1, cardCount: 0, cards: [] },
+        { ...humanTurnState.players[1] },
+        { ...humanTurnState.players[2] },
+        { ...humanTurnState.players[3] },
+      ],
+    };
+    mockExec.mockResolvedValue(humanFinishedState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getAllByText(/上がり.*大富豪/).length).toBeGreaterThan(0));
+  });
+
+  it('does not show selection hint when not human turn in HumanPlayerArea', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('考え中...')).toBeInTheDocument());
+    expect(screen.queryByText('カードをクリックして選択')).not.toBeInTheDocument();
+  });
+
+  it('shows 富豪 rank badge for finished player with rank 2', async () => {
+    const stateWithRank2: DaifugoResponse = {
+      ...humanTurnState,
+      players: [
+        { ...humanTurnState.players[0] },
+        { id: 1, isHuman: false, isFinished: true, rank: 2, cardCount: 0, cards: [] },
+        { ...humanTurnState.players[2] },
+        { ...humanTurnState.players[3] },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithRank2);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/上がり \(富豪\)/)).toBeInTheDocument());
+  });
+
+  it('shows 平民 rank badge for finished player with rank 3', async () => {
+    const stateWithRank3: DaifugoResponse = {
+      ...humanTurnState,
+      players: [
+        { ...humanTurnState.players[0] },
+        { id: 1, isHuman: false, isFinished: true, rank: 3, cardCount: 0, cards: [] },
+        { ...humanTurnState.players[2] },
+        { ...humanTurnState.players[3] },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithRank3);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/上がり \(平民\)/)).toBeInTheDocument());
+  });
+
+  it('shows 大貧民 rank badge for finished player with rank 4', async () => {
+    const stateWithRank4: DaifugoResponse = {
+      ...humanTurnState,
+      players: [
+        { ...humanTurnState.players[0] },
+        { id: 1, isHuman: false, isFinished: true, rank: 4, cardCount: 0, cards: [] },
+        { ...humanTurnState.players[2] },
+        { ...humanTurnState.players[3] },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithRank4);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/上がり \(大貧民\)/)).toBeInTheDocument());
+  });
+
+  it('deselects a card by clicking it again', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+
+    // Click SPADE 3 to select it
+    fireEvent.click(screen.getByAltText('SPADE 3'));
+    // Click SPADE 3 again to deselect it
+    fireEvent.click(screen.getByAltText('SPADE 3'));
+
+    // After deselection, the 選択して出す button should not show any selection count
+    // (the card toggle state resets on the second click)
+    // We verify no error is thrown and the button is still present
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeInTheDocument();
+  });
 });

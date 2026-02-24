@@ -337,4 +337,100 @@ describe('BlackJackPage', () => {
       expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
     );
   });
+
+  it('shows [BUST] flag for busted hand', async () => {
+    const bustState: BlackJackResponse = {
+      ...actionPhaseState,
+      hands: [{ ...(actionPhaseState.hands?.[0] as BlackJackHand), busted: true }],
+    };
+    mockExec.mockResolvedValue(bustState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/\[BUST\]/)).toBeInTheDocument());
+  });
+
+  it('shows [DD] flag for doubled hand', async () => {
+    const ddState: BlackJackResponse = {
+      ...actionPhaseState,
+      hands: [{ ...(actionPhaseState.hands?.[0] as BlackJackHand), doubled: true }],
+    };
+    mockExec.mockResolvedValue(ddState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/\[DD\]/)).toBeInTheDocument());
+  });
+
+  it('shows insurance bet info when insuranceBet > 0', async () => {
+    const insState: BlackJackResponse = { ...actionPhaseState, insuranceBet: 50 };
+    mockExec.mockResolvedValue(insState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('インシュランス: 50')).toBeInTheDocument());
+  });
+
+  it('shows multiple hand labels when there are 2 hands', async () => {
+    const baseHand = actionPhaseState.hands?.[0] as BlackJackHand;
+    const multiHandState: BlackJackResponse = {
+      ...actionPhaseState,
+      currentHandIdx: 0,
+      hands: [
+        { ...baseHand },
+        {
+          ...baseHand,
+          cards: [
+            { design: 'CLOVER', value: 5 },
+            { design: 'SPADE', value: 6 },
+          ],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(multiHandState);
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ハンド 1/)).toBeInTheDocument();
+      expect(screen.getByText(/ハンド 2/)).toBeInTheDocument();
+      expect(screen.getByText(/\(\*\)/)).toBeInTheDocument();
+    });
+  });
+
+  it('does not show double down button when hand has more than 2 cards', async () => {
+    const threeCardState: BlackJackResponse = {
+      ...actionPhaseState,
+      hands: [
+        {
+          ...(actionPhaseState.hands?.[0] as BlackJackHand),
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'DIAMOND', value: 10 },
+            { design: 'SPADE', value: 2 },
+          ],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(threeCardState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ダブルダウン' })).not.toBeInTheDocument();
+  });
+
+  it('does not show double down button when player has insufficient chips', async () => {
+    const lowChipState: BlackJackResponse = {
+      ...actionPhaseState,
+      player: { chips: 50 },
+      hands: [{ ...(actionPhaseState.hands?.[0] as BlackJackHand), bet: 100 }],
+    };
+    mockExec.mockResolvedValue(lowChipState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ダブルダウン' })).not.toBeInTheDocument();
+  });
+
+  it('does not show split button when chips are insufficient even if canSplit is true', async () => {
+    const lowChipSplitState: BlackJackResponse = {
+      ...actionPhaseState,
+      player: { chips: 50 },
+      hands: [{ ...(actionPhaseState.hands?.[0] as BlackJackHand), bet: 100, canSplit: true }],
+    };
+    mockExec.mockResolvedValue(lowChipSplitState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'スプリット' })).not.toBeInTheDocument();
+  });
 });
