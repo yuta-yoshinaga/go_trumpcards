@@ -44,41 +44,6 @@ func NewSessionStore[T any]() *SessionStore[T] {
 	return s
 }
 
-// Get returns the value for the given sessionId, creating it via factory if it
-// does not yet exist. The second return value is false when the sessionId is
-// invalid (too long) or the store is at capacity.
-func (s *SessionStore[T]) Get(id string, factory func() T) (T, bool) {
-	var zero T
-	if len(id) > SessionMaxIDLen {
-		return zero, false
-	}
-	s.mu.Lock()
-	if entry, ok := s.entries[id]; ok {
-		entry.lastUsed = time.Now()
-		s.mu.Unlock()
-		return entry.value, true
-	}
-	if len(s.entries) >= SessionMaxCount {
-		s.mu.Unlock()
-		return zero, false
-	}
-	s.mu.Unlock()
-	// factory() をグローバルmutex外で実行（遅延時のブロッキングを防ぐ）
-	val := factory()
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	// ダブルチェック: 他のゴルーチンが同じIDで作成していないか
-	if entry, ok := s.entries[id]; ok {
-		entry.lastUsed = time.Now()
-		return entry.value, true
-	}
-	if len(s.entries) >= SessionMaxCount {
-		return zero, false
-	}
-	s.entries[id] = &sessionEntry[T]{value: val, mu: &sync.Mutex{}, lastUsed: time.Now()}
-	return val, true
-}
-
 // GetWithLock returns the value for the given sessionId (creating it via factory
 // if needed) along with a per-session mutex. The caller must use
 // defer mu.Unlock() after mu.Lock() to ensure the lock is always released.
