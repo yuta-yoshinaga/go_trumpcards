@@ -1,38 +1,33 @@
 import { useCallback, useEffect, useState } from 'react';
 import { blackjackApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
-
-const PHASE_BET = 1;
-const PHASE_INSURANCE = 3;
-const PHASE_ACTION = 4;
-const PHASE_END = 5;
-
-const btnPrimary =
-  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnWarning =
-  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnDanger =
-  'px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnSuccess =
-  'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
+import { BjPhase } from '../types/phases';
 
 export function BlackJackPage() {
   const [state, setState] = useState<BlackJackResponse | null>(null);
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const exec = useCallback(
     async (
       command: 'reset' | 'hit' | 'stand' | 'bet' | 'doubledown' | 'split' | 'insurance' | 'declineinsurance',
       amount?: number,
     ) => {
+      setLoading(true);
       try {
+        setError(null);
         const res = await blackjackApi.exec(command, amount);
         setState(res);
-        setMessage(res.message ?? '');
+        setMessage(res.message);
       } catch {
-        console.error('blackjack request failed');
+        setError('通信エラーが発生しました。もう一度お試しください。');
+      } finally {
+        setLoading(false);
       }
     },
     [],
@@ -42,7 +37,7 @@ export function BlackJackPage() {
     exec('reset');
   }, [exec]);
 
-  const phase = state?.phase ?? PHASE_BET;
+  const phase = state?.phase ?? BjPhase.BET;
   const hands = state?.hands ?? [];
   const currentHandIdx = state?.currentHandIdx ?? 0;
   const currentHand = hands[currentHandIdx];
@@ -60,7 +55,7 @@ export function BlackJackPage() {
 
       {/* Scrollable: dealer area */}
       <div className="flex-1 overflow-y-auto p-4">
-        {state && phase !== PHASE_BET && (
+        {state && phase !== BjPhase.BET && (
           <div>
             <h3 className="text-white">ディーラー手札</h3>
             <h3 className="text-white">スコア {state.dealer.score ? state.dealer.score : ''}</h3>
@@ -80,13 +75,13 @@ export function BlackJackPage() {
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
         {/* Player hands */}
-        {state && phase !== PHASE_BET && hands.length > 0 && (
+        {state && phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
             {hands.map((hand, handIndex) => (
               <div key={`hand-${hand.score}-${hand.bet}-${hand.cards.length}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
                   {hands.length > 1 ? `ハンド ${handIndex + 1}` : 'プレイヤー手札'}
-                  {handIndex === currentHandIdx && phase === PHASE_ACTION && ' (*)'}
+                  {handIndex === currentHandIdx && phase === BjPhase.ACTION && ' (*)'}
                   {hand.busted && ' [BUST]'}
                   {hand.doubled && ' [DD]'}
                   {hand.isBlackJack && ' [BJ]'}
@@ -116,9 +111,11 @@ export function BlackJackPage() {
           </div>
         )}
 
+        <ErrorAlert message={error} />
+
         {/* Phase-based buttons */}
         <div className="text-center">
-          {phase === PHASE_BET && (
+          {phase === BjPhase.BET && (
             <>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <label htmlFor="bj-bet-amount" className="text-white text-sm">
@@ -134,46 +131,46 @@ export function BlackJackPage() {
                   className="w-20 px-2 py-1 rounded text-sm"
                 />
               </div>
-              <button type="button" className={btnPrimary} onClick={() => exec('bet', betAmount)}>
+              <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('bet', betAmount)}>
                 ベット
               </button>
             </>
           )}
 
-          {phase === PHASE_INSURANCE && (
+          {phase === BjPhase.INSURANCE && (
             <>
-              <button type="button" className={btnWarning} onClick={() => exec('insurance')}>
+              <button type="button" className={btnWarning} disabled={loading} onClick={() => exec('insurance')}>
                 インシュランス
               </button>
-              <button type="button" className={btnDanger} onClick={() => exec('declineinsurance')}>
+              <button type="button" className={btnDanger} disabled={loading} onClick={() => exec('declineinsurance')}>
                 辞退
               </button>
             </>
           )}
 
-          {phase === PHASE_ACTION && (
+          {phase === BjPhase.ACTION && (
             <>
-              <button type="button" className={btnPrimary} onClick={() => exec('hit')}>
+              <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('hit')}>
                 ヒット
               </button>
-              <button type="button" className={btnPrimary} onClick={() => exec('stand')}>
+              <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('stand')}>
                 スタンド
               </button>
               {currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet && (
-                <button type="button" className={btnWarning} onClick={() => exec('doubledown')}>
+                <button type="button" className={btnWarning} disabled={loading} onClick={() => exec('doubledown')}>
                   ダブルダウン
                 </button>
               )}
               {currentHand?.canSplit && playerChips >= currentHand.bet && (
-                <button type="button" className={btnSuccess} onClick={() => exec('split')}>
+                <button type="button" className={btnSuccess} disabled={loading} onClick={() => exec('split')}>
                   スプリット
                 </button>
               )}
             </>
           )}
 
-          {phase === PHASE_END && (
-            <button type="button" className={btnPrimary} onClick={() => exec('reset')}>
+          {phase === BjPhase.END && (
+            <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('reset')}>
               リセット
             </button>
           )}

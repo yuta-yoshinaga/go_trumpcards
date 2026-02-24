@@ -359,4 +359,216 @@ describe('SevensPage', () => {
       expect(screen.getByRole('combobox')).toHaveValue('2');
     });
   });
+
+  it('disables action buttons while loading', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+
+    let resolve!: (value: SevensResponse) => void;
+    const slowPromise = new Promise<SevensResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+
+    expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+
+    resolve(humanTurnState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+  });
+
+  it('shows error message when API call fails', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  }, 10000);
+
+  it('clears error message on successful API call after failure', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
+    );
+  }, 10000);
+
+  it('A is playable via tunnel when K is placed', async () => {
+    // SPADE: bit 7 (128) + bit 13 (8192) placed; A (bit 1) not placed
+    const tunnelAState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelEnabled: true },
+      tablePlaced: [0, 128 | 8192, 128, 128, 128],
+      players: [
+        { ...humanTurnState.players[0], cardCount: 1, cards: [{ design: 'SPADE', value: 1 }] },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(tunnelAState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
+    const btn = screen.getByAltText('SPADE 1').closest('button');
+    expect(btn).not.toBeDisabled();
+  });
+
+  it('K is playable via tunnel when A is placed', async () => {
+    // SPADE: bit 7 (128) + bit 1 (2) placed; K (bit 13) not placed
+    const tunnelKState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelEnabled: true },
+      tablePlaced: [0, 128 | 2, 128, 128, 128],
+      players: [
+        { ...humanTurnState.players[0], cardCount: 1, cards: [{ design: 'SPADE', value: 13 }] },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(tunnelKState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 13')).toBeInTheDocument());
+    const btn = screen.getByAltText('SPADE 13').closest('button');
+    expect(btn).not.toBeDisabled();
+  });
+
+  it('JOKER card is not playable when board has no open positions', async () => {
+    // All 13 values placed per suit: bits 1-13 set = 16382
+    const allPlaced = 0x3ffe; // bits 1-13 set = 16382
+    const fullBoardState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1 },
+      tablePlaced: [0, allPlaced, allPlaced, allPlaced, allPlaced],
+      players: [
+        { ...humanTurnState.players[0], cardCount: 1, cards: [{ design: 'JOKER', value: 0 }] },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(fullBoardState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('JOKER 0')).toBeInTheDocument());
+    const jokerBtn = screen.getByAltText('JOKER 0').closest('button');
+    expect(jokerBtn).toBeDisabled();
+  });
+
+  it('shows cancel button when joker card is selected for placement', async () => {
+    const jokerHandState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1 },
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [
+            { design: 'JOKER', value: 0 },
+            { design: 'SPADE', value: 6 },
+          ],
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jokerHandState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('JOKER 0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('JOKER 0'));
+
+    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
+  });
+
+  it('cancels joker selection when cancel button is clicked', async () => {
+    const jokerHandState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1 },
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [
+            { design: 'JOKER', value: 0 },
+            { design: 'SPADE', value: 6 },
+          ],
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jokerHandState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('JOKER 0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('JOKER 0'));
+    expect(screen.getByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('button', { name: 'キャンセル' })).not.toBeInTheDocument();
+  });
+
+  it('calls joker exec when clicking a valid board position in joker selection mode', async () => {
+    const jokerHandState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1 },
+      players: [
+        { ...humanTurnState.players[0], cardCount: 1, cards: [{ design: 'JOKER', value: 0 }] },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jokerHandState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('JOKER 0')).toBeInTheDocument());
+
+    // Click JOKER card image to enter joker placement mode (same pattern as cancel test)
+    fireEvent.click(screen.getByAltText('JOKER 0'));
+
+    // After click, board position buttons for value '6' appear synchronously (7 is placed)
+    const boardButtons6 = screen.getAllByRole('button', { name: '6' });
+    expect(boardButtons6.length).toBeGreaterThan(0);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(boardButtons6[0]);
+
+    // exec is called as: sevensApi.exec('joker', 0, suit, 6, undefined)
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, expect.any(Number), 6, undefined));
+  }, 10000);
+
+  it('shows rank badge when human player finishes', async () => {
+    const humanFinishedState: SevensResponse = {
+      ...humanTurnState,
+      players: [
+        { ...humanTurnState.players[0], isFinished: true, rank: 2, cardCount: 0, cards: [] },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(humanFinishedState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getAllByText('2位').length).toBeGreaterThan(0));
+  });
+
+  it('shows joker played without target info when targetSuit is 0', async () => {
+    const jokerNoTargetState: SevensResponse = {
+      ...humanTurnState,
+      currentTurn: 1,
+      humanAction: {
+        playerIdx: 0,
+        playedCard: { design: 'JOKER', value: 0 },
+        targetSuit: 0,
+        targetValue: 0,
+      },
+    };
+    mockExec.mockResolvedValue(jokerNoTargetState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText(/あなたが出しました: JOKER/)).toBeInTheDocument());
+    expect(screen.queryByText(/→/)).not.toBeInTheDocument();
+  });
 });

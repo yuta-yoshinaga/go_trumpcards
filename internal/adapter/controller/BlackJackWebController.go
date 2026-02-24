@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -73,18 +74,24 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	err := r.DecodeJsonPayload(&param)
 	if err != nil || param.Command == "" || param.SessionId == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(bwc.newDefaultOutput("param error."))
+		if err := w.WriteJson(bwc.newDefaultOutput("param error.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	if param.Command == "q" || param.Command == "quit" {
 		w.WriteHeader(http.StatusOK)
-		_ = w.WriteJson(bwc.newDefaultOutput("bye."))
+		if err := w.WriteJson(bwc.newDefaultOutput("bye.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	bji, mu, ok := bwc.store.GetWithLock(param.SessionId, bwc.factory)
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
-		_ = w.WriteJson(bwc.newDefaultOutput("param error."))
+		if err := w.WriteJson(bwc.newDefaultOutput("param error.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 		return
 	}
 	mu.Lock()
@@ -109,7 +116,9 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 		bwc.writePresenterResponse(w, bji.DeclineInsurance(), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
-		_ = w.WriteJson(bwc.newDefaultOutput("Unsupported command."))
+		if err := w.WriteJson(bwc.newDefaultOutput("Unsupported command.")); err != nil {
+			log.Printf("WriteJson error: %v", err)
+		}
 	}
 }
 

@@ -1,11 +1,11 @@
 package presenter
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // DaifugoWebPresenter 大富豪Webプレゼンタークラス
@@ -17,7 +17,7 @@ func NewDaifugoWebPresenter() *DaifugoWebPresenter {
 }
 
 // Output ゲーム状態をJSON出力
-func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo) string {
+func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	resObj := new(controller.DaifugoWebOutput)
 	resObj.Players = make([]*controller.DaifugoWebOutputPlayer, 0)
 	resObj.TableCards = make([]*controller.DaifugoWebOutputCard, 0)
@@ -94,17 +94,22 @@ func (dwp *DaifugoWebPresenter) Output(dg *domain.Daifugo) string {
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
-	// メッセージ (ゲーム終了時)
-	if dg.GetGameEndFlag() {
+	// エラーメッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else if dg.GetGameEndFlag() {
 		resObj.Message = dwp.buildResultMessage(dg)
 	}
 
-	res, _ := json.Marshal(resObj)
+	res, err := jsonMarshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 
 // buildResultMessage ゲーム終了メッセージを生成
-func (dwp *DaifugoWebPresenter) buildResultMessage(dg *domain.Daifugo) string {
+func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) string {
 	rankNames := []string{"大富豪", "富豪", "平民", "大貧民"}
 	msg := "ゲーム終了！ "
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
@@ -124,17 +129,11 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg *domain.Daifugo) string {
 	return msg
 }
 
-// getSuitName スート名取得
+// getSuitName スート名取得 (スート縛り用: 4スートのみ変換し、それ以外は空文字)
 func (dwp *DaifugoWebPresenter) getSuitName(suit int) string {
 	switch suit {
-	case domain.CardDesignSpade:
-		return "SPADE"
-	case domain.CardDesignClover:
-		return "CLOVER"
-	case domain.CardDesignHeart:
-		return "HEART"
-	case domain.CardDesignDiamond:
-		return "DIAMOND"
+	case domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond:
+		return cardDesignToString(suit)
 	default:
 		return ""
 	}
@@ -158,18 +157,7 @@ func (dwp *DaifugoWebPresenter) getCardObj(card *domain.Card) *controller.Daifug
 		return nil
 	}
 	res := new(controller.DaifugoWebOutputCard)
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		res.Design = "SPADE"
-	case domain.CardDesignClover:
-		res.Design = "CLOVER"
-	case domain.CardDesignHeart:
-		res.Design = "HEART"
-	case domain.CardDesignDiamond:
-		res.Design = "DIAMOND"
-	default:
-		res.Design = "JOKER"
-	}
+	res.Design = cardDesignToString(card.GetDesign())
 	res.Value = card.GetValue()
 	return res
 }

@@ -3,11 +3,28 @@ package presenter_test
 import (
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
+
+// setupOldMaidWebTest creates an OldMaid game with standard setup (player[0] SPADE 1, player[1] HEART 3, players[2,3] finished).
+func setupOldMaidWebTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	return om, players
+}
 
 func TestOldMaidWebPresenter_Method(t *testing.T) {
 	towp := presenter.NewOldMaidWebPresenter()
@@ -31,7 +48,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[2].SetIsFinished(true)
 		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
 		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"SPADE","value":1},{"design":"CLOVER","value":2}]},{"id":1,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":[],"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":""}`
-		assert.Equal(t, expected, towp.Output(om))
+		assert.Equal(t, expected, towp.Output(om, nil))
 	})
 
 	t.Run("success Output game ended human loses", func(t *testing.T) {
@@ -49,8 +66,8 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[3].SetIsFinished(true)
 		// PlayerDraw(0): draws HEART 7 (only card), discards SPADE5+CLOVER5 pair (1 pair)
 		// player 0 left: JOKER, HEART 7 (shuffled order); player 1 finished; game ends; loserIdx=0
-		om.PlayerDraw(0)
-		result := towp.Output(om)
+		_ = om.PlayerDraw(0)
+		result := towp.Output(om, nil)
 		// Card order in player 0's hand is non-deterministic due to ShuffleCards; verify presence
 		assert.Contains(t, result, `"cardCount":2`)
 		assert.Contains(t, result, `{"design":"JOKER","value":0}`)
@@ -78,8 +95,8 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 		players[3].SetIsFinished(true)
-		om.PlayerDraw(0)
-		result := towp.Output(om)
+		_ = om.PlayerDraw(0)
+		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"hasDrawn":true`)
 		assert.Contains(t, result, `"lastDrawPlayerIdx":0`)
 		assert.Contains(t, result, `"lastDrawFromIdx":1`)
@@ -104,8 +121,8 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
 		players[3].SetIsFinished(true)
-		om.PlayerDraw(0)
-		result := towp.Output(om)
+		_ = om.PlayerDraw(0)
+		result := towp.Output(om, nil)
 		// discardedCards order is non-deterministic due to ShuffleCards before DiscardPairs
 		assert.Contains(t, result, `"isFinished":true,"cardCount":0,"cards":[]`)
 		assert.Contains(t, result, `"gameEndFlag":true`)
@@ -140,9 +157,9 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		// Turn is 0 (CPU). Call CpuDraw.
 		// Player 0 draws CLOVER 10 from Player 1.
 		// Player 0 discards SPADE 10 + CLOVER 10.
-		om.CpuDraw()
+		_ = om.CpuDraw()
 
-		result := towp.Output(om)
+		result := towp.Output(om, nil)
 		// drawnCard must be null in cpuActions to preserve game fairness
 		// discardedCards order is non-deterministic due to ShuffleCards before DiscardPairs
 		assert.Contains(t, result, `"cpuActions":[{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":null,"discardedPairs":1,"discardedCards":[`)
@@ -171,8 +188,8 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
 		players[3].SetIsFinished(true)
 		// CpuDraw: player 0 draws CLOVER 3, forms pair, both 0 and 1 finish → loserIdx=2 (human)
-		om.CpuDraw()
-		result := towp.Output(om)
+		_ = om.CpuDraw()
+		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"message":"ゲーム終了！ あなたの負け！"`)
 	})
 
@@ -196,9 +213,21 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[3].SetIsFinished(true)
 		// CpuDraw: player 0 draws SPADE 3 from player 1, no pair → player 1 finishes (0 cards)
 		// active = {player 0} → game ends, loserIdx=0 (CPU)
-		om.CpuDraw()
-		result := towp.Output(om)
+		_ = om.CpuDraw()
+		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"message":"ゲーム終了！ CPU 0の負け！"`)
+	})
+
+	t.Run("success Output displays error message", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[2].SetIsFinished(true)
+		players[3].SetIsFinished(true)
+		result := towp.Output(om, domain.ErrNotHumanTurn)
+		assert.Contains(t, result, `"message":"not human player's turn"`)
 	})
 
 	t.Run("success Output cpuActions drawnCard is nil when no pair discarded", func(t *testing.T) {
@@ -220,12 +249,58 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		om.GetPlayer(3).SetIsFinished(true)
 
 		// Player 0 draws SPADE 5, no pair → keeps it (drawnCard must not be revealed)
-		om.CpuDraw()
+		_ = om.CpuDraw()
 
-		result := towp.Output(om)
+		result := towp.Output(om, nil)
 		// drawnCard must be null regardless of whether a pair was discarded
 		assert.Contains(t, result, `"drawnCard":null`)
 		assert.NotContains(t, result, `"drawnCard":{"design`)
 		assert.Contains(t, result, `"discardedPairs":0`)
+	})
+
+	t.Run("success Output lastDrawPlayer nil hides draw card", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		// Simulate draw having happened with invalid player idx → GetPlayer returns nil
+		om.SetHasDrawn(true)
+		om.SetLastDrawPlayerIdx(-1)
+		result := towp.Output(om, nil)
+		// lastDrawCard should be null since lastDrawPlayer is nil
+		assert.Contains(t, result, `"lastDrawCard":null`)
+	})
+
+	t.Run("success Output getCardObj nil card via humanAction", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		// HumanAction with nil DrawnCard → exercises getCardObj(nil)
+		om.SetHumanAction(&domain.OldMaidCpuAction{
+			DrawPlayerIdx:  0,
+			DrawFromIdx:    1,
+			DrawnCard:      nil,
+			DiscardedPairs: 0,
+			DiscardedCards: []*domain.Card{},
+		})
+		result := towp.Output(om, nil)
+		assert.Contains(t, result, `"humanAction":{`)
+		assert.Contains(t, result, `"drawnCard":null`)
+	})
+
+	t.Run("success Output lastDrawPlayer is CPU hides draw card", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		cpuPlayers := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, cpuPlayers)
+		// Player 0: JOKER
+		// Player 1: SPADE 5
+		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		cpuPlayers[2].SetIsFinished(true)
+		cpuPlayers[3].SetIsFinished(true)
+		_ = om.CpuDraw()
+		result := towp.Output(om, nil)
+		// lastDrawPlayer is CPU → lastDrawCard should be null
+		assert.Contains(t, result, `"lastDrawCard":null`)
 	})
 }

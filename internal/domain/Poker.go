@@ -21,6 +21,13 @@ const (
 	PokerMinBet       = 10
 )
 
+// ポーカーフォールド状態定数
+const (
+	PokerFoldNone     = iota // フォールドなし
+	PokerFoldByPlayer        // プレイヤーがフォールド
+	PokerFoldByDealer        // ディーラーがフォールド
+)
+
 // ディーラーAI閾値
 const (
 	dealerFoldPotOddsThreshold    = 0.4 // ポットオッズがこれを超えるとフォールド候補
@@ -32,7 +39,7 @@ const (
 
 // Poker ポーカークラス (5枚ドローポーカー)
 type Poker struct {
-	trumpCards *TrumpCards   // トランプカード
+	trumpCards *TrumpCards  // トランプカード
 	player     *PokerPlayer // プレイヤー
 	dealer     *PokerPlayer // ディーラー(CPU)
 	phase      int          // ゲームフェーズ
@@ -40,7 +47,7 @@ type Poker struct {
 	playerBet  int          // プレイヤーの現ラウンドベット
 	dealerBet  int          // ディーラーの現ラウンドベット
 	ante       int          // アンティ
-	folded     int          // フォールド状態 (0:なし, 1:プレイヤー, 2:ディーラー)
+	folded     int          // フォールド状態 (PokerFoldNone/PokerFoldByPlayer/PokerFoldByDealer)
 }
 
 // NewPoker コンストラクタ
@@ -60,7 +67,7 @@ func (p *Poker) Reset() {
 	p.pot = 0
 	p.playerBet = 0
 	p.dealerBet = 0
-	p.folded = 0
+	p.folded = PokerFoldNone
 	for i := 0; i < 10; i++ {
 		p.trumpCards.Shuffle()
 	}
@@ -101,15 +108,15 @@ func (p *Poker) collectAnte() {
 }
 
 // PlayerBet プレイヤーベット (フェーズ1,3)
-func (p *Poker) PlayerBet(amount int) bool {
+func (p *Poker) PlayerBet(amount int) error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return false
+		return NewDomainError(ErrWrongPhase, "Bet is not allowed now.")
 	}
 	if amount < PokerMinBet {
-		return false
+		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
 	}
 	if p.player.GetChips() < amount {
-		return false
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	p.player.SubtractChips(amount)
 	p.playerBet += amount
@@ -117,22 +124,22 @@ func (p *Poker) PlayerBet(amount int) bool {
 	// ディーラーのベットに対する応答
 	p.dealerRespondToBet()
 	// フォールドした場合は終了
-	if p.folded != 0 {
+	if p.folded != PokerFoldNone {
 		p.phase = PokerPhaseEnd
-		return true
+		return nil
 	}
 	p.advanceAfterBetting()
-	return true
+	return nil
 }
 
 // PlayerCall プレイヤーコール (ディーラーのベットに合わせる)
-func (p *Poker) PlayerCall() bool {
+func (p *Poker) PlayerCall() error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return false
+		return NewDomainError(ErrWrongPhase, "Call is not allowed now.")
 	}
 	diff := p.dealerBet - p.playerBet
 	if diff <= 0 {
-		return false
+		return NewDomainError(ErrInvalidPlay, "Nothing to call.")
 	}
 	if p.player.GetChips() < diff {
 		// オールインの場合はあるだけ出す
@@ -142,16 +149,16 @@ func (p *Poker) PlayerCall() bool {
 	p.playerBet += diff
 	p.pot += diff
 	p.advanceAfterBetting()
-	return true
+	return nil
 }
 
 // PlayerRaise プレイヤーレイズ (ディーラーのベット以上に上乗せ)
-func (p *Poker) PlayerRaise(amount int) bool {
+func (p *Poker) PlayerRaise(amount int) error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return false
+		return NewDomainError(ErrWrongPhase, "Raise is not allowed now.")
 	}
 	if amount < PokerMinBet {
-		return false
+		return NewDomainError(ErrInvalidAmount, "Invalid raise amount.")
 	}
 	diff := p.dealerBet - p.playerBet
 	if diff < 0 {
@@ -159,7 +166,7 @@ func (p *Poker) PlayerRaise(amount int) bool {
 	}
 	// オーバーフロー防止
 	if amount > p.player.GetChips()-diff {
-		return false
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips for raise.")
 	}
 	totalNeeded := diff + amount
 	p.player.SubtractChips(totalNeeded)
@@ -167,37 +174,38 @@ func (p *Poker) PlayerRaise(amount int) bool {
 	p.pot += totalNeeded
 	// ディーラーのレイズに対する応答
 	p.dealerRespondToBet()
-	if p.folded != 0 {
+	if p.folded != PokerFoldNone {
 		p.phase = PokerPhaseEnd
-		return true
+		return nil
 	}
 	p.advanceAfterBetting()
-	return true
+	return nil
 }
 
 // PlayerFold プレイヤーフォールド
-func (p *Poker) PlayerFold() {
+func (p *Poker) PlayerFold() error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return
+		return NewDomainError(ErrWrongPhase, "Fold is not allowed now.")
 	}
-	p.folded = 1
+	p.folded = PokerFoldByPlayer
 	// ポットをディーラーに渡す
 	p.dealer.AddChips(p.pot)
 	p.pot = 0
 	p.phase = PokerPhaseEnd
+	return nil
 }
 
 // PlayerCheck プレイヤーチェック (ベットなしでパス)
-func (p *Poker) PlayerCheck() bool {
+func (p *Poker) PlayerCheck() error {
 	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return false
+		return NewDomainError(ErrWrongPhase, "Check is not allowed now.")
 	}
 	// 未決済のベットがある場合はチェック不可
 	if p.dealerBet > p.playerBet {
-		return false
+		return NewDomainError(ErrInvalidPlay, "Cannot check with outstanding bet.")
 	}
 	p.advanceAfterBetting()
-	return true
+	return nil
 }
 
 // advanceAfterBetting ベッティング後のフェーズ遷移
@@ -210,9 +218,9 @@ func (p *Poker) advanceAfterBetting() {
 }
 
 // PlayerExchange プレイヤーカード交換
-func (p *Poker) PlayerExchange(indices []int) {
+func (p *Poker) PlayerExchange(indices []int) error {
 	if p.phase != PokerPhaseExchange {
-		return
+		return NewDomainError(ErrWrongPhase, "Exchange is not allowed now.")
 	}
 	// 指定カードを新しいカードと交換
 	for _, idx := range indices {
@@ -229,12 +237,13 @@ func (p *Poker) PlayerExchange(indices []int) {
 	// ディーラー第2ベット
 	p.dealerSecondBet()
 	p.phase = PokerPhaseSecondBet
+	return nil
 }
 
 // PlayerStand カード交換なしでショーダウン
-func (p *Poker) PlayerStand() {
+func (p *Poker) PlayerStand() error {
 	if p.phase != PokerPhaseExchange {
-		return
+		return NewDomainError(ErrWrongPhase, "Stand is not allowed now.")
 	}
 	// ディーラーの自動カード交換
 	p.dealerExchange()
@@ -244,6 +253,7 @@ func (p *Poker) PlayerStand() {
 	// ディーラー第2ベット
 	p.dealerSecondBet()
 	p.phase = PokerPhaseSecondBet
+	return nil
 }
 
 // resolveShowdown ショーダウン: ハンド評価・ポット配分
@@ -310,7 +320,7 @@ func (p *Poker) dealerRespondToBet() {
 		if !hasHighCard && potOdds > dealerFoldPotOddsThreshold && diff > PokerMinBet*dealerFoldBetMultiplierWeak {
 			// 70%の確率でフォールドする（残りの30%でコールを試みる）
 			if rand.Intn(100) < dealerFoldRateWeak {
-				p.folded = 2
+				p.folded = PokerFoldByDealer
 				p.player.AddChips(p.pot)
 				p.pot = 0
 				return
@@ -318,7 +328,7 @@ func (p *Poker) dealerRespondToBet() {
 		} else if !hasHighCard && diff > PokerMinBet*dealerFoldBetMultiplierStrong {
 			// 50%の確率でフォールドする（残りの50%でコールを試みる）
 			if rand.Intn(100) < dealerFoldRateStrong {
-				p.folded = 2
+				p.folded = PokerFoldByDealer
 				p.player.AddChips(p.pot)
 				p.pot = 0
 				return
@@ -527,10 +537,10 @@ func (p *Poker) findStraightDrawDiscard() int {
 
 // GameJudgment ゲーム勝敗判定 (1:勝ち, 0:引き分け, -1:負け)
 func (p *Poker) GameJudgment() int {
-	if p.folded == 1 {
+	if p.folded == PokerFoldByPlayer {
 		return -1 // プレイヤーフォールド
 	}
-	if p.folded == 2 {
+	if p.folded == PokerFoldByDealer {
 		return 1 // ディーラーフォールド
 	}
 	playerRank := p.player.GetHandRank()
@@ -615,4 +625,19 @@ func (p *Poker) GetAnte() int {
 // GetFolded フォールド状態取得
 func (p *Poker) GetFolded() int {
 	return p.folded
+}
+
+// SetPhase フェーズ設定（テスト用）
+func (p *Poker) SetPhase(phase int) {
+	p.phase = phase
+}
+
+// SetFolded フォールド状態設定（テスト用）
+func (p *Poker) SetFolded(folded int) {
+	p.folded = folded
+}
+
+// SetDealerBet ディーラーベット設定（テスト用）
+func (p *Poker) SetDealerBet(bet int) {
+	p.dealerBet = bet
 }

@@ -1,10 +1,9 @@
 package presenter
 
 import (
-	"encoding/json"
-
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // BlackJackWebPresenter ブラックジャックWebプレゼンタークラス
@@ -17,7 +16,7 @@ func NewBlackJackWebPresenter() *BlackJackWebPresenter {
 }
 
 // Output ゲーム状態を出力
-func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack) string {
+func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr error) string {
 	resObj := new(controller.BlackJackWebOutput)
 	// dealer
 	dealer := bj.GetDealer()
@@ -63,8 +62,8 @@ func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack) string {
 	}
 
 	// エラーメッセージ（ベット失敗等）
-	if errMsg := bj.GetLastError(); errMsg != "" {
-		resObj.Message = errMsg
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
 	} else if bj.GetGameEndFlag() {
 		switch bj.GameJudgment() {
 		case domain.GameResultDraw:
@@ -75,25 +74,17 @@ func (bjp *BlackJackWebPresenter) Output(bj *domain.BlackJack) string {
 			resObj.Message = "It is your loss."
 		}
 	}
-	res, _ := json.Marshal(resObj)
+	res, err := jsonMarshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 
 // GetCardObj カード情報取得
 func (bjp *BlackJackWebPresenter) GetCardObj(card *domain.Card) *controller.BlackJackWebOutputCard {
 	res := new(controller.BlackJackWebOutputCard)
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		res.Design = "SPADE"
-	case domain.CardDesignClover:
-		res.Design = "CLOVER"
-	case domain.CardDesignHeart:
-		res.Design = "HEART"
-	case domain.CardDesignDiamond:
-		res.Design = "DIAMOND"
-	default:
-		res.Design = "Unsupported card"
-	}
+	res.Design = cardDesignToString(card.GetDesign())
 	res.Value = card.GetValue()
 	return res
 }

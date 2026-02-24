@@ -1,10 +1,9 @@
 package presenter
 
 import (
-	"encoding/json"
-
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // PokerWebPresenter ポーカーWebプレゼンタークラス
@@ -17,7 +16,7 @@ func NewPokerWebPresenter() *PokerWebPresenter {
 }
 
 // Output ゲーム状態を出力
-func (pwp *PokerWebPresenter) Output(p *domain.Poker) string {
+func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	resObj := new(controller.PokerWebOutput)
 	resObj.Phase = p.GetPhase()
 	resObj.Pot = p.GetPot()
@@ -41,15 +40,20 @@ func (pwp *PokerWebPresenter) Output(p *domain.Poker) string {
 	resObj.Dealer.Cards = make([]*controller.PokerWebOutputCard, 0)
 	resObj.Dealer.Chips = dealer.GetChips()
 	resObj.Dealer.Bet = p.GetDealerBet()
+	// エラーメッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	}
+
 	if p.GetPhase() == domain.PokerPhaseEnd {
 		resObj.Dealer.HandRank = dealer.GetHandRank()
 		resObj.Dealer.HandName = dealer.GetHandName()
 		for i := 0; i < dealer.GetCardsSize(); i++ {
 			resObj.Dealer.Cards = append(resObj.Dealer.Cards, pwp.GetCardObj(dealer.GetCard(i)))
 		}
-		if p.GetFolded() == 1 {
+		if p.GetFolded() == domain.PokerFoldByPlayer {
 			resObj.Message = "You folded."
-		} else if p.GetFolded() == 2 {
+		} else if p.GetFolded() == domain.PokerFoldByDealer {
 			resObj.Message = "Dealer folded. You win!"
 		} else {
 			switch p.GameJudgment() {
@@ -63,25 +67,17 @@ func (pwp *PokerWebPresenter) Output(p *domain.Poker) string {
 		}
 	}
 
-	res, _ := json.Marshal(resObj)
+	res, err := jsonMarshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 
 // GetCardObj カード情報取得
 func (pwp *PokerWebPresenter) GetCardObj(card *domain.Card) *controller.PokerWebOutputCard {
 	res := new(controller.PokerWebOutputCard)
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		res.Design = "SPADE"
-	case domain.CardDesignClover:
-		res.Design = "CLOVER"
-	case domain.CardDesignHeart:
-		res.Design = "HEART"
-	case domain.CardDesignDiamond:
-		res.Design = "DIAMOND"
-	default:
-		res.Design = "Unsupported card"
-	}
+	res.Design = cardDesignToString(card.GetDesign())
 	res.Value = card.GetValue()
 	return res
 }

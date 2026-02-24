@@ -1,19 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const REPLAY_DELAY_MS = 800;
 
 const playerAreaBaseClass = 'bg-black/35 rounded-[10px] p-2 border-2 border-transparent flex-[1_1_140px] min-w-[120px]';
-const btnPrimary =
-  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1';
-const btnWarning =
-  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1';
 
-function cardLabel(card: OldMaidResponse['lastDrawCard']): string {
-  if (!card) return '';
+function cardLabel(card: Card): string {
   if (card.design === 'JOKER') return 'JOKER';
   return `${card.design} ${card.value}`;
 }
@@ -24,7 +21,6 @@ const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
  *  then replay forward. Returns one OldMaidResponse per CPU action (state after each action). */
 function buildReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
   const actions = finalState.cpuActions;
-  if (actions.length === 0) return [];
 
   // Work backwards to get counts before all CPU actions
   const counts = finalState.players.map((p) => p.cardCount);
@@ -59,11 +55,7 @@ function buildReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
       cpuActions: actions.slice(0, i + 1),
       gameEndFlag: isLastAction ? finalState.gameEndFlag : false,
       message: isLastAction ? finalState.message : '',
-      nextDrawTargetIdx: isLastAction
-        ? finalState.nextDrawTargetIdx
-        : i + 1 < actions.length
-          ? actions[i + 1].drawFromIdx
-          : finalState.nextDrawTargetIdx,
+      nextDrawTargetIdx: isLastAction ? finalState.nextDrawTargetIdx : actions[i + 1].drawFromIdx,
     });
   }
   return states;
@@ -88,7 +80,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
       cardCount: Math.max(0, counts[idx]),
       isFinished: counts[idx] <= 0,
     })),
-    currentTurn: finalState.cpuActions.length > 0 ? finalState.cpuActions[0].drawPlayerIdx : finalState.currentTurn,
+    currentTurn: finalState.cpuActions[0].drawPlayerIdx,
     hasDrawn: true,
     lastDrawPlayerIdx: ha.drawPlayerIdx,
     lastDrawFromIdx: ha.drawFromIdx,
@@ -98,8 +90,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     cpuActions: [],
     gameEndFlag: false,
     message: '',
-    nextDrawTargetIdx:
-      finalState.cpuActions.length > 0 ? finalState.cpuActions[0].drawFromIdx : finalState.nextDrawTargetIdx,
+    nextDrawTargetIdx: finalState.cpuActions[0].drawFromIdx,
   };
 }
 
@@ -108,17 +99,18 @@ interface PlayerAreaProps {
   isTarget: boolean;
   isHumanTurn: boolean;
   gameEndFlag: boolean;
+  loading: boolean;
   onDraw: (drawIdx: number) => void;
 }
 
-function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, onDraw }: PlayerAreaProps) {
+function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, loading, onDraw }: PlayerAreaProps) {
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isTarget && !gameEndFlag
       ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
       : {};
 
-  const showSelectable = isHumanTurn && isTarget && !player.isFinished && !player.isHuman && !gameEndFlag;
+  const showSelectable = isHumanTurn && !loading && isTarget && !player.isFinished && !player.isHuman && !gameEndFlag;
   const showCount = Math.min(player.cardCount, 10);
 
   return (
@@ -227,13 +219,14 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
 
 export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
-  const replayGenRef = useRef(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const exec = useCallback(async (command: 'reset' | 'draw', drawIdx?: number) => {
-    const myGen = ++replayGenRef.current;
+    setLoading(true);
     try {
+      setError(null);
       const res = await oldmaidApi.exec(command, drawIdx);
-      if (myGen !== replayGenRef.current) return;
 
       if (command === 'reset' || res.cpuActions.length === 0) {
         setDisplayState(res);
@@ -245,7 +238,6 @@ export function OldMaidPage() {
       if (humanDrawState) {
         setDisplayState(humanDrawState);
         await delay(REPLAY_DELAY_MS);
-        if (myGen !== replayGenRef.current) return;
       }
 
       // Replay each CPU action step by step
@@ -253,12 +245,13 @@ export function OldMaidPage() {
       for (const state of replayStates) {
         setDisplayState(state);
         await delay(REPLAY_DELAY_MS);
-        if (myGen !== replayGenRef.current) return;
       }
       // Restore the actual final state so currentTurn reflects the server response
       setDisplayState(res);
     } catch {
-      console.error('oldmaid request failed');
+      setError('通信エラーが発生しました。もう一度お試しください。');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -299,6 +292,7 @@ export function OldMaidPage() {
               isTarget={state.nextDrawTargetIdx === player.id}
               isHumanTurn={isHumanTurn}
               gameEndFlag={state.gameEndFlag}
+              loading={loading}
               onDraw={(drawIdx) => exec('draw', drawIdx)}
             />
           ))}
@@ -350,20 +344,28 @@ export function OldMaidPage() {
               isTarget={false}
               isHumanTurn={isHumanTurn}
               gameEndFlag={state.gameEndFlag}
+              loading={loading}
               onDraw={(drawIdx) => exec('draw', drawIdx)}
             />
           </div>
         )}
 
+        <ErrorAlert message={error} />
+
         {/* Buttons */}
         <div className="text-center">
-          <button type="button" className={`${btnPrimary} min-w-[80px]`} onClick={() => exec('reset')}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[80px]`}
+            disabled={loading}
+            onClick={() => exec('reset')}
+          >
             リセット
           </button>
           <button
             type="button"
             className={`${btnWarning} min-w-[110px]`}
-            disabled={!isHumanTurn || state.gameEndFlag}
+            disabled={loading || !isHumanTurn || state.gameEndFlag}
             onClick={() => exec('draw')}
           >
             ランダムに引く

@@ -232,3 +232,18 @@ func TestPokerPlayer_Method(t *testing.T) {
 		assert.Equal(t, 10, tpp.GetChips())
 	})
 }
+
+func TestPokerPlayer_CheckStraight_NotNormal(t *testing.T) {
+	tpp := domain.NewPokerPlayer()
+	// Hand that is NOT a normal straight, NOT A-2-3-4-5, NOT A-10-J-Q-K
+	// E.g., 2, 3, 5, 7, 9 → not consecutive → evaluates as HighCard
+	tpp.Reset()
+	tpp.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	tpp.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	tpp.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	tpp.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	tpp.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	rank := tpp.EvalHand()
+	assert.Equal(t, domain.PokerHandHighCard, rank)
+	assert.Equal(t, "High Card", tpp.GetHandName())
+}

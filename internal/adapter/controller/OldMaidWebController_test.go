@@ -19,6 +19,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	omiMock := new(usecase.MockOldMaidInteractor)
 	omiMock.On("Reset").Return(mockOutput).Times(2)
 	omiMock.On("Draw", -1).Return(mockOutput)
+	omiMock.On("Draw", 2).Return(mockOutput)
 
 	factory := func() uc.OldMaidInteractorIF { return omiMock }
 	towc := controller.NewOldMaidWebController(factory)
@@ -81,6 +82,20 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	t.Run("success Exec draw", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "draw", "sessionId": "test-session-1"}`), &jsonInput)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec draw with drawIdx", func(t *testing.T) {
+		drawIdx := 2
+		input := controller.OldMaidWebInput{
+			Command:   "d",
+			DrawIdx:   &drawIdx,
+			SessionId: "test-session-1",
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)

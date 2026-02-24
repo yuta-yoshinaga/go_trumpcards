@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -19,12 +19,18 @@ type BlackJackInteractorIF interface {
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
 type BlackJackInteractor struct {
-	bj  *domain.BlackJack
+	bj  interfaces.BlackJackGame
 	bjp presenter.BlackJackPresenter
 }
 
 // NewBlackJackInteractor コンストラクタ
-func NewBlackJackInteractor(bj *domain.BlackJack, bjp presenter.BlackJackPresenter) *BlackJackInteractor {
+func NewBlackJackInteractor(bj interfaces.BlackJackGame, bjp presenter.BlackJackPresenter) *BlackJackInteractor {
+	if bj == nil {
+		panic("BlackJackInteractor: bj must not be nil")
+	}
+	if bjp == nil {
+		panic("BlackJackInteractor: bjp must not be nil")
+	}
 	return &BlackJackInteractor{
 		bj:  bj,
 		bjp: bjp,
@@ -34,47 +40,47 @@ func NewBlackJackInteractor(bj *domain.BlackJack, bjp presenter.BlackJackPresent
 // Reset ゲーム初期化
 func (bi *BlackJackInteractor) Reset() string {
 	bi.bj.Reset()
-	return bi.bjp.Output(bi.bj)
+	return bi.bjp.Output(bi.bj, nil)
 }
 
 // Hit ヒット
 func (bi *BlackJackInteractor) Hit() string {
-	bi.bj.PlayerHit()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerHit()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // Stand スタンド
 func (bi *BlackJackInteractor) Stand() string {
-	bi.bj.PlayerStand()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerStand()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // Bet ベット
 func (bi *BlackJackInteractor) Bet(amount int) string {
-	bi.bj.PlayerBet(amount)
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerBet(amount)
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // DoubleDown ダブルダウン
 func (bi *BlackJackInteractor) DoubleDown() string {
-	bi.bj.PlayerDoubleDown()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerDoubleDown()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // Split スプリット
 func (bi *BlackJackInteractor) Split() string {
-	bi.bj.PlayerSplit()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerSplit()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // Insurance インシュランス
 func (bi *BlackJackInteractor) Insurance() string {
-	bi.bj.PlayerInsurance()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerInsurance()
+	return bi.bjp.Output(bi.bj, err)
 }
 
 // DeclineInsurance インシュランス辞退
 func (bi *BlackJackInteractor) DeclineInsurance() string {
-	bi.bj.PlayerDeclineInsurance()
-	return bi.bjp.Output(bi.bj)
+	err := bi.bj.PlayerDeclineInsurance()
+	return bi.bjp.Output(bi.bj, err)
 }

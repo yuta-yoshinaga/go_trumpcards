@@ -1,11 +1,11 @@
 package presenter
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // OldMaidWebPresenter ババ抜きWebプレゼンタークラス
@@ -17,7 +17,7 @@ func NewOldMaidWebPresenter() *OldMaidWebPresenter {
 }
 
 // Output ゲーム状態をJSON出力
-func (owp *OldMaidWebPresenter) Output(om *domain.OldMaid) string {
+func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error) string {
 	resObj := new(controller.OldMaidWebOutput)
 	resObj.Players = make([]*controller.OldMaidWebOutputPlayer, 0)
 	resObj.CurrentTurn = om.GetCurrentTurn()
@@ -86,7 +86,10 @@ func (owp *OldMaidWebPresenter) Output(om *domain.OldMaid) string {
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
-	if om.GetGameEndFlag() {
+	// エラーメッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else if om.GetGameEndFlag() {
 		loserIdx := om.GetLoserIdx()
 		if loserIdx >= 0 {
 			loser := om.GetPlayer(loserIdx)
@@ -98,7 +101,10 @@ func (owp *OldMaidWebPresenter) Output(om *domain.OldMaid) string {
 		}
 	}
 
-	res, _ := json.Marshal(resObj)
+	res, err := jsonMarshal(resObj)
+	if err != nil {
+		return `{"error":"internal server error"}`
+	}
 	return string(res)
 }
 
@@ -108,18 +114,7 @@ func (owp *OldMaidWebPresenter) getCardObj(card *domain.Card) *controller.OldMai
 		return nil
 	}
 	res := new(controller.OldMaidWebOutputCard)
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		res.Design = "SPADE"
-	case domain.CardDesignClover:
-		res.Design = "CLOVER"
-	case domain.CardDesignHeart:
-		res.Design = "HEART"
-	case domain.CardDesignDiamond:
-		res.Design = "DIAMOND"
-	default:
-		res.Design = "JOKER"
-	}
+	res.Design = cardDesignToString(card.GetDesign())
 	res.Value = card.GetValue()
 	return res
 }

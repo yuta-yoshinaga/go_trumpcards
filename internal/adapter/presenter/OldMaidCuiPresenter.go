@@ -3,8 +3,10 @@ package presenter
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // OldMaidCuiPresenter ババ抜きCUIプレゼンタークラス
@@ -16,35 +18,37 @@ func NewOldMaidCuiPresenter() *OldMaidCuiPresenter {
 }
 
 // Output ゲーム状態を文字列出力
-func (p *OldMaidCuiPresenter) Output(om *domain.OldMaid) string {
-	res := "==========\n"
-	res += "Old Maid (ババ抜き)\n"
-	res += "==========\n"
+func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) string {
+	var b strings.Builder
+
+	b.WriteString("==========\n")
+	b.WriteString("Old Maid (ババ抜き)\n")
+	b.WriteString("==========\n")
 
 	for i := 0; i < om.GetPlayerCnt(); i++ {
 		player := om.GetPlayer(i)
 		if player.GetIsHuman() {
-			res += "[You]"
+			b.WriteString("[You]")
 		} else {
-			res += fmt.Sprintf("CPU %d", i)
+			fmt.Fprintf(&b, "CPU %d", i)
 		}
 		if player.GetIsFinished() {
-			res += ": 上がり\n"
+			b.WriteString(": 上がり\n")
 		} else {
-			res += fmt.Sprintf(": %d枚\n", player.GetCardsSize())
+			fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
 			if player.GetIsHuman() {
 				for j := 0; j < player.GetCardsSize(); j++ {
 					if j != 0 {
-						res += "  "
+						b.WriteString("  ")
 					}
-					res += fmt.Sprintf("[%d]%s", j, p.getCardStr(player.GetCard(j)))
+					fmt.Fprintf(&b, "[%d]%s", j, p.getCardStr(player.GetCard(j)))
 				}
-				res += "\n"
+				b.WriteString("\n")
 			}
 		}
 	}
 
-	res += "----------\n"
+	b.WriteString("----------\n")
 
 	if om.GetHasDrawn() {
 		drawPlayerIdx := om.GetLastDrawPlayerIdx()
@@ -54,38 +58,43 @@ func (p *OldMaidCuiPresenter) Output(om *domain.OldMaid) string {
 		drawFromName := p.getPlayerName(om, drawFromIdx)
 		drawnCard := om.GetLastDrawCard()
 		drawPlayer := om.GetPlayer(drawPlayerIdx)
-		res += fmt.Sprintf("%sが%sから1枚引きました", drawPlayerName, drawFromName)
+		fmt.Fprintf(&b, "%sが%sから1枚引きました", drawPlayerName, drawFromName)
 		// Only reveal drawn card for human players to preserve CPU game fairness
 		if drawnCard != nil && drawPlayer != nil && drawPlayer.GetIsHuman() {
-			res += fmt.Sprintf(" (%s)", p.getCardStr(drawnCard))
+			fmt.Fprintf(&b, " (%s)", p.getCardStr(drawnCard))
 		}
 		if discarded > 0 {
-			res += fmt.Sprintf("。%d組捨てました", discarded)
+			fmt.Fprintf(&b, "。%d組捨てました", discarded)
 		}
-		res += "\n"
+		b.WriteString("\n")
 	}
 
 	// CPUの行動履歴を表示
 	cpuActions := om.GetCpuActions()
 	if len(cpuActions) > 0 {
-		res += "[CPUの行動]\n"
+		b.WriteString("[CPUの行動]\n")
 		for _, action := range cpuActions {
 			actPlayerName := p.getPlayerName(om, action.DrawPlayerIdx)
 			actFromName := p.getPlayerName(om, action.DrawFromIdx)
-			res += fmt.Sprintf("%sが%sから1枚引きました", actPlayerName, actFromName)
+			fmt.Fprintf(&b, "%sが%sから1枚引きました", actPlayerName, actFromName)
 			// CPU drawn card is intentionally hidden to preserve game fairness
 			if action.DiscardedPairs > 0 {
-				res += fmt.Sprintf("。%d組捨てました", action.DiscardedPairs)
+				fmt.Fprintf(&b, "。%d組捨てました", action.DiscardedPairs)
 			}
-			res += "\n"
+			b.WriteString("\n")
 		}
+	}
+
+	// エラーメッセージ
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
 	}
 
 	if om.GetGameEndFlag() {
 		loserIdx := om.GetLoserIdx()
 		if loserIdx >= 0 {
 			loserName := p.getPlayerName(om, loserIdx)
-			res += fmt.Sprintf("ゲーム終了！ %sの負け！\n", loserName)
+			fmt.Fprintf(&b, "ゲーム終了！ %sの負け！\n", loserName)
 		}
 	} else {
 		currentTurn := om.GetCurrentTurn()
@@ -93,18 +102,18 @@ func (p *OldMaidCuiPresenter) Output(om *domain.OldMaid) string {
 		targetIdx := om.GetNextDrawTargetIdx()
 		if targetIdx >= 0 {
 			targetName := p.getPlayerName(om, targetIdx)
-			res += fmt.Sprintf("手番: %s → %sから引きます\n", currentName, targetName)
+			fmt.Fprintf(&b, "手番: %s → %sから引きます\n", currentName, targetName)
 		} else {
-			res += fmt.Sprintf("手番: %s\n", currentName)
+			fmt.Fprintf(&b, "手番: %s\n", currentName)
 		}
 	}
 
-	res += "==========\n"
-	return res
+	b.WriteString("==========\n")
+	return b.String()
 }
 
 // getPlayerName プレイヤー名取得
-func (p *OldMaidCuiPresenter) getPlayerName(om *domain.OldMaid, idx int) string {
+func (p *OldMaidCuiPresenter) getPlayerName(om interfaces.OldMaidGame, idx int) string {
 	player := om.GetPlayer(idx)
 	if player == nil {
 		return "不明"

@@ -12,9 +12,11 @@ const (
 	SessionMaxCount = 10000
 	// SessionTTL is the inactivity duration after which a session is evicted.
 	SessionTTL = 1 * time.Hour
-	// sessionCleanupInterval is how often the background goroutine runs eviction.
-	sessionCleanupInterval = 10 * time.Minute
 )
+
+// sessionCleanupInterval is how often the background goroutine runs eviction.
+// It is a var (not const) so that internal tests can shorten the interval.
+var sessionCleanupInterval = 10 * time.Minute
 
 type sessionEntry[T any] struct {
 	value    T
@@ -40,41 +42,6 @@ func NewSessionStore[T any]() *SessionStore[T] {
 	}
 	go s.cleanupLoop()
 	return s
-}
-
-// Get returns the value for the given sessionId, creating it via factory if it
-// does not yet exist. The second return value is false when the sessionId is
-// invalid (too long) or the store is at capacity.
-func (s *SessionStore[T]) Get(id string, factory func() T) (T, bool) {
-	var zero T
-	if len(id) > SessionMaxIDLen {
-		return zero, false
-	}
-	s.mu.Lock()
-	if entry, ok := s.entries[id]; ok {
-		entry.lastUsed = time.Now()
-		s.mu.Unlock()
-		return entry.value, true
-	}
-	if len(s.entries) >= SessionMaxCount {
-		s.mu.Unlock()
-		return zero, false
-	}
-	s.mu.Unlock()
-	// factory() をグローバルmutex外で実行（遅延時のブロッキングを防ぐ）
-	val := factory()
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	// ダブルチェック: 他のゴルーチンが同じIDで作成していないか
-	if entry, ok := s.entries[id]; ok {
-		entry.lastUsed = time.Now()
-		return entry.value, true
-	}
-	if len(s.entries) >= SessionMaxCount {
-		return zero, false
-	}
-	s.entries[id] = &sessionEntry[T]{value: val, mu: &sync.Mutex{}, lastUsed: time.Now()}
-	return val, true
 }
 
 // GetWithLock returns the value for the given sessionId (creating it via factory

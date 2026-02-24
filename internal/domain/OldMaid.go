@@ -104,12 +104,8 @@ func (o *OldMaid) Reset() {
 
 	// currentTurnがフィニッシュしていたら次へ
 	if !o.gameEndFlag {
-		start := o.currentTurn
 		for o.players[o.currentTurn].GetIsFinished() {
 			o.currentTurn = (o.currentTurn + 1) % OldMaidPlayerCnt
-			if o.currentTurn == start {
-				break
-			}
 		}
 	}
 }
@@ -220,9 +216,12 @@ func (o *OldMaid) advanceTurn() {
 
 // PlayerDraw 人間プレイヤーがカードを引く
 // cardIdx: 引くカードのインデックス。-1 の場合はランダム選択。
-func (o *OldMaid) PlayerDraw(cardIdx int) {
-	if o.gameEndFlag || !o.players[o.currentTurn].GetIsHuman() {
-		return
+func (o *OldMaid) PlayerDraw(cardIdx int) error {
+	if o.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !o.players[o.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	// 人間のターン開始時にCPU行動履歴をリセット
 	o.cpuActions = nil
@@ -238,6 +237,7 @@ func (o *OldMaid) PlayerDraw(cardIdx int) {
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
+	return nil
 }
 
 // CPU戦略用定数
@@ -265,14 +265,17 @@ func cpuSelectCardIdx(size int) int {
 }
 
 // CpuDraw 現在の手番がCPUの場合に1ターン実行
-func (o *OldMaid) CpuDraw() {
-	if o.gameEndFlag || o.players[o.currentTurn].GetIsHuman() {
-		return
+func (o *OldMaid) CpuDraw() error {
+	if o.gameEndFlag {
+		return ErrGameEnded
+	}
+	if o.players[o.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	playerIdx := o.currentTurn
 	targetIdx := o.getNextActivePlayer(playerIdx)
 	if targetIdx < 0 || targetIdx >= len(o.players) {
-		return
+		return nil
 	}
 	cardIdx := cpuSelectCardIdx(o.players[targetIdx].GetCardsSize())
 	card := o.drawCard(playerIdx, cardIdx)
@@ -287,6 +290,7 @@ func (o *OldMaid) CpuDraw() {
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
+	return nil
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
@@ -366,3 +370,15 @@ func (o *OldMaid) GetCpuActions() []*OldMaidCpuAction {
 func (o *OldMaid) GetHumanAction() *OldMaidCpuAction {
 	return o.humanAction
 }
+
+// SetLastDrawPlayerIdx 最後に引いたプレイヤーインデックス設定（テスト用）
+func (o *OldMaid) SetLastDrawPlayerIdx(idx int) { o.lastDrawPlayerIdx = idx }
+
+// SetHasDrawn 引いたフラグ設定（テスト用）
+func (o *OldMaid) SetHasDrawn(v bool) { o.hasDrawn = v }
+
+// SetHumanAction 人間プレイヤーの行動設定（テスト用）
+func (o *OldMaid) SetHumanAction(action *OldMaidCpuAction) { o.humanAction = action }
+
+// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
+func (o *OldMaid) SetGameEndFlag(v bool) { o.gameEndFlag = v }

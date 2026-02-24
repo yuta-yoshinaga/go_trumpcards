@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -13,20 +13,20 @@ type OldMaidInteractorIF interface {
 
 // OldMaidInteractor ババ抜きインタラクタークラス
 type OldMaidInteractor struct {
-	om  *domain.OldMaid
+	om  interfaces.OldMaidGame
 	omp presenter.OldMaidPresenter
 }
 
 // NewOldMaidInteractor コンストラクタ
-func NewOldMaidInteractor(omp presenter.OldMaidPresenter) *OldMaidInteractor {
-	players := []*domain.OldMaidPlayer{
-		domain.NewOldMaidPlayer(true),  // player 0: 人間
-		domain.NewOldMaidPlayer(false), // player 1: CPU
-		domain.NewOldMaidPlayer(false), // player 2: CPU
-		domain.NewOldMaidPlayer(false), // player 3: CPU
+func NewOldMaidInteractor(om interfaces.OldMaidGame, omp presenter.OldMaidPresenter) *OldMaidInteractor {
+	if om == nil {
+		panic("OldMaidInteractor: om must not be nil")
+	}
+	if omp == nil {
+		panic("OldMaidInteractor: omp must not be nil")
 	}
 	return &OldMaidInteractor{
-		om:  domain.NewOldMaid(domain.NewTrumpCards(1), players),
+		om:  om,
 		omp: omp,
 	}
 }
@@ -35,23 +35,23 @@ func NewOldMaidInteractor(omp presenter.OldMaidPresenter) *OldMaidInteractor {
 func (oi *OldMaidInteractor) Reset() string {
 	oi.om.Reset()
 	oi.runCpuTurns()
-	return oi.omp.Output(oi.om)
+	return oi.omp.Output(oi.om, nil)
 }
 
 // Draw 人間プレイヤーがカードを引く
 // cardIdx: 引くカードのインデックス。-1 の場合はランダム選択。
 func (oi *OldMaidInteractor) Draw(cardIdx int) string {
 	if oi.om.GetGameEndFlag() {
-		return oi.omp.Output(oi.om)
+		return oi.omp.Output(oi.om, nil)
 	}
 	if !oi.om.IsHumanTurn() {
-		return oi.omp.Output(oi.om)
+		return oi.omp.Output(oi.om, nil)
 	}
-	oi.om.PlayerDraw(cardIdx)
-	if !oi.om.GetGameEndFlag() {
+	err := oi.om.PlayerDraw(cardIdx)
+	if err == nil && !oi.om.GetGameEndFlag() {
 		oi.runCpuTurns()
 	}
-	return oi.omp.Output(oi.om)
+	return oi.omp.Output(oi.om, err)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

@@ -1,12 +1,16 @@
 package domain
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
 
 // SevensPlayerCnt 7並べプレイヤー数
 const SevensPlayerCnt = 4
+
+// sevensNoScore 評価値の初期値 (未評価を表す最小値)
+const sevensNoScore = math.MinInt
 
 // SevensCpuAction CPUまたは人間の1ターン分の行動記録
 type SevensCpuAction struct {
@@ -21,10 +25,10 @@ type SevensCpuAction struct {
 type Sevens struct {
 	trumpCards  *TrumpCards
 	players     []*SevensPlayer
-	currentTurn int              // 現在の手番プレイヤーインデックス
-	tablePlaced [5]uint16        // tablePlaced[suit] = ビットマスク (bit i = 値iが配置済み)
-	config      SevensConfig     // ゲーム設定
-	gameEndFlag bool             // ゲーム終了フラグ
+	currentTurn int                // 現在の手番プレイヤーインデックス
+	tablePlaced [5]uint16          // tablePlaced[suit] = ビットマスク (bit i = 値iが配置済み)
+	config      SevensConfig       // ゲーム設定
+	gameEndFlag bool               // ゲーム終了フラグ
 	cpuActions  []*SevensCpuAction // 人間ターン後のCPUの行動履歴
 	humanAction *SevensCpuAction   // 人間の最後の行動
 }
@@ -288,10 +292,12 @@ func (s *Sevens) placePosition(suit, value int) {
 
 // PlayerPlay 人間プレイヤーがカードを出す (または パスする)
 // idx: 出すカードのインデックス。-1 の場合はパス。
-// 成功した場合 true を返す。
-func (s *Sevens) PlayerPlay(idx int) bool {
-	if s.gameEndFlag || !s.players[s.currentTurn].GetIsHuman() {
-		return false
+func (s *Sevens) PlayerPlay(idx int) error {
+	if s.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !s.players[s.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	// 人間のターン開始時にCPU行動履歴をリセット
 	s.cpuActions = nil
@@ -301,21 +307,21 @@ func (s *Sevens) PlayerPlay(idx int) bool {
 	if idx < 0 {
 		// パス
 		if !player.CanPass() {
-			return false
+			return ErrCannotPass
 		}
 		player.IncrPassesUsed()
 		s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: nil}
 		s.advanceTurn()
-		return true
+		return nil
 	}
 
 	// カードを出す
 	card := player.GetCard(idx)
 	if card == nil {
-		return false
+		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", idx))
 	}
 	if !s.IsPlayable(card) {
-		return false
+		return NewDomainError(ErrInvalidPlay, "card cannot be played on the board")
 	}
 
 	s.placeCard(card)
@@ -328,29 +334,31 @@ func (s *Sevens) PlayerPlay(idx int) bool {
 	if !s.checkGameEnd() {
 		s.advanceTurn()
 	}
-	return true
+	return nil
 }
 
 // PlayerPlayJoker 人間プレイヤーがジョーカーを指定ポジションに出す
 // cardIdx: ジョーカーの手札インデックス
 // targetSuit: 配置先スート, targetValue: 配置先値
-// 成功した場合 true を返す。
-func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) bool {
-	if s.gameEndFlag || !s.players[s.currentTurn].GetIsHuman() {
-		return false
+func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
+	if s.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !s.players[s.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	s.cpuActions = nil
 
 	player := s.players[s.currentTurn]
 	card := player.GetCard(cardIdx)
 	if card == nil {
-		return false
+		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", cardIdx))
 	}
 	if card.GetDesign() != CardDesignJoker {
-		return false
+		return NewDomainError(ErrInvalidCard, "card is not a joker")
 	}
 	if !s.isPositionPlayable(targetSuit, targetValue) {
-		return false
+		return NewDomainError(ErrInvalidPlay, "target position is not playable")
 	}
 
 	s.placePosition(targetSuit, targetValue)
@@ -368,7 +376,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) bool {
 	if !s.checkGameEnd() {
 		s.advanceTurn()
 	}
-	return true
+	return nil
 }
 
 // sevensPlay CPUの1手分の情報
@@ -496,7 +504,7 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 func (s *Sevens) evaluateJokerPlays(player *SevensPlayer) (int, int, int) {
 	bestSuit := 0
 	bestValue := 0
-	bestScore := math.MinInt
+	bestScore := sevensNoScore
 
 	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
 		for value := 1; value <= 13; value++ {
@@ -693,3 +701,9 @@ func (s *Sevens) GetCpuActions() []*SevensCpuAction { return s.cpuActions }
 
 // GetHumanAction 人間の最後の行動取得
 func (s *Sevens) GetHumanAction() *SevensCpuAction { return s.humanAction }
+
+// SetHumanAction 人間の行動設定（テスト用）
+func (s *Sevens) SetHumanAction(action *SevensCpuAction) { s.humanAction = action }
+
+// SetCpuActions CPU行動設定（テスト用）
+func (s *Sevens) SetCpuActions(actions []*SevensCpuAction) { s.cpuActions = actions }

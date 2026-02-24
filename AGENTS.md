@@ -43,6 +43,11 @@ go tool cover -func=coverage.out                           # Show coverage summa
 go tool cover -html=coverage.out -o coverage.html          # Generate HTML coverage report
 ```
 
+**Format Go source files:**
+```sh
+goimports -w ./...   # Format and organize imports for all Go files
+```
+
 **Manage dependencies:**
 ```sh
 go mod tidy
@@ -62,6 +67,10 @@ cd frontend && npm run check:write            # Run Biome lint + format check an
 cd frontend && npm test                       # Run frontend unit tests (Vitest)
 cd frontend && npm run test:coverage          # Run frontend tests with coverage (outputs to frontend/coverage/)
 ```
+
+## Go Formatting Rule
+
+**After editing any Go source file, always run `goimports -w` on the modified files before committing.** This ensures consistent code formatting and correct import organization (grouping, ordering, and removal of unused imports). Use `goimports`, not `gofmt`.
 
 ## Architecture
 
@@ -114,6 +123,12 @@ public/                        # Built frontend assets served by Go web server
 
 **Unit tests are mandatory. Every implementation must ship with tests in the same commit.**
 
+### Coverage standard
+
+The `cmd/` and `internal/infrastructure/` directories are excluded from coverage requirements. For all other packages under `internal/`, **branch coverage (C1) must be 100%**.
+
+When writing tests, always verify branch coverage—not just statement coverage (C0)—by ensuring every conditional branch (if/else, switch cases, loop exit conditions, etc.) is exercised.
+
 ### Coverage requirements
 
 When adding or modifying any game logic, provide tests for all four layers:
@@ -157,6 +172,8 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 | Components | `frontend/src/components/*.test.tsx` | Rendered output, props, event handlers |
 | Pages | `frontend/src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
 
+**Branch coverage (C1) must be 100%** for the four directories `frontend/src/api`, `frontend/src/components`, `frontend/src/pages`, and `frontend/src/utils`. When writing tests, always verify branch coverage—not just statement coverage (C0)—by ensuring every conditional branch (if/else, ternary, `??`, `&&`/`||` short-circuits, switch cases) is exercised.
+
 **Patterns:**
 
 - **Mock the API module**: use `vi.mock('../api/gameApi', ...)` inside page test files; access the typed mock with `vi.mocked(api.exec)`
@@ -164,9 +181,10 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 - **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
 - **Query buttons by role**: when a text string appears in multiple elements, use `screen.getByRole('button', { name: '...' })` instead of `getByText`
 
-**Run Biome check and frontend tests before committing:**
+**Run build, Biome check, and frontend tests before committing:**
 
 ```sh
+cd frontend && npm run build
 cd frontend && npm run check
 cd frontend && npm test
 ```
@@ -183,9 +201,10 @@ cd frontend && npm test
 | Change request/response schema of a Web API endpoint | `api/openapi.yaml` |
 | Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
 | Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
-| Modify anything under `frontend/` | Run `cd frontend && npm run check` and `cd frontend && npm test` and ensure both pass before committing |
+| Modify anything under `frontend/` | Run `cd frontend && npm run build`, `cd frontend && npm run check`, and `cd frontend && npm test` and ensure all three pass before committing |
 | Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
 | Change frontend tooling or scripts | `frontend/README.md` (Scripts, Tooling) |
+| Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
@@ -287,3 +306,4 @@ refactor(usecases): simplify interactor dependency injection
 - **Simplicity First**: Make every change as simple as possible. Impact minimal code.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- **Dead Code Cleanup**: When modifying code, always remove any dead code or dead files you encounter. Use `golang.org/x/tools/cmd/deadcode` for Go and `knip` for TypeScript to identify unused code. Verify findings manually before deleting — static analysis tools can produce false positives (e.g., interface implementations called via reflection, mock methods). Delete confirmed dead code in the same commit as your feature or fix.

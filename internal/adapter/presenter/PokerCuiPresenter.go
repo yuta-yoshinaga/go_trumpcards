@@ -1,9 +1,12 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // PokerCuiPresenter ポーカーCUIプレゼンタークラス
@@ -16,67 +19,74 @@ func NewPokerCuiPresenter() *PokerCuiPresenter {
 }
 
 // Output ゲーム状態を出力
-func (pcp *PokerCuiPresenter) Output(p *domain.Poker) string {
+func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	player := p.GetPlayer()
 	dealer := p.GetDealer()
-	res := "----------\n"
+	var b strings.Builder
+
+	b.WriteString("----------\n")
 
 	// chips/pot info
-	res += "Pot: " + strconv.Itoa(p.GetPot()) + " | Player Chips: " + strconv.Itoa(player.GetChips()) + " | Dealer Chips: " + strconv.Itoa(dealer.GetChips()) + "\n"
+	fmt.Fprintf(&b, "Pot: %d | Player Chips: %d | Dealer Chips: %d\n", p.GetPot(), player.GetChips(), dealer.GetChips())
 	if p.GetDealerBet() > 0 {
-		res += "Dealer Bet: " + strconv.Itoa(p.GetDealerBet()) + "\n"
+		fmt.Fprintf(&b, "Dealer Bet: %d\n", p.GetDealerBet())
 	}
-	res += "----------\n"
+	b.WriteString("----------\n")
 
 	// player
-	res += "player hand"
+	b.WriteString("player hand")
 	if p.GetPhase() == domain.PokerPhaseEnd {
-		res += " [" + player.GetHandName() + "]"
+		fmt.Fprintf(&b, " [%s]", player.GetHandName())
 	}
-	res += "\n"
+	b.WriteString("\n")
 	for i := 0; i < player.GetCardsSize(); i++ {
 		if i != 0 {
-			res += ","
+			b.WriteString(",")
 		}
-		res += "[" + strconv.Itoa(i) + "]" + pcp.GetCardStr(player.GetCard(i))
+		fmt.Fprintf(&b, "[%d]%s", i, pcp.GetCardStr(player.GetCard(i)))
 	}
-	res += "\n----------\n"
+	b.WriteString("\n----------\n")
 
 	// dealer
-	res += "dealer hand"
+	b.WriteString("dealer hand")
 	if p.GetPhase() == domain.PokerPhaseEnd {
-		res += " [" + dealer.GetHandName() + "]"
-		res += "\n"
+		fmt.Fprintf(&b, " [%s]", dealer.GetHandName())
+		b.WriteString("\n")
 		for i := 0; i < dealer.GetCardsSize(); i++ {
 			if i != 0 {
-				res += ","
+				b.WriteString(",")
 			}
-			res += pcp.GetCardStr(dealer.GetCard(i))
+			b.WriteString(pcp.GetCardStr(dealer.GetCard(i)))
 		}
-		res += "\n"
+		b.WriteString("\n")
 	} else {
-		res += "\n"
+		b.WriteString("\n")
 	}
-	res += "----------\n"
+	b.WriteString("----------\n")
+
+	// エラーメッセージ
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
+	}
 
 	if p.GetPhase() == domain.PokerPhaseEnd {
-		if p.GetFolded() == 1 {
-			res += "You folded.\n"
-		} else if p.GetFolded() == 2 {
-			res += "Dealer folded. You win!\n"
+		if p.GetFolded() == domain.PokerFoldByPlayer {
+			b.WriteString("You folded.\n")
+		} else if p.GetFolded() == domain.PokerFoldByDealer {
+			b.WriteString("Dealer folded. You win!\n")
 		} else {
 			switch p.GameJudgment() {
 			case 0:
-				res += "It is a draw.\n"
+				b.WriteString("It is a draw.\n")
 			case 1:
-				res += "You are the winner.\n"
+				b.WriteString("You are the winner.\n")
 			default:
-				res += "It is your loss.\n"
+				b.WriteString("It is your loss.\n")
 			}
 		}
-		res += "----------\n"
+		b.WriteString("----------\n")
 	}
-	return res
+	return b.String()
 }
 
 // GetCardStr カード情報文字列取得

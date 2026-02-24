@@ -2,11 +2,12 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,6 +24,17 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		}
 	}
 
+	setupDGWebTest := func() (*domain.Daifugo, []*domain.DaifugoPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		return dg, players
+	}
+
 	t.Run("success Output initial state", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDGPlayers()
@@ -33,7 +45,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		assert.NotEmpty(t, result)
 
 		var resObj controller.DaifugoWebOutput
@@ -55,7 +67,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		humanPlayer := resObj.Players[0]
@@ -74,7 +86,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		cpu1 := resObj.Players[1]
@@ -93,9 +105,9 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		dg.PlayerPlay([]int{0}) // play 5
+		_ = dg.PlayerPlay([]int{0}) // play 5
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Len(t, resObj.TableCards, 1)
@@ -114,9 +126,9 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[2].SetRank(2)
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
-		dg.PlayerPlay([]int{0}) // human plays last card → game ends
+		_ = dg.PlayerPlay([]int{0}) // human plays last card → game ends
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.GameEndFlag)
@@ -133,9 +145,9 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		dg.PlayerPlay([]int{0}) // play 5
+		_ = dg.PlayerPlay([]int{0}) // play 5
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.NotNil(t, resObj.HumanAction)
@@ -152,9 +164,9 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		dg.PlayerPlay([]int{}) // pass
+		_ = dg.PlayerPlay([]int{}) // pass
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.NotNil(t, resObj.HumanAction)
@@ -171,12 +183,12 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-		dg.PlayerPlay([]int{0}) // play 2 → human keeps [3], not finished
-		dg.CpuPlay()            // CPU 1 passes
-		dg.CpuPlay()            // CPU 2 passes
-		dg.CpuPlay()            // CPU 3 passes → table clears
+		_ = dg.PlayerPlay([]int{0}) // play 2 → human keeps [3], not finished
+		dg.CpuPlay()                // CPU 1 passes
+		dg.CpuPlay()                // CPU 2 passes
+		dg.CpuPlay()                // CPU 3 passes → table clears
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Len(t, resObj.CpuActions, 3)
@@ -194,7 +206,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.False(t, resObj.RevolutionActive)
@@ -213,9 +225,9 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		dg.PlayerPlay([]int{0, 1, 2, 3}) // play four 5s
+		_ = dg.PlayerPlay([]int{0, 1, 2, 3}) // play four 5s
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.RevolutionActive)
@@ -233,13 +245,143 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		players[2].SetRank(2)
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
-		dg.PlayerPlay([]int{0}) // human plays last card → countFinished=3 → rank=4
+		_ = dg.PlayerPlay([]int{0}) // human plays last card → countFinished=3 → rank=4
 
-		result := tdwp.Output(dg)
+		result := tdwp.Output(dg, nil)
 		var resObj controller.DaifugoWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		humanPlayer := resObj.Players[0]
 		assert.True(t, humanPlayer.IsFinished)
 		assert.Equal(t, 4, humanPlayer.Rank)
+	})
+
+	t.Run("success Output shows error message when lastErr is non-nil", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := domain.NewDaifugo(tc, players, domain.DaifugoConfig{})
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		testErr := errors.New("test error message")
+		result := tdwp.Output(dg, testErr)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, "test error message", resObj.Message)
+	})
+
+	t.Run("success Output elevenBack suitLocked tableIsSequence flags", func(t *testing.T) {
+		dg, _ := setupDGWebTest()
+		dg.SetElevenBackActive(true)
+		dg.SetSuitLocked(true, domain.CardDesignHeart)
+		dg.SetTableIsSequence(true)
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.ElevenBackActive)
+		assert.True(t, resObj.SuitLocked)
+		assert.Equal(t, "HEART", resObj.LockedSuit)
+		assert.True(t, resObj.TableIsSequence)
+	})
+
+	t.Run("success Output lockedSuit all suits", func(t *testing.T) {
+		suitTests := []struct {
+			suit     int
+			expected string
+		}{
+			{domain.CardDesignSpade, "SPADE"},
+			{domain.CardDesignClover, "CLOVER"},
+			{domain.CardDesignDiamond, "DIAMOND"},
+			{999, ""},
+		}
+		for _, st := range suitTests {
+			dg, _ := setupDGWebTest()
+			dg.SetSuitLocked(true, st.suit)
+			result := tdwp.Output(dg, nil)
+			var resObj controller.DaifugoWebOutput
+			err := json.Unmarshal([]byte(result), &resObj)
+			assert.NoError(t, err)
+			assert.Equal(t, st.expected, resObj.LockedSuit)
+		}
+	})
+
+	t.Run("success Output exchange actions in JSON", func(t *testing.T) {
+		dg, _ := setupDGWebTest()
+		dg.SetExchangeActions([]*domain.DaifugoExchangeAction{
+			{FromPlayerIdx: 0, ToPlayerIdx: 3, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, false)}},
+		})
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Len(t, resObj.ExchangeActions, 1)
+		assert.Equal(t, 0, resObj.ExchangeActions[0].FromPlayerIdx)
+		assert.Equal(t, 3, resObj.ExchangeActions[0].ToPlayerIdx)
+		assert.Len(t, resObj.ExchangeActions[0].Cards, 1)
+		assert.Equal(t, "SPADE", resObj.ExchangeActions[0].Cards[0].Design)
+	})
+
+	t.Run("success Output buildResultMessage with rank out of bounds", func(t *testing.T) {
+		dg, players := setupDGWebTest()
+		players[1].SetIsFinished(true)
+		players[1].SetRank(0) // out of bounds → skip in buildResultMessage
+		players[2].SetIsFinished(true)
+		players[2].SetRank(2)
+		players[3].SetIsFinished(true)
+		players[3].SetRank(3)
+		_ = dg.PlayerPlay([]int{0})
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Contains(t, resObj.Message, "ゲーム終了")
+		// CPU 1 with rank 0 should be skipped
+		assert.NotContains(t, resObj.Message, "CPU 1")
+	})
+
+	t.Run("success Output getCardObj nil card", func(t *testing.T) {
+		dg, _ := setupDGWebTest()
+		// Set exchange action with nil card to exercise getCardObj nil branch
+		dg.SetExchangeActions([]*domain.DaifugoExchangeAction{
+			{FromPlayerIdx: 0, ToPlayerIdx: 3, Cards: []*domain.Card{nil}},
+		})
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Len(t, resObj.ExchangeActions, 1)
+		assert.Nil(t, resObj.ExchangeActions[0].Cards[0])
+	})
+
+	t.Run("success Output getCardObjs nil input", func(t *testing.T) {
+		dg, _ := setupDGWebTest()
+		// HumanAction with nil PlayedCards → exercises getCardObjs nil branch
+		dg.SetHumanAction(&domain.DaifugoCpuAction{PlayerIdx: 0, PlayedCards: nil})
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.HumanAction)
+		assert.Nil(t, resObj.HumanAction.PlayedCards)
+	})
+
+	t.Run("success Output buildResultMessage with rank > 4", func(t *testing.T) {
+		dg, players := setupDGWebTest()
+		players[1].SetIsFinished(true)
+		players[1].SetRank(5) // out of bounds (> 4) → skip in buildResultMessage
+		players[2].SetIsFinished(true)
+		players[2].SetRank(2)
+		players[3].SetIsFinished(true)
+		players[3].SetRank(3)
+		_ = dg.PlayerPlay([]int{0})
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.NotContains(t, resObj.Message, "CPU 1")
 	})
 }

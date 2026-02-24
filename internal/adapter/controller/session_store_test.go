@@ -8,41 +8,14 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 )
 
-func TestSessionStore_GetCreatesOnce(t *testing.T) {
-	calls := 0
-	store := controller.NewSessionStore[int]()
-	defer store.Stop()
-	factory := func() int { calls++; return calls }
-
-	v1, ok1 := store.Get("session-a", factory)
-	if !ok1 {
-		t.Fatal("expected ok=true on first Get")
-	}
-	if v1 != 1 {
-		t.Errorf("want value 1, got %d", v1)
-	}
-
-	// Second Get for same session must reuse — factory must NOT be called again.
-	v2, ok2 := store.Get("session-a", factory)
-	if !ok2 {
-		t.Fatal("expected ok=true on second Get")
-	}
-	if v2 != 1 {
-		t.Errorf("want same value 1 on reuse, got %d", v2)
-	}
-	if calls != 1 {
-		t.Errorf("factory called %d times, want exactly 1", calls)
-	}
-}
-
 func TestSessionStore_DifferentSessionsAreIsolated(t *testing.T) {
 	store := controller.NewSessionStore[int]()
 	defer store.Stop()
 	counter := 0
 	factory := func() int { counter++; return counter }
 
-	v1, _ := store.Get("session-A", factory)
-	v2, _ := store.Get("session-B", factory)
+	v1, _, _ := store.GetWithLock("session-A", factory)
+	v2, _, _ := store.GetWithLock("session-B", factory)
 	if v1 == v2 {
 		t.Errorf("different sessions should get different values, both got %d", v1)
 	}
@@ -55,7 +28,7 @@ func TestSessionStore_TooLongID(t *testing.T) {
 	store := controller.NewSessionStore[int]()
 	defer store.Stop()
 	longID := strings.Repeat("x", controller.SessionMaxIDLen+1)
-	_, ok := store.Get(longID, func() int { return 1 })
+	_, _, ok := store.GetWithLock(longID, func() int { return 1 })
 	if ok {
 		t.Fatal("expected ok=false for sessionId longer than SessionMaxIDLen")
 	}
@@ -68,7 +41,7 @@ func TestSessionStore_ExactMaxIDLen(t *testing.T) {
 	store := controller.NewSessionStore[int]()
 	defer store.Stop()
 	exactID := strings.Repeat("x", controller.SessionMaxIDLen)
-	_, ok := store.Get(exactID, func() int { return 1 })
+	_, _, ok := store.GetWithLock(exactID, func() int { return 1 })
 	if !ok {
 		t.Fatal("expected ok=true for sessionId of exactly SessionMaxIDLen characters")
 	}
@@ -80,7 +53,7 @@ func TestSessionStore_MaxCount(t *testing.T) {
 
 	for i := 0; i < controller.SessionMaxCount; i++ {
 		id := fmt.Sprintf("s%d", i)
-		_, ok := store.Get(id, func() int { return i })
+		_, _, ok := store.GetWithLock(id, func() int { return i })
 		if !ok {
 			t.Fatalf("expected ok=true at i=%d (before limit)", i)
 		}
@@ -90,7 +63,7 @@ func TestSessionStore_MaxCount(t *testing.T) {
 	}
 
 	// One more should fail.
-	_, ok := store.Get("overflow", func() int { return 0 })
+	_, _, ok := store.GetWithLock("overflow", func() int { return 0 })
 	if ok {
 		t.Fatal("expected ok=false when store is at capacity")
 	}
@@ -100,7 +73,7 @@ func TestSessionStore_EvictExpiredDoesNotRemoveActiveSession(t *testing.T) {
 	store := controller.NewSessionStore[int]()
 	defer store.Stop()
 
-	store.Get("live", func() int { return 42 })
+	store.GetWithLock("live", func() int { return 42 })
 	if store.Len() != 1 {
 		t.Fatalf("expected 1 session, got %d", store.Len())
 	}

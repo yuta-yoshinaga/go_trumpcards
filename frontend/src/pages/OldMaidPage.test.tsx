@@ -286,6 +286,24 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 4000 });
   }, 10000);
 
+  it('disables buttons while loading', async () => {
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
+
+    let resolve!: (value: OldMaidResponse) => void;
+    const slowPromise = new Promise<OldMaidResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'ランダムに引く' }));
+
+    expect(screen.getByRole('button', { name: 'ランダムに引く' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+
+    resolve(humanTurnState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
+  });
+
   it('enables random draw button after CPU replay animation completes (Bug 1 regression)', async () => {
     // Final server state has currentTurn=0 (human's turn)
     const finalState: OldMaidResponse = {
@@ -333,5 +351,221 @@ describe('OldMaidPage', () => {
     // After all replay delays, the final state (currentTurn=0) must be applied
     // so the button is re-enabled for the human's next turn
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled(), { timeout: 4000 });
+  }, 10000);
+
+  it('shows error message when API call fails', async () => {
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  }, 10000);
+
+  it('clears error message on successful API call after failure', async () => {
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+
+    mockExec.mockReset();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
+    );
+  }, 10000);
+
+  it('shows JOKER label in status when lastDrawCard is JOKER', async () => {
+    const jokerDrawState: OldMaidResponse = {
+      ...cpuTurnState,
+      lastDrawCard: { design: 'JOKER', value: 0 },
+    };
+    mockExec.mockResolvedValue(jokerDrawState);
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1がCPU 2から1枚引きました \(JOKER\)/)).toBeInTheDocument());
+  });
+
+  it('shows status without card info when hasDrawn is true but lastDrawCard is null', async () => {
+    const noCardDrawState: OldMaidResponse = {
+      ...cpuTurnState,
+      lastDrawCard: null,
+      lastDiscardedPairs: 0,
+    };
+    mockExec.mockResolvedValue(noCardDrawState);
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1がCPU 2から1枚引きました$/)).toBeInTheDocument());
+    expect(screen.queryByText(/組捨てました/)).not.toBeInTheDocument();
+  });
+
+  it('shows overflow indicator when CPU player has more than 10 cards', async () => {
+    const overflowState: OldMaidResponse = {
+      ...humanTurnState,
+      nextDrawTargetIdx: 1,
+      players: [
+        { ...humanTurnState.players[0] },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 13, cards: [] }, // target player: selectable path
+        { id: 2, isHuman: false, isFinished: false, cardCount: 11, cards: [] }, // non-target: non-selectable path
+      ],
+    };
+    mockExec.mockResolvedValue(overflowState);
+    render(<OldMaidPage />);
+    await waitFor(() => {
+      expect(screen.getByText('+3')).toBeInTheDocument(); // 13-10=3
+      expect(screen.getByText('+1')).toBeInTheDocument(); // 11-10=1
+    });
+  });
+
+  it('shows single odd discarded card without pairing', async () => {
+    const stateWithOddDiscards: OldMaidResponse = {
+      ...humanTurnState,
+      lastDiscardedCards: [{ design: 'SPADE', value: 3 }],
+    };
+    mockExec.mockResolvedValue(stateWithOddDiscards);
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+  });
+
+  it('shows discarded pair count in CPU log when discardedPairs > 0', async () => {
+    const stateWithDiscardedPairs: OldMaidResponse = {
+      ...humanTurnState,
+      cpuActions: [{ drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 2, discardedCards: [] }],
+    };
+    mockExec.mockResolvedValue(stateWithDiscardedPairs);
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1がCPU 2から1枚引きました。2組捨てました/)).toBeInTheDocument());
+  });
+
+  it('replays two CPU actions covering non-last-action branches', async () => {
+    const twoCpuActionsState: OldMaidResponse = {
+      ...humanTurnState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 3,
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'JOKER', value: 0 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 3, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, cardCount: 1, cards: [] },
+      ],
+      humanAction: null,
+      cpuActions: [
+        { drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 0, discardedCards: [] },
+        { drawPlayerIdx: 2, drawFromIdx: 0, drawnCard: null, discardedPairs: 0, discardedCards: [] },
+      ],
+      currentTurn: 0,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 1,
+      lastDrawFromIdx: 2,
+      lastDrawCard: null,
+      lastDiscardedPairs: 0,
+    };
+
+    mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(twoCpuActionsState);
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
+
+    fireEvent.click(screen.getByText('ランダムに引く'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+
+    // After CPU replay with 2 actions, the CPU action log should appear
+    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 6000 });
+  }, 15000);
+
+  it('shows replay state when humanAction.discardedCards is undefined', async () => {
+    const stateWithUndefinedDiscards: OldMaidResponse = {
+      ...humanTurnState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 3,
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'JOKER', value: 0 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 3, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, cardCount: 1, cards: [] },
+      ],
+      currentTurn: 0,
+      nextDrawTargetIdx: 1,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 1,
+      lastDrawFromIdx: 2,
+      lastDrawCard: null,
+      lastDiscardedPairs: 0,
+      cpuActions: [{ drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 0 }],
+      humanAction: {
+        drawPlayerIdx: 0,
+        drawFromIdx: 1,
+        drawnCard: { design: 'HEART', value: 3 },
+        discardedPairs: 0,
+      },
+    };
+
+    mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithUndefinedDiscards);
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
+
+    fireEvent.click(screen.getByText('ランダムに引く'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+
+    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 4000 });
+  }, 10000);
+
+  it('goes directly to CPU replay when humanAction is null', async () => {
+    const directCpuState: OldMaidResponse = {
+      ...humanTurnState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 3,
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+            { design: 'JOKER', value: 0 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 3, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, cardCount: 1, cards: [] },
+      ],
+      humanAction: null,
+      cpuActions: [{ drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 0, discardedCards: [] }],
+      currentTurn: 0,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 1,
+      lastDrawFromIdx: 2,
+      lastDrawCard: null,
+      lastDiscardedPairs: 0,
+    };
+
+    mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(directCpuState);
+    render(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
+
+    fireEvent.click(screen.getByText('ランダムに引く'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+
+    // After CPU replay, the CPU action log should appear
+    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 4000 });
   }, 10000);
 });

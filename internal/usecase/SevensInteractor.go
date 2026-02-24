@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
@@ -15,21 +16,20 @@ type SevensInteractorIF interface {
 
 // SevensInteractor 7並べインタラクタークラス
 type SevensInteractor struct {
-	s  *domain.Sevens
+	s  interfaces.SevensGame
 	sp presenter.SevensPresenter
 }
 
 // NewSevensInteractor コンストラクタ
-func NewSevensInteractor(sp presenter.SevensPresenter) *SevensInteractor {
-	config := domain.DefaultSevensConfig()
-	players := []*domain.SevensPlayer{
-		domain.NewSevensPlayer(true),  // player 0: 人間
-		domain.NewSevensPlayer(false), // player 1: CPU
-		domain.NewSevensPlayer(false), // player 2: CPU
-		domain.NewSevensPlayer(false), // player 3: CPU
+func NewSevensInteractor(s interfaces.SevensGame, sp presenter.SevensPresenter) *SevensInteractor {
+	if s == nil {
+		panic("SevensInteractor: s must not be nil")
+	}
+	if sp == nil {
+		panic("SevensInteractor: sp must not be nil")
 	}
 	return &SevensInteractor{
-		s:  domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config),
+		s:  s,
 		sp: sp,
 	}
 }
@@ -56,45 +56,45 @@ func (si *SevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, 
 	si.s = domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
 	si.s.Reset()
 	si.runCpuTurns()
-	return si.sp.Output(si.s)
+	return si.sp.Output(si.s, nil)
 }
 
 // Reset ゲーム初期化
 func (si *SevensInteractor) Reset() string {
 	si.s.Reset()
 	si.runCpuTurns()
-	return si.sp.Output(si.s)
+	return si.sp.Output(si.s, nil)
 }
 
 // Play 人間プレイヤーがカードを出す (または パスする)
 // idx: 出すカードのインデックス。-1 の場合はパス。
 func (si *SevensInteractor) Play(idx int) string {
 	if si.s.GetGameEndFlag() {
-		return si.sp.Output(si.s)
+		return si.sp.Output(si.s, nil)
 	}
 	if !si.s.IsHumanTurn() {
-		return si.sp.Output(si.s)
+		return si.sp.Output(si.s, nil)
 	}
-	si.s.PlayerPlay(idx)
-	if !si.s.GetGameEndFlag() {
+	err := si.s.PlayerPlay(idx)
+	if err == nil && !si.s.GetGameEndFlag() {
 		si.runCpuTurns()
 	}
-	return si.sp.Output(si.s)
+	return si.sp.Output(si.s, err)
 }
 
 // PlayJoker 人間プレイヤーがジョーカーを指定ポジションに出す
 func (si *SevensInteractor) PlayJoker(cardIdx, targetSuit, targetValue int) string {
 	if si.s.GetGameEndFlag() {
-		return si.sp.Output(si.s)
+		return si.sp.Output(si.s, nil)
 	}
 	if !si.s.IsHumanTurn() {
-		return si.sp.Output(si.s)
+		return si.sp.Output(si.s, nil)
 	}
-	si.s.PlayerPlayJoker(cardIdx, targetSuit, targetValue)
-	if !si.s.GetGameEndFlag() {
+	err := si.s.PlayerPlayJoker(cardIdx, targetSuit, targetValue)
+	if err == nil && !si.s.GetGameEndFlag() {
 		si.runCpuTurns()
 	}
-	return si.sp.Output(si.s)
+	return si.sp.Output(si.s, err)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

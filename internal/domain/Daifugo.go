@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -34,9 +35,9 @@ const DaifugoJokerStrength = 16
 
 // ランク定数
 const (
-	DaifugoRankDaifugo  = 1 // 大富豪
-	DaifugoRankFugo     = 2 // 富豪
-	DaifugoRankHeimin   = 3 // 平民
+	DaifugoRankDaifugo   = 1 // 大富豪
+	DaifugoRankFugo      = 2 // 富豪
+	DaifugoRankHeimin    = 3 // 平民
 	DaifugoRankDaihinmin = 4 // 大貧民
 )
 
@@ -608,10 +609,12 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 
 // PlayerPlay 人間プレイヤーがカードを出す (または パスする)
 // indices: 出すカードのインデックス。空の場合はパス。
-// 成功した場合 true を返す。
-func (d *Daifugo) PlayerPlay(indices []int) bool {
-	if d.gameEndFlag || !d.players[d.currentTurn].GetIsHuman() {
-		return false
+func (d *Daifugo) PlayerPlay(indices []int) error {
+	if d.gameEndFlag {
+		return ErrGameEnded
+	}
+	if !d.players[d.currentTurn].GetIsHuman() {
+		return ErrNotHumanTurn
 	}
 	// 人間のターン開始時にCPU行動履歴をリセット
 	d.cpuActions = nil
@@ -622,7 +625,7 @@ func (d *Daifugo) PlayerPlay(indices []int) bool {
 		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
 		d.advanceTurn()
 		d.checkPassClear()
-		return true
+		return nil
 	}
 
 	// 重複インデックスを除去 (重複があると isPlayable の枚数チェックが狂うため)
@@ -645,12 +648,12 @@ func (d *Daifugo) PlayerPlay(indices []int) bool {
 	for i, idx := range indices {
 		card := player.GetCard(idx)
 		if card == nil {
-			return false
+			return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", idx))
 		}
 		selectedCards[i] = card
 	}
 	if !d.isPlayable(selectedCards) {
-		return false
+		return NewDomainError(ErrInvalidPlay, "selected cards cannot be played")
 	}
 
 	// スート縛り更新 (場のカードがある場合、出す前にチェック)
@@ -688,7 +691,7 @@ func (d *Daifugo) PlayerPlay(indices []int) bool {
 			d.advanceTurn()
 		}
 	}
-	return true
+	return nil
 }
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行
@@ -918,11 +921,9 @@ func (d *Daifugo) findBestSequencePlay(player *DaifugoPlayer) []int {
 						lastStr = targetStr
 						sci++
 						found = true
-						break
-					} else if suitCards[sci].strength > targetStr {
-						break
 					}
-					sci++
+					// suitCards are in ascending strength order, so once strength >= targetStr, stop
+					break
 				}
 				if !found {
 					// ジョーカーで埋める
@@ -1010,3 +1011,21 @@ func (d *Daifugo) GetTableIsSequence() bool { return d.tableIsSequence }
 
 // GetExchangeActions カード交換記録取得
 func (d *Daifugo) GetExchangeActions() []*DaifugoExchangeAction { return d.exchangeActions }
+
+// SetElevenBackActive 11バック設定（テスト用）
+func (d *Daifugo) SetElevenBackActive(active bool) { d.elevenBackActive = active }
+
+// SetSuitLocked スート縛り設定（テスト用）
+func (d *Daifugo) SetSuitLocked(locked bool, suit int) {
+	d.suitLocked = locked
+	d.lockedSuit = suit
+}
+
+// SetTableIsSequence 階段フラグ設定（テスト用）
+func (d *Daifugo) SetTableIsSequence(seq bool) { d.tableIsSequence = seq }
+
+// SetExchangeActions カード交換記録設定（テスト用）
+func (d *Daifugo) SetExchangeActions(actions []*DaifugoExchangeAction) { d.exchangeActions = actions }
+
+// SetHumanAction 人間の行動設定（テスト用）
+func (d *Daifugo) SetHumanAction(action *DaifugoCpuAction) { d.humanAction = action }

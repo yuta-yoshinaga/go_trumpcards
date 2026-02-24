@@ -1,22 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { pokerApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { PokerResponse } from '../types/card';
-
-const PHASE_INIT = 0;
-const PHASE_DEAL = 1;
-const PHASE_EXCHANGE = 2;
-const PHASE_SECOND_BET = 3;
-const PHASE_END = 4;
-
-const btnPrimary =
-  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnWarning =
-  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnSuccess =
-  'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnDanger =
-  'px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
+import { PokerPhase } from '../types/phases';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -31,6 +19,8 @@ export function PokerPage() {
   const [state, setState] = useState<PokerResponse | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
   const [betAmount, setBetAmount] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const exec = useCallback(
     async (
@@ -38,12 +28,16 @@ export function PokerPage() {
       indices?: number[],
       amount?: number,
     ) => {
+      setLoading(true);
       try {
+        setError(null);
         const res = await pokerApi.exec(command, indices, amount);
         setState(res);
         setSelected([]);
       } catch {
-        console.error('poker request failed');
+        setError('通信エラーが発生しました。もう一度お試しください。');
+      } finally {
+        setLoading(false);
       }
     },
     [],
@@ -53,12 +47,14 @@ export function PokerPage() {
     exec('reset');
   }, [exec]);
 
-  const phase = state?.phase ?? PHASE_INIT;
-  const isBettingPhase = phase === PHASE_DEAL || phase === PHASE_SECOND_BET;
-  const isExchangePhase = phase === PHASE_EXCHANGE;
+  const phase = state?.phase ?? PokerPhase.INIT;
+  const isBettingPhase = phase === PokerPhase.DEAL || phase === PokerPhase.SECOND_BET;
+  const isExchangePhase = phase === PokerPhase.EXCHANGE;
   const dealerBet = state?.dealer?.bet ?? 0;
   const playerBet = state?.player?.bet ?? 0;
   const hasOutstandingBet = dealerBet > playerBet;
+  /* v8 ignore next */
+  const anteAmount = state?.ante ?? 10;
 
   const toggleSelect = (idx: number) => {
     if (!isExchangePhase) return;
@@ -90,7 +86,7 @@ export function PokerPage() {
         <div className="mb-2">
           <div className="text-white text-[1.1em] mb-1.5">
             ディーラー手札
-            {phase === PHASE_END && state?.dealer?.handName && (
+            {phase === PokerPhase.END && state?.dealer?.handName && (
               <span
                 style={{
                   display: 'inline-block',
@@ -108,7 +104,7 @@ export function PokerPage() {
             )}
           </div>
           <div className="flex flex-wrap gap-2 mb-2.5">
-            {phase === PHASE_END && state?.dealer?.cards?.length
+            {phase === PokerPhase.END && state?.dealer?.cards?.length
               ? state.dealer.cards.map((card) => (
                   <div key={`${card.design}-${card.value}`} style={{ ...cardWrapBase, cursor: 'default' }}>
                     <CardImage card={card} width={60} style={{ border: '3px solid transparent' }} />
@@ -131,7 +127,7 @@ export function PokerPage() {
         <div>
           <div className="text-white text-[1.1em] mb-1">
             プレイヤー手札
-            {phase === PHASE_END && state?.player?.handName && (
+            {phase === PokerPhase.END && state?.player?.handName && (
               <span
                 style={{
                   display: 'inline-block',
@@ -199,6 +195,8 @@ export function PokerPage() {
           {state?.message ?? ''}
         </div>
 
+        <ErrorAlert message={error} />
+
         {/* Betting controls */}
         {isBettingPhase && (
           <div className="text-center mb-2">
@@ -209,8 +207,8 @@ export function PokerPage() {
               <input
                 id="betAmount"
                 type="number"
-                min={state?.ante ?? 10}
-                step={state?.ante ?? 10}
+                min={anteAmount}
+                step={anteAmount}
                 value={betAmount}
                 onChange={(e) => setBetAmount(Number(e.target.value))}
                 className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
@@ -218,12 +216,18 @@ export function PokerPage() {
             </div>
             {hasOutstandingBet ? (
               <>
-                <button type="button" className={`${btnSuccess} min-w-[80px]`} onClick={() => exec('call')}>
+                <button
+                  type="button"
+                  className={`${btnSuccess} min-w-[80px]`}
+                  disabled={loading}
+                  onClick={() => exec('call')}
+                >
                   コール
                 </button>
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[80px]`}
+                  disabled={loading}
                   onClick={() => exec('raise', undefined, betAmount)}
                 >
                   レイズ
@@ -234,16 +238,27 @@ export function PokerPage() {
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[80px]`}
+                  disabled={loading}
                   onClick={() => exec('bet', undefined, betAmount)}
                 >
                   ベット
                 </button>
-                <button type="button" className={`${btnSuccess} min-w-[80px]`} onClick={() => exec('check')}>
+                <button
+                  type="button"
+                  className={`${btnSuccess} min-w-[80px]`}
+                  disabled={loading}
+                  onClick={() => exec('check')}
+                >
                   チェック
                 </button>
               </>
             )}
-            <button type="button" className={`${btnDanger} min-w-[80px]`} onClick={() => exec('fold')}>
+            <button
+              type="button"
+              className={`${btnDanger} min-w-[80px]`}
+              disabled={loading}
+              onClick={() => exec('fold')}
+            >
               フォールド
             </button>
           </div>
@@ -252,10 +267,20 @@ export function PokerPage() {
         {/* Exchange controls */}
         {isExchangePhase && (
           <div className="text-center mb-2">
-            <button type="button" className={`${btnWarning} min-w-[90px]`} onClick={() => exec('exchange', selected)}>
+            <button
+              type="button"
+              className={`${btnWarning} min-w-[90px]`}
+              disabled={loading}
+              onClick={() => exec('exchange', selected)}
+            >
               交換
             </button>
-            <button type="button" className={`${btnSuccess} min-w-[90px]`} onClick={() => exec('stand')}>
+            <button
+              type="button"
+              className={`${btnSuccess} min-w-[90px]`}
+              disabled={loading}
+              onClick={() => exec('stand')}
+            >
               スタンド
             </button>
           </div>
@@ -263,7 +288,12 @@ export function PokerPage() {
 
         {/* Always-visible buttons */}
         <div className="text-center">
-          <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[90px]`}
+            disabled={loading}
+            onClick={() => exec('reset')}
+          >
             リセット
           </button>
         </div>

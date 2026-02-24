@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { Card, DaifugoAction, DaifugoExchangeAction, DaifugoPlayerData, DaifugoResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
-
-const btnPrimary =
-  'px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnWarning =
-  'px-3 py-1.5 text-sm font-medium text-gray-900 bg-yellow-400 rounded hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
-const btnSuccess =
-  'px-3 py-1.5 text-sm font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
 
 const playerAreaBaseClass =
   'bg-black/35 rounded-[10px] p-[10px] border-2 border-transparent flex-[1_1_180px] min-w-[150px]';
@@ -24,13 +19,13 @@ function rankName(rank: number): string {
       return '平民';
     case 4:
       return '大貧民';
+    /* v8 ignore next 2 */
     default:
       return '';
   }
 }
 
-function cardLabel(card: Card | null): string {
-  if (!card) return '';
+function cardLabel(card: Card): string {
   return `${card.design} ${card.value}`;
 }
 
@@ -214,14 +209,20 @@ function ExchangeLog({
 export function DaifugoPage() {
   const [state, setState] = useState<DaifugoResponse | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const exec = useCallback(async (command: 'reset' | 'play', indices?: number[]) => {
+    setLoading(true);
     try {
+      setError(null);
       const res = await daifugoApi.exec(command, indices);
       setState(res);
       setSelectedIndices([]);
     } catch {
-      console.error('daifugo request failed');
+      setError('通信エラーが発生しました。もう一度お試しください。');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -309,15 +310,22 @@ export function DaifugoPage() {
           </div>
         )}
 
+        <ErrorAlert message={error} />
+
         {/* Buttons */}
         <div className="text-center">
-          <button type="button" className={`${btnPrimary} min-w-[90px]`} onClick={() => exec('reset')}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[90px]`}
+            disabled={loading}
+            onClick={() => exec('reset')}
+          >
             リセット
           </button>
           <button
             type="button"
             className={`${btnWarning} min-w-[90px]`}
-            disabled={!isHumanTurn || state.gameEndFlag}
+            disabled={loading || !isHumanTurn || state.gameEndFlag}
             onClick={() => exec('play', [])}
           >
             パス
@@ -325,7 +333,7 @@ export function DaifugoPage() {
           <button
             type="button"
             className={`${btnSuccess} min-w-[120px]`}
-            disabled={!isHumanTurn || state.gameEndFlag || selectedIndices.length === 0}
+            disabled={loading || !isHumanTurn || state.gameEndFlag || selectedIndices.length === 0}
             onClick={() =>
               exec(
                 'play',

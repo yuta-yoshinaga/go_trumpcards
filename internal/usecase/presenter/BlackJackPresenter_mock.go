@@ -1,9 +1,8 @@
 package presenter
 
 import (
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-
 	"github.com/stretchr/testify/mock"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // MockBlackJackPresenter ブラックジャックプレゼンターモック
@@ -12,7 +11,7 @@ type MockBlackJackPresenter struct {
 }
 
 // Output モック
-func (_m *MockBlackJackPresenter) Output(bj *domain.BlackJack) string {
-	ret := _m.Called()
+func (_m *MockBlackJackPresenter) Output(bj interfaces.BlackJackGame, lastErr error) string {
+	ret := _m.Called(bj, lastErr)
 	return ret.Get(0).(string)
 }

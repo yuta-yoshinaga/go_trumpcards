@@ -1,9 +1,12 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 // BlackJackCuiPresenter ブラックジャックCUIプレゼンタークラス
@@ -16,35 +19,37 @@ func NewBlackJackCuiPresenter() *BlackJackCuiPresenter {
 }
 
 // Output ゲーム状態を出力
-func (bjp *BlackJackCuiPresenter) Output(bj *domain.BlackJack) string {
+func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr error) string {
 	player := bj.GetPlayer()
 	dealer := bj.GetDealer()
-	res := "----------\n"
+	var b strings.Builder
+
+	b.WriteString("----------\n")
 
 	// チップ情報
-	res += "chips: player=" + strconv.Itoa(player.GetChips()) + " dealer=" + strconv.Itoa(dealer.GetChips()) + "\n"
+	fmt.Fprintf(&b, "chips: player=%d dealer=%d\n", player.GetChips(), dealer.GetChips())
 
 	// フェーズ情報
-	res += "phase: " + bjp.phaseStr(bj.GetPhase()) + "\n"
+	fmt.Fprintf(&b, "phase: %s\n", bjp.phaseStr(bj.GetPhase()))
 
 	// dealer
-	res += "dealer score "
+	b.WriteString("dealer score ")
 	if bj.GetGameEndFlag() {
-		res += strconv.Itoa(dealer.GetScore()) + "\n"
+		fmt.Fprintf(&b, "%d\n", dealer.GetScore())
 		for i := 0; i < dealer.GetCardsSize(); i++ {
 			if i != 0 {
-				res += ","
+				b.WriteString(",")
 			}
-			res += bjp.GetCardStr(dealer.GetCard(i))
+			b.WriteString(bjp.GetCardStr(dealer.GetCard(i)))
 		}
-		res += "\n"
+		b.WriteString("\n")
 	} else {
-		res += "\n"
+		b.WriteString("\n")
 		if dealer.GetCardsSize() > 0 {
-			res += bjp.GetCardStr(dealer.GetCard(0)) + ",\n"
+			fmt.Fprintf(&b, "%s,\n", bjp.GetCardStr(dealer.GetCard(0)))
 		}
 	}
-	res += "----------\n"
+	b.WriteString("----------\n")
 
 	// player hands
 	hands := bj.GetPlayerHands()
@@ -56,42 +61,42 @@ func (bjp *BlackJackCuiPresenter) Output(bj *domain.BlackJack) string {
 		if i == bj.GetCurrentHandIdx() && !bj.GetGameEndFlag() {
 			prefix += " (*)"
 		}
-		res += prefix + " score " + strconv.Itoa(hand.GetScore()) + " bet=" + strconv.Itoa(hand.GetBet())
+		fmt.Fprintf(&b, "%s score %d bet=%d", prefix, hand.GetScore(), hand.GetBet())
 		if hand.IsDoubled() {
-			res += " [DD]"
+			b.WriteString(" [DD]")
 		}
 		if hand.IsBusted() {
-			res += " [BUST]"
+			b.WriteString(" [BUST]")
 		}
 		if hand.IsStood() {
-			res += " [STAND]"
+			b.WriteString(" [STAND]")
 		}
 		if hand.IsBlackJack() {
-			res += " [BJ]"
+			b.WriteString(" [BJ]")
 		}
-		res += "\n"
+		b.WriteString("\n")
 		for j := 0; j < hand.GetCardsSize(); j++ {
 			if j != 0 {
-				res += ","
+				b.WriteString(",")
 			}
-			res += bjp.GetCardStr(hand.GetCard(j))
+			b.WriteString(bjp.GetCardStr(hand.GetCard(j)))
 		}
-		res += "\n"
+		b.WriteString("\n")
 	}
 
-	res += "----------\n"
+	b.WriteString("----------\n")
 
 	// インシュランス情報
 	if bj.GetInsuranceBet() > 0 {
-		res += "insurance bet: " + strconv.Itoa(bj.GetInsuranceBet()) + "\n"
+		fmt.Fprintf(&b, "insurance bet: %d\n", bj.GetInsuranceBet())
 	}
 	if bj.IsInsuranceAvailable() && bj.GetPhase() == domain.BJPhaseInsurance {
-		res += "Insurance available!\n"
+		b.WriteString("Insurance available!\n")
 	}
 
 	// エラーメッセージ（ベット失敗等）
-	if errMsg := bj.GetLastError(); errMsg != "" {
-		res += errMsg + "\n"
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
 	}
 
 	if bj.GetGameEndFlag() {
@@ -99,30 +104,30 @@ func (bjp *BlackJackCuiPresenter) Output(bj *domain.BlackJack) string {
 			for i, hand := range hands {
 				_ = hand
 				result := bj.GameJudgmentForHand(i)
-				res += "hand " + strconv.Itoa(i+1) + ": "
+				fmt.Fprintf(&b, "hand %d: ", i+1)
 				switch result {
 				case domain.GameResultDraw:
-					res += "It is a draw."
+					b.WriteString("It is a draw.")
 				case domain.GameResultWin:
-					res += "You are the winner."
+					b.WriteString("You are the winner.")
 				case domain.GameResultLose:
-					res += "It is your loss."
+					b.WriteString("It is your loss.")
 				}
-				res += "\n"
+				b.WriteString("\n")
 			}
 		} else {
 			switch bj.GameJudgment() {
 			case domain.GameResultDraw:
-				res += "It is a draw.\n"
+				b.WriteString("It is a draw.\n")
 			case domain.GameResultWin:
-				res += "You are the winner.\n"
+				b.WriteString("You are the winner.\n")
 			case domain.GameResultLose:
-				res += "It is your loss.\n"
+				b.WriteString("It is your loss.\n")
 			}
 		}
-		res += "\n----------\n"
+		b.WriteString("\n----------\n")
 	}
-	return res
+	return b.String()
 }
 
 // phaseStr フェーズ文字列

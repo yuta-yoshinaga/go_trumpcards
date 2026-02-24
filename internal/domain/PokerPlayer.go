@@ -32,9 +32,9 @@ var PokerHandNames = []string{
 
 // PokerPlayer ポーカープレイヤークラス
 type PokerPlayer struct {
-	Player           // 親クラス
-	handRank int     // ハンドランク
-	chips    int     // チップ
+	Player       // 親クラス
+	handRank int // ハンドランク
+	chips    int // チップ
 }
 
 // NewPokerPlayer コンストラクタ
@@ -137,16 +137,6 @@ func (pp *PokerPlayer) checkStraight(sortedValues []int) bool {
 		}
 	}
 	if isNormal {
-		return true
-	}
-
-	// A-2-3-4-5 のローエーストレート (value: 1,2,3,4,5)
-	if len(sortedValues) == 5 &&
-		sortedValues[0] == 1 &&
-		sortedValues[1] == 2 &&
-		sortedValues[2] == 3 &&
-		sortedValues[3] == 4 &&
-		sortedValues[4] == 5 {
 		return true
 	}
 
