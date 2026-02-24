@@ -28,6 +28,9 @@ func main() {
 	case "sevens":
 		sevens := ui.NewSevensCui()
 		sevens.Exec()
+	case "doubt":
+		doubt := ui.NewDoubtCui()
+		doubt.Exec()
 	case "web":
 		w := web.NewTrumpCardsWeb()
 		w.Exec()
