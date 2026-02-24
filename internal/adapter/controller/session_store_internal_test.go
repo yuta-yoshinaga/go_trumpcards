@@ -9,7 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestGetWithLock_DoubleCheck_ExistingEntry exercises the branch at line 106-108.
+// TestGetWithLock_DoubleCheck_ExistingEntry exercises the branch at line 73-75 where,
+// after releasing the global lock to run factory(), another goroutine has
+// already inserted an entry for the same ID.
 func TestGetWithLock_DoubleCheck_ExistingEntry(t *testing.T) {
 	s := &SessionStore[int]{
 		entries: make(map[string]*sessionEntry[int]),
@@ -31,7 +33,9 @@ func TestGetWithLock_DoubleCheck_ExistingEntry(t *testing.T) {
 	assert.Equal(t, existingMu, mu)
 }
 
-// TestGetWithLock_DoubleCheck_AtCapacity exercises the branch at line 110-111.
+// TestGetWithLock_DoubleCheck_AtCapacity exercises the branch at line 77-79 where,
+// after releasing the global lock to run factory(), other goroutines fill the
+// store to capacity.
 func TestGetWithLock_DoubleCheck_AtCapacity(t *testing.T) {
 	s := &SessionStore[int]{
 		entries: make(map[string]*sessionEntry[int]),
