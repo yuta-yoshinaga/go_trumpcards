@@ -97,7 +97,16 @@ func (cui *DoubtCui) handleDoubtWindow() {
 	}
 
 	cpuDoubters := cui.game.GetCpuDoubters()
-	humanCanDoubt := lastAction.PlayerIdx != 0 // 人間はカード出しプレイヤーをダウトできない
+
+	// 人間プレイヤーのインデックスを動的に取得
+	humanIdx := -1
+	for i := 0; i < cui.game.GetPlayerCnt(); i++ {
+		if cui.game.GetPlayer(i).GetIsHuman() {
+			humanIdx = i
+			break
+		}
+	}
+	humanCanDoubt := humanIdx >= 0 && lastAction.PlayerIdx != humanIdx // 人間はカード出しプレイヤーをダウトできない
 
 	var allDoubters []int
 
@@ -108,7 +117,7 @@ func (cui *DoubtCui) handleDoubtWindow() {
 			trimmed := strings.TrimSpace(input)
 			fields := strings.Fields(trimmed)
 			if len(fields) > 0 && (fields[0] == "d" || fields[0] == "doubt") {
-				allDoubters = append(allDoubters, 0) // 人間がダウト
+				allDoubters = append(allDoubters, humanIdx) // 人間がダウト
 			}
 		case <-time.After(10 * time.Second):
 			fmt.Println("タイムアウト: ダウトをスキップします")

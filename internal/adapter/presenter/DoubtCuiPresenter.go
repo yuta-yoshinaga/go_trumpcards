@@ -121,8 +121,13 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 		currentTurn := d.GetCurrentTurn()
 		phase := d.GetPhase()
 		if phase == domain.DoubtPhaseDoubt {
-			fmt.Fprintf(&b, "ダウトフェーズ: %sのプレイにダウトしますか？\n",
-				p.getPlayerName(d, d.GetLastAction().PlayerIdx))
+			lastAct := d.GetLastAction()
+			if lastAct != nil {
+				fmt.Fprintf(&b, "ダウトフェーズ: %sのプレイにダウトしますか？\n",
+					p.getPlayerName(d, lastAct.PlayerIdx))
+			} else {
+				b.WriteString("ダウトフェーズ\n")
+			}
 			b.WriteString("d <idx...>・・・ダウト / s・・・スキップ\n")
 		} else {
 			fmt.Fprintf(&b, "手番: %s\n", p.getPlayerName(d, currentTurn))

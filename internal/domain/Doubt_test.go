@@ -307,7 +307,9 @@ func TestDoubt_CpuPlay(t *testing.T) {
 		t.Fatal("CPU never played without ending game after 1000 attempts")
 	})
 
-	// Cover the isBluff=false (honest play) branch of CpuPlay.
+	// Cover the intentBluff=false (honest play) branch of CpuPlay.
+	// IsBluff is now based on actual card matching: false when claimed value equals all played cards.
+	// This happens when intentBluff=false AND numCards=1 (single card always matches its own value).
 	t.Run("CPU plays honestly at least once", func(t *testing.T) {
 		for attempt := 0; attempt < 1000; attempt++ {
 			game, players := makeDoubtGame()
@@ -320,7 +322,7 @@ func TestDoubt_CpuPlay(t *testing.T) {
 
 			cpuActions := game.GetCpuActions()
 			if len(cpuActions) > 0 && !cpuActions[0].IsBluff {
-				// isBluff=false branch was hit
+				// actualIsBluff=false branch was hit (all played cards match claimed value)
 				return // success
 			}
 		}

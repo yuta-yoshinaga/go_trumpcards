@@ -214,7 +214,7 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 
 	t.Run("doubt phase shows doubt prompt", func(t *testing.T) {
 		game, _ := makeDoubtGameForPresenter()
-		// Set up last action so the doubt phase output doesn't nil-panic
+		// Set up last action so the player name is shown
 		game.SetLastAction(&domain.DoubtAction{
 			PlayerIdx:    1,
 			ClaimedValue: 3,
@@ -227,6 +227,17 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ダウトフェーズ")
 		assert.Contains(t, result, "d <idx...>")
 		assert.Contains(t, result, "s・・・スキップ")
+	})
+
+	t.Run("doubt phase with nil lastAction shows generic message", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetPhase(domain.DoubtPhaseDoubt)
+		// lastAction is nil
+
+		result := p.Output(game, nil)
+		assert.Contains(t, result, "ダウトフェーズ")
+		assert.Contains(t, result, "d <idx...>")
+		assert.NotContains(t, result, "のプレイにダウト")
 	})
 
 	t.Run("getPlayerName for out-of-range index returns 不明", func(t *testing.T) {

@@ -183,12 +183,21 @@ func (d *Doubt) CpuPlay() {
 	d.tableCards = append(d.tableCards, played...)
 
 	// 40% の確率でブラフ
-	isBluff := rand.Float64() < 0.4
+	intentBluff := rand.Float64() < 0.4
 	var claimedValue int
-	if isBluff {
+	if intentBluff {
 		claimedValue = rand.Intn(13) + 1
 	} else {
 		claimedValue = played[0].GetValue()
+	}
+
+	// IsBluff は宣言値と実際のカードが一致しないかで判定 (checkLying と一致させる)
+	isActuallyBluff := false
+	for _, card := range played {
+		if card.GetValue() != claimedValue {
+			isActuallyBluff = true
+			break
+		}
 	}
 
 	d.lastAction = &DoubtAction{
@@ -201,7 +210,7 @@ func (d *Doubt) CpuPlay() {
 		PlayerIdx:    playerIdx,
 		ClaimedValue: claimedValue,
 		CardCount:    numCards,
-		IsBluff:      isBluff,
+		IsBluff:      isActuallyBluff,
 	}
 	d.cpuActions = append(d.cpuActions, cpuAction)
 
