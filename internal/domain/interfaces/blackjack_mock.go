@@ -117,11 +117,11 @@ func (_m *MockBlackJackGame) IsInsuranceAvailable() bool {
 // GameJudgmentForHand モック
 func (_m *MockBlackJackGame) GameJudgmentForHand(handIdx int) domain.GameResult {
 	ret := _m.Called(handIdx)
-	return ret.Get(0).(domain.GameResult)
+	return domain.GameResult(ret.Int(0))
 }
 
 // GameJudgment モック
 func (_m *MockBlackJackGame) GameJudgment() domain.GameResult {
 	ret := _m.Called()
-	return ret.Get(0).(domain.GameResult)
+	return domain.GameResult(ret.Int(0))
 }

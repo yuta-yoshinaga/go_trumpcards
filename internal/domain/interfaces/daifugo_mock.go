@@ -134,7 +134,10 @@ func (_m *MockDaifugoGame) GetCurrentTurn() int {
 // GetConfig モック
 func (_m *MockDaifugoGame) GetConfig() domain.DaifugoConfig {
 	ret := _m.Called()
-	return ret.Get(0).(domain.DaifugoConfig)
+	if val, ok := ret.Get(0).(domain.DaifugoConfig); ok {
+		return val
+	}
+	return domain.DaifugoConfig{}
 }
 
 // GetPassCount モック
