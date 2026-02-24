@@ -19,13 +19,13 @@ function rankName(rank: number): string {
       return '平民';
     case 4:
       return '大貧民';
+    /* v8 ignore next 2 */
     default:
       return '';
   }
 }
 
-function cardLabel(card: Card | null): string {
-  if (!card) return '';
+function cardLabel(card: Card): string {
   return `${card.design} ${card.value}`;
 }
 

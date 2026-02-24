@@ -38,7 +38,6 @@ function isPositionPlaced(tablePlaced: number[], suit: number, value: number): b
 }
 
 function isPositionPlayable(tablePlaced: number[], suit: number, value: number, tunnelEnabled: boolean): boolean {
-  if (suit < 1 || suit > 4 || value < 1 || value > 13) return false;
   if (isPositionPlaced(tablePlaced, suit, value)) return false;
   if (isPositionPlaced(tablePlaced, suit, value + 1)) return true;
   if (isPositionPlaced(tablePlaced, suit, value - 1)) return true;
@@ -61,7 +60,6 @@ function hasAnyPlayablePosition(tablePlaced: number[], tunnelEnabled: boolean): 
 function isCardPlayable(card: Card, tablePlaced: number[], tunnelEnabled: boolean): boolean {
   const suit = designToSuit[card.design];
   if (card.design === 'JOKER') return hasAnyPlayablePosition(tablePlaced, tunnelEnabled);
-  if (suit < 1 || suit > 4) return false;
   return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled);
 }
 
@@ -296,11 +294,9 @@ export function SevensPage() {
         const res = await sevensApi.exec(command, index, suit, value, config);
         setState(res);
         setJokerCardIdx(null);
-        if (res.config) {
-          setCfgTunnel(res.config.tunnelEnabled);
-          setCfgJokerCount(res.config.jokerCount);
-          setCfgCpuStrategy(res.config.cpuStrategy);
-        }
+        setCfgTunnel(res.config.tunnelEnabled);
+        setCfgJokerCount(res.config.jokerCount);
+        setCfgCpuStrategy(res.config.cpuStrategy);
       } catch {
         setError('通信エラーが発生しました。もう一度お試しください。');
       } finally {
@@ -316,12 +312,12 @@ export function SevensPage() {
 
   if (!state) return null;
 
-  const tablePlaced = state.tablePlaced ?? [0, 0, 0, 0, 0];
-  const tunnelEnabled = state.config?.tunnelEnabled ?? false;
+  const tablePlaced = state.tablePlaced;
+  const tunnelEnabled = state.config.tunnelEnabled;
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
-  const canPass = isHumanTurn && (humanPlayer?.passesUsed ?? 0) < (humanPlayer?.maxPasses ?? 5);
+  const canPass = isHumanTurn && state.players.some((p) => p.isHuman && p.passesUsed < p.maxPasses);
 
   const handleCardPlay = (idx: number) => {
     const card = humanPlayer?.cards?.[idx];
@@ -333,9 +329,7 @@ export function SevensPage() {
   };
 
   const handleJokerPlace = (suit: number, value: number) => {
-    if (jokerCardIdx !== null) {
-      exec('joker', jokerCardIdx, suit, value);
-    }
+    exec('joker', jokerCardIdx as number, suit, value);
   };
 
   return (

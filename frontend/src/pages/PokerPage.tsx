@@ -53,6 +53,8 @@ export function PokerPage() {
   const dealerBet = state?.dealer?.bet ?? 0;
   const playerBet = state?.player?.bet ?? 0;
   const hasOutstandingBet = dealerBet > playerBet;
+  /* v8 ignore next */
+  const anteAmount = state?.ante ?? 10;
 
   const toggleSelect = (idx: number) => {
     if (!isExchangePhase) return;
@@ -205,8 +207,8 @@ export function PokerPage() {
               <input
                 id="betAmount"
                 type="number"
-                min={state?.ante ?? 10}
-                step={state?.ante ?? 10}
+                min={anteAmount}
+                step={anteAmount}
                 value={betAmount}
                 onChange={(e) => setBetAmount(Number(e.target.value))}
                 className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"

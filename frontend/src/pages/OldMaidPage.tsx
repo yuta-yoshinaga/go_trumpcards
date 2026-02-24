@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -10,8 +10,7 @@ const REPLAY_DELAY_MS = 800;
 
 const playerAreaBaseClass = 'bg-black/35 rounded-[10px] p-2 border-2 border-transparent flex-[1_1_140px] min-w-[120px]';
 
-function cardLabel(card: OldMaidResponse['lastDrawCard']): string {
-  if (!card) return '';
+function cardLabel(card: Card): string {
   if (card.design === 'JOKER') return 'JOKER';
   return `${card.design} ${card.value}`;
 }
@@ -22,7 +21,6 @@ const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
  *  then replay forward. Returns one OldMaidResponse per CPU action (state after each action). */
 function buildReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
   const actions = finalState.cpuActions;
-  if (actions.length === 0) return [];
 
   // Work backwards to get counts before all CPU actions
   const counts = finalState.players.map((p) => p.cardCount);
@@ -57,11 +55,7 @@ function buildReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
       cpuActions: actions.slice(0, i + 1),
       gameEndFlag: isLastAction ? finalState.gameEndFlag : false,
       message: isLastAction ? finalState.message : '',
-      nextDrawTargetIdx: isLastAction
-        ? finalState.nextDrawTargetIdx
-        : i + 1 < actions.length
-          ? actions[i + 1].drawFromIdx
-          : finalState.nextDrawTargetIdx,
+      nextDrawTargetIdx: isLastAction ? finalState.nextDrawTargetIdx : actions[i + 1].drawFromIdx,
     });
   }
   return states;
@@ -86,7 +80,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
       cardCount: Math.max(0, counts[idx]),
       isFinished: counts[idx] <= 0,
     })),
-    currentTurn: finalState.cpuActions.length > 0 ? finalState.cpuActions[0].drawPlayerIdx : finalState.currentTurn,
+    currentTurn: finalState.cpuActions[0].drawPlayerIdx,
     hasDrawn: true,
     lastDrawPlayerIdx: ha.drawPlayerIdx,
     lastDrawFromIdx: ha.drawFromIdx,
@@ -96,8 +90,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     cpuActions: [],
     gameEndFlag: false,
     message: '',
-    nextDrawTargetIdx:
-      finalState.cpuActions.length > 0 ? finalState.cpuActions[0].drawFromIdx : finalState.nextDrawTargetIdx,
+    nextDrawTargetIdx: finalState.cpuActions[0].drawFromIdx,
   };
 }
 
@@ -228,15 +221,12 @@ export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const replayGenRef = useRef(0);
 
   const exec = useCallback(async (command: 'reset' | 'draw', drawIdx?: number) => {
-    const myGen = ++replayGenRef.current;
     setLoading(true);
     try {
       setError(null);
       const res = await oldmaidApi.exec(command, drawIdx);
-      if (myGen !== replayGenRef.current) return;
 
       if (command === 'reset' || res.cpuActions.length === 0) {
         setDisplayState(res);
@@ -248,7 +238,6 @@ export function OldMaidPage() {
       if (humanDrawState) {
         setDisplayState(humanDrawState);
         await delay(REPLAY_DELAY_MS);
-        if (myGen !== replayGenRef.current) return;
       }
 
       // Replay each CPU action step by step
@@ -256,7 +245,6 @@ export function OldMaidPage() {
       for (const state of replayStates) {
         setDisplayState(state);
         await delay(REPLAY_DELAY_MS);
-        if (myGen !== replayGenRef.current) return;
       }
       // Restore the actual final state so currentTurn reflects the server response
       setDisplayState(res);

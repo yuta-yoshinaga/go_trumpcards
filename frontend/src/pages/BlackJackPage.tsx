@@ -23,7 +23,7 @@ export function BlackJackPage() {
         setError(null);
         const res = await blackjackApi.exec(command, amount);
         setState(res);
-        setMessage(res.message ?? '');
+        setMessage(res.message);
       } catch {
         setError('通信エラーが発生しました。もう一度お試しください。');
       } finally {
