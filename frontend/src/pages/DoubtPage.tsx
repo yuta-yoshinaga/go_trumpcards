@@ -371,7 +371,12 @@ export function DoubtPage() {
                   min={1}
                   max={13}
                   value={claimedValue}
-                  onChange={(e) => setClaimedValue(Math.max(1, Math.min(13, Number(e.target.value))))}
+                  onChange={(e) => {
+                    const num = Number(e.target.value);
+                    if (!Number.isNaN(num)) {
+                      setClaimedValue(Math.max(1, Math.min(13, num)));
+                    }
+                  }}
                   className="bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30"
                 />
                 <span className="text-[#ccc] text-xs">({valueName(claimedValue)})</span>

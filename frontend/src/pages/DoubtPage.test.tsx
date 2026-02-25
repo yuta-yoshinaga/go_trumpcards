@@ -194,6 +194,10 @@ describe('DoubtPage', () => {
     // Test value clamping at min
     fireEvent.change(input, { target: { value: '0' } });
     expect(input).toHaveValue(1);
+
+    // NaN input (e.g. from browser on invalid text) should keep previous value
+    fireEvent.change(input, { target: { value: 'abc' } });
+    expect(input).toHaveValue(1);
   });
 
   it('calls play command with selected cards when 出す clicked', async () => {

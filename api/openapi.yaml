@@ -593,7 +593,7 @@ paths:
         | `reset` | `r`     | Start / restart a game |
         | `play`  | `p`     | Play `cardIndices` cards declaring `claimedValue` |
         | `doubt` | `d`     | Declare doubt; supply `doubterIndices` (human = 0 + any CPU doubters) |
-        | `skip`  | `s`     | Pass on doubting; supply `doubterIndices` (CPU doubters only) |
+        | `skip`  | `s`     | Pass on doubting; `doubterIndices` is ignored (server uses its own state) |
         | `quit`  | `q`     | End the session |
       operationId: doubtExec
       requestBody:
@@ -622,10 +622,9 @@ paths:
                   doubterIndices: [0, 2]
                   sessionId: my-session-001
               skip:
-                summary: Human passes; CPU 2 doubts
+                summary: Human passes (doubterIndices is not required for skip)
                 value:
                   command: skip
-                  doubterIndices: [2]
                   sessionId: my-session-001
       responses:
         '200':
@@ -1607,8 +1606,9 @@ components:
         doubterIndices:
           type: array
           description: |
-            Player indices declaring doubt.  For `doubt`: include 0 (human) plus any CPU doubters.
-            For `skip`: include only CPU doubters.
+            Player indices declaring doubt. Used only for the `doubt` command: include 0 (human)
+            if the human is doubting, plus any CPU doubters. Ignored for the `skip` command
+            (the server determines CPU doubters from its own state).
           items:
             type: integer
           example: [0, 2]
