@@ -13,7 +13,7 @@ import (
 type DoubtWebInput struct {
 	Command        string `json:"command"`
 	CardIndices    []int  `json:"cardIndices,omitempty"`
-	ClaimedValue   int    `json:"claimedValue"`
+	ClaimedValue   int    `json:"claimedValue,omitempty"`
 	DoubterIndices []int  `json:"doubterIndices,omitempty"`
 	SessionId      string `json:"sessionId"`
 }

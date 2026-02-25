@@ -252,12 +252,7 @@ export function DoubtPage() {
                   <button type="button" className={btnDanger} disabled={loading} onClick={handleDoubt}>
                     ダウト！
                   </button>
-                  <button
-                    type="button"
-                    className={btnWarning}
-                    disabled={loading || (countdown === null && countdown !== null)}
-                    onClick={handleSkip}
-                  >
+                  <button type="button" className={btnWarning} disabled={loading} onClick={handleSkip}>
                     スルー
                   </button>
                 </div>
