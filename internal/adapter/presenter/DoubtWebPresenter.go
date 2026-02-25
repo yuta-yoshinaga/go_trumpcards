@@ -102,6 +102,9 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 func (dwp *DoubtWebPresenter) buildResultMessage(d interfaces.DoubtGame) string {
 	winnerIdx := d.GetWinnerIdx()
 	player := d.GetPlayer(winnerIdx)
+	if player == nil {
+		return fmt.Sprintf("ゲーム終了！ CPU %dの勝ち！", winnerIdx)
+	}
 	var name string
 	if player.GetIsHuman() {
 		name = "あなた"

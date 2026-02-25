@@ -12,6 +12,7 @@ type DoubtInteractorIF interface {
 	Play(cardIndices []int, claimedValue int) string
 	ResolveDoubt(doubterIndices []int) string
 	SkipDoubt() string
+	GetCpuDoubters() []int
 }
 
 // DoubtInteractor ダウトインタラクタークラス
@@ -61,6 +62,11 @@ func (di *DoubtInteractor) SkipDoubt() string {
 	di.d.SkipDoubt()
 	di.runCpuTurns()
 	return di.dp.Output(di.d, nil)
+}
+
+// GetCpuDoubters CPUダウターインデックスリスト取得
+func (di *DoubtInteractor) GetCpuDoubters() []int {
+	return di.d.GetCpuDoubters()
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはダウトフェーズになるまでCPUターンを実行

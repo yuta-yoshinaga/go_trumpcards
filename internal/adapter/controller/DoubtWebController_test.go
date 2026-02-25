@@ -21,8 +21,9 @@ func TestDoubtWebController_Method(t *testing.T) {
 	dgiMock := new(usecase.MockDoubtInteractor)
 	dgiMock.On("Reset").Return(mockOutput).Times(2)
 	dgiMock.On("Play", []int{0}, 1).Return(mockOutput)
+	dgiMock.On("GetCpuDoubters").Return([]int{})
 	dgiMock.On("ResolveDoubt", []int{0}).Return(mockOutput)
-	dgiMock.On("ResolveDoubt", []int(nil)).Return(mockOutput)
+	dgiMock.On("SkipDoubt").Return(mockOutput)
 
 	factory := func() uc.DoubtInteractorIF { return dgiMock }
 	tdwc := controller.NewDoubtWebController(factory)
@@ -169,6 +170,50 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"error."}`)
+	})
+
+	t.Run("failed Exec cardIndices too large", func(t *testing.T) {
+		indices := make([]int, controller.MaxCardIndices+1)
+		input := controller.DoubtWebInput{
+			Command:     "p",
+			CardIndices: indices,
+			SessionId:   "test-session-1",
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
+	})
+}
+
+func TestDoubtWebController_SkipWithCpuDoubters(t *testing.T) {
+	mockOutput := `{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":""}`
+
+	dgiMock := new(usecase.MockDoubtInteractor)
+	dgiMock.On("GetCpuDoubters").Return([]int{1, 2})
+	dgiMock.On("ResolveDoubt", []int{1, 2}).Return(mockOutput)
+
+	factory := func() uc.DoubtInteractorIF { return dgiMock }
+	tdwc := controller.NewDoubtWebController(factory)
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(
+		rest.Post("/doubt/exec", tdwc.Exec),
+	)
+	api.SetApp(router)
+
+	t.Run("skip with cpu doubters calls ResolveDoubt", func(t *testing.T) {
+		var jsonInput controller.DoubtWebInput
+		_ = json.Unmarshal([]byte(`{"command": "s", "sessionId": "session-skip-doubters"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+		dgiMock.AssertCalled(t, "ResolveDoubt", []int{1, 2})
 	})
 }
 

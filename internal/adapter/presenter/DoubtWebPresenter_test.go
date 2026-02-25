@@ -8,6 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -259,5 +260,29 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Contains(t, resObj.Message, "test error")
+	})
+
+	t.Run("success Output gameEndFlag nil player at winnerIdx", func(t *testing.T) {
+		gameMock := new(interfaces.MockDoubtGame)
+		gameMock.On("GetCurrentTurn").Return(0)
+		gameMock.On("GetPhase").Return(domain.DoubtPhasePlay)
+		gameMock.On("GetTableCardCount").Return(0)
+		gameMock.On("GetGameEndFlag").Return(true)
+		gameMock.On("GetWinnerIdx").Return(99)
+		gameMock.On("GetCpuActions").Return([]*domain.DoubtCpuAction{})
+		gameMock.On("GetHumanAction").Return((*domain.DoubtCpuAction)(nil))
+		gameMock.On("GetLastAction").Return((*domain.DoubtAction)(nil))
+		gameMock.On("GetCpuDoubters").Return([]int(nil))
+		gameMock.On("GetLastDoubtResult").Return((*domain.DoubtDoubtResult)(nil))
+		gameMock.On("GetPlayerCnt").Return(0)
+		gameMock.On("GetPlayer", 99).Return((*domain.DoubtPlayer)(nil))
+
+		result := tdwp.Output(gameMock, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.GameEndFlag)
+		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Contains(t, resObj.Message, "CPU 99")
 	})
 }

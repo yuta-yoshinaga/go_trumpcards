@@ -82,11 +82,14 @@ func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebCo
 	}
 }
 
+// MaxCardIndices カードインデックスの最大数 (52枚デッキ)
+const MaxCardIndices = 52
+
 // Exec ゲーム実行
 func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param DoubtWebInput
 	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" || param.SessionId == "" {
+	if err != nil || param.Command == "" || param.SessionId == "" || len(param.CardIndices) > MaxCardIndices {
 		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
@@ -117,9 +120,16 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "p", "play":
 		dwc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue), errOutput)
 	case "d", "doubt":
-		dwc.writePresenterResponse(w, dgi.ResolveDoubt(param.DoubterIndices), errOutput)
+		cpuDoubters := dgi.GetCpuDoubters()
+		doubters := append([]int{0}, cpuDoubters...)
+		dwc.writePresenterResponse(w, dgi.ResolveDoubt(doubters), errOutput)
 	case "s", "skip":
-		dwc.writePresenterResponse(w, dgi.ResolveDoubt(param.DoubterIndices), errOutput)
+		cpuDoubters := dgi.GetCpuDoubters()
+		if len(cpuDoubters) > 0 {
+			dwc.writePresenterResponse(w, dgi.ResolveDoubt(cpuDoubters), errOutput)
+		} else {
+			dwc.writePresenterResponse(w, dgi.SkipDoubt(), errOutput)
+		}
 	default:
 		w.WriteHeader(http.StatusOK)
 		if err := w.WriteJson(dwc.newDefaultOutput("Unsupported command.")); err != nil {

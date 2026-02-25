@@ -121,11 +121,11 @@ export function DoubtPage() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoSkipRef = useRef(false);
-  const cpuDoubterstRef = useRef<number[]>([]);
+  const cpuDoubtersRef = useRef<number[]>([]);
 
   // Keep cpuDoubters ref current so the auto-skip effect avoids stale state
   useEffect(() => {
-    if (state) cpuDoubterstRef.current = state.cpuDoubters;
+    if (state) cpuDoubtersRef.current = state.cpuDoubters;
   }, [state]);
 
   const stopCountdown = useCallback(() => {
@@ -187,7 +187,7 @@ export function DoubtPage() {
     if (countdown !== null) return;
     if (!autoSkipRef.current) return;
     autoSkipRef.current = false;
-    exec('skip', undefined, undefined, cpuDoubterstRef.current);
+    exec('skip', undefined, undefined, cpuDoubtersRef.current);
   }, [countdown, exec]);
 
   // Start countdown when it's the doubt phase and a CPU played (human needs to decide)

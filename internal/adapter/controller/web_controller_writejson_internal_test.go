@@ -273,10 +273,17 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 
 type mockDoubtIF struct{ mock.Mock }
 
-func (m *mockDoubtIF) Reset() string                              { return m.Called().String(0) }
-func (m *mockDoubtIF) Play(i []int, v int) string                 { return m.Called(i, v).String(0) }
-func (m *mockDoubtIF) ResolveDoubt(idx []int) string              { return m.Called(idx).String(0) }
-func (m *mockDoubtIF) SkipDoubt() string                          { return m.Called().String(0) }
+func (m *mockDoubtIF) Reset() string                 { return m.Called().String(0) }
+func (m *mockDoubtIF) Play(i []int, v int) string    { return m.Called(i, v).String(0) }
+func (m *mockDoubtIF) ResolveDoubt(idx []int) string { return m.Called(idx).String(0) }
+func (m *mockDoubtIF) SkipDoubt() string             { return m.Called().String(0) }
+func (m *mockDoubtIF) GetCpuDoubters() []int {
+	ret := m.Called()
+	if val, ok := ret.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}
 
 func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 	dwMock := &mockDoubtIF{}
