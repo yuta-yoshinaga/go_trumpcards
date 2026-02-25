@@ -9,6 +9,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -25,7 +26,10 @@ func mustDoubtOutputJSON(msg string) string {
 		WinnerIdx:   -1,
 		Message:     msg,
 	}
-	b, _ := json.Marshal(out)
+	b, err := json.Marshal(out)
+	if err != nil {
+		panic(fmt.Sprintf("mustDoubtOutputJSON: %v", err))
+	}
 	return string(b)
 }
 
@@ -199,7 +203,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 
 	claimedValueErrBody := mustDoubtOutputJSON(fmt.Sprintf(
 		"param error: claimedValue must be between %d and %d.",
-		controller.MinClaimedValue, controller.MaxClaimedValue,
+		domain.MinClaimedValue, domain.MaxClaimedValue,
 	))
 	claimedValueTests := []struct {
 		name         string

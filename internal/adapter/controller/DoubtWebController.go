@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -86,12 +87,6 @@ func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebCo
 // MaxCardIndices カードインデックスの最大数 (52枚デッキ)
 const MaxCardIndices = 52
 
-// MinClaimedValue claimed value の最小値 (A)
-const MinClaimedValue = 1
-
-// MaxClaimedValue claimed value の最大値 (K)
-const MaxClaimedValue = 13
-
 // Exec ゲーム実行
 func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param DoubtWebInput
@@ -125,9 +120,9 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "r", "reset":
 		dwc.writePresenterResponse(w, dgi.Reset(), errOutput)
 	case "p", "play":
-		if param.ClaimedValue < MinClaimedValue || param.ClaimedValue > MaxClaimedValue {
+		if param.ClaimedValue < domain.MinClaimedValue || param.ClaimedValue > domain.MaxClaimedValue {
 			w.WriteHeader(http.StatusBadRequest)
-			if err := w.WriteJson(dwc.newDefaultOutput(fmt.Sprintf("param error: claimedValue must be between %d and %d.", MinClaimedValue, MaxClaimedValue))); err != nil {
+			if err := w.WriteJson(dwc.newDefaultOutput(fmt.Sprintf("param error: claimedValue must be between %d and %d.", domain.MinClaimedValue, domain.MaxClaimedValue))); err != nil {
 				log.Printf("WriteJson error: %v", err)
 			}
 			return
