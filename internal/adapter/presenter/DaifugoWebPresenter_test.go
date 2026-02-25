@@ -426,7 +426,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		var resObj controller.DaifugoWebOutput
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
-		assert.Len(t, resObj.Players, 0)            // nil player skipped in Output loop
-		assert.Contains(t, resObj.Message, "ゲーム終了") // buildResultMessage called
+		assert.Len(t, resObj.Players, 0)           // nil player skipped in Output loop
+		assert.Equal(t, "ゲーム終了！ ", resObj.Message) // buildResultMessage called
 	})
 }
