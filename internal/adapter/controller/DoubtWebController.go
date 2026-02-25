@@ -85,6 +85,12 @@ func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebCo
 // MaxCardIndices カードインデックスの最大数 (52枚デッキ)
 const MaxCardIndices = 52
 
+// MinClaimedValue claimed value の最小値 (A)
+const MinClaimedValue = 1
+
+// MaxClaimedValue claimed value の最大値 (K)
+const MaxClaimedValue = 13
+
 // Exec ゲーム実行
 func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	var param DoubtWebInput
@@ -118,6 +124,13 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "r", "reset":
 		dwc.writePresenterResponse(w, dgi.Reset(), errOutput)
 	case "p", "play":
+		if param.ClaimedValue < MinClaimedValue || param.ClaimedValue > MaxClaimedValue {
+			w.WriteHeader(http.StatusBadRequest)
+			if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
+				log.Printf("WriteJson error: %v", err)
+			}
+			return
+		}
 		dwc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue), errOutput)
 	case "d", "doubt":
 		cpuDoubters := dgi.GetCpuDoubters()

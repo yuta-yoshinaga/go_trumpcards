@@ -21,6 +21,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	dgiMock := new(usecase.MockDoubtInteractor)
 	dgiMock.On("Reset").Return(mockOutput).Times(2)
 	dgiMock.On("Play", []int{0}, 1).Return(mockOutput)
+	dgiMock.On("Play", []int{0}, 13).Return(mockOutput)
 	dgiMock.On("GetCpuDoubters").Return([]int{})
 	dgiMock.On("ResolveDoubt", []int{0}).Return(mockOutput)
 	dgiMock.On("ResolveDoubt", []int{}).Return(mockOutput)
@@ -182,6 +183,47 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"error."}`)
+	})
+
+	t.Run("success Exec p play claimedValue at max boundary", func(t *testing.T) {
+		var jsonInput controller.DoubtWebInput
+		_ = json.Unmarshal([]byte(`{"command": "p", "cardIndices": [0], "claimedValue": 13, "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("failed Exec p play claimedValue too low", func(t *testing.T) {
+		input := controller.DoubtWebInput{
+			Command:      "p",
+			CardIndices:  []int{0},
+			ClaimedValue: 0,
+			SessionId:    "test-session-1",
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
+	})
+
+	t.Run("failed Exec p play claimedValue too high", func(t *testing.T) {
+		input := controller.DoubtWebInput{
+			Command:      "p",
+			CardIndices:  []int{0},
+			ClaimedValue: 14,
+			SessionId:    "test-session-1",
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
 	})
 
 	t.Run("failed Exec cardIndices too large", func(t *testing.T) {
