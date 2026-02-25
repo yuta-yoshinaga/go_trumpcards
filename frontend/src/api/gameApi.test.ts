@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { blackjackApi, daifugoApi, oldmaidApi, pokerApi, sessionId, sevensApi } from './gameApi';
+import { blackjackApi, daifugoApi, doubtApi, oldmaidApi, pokerApi, sessionId, sevensApi } from './gameApi';
 
 describe('gameApi', () => {
   const mockFetch = vi.fn();
@@ -461,6 +461,96 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(daifugoApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('doubtApi.exec', () => {
+    const payload = {
+      players: [],
+      currentTurn: 0,
+      phase: 0,
+      tableCardCount: 0,
+      lastAction: null,
+      cpuDoubters: [],
+      cpuActions: [],
+      humanAction: null,
+      lastDoubtResult: null,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      message: '',
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await doubtApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/doubt/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndices: undefined,
+          claimedValue: undefined,
+          doubterIndices: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and card indices and claimed value', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await doubtApi.exec('play', [0, 2], 5);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/doubt/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            cardIndices: [0, 2],
+            claimedValue: 5,
+            doubterIndices: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with doubt command and doubter indices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await doubtApi.exec('doubt', undefined, undefined, [0, 1]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/doubt/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'doubt',
+            cardIndices: undefined,
+            claimedValue: undefined,
+            doubterIndices: [0, 1],
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with skip command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await doubtApi.exec('skip');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/doubt/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'skip',
+            cardIndices: undefined,
+            claimedValue: undefined,
+            doubterIndices: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(doubtApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 

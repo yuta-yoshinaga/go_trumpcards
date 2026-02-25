@@ -1,0 +1,83 @@
+package usecase
+
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
+)
+
+// DoubtInteractorIF ダウトインタラクターインタフェース
+type DoubtInteractorIF interface {
+	Reset() string
+	Play(cardIndices []int, claimedValue int) string
+	ResolveDoubt(doubterIndices []int) string
+	SkipDoubt() string
+	GetCpuDoubters() []int
+}
+
+// DoubtInteractor ダウトインタラクタークラス
+type DoubtInteractor struct {
+	d  interfaces.DoubtGame
+	dp presenter.DoubtPresenter
+}
+
+// NewDoubtInteractor コンストラクタ
+func NewDoubtInteractor(d interfaces.DoubtGame, dp presenter.DoubtPresenter) *DoubtInteractor {
+	if d == nil {
+		panic("DoubtInteractor: d must not be nil")
+	}
+	if dp == nil {
+		panic("DoubtInteractor: dp must not be nil")
+	}
+	return &DoubtInteractor{d: d, dp: dp}
+}
+
+// Reset ゲーム初期化
+func (di *DoubtInteractor) Reset() string {
+	di.d.Reset()
+	return di.dp.Output(di.d, nil)
+}
+
+// Play 人間プレイヤーがカードを出す
+func (di *DoubtInteractor) Play(cardIndices []int, claimedValue int) string {
+	if di.d.GetGameEndFlag() {
+		return di.dp.Output(di.d, nil)
+	}
+	if !di.d.IsHumanTurn() {
+		return di.dp.Output(di.d, nil)
+	}
+	err := di.d.PlayerPlay(cardIndices, claimedValue)
+	return di.dp.Output(di.d, err)
+}
+
+// ResolveDoubt ダウト解決 (ダウトした人が正しかったか判定)
+func (di *DoubtInteractor) ResolveDoubt(doubterIndices []int) string {
+	di.d.ResolveDoubt(doubterIndices)
+	di.runCpuTurns()
+	return di.dp.Output(di.d, nil)
+}
+
+// SkipDoubt ダウトをスキップ (誰もダウトしなかった)
+func (di *DoubtInteractor) SkipDoubt() string {
+	di.d.SkipDoubt()
+	di.runCpuTurns()
+	return di.dp.Output(di.d, nil)
+}
+
+// GetCpuDoubters CPUダウターインデックスリスト取得
+func (di *DoubtInteractor) GetCpuDoubters() []int {
+	return di.d.GetCpuDoubters()
+}
+
+// runCpuTurns ゲームが終わるか人間の手番またはダウトフェーズになるまでCPUターンを実行
+func (di *DoubtInteractor) runCpuTurns() {
+	for !di.d.GetGameEndFlag() {
+		if di.d.GetPhase() == domain.DoubtPhaseDoubt {
+			break
+		}
+		if di.d.IsHumanTurn() {
+			break
+		}
+		di.d.CpuPlay()
+	}
+}

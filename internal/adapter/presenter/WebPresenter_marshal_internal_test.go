@@ -80,6 +80,20 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 				return p.Output(s, nil)
 			}(),
 		},
+		{
+			name: "DoubtWebPresenter marshal error",
+			output: func() string {
+				p := NewDoubtWebPresenter()
+				players := []*domain.DoubtPlayer{
+					domain.NewDoubtPlayer(true),
+					domain.NewDoubtPlayer(false),
+					domain.NewDoubtPlayer(false),
+					domain.NewDoubtPlayer(false),
+				}
+				d := domain.NewDoubt(domain.NewTrumpCards(0), players)
+				return p.Output(d, nil)
+			}(),
+		},
 	}
 
 	for _, tc := range testCases {

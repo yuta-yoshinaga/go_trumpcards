@@ -169,3 +169,42 @@ export interface SevensResponse {
   humanAction: SevensAction | null;
   message: string;
 }
+
+export interface DoubtPlayerData {
+  id: number;
+  isHuman: boolean;
+  isFinished: boolean;
+  cardCount: number;
+  cards: Card[];
+}
+
+export interface DoubtCpuAction {
+  playerIdx: number;
+  claimedValue: number;
+  cardCount: number;
+  isBluff: boolean;
+}
+
+export interface DoubtDoubtResult {
+  doubterIdx: number;
+  cardPlayerIdx: number;
+  wasLying: boolean;
+  loserIdx: number;
+  cardCount: number;
+  revealedCards: Card[];
+}
+
+export interface DoubtResponse {
+  players: DoubtPlayerData[];
+  currentTurn: number;
+  phase: 0 | 1 | 2; // 0=Play, 1=Doubt, 2=End
+  tableCardCount: number;
+  lastAction: DoubtCpuAction | null;
+  cpuDoubters: number[];
+  cpuActions: DoubtCpuAction[];
+  humanAction: DoubtCpuAction | null;
+  lastDoubtResult: DoubtDoubtResult | null;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+}

@@ -2,6 +2,7 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import { NavBar } from './components/NavBar';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { DaifugoPage } from './pages/DaifugoPage';
+import { DoubtPage } from './pages/DoubtPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/oldmaid" element={<OldMaidPage />} />
             <Route path="/daifugo" element={<DaifugoPage />} />
             <Route path="/sevens" element={<SevensPage />} />
+            <Route path="/doubt" element={<DoubtPage />} />
           </Routes>
         </div>
       </div>

@@ -24,6 +24,8 @@ tags:
     description: Daifugo (大富豪) game
   - name: sevens
     description: Sevens (7並べ) game
+  - name: doubt
+    description: Doubt (ダウト) game
 
 paths:
   /blackjack/exec:
@@ -570,6 +572,87 @@ paths:
                     gameEndFlag: false
                     cpuActions: []
                     humanAction: null
+                    message: param error.
+
+  /doubt/exec:
+    post:
+      tags:
+        - doubt
+      summary: Execute a Doubt (ダウト) game command
+      description: |
+        Send a command to advance the Doubt game session identified by
+        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
+        CPU).
+
+        Each turn, the active player places cards face-down and declares a card
+        value (which may be a bluff).  After a card is played, other players can
+        declare "doubt" (`d`/`doubt`) or pass (`s`/`skip`).
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `play`  | `p`     | Play `cardIndices` cards declaring `claimedValue` |
+        | `doubt` | `d`     | Declare doubt; supply `doubterIndices` (human = 0 + any CPU doubters) |
+        | `skip`  | `s`     | Pass on doubting; `doubterIndices` is ignored (server uses its own state) |
+        | `quit`  | `q`     | End the session |
+      operationId: doubtExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoubtRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play cards at hand indices 0 and 2, declare value 3
+                value:
+                  command: play
+                  cardIndices: [0, 2]
+                  claimedValue: 3
+                  sessionId: my-session-001
+              doubt:
+                summary: Human doubts (with CPU 2 also doubting)
+                value:
+                  command: doubt
+                  doubterIndices: [0, 2]
+                  sessionId: my-session-001
+              skip:
+                summary: Human passes (doubterIndices is not required for skip)
+                value:
+                  command: skip
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoubtResponse'
+        '400':
+          description: Bad request (missing/invalid parameters or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoubtResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    currentTurn: 0
+                    phase: 0
+                    tableCardCount: 0
+                    lastAction: null
+                    cpuDoubters: []
+                    cpuActions: []
+                    humanAction: null
+                    lastDoubtResult: null
+                    gameEndFlag: false
+                    winnerIdx: -1
                     message: param error.
 
 components:
@@ -1495,3 +1578,208 @@ components:
             Game result or status message.  Empty while the game is in progress.
           example: ""
 
+
+    # Doubt
+    DoubtRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: Game command
+          enum: [reset, r, play, p, doubt, d, skip, s, quit, q]
+          example: play
+        cardIndices:
+          type: array
+          description: Hand indices of cards to play (required for `play` command)
+          items:
+            type: integer
+          example: [0, 2]
+        claimedValue:
+          type: integer
+          description: Declared card value 1–13 (required for `play` command)
+          minimum: 1
+          maximum: 13
+          example: 3
+        doubterIndices:
+          type: array
+          description: |
+            Player indices declaring doubt. Used only for the `doubt` command: include 0 (human)
+            if the human is doubting, plus any CPU doubters. Ignored for the `skip` command
+            (the server determines CPU doubters from its own state).
+          items:
+            type: integer
+          example: [0, 2]
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    DoubtPlayer:
+      type: object
+      description: A player in the Doubt game
+      required:
+        - id
+        - isHuman
+        - isFinished
+        - cardCount
+        - cards
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1–3 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this player is the human
+          example: true
+        isFinished:
+          type: boolean
+          description: Whether this player has played all cards (won)
+          example: false
+        cardCount:
+          type: integer
+          description: Number of cards in hand
+          example: 5
+        cards:
+          type: array
+          description: Cards in hand (populated only for the human player)
+          items:
+            $ref: '#/components/schemas/Card'
+
+    DoubtAction:
+      type: object
+      description: An action (play) taken by a player
+      required:
+        - playerIdx
+        - claimedValue
+        - cardCount
+        - isBluff
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who took the action
+          example: 1
+        claimedValue:
+          type: integer
+          description: The card value the player declared
+          example: 3
+        cardCount:
+          type: integer
+          description: Number of cards played
+          example: 2
+        isBluff:
+          type: boolean
+          description: Whether the play was a bluff (always false until revealed)
+          example: false
+
+    DoubtDoubtResult:
+      type: object
+      description: Result of a doubt resolution
+      required:
+        - doubterIdx
+        - cardPlayerIdx
+        - wasLying
+        - loserIdx
+        - cardCount
+        - revealedCards
+      properties:
+        doubterIdx:
+          type: integer
+          description: Index of the player who called doubt
+          example: 0
+        cardPlayerIdx:
+          type: integer
+          description: Index of the player whose cards were challenged
+          example: 1
+        wasLying:
+          type: boolean
+          description: Whether the challenged player was bluffing
+          example: true
+        loserIdx:
+          type: integer
+          description: Index of the player who must pick up the table cards
+          example: 1
+        cardCount:
+          type: integer
+          description: Number of cards the loser picks up
+          example: 4
+        revealedCards:
+          type: array
+          description: Cards that were revealed during the doubt resolution
+          items:
+            $ref: '#/components/schemas/Card'
+
+    DoubtResponse:
+      type: object
+      description: Current state of the Doubt game
+      required:
+        - players
+        - currentTurn
+        - phase
+        - tableCardCount
+        - cpuDoubters
+        - cpuActions
+        - gameEndFlag
+        - winnerIdx
+        - message
+      properties:
+        players:
+          type: array
+          description: All players in turn order
+          items:
+            $ref: '#/components/schemas/DoubtPlayer'
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        phase:
+          type: integer
+          description: "Game phase: 0 = Play, 1 = Doubt window, 2 = Game end"
+          enum: [0, 1, 2]
+          example: 0
+        tableCardCount:
+          type: integer
+          description: Total number of cards on the table
+          example: 0
+        lastAction:
+          allOf:
+            - $ref: '#/components/schemas/DoubtAction'
+          nullable: true
+          description: The most recent play action (null until first play)
+        cpuDoubters:
+          type: array
+          description: Indices of CPU players who have decided to call doubt
+          items:
+            type: integer
+          example: []
+        cpuActions:
+          type: array
+          description: CPU play actions that occurred after the human's last action
+          items:
+            $ref: '#/components/schemas/DoubtAction'
+        humanAction:
+          allOf:
+            - $ref: '#/components/schemas/DoubtAction'
+          nullable: true
+          description: The human player's most recent play action (null before first play)
+        lastDoubtResult:
+          allOf:
+            - $ref: '#/components/schemas/DoubtDoubtResult'
+          nullable: true
+          description: Result of the most recent doubt resolution (null if no doubt yet)
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+          example: false
+        winnerIdx:
+          type: integer
+          description: Index of the winner (-1 while game is in progress)
+          example: -1
+        message:
+          type: string
+          description: |
+            Game result or status message.  Empty while the game is in progress.
+          example: ""
