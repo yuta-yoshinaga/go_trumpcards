@@ -99,12 +99,17 @@ func (web *TrumpCardsWeb) Exec() {
 	api.SetApp(router)
 	mux := http.NewServeMux()
 	apiHandler := api.MakeHandler()
-	mux.Handle("/blackjack/exec", apiHandler)
-	mux.Handle("/poker/exec", apiHandler)
-	mux.Handle("/oldmaid/exec", apiHandler)
-	mux.Handle("/daifugo/exec", apiHandler)
-	mux.Handle("/sevens/exec", apiHandler)
-	mux.Handle("/doubt/exec", apiHandler)
+	apiPaths := []string{
+		"/blackjack/exec",
+		"/poker/exec",
+		"/oldmaid/exec",
+		"/daifugo/exec",
+		"/sevens/exec",
+		"/doubt/exec",
+	}
+	for _, path := range apiPaths {
+		mux.Handle(path, apiHandler)
+	}
 	mux.Handle("/", http.FileServer(http.Dir("public")))
 	log.Fatal(http.ListenAndServe(getListenPort(), mux))
 }
