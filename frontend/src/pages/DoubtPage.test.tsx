@@ -480,15 +480,23 @@ describe('DoubtPage', () => {
       expect(screen.getByText(/残り 9 秒/)).toBeInTheDocument();
     });
 
-    it('clears countdown when it reaches zero', async () => {
-      mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+    it('auto-skips and clears countdown when timer expires', async () => {
+      mockExec
+        .mockResolvedValueOnce(doubtPhaseCpuPlayedState) // initial reset
+        .mockResolvedValueOnce(humanTurnState); // skip response → leave doubt phase
       render(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
 
       act(() => {
         vi.advanceTimersByTime(10000);
       });
+      // Countdown display cleared immediately
       expect(screen.queryByText(/残り/)).not.toBeInTheDocument();
+
+      // Auto-skip is called with the correct doubters
+      await waitFor(() => {
+        expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []);
+      });
     });
 
     it('stops countdown when ダウト！ is clicked', async () => {

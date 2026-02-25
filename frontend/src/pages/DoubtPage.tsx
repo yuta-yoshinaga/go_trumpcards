@@ -120,8 +120,16 @@ export function DoubtPage() {
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoSkipRef = useRef(false);
+  const cpuDoubterstRef = useRef<number[]>([]);
+
+  // Keep cpuDoubters ref current so the auto-skip effect avoids stale state
+  useEffect(() => {
+    if (state) cpuDoubterstRef.current = state.cpuDoubters;
+  }, [state]);
 
   const stopCountdown = useCallback(() => {
+    autoSkipRef.current = false;
     if (countdownRef.current !== null) {
       clearInterval(countdownRef.current);
       countdownRef.current = null;
@@ -138,6 +146,7 @@ export function DoubtPage() {
         if (cur <= 1) {
           clearInterval(countdownRef.current as ReturnType<typeof setInterval>);
           countdownRef.current = null;
+          autoSkipRef.current = true;
           return null;
         }
         return cur - 1;
@@ -172,6 +181,14 @@ export function DoubtPage() {
   useEffect(() => {
     exec('reset');
   }, [exec]);
+
+  // Auto-skip when countdown timer expires without user interaction (mirrors CLI timeout behaviour)
+  useEffect(() => {
+    if (countdown !== null) return;
+    if (!autoSkipRef.current) return;
+    autoSkipRef.current = false;
+    exec('skip', undefined, undefined, cpuDoubterstRef.current);
+  }, [countdown, exec]);
 
   // Start countdown when it's the doubt phase and a CPU played (human needs to decide)
   useEffect(() => {
