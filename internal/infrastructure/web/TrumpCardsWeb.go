@@ -97,14 +97,21 @@ func (web *TrumpCardsWeb) Exec() {
 		log.Fatal(err)
 	}
 	api.SetApp(router)
-	http.Handle("/", http.FileServer(http.Dir("public")))
-	http.Handle("/blackjack/exec", api.MakeHandler())
-	http.Handle("/poker/exec", api.MakeHandler())
-	http.Handle("/oldmaid/exec", api.MakeHandler())
-	http.Handle("/daifugo/exec", api.MakeHandler())
-	http.Handle("/sevens/exec", api.MakeHandler())
-	http.Handle("/doubt/exec", api.MakeHandler())
-	log.Fatal(http.ListenAndServe(getListenPort(), nil))
+	mux := http.NewServeMux()
+	apiHandler := api.MakeHandler()
+	apiPaths := []string{
+		"/blackjack/exec",
+		"/poker/exec",
+		"/oldmaid/exec",
+		"/daifugo/exec",
+		"/sevens/exec",
+		"/doubt/exec",
+	}
+	for _, path := range apiPaths {
+		mux.Handle(path, apiHandler)
+	}
+	mux.Handle("/", http.FileServer(http.Dir("public")))
+	log.Fatal(http.ListenAndServe(getListenPort(), mux))
 }
 
 func getListenPort() string {
