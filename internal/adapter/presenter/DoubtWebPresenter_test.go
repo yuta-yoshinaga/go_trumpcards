@@ -143,7 +143,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.Len(t, resObj.CpuActions, 1)
 		assert.Equal(t, 1, resObj.CpuActions[0].PlayerIdx)
 		assert.Equal(t, 3, resObj.CpuActions[0].ClaimedValue)
-		assert.True(t, resObj.CpuActions[0].IsBluff)
+		assert.False(t, resObj.CpuActions[0].IsBluff) // IsBluff is not sent to client (hidden game state)
 	})
 
 	t.Run("success Output cpuDoubters non-empty", func(t *testing.T) {

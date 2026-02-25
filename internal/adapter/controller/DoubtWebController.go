@@ -121,7 +121,19 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		dwc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue), errOutput)
 	case "d", "doubt":
 		cpuDoubters := dgi.GetCpuDoubters()
-		doubters := append([]int{0}, cpuDoubters...)
+		humanDoubts := false
+		for _, idx := range param.DoubterIndices {
+			if idx == 0 {
+				humanDoubts = true
+				break
+			}
+		}
+		var doubters []int
+		if humanDoubts {
+			doubters = append([]int{0}, cpuDoubters...)
+		} else {
+			doubters = cpuDoubters
+		}
 		dwc.writePresenterResponse(w, dgi.ResolveDoubt(doubters), errOutput)
 	case "s", "skip":
 		cpuDoubters := dgi.GetCpuDoubters()

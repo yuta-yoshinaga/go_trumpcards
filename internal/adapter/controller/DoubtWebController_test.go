@@ -23,6 +23,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	dgiMock.On("Play", []int{0}, 1).Return(mockOutput)
 	dgiMock.On("GetCpuDoubters").Return([]int{})
 	dgiMock.On("ResolveDoubt", []int{0}).Return(mockOutput)
+	dgiMock.On("ResolveDoubt", []int{}).Return(mockOutput)
 	dgiMock.On("SkipDoubt").Return(mockOutput)
 
 	factory := func() uc.DoubtInteractorIF { return dgiMock }
@@ -92,9 +93,20 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded.BodyIs(expectedBody)
 	})
 
-	t.Run("success Exec d doubt", func(t *testing.T) {
+	t.Run("success Exec d doubt (human doubts)", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "d", "doubterIndices": [0], "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("success Exec d doubt confirm (cpu only, no human)", func(t *testing.T) {
+		var jsonInput controller.DoubtWebInput
+		_ = json.Unmarshal([]byte(`{"command": "d", "sessionId": "test-session-1"}`), &jsonInput)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)

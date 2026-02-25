@@ -115,12 +115,12 @@ func (dwp *DoubtWebPresenter) buildResultMessage(d interfaces.DoubtGame) string 
 }
 
 // actionToOutput DoubtCpuAction を DoubtWebOutputAction に変換
+// IsBluff は意図的に除外する（ダウト解決前に隠されたゲーム状態をクライアントに漏洩しないため）
 func (dwp *DoubtWebPresenter) actionToOutput(a *domain.DoubtCpuAction) *controller.DoubtWebOutputAction {
 	return &controller.DoubtWebOutputAction{
 		PlayerIdx:    a.PlayerIdx,
 		ClaimedValue: a.ClaimedValue,
 		CardCount:    a.CardCount,
-		IsBluff:      a.IsBluff,
 	}
 }
 
