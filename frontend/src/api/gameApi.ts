@@ -1,4 +1,11 @@
-import type { BlackJackResponse, DaifugoResponse, OldMaidResponse, PokerResponse, SevensResponse } from '../types/card';
+import type {
+  BlackJackResponse,
+  DaifugoResponse,
+  DoubtResponse,
+  OldMaidResponse,
+  PokerResponse,
+  SevensResponse,
+} from '../types/card';
 
 export const sessionId: string = crypto.randomUUID();
 
@@ -35,6 +42,15 @@ export const oldmaidApi = {
 export const daifugoApi = {
   exec: (command: 'reset' | 'play', indices?: number[]) =>
     postJson<DaifugoResponse>('/daifugo/exec', { command, indices, sessionId }),
+};
+
+export const doubtApi = {
+  exec: (
+    command: 'reset' | 'play' | 'doubt' | 'skip',
+    cardIndices?: number[],
+    claimedValue?: number,
+    doubterIndices?: number[],
+  ) => postJson<DoubtResponse>('/doubt/exec', { command, cardIndices, claimedValue, doubterIndices, sessionId }),
 };
 
 export interface SevensConfigInput {

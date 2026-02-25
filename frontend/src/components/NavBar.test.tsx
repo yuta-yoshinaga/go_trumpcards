@@ -12,10 +12,10 @@ function renderNavBar(initialPath = '/') {
 }
 
 describe('NavBar', () => {
-  it('renders five navigation links', () => {
+  it('renders six navigation links', () => {
     renderNavBar();
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(5);
+    expect(links).toHaveLength(6);
   });
 
   it('renders BlackJack link', () => {
@@ -41,6 +41,11 @@ describe('NavBar', () => {
   it('renders Sevens link', () => {
     renderNavBar();
     expect(screen.getByText('7並べ')).toBeInTheDocument();
+  });
+
+  it('renders Doubt link', () => {
+    renderNavBar();
+    expect(screen.getByText('ダウト')).toBeInTheDocument();
   });
 
   it('marks BlackJack link as active when on root path', () => {
@@ -85,6 +90,15 @@ describe('NavBar', () => {
     expect(screen.getByText('大富豪')).not.toHaveAttribute('aria-current');
   });
 
+  it('marks Doubt link as active when on /doubt path', () => {
+    renderNavBar('/doubt');
+    expect(screen.getByText('ダウト')).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText('ブラックジャック')).not.toHaveAttribute('aria-current');
+    expect(screen.getByText('ポーカー')).not.toHaveAttribute('aria-current');
+    expect(screen.getByText('ババ抜き')).not.toHaveAttribute('aria-current');
+    expect(screen.getByText('大富豪')).not.toHaveAttribute('aria-current');
+  });
+
   it('links point to correct hrefs', () => {
     renderNavBar();
     const links = screen.getAllByRole('link');
@@ -93,5 +107,6 @@ describe('NavBar', () => {
     expect(links[2]).toHaveAttribute('href', '/oldmaid');
     expect(links[3]).toHaveAttribute('href', '/daifugo');
     expect(links[4]).toHaveAttribute('href', '/sevens');
+    expect(links[5]).toHaveAttribute('href', '/doubt');
   });
 });
