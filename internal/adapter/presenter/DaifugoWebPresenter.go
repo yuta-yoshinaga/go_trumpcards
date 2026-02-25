@@ -79,6 +79,9 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	// プレイヤー情報
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
 		player := dg.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		pObj := new(controller.DaifugoWebOutputPlayer)
 		pObj.ID = i
 		pObj.IsHuman = player.GetIsHuman()
@@ -114,6 +117,9 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 	msg := "ゲーム終了！ "
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
 		player := dg.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		rank := player.GetRank()
 		if rank < 1 || rank > len(rankNames) {
 			continue

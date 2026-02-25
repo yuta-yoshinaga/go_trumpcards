@@ -7,6 +7,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -322,5 +323,44 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, resObj.CpuActions, 1)
 		assert.Nil(t, resObj.CpuActions[0].PlayedCard)
+	})
+
+	setupSMock := func() *interfaces.MockSevensGame {
+		m := new(interfaces.MockSevensGame)
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetTableMinVals").Return([5]int{7, 7, 7, 7, 7})
+		m.On("GetTableMaxVals").Return([5]int{7, 7, 7, 7, 7})
+		m.On("GetTablePlaced").Return([5]uint16{128, 128, 128, 128, 128})
+		m.On("GetConfig").Return(domain.SevensConfig{})
+		m.On("GetCpuActions").Return([]*domain.SevensCpuAction(nil))
+		m.On("GetHumanAction").Return((*domain.SevensCpuAction)(nil))
+		return m
+	}
+
+	t.Run("success Output skips nil player in player loop", func(t *testing.T) {
+		m := setupSMock()
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPlayerCnt").Return(1)
+		m.On("GetPlayer", 0).Return((*domain.SevensPlayer)(nil))
+
+		result := tswp.Output(m, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Len(t, resObj.Players, 0) // nil player skipped
+	})
+
+	t.Run("success buildResultMessage skips nil player", func(t *testing.T) {
+		m := setupSMock()
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetPlayerCnt").Return(1)
+		m.On("GetPlayer", 0).Return((*domain.SevensPlayer)(nil))
+
+		result := tswp.Output(m, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Len(t, resObj.Players, 0)           // nil player skipped in Output loop
+		assert.Equal(t, "ゲーム終了！ ", resObj.Message) // buildResultMessage called
 	})
 }
