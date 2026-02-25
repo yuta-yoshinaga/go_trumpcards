@@ -27,30 +27,6 @@ func dealerIdx(card *Card) int {
 	}
 }
 
-// hasSoftAce ソフトハンド（有効なエースを含む）かどうか判定し、ソフト合計値を返す
-// ソフトハンドの場合 (true, softTotal) を返す
-func hasSoftAce(hand *BlackJackHand) (bool, int) {
-	total := 0
-	aces := 0
-	for _, c := range hand.GetCards() {
-		v := c.GetValue()
-		if v == 1 {
-			aces++
-			total += 11
-		} else if v >= 10 {
-			total += 10
-		} else {
-			total += v
-		}
-	}
-	for total > 21 && aces > 0 {
-		total -= 10
-		aces--
-	}
-	// aces > 0 means at least one ace is still counted as 11
-	return aces > 0, total
-}
-
 // pairValue ペアのBJ値を返す（ペアでなければ -1）
 func pairValue(hand *BlackJackHand) int {
 	if hand.GetCardsSize() != 2 {
@@ -76,8 +52,8 @@ func GetBasicStrategyAction(hand *BlackJackHand, dealerUpcard *Card) BJSuggested
 	}
 
 	// ② ソフトハンド
-	if isSoft, softTotal := hasSoftAce(hand); isSoft {
-		return softStrategy(softTotal, di)
+	if hand.IsSoft() {
+		return softStrategy(hand.GetScore(), di)
 	}
 
 	// ③ ハードハンド

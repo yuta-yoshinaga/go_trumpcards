@@ -561,8 +561,6 @@ func (b *BlackJack) SetDeckCount(count int) error {
 		return NewDomainError(ErrInvalidAmount, "Invalid deck count. Use 1, 2, 4, 6, or 8.")
 	}
 	b.deckCount = count
-	b.trumpCards = NewTrumpCardsWithDecks(count, 0)
-	b.trumpCards.Shuffle()
 	return nil
 }
 

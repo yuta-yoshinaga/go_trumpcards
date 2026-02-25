@@ -244,3 +244,25 @@ func TestBlackJackHand_IsFinished_Surrendered(t *testing.T) {
 	h.SetSurrendered(true)
 	assert.True(t, h.IsFinished())
 }
+
+func TestBlackJackHand_IsSoft(t *testing.T) {
+	t.Run("soft hand ace counting as 11", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		assert.True(t, h.IsSoft())
+	})
+	t.Run("hard hand ace forced to 1", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		h.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		assert.False(t, h.IsSoft())
+	})
+	t.Run("no ace is hard", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		assert.False(t, h.IsSoft())
+	})
+}

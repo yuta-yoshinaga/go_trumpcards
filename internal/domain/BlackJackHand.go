@@ -40,9 +40,9 @@ func (h *BlackJackHand) GetCardsSize() int {
 	return len(h.cards)
 }
 
-// CalculateBlackJackScore カードスライスからブラックジャックスコアを計算する共通関数
-func CalculateBlackJackScore(cards []*Card) int {
-	score := 0
+// calcScore カードスライスからスコアとソフト状態を計算する内部ヘルパー
+// isSoft=true はエースが11として有効に働いていることを意味する
+func calcScore(cards []*Card) (score int, isSoft bool) {
 	aceCount := 0
 	for _, card := range cards {
 		value := card.GetValue()
@@ -55,17 +55,28 @@ func CalculateBlackJackScore(cards []*Card) int {
 			score += value
 		}
 	}
-	// スコアが21を超えている場合、エースを1として再計算
 	for score > 21 && aceCount > 0 {
 		score -= 10
 		aceCount--
 	}
+	return score, aceCount > 0
+}
+
+// CalculateBlackJackScore カードスライスからブラックジャックスコアを計算する共通関数
+func CalculateBlackJackScore(cards []*Card) int {
+	score, _ := calcScore(cards)
 	return score
 }
 
 // GetScore 手札から現在のスコア計算
 func (h *BlackJackHand) GetScore() int {
 	return CalculateBlackJackScore(h.cards)
+}
+
+// IsSoft ソフトハンド（11として有効なエースを含む）かどうか判定
+func (h *BlackJackHand) IsSoft() bool {
+	_, isSoft := calcScore(h.cards)
+	return isSoft
 }
 
 // GetBet ベット額取得
