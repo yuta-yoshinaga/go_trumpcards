@@ -14,6 +14,8 @@ export interface BlackJackHand {
   busted: boolean;
   isBlackJack: boolean;
   canSplit: boolean;
+  surrendered: boolean;
+  canSurrender: boolean;
 }
 
 export interface BlackJackPlayer {
@@ -33,6 +35,9 @@ export interface BlackJackResponse {
   insuranceBet: number;
   insuranceAvailable: boolean;
   message: string;
+  hintEnabled: boolean;
+  suggestedAction: number;
+  deckCount: number;
 }
 
 export interface PokerPlayer {

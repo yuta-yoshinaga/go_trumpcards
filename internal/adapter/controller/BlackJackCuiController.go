@@ -56,6 +56,21 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 		res = bcc.bji.Insurance()
 	case "di", "declineinsurance":
 		res = bcc.bji.DeclineInsurance()
+	case "sur", "surrender":
+		res = bcc.bji.Surrender()
+	case "hint", "togglehint":
+		res = bcc.bji.ToggleHint()
+	case "sd", "setdeckcount":
+		if len(parts) < 2 {
+			res = "Deck count is required."
+		} else {
+			count, err := strconv.Atoi(parts[1])
+			if err != nil {
+				res = "Invalid deck count. Please enter a number."
+			} else {
+				res = bcc.bji.SetDeckCount(count)
+			}
+		}
 	default:
 		res = "Unsupported command."
 	}

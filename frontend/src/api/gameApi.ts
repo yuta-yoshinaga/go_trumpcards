@@ -21,7 +21,18 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 
 export const blackjackApi = {
   exec: (
-    command: 'reset' | 'hit' | 'stand' | 'bet' | 'doubledown' | 'split' | 'insurance' | 'declineinsurance',
+    command:
+      | 'reset'
+      | 'hit'
+      | 'stand'
+      | 'bet'
+      | 'doubledown'
+      | 'split'
+      | 'insurance'
+      | 'declineinsurance'
+      | 'surrender'
+      | 'togglehint'
+      | 'setdeckcount',
     amount?: number,
   ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId }),
 };

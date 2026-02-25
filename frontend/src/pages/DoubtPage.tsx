@@ -373,9 +373,7 @@ export function DoubtPage() {
                   value={claimedValue}
                   onChange={(e) => {
                     const num = Number(e.target.value);
-                    if (!Number.isNaN(num)) {
-                      setClaimedValue(Math.max(1, Math.min(13, num)));
-                    }
+                    setClaimedValue(Math.max(1, Math.min(13, num)));
                   }}
                   className="bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30"
                 />

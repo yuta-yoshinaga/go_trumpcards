@@ -27,7 +27,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	b.WriteString("----------\n")
 
 	// チップ情報
-	fmt.Fprintf(&b, "chips: player=%d dealer=%d\n", player.GetChips(), dealer.GetChips())
+	fmt.Fprintf(&b, "chips: player=%d dealer=%d decks=%d\n", player.GetChips(), dealer.GetChips(), bj.GetDeckCount())
 
 	// フェーズ情報
 	fmt.Fprintf(&b, "phase: %s\n", bjp.phaseStr(bj.GetPhase()))
@@ -74,6 +74,9 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		if hand.IsBlackJack() {
 			b.WriteString(" [BJ]")
 		}
+		if hand.IsSurrendered() {
+			b.WriteString(" [SURRENDER]")
+		}
 		b.WriteString("\n")
 		for j := 0; j < hand.GetCardsSize(); j++ {
 			if j != 0 {
@@ -92,6 +95,14 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	}
 	if bj.IsInsuranceAvailable() && bj.GetPhase() == domain.BJPhaseInsurance {
 		b.WriteString("Insurance available!\n")
+	}
+
+	// ヒント情報
+	if bj.IsHintEnabled() {
+		suggestion := bj.GetBasicStrategySuggestion()
+		if suggestion != domain.BJSuggestNone {
+			fmt.Fprintf(&b, "[HINT: %s]\n", bjp.suggestionStr(suggestion))
+		}
 	}
 
 	// エラーメッセージ（ベット失敗等）
@@ -145,6 +156,26 @@ func (bjp *BlackJackCuiPresenter) phaseStr(phase int) string {
 		return "END"
 	default:
 		return "UNKNOWN"
+	}
+}
+
+// suggestionStr 推奨アクション文字列
+func (bjp *BlackJackCuiPresenter) suggestionStr(s domain.BJSuggestedAction) string {
+	switch s {
+	case domain.BJSuggestHit:
+		return "HIT"
+	case domain.BJSuggestStand:
+		return "STAND"
+	case domain.BJSuggestDouble:
+		return "DOUBLE"
+	case domain.BJSuggestSplit:
+		return "SPLIT"
+	case domain.BJSuggestSurrender:
+		return "SURRENDER"
+	case domain.BJSuggestDeclineInsurance:
+		return "DECLINE INSURANCE"
+	default:
+		return ""
 	}
 }
 

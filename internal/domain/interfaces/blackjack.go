@@ -13,6 +13,9 @@ type BlackJackGame interface {
 	PlayerStand() error
 	PlayerDoubleDown() error
 	PlayerSplit() error
+	PlayerSurrender() error
+	SetDeckCount(count int) error
+	ToggleHint()
 
 	// presenter が呼ぶメソッド
 	GetPlayer() *domain.BlackJackPlayer
@@ -25,4 +28,7 @@ type BlackJackGame interface {
 	IsInsuranceAvailable() bool
 	GameJudgmentForHand(handIdx int) domain.GameResult
 	GameJudgment() domain.GameResult
+	GetDeckCount() int
+	IsHintEnabled() bool
+	GetBasicStrategySuggestion() domain.BJSuggestedAction
 }

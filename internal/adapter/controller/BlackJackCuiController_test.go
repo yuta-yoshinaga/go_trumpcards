@@ -88,3 +88,37 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 		assert.Equal(t, "Unsupported command.", tbc.Exec(""))
 	})
 }
+
+func TestBlackJackCuiController_NewCommands(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("Surrender").Return(mockOutput)
+	bjiMock.On("ToggleHint").Return(mockOutput)
+	bjiMock.On("SetDeckCount", 6).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("sur", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("sur"))
+	})
+	t.Run("surrender", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("surrender"))
+	})
+	t.Run("hint", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("hint"))
+	})
+	t.Run("togglehint", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("togglehint"))
+	})
+	t.Run("sd with valid count", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("sd 6"))
+	})
+	t.Run("setdeckcount with valid count", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("setdeckcount 6"))
+	})
+	t.Run("sd without count", func(t *testing.T) {
+		assert.Equal(t, "Deck count is required.", tbc.Exec("sd"))
+	})
+	t.Run("sd with invalid count", func(t *testing.T) {
+		assert.Equal(t, "Invalid deck count. Please enter a number.", tbc.Exec("sd abc"))
+	})
+}

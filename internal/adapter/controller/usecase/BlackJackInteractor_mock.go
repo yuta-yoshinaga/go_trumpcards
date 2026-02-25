@@ -54,3 +54,21 @@ func (_m *MockBlackJackInteractor) DeclineInsurance() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Surrender モック
+func (_m *MockBlackJackInteractor) Surrender() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// SetDeckCount モック
+func (_m *MockBlackJackInteractor) SetDeckCount(count int) string {
+	ret := _m.Called(count)
+	return ret.Get(0).(string)
+}
+
+// ToggleHint モック
+func (_m *MockBlackJackInteractor) ToggleHint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

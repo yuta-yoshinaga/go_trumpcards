@@ -24,14 +24,16 @@ type BlackJackWebOutputCard struct {
 
 // BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
 type BlackJackWebOutputHand struct {
-	Score       int                       `json:"score"`
-	Cards       []*BlackJackWebOutputCard `json:"cards"`
-	Bet         int                       `json:"bet"`
-	Stood       bool                      `json:"stood"`
-	Doubled     bool                      `json:"doubled"`
-	Busted      bool                      `json:"busted"`
-	IsBlackJack bool                      `json:"isBlackJack"`
-	CanSplit    bool                      `json:"canSplit"`
+	Score        int                       `json:"score"`
+	Cards        []*BlackJackWebOutputCard `json:"cards"`
+	Bet          int                       `json:"bet"`
+	Stood        bool                      `json:"stood"`
+	Doubled      bool                      `json:"doubled"`
+	Busted       bool                      `json:"busted"`
+	IsBlackJack  bool                      `json:"isBlackJack"`
+	CanSplit     bool                      `json:"canSplit"`
+	Surrendered  bool                      `json:"surrendered"`
+	CanSurrender bool                      `json:"canSurrender"`
 }
 
 // BlackJackWebOutputPlayer ブラックジャックWebアウトプットプレイヤー
@@ -51,6 +53,9 @@ type BlackJackWebOutput struct {
 	InsuranceBet       int                       `json:"insuranceBet"`
 	InsuranceAvailable bool                      `json:"insuranceAvailable"`
 	Message            string                    `json:"message"`
+	HintEnabled        bool                      `json:"hintEnabled"`
+	SuggestedAction    int                       `json:"suggestedAction"`
+	DeckCount          int                       `json:"deckCount"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -114,6 +119,12 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 		bwc.writePresenterResponse(w, bji.Insurance(), errOutput)
 	case "di", "declineinsurance":
 		bwc.writePresenterResponse(w, bji.DeclineInsurance(), errOutput)
+	case "sur", "surrender":
+		bwc.writePresenterResponse(w, bji.Surrender(), errOutput)
+	case "togglehint":
+		bwc.writePresenterResponse(w, bji.ToggleHint(), errOutput)
+	case "sd", "setdeckcount":
+		bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount), errOutput)
 	default:
 		w.WriteHeader(http.StatusOK)
 		if err := w.WriteJson(bwc.newDefaultOutput("Unsupported command.")); err != nil {
@@ -125,8 +136,9 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (bwc *BlackJackWebController) newDefaultOutput(msg string) *BlackJackWebOutput {
 	return &BlackJackWebOutput{
-		Dealer:  &BlackJackWebOutputPlayer{},
-		Player:  &BlackJackWebOutputPlayer{},
-		Message: msg,
+		Dealer:    &BlackJackWebOutputPlayer{},
+		Player:    &BlackJackWebOutputPlayer{},
+		Message:   msg,
+		DeckCount: 1,
 	}
 }

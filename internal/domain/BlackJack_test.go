@@ -288,9 +288,10 @@ func TestBlackJack_DrawCardNilSafety(t *testing.T) {
 		bj := domain.NewBlackJack(tc, player, dealer)
 		bj.Reset()
 
-		// デッキを全て引き切る
+		// デッキを全て引き切る（Reset後に新しいデッキが生成されるのでGetTrumpCardsを使う）
+		deck := bj.GetTrumpCards()
 		for i := 0; i < 52; i++ {
-			tc.DrawCard()
+			deck.DrawCard()
 		}
 
 		// デッキ枯渇時のベットはエラーを返し、チップが返却される
@@ -319,8 +320,9 @@ func TestBlackJack_DrawCardNilSafety(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 
 		// デッキを全て引き切る
+		deck := bj.GetTrumpCards()
 		for i := 0; i < 52; i++ {
-			tc.DrawCard()
+			deck.DrawCard()
 		}
 
 		// デッキ枯渇後のヒットでパニックしない
@@ -351,8 +353,9 @@ func TestBlackJack_DrawCardNilSafety(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 
 		// デッキを全て引き切る
+		deck := bj.GetTrumpCards()
 		for i := 0; i < 52; i++ {
-			tc.DrawCard()
+			deck.DrawCard()
 		}
 
 		// デッキ枯渇後のスタンド→ディーラーヒットでパニックしない
@@ -1078,9 +1081,10 @@ func TestBlackJack_PlayerSplit_DeckExhausted(t *testing.T) {
 	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 	bj.SetPhase(domain.BJPhaseAction)
 
-	// Drain the deck completely
+	// Drain the deck completely (Reset rebuilds deck so use GetTrumpCards)
+	deck := bj.GetTrumpCards()
 	for i := 0; i < 52; i++ {
-		tc.DrawCard()
+		deck.DrawCard()
 	}
 
 	err := bj.PlayerSplit()
@@ -1195,8 +1199,10 @@ func TestBlackJack_PlayerBet_DealFailed(t *testing.T) {
 	bj.Reset()
 
 	// Drain deck to leave only 2 cards (need 4 for deal: 2 player + 2 dealer)
+	// Reset rebuilds the deck, so use GetTrumpCards to get the current deck
+	deck := bj.GetTrumpCards()
 	for i := 0; i < 50; i++ {
-		tc.DrawCard()
+		deck.DrawCard()
 	}
 
 	err := bj.PlayerBet(100)
@@ -1275,3 +1281,236 @@ func TestBlackJack_JudgeHand_DealerBJvsPlayerNonBJ(t *testing.T) {
 
 // TestBlackJack_PlayerDoubleDown_Bust moved to blackjack_internal_test.go
 // as a deterministic test that stacks the deck instead of retrying random shuffles.
+
+func TestBlackJack_PlayerSurrender(t *testing.T) {
+	t.Run("surrender success returns half bet", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		startChips := bj.GetPlayer().GetChips()
+
+		err := bj.PlayerSurrender()
+		assert.NoError(t, err)
+		// half bet returned
+		assert.Equal(t, startChips+50, bj.GetPlayer().GetChips())
+		assert.True(t, hand.IsSurrendered())
+		// game ends (only one hand, all done)
+		assert.True(t, bj.GetGameEndFlag())
+	})
+	t.Run("surrender wrong phase", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		err := bj.PlayerSurrender()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
+	})
+	t.Run("surrender with 3 cards rejected", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		bj.SetPhase(domain.BJPhaseAction)
+
+		err := bj.PlayerSurrender()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+	})
+	t.Run("surrender after stood rejected", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		hand.SetStood(true)
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		bj.SetPhase(domain.BJPhaseAction)
+
+		err := bj.PlayerSurrender()
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+	})
+	t.Run("surrender with all-surrendered hands triggers game end without dealer play", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+
+		err := bj.PlayerSurrender()
+		assert.NoError(t, err)
+		assert.True(t, bj.GetGameEndFlag())
+		// dealer should have only 2 cards (not drawn more)
+		assert.Equal(t, 2, bj.GetDealer().GetCardsSize())
+	})
+}
+
+func TestBlackJack_SetDeckCount(t *testing.T) {
+	t.Run("set valid deck counts", func(t *testing.T) {
+		for _, count := range []int{1, 2, 4, 6, 8} {
+			bj := domain.NewDefaultBlackJack()
+			err := bj.SetDeckCount(count)
+			assert.NoError(t, err, "count=%d", count)
+			assert.Equal(t, count, bj.GetDeckCount())
+		}
+	})
+	t.Run("invalid deck count rejected", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		err := bj.SetDeckCount(3)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+	t.Run("wrong phase rejected", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.SetPhase(domain.BJPhaseAction)
+		err := bj.SetDeckCount(2)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
+	})
+	t.Run("deck count persists across reset", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		err := bj.SetDeckCount(6)
+		assert.NoError(t, err)
+		bj.Reset()
+		assert.Equal(t, 6, bj.GetDeckCount())
+	})
+}
+
+func TestBlackJack_GetDeckCount_Default(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	assert.Equal(t, 1, bj.GetDeckCount())
+}
+
+func TestBlackJack_ToggleHint(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	assert.False(t, bj.IsHintEnabled())
+	bj.ToggleHint()
+	assert.True(t, bj.IsHintEnabled())
+	bj.ToggleHint()
+	assert.False(t, bj.IsHintEnabled())
+}
+
+func TestBlackJack_GetBasicStrategySuggestion(t *testing.T) {
+	t.Run("hint disabled returns none", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		assert.Equal(t, domain.BJSuggestNone, bj.GetBasicStrategySuggestion())
+	})
+	t.Run("bet phase returns none even with hint on", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.ToggleHint()
+		assert.Equal(t, domain.BJSuggestNone, bj.GetBasicStrategySuggestion())
+	})
+	t.Run("insurance phase returns decline insurance", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.ToggleHint()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 1, false)) // ace upcard
+		bj.SetPhase(domain.BJPhaseInsurance)
+		assert.Equal(t, domain.BJSuggestDeclineInsurance, bj.GetBasicStrategySuggestion())
+	})
+	t.Run("action phase with hard 16 vs 10 returns surrender", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.ToggleHint()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		assert.Equal(t, domain.BJSuggestSurrender, bj.GetBasicStrategySuggestion())
+	})
+	t.Run("action phase with finished hand returns none", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.ToggleHint()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		hand.SetStood(true)
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		assert.Equal(t, domain.BJSuggestNone, bj.GetBasicStrategySuggestion())
+	})
+	t.Run("action phase with no dealer upcard returns none", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.ToggleHint()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		// no dealer card
+		bj.SetPhase(domain.BJPhaseAction)
+		assert.Equal(t, domain.BJSuggestNone, bj.GetBasicStrategySuggestion())
+	})
+}
+
+func TestBlackJack_Reset_PreservesHintAndDeckCount(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	bj.ToggleHint()
+	err := bj.SetDeckCount(4)
+	assert.NoError(t, err)
+	bj.Reset()
+	assert.True(t, bj.IsHintEnabled())
+	assert.Equal(t, 4, bj.GetDeckCount())
+}
+
+func TestBlackJack_Surrender_ResolvePayout_Skipped(t *testing.T) {
+	// Surrendered hand should be skipped in payout; other hand is settled normally
+	bj := domain.NewDefaultBlackJack()
+	bj.Reset()
+	// Set up two hands: hand[0] surrendered, hand[1] wins
+	hand0 := bj.GetPlayerHands()[0]
+	hand0.SetBet(100)
+	hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	hand0.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	hand1 := domain.NewBlackJackHand()
+	hand1.SetBet(100)
+	hand1.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	hand1.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	hand1.SetStood(true)
+	bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
+
+	// Start chips: player already paid 200 in bet (100+100)
+	startChips := bj.GetPlayer().GetChips()
+
+	// Surrender hand0 returns 50
+	bj.SetPhase(domain.BJPhaseAction)
+	err := bj.PlayerSurrender()
+	assert.NoError(t, err)
+	// Now currentHandIdx moves to 1 (hand1 not finished)
+	// stand hand1 to trigger dealer play
+	_ = bj.PlayerStand()
+
+	// Dealer has score < 20 so player wins hand1 (dealer draws until >=17)
+	// Just verify game ended and player got back hand1 winnings but not double hand0
+	assert.True(t, bj.GetGameEndFlag())
+	// Player should have gotten: 50 (from surrender) + some winnings from hand1
+	assert.Greater(t, bj.GetPlayer().GetChips(), startChips+50)
+}
+
+func TestBlackJack_GetDeckCount_ZeroDefault(t *testing.T) {
+	// NewBlackJack directly doesn't set deckCount, so GetDeckCount should return default
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	bj := domain.NewBlackJack(tc, player, dealer)
+	assert.Equal(t, domain.BJDefaultDecks, bj.GetDeckCount())
+}

@@ -364,3 +364,62 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		assert.Contains(t, output, "phase: DEAL")
 	})
 }
+
+func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("surrender flag displayed on hand", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(900, 1000)
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		_ = bj.PlayerSurrender()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "[SURRENDER]")
+	})
+
+	t.Run("hint enabled ACTION phase shows hint text", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(900, 1000)
+		bj.ToggleHint()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		// hard 16 vs 10 → surrender
+		assert.Contains(t, output, "[HINT: SURRENDER]")
+	})
+
+	t.Run("hint enabled INSURANCE phase shows decline insurance", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(900, 1000)
+		bj.ToggleHint()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+		bj.SetPhase(domain.BJPhaseInsurance)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "[HINT: DECLINE INSURANCE]")
+	})
+
+	t.Run("hint enabled but no suggestion (bet phase): no hint line", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		bj.ToggleHint()
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "[HINT:")
+	})
+
+	t.Run("decks shown in chip info", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "decks=1")
+	})
+}

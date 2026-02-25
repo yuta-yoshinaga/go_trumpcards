@@ -23,7 +23,11 @@ const (
 	BJDefaultChips = 1000 // デフォルトチップ
 	BJMinBet       = 10   // 最低ベット額
 	BJMaxHands     = 4    // スプリットによる最大ハンド数
+	BJDefaultDecks = 1    // デフォルトデッキ数
 )
+
+// BJValidDeckCounts 有効なデッキ数
+var BJValidDeckCounts = []int{1, 2, 4, 6, 8}
 
 // BlackJack ブラックジャッククラス
 type BlackJack struct {
@@ -36,6 +40,8 @@ type BlackJack struct {
 	currentHandIdx     int              // 現在操作中のハンドインデックス
 	insuranceBet       int              // インシュランスベット額
 	insuranceAvailable bool             // インシュランス可能フラグ
+	deckCount          int              // デッキ数
+	hintEnabled        bool             // ヒント有効フラグ
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -43,6 +49,7 @@ func NewDefaultBlackJack() *BlackJack {
 	bj := NewBlackJack(NewTrumpCards(0), NewBlackJackPlayer(), NewBlackJackPlayer())
 	bj.player.SetChips(BJDefaultChips)
 	bj.dealer.SetChips(BJDefaultChips)
+	bj.deckCount = BJDefaultDecks
 	return bj
 }
 
@@ -60,7 +67,7 @@ func NewBlackJack(trumpCards *TrumpCards, player *BlackJackPlayer, dealer *Black
 	}
 }
 
-// Reset ゲーム初期化
+// Reset ゲーム初期化（hintEnabled/deckCountは保持）
 func (b *BlackJack) Reset() {
 	b.gameEndFlag = false
 	b.phase = BJPhaseBet
@@ -75,6 +82,11 @@ func (b *BlackJack) Reset() {
 	if b.dealer.GetChips() < BJMinBet {
 		b.dealer.SetChips(BJDefaultChips)
 	}
+	// デッキ数を反映してシュー再構築
+	if b.deckCount <= 0 {
+		b.deckCount = BJDefaultDecks
+	}
+	b.trumpCards = NewTrumpCardsWithDecks(b.deckCount, 0)
 	// 山札シャッフル
 	for i := 0; i < 10; i++ {
 		b.trumpCards.Shuffle()
@@ -321,15 +333,15 @@ func (b *BlackJack) advanceHand() {
 
 // dealerPlay ディーラーのカードドロー＆精算
 func (b *BlackJack) dealerPlay() {
-	// 全ハンドがバーストしていればディーラーはカードを引かない
-	allBusted := true
+	// 全ハンドがバースト or サレンダーしていればディーラーはカードを引かない
+	allDone := true
 	for _, hand := range b.playerHands {
-		if !hand.IsBusted() {
-			allBusted = false
+		if !hand.IsBusted() && !hand.IsSurrendered() {
+			allDone = false
 			break
 		}
 	}
-	if !allBusted {
+	if !allDone {
 		b.DealerHit()
 	} else {
 		b.endGame()
@@ -382,6 +394,10 @@ func (b *BlackJack) resolvePayouts() {
 	}
 
 	for _, hand := range b.playerHands {
+		if hand.IsSurrendered() {
+			// サレンダー: 半額返却済み（PlayerSurrender内で処理）
+			continue
+		}
 		bet := hand.GetBet()
 		result := b.judgeHand(hand)
 		switch result {
@@ -510,4 +526,80 @@ func (b *BlackJack) SetPhase(phase int) {
 	if phase == BJPhaseInsurance {
 		b.insuranceAvailable = true
 	}
+}
+
+// PlayerSurrender プレイヤーサレンダー（ベット半額返却して降りる）
+func (b *BlackJack) PlayerSurrender() error {
+	if b.phase != BJPhaseAction {
+		return NewDomainError(ErrWrongPhase, "Surrender is not allowed now.")
+	}
+	hand := b.playerHands[b.currentHandIdx]
+	if !hand.CanSurrender() {
+		return NewDomainError(ErrInvalidPlay, "Surrender is not allowed for this hand.")
+	}
+	// 半額返却
+	halfBet := hand.GetBet() / 2
+	b.player.AddChips(halfBet)
+	hand.SetSurrendered(true)
+	b.advanceHand()
+	return nil
+}
+
+// SetDeckCount デッキ数設定（BETフェーズのみ）
+func (b *BlackJack) SetDeckCount(count int) error {
+	if b.phase != BJPhaseBet {
+		return NewDomainError(ErrWrongPhase, "Deck count can only be changed during the bet phase.")
+	}
+	valid := false
+	for _, v := range BJValidDeckCounts {
+		if v == count {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return NewDomainError(ErrInvalidAmount, "Invalid deck count. Use 1, 2, 4, 6, or 8.")
+	}
+	b.deckCount = count
+	return nil
+}
+
+// GetDeckCount デッキ数取得
+func (b *BlackJack) GetDeckCount() int {
+	if b.deckCount <= 0 {
+		return BJDefaultDecks
+	}
+	return b.deckCount
+}
+
+// ToggleHint ヒント表示のON/OFF切り替え
+func (b *BlackJack) ToggleHint() {
+	b.hintEnabled = !b.hintEnabled
+}
+
+// IsHintEnabled ヒント有効か
+func (b *BlackJack) IsHintEnabled() bool {
+	return b.hintEnabled
+}
+
+// GetBasicStrategySuggestion ベーシックストラテジーによる推奨アクションを返す
+func (b *BlackJack) GetBasicStrategySuggestion() BJSuggestedAction {
+	if !b.hintEnabled {
+		return BJSuggestNone
+	}
+	if b.phase != BJPhaseAction && b.phase != BJPhaseInsurance {
+		return BJSuggestNone
+	}
+	if b.phase == BJPhaseInsurance {
+		return BJSuggestDeclineInsurance
+	}
+	hand := b.playerHands[b.currentHandIdx]
+	if hand.IsFinished() {
+		return BJSuggestNone
+	}
+	dealerUpcard := b.dealer.GetCard(0)
+	if dealerUpcard == nil {
+		return BJSuggestNone
+	}
+	return GetBasicStrategyAction(hand, dealerUpcard)
 }

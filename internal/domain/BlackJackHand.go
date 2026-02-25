@@ -2,11 +2,12 @@ package domain
 
 // BlackJackHand ブラックジャックハンド（分割対応）
 type BlackJackHand struct {
-	cards   []*Card
-	bet     int
-	stood   bool
-	doubled bool
-	busted  bool
+	cards       []*Card
+	bet         int
+	stood       bool
+	doubled     bool
+	busted      bool
+	surrendered bool
 }
 
 // NewBlackJackHand コンストラクタ
@@ -39,9 +40,9 @@ func (h *BlackJackHand) GetCardsSize() int {
 	return len(h.cards)
 }
 
-// CalculateBlackJackScore カードスライスからブラックジャックスコアを計算する共通関数
-func CalculateBlackJackScore(cards []*Card) int {
-	score := 0
+// calcScore カードスライスからスコアとソフト状態を計算する内部ヘルパー
+// isSoft=true はエースが11として有効に働いていることを意味する
+func calcScore(cards []*Card) (score int, isSoft bool) {
 	aceCount := 0
 	for _, card := range cards {
 		value := card.GetValue()
@@ -54,17 +55,28 @@ func CalculateBlackJackScore(cards []*Card) int {
 			score += value
 		}
 	}
-	// スコアが21を超えている場合、エースを1として再計算
 	for score > 21 && aceCount > 0 {
 		score -= 10
 		aceCount--
 	}
+	return score, aceCount > 0
+}
+
+// CalculateBlackJackScore カードスライスからブラックジャックスコアを計算する共通関数
+func CalculateBlackJackScore(cards []*Card) int {
+	score, _ := calcScore(cards)
 	return score
 }
 
 // GetScore 手札から現在のスコア計算
 func (h *BlackJackHand) GetScore() int {
 	return CalculateBlackJackScore(h.cards)
+}
+
+// IsSoft ソフトハンド（11として有効なエースを含む）かどうか判定
+func (h *BlackJackHand) IsSoft() bool {
+	_, isSoft := calcScore(h.cards)
+	return isSoft
 }
 
 // GetBet ベット額取得
@@ -129,9 +141,24 @@ func (h *BlackJackHand) CanSplit() bool {
 	return bjValue(h.cards[0]) == bjValue(h.cards[1])
 }
 
+// IsSurrendered サレンダー済みか
+func (h *BlackJackHand) IsSurrendered() bool {
+	return h.surrendered
+}
+
+// SetSurrendered サレンダー状態設定
+func (h *BlackJackHand) SetSurrendered(surrendered bool) {
+	h.surrendered = surrendered
+}
+
+// CanSurrender サレンダー可能か（2枚でスタンド/バースト/サレンダー前）
+func (h *BlackJackHand) CanSurrender() bool {
+	return len(h.cards) == 2 && !h.stood && !h.busted && !h.surrendered
+}
+
 // IsFinished ハンドが完了しているか
 func (h *BlackJackHand) IsFinished() bool {
-	return h.stood || h.busted
+	return h.stood || h.busted || h.surrendered
 }
 
 // Reset ハンドリセット
@@ -141,4 +168,5 @@ func (h *BlackJackHand) Reset() {
 	h.stood = false
 	h.doubled = false
 	h.busted = false
+	h.surrendered = false
 }

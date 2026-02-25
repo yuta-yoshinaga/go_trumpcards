@@ -33,6 +33,9 @@ func (m *mockBlackJackIF) DoubleDown() string       { return m.Called().String(0
 func (m *mockBlackJackIF) Split() string            { return m.Called().String(0) }
 func (m *mockBlackJackIF) Insurance() string        { return m.Called().String(0) }
 func (m *mockBlackJackIF) DeclineInsurance() string { return m.Called().String(0) }
+func (m *mockBlackJackIF) Surrender() string        { return m.Called().String(0) }
+func (m *mockBlackJackIF) SetDeckCount(c int) string { return m.Called(c).String(0) }
+func (m *mockBlackJackIF) ToggleHint() string       { return m.Called().String(0) }
 
 func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 	bjMock := &mockBlackJackIF{}
