@@ -65,6 +65,9 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	// プレイヤー情報
 	for i := 0; i < s.GetPlayerCnt(); i++ {
 		player := s.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		pObj := new(controller.SevensWebOutputPlayer)
 		pObj.ID = i
 		pObj.IsHuman = player.GetIsHuman()
@@ -101,6 +104,9 @@ func (swp *SevensWebPresenter) buildResultMessage(s interfaces.SevensGame) strin
 	msg := "ゲーム終了！ "
 	for i := 0; i < s.GetPlayerCnt(); i++ {
 		player := s.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		rank := player.GetRank()
 		if rank < 1 {
 			continue
