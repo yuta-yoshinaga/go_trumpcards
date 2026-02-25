@@ -97,14 +97,16 @@ func (web *TrumpCardsWeb) Exec() {
 		log.Fatal(err)
 	}
 	api.SetApp(router)
-	http.Handle("/", http.FileServer(http.Dir("public")))
-	http.Handle("/blackjack/exec", api.MakeHandler())
-	http.Handle("/poker/exec", api.MakeHandler())
-	http.Handle("/oldmaid/exec", api.MakeHandler())
-	http.Handle("/daifugo/exec", api.MakeHandler())
-	http.Handle("/sevens/exec", api.MakeHandler())
-	http.Handle("/doubt/exec", api.MakeHandler())
-	log.Fatal(http.ListenAndServe(getListenPort(), nil))
+	mux := http.NewServeMux()
+	apiHandler := api.MakeHandler()
+	mux.Handle("/blackjack/exec", apiHandler)
+	mux.Handle("/poker/exec", apiHandler)
+	mux.Handle("/oldmaid/exec", apiHandler)
+	mux.Handle("/daifugo/exec", apiHandler)
+	mux.Handle("/sevens/exec", apiHandler)
+	mux.Handle("/doubt/exec", apiHandler)
+	mux.Handle("/", http.FileServer(http.Dir("public")))
+	log.Fatal(http.ListenAndServe(getListenPort(), mux))
 }
 
 func getListenPort() string {
