@@ -5,6 +5,12 @@ import "math/rand"
 // DoubtPlayerCnt ダウトプレイヤー数
 const DoubtPlayerCnt = 4
 
+// MinClaimedValue claimed value の最小値 (A)
+const MinClaimedValue = 1
+
+// MaxClaimedValue claimed value の最大値 (K)
+const MaxClaimedValue = 13
+
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
@@ -113,7 +119,7 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 	if !d.players[d.currentTurn].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
-	if claimedValue < 1 || claimedValue > 13 {
+	if claimedValue < MinClaimedValue || claimedValue > MaxClaimedValue {
 		return NewDomainError(ErrInvalidPlay, "宣言する値は1から13の範囲で指定してください")
 	}
 	if len(cardIndices) == 0 {
