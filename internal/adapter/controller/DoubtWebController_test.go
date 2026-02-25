@@ -2,6 +2,7 @@ package controller_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -13,6 +14,20 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ant0ine/go-json-rest/rest/test"
 )
+
+// mustDoubtOutputJSON constructs a default DoubtWebOutput with the given message
+// and returns its JSON representation, mirroring newDefaultOutput in the controller.
+func mustDoubtOutputJSON(msg string) string {
+	out := &controller.DoubtWebOutput{
+		Players:     []*controller.DoubtWebOutputPlayer{},
+		CpuDoubters: []int{},
+		CpuActions:  []*controller.DoubtWebOutputAction{},
+		WinnerIdx:   -1,
+		Message:     msg,
+	}
+	b, _ := json.Marshal(out)
+	return string(b)
+}
 
 func TestDoubtWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":""}`
@@ -36,9 +51,6 @@ func TestDoubtWebController_Method(t *testing.T) {
 	)
 	api.SetApp(router)
 
-	// For "q"/"quit": other fields get zero values
-	qBody := `{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"bye."}`
-
 	t.Run("success Exec q", func(t *testing.T) {
 		var jsonInput controller.DoubtWebInput
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
@@ -47,7 +59,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(qBody)
+		recorded.BodyIs(mustDoubtOutputJSON("bye."))
 	})
 
 	t.Run("success Exec quit", func(t *testing.T) {
@@ -58,7 +70,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(qBody)
+		recorded.BodyIs(mustDoubtOutputJSON("bye."))
 	})
 
 	t.Run("success Exec r", func(t *testing.T) {
@@ -135,7 +147,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"Unsupported command."}`)
+		recorded.BodyIs(mustDoubtOutputJSON("Unsupported command."))
 	})
 
 	t.Run("failed Exec command empty", func(t *testing.T) {
@@ -146,7 +158,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
+		recorded.BodyIs(mustDoubtOutputJSON("param error."))
 	})
 
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
@@ -157,7 +169,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
+		recorded.BodyIs(mustDoubtOutputJSON("param error."))
 	})
 
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
@@ -170,7 +182,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
+		recorded.BodyIs(mustDoubtOutputJSON("param error."))
 	})
 
 	t.Run("failed Exec response empty", func(t *testing.T) {
@@ -182,9 +194,13 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"error."}`)
+		recorded.BodyIs(mustDoubtOutputJSON("error."))
 	})
 
+	claimedValueErrBody := mustDoubtOutputJSON(fmt.Sprintf(
+		"param error: claimedValue must be between %d and %d.",
+		controller.MinClaimedValue, controller.MaxClaimedValue,
+	))
 	claimedValueTests := []struct {
 		name         string
 		claimedValue int
@@ -201,13 +217,13 @@ func TestDoubtWebController_Method(t *testing.T) {
 			name:         "failed too low (0)",
 			claimedValue: 0,
 			wantCode:     http.StatusBadRequest,
-			wantBody:     `{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error: claimedValue must be between 1 and 13."}`,
+			wantBody:     claimedValueErrBody,
 		},
 		{
 			name:         "failed too high (14)",
 			claimedValue: 14,
 			wantCode:     http.StatusBadRequest,
-			wantBody:     `{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error: claimedValue must be between 1 and 13."}`,
+			wantBody:     claimedValueErrBody,
 		},
 	}
 	for _, tc := range claimedValueTests {
@@ -239,7 +255,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
+		recorded.BodyIs(mustDoubtOutputJSON("param error."))
 	})
 }
 
