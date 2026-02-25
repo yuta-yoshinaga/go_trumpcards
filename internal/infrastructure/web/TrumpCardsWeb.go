@@ -20,6 +20,7 @@ type TrumpCardsWeb struct {
 	omc *controller.OldMaidWebController
 	dgc *controller.DaifugoWebController
 	sgc *controller.SevensWebController
+	dwc *controller.DoubtWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -67,6 +68,16 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
 			return usecase.NewSevensInteractor(sevens, presenter.NewSevensWebPresenter())
 		}),
+		dwc: controller.NewDoubtWebController(func() usecase.DoubtInteractorIF {
+			players := []*domain.DoubtPlayer{
+				domain.NewDoubtPlayer(true),
+				domain.NewDoubtPlayer(false),
+				domain.NewDoubtPlayer(false),
+				domain.NewDoubtPlayer(false),
+			}
+			doubt := domain.NewDoubt(domain.NewTrumpCards(0), players)
+			return usecase.NewDoubtInteractor(doubt, presenter.NewDoubtWebPresenter())
+		}),
 	}
 }
 
@@ -80,6 +91,7 @@ func (web *TrumpCardsWeb) Exec() {
 		rest.Post("/oldmaid/exec", web.omc.Exec),
 		rest.Post("/daifugo/exec", web.dgc.Exec),
 		rest.Post("/sevens/exec", web.sgc.Exec),
+		rest.Post("/doubt/exec", web.dwc.Exec),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -91,6 +103,7 @@ func (web *TrumpCardsWeb) Exec() {
 	http.Handle("/oldmaid/exec", api.MakeHandler())
 	http.Handle("/daifugo/exec", api.MakeHandler())
 	http.Handle("/sevens/exec", api.MakeHandler())
+	http.Handle("/doubt/exec", api.MakeHandler())
 	log.Fatal(http.ListenAndServe(getListenPort(), nil))
 }
 

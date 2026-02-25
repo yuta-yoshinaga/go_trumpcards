@@ -30,3 +30,12 @@ func (_m *MockDoubtInteractor) SkipDoubt() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// GetCpuDoubters モック
+func (_m *MockDoubtInteractor) GetCpuDoubters() []int {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}

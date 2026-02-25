@@ -268,3 +268,58 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 }
+
+// --- Doubt WriteJson error tests ---
+
+type mockDoubtIF struct{ mock.Mock }
+
+func (m *mockDoubtIF) Reset() string                 { return m.Called().String(0) }
+func (m *mockDoubtIF) Play(i []int, v int) string    { return m.Called(i, v).String(0) }
+func (m *mockDoubtIF) ResolveDoubt(idx []int) string { return m.Called(idx).String(0) }
+func (m *mockDoubtIF) SkipDoubt() string             { return m.Called().String(0) }
+func (m *mockDoubtIF) GetCpuDoubters() []int {
+	ret := m.Called()
+	if val, ok := ret.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}
+
+func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
+	dwMock := &mockDoubtIF{}
+	factory := func() usecase.DoubtInteractorIF { return dwMock }
+	ctrl := NewDoubtWebController(factory)
+	defer ctrl.store.Stop()
+
+	t.Run("param error WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
+	})
+
+	t.Run("quit WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusOK, fw.headerCode)
+	})
+
+	t.Run("session error WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
+	})
+
+	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+		dwMock2 := &mockDoubtIF{}
+		factory2 := func() usecase.DoubtInteractorIF { return dwMock2 }
+		ctrl2 := NewDoubtWebController(factory2)
+		defer ctrl2.store.Stop()
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-dw-unsupported"}`)
+		ctrl2.Exec(fw, req)
+		assert.Equal(t, http.StatusOK, fw.headerCode)
+	})
+}

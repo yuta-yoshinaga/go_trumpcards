@@ -182,6 +182,28 @@ func TestDoubtInteractor_SkipDoubt(t *testing.T) {
 	})
 }
 
+func TestDoubtInteractor_GetCpuDoubters(t *testing.T) {
+	t.Run("returns cpu doubters from domain game", func(t *testing.T) {
+		dpMock := new(presenter.MockDoubtPresenter)
+		gameMock := new(interfaces.MockDoubtGame)
+		gameMock.On("GetCpuDoubters").Return([]int{1, 2})
+
+		di := usecase.NewDoubtInteractor(gameMock, dpMock)
+		result := di.GetCpuDoubters()
+		assert.Equal(t, []int{1, 2}, result)
+	})
+
+	t.Run("returns nil when no cpu doubters", func(t *testing.T) {
+		dpMock := new(presenter.MockDoubtPresenter)
+		gameMock := new(interfaces.MockDoubtGame)
+		gameMock.On("GetCpuDoubters").Return([]int(nil))
+
+		di := usecase.NewDoubtInteractor(gameMock, dpMock)
+		result := di.GetCpuDoubters()
+		assert.Nil(t, result)
+	})
+}
+
 func TestDoubtInteractor_WithRealGame(t *testing.T) {
 	t.Run("Reset initializes game and returns output", func(t *testing.T) {
 		mockOutput := `{"phase":0}`
