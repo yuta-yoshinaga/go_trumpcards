@@ -185,46 +185,47 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"error."}`)
 	})
 
-	t.Run("success Exec p play claimedValue at max boundary", func(t *testing.T) {
-		var jsonInput controller.DoubtWebInput
-		_ = json.Unmarshal([]byte(`{"command": "p", "cardIndices": [0], "claimedValue": 13, "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusOK)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(expectedBody)
-	})
-
-	t.Run("failed Exec p play claimedValue too low", func(t *testing.T) {
-		input := controller.DoubtWebInput{
-			Command:      "p",
-			CardIndices:  []int{0},
-			ClaimedValue: 0,
-			SessionId:    "test-session-1",
-		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
-	})
-
-	t.Run("failed Exec p play claimedValue too high", func(t *testing.T) {
-		input := controller.DoubtWebInput{
-			Command:      "p",
-			CardIndices:  []int{0},
-			ClaimedValue: 14,
-			SessionId:    "test-session-1",
-		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error."}`)
-	})
+	claimedValueTests := []struct {
+		name         string
+		claimedValue int
+		wantCode     int
+		wantBody     string
+	}{
+		{
+			name:         "success at max boundary (13)",
+			claimedValue: 13,
+			wantCode:     http.StatusOK,
+			wantBody:     expectedBody,
+		},
+		{
+			name:         "failed too low (0)",
+			claimedValue: 0,
+			wantCode:     http.StatusBadRequest,
+			wantBody:     `{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error: claimedValue must be between 1 and 13."}`,
+		},
+		{
+			name:         "failed too high (14)",
+			claimedValue: 14,
+			wantCode:     http.StatusBadRequest,
+			wantBody:     `{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":"param error: claimedValue must be between 1 and 13."}`,
+		},
+	}
+	for _, tc := range claimedValueTests {
+		t.Run("Exec p play claimedValue "+tc.name, func(t *testing.T) {
+			input := controller.DoubtWebInput{
+				Command:      "p",
+				CardIndices:  []int{0},
+				ClaimedValue: tc.claimedValue,
+				SessionId:    "test-session-1",
+			}
+			req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+			recorded := test.RunRequest(t, api.MakeHandler(), req)
+			recorded.CodeIs(tc.wantCode)
+			recorded.ContentTypeIsJson()
+			recorded.BodyIs(tc.wantBody)
+		})
+	}
 
 	t.Run("failed Exec cardIndices too large", func(t *testing.T) {
 		indices := make([]int, controller.MaxCardIndices+1)

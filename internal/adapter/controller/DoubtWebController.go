@@ -126,7 +126,7 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "p", "play":
 		if param.ClaimedValue < MinClaimedValue || param.ClaimedValue > MaxClaimedValue {
 			w.WriteHeader(http.StatusBadRequest)
-			if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
+			if err := w.WriteJson(dwc.newDefaultOutput("param error: claimedValue must be between 1 and 13.")); err != nil {
 				log.Printf("WriteJson error: %v", err)
 			}
 			return
