@@ -34,7 +34,6 @@ export function BlackJackPage() {
   const [state, setState] = useState<BlackJackResponse | null>(null);
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
-  const [deckCount, setDeckCount] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,11 +79,6 @@ export function BlackJackPage() {
   const playerChips = state?.player?.chips ?? 0;
   const hintEnabled = state?.hintEnabled ?? false;
   const suggestedAction = state?.suggestedAction ?? BJ_SUGGEST_NONE;
-
-  const handleDeckCountChange = (newCount: number) => {
-    setDeckCount(newCount);
-    exec('setdeckcount', newCount);
-  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]">
@@ -191,8 +185,8 @@ export function BlackJackPage() {
                 </label>
                 <select
                   id="bj-deck-count"
-                  value={deckCount}
-                  onChange={(e) => handleDeckCountChange(Number(e.target.value))}
+                  value={state?.deckCount ?? 1}
+                  onChange={(e) => exec('setdeckcount', Number(e.target.value))}
                   className="px-2 py-1 rounded text-sm"
                   disabled={loading}
                 >
