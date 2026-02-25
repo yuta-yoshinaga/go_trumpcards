@@ -41,7 +41,7 @@ paths:
         1. **Bet** (`phase=1`) — Player places an initial bet
         2. **Deal** (`phase=2`) — Two cards dealt to each; check if dealer shows Ace
         3. **Insurance** (`phase=3`) — Player accepts/declines insurance (only if dealer shows Ace)
-        4. **Action** (`phase=4`) — Hit / Stand / Double Down / Split
+        4. **Action** (`phase=4`) — Hit / Stand / Double Down / Split / Surrender
         5. **End** (`phase=5`) — Dealer plays, judgment, payout
 
         | Command | Aliases | Description |
@@ -54,6 +54,9 @@ paths:
         | `split` | `sp`    | Split a pair into two hands |
         | `insurance` | `i` | Accept insurance (costs half of original bet) |
         | `declineinsurance` | `di` | Decline insurance |
+        | `surrender` | `sur` | Surrender first 2 cards and receive half bet back |
+        | `togglehint` | — | Toggle basic strategy hint on/off |
+        | `setdeckcount` | `sd` | Set shoe deck count (requires `amount`: 1/2/4/6/8) |
         | `quit`  | `q`     | End the session |
       operationId: blackjackExec
       requestBody:
@@ -698,14 +701,15 @@ components:
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
             `hit` (`h`), `stand` (`s`), `doubledown` (`d`), `split` (`sp`),
             `insurance` (`i`), `declineinsurance` (`di`), `quit` (`q`).
-          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, q, quit]
+          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, q, quit]
           example: hit
         amount:
           type: integer
           description: |
             Bet amount.  Required for `bet` command (minimum 10).
+            Deck count for `setdeckcount` command (valid values: 1, 2, 4, 6, 8).
             Ignored for other commands.
-          minimum: 10
+          minimum: 1
           example: 100
         sessionId:
           type: string
@@ -750,6 +754,8 @@ components:
         - busted
         - isBlackJack
         - canSplit
+        - surrendered
+        - canSurrender
       properties:
         score:
           type: integer
@@ -779,6 +785,12 @@ components:
         canSplit:
           type: boolean
           description: Whether this hand can be split (2 cards of equal BJ value).
+        surrendered:
+          type: boolean
+          description: Whether the player surrendered this hand.
+        canSurrender:
+          type: boolean
+          description: Whether the player can surrender this hand (exactly 2 cards, action phase, not yet stood/busted/surrendered).
 
     BlackJackResponse:
       type: object
@@ -790,6 +802,9 @@ components:
         - insuranceBet
         - insuranceAvailable
         - message
+        - hintEnabled
+        - suggestedAction
+        - deckCount
       properties:
         dealer:
           $ref: '#/components/schemas/BlackJackPlayer'
@@ -838,6 +853,29 @@ components:
             - `"param error."` — invalid request
             - `"error."` — internal error
           example: You are the winner.
+        hintEnabled:
+          type: boolean
+          description: Whether the basic strategy hint is currently enabled.
+          example: false
+        suggestedAction:
+          type: integer
+          description: |
+            Basic strategy suggested action for the current hand (0 when hint is disabled or no suggestion).
+            - `0` — None
+            - `1` — Hit
+            - `2` — Stand
+            - `3` — Double Down
+            - `4` — Split
+            - `5` — Surrender
+            - `6` — Decline Insurance
+          enum: [0, 1, 2, 3, 4, 5, 6]
+          example: 1
+        deckCount:
+          type: integer
+          description: |
+            Number of decks in the shoe.  Valid values: 1, 2, 4, 6, 8.
+          enum: [1, 2, 4, 6, 8]
+          example: 1
 
     # -------------------------------------------------------------------------
     # Poker

@@ -2,11 +2,12 @@ package domain
 
 // BlackJackHand ブラックジャックハンド（分割対応）
 type BlackJackHand struct {
-	cards   []*Card
-	bet     int
-	stood   bool
-	doubled bool
-	busted  bool
+	cards       []*Card
+	bet         int
+	stood       bool
+	doubled     bool
+	busted      bool
+	surrendered bool
 }
 
 // NewBlackJackHand コンストラクタ
@@ -129,9 +130,24 @@ func (h *BlackJackHand) CanSplit() bool {
 	return bjValue(h.cards[0]) == bjValue(h.cards[1])
 }
 
+// IsSurrendered サレンダー済みか
+func (h *BlackJackHand) IsSurrendered() bool {
+	return h.surrendered
+}
+
+// SetSurrendered サレンダー状態設定
+func (h *BlackJackHand) SetSurrendered(surrendered bool) {
+	h.surrendered = surrendered
+}
+
+// CanSurrender サレンダー可能か（2枚でスタンド/バースト/サレンダー前）
+func (h *BlackJackHand) CanSurrender() bool {
+	return len(h.cards) == 2 && !h.stood && !h.busted && !h.surrendered
+}
+
 // IsFinished ハンドが完了しているか
 func (h *BlackJackHand) IsFinished() bool {
-	return h.stood || h.busted
+	return h.stood || h.busted || h.surrendered
 }
 
 // Reset ハンドリセット
@@ -141,4 +157,5 @@ func (h *BlackJackHand) Reset() {
 	h.stood = false
 	h.doubled = false
 	h.busted = false
+	h.surrendered = false
 }

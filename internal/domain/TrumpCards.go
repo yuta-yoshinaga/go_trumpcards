@@ -11,15 +11,20 @@ type TrumpCards struct {
 
 // NewTrumpCards コンストラクタ
 func NewTrumpCards(jokerCnt int) *TrumpCards {
+	return NewTrumpCardsWithDecks(1, jokerCnt)
+}
+
+// NewTrumpCardsWithDecks マルチデッキ対応コンストラクタ
+func NewTrumpCardsWithDecks(deckCount, jokerCnt int) *TrumpCards {
 	t := new(TrumpCards)
-	t.deckCnt = CardCnt + jokerCnt
-	t.cardsInit()
+	t.deckCnt = CardCnt*deckCount + jokerCnt
+	t.cardsInit(deckCount, jokerCnt)
 	t.deckInit()
 	return t
 }
 
 // cardsInit カード初期化
-func (t *TrumpCards) cardsInit() {
+func (t *TrumpCards) cardsInit(deckCount, jokerCnt int) {
 	t.deck = make([]*Card, 0, t.deckCnt)
 
 	// デザインのリスト
@@ -30,17 +35,18 @@ func (t *TrumpCards) cardsInit() {
 		CardDesignDiamond,
 	}
 
-	// 通常カード (各スート 1-13)
-	for _, design := range designs {
-		for val := 1; val <= CardValueMax; val++ {
-			card := NewCard(design, val, false)
-			t.deck = append(t.deck, card)
+	// 通常カード (deckCount デッキ分)
+	for d := 0; d < deckCount; d++ {
+		for _, design := range designs {
+			for val := 1; val <= CardValueMax; val++ {
+				card := NewCard(design, val, false)
+				t.deck = append(t.deck, card)
+			}
 		}
 	}
 
-	// ジョーカー (残り枚数分)
-	jokerCount := t.deckCnt - CardCnt
-	for i := 1; i <= jokerCount; i++ {
+	// ジョーカー
+	for i := 1; i <= jokerCnt; i++ {
 		card := NewCard(CardDesignJoker, i, false)
 		t.deck = append(t.deck, card)
 	}

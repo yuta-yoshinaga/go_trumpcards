@@ -184,3 +184,63 @@ func TestBlackJackHand_IsFinished(t *testing.T) {
 		assert.True(t, h.IsFinished())
 	})
 }
+
+func TestBlackJackHand_Surrender(t *testing.T) {
+	t.Run("new hand not surrendered", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		assert.False(t, h.IsSurrendered())
+		assert.False(t, h.CanSurrender())
+	})
+	t.Run("can surrender with 2 cards", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		assert.True(t, h.CanSurrender())
+	})
+	t.Run("cannot surrender with 3 cards", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		h.AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		assert.False(t, h.CanSurrender())
+	})
+	t.Run("cannot surrender when stood", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		h.SetStood(true)
+		assert.False(t, h.CanSurrender())
+	})
+	t.Run("cannot surrender when busted", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		h.SetBusted(true)
+		assert.False(t, h.CanSurrender())
+	})
+	t.Run("cannot surrender when already surrendered", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		h.SetSurrendered(true)
+		assert.False(t, h.CanSurrender())
+		assert.True(t, h.IsSurrendered())
+		assert.True(t, h.IsFinished())
+	})
+	t.Run("reset clears surrendered", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		h.SetSurrendered(true)
+		h.Reset()
+		assert.False(t, h.IsSurrendered())
+		assert.False(t, h.IsFinished())
+	})
+}
+
+func TestBlackJackHand_IsFinished_Surrendered(t *testing.T) {
+	h := domain.NewBlackJackHand()
+	assert.False(t, h.IsFinished())
+	h.SetSurrendered(true)
+	assert.True(t, h.IsFinished())
+}

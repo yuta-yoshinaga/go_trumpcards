@@ -195,7 +195,7 @@ describe('DoubtPage', () => {
     fireEvent.change(input, { target: { value: '0' } });
     expect(input).toHaveValue(1);
 
-    // NaN input (e.g. from browser on invalid text) should keep previous value
+    // non-numeric input is sanitized to '' by the browser; Number('') = 0 → clamped to 1
     fireEvent.change(input, { target: { value: 'abc' } });
     expect(input).toHaveValue(1);
   });

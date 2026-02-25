@@ -42,6 +42,9 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.CurrentHandIdx = bj.GetCurrentHandIdx()
 	resObj.InsuranceBet = bj.GetInsuranceBet()
 	resObj.InsuranceAvailable = bj.IsInsuranceAvailable()
+	resObj.HintEnabled = bj.IsHintEnabled()
+	resObj.SuggestedAction = int(bj.GetBasicStrategySuggestion())
+	resObj.DeckCount = bj.GetDeckCount()
 
 	// hands
 	resObj.Hands = make([]*controller.BlackJackWebOutputHand, len(hands))
@@ -58,6 +61,8 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		h.Busted = hand.IsBusted()
 		h.IsBlackJack = hand.IsBlackJack()
 		h.CanSplit = hand.CanSplit()
+		h.Surrendered = hand.IsSurrendered()
+		h.CanSurrender = hand.CanSurrender()
 		resObj.Hands[i] = h
 	}
 

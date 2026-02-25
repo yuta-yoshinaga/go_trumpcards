@@ -18,56 +18,53 @@ const betPhaseState: BlackJackResponse = {
   insuranceBet: 0,
   insuranceAvailable: false,
   message: '',
+  hintEnabled: false,
+  suggestedAction: 0,
+  deckCount: 1,
+};
+
+const baseHand: BlackJackHand = {
+  score: 15,
+  cards: [
+    { design: 'HEART', value: 5 },
+    { design: 'DIAMOND', value: 10 },
+  ],
+  bet: 100,
+  stood: false,
+  doubled: false,
+  busted: false,
+  isBlackJack: false,
+  canSplit: false,
+  surrendered: false,
+  canSurrender: false,
 };
 
 const actionPhaseState: BlackJackResponse = {
   dealer: { cards: [{ design: 'SPADE', value: 1 }], chips: 1000 },
   player: { chips: 900 },
-  hands: [
-    {
-      score: 15,
-      cards: [
-        { design: 'HEART', value: 5 },
-        { design: 'DIAMOND', value: 10 },
-      ],
-      bet: 100,
-      stood: false,
-      doubled: false,
-      busted: false,
-      isBlackJack: false,
-      canSplit: false,
-    },
-  ],
+  hands: [{ ...baseHand }],
   phase: 4,
   currentHandIdx: 0,
   insuranceBet: 0,
   insuranceAvailable: false,
   message: '',
+  hintEnabled: false,
+  suggestedAction: 0,
+  deckCount: 1,
 };
 
 const insurancePhaseState: BlackJackResponse = {
   dealer: { cards: [{ design: 'SPADE', value: 1 }], chips: 1000 },
   player: { chips: 900 },
-  hands: [
-    {
-      score: 15,
-      cards: [
-        { design: 'HEART', value: 5 },
-        { design: 'DIAMOND', value: 10 },
-      ],
-      bet: 100,
-      stood: false,
-      doubled: false,
-      busted: false,
-      isBlackJack: false,
-      canSplit: false,
-    },
-  ],
+  hands: [{ ...baseHand }],
   phase: 3,
   currentHandIdx: 0,
   insuranceBet: 0,
   insuranceAvailable: true,
   message: '',
+  hintEnabled: false,
+  suggestedAction: 0,
+  deckCount: 1,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -93,6 +90,8 @@ const endPhaseState: BlackJackResponse = {
       busted: false,
       isBlackJack: true,
       canSplit: false,
+      surrendered: false,
+      canSurrender: false,
     },
   ],
   phase: 5,
@@ -100,6 +99,9 @@ const endPhaseState: BlackJackResponse = {
   insuranceBet: 0,
   insuranceAvailable: false,
   message: 'You are the winner.',
+  hintEnabled: false,
+  suggestedAction: 0,
+  deckCount: 1,
 };
 
 beforeEach(() => {
@@ -151,15 +153,9 @@ describe('BlackJackPage', () => {
   });
 
   it('shows split button when canSplit and sufficient chips', async () => {
-    const baseHand = actionPhaseState.hands?.[0] as BlackJackHand;
     const splitState: BlackJackResponse = {
       ...actionPhaseState,
-      hands: [
-        {
-          ...baseHand,
-          canSplit: true,
-        },
-      ],
+      hands: [{ ...baseHand, canSplit: true }],
     };
     mockExec.mockResolvedValue(splitState);
     render(<BlackJackPage />);
@@ -341,7 +337,7 @@ describe('BlackJackPage', () => {
   it('shows [BUST] flag for busted hand', async () => {
     const bustState: BlackJackResponse = {
       ...actionPhaseState,
-      hands: [{ ...(actionPhaseState.hands?.[0] as BlackJackHand), busted: true }],
+      hands: [{ ...baseHand, busted: true }],
     };
     mockExec.mockResolvedValue(bustState);
     render(<BlackJackPage />);
@@ -351,7 +347,7 @@ describe('BlackJackPage', () => {
   it('shows [DD] flag for doubled hand', async () => {
     const ddState: BlackJackResponse = {
       ...actionPhaseState,
-      hands: [{ ...(actionPhaseState.hands?.[0] as BlackJackHand), doubled: true }],
+      hands: [{ ...baseHand, doubled: true }],
     };
     mockExec.mockResolvedValue(ddState);
     render(<BlackJackPage />);
@@ -366,7 +362,6 @@ describe('BlackJackPage', () => {
   });
 
   it('shows multiple hand labels when there are 2 hands', async () => {
-    const baseHand = actionPhaseState.hands?.[0] as BlackJackHand;
     const multiHandState: BlackJackResponse = {
       ...actionPhaseState,
       currentHandIdx: 0,
@@ -395,7 +390,7 @@ describe('BlackJackPage', () => {
       ...actionPhaseState,
       hands: [
         {
-          ...(actionPhaseState.hands?.[0] as BlackJackHand),
+          ...baseHand,
           cards: [
             { design: 'HEART', value: 5 },
             { design: 'DIAMOND', value: 10 },
@@ -414,7 +409,7 @@ describe('BlackJackPage', () => {
     const lowChipState: BlackJackResponse = {
       ...actionPhaseState,
       player: { chips: 50 },
-      hands: [{ ...(actionPhaseState.hands?.[0] as BlackJackHand), bet: 100 }],
+      hands: [{ ...baseHand, bet: 100 }],
     };
     mockExec.mockResolvedValue(lowChipState);
     render(<BlackJackPage />);
@@ -426,11 +421,174 @@ describe('BlackJackPage', () => {
     const lowChipSplitState: BlackJackResponse = {
       ...actionPhaseState,
       player: { chips: 50 },
-      hands: [{ ...(actionPhaseState.hands?.[0] as BlackJackHand), bet: 100, canSplit: true }],
+      hands: [{ ...baseHand, bet: 100, canSplit: true }],
     };
     mockExec.mockResolvedValue(lowChipSplitState);
     render(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'スプリット' })).not.toBeInTheDocument();
+  });
+
+  // --- New feature tests ---
+
+  it('shows deck count selector in bet phase', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('デッキ数:')).toBeInTheDocument());
+  });
+
+  it('calls setdeckcount when deck count is changed', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(betPhaseState);
+    fireEvent.change(screen.getByLabelText('デッキ数:'), { target: { value: '6' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setdeckcount', 6));
+  });
+
+  it('shows hint toggle button with OFF state in bet phase', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント OFF' })).toBeInTheDocument());
+  });
+
+  it('calls togglehint when hint toggle button is clicked', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(betPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント OFF' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('togglehint', undefined));
+  });
+
+  it('shows hint button as ON when hintEnabled is true', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, hintEnabled: true });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント ON' })).toBeInTheDocument());
+  });
+
+  it('shows surrender button when canSurrender is true', async () => {
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: [{ ...baseHand, canSurrender: true }],
+    });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'サレンダー' })).toBeInTheDocument());
+  });
+
+  it('does not show surrender button when canSurrender is false', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'サレンダー' })).not.toBeInTheDocument();
+  });
+
+  it('calls surrender when surrender button is clicked', async () => {
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: [{ ...baseHand, canSurrender: true }],
+    });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'サレンダー' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('surrender', undefined));
+  });
+
+  it('shows hint banner when hint is enabled and action is suggested', async () => {
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hintEnabled: true,
+      suggestedAction: 1, // BJ_SUGGEST_HIT
+    });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('推奨: ヒット')).toBeInTheDocument());
+  });
+
+  it('does not show hint banner when hintEnabled is false', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: false, suggestedAction: 1 });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByText(/推奨:/)).not.toBeInTheDocument();
+  });
+
+  it('does not show hint banner when suggestedAction is none', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 0 });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByText(/推奨:/)).not.toBeInTheDocument();
+  });
+
+  it('highlights hit button when hint suggests hit', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 1 });
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'ヒット' })).toHaveClass('ring-2');
+    });
+  });
+
+  it('highlights stand button when hint suggests stand', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 2 });
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'スタンド' })).toHaveClass('ring-2');
+    });
+  });
+
+  it('highlights double down button when hint suggests double', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 3 });
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'ダブルダウン' })).toHaveClass('ring-2');
+    });
+  });
+
+  it('highlights split button when hint suggests split', async () => {
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hintEnabled: true,
+      suggestedAction: 4,
+      hands: [{ ...baseHand, canSplit: true }],
+    });
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'スプリット' })).toHaveClass('ring-2');
+    });
+  });
+
+  it('highlights surrender button when hint suggests surrender', async () => {
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hintEnabled: true,
+      suggestedAction: 5,
+      hands: [{ ...baseHand, canSurrender: true }],
+    });
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'サレンダー' })).toHaveClass('ring-2');
+    });
+  });
+
+  it('highlights decline button when hint suggests decline insurance', async () => {
+    mockExec.mockResolvedValue({ ...insurancePhaseState, hintEnabled: true, suggestedAction: 6 });
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '辞退' })).toHaveClass('ring-2');
+    });
+  });
+
+  it('shows SURRENDER badge on surrendered hand', async () => {
+    const surrenderedEndState: BlackJackResponse = {
+      ...endPhaseState,
+      hands: [{ ...(endPhaseState.hands?.[0] as BlackJackHand), surrendered: true }],
+    };
+    mockExec.mockResolvedValue(surrenderedEndState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('SURRENDER')).toBeInTheDocument());
+  });
+
+  it('shows deck count in chip bar', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, deckCount: 6 });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('デッキ: 6デッキ')).toBeInTheDocument());
   });
 });
