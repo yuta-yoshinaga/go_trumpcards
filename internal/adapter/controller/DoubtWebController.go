@@ -125,8 +125,11 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		if param.DoubtWindowSec != nil && *param.DoubtWindowSec >= 1 {
 			cfg.DoubtWindowSec = *param.DoubtWindowSec
 		}
-		if param.CpuMemoryLevel != nil && *param.CpuMemoryLevel >= 0 && domain.DoubtMemoryLevel(*param.CpuMemoryLevel) <= domain.DoubtMemoryLevelHard {
-			cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(*param.CpuMemoryLevel)
+		if param.CpuMemoryLevel != nil {
+			level := *param.CpuMemoryLevel
+			if level >= int(domain.DoubtMemoryLevelEasy) && level <= int(domain.DoubtMemoryLevelHard) {
+				cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
+			}
 		}
 		dwc.writePresenterResponse(w, dgi.ResetWithConfig(cfg), errOutput)
 	case "p", "play":

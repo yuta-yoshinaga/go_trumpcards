@@ -254,7 +254,9 @@ func memoryRetentionChance(level DoubtMemoryLevel) float64 {
 		return retentionChanceEasy
 	case DoubtMemoryLevelHard:
 		return retentionChanceHard
-	default: // DoubtMemoryLevelNormal
+	case DoubtMemoryLevelNormal:
+		return retentionChanceNormal
+	default:
 		return retentionChanceNormal
 	}
 }
