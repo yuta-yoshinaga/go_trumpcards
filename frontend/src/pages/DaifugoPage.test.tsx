@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { createEvent, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { daifugoApi } from '../api/gameApi';
 import type { DaifugoResponse } from '../types/card';
@@ -17,6 +17,11 @@ const defaultConfig = {
   elevenBackEnabled: true,
   sequenceEnabled: true,
   cardExchangeEnabled: true,
+  fiveSkipEnabled: false,
+  sevenPassEnabled: false,
+  tenDiscardEnabled: false,
+  spadeThreeEnabled: false,
+  capitalFallEnabled: false,
 };
 
 const humanTurnState: DaifugoResponse = {
@@ -51,6 +56,8 @@ const humanTurnState: DaifugoResponse = {
   cpuActions: [],
   humanAction: null,
   message: '',
+  pendingAction: 'none',
+  pendingActionTarget: -1,
 };
 
 const cpuTurnState: DaifugoResponse = {
@@ -89,7 +96,7 @@ describe('DaifugoPage', () => {
 
   it('calls reset command on mount', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
   });
 
   it('renders human player area labeled あなた', async () => {
@@ -164,7 +171,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', [], expect.any(Object)));
   });
 
   it('calls play with empty indices when pass button is clicked', async () => {
@@ -173,7 +180,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [], undefined));
   });
 
   it('selects a card on click and enables play button', async () => {
@@ -191,7 +198,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: '選択して出す' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], undefined));
   });
 
   it('shows human action log after play', async () => {
@@ -259,7 +266,8 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(elevenBackState);
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText('11バック')).toBeInTheDocument());
+    // Use selector:'span' to find the badge (not the settings panel label)
+    await waitFor(() => expect(screen.getByText('11バック', { selector: 'span' })).toBeInTheDocument());
   });
 
   it('shows suit lock badge when suitLocked is true', async () => {
@@ -280,7 +288,8 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(seqState);
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText('階段')).toBeInTheDocument());
+    // Use selector:'span' to find the badge (not the settings panel label)
+    await waitFor(() => expect(screen.getByText('階段', { selector: 'span' })).toBeInTheDocument());
   });
 
   it('shows card exchange log when exchangeActions is non-empty', async () => {
@@ -296,7 +305,8 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(exchangeState);
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/カード交換/)).toBeInTheDocument());
+    // Use bracketed form to distinguish from settings panel label
+    await waitFor(() => expect(screen.getByText(/\[カード交換\]/)).toBeInTheDocument());
   });
 
   it('disables action buttons while loading', async () => {
@@ -439,5 +449,154 @@ describe('DaifugoPage', () => {
     // (the card toggle state resets on the second click)
     // We verify no error is thrown and the button is still present
     expect(screen.getByRole('button', { name: '選択して出す' })).toBeInTheDocument();
+  });
+
+  it('settings panel renders checkbox labels', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('8切り')).toBeInTheDocument();
+    expect(screen.getByLabelText('5飛び')).toBeInTheDocument();
+    expect(screen.getByLabelText('7渡し')).toBeInTheDocument();
+    expect(screen.getByLabelText('10捨て')).toBeInTheDocument();
+    expect(screen.getByLabelText('スペ3返し')).toBeInTheDocument();
+    expect(screen.getByLabelText('都落ち')).toBeInTheDocument();
+  });
+
+  it('settings panel joker count dropdown changes config', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('ジョーカー枚数:')).toBeInTheDocument());
+    // Change joker count to 0
+    fireEvent.change(screen.getByLabelText('ジョーカー枚数:'), { target: { value: '0' } });
+    // Click reset → config with jokerCount:0 is sent
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ jokerCount: 0 })));
+  });
+
+  it('settings panel boolean checkbox toggle updates config', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('5飛び')).toBeInTheDocument());
+    // Enable 5飛び
+    fireEvent.click(screen.getByLabelText('5飛び'));
+    // Click reset → config with fiveSkipEnabled:true is sent
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ fiveSkipEnabled: true })),
+    );
+  });
+
+  it('shows sevenPass pending banner and changes play button label', async () => {
+    const sevenPassState: DaifugoResponse = {
+      ...humanTurnState,
+      pendingAction: 'sevenPass',
+      pendingActionTarget: 1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(sevenPassState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/【7渡し】/)).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '渡す' })).toBeInTheDocument();
+    // Pass button is disabled when pending action is active
+    expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
+  });
+
+  it('shows tenDiscard pending banner and changes play button label', async () => {
+    const tenDiscardState: DaifugoResponse = {
+      ...humanTurnState,
+      pendingAction: 'tenDiscard',
+      pendingActionTarget: -1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(tenDiscardState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/【10捨て】/)).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument();
+  });
+
+  it('pendingAction enables human turn even when currentTurn is CPU', async () => {
+    const pendingCpuTurn: DaifugoResponse = {
+      ...humanTurnState,
+      currentTurn: 1, // CPU turn
+      pendingAction: 'sevenPass',
+      pendingActionTarget: 1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(pendingCpuTurn);
+    render(<DaifugoPage />);
+    // isHumanTurn is true due to pendingAction even though currentTurn=1
+    // Card buttons are enabled (not disabled) only when isCurrentTurn=true
+    await waitFor(() => expect(screen.getByAltText('SPADE 3').closest('button')).not.toBeDisabled());
+  });
+
+  it('drag card not in selection adds it to selection', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+
+    // Initially no card selected → play button disabled
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
+
+    // Fire dragStart on SPADE 3 (index 0, not in selection)
+    const cardButton = screen.getByAltText('SPADE 3').closest('button') as HTMLElement;
+    fireEvent.dragStart(cardButton, {
+      dataTransfer: { setData: vi.fn() },
+    });
+
+    // handleDragCard adds card to selection → play button enabled
+    expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
+  });
+
+  it('drag card already in selection keeps it in selection', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+
+    const cardButton = screen.getByAltText('SPADE 3').closest('button') as HTMLElement;
+    // First click to select
+    fireEvent.click(cardButton);
+    expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
+
+    // dragStart with card already in selection → still selected
+    fireEvent.dragStart(cardButton, {
+      dataTransfer: { setData: vi.fn() },
+    });
+    expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
+  });
+
+  it('drop on table plays dragged card when not in selection', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+
+    // No cards selected; drag card index 0 onto the table
+    const dropZone = screen.getByText('場札').closest('div') as HTMLElement;
+    const dropEvent = createEvent.drop(dropZone);
+    Object.defineProperty(dropEvent, 'dataTransfer', {
+      value: { getData: vi.fn().mockReturnValue('0') },
+      writable: false,
+    });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(cpuTurnState);
+    fireEvent(dropZone, dropEvent);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], undefined));
+  });
+
+  it('drop on table plays selected cards when dragged card is in selection', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+
+    // Select cards 0 and 1
+    fireEvent.click(screen.getByAltText('SPADE 3'));
+    fireEvent.click(screen.getAllByAltText('HEART 5')[0]);
+    expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
+
+    // Drop card 0 (which is in selection) → plays [0,1]
+    const dropZone = screen.getByText('場札').closest('div') as HTMLElement;
+    const dropEvent = createEvent.drop(dropZone);
+    Object.defineProperty(dropEvent, 'dataTransfer', {
+      value: { getData: vi.fn().mockReturnValue('0') },
+      writable: false,
+    });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(cpuTurnState);
+    fireEvent(dropZone, dropEvent);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0, 1], undefined));
   });
 });

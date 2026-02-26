@@ -112,7 +112,14 @@ export interface DaifugoConfig {
   elevenBackEnabled: boolean;
   sequenceEnabled: boolean;
   cardExchangeEnabled: boolean;
+  fiveSkipEnabled: boolean;
+  sevenPassEnabled: boolean;
+  tenDiscardEnabled: boolean;
+  spadeThreeEnabled: boolean;
+  capitalFallEnabled: boolean;
 }
+
+export type DaifugoConfigInput = DaifugoConfig;
 
 export interface DaifugoExchangeAction {
   fromPlayerIdx: number;
@@ -136,6 +143,8 @@ export interface DaifugoResponse {
   cpuActions: DaifugoAction[];
   humanAction: DaifugoAction | null;
   message: string;
+  pendingAction: 'none' | 'sevenPass' | 'tenDiscard';
+  pendingActionTarget: number;
 }
 
 export interface SevensPlayerData {

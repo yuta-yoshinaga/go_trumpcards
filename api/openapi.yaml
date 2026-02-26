@@ -1194,6 +1194,14 @@ components:
           description: Unique session identifier (max 256 characters)
           maxLength: 256
           example: my-session-001
+        config:
+          allOf:
+            - $ref: '#/components/schemas/DaifugoConfig'
+          nullable: true
+          description: |
+            Optional rule configuration for the `reset` command.
+            When present, overrides the current session's rule settings.
+            Omit (or set to null) to reuse the previous configuration.
 
     DaifugoPlayer:
       type: object
@@ -1278,6 +1286,26 @@ components:
           type: boolean
           description: Whether カード交換 (card exchange) based on previous ranks is enabled
           example: true
+        fiveSkipEnabled:
+          type: boolean
+          description: Whether 5飛び (five-skip) rule is enabled (default false)
+          example: false
+        sevenPassEnabled:
+          type: boolean
+          description: Whether 7渡し (seven-pass) rule is enabled (default false)
+          example: false
+        tenDiscardEnabled:
+          type: boolean
+          description: Whether 10捨て (ten-discard) rule is enabled (default false)
+          example: false
+        spadeThreeEnabled:
+          type: boolean
+          description: Whether スペ3返し (spade-three counter) rule is enabled (default false)
+          example: false
+        capitalFallEnabled:
+          type: boolean
+          description: Whether 都落ち (capital-fall) rule is enabled (default false)
+          example: false
 
     DaifugoExchangeAction:
       type: object
@@ -1314,6 +1342,8 @@ components:
         - cpuActions
         - humanAction
         - message
+        - pendingAction
+        - pendingActionTarget
       properties:
         players:
           type: array
@@ -1379,6 +1409,20 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        pendingAction:
+          type: string
+          description: |
+            Pending action that the current player must resolve before turn advances.
+            `none` = no pending action; `sevenPass` = must give a card (7渡し);
+            `tenDiscard` = must discard a card (10捨て).
+          enum: [none, sevenPass, tenDiscard]
+          example: none
+        pendingActionTarget:
+          type: integer
+          description: |
+            For `sevenPass`, the index of the player to give the card to.
+            -1 when no pending action.
+          example: -1
 
     # -------------------------------------------------------------------------
     # Sevens

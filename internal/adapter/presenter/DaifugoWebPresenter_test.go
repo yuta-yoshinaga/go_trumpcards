@@ -400,6 +400,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		m.On("GetTableCards").Return([]*domain.Card(nil))
 		m.On("GetCpuActions").Return([]*domain.DaifugoCpuAction(nil))
 		m.On("GetHumanAction").Return((*domain.DaifugoCpuAction)(nil))
+		m.On("GetPendingActionType").Return(domain.DaifugoPendingNone)
+		m.On("GetPendingActionTarget").Return(-1)
 		return m
 	}
 
@@ -428,5 +430,58 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, resObj.Players, 0)           // nil player skipped in Output loop
 		assert.Equal(t, "ゲーム終了！ ", resObj.Message) // buildResultMessage called
+	})
+
+	t.Run("success Output pendingAction sevenPass", func(t *testing.T) {
+		m := new(interfaces.MockDaifugoGame)
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetLastPlayPlayerIdx").Return(-1)
+		m.On("GetRevolutionActive").Return(false)
+		m.On("GetElevenBackActive").Return(false)
+		m.On("GetSuitLocked").Return(false)
+		m.On("GetLockedSuit").Return(0)
+		m.On("GetTableIsSequence").Return(false)
+		m.On("GetConfig").Return(domain.DaifugoConfig{})
+		m.On("GetExchangeActions").Return([]*domain.DaifugoExchangeAction(nil))
+		m.On("GetTableCards").Return([]*domain.Card(nil))
+		m.On("GetCpuActions").Return([]*domain.DaifugoCpuAction(nil))
+		m.On("GetHumanAction").Return((*domain.DaifugoCpuAction)(nil))
+		m.On("GetPendingActionType").Return(domain.DaifugoPendingSevenPass)
+		m.On("GetPendingActionTarget").Return(1)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPlayerCnt").Return(0)
+
+		result := tdwp.Output(m, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, "sevenPass", resObj.PendingAction)
+		assert.Equal(t, 1, resObj.PendingActionTarget)
+	})
+
+	t.Run("success Output pendingAction tenDiscard", func(t *testing.T) {
+		m := new(interfaces.MockDaifugoGame)
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetLastPlayPlayerIdx").Return(-1)
+		m.On("GetRevolutionActive").Return(false)
+		m.On("GetElevenBackActive").Return(false)
+		m.On("GetSuitLocked").Return(false)
+		m.On("GetLockedSuit").Return(0)
+		m.On("GetTableIsSequence").Return(false)
+		m.On("GetConfig").Return(domain.DaifugoConfig{})
+		m.On("GetExchangeActions").Return([]*domain.DaifugoExchangeAction(nil))
+		m.On("GetTableCards").Return([]*domain.Card(nil))
+		m.On("GetCpuActions").Return([]*domain.DaifugoCpuAction(nil))
+		m.On("GetHumanAction").Return((*domain.DaifugoCpuAction)(nil))
+		m.On("GetPendingActionType").Return(domain.DaifugoPendingTenDiscard)
+		m.On("GetPendingActionTarget").Return(-1)
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPlayerCnt").Return(0)
+
+		result := tdwp.Output(m, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, "tenDiscard", resObj.PendingAction)
 	})
 }

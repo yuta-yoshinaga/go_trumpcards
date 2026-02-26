@@ -1,5 +1,6 @@
 import type {
   BlackJackResponse,
+  DaifugoConfigInput,
   DaifugoResponse,
   DoubtResponse,
   OldMaidResponse,
@@ -51,8 +52,8 @@ export const oldmaidApi = {
 };
 
 export const daifugoApi = {
-  exec: (command: 'reset' | 'play', indices?: number[]) =>
-    postJson<DaifugoResponse>('/daifugo/exec', { command, indices, sessionId }),
+  exec: (command: 'reset' | 'play', indices?: number[], config?: DaifugoConfigInput) =>
+    postJson<DaifugoResponse>('/daifugo/exec', { command, indices, config, sessionId }),
 };
 
 export const doubtApi = {
