@@ -757,90 +757,25 @@ describe('DoubtPage', () => {
     expect(summary).toBeInTheDocument();
   });
 
-  it('changing doubtWindowSec updates config passed to reset', async () => {
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
-
-    // Open settings
-    fireEvent.click(screen.getByText('設定'));
-
-    // Change doubt window to 3s
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[0], { target: { value: '3' } });
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(humanTurnState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
-        doubtWindowSec: 3,
-        cpuMemoryLevel: 1,
-      }),
-    );
-  });
-
-  it('changing cpuMemoryLevel updates config passed to reset', async () => {
+  it.each([
+    { label: 'doubtWindowSec to 3s', selectIdx: 0, value: '3', expected: { doubtWindowSec: 3, cpuMemoryLevel: 1 } },
+    { label: 'doubtWindowSec to 5s', selectIdx: 0, value: '5', expected: { doubtWindowSec: 5, cpuMemoryLevel: 1 } },
+    { label: 'cpuMemoryLevel to Hard', selectIdx: 1, value: '2', expected: { doubtWindowSec: 10, cpuMemoryLevel: 2 } },
+    { label: 'cpuMemoryLevel to Easy', selectIdx: 1, value: '0', expected: { doubtWindowSec: 10, cpuMemoryLevel: 0 } },
+  ])('changing $label updates config passed to reset', async ({ selectIdx, value, expected }) => {
     render(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
 
     fireEvent.click(screen.getByText('設定'));
 
     const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: '2' } }); // Hard
+    fireEvent.change(selects[selectIdx], { target: { value } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
-        doubtWindowSec: 10,
-        cpuMemoryLevel: 2,
-      }),
-    );
-  });
-
-  it('changing doubtWindowSec to 5s updates config', async () => {
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByText('設定'));
-
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[0], { target: { value: '5' } }); // 5s
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(humanTurnState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
-        doubtWindowSec: 5,
-        cpuMemoryLevel: 1,
-      }),
-    );
-  });
-
-  it('changing cpuMemoryLevel to Easy updates config', async () => {
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
-
-    fireEvent.click(screen.getByText('設定'));
-
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: '0' } }); // Easy
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(humanTurnState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
-        doubtWindowSec: 10,
-        cpuMemoryLevel: 0,
-      }),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, expected));
   });
 
   // ── Server-driven countdown ───────────────────────────────────────────────

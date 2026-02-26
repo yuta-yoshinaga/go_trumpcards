@@ -183,6 +183,13 @@ export function DoubtPage() {
     [stopCountdown],
   );
 
+  const handleConfigChange = useCallback((key: keyof DoubtConfig, value: string) => {
+    const parsed = Number(value);
+    if (!Number.isNaN(parsed)) {
+      setDoubtConfig((prev) => ({ ...prev, [key]: parsed }));
+    }
+  }, []);
+
   useEffect(() => {
     exec('reset', undefined, undefined, undefined, DEFAULT_DOUBT_CONFIG);
   }, [exec]);
@@ -247,7 +254,7 @@ export function DoubtPage() {
             <select
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.doubtWindowSec}
-              onChange={(e) => setDoubtConfig((prev) => ({ ...prev, doubtWindowSec: Number(e.target.value) }))}
+              onChange={(e) => handleConfigChange('doubtWindowSec', e.target.value)}
             >
               <option value={3}>3秒</option>
               <option value={5}>5秒</option>
@@ -259,7 +266,7 @@ export function DoubtPage() {
             <select
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.cpuMemoryLevel}
-              onChange={(e) => setDoubtConfig((prev) => ({ ...prev, cpuMemoryLevel: Number(e.target.value) }))}
+              onChange={(e) => handleConfigChange('cpuMemoryLevel', e.target.value)}
             >
               <option value={0}>Easy</option>
               <option value={1}>Normal</option>

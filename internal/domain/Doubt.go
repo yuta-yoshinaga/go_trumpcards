@@ -11,6 +11,9 @@ const MinClaimedValue = 1
 // MaxClaimedValue claimed value の最大値 (K)
 const MaxClaimedValue = 13
 
+// randomDoubtChance CPUがランダムにダウトを宣言する確率
+const randomDoubtChance = 0.3
+
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
@@ -273,7 +276,7 @@ func (d *Doubt) decideCpuDoubters() {
 		if known+claimedCount > cardsPerValue {
 			// 物理的に不可能な宣言 → 100%ダウト
 			d.cpuDoubters = append(d.cpuDoubters, i)
-		} else if rand.Float64() < 0.3 {
+		} else if rand.Float64() < randomDoubtChance {
 			d.cpuDoubters = append(d.cpuDoubters, i)
 		}
 	}
