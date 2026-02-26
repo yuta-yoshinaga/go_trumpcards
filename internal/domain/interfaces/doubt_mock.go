@@ -140,3 +140,14 @@ func (_m *MockDoubtGame) GetLastDoubtResult() *domain.DoubtDoubtResult {
 	}
 	return nil
 }
+
+// GetConfig モック
+func (_m *MockDoubtGame) GetConfig() domain.DoubtConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.DoubtConfig)
+}
+
+// SetConfig モック
+func (_m *MockDoubtGame) SetConfig(cfg domain.DoubtConfig) {
+	_m.Called(cfg)
+}

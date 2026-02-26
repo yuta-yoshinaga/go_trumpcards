@@ -262,6 +262,25 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, resObj.Message, "test error")
 	})
 
+	t.Run("success Output doubtWindowSec reflects config default", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 10, resObj.DoubtWindowSec)
+	})
+
+	t.Run("success Output doubtWindowSec reflects custom config", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetConfig(domain.DoubtConfig{DoubtWindowSec: 3, CpuMemoryLevel: domain.DoubtMemoryLevelHard})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 3, resObj.DoubtWindowSec)
+	})
+
 	t.Run("success Output gameEndFlag nil player at winnerIdx", func(t *testing.T) {
 		gameMock := new(interfaces.MockDoubtGame)
 		gameMock.On("GetCurrentTurn").Return(0)
@@ -276,6 +295,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		gameMock.On("GetLastDoubtResult").Return((*domain.DoubtDoubtResult)(nil))
 		gameMock.On("GetPlayerCnt").Return(0)
 		gameMock.On("GetPlayer", 99).Return((*domain.DoubtPlayer)(nil))
+		gameMock.On("GetConfig").Return(domain.DefaultDoubtConfig())
 
 		result := tdwp.Output(gameMock, nil)
 		var resObj controller.DoubtWebOutput

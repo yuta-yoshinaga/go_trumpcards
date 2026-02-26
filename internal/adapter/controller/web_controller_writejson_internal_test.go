@@ -26,17 +26,17 @@ func makeRestRequest(body string) *rest.Request {
 
 type mockBlackJackIF struct{ mock.Mock }
 
-func (m *mockBlackJackIF) Reset() string            { return m.Called().String(0) }
-func (m *mockBlackJackIF) Hit() string              { return m.Called().String(0) }
-func (m *mockBlackJackIF) Stand() string            { return m.Called().String(0) }
-func (m *mockBlackJackIF) Bet(a int) string         { return m.Called(a).String(0) }
-func (m *mockBlackJackIF) DoubleDown() string       { return m.Called().String(0) }
-func (m *mockBlackJackIF) Split() string            { return m.Called().String(0) }
-func (m *mockBlackJackIF) Insurance() string        { return m.Called().String(0) }
-func (m *mockBlackJackIF) DeclineInsurance() string { return m.Called().String(0) }
-func (m *mockBlackJackIF) Surrender() string        { return m.Called().String(0) }
+func (m *mockBlackJackIF) Reset() string             { return m.Called().String(0) }
+func (m *mockBlackJackIF) Hit() string               { return m.Called().String(0) }
+func (m *mockBlackJackIF) Stand() string             { return m.Called().String(0) }
+func (m *mockBlackJackIF) Bet(a int) string          { return m.Called(a).String(0) }
+func (m *mockBlackJackIF) DoubleDown() string        { return m.Called().String(0) }
+func (m *mockBlackJackIF) Split() string             { return m.Called().String(0) }
+func (m *mockBlackJackIF) Insurance() string         { return m.Called().String(0) }
+func (m *mockBlackJackIF) DeclineInsurance() string  { return m.Called().String(0) }
+func (m *mockBlackJackIF) Surrender() string         { return m.Called().String(0) }
 func (m *mockBlackJackIF) SetDeckCount(c int) string { return m.Called(c).String(0) }
-func (m *mockBlackJackIF) ToggleHint() string       { return m.Called().String(0) }
+func (m *mockBlackJackIF) ToggleHint() string        { return m.Called().String(0) }
 
 func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 	bjMock := &mockBlackJackIF{}
@@ -282,10 +282,11 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 
 type mockDoubtIF struct{ mock.Mock }
 
-func (m *mockDoubtIF) Reset() string                 { return m.Called().String(0) }
-func (m *mockDoubtIF) Play(i []int, v int) string    { return m.Called(i, v).String(0) }
-func (m *mockDoubtIF) ResolveDoubt(idx []int) string { return m.Called(idx).String(0) }
-func (m *mockDoubtIF) SkipDoubt() string             { return m.Called().String(0) }
+func (m *mockDoubtIF) Reset() string                                 { return m.Called().String(0) }
+func (m *mockDoubtIF) ResetWithConfig(cfg domain.DoubtConfig) string { return m.Called(cfg).String(0) }
+func (m *mockDoubtIF) Play(i []int, v int) string                    { return m.Called(i, v).String(0) }
+func (m *mockDoubtIF) ResolveDoubt(idx []int) string                 { return m.Called(idx).String(0) }
+func (m *mockDoubtIF) SkipDoubt() string                             { return m.Called().String(0) }
 func (m *mockDoubtIF) GetCpuDoubters() []int {
 	ret := m.Called()
 	if val, ok := ret.Get(0).([]int); ok {

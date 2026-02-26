@@ -1694,6 +1694,22 @@ components:
           items:
             type: integer
           example: [0, 2]
+        doubtWindowSec:
+          type: integer
+          description: |
+            Duration of the doubt window in seconds (used with the `reset` command).
+            Must be at least 1. Defaults to 10 when omitted.
+          minimum: 1
+          example: 5
+        cpuMemoryLevel:
+          type: integer
+          description: |
+            CPU memory retention level (used with the `reset` command).
+            0 = Easy (~30% retention), 1 = Normal (~70% retention), 2 = Hard (100% retention).
+            Defaults to 1 (Normal) when omitted.
+          minimum: 0
+          maximum: 2
+          example: 1
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -1807,6 +1823,7 @@ components:
         - gameEndFlag
         - winnerIdx
         - message
+        - doubtWindowSec
       properties:
         players:
           type: array
@@ -1865,3 +1882,7 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        doubtWindowSec:
+          type: integer
+          description: Duration of the doubt window in seconds (reflects current game config)
+          example: 10

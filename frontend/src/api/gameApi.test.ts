@@ -548,6 +548,36 @@ describe('gameApi', () => {
       );
     });
 
+    it('sends config fields when config is provided', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await doubtApi.exec('reset', undefined, undefined, undefined, { doubtWindowSec: 3, cpuMemoryLevel: 2 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/doubt/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            sessionId,
+            doubtWindowSec: 3,
+            cpuMemoryLevel: 2,
+          }),
+        }),
+      );
+    });
+
+    it('omits config fields when config is not provided', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await doubtApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/doubt/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(doubtApi.exec('reset')).rejects.toThrow('HTTP error: 500');

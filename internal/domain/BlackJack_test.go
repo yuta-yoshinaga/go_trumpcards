@@ -1476,6 +1476,9 @@ func TestBlackJack_Surrender_ResolvePayout_Skipped(t *testing.T) {
 	// Surrendered hand should be skipped in payout; other hand is settled normally
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()
+	// Give dealer a deterministic hand (17) so DealerHit stops immediately
+	bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 	// Set up two hands: hand[0] surrendered, hand[1] wins
 	hand0 := bj.GetPlayerHands()[0]
 	hand0.SetBet(100)
@@ -1485,7 +1488,6 @@ func TestBlackJack_Surrender_ResolvePayout_Skipped(t *testing.T) {
 	hand1.SetBet(100)
 	hand1.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 	hand1.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
-	hand1.SetStood(true)
 	bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
 
 	// Start chips: player already paid 200 in bet (100+100)

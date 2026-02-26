@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubtApi } from '../api/gameApi';
-import type { DoubtResponse } from '../types/card';
+import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -9,6 +9,8 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(doubtApi.exec);
+
+const defaultConfig: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1 };
 
 const humanTurnState: DoubtResponse = {
   players: [
@@ -37,6 +39,7 @@ const humanTurnState: DoubtResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   message: '',
+  doubtWindowSec: 10,
 };
 
 const cpuTurnState: DoubtResponse = {
@@ -86,7 +89,7 @@ describe('DoubtPage', () => {
 
   it('calls reset command on mount', async () => {
     render(<DoubtPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, defaultConfig));
   });
 
   it('renders CPU player areas', async () => {
@@ -209,7 +212,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1, undefined, undefined));
   });
 
   it('calls reset when reset button is clicked', async () => {
@@ -220,7 +223,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, defaultConfig));
   });
 
   it('disables buttons while loading', async () => {
@@ -382,7 +385,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'ダウト！' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0], undefined));
   });
 
   it('calls skip with [] when スルー clicked (no cpu doubters)', async () => {
@@ -394,7 +397,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'スルー' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, [], undefined));
   });
 
   it('calls doubt with [0, ...cpuDoubters] when ダウト！ clicked with cpu doubters', async () => {
@@ -407,7 +410,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'ダウト！' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0, 2, 3]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0, 2, 3], undefined));
   });
 
   // ── Doubt phase: human played ─────────────────────────────────────────────
@@ -444,7 +447,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [1, 2]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [1, 2], undefined));
   });
 
   // ── Doubt phase suppressed when gameEndFlag ───────────────────────────────
@@ -499,7 +502,7 @@ describe('DoubtPage', () => {
 
       // Auto-skip is called with the correct doubters
       await waitFor(() => {
-        expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []);
+        expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, [], undefined);
       });
     });
 
@@ -743,5 +746,63 @@ describe('DoubtPage', () => {
     render(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  // ── Settings panel ────────────────────────────────────────────────────────
+
+  it('renders settings panel with default values', async () => {
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+    const summary = screen.getByText('設定');
+    expect(summary).toBeInTheDocument();
+  });
+
+  it.each([
+    { label: 'doubtWindowSec to 3s', selectIdx: 0, value: '3', expected: { doubtWindowSec: 3, cpuMemoryLevel: 1 } },
+    { label: 'doubtWindowSec to 5s', selectIdx: 0, value: '5', expected: { doubtWindowSec: 5, cpuMemoryLevel: 1 } },
+    { label: 'cpuMemoryLevel to Hard', selectIdx: 1, value: '2', expected: { doubtWindowSec: 10, cpuMemoryLevel: 2 } },
+    { label: 'cpuMemoryLevel to Easy', selectIdx: 1, value: '0', expected: { doubtWindowSec: 10, cpuMemoryLevel: 0 } },
+  ])('changing $label updates config passed to reset', async ({ selectIdx, value, expected }) => {
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[selectIdx], { target: { value } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, expected));
+  });
+
+  // ── Server-driven countdown ───────────────────────────────────────────────
+
+  describe('server-driven countdown', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    });
+
+    it('uses state.doubtWindowSec for countdown (3s)', async () => {
+      const shortState: DoubtResponse = {
+        ...doubtPhaseCpuPlayedState,
+        doubtWindowSec: 3,
+      };
+      mockExec.mockResolvedValue(shortState);
+      render(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText(/残り 3 秒/)).toBeInTheDocument());
+    });
+
+    it('uses state.doubtWindowSec for countdown (5s)', async () => {
+      const midState: DoubtResponse = {
+        ...doubtPhaseCpuPlayedState,
+        doubtWindowSec: 5,
+      };
+      mockExec.mockResolvedValue(midState);
+      render(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText(/残り 5 秒/)).toBeInTheDocument());
+    });
   });
 });

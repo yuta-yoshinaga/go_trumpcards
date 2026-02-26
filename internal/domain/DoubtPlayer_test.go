@@ -99,3 +99,66 @@ func TestDoubtPlayer_RemoveCards(t *testing.T) {
 		assert.Equal(t, 0, p.GetCardsSize())
 	})
 }
+
+func TestDoubtPlayer_ResetMemory(t *testing.T) {
+	p := domain.NewDoubtPlayer(false)
+	// Record some cards first
+	p.RecordRevealedCard(5, 1.0)
+	p.RecordRevealedCard(5, 1.0)
+	assert.Equal(t, 2, p.CountKnownCards(5))
+
+	p.ResetMemory()
+	assert.Equal(t, 0, p.CountKnownCards(5))
+}
+
+func TestDoubtPlayer_RecordRevealedCard(t *testing.T) {
+	t.Run("full retention - always records", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		p.RecordRevealedCard(7, 1.0)
+		p.RecordRevealedCard(7, 1.0)
+		assert.Equal(t, 2, p.CountKnownCards(7))
+	})
+
+	t.Run("zero retention - never records", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		for i := 0; i < 100; i++ {
+			p.RecordRevealedCard(3, 0.0)
+		}
+		assert.Equal(t, 0, p.CountKnownCards(3))
+	})
+
+	t.Run("partial retention - sometimes records", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		for attempt := 0; attempt < 1000; attempt++ {
+			p.RecordRevealedCard(9, 0.5)
+			if p.CountKnownCards(9) > 0 {
+				return // retention branch hit
+			}
+		}
+		t.Fatal("partial retention never recorded after 1000 attempts")
+	})
+}
+
+func TestDoubtPlayer_CountKnownCards(t *testing.T) {
+	t.Run("includes hand cards", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		// 2 in hand, 0 in memory
+		assert.Equal(t, 2, p.CountKnownCards(5))
+	})
+
+	t.Run("combines memory and hand", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		p.RecordRevealedCard(3, 1.0)
+		p.RecordRevealedCard(3, 1.0)
+		// 1 in hand + 2 in memory = 3
+		assert.Equal(t, 3, p.CountKnownCards(3))
+	})
+
+	t.Run("unknown value returns zero", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		assert.Equal(t, 0, p.CountKnownCards(13))
+	})
+}

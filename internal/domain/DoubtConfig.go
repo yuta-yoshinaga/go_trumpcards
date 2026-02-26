@@ -1,0 +1,24 @@
+package domain
+
+// DoubtMemoryLevel CPU の記憶力レベル
+type DoubtMemoryLevel int
+
+const (
+	// DoubtMemoryLevelEasy 低記憶力 (約30%の確率で記憶)
+	DoubtMemoryLevelEasy DoubtMemoryLevel = iota
+	// DoubtMemoryLevelNormal 中記憶力 (約70%の確率で記憶)
+	DoubtMemoryLevelNormal
+	// DoubtMemoryLevelHard 高記憶力 (100%記憶)
+	DoubtMemoryLevelHard
+)
+
+// DoubtConfig ダウトゲーム設定
+type DoubtConfig struct {
+	DoubtWindowSec int
+	CpuMemoryLevel DoubtMemoryLevel
+}
+
+// DefaultDoubtConfig デフォルト設定を返す
+func DefaultDoubtConfig() DoubtConfig {
+	return DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: DoubtMemoryLevelNormal}
+}

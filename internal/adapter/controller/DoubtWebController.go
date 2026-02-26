@@ -18,6 +18,8 @@ type DoubtWebInput struct {
 	ClaimedValue   int    `json:"claimedValue,omitempty"`
 	DoubterIndices []int  `json:"doubterIndices,omitempty"`
 	SessionId      string `json:"sessionId"`
+	DoubtWindowSec *int   `json:"doubtWindowSec,omitempty"`
+	CpuMemoryLevel *int   `json:"cpuMemoryLevel,omitempty"`
 }
 
 // DoubtWebOutputCard ダウトWebアウトプットカード
@@ -67,6 +69,7 @@ type DoubtWebOutput struct {
 	GameEndFlag     bool                       `json:"gameEndFlag"`
 	WinnerIdx       int                        `json:"winnerIdx"`
 	Message         string                     `json:"message"`
+	DoubtWindowSec  int                        `json:"doubtWindowSec"`
 }
 
 // DoubtWebController ダウトWebコントローラークラス
@@ -118,7 +121,17 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	errOutput := dwc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
-		dwc.writePresenterResponse(w, dgi.Reset(), errOutput)
+		cfg := domain.DefaultDoubtConfig()
+		if param.DoubtWindowSec != nil && *param.DoubtWindowSec >= 1 {
+			cfg.DoubtWindowSec = *param.DoubtWindowSec
+		}
+		if param.CpuMemoryLevel != nil {
+			level := *param.CpuMemoryLevel
+			if level >= int(domain.DoubtMemoryLevelEasy) && level <= int(domain.DoubtMemoryLevelHard) {
+				cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
+			}
+		}
+		dwc.writePresenterResponse(w, dgi.ResetWithConfig(cfg), errOutput)
 	case "p", "play":
 		if param.ClaimedValue < domain.MinClaimedValue || param.ClaimedValue > domain.MaxClaimedValue {
 			w.WriteHeader(http.StatusBadRequest)

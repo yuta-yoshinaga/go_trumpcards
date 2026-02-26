@@ -208,6 +208,11 @@ export interface DoubtDoubtResult {
   revealedCards: Card[];
 }
 
+export interface DoubtConfig {
+  doubtWindowSec: number;
+  cpuMemoryLevel: number; // 0=Easy, 1=Normal, 2=Hard
+}
+
 export interface DoubtResponse {
   players: DoubtPlayerData[];
   currentTurn: number;
@@ -221,4 +226,5 @@ export interface DoubtResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   message: string;
+  doubtWindowSec: number;
 }
