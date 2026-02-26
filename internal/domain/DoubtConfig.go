@@ -5,11 +5,11 @@ type DoubtMemoryLevel int
 
 const (
 	// DoubtMemoryLevelEasy 低記憶力 (約30%の確率で記憶)
-	DoubtMemoryLevelEasy DoubtMemoryLevel = 0
+	DoubtMemoryLevelEasy DoubtMemoryLevel = iota
 	// DoubtMemoryLevelNormal 中記憶力 (約70%の確率で記憶)
-	DoubtMemoryLevelNormal DoubtMemoryLevel = 1
+	DoubtMemoryLevelNormal
 	// DoubtMemoryLevelHard 高記憶力 (100%記憶)
-	DoubtMemoryLevelHard DoubtMemoryLevel = 2
+	DoubtMemoryLevelHard
 )
 
 // DoubtConfig ダウトゲーム設定

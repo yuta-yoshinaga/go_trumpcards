@@ -14,6 +14,13 @@ const MaxClaimedValue = 13
 // randomDoubtChance CPUがランダムにダウトを宣言する確率
 const randomDoubtChance = 0.3
 
+// retentionChanceEasy / Normal / Hard 各記憶レベルのカード保持確率
+const (
+	retentionChanceEasy   = 0.3
+	retentionChanceNormal = 0.7
+	retentionChanceHard   = 1.0
+)
+
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
@@ -244,11 +251,11 @@ func (d *Doubt) CpuPlay() {
 func memoryRetentionChance(level DoubtMemoryLevel) float64 {
 	switch level {
 	case DoubtMemoryLevelEasy:
-		return 0.3
+		return retentionChanceEasy
 	case DoubtMemoryLevelHard:
-		return 1.0
+		return retentionChanceHard
 	default: // DoubtMemoryLevelNormal
-		return 0.7
+		return retentionChanceNormal
 	}
 }
 

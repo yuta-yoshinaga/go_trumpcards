@@ -112,6 +112,18 @@ function actionDesc(action: DoubtCpuAction, players: DoubtPlayerData[]): string 
 
 const DEFAULT_DOUBT_CONFIG: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1 };
 
+const DOUBT_WINDOW_OPTIONS = [
+  { value: 3, label: '3秒' },
+  { value: 5, label: '5秒' },
+  { value: 10, label: '10秒' },
+] as const;
+
+const CPU_MEMORY_OPTIONS = [
+  { value: 0, label: 'Easy' },
+  { value: 1, label: 'Normal' },
+  { value: 2, label: 'Hard' },
+] as const;
+
 export function DoubtPage() {
   const [state, setState] = useState<DoubtResponse | null>(null);
   const [selectedCardIndices, setSelectedCardIndices] = useState<number[]>([]);
@@ -256,9 +268,11 @@ export function DoubtPage() {
               value={doubtConfig.doubtWindowSec}
               onChange={(e) => handleConfigChange('doubtWindowSec', e.target.value)}
             >
-              <option value={3}>3秒</option>
-              <option value={5}>5秒</option>
-              <option value={10}>10秒</option>
+              {DOUBT_WINDOW_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </label>
           <label className="flex items-center gap-2">
@@ -268,9 +282,11 @@ export function DoubtPage() {
               value={doubtConfig.cpuMemoryLevel}
               onChange={(e) => handleConfigChange('cpuMemoryLevel', e.target.value)}
             >
-              <option value={0}>Easy</option>
-              <option value={1}>Normal</option>
-              <option value={2}>Hard</option>
+              {CPU_MEMORY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
           </label>
         </div>
