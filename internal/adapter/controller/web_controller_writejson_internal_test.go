@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -178,8 +179,13 @@ func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 
 type mockDaifugoIF struct{ mock.Mock }
 
-func (m *mockDaifugoIF) Reset() string       { return m.Called().String(0) }
-func (m *mockDaifugoIF) Play(i []int) string { return m.Called(i).String(0) }
+func (m *mockDaifugoIF) Reset() string { return m.Called().String(0) }
+func (m *mockDaifugoIF) Play(i []int) string {
+	return m.Called(i).String(0)
+}
+func (m *mockDaifugoIF) ResetWithConfig(config domain.DaifugoConfig) string {
+	return m.Called(config).String(0)
+}
 
 func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 	dgMock := &mockDaifugoIF{}

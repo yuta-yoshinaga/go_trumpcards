@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/mock"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -15,10 +16,11 @@ import (
 )
 
 func TestDaifugoWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":-1,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":""}`
+	mockOutput := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":-1,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":""}`
 	dgiMock := new(usecase.MockDaifugoInteractor)
 	dgiMock.On("Reset").Return(mockOutput).Times(2)
 	dgiMock.On("Play", []int{}).Return(mockOutput)
+	dgiMock.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 
 	factory := func() uc.DaifugoInteractorIF { return dgiMock }
 	tdwc := controller.NewDaifugoWebController(factory)
@@ -31,7 +33,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	var jsonInput controller.DaifugoWebInput
 	// For "q"/"quit": responseStr = {"message":"bye."} → other fields get zero values
-	qBody := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"bye."}`
+	qBody := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"bye.","pendingAction":"none","pendingActionTarget":-1}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
@@ -83,6 +85,24 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded.BodyIs(mockOutput)
 	})
 
+	t.Run("success Exec reset with config calls ResetWithConfig", func(t *testing.T) {
+		input := controller.DaifugoWebInput{
+			Command:   "reset",
+			SessionId: "test-session-1",
+			Config: &controller.DaifugoWebInputConfig{
+				JokerCount:      2,
+				FiveSkipEnabled: true,
+			},
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+		dgiMock.AssertCalled(t, "ResetWithConfig", mock.Anything)
+	})
+
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
@@ -90,7 +110,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"Unsupported command."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"Unsupported command.","pendingAction":"none","pendingActionTarget":-1}`)
 	})
 
 	t.Run("failed Exec command empty", func(t *testing.T) {
@@ -100,7 +120,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"param error.","pendingAction":"none","pendingActionTarget":-1}`)
 	})
 
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
@@ -110,7 +130,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"param error.","pendingAction":"none","pendingActionTarget":-1}`)
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.DaifugoWebInput{
@@ -122,7 +142,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"param error.","pendingAction":"none","pendingActionTarget":-1}`)
 	})
 
 	t.Run("failed Exec response empty", func(t *testing.T) {
@@ -133,12 +153,12 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"error.","pendingAction":"none","pendingActionTarget":-1}`)
 	})
 }
 
 func TestDaifugoWebController_SessionIsolation(t *testing.T) {
-	mockOutput := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":-1,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":""}`
+	mockOutput := `{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":-1,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":""}`
 	mockA := new(usecase.MockDaifugoInteractor)
 	mockA.On("Reset").Return(mockOutput)
 	mockB := new(usecase.MockDaifugoInteractor)

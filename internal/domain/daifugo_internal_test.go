@@ -310,3 +310,80 @@ func TestDaifugo_findBestSequencePlay_SciIncrement(t *testing.T) {
 	result := d.findBestSequencePlay(players[0])
 	assert.NotNil(t, result)
 }
+
+// TestDaifugo_findBestPlay_EmptyHand covers line 854:
+// findBestPlay returns nil when player has no cards at all and table is nil.
+// This branch cannot be reached via normal gameplay (CpuPlay skips finished players),
+// so we test it directly via the internal method.
+func TestDaifugo_findBestPlay_EmptyHand(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	config := DaifugoConfig{}
+	d := NewDaifugo(tc, players, config)
+
+	// Player 1 has no cards; table is nil (clear)
+	result := d.findBestPlay(players[1])
+	assert.Nil(t, result)
+}
+
+// TestDaifugo_findBestPlay_EightOnly covers lines 845-848:
+// findBestPlay returns the 8 (second loop) when player has only 8s on a clear table.
+// The first loop skips 8s, then the second loop finds the non-joker 8.
+func TestDaifugo_findBestPlay_EightOnly(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	config := DaifugoConfig{}
+	d := NewDaifugo(tc, players, config)
+
+	// Player 1 has only an 8 (skipped by first loop, picked by second loop)
+	players[1].AddCard(NewCard(CardDesignSpade, 8, false))
+	d.tableCards = nil
+
+	result := d.findBestPlay(players[1])
+	assert.Equal(t, []int{0}, result)
+}
+
+// TestDaifugo_applyCapitalFall_FormerDaifugoIsLast covers line 1224:
+// applyCapitalFall does not swap when the former 大富豪 already has the lowest rank.
+func TestDaifugo_applyCapitalFall_FormerDaifugoIsLast(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	config := DaifugoConfig{CapitalFallEnabled: true}
+	d := NewDaifugo(tc, players, config)
+
+	// Player 1 was former 大富豪
+	players[1].SetPrevRank(1)
+	// Players 0, 2, 3 finished ahead of player 1
+	players[0].SetIsFinished(true)
+	players[0].SetRank(1)
+	players[2].SetIsFinished(true)
+	players[2].SetRank(2)
+	players[3].SetIsFinished(true)
+	players[3].SetRank(3)
+	// Player 1 is last active, give them 1 card
+	players[1].AddCard(NewCard(CardDesignSpade, 3, false))
+	d.currentTurn = 1 // set turn to CPU player 1
+
+	// CpuPlay: player 1 plays last card → finishPlayer(1) rank=4 → applyCapitalFall
+	d.CpuPlay()
+
+	// lowestIdx == prevDaifugoIdx (both = 1) → no swap
+	assert.True(t, d.gameEndFlag)
+	assert.Equal(t, 4, players[1].GetRank()) // still last
+	assert.Equal(t, 1, players[0].GetRank()) // unchanged
+}
