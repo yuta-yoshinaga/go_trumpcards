@@ -85,6 +85,16 @@ func TestDaifugoInteractor_MockGame(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "PlayerPlay", []int{0})
 	})
+	t.Run("Play returns early without PlayerPlay when not human turn", func(t *testing.T) {
+		cpuMock := new(interfaces.MockDaifugoGame)
+		cpuMock.On("GetGameEndFlag").Return(false)
+		cpuMock.On("IsHumanTurn").Return(false)
+		cpuMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+		diCpu := usecase.NewDaifugoInteractor(cpuMock, dgpMock)
+		result := diCpu.Play([]int{0})
+		assert.Equal(t, mockOutput, result)
+		cpuMock.AssertNotCalled(t, "PlayerPlay", mock.Anything)
+	})
 	t.Run("ResetWithConfig calls game.SetConfig then game.Reset", func(t *testing.T) {
 		config := domain.DefaultDaifugoConfig()
 		result := di.ResetWithConfig(config)

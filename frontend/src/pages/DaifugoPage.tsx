@@ -315,7 +315,7 @@ export function DaifugoPage() {
   if (!state) return null;
 
   const pendingAction = state.pendingAction ?? 'none';
-  const isHumanTurn = !state.gameEndFlag && (pendingAction !== 'none' || !!state.players[state.currentTurn]?.isHuman);
+  const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
 

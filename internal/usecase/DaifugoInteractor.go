@@ -46,7 +46,7 @@ func (di *DaifugoInteractor) Play(indices []int) string {
 	if di.dg.GetGameEndFlag() {
 		return di.dgp.Output(di.dg, nil)
 	}
-	if !di.dg.IsHumanTurn() && !di.dg.HasPendingAction() {
+	if !di.dg.IsHumanTurn() {
 		return di.dgp.Output(di.dg, nil)
 	}
 	err := di.dg.PlayerPlay(indices)

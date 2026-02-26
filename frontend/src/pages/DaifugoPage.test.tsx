@@ -514,18 +514,19 @@ describe('DaifugoPage', () => {
     expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument();
   });
 
-  it('pendingAction enables human turn even when currentTurn is CPU', async () => {
+  it('UI is disabled when currentTurn is CPU even if pendingAction is set', async () => {
+    // Pending actions always belong to currentTurn's player; if CPU has a
+    // pending action, the human UI must stay disabled.
     const pendingCpuTurn: DaifugoResponse = {
       ...humanTurnState,
-      currentTurn: 1, // CPU turn
+      currentTurn: 1, // CPU's turn to resolve pending action
       pendingAction: 'sevenPass',
-      pendingActionTarget: 1,
+      pendingActionTarget: 2,
     } as DaifugoResponse;
     mockExec.mockResolvedValue(pendingCpuTurn);
     render(<DaifugoPage />);
-    // isHumanTurn is true due to pendingAction even though currentTurn=1
-    // Card buttons are enabled (not disabled) only when isCurrentTurn=true
-    await waitFor(() => expect(screen.getByAltText('SPADE 3').closest('button')).not.toBeDisabled());
+    // Card buttons are disabled because isHumanTurn = false (currentTurn is CPU)
+    await waitFor(() => expect(screen.getByAltText('SPADE 3').closest('button')).toBeDisabled());
   });
 
   it('drag card not in selection adds it to selection', async () => {
