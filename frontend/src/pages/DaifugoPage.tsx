@@ -331,6 +331,9 @@ export function DaifugoPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const draggedIdx = parseInt(e.dataTransfer.getData('cardIndex'), 10);
+    if (isNaN(draggedIdx)) {
+      return;
+    }
     const toPlay = selectedIndices.includes(draggedIdx) ? selectedIndices : [draggedIdx];
     exec(
       'play',

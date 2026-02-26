@@ -599,4 +599,20 @@ describe('DaifugoPage', () => {
     fireEvent(dropZone, dropEvent);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0, 1], undefined));
   });
+
+  it('drop with invalid dataTransfer data is ignored (NaN guard)', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+
+    const dropZone = screen.getByText('場札').closest('div') as HTMLElement;
+    const dropEvent = createEvent.drop(dropZone);
+    Object.defineProperty(dropEvent, 'dataTransfer', {
+      value: { getData: vi.fn().mockReturnValue('') },
+      writable: false,
+    });
+    mockExec.mockClear();
+    fireEvent(dropZone, dropEvent);
+    // exec should NOT be called when draggedIdx is NaN
+    expect(mockExec).not.toHaveBeenCalled();
+  });
 });
