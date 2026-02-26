@@ -1,12 +1,16 @@
 package domain
 
-import "sort"
+import (
+	"math/rand"
+	"sort"
+)
 
 // DoubtPlayer ダウトプレイヤークラス
 type DoubtPlayer struct {
 	Player
 	isHuman    bool
 	isFinished bool
+	cardMemory map[int]int // value (1-13) → 見えたカードの枚数
 }
 
 // NewDoubtPlayer コンストラクタ
@@ -15,6 +19,7 @@ func NewDoubtPlayer(isHuman bool) *DoubtPlayer {
 		Player:     Player{cards: make([]*Card, 0)},
 		isHuman:    isHuman,
 		isFinished: false,
+		cardMemory: make(map[int]int),
 	}
 }
 
@@ -26,6 +31,29 @@ func (p *DoubtPlayer) GetIsFinished() bool { return p.isFinished }
 
 // SetIsFinished 上がり状態設定
 func (p *DoubtPlayer) SetIsFinished(v bool) { p.isFinished = v }
+
+// ResetMemory カード記憶をリセットする
+func (p *DoubtPlayer) ResetMemory() {
+	p.cardMemory = make(map[int]int)
+}
+
+// RecordRevealedCard 公開されたカードを記憶する (retentionChance の確率で記録)
+func (p *DoubtPlayer) RecordRevealedCard(value int, retentionChance float64) {
+	if rand.Float64() < retentionChance {
+		p.cardMemory[value]++
+	}
+}
+
+// CountKnownCards 指定した値のカードを何枚知っているか返す (記憶 + 手札)
+func (p *DoubtPlayer) CountKnownCards(value int) int {
+	count := p.cardMemory[value]
+	for _, card := range p.cards {
+		if card.GetValue() == value {
+			count++
+		}
+	}
+	return count
+}
 
 // RemoveCards 指定インデックスのカードを手札から取り除いて返す
 // 重複インデックスは無視する。返却カードは元のインデックス昇順。

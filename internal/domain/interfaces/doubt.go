@@ -11,6 +11,10 @@ type DoubtGame interface {
 	ResolveDoubt(doubterIndices []int)
 	SkipDoubt()
 
+	// config
+	GetConfig() domain.DoubtConfig
+	SetConfig(cfg domain.DoubtConfig)
+
 	// state readers
 	GetGameEndFlag() bool
 	GetPhase() domain.DoubtPhase

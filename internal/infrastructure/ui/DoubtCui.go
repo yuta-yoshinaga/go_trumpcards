@@ -111,7 +111,8 @@ func (cui *DoubtCui) handleDoubtWindow() {
 	var allDoubters []int
 
 	if humanCanDoubt {
-		fmt.Println("ダウト！と言いますか？ (d / doubt → ダウト、Enter でスキップ) [10秒]")
+		timeout := time.Duration(cui.game.GetConfig().DoubtWindowSec) * time.Second
+		fmt.Printf("ダウト！と言いますか？ (d / doubt → ダウト、Enter でスキップ) [%d秒]\n", cui.game.GetConfig().DoubtWindowSec)
 		select {
 		case input := <-cui.inputCh:
 			trimmed := strings.TrimSpace(input)
@@ -119,7 +120,7 @@ func (cui *DoubtCui) handleDoubtWindow() {
 			if len(fields) > 0 && (fields[0] == "d" || fields[0] == "doubt") {
 				allDoubters = append(allDoubters, humanIdx) // 人間がダウト
 			}
-		case <-time.After(10 * time.Second):
+		case <-time.After(timeout):
 			fmt.Println("タイムアウト: ダウトをスキップします")
 		}
 	}

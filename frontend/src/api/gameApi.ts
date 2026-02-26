@@ -2,6 +2,7 @@ import type {
   BlackJackResponse,
   DaifugoConfigInput,
   DaifugoResponse,
+  DoubtConfig,
   DoubtResponse,
   OldMaidResponse,
   PokerResponse,
@@ -62,7 +63,17 @@ export const doubtApi = {
     cardIndices?: number[],
     claimedValue?: number,
     doubterIndices?: number[],
-  ) => postJson<DoubtResponse>('/doubt/exec', { command, cardIndices, claimedValue, doubterIndices, sessionId }),
+    config?: DoubtConfig,
+  ) =>
+    postJson<DoubtResponse>('/doubt/exec', {
+      command,
+      cardIndices,
+      claimedValue,
+      doubterIndices,
+      sessionId,
+      doubtWindowSec: config?.doubtWindowSec,
+      cpuMemoryLevel: config?.cpuMemoryLevel,
+    }),
 };
 
 export interface SevensConfigInput {

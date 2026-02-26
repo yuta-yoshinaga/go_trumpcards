@@ -3,10 +3,8 @@ import { doubtApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { Card, DoubtCpuAction, DoubtPlayerData, DoubtResponse } from '../types/card';
+import type { Card, DoubtConfig, DoubtCpuAction, DoubtPlayerData, DoubtResponse } from '../types/card';
 import { playerName } from '../utils/playerUtils';
-
-const DOUBT_COUNTDOWN_SEC = 10;
 
 function valueName(v: number): string {
   if (v === 1) return 'A';
@@ -112,6 +110,8 @@ function actionDesc(action: DoubtCpuAction, players: DoubtPlayerData[]): string 
 
 // ── Main page ────────────────────────────────────────────────────────────────
 
+const DEFAULT_DOUBT_CONFIG: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1 };
+
 export function DoubtPage() {
   const [state, setState] = useState<DoubtResponse | null>(null);
   const [selectedCardIndices, setSelectedCardIndices] = useState<number[]>([]);
@@ -119,6 +119,7 @@ export function DoubtPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [doubtConfig, setDoubtConfig] = useState<DoubtConfig>(DEFAULT_DOUBT_CONFIG);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoSkipRef = useRef(false);
   const cpuDoubtersRef = useRef<number[]>([]);
@@ -137,22 +138,25 @@ export function DoubtPage() {
     setCountdown(null);
   }, []);
 
-  const startCountdown = useCallback(() => {
-    stopCountdown();
-    setCountdown(DOUBT_COUNTDOWN_SEC);
-    countdownRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        const cur = prev as number;
-        if (cur <= 1) {
-          clearInterval(countdownRef.current as ReturnType<typeof setInterval>);
-          countdownRef.current = null;
-          autoSkipRef.current = true;
-          return null;
-        }
-        return cur - 1;
-      });
-    }, 1000);
-  }, [stopCountdown]);
+  const startCountdown = useCallback(
+    (sec: number) => {
+      stopCountdown();
+      setCountdown(sec);
+      countdownRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          const cur = prev as number;
+          if (cur <= 1) {
+            clearInterval(countdownRef.current as ReturnType<typeof setInterval>);
+            countdownRef.current = null;
+            autoSkipRef.current = true;
+            return null;
+          }
+          return cur - 1;
+        });
+      }, 1000);
+    },
+    [stopCountdown],
+  );
 
   const exec = useCallback(
     async (
@@ -160,12 +164,13 @@ export function DoubtPage() {
       cardIndices?: number[],
       cv?: number,
       doubterIndices?: number[],
+      config?: DoubtConfig,
     ) => {
       setLoading(true);
       stopCountdown();
       try {
         setError(null);
-        const res = await doubtApi.exec(command, cardIndices, cv, doubterIndices);
+        const res = await doubtApi.exec(command, cardIndices, cv, doubterIndices, config);
         setState(res);
         setSelectedCardIndices([]);
         setClaimedValue(1);
@@ -179,7 +184,7 @@ export function DoubtPage() {
   );
 
   useEffect(() => {
-    exec('reset');
+    exec('reset', undefined, undefined, undefined, DEFAULT_DOUBT_CONFIG);
   }, [exec]);
 
   // Auto-skip when countdown timer expires without user interaction (mirrors CLI timeout behaviour)
@@ -196,7 +201,7 @@ export function DoubtPage() {
     if (state.phase === 1 && state.lastAction !== null) {
       const lastActionPlayer = state.players[state.lastAction.playerIdx];
       if (lastActionPlayer && !lastActionPlayer.isHuman) {
-        startCountdown();
+        startCountdown(state.doubtWindowSec);
       }
     }
   }, [state, startCountdown]);
@@ -233,6 +238,37 @@ export function DoubtPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]">
+      {/* Settings panel */}
+      <details className="px-4 pt-2">
+        <summary className="text-white/70 text-xs cursor-pointer select-none">設定</summary>
+        <div className="bg-black/30 rounded-lg p-3 mt-1 flex flex-wrap gap-4 text-sm text-white">
+          <label className="flex items-center gap-2">
+            ダウト時間:
+            <select
+              className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
+              value={doubtConfig.doubtWindowSec}
+              onChange={(e) => setDoubtConfig((prev) => ({ ...prev, doubtWindowSec: Number(e.target.value) }))}
+            >
+              <option value={3}>3秒</option>
+              <option value={5}>5秒</option>
+              <option value={10}>10秒</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2">
+            CPU記憶力:
+            <select
+              className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
+              value={doubtConfig.cpuMemoryLevel}
+              onChange={(e) => setDoubtConfig((prev) => ({ ...prev, cpuMemoryLevel: Number(e.target.value) }))}
+            >
+              <option value={0}>Easy</option>
+              <option value={1}>Normal</option>
+              <option value={2}>Hard</option>
+            </select>
+          </label>
+        </div>
+      </details>
+
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* CPU player areas */}
@@ -391,7 +427,7 @@ export function DoubtPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset')}
+            onClick={() => exec('reset', undefined, undefined, undefined, doubtConfig)}
           >
             リセット
           </button>

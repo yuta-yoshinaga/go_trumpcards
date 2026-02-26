@@ -1,6 +1,9 @@
 package usecase
 
-import "github.com/stretchr/testify/mock"
+import (
+	"github.com/stretchr/testify/mock"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
 
 // MockDoubtInteractor ダウトインタラクターモック
 type MockDoubtInteractor struct {
@@ -10,6 +13,12 @@ type MockDoubtInteractor struct {
 // Reset モック
 func (_m *MockDoubtInteractor) Reset() string {
 	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// ResetWithConfig モック
+func (_m *MockDoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig) string {
+	ret := _m.Called(cfg)
 	return ret.Get(0).(string)
 }
 

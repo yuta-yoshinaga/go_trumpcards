@@ -25,6 +25,7 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	resObj.TableCardCount = d.GetTableCardCount()
 	resObj.GameEndFlag = d.GetGameEndFlag()
 	resObj.WinnerIdx = d.GetWinnerIdx()
+	resObj.DoubtWindowSec = d.GetConfig().DoubtWindowSec
 
 	// CPU行動履歴
 	resObj.CpuActions = make([]*controller.DoubtWebOutputAction, 0)
