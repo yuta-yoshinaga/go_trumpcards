@@ -2709,6 +2709,26 @@ func TestDaifugo_FiveSkip(t *testing.T) {
 		assert.Equal(t, 1, dg.GetCurrentTurn())
 	})
 
+	t.Run("5飛び: playing 5 as part of a sequence does not skip", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{FiveSkipEnabled: true, SequenceEnabled: true}
+		dg := domain.NewDaifugo(tc, players, cfg)
+		// Play 4-5-6 of spades (sequence including a 5)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0, 1, 2}) // play sequence: 4-5-6
+		assert.NoError(t, err)
+		assert.False(t, dg.HasPendingAction())
+		// isSeq=true suppresses 5飛び → turn advances by 1 only
+		assert.Equal(t, 1, dg.GetCurrentTurn())
+	})
+
 	t.Run("5飛び: CPU playing 5 skips the next player", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDaifugoPlayers()

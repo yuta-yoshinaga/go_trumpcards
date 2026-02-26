@@ -726,7 +726,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	eightCut := d.triggerEightCut(cards)
 
 	// ローカルルール: 5飛び / 7渡し / 10捨て
-	fiveSkip := d.triggerFiveSkipIfNeeded(cards)
+	fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
 	d.triggerSevenPassIfNeeded(cards, isSeq)
 	d.triggerTenDiscardIfNeeded(cards, isSeq)
 
@@ -808,7 +808,7 @@ func (d *Daifugo) CpuPlay() {
 		eightCut := d.triggerEightCut(cards)
 
 		// ローカルルール: 5飛び / 7渡し / 10捨て
-		fiveSkip := d.triggerFiveSkipIfNeeded(cards)
+		fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
 		d.triggerSevenPassIfNeeded(cards, isSeq)
 		d.triggerTenDiscardIfNeeded(cards, isSeq)
 
@@ -1048,9 +1048,9 @@ func (d *Daifugo) findBestSequencePlay(player *DaifugoPlayer) []int {
 	return nil
 }
 
-// triggerFiveSkipIfNeeded 5飛びチェック: 非ジョーカーの5が出されたら次のプレイヤーをスキップ
-func (d *Daifugo) triggerFiveSkipIfNeeded(cards []*Card) bool {
-	if !d.config.FiveSkipEnabled {
+// triggerFiveSkipIfNeeded 5飛びチェック: 非ジョーカーの5が出されたら次のプレイヤーをスキップ（階段時は無効）
+func (d *Daifugo) triggerFiveSkipIfNeeded(cards []*Card, isSeq bool) bool {
+	if !d.config.FiveSkipEnabled || isSeq {
 		return false
 	}
 	for _, c := range cards {
@@ -1157,16 +1157,17 @@ func (d *Daifugo) resolvePendingAction(indices []int) error {
 func (d *Daifugo) cpuResolvePendingAction() {
 	player := d.players[d.currentTurn]
 
+	// 最弱の非ジョーカーカードを探す (インデックス0 = 最弱)
+	idx := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if !IsJoker(player.GetCard(i)) {
+			idx = i
+			break
+		}
+	}
+
 	switch d.pendingActionType {
 	case DaifugoPendingSevenPass:
-		// 最弱の非ジョーカーカードを渡す (インデックス0 = 最弱)
-		idx := 0
-		for i := 0; i < player.GetCardsSize(); i++ {
-			if !IsJoker(player.GetCard(i)) {
-				idx = i
-				break
-			}
-		}
 		removed := player.RemoveCards([]int{idx})
 		target := d.players[d.pendingActionTarget]
 		target.AddCard(removed[0])
@@ -1174,14 +1175,6 @@ func (d *Daifugo) cpuResolvePendingAction() {
 		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
 		d.cpuActions = append(d.cpuActions, action)
 	case DaifugoPendingTenDiscard:
-		// 最弱の非ジョーカーカードを捨てる (インデックス0 = 最弱)
-		idx := 0
-		for i := 0; i < player.GetCardsSize(); i++ {
-			if !IsJoker(player.GetCard(i)) {
-				idx = i
-				break
-			}
-		}
 		removed := player.RemoveCards([]int{idx})
 		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
 		d.cpuActions = append(d.cpuActions, action)
