@@ -3,6 +3,7 @@ import { NavBar } from './components/NavBar';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
+import { HoldemPage } from './pages/HoldemPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/daifugo" element={<DaifugoPage />} />
             <Route path="/sevens" element={<SevensPage />} />
             <Route path="/doubt" element={<DoubtPage />} />
+            <Route path="/holdem" element={<HoldemPage />} />
           </Routes>
         </div>
       </div>

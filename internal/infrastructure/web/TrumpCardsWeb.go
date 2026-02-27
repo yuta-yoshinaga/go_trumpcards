@@ -21,6 +21,7 @@ type TrumpCardsWeb struct {
 	dgc *controller.DaifugoWebController
 	sgc *controller.SevensWebController
 	dwc *controller.DoubtWebController
+	hmc *controller.HoldemWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -78,6 +79,16 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			doubt := domain.NewDoubt(domain.NewTrumpCards(0), players)
 			return usecase.NewDoubtInteractor(doubt, presenter.NewDoubtWebPresenter())
 		}),
+		hmc: controller.NewHoldemWebController(func() usecase.HoldemInteractorIF {
+			players := []*domain.HoldemPlayer{
+				domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+				domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+				domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+				domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+			}
+			holdem := domain.NewHoldem(domain.NewTrumpCards(0), players, domain.DefaultHoldemConfig())
+			return usecase.NewHoldemInteractor(holdem, presenter.NewHoldemWebPresenter())
+		}),
 	}
 }
 
@@ -92,6 +103,7 @@ func (web *TrumpCardsWeb) Exec() {
 		rest.Post("/daifugo/exec", web.dgc.Exec),
 		rest.Post("/sevens/exec", web.sgc.Exec),
 		rest.Post("/doubt/exec", web.dwc.Exec),
+		rest.Post("/holdem/exec", web.hmc.Exec),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -106,6 +118,7 @@ func (web *TrumpCardsWeb) Exec() {
 		"/daifugo/exec",
 		"/sevens/exec",
 		"/doubt/exec",
+		"/holdem/exec",
 	}
 	for _, path := range apiPaths {
 		mux.Handle(path, apiHandler)

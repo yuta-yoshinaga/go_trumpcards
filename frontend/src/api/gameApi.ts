@@ -4,6 +4,7 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  HoldemResponse,
   OldMaidResponse,
   PokerResponse,
   SevensResponse,
@@ -97,5 +98,21 @@ export const sevensApi = {
       jokerTargetValue,
       sessionId,
       ...config,
+    }),
+};
+
+export const holdemApi = {
+  exec: (
+    command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    amount?: number,
+    smallBlind?: number,
+    bigBlind?: number,
+  ) =>
+    postJson<HoldemResponse>('/holdem/exec', {
+      command,
+      amount,
+      sessionId,
+      smallBlind,
+      bigBlind,
     }),
 };

@@ -333,3 +333,54 @@ func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})
 }
+
+// --- Holdem WriteJson error tests ---
+
+type mockHoldemIF struct{ mock.Mock }
+
+func (m *mockHoldemIF) Reset() string { return m.Called().String(0) }
+func (m *mockHoldemIF) ResetWithConfig(cfg domain.HoldemConfig) string {
+	return m.Called(cfg).String(0)
+}
+func (m *mockHoldemIF) Action(action int, amount int) string {
+	return m.Called(action, amount).String(0)
+}
+
+func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
+	hmMock := &mockHoldemIF{}
+	factory := func() usecase.HoldemInteractorIF { return hmMock }
+	ctrl := NewHoldemWebController(factory)
+	defer ctrl.store.Stop()
+
+	t.Run("param error WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
+	})
+
+	t.Run("quit WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusOK, fw.headerCode)
+	})
+
+	t.Run("session error WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
+	})
+
+	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+		hmMock2 := &mockHoldemIF{}
+		factory2 := func() usecase.HoldemInteractorIF { return hmMock2 }
+		ctrl2 := NewHoldemWebController(factory2)
+		defer ctrl2.store.Stop()
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-hm-unsupported"}`)
+		ctrl2.Exec(fw, req)
+		assert.Equal(t, http.StatusOK, fw.headerCode)
+	})
+}

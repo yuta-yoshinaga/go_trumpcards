@@ -12,10 +12,10 @@ function renderNavBar(initialPath = '/') {
 }
 
 describe('NavBar', () => {
-  it('renders six navigation links', () => {
+  it('renders seven navigation links', () => {
     renderNavBar();
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(6);
+    expect(links).toHaveLength(7);
   });
 
   it('renders BlackJack link', () => {
@@ -99,6 +99,18 @@ describe('NavBar', () => {
     expect(screen.getByText('大富豪')).not.toHaveAttribute('aria-current');
   });
 
+  it('renders Holdem link', () => {
+    renderNavBar();
+    expect(screen.getByText('テキサスホールデム')).toBeInTheDocument();
+  });
+
+  it('marks Holdem link as active when on /holdem path', () => {
+    renderNavBar('/holdem');
+    expect(screen.getByText('テキサスホールデム')).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByText('ブラックジャック')).not.toHaveAttribute('aria-current');
+    expect(screen.getByText('ポーカー')).not.toHaveAttribute('aria-current');
+  });
+
   it('links point to correct hrefs', () => {
     renderNavBar();
     const links = screen.getAllByRole('link');
@@ -108,5 +120,6 @@ describe('NavBar', () => {
     expect(links[3]).toHaveAttribute('href', '/daifugo');
     expect(links[4]).toHaveAttribute('href', '/sevens');
     expect(links[5]).toHaveAttribute('href', '/doubt');
+    expect(links[6]).toHaveAttribute('href', '/holdem');
   });
 });

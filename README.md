@@ -15,6 +15,7 @@
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます — [CUI版マニュアル](docs/manual/cui/daifugo.md) / [Web版マニュアル](docs/manual/web/daifugo.md)
 - **7並べ (Sevens)**: CLI および Web GUIで遊べます（オプションルール: トンネル、ジョーカー、CPU戦略） — [CUI版マニュアル](docs/manual/cui/sevens.md) / [Web版マニュアル](docs/manual/web/sevens.md)
 - **ダウト (Doubt)**: CLI および Web GUIで遊べます（1人 vs CPU×3、10秒ダウト判定ウィンドウ付き） — [CUI版マニュアル](docs/manual/cui/doubt.md) / [Web版マニュアル](docs/manual/web/doubt.md)
+- **テキサスホールデム (Texas Hold'em)**: CLI および Web GUIで遊べます（1人 vs CPU×3、4種のプレイスタイル、サイドポット対応） — [CUI版マニュアル](docs/manual/cui/holdem.md) / [Web版マニュアル](docs/manual/web/holdem.md)
 
 ## Requirements
 
@@ -39,6 +40,7 @@ go run ./cmd/cli oldmaid    # ババ抜き CLI
 go run ./cmd/cli daifugo    # 大富豪 CLI
 go run ./cmd/cli sevens     # 7並べ CLI
 go run ./cmd/cli doubt      # ダウト CLI
+go run ./cmd/cli holdem     # テキサスホールデム CLI
 go run ./cmd/cli web        # REST API + Web GUI サーバー起動 (CLI経由)
 go run ./cmd/server         # REST API + Web GUI サーバー起動 (直接)
 ```
