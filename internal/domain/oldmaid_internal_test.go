@@ -116,51 +116,26 @@ func TestOldMaid_advanceTurn_GameEndFlag(t *testing.T) {
 		"advanceTurn should not change currentTurn when gameEndFlag is true")
 }
 
-// TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs covers the Reset code paths
-// where a player has 0 cards after DiscardPairs (SetIsFinished(true)) and
-// the currentTurn advancement loop skips finished players.
-//
-// Strategy: Use JijiNuki mode which deals 51 cards (52 - 1 removed).
-// With random dealing, pairs split across players can leave some players with 0
-// cards after per-player DiscardPairs while others remain active.
-// Run in a retry loop (up to 1000 attempts) to guarantee both conditions:
-// at least one player finishes and gameEndFlag stays false (2+ active players).
-func TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs(t *testing.T) {
-	for attempt := 0; attempt < 5000; attempt++ {
-		tc := NewTrumpCards(0)
-		players := []*OldMaidPlayer{
-			NewOldMaidPlayer(false),
-			NewOldMaidPlayer(false),
-			NewOldMaidPlayer(false),
-			NewOldMaidPlayer(false),
-		}
-		om := NewOldMaid(tc, players)
-		om.config.Mode = OldMaidModeJijiNuki
-		om.Reset()
-
-		if om.gameEndFlag {
-			continue
-		}
-
-		// Verify at least one player has 0 cards and is finished (lines 97-99)
-		foundFinished := false
-		for i := 0; i < OldMaidPlayerCnt; i++ {
-			p := om.players[i]
-			if p.GetCardsSize() == 0 && p.GetIsFinished() {
-				foundFinished = true
-			}
-		}
-		if !foundFinished {
-			continue
-		}
-
-		// Verify currentTurn was advanced past any finished player (lines 107-108)
-		currentPlayer := om.players[om.currentTurn]
-		assert.False(t, currentPlayer.GetIsFinished(),
-			"currentTurn should point to a non-finished player after Reset")
-		return // success
+// TestOldMaid_advancePastFinished_SkipsFinishedPlayer covers the advancePastFinished
+// code path where currentTurn points to a finished player and must advance.
+func TestOldMaid_advancePastFinished_SkipsFinishedPlayer(t *testing.T) {
+	tc := NewTrumpCards(1)
+	players := []*OldMaidPlayer{
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
 	}
-	t.Fatal("could not produce a finished player with gameEndFlag=false after 5000 JijiNuki resets")
+	om := NewOldMaid(tc, players)
+
+	// player[0] is finished, player[1] is active
+	om.players[0].SetIsFinished(true)
+	om.players[1].AddCard(NewCard(CardDesignSpade, 2, false))
+	om.currentTurn = 0
+
+	om.advancePastFinished()
+
+	assert.Equal(t, 1, om.currentTurn, "advancePastFinished should skip finished player[0] and land on player[1]")
 }
 
 // TestOldMaid_drawCard_NoActiveTargetWith5Players covers drawCard returning nil

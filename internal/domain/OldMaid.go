@@ -150,11 +150,7 @@ func (o *OldMaid) Reset() {
 	o.checkGameEnd()
 
 	// currentTurnがフィニッシュしていたら次へ
-	if !o.gameEndFlag {
-		for o.players[o.currentTurn].GetIsFinished() {
-			o.currentTurn = (o.currentTurn + 1) % OldMaidPlayerCnt
-		}
-	}
+	o.advancePastFinished()
 }
 
 // getNextActivePlayer fromの次のアクティブなプレイヤーインデックスを取得
@@ -258,6 +254,13 @@ func (o *OldMaid) advanceTurn() {
 	next := o.getNextActivePlayer(o.currentTurn)
 	if next >= 0 {
 		o.currentTurn = next
+	}
+}
+
+// advancePastFinished currentTurnがフィニッシュしていたら次のアクティブプレイヤーへ進める
+func (o *OldMaid) advancePastFinished() {
+	for o.players[o.currentTurn].GetIsFinished() {
+		o.currentTurn = (o.currentTurn + 1) % OldMaidPlayerCnt
 	}
 }
 
