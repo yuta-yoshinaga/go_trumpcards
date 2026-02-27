@@ -16,39 +16,57 @@ type OldMaidCpuAction struct {
 
 // OldMaid ババ抜きゲームクラス
 type OldMaid struct {
-	trumpCards         *TrumpCards
-	players            []*OldMaidPlayer
-	currentTurn        int                 // 現在の手番プレイヤーインデックス
-	gameEndFlag        bool                // ゲーム終了フラグ
-	loserIdx           int                 // 負けたプレイヤーインデックス
-	lastDrawPlayerIdx  int                 // 最後に引いたプレイヤーのインデックス (-1=まだなし)
-	lastDrawFromIdx    int                 // 最後に引いた相手のインデックス (-1=まだなし)
-	lastDrawCard       *Card               // 最後に引いたカード
-	lastDiscardedPairs int                 // 最後に捨てたペア数
-	lastDiscardedCards []*Card             // 最後に捨てたカード
-	hasDrawn           bool                // 引きが発生したか
-	cpuActions         []*OldMaidCpuAction // CPUターンの行動履歴 (人間のターン後にリセット)
-	humanAction        *OldMaidCpuAction   // 人間プレイヤーの最後の行動記録
+	trumpCards            *TrumpCards
+	players               []*OldMaidPlayer
+	currentTurn           int                 // 現在の手番プレイヤーインデックス
+	gameEndFlag           bool                // ゲーム終了フラグ
+	loserIdx              int                 // 負けたプレイヤーインデックス
+	lastDrawPlayerIdx     int                 // 最後に引いたプレイヤーのインデックス (-1=まだなし)
+	lastDrawFromIdx       int                 // 最後に引いた相手のインデックス (-1=まだなし)
+	lastDrawCard          *Card               // 最後に引いたカード
+	lastDiscardedPairs    int                 // 最後に捨てたペア数
+	lastDiscardedCards    []*Card             // 最後に捨てたカード
+	hasDrawn              bool                // 引きが発生したか
+	cpuActions            []*OldMaidCpuAction // CPUターンの行動履歴 (人間のターン後にリセット)
+	humanAction           *OldMaidCpuAction   // 人間プレイヤーの最後の行動記録
+	config                OldMaidConfig       // ゲーム設定
+	removedCard           *Card               // ジジ抜き: 除外されたカード
+	cpuHighlightedCardIdx int                 // CPU心理戦: 奇数カードの位置 (-1=なし)
 }
 
 // NewOldMaid コンストラクタ
 func NewOldMaid(trumpCards *TrumpCards, players []*OldMaidPlayer) *OldMaid {
 	return &OldMaid{
-		trumpCards:         trumpCards,
-		players:            players,
-		currentTurn:        0,
-		gameEndFlag:        false,
-		loserIdx:           -1,
-		lastDrawPlayerIdx:  -1,
-		lastDrawFromIdx:    -1,
-		lastDrawCard:       nil,
-		lastDiscardedPairs: 0,
-		lastDiscardedCards: nil,
-		hasDrawn:           false,
-		cpuActions:         nil,
-		humanAction:        nil,
+		trumpCards:            trumpCards,
+		players:               players,
+		currentTurn:           0,
+		gameEndFlag:           false,
+		loserIdx:              -1,
+		lastDrawPlayerIdx:     -1,
+		lastDrawFromIdx:       -1,
+		lastDrawCard:          nil,
+		lastDiscardedPairs:    0,
+		lastDiscardedCards:    nil,
+		hasDrawn:              false,
+		cpuActions:            nil,
+		humanAction:           nil,
+		config:                DefaultOldMaidConfig(),
+		removedCard:           nil,
+		cpuHighlightedCardIdx: -1,
 	}
 }
+
+// SetConfig ゲーム設定をセット
+func (o *OldMaid) SetConfig(config OldMaidConfig) { o.config = config }
+
+// GetConfig ゲーム設定取得
+func (o *OldMaid) GetConfig() OldMaidConfig { return o.config }
+
+// GetRemovedCard ジジ抜きで除外されたカード取得
+func (o *OldMaid) GetRemovedCard() *Card { return o.removedCard }
+
+// GetCpuHighlightedCardIdx CPU心理戦で強調された奇数カードの位置取得 (-1=なし)
+func (o *OldMaid) GetCpuHighlightedCardIdx() int { return o.cpuHighlightedCardIdx }
 
 // Reset ゲーム初期化
 func (o *OldMaid) Reset() {
@@ -63,11 +81,8 @@ func (o *OldMaid) Reset() {
 	o.hasDrawn = false
 	o.cpuActions = nil
 	o.humanAction = nil
-
-	// シャッフル
-	for i := 0; i < 10; i++ {
-		o.trumpCards.Shuffle()
-	}
+	o.removedCard = nil
+	o.cpuHighlightedCardIdx = -1
 
 	// 全プレイヤーのカードリセット
 	for _, p := range o.players {
@@ -80,15 +95,47 @@ func (o *OldMaid) Reset() {
 		o.players[i], o.players[j] = o.players[j], o.players[i]
 	})
 
-	// 全カードを配る
-	idx := 0
-	for {
-		card := o.trumpCards.DrawCard()
-		if card == nil {
-			break
+	// モードに応じてデッキを再構築し、カードを配る
+	if o.config.Mode == OldMaidModeJijiNuki {
+		// ジジ抜き: 52枚からランダムに1枚除外して配る
+		tc := NewTrumpCards(0)
+		for i := 0; i < 10; i++ {
+			tc.Shuffle()
 		}
-		o.players[idx%OldMaidPlayerCnt].AddCard(card)
-		idx++
+		allCards := make([]*Card, 0, 52)
+		for {
+			card := tc.DrawCard()
+			if card == nil {
+				break
+			}
+			allCards = append(allCards, card)
+		}
+		removeIdx := rand.Intn(len(allCards))
+		o.removedCard = allCards[removeIdx]
+		dealIdx := 0
+		for i, card := range allCards {
+			if i == removeIdx {
+				continue
+			}
+			o.players[dealIdx%OldMaidPlayerCnt].AddCard(card)
+			dealIdx++
+		}
+		o.trumpCards = tc
+	} else {
+		// ノーマル: ジョーカー1枚付き53枚
+		o.trumpCards = NewTrumpCards(1)
+		for i := 0; i < 10; i++ {
+			o.trumpCards.Shuffle()
+		}
+		idx := 0
+		for {
+			card := o.trumpCards.DrawCard()
+			if card == nil {
+				break
+			}
+			o.players[idx%OldMaidPlayerCnt].AddCard(card)
+			idx++
+		}
 	}
 
 	// 全プレイヤーのペアを捨てる
@@ -293,6 +340,82 @@ func (o *OldMaid) CpuDraw() error {
 	return nil
 }
 
+// detectOddCardIdx プレイヤーの手札から奇数カードのインデックスを検出する (内部処理)
+// Normal: ジョーカーのインデックスを返す (-1=なし)
+// JijiNuki: 手札中で出現回数が奇数の値を持つ最初のカードのインデックスを返す (-1=なし)
+func (o *OldMaid) detectOddCardIdx(player *OldMaidPlayer) int {
+	switch o.config.Mode {
+	case OldMaidModeNormal:
+		for i := 0; i < player.GetCardsSize(); i++ {
+			c := player.GetCard(i)
+			if c != nil && c.GetDesign() == CardDesignJoker {
+				return i
+			}
+		}
+		return -1
+	case OldMaidModeJijiNuki:
+		// 手札内で各値の出現回数をカウント
+		counts := make(map[int]int)
+		for i := 0; i < player.GetCardsSize(); i++ {
+			c := player.GetCard(i)
+			if c != nil {
+				counts[c.GetValue()]++
+			}
+		}
+		// 出現回数が奇数の最初のカードのインデックスを返す
+		for i := 0; i < player.GetCardsSize(); i++ {
+			c := player.GetCard(i)
+			if c != nil && counts[c.GetValue()]%2 != 0 {
+				return i
+			}
+		}
+		return -1
+	default:
+		return -1
+	}
+}
+
+// ArrangeTargetForHumanDraw CPU心理戦: 人間が引く前に対象CPUの奇数カードを端に配置する
+func (o *OldMaid) ArrangeTargetForHumanDraw() {
+	if o.gameEndFlag {
+		o.cpuHighlightedCardIdx = -1
+		return
+	}
+	if !o.IsHumanTurn() {
+		o.cpuHighlightedCardIdx = -1
+		return
+	}
+	if !o.config.CpuPlacementStrategy {
+		o.cpuHighlightedCardIdx = -1
+		return
+	}
+	targetIdx := o.getNextActivePlayer(o.currentTurn)
+	if targetIdx < 0 {
+		o.cpuHighlightedCardIdx = -1
+		return
+	}
+	target := o.players[targetIdx]
+	if target.GetIsHuman() || target.GetCardsSize() <= 1 {
+		o.cpuHighlightedCardIdx = -1
+		return
+	}
+	oddIdx := o.detectOddCardIdx(target)
+	if oddIdx < 0 {
+		o.cpuHighlightedCardIdx = -1
+		return
+	}
+	size := target.GetCardsSize()
+	position := rand.Intn(2) // 0=先頭, 1=末尾
+	card := target.RemoveCard(oddIdx)
+	if position == 0 {
+		target.PrependCard(card)
+		o.cpuHighlightedCardIdx = 0
+	} else {
+		target.AddCard(card)
+		o.cpuHighlightedCardIdx = size - 1
+	}
+}
+
 // IsHumanTurn 現在の手番が人間かどうか
 func (o *OldMaid) IsHumanTurn() bool {
 	return o.players[o.currentTurn].GetIsHuman()
@@ -382,3 +505,6 @@ func (o *OldMaid) SetHumanAction(action *OldMaidCpuAction) { o.humanAction = act
 
 // SetGameEndFlag ゲーム終了フラグ設定（テスト用）
 func (o *OldMaid) SetGameEndFlag(v bool) { o.gameEndFlag = v }
+
+// SetCpuHighlightedCardIdx CPU心理戦の強調インデックス設定（テスト用）
+func (o *OldMaid) SetCpuHighlightedCardIdx(v int) { o.cpuHighlightedCardIdx = v }

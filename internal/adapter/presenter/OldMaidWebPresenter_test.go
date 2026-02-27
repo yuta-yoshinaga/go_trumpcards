@@ -47,7 +47,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[2].SetIsFinished(true)
 		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
-		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"SPADE","value":1},{"design":"CLOVER","value":2}]},{"id":1,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":[],"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":""}`
+		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"SPADE","value":1},{"design":"CLOVER","value":2}]},{"id":1,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":[],"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":""}`
 		assert.Equal(t, expected, towp.Output(om, nil))
 	})
 
@@ -303,4 +303,97 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		// lastDrawPlayer is CPU → lastDrawCard should be null
 		assert.Contains(t, result, `"lastDrawCard":null`)
 	})
+}
+
+func TestOldMaidWebPresenter_CpuHighlightedCardIdx(t *testing.T) {
+	towp := presenter.NewOldMaidWebPresenter()
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+
+	om.SetCpuHighlightedCardIdx(2)
+	result := towp.Output(om, nil)
+	assert.Contains(t, result, `"cpuHighlightedCardIdx":2`)
+}
+
+func TestOldMaidWebPresenter_Mode_Normal(t *testing.T) {
+	towp := presenter.NewOldMaidWebPresenter()
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	// Default config is Normal (mode=0)
+	result := towp.Output(om, nil)
+	assert.Contains(t, result, `"mode":0`)
+	assert.Contains(t, result, `"removedCard":null`)
+}
+
+func TestOldMaidWebPresenter_JijiNuki_GameEnd_RevealsRemovedCard(t *testing.T) {
+	towp := presenter.NewOldMaidWebPresenter()
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki})
+	// Simulate game end
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	_ = om.PlayerDraw(0) // ends game
+
+	// Manually set removedCard (Reset normally sets it but we're bypassing it)
+	// We need to set it via a fresh reset with JijiNuki config
+	om2 := domain.NewOldMaid(domain.NewTrumpCards(0), []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	})
+	om2.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki})
+	om2.Reset()
+	// After reset, game likely not ended; force game end for test
+	om2.SetGameEndFlag(true)
+	result := towp.Output(om2, nil)
+	assert.Contains(t, result, `"mode":1`)
+	// removedCard should be revealed
+	assert.NotContains(t, result, `"removedCard":null`)
+}
+
+func TestOldMaidWebPresenter_JijiNuki_GameNotEnd_NoRemovedCard(t *testing.T) {
+	towp := presenter.NewOldMaidWebPresenter()
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki})
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	result := towp.Output(om, nil)
+	assert.Contains(t, result, `"mode":1`)
+	// Game not ended → removedCard not revealed
+	assert.Contains(t, result, `"removedCard":null`)
 }

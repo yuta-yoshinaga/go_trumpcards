@@ -88,6 +88,9 @@ export interface OldMaidResponse {
   lastDiscardedCards?: Card[];
   cpuActions: CpuAction[];
   humanAction?: CpuAction | null;
+  cpuHighlightedCardIdx: number;
+  removedCard: Card | null;
+  mode: number;
   message: string;
 }
 

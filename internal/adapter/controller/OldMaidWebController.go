@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -11,9 +12,11 @@ import (
 
 // OldMaidWebInput ババ抜きWebインプット
 type OldMaidWebInput struct {
-	Command   string `json:"command"`
-	DrawIdx   *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
-	SessionId string `json:"sessionId"`
+	Command              string `json:"command"`
+	DrawIdx              *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
+	SessionId            string `json:"sessionId"`
+	Mode                 int    `json:"mode"`
+	CpuPlacementStrategy bool   `json:"cpuPlacementStrategy"`
 }
 
 // OldMaidWebOutputCard ババ抜きWebアウトプットカード
@@ -42,20 +45,23 @@ type OldMaidWebOutputCpuAction struct {
 
 // OldMaidWebOutput ババ抜きWebアウトプット
 type OldMaidWebOutput struct {
-	Players            []*OldMaidWebOutputPlayer    `json:"players"`
-	CurrentTurn        int                          `json:"currentTurn"`
-	NextDrawTargetIdx  int                          `json:"nextDrawTargetIdx"`
-	GameEndFlag        bool                         `json:"gameEndFlag"`
-	LoserIdx           int                          `json:"loserIdx"`
-	LastDrawPlayerIdx  int                          `json:"lastDrawPlayerIdx"`
-	LastDrawFromIdx    int                          `json:"lastDrawFromIdx"`
-	LastDrawCard       *OldMaidWebOutputCard        `json:"lastDrawCard"`
-	LastDiscardedPairs int                          `json:"lastDiscardedPairs"`
-	LastDiscardedCards []*OldMaidWebOutputCard      `json:"lastDiscardedCards"`
-	HasDrawn           bool                         `json:"hasDrawn"`
-	CpuActions         []*OldMaidWebOutputCpuAction `json:"cpuActions"`
-	HumanAction        *OldMaidWebOutputCpuAction   `json:"humanAction"`
-	Message            string                       `json:"message"`
+	Players               []*OldMaidWebOutputPlayer    `json:"players"`
+	CurrentTurn           int                          `json:"currentTurn"`
+	NextDrawTargetIdx     int                          `json:"nextDrawTargetIdx"`
+	GameEndFlag           bool                         `json:"gameEndFlag"`
+	LoserIdx              int                          `json:"loserIdx"`
+	LastDrawPlayerIdx     int                          `json:"lastDrawPlayerIdx"`
+	LastDrawFromIdx       int                          `json:"lastDrawFromIdx"`
+	LastDrawCard          *OldMaidWebOutputCard        `json:"lastDrawCard"`
+	LastDiscardedPairs    int                          `json:"lastDiscardedPairs"`
+	LastDiscardedCards    []*OldMaidWebOutputCard      `json:"lastDiscardedCards"`
+	HasDrawn              bool                         `json:"hasDrawn"`
+	CpuActions            []*OldMaidWebOutputCpuAction `json:"cpuActions"`
+	HumanAction           *OldMaidWebOutputCpuAction   `json:"humanAction"`
+	CpuHighlightedCardIdx int                          `json:"cpuHighlightedCardIdx"`
+	RemovedCard           *OldMaidWebOutputCard        `json:"removedCard"`
+	Mode                  int                          `json:"mode"`
+	Message               string                       `json:"message"`
 }
 
 // OldMaidWebController ババ抜きWebコントローラークラス
@@ -108,7 +114,11 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	errOutput := owc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
-		owc.writePresenterResponse(w, omi.Reset(), errOutput)
+		cfg := domain.OldMaidConfig{
+			Mode:                 domain.OldMaidMode(param.Mode),
+			CpuPlacementStrategy: param.CpuPlacementStrategy,
+		}
+		owc.writePresenterResponse(w, omi.Reset(cfg), errOutput)
 	case "d", "draw":
 		owc.writePresenterResponse(w, omi.Draw(drawIdx), errOutput)
 	default:
@@ -122,8 +132,9 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (owc *OldMaidWebController) newDefaultOutput(msg string) *OldMaidWebOutput {
 	return &OldMaidWebOutput{
-		Players:    make([]*OldMaidWebOutputPlayer, 0),
-		CpuActions: make([]*OldMaidWebOutputCpuAction, 0),
-		Message:    msg,
+		Players:               make([]*OldMaidWebOutputPlayer, 0),
+		CpuActions:            make([]*OldMaidWebOutputCpuAction, 0),
+		CpuHighlightedCardIdx: -1,
+		Message:               msg,
 	}
 }

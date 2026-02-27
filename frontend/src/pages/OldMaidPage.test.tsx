@@ -36,6 +36,9 @@ const humanTurnState: OldMaidResponse = {
   lastDiscardedPairs: 0,
   cpuActions: [],
   humanAction: null,
+  cpuHighlightedCardIdx: -1,
+  removedCard: null,
+  mode: 0,
   message: '',
 };
 
@@ -60,105 +63,204 @@ beforeEach(() => {
   mockExec.mockResolvedValue(humanTurnState);
 });
 
+async function startGame() {
+  render(<OldMaidPage />);
+  fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+  await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+}
+
 describe('OldMaidPage', () => {
-  it('renders nothing before first API response', () => {
-    // Simulate pending promise that never resolves during this check
-    mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = render(<OldMaidPage />);
-    expect(container.firstChild).toBeNull();
+  it('shows setup screen on initial render without calling exec', () => {
+    render(<OldMaidPage />);
+    expect(screen.getByText('Old Maid 設定')).toBeInTheDocument();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it('calls reset command on mount', async () => {
+  it('renders null game area while API call is pending after setup', async () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
     render(<OldMaidPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    expect(screen.queryByText('あなた')).not.toBeInTheDocument();
+  });
+
+  it('mode 0 radio is selected by default', () => {
+    render(<OldMaidPage />);
+    const radios = screen.getAllByRole('radio');
+    expect(radios[0]).toBeChecked();
+    expect(radios[1]).not.toBeChecked();
+  });
+
+  it('can select mode 1', () => {
+    render(<OldMaidPage />);
+    const radios = screen.getAllByRole('radio');
+    fireEvent.click(radios[1]);
+    expect(radios[1]).toBeChecked();
+  });
+
+  it('CPU心理戦 checkbox is unchecked by default', () => {
+    render(<OldMaidPage />);
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+  });
+
+  it('CPU心理戦 checkbox can be toggled', () => {
+    render(<OldMaidPage />);
+    const checkbox = screen.getByRole('checkbox');
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+  });
+
+  it('ゲーム開始 calls reset with mode=1 and cpuPlacementStrategy=true after changes', async () => {
+    render(<OldMaidPage />);
+    const radios = screen.getAllByRole('radio');
+    fireEvent.click(radios[1]);
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true));
+  });
+
+  it('hides setup screen after ゲーム開始', async () => {
+    await startGame();
+    expect(screen.queryByText('Old Maid 設定')).not.toBeInTheDocument();
+  });
+
+  it('設定 button returns to setup screen', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
+    expect(screen.getByText('Old Maid 設定')).toBeInTheDocument();
+  });
+
+  it('shows ジジ抜き mode badge when mode is 1', async () => {
+    const jijiState: OldMaidResponse = { ...humanTurnState, mode: 1 };
+    mockExec.mockResolvedValue(jijiState);
+    await startGame();
+    expect(screen.getByText('ジジ抜き')).toBeInTheDocument();
+  });
+
+  it('highlighted card has translateY style', async () => {
+    const highlightedState: OldMaidResponse = {
+      ...humanTurnState,
+      cpuHighlightedCardIdx: 0,
+      nextDrawTargetIdx: 1,
+      currentTurn: 0,
+    };
+    mockExec.mockResolvedValue(highlightedState);
+    await startGame();
+    const cardBacks = screen.getAllByAltText('card back');
+    expect(cardBacks[0]).toHaveStyle({ transform: 'translateY(-8px)' });
+  });
+
+  it('non-highlighted cards do not have translateY style', async () => {
+    await startGame();
+    const cardBacks = screen.getAllByAltText('card back');
+    for (const cardBack of cardBacks) {
+      expect(cardBack).not.toHaveStyle({ transform: 'translateY(-8px)' });
+    }
+  });
+
+  it('shows removed card info at game end in JijiNuki mode', async () => {
+    const jijiEndState: OldMaidResponse = {
+      ...humanTurnState,
+      gameEndFlag: true,
+      removedCard: { design: 'SPADE', value: 3 },
+      mode: 1,
+      message: 'ゲーム終了',
+    };
+    mockExec.mockResolvedValue(jijiEndState);
+    await startGame();
+    expect(screen.getByText('除外カード: SPADE 3')).toBeInTheDocument();
+  });
+
+  it('does not show removed card when gameEndFlag is false', async () => {
+    const notEndedState: OldMaidResponse = {
+      ...humanTurnState,
+      gameEndFlag: false,
+      removedCard: { design: 'SPADE', value: 3 },
+    };
+    mockExec.mockResolvedValue(notEndedState);
+    await startGame();
+    expect(screen.queryByText(/除外カード:/)).not.toBeInTheDocument();
   });
 
   it('renders human player area labeled あなた', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText('あなた')).toBeInTheDocument();
   });
 
   it('renders CPU player areas with correct labels', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => {
-      expect(screen.getByText('CPU 1')).toBeInTheDocument();
-      expect(screen.getByText('CPU 2')).toBeInTheDocument();
-    });
+    await startGame();
+    expect(screen.getByText('CPU 1')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2')).toBeInTheDocument();
   });
 
   it('shows human player cards', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => {
-      // Human player cards: SPADE 1, HEART 2, JOKER 0
-      expect(screen.getByAltText('SPADE 1')).toBeInTheDocument();
-      expect(screen.getByAltText('HEART 2')).toBeInTheDocument();
-      expect(screen.getByAltText('JOKER 0')).toBeInTheDocument();
-    });
+    await startGame();
+    expect(screen.getByAltText('SPADE 1')).toBeInTheDocument();
+    expect(screen.getByAltText('HEART 2')).toBeInTheDocument();
+    expect(screen.getByAltText('JOKER 0')).toBeInTheDocument();
   });
 
   it('shows card counts for CPU players', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => {
-      expect(screen.getByText('4枚')).toBeInTheDocument();
-      expect(screen.getByText('2枚')).toBeInTheDocument();
-    });
+    await startGame();
+    expect(screen.getByText('4枚')).toBeInTheDocument();
+    expect(screen.getByText('2枚')).toBeInTheDocument();
   });
 
   it('shows target player badge (← 引く相手) on human turn', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('← 引く相手')).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText('← 引く相手')).toBeInTheDocument();
   });
 
   it('shows instruction to click target player on human turn', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText(/あなたの番！/)).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText(/あなたの番！/)).toBeInTheDocument();
   });
 
   it('random draw button is enabled on human turn', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
+    await startGame();
+    expect(screen.getByText('ランダムに引く')).not.toBeDisabled();
   });
 
   it('random draw button is disabled on CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('ランダムに引く')).toBeDisabled());
+    await startGame();
+    expect(screen.getByText('ランダムに引く')).toBeDisabled();
   });
 
   it('random draw button is disabled when game has ended', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('ランダムに引く')).toBeDisabled());
+    await startGame();
+    expect(screen.getByText('ランダムに引く')).toBeDisabled();
   });
 
   it('calls reset when reset button is clicked', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('リセット')).toBeInTheDocument());
+    await startGame();
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false));
   });
 
   it('calls draw when random draw button is clicked', async () => {
+    mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(cpuTurnState);
     render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
   });
 
   it('shows status message when hasDrawn is true', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1がCPU 2から1枚引きました/)).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText(/CPU 1がCPU 2から1枚引きました/)).toBeInTheDocument();
   });
 
   it('shows discarded pairs in status message', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText(/1組捨てました/)).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText(/1組捨てました/)).toBeInTheDocument();
   });
 
   it('shows finished badge for completed players', async () => {
@@ -171,14 +273,14 @@ describe('OldMaidPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithFinished);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('上がり')).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText('上がり')).toBeInTheDocument();
   });
 
   it('shows game result message when game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('あなたが負けました')).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText('あなたが負けました')).toBeInTheDocument();
   });
 
   it('shows CPU actions log when cpuActions is non-empty', async () => {
@@ -187,8 +289,8 @@ describe('OldMaidPage', () => {
       cpuActions: [{ drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 0 }],
     };
     mockExec.mockResolvedValue(stateWithCpuActions);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument();
     expect(screen.getByText(/CPU 1がCPU 2から1枚引きました/)).toBeInTheDocument();
   });
 
@@ -198,21 +300,19 @@ describe('OldMaidPage', () => {
       cpuActions: [{ drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 0 }],
     };
     mockExec.mockResolvedValue(stateWithCpuActions);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument();
     expect(screen.queryByText(/SPADE 3/)).not.toBeInTheDocument();
   });
 
   it('calls draw with drawIdx when a target player card back is clicked', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('← 引く相手')).toBeInTheDocument());
-
+    await startGame();
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     // CPU 1 is target player: click its first card back
     const cardBacks = screen.getAllByAltText('card back');
     fireEvent.click(cardBacks[0]);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', 0, undefined, undefined));
   });
 
   it('shows stacked discarded cards when lastDiscardedCards has a pair', async () => {
@@ -229,11 +329,9 @@ describe('OldMaidPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithDiscarded);
-    render(<OldMaidPage />);
-    await waitFor(() => {
-      expect(screen.getByAltText('SPADE 5')).toBeInTheDocument();
-      expect(screen.getByAltText('CLOVER 5')).toBeInTheDocument();
-    });
+    await startGame();
+    expect(screen.getByAltText('SPADE 5')).toBeInTheDocument();
+    expect(screen.getByAltText('CLOVER 5')).toBeInTheDocument();
   });
 
   it('shows human draw status before CPU replay and eventually shows CPU log', async () => {
@@ -275,21 +373,22 @@ describe('OldMaidPage', () => {
     // reset returns humanTurnState, draw returns stateWithCpuActions
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithCpuActions);
     render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
 
     // Trigger draw
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
 
     // After all replay delays, final state CPU log should be visible
     // Each delay is 800ms; humanAction + 1 cpuAction = 2 delays = 1600ms max
-    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
+      timeout: 4000,
+    });
   }, 10000);
 
   it('disables buttons while loading', async () => {
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
-
+    await startGame();
     let resolve!: (value: OldMaidResponse) => void;
     const slowPromise = new Promise<OldMaidResponse>((res) => {
       resolve = res;
@@ -343,18 +442,21 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(finalState);
     render(<OldMaidPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
 
     // After all replay delays, the final state (currentTurn=0) must be applied
     // so the button is re-enabled for the human's next turn
-    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled(), {
+      timeout: 4000,
+    });
   }, 10000);
 
   it('shows error message when API call fails', async () => {
-    render(<OldMaidPage />);
+    await startGame();
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     mockExec.mockReset();
@@ -366,7 +468,7 @@ describe('OldMaidPage', () => {
   }, 10000);
 
   it('clears error message on successful API call after failure', async () => {
-    render(<OldMaidPage />);
+    await startGame();
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     mockExec.mockReset();
@@ -390,8 +492,8 @@ describe('OldMaidPage', () => {
       lastDrawCard: { design: 'JOKER', value: 0 },
     };
     mockExec.mockResolvedValue(jokerDrawState);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1がCPU 2から1枚引きました \(JOKER\)/)).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText(/CPU 1がCPU 2から1枚引きました \(JOKER\)/)).toBeInTheDocument();
   });
 
   it('shows status without card info when hasDrawn is true but lastDrawCard is null', async () => {
@@ -401,8 +503,8 @@ describe('OldMaidPage', () => {
       lastDiscardedPairs: 0,
     };
     mockExec.mockResolvedValue(noCardDrawState);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1がCPU 2から1枚引きました$/)).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText(/CPU 1がCPU 2から1枚引きました$/)).toBeInTheDocument();
     expect(screen.queryByText(/組捨てました/)).not.toBeInTheDocument();
   });
 
@@ -417,11 +519,9 @@ describe('OldMaidPage', () => {
       ],
     };
     mockExec.mockResolvedValue(overflowState);
-    render(<OldMaidPage />);
-    await waitFor(() => {
-      expect(screen.getByText('+3')).toBeInTheDocument(); // 13-10=3
-      expect(screen.getByText('+1')).toBeInTheDocument(); // 11-10=1
-    });
+    await startGame();
+    expect(screen.getByText('+3')).toBeInTheDocument(); // 13-10=3
+    expect(screen.getByText('+1')).toBeInTheDocument(); // 11-10=1
   });
 
   it('shows single odd discarded card without pairing', async () => {
@@ -430,8 +530,8 @@ describe('OldMaidPage', () => {
       lastDiscardedCards: [{ design: 'SPADE', value: 3 }],
     };
     mockExec.mockResolvedValue(stateWithOddDiscards);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByAltText('SPADE 3')).toBeInTheDocument();
   });
 
   it('shows discarded pair count in CPU log when discardedPairs > 0', async () => {
@@ -440,8 +540,8 @@ describe('OldMaidPage', () => {
       cpuActions: [{ drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 2, discardedCards: [] }],
     };
     mockExec.mockResolvedValue(stateWithDiscardedPairs);
-    render(<OldMaidPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1がCPU 2から1枚引きました。2組捨てました/)).toBeInTheDocument());
+    await startGame();
+    expect(screen.getByText(/CPU 1がCPU 2から1枚引きました。2組捨てました/)).toBeInTheDocument();
   });
 
   it('replays two CPU actions covering non-last-action branches', async () => {
@@ -477,13 +577,16 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(twoCpuActionsState);
     render(<OldMaidPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
 
     // After CPU replay with 2 actions, the CPU action log should appear
-    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 6000 });
+    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
+      timeout: 6000,
+    });
   }, 15000);
 
   it('shows replay state when humanAction.discardedCards is undefined', async () => {
@@ -522,12 +625,15 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithUndefinedDiscards);
     render(<OldMaidPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
 
-    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
+      timeout: 4000,
+    });
   }, 10000);
 
   it('goes directly to CPU replay when humanAction is null', async () => {
@@ -560,12 +666,15 @@ describe('OldMaidPage', () => {
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(directCpuState);
     render(<OldMaidPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
 
     // After CPU replay, the CPU action log should appear
-    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
+      timeout: 4000,
+    });
   }, 10000);
 });

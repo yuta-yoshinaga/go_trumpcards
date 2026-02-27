@@ -1,13 +1,14 @@
 package usecase
 
 import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
 // OldMaidInteractorIF ババ抜きインタラクターインタフェース
 type OldMaidInteractorIF interface {
-	Reset() string
+	Reset(config domain.OldMaidConfig) string
 	Draw(cardIdx int) string
 }
 
@@ -32,9 +33,11 @@ func NewOldMaidInteractor(om interfaces.OldMaidGame, omp presenter.OldMaidPresen
 }
 
 // Reset ゲーム初期化
-func (oi *OldMaidInteractor) Reset() string {
+func (oi *OldMaidInteractor) Reset(config domain.OldMaidConfig) string {
+	oi.om.SetConfig(config)
 	oi.om.Reset()
 	oi.runCpuTurns()
+	oi.om.ArrangeTargetForHumanDraw()
 	return oi.omp.Output(oi.om, nil)
 }
 
@@ -50,6 +53,7 @@ func (oi *OldMaidInteractor) Draw(cardIdx int) string {
 	err := oi.om.PlayerDraw(cardIdx)
 	if err == nil && !oi.om.GetGameEndFlag() {
 		oi.runCpuTurns()
+		oi.om.ArrangeTargetForHumanDraw()
 	}
 	return oi.omp.Output(oi.om, err)
 }

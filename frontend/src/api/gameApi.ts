@@ -48,8 +48,8 @@ export const pokerApi = {
 };
 
 export const oldmaidApi = {
-  exec: (command: 'reset' | 'draw', drawIdx?: number) =>
-    postJson<OldMaidResponse>('/oldmaid/exec', { command, drawIdx, sessionId }),
+  exec: (command: 'reset' | 'draw', drawIdx?: number, mode?: number, cpuPlacementStrategy?: boolean) =>
+    postJson<OldMaidResponse>('/oldmaid/exec', { command, drawIdx, mode, cpuPlacementStrategy, sessionId }),
 };
 
 export const daifugoApi = {
