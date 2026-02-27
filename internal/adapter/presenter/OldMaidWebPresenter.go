@@ -86,6 +86,15 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
+	// CPU心理戦: 強調カードインデックスとモード
+	resObj.CpuHighlightedCardIdx = om.GetCpuHighlightedCardIdx()
+	resObj.Mode = int(om.GetConfig().Mode)
+
+	// ジジ抜き: ゲーム終了時に除外カードを公開
+	if om.GetGameEndFlag() && om.GetConfig().Mode == domain.OldMaidModeJijiNuki {
+		resObj.RemovedCard = owp.getCardObj(om.GetRemovedCard())
+	}
+
 	// エラーメッセージ
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

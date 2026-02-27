@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -29,7 +30,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 	case "q", "quit":
 		return "bye."
 	case "r", "reset":
-		return c.omi.Reset()
+		return c.omi.Reset(domain.DefaultOldMaidConfig())
 	case "d", "draw":
 		cardIdx := -1
 		if len(fields) >= 2 {

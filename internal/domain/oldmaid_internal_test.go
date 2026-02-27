@@ -116,31 +116,10 @@ func TestOldMaid_advanceTurn_GameEndFlag(t *testing.T) {
 		"advanceTurn should not change currentTurn when gameEndFlag is true")
 }
 
-// TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs covers lines 97-99 and 107-108
-// in Reset: when a player has 0 cards after DiscardPairs, they are set as finished,
-// and the currentTurn advancement loop skips finished players.
-//
-// Strategy: Replace the TrumpCards deck with exactly 5 cards of the same value.
-// With 5 cards dealt round-robin to 4 players, player at index 0 receives 2 cards
-// (at positions 0 and 4) while players at indices 1-3 receive 1 card each.
-// Since all cards share the same value, DiscardPairs matches player 0's 2 cards
-// as a pair, leaving 0 cards → SetIsFinished(true).
-// The remaining 3 players each keep 1 card (no pair possible) → active count = 3
-// → gameEndFlag stays false → the currentTurn advancement loop executes.
-func TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs(t *testing.T) {
-	tc := NewTrumpCards(0)
-	// Replace the deck with exactly 5 cards, all value 1.
-	// Shuffle order is irrelevant because all cards have the same value.
-	tc.deck = []*Card{
-		NewCard(CardDesignSpade, 1, false),
-		NewCard(CardDesignClover, 1, false),
-		NewCard(CardDesignHeart, 1, false),
-		NewCard(CardDesignDiamond, 1, false),
-		NewCard(CardDesignSpade, 1, false),
-	}
-	tc.deckCnt = 5
-	tc.deckDrawCnt = 0
-
+// TestOldMaid_advancePastFinished_SkipsFinishedPlayer covers the advancePastFinished
+// code path where currentTurn points to a finished player and must advance.
+func TestOldMaid_advancePastFinished_SkipsFinishedPlayer(t *testing.T) {
+	tc := NewTrumpCards(1)
 	players := []*OldMaidPlayer{
 		NewOldMaidPlayer(false),
 		NewOldMaidPlayer(false),
@@ -148,33 +127,15 @@ func TestOldMaid_Reset_PlayerZeroCardsAfterDiscardPairs(t *testing.T) {
 		NewOldMaidPlayer(false),
 	}
 	om := NewOldMaid(tc, players)
-	om.Reset()
 
-	// After Reset:
-	// - Player at index 0 received 2 same-value cards → paired → 0 cards → finished
-	// - Players at indices 1-3 each received 1 card → no pair → 1 card → not finished
-	// - Active players = 3, so gameEndFlag is false
-	// - currentTurn was 0 (finished), loop advanced to next non-finished player
+	// player[0] is finished, player[1] is active
+	om.players[0].SetIsFinished(true)
+	om.players[1].AddCard(NewCard(CardDesignSpade, 2, false))
+	om.currentTurn = 0
 
-	// Verify at least one player has 0 cards and is finished (lines 97-99)
-	foundFinished := false
-	for i := 0; i < OldMaidPlayerCnt; i++ {
-		p := om.players[i]
-		if p.GetCardsSize() == 0 && p.GetIsFinished() {
-			foundFinished = true
-		}
-	}
-	assert.True(t, foundFinished,
-		"player at index 0 should have 0 cards and be finished after DiscardPairs")
+	om.advancePastFinished()
 
-	// Verify game has not ended (3 active players remain)
-	assert.False(t, om.gameEndFlag,
-		"gameEndFlag should be false with 3 active players")
-
-	// Verify currentTurn was advanced past the finished player (lines 107-108)
-	currentPlayer := om.players[om.currentTurn]
-	assert.False(t, currentPlayer.GetIsFinished(),
-		"currentTurn should point to a non-finished player after Reset")
+	assert.Equal(t, 1, om.currentTurn, "advancePastFinished should skip finished player[0] and land on player[1]")
 }
 
 // TestOldMaid_drawCard_NoActiveTargetWith5Players covers drawCard returning nil

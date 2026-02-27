@@ -22,7 +22,11 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 	var b strings.Builder
 
 	b.WriteString("==========\n")
-	b.WriteString("Old Maid (ババ抜き)\n")
+	if om.GetConfig().Mode == domain.OldMaidModeJijiNuki {
+		b.WriteString("Old Maid (ジジ抜き)\n")
+	} else {
+		b.WriteString("Old Maid (ババ抜き)\n")
+	}
 	b.WriteString("==========\n")
 
 	for i := 0; i < om.GetPlayerCnt(); i++ {
@@ -94,7 +98,11 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		loserIdx := om.GetLoserIdx()
 		if loserIdx >= 0 {
 			loserName := p.getPlayerName(om, loserIdx)
-			fmt.Fprintf(&b, "ゲーム終了！ %sの負け！\n", loserName)
+			gameEndLine := fmt.Sprintf("ゲーム終了！ %sの負け！", loserName)
+			if om.GetConfig().Mode == domain.OldMaidModeJijiNuki && om.GetRemovedCard() != nil {
+				gameEndLine += fmt.Sprintf("（除外カード: %s）", p.getCardStr(om.GetRemovedCard()))
+			}
+			fmt.Fprintf(&b, "%s\n", gameEndLine)
 		}
 	} else {
 		currentTurn := om.GetCurrentTurn()

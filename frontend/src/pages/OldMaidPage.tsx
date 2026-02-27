@@ -1,12 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
-import { btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const REPLAY_DELAY_MS = 800;
+
+const OldMaidMode = {
+  Normal: 0,
+  JijiNuki: 1,
+} as const;
 
 const playerAreaBaseClass = 'bg-black/35 rounded-[10px] p-2 border-2 border-transparent flex-[1_1_140px] min-w-[120px]';
 
@@ -100,10 +105,19 @@ interface PlayerAreaProps {
   isHumanTurn: boolean;
   gameEndFlag: boolean;
   loading: boolean;
+  highlightedCardIdx: number;
   onDraw: (drawIdx: number) => void;
 }
 
-function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, loading, onDraw }: PlayerAreaProps) {
+function PlayerArea({
+  player,
+  isTarget,
+  isHumanTurn,
+  gameEndFlag,
+  loading,
+  highlightedCardIdx,
+  onDraw,
+}: PlayerAreaProps) {
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isTarget && !gameEndFlag
@@ -155,7 +169,13 @@ function PlayerArea({ player, isTarget, isHumanTurn, gameEndFlag, loading, onDra
         ) : showSelectable ? (
           <>
             {Array.from({ length: showCount }, (_, i) => {
-              const cardStyle = { border: '2px solid transparent', borderRadius: 4, cursor: 'pointer' };
+              const isHighlighted = isTarget && !player.isHuman && i === highlightedCardIdx;
+              const cardStyle: React.CSSProperties = {
+                border: '2px solid transparent',
+                borderRadius: 4,
+                cursor: 'pointer',
+                ...(isHighlighted ? { transform: 'translateY(-8px)', transition: 'transform 0.2s' } : {}),
+              };
               // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
               return <CardBack key={i} width={40} style={cardStyle} onClick={() => onDraw(i)} />;
             })}
@@ -217,47 +237,129 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
   );
 }
 
+interface SetupScreenProps {
+  mode: number;
+  cpuPlacementStrategy: boolean;
+  onModeChange: (m: number) => void;
+  onStrategyChange: (v: boolean) => void;
+  onStart: () => void;
+  loading: boolean;
+}
+
+function SetupScreen({
+  mode,
+  cpuPlacementStrategy,
+  onModeChange,
+  onStrategyChange,
+  onStart,
+  loading,
+}: SetupScreenProps) {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center bg-[#1a5c1a] p-6 gap-4">
+      <div className="text-white text-2xl font-bold mb-2">Old Maid 設定</div>
+      <div className="bg-black/40 rounded-xl p-4 w-full max-w-sm flex flex-col gap-3">
+        <div className="text-white font-bold mb-1">モード選択</div>
+        <label className="flex items-center gap-2 text-white cursor-pointer">
+          <input
+            type="radio"
+            name="oldmaid-mode"
+            value={OldMaidMode.Normal}
+            checked={mode === OldMaidMode.Normal}
+            onChange={() => onModeChange(OldMaidMode.Normal)}
+          />
+          ババ抜き（ジョーカーが奇数カード）
+        </label>
+        <label className="flex items-center gap-2 text-white cursor-pointer">
+          <input
+            type="radio"
+            name="oldmaid-mode"
+            value={OldMaidMode.JijiNuki}
+            checked={mode === OldMaidMode.JijiNuki}
+            onChange={() => onModeChange(OldMaidMode.JijiNuki)}
+          />
+          ジジ抜き（ランダム1枚除外）
+        </label>
+        <div className="border-t border-white/20 my-1" />
+        <label className="flex items-center gap-2 text-white cursor-pointer">
+          <input type="checkbox" checked={cpuPlacementStrategy} onChange={(e) => onStrategyChange(e.target.checked)} />
+          CPU心理戦（奇数カードを端に配置）
+        </label>
+      </div>
+      <button type="button" className={`${btnPrimary} min-w-[120px] mt-2`} disabled={loading} onClick={onStart}>
+        ゲーム開始
+      </button>
+    </div>
+  );
+}
+
 export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
+  const [setupStrategy, setSetupStrategy] = useState(false);
+  const [gameSettings, setGameSettings] = useState<{ mode: number; cpuPlacementStrategy: boolean } | null>(null);
 
-  const exec = useCallback(async (command: 'reset' | 'draw', drawIdx?: number) => {
-    setLoading(true);
-    try {
-      setError(null);
-      const res = await oldmaidApi.exec(command, drawIdx);
+  const exec = useCallback(
+    async (command: 'reset' | 'draw', drawIdx?: number, execMode?: number, execStrategy?: boolean) => {
+      setLoading(true);
+      try {
+        setError(null);
+        const res = await oldmaidApi.exec(command, drawIdx, execMode, execStrategy);
 
-      if (command === 'reset' || res.cpuActions.length === 0) {
+        if (command === 'reset' || res.cpuActions.length === 0) {
+          setDisplayState(res);
+          return;
+        }
+
+        // Show human's draw result first (if humanAction is available)
+        const humanDrawState = buildHumanDrawState(res);
+        if (humanDrawState) {
+          setDisplayState(humanDrawState);
+          await delay(REPLAY_DELAY_MS);
+        }
+
+        // Replay each CPU action step by step
+        const replayStates = buildReplayStates(res);
+        for (const state of replayStates) {
+          setDisplayState(state);
+          await delay(REPLAY_DELAY_MS);
+        }
+        // Restore the actual final state so currentTurn reflects the server response
         setDisplayState(res);
-        return;
+      } catch {
+        setError('通信エラーが発生しました。もう一度お試しください。');
+      } finally {
+        setLoading(false);
       }
+    },
+    [],
+  );
 
-      // Show human's draw result first (if humanAction is available)
-      const humanDrawState = buildHumanDrawState(res);
-      if (humanDrawState) {
-        setDisplayState(humanDrawState);
-        await delay(REPLAY_DELAY_MS);
-      }
+  const handleStart = useCallback(() => {
+    const settings = { mode: setupMode, cpuPlacementStrategy: setupStrategy };
+    setGameSettings(settings);
+    exec('reset', undefined, settings.mode, settings.cpuPlacementStrategy);
+  }, [exec, setupMode, setupStrategy]);
 
-      // Replay each CPU action step by step
-      const replayStates = buildReplayStates(res);
-      for (const state of replayStates) {
-        setDisplayState(state);
-        await delay(REPLAY_DELAY_MS);
-      }
-      // Restore the actual final state so currentTurn reflects the server response
-      setDisplayState(res);
-    } catch {
-      setError('通信エラーが発生しました。もう一度お試しください。');
-    } finally {
-      setLoading(false);
+  const handleReset = useCallback(() => {
+    if (gameSettings) {
+      exec('reset', undefined, gameSettings.mode, gameSettings.cpuPlacementStrategy);
     }
-  }, []);
+  }, [exec, gameSettings]);
 
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
+  if (!gameSettings) {
+    return (
+      <SetupScreen
+        mode={setupMode}
+        cpuPlacementStrategy={setupStrategy}
+        onModeChange={setSetupMode}
+        onStrategyChange={setSetupStrategy}
+        onStart={handleStart}
+        loading={loading}
+      />
+    );
+  }
 
   if (!displayState) return null;
 
@@ -283,6 +385,15 @@ export function OldMaidPage() {
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
+        {/* Mode badge */}
+        {state.mode === OldMaidMode.JijiNuki && (
+          <div className="text-center mb-1">
+            <span className="inline-block rounded-md bg-red-600 px-2.5 py-0.5 text-sm font-bold text-white">
+              ジジ抜き
+            </span>
+          </div>
+        )}
+
         {/* CPU row */}
         <div className="flex gap-2 flex-wrap mb-2 justify-center">
           {cpuPlayers.map((player) => (
@@ -293,6 +404,7 @@ export function OldMaidPage() {
               isHumanTurn={isHumanTurn}
               gameEndFlag={state.gameEndFlag}
               loading={loading}
+              highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
               onDraw={(drawIdx) => exec('draw', drawIdx)}
             />
           ))}
@@ -329,6 +441,11 @@ export function OldMaidPage() {
             {state.message}
           </div>
         )}
+
+        {/* JijiNuki: show removed card at game end */}
+        {state.gameEndFlag && state.removedCard && (
+          <div className="text-center my-2 text-white text-[0.9em]">除外カード: {cardLabel(state.removedCard)}</div>
+        )}
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
@@ -345,6 +462,7 @@ export function OldMaidPage() {
               isHumanTurn={isHumanTurn}
               gameEndFlag={state.gameEndFlag}
               loading={loading}
+              highlightedCardIdx={-1}
               onDraw={(drawIdx) => exec('draw', drawIdx)}
             />
           </div>
@@ -356,10 +474,13 @@ export function OldMaidPage() {
         <div className="text-center">
           <button
             type="button"
-            className={`${btnPrimary} min-w-[80px]`}
+            className={`${btnSecondary} min-w-[80px]`}
             disabled={loading}
-            onClick={() => exec('reset')}
+            onClick={() => setGameSettings(null)}
           >
+            設定
+          </button>
+          <button type="button" className={`${btnPrimary} min-w-[80px]`} disabled={loading} onClick={handleReset}>
             リセット
           </button>
           <button

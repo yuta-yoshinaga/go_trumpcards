@@ -1033,6 +1033,16 @@ components:
           nullable: true
           minimum: 0
           example: 1
+        mode:
+          type: integer
+          description: Game mode (0=Normal/ババ抜き, 1=JijiNuki/ジジ抜き)
+          default: 0
+          example: 0
+        cpuPlacementStrategy:
+          type: boolean
+          description: When true, CPUs place the odd card at the edge of their hand
+          default: false
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1109,6 +1119,8 @@ components:
         - hasDrawn
         - cpuActions
         - message
+        - cpuHighlightedCardIdx
+        - mode
       properties:
         players:
           type: array
@@ -1162,6 +1174,19 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        cpuHighlightedCardIdx:
+          type: integer
+          description: Index of the highlighted card for the target CPU player (-1 if none)
+          example: -1
+        removedCard:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: The removed card (only revealed at game end in JijiNuki mode)
+        mode:
+          type: integer
+          description: Current game mode (0=Normal/ババ抜き, 1=JijiNuki/ジジ抜き)
+          example: 0
 
     # -------------------------------------------------------------------------
     # Daifugo
