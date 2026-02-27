@@ -368,31 +368,20 @@ func (o *OldMaid) detectOddCardIdx(player *OldMaidPlayer) int {
 
 // ArrangeTargetForHumanDraw CPU心理戦: 人間が引く前に対象CPUの奇数カードを端に配置する
 func (o *OldMaid) ArrangeTargetForHumanDraw() {
-	if o.gameEndFlag {
-		o.cpuHighlightedCardIdx = -1
-		return
-	}
-	if !o.IsHumanTurn() {
-		o.cpuHighlightedCardIdx = -1
-		return
-	}
-	if !o.config.CpuPlacementStrategy {
-		o.cpuHighlightedCardIdx = -1
+	o.cpuHighlightedCardIdx = -1
+	if o.gameEndFlag || !o.IsHumanTurn() || !o.config.CpuPlacementStrategy {
 		return
 	}
 	targetIdx := o.getNextActivePlayer(o.currentTurn)
 	if targetIdx < 0 {
-		o.cpuHighlightedCardIdx = -1
 		return
 	}
 	target := o.players[targetIdx]
 	if target.GetIsHuman() || target.GetCardsSize() <= 1 {
-		o.cpuHighlightedCardIdx = -1
 		return
 	}
 	oddIdx := o.detectOddCardIdx(target)
 	if oddIdx < 0 {
-		o.cpuHighlightedCardIdx = -1
 		return
 	}
 	size := target.GetCardsSize()

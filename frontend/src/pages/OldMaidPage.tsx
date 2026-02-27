@@ -8,6 +8,11 @@ import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const REPLAY_DELAY_MS = 800;
 
+const OldMaidMode = {
+  Normal: 0,
+  JijiNuki: 1,
+} as const;
+
 const playerAreaBaseClass = 'bg-black/35 rounded-[10px] p-2 border-2 border-transparent flex-[1_1_140px] min-w-[120px]';
 
 function cardLabel(card: Card): string {
@@ -255,11 +260,23 @@ function SetupScreen({
       <div className="bg-black/40 rounded-xl p-4 w-full max-w-sm flex flex-col gap-3">
         <div className="text-white font-bold mb-1">モード選択</div>
         <label className="flex items-center gap-2 text-white cursor-pointer">
-          <input type="radio" name="oldmaid-mode" value="0" checked={mode === 0} onChange={() => onModeChange(0)} />
+          <input
+            type="radio"
+            name="oldmaid-mode"
+            value={OldMaidMode.Normal}
+            checked={mode === OldMaidMode.Normal}
+            onChange={() => onModeChange(OldMaidMode.Normal)}
+          />
           ババ抜き（ジョーカーが奇数カード）
         </label>
         <label className="flex items-center gap-2 text-white cursor-pointer">
-          <input type="radio" name="oldmaid-mode" value="1" checked={mode === 1} onChange={() => onModeChange(1)} />
+          <input
+            type="radio"
+            name="oldmaid-mode"
+            value={OldMaidMode.JijiNuki}
+            checked={mode === OldMaidMode.JijiNuki}
+            onChange={() => onModeChange(OldMaidMode.JijiNuki)}
+          />
           ジジ抜き（ランダム1枚除外）
         </label>
         <div className="border-t border-white/20 my-1" />
@@ -279,7 +296,7 @@ export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [setupMode, setSetupMode] = useState(0);
+  const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
   const [setupStrategy, setSetupStrategy] = useState(false);
   const [gameSettings, setGameSettings] = useState<{ mode: number; cpuPlacementStrategy: boolean } | null>(null);
 
@@ -369,7 +386,7 @@ export function OldMaidPage() {
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Mode badge */}
-        {state.mode === 1 && (
+        {state.mode === OldMaidMode.JijiNuki && (
           <div className="text-center mb-1">
             <span className="inline-block rounded-md bg-red-600 px-2.5 py-0.5 text-sm font-bold text-white">
               ジジ抜き
