@@ -5,6 +5,9 @@ import "math/rand"
 // OldMaidPlayerCnt ババ抜きプレイヤー数
 const OldMaidPlayerCnt = 4
 
+// oldMaidShuffleCount シャッフル回数
+const oldMaidShuffleCount = 10
+
 // OldMaidCpuAction CPUの1ターン分の行動記録
 type OldMaidCpuAction struct {
 	DrawPlayerIdx  int     // 引いたプレイヤーインデックス
@@ -99,7 +102,7 @@ func (o *OldMaid) Reset() {
 	if o.config.Mode == OldMaidModeJijiNuki {
 		// ジジ抜き: 52枚からランダムに1枚除外して配る
 		tc := NewTrumpCards(0)
-		for i := 0; i < 10; i++ {
+		for i := 0; i < oldMaidShuffleCount; i++ {
 			tc.Shuffle()
 		}
 		allCards := make([]*Card, 0, 52)
@@ -124,7 +127,7 @@ func (o *OldMaid) Reset() {
 	} else {
 		// ノーマル: ジョーカー1枚付き53枚
 		o.trumpCards = NewTrumpCards(1)
-		for i := 0; i < 10; i++ {
+		for i := 0; i < oldMaidShuffleCount; i++ {
 			o.trumpCards.Shuffle()
 		}
 		idx := 0

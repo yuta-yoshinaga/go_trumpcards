@@ -255,11 +255,11 @@ function SetupScreen({
       <div className="bg-black/40 rounded-xl p-4 w-full max-w-sm flex flex-col gap-3">
         <div className="text-white font-bold mb-1">モード選択</div>
         <label className="flex items-center gap-2 text-white cursor-pointer">
-          <input type="radio" name="oldmaid-mode" value={0} checked={mode === 0} onChange={() => onModeChange(0)} />
+          <input type="radio" name="oldmaid-mode" value="0" checked={mode === 0} onChange={() => onModeChange(0)} />
           ババ抜き（ジョーカーが奇数カード）
         </label>
         <label className="flex items-center gap-2 text-white cursor-pointer">
-          <input type="radio" name="oldmaid-mode" value={1} checked={mode === 1} onChange={() => onModeChange(1)} />
+          <input type="radio" name="oldmaid-mode" value="1" checked={mode === 1} onChange={() => onModeChange(1)} />
           ジジ抜き（ランダム1枚除外）
         </label>
         <div className="border-t border-white/20 my-1" />

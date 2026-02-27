@@ -241,7 +241,7 @@ describe('OldMaidPage', () => {
   });
 
   it('calls draw when random draw button is clicked', async () => {
-    mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(cpuTurnState);
+    mockExec.mockResolvedValueOnce(humanTurnState);
     render(<OldMaidPage />);
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
