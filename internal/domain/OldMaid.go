@@ -499,3 +499,6 @@ func (o *OldMaid) SetGameEndFlag(v bool) { o.gameEndFlag = v }
 
 // SetCpuHighlightedCardIdx CPU心理戦の強調インデックス設定（テスト用）
 func (o *OldMaid) SetCpuHighlightedCardIdx(v int) { o.cpuHighlightedCardIdx = v }
+
+// SetRemovedCard 除外カード設定（テスト用）
+func (o *OldMaid) SetRemovedCard(card *Card) { o.removedCard = card }

@@ -301,36 +301,32 @@ func TestOldMaidCuiPresenter_Normal_Header(t *testing.T) {
 
 func TestOldMaidCuiPresenter_JijiNuki_GameEnd_ShowsRemovedCard(t *testing.T) {
 	top := presenter.NewOldMaidCuiPresenter()
-	// Reset in JijiNuki mode to get removedCard set, then play to completion.
-	// Repeat until we get a game state where removedCard is set and game has ended.
-	for attempt := 0; attempt < 50; attempt++ {
-		players := []*domain.OldMaidPlayer{
-			domain.NewOldMaidPlayer(true),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-		}
-		om := domain.NewOldMaid(domain.NewTrumpCards(0), players)
-		om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki})
-		om.Reset()
-		if om.GetRemovedCard() == nil {
-			continue
-		}
-		// Play game to completion (drive all turns until gameEndFlag is set)
-		for round := 0; round < 200 && !om.GetGameEndFlag(); round++ {
-			if om.IsHumanTurn() {
-				_ = om.PlayerDraw(-1)
-			} else {
-				_ = om.CpuDraw()
-			}
-		}
-		if om.GetGameEndFlag() && om.GetLoserIdx() >= 0 && om.GetRemovedCard() != nil {
-			result := top.Output(om, nil)
-			assert.Contains(t, result, "（除外カード:")
-			return
-		}
+	tc := domain.NewTrumpCards(0)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
 	}
-	t.Fatal("could not produce JijiNuki game-ended state with loser and removedCard after 50 games")
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki})
+
+	// Deterministic setup: Heart 7 was the removed card (explains why Clover 7 is unpairable).
+	om.SetRemovedCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	// player[0] holds Spade 5; player[1] holds Clover 5 (will be drawn and paired).
+	// player[2] holds Clover 7 (unpaired → loser); player[3] is already finished.
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+	players[3].SetIsFinished(true)
+
+	// player[0] draws Clover 5 from player[1] → pair → both finish; player[2] alone → game ends.
+	_ = om.PlayerDraw(0)
+
+	assert.True(t, om.GetGameEndFlag())
+	assert.Equal(t, 2, om.GetLoserIdx())
+	result := top.Output(om, nil)
+	assert.Contains(t, result, "（除外カード: HEART 7）")
 }
 
 func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {
