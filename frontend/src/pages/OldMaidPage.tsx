@@ -371,16 +371,7 @@ export function OldMaidPage() {
         {/* Mode badge */}
         {state.mode === 1 && (
           <div className="text-center mb-1">
-            <span
-              style={{
-                background: '#d9534f',
-                color: '#fff',
-                borderRadius: 6,
-                padding: '2px 10px',
-                fontSize: '0.85em',
-                fontWeight: 'bold',
-              }}
-            >
+            <span className="inline-block rounded-md bg-red-600 px-2.5 py-0.5 text-sm font-bold text-white">
               ジジ抜き
             </span>
           </div>

@@ -8,6 +8,15 @@ const OldMaidPlayerCnt = 4
 // oldMaidShuffleCount シャッフル回数
 const oldMaidShuffleCount = 10
 
+// newShuffledDeck jokerCount枚のジョーカーを含むデッキを生成してシャッフルする
+func newShuffledDeck(jokerCount int) *TrumpCards {
+	tc := NewTrumpCards(jokerCount)
+	for i := 0; i < oldMaidShuffleCount; i++ {
+		tc.Shuffle()
+	}
+	return tc
+}
+
 // OldMaidCpuAction CPUの1ターン分の行動記録
 type OldMaidCpuAction struct {
 	DrawPlayerIdx  int     // 引いたプレイヤーインデックス
@@ -101,10 +110,7 @@ func (o *OldMaid) Reset() {
 	// モードに応じてデッキを再構築し、カードを配る
 	if o.config.Mode == OldMaidModeJijiNuki {
 		// ジジ抜き: 52枚からランダムに1枚除外して配る
-		tc := NewTrumpCards(0)
-		for i := 0; i < oldMaidShuffleCount; i++ {
-			tc.Shuffle()
-		}
+		tc := newShuffledDeck(0)
 		allCards := make([]*Card, 0, 52)
 		for {
 			card := tc.DrawCard()
@@ -122,10 +128,7 @@ func (o *OldMaid) Reset() {
 		o.trumpCards = tc
 	} else {
 		// ノーマル: ジョーカー1枚付き53枚
-		o.trumpCards = NewTrumpCards(1)
-		for i := 0; i < oldMaidShuffleCount; i++ {
-			o.trumpCards.Shuffle()
-		}
+		o.trumpCards = newShuffledDeck(1)
 		idx := 0
 		for {
 			card := o.trumpCards.DrawCard()
