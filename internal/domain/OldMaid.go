@@ -110,30 +110,20 @@ func (o *OldMaid) Reset() {
 	// モードに応じてデッキを再構築し、カードを配る
 	if o.config.Mode == OldMaidModeJijiNuki {
 		// ジジ抜き: シャッフル済みデッキの先頭1枚を除外カードとし、残り51枚を配る
-		tc := newShuffledDeck(0)
-		o.removedCard = tc.DrawCard()
-		idx := 0
-		for {
-			card := tc.DrawCard()
-			if card == nil {
-				break
-			}
-			o.players[idx%OldMaidPlayerCnt].AddCard(card)
-			idx++
-		}
-		o.trumpCards = tc
+		o.trumpCards = newShuffledDeck(0)
+		o.removedCard = o.trumpCards.DrawCard()
 	} else {
 		// ノーマル: ジョーカー1枚付き53枚
 		o.trumpCards = newShuffledDeck(1)
-		idx := 0
-		for {
-			card := o.trumpCards.DrawCard()
-			if card == nil {
-				break
-			}
-			o.players[idx%OldMaidPlayerCnt].AddCard(card)
-			idx++
+	}
+	idx := 0
+	for {
+		card := o.trumpCards.DrawCard()
+		if card == nil {
+			break
 		}
+		o.players[idx%OldMaidPlayerCnt].AddCard(card)
+		idx++
 	}
 
 	// 全プレイヤーのペアを捨てる
