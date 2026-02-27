@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubtApi } from '../api/gameApi';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
@@ -468,6 +468,10 @@ describe('DoubtPage', () => {
       // Only fake setInterval/clearInterval; leave setTimeout for waitFor retries
       vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     });
+    afterEach(() => {
+      vi.clearAllTimers();
+      vi.useRealTimers();
+    });
 
     it('starts countdown display when CPU played in doubt phase', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
@@ -783,6 +787,10 @@ describe('DoubtPage', () => {
   describe('server-driven countdown', () => {
     beforeEach(() => {
       vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    });
+    afterEach(() => {
+      vi.clearAllTimers();
+      vi.useRealTimers();
     });
 
     it('uses state.doubtWindowSec for countdown (3s)', async () => {
