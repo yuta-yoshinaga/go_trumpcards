@@ -109,21 +109,17 @@ func (o *OldMaid) Reset() {
 
 	// モードに応じてデッキを再構築し、カードを配る
 	if o.config.Mode == OldMaidModeJijiNuki {
-		// ジジ抜き: 52枚からランダムに1枚除外して配る
+		// ジジ抜き: シャッフル済みデッキの先頭1枚を除外カードとし、残り51枚を配る
 		tc := newShuffledDeck(0)
-		allCards := make([]*Card, 0, 52)
+		o.removedCard = tc.DrawCard()
+		idx := 0
 		for {
 			card := tc.DrawCard()
 			if card == nil {
 				break
 			}
-			allCards = append(allCards, card)
-		}
-		removeIdx := rand.Intn(len(allCards))
-		o.removedCard = allCards[removeIdx]
-		allCards = append(allCards[:removeIdx], allCards[removeIdx+1:]...)
-		for i, card := range allCards {
-			o.players[i%OldMaidPlayerCnt].AddCard(card)
+			o.players[idx%OldMaidPlayerCnt].AddCard(card)
+			idx++
 		}
 		o.trumpCards = tc
 	} else {
