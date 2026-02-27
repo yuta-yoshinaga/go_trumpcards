@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -279,11 +279,9 @@ export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState(0);
-  const [cpuPlacementStrategy, setCpuPlacementStrategy] = useState(false);
-  const [showSetup, setShowSetup] = useState(true);
-  const modeRef = useRef(mode);
-  const strategyRef = useRef(cpuPlacementStrategy);
+  const [setupMode, setSetupMode] = useState(0);
+  const [setupStrategy, setSetupStrategy] = useState(false);
+  const [gameSettings, setGameSettings] = useState<{ mode: number; cpuPlacementStrategy: boolean } | null>(null);
 
   const exec = useCallback(
     async (command: 'reset' | 'draw', drawIdx?: number, execMode?: number, execStrategy?: boolean) => {
@@ -322,23 +320,24 @@ export function OldMaidPage() {
   );
 
   const handleStart = useCallback(() => {
-    modeRef.current = mode;
-    strategyRef.current = cpuPlacementStrategy;
-    setShowSetup(false);
-    exec('reset', undefined, mode, cpuPlacementStrategy);
-  }, [exec, mode, cpuPlacementStrategy]);
+    const settings = { mode: setupMode, cpuPlacementStrategy: setupStrategy };
+    setGameSettings(settings);
+    exec('reset', undefined, settings.mode, settings.cpuPlacementStrategy);
+  }, [exec, setupMode, setupStrategy]);
 
   const handleReset = useCallback(() => {
-    exec('reset', undefined, modeRef.current, strategyRef.current);
-  }, [exec]);
+    if (gameSettings) {
+      exec('reset', undefined, gameSettings.mode, gameSettings.cpuPlacementStrategy);
+    }
+  }, [exec, gameSettings]);
 
-  if (showSetup) {
+  if (!gameSettings) {
     return (
       <SetupScreen
-        mode={mode}
-        cpuPlacementStrategy={cpuPlacementStrategy}
-        onModeChange={setMode}
-        onStrategyChange={setCpuPlacementStrategy}
+        mode={setupMode}
+        cpuPlacementStrategy={setupStrategy}
+        onModeChange={setSetupMode}
+        onStrategyChange={setSetupStrategy}
         onStart={handleStart}
         loading={loading}
       />
@@ -469,7 +468,7 @@ export function OldMaidPage() {
             type="button"
             className={`${btnSecondary} min-w-[80px]`}
             disabled={loading}
-            onClick={() => setShowSetup(true)}
+            onClick={() => setGameSettings(null)}
           >
             設定
           </button>

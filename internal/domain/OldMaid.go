@@ -115,13 +115,9 @@ func (o *OldMaid) Reset() {
 		}
 		removeIdx := rand.Intn(len(allCards))
 		o.removedCard = allCards[removeIdx]
-		dealIdx := 0
+		allCards = append(allCards[:removeIdx], allCards[removeIdx+1:]...)
 		for i, card := range allCards {
-			if i == removeIdx {
-				continue
-			}
-			o.players[dealIdx%OldMaidPlayerCnt].AddCard(card)
-			dealIdx++
+			o.players[i%OldMaidPlayerCnt].AddCard(card)
 		}
 		o.trumpCards = tc
 	} else {
