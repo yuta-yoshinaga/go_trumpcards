@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
-import { btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
@@ -467,7 +467,7 @@ export function OldMaidPage() {
         <div className="text-center">
           <button
             type="button"
-            className="bg-gray-600 hover:bg-gray-500 text-white font-bold py-1.5 px-4 rounded mr-2 cursor-pointer disabled:opacity-50 min-w-[80px]"
+            className={`${btnSecondary} min-w-[80px]`}
             disabled={loading}
             onClick={() => setShowSetup(true)}
           >
