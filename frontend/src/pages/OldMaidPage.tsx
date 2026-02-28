@@ -78,6 +78,8 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     counts[a.drawFromIdx] = counts[a.drawFromIdx] + 1;
   }
 
+  const [firstCpuAction] = finalState.cpuActions;
+
   return {
     ...finalState,
     players: finalState.players.map((p, idx) => ({
@@ -85,7 +87,6 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
       cardCount: Math.max(0, counts[idx]),
       isFinished: counts[idx] <= 0,
     })),
-    currentTurn: finalState.cpuActions[0].drawPlayerIdx,
     hasDrawn: true,
     lastDrawPlayerIdx: ha.drawPlayerIdx,
     lastDrawFromIdx: ha.drawFromIdx,
@@ -93,9 +94,12 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     lastDiscardedPairs: ha.discardedPairs,
     lastDiscardedCards: ha.discardedCards ?? [],
     cpuActions: [],
-    gameEndFlag: false,
-    message: '',
-    nextDrawTargetIdx: finalState.cpuActions[0].drawFromIdx,
+    ...(firstCpuAction && {
+      currentTurn: firstCpuAction.drawPlayerIdx,
+      gameEndFlag: false,
+      message: '',
+      nextDrawTargetIdx: firstCpuAction.drawFromIdx,
+    }),
   };
 }
 
@@ -307,7 +311,7 @@ export function OldMaidPage() {
         setError(null);
         const res = await oldmaidApi.exec(command, drawIdx, execMode, execStrategy);
 
-        if (command === 'reset' || res.cpuActions.length === 0) {
+        if (command === 'reset') {
           setDisplayState(res);
           return;
         }
@@ -317,6 +321,11 @@ export function OldMaidPage() {
         if (humanDrawState) {
           setDisplayState(humanDrawState);
           await delay(REPLAY_DELAY_MS);
+        }
+
+        if (res.cpuActions.length === 0) {
+          setDisplayState(res);
+          return;
         }
 
         // Replay each CPU action step by step
