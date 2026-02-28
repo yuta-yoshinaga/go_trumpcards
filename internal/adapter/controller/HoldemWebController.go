@@ -127,17 +127,18 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "r", "reset":
 		cfg := domain.DefaultHoldemConfig()
 		sb, bb := cfg.SmallBlind, cfg.BigBlind
-		if param.SmallBlind != nil && *param.SmallBlind >= 1 {
+		sbProvided := param.SmallBlind != nil && *param.SmallBlind >= 1
+		bbProvided := param.BigBlind != nil && *param.BigBlind >= 1
+		if sbProvided {
 			sb = *param.SmallBlind
 		}
-		if param.BigBlind != nil && *param.BigBlind >= 1 {
+		if bbProvided {
 			bb = *param.BigBlind
 		}
 		// 片方のみ指定された場合、もう片方を自動調整
-		if param.SmallBlind != nil && param.BigBlind == nil && sb >= bb {
+		if sbProvided && !bbProvided && sb >= cfg.BigBlind {
 			bb = sb * 2
-		}
-		if param.BigBlind != nil && param.SmallBlind == nil && sb >= bb {
+		} else if bbProvided && !sbProvided && cfg.SmallBlind >= bb {
 			sb = bb / 2
 			if sb < 1 {
 				sb = 1
