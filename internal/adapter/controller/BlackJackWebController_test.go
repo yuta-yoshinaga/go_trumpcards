@@ -240,3 +240,58 @@ func TestBlackJackWebController_SessionIsolation(t *testing.T) {
 		}
 	})
 }
+
+func TestBlackJackWebController_NewCommands(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":0},"player":{"score":0,"cards":null,"chips":0},"message":"ok","deckCount":1}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("Surrender").Return(mockOutput)
+	bjiMock.On("ToggleHint").Return(mockOutput)
+	bjiMock.On("SetDeckCount", 6).Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	t.Run("sur", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"sur","sessionId":"bj-new-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+	})
+	t.Run("surrender", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"surrender","sessionId":"bj-new-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+	})
+	t.Run("togglehint", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"togglehint","sessionId":"bj-new-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+	})
+	t.Run("sd with amount", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"sd","amount":6,"sessionId":"bj-new-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+	})
+	t.Run("setdeckcount with amount", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"setdeckcount","amount":6,"sessionId":"bj-new-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+	})
+}

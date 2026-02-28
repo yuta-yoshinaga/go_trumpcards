@@ -258,3 +258,94 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "不明")
 	})
 }
+
+func TestOldMaidCuiPresenter_JijiNuki_Header(t *testing.T) {
+	top := presenter.NewOldMaidCuiPresenter()
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki})
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	result := top.Output(om, nil)
+	assert.Contains(t, result, "Old Maid (ジジ抜き)")
+	assert.NotContains(t, result, "Old Maid (ババ抜き)")
+}
+
+func TestOldMaidCuiPresenter_Normal_Header(t *testing.T) {
+	top := presenter.NewOldMaidCuiPresenter()
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	// Default config is Normal
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	result := top.Output(om, nil)
+	assert.Contains(t, result, "Old Maid (ババ抜き)")
+	assert.NotContains(t, result, "Old Maid (ジジ抜き)")
+}
+
+func TestOldMaidCuiPresenter_JijiNuki_GameEnd_ShowsRemovedCard(t *testing.T) {
+	top := presenter.NewOldMaidCuiPresenter()
+	tc := domain.NewTrumpCards(0)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki})
+
+	// Deterministic setup: Heart 7 was the removed card (explains why Clover 7 is unpairable).
+	om.SetRemovedCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	// player[0] holds Spade 5; player[1] holds Clover 5 (will be drawn and paired).
+	// player[2] holds Clover 7 (unpaired → loser); player[3] is already finished.
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+	players[3].SetIsFinished(true)
+
+	// player[0] draws Clover 5 from player[1] → pair → both finish; player[2] alone → game ends.
+	_ = om.PlayerDraw(0)
+
+	assert.True(t, om.GetGameEndFlag())
+	assert.Equal(t, 2, om.GetLoserIdx())
+	result := top.Output(om, nil)
+	assert.Contains(t, result, "（除外カード: HEART 7）")
+}
+
+func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {
+	top := presenter.NewOldMaidCuiPresenter()
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	// Normal mode, removedCard is nil
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[3].SetIsFinished(true)
+	_ = om.PlayerDraw(0) // ends game
+	result := top.Output(om, nil)
+	assert.NotContains(t, result, "（除外カード:")
+	assert.Contains(t, result, "ゲーム終了！")
+}

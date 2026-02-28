@@ -1,0 +1,29 @@
+package usecase
+
+import (
+	"github.com/stretchr/testify/mock"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
+
+// MockHoldemInteractor テキサスホールデムインタラクターモック
+type MockHoldemInteractor struct {
+	mock.Mock
+}
+
+// Reset モック
+func (_m *MockHoldemInteractor) Reset() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// ResetWithConfig モック
+func (_m *MockHoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
+	ret := _m.Called(cfg)
+	return ret.Get(0).(string)
+}
+
+// Action モック
+func (_m *MockHoldemInteractor) Action(action int, amount int) string {
+	ret := _m.Called(action, amount)
+	return ret.Get(0).(string)
+}

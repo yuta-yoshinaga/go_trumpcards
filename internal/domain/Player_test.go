@@ -82,3 +82,16 @@ func TestPlayer_Method(t *testing.T) {
 		assert.Equal(t, 2, p.GetCard(0).GetValue())
 	})
 }
+
+func TestPlayer_PrependCard(t *testing.T) {
+	p := domain.NewPlayer()
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	front := domain.NewCard(domain.CardDesignHeart, 1, false)
+	p.PrependCard(front)
+	assert.Equal(t, 3, p.GetCardsSize())
+	assert.Equal(t, domain.CardDesignHeart, p.GetCard(0).GetDesign())
+	assert.Equal(t, 1, p.GetCard(0).GetValue())
+	assert.Equal(t, domain.CardDesignSpade, p.GetCard(1).GetDesign())
+	assert.Equal(t, domain.CardDesignClover, p.GetCard(2).GetDesign())
+}

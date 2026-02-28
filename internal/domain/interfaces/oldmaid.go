@@ -6,6 +6,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 type OldMaidGame interface {
 	// interactor が呼ぶメソッド
 	Reset()
+	SetConfig(config domain.OldMaidConfig)
+	ArrangeTargetForHumanDraw()
 	GetGameEndFlag() bool
 	IsHumanTurn() bool
 	PlayerDraw(cardIdx int) error
@@ -25,4 +27,7 @@ type OldMaidGame interface {
 	GetLoserIdx() int
 	GetCurrentTurn() int
 	GetNextDrawTargetIdx() int
+	GetConfig() domain.OldMaidConfig
+	GetRemovedCard() *domain.Card
+	GetCpuHighlightedCardIdx() int
 }

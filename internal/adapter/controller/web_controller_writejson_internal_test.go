@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -25,14 +26,17 @@ func makeRestRequest(body string) *rest.Request {
 
 type mockBlackJackIF struct{ mock.Mock }
 
-func (m *mockBlackJackIF) Reset() string            { return m.Called().String(0) }
-func (m *mockBlackJackIF) Hit() string              { return m.Called().String(0) }
-func (m *mockBlackJackIF) Stand() string            { return m.Called().String(0) }
-func (m *mockBlackJackIF) Bet(a int) string         { return m.Called(a).String(0) }
-func (m *mockBlackJackIF) DoubleDown() string       { return m.Called().String(0) }
-func (m *mockBlackJackIF) Split() string            { return m.Called().String(0) }
-func (m *mockBlackJackIF) Insurance() string        { return m.Called().String(0) }
-func (m *mockBlackJackIF) DeclineInsurance() string { return m.Called().String(0) }
+func (m *mockBlackJackIF) Reset() string             { return m.Called().String(0) }
+func (m *mockBlackJackIF) Hit() string               { return m.Called().String(0) }
+func (m *mockBlackJackIF) Stand() string             { return m.Called().String(0) }
+func (m *mockBlackJackIF) Bet(a int) string          { return m.Called(a).String(0) }
+func (m *mockBlackJackIF) DoubleDown() string        { return m.Called().String(0) }
+func (m *mockBlackJackIF) Split() string             { return m.Called().String(0) }
+func (m *mockBlackJackIF) Insurance() string         { return m.Called().String(0) }
+func (m *mockBlackJackIF) DeclineInsurance() string  { return m.Called().String(0) }
+func (m *mockBlackJackIF) Surrender() string         { return m.Called().String(0) }
+func (m *mockBlackJackIF) SetDeckCount(c int) string { return m.Called(c).String(0) }
+func (m *mockBlackJackIF) ToggleHint() string        { return m.Called().String(0) }
 
 func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 	bjMock := &mockBlackJackIF{}
@@ -129,8 +133,8 @@ func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 
 type mockOldMaidIF struct{ mock.Mock }
 
-func (m *mockOldMaidIF) Reset() string       { return m.Called().String(0) }
-func (m *mockOldMaidIF) Draw(idx int) string { return m.Called(idx).String(0) }
+func (m *mockOldMaidIF) Reset(cfg domain.OldMaidConfig) string { return m.Called(cfg).String(0) }
+func (m *mockOldMaidIF) Draw(idx int) string                   { return m.Called(idx).String(0) }
 
 func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 	omMock := &mockOldMaidIF{}
@@ -175,8 +179,13 @@ func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 
 type mockDaifugoIF struct{ mock.Mock }
 
-func (m *mockDaifugoIF) Reset() string       { return m.Called().String(0) }
-func (m *mockDaifugoIF) Play(i []int) string { return m.Called(i).String(0) }
+func (m *mockDaifugoIF) Reset() string { return m.Called().String(0) }
+func (m *mockDaifugoIF) Play(i []int) string {
+	return m.Called(i).String(0)
+}
+func (m *mockDaifugoIF) ResetWithConfig(config domain.DaifugoConfig) string {
+	return m.Called(config).String(0)
+}
 
 func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 	dgMock := &mockDaifugoIF{}
@@ -222,8 +231,8 @@ func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 type mockSevensIF struct{ mock.Mock }
 
 func (m *mockSevensIF) Reset() string { return m.Called().String(0) }
-func (m *mockSevensIF) ResetWithConfig(t bool, j int, c bool) string {
-	return m.Called(t, j, c).String(0)
+func (m *mockSevensIF) ResetWithConfig(t bool, j int, c bool, mp int) string {
+	return m.Called(t, j, c, mp).String(0)
 }
 func (m *mockSevensIF) Play(idx int) string { return m.Called(idx).String(0) }
 func (m *mockSevensIF) PlayJoker(idx, suit, val int) string {
@@ -273,10 +282,11 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 
 type mockDoubtIF struct{ mock.Mock }
 
-func (m *mockDoubtIF) Reset() string                 { return m.Called().String(0) }
-func (m *mockDoubtIF) Play(i []int, v int) string    { return m.Called(i, v).String(0) }
-func (m *mockDoubtIF) ResolveDoubt(idx []int) string { return m.Called(idx).String(0) }
-func (m *mockDoubtIF) SkipDoubt() string             { return m.Called().String(0) }
+func (m *mockDoubtIF) Reset() string                                 { return m.Called().String(0) }
+func (m *mockDoubtIF) ResetWithConfig(cfg domain.DoubtConfig) string { return m.Called(cfg).String(0) }
+func (m *mockDoubtIF) Play(i []int, v int) string                    { return m.Called(i, v).String(0) }
+func (m *mockDoubtIF) ResolveDoubt(idx []int) string                 { return m.Called(idx).String(0) }
+func (m *mockDoubtIF) SkipDoubt() string                             { return m.Called().String(0) }
 func (m *mockDoubtIF) GetCpuDoubters() []int {
 	ret := m.Called()
 	if val, ok := ret.Get(0).([]int); ok {
@@ -319,6 +329,57 @@ func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 		defer ctrl2.store.Stop()
 		fw := newFailWriter()
 		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-dw-unsupported"}`)
+		ctrl2.Exec(fw, req)
+		assert.Equal(t, http.StatusOK, fw.headerCode)
+	})
+}
+
+// --- Holdem WriteJson error tests ---
+
+type mockHoldemIF struct{ mock.Mock }
+
+func (m *mockHoldemIF) Reset() string { return m.Called().String(0) }
+func (m *mockHoldemIF) ResetWithConfig(cfg domain.HoldemConfig) string {
+	return m.Called(cfg).String(0)
+}
+func (m *mockHoldemIF) Action(action int, amount int) string {
+	return m.Called(action, amount).String(0)
+}
+
+func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
+	hmMock := &mockHoldemIF{}
+	factory := func() usecase.HoldemInteractorIF { return hmMock }
+	ctrl := NewHoldemWebController(factory)
+	defer ctrl.store.Stop()
+
+	t.Run("param error WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "", "sessionId": "s1"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
+	})
+
+	t.Run("quit WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "q", "sessionId": "s1"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusOK, fw.headerCode)
+	})
+
+	t.Run("session error WriteJson fails", func(t *testing.T) {
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "r", "sessionId": "` + strings.Repeat("a", SessionMaxIDLen+1) + `"}`)
+		ctrl.Exec(fw, req)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
+	})
+
+	t.Run("unsupported command WriteJson fails", func(t *testing.T) {
+		hmMock2 := &mockHoldemIF{}
+		factory2 := func() usecase.HoldemInteractorIF { return hmMock2 }
+		ctrl2 := NewHoldemWebController(factory2)
+		defer ctrl2.store.Stop()
+		fw := newFailWriter()
+		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-hm-unsupported"}`)
 		ctrl2.Exec(fw, req)
 		assert.Equal(t, http.StatusOK, fw.headerCode)
 	})

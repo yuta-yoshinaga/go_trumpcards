@@ -37,6 +37,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		TunnelEnabled: cfg.TunnelEnabled,
 		JokerCount:    cfg.JokerCount,
 		CpuStrategy:   cfg.CpuStrategy,
+		MaxPasses:     cfg.MaxPasses,
 	}
 
 	// CPU行動履歴
@@ -47,6 +48,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 			PlayedCard:  swp.getCardObj(action.PlayedCard),
 			TargetSuit:  action.TargetSuit,
 			TargetValue: action.TargetValue,
+			ForcedPass:  action.ForcedPass,
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
 	}
@@ -59,12 +61,16 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 			PlayedCard:  swp.getCardObj(humanAction.PlayedCard),
 			TargetSuit:  humanAction.TargetSuit,
 			TargetValue: humanAction.TargetValue,
+			ForcedPass:  humanAction.ForcedPass,
 		}
 	}
 
 	// プレイヤー情報
 	for i := 0; i < s.GetPlayerCnt(); i++ {
 		player := s.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		pObj := new(controller.SevensWebOutputPlayer)
 		pObj.ID = i
 		pObj.IsHuman = player.GetIsHuman()
@@ -101,6 +107,9 @@ func (swp *SevensWebPresenter) buildResultMessage(s interfaces.SevensGame) strin
 	msg := "ゲーム終了！ "
 	for i := 0; i < s.GetPlayerCnt(); i++ {
 		player := s.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		rank := player.GetRank()
 		if rank < 1 {
 			continue

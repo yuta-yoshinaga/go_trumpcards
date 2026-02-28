@@ -3,7 +3,14 @@ import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { Card, DaifugoAction, DaifugoExchangeAction, DaifugoPlayerData, DaifugoResponse } from '../types/card';
+import type {
+  Card,
+  DaifugoAction,
+  DaifugoConfigInput,
+  DaifugoExchangeAction,
+  DaifugoPlayerData,
+  DaifugoResponse,
+} from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const playerAreaBaseClass =
@@ -92,9 +99,10 @@ interface HumanPlayerAreaProps {
   selectedIndices: number[];
   onToggle: (idx: number) => void;
   isCurrentTurn: boolean;
+  onDragCard: (idx: number) => void;
 }
 
-function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: HumanPlayerAreaProps) {
+function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn, onDragCard }: HumanPlayerAreaProps) {
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isCurrentTurn
@@ -131,7 +139,12 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn }: H
             key={`${card.design}-${card.value}`}
             type="button"
             disabled={!isCurrentTurn}
+            draggable={isCurrentTurn}
             onClick={() => onToggle(i)}
+            onDragStart={(e) => {
+              e.dataTransfer.setData('cardIndex', String(i));
+              onDragCard(i);
+            }}
             style={{
               background: 'none',
               padding: 0,
@@ -206,17 +219,86 @@ function ExchangeLog({
   );
 }
 
+interface SettingsPanelProps {
+  config: DaifugoConfigInput;
+  onChange: (key: keyof DaifugoConfigInput, value: boolean | number) => void;
+}
+
+function SettingsPanel({ config, onChange }: SettingsPanelProps) {
+  const boolRules: { key: keyof DaifugoConfigInput; label: string }[] = [
+    { key: 'eightCutEnabled', label: '8切り' },
+    { key: 'suitLockEnabled', label: 'スート縛り' },
+    { key: 'elevenBackEnabled', label: '11バック' },
+    { key: 'sequenceEnabled', label: '階段' },
+    { key: 'cardExchangeEnabled', label: 'カード交換' },
+    { key: 'fiveSkipEnabled', label: '5飛び' },
+    { key: 'sevenPassEnabled', label: '7渡し' },
+    { key: 'tenDiscardEnabled', label: '10捨て' },
+    { key: 'spadeThreeEnabled', label: 'スペ3返し' },
+    { key: 'capitalFallEnabled', label: '都落ち' },
+  ];
+  return (
+    <details className="mb-2">
+      <summary className="cursor-pointer text-[#ccc] text-[0.85em] select-none">ルール設定</summary>
+      <div className="bg-black/40 rounded-lg p-2 mt-1 text-[0.82em] text-white">
+        <div className="mb-1">
+          <label htmlFor="joker-count" className="mr-2">
+            ジョーカー枚数:
+          </label>
+          <select
+            id="joker-count"
+            value={config.jokerCount}
+            onChange={(e) => onChange('jokerCount', Number(e.target.value))}
+            className="bg-black/50 text-white rounded px-1"
+          >
+            <option value={0}>0</option>
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+          </select>
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          {boolRules.map(({ key, label }) => (
+            <label key={key} className="flex items-center gap-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={config[key] as boolean}
+                onChange={(e) => onChange(key, e.target.checked)}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      </div>
+    </details>
+  );
+}
+
+const defaultConfigInput: DaifugoConfigInput = {
+  jokerCount: 2,
+  eightCutEnabled: true,
+  suitLockEnabled: true,
+  elevenBackEnabled: true,
+  sequenceEnabled: true,
+  cardExchangeEnabled: true,
+  fiveSkipEnabled: false,
+  sevenPassEnabled: false,
+  tenDiscardEnabled: false,
+  spadeThreeEnabled: false,
+  capitalFallEnabled: false,
+};
+
 export function DaifugoPage() {
   const [state, setState] = useState<DaifugoResponse | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [configInput, setConfigInput] = useState<DaifugoConfigInput>(defaultConfigInput);
 
-  const exec = useCallback(async (command: 'reset' | 'play', indices?: number[]) => {
+  const exec = useCallback(async (command: 'reset' | 'play', indices?: number[], config?: DaifugoConfigInput) => {
     setLoading(true);
     try {
       setError(null);
-      const res = await daifugoApi.exec(command, indices);
+      const res = await daifugoApi.exec(command, indices, config);
       setState(res);
       setSelectedIndices([]);
     } catch {
@@ -232,6 +314,7 @@ export function DaifugoPage() {
 
   if (!state) return null;
 
+  const pendingAction = state.pendingAction ?? 'none';
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -239,6 +322,40 @@ export function DaifugoPage() {
   const toggleCardSelection = (idx: number) => {
     setSelectedIndices((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
   };
+
+  const handleDragCard = (idx: number) => {
+    // Ensure dragged card is in selection
+    setSelectedIndices((prev) => (prev.includes(idx) ? prev : [...prev, idx]));
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const draggedIdx = parseInt(e.dataTransfer.getData('cardIndex'), 10);
+    if (Number.isNaN(draggedIdx)) {
+      return;
+    }
+    const toPlay = selectedIndices.includes(draggedIdx) ? selectedIndices : [draggedIdx];
+    exec(
+      'play',
+      [...toPlay].sort((a, b) => a - b),
+    );
+  };
+
+  const handleConfigChange = (key: keyof DaifugoConfigInput, value: boolean | number) => {
+    setConfigInput((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Pending action UI
+  let playButtonLabel = '選択して出す';
+  let pendingBanner: string | null = null;
+  if (pendingAction === 'sevenPass') {
+    playButtonLabel = '渡す';
+    const targetName = findPlayerName(state.players, state.pendingActionTarget);
+    pendingBanner = `【7渡し】${targetName}にカードを1枚渡してください`;
+  } else if (pendingAction === 'tenDiscard') {
+    playButtonLabel = '捨てる';
+    pendingBanner = '【10捨て】捨てるカードを1枚選択してください';
+  }
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
@@ -251,8 +368,13 @@ export function DaifugoPage() {
           ))}
         </div>
 
-        {/* Table cards */}
-        <div className="bg-black/30 rounded-[10px] p-2.5 my-2">
+        {/* Table cards (drop zone) */}
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target; keyboard play uses select+button */}
+        <div
+          className="bg-black/30 rounded-[10px] p-2.5 my-2"
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+        >
           <div className="text-white font-bold mb-1.5">場札</div>
           <div className="flex flex-wrap gap-1">
             {!state.tableCards || state.tableCards.length === 0 ? (
@@ -262,6 +384,13 @@ export function DaifugoPage() {
             )}
           </div>
         </div>
+
+        {/* Pending action banner */}
+        {pendingBanner && (
+          <div className="bg-yellow-700/80 rounded-[10px] text-white text-center py-2 px-4 text-[0.95em] font-bold my-2">
+            {pendingBanner}
+          </div>
+        )}
 
         {/* Local rules status badges */}
         <RulesBadges state={state} />
@@ -298,6 +427,9 @@ export function DaifugoPage() {
         className="shrink-0 bg-[#163e16] border-t border-white/20 px-4 py-2.5"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
       >
+        {/* Settings panel */}
+        <SettingsPanel config={configInput} onChange={handleConfigChange} />
+
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
@@ -306,6 +438,7 @@ export function DaifugoPage() {
               selectedIndices={selectedIndices}
               onToggle={toggleCardSelection}
               isCurrentTurn={isHumanTurn}
+              onDragCard={handleDragCard}
             />
           </div>
         )}
@@ -318,14 +451,14 @@ export function DaifugoPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset')}
+            onClick={() => exec('reset', [], configInput)}
           >
             リセット
           </button>
           <button
             type="button"
             className={`${btnWarning} min-w-[90px]`}
-            disabled={loading || !isHumanTurn || state.gameEndFlag}
+            disabled={loading || !isHumanTurn || state.gameEndFlag || pendingAction !== 'none'}
             onClick={() => exec('play', [])}
           >
             パス
@@ -341,7 +474,7 @@ export function DaifugoPage() {
               )
             }
           >
-            選択して出す
+            {playButtonLabel}
           </button>
         </div>
       </div>

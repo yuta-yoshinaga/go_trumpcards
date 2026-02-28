@@ -26,4 +26,20 @@ func TestSevensConfig_Method(t *testing.T) {
 		assert.Equal(t, 2, cfg.JokerCount)
 		assert.True(t, cfg.CpuStrategy)
 	})
+
+	t.Run("success DefaultSevensConfig returns MaxPasses 5", func(t *testing.T) {
+		cfg := domain.DefaultSevensConfig()
+		assert.Equal(t, domain.SevensMaxPasses, cfg.MaxPasses)
+		assert.Equal(t, 5, cfg.MaxPasses)
+	})
+
+	t.Run("success SevensConfig MaxPasses can be set to 0 (unlimited)", func(t *testing.T) {
+		cfg := domain.SevensConfig{MaxPasses: 0}
+		assert.Equal(t, 0, cfg.MaxPasses)
+	})
+
+	t.Run("success SevensConfig MaxPasses can be set to custom value", func(t *testing.T) {
+		cfg := domain.SevensConfig{MaxPasses: 3}
+		assert.Equal(t, 3, cfg.MaxPasses)
+	})
 }

@@ -94,6 +94,20 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 				return p.Output(d, nil)
 			}(),
 		},
+		{
+			name: "HoldemWebPresenter marshal error",
+			output: func() string {
+				p := NewHoldemWebPresenter()
+				players := []*domain.HoldemPlayer{
+					domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+					domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+					domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+					domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+				}
+				h := domain.NewHoldem(domain.NewTrumpCards(0), players, domain.DefaultHoldemConfig())
+				return p.Output(h, nil)
+			}(),
+		},
 	}
 
 	for _, tc := range testCases {

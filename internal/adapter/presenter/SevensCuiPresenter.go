@@ -24,7 +24,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	b.WriteString("==========\n")
 	b.WriteString("Sevens (7並べ)\n")
 	config := s.GetConfig()
-	if config.TunnelEnabled || config.JokerCount > 0 || config.CpuStrategy {
+	if config.TunnelEnabled || config.JokerCount > 0 || config.CpuStrategy || config.MaxPasses != domain.SevensMaxPasses {
 		b.WriteString("ルール:")
 		if config.TunnelEnabled {
 			b.WriteString(" [トンネル]")
@@ -34,6 +34,11 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		}
 		if config.CpuStrategy {
 			b.WriteString(" [CPU戦略]")
+		}
+		if config.MaxPasses == 0 {
+			b.WriteString(" [パス無制限]")
+		} else if config.MaxPasses != domain.SevensMaxPasses {
+			fmt.Fprintf(&b, " [パス%d回]", config.MaxPasses)
 		}
 		b.WriteString("\n")
 	}
@@ -49,8 +54,13 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		if player.GetIsFinished() {
 			fmt.Fprintf(&b, ": 上がり/失格 (ランク: %d位)\n", player.GetRank())
 		} else {
-			fmt.Fprintf(&b, ": %d枚 (パス: %d/%d)\n",
-				player.GetCardsSize(), player.GetPassesUsed(), player.GetMaxPasses())
+			if player.GetMaxPasses() == 0 {
+				fmt.Fprintf(&b, ": %d枚 (パス: %d/∞)\n",
+					player.GetCardsSize(), player.GetPassesUsed())
+			} else {
+				fmt.Fprintf(&b, ": %d枚 (パス: %d/%d)\n",
+					player.GetCardsSize(), player.GetPassesUsed(), player.GetMaxPasses())
+			}
 			if player.GetIsHuman() {
 				for j := 0; j < player.GetCardsSize(); j++ {
 					if j != 0 {
@@ -79,7 +89,11 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	humanAction := s.GetHumanAction()
 	if humanAction != nil {
 		if humanAction.PlayedCard == nil {
-			fmt.Fprintf(&b, "%sがパスしました\n", p.getPlayerName(s, humanAction.PlayerIdx))
+			if humanAction.ForcedPass {
+				fmt.Fprintf(&b, "%sがパスしました (出せるカードなし)\n", p.getPlayerName(s, humanAction.PlayerIdx))
+			} else {
+				fmt.Fprintf(&b, "%sがパスしました\n", p.getPlayerName(s, humanAction.PlayerIdx))
+			}
 		} else {
 			if humanAction.PlayedCard.GetDesign() == domain.CardDesignJoker && humanAction.TargetSuit > 0 {
 				fmt.Fprintf(&b, "%sが %s → %s %d を出しました\n",
@@ -99,7 +113,11 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		for _, action := range cpuActions {
 			actPlayerName := p.getPlayerName(s, action.PlayerIdx)
 			if action.PlayedCard == nil {
-				fmt.Fprintf(&b, "%sがパスしました\n", actPlayerName)
+				if action.ForcedPass {
+					fmt.Fprintf(&b, "%sがパスしました (出せるカードなし)\n", actPlayerName)
+				} else {
+					fmt.Fprintf(&b, "%sがパスしました\n", actPlayerName)
+				}
 			} else {
 				if action.PlayedCard.GetDesign() == domain.CardDesignJoker && action.TargetSuit > 0 {
 					fmt.Fprintf(&b, "%sが %s → %s %d を出しました\n",

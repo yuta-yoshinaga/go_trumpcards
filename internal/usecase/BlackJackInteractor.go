@@ -15,6 +15,9 @@ type BlackJackInteractorIF interface {
 	Split() string
 	Insurance() string
 	DeclineInsurance() string
+	Surrender() string
+	SetDeckCount(count int) string
+	ToggleHint() string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -83,4 +86,22 @@ func (bi *BlackJackInteractor) Insurance() string {
 func (bi *BlackJackInteractor) DeclineInsurance() string {
 	err := bi.bj.PlayerDeclineInsurance()
 	return bi.bjp.Output(bi.bj, err)
+}
+
+// Surrender サレンダー
+func (bi *BlackJackInteractor) Surrender() string {
+	err := bi.bj.PlayerSurrender()
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// SetDeckCount デッキ数設定
+func (bi *BlackJackInteractor) SetDeckCount(count int) string {
+	err := bi.bj.SetDeckCount(count)
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// ToggleHint ヒント表示切り替え
+func (bi *BlackJackInteractor) ToggleHint() string {
+	bi.bj.ToggleHint()
+	return bi.bjp.Output(bi.bj, nil)
 }

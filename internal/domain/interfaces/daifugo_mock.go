@@ -145,3 +145,26 @@ func (_m *MockDaifugoGame) GetPassCount() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// HasPendingAction モック
+func (_m *MockDaifugoGame) HasPendingAction() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// SetConfig モック
+func (_m *MockDaifugoGame) SetConfig(config domain.DaifugoConfig) {
+	_m.Called(config)
+}
+
+// GetPendingActionType モック
+func (_m *MockDaifugoGame) GetPendingActionType() domain.DaifugoPendingAction {
+	ret := _m.Called()
+	return ret.Get(0).(domain.DaifugoPendingAction)
+}
+
+// GetPendingActionTarget モック
+func (_m *MockDaifugoGame) GetPendingActionTarget() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}

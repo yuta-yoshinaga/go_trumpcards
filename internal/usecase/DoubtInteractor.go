@@ -9,6 +9,7 @@ import (
 // DoubtInteractorIF ダウトインタラクターインタフェース
 type DoubtInteractorIF interface {
 	Reset() string
+	ResetWithConfig(cfg domain.DoubtConfig) string
 	Play(cardIndices []int, claimedValue int) string
 	ResolveDoubt(doubterIndices []int) string
 	SkipDoubt() string
@@ -34,6 +35,13 @@ func NewDoubtInteractor(d interfaces.DoubtGame, dp presenter.DoubtPresenter) *Do
 
 // Reset ゲーム初期化
 func (di *DoubtInteractor) Reset() string {
+	di.d.Reset()
+	return di.dp.Output(di.d, nil)
+}
+
+// ResetWithConfig 設定を変更してゲーム初期化
+func (di *DoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig) string {
+	di.d.SetConfig(cfg)
 	di.d.Reset()
 	return di.dp.Output(di.d, nil)
 }

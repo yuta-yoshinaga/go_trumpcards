@@ -143,7 +143,14 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 		currentTurn := dg.GetCurrentTurn()
 		currentName := p.getPlayerName(dg, currentTurn)
 		fmt.Fprintf(&b, "手番: %s\n", currentName)
-		b.WriteString("p [インデックス...] でカードを出す / p でパス\n")
+		switch dg.GetPendingActionType() {
+		case domain.DaifugoPendingSevenPass:
+			b.WriteString("【7渡し】渡すカードを選択してください (p [インデックス])\n")
+		case domain.DaifugoPendingTenDiscard:
+			b.WriteString("【10捨て】捨てるカードを選択してください (p [インデックス])\n")
+		default:
+			b.WriteString("p [インデックス...] でカードを出す / p でパス\n")
+		}
 	}
 
 	b.WriteString("==========\n")

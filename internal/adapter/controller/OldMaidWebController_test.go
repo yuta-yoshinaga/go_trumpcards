@@ -12,12 +12,13 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ant0ine/go-json-rest/rest/test"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestOldMaidWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
 	omiMock := new(usecase.MockOldMaidInteractor)
-	omiMock.On("Reset").Return(mockOutput).Times(2)
+	omiMock.On("Reset", mock.Anything).Return(mockOutput).Times(3)
 	omiMock.On("Draw", -1).Return(mockOutput)
 	omiMock.On("Draw", 2).Return(mockOutput)
 
@@ -31,8 +32,8 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	api.SetApp(router)
 
 	var jsonInput controller.OldMaidWebInput
-	// When "q" / "quit": newDefaultOutput is used
-	qBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"bye."}`
+	// When "q" / "quit": newDefaultOutput is used (cpuHighlightedCardIdx=-1, removedCard=null, mode=0)
+	qBody := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"bye."}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
@@ -102,6 +103,19 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
 	})
+	t.Run("success Exec reset with mode and cpuPlacementStrategy", func(t *testing.T) {
+		input := controller.OldMaidWebInput{
+			Command:              "reset",
+			SessionId:            "test-session-1",
+			Mode:                 1,
+			CpuPlacementStrategy: true,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+	})
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
@@ -109,7 +123,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"Unsupported command."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"Unsupported command."}`)
 	})
 	t.Run("failed Exec command empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "", "sessionId": "test-session-1"}`), &jsonInput)
@@ -118,7 +132,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error."}`)
 	})
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "reset", "sessionId": ""}`), &jsonInput)
@@ -127,7 +141,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error."}`)
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.OldMaidWebInput{
@@ -139,26 +153,26 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error."}`)
 	})
 	t.Run("failed Exec response empty", func(t *testing.T) {
-		omiMock.On("Reset").Return(``)
+		omiMock.On("Reset", mock.Anything).Return(``)
 		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonInput)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"message":"error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"error."}`)
 	})
 }
 
 func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
 	mockA := new(usecase.MockOldMaidInteractor)
-	mockA.On("Reset").Return(mockOutput)
+	mockA.On("Reset", mock.Anything).Return(mockOutput)
 	mockB := new(usecase.MockOldMaidInteractor)
-	mockB.On("Reset").Return(mockOutput)
+	mockB.On("Reset", mock.Anything).Return(mockOutput)
 
 	callCount := 0
 	isoController := controller.NewOldMaidWebController(func() uc.OldMaidInteractorIF {
@@ -182,8 +196,8 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		mockA.AssertCalled(t, "Reset")
-		mockB.AssertNotCalled(t, "Reset")
+		mockA.AssertCalled(t, "Reset", mock.Anything)
+		mockB.AssertNotCalled(t, "Reset", mock.Anything)
 	})
 
 	t.Run("session-B reset calls mockB", func(t *testing.T) {
@@ -193,7 +207,7 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		mockB.AssertCalled(t, "Reset")
+		mockB.AssertCalled(t, "Reset", mock.Anything)
 	})
 
 	t.Run("session-A second call reuses mockA", func(t *testing.T) {

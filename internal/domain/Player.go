@@ -46,3 +46,8 @@ func (p *Player) ShuffleCards() {
 		p.cards[i], p.cards[j] = p.cards[j], p.cards[i]
 	})
 }
+
+// PrependCard カードを手札の先頭に追加
+func (p *Player) PrependCard(card *Card) {
+	p.cards = append([]*Card{card}, p.cards...)
+}

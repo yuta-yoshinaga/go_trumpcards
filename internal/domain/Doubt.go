@@ -5,6 +5,22 @@ import "math/rand"
 // DoubtPlayerCnt ダウトプレイヤー数
 const DoubtPlayerCnt = 4
 
+// MinClaimedValue claimed value の最小値 (A)
+const MinClaimedValue = 1
+
+// MaxClaimedValue claimed value の最大値 (K)
+const MaxClaimedValue = 13
+
+// randomDoubtChance CPUがランダムにダウトを宣言する確率
+const randomDoubtChance = 0.3
+
+// retentionChanceEasy / Normal / Hard 各記憶レベルのカード保持確率
+const (
+	retentionChanceEasy   = 0.3
+	retentionChanceNormal = 0.7
+	retentionChanceHard   = 1.0
+)
+
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
@@ -43,6 +59,9 @@ type DoubtDoubtResult struct {
 	RevealedCards []*Card // 公開されたカード
 }
 
+// cardsPerValue 標準52枚デッキにおける各値のカード枚数
+const cardsPerValue = 4
+
 // Doubt ダウトゲームクラス
 type Doubt struct {
 	trumpCards      *TrumpCards
@@ -57,6 +76,7 @@ type Doubt struct {
 	cpuActions      []*DoubtCpuAction
 	humanAction     *DoubtCpuAction
 	lastDoubtResult *DoubtDoubtResult
+	config          DoubtConfig
 }
 
 // NewDoubt コンストラクタ
@@ -68,6 +88,7 @@ func NewDoubt(trumpCards *TrumpCards, players []*DoubtPlayer) *Doubt {
 		phase:       DoubtPhasePlay,
 		gameEndFlag: false,
 		winnerIdx:   -1,
+		config:      DefaultDoubtConfig(),
 	}
 }
 
@@ -87,6 +108,7 @@ func (d *Doubt) Reset() {
 	for _, p := range d.players {
 		p.Reset()
 		p.SetIsFinished(false)
+		p.ResetMemory()
 	}
 
 	d.trumpCards.Shuffle()
@@ -113,7 +135,7 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 	if !d.players[d.currentTurn].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
-	if claimedValue < 1 || claimedValue > 13 {
+	if claimedValue < MinClaimedValue || claimedValue > MaxClaimedValue {
 		return NewDomainError(ErrInvalidPlay, "宣言する値は1から13の範囲で指定してください")
 	}
 	if len(cardIndices) == 0 {
@@ -225,13 +247,30 @@ func (d *Doubt) CpuPlay() {
 	d.decideCpuDoubters()
 }
 
-// decideCpuDoubters カードを出した後、CPUがダウトするか確率で決定 (30%)
+// memoryRetentionChance 記憶力レベルに対応するカード記憶確率を返す
+func memoryRetentionChance(level DoubtMemoryLevel) float64 {
+	switch level {
+	case DoubtMemoryLevelEasy:
+		return retentionChanceEasy
+	case DoubtMemoryLevelNormal:
+		return retentionChanceNormal
+	case DoubtMemoryLevelHard:
+		return retentionChanceHard
+	default:
+		return retentionChanceNormal
+	}
+}
+
+// decideCpuDoubters カードを出した後、CPUがダウトするか決定する
+// 宣言が物理的に不可能な場合は100%ダウト、それ以外は30%の確率でダウト
 func (d *Doubt) decideCpuDoubters() {
 	d.cpuDoubters = nil
 	if d.lastAction == nil {
 		return
 	}
 	cardPlayerIdx := d.lastAction.PlayerIdx
+	claimedValue := d.lastAction.ClaimedValue
+	claimedCount := d.lastAction.CardCount
 	for i := 0; i < DoubtPlayerCnt; i++ {
 		if i == cardPlayerIdx {
 			continue
@@ -239,7 +278,14 @@ func (d *Doubt) decideCpuDoubters() {
 		if d.players[i].GetIsHuman() {
 			continue
 		}
-		if rand.Float64() < 0.3 {
+		if d.players[i].GetIsFinished() {
+			continue
+		}
+		known := d.players[i].CountKnownCards(claimedValue)
+		if known+claimedCount > cardsPerValue {
+			// 物理的に不可能な宣言 → 100%ダウト
+			d.cpuDoubters = append(d.cpuDoubters, i)
+		} else if rand.Float64() < randomDoubtChance {
 			d.cpuDoubters = append(d.cpuDoubters, i)
 		}
 	}
@@ -312,6 +358,17 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 		LoserIdx:      loserIdx,
 		CardCount:     cardCount,
 		RevealedCards: revealedCards,
+	}
+
+	// 非敗者のCPUがカードを記憶する
+	retentionChance := memoryRetentionChance(d.config.CpuMemoryLevel)
+	for i, p := range d.players {
+		if p.GetIsHuman() || i == loserIdx {
+			continue
+		}
+		for _, card := range revealedCards {
+			p.RecordRevealedCard(card.GetValue(), retentionChance)
+		}
 	}
 
 	d.tableCards = nil
@@ -401,3 +458,9 @@ func (d *Doubt) SetLastDoubtResult(result *DoubtDoubtResult) { d.lastDoubtResult
 
 // SetWinnerIdx 勝者インデックス設定 (テスト用)
 func (d *Doubt) SetWinnerIdx(idx int) { d.winnerIdx = idx }
+
+// GetConfig ゲーム設定取得
+func (d *Doubt) GetConfig() DoubtConfig { return d.config }
+
+// SetConfig ゲーム設定変更
+func (d *Doubt) SetConfig(cfg DoubtConfig) { d.config = cfg }

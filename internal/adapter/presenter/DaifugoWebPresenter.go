@@ -39,7 +39,23 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		ElevenBackEnabled:   config.ElevenBackEnabled,
 		SequenceEnabled:     config.SequenceEnabled,
 		CardExchangeEnabled: config.CardExchangeEnabled,
+		FiveSkipEnabled:     config.FiveSkipEnabled,
+		SevenPassEnabled:    config.SevenPassEnabled,
+		TenDiscardEnabled:   config.TenDiscardEnabled,
+		SpadeThreeEnabled:   config.SpadeThreeEnabled,
+		CapitalFallEnabled:  config.CapitalFallEnabled,
 	}
+
+	// ペンディングアクション
+	switch dg.GetPendingActionType() {
+	case domain.DaifugoPendingSevenPass:
+		resObj.PendingAction = "sevenPass"
+	case domain.DaifugoPendingTenDiscard:
+		resObj.PendingAction = "tenDiscard"
+	default:
+		resObj.PendingAction = "none"
+	}
+	resObj.PendingActionTarget = dg.GetPendingActionTarget()
 
 	// カード交換記録
 	resObj.ExchangeActions = make([]*controller.DaifugoWebOutputExchangeAction, 0)
@@ -79,6 +95,9 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	// プレイヤー情報
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
 		player := dg.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		pObj := new(controller.DaifugoWebOutputPlayer)
 		pObj.ID = i
 		pObj.IsHuman = player.GetIsHuman()
@@ -114,6 +133,9 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 	msg := "ゲーム終了！ "
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
 		player := dg.GetPlayer(i)
+		if player == nil {
+			continue
+		}
 		rank := player.GetRank()
 		if rank < 1 || rank > len(rankNames) {
 			continue

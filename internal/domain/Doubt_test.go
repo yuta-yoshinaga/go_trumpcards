@@ -543,6 +543,211 @@ func TestDoubt_GetTableCards(t *testing.T) {
 	assert.Equal(t, cards, game.GetTableCards())
 }
 
+func TestDoubt_GetSetConfig(t *testing.T) {
+	game, _ := makeDoubtGame()
+
+	// Default config
+	cfg := game.GetConfig()
+	assert.Equal(t, 10, cfg.DoubtWindowSec)
+	assert.Equal(t, domain.DoubtMemoryLevelNormal, cfg.CpuMemoryLevel)
+
+	// Custom config
+	custom := domain.DoubtConfig{DoubtWindowSec: 3, CpuMemoryLevel: domain.DoubtMemoryLevelHard}
+	game.SetConfig(custom)
+	got := game.GetConfig()
+	assert.Equal(t, 3, got.DoubtWindowSec)
+	assert.Equal(t, domain.DoubtMemoryLevelHard, got.CpuMemoryLevel)
+}
+
+func TestDoubt_Reset_ClearsMemory(t *testing.T) {
+	game, players := makeDoubtGame()
+	// Use value 99 (impossible in deck) so hand cards after reset won't interfere
+	players[1].RecordRevealedCard(99, 1.0)
+	assert.Equal(t, 1, players[1].CountKnownCards(99))
+
+	game.Reset()
+	// After reset, memory is cleared and no dealt cards have value 99
+	assert.Equal(t, 0, players[1].CountKnownCards(99))
+}
+
+func TestDoubt_DecideCpuDoubters_ImpossibleClaim(t *testing.T) {
+	// CPU player 1 has 4 cards of value 5 in memory → impossible claim for claimedValue=5, count=1
+	game, players := makeDoubtGame()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+	// Give CPU 1 knowledge of 4 cards of value 5 (max in deck)
+	for i := 0; i < 4; i++ {
+		players[1].RecordRevealedCard(5, 1.0)
+	}
+
+	// Human plays value=5 (claimed), count=1 → known(5)+1 = 5 > 4 → impossible
+	err := game.PlayerPlay([]int{0}, 5)
+	assert.NoError(t, err)
+
+	// CPU 1 should ALWAYS doubt (impossible claim)
+	found1 := false
+	for _, idx := range game.GetCpuDoubters() {
+		if idx == 1 {
+			found1 = true
+		}
+	}
+	assert.True(t, found1, "CPU 1 should always doubt an impossible claim")
+}
+
+func TestDoubt_DecideCpuDoubters_SkipsFinishedPlayers(t *testing.T) {
+	game, players := makeDoubtGame()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].SetIsFinished(true) // CPU 1 finished
+
+	_ = game.PlayerPlay([]int{0}, 1)
+
+	// CPU 1 should not be in doubters (finished)
+	for _, idx := range game.GetCpuDoubters() {
+		assert.NotEqual(t, 1, idx, "finished CPU should not be in doubters")
+	}
+}
+
+func TestDoubt_ResolveDoubt_UpdatesMemory(t *testing.T) {
+	// Use Hard memory so retention is 100%
+	game, players := makeDoubtGame()
+	game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard})
+
+	// Player 0 (human) played cards with value 7 (lie: claimed 3)
+	playedCard := domain.NewCard(domain.CardDesignSpade, 7, false)
+	tableCards := []*domain.Card{playedCard}
+	game.SetLastAction(&domain.DoubtAction{
+		PlayerIdx:    0,
+		ClaimedValue: 3,
+		CardCount:    1,
+		PlayedCards:  []*domain.Card{playedCard},
+	})
+	game.SetPhase(domain.DoubtPhaseDoubt)
+	game.SetTableCards(tableCards)
+
+	// CPU 1 doubts → player 0 was lying → loser = 0
+	game.ResolveDoubt([]int{1})
+
+	// CPU 2 and CPU 3 (non-loser, non-human) should have recorded the revealed card (value=7)
+	// CPU 1 (doubter, non-loser) should also have recorded
+	result := game.GetLastDoubtResult()
+	assert.NotNil(t, result)
+	assert.True(t, result.WasLying)
+	assert.Equal(t, 0, result.LoserIdx)
+
+	// CPU 1 is doubter and non-loser → should record memory
+	assert.Equal(t, 1, players[1].CountKnownCards(7))
+	// CPU 2, CPU 3 also non-loser → should record
+	assert.Equal(t, 1, players[2].CountKnownCards(7))
+	assert.Equal(t, 1, players[3].CountKnownCards(7))
+	// Human (player 0) is the loser, memory not updated (human doesn't track anyway)
+}
+
+func TestDoubt_ResolveDoubt_LoserDoesNotRecord(t *testing.T) {
+	// CPU 1 doubts but player 0 was honest → loser = CPU 1
+	// CPU 1 (loser) should NOT record memory
+	game, players := makeDoubtGame()
+	game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard})
+
+	playedCard := domain.NewCard(domain.CardDesignHeart, 4, false)
+	tableCards := []*domain.Card{playedCard}
+	game.SetLastAction(&domain.DoubtAction{
+		PlayerIdx:    0,
+		ClaimedValue: 4, // honest
+		CardCount:    1,
+		PlayedCards:  []*domain.Card{playedCard},
+	})
+	game.SetPhase(domain.DoubtPhaseDoubt)
+	game.SetTableCards(tableCards)
+
+	// Give player 1 a card so it can receive table cards
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+	game.ResolveDoubt([]int{1})
+
+	result := game.GetLastDoubtResult()
+	assert.NotNil(t, result)
+	assert.False(t, result.WasLying)
+	assert.Equal(t, 1, result.LoserIdx) // CPU 1 loses
+
+	// CPU 1 (loser): received the table card (value 4) in hand via resolve,
+	// memory NOT updated → CountKnownCards(4) = 0 (memory) + 1 (hand card) = 1
+	assert.Equal(t, 1, players[1].CountKnownCards(4))
+	// CPU 2, CPU 3 (non-loser) recorded value 4 in memory, none in hand
+	assert.Equal(t, 1, players[2].CountKnownCards(4))
+	assert.Equal(t, 1, players[3].CountKnownCards(4))
+}
+
+func TestDoubt_MemoryRetentionChanceLevels(t *testing.T) {
+	// Easy level: sometimes skips recording
+	t.Run("easy level - partial retention", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelEasy})
+
+		// Try many resolves to see if some are NOT recorded (retention = 0.3)
+		skipped := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			p := domain.NewDoubtPlayer(false)
+			players[2] = p // replace CPU 2 with fresh player
+			game2, players2 := makeDoubtGame()
+			game2.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelEasy})
+			playedCard := domain.NewCard(domain.CardDesignSpade, 11, false)
+			game2.SetLastAction(&domain.DoubtAction{
+				PlayerIdx: 0, ClaimedValue: 5, CardCount: 1,
+				PlayedCards: []*domain.Card{playedCard},
+			})
+			game2.SetPhase(domain.DoubtPhaseDoubt)
+			game2.SetTableCards([]*domain.Card{playedCard})
+			game2.ResolveDoubt([]int{1})
+			if players2[2].CountKnownCards(11) == 0 {
+				skipped = true
+				break
+			}
+		}
+		assert.True(t, skipped, "easy level should sometimes skip recording")
+	})
+
+	// Normal level: sometimes skips recording
+	t.Run("normal level - partial retention", func(t *testing.T) {
+		skipped := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			game2, players2 := makeDoubtGame()
+			game2.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal})
+			playedCard := domain.NewCard(domain.CardDesignSpade, 12, false)
+			game2.SetLastAction(&domain.DoubtAction{
+				PlayerIdx: 0, ClaimedValue: 5, CardCount: 1,
+				PlayedCards: []*domain.Card{playedCard},
+			})
+			game2.SetPhase(domain.DoubtPhaseDoubt)
+			game2.SetTableCards([]*domain.Card{playedCard})
+			game2.ResolveDoubt([]int{1})
+			if players2[2].CountKnownCards(12) == 0 {
+				skipped = true
+				break
+			}
+		}
+		assert.True(t, skipped, "normal level should sometimes skip recording")
+	})
+
+	// Hard level: always records
+	t.Run("hard level - full retention", func(t *testing.T) {
+		game2, players2 := makeDoubtGame()
+		game2.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard})
+		playedCard := domain.NewCard(domain.CardDesignSpade, 13, false)
+		game2.SetLastAction(&domain.DoubtAction{
+			PlayerIdx: 0, ClaimedValue: 5, CardCount: 1,
+			PlayedCards: []*domain.Card{playedCard},
+		})
+		game2.SetPhase(domain.DoubtPhaseDoubt)
+		game2.SetTableCards([]*domain.Card{playedCard})
+		game2.ResolveDoubt([]int{1})
+		// CPU 2 and CPU 3 should have recorded value 13
+		assert.Equal(t, 1, players2[2].CountKnownCards(13))
+		assert.Equal(t, 1, players2[3].CountKnownCards(13))
+	})
+}
+
 func TestDoubt_SettersForTest(t *testing.T) {
 	game, _ := makeDoubtGame()
 

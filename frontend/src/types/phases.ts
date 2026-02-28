@@ -23,3 +23,24 @@ export const PokerPhase = {
   SECOND_BET: 3,
   END: 4,
 } as const;
+
+// Texas Hold'em phase constants (sync: internal/domain/Holdem.go)
+export const HoldemPhase = {
+  INIT: 0,
+  PRE_FLOP: 1,
+  FLOP: 2,
+  TURN: 3,
+  RIVER: 4,
+  SHOWDOWN: 5,
+  END: 6,
+} as const;
+
+// Texas Hold'em action constants (sync: internal/domain/Holdem.go)
+export const HoldemAction = {
+  FOLD: 0,
+  CHECK: 1,
+  CALL: 2,
+  BET: 3,
+  RAISE: 4,
+  ALL_IN: 5,
+} as const;

@@ -306,4 +306,36 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "パスしました")
 	})
+
+	t.Run("success Output shows 7渡し pending action prompt", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		config := domain.DaifugoConfig{SevenPassEnabled: true}
+		dg := domain.NewDaifugo(tc, players, config)
+		// Human plays a 7; has spare card → SevenPass pending set
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false)) // spare
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		_ = dg.PlayerPlay([]int{0})
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "【7渡し】")
+	})
+
+	t.Run("success Output shows 10捨て pending action prompt", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		config := domain.DaifugoConfig{TenDiscardEnabled: true}
+		dg := domain.NewDaifugo(tc, players, config)
+		// Human plays a 10; has spare card → TenDiscard pending set
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false)) // spare
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		_ = dg.PlayerPlay([]int{0})
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "【10捨て】")
+	})
 }

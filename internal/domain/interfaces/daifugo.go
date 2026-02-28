@@ -10,6 +10,8 @@ type DaifugoGame interface {
 	IsHumanTurn() bool
 	PlayerPlay(indices []int) error
 	CpuPlay()
+	HasPendingAction() bool
+	SetConfig(config domain.DaifugoConfig)
 
 	// presenter が呼ぶメソッド
 	GetPlayerCnt() int
@@ -27,4 +29,6 @@ type DaifugoGame interface {
 	GetCurrentTurn() int
 	GetConfig() domain.DaifugoConfig
 	GetPassCount() int
+	GetPendingActionType() domain.DaifugoPendingAction
+	GetPendingActionTarget() int
 }

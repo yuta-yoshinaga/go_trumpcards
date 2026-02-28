@@ -109,6 +109,32 @@ func TestSevensPlayer_Method(t *testing.T) {
 		assert.Equal(t, 1, p.GetCardsSize())
 	})
 
+	t.Run("success SetMaxPasses unlimited (0) makes CanPass always true", func(t *testing.T) {
+		p := domain.NewSevensPlayer(true)
+		p.SetMaxPasses(0)
+		assert.Equal(t, 0, p.GetMaxPasses())
+		assert.True(t, p.CanPass())
+		// Even after many passes, CanPass still returns true
+		for i := 0; i < 100; i++ {
+			p.IncrPassesUsed()
+		}
+		assert.True(t, p.CanPass())
+		assert.Equal(t, 100, p.GetPassesUsed())
+	})
+
+	t.Run("success SetMaxPasses custom value (3)", func(t *testing.T) {
+		p := domain.NewSevensPlayer(true)
+		p.SetMaxPasses(3)
+		assert.Equal(t, 3, p.GetMaxPasses())
+		assert.True(t, p.CanPass())
+		p.IncrPassesUsed()
+		p.IncrPassesUsed()
+		assert.True(t, p.CanPass()) // 2 < 3
+		p.IncrPassesUsed()
+		assert.False(t, p.CanPass()) // 3 >= 3
+		assert.Equal(t, 3, p.GetPassesUsed())
+	})
+
 	t.Run("success SortCards sorts by suit then value", func(t *testing.T) {
 		p := domain.NewSevensPlayer(true)
 		p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))

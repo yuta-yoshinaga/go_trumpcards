@@ -14,6 +14,8 @@ export interface BlackJackHand {
   busted: boolean;
   isBlackJack: boolean;
   canSplit: boolean;
+  surrendered: boolean;
+  canSurrender: boolean;
 }
 
 export interface BlackJackPlayer {
@@ -33,6 +35,9 @@ export interface BlackJackResponse {
   insuranceBet: number;
   insuranceAvailable: boolean;
   message: string;
+  hintEnabled: boolean;
+  suggestedAction: number;
+  deckCount: number;
 }
 
 export interface PokerPlayer {
@@ -83,6 +88,9 @@ export interface OldMaidResponse {
   lastDiscardedCards?: Card[];
   cpuActions: CpuAction[];
   humanAction?: CpuAction | null;
+  cpuHighlightedCardIdx: number;
+  removedCard: Card | null;
+  mode: number;
   message: string;
 }
 
@@ -107,7 +115,14 @@ export interface DaifugoConfig {
   elevenBackEnabled: boolean;
   sequenceEnabled: boolean;
   cardExchangeEnabled: boolean;
+  fiveSkipEnabled: boolean;
+  sevenPassEnabled: boolean;
+  tenDiscardEnabled: boolean;
+  spadeThreeEnabled: boolean;
+  capitalFallEnabled: boolean;
 }
+
+export type DaifugoConfigInput = DaifugoConfig;
 
 export interface DaifugoExchangeAction {
   fromPlayerIdx: number;
@@ -131,6 +146,8 @@ export interface DaifugoResponse {
   cpuActions: DaifugoAction[];
   humanAction: DaifugoAction | null;
   message: string;
+  pendingAction: 'none' | 'sevenPass' | 'tenDiscard';
+  pendingActionTarget: number;
 }
 
 export interface SevensPlayerData {
@@ -149,12 +166,14 @@ export interface SevensAction {
   playedCard: Card | null; // null = pass
   targetSuit: number;
   targetValue: number;
+  forcedPass: boolean;
 }
 
 export interface SevensConfig {
   tunnelEnabled: boolean;
   jokerCount: number;
   cpuStrategy: boolean;
+  maxPasses: number;
 }
 
 export interface SevensResponse {
@@ -194,6 +213,11 @@ export interface DoubtDoubtResult {
   revealedCards: Card[];
 }
 
+export interface DoubtConfig {
+  doubtWindowSec: number;
+  cpuMemoryLevel: number; // 0=Easy, 1=Normal, 2=Hard
+}
+
 export interface DoubtResponse {
   players: DoubtPlayerData[];
   currentTurn: number;
@@ -206,5 +230,55 @@ export interface DoubtResponse {
   lastDoubtResult: DoubtDoubtResult | null;
   gameEndFlag: boolean;
   winnerIdx: number;
+  message: string;
+  doubtWindowSec: number;
+}
+
+export interface HoldemPlayerData {
+  id: number;
+  isHuman: boolean;
+  cards: Card[];
+  chips: number;
+  currentBet: number;
+  folded: boolean;
+  allIn: boolean;
+  handRank: number;
+  handName: string;
+  bestHand: Card[];
+  playStyleName: string;
+}
+
+export interface HoldemCpuAction {
+  playerIdx: number;
+  action: number;
+  amount: number;
+}
+
+export interface HoldemResult {
+  playerIdx: number;
+  handRank: number;
+  handName: string;
+  bestHand: Card[];
+  wonAmount: number;
+}
+
+export interface HoldemSidePot {
+  amount: number;
+  eligiblePlayers: number[];
+}
+
+export interface HoldemResponse {
+  players: HoldemPlayerData[];
+  communityCards: Card[];
+  pot: number;
+  sidePots: HoldemSidePot[];
+  dealerIdx: number;
+  currentTurn: number;
+  phase: number;
+  gameEndFlag: boolean;
+  lastBet: number;
+  minRaise: number;
+  roundResults: HoldemResult[];
+  cpuActions: HoldemCpuAction[];
   message: string;
 }

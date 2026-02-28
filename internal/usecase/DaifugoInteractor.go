@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -9,6 +10,7 @@ import (
 type DaifugoInteractorIF interface {
 	Reset() string
 	Play(indices []int) string
+	ResetWithConfig(config domain.DaifugoConfig) string
 }
 
 // DaifugoInteractor 大富豪インタラクタークラス
@@ -48,10 +50,18 @@ func (di *DaifugoInteractor) Play(indices []int) string {
 		return di.dgp.Output(di.dg, nil)
 	}
 	err := di.dg.PlayerPlay(indices)
-	if err == nil && !di.dg.GetGameEndFlag() {
+	if err == nil && !di.dg.GetGameEndFlag() && !di.dg.HasPendingAction() {
 		di.runCpuTurns()
 	}
 	return di.dgp.Output(di.dg, err)
+}
+
+// ResetWithConfig 設定を変更してゲームを初期化
+func (di *DaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) string {
+	di.dg.SetConfig(config)
+	di.dg.Reset()
+	di.runCpuTurns()
+	return di.dgp.Output(di.dg, nil)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

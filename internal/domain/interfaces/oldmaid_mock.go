@@ -15,6 +15,16 @@ func (_m *MockOldMaidGame) Reset() {
 	_m.Called()
 }
 
+// SetConfig モック
+func (_m *MockOldMaidGame) SetConfig(config domain.OldMaidConfig) {
+	_m.Called(config)
+}
+
+// ArrangeTargetForHumanDraw モック
+func (_m *MockOldMaidGame) ArrangeTargetForHumanDraw() {
+	_m.Called()
+}
+
 // GetGameEndFlag モック
 func (_m *MockOldMaidGame) GetGameEndFlag() bool {
 	ret := _m.Called()
@@ -128,6 +138,27 @@ func (_m *MockOldMaidGame) GetCurrentTurn() int {
 
 // GetNextDrawTargetIdx モック
 func (_m *MockOldMaidGame) GetNextDrawTargetIdx() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+// GetConfig モック
+func (_m *MockOldMaidGame) GetConfig() domain.OldMaidConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.OldMaidConfig)
+}
+
+// GetRemovedCard モック
+func (_m *MockOldMaidGame) GetRemovedCard() *domain.Card {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.Card); ok {
+		return val
+	}
+	return nil
+}
+
+// GetCpuHighlightedCardIdx モック
+func (_m *MockOldMaidGame) GetCpuHighlightedCardIdx() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }

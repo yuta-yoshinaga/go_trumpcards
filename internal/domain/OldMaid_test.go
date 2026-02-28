@@ -862,3 +862,311 @@ func TestOldMaid_Reset_CurrentTurnPointsToActivePlayer(t *testing.T) {
 			"currentTurn should point to an active player after Reset")
 	}
 }
+
+func TestOldMaid_SetConfig_GetConfig(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	cfg := domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki, CpuPlacementStrategy: true}
+	om.SetConfig(cfg)
+	got := om.GetConfig()
+	assert.Equal(t, domain.OldMaidModeJijiNuki, got.Mode)
+	assert.True(t, got.CpuPlacementStrategy)
+}
+
+func TestOldMaid_GetRemovedCard_InitiallyNil(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	assert.Nil(t, om.GetRemovedCard())
+}
+
+func TestOldMaid_GetCpuHighlightedCardIdx_InitiallyMinus1(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	assert.Equal(t, -1, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_SetCpuHighlightedCardIdx(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetCpuHighlightedCardIdx(2)
+	assert.Equal(t, 2, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_JijiNuki_Reset(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki})
+	om.Reset()
+
+	// removedCard must be set
+	assert.NotNil(t, om.GetRemovedCard())
+	// removedCard must not be a Joker (JijiNuki uses no joker)
+	assert.NotEqual(t, domain.CardDesignJoker, om.GetRemovedCard().GetDesign())
+	// Total cards dealt: 51 (52 - 1 removed)
+	totalCards := 0
+	for i := 0; i < om.GetPlayerCnt(); i++ {
+		totalCards += om.GetPlayer(i).GetCardsSize()
+	}
+	// After pair discard, total is at most 51; at least some remain
+	assert.True(t, totalCards > 0, "some cards should remain after reset")
+
+	// cpuHighlightedCardIdx must be -1 after reset
+	assert.Equal(t, -1, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_Normal_Reset_HasJoker(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	// Default config is Normal
+	om.Reset()
+	// removedCard must be nil in Normal mode
+	assert.Nil(t, om.GetRemovedCard())
+	// Find joker in some player's hand
+	jokerFound := false
+	for i := 0; i < om.GetPlayerCnt(); i++ {
+		p := om.GetPlayer(i)
+		for j := 0; j < p.GetCardsSize(); j++ {
+			if p.GetCard(j).GetDesign() == domain.CardDesignJoker {
+				jokerFound = true
+			}
+		}
+	}
+	assert.True(t, jokerFound, "joker should be in some player's hand in Normal mode")
+}
+
+func TestOldMaid_DetectOddCardIdx_Normal_NoJoker(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	// Normal mode, test ArrangeTargetForHumanDraw with strategy=true
+	// Set up: player 0 (human, current turn), player 1 (CPU target) with no Joker
+	// CpuPlacementStrategy=true, but no odd card → cpuHighlightedCardIdx=-1
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeNormal, CpuPlacementStrategy: true})
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	// Player 1 has no Joker → detectOddCardIdx returns -1 → cpuHighlightedCardIdx=-1
+	om.ArrangeTargetForHumanDraw()
+	assert.Equal(t, -1, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_DetectOddCardIdx_Normal_WithJoker(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeNormal, CpuPlacementStrategy: true})
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	// Player 1: joker at index 1, another card at index 0
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	// detectOddCardIdx finds Joker at index 1 → moves to edge
+	om.ArrangeTargetForHumanDraw()
+	// cpuHighlightedCardIdx must be 0 or 1 (size-1)
+	idx := om.GetCpuHighlightedCardIdx()
+	assert.True(t, idx == 0 || idx == 1, "highlighted idx should be 0 or last position")
+	// The Joker must be at the highlighted position
+	jokerAtHighlighted := players[1].GetCard(idx)
+	assert.NotNil(t, jokerAtHighlighted)
+	assert.Equal(t, domain.CardDesignJoker, jokerAtHighlighted.GetDesign())
+}
+
+func TestOldMaid_DetectOddCardIdx_JijiNuki_OddCard(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki, CpuPlacementStrategy: true})
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	// Player 1: one card with value 5 (appears 1 time = odd) and one with value 7 (appears 1 time = odd)
+	// detectOddCardIdx returns first odd: index 0 (value 5)
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	om.ArrangeTargetForHumanDraw()
+	idx := om.GetCpuHighlightedCardIdx()
+	assert.True(t, idx == 0 || idx == 1, "highlighted idx should be 0 or last position")
+}
+
+func TestOldMaid_DetectOddCardIdx_JijiNuki_NoOddCard(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki, CpuPlacementStrategy: true})
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	// Player 1: two cards of same value (even count) → no odd card
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	// All values appear even count → detectOddCardIdx returns -1
+	om.ArrangeTargetForHumanDraw()
+	assert.Equal(t, -1, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_ArrangeTargetForHumanDraw_NoStrategy(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	// CpuPlacementStrategy=false → no-op, cpuHighlightedCardIdx=-1
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeNormal, CpuPlacementStrategy: false})
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	om.ArrangeTargetForHumanDraw()
+	assert.Equal(t, -1, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_ArrangeTargetForHumanDraw_GameEnded(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeNormal, CpuPlacementStrategy: true})
+	om.SetGameEndFlag(true)
+	om.SetCpuHighlightedCardIdx(5)
+	om.ArrangeTargetForHumanDraw()
+	assert.Equal(t, -1, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_ArrangeTargetForHumanDraw_NotHumanTurn(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	// All CPU players, so IsHumanTurn returns false
+	cpuPlayers := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, cpuPlayers)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeNormal, CpuPlacementStrategy: true})
+	cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	cpuPlayers[2].SetIsFinished(true)
+	cpuPlayers[3].SetIsFinished(true)
+	om.ArrangeTargetForHumanDraw()
+	assert.Equal(t, -1, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_ArrangeTargetForHumanDraw_TargetSingleCard(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeNormal, CpuPlacementStrategy: true})
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	// Player 1 has only 1 card → size <= 1 → no-op
+	players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	om.ArrangeTargetForHumanDraw()
+	assert.Equal(t, -1, om.GetCpuHighlightedCardIdx())
+}
+
+func TestOldMaid_ArrangeTargetForHumanDraw_CoversEdgePlacements(t *testing.T) {
+	// Run many times to cover both front (position=0) and back (position=1) placement
+	frontHit := false
+	backHit := false
+	for attempt := 0; attempt < 200; attempt++ {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.SetConfig(domain.OldMaidConfig{Mode: domain.OldMaidModeNormal, CpuPlacementStrategy: true})
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+		players[2].SetIsFinished(true)
+		players[3].SetIsFinished(true)
+		om.ArrangeTargetForHumanDraw()
+		idx := om.GetCpuHighlightedCardIdx()
+		if idx == 0 {
+			frontHit = true
+		}
+		if idx == 1 {
+			backHit = true
+		}
+		if frontHit && backHit {
+			break
+		}
+	}
+	assert.True(t, frontHit, "Joker should sometimes be placed at front (position 0)")
+	assert.True(t, backHit, "Joker should sometimes be placed at back (position size-1)")
+}

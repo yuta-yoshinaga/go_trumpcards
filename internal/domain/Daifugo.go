@@ -47,6 +47,15 @@ const (
 	DaifugoExchangeCountFugo    = 1 // 富豪↔平民: 1枚
 )
 
+// DaifugoPendingAction ペンディングアクションの種類
+type DaifugoPendingAction int
+
+const (
+	DaifugoPendingNone       DaifugoPendingAction = 0 // ペンディングなし
+	DaifugoPendingSevenPass  DaifugoPendingAction = 1 // 7渡し待ち
+	DaifugoPendingTenDiscard DaifugoPendingAction = 2 // 10捨て待ち
+)
+
 // DaifugoConfig 大富豪ローカルルール設定
 type DaifugoConfig struct {
 	JokerCount          int  // ジョーカー枚数 (default: 2)
@@ -55,6 +64,11 @@ type DaifugoConfig struct {
 	ElevenBackEnabled   bool // 11バック
 	SequenceEnabled     bool // 階段
 	CardExchangeEnabled bool // カード交換
+	FiveSkipEnabled     bool // 5飛び
+	SevenPassEnabled    bool // 7渡し
+	TenDiscardEnabled   bool // 10捨て
+	SpadeThreeEnabled   bool // スペ3返し
+	CapitalFallEnabled  bool // 都落ち
 }
 
 // DefaultDaifugoConfig デフォルトのローカルルール設定 (全て有効)
@@ -66,6 +80,11 @@ func DefaultDaifugoConfig() DaifugoConfig {
 		ElevenBackEnabled:   true,
 		SequenceEnabled:     true,
 		CardExchangeEnabled: true,
+		FiveSkipEnabled:     false,
+		SevenPassEnabled:    false,
+		TenDiscardEnabled:   false,
+		SpadeThreeEnabled:   false,
+		CapitalFallEnabled:  false,
 	}
 }
 
@@ -84,43 +103,47 @@ type DaifugoExchangeAction struct {
 
 // Daifugo 大富豪ゲームクラス
 type Daifugo struct {
-	trumpCards        *TrumpCards
-	players           []*DaifugoPlayer
-	currentTurn       int                      // 現在の手番プレイヤーインデックス
-	tableCards        []*Card                  // 場に出されているカード (nil = 場はクリア)
-	lastPlayPlayerIdx int                      // 最後にカードを出したプレイヤーインデックス (-1 = なし)
-	gameEndFlag       bool                     // ゲーム終了フラグ
-	passCount         int                      // 最後の出し以降の連続パス数
-	cpuActions        []*DaifugoCpuAction      // 人間ターン後のCPUの行動履歴
-	humanAction       *DaifugoCpuAction        // 人間の最後の行動
-	revolutionActive  bool                     // 革命フラグ (true = 革命中)
-	config            DaifugoConfig            // ローカルルール設定
-	suitLocked        bool                     // スート縛り発動中
-	lockedSuit        int                      // 縛られているスート (CardDesignSpade等)
-	elevenBackActive  bool                     // 11バック発動中
-	tableIsSequence   bool                     // 場が階段プレイか
-	exchangeActions   []*DaifugoExchangeAction // カード交換記録
+	trumpCards          *TrumpCards
+	players             []*DaifugoPlayer
+	currentTurn         int                      // 現在の手番プレイヤーインデックス
+	tableCards          []*Card                  // 場に出されているカード (nil = 場はクリア)
+	lastPlayPlayerIdx   int                      // 最後にカードを出したプレイヤーインデックス (-1 = なし)
+	gameEndFlag         bool                     // ゲーム終了フラグ
+	passCount           int                      // 最後の出し以降の連続パス数
+	cpuActions          []*DaifugoCpuAction      // 人間ターン後のCPUの行動履歴
+	humanAction         *DaifugoCpuAction        // 人間の最後の行動
+	revolutionActive    bool                     // 革命フラグ (true = 革命中)
+	config              DaifugoConfig            // ローカルルール設定
+	suitLocked          bool                     // スート縛り発動中
+	lockedSuit          int                      // 縛られているスート (CardDesignSpade等)
+	elevenBackActive    bool                     // 11バック発動中
+	tableIsSequence     bool                     // 場が階段プレイか
+	exchangeActions     []*DaifugoExchangeAction // カード交換記録
+	pendingActionType   DaifugoPendingAction     // ペンディングアクションの種類
+	pendingActionTarget int                      // 7渡しの対象プレイヤーインデックス (-1 = なし)
 }
 
 // NewDaifugo コンストラクタ
 func NewDaifugo(trumpCards *TrumpCards, players []*DaifugoPlayer, config DaifugoConfig) *Daifugo {
 	return &Daifugo{
-		trumpCards:        trumpCards,
-		players:           players,
-		currentTurn:       0,
-		tableCards:        nil,
-		lastPlayPlayerIdx: -1,
-		gameEndFlag:       false,
-		passCount:         0,
-		cpuActions:        nil,
-		humanAction:       nil,
-		revolutionActive:  false,
-		config:            config,
-		suitLocked:        false,
-		lockedSuit:        0,
-		elevenBackActive:  false,
-		tableIsSequence:   false,
-		exchangeActions:   nil,
+		trumpCards:          trumpCards,
+		players:             players,
+		currentTurn:         0,
+		tableCards:          nil,
+		lastPlayPlayerIdx:   -1,
+		gameEndFlag:         false,
+		passCount:           0,
+		cpuActions:          nil,
+		humanAction:         nil,
+		revolutionActive:    false,
+		config:              config,
+		suitLocked:          false,
+		lockedSuit:          0,
+		elevenBackActive:    false,
+		tableIsSequence:     false,
+		exchangeActions:     nil,
+		pendingActionType:   DaifugoPendingNone,
+		pendingActionTarget: -1,
 	}
 }
 
@@ -151,6 +174,8 @@ func (d *Daifugo) Reset() {
 	d.elevenBackActive = false
 	d.tableIsSequence = false
 	d.exchangeActions = nil
+	d.pendingActionType = DaifugoPendingNone
+	d.pendingActionTarget = -1
 
 	// シャッフル
 	d.trumpCards.Shuffle()
@@ -410,6 +435,7 @@ func (d *Daifugo) checkGameEnd() bool {
 			}
 		}
 		d.gameEndFlag = true
+		d.applyCapitalFall()
 		return true
 	}
 	return false
@@ -548,6 +574,11 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 		return false
 	}
 
+	// スペ3返し特例: 場がジョーカー1枚のみ && スペードの3を1枚出す
+	if d.isSpadeThreeCounter(cards) {
+		return true
+	}
+
 	// プレイタイプ判定
 	validGroup := isValidGroup(cards)
 	validSeq := d.config.SequenceEnabled && d.isValidSequence(cards)
@@ -616,6 +647,12 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	if !d.players[d.currentTurn].GetIsHuman() {
 		return ErrNotHumanTurn
 	}
+
+	// ペンディングアクションがある場合はそちらを先に解決
+	if d.pendingActionType != DaifugoPendingNone {
+		return d.resolvePendingAction(indices)
+	}
+
 	// 人間のターン開始時にCPU行動履歴をリセット
 	d.cpuActions = nil
 
@@ -662,6 +699,9 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	// 階段判定
 	isSeq := d.config.SequenceEnabled && d.isValidSequence(selectedCards)
 
+	// スペ3返し判定 (isPlayable でチェック済み、ここで行動フラグを取得)
+	spadeThree := d.isSpadeThreeCounter(selectedCards)
+
 	// カードを出す
 	cards := player.RemoveCards(indices)
 	d.tableCards = cards
@@ -685,10 +725,24 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	// 8切りチェック (上がりチェック後に実施)
 	eightCut := d.triggerEightCut(cards)
 
+	// ローカルルール: 5飛び / 7渡し / 10捨て
+	fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
+	d.triggerSevenPassIfNeeded(cards, isSeq)
+	d.triggerTenDiscardIfNeeded(cards, isSeq)
+
+	// ペンディングアクションがセットされた場合はターンを進めない
+	if d.pendingActionType != DaifugoPendingNone {
+		return nil
+	}
+
 	if !d.checkGameEnd() {
-		// 8切り: 出したプレイヤーに手番が戻る (上がっていない場合のみ)
-		if !eightCut || player.GetIsFinished() {
+		// 8切りまたはスペ3返し: 出したプレイヤーに手番が戻る (上がっていない場合のみ)
+		if (!eightCut && !spadeThree) || player.GetIsFinished() {
 			d.advanceTurn()
+			if fiveSkip && !d.gameEndFlag {
+				d.advanceTurn() // 5飛び: もう1人スキップ
+			}
+			d.checkPassClear()
 		}
 	}
 	return nil
@@ -699,6 +753,13 @@ func (d *Daifugo) CpuPlay() {
 	if d.gameEndFlag || d.players[d.currentTurn].GetIsHuman() {
 		return
 	}
+
+	// ペンディングアクションがある場合はCPUが自動解決
+	if d.pendingActionType != DaifugoPendingNone {
+		d.cpuResolvePendingAction()
+		return
+	}
+
 	playerIdx := d.currentTurn
 	player := d.players[playerIdx]
 
@@ -718,6 +779,9 @@ func (d *Daifugo) CpuPlay() {
 		for i, idx := range playIndices {
 			selectedCards[i] = player.GetCard(idx)
 		}
+
+		// スペ3返し判定
+		spadeThree := d.isSpadeThreeCounter(selectedCards)
 
 		// スート縛り更新
 		d.updateSuitLock(selectedCards)
@@ -743,10 +807,24 @@ func (d *Daifugo) CpuPlay() {
 
 		eightCut := d.triggerEightCut(cards)
 
+		// ローカルルール: 5飛び / 7渡し / 10捨て
+		fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
+		d.triggerSevenPassIfNeeded(cards, isSeq)
+		d.triggerTenDiscardIfNeeded(cards, isSeq)
+
+		// ペンディングアクションがセットされた場合はターンを進めない
+		if d.pendingActionType != DaifugoPendingNone {
+			return
+		}
+
 		if !d.checkGameEnd() {
-			// 8切り: 出したプレイヤーに手番が戻る (上がっていない場合のみ)
-			if !eightCut || player.GetIsFinished() {
+			// 8切りまたはスペ3返し: 出したプレイヤーに手番が戻る (上がっていない場合のみ)
+			if (!eightCut && !spadeThree) || player.GetIsFinished() {
 				d.advanceTurn()
+				if fiveSkip && !d.gameEndFlag {
+					d.advanceTurn() // 5飛び: もう1人スキップ
+				}
+				d.checkPassClear()
 			}
 		}
 	}
@@ -756,7 +834,14 @@ func (d *Daifugo) CpuPlay() {
 // 出せるカードがない場合は nil を返す
 func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 	if d.tableCards == nil {
-		// 場がクリアなら最弱の1枚を出す (ジョーカーは温存)
+		// 場がクリアなら最弱の1枚を出す (ジョーカーと8は温存)
+		for i := 0; i < player.GetCardsSize(); i++ {
+			card := player.GetCard(i)
+			if !IsJoker(card) && card.GetValue() != 8 {
+				return []int{i}
+			}
+		}
+		// 8以外の非ジョーカーがない: 8を使う (ジョーカーより優先)
 		for i := 0; i < player.GetCardsSize(); i++ {
 			if !IsJoker(player.GetCard(i)) {
 				return []int{i}
@@ -799,6 +884,11 @@ func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 		}
 		count := j - i
 		if count >= needed && d.cardStrength(v) > tableStrength {
+			// 革命防止: 4枚以上かつ革命未発動かつ出した後も手札が残る場合はスキップ
+			if count >= 4 && !d.revolutionActive && player.GetCardsSize() > count {
+				i = j
+				continue
+			}
 			// スート縛りチェック
 			if d.suitLocked && d.config.SuitLockEnabled {
 				suit := player.GetCard(i).GetDesign()
@@ -843,6 +933,10 @@ func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 
 	// ジョーカー単体で出す (場が1枚で、ジョーカーの方が強い場合)
 	if needed == 1 {
+		// 戦略的パス: 場が2またはジョーカーで手札が4枚以上の場合はジョーカーを温存
+		if tableStrength >= DaifugoCardStrength(2) && player.GetCardsSize() > 3 {
+			return nil
+		}
 		for i := 0; i < player.GetCardsSize(); i++ {
 			if IsJoker(player.GetCard(i)) && DaifugoJokerStrength > tableStrength {
 				return []int{i}
@@ -954,6 +1048,181 @@ func (d *Daifugo) findBestSequencePlay(player *DaifugoPlayer) []int {
 	return nil
 }
 
+// triggerFiveSkipIfNeeded 5飛びチェック: 非ジョーカーの5が出されたら次のプレイヤーをスキップ（階段時は無効）
+func (d *Daifugo) triggerFiveSkipIfNeeded(cards []*Card, isSeq bool) bool {
+	if !d.config.FiveSkipEnabled || isSeq {
+		return false
+	}
+	for _, c := range cards {
+		if !IsJoker(c) && c.GetValue() == 5 {
+			return true
+		}
+	}
+	return false
+}
+
+// triggerSevenPassIfNeeded 7渡しチェック: 非ジョーカーの7が出されたらペンディングアクションをセット
+func (d *Daifugo) triggerSevenPassIfNeeded(cards []*Card, isSeq bool) {
+	if !d.config.SevenPassEnabled || isSeq {
+		return
+	}
+	player := d.players[d.currentTurn]
+	// 出した後に手札が残っている場合のみ
+	if player.GetCardsSize() == 0 {
+		return
+	}
+	for _, c := range cards {
+		if !IsJoker(c) && c.GetValue() == 7 {
+			// 渡す対象: 次のアクティブなプレイヤー (自分以外)
+			target := d.getNextActivePlayer(d.currentTurn)
+			if target >= 0 && target != d.currentTurn {
+				d.pendingActionType = DaifugoPendingSevenPass
+				d.pendingActionTarget = target
+			}
+			return
+		}
+	}
+}
+
+// triggerTenDiscardIfNeeded 10捨てチェック: 非ジョーカーの10が出されたらペンディングアクションをセット
+func (d *Daifugo) triggerTenDiscardIfNeeded(cards []*Card, isSeq bool) {
+	if !d.config.TenDiscardEnabled || isSeq {
+		return
+	}
+	player := d.players[d.currentTurn]
+	// 出した後に手札が残っている場合のみ
+	if player.GetCardsSize() == 0 {
+		return
+	}
+	for _, c := range cards {
+		if !IsJoker(c) && c.GetValue() == 10 {
+			d.pendingActionType = DaifugoPendingTenDiscard
+			d.pendingActionTarget = -1
+			return
+		}
+	}
+}
+
+// isSpadeThreeCounter スペ3返し判定: 場がジョーカー1枚でスペードの3を1枚出す場合
+func (d *Daifugo) isSpadeThreeCounter(cards []*Card) bool {
+	if !d.config.SpadeThreeEnabled {
+		return false
+	}
+	// 場がジョーカー1枚のみ
+	if len(d.tableCards) != 1 || !IsJoker(d.tableCards[0]) {
+		return false
+	}
+	// 出すカードがスペードの3を1枚のみ
+	if len(cards) != 1 {
+		return false
+	}
+	c := cards[0]
+	return !IsJoker(c) && c.GetDesign() == CardDesignSpade && c.GetValue() == 3
+}
+
+// resolvePendingAction ペンディングアクションを解決する
+func (d *Daifugo) resolvePendingAction(indices []int) error {
+	if len(indices) != 1 {
+		return NewDomainError(ErrInvalidPlay, "pending action requires exactly 1 card index")
+	}
+	player := d.players[d.currentTurn]
+	card := player.GetCard(indices[0])
+	if card == nil {
+		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", indices[0]))
+	}
+
+	switch d.pendingActionType {
+	case DaifugoPendingSevenPass:
+		// 7渡し: カードを対象プレイヤーに渡す
+		removed := player.RemoveCards([]int{indices[0]})
+		target := d.players[d.pendingActionTarget]
+		target.AddCard(removed[0])
+		target.SortCardsByStrength(d.cardStrengthForCard)
+		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
+	case DaifugoPendingTenDiscard:
+		// 10捨て: カードを捨てる
+		removed := player.RemoveCards([]int{indices[0]})
+		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
+	}
+
+	d.pendingActionType = DaifugoPendingNone
+	d.pendingActionTarget = -1
+
+	d.advanceTurn()
+	d.checkPassClear()
+	return nil
+}
+
+// cpuResolvePendingAction CPUがペンディングアクションを自動解決する
+func (d *Daifugo) cpuResolvePendingAction() {
+	player := d.players[d.currentTurn]
+
+	// 最弱の非ジョーカーカードを探す (インデックス0 = 最弱)
+	idx := 0
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if !IsJoker(player.GetCard(i)) {
+			idx = i
+			break
+		}
+	}
+
+	switch d.pendingActionType {
+	case DaifugoPendingSevenPass:
+		removed := player.RemoveCards([]int{idx})
+		target := d.players[d.pendingActionTarget]
+		target.AddCard(removed[0])
+		target.SortCardsByStrength(d.cardStrengthForCard)
+		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
+		d.cpuActions = append(d.cpuActions, action)
+	case DaifugoPendingTenDiscard:
+		removed := player.RemoveCards([]int{idx})
+		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
+		d.cpuActions = append(d.cpuActions, action)
+	}
+
+	d.pendingActionType = DaifugoPendingNone
+	d.pendingActionTarget = -1
+
+	d.advanceTurn()
+	d.checkPassClear()
+}
+
+// applyCapitalFall 都落ちを適用する
+// 前回大富豪だったプレイヤーが今回1位でない場合、そのプレイヤーと最下位のプレイヤーのランクを入れ替える
+func (d *Daifugo) applyCapitalFall() {
+	if !d.config.CapitalFallEnabled {
+		return
+	}
+	// 前回大富豪のプレイヤーを探す
+	prevDaifugoIdx := -1
+	for i, p := range d.players {
+		if p.GetPrevRank() == DaifugoRankDaifugo {
+			prevDaifugoIdx = i
+			break
+		}
+	}
+	// 前回大富豪がいない (初回ゲーム) か今回も1位の場合はスキップ
+	if prevDaifugoIdx < 0 || d.players[prevDaifugoIdx].GetRank() == DaifugoRankDaifugo {
+		return
+	}
+	// 最下位のプレイヤーを探す
+	lowestRank := 0
+	lowestIdx := -1
+	for i, p := range d.players {
+		if p.GetRank() > lowestRank {
+			lowestRank = p.GetRank()
+			lowestIdx = i
+		}
+	}
+	if lowestIdx < 0 || lowestIdx == prevDaifugoIdx {
+		return
+	}
+	// ランクを入れ替える
+	prevRank := d.players[prevDaifugoIdx].GetRank()
+	d.players[prevDaifugoIdx].SetRank(d.players[lowestIdx].GetRank())
+	d.players[lowestIdx].SetRank(prevRank)
+}
+
 // IsHumanTurn 現在の手番が人間かどうか
 func (d *Daifugo) IsHumanTurn() bool {
 	return d.players[d.currentTurn].GetIsHuman()
@@ -1029,3 +1298,21 @@ func (d *Daifugo) SetExchangeActions(actions []*DaifugoExchangeAction) { d.excha
 
 // SetHumanAction 人間の行動設定（テスト用）
 func (d *Daifugo) SetHumanAction(action *DaifugoCpuAction) { d.humanAction = action }
+
+// GetPendingActionType ペンディングアクションの種類取得
+func (d *Daifugo) GetPendingActionType() DaifugoPendingAction { return d.pendingActionType }
+
+// GetPendingActionTarget ペンディングアクションの対象プレイヤーインデックス取得
+func (d *Daifugo) GetPendingActionTarget() int { return d.pendingActionTarget }
+
+// HasPendingAction ペンディングアクションがあるか取得
+func (d *Daifugo) HasPendingAction() bool { return d.pendingActionType != DaifugoPendingNone }
+
+// SetConfig ローカルルール設定を変更（ResetWithConfig用）
+func (d *Daifugo) SetConfig(config DaifugoConfig) { d.config = config }
+
+// SetTableCards 場のカードを直接設定（テスト用）
+func (d *Daifugo) SetTableCards(cards []*Card) { d.tableCards = cards }
+
+// SetLastPlayPlayerIdx 最後にカードを出したプレイヤーインデックスを設定（テスト用）
+func (d *Daifugo) SetLastPlayPlayerIdx(idx int) { d.lastPlayPlayerIdx = idx }

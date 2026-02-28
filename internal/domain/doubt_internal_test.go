@@ -21,6 +21,12 @@ func TestDecideCpuDoubters_NilLastAction(t *testing.T) {
 	assert.Nil(t, d.cpuDoubters)
 }
 
+// TestMemoryRetentionChance_UnknownLevel 未知のレベルは Normal と同じ保持率を返す
+func TestMemoryRetentionChance_UnknownLevel(t *testing.T) {
+	unknown := DoubtMemoryLevel(99)
+	assert.Equal(t, retentionChanceNormal, memoryRetentionChance(unknown))
+}
+
 // TestCheckLying_NilLastAction lastAction が nil のとき false を返す
 func TestCheckLying_NilLastAction(t *testing.T) {
 	players := []*DoubtPlayer{

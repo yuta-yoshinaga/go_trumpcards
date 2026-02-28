@@ -7,6 +7,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -216,7 +217,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 	t.Run("success Output config with features enabled", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true}
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true, MaxPasses: 3}
 		s := domain.NewSevens(tc, players, cfg)
 
 		result := tswp.Output(s, nil)
@@ -225,6 +226,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.True(t, resObj.Config.TunnelEnabled)
 		assert.Equal(t, 2, resObj.Config.JokerCount)
 		assert.True(t, resObj.Config.CpuStrategy)
+		assert.Equal(t, 3, resObj.Config.MaxPasses)
 	})
 
 	t.Run("success Output tablePlaced updated after play", func(t *testing.T) {
@@ -322,5 +324,105 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, resObj.CpuActions, 1)
 		assert.Nil(t, resObj.CpuActions[0].PlayedCard)
+	})
+
+	setupSMock := func() *interfaces.MockSevensGame {
+		m := new(interfaces.MockSevensGame)
+		m.On("GetCurrentTurn").Return(0)
+		m.On("GetTableMinVals").Return([5]int{7, 7, 7, 7, 7})
+		m.On("GetTableMaxVals").Return([5]int{7, 7, 7, 7, 7})
+		m.On("GetTablePlaced").Return([5]uint16{128, 128, 128, 128, 128})
+		m.On("GetConfig").Return(domain.SevensConfig{})
+		m.On("GetCpuActions").Return([]*domain.SevensCpuAction(nil))
+		m.On("GetHumanAction").Return((*domain.SevensCpuAction)(nil))
+		return m
+	}
+
+	t.Run("success Output skips nil player in player loop", func(t *testing.T) {
+		m := setupSMock()
+		m.On("GetGameEndFlag").Return(false)
+		m.On("GetPlayerCnt").Return(1)
+		m.On("GetPlayer", 0).Return((*domain.SevensPlayer)(nil))
+
+		result := tswp.Output(m, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Len(t, resObj.Players, 0) // nil player skipped
+	})
+
+	t.Run("success buildResultMessage skips nil player", func(t *testing.T) {
+		m := setupSMock()
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetPlayerCnt").Return(1)
+		m.On("GetPlayer", 0).Return((*domain.SevensPlayer)(nil))
+
+		result := tswp.Output(m, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Len(t, resObj.Players, 0)           // nil player skipped in Output loop
+		assert.Equal(t, "ゲーム終了！ ", resObj.Message) // buildResultMessage called
+	})
+
+	t.Run("success Output config includes MaxPasses", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{MaxPasses: 0}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, resObj.Config.MaxPasses)
+	})
+
+	t.Run("success Output ForcedPass in CPU action", func(t *testing.T) {
+		s, _ := setupSWebTest()
+		s.SetCpuActions([]*domain.SevensCpuAction{
+			{
+				PlayerIdx:  1,
+				PlayedCard: nil,
+				ForcedPass: true,
+			},
+		})
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Len(t, resObj.CpuActions, 1)
+		assert.True(t, resObj.CpuActions[0].ForcedPass)
+	})
+
+	t.Run("success Output ForcedPass in human action", func(t *testing.T) {
+		s, _ := setupSWebTest()
+		s.SetHumanAction(&domain.SevensCpuAction{
+			PlayerIdx:  0,
+			PlayedCard: nil,
+			ForcedPass: true,
+		})
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.HumanAction)
+		assert.True(t, resObj.HumanAction.ForcedPass)
+	})
+
+	t.Run("success Output non-forced pass has ForcedPass false", func(t *testing.T) {
+		s, _ := setupSWebTest()
+		s.SetHumanAction(&domain.SevensCpuAction{
+			PlayerIdx:  0,
+			PlayedCard: nil,
+			ForcedPass: false,
+		})
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.HumanAction)
+		assert.False(t, resObj.HumanAction.ForcedPass)
 	})
 }
