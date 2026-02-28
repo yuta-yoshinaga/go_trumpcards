@@ -462,7 +462,7 @@ func (s *Sevens) findPlayableStrategic(player *SevensPlayer) (int, int, int) {
 	}
 
 	// 全ての手がマイナス評価で、パスの余裕がある場合はパスを選択
-	if best.score < 0 && player.CanPass() && (player.GetMaxPasses() == 0 || player.GetPassesUsed() < player.GetMaxPasses()-1) {
+	if best.score < 0 && (player.GetMaxPasses() == 0 || player.GetPassesUsed() < player.GetMaxPasses()-1) {
 		return -1, 0, 0
 	}
 
