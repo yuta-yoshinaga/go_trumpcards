@@ -128,7 +128,7 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "j", "joker":
 		swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(swc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}

@@ -167,7 +167,7 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "a", "allin":
 		hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(hwc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}

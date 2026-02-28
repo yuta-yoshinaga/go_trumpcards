@@ -158,7 +158,7 @@ func TestHoldemWebController_Unknown(t *testing.T) {
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "xyz", "sessionId": "s1"}))
-	recorded.CodeIs(200)
+	recorded.CodeIs(400)
 }
 
 func TestHoldemWebController_BadRequest_EmptyBody(t *testing.T) {

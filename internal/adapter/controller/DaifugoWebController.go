@@ -157,7 +157,7 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		}
 		dwc.writePresenterResponse(w, dgi.Play(indices), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(dwc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}

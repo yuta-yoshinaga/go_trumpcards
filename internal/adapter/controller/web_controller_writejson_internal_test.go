@@ -73,7 +73,7 @@ func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 		fw := newFailWriter()
 		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-bj-unsupported"}`)
 		ctrl2.Exec(fw, req)
-		assert.Equal(t, http.StatusOK, fw.headerCode)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 }
 
@@ -125,7 +125,7 @@ func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 		fw := newFailWriter()
 		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-pk-unsupported"}`)
 		ctrl2.Exec(fw, req)
-		assert.Equal(t, http.StatusOK, fw.headerCode)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 }
 
@@ -171,7 +171,7 @@ func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 		fw := newFailWriter()
 		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-om-unsupported"}`)
 		ctrl2.Exec(fw, req)
-		assert.Equal(t, http.StatusOK, fw.headerCode)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 }
 
@@ -222,7 +222,7 @@ func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 		fw := newFailWriter()
 		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-dg-unsupported"}`)
 		ctrl2.Exec(fw, req)
-		assert.Equal(t, http.StatusOK, fw.headerCode)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 }
 
@@ -274,7 +274,7 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 		fw := newFailWriter()
 		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-sv-unsupported"}`)
 		ctrl2.Exec(fw, req)
-		assert.Equal(t, http.StatusOK, fw.headerCode)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 }
 
@@ -330,7 +330,7 @@ func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 		fw := newFailWriter()
 		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-dw-unsupported"}`)
 		ctrl2.Exec(fw, req)
-		assert.Equal(t, http.StatusOK, fw.headerCode)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 }
 
@@ -381,6 +381,6 @@ func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
 		fw := newFailWriter()
 		req := makeRestRequest(`{"command": "xyz", "sessionId": "s-hm-unsupported"}`)
 		ctrl2.Exec(fw, req)
-		assert.Equal(t, http.StatusOK, fw.headerCode)
+		assert.Equal(t, http.StatusBadRequest, fw.headerCode)
 	})
 }

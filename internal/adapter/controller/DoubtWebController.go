@@ -165,7 +165,7 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			dwc.writePresenterResponse(w, dgi.SkipDoubt(), errOutput)
 		}
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(dwc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}
