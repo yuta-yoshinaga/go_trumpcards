@@ -739,6 +739,44 @@ func (h *Holdem) cpuDecide(idx int) (int, int) {
 	return action, amount
 }
 
+// cpuFoldOrCheck コール額がある場合はフォールド、なければチェック
+func (h *Holdem) cpuFoldOrCheck(callAmount int) (int, int) {
+	if callAmount > 0 {
+		return HoldemActionFold, 0
+	}
+	return HoldemActionCheck, 0
+}
+
+// cpuCallOrCheck コール額がある場合はコール、なければチェック
+func (h *Holdem) cpuCallOrCheck(callAmount int) (int, int) {
+	if callAmount > 0 {
+		return HoldemActionCall, 0
+	}
+	return HoldemActionCheck, 0
+}
+
+// cpuRaiseOrBet コール額がある場合はレイズ、なければベット (チップ不足時はオールイン)
+func (h *Holdem) cpuRaiseOrBet(p *HoldemPlayer, callAmount, raiseAmt int) (int, int) {
+	if raiseAmt > p.GetChips() {
+		return HoldemActionAllIn, 0
+	}
+	if callAmount > 0 {
+		if raiseAmt+callAmount > p.GetChips() {
+			return HoldemActionAllIn, 0
+		}
+		return HoldemActionRaise, raiseAmt
+	}
+	return HoldemActionBet, raiseAmt
+}
+
+// cpuBetOrAllIn ベットする (チップ不足時はオールイン)
+func (h *Holdem) cpuBetOrAllIn(p *HoldemPlayer, betAmt int) (int, int) {
+	if betAmt > p.GetChips() {
+		return HoldemActionAllIn, 0
+	}
+	return HoldemActionBet, betAmt
+}
+
 // cpuDecidePreFlop プリフロップのCPU意思決定
 func (h *Holdem) cpuDecidePreFlop(idx int, style HoldemPlayStyle, callAmount int) (int, int) {
 	p := h.players[idx]
@@ -747,28 +785,12 @@ func (h *Holdem) cpuDecidePreFlop(idx int, style HoldemPlayStyle, callAmount int
 	switch style {
 	case HoldemStyleTAG:
 		if strength < 40 {
-			if callAmount > 0 {
-				return HoldemActionFold, 0
-			}
-			return HoldemActionCheck, 0
+			return h.cpuFoldOrCheck(callAmount)
 		}
 		if strength >= 70 || rand.Intn(100) < holdemBluffRateTAG {
-			raiseAmt := h.config.BigBlind * 3
-			if raiseAmt > p.GetChips() {
-				return HoldemActionAllIn, 0
-			}
-			if callAmount > 0 {
-				if raiseAmt+callAmount > p.GetChips() {
-					return HoldemActionAllIn, 0
-				}
-				return HoldemActionRaise, raiseAmt
-			}
-			return HoldemActionBet, raiseAmt
+			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*3)
 		}
-		if callAmount > 0 {
-			return HoldemActionCall, 0
-		}
-		return HoldemActionCheck, 0
+		return h.cpuCallOrCheck(callAmount)
 
 	case HoldemStyleLAP:
 		if strength < 15 && callAmount > h.config.BigBlind*2 {
@@ -778,30 +800,19 @@ func (h *Holdem) cpuDecidePreFlop(idx int, style HoldemPlayStyle, callAmount int
 			return HoldemActionCall, 0
 		}
 		if rand.Intn(100) < holdemBluffRateLAP {
-			betAmt := h.config.BigBlind * 2
-			if betAmt > p.GetChips() {
-				return HoldemActionAllIn, 0
-			}
-			return HoldemActionBet, betAmt
+			return h.cpuBetOrAllIn(p, h.config.BigBlind*2)
 		}
 		return HoldemActionCheck, 0
 
 	case HoldemStyleTAP:
 		if strength < 30 {
-			if callAmount > 0 {
-				return HoldemActionFold, 0
-			}
-			return HoldemActionCheck, 0
+			return h.cpuFoldOrCheck(callAmount)
 		}
 		if callAmount > 0 {
 			return HoldemActionCall, 0
 		}
 		if rand.Intn(100) < holdemBluffRateTAP {
-			betAmt := h.config.BigBlind * 2
-			if betAmt > p.GetChips() {
-				return HoldemActionAllIn, 0
-			}
-			return HoldemActionBet, betAmt
+			return h.cpuBetOrAllIn(p, h.config.BigBlind*2)
 		}
 		return HoldemActionCheck, 0
 
@@ -810,22 +821,9 @@ func (h *Holdem) cpuDecidePreFlop(idx int, style HoldemPlayStyle, callAmount int
 			return HoldemActionFold, 0
 		}
 		if strength >= 50 || rand.Intn(100) < holdemBluffRateLAG {
-			raiseAmt := h.config.BigBlind * 3
-			if raiseAmt > p.GetChips() {
-				return HoldemActionAllIn, 0
-			}
-			if callAmount > 0 {
-				if raiseAmt+callAmount > p.GetChips() {
-					return HoldemActionAllIn, 0
-				}
-				return HoldemActionRaise, raiseAmt
-			}
-			return HoldemActionBet, raiseAmt
+			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*3)
 		}
-		if callAmount > 0 {
-			return HoldemActionCall, 0
-		}
-		return HoldemActionCheck, 0
+		return h.cpuCallOrCheck(callAmount)
 	}
 
 	// デフォルト: コールまたはチェック
@@ -843,25 +841,12 @@ func (h *Holdem) cpuDecidePostFlop(idx int, style HoldemPlayStyle, callAmount in
 	switch style {
 	case HoldemStyleTAG:
 		if handRank >= PokerHandTwoPair || rand.Intn(100) < holdemBluffRateTAG {
-			raiseAmt := h.config.BigBlind * 2
-			if raiseAmt > p.GetChips() {
-				return HoldemActionAllIn, 0
-			}
-			if callAmount > 0 {
-				if raiseAmt+callAmount > p.GetChips() {
-					return HoldemActionAllIn, 0
-				}
-				return HoldemActionRaise, raiseAmt
-			}
-			return HoldemActionBet, raiseAmt
+			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*2)
 		}
 		if handRank >= PokerHandOnePair && callAmount > 0 {
 			return HoldemActionCall, 0
 		}
-		if callAmount > 0 {
-			return HoldemActionFold, 0
-		}
-		return HoldemActionCheck, 0
+		return h.cpuFoldOrCheck(callAmount)
 
 	case HoldemStyleLAP:
 		if callAmount > 0 {
@@ -871,11 +856,7 @@ func (h *Holdem) cpuDecidePostFlop(idx int, style HoldemPlayStyle, callAmount in
 			return HoldemActionCall, 0
 		}
 		if rand.Intn(100) < holdemBluffRateLAP {
-			betAmt := h.config.BigBlind
-			if betAmt > p.GetChips() {
-				return HoldemActionAllIn, 0
-			}
-			return HoldemActionBet, betAmt
+			return h.cpuBetOrAllIn(p, h.config.BigBlind)
 		}
 		return HoldemActionCheck, 0
 
@@ -887,27 +868,13 @@ func (h *Holdem) cpuDecidePostFlop(idx int, style HoldemPlayStyle, callAmount in
 			return HoldemActionCall, 0
 		}
 		if rand.Intn(100) < holdemBluffRateTAP {
-			betAmt := h.config.BigBlind
-			if betAmt > p.GetChips() {
-				return HoldemActionAllIn, 0
-			}
-			return HoldemActionBet, betAmt
+			return h.cpuBetOrAllIn(p, h.config.BigBlind)
 		}
 		return HoldemActionCheck, 0
 
 	case HoldemStyleLAG:
 		if handRank >= PokerHandOnePair || rand.Intn(100) < holdemBluffRateLAG {
-			raiseAmt := h.config.BigBlind * 3
-			if raiseAmt > p.GetChips() {
-				return HoldemActionAllIn, 0
-			}
-			if callAmount > 0 {
-				if raiseAmt+callAmount > p.GetChips() {
-					return HoldemActionAllIn, 0
-				}
-				return HoldemActionRaise, raiseAmt
-			}
-			return HoldemActionBet, raiseAmt
+			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*3)
 		}
 		if callAmount > 0 {
 			if handRank <= PokerHandHighCard && callAmount > h.config.BigBlind*4 {

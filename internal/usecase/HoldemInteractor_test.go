@@ -66,8 +66,6 @@ func TestHoldemInteractor_Action(t *testing.T) {
 	mp := new(presenter.MockHoldemPresenter)
 	hi := NewHoldemInteractor(mg, mp)
 
-	mg.On("GetGameEndFlag").Return(false)
-	mg.On("IsHumanTurn").Return(true)
 	mg.On("PlayerAction", domain.HoldemActionCheck, 0).Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("action output")
 
@@ -76,41 +74,12 @@ func TestHoldemInteractor_Action(t *testing.T) {
 	mg.AssertCalled(t, "PlayerAction", domain.HoldemActionCheck, 0)
 }
 
-func TestHoldemInteractor_Action_GameEnded(t *testing.T) {
-	mg := new(interfaces.MockHoldemGame)
-	mp := new(presenter.MockHoldemPresenter)
-	hi := NewHoldemInteractor(mg, mp)
-
-	mg.On("GetGameEndFlag").Return(true)
-	mp.On("Output", mg, mock.Anything).Return("game ended")
-
-	result := hi.Action(domain.HoldemActionCheck, 0)
-	assert.Equal(t, "game ended", result)
-	mg.AssertNotCalled(t, "PlayerAction", mock.Anything, mock.Anything)
-}
-
-func TestHoldemInteractor_Action_NotHumanTurn(t *testing.T) {
-	mg := new(interfaces.MockHoldemGame)
-	mp := new(presenter.MockHoldemPresenter)
-	hi := NewHoldemInteractor(mg, mp)
-
-	mg.On("GetGameEndFlag").Return(false)
-	mg.On("IsHumanTurn").Return(false)
-	mp.On("Output", mg, mock.Anything).Return("not your turn")
-
-	result := hi.Action(domain.HoldemActionCheck, 0)
-	assert.Equal(t, "not your turn", result)
-	mg.AssertNotCalled(t, "PlayerAction", mock.Anything, mock.Anything)
-}
-
 func TestHoldemInteractor_Action_Error(t *testing.T) {
 	mg := new(interfaces.MockHoldemGame)
 	mp := new(presenter.MockHoldemPresenter)
 	hi := NewHoldemInteractor(mg, mp)
 
 	err := errors.New("test error")
-	mg.On("GetGameEndFlag").Return(false)
-	mg.On("IsHumanTurn").Return(true)
 	mg.On("PlayerAction", domain.HoldemActionBet, 50).Return(err)
 	mp.On("Output", mg, err).Return("error output")
 

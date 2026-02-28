@@ -45,12 +45,6 @@ func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
 
 // Action プレイヤーアクション実行
 func (hi *HoldemInteractor) Action(action int, amount int) string {
-	if hi.h.GetGameEndFlag() {
-		return hi.hp.Output(hi.h, nil)
-	}
-	if !hi.h.IsHumanTurn() {
-		return hi.hp.Output(hi.h, nil)
-	}
 	err := hi.h.PlayerAction(action, amount)
 	return hi.hp.Output(hi.h, err)
 }

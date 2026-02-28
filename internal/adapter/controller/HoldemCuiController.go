@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -37,14 +38,14 @@ func (c *HoldemCuiController) Exec(command string) string {
 		return c.hi.Action(domain.HoldemActionCall, 0)
 	case "b", "bet":
 		amount, err := parseAmount(fields)
-		if err != "" {
-			return err
+		if err != nil {
+			return err.Error()
 		}
 		return c.hi.Action(domain.HoldemActionBet, amount)
 	case "ra", "raise":
 		amount, err := parseAmount(fields)
-		if err != "" {
-			return err
+		if err != nil {
+			return err.Error()
 		}
 		return c.hi.Action(domain.HoldemActionRaise, amount)
 	case "a", "allin":
@@ -55,14 +56,13 @@ func (c *HoldemCuiController) Exec(command string) string {
 }
 
 // parseAmount コマンドのスライスからベット額を抽出する
-// 戻り値: (金額, エラーメッセージ)。エラーメッセージが空なら成功。
-func parseAmount(fields []string) (int, string) {
+func parseAmount(fields []string) (int, error) {
 	if len(fields) < 2 {
-		return 0, "ベット/レイズには金額の指定が必要です。"
+		return 0, fmt.Errorf("ベット/レイズには金額の指定が必要です。")
 	}
 	amount, err := strconv.Atoi(fields[1])
 	if err != nil {
-		return 0, "無効な金額です: " + fields[1]
+		return 0, fmt.Errorf("無効な金額です: %s", fields[1])
 	}
-	return amount, ""
+	return amount, nil
 }
