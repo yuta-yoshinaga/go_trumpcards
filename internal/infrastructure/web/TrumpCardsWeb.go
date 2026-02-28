@@ -129,12 +129,17 @@ func (web *TrumpCardsWeb) Exec() {
 		mux.Handle(path, apiHandler)
 	}
 	mux.Handle("/", http.FileServer(http.Dir("public")))
+	const (
+		readTimeout  = 10 * time.Second
+		writeTimeout = 30 * time.Second
+		idleTimeout  = 60 * time.Second
+	)
 	srv := &http.Server{
 		Addr:         getListenPort(),
 		Handler:      mux,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		IdleTimeout:  idleTimeout,
 	}
 	log.Fatal(srv.ListenAndServe())
 }
