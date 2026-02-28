@@ -58,8 +58,7 @@ func TestHoldemCuiController_Bet(t *testing.T) {
 func TestHoldemCuiController_Bet_NoAmount(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	mi.On("Action", domain.HoldemActionBet, 0).Return("bet ok")
-	assert.Equal(t, "bet ok", c.Exec("b"))
+	assert.Contains(t, c.Exec("b"), "金額の指定が必要です")
 }
 
 func TestHoldemCuiController_Bet_InvalidAmount(t *testing.T) {
@@ -80,8 +79,7 @@ func TestHoldemCuiController_Raise(t *testing.T) {
 func TestHoldemCuiController_Raise_NoAmount(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	mi.On("Action", domain.HoldemActionRaise, 0).Return("raise ok")
-	assert.Equal(t, "raise ok", c.Exec("ra"))
+	assert.Contains(t, c.Exec("ra"), "金額の指定が必要です")
 }
 
 func TestHoldemCuiController_Raise_InvalidAmount(t *testing.T) {

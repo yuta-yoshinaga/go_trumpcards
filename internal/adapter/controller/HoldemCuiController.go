@@ -57,12 +57,12 @@ func (c *HoldemCuiController) Exec(command string) string {
 // parseAmount コマンドのスライスからベット額を抽出する
 // 戻り値: (金額, エラーメッセージ)。エラーメッセージが空なら成功。
 func parseAmount(fields []string) (int, string) {
-	if len(fields) > 1 {
-		amount, err := strconv.Atoi(fields[1])
-		if err != nil {
-			return 0, "無効な金額です: " + fields[1]
-		}
-		return amount, ""
+	if len(fields) < 2 {
+		return 0, "ベット/レイズには金額の指定が必要です。"
 	}
-	return 0, ""
+	amount, err := strconv.Atoi(fields[1])
+	if err != nil {
+		return 0, "無効な金額です: " + fields[1]
+	}
+	return amount, ""
 }
