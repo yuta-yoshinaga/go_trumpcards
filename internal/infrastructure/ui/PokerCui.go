@@ -39,8 +39,11 @@ func (cui *PokerCui) Exec() {
 		fmt.Println("f・・・fold")
 		fmt.Println("e [0-4]・・・exchange (e.g. 'e 0 2 4' to exchange cards at index 0, 2, 4)")
 		fmt.Println("s・・・stand (no exchange)")
-		scanner.Scan()
-		res := cui.pc.Exec(scanner.Text())
+		input, exit := readInput(scanner)
+		if exit {
+			break
+		}
+		res := cui.pc.Exec(input)
 		fmt.Println(res)
 		if res == "bye." {
 			break

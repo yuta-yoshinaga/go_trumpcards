@@ -42,8 +42,11 @@ func (cui *DaifugoCui) Exec() {
 		fmt.Println("q・・・quit")
 		fmt.Println("r・・・reset")
 		fmt.Println("p [インデックス...]・・・カードを出す (インデックスなしでパス)")
-		scanner.Scan()
-		res := cui.dgc.Exec(scanner.Text())
+		input, exit := readInput(scanner)
+		if exit {
+			break
+		}
+		res := cui.dgc.Exec(input)
 		fmt.Println(res)
 		if res == "bye." {
 			break
