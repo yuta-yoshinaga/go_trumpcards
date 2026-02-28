@@ -438,7 +438,6 @@ export function SevensPage() {
           <label className="flex items-center gap-1 cursor-pointer">
             ジョーカー
             <select
-              aria-label="ジョーカー"
               value={cfgJokerCount}
               onChange={(e) => setCfgJokerCount(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -455,7 +454,6 @@ export function SevensPage() {
           <label className="flex items-center gap-1 cursor-pointer">
             パス回数
             <select
-              aria-label="パス回数"
               value={cfgMaxPasses}
               onChange={(e) => setCfgMaxPasses(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
