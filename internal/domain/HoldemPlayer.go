@@ -254,6 +254,26 @@ func isWheelHand(cards []*Card) bool {
 	return vals[0] == 1 && vals[1] == 2 && vals[2] == 3 && vals[3] == 4 && vals[4] == 5
 }
 
+// tieBreakValues カード値リストを (出現回数 DESC, 値 DESC) でソートしたユニーク値リストを返す
+// ペア系ハンドの正しいタイブレーク順序を保証する
+func tieBreakValues(vals []int) []int {
+	freq := make(map[int]int)
+	for _, v := range vals {
+		freq[v]++
+	}
+	unique := make([]int, 0, len(freq))
+	for v := range freq {
+		unique = append(unique, v)
+	}
+	sort.Slice(unique, func(i, j int) bool {
+		if freq[unique[i]] != freq[unique[j]] {
+			return freq[unique[i]] > freq[unique[j]]
+		}
+		return unique[i] > unique[j]
+	})
+	return unique
+}
+
 // compareHighCardsSlice 2つの5枚ハンドのハイカード比較 (a > b: 1, a < b: -1, a == b: 0)
 func compareHighCardsSlice(a, b []*Card) int {
 	if len(a) == 0 || len(b) == 0 {
@@ -277,13 +297,13 @@ func compareHighCardsSlice(a, b []*Card) int {
 		}
 		bVals[i] = v
 	}
-	sort.Sort(sort.Reverse(sort.IntSlice(aVals)))
-	sort.Sort(sort.Reverse(sort.IntSlice(bVals)))
-	for i := 0; i < len(aVals) && i < len(bVals); i++ {
-		if aVals[i] > bVals[i] {
+	aTB := tieBreakValues(aVals)
+	bTB := tieBreakValues(bVals)
+	for i := 0; i < len(aTB) && i < len(bTB); i++ {
+		if aTB[i] > bTB[i] {
 			return 1
 		}
-		if aVals[i] < bVals[i] {
+		if aTB[i] < bTB[i] {
 			return -1
 		}
 	}

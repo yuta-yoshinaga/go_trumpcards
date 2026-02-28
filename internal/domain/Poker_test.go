@@ -1367,6 +1367,102 @@ func TestPoker_DealerExchange_HighCardWithAce(t *testing.T) {
 	assert.Equal(t, 5, dealer.GetCardsSize())
 }
 
+// --- Tie-break regression tests: pair value must be compared before kickers ---
+
+func TestPoker_CompareHighCards_OnePairTieBreak(t *testing.T) {
+	// Player: Pair of 4s (4-4-K-3-2), Dealer: Pair of 3s (3-3-K-Q-J)
+	// Old bug: sorts desc [13,4,4,3,2] vs [13,12,11,3,3] → K==K, 4<12 → dealer wins
+	// Fixed: compare pair value first: 4 > 3 → player wins
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewPokerPlayer()
+	dealer := domain.NewPokerPlayer()
+	tp := domain.NewPoker(tc, player, dealer)
+	tp.SetFolded(domain.PokerFoldNone)
+	player.Reset()
+	dealer.Reset()
+
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	player.AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	player.AddCard(domain.NewCard(domain.CardDesignClover, 13, false))
+	player.AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+
+	player.EvalHand()
+	dealer.EvalHand()
+	assert.Equal(t, domain.PokerHandOnePair, player.GetHandRank())
+	assert.Equal(t, domain.PokerHandOnePair, dealer.GetHandRank())
+	// Player's pair of 4s beats dealer's pair of 3s
+	assert.Equal(t, 1, tp.GameJudgment())
+}
+
+func TestPoker_CompareHighCards_TwoPairTieBreak(t *testing.T) {
+	// Player: 10-10-5-5-A, Dealer: 9-9-8-8-A
+	// Higher top pair (10 vs 9) should win
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewPokerPlayer()
+	dealer := domain.NewPokerPlayer()
+	tp := domain.NewPoker(tc, player, dealer)
+	tp.SetFolded(domain.PokerFoldNone)
+	player.Reset()
+	dealer.Reset()
+
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	player.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	player.AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+
+	player.EvalHand()
+	dealer.EvalHand()
+	assert.Equal(t, domain.PokerHandTwoPair, player.GetHandRank())
+	assert.Equal(t, domain.PokerHandTwoPair, dealer.GetHandRank())
+	// Player's top pair (10) > dealer's top pair (9)
+	assert.Equal(t, 1, tp.GameJudgment())
+}
+
+func TestPoker_CompareHighCards_TwoPairKickerDecides(t *testing.T) {
+	// Player: 10-10-5-5-K, Dealer: 10-10-5-5-Q
+	// Same two pairs, kicker decides: K > Q → player wins
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewPokerPlayer()
+	dealer := domain.NewPokerPlayer()
+	tp := domain.NewPoker(tc, player, dealer)
+	tp.SetFolded(domain.PokerFoldNone)
+	player.Reset()
+	dealer.Reset()
+
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	player.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	player.AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 12, false))
+
+	player.EvalHand()
+	dealer.EvalHand()
+	assert.Equal(t, domain.PokerHandTwoPair, player.GetHandRank())
+	assert.Equal(t, domain.PokerHandTwoPair, dealer.GetHandRank())
+	// Same pairs, kicker K(13) > Q(12) → player wins
+	assert.Equal(t, 1, tp.GameJudgment())
+}
+
 // --- Coverage gap tests: compareHighCards dealer Ace=14 ---
 
 func TestPoker_CompareHighCards_DealerAce(t *testing.T) {

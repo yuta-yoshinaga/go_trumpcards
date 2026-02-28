@@ -574,13 +574,13 @@ func (p *Poker) compareHighCards() int {
 		dealerValues[i] = v
 	}
 
-	sort.Sort(sort.Reverse(sort.IntSlice(playerValues)))
-	sort.Sort(sort.Reverse(sort.IntSlice(dealerValues)))
+	pTB := tieBreakValues(playerValues)
+	dTB := tieBreakValues(dealerValues)
 
-	for i := 0; i < len(playerValues) && i < len(dealerValues); i++ {
-		if playerValues[i] > dealerValues[i] {
+	for i := 0; i < len(pTB) && i < len(dTB); i++ {
+		if pTB[i] > dTB[i] {
 			return 1
-		} else if playerValues[i] < dealerValues[i] {
+		} else if pTB[i] < dTB[i] {
 			return -1
 		}
 	}
