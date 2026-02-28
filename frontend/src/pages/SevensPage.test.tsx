@@ -13,7 +13,7 @@ const mockExec = vi.mocked(sevensApi.exec);
 // tableMinVals/tableMaxVals: index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
 // tablePlaced: bitmask per suit; bit i = value i placed. 7 placed = 1<<7 = 128
 // With all 7s placed: value 6 or 8 of any suit is playable
-const defaultConfig = { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false };
+const defaultConfig = { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 };
 const allSevensPlaced = [0, 128, 128, 128, 128]; // bit 7 set = 128
 
 const humanTurnState: SevensResponse = {
@@ -50,7 +50,13 @@ const humanTurnState: SevensResponse = {
 const cpuTurnState: SevensResponse = {
   ...humanTurnState,
   currentTurn: 1,
-  humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 }, targetSuit: 0, targetValue: 0 },
+  humanAction: {
+    playerIdx: 0,
+    playedCard: { design: 'SPADE', value: 6 },
+    targetSuit: 0,
+    targetValue: 0,
+    forcedPass: false,
+  },
   tableMinVals: [0, 6, 7, 7, 7],
   tableMaxVals: [0, 7, 7, 7, 7],
   tablePlaced: [0, 128 | 64, 128, 128, 128], // spade 6+7 placed
@@ -171,6 +177,7 @@ describe('SevensPage', () => {
         tunnelEnabled: false,
         jokerCount: 0,
         cpuStrategy: false,
+        maxPasses: 5,
       }),
     );
   });
@@ -184,7 +191,7 @@ describe('SevensPage', () => {
   it('shows pass action log for human pass', async () => {
     const passState: SevensResponse = {
       ...cpuTurnState,
-      humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0 },
+      humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false },
     };
     mockExec.mockResolvedValue(passState);
     render(<SevensPage />);
@@ -195,8 +202,8 @@ describe('SevensPage', () => {
     const stateWithCpuActions: SevensResponse = {
       ...humanTurnState,
       cpuActions: [
-        { playerIdx: 1, playedCard: { design: 'SPADE', value: 8 }, targetSuit: 0, targetValue: 0 },
-        { playerIdx: 2, playedCard: null, targetSuit: 0, targetValue: 0 },
+        { playerIdx: 1, playedCard: { design: 'SPADE', value: 8 }, targetSuit: 0, targetValue: 0, forcedPass: false },
+        { playerIdx: 2, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false },
       ],
     };
     mockExec.mockResolvedValue(stateWithCpuActions);
@@ -244,7 +251,7 @@ describe('SevensPage', () => {
   it('shows rule header when config has features enabled', async () => {
     const stateWithConfig: SevensResponse = {
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true },
+      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5 },
     };
     mockExec.mockResolvedValue(stateWithConfig);
     render(<SevensPage />);
@@ -295,6 +302,7 @@ describe('SevensPage', () => {
         playedCard: { design: 'JOKER', value: 0 },
         targetSuit: 1,
         targetValue: 6,
+        forcedPass: false,
       },
     };
     mockExec.mockResolvedValue(jokerActionState);
@@ -320,7 +328,9 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
     expect(screen.getByLabelText('トンネル')).not.toBeChecked();
     expect(screen.getByLabelText('CPU戦略')).not.toBeChecked();
-    expect(screen.getByRole('combobox')).toHaveValue('0');
+    const comboboxes = screen.getAllByRole('combobox');
+    expect(comboboxes[0]).toHaveValue('0');
+    expect(comboboxes[1]).toHaveValue('5');
   });
 
   it('sends config to API when reset button is clicked with config toggled', async () => {
@@ -328,13 +338,14 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
 
     fireEvent.click(screen.getByLabelText('トンネル'));
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: '1' } });
+    const comboboxes = screen.getAllByRole('combobox');
+    fireEvent.change(comboboxes[0], { target: { value: '1' } });
     fireEvent.click(screen.getByLabelText('CPU戦略'));
 
     mockExec.mockClear();
     mockExec.mockResolvedValue({
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 1, cpuStrategy: true },
+      config: { tunnelEnabled: true, jokerCount: 1, cpuStrategy: true, maxPasses: 5 },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     await waitFor(() =>
@@ -342,6 +353,7 @@ describe('SevensPage', () => {
         tunnelEnabled: true,
         jokerCount: 1,
         cpuStrategy: true,
+        maxPasses: 5,
       }),
     );
   });
@@ -349,14 +361,15 @@ describe('SevensPage', () => {
   it('syncs config state from server response', async () => {
     const configState: SevensResponse = {
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true },
+      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5 },
     };
     mockExec.mockResolvedValue(configState);
     render(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByLabelText('トンネル')).toBeChecked();
       expect(screen.getByLabelText('CPU戦略')).toBeChecked();
-      expect(screen.getByRole('combobox')).toHaveValue('2');
+      const comboboxes = screen.getAllByRole('combobox');
+      expect(comboboxes[0]).toHaveValue('2');
     });
   });
 
@@ -555,6 +568,150 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getAllByText('2位').length).toBeGreaterThan(0));
   });
 
+  it('pass count dropdown renders with correct options', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+    const comboboxes = screen.getAllByRole('combobox');
+    const passSelect = comboboxes[1];
+    const options = Array.from(passSelect.querySelectorAll('option'));
+    expect(options.map((o) => o.textContent)).toEqual(['3', '5', '10', '無制限']);
+    expect(options.map((o) => o.getAttribute('value'))).toEqual(['3', '5', '10', '0']);
+  });
+
+  it('pass count included in reset config', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+
+    const comboboxes = screen.getAllByRole('combobox');
+    fireEvent.change(comboboxes[1], { target: { value: '3' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, maxPasses: 3 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        jokerCount: 0,
+        cpuStrategy: false,
+        maxPasses: 3,
+      }),
+    );
+  });
+
+  it('shows 0/∞ for unlimited passes (maxPasses=0)', async () => {
+    const unlimitedState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, maxPasses: 0 },
+      players: humanTurnState.players.map((p) => ({ ...p, maxPasses: 0 })),
+    };
+    mockExec.mockResolvedValue(unlimitedState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getAllByText(/0\/∞/).length).toBeGreaterThan(0));
+  });
+
+  it('shows 0/3 for custom passes (maxPasses=3)', async () => {
+    const customState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, maxPasses: 3 },
+      players: humanTurnState.players.map((p) => ({ ...p, maxPasses: 3 })),
+    };
+    mockExec.mockResolvedValue(customState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getAllByText(/0\/3/).length).toBeGreaterThan(0));
+  });
+
+  it('forced pass action shows warning text', async () => {
+    const forcedPassState: SevensResponse = {
+      ...humanTurnState,
+      currentTurn: 1,
+      humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: true },
+    };
+    mockExec.mockResolvedValue(forcedPassState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText(/⚠ 出せるカードなし!/)).toBeInTheDocument());
+  });
+
+  it('non-forced pass does NOT show warning text', async () => {
+    const passState: SevensResponse = {
+      ...cpuTurnState,
+      humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false },
+    };
+    mockExec.mockResolvedValue(passState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText(/あなたがパスしました/)).toBeInTheDocument());
+    expect(screen.queryByText(/⚠ 出せるカードなし!/)).not.toBeInTheDocument();
+  });
+
+  it('rules banner shows [パス無制限] when maxPasses=0', async () => {
+    const unlimitedRuleState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, maxPasses: 0 },
+      players: humanTurnState.players.map((p) => ({ ...p, maxPasses: 0 })),
+    };
+    mockExec.mockResolvedValue(unlimitedRuleState);
+    render(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[パス無制限\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('rules banner shows [パス3回] when maxPasses=3', async () => {
+    const customRuleState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, maxPasses: 3 },
+      players: humanTurnState.players.map((p) => ({ ...p, maxPasses: 3 })),
+    };
+    mockExec.mockResolvedValue(customRuleState);
+    render(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[パス3回\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('canPass works with unlimited passes (maxPasses=0, passesUsed=5)', async () => {
+    const unlimitedPassState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, maxPasses: 0 },
+      players: [
+        { ...humanTurnState.players[0], passesUsed: 5, maxPasses: 0 },
+        ...humanTurnState.players.slice(1).map((p) => ({ ...p, maxPasses: 0 })),
+      ],
+    };
+    mockExec.mockResolvedValue(unlimitedPassState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+  });
+
+  it('forced pass human action has red-styled wrapper', async () => {
+    const forcedPassHumanState: SevensResponse = {
+      ...humanTurnState,
+      currentTurn: 1,
+      humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: true },
+    };
+    mockExec.mockResolvedValue(forcedPassHumanState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText(/あなたがパスしました/)).toBeInTheDocument());
+    const actionDiv = screen.getByText(/あなたがパスしました/).closest('div');
+    expect(actionDiv?.className).toContain('bg-red-900/50');
+  });
+
+  it('forced pass CPU action has amber-styled text', async () => {
+    const forcedPassCpuState: SevensResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: true }],
+    };
+    mockExec.mockResolvedValue(forcedPassCpuState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1がパスしました/)).toBeInTheDocument());
+    const cpuActionDiv = screen.getByText(/CPU 1がパスしました/).closest('div');
+    expect(cpuActionDiv?.className).toContain('text-[#fca]');
+  });
+
   it('shows joker played without target info when targetSuit is 0', async () => {
     const jokerNoTargetState: SevensResponse = {
       ...humanTurnState,
@@ -564,6 +721,7 @@ describe('SevensPage', () => {
         playedCard: { design: 'JOKER', value: 0 },
         targetSuit: 0,
         targetValue: 0,
+        forcedPass: false,
       },
     };
     mockExec.mockResolvedValue(jokerNoTargetState);

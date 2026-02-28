@@ -64,7 +64,10 @@ function isCardPlayable(card: Card, tablePlaced: number[], tunnelEnabled: boolea
 }
 
 function actionDesc(players: { id: number; isHuman: boolean }[], action: SevensAction): string {
-  if (!action.playedCard) return `${findPlayerName(players, action.playerIdx)}がパスしました`;
+  if (!action.playedCard) {
+    const base = `${findPlayerName(players, action.playerIdx)}がパスしました`;
+    return action.forcedPass ? `${base} ⚠ 出せるカードなし!` : base;
+  }
   const c = action.playedCard;
   let desc = `${findPlayerName(players, action.playerIdx)}が出しました: ${c.design} ${valueName(c.value)}`;
   if (c.design === 'JOKER' && action.targetSuit > 0) {
@@ -197,7 +200,7 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
       </div>
       {!player.isFinished && (
         <div className="text-[#ccc] text-[0.85em]">
-          {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses}
+          {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses === 0 ? '∞' : player.maxPasses}
         </div>
       )}
     </div>
@@ -242,7 +245,7 @@ function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, loading,
       </div>
       {!player.isFinished && (
         <div className="text-[#ccc] text-[0.85em] mb-1">
-          {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses}
+          {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses === 0 ? '∞' : player.maxPasses}
           {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>出せるカードをクリック</span>}
         </div>
       )}
@@ -283,6 +286,7 @@ export function SevensPage() {
   const [cfgTunnel, setCfgTunnel] = useState(false);
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
   const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
+  const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -297,6 +301,7 @@ export function SevensPage() {
         setCfgTunnel(res.config.tunnelEnabled);
         setCfgJokerCount(res.config.jokerCount);
         setCfgCpuStrategy(res.config.cpuStrategy);
+        setCfgMaxPasses(res.config.maxPasses);
       } catch {
         setError('通信エラーが発生しました。もう一度お試しください。');
       } finally {
@@ -317,7 +322,8 @@ export function SevensPage() {
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
-  const canPass = isHumanTurn && state.players.some((p) => p.isHuman && p.passesUsed < p.maxPasses);
+  const canPass =
+    isHumanTurn && state.players.some((p) => p.isHuman && (p.maxPasses === 0 || p.passesUsed < p.maxPasses));
 
   const handleCardPlay = (idx: number) => {
     const card = humanPlayer?.cards?.[idx];
@@ -337,14 +343,20 @@ export function SevensPage() {
       {/* Scrollable: CPU rows + board + action logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Config rules */}
-        {state.config && (state.config.tunnelEnabled || state.config.jokerCount > 0 || state.config.cpuStrategy) && (
-          <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-[0.85em]">
-            ルール:
-            {state.config.tunnelEnabled && ' [トンネル]'}
-            {state.config.jokerCount > 0 && ` [ジョーカー×${state.config.jokerCount}]`}
-            {state.config.cpuStrategy && ' [CPU戦略]'}
-          </div>
-        )}
+        {state.config &&
+          (state.config.tunnelEnabled ||
+            state.config.jokerCount > 0 ||
+            state.config.cpuStrategy ||
+            state.config.maxPasses !== 5) && (
+            <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-[0.85em]">
+              ルール:
+              {state.config.tunnelEnabled && ' [トンネル]'}
+              {state.config.jokerCount > 0 && ` [ジョーカー×${state.config.jokerCount}]`}
+              {state.config.cpuStrategy && ' [CPU戦略]'}
+              {state.config.maxPasses === 0 && ' [パス無制限]'}
+              {state.config.maxPasses !== 5 && state.config.maxPasses !== 0 && ` [パス${state.config.maxPasses}回]`}
+            </div>
+          )}
 
         {/* CPU row */}
         <div className="flex gap-2.5 flex-wrap mb-2.5">
@@ -363,15 +375,25 @@ export function SevensPage() {
 
         {/* Human action log */}
         {state.humanAction && (
-          <div className="bg-black/40 rounded-lg text-[#cfc] py-2 px-3.5 my-2 text-[0.85em]">
+          <div
+            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass && !state.humanAction.playedCard ? 'bg-red-900/50 text-[#fca] border border-red-500/50' : 'bg-black/40 text-[#cfc]'}`}
+          >
             {actionDesc(state.players, state.humanAction)}
           </div>
         )}
 
         {/* CPU action log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
-            {['[CPUの行動]', ...state.cpuActions.map((a) => actionDesc(state.players, a))].join('\n')}
+          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+            <span className="text-[#ccc]">[CPUの行動]</span>
+            {state.cpuActions.map((a, i) => (
+              <div
+                key={`cpu-action-${a.playerIdx}-${i}`}
+                className={a.forcedPass && !a.playedCard ? 'text-[#fca]' : 'text-[#ccc]'}
+              >
+                {actionDesc(state.players, a)}
+              </div>
+            ))}
           </div>
         )}
 
@@ -425,6 +447,19 @@ export function SevensPage() {
             <input type="checkbox" checked={cfgCpuStrategy} onChange={(e) => setCfgCpuStrategy(e.target.checked)} />
             CPU戦略
           </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            パス回数
+            <select
+              value={cfgMaxPasses}
+              onChange={(e) => setCfgMaxPasses(Number(e.target.value))}
+              className="bg-black/50 text-white rounded px-1 py-0.5"
+            >
+              <option value={3}>3</option>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={0}>無制限</option>
+            </select>
+          </label>
         </div>
 
         <ErrorAlert message={error} />
@@ -440,6 +475,7 @@ export function SevensPage() {
                 tunnelEnabled: cfgTunnel,
                 jokerCount: cfgJokerCount,
                 cpuStrategy: cfgCpuStrategy,
+                maxPasses: cfgMaxPasses,
               })
             }
           >

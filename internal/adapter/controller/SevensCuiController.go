@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -35,6 +36,7 @@ func (c *SevensCuiController) Exec(command string) string {
 			tunnelEnabled := false
 			jokerCount := 0
 			cpuStrategy := false
+			maxPasses := domain.SevensMaxPasses
 			for _, f := range fields[1:] {
 				switch {
 				case f == "tunnel":
@@ -43,11 +45,15 @@ func (c *SevensCuiController) Exec(command string) string {
 					if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "joker=")); err == nil {
 						jokerCount = parsed
 					}
+				case strings.HasPrefix(f, "passes="):
+					if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "passes=")); err == nil {
+						maxPasses = parsed
+					}
 				case f == "strategy":
 					cpuStrategy = true
 				}
 			}
-			return c.sgi.ResetWithConfig(tunnelEnabled, jokerCount, cpuStrategy)
+			return c.sgi.ResetWithConfig(tunnelEnabled, jokerCount, cpuStrategy, maxPasses)
 		}
 		return c.sgi.Reset()
 	case "p", "play":
