@@ -78,7 +78,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     counts[a.drawFromIdx] = counts[a.drawFromIdx] + 1;
   }
 
-  const hasCpuActions = finalState.cpuActions.length > 0;
+  const [firstCpuAction] = finalState.cpuActions;
 
   return {
     ...finalState,
@@ -87,7 +87,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
       cardCount: Math.max(0, counts[idx]),
       isFinished: counts[idx] <= 0,
     })),
-    currentTurn: hasCpuActions ? finalState.cpuActions[0].drawPlayerIdx : finalState.currentTurn,
+    currentTurn: firstCpuAction ? firstCpuAction.drawPlayerIdx : finalState.currentTurn,
     hasDrawn: true,
     lastDrawPlayerIdx: ha.drawPlayerIdx,
     lastDrawFromIdx: ha.drawFromIdx,
@@ -95,9 +95,9 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     lastDiscardedPairs: ha.discardedPairs,
     lastDiscardedCards: ha.discardedCards ?? [],
     cpuActions: [],
-    gameEndFlag: hasCpuActions ? false : finalState.gameEndFlag,
-    message: hasCpuActions ? '' : finalState.message,
-    nextDrawTargetIdx: hasCpuActions ? finalState.cpuActions[0].drawFromIdx : finalState.nextDrawTargetIdx,
+    gameEndFlag: firstCpuAction ? false : finalState.gameEndFlag,
+    message: firstCpuAction ? '' : finalState.message,
+    nextDrawTargetIdx: firstCpuAction ? firstCpuAction.drawFromIdx : finalState.nextDrawTargetIdx,
   };
 }
 
