@@ -80,7 +80,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
 
   const [firstCpuAction] = finalState.cpuActions;
 
-  const cpuTransitionState = firstCpuAction
+  const cpuTransitionOverrides = firstCpuAction
     ? {
         currentTurn: firstCpuAction.drawPlayerIdx,
         gameEndFlag: false,
@@ -103,7 +103,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     lastDiscardedPairs: ha.discardedPairs,
     lastDiscardedCards: ha.discardedCards ?? [],
     cpuActions: [],
-    ...cpuTransitionState,
+    ...cpuTransitionOverrides,
   };
 }
 

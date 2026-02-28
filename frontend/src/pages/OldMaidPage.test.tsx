@@ -681,7 +681,7 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
 
     // Should show the game end message without crashing
-    await waitFor(() => expect(screen.getByText('あなたが負けました')).toBeInTheDocument(), {
+    await waitFor(() => expect(screen.getByText(humanActionNoCpuState.message)).toBeInTheDocument(), {
       timeout: 4000,
     });
   }, 10000);
