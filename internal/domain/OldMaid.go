@@ -250,11 +250,11 @@ func (o *OldMaid) advancePastFinished() {
 	if o.gameEndFlag {
 		return
 	}
-	for i := 0; i < OldMaidPlayerCnt; i++ {
+	for i := 0; i < len(o.players); i++ {
 		if !o.players[o.currentTurn].GetIsFinished() {
 			break
 		}
-		o.currentTurn = (o.currentTurn + 1) % OldMaidPlayerCnt
+		o.currentTurn = (o.currentTurn + 1) % len(o.players)
 	}
 }
 
