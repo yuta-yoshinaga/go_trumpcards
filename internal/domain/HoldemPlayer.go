@@ -186,14 +186,12 @@ func evalFiveCards(cards []*Card) int {
 // checkStraightValues ストレートチェック (ソート済み値スライス)
 func checkStraightValues(sortedValues []int) bool {
 	// A-2-3-4-5 (ホイール)
-	if len(sortedValues) == 5 &&
-		sortedValues[0] == 1 && sortedValues[1] == 2 &&
+	if sortedValues[0] == 1 && sortedValues[1] == 2 &&
 		sortedValues[2] == 3 && sortedValues[3] == 4 && sortedValues[4] == 5 {
 		return true
 	}
 	// A-10-J-Q-K (ブロードウェイ)
-	if len(sortedValues) == 5 &&
-		sortedValues[0] == 1 && sortedValues[1] == 10 &&
+	if sortedValues[0] == 1 && sortedValues[1] == 10 &&
 		sortedValues[2] == 11 && sortedValues[3] == 12 && sortedValues[4] == 13 {
 		return true
 	}

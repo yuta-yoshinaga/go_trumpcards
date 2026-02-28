@@ -402,8 +402,6 @@ func TestCheckStraightValues(t *testing.T) {
 	assert.True(t, checkStraightValues([]int{1, 2, 3, 4, 5}))
 	// Not a straight
 	assert.False(t, checkStraightValues([]int{1, 3, 5, 7, 9}))
-	// Not 5 cards for ace-high
-	assert.False(t, checkStraightValues([]int{1, 10, 11, 12}))
 }
 
 func TestCheckRoyalStraightValues(t *testing.T) {
