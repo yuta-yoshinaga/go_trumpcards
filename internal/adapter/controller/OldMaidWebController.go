@@ -122,7 +122,7 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "d", "draw":
 		owc.writePresenterResponse(w, omi.Draw(drawIdx), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(owc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}

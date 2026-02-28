@@ -149,7 +149,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusOK)
+		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mustDoubtOutputJSON("Unsupported command."))
 	})

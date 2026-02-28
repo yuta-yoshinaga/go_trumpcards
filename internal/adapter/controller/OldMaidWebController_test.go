@@ -121,7 +121,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusOK)
+		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"Unsupported command."}`)
 	})

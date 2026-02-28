@@ -126,7 +126,7 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	case "sd", "setdeckcount":
 		bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(bwc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}

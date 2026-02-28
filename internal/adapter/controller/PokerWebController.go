@@ -108,7 +108,7 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "ck", "check":
 		pwc.writePresenterResponse(w, pi.Check(), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(pwc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}
