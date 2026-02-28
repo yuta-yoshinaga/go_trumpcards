@@ -51,10 +51,12 @@ export function HoldemPage() {
   }, [exec]);
 
   useEffect(() => {
-    if (state?.minRaise) {
+    if (state?.minRaise && state.minRaise > 0) {
       setBetAmount(state.minRaise);
+    } else if (state) {
+      setBetAmount(20);
     }
-  }, [state?.minRaise]);
+  }, [state]);
 
   const phase = state?.phase ?? HoldemPhase.INIT;
   const isActive = phase >= HoldemPhase.PRE_FLOP && phase <= HoldemPhase.RIVER;

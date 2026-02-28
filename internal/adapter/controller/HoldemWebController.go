@@ -126,12 +126,22 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	switch param.Command {
 	case "r", "reset":
 		cfg := domain.DefaultHoldemConfig()
+		sb, bb := cfg.SmallBlind, cfg.BigBlind
 		if param.SmallBlind != nil && *param.SmallBlind >= 1 {
-			cfg.SmallBlind = *param.SmallBlind
+			sb = *param.SmallBlind
 		}
 		if param.BigBlind != nil && *param.BigBlind >= 1 {
-			cfg.BigBlind = *param.BigBlind
+			bb = *param.BigBlind
 		}
+		if sb >= bb {
+			w.WriteHeader(http.StatusBadRequest)
+			if err := w.WriteJson(hwc.newDefaultOutput("param error: smallBlind must be less than bigBlind.")); err != nil {
+				log.Printf("WriteJson error: %v", err)
+			}
+			return
+		}
+		cfg.SmallBlind = sb
+		cfg.BigBlind = bb
 		hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg), errOutput)
 	case "f", "fold":
 		hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0), errOutput)

@@ -235,7 +235,7 @@ func TestHoldemWebController_Reset_SmallBlindOnly(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api := newHoldemTestHandler(mi)
 
-	sb := 20
+	sb := 3
 	cfg := domain.DefaultHoldemConfig()
 	cfg.SmallBlind = sb
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
@@ -267,6 +267,33 @@ func TestHoldemWebController_Reset_BigBlindOnly(t *testing.T) {
 				"bigBlind":  bb,
 			}))
 	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_SmallBlindGeBigBlind(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api := newHoldemTestHandler(mi)
+
+	// smallBlind >= bigBlind は不正
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":    "reset",
+				"sessionId":  "s-ge",
+				"smallBlind": 20,
+				"bigBlind":   10,
+			}))
+	recorded.CodeIs(400)
+
+	// smallBlind == bigBlind も不正
+	recorded2 := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":    "reset",
+				"sessionId":  "s-eq",
+				"smallBlind": 10,
+				"bigBlind":   10,
+			}))
+	recorded2.CodeIs(400)
 }
 
 func TestHoldemWebController_Reset_InvalidBlinds(t *testing.T) {
