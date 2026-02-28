@@ -283,8 +283,8 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 			return NewDomainError(ErrInvalidAmount, "Raise must be at least the minimum raise.")
 		}
 		totalNeeded := diff + amount
-		if totalNeeded > p.GetChips() {
-			return NewDomainError(ErrInsufficientChips, "Insufficient chips for raise.")
+		if totalNeeded >= p.GetChips() {
+			return h.executeAction(playerIdx, HoldemActionAllIn, 0)
 		}
 		p.SubtractChips(totalNeeded)
 		p.SetCurrentBet(p.GetCurrentBet() + totalNeeded)
