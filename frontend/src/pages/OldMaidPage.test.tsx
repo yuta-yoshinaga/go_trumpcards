@@ -633,6 +633,59 @@ describe('OldMaidPage', () => {
     });
   }, 10000);
 
+  it('handles humanAction with empty cpuActions without crashing', async () => {
+    const humanActionNoCpuState: OldMaidResponse = {
+      ...humanTurnState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'JOKER', value: 0 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: true, cardCount: 0, cards: [] },
+        { id: 2, isHuman: false, isFinished: true, cardCount: 0, cards: [] },
+      ],
+      currentTurn: 0,
+      nextDrawTargetIdx: 0,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'HEART', value: 3 },
+      lastDiscardedPairs: 1,
+      cpuActions: [],
+      humanAction: {
+        drawPlayerIdx: 0,
+        drawFromIdx: 1,
+        drawnCard: { design: 'HEART', value: 3 },
+        discardedPairs: 1,
+        discardedCards: [
+          { design: 'HEART', value: 3 },
+          { design: 'DIAMOND', value: 3 },
+        ],
+      },
+      gameEndFlag: true,
+      message: 'あなたが負けました',
+    };
+
+    mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(humanActionNoCpuState);
+    render(<OldMaidPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
+
+    fireEvent.click(screen.getByText('ランダムに引く'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+
+    // Should show the game end message without crashing
+    await waitFor(() => expect(screen.getByText('あなたが負けました')).toBeInTheDocument(), {
+      timeout: 4000,
+    });
+  }, 10000);
+
   it('goes directly to CPU replay when humanAction is null', async () => {
     const directCpuState: OldMaidResponse = {
       ...humanTurnState,
