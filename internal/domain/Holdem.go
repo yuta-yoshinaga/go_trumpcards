@@ -1,6 +1,9 @@
 package domain
 
-import "math/rand"
+import (
+	"math/rand"
+	"sort"
+)
 
 // テキサスホールデムプレイヤー数
 const HoldemPlayerCnt = 4
@@ -543,7 +546,6 @@ func (h *Holdem) calculateSidePots() {
 
 	// 各プレイヤーの合計投入額を計算
 	contribs := make([]playerContrib, 0)
-	totalPot := 0
 	for i, p := range h.players {
 		// 投入額 = ハンド開始時チップ - 現在のチップ
 		invested := h.startingChips[i] - p.GetChips()
@@ -551,7 +553,6 @@ func (h *Holdem) calculateSidePots() {
 			invested = 0
 		}
 		contribs = append(contribs, playerContrib{idx: i, amount: invested})
-		totalPot += invested
 	}
 
 	// オールインプレイヤーがいない場合はシンプルなメインポット
@@ -586,13 +587,9 @@ func (h *Holdem) calculateSidePots() {
 		}
 	}
 	// 投入額の昇順でソート
-	for i := 0; i < len(levels)-1; i++ {
-		for j := i + 1; j < len(levels); j++ {
-			if levels[j].amount < levels[i].amount {
-				levels[i], levels[j] = levels[j], levels[i]
-			}
-		}
-	}
+	sort.Slice(levels, func(i, j int) bool {
+		return levels[i].amount < levels[j].amount
+	})
 
 	h.sidePots = make([]HoldemSidePot, 0)
 	prevLevel := 0
