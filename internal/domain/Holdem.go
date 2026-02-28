@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -79,6 +80,7 @@ type Holdem struct {
 	roundResults   []HoldemResult
 	cpuActions     []HoldemCpuAction
 	startingChips  []int
+	lastCpuError   error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 }
 
 // NewHoldem コンストラクタ
@@ -148,8 +150,10 @@ func (h *Holdem) Reset() {
 	// UTG (ビッグブラインドの次) から開始
 	h.currentTurn = (h.dealerIdx + 3) % len(h.players)
 
-	// CPUプリフロップアクション実行
-	h.runCpuActions()
+	// CPUプリフロップアクション実行 (Reset時のエラーは回復不能なため panic)
+	if err := h.runCpuActions(); err != nil {
+		panic(fmt.Sprintf("runCpuActions failed during Reset: %v", err))
+	}
 }
 
 // postBlinds ブラインド投入
@@ -204,8 +208,7 @@ func (h *Holdem) PlayerAction(action, amount int) error {
 	}
 
 	h.advanceTurn()
-	h.runCpuActions()
-	return nil
+	return h.runCpuActions()
 }
 
 // executeAction 指定プレイヤーのアクション実行
@@ -690,9 +693,9 @@ func (h *Holdem) getHandName(rank int) string {
 }
 
 // runCpuActions CPUプレイヤーのアクションを実行
-func (h *Holdem) runCpuActions() {
+func (h *Holdem) runCpuActions() error {
 	if h.gameEndFlag {
-		return
+		return nil
 	}
 	// maxIterationsはCPUアクションの無限ループを防ぐための安全策。
 	// 1ラウンドのアクションは最大でも「ベット→レイズ→リレイズ→キャップ」の4レイズ + 各プレイヤーのコールとなり、
@@ -702,10 +705,10 @@ func (h *Holdem) runCpuActions() {
 	for !h.gameEndFlag && h.phase >= HoldemPhasePreFlop && h.phase <= HoldemPhaseRiver {
 		iterations++
 		if iterations > maxIterations {
-			panic("maxIterations reached in runCpuActions, possible infinite loop")
+			return fmt.Errorf("maxIterations reached in runCpuActions, possible infinite loop")
 		}
 		if h.players[h.currentTurn].GetIsHuman() {
-			return
+			return nil
 		}
 		if h.players[h.currentTurn].GetFolded() || h.players[h.currentTurn].GetAllIn() {
 			h.advanceTurn()
@@ -719,7 +722,9 @@ func (h *Holdem) runCpuActions() {
 		})
 		err := h.executeAction(h.currentTurn, action, amount)
 		if err != nil {
-			// アクションが失敗した場合、フォールバック: チェックまたはフォールド
+			// CPUの決定したアクションが失敗した場合 (例: チップ不足でレイズ不可)、
+			// エラーを記録し、フォールバック: コール額がある場合はフォールド、なければチェック。
+			h.lastCpuError = fmt.Errorf("CPU player %d action %d failed: %w", h.currentTurn, action, err)
 			callAmt := h.lastBet - h.players[h.currentTurn].GetCurrentBet()
 			if callAmt > 0 {
 				h.executeAction(h.currentTurn, HoldemActionFold, 0)
@@ -728,10 +733,11 @@ func (h *Holdem) runCpuActions() {
 			}
 		}
 		if h.gameEndFlag {
-			return
+			return nil
 		}
 		h.advanceTurn()
 	}
+	return nil
 }
 
 // cpuDecide CPUプレイヤーの意思決定
@@ -1030,6 +1036,9 @@ func (h *Holdem) GetRoundResults() []HoldemResult { return h.roundResults }
 
 // GetCpuActions CPU行動記録取得
 func (h *Holdem) GetCpuActions() []HoldemCpuAction { return h.cpuActions }
+
+// GetLastCpuError 最後のCPUアクションエラー取得 (テスト・デバッグ用)
+func (h *Holdem) GetLastCpuError() error { return h.lastCpuError }
 
 // GetConfig 設定取得
 func (h *Holdem) GetConfig() HoldemConfig { return h.config }
