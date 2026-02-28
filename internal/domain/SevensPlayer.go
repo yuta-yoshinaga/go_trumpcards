@@ -58,8 +58,16 @@ func (p *SevensPlayer) IncrPassesUsed() { p.passesUsed++ }
 // GetMaxPasses 最大パス回数取得
 func (p *SevensPlayer) GetMaxPasses() int { return p.maxPasses }
 
-// CanPass パス可能かどうか (使用済みパス < 最大パス)
-func (p *SevensPlayer) CanPass() bool { return p.passesUsed < p.maxPasses }
+// SetMaxPasses 最大パス回数設定 (0 = 無制限)
+func (p *SevensPlayer) SetMaxPasses(n int) { p.maxPasses = n }
+
+// CanPass パス可能かどうか (maxPasses == 0 は無制限, それ以外は使用済みパス < 最大パス)
+func (p *SevensPlayer) CanPass() bool {
+	if p.maxPasses == 0 {
+		return true
+	}
+	return p.passesUsed < p.maxPasses
+}
 
 // ResetPasses パス回数リセット
 func (p *SevensPlayer) ResetPasses() {

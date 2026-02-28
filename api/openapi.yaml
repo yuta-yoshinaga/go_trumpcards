@@ -522,7 +522,7 @@ paths:
         `tableMinVals` and `tableMaxVals` — arrays of 5 integers indexed by suit
         (0 = unused, 1 = SPADE, 2 = CLOVER, 3 = HEART, 4 = DIAMOND).
 
-        Players have a maximum of 3 passes (`maxPasses`).
+        Players have a configurable number of passes (`maxPasses`, default 5, 0 = unlimited).
 
         | Command | Aliases | Description |
         |---------|---------|-------------|
@@ -1614,6 +1614,13 @@ components:
           description: |
             Enable CPU strategic card selection. Only used with `reset` command.
           example: false
+        maxPasses:
+          type: integer
+          description: |
+            Maximum number of passes per player (0 = unlimited). Only used with `reset` command.
+          minimum: 0
+          default: 5
+          example: 5
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1695,6 +1702,12 @@ components:
           description: |
             Target value for joker placement (0 for non-joker plays).
           example: 0
+        forcedPass:
+          type: boolean
+          description: |
+            Whether the pass was forced (player had no playable cards).
+            Only meaningful when `playedCard` is null.
+          example: false
 
     SevensConfig:
       type: object
@@ -1703,6 +1716,7 @@ components:
         - tunnelEnabled
         - jokerCount
         - cpuStrategy
+        - maxPasses
       properties:
         tunnelEnabled:
           type: boolean
@@ -1716,6 +1730,10 @@ components:
           type: boolean
           description: Whether CPU uses strategic card selection
           example: false
+        maxPasses:
+          type: integer
+          description: Maximum number of passes per player (0 = unlimited)
+          example: 5
 
     SevensResponse:
       type: object

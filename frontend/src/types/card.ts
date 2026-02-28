@@ -166,12 +166,14 @@ export interface SevensAction {
   playedCard: Card | null; // null = pass
   targetSuit: number;
   targetValue: number;
+  forcedPass: boolean;
 }
 
 export interface SevensConfig {
   tunnelEnabled: boolean;
   jokerCount: number;
   cpuStrategy: boolean;
+  maxPasses: number;
 }
 
 export interface SevensResponse {

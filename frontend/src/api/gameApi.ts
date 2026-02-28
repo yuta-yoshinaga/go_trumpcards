@@ -81,6 +81,7 @@ export interface SevensConfigInput {
   tunnelEnabled?: boolean;
   jokerCount?: number;
   cpuStrategy?: boolean;
+  maxPasses?: number;
 }
 
 export const sevensApi = {

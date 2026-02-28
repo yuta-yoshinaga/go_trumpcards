@@ -349,4 +349,99 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "HEART 8")
 		assert.Contains(t, result, "を出しました")
 	})
+
+	t.Run("success Output unlimited pass display", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{MaxPasses: 0}
+		s := domain.NewSevens(tc, players, cfg)
+		for _, p := range players {
+			p.SetMaxPasses(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "パス: 0/∞")
+	})
+
+	t.Run("success Output custom pass count display", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{MaxPasses: 3}
+		s := domain.NewSevens(tc, players, cfg)
+		for _, p := range players {
+			p.SetMaxPasses(3)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "パス: 0/3")
+	})
+
+	t.Run("success Output rule header with unlimited passes", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{MaxPasses: 0}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[パス無制限]")
+	})
+
+	t.Run("success Output rule header with custom passes", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{MaxPasses: 3}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[パス3回]")
+	})
+
+	t.Run("success Output forced pass annotation on human action", func(t *testing.T) {
+		s, _ := setupSevensCuiTest()
+		s.SetHumanAction(&domain.SevensCpuAction{
+			PlayerIdx:  0,
+			PlayedCard: nil,
+			ForcedPass: true,
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "パスしました (出せるカードなし)")
+	})
+
+	t.Run("success Output forced pass annotation on CPU action", func(t *testing.T) {
+		s, _ := setupSevensCuiTest()
+		s.SetCpuActions([]*domain.SevensCpuAction{
+			{
+				PlayerIdx:  1,
+				PlayedCard: nil,
+				ForcedPass: true,
+			},
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "[CPUの行動]")
+		assert.Contains(t, result, "パスしました (出せるカードなし)")
+	})
+
+	t.Run("success Output non-forced pass does not show forced annotation", func(t *testing.T) {
+		s, _ := setupSevensCuiTest()
+		s.SetHumanAction(&domain.SevensCpuAction{
+			PlayerIdx:  0,
+			PlayedCard: nil,
+			ForcedPass: false,
+		})
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "パスしました")
+		assert.NotContains(t, result, "(出せるカードなし)")
+	})
 }

@@ -617,7 +617,7 @@ describe('gameApi', () => {
         tableMinVals: [0, 7, 7, 7, 7],
         tableMaxVals: [0, 7, 7, 7, 7],
         tablePlaced: [0, 128, 128, 128, 128],
-        config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
+        config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 },
         gameEndFlag: false,
         cpuActions: [],
         humanAction: null,
@@ -643,7 +643,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 6, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 192, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 }, targetSuit: 0, targetValue: 0 },
@@ -667,7 +667,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0 },
@@ -691,7 +691,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 6, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 192, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 1, cpuStrategy: false },
+          config: { tunnelEnabled: false, jokerCount: 1, cpuStrategy: false, maxPasses: 5 },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: {
@@ -725,7 +725,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true },
+          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5 },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: null,
@@ -749,6 +749,39 @@ describe('gameApi', () => {
       });
     });
 
+    it('sends maxPasses in config fields when config is provided', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableMinVals: [0, 7, 7, 7, 7],
+          tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 128, 128, 128, 128],
+          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3 },
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await sevensApi.exec('reset', -1, 0, 0, { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3 });
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          index: -1,
+          jokerTargetSuit: 0,
+          jokerTargetValue: 0,
+          sessionId,
+          tunnelEnabled: true,
+          jokerCount: 2,
+          cpuStrategy: true,
+          maxPasses: 3,
+        }),
+      });
+    });
+
     it('does not send config fields when config is omitted', async () => {
       mockFetch.mockReturnValue(
         makeResponse({
@@ -757,7 +790,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: null,

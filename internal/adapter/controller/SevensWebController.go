@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -18,6 +19,7 @@ type SevensWebInput struct {
 	TunnelEnabled    *bool  `json:"tunnelEnabled,omitempty"` // トンネルルール (reset時のみ)
 	JokerCount       *int   `json:"jokerCount,omitempty"`    // ジョーカー枚数 (reset時のみ)
 	CpuStrategy      *bool  `json:"cpuStrategy,omitempty"`   // CPU戦略 (reset時のみ)
+	MaxPasses        *int   `json:"maxPasses,omitempty"`     // 最大パス回数 (reset時のみ, 0=無制限)
 	SessionId        string `json:"sessionId"`
 }
 
@@ -45,6 +47,7 @@ type SevensWebOutputAction struct {
 	PlayedCard  *SevensWebOutputCard `json:"playedCard"` // nil = パス
 	TargetSuit  int                  `json:"targetSuit"`
 	TargetValue int                  `json:"targetValue"`
+	ForcedPass  bool                 `json:"forcedPass"`
 }
 
 // SevensWebOutputConfig 7並べゲーム設定出力
@@ -52,6 +55,7 @@ type SevensWebOutputConfig struct {
 	TunnelEnabled bool `json:"tunnelEnabled"`
 	JokerCount    int  `json:"jokerCount"`
 	CpuStrategy   bool `json:"cpuStrategy"`
+	MaxPasses     int  `json:"maxPasses"`
 }
 
 // SevensWebOutput 7並べWebアウトプット
@@ -114,8 +118,8 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	errOutput := swc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
-		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil {
-			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), derefInt(param.JokerCount), derefBool(param.CpuStrategy)), errOutput)
+		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil {
+			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), derefInt(param.JokerCount), derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses)), errOutput)
 		} else {
 			swc.writePresenterResponse(w, sgi.Reset(), errOutput)
 		}
@@ -141,6 +145,13 @@ func derefBool(p *bool) bool {
 func derefInt(p *int) int {
 	if p == nil {
 		return 0
+	}
+	return *p
+}
+
+func derefIntDefault(p *int, defaultVal int) int {
+	if p == nil {
+		return defaultVal
 	}
 	return *p
 }

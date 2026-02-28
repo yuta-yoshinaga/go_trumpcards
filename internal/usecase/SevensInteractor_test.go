@@ -47,22 +47,37 @@ func TestSevensInteractor_Method(t *testing.T) {
 	})
 
 	t.Run("success ResetWithConfig all enabled", func(t *testing.T) {
-		result := tsi.ResetWithConfig(true, 2, true)
+		result := tsi.ResetWithConfig(true, 2, true, domain.SevensMaxPasses)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig default values", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false)
+		result := tsi.ResetWithConfig(false, 0, false, domain.SevensMaxPasses)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig jokerCount clamped to 0", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, -5, false)
+		result := tsi.ResetWithConfig(false, -5, false, domain.SevensMaxPasses)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig jokerCount clamped to 2", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 10, false)
+		result := tsi.ResetWithConfig(false, 10, false, domain.SevensMaxPasses)
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("success ResetWithConfig maxPasses 0 (unlimited)", func(t *testing.T) {
+		result := tsi.ResetWithConfig(false, 0, false, 0)
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("success ResetWithConfig maxPasses 3", func(t *testing.T) {
+		result := tsi.ResetWithConfig(false, 0, false, 3)
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("success ResetWithConfig maxPasses negative clamped to 0", func(t *testing.T) {
+		result := tsi.ResetWithConfig(false, 0, false, -1)
 		assert.Equal(t, mockOutput, result)
 	})
 

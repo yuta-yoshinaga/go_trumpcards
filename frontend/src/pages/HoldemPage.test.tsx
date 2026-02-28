@@ -736,7 +736,7 @@ describe('HoldemPage', () => {
   it('sends updated bet amount when raise is clicked after changing input', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     render(<HoldemPage />);
-    await waitFor(() => expect(screen.getByLabelText('ベット額:')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ' })).not.toBeDisabled());
 
     fireEvent.change(screen.getByLabelText('ベット額:'), { target: { value: '100' } });
 
@@ -749,7 +749,7 @@ describe('HoldemPage', () => {
   it('sends updated bet amount when bet is clicked after changing input', async () => {
     mockExec.mockResolvedValue(preFlopState);
     render(<HoldemPage />);
-    await waitFor(() => expect(screen.getByLabelText('ベット額:')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
     fireEvent.change(screen.getByLabelText('ベット額:'), { target: { value: '60' } });
 

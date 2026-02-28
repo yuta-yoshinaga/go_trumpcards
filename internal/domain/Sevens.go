@@ -18,6 +18,7 @@ type SevensCpuAction struct {
 	PlayedCard  *Card // 出したカード (nil = パスまたは失格)
 	TargetSuit  int   // ジョーカー配置先スート (ジョーカー以外は0)
 	TargetValue int   // ジョーカー配置先値 (ジョーカー以外は0)
+	ForcedPass  bool  // true = 出せるカードがなくパスした
 }
 
 // Sevens 7並べゲームクラス
@@ -69,6 +70,7 @@ func (s *Sevens) Reset() {
 		p.SetIsEliminated(false)
 		p.SetRank(-1)
 		p.ResetPasses()
+		p.SetMaxPasses(s.config.MaxPasses)
 	}
 
 	// プレイ順をランダムにする
@@ -310,7 +312,11 @@ func (s *Sevens) PlayerPlay(idx int) error {
 			return ErrCannotPass
 		}
 		player.IncrPassesUsed()
-		s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: nil}
+		s.humanAction = &SevensCpuAction{
+			PlayerIdx:  s.currentTurn,
+			PlayedCard: nil,
+			ForcedPass: !s.hasPlayableCard(player),
+		}
 		s.advanceTurn()
 		return nil
 	}
@@ -456,16 +462,54 @@ func (s *Sevens) findPlayableStrategic(player *SevensPlayer) (int, int, int) {
 	}
 
 	// 全ての手がマイナス評価で、パスの余裕がある場合はパスを選択
-	if best.score < 0 && player.CanPass() && player.GetPassesUsed() < player.GetMaxPasses()-1 {
+	if best.score < 0 && (player.GetMaxPasses() == 0 || player.GetPassesUsed() < player.GetMaxPasses()-1) {
 		return -1, 0, 0
 	}
 
 	return best.cardIdx, best.targetSuit, best.targetValue
 }
 
+// countOpponentsBlocked 指定方向にブロックされている相手の数をカウント
+// direction: -1 = 下方向, +1 = 上方向
+func (s *Sevens) countOpponentsBlocked(self *SevensPlayer, suit, fromValue, direction int) int {
+	count := 0
+	for _, p := range s.players {
+		if p == self || p.GetIsFinished() {
+			continue
+		}
+		// fromValue から direction 方向に未配置の値を走査し、相手がその値のカードを持っていたらカウント
+		v := fromValue
+		for {
+			v += direction
+			if s.config.TunnelEnabled {
+				if v < 1 {
+					v = 13
+				} else if v > 13 {
+					v = 1
+				}
+			}
+			if v < 1 || v > 13 {
+				break
+			}
+			if s.isPositionPlaced(suit, v) {
+				break
+			}
+			if s.playerHasCard(p, suit, v) {
+				count++
+				break
+			}
+			// トンネルルールで1周して戻った場合は終了
+			if s.config.TunnelEnabled && v == fromValue {
+				break
+			}
+		}
+	}
+	return count
+}
+
 // evaluatePlay 通常カードの1手を評価
 // +2: 自分が次の延長カードを持っている
-// -1: 自分が次の延長カードを持っていない (相手に道を開く)
+// -(1+blockedOpponents): 自分が持っていない場合、ブロックしている相手が多いほど重いペナルティ
 func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 	score := 0
 	suit := card.GetDesign()
@@ -480,7 +524,7 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 		if s.playerHasCard(player, suit, nextLow) {
 			score += 2
 		} else {
-			score--
+			score -= 1 + s.countOpponentsBlocked(player, suit, value, -1)
 		}
 	}
 
@@ -493,7 +537,7 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 		if s.playerHasCard(player, suit, nextHigh) {
 			score += 2
 		} else {
-			score--
+			score -= 1 + s.countOpponentsBlocked(player, suit, value, +1)
 		}
 	}
 
@@ -585,7 +629,11 @@ func (s *Sevens) CpuPlay() {
 	} else if player.CanPass() {
 		// パス
 		player.IncrPassesUsed()
-		action := &SevensCpuAction{PlayerIdx: playerIdx, PlayedCard: nil}
+		action := &SevensCpuAction{
+			PlayerIdx:  playerIdx,
+			PlayedCard: nil,
+			ForcedPass: !s.hasPlayableCard(player),
+		}
 		s.cpuActions = append(s.cpuActions, action)
 		s.advanceTurn()
 	} else {
@@ -625,7 +673,7 @@ func (s *Sevens) eliminatePlayer(idx int) {
 // (出せるカードもパスも不可 → 失格)
 func (s *Sevens) AutoHandleNoOption() {
 	playerIdx := s.currentTurn
-	action := &SevensCpuAction{PlayerIdx: playerIdx, PlayedCard: nil}
+	action := &SevensCpuAction{PlayerIdx: playerIdx, PlayedCard: nil, ForcedPass: true}
 	if s.players[playerIdx].GetIsHuman() {
 		s.humanAction = action
 		s.cpuActions = nil

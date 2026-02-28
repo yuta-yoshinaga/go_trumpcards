@@ -40,7 +40,7 @@ func (cui *SevensCui) Exec() {
 	for {
 		fmt.Println("コマンドを入力してください。")
 		fmt.Println("q・・・quit")
-		fmt.Println("r [tunnel] [joker=N] [strategy]・・・reset (オプションルール設定)")
+		fmt.Println("r [tunnel] [joker=N] [strategy] [passes=N]・・・reset (オプションルール設定)")
 		fmt.Println("p [インデックス]・・・カードを出す (インデックスなしでパス)")
 		scanner.Scan()
 		res := cui.sgc.Exec(scanner.Text())
