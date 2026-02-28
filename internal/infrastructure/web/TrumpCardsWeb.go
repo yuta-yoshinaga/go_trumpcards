@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -128,7 +129,14 @@ func (web *TrumpCardsWeb) Exec() {
 		mux.Handle(path, apiHandler)
 	}
 	mux.Handle("/", http.FileServer(http.Dir("public")))
-	log.Fatal(http.ListenAndServe(getListenPort(), mux))
+	srv := &http.Server{
+		Addr:         getListenPort(),
+		Handler:      mux,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+	log.Fatal(srv.ListenAndServe())
 }
 
 func getListenPort() string {
