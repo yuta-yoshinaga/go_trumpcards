@@ -50,6 +50,12 @@ export function HoldemPage() {
     exec('reset');
   }, [exec]);
 
+  useEffect(() => {
+    if (state?.minRaise) {
+      setBetAmount(state.minRaise);
+    }
+  }, [state?.minRaise]);
+
   const phase = state?.phase ?? HoldemPhase.INIT;
   const isActive = phase >= HoldemPhase.PRE_FLOP && phase <= HoldemPhase.RIVER;
   const isShowdown = phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END;
