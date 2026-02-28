@@ -6,8 +6,8 @@ import (
 	"os"
 )
 
-// readInput reads a line from the scanner, handling EOF and errors.
-// It returns the input text and a boolean indicating if the program should exit.
+// readInput はスキャナから1行を読み込み、EOFとエラーを処理します。
+// 入力テキストと、プログラムを終了すべきかを示すブール値を返します。
 func readInput(scanner *bufio.Scanner) (text string, exit bool) {
 	if !scanner.Scan() {
 		if err := scanner.Err(); err != nil {
