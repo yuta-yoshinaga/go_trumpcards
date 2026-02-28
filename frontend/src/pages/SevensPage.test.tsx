@@ -328,9 +328,8 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
     expect(screen.getByLabelText('トンネル')).not.toBeChecked();
     expect(screen.getByLabelText('CPU戦略')).not.toBeChecked();
-    const comboboxes = screen.getAllByRole('combobox');
-    expect(comboboxes[0]).toHaveValue('0');
-    expect(comboboxes[1]).toHaveValue('5');
+    expect(screen.getByRole('combobox', { name: 'ジョーカー' })).toHaveValue('0');
+    expect(screen.getByRole('combobox', { name: 'パス回数' })).toHaveValue('5');
   });
 
   it('sends config to API when reset button is clicked with config toggled', async () => {
@@ -338,8 +337,7 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
 
     fireEvent.click(screen.getByLabelText('トンネル'));
-    const comboboxes = screen.getAllByRole('combobox');
-    fireEvent.change(comboboxes[0], { target: { value: '1' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'ジョーカー' }), { target: { value: '1' } });
     fireEvent.click(screen.getByLabelText('CPU戦略'));
 
     mockExec.mockClear();
@@ -368,8 +366,7 @@ describe('SevensPage', () => {
     await waitFor(() => {
       expect(screen.getByLabelText('トンネル')).toBeChecked();
       expect(screen.getByLabelText('CPU戦略')).toBeChecked();
-      const comboboxes = screen.getAllByRole('combobox');
-      expect(comboboxes[0]).toHaveValue('2');
+      expect(screen.getByRole('combobox', { name: 'ジョーカー' })).toHaveValue('2');
     });
   });
 
@@ -571,8 +568,7 @@ describe('SevensPage', () => {
   it('pass count dropdown renders with correct options', async () => {
     render(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
-    const comboboxes = screen.getAllByRole('combobox');
-    const passSelect = comboboxes[1];
+    const passSelect = screen.getByRole('combobox', { name: 'パス回数' });
     const options = Array.from(passSelect.querySelectorAll('option'));
     expect(options.map((o) => o.textContent)).toEqual(['3', '5', '10', '無制限']);
     expect(options.map((o) => o.getAttribute('value'))).toEqual(['3', '5', '10', '0']);
@@ -582,8 +578,7 @@ describe('SevensPage', () => {
     render(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
 
-    const comboboxes = screen.getAllByRole('combobox');
-    fireEvent.change(comboboxes[1], { target: { value: '3' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'パス回数' }), { target: { value: '3' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue({

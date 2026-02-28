@@ -323,7 +323,9 @@ export function SevensPage() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const canPass =
-    isHumanTurn && state.players.some((p) => p.isHuman && (p.maxPasses === 0 || p.passesUsed < p.maxPasses));
+    isHumanTurn &&
+    humanPlayer != null &&
+    (humanPlayer.maxPasses === 0 || humanPlayer.passesUsed < humanPlayer.maxPasses);
 
   const handleCardPlay = (idx: number) => {
     const card = humanPlayer?.cards?.[idx];
@@ -376,7 +378,7 @@ export function SevensPage() {
         {/* Human action log */}
         {state.humanAction && (
           <div
-            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass && !state.humanAction.playedCard ? 'bg-red-900/50 text-[#fca] border border-red-500/50' : 'bg-black/40 text-[#cfc]'}`}
+            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-[#fca] border border-red-500/50' : 'bg-black/40 text-[#cfc]'}`}
           >
             {actionDesc(state.players, state.humanAction)}
           </div>
@@ -387,10 +389,7 @@ export function SevensPage() {
           <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
             <span className="text-[#ccc]">[CPUの行動]</span>
             {state.cpuActions.map((a, i) => (
-              <div
-                key={`cpu-action-${a.playerIdx}-${i}`}
-                className={a.forcedPass && !a.playedCard ? 'text-[#fca]' : 'text-[#ccc]'}
-              >
+              <div key={`cpu-action-${a.playerIdx}-${i}`} className={a.forcedPass ? 'text-[#fca]' : 'text-[#ccc]'}>
                 {actionDesc(state.players, a)}
               </div>
             ))}
@@ -434,6 +433,7 @@ export function SevensPage() {
           <label className="flex items-center gap-1 cursor-pointer">
             ジョーカー
             <select
+              aria-label="ジョーカー"
               value={cfgJokerCount}
               onChange={(e) => setCfgJokerCount(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -450,6 +450,7 @@ export function SevensPage() {
           <label className="flex items-center gap-1 cursor-pointer">
             パス回数
             <select
+              aria-label="パス回数"
               value={cfgMaxPasses}
               onChange={(e) => setCfgMaxPasses(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
