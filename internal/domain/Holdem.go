@@ -243,6 +243,9 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 		h.actedFlags[playerIdx] = true
 
 	case HoldemActionBet:
+		if h.raiseCount >= holdemMaxRaisesPerRound {
+			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
+		}
 		if h.lastBet > 0 {
 			return NewDomainError(ErrInvalidPlay, "Cannot bet when there is an outstanding bet. Use raise.")
 		}
@@ -265,6 +268,9 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 		}
 
 	case HoldemActionRaise:
+		if h.raiseCount >= holdemMaxRaisesPerRound {
+			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
+		}
 		diff := h.lastBet - p.GetCurrentBet()
 		if diff < 0 {
 			diff = 0
@@ -1063,6 +1069,9 @@ func (h *Holdem) SetLastBet(bet int) { h.lastBet = bet }
 
 // SetMinRaise 最小レイズ額設定（テスト用）
 func (h *Holdem) SetMinRaise(raise int) { h.minRaise = raise }
+
+// SetRaiseCount レイズ回数設定（テスト用）
+func (h *Holdem) SetRaiseCount(count int) { h.raiseCount = count }
 
 // SetRoundResults ラウンド結果設定（テスト用）
 func (h *Holdem) SetRoundResults(results []HoldemResult) { h.roundResults = results }

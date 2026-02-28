@@ -315,6 +315,38 @@ func TestHoldem_PlayerAction_Raise_ExactChips(t *testing.T) {
 	assert.True(t, h.players[0].GetAllIn())
 }
 
+func TestHoldem_PlayerAction_Raise_MaxRaisesReached(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.SetLastBet(20)
+	h.SetMinRaise(10)
+	h.SetRaiseCount(4) // holdemMaxRaisesPerRound = 4
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	err := h.PlayerAction(HoldemActionRaise, 10)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Maximum number of raises")
+}
+
+func TestHoldem_PlayerAction_Bet_MaxRaisesReached(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.SetLastBet(0)
+	h.SetMinRaise(10)
+	h.SetRaiseCount(4) // holdemMaxRaisesPerRound = 4
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	err := h.PlayerAction(HoldemActionBet, 20)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Maximum number of raises")
+}
+
 func TestHoldem_PlayerAction_AllIn(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseFlop)
 	h.SetCommunityCards([]*Card{

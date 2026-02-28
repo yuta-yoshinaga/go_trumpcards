@@ -181,8 +181,8 @@ describe('HoldemPage', () => {
     render(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('コミュニティカード')).toBeInTheDocument());
     const cardBacks = screen.getAllByAltText('card back');
-    // 5 community + 2 per CPU player (2 CPUs) = 5 + 4 = 9
-    // but we just verify at least 5 exist
+    // 5 community card placeholders + 2 cards for each of the 3 CPUs = 11 card backs expected
+    // but we just verify at least 5 exist for community cards
     expect(cardBacks.length).toBeGreaterThanOrEqual(5);
   });
 
@@ -282,7 +282,7 @@ describe('HoldemPage', () => {
     render(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     const cardBacks = screen.getAllByAltText('card back');
-    // 5 community + 2 per CPU * 2 CPUs = 5 + 4 = 9
+    // 5 community card placeholders + 2 cards for each of the 3 CPUs = 11 card backs expected
     expect(cardBacks.length).toBeGreaterThanOrEqual(4);
   });
 
