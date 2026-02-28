@@ -41,7 +41,9 @@ func (cui *OldMaidCui) Exec() {
 		fmt.Println("q・・・quit")
 		fmt.Println("r・・・reset")
 		fmt.Println("d・・・draw (カードを引く)")
-		scanner.Scan()
+		if !scanner.Scan() {
+			break
+		}
 		res := cui.omc.Exec(scanner.Text())
 		fmt.Println(res)
 		if res == "bye." {

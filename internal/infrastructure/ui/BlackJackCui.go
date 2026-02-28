@@ -41,7 +41,9 @@ func (cui *BlackJackCui) Exec() {
 		fmt.Println("sp・・・split")
 		fmt.Println("i・・・insurance")
 		fmt.Println("di・・・decline insurance")
-		scanner.Scan()
+		if !scanner.Scan() {
+			break
+		}
 		res := cui.bjc.Exec(scanner.Text())
 		fmt.Println(res)
 		if res == "bye." {
