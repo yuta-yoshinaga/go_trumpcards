@@ -20,7 +20,7 @@ func NewDaifugoWebPresenter() *DaifugoWebPresenter {
 func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	resObj := new(controller.DaifugoWebOutput)
 	resObj.Players = make([]*controller.DaifugoWebOutputPlayer, 0)
-	resObj.TableCards = make([]*controller.DaifugoWebOutputCard, 0)
+	resObj.TableCards = make([]*controller.WebOutputCard, 0)
 	resObj.CurrentTurn = dg.GetCurrentTurn()
 	resObj.LastPlayPlayerIdx = dg.GetLastPlayPlayerIdx()
 	resObj.GameEndFlag = dg.GetGameEndFlag()
@@ -63,14 +63,14 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		exObj := &controller.DaifugoWebOutputExchangeAction{
 			FromPlayerIdx: ex.FromPlayerIdx,
 			ToPlayerIdx:   ex.ToPlayerIdx,
-			Cards:         dwp.getCardObjs(ex.Cards),
+			Cards:         cardsToOutput(ex.Cards),
 		}
 		resObj.ExchangeActions = append(resObj.ExchangeActions, exObj)
 	}
 
 	// 場のカード
 	for _, c := range dg.GetTableCards() {
-		resObj.TableCards = append(resObj.TableCards, dwp.getCardObj(c))
+		resObj.TableCards = append(resObj.TableCards, cardToOutput(c))
 	}
 
 	// CPU行動履歴
@@ -78,7 +78,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	for _, action := range dg.GetCpuActions() {
 		a := &controller.DaifugoWebOutputAction{
 			PlayerIdx:   action.PlayerIdx,
-			PlayedCards: dwp.getCardObjs(action.PlayedCards),
+			PlayedCards: cardsToOutput(action.PlayedCards),
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
 	}
@@ -88,7 +88,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	if humanAction != nil {
 		resObj.HumanAction = &controller.DaifugoWebOutputAction{
 			PlayerIdx:   humanAction.PlayerIdx,
-			PlayedCards: dwp.getCardObjs(humanAction.PlayedCards),
+			PlayedCards: cardsToOutput(humanAction.PlayedCards),
 		}
 	}
 
@@ -104,10 +104,10 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		pObj.IsFinished = player.GetIsFinished()
 		pObj.Rank = player.GetRank()
 		pObj.CardCount = player.GetCardsSize()
-		pObj.Cards = make([]*controller.DaifugoWebOutputCard, 0)
+		pObj.Cards = make([]*controller.WebOutputCard, 0)
 		if player.GetIsHuman() {
 			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, dwp.getCardObj(player.GetCard(j)))
+				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
 			}
 		}
 		resObj.Players = append(resObj.Players, pObj)
@@ -159,27 +159,4 @@ func (dwp *DaifugoWebPresenter) getSuitName(suit int) string {
 	default:
 		return ""
 	}
-}
-
-// getCardObjs カードオブジェクトの配列取得 (nil → nil)
-func (dwp *DaifugoWebPresenter) getCardObjs(cards []*domain.Card) []*controller.DaifugoWebOutputCard {
-	if cards == nil {
-		return nil
-	}
-	result := make([]*controller.DaifugoWebOutputCard, len(cards))
-	for i, c := range cards {
-		result[i] = dwp.getCardObj(c)
-	}
-	return result
-}
-
-// getCardObj カード情報オブジェクト取得
-func (dwp *DaifugoWebPresenter) getCardObj(card *domain.Card) *controller.DaifugoWebOutputCard {
-	if card == nil {
-		return nil
-	}
-	res := new(controller.DaifugoWebOutputCard)
-	res.Design = cardDesignToString(card.GetDesign())
-	res.Value = card.GetValue()
-	return res
 }

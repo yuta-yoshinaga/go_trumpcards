@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
@@ -45,7 +44,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	for _, action := range s.GetCpuActions() {
 		a := &controller.SevensWebOutputAction{
 			PlayerIdx:   action.PlayerIdx,
-			PlayedCard:  swp.getCardObj(action.PlayedCard),
+			PlayedCard:  cardToOutput(action.PlayedCard),
 			TargetSuit:  action.TargetSuit,
 			TargetValue: action.TargetValue,
 			ForcedPass:  action.ForcedPass,
@@ -58,7 +57,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	if humanAction != nil {
 		resObj.HumanAction = &controller.SevensWebOutputAction{
 			PlayerIdx:   humanAction.PlayerIdx,
-			PlayedCard:  swp.getCardObj(humanAction.PlayedCard),
+			PlayedCard:  cardToOutput(humanAction.PlayedCard),
 			TargetSuit:  humanAction.TargetSuit,
 			TargetValue: humanAction.TargetValue,
 			ForcedPass:  humanAction.ForcedPass,
@@ -79,10 +78,10 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		pObj.CardCount = player.GetCardsSize()
 		pObj.PassesUsed = player.GetPassesUsed()
 		pObj.MaxPasses = player.GetMaxPasses()
-		pObj.Cards = make([]*controller.SevensWebOutputCard, 0)
+		pObj.Cards = make([]*controller.WebOutputCard, 0)
 		if player.GetIsHuman() {
 			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, swp.getCardObj(player.GetCard(j)))
+				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
 			}
 		}
 		resObj.Players = append(resObj.Players, pObj)
@@ -123,15 +122,4 @@ func (swp *SevensWebPresenter) buildResultMessage(s interfaces.SevensGame) strin
 		msg += fmt.Sprintf("%s:%d位 ", name, rank)
 	}
 	return msg
-}
-
-// getCardObj カード情報オブジェクト取得 (nil → nil)
-func (swp *SevensWebPresenter) getCardObj(card *domain.Card) *controller.SevensWebOutputCard {
-	if card == nil {
-		return nil
-	}
-	res := new(controller.SevensWebOutputCard)
-	res.Design = cardDesignToString(card.GetDesign())
-	res.Value = card.GetValue()
-	return res
 }

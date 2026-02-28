@@ -22,19 +22,13 @@ type DoubtWebInput struct {
 	CpuMemoryLevel *int   `json:"cpuMemoryLevel,omitempty"`
 }
 
-// DoubtWebOutputCard ダウトWebアウトプットカード
-type DoubtWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
 type DoubtWebOutputPlayer struct {
-	ID         int                   `json:"id"`
-	IsHuman    bool                  `json:"isHuman"`
-	IsFinished bool                  `json:"isFinished"`
-	CardCount  int                   `json:"cardCount"`
-	Cards      []*DoubtWebOutputCard `json:"cards"`
+	ID         int              `json:"id"`
+	IsHuman    bool             `json:"isHuman"`
+	IsFinished bool             `json:"isFinished"`
+	CardCount  int              `json:"cardCount"`
+	Cards      []*WebOutputCard `json:"cards"`
 }
 
 // DoubtWebOutputAction ダウトのプレイヤー行動記録
@@ -47,12 +41,12 @@ type DoubtWebOutputAction struct {
 
 // DoubtWebOutputDoubtResult ダウト解決結果
 type DoubtWebOutputDoubtResult struct {
-	DoubterIdx    int                   `json:"doubterIdx"`
-	CardPlayerIdx int                   `json:"cardPlayerIdx"`
-	WasLying      bool                  `json:"wasLying"`
-	LoserIdx      int                   `json:"loserIdx"`
-	CardCount     int                   `json:"cardCount"`
-	RevealedCards []*DoubtWebOutputCard `json:"revealedCards"`
+	DoubterIdx    int              `json:"doubterIdx"`
+	CardPlayerIdx int              `json:"cardPlayerIdx"`
+	WasLying      bool             `json:"wasLying"`
+	LoserIdx      int              `json:"loserIdx"`
+	CardCount     int              `json:"cardCount"`
+	RevealedCards []*WebOutputCard `json:"revealedCards"`
 }
 
 // DoubtWebOutput ダウトWebアウトプット

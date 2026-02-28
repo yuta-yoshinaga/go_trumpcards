@@ -33,33 +33,27 @@ type DaifugoWebInput struct {
 	Config    *DaifugoWebInputConfig `json:"config"` // リセット時のローカルルール設定 (省略可)
 }
 
-// DaifugoWebOutputCard 大富豪Webアウトプットカード
-type DaifugoWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // DaifugoWebOutputPlayer 大富豪Webアウトプットプレイヤー
 type DaifugoWebOutputPlayer struct {
-	ID         int                     `json:"id"`
-	IsHuman    bool                    `json:"isHuman"`
-	IsFinished bool                    `json:"isFinished"`
-	Rank       int                     `json:"rank"`
-	CardCount  int                     `json:"cardCount"`
-	Cards      []*DaifugoWebOutputCard `json:"cards"`
+	ID         int              `json:"id"`
+	IsHuman    bool             `json:"isHuman"`
+	IsFinished bool             `json:"isFinished"`
+	Rank       int              `json:"rank"`
+	CardCount  int              `json:"cardCount"`
+	Cards      []*WebOutputCard `json:"cards"`
 }
 
 // DaifugoWebOutputAction 大富豪のプレイヤー行動記録
 type DaifugoWebOutputAction struct {
-	PlayerIdx   int                     `json:"playerIdx"`
-	PlayedCards []*DaifugoWebOutputCard `json:"playedCards"` // nil = パス
+	PlayerIdx   int              `json:"playerIdx"`
+	PlayedCards []*WebOutputCard `json:"playedCards"` // nil = パス
 }
 
 // DaifugoWebOutputExchangeAction カード交換記録
 type DaifugoWebOutputExchangeAction struct {
-	FromPlayerIdx int                     `json:"fromPlayerIdx"`
-	ToPlayerIdx   int                     `json:"toPlayerIdx"`
-	Cards         []*DaifugoWebOutputCard `json:"cards"`
+	FromPlayerIdx int              `json:"fromPlayerIdx"`
+	ToPlayerIdx   int              `json:"toPlayerIdx"`
+	Cards         []*WebOutputCard `json:"cards"`
 }
 
 // DaifugoWebOutputConfig ローカルルール設定
@@ -81,7 +75,7 @@ type DaifugoWebOutputConfig struct {
 type DaifugoWebOutput struct {
 	Players             []*DaifugoWebOutputPlayer         `json:"players"`
 	CurrentTurn         int                               `json:"currentTurn"`
-	TableCards          []*DaifugoWebOutputCard           `json:"tableCards"`
+	TableCards          []*WebOutputCard                  `json:"tableCards"`
 	LastPlayPlayerIdx   int                               `json:"lastPlayPlayerIdx"`
 	GameEndFlag         bool                              `json:"gameEndFlag"`
 	RevolutionActive    bool                              `json:"revolutionActive"`
@@ -185,7 +179,7 @@ func convertWebInputConfig(c DaifugoWebInputConfig) domain.DaifugoConfig {
 func (dwc *DaifugoWebController) newDefaultOutput(msg string) *DaifugoWebOutput {
 	return &DaifugoWebOutput{
 		Players:             make([]*DaifugoWebOutputPlayer, 0),
-		TableCards:          make([]*DaifugoWebOutputCard, 0),
+		TableCards:          make([]*WebOutputCard, 0),
 		CpuActions:          make([]*DaifugoWebOutputAction, 0),
 		ExchangeActions:     make([]*DaifugoWebOutputExchangeAction, 0),
 		Message:             msg,

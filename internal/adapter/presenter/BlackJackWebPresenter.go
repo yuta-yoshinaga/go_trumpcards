@@ -21,15 +21,15 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	// dealer
 	dealer := bj.GetDealer()
 	resObj.Dealer = new(controller.BlackJackWebOutputPlayer)
-	resObj.Dealer.Cards = make([]*controller.BlackJackWebOutputCard, 0)
+	resObj.Dealer.Cards = make([]*controller.WebOutputCard, 0)
 	resObj.Dealer.Chips = dealer.GetChips()
 	if bj.GetGameEndFlag() {
 		resObj.Dealer.Score = dealer.GetScore()
 		for i := 0; i < dealer.GetCardsSize(); i++ {
-			resObj.Dealer.Cards = append(resObj.Dealer.Cards, bjp.GetCardObj(dealer.GetCard(i)))
+			resObj.Dealer.Cards = append(resObj.Dealer.Cards, cardToOutput(dealer.GetCard(i)))
 		}
 	} else if dealer.GetCardsSize() > 0 {
-		resObj.Dealer.Cards = append(resObj.Dealer.Cards, bjp.GetCardObj(dealer.GetCard(0)))
+		resObj.Dealer.Cards = append(resObj.Dealer.Cards, cardToOutput(dealer.GetCard(0)))
 	}
 	// player — chips only; score/cards are in hands (single source of truth)
 	player := bj.GetPlayer()
@@ -51,9 +51,9 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	for i, hand := range hands {
 		h := new(controller.BlackJackWebOutputHand)
 		h.Score = hand.GetScore()
-		h.Cards = make([]*controller.BlackJackWebOutputCard, 0)
+		h.Cards = make([]*controller.WebOutputCard, 0)
 		for j := 0; j < hand.GetCardsSize(); j++ {
-			h.Cards = append(h.Cards, bjp.GetCardObj(hand.GetCard(j)))
+			h.Cards = append(h.Cards, cardToOutput(hand.GetCard(j)))
 		}
 		h.Bet = hand.GetBet()
 		h.Stood = hand.IsStood()
@@ -84,12 +84,4 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		return `{"error":"internal server error"}`
 	}
 	return string(res)
-}
-
-// GetCardObj カード情報取得
-func (bjp *BlackJackWebPresenter) GetCardObj(card *domain.Card) *controller.BlackJackWebOutputCard {
-	res := new(controller.BlackJackWebOutputCard)
-	res.Design = cardDesignToString(card.GetDesign())
-	res.Value = card.GetValue()
-	return res
 }

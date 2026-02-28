@@ -17,19 +17,13 @@ type PokerWebInput struct {
 	SessionId string `json:"sessionId"`
 }
 
-// PokerWebOutputCard ポーカーWebアウトプットカード
-type PokerWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
 type PokerWebOutputPlayer struct {
-	HandRank int                   `json:"handRank"`
-	HandName string                `json:"handName"`
-	Cards    []*PokerWebOutputCard `json:"cards"`
-	Chips    int                   `json:"chips"`
-	Bet      int                   `json:"bet"`
+	HandRank int              `json:"handRank"`
+	HandName string           `json:"handName"`
+	Cards    []*WebOutputCard `json:"cards"`
+	Chips    int              `json:"chips"`
+	Bet      int              `json:"bet"`
 }
 
 // PokerWebOutput ポーカーWebアウトプット

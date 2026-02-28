@@ -63,7 +63,7 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 			WasLying:      dr.WasLying,
 			LoserIdx:      dr.LoserIdx,
 			CardCount:     dr.CardCount,
-			RevealedCards: dwp.cardsToOutput(dr.RevealedCards),
+			RevealedCards: cardsToOutput(dr.RevealedCards),
 		}
 	}
 
@@ -75,11 +75,11 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 			IsHuman:    player.GetIsHuman(),
 			IsFinished: player.GetIsFinished(),
 			CardCount:  player.GetCardsSize(),
-			Cards:      make([]*controller.DoubtWebOutputCard, 0),
+			Cards:      make([]*controller.WebOutputCard, 0),
 		}
 		if player.GetIsHuman() {
 			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, dwp.cardToOutput(player.GetCard(j)))
+				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
 			}
 		}
 		resObj.Players = append(resObj.Players, pObj)
@@ -122,22 +122,5 @@ func (dwp *DoubtWebPresenter) actionToOutput(a *domain.DoubtCpuAction) *controll
 		PlayerIdx:    a.PlayerIdx,
 		ClaimedValue: a.ClaimedValue,
 		CardCount:    a.CardCount,
-	}
-}
-
-// cardsToOutput カードスライスを変換
-func (dwp *DoubtWebPresenter) cardsToOutput(cards []*domain.Card) []*controller.DoubtWebOutputCard {
-	result := make([]*controller.DoubtWebOutputCard, 0, len(cards))
-	for _, c := range cards {
-		result = append(result, dwp.cardToOutput(c))
-	}
-	return result
-}
-
-// cardToOutput カード情報オブジェクト取得
-func (dwp *DoubtWebPresenter) cardToOutput(card *domain.Card) *controller.DoubtWebOutputCard {
-	return &controller.DoubtWebOutputCard{
-		Design: cardDesignToString(card.GetDesign()),
-		Value:  card.GetValue(),
 	}
 }
