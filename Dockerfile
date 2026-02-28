@@ -54,6 +54,7 @@ COPY --from=frontend-builder --chown=appuser:appgroup /app/public ./public
 USER appuser
 
 # Use a non-privileged port; the server reads the PORT environment variable
+ENV APP_ENV=production
 ENV PORT=8080
 EXPOSE 8080
 

@@ -1,0 +1,4 @@
+ignore:
+  - "cmd/"
+  - "internal/infrastructure/"
+  - "**/*_mock.go"
