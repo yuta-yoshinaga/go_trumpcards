@@ -303,7 +303,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "あなたの勝ちです")
+		assert.Contains(t, out.Message, "You are the winner.")
 	})
 
 	t.Run("game end message - human loses", func(t *testing.T) {
@@ -319,7 +319,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "あなたの負けです")
+		assert.Contains(t, out.Message, "You lose.")
 	})
 
 	t.Run("game end message - human folded", func(t *testing.T) {
@@ -335,7 +335,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Contains(t, out.Message, "フォールドしました")
+		assert.Contains(t, out.Message, "You folded.")
 	})
 
 	t.Run("game end message - no results", func(t *testing.T) {
@@ -347,7 +347,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		var out controller.HoldemWebOutput
 		_ = json.Unmarshal([]byte(result), &out)
 
-		assert.Equal(t, "ゲーム終了", out.Message)
+		assert.Equal(t, "Game over.", out.Message)
 	})
 
 	t.Run("pot and dealer fields", func(t *testing.T) {

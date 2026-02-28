@@ -2052,6 +2052,8 @@ components:
           description: |
             Small blind amount (for the `reset` command).
             Defaults to 5 when omitted.
+            If only `smallBlind` is specified and it is >= the default `bigBlind`,
+            `bigBlind` is auto-adjusted to `smallBlind * 2`.
           minimum: 1
           example: 5
         bigBlind:
@@ -2059,6 +2061,8 @@ components:
           description: |
             Big blind amount (for the `reset` command).
             Defaults to 10 when omitted.
+            If only `bigBlind` is specified and the default `smallBlind` is >= `bigBlind`,
+            `smallBlind` is auto-adjusted to `bigBlind / 2` (minimum 1).
           minimum: 1
           example: 10
         sessionId:
@@ -2303,10 +2307,10 @@ components:
           description: |
             Game result or status message.  One of:
             - `""` — game in progress
-            - `"あなたの勝ちです！"` — player wins
-            - `"あなたの負けです。"` — player loses
-            - `"フォールドしました。"` — player folded
-            - `"ゲーム終了"` — game ended (no results)
+            - `"You are the winner."` — player wins
+            - `"You lose."` — player loses
+            - `"You folded."` — player folded
+            - `"Game over."` — game ended (no results)
             - `"Unsupported command."` — unknown command
             - `"bye."` — session ended by quit command
             - `"param error."` — invalid request

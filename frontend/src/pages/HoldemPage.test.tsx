@@ -141,7 +141,7 @@ const showdownState: HoldemResponse = {
 const endState: HoldemResponse = {
   ...showdownState,
   phase: 6,
-  message: 'ゲーム終了',
+  message: 'Game over.',
 };
 
 beforeEach(() => {

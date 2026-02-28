@@ -116,30 +116,29 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	return string(res)
 }
 
-// buildResultMessage ゲーム終了時のメッセージを構築
+// buildResultMessage builds the end-of-round message
 func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) string {
 	results := h.GetRoundResults()
 	if len(results) == 0 {
-		return "ゲーム終了"
+		return "Game over."
 	}
 
-	// 人間プレイヤーの獲得チップを確認
 	for _, r := range results {
 		if h.GetPlayer(r.PlayerIdx).GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "あなたの勝ちです！"
+				return "You are the winner."
 			}
 		}
 	}
 
-	// 人間が結果に含まれていない場合（フォールド済み）
+	// Human not in results (folded)
 	for i := 0; i < h.GetPlayerCnt(); i++ {
 		if h.GetPlayer(i).GetIsHuman() && h.GetPlayer(i).GetFolded() {
-			return "フォールドしました。"
+			return "You folded."
 		}
 	}
 
-	return "あなたの負けです。"
+	return "You lose."
 }
 
 // cardToOutput カードを出力オブジェクトに変換
