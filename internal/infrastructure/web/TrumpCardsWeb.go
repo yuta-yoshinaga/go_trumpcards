@@ -95,7 +95,11 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 // Exec ゲーム実行
 func (web *TrumpCardsWeb) Exec() {
 	api := rest.NewApi()
-	api.Use(rest.DefaultDevStack...)
+	if os.Getenv("APP_ENV") == "production" {
+		api.Use(rest.DefaultProdStack...)
+	} else {
+		api.Use(rest.DefaultDevStack...)
+	}
 	router, err := rest.MakeRouter(
 		rest.Post("/blackjack/exec", web.bjc.Exec),
 		rest.Post("/poker/exec", web.pkc.Exec),
