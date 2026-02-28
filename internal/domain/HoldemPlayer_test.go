@@ -333,6 +333,71 @@ func TestCompareHighCardsSlice(t *testing.T) {
 	assert.Equal(t, 0, compareHighCardsSlice(wheel, wheel))
 }
 
+func TestCompareHighCardsSlice_OnePairTieBreak(t *testing.T) {
+	// Pair of 4s with low kickers vs Pair of 3s with high kickers
+	// Pair value must be compared first
+	a := []*Card{
+		NewCard(CardDesignSpade, 4, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignClover, 13, false),
+		NewCard(CardDesignDiamond, 3, false),
+		NewCard(CardDesignSpade, 2, false),
+	}
+	b := []*Card{
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 3, false),
+		NewCard(CardDesignHeart, 13, false),
+		NewCard(CardDesignSpade, 12, false),
+		NewCard(CardDesignClover, 11, false),
+	}
+	// Pair of 4s > Pair of 3s
+	assert.Equal(t, 1, compareHighCardsSlice(a, b))
+	assert.Equal(t, -1, compareHighCardsSlice(b, a))
+}
+
+func TestCompareHighCardsSlice_TwoPairTieBreak(t *testing.T) {
+	// 10-10-5-5-A vs 9-9-8-8-A
+	a := []*Card{
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignHeart, 10, false),
+		NewCard(CardDesignClover, 5, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 1, false),
+	}
+	b := []*Card{
+		NewCard(CardDesignClover, 9, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignHeart, 8, false),
+		NewCard(CardDesignSpade, 8, false),
+		NewCard(CardDesignClover, 1, false),
+	}
+	// Top pair: 10 > 9
+	assert.Equal(t, 1, compareHighCardsSlice(a, b))
+	assert.Equal(t, -1, compareHighCardsSlice(b, a))
+}
+
+func TestCompareHighCardsSlice_FullHouseTieBreak(t *testing.T) {
+	// 3-3-3-K-K vs 2-2-2-A-A
+	// Trips value (3 > 2) should decide, not the pair
+	a := []*Card{
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 13, false),
+		NewCard(CardDesignSpade, 13, false),
+	}
+	b := []*Card{
+		NewCard(CardDesignClover, 2, false),
+		NewCard(CardDesignDiamond, 2, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignClover, 1, false),
+	}
+	// Trips: 3 > 2
+	assert.Equal(t, 1, compareHighCardsSlice(a, b))
+	assert.Equal(t, -1, compareHighCardsSlice(b, a))
+}
+
 func TestIsWheelHand(t *testing.T) {
 	wheel := []*Card{
 		NewCard(CardDesignSpade, 1, false),
