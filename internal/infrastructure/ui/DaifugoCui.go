@@ -43,6 +43,9 @@ func (cui *DaifugoCui) Exec() {
 		fmt.Println("r・・・reset")
 		fmt.Println("p [インデックス...]・・・カードを出す (インデックスなしでパス)")
 		if !scanner.Scan() {
+			if err := scanner.Err(); err != nil {
+				fmt.Fprintf(os.Stderr, "入力の読み取り中にエラーが発生しました: %v\n", err)
+			}
 			break
 		}
 		res := cui.dgc.Exec(scanner.Text())

@@ -43,6 +43,9 @@ func (cui *SevensCui) Exec() {
 		fmt.Println("r [tunnel] [joker=N] [strategy] [passes=N]・・・reset (オプションルール設定)")
 		fmt.Println("p [インデックス]・・・カードを出す (インデックスなしでパス)")
 		if !scanner.Scan() {
+			if err := scanner.Err(); err != nil {
+				fmt.Fprintf(os.Stderr, "入力の読み取り中にエラーが発生しました: %v\n", err)
+			}
 			break
 		}
 		res := cui.sgc.Exec(scanner.Text())

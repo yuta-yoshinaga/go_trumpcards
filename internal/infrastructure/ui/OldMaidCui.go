@@ -42,6 +42,9 @@ func (cui *OldMaidCui) Exec() {
 		fmt.Println("r・・・reset")
 		fmt.Println("d・・・draw (カードを引く)")
 		if !scanner.Scan() {
+			if err := scanner.Err(); err != nil {
+				fmt.Fprintf(os.Stderr, "入力の読み取り中にエラーが発生しました: %v\n", err)
+			}
 			break
 		}
 		res := cui.omc.Exec(scanner.Text())

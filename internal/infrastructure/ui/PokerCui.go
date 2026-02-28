@@ -40,6 +40,9 @@ func (cui *PokerCui) Exec() {
 		fmt.Println("e [0-4]・・・exchange (e.g. 'e 0 2 4' to exchange cards at index 0, 2, 4)")
 		fmt.Println("s・・・stand (no exchange)")
 		if !scanner.Scan() {
+			if err := scanner.Err(); err != nil {
+				fmt.Fprintf(os.Stderr, "入力の読み取り中にエラーが発生しました: %v\n", err)
+			}
 			break
 		}
 		res := cui.pc.Exec(scanner.Text())

@@ -50,6 +50,9 @@ func (cui *HoldemCui) Exec() {
 	for {
 		fmt.Print("\nPlease enter a command > ")
 		if !scanner.Scan() {
+			if err := scanner.Err(); err != nil {
+				fmt.Fprintf(os.Stderr, "入力の読み取り中にエラーが発生しました: %v\n", err)
+			}
 			break
 		}
 		res := cui.hc.Exec(scanner.Text())
