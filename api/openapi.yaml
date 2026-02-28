@@ -26,6 +26,8 @@ tags:
     description: Sevens (7並べ) game
   - name: doubt
     description: Doubt (ダウト) game
+  - name: holdem
+    description: Texas Hold'em game
 
 paths:
   /blackjack/exec:
@@ -656,6 +658,115 @@ paths:
                     lastDoubtResult: null
                     gameEndFlag: false
                     winnerIdx: -1
+                    message: param error.
+
+  /holdem/exec:
+    post:
+      tags:
+        - holdem
+      summary: Execute a Texas Hold'em game command
+      description: |
+        Send a command to advance the Texas Hold'em game session identified by
+        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
+        CPU with distinct play styles).
+
+        The game proceeds through seven phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Init       | `0`   | Before any cards are dealt |
+        | PreFlop    | `1`   | Two hole cards dealt; first betting round |
+        | Flop       | `2`   | Three community cards revealed |
+        | Turn       | `3`   | Fourth community card revealed |
+        | River      | `4`   | Fifth community card revealed |
+        | Showdown   | `5`   | Hands evaluated; winners determined |
+        | End        | `6`   | Round complete; results displayed |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `fold`  | `f`     | Fold and forfeit the pot |
+        | `check` | `ck`    | Pass without betting (only when no outstanding bet) |
+        | `call`  | `c`     | Match the current bet |
+        | `bet`   | `b`     | Place a bet (use `amount`) |
+        | `raise` | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
+        | `allin` | `a`     | Go all-in with all remaining chips |
+        | `quit`  | `q`     | End the session |
+      operationId: holdemExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              resetCustomBlinds:
+                summary: Start with custom blinds
+                value:
+                  command: reset
+                  smallBlind: 10
+                  bigBlind: 20
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              call:
+                summary: Call
+                value:
+                  command: call
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 40
+                value:
+                  command: bet
+                  amount: 40
+                  sessionId: my-session-001
+              raise:
+                summary: Raise by 80 on top of calling
+                value:
+                  command: raise
+                  amount: 80
+                  sessionId: my-session-001
+              allin:
+                summary: Go all-in
+                value:
+                  command: allin
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request (missing/invalid parameters or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    communityCards: []
+                    pot: 0
+                    sidePots: []
+                    dealerIdx: 0
+                    currentTurn: 0
+                    phase: 0
+                    gameEndFlag: false
+                    lastBet: 0
+                    minRaise: 0
+                    roundResults: []
+                    cpuActions: []
                     message: param error.
 
 components:
@@ -1911,3 +2022,297 @@ components:
           type: integer
           description: Duration of the doubt window in seconds (reflects current game config)
           example: 10
+
+    # -------------------------------------------------------------------------
+    # Texas Hold'em
+    # -------------------------------------------------------------------------
+    HoldemRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `fold` (`f`),
+            `check` (`ck`), `call` (`c`), `bet` (`b`), `raise` (`ra`),
+            `allin` (`a`), `quit` (`q`).
+          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, q, quit]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Bet/raise amount (for the `bet` and `raise` commands).
+            Ignored for other commands.
+          minimum: 1
+          example: 40
+        smallBlind:
+          type: integer
+          description: |
+            Small blind amount (for the `reset` command).
+            Defaults to 5 when omitted.
+            If only `smallBlind` is specified and it is >= the default `bigBlind`,
+            `bigBlind` is auto-adjusted to `smallBlind * 2`.
+          minimum: 1
+          example: 5
+        bigBlind:
+          type: integer
+          description: |
+            Big blind amount (for the `reset` command).
+            Defaults to 10 when omitted.
+            If only `bigBlind` is specified and the default `smallBlind` is >= `bigBlind`,
+            `smallBlind` is auto-adjusted to `bigBlind / 2` (minimum 1).
+          minimum: 1
+          example: 10
+        sessionId:
+          type: string
+          description: Unique session identifier (max 256 characters)
+          maxLength: 256
+          example: my-session-001
+
+    HoldemPlayer:
+      type: object
+      required:
+        - id
+        - isHuman
+        - cards
+        - chips
+        - currentBet
+        - folded
+        - allIn
+        - handRank
+        - handName
+        - bestHand
+        - playStyleName
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1–3 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this is the human player
+          example: true
+        cards:
+          type: array
+          description: |
+            Hole cards.  Human player's cards are always visible.
+            CPU cards are hidden (empty array) until showdown.
+          items:
+            $ref: '#/components/schemas/Card'
+        chips:
+          type: integer
+          description: Current chip count
+          minimum: 0
+          example: 990
+        currentBet:
+          type: integer
+          description: Current round bet amount
+          minimum: 0
+          example: 10
+        folded:
+          type: boolean
+          description: Whether the player has folded
+          example: false
+        allIn:
+          type: boolean
+          description: Whether the player is all-in
+          example: false
+        handRank:
+          type: integer
+          description: |
+            Numeric hand rank (only populated at showdown for non-folded players):
+            0 = High Card, 1 = One Pair, 2 = Two Pair, 3 = Three of a Kind,
+            4 = Straight, 5 = Flush, 6 = Full House, 7 = Four of a Kind,
+            8 = Straight Flush, 9 = Royal Flush.
+          minimum: 0
+          maximum: 9
+          example: 0
+        handName:
+          type: string
+          description: Human-readable hand name (empty until showdown)
+          example: ""
+        bestHand:
+          type: array
+          description: Best 5-card hand (only populated at showdown)
+          items:
+            $ref: '#/components/schemas/Card'
+        playStyleName:
+          type: string
+          description: |
+            CPU play style name: TAG (Tight-Aggressive), LAP (Loose-Passive),
+            TAP (Tight-Passive), LAG (Loose-Aggressive).
+            Empty for human player.
+          example: TAG
+
+    HoldemCpuAction:
+      type: object
+      description: Record of a CPU player's betting action
+      required:
+        - playerIdx
+        - action
+        - amount
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the CPU player who acted
+          example: 1
+        action:
+          type: integer
+          description: |
+            Action taken: 0 = Fold, 1 = Check, 2 = Call,
+            3 = Bet, 4 = Raise, 5 = All-in.
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 2
+        amount:
+          type: integer
+          description: Amount bet/raised (0 for fold/check/call/all-in)
+          example: 0
+
+    HoldemResult:
+      type: object
+      description: Result for a player at showdown
+      required:
+        - playerIdx
+        - handRank
+        - handName
+        - bestHand
+        - wonAmount
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player
+          example: 0
+        handRank:
+          type: integer
+          description: Numeric hand rank
+          example: 1
+        handName:
+          type: string
+          description: Hand name (e.g., "One Pair")
+          example: One Pair
+        bestHand:
+          type: array
+          description: Best 5-card hand
+          items:
+            $ref: '#/components/schemas/Card'
+        wonAmount:
+          type: integer
+          description: Chips won from the pot
+          example: 40
+
+    HoldemSidePot:
+      type: object
+      description: A side pot created when a player goes all-in
+      required:
+        - amount
+        - eligiblePlayers
+      properties:
+        amount:
+          type: integer
+          description: Total chips in this side pot
+          example: 100
+        eligiblePlayers:
+          type: array
+          description: Indices of players eligible to win this pot
+          items:
+            type: integer
+          example: [0, 1, 2]
+
+    HoldemResponse:
+      type: object
+      required:
+        - players
+        - communityCards
+        - pot
+        - sidePots
+        - dealerIdx
+        - currentTurn
+        - phase
+        - gameEndFlag
+        - lastBet
+        - minRaise
+        - roundResults
+        - cpuActions
+        - message
+      properties:
+        players:
+          type: array
+          description: State of all 4 players
+          items:
+            $ref: '#/components/schemas/HoldemPlayer'
+        communityCards:
+          type: array
+          description: Community cards on the board (0/3/4/5 cards based on phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        pot:
+          type: integer
+          description: Current main pot size
+          minimum: 0
+          example: 30
+        sidePots:
+          type: array
+          description: Side pots (created when players go all-in with different amounts)
+          items:
+            $ref: '#/components/schemas/HoldemSidePot'
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for this round
+          example: 0
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        phase:
+          type: integer
+          description: |
+            Current game phase:
+            - `0` — Init
+            - `1` — PreFlop
+            - `2` — Flop
+            - `3` — Turn
+            - `4` — River
+            - `5` — Showdown
+            - `6` — End
+          enum: [0, 1, 2, 3, 4, 5, 6]
+          example: 1
+        gameEndFlag:
+          type: boolean
+          description: Whether the round has ended
+          example: false
+        lastBet:
+          type: integer
+          description: The current highest bet in this betting round
+          minimum: 0
+          example: 10
+        minRaise:
+          type: integer
+          description: Minimum raise amount
+          minimum: 0
+          example: 20
+        roundResults:
+          type: array
+          description: Results for each non-folded player at showdown
+          items:
+            $ref: '#/components/schemas/HoldemResult'
+        cpuActions:
+          type: array
+          description: CPU actions that occurred since the last human action
+          items:
+            $ref: '#/components/schemas/HoldemCpuAction'
+        message:
+          type: string
+          description: |
+            Game result or status message.  One of:
+            - `""` — game in progress
+            - `"You are the winner."` — player wins
+            - `"You lose."` — player loses
+            - `"You folded."` — player folded
+            - `"Game over."` — game ended (no results)
+            - `"Unsupported command."` — unknown command
+            - `"bye."` — session ended by quit command
+            - `"param error."` — invalid request
+            - `"error."` — internal error
+          example: ""

@@ -231,3 +231,52 @@ export interface DoubtResponse {
   message: string;
   doubtWindowSec: number;
 }
+
+export interface HoldemPlayerData {
+  id: number;
+  isHuman: boolean;
+  cards: Card[];
+  chips: number;
+  currentBet: number;
+  folded: boolean;
+  allIn: boolean;
+  handRank: number;
+  handName: string;
+  bestHand: Card[];
+  playStyleName: string;
+}
+
+export interface HoldemCpuAction {
+  playerIdx: number;
+  action: number;
+  amount: number;
+}
+
+export interface HoldemResult {
+  playerIdx: number;
+  handRank: number;
+  handName: string;
+  bestHand: Card[];
+  wonAmount: number;
+}
+
+export interface HoldemSidePot {
+  amount: number;
+  eligiblePlayers: number[];
+}
+
+export interface HoldemResponse {
+  players: HoldemPlayerData[];
+  communityCards: Card[];
+  pot: number;
+  sidePots: HoldemSidePot[];
+  dealerIdx: number;
+  currentTurn: number;
+  phase: number;
+  gameEndFlag: boolean;
+  lastBet: number;
+  minRaise: number;
+  roundResults: HoldemResult[];
+  cpuActions: HoldemCpuAction[];
+  message: string;
+}

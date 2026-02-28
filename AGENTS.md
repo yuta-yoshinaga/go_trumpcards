@@ -12,6 +12,7 @@ This repository contains a Go implementation of trump card game algorithms. The 
 - **Daifugo**: CLI and Web GUI
 - **Sevens (7並べ)**: CLI and Web GUI (optional rules: tunnel, joker, CPU strategy)
 - **Doubt (ダウト)**: CLI and Web GUI (1 human vs 3 CPUs, 10-second async doubt window)
+- **Texas Hold'em**: CLI and Web GUI (1 human vs 3 CPUs, 4 play styles, side pots)
 
 ## Requirements
 
@@ -31,6 +32,7 @@ go run ./cmd/cli oldmaid    # Old Maid CLI
 go run ./cmd/cli daifugo    # Daifugo CLI
 go run ./cmd/cli sevens     # Sevens (7並べ) CLI
 go run ./cmd/cli doubt      # Doubt (ダウト) CLI
+go run ./cmd/cli holdem     # Texas Hold'em CLI
 go run ./cmd/cli web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
 ```
@@ -111,7 +113,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/adapter/presenter/` and `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: Six endpoints — `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), `POST /sevens/exec` (Sevens), and `POST /doubt/exec` (Doubt) — accept JSON with a `Cmd` field and game state.
+- **Web API**: Seven endpoints — `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), `POST /sevens/exec` (Sevens), `POST /doubt/exec` (Doubt), and `POST /holdem/exec` (Texas Hold'em) — accept JSON with a `Cmd` field and game state.
 
 ### Games implemented
 
@@ -121,6 +123,7 @@ public/                        # Built frontend assets served by Go web server
 - **Daifugo**: Entities in `internal/domain/Daifugo.go`, `internal/domain/DaifugoPlayer.go`; interactor in `internal/usecase/DaifugoInteractor.go`
 - **Sevens (7並べ)**: Entities in `internal/domain/Sevens.go`, `internal/domain/SevensPlayer.go`, `internal/domain/SevensConfig.go`; interactor in `internal/usecase/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, and CPU strategy
 - **Doubt (ダウト)**: Entities in `internal/domain/Doubt.go`, `internal/domain/DoubtPlayer.go`; interactor in `internal/usecase/DoubtInteractor.go`. CLI and Web GUI (1 human vs 3 CPUs), 10-second async doubt window (CLI) / frontend countdown timer (Web), random CPU bluff/doubt AI
+- **Texas Hold'em**: Entities in `internal/domain/Holdem.go`, `internal/domain/HoldemPlayer.go`, `internal/domain/HoldemConfig.go`; interactor in `internal/usecase/HoldemInteractor.go`. CLI and Web GUI (1 human vs 3 CPU), 4 CPU play styles (TAG/LAP/TAP/LAG) with bluff AI, full side pot support
 
 ## Testing Policy
 

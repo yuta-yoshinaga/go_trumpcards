@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { blackjackApi, daifugoApi, doubtApi, oldmaidApi, pokerApi, sessionId, sevensApi } from './gameApi';
+import { blackjackApi, daifugoApi, doubtApi, holdemApi, oldmaidApi, pokerApi, sessionId, sevensApi } from './gameApi';
 
 describe('gameApi', () => {
   const mockFetch = vi.fn();
@@ -770,6 +770,97 @@ describe('gameApi', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: 'reset', index: -1, jokerTargetSuit: 0, jokerTargetValue: 0, sessionId }),
       });
+    });
+  });
+
+  describe('holdemApi.exec', () => {
+    const payload = {
+      players: [],
+      communityCards: [],
+      pot: 0,
+      sidePots: [],
+      dealerIdx: 0,
+      currentTurn: 0,
+      phase: 1,
+      gameEndFlag: false,
+      lastBet: 0,
+      minRaise: 0,
+      roundResults: [],
+      cpuActions: [],
+      message: '',
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await holdemApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/holdem/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          amount: undefined,
+          sessionId,
+          smallBlind: undefined,
+          bigBlind: undefined,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with fold command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('fold');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'fold',
+            amount: undefined,
+            sessionId,
+            smallBlind: undefined,
+            bigBlind: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('calls with bet command and amount', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('bet', 50);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'bet',
+            amount: 50,
+            sessionId,
+            smallBlind: undefined,
+            bigBlind: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and custom blinds', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('reset', undefined, 10, 20);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            smallBlind: 10,
+            bigBlind: 20,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(holdemApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 });

@@ -31,6 +31,9 @@ func main() {
 	case "doubt":
 		doubt := ui.NewDoubtCui()
 		doubt.Exec()
+	case "holdem":
+		holdem := ui.NewHoldemCui()
+		holdem.Exec()
 	case "web":
 		w := web.NewTrumpCardsWeb()
 		w.Exec()
