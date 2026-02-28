@@ -165,6 +165,27 @@ func TestBlackJack_PlayerStandOnFinishedHand(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrHandFinished)
 }
 
+func TestBlackJack_PlayerSplitOnFinishedHand(t *testing.T) {
+	// Use a pair so CanSplit would normally pass
+	playerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 10, false),
+	}
+	dealerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 10, false),
+		domain.NewCard(domain.CardDesignClover, 7, false),
+	}
+	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	// Stand to finish the hand
+	err := bj.PlayerStand()
+	assert.NoError(t, err)
+	// Reset phase to Action so the phase guard passes, to test the IsFinished guard
+	bj.SetPhase(domain.BJPhaseAction)
+	err = bj.PlayerSplit()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrHandFinished)
+}
+
 func TestBlackJack_GameJudgmentCases(t *testing.T) {
 	t.Run("player lose bust", func(t *testing.T) {
 		playerCards := []*domain.Card{

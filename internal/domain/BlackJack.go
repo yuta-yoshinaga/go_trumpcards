@@ -264,6 +264,9 @@ func (b *BlackJack) PlayerSplit() error {
 		return NewDomainError(ErrInvalidPlay, "Maximum number of hands reached.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
+	if hand.IsFinished() {
+		return NewDomainError(ErrHandFinished, "This hand is already finished.")
+	}
 	if !hand.CanSplit() {
 		return NewDomainError(ErrInvalidPlay, "Split is not allowed for this hand.")
 	}

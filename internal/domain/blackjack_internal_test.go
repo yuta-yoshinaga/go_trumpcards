@@ -67,11 +67,12 @@ func TestBlackJack_PlayerDoubleDown_Bust_Deterministic(t *testing.T) {
 // are busted, dealerPlay skips drawing cards. Uses internal access to stack the
 // deck and call PlayerHit to bust the hand naturally.
 func TestBlackJack_AllBustedSkipsDealerDraw(t *testing.T) {
-	bj, _, dealer := setupInternalTestBJ(900, 1000)
+	bj, player, dealer := setupInternalTestBJ(1000, 1000)
 
-	// Set up player hand with score 20 (10 + 10)
+	// Set up player hand with score 20 (10 + 10) and a 100 chip bet
 	hand := bj.playerHands[0]
 	hand.SetBet(100)
+	player.SubtractChips(100)
 	hand.AddCard(NewCard(CardDesignSpade, 10, false))
 	hand.AddCard(NewCard(CardDesignHeart, 10, false))
 
