@@ -36,24 +36,22 @@ func (c *HoldemCuiController) Exec(command string) string {
 	case "c", "call":
 		return c.hi.Action(domain.HoldemActionCall, 0)
 	case "b", "bet":
-		amount := 0
-		if len(fields) > 1 {
-			if parsed, err := strconv.Atoi(fields[1]); err == nil {
-				amount = parsed
-			}
-		}
-		return c.hi.Action(domain.HoldemActionBet, amount)
+		return c.hi.Action(domain.HoldemActionBet, parseAmount(fields))
 	case "ra", "raise":
-		amount := 0
-		if len(fields) > 1 {
-			if parsed, err := strconv.Atoi(fields[1]); err == nil {
-				amount = parsed
-			}
-		}
-		return c.hi.Action(domain.HoldemActionRaise, amount)
+		return c.hi.Action(domain.HoldemActionRaise, parseAmount(fields))
 	case "a", "allin":
 		return c.hi.Action(domain.HoldemActionAllIn, 0)
 	default:
 		return "コマンドが不明です: " + command
 	}
+}
+
+// parseAmount コマンドのスライスからベット額を抽出する
+func parseAmount(fields []string) int {
+	if len(fields) > 1 {
+		if amount, err := strconv.Atoi(fields[1]); err == nil {
+			return amount
+		}
+	}
+	return 0
 }

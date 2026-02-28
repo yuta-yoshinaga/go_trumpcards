@@ -19,6 +19,7 @@ func newInternalTestHoldem() *Holdem {
 	for _, p := range h.players {
 		p.SetChips(1000)
 	}
+	h.startingChips = []int{1000, 1000, 1000, 1000}
 	return h
 }
 
@@ -298,11 +299,9 @@ func TestCalculateSidePots_NoAllIn(t *testing.T) {
 
 func TestCalculateSidePots_WithAllIn(t *testing.T) {
 	h := newInternalTestHoldem()
-	cfg := DefaultHoldemConfig()
-	cfg.InitChips = 100
-	h.SetConfig(cfg)
 
 	// Player 0: all-in with 50, Player 1: all-in with 100, others: normal
+	h.startingChips = []int{100, 100, 100, 100}
 	h.players[0].SetChips(50) // invested 50
 	h.players[0].SetAllIn(true)
 	h.players[1].SetChips(0) // invested 100
@@ -1801,10 +1800,8 @@ func TestRunCpuActions_GameEnded(t *testing.T) {
 
 func TestResolveShowdown_WithSidePots(t *testing.T) {
 	h := newInternalTestHoldem()
-	cfg := DefaultHoldemConfig()
-	cfg.InitChips = 100
-	h.SetConfig(cfg)
 
+	h.startingChips = []int{100, 100, 100, 100}
 	h.players[0].SetChips(50) // invested 50
 	h.players[0].SetAllIn(true)
 	h.players[1].SetChips(0) // invested 100
@@ -1848,11 +1845,9 @@ func TestResolveShowdown_WithSidePots(t *testing.T) {
 
 func TestCalculateSidePots_DuplicateAllInLevel(t *testing.T) {
 	h := newInternalTestHoldem()
-	cfg := DefaultHoldemConfig()
-	cfg.InitChips = 100
-	h.SetConfig(cfg)
 
 	// Two players all-in at the same level
+	h.startingChips = []int{100, 100, 100, 100}
 	h.players[0].SetChips(50)
 	h.players[0].SetAllIn(true)
 	h.players[1].SetChips(50)
@@ -1868,11 +1863,9 @@ func TestCalculateSidePots_DuplicateAllInLevel(t *testing.T) {
 
 func TestCalculateSidePots_AllAllIn_Remaining(t *testing.T) {
 	h := newInternalTestHoldem()
-	cfg := DefaultHoldemConfig()
-	cfg.InitChips = 100
-	h.SetConfig(cfg)
 
 	// All players all-in with different amounts
+	h.startingChips = []int{100, 100, 100, 100}
 	h.players[0].SetChips(70) // invested 30
 	h.players[0].SetAllIn(true)
 	h.players[1].SetChips(50) // invested 50

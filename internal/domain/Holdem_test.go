@@ -25,6 +25,7 @@ func setupHoldemForHumanAction(phase int) *Holdem {
 	for _, p := range h.players {
 		p.SetChips(1000)
 	}
+	h.SetStartingChips([]int{1000, 1000, 1000, 1000})
 	h.SetPhase(phase)
 	h.SetCurrentTurn(0)
 	h.SetLastBet(0)

@@ -75,6 +75,7 @@ type Holdem struct {
 	actedFlags     []bool
 	roundResults   []HoldemResult
 	cpuActions     []HoldemCpuAction
+	startingChips  []int
 }
 
 // NewHoldem コンストラクタ
@@ -87,6 +88,7 @@ func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemCon
 		actedFlags:     make([]bool, len(players)),
 		roundResults:   make([]HoldemResult, 0),
 		cpuActions:     make([]HoldemCpuAction, 0),
+		startingChips:  make([]int, len(players)),
 		config:         config,
 		phase:          HoldemPhaseInit,
 	}
@@ -117,6 +119,12 @@ func (h *Holdem) Reset() {
 		if p.GetChips() <= 0 {
 			p.SetChips(h.config.InitChips)
 		}
+	}
+
+	// ハンド開始時のチップを記録 (サイドポット計算用)
+	h.startingChips = make([]int, len(h.players))
+	for i, p := range h.players {
+		h.startingChips[i] = p.GetChips()
 	}
 
 	// ブラインド投入
@@ -537,12 +545,8 @@ func (h *Holdem) calculateSidePots() {
 	contribs := make([]playerContrib, 0)
 	totalPot := 0
 	for i, p := range h.players {
-		// 投入額 = 初期チップ - 現在のチップ
-		invested := h.config.InitChips - p.GetChips()
-		if p.GetFolded() {
-			// フォールドしたプレイヤーの投入額もカウント
-			invested = h.config.InitChips - p.GetChips()
-		}
+		// 投入額 = ハンド開始時チップ - 現在のチップ
+		invested := h.startingChips[i] - p.GetChips()
 		if invested < 0 {
 			invested = 0
 		}
@@ -1101,3 +1105,9 @@ func (h *Holdem) SetCpuActions(actions []HoldemCpuAction) { h.cpuActions = actio
 
 // SetSidePots サイドポット設定（テスト用）
 func (h *Holdem) SetSidePots(pots []HoldemSidePot) { h.sidePots = pots }
+
+// SetStartingChips ハンド開始時チップ設定（テスト用）
+func (h *Holdem) SetStartingChips(chips []int) { h.startingChips = chips }
+
+// GetStartingChips ハンド開始時チップ取得（テスト用）
+func (h *Holdem) GetStartingChips() []int { return h.startingChips }
