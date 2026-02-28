@@ -185,23 +185,25 @@ func evalFiveCards(cards []*Card) int {
 
 // checkStraightValues ストレートチェック (ソート済み値スライス)
 func checkStraightValues(sortedValues []int) bool {
-	isNormal := true
-	for i := 1; i < len(sortedValues); i++ {
-		if sortedValues[i] != sortedValues[i-1]+1 {
-			isNormal = false
-			break
-		}
-	}
-	if isNormal {
+	// A-2-3-4-5 (ホイール)
+	if len(sortedValues) == 5 &&
+		sortedValues[0] == 1 && sortedValues[1] == 2 &&
+		sortedValues[2] == 3 && sortedValues[3] == 4 && sortedValues[4] == 5 {
 		return true
 	}
-	// A-10-J-Q-K のハイエーストレート
+	// A-10-J-Q-K (ブロードウェイ)
 	if len(sortedValues) == 5 &&
 		sortedValues[0] == 1 && sortedValues[1] == 10 &&
 		sortedValues[2] == 11 && sortedValues[3] == 12 && sortedValues[4] == 13 {
 		return true
 	}
-	return false
+	// 通常のストレート
+	for i := 1; i < len(sortedValues); i++ {
+		if sortedValues[i] != sortedValues[i-1]+1 {
+			return false
+		}
+	}
+	return true
 }
 
 // checkRoyalStraightValues ロイヤルフラッシュかチェック
@@ -241,23 +243,38 @@ func combinations(cards []*Card, k int) [][]*Card {
 	return result
 }
 
+// isWheelHand ホイール (A-2-3-4-5) かどうか判定
+func isWheelHand(cards []*Card) bool {
+	if len(cards) != 5 {
+		return false
+	}
+	vals := make([]int, 5)
+	for i, c := range cards {
+		vals[i] = c.GetValue()
+	}
+	sort.Ints(vals)
+	return vals[0] == 1 && vals[1] == 2 && vals[2] == 3 && vals[3] == 4 && vals[4] == 5
+}
+
 // compareHighCardsSlice 2つの5枚ハンドのハイカード比較 (a > b: 1, a < b: -1, a == b: 0)
 func compareHighCardsSlice(a, b []*Card) int {
 	if len(a) == 0 || len(b) == 0 {
 		return 0
 	}
+	aWheel := isWheelHand(a)
+	bWheel := isWheelHand(b)
 	aVals := make([]int, len(a))
 	bVals := make([]int, len(b))
 	for i, c := range a {
 		v := c.GetValue()
-		if v == 1 {
+		if v == 1 && !aWheel {
 			v = 14
 		}
 		aVals[i] = v
 	}
 	for i, c := range b {
 		v := c.GetValue()
-		if v == 1 {
+		if v == 1 && !bWheel {
 			v = 14
 		}
 		bVals[i] = v

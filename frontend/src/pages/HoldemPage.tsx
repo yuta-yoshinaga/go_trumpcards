@@ -146,8 +146,7 @@ export function HoldemPage() {
           <div className="bg-black/30 rounded p-2 mb-3 text-white text-[0.85em]">
             <div className="font-bold mb-1">CPU行動:</div>
             {state.cpuActions.map((a, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: sequential list
-              <div key={i}>
+              <div key={`${i}-${a.playerIdx}-${a.action}`}>
                 Player {a.playerIdx}: {ACTION_NAMES[a.action] ?? '不明'}
                 {a.amount > 0 && ` (${a.amount})`}
               </div>

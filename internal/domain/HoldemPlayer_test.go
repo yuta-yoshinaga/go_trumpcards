@@ -312,6 +312,65 @@ func TestCompareHighCardsSlice(t *testing.T) {
 	assert.Equal(t, 0, compareHighCardsSlice(nil, a))
 	assert.Equal(t, 0, compareHighCardsSlice(a, nil))
 	assert.Equal(t, 0, compareHighCardsSlice(nil, nil))
+
+	// Wheel (A-2-3-4-5) should lose to 6-high straight (2-3-4-5-6)
+	wheel := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+	}
+	sixHigh := []*Card{
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 6, false),
+	}
+	assert.Equal(t, -1, compareHighCardsSlice(wheel, sixHigh))
+	assert.Equal(t, 1, compareHighCardsSlice(sixHigh, wheel))
+	assert.Equal(t, 0, compareHighCardsSlice(wheel, wheel))
+}
+
+func TestIsWheelHand(t *testing.T) {
+	wheel := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+	}
+	assert.True(t, isWheelHand(wheel))
+
+	notWheel := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 6, false),
+	}
+	assert.False(t, isWheelHand(notWheel))
+
+	// Not 5 cards
+	assert.False(t, isWheelHand([]*Card{NewCard(CardDesignSpade, 1, false)}))
+}
+
+func TestHoldemPlayer_EvalBestHand_Wheel(t *testing.T) {
+	p := NewHoldemPlayer(true, HoldemStyleTAG)
+	p.AddCard(NewCard(CardDesignSpade, 1, false))
+	p.AddCard(NewCard(CardDesignHeart, 2, false))
+
+	community := []*Card{
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 9, false),
+		NewCard(CardDesignClover, 12, false),
+	}
+
+	rank := p.EvalBestHand(community)
+	assert.Equal(t, PokerHandStraight, rank)
 }
 
 func TestHoldemPlayer_EvalBestHand_ChoosesBestFromSeven(t *testing.T) {
@@ -337,8 +396,10 @@ func TestHoldemPlayer_EvalBestHand_ChoosesBestFromSeven(t *testing.T) {
 func TestCheckStraightValues(t *testing.T) {
 	// Normal straight
 	assert.True(t, checkStraightValues([]int{3, 4, 5, 6, 7}))
-	// Ace-high straight
+	// Ace-high straight (broadway)
 	assert.True(t, checkStraightValues([]int{1, 10, 11, 12, 13}))
+	// Wheel (A-2-3-4-5)
+	assert.True(t, checkStraightValues([]int{1, 2, 3, 4, 5}))
 	// Not a straight
 	assert.False(t, checkStraightValues([]int{1, 3, 5, 7, 9}))
 	// Not 5 cards for ace-high
