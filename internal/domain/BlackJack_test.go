@@ -145,6 +145,26 @@ func TestBlackJack_PlayerStandViaHand(t *testing.T) {
 	assert.Equal(t, domain.GameResultWin, bj.GameJudgment())
 }
 
+func TestBlackJack_PlayerStandOnFinishedHand(t *testing.T) {
+	playerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 9, false),
+		domain.NewCard(domain.CardDesignHeart, 8, false),
+	}
+	dealerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 10, false),
+		domain.NewCard(domain.CardDesignClover, 7, false),
+	}
+	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+	// Stand once to finish the hand
+	err := bj.PlayerStand()
+	assert.NoError(t, err)
+	// Reset phase to Action so the phase guard passes, to test the IsFinished guard
+	bj.SetPhase(domain.BJPhaseAction)
+	err = bj.PlayerStand()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrHandFinished)
+}
+
 func TestBlackJack_GameJudgmentCases(t *testing.T) {
 	t.Run("player lose bust", func(t *testing.T) {
 		playerCards := []*domain.Card{
@@ -772,23 +792,10 @@ func TestBlackJack_FullBettingFlow(t *testing.T) {
 	})
 
 	t.Run("all busted skips dealer draw", func(t *testing.T) {
-		bj, _, dealer := setupDeterministicBJ(
-			900,
-			[]*domain.Card{
-				domain.NewCard(domain.CardDesignSpade, 10, false),
-				domain.NewCard(domain.CardDesignHeart, 10, false),
-				domain.NewCard(domain.CardDesignClover, 5, false),
-			},
-			[]*domain.Card{
-				domain.NewCard(domain.CardDesignDiamond, 5, false),
-				domain.NewCard(domain.CardDesignDiamond, 6, false),
-			},
-			100,
-		)
-		bj.GetPlayerHands()[0].SetBusted(true)
-		_ = bj.PlayerStand()
-		assert.True(t, bj.GetGameEndFlag())
-		assert.Equal(t, 2, dealer.GetCardsSize())
+		// This test verifies that when all player hands are busted,
+		// the dealer skips drawing. Moved to blackjack_internal_test.go
+		// (TestBlackJack_AllBustedSkipsDealerDraw) to allow deck stacking.
+		t.Skip("moved to blackjack_internal_test.go for deck stacking")
 	})
 
 	t.Run("hit then stand flow", func(t *testing.T) {
@@ -1139,40 +1146,29 @@ func TestBlackJack_JudgeHand_SplitBJNo3to2(t *testing.T) {
 	bj := domain.NewBlackJack(tc, player, dealer)
 	bj.Reset()
 
-	// Hand 0: natural BJ (Ace + 10) in 2 cards
+	// Hand 0: natural BJ (Ace + 10) in 2 cards — not yet stood
 	hand0 := domain.NewBlackJackHand()
 	hand0.SetBet(100)
 	hand0.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 	hand0.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
-	hand0.SetStood(true)
 
-	// Hand 1: normal hand (10 + 9 = 19)
+	// Hand 1: normal hand (10 + 9 = 19) — not yet stood
 	hand1 := domain.NewBlackJackHand()
 	hand1.SetBet(100)
 	hand1.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 	hand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
-	hand1.SetStood(true)
 
 	bj.SetPlayerHands([]*domain.BlackJackHand{hand0, hand1})
 	dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
 	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
 	bj.SetPhase(domain.BJPhaseAction)
 
-	// Stand on any remaining unfinished hand → all are stood, so just trigger endGame via stand
-	// Both hands are already stood. We need to trigger dealerPlay.
-	// Call PlayerStand will stand the hand at currentHandIdx=0, but it's already stood.
-	// The easiest way is to unset stood on hand1 and call stand.
-	hand1.SetStood(false)
-	// currentHandIdx should be 1 since hand0 is finished
-	// Actually after SetPhase, currentHandIdx is still 0. Let's just use PlayerStand
-	// which will try to stand hand at index 0 (already stood), but it will still call advanceHand.
-	// Actually PlayerStand sets stood=true and calls advanceHand regardless.
-	// hand0 is already stood, so standing it again is fine (just sets stood=true again).
+	// Stand hand0 → advanceHand finds hand1 not finished, moves there
 	err := bj.PlayerStand()
 	assert.NoError(t, err)
-	// advanceHand finds hand1 is not finished, moves there
 	assert.Equal(t, 1, bj.GetCurrentHandIdx())
 
+	// Stand hand1 → all hands finished → dealerPlay → endGame
 	err = bj.PlayerStand()
 	assert.NoError(t, err)
 	assert.True(t, bj.GetGameEndFlag())
@@ -1255,7 +1251,6 @@ func TestBlackJack_JudgeHand_DealerBJvsPlayerNonBJ(t *testing.T) {
 	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 	hand.AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
-	hand.SetStood(true)
 	player.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 	player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 	player.AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
