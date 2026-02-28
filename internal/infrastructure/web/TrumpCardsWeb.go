@@ -96,6 +96,20 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 // Exec ゲーム実行
 func (web *TrumpCardsWeb) Exec() {
 	api := rest.NewApi()
+	api.Use(&rest.CorsMiddleware{
+		RejectNonCorsRequests: false,
+		OriginValidator: func(origin string, request *rest.Request) bool {
+			allowedOrigins := map[string]bool{
+				"http://localhost:5173": true,
+				"http://localhost:8080": true,
+			}
+			return allowedOrigins[origin]
+		},
+		AllowedMethods:                []string{"GET", "POST"},
+		AllowedHeaders:                []string{"Content-Type"},
+		AccessControlAllowCredentials: false,
+		AccessControlMaxAge:           3600,
+	})
 	stack := rest.DefaultDevStack
 	if os.Getenv("APP_ENV") == "production" {
 		stack = rest.DefaultProdStack
