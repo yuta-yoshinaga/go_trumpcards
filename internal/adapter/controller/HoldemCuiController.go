@@ -36,9 +36,17 @@ func (c *HoldemCuiController) Exec(command string) string {
 	case "c", "call":
 		return c.hi.Action(domain.HoldemActionCall, 0)
 	case "b", "bet":
-		return c.hi.Action(domain.HoldemActionBet, parseAmount(fields))
+		amount, err := parseAmount(fields)
+		if err != "" {
+			return err
+		}
+		return c.hi.Action(domain.HoldemActionBet, amount)
 	case "ra", "raise":
-		return c.hi.Action(domain.HoldemActionRaise, parseAmount(fields))
+		amount, err := parseAmount(fields)
+		if err != "" {
+			return err
+		}
+		return c.hi.Action(domain.HoldemActionRaise, amount)
 	case "a", "allin":
 		return c.hi.Action(domain.HoldemActionAllIn, 0)
 	default:
@@ -47,11 +55,14 @@ func (c *HoldemCuiController) Exec(command string) string {
 }
 
 // parseAmount コマンドのスライスからベット額を抽出する
-func parseAmount(fields []string) int {
+// 戻り値: (金額, エラーメッセージ)。エラーメッセージが空なら成功。
+func parseAmount(fields []string) (int, string) {
 	if len(fields) > 1 {
-		if amount, err := strconv.Atoi(fields[1]); err == nil {
-			return amount
+		amount, err := strconv.Atoi(fields[1])
+		if err != nil {
+			return 0, "無効な金額です: " + fields[1]
 		}
+		return amount, ""
 	}
-	return 0
+	return 0, ""
 }

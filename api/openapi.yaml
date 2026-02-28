@@ -689,7 +689,7 @@ paths:
         | `check` | `ck`    | Pass without betting (only when no outstanding bet) |
         | `call`  | `c`     | Match the current bet |
         | `bet`   | `b`     | Place a bet (use `amount`) |
-        | `raise` | `ra`    | Raise the current bet (use `amount`) |
+        | `raise` | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
         | `allin` | `a`     | Go all-in with all remaining chips |
         | `quit`  | `q`     | End the session |
       operationId: holdemExec
@@ -729,7 +729,7 @@ paths:
                   amount: 40
                   sessionId: my-session-001
               raise:
-                summary: Raise to 80
+                summary: Raise by 80 on top of calling
                 value:
                   command: raise
                   amount: 80
