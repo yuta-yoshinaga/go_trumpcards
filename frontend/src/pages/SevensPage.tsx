@@ -387,7 +387,7 @@ export function SevensPage() {
 
         {/* CPU action log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-[0.85em]">
             <span className="text-[#ccc]">[CPUの行動]</span>
             {state.cpuActions.map((a, i) => (
               <div
