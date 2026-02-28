@@ -1798,6 +1798,82 @@ func TestRunCpuActions_GameEnded(t *testing.T) {
 	assert.Equal(t, 0, len(h.cpuActions))
 }
 
+func TestRunCpuActions_FallbackOnError(t *testing.T) {
+	// CPUのアクションがexecuteActionでエラーになった場合、フォールバックでチェックまたはフォールドする
+	h := newInternalTestHoldem()
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.startingChips = []int{1000, 1000, 1000, 1000}
+	h.SetPhase(HoldemPhaseRiver)
+	h.SetCurrentTurn(1)
+	h.SetLastBet(0)
+	h.SetMinRaise(10)
+	h.SetPot(100)
+	h.actedFlags = []bool{false, false, false, false}
+	h.players[0].SetFolded(true)
+	h.actedFlags[0] = true
+	// raiseCountを上限に設定: CPUがbet/raiseを選択してもエラーになりフォールバックする
+	h.raiseCount = holdemMaxRaisesPerRound
+
+	for _, p := range h.players {
+		p.Reset()
+		p.AddCard(NewCard(CardDesignSpade, 1, false))
+		p.AddCard(NewCard(CardDesignHeart, 13, false))
+	}
+	h.communityCards = []*Card{
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignHeart, 11, false),
+		NewCard(CardDesignClover, 12, false),
+		NewCard(CardDesignDiamond, 2, false),
+		NewCard(CardDesignSpade, 3, false),
+	}
+
+	// パニックせずに完了すること
+	assert.NotPanics(t, func() {
+		h.runCpuActions()
+	})
+	// ゲームが進行して終了すること
+	assert.True(t, h.gameEndFlag || h.phase >= HoldemPhaseShowdown)
+}
+
+func TestRunCpuActions_FallbackFoldOnError(t *testing.T) {
+	// lastBetがある場合、CPUのアクションエラー時にフォールドする
+	h := newInternalTestHoldem()
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.startingChips = []int{1000, 1000, 1000, 1000}
+	h.SetPhase(HoldemPhaseRiver)
+	h.SetCurrentTurn(1)
+	h.SetLastBet(500)
+	h.SetMinRaise(500)
+	h.SetPot(600)
+	h.actedFlags = []bool{true, false, true, true}
+	h.players[0].SetFolded(true)
+	h.players[2].SetFolded(true)
+	h.players[3].SetFolded(true)
+	// raiseCountを上限に設定
+	h.raiseCount = holdemMaxRaisesPerRound
+
+	for _, p := range h.players {
+		p.Reset()
+		p.AddCard(NewCard(CardDesignSpade, 1, false))
+		p.AddCard(NewCard(CardDesignHeart, 13, false))
+	}
+	h.communityCards = []*Card{
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignHeart, 11, false),
+		NewCard(CardDesignClover, 12, false),
+		NewCard(CardDesignDiamond, 2, false),
+		NewCard(CardDesignSpade, 3, false),
+	}
+
+	assert.NotPanics(t, func() {
+		h.runCpuActions()
+	})
+}
+
 func TestResolveShowdown_WithSidePots(t *testing.T) {
 	h := newInternalTestHoldem()
 
@@ -1956,10 +2032,10 @@ func TestExecuteAction_AllIn_FullRaise_ReopensBetting(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
 	// Full all-in raise SHOULD reopen betting
-	assert.True(t, h.actedFlags[0])   // self: acted
-	assert.False(t, h.actedFlags[1])  // should be reset
-	assert.False(t, h.actedFlags[2])  // should be reset
-	assert.False(t, h.actedFlags[3])  // should be reset
+	assert.True(t, h.actedFlags[0])  // self: acted
+	assert.False(t, h.actedFlags[1]) // should be reset
+	assert.False(t, h.actedFlags[2]) // should be reset
+	assert.False(t, h.actedFlags[3]) // should be reset
 	assert.Equal(t, 200, h.lastBet)
 	assert.Equal(t, 100, h.minRaise) // updated to raiseAmount
 }

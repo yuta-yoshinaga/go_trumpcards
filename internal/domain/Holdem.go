@@ -702,7 +702,7 @@ func (h *Holdem) runCpuActions() {
 	for !h.gameEndFlag && h.phase >= HoldemPhasePreFlop && h.phase <= HoldemPhaseRiver {
 		iterations++
 		if iterations > maxIterations {
-			break
+			panic("maxIterations reached in runCpuActions, possible infinite loop")
 		}
 		if h.players[h.currentTurn].GetIsHuman() {
 			return
@@ -717,7 +717,16 @@ func (h *Holdem) runCpuActions() {
 			Action:    action,
 			Amount:    amount,
 		})
-		h.executeAction(h.currentTurn, action, amount)
+		err := h.executeAction(h.currentTurn, action, amount)
+		if err != nil {
+			// アクションが失敗した場合、フォールバック: チェックまたはフォールド
+			callAmt := h.lastBet - h.players[h.currentTurn].GetCurrentBet()
+			if callAmt > 0 {
+				h.executeAction(h.currentTurn, HoldemActionFold, 0)
+			} else {
+				h.executeAction(h.currentTurn, HoldemActionCheck, 0)
+			}
+		}
 		if h.gameEndFlag {
 			return
 		}
