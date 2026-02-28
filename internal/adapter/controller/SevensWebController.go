@@ -23,31 +23,25 @@ type SevensWebInput struct {
 	SessionId        string `json:"sessionId"`
 }
 
-// SevensWebOutputCard 7並べWebアウトプットカード
-type SevensWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // SevensWebOutputPlayer 7並べWebアウトプットプレイヤー
 type SevensWebOutputPlayer struct {
-	ID         int                    `json:"id"`
-	IsHuman    bool                   `json:"isHuman"`
-	IsFinished bool                   `json:"isFinished"`
-	Rank       int                    `json:"rank"`
-	CardCount  int                    `json:"cardCount"`
-	PassesUsed int                    `json:"passesUsed"`
-	MaxPasses  int                    `json:"maxPasses"`
-	Cards      []*SevensWebOutputCard `json:"cards"`
+	ID         int              `json:"id"`
+	IsHuman    bool             `json:"isHuman"`
+	IsFinished bool             `json:"isFinished"`
+	Rank       int              `json:"rank"`
+	CardCount  int              `json:"cardCount"`
+	PassesUsed int              `json:"passesUsed"`
+	MaxPasses  int              `json:"maxPasses"`
+	Cards      []*WebOutputCard `json:"cards"`
 }
 
 // SevensWebOutputAction 7並べのプレイヤー行動記録
 type SevensWebOutputAction struct {
-	PlayerIdx   int                  `json:"playerIdx"`
-	PlayedCard  *SevensWebOutputCard `json:"playedCard"` // nil = パス
-	TargetSuit  int                  `json:"targetSuit"`
-	TargetValue int                  `json:"targetValue"`
-	ForcedPass  bool                 `json:"forcedPass"`
+	PlayerIdx   int            `json:"playerIdx"`
+	PlayedCard  *WebOutputCard `json:"playedCard"` // nil = パス
+	TargetSuit  int            `json:"targetSuit"`
+	TargetValue int            `json:"targetValue"`
+	ForcedPass  bool           `json:"forcedPass"`
 }
 
 // SevensWebOutputConfig 7並べゲーム設定出力

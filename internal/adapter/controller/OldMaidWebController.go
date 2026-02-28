@@ -19,28 +19,22 @@ type OldMaidWebInput struct {
 	CpuPlacementStrategy bool   `json:"cpuPlacementStrategy"`
 }
 
-// OldMaidWebOutputCard ババ抜きWebアウトプットカード
-type OldMaidWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // OldMaidWebOutputPlayer ババ抜きWebアウトプットプレイヤー
 type OldMaidWebOutputPlayer struct {
-	ID         int                     `json:"id"`
-	IsHuman    bool                    `json:"isHuman"`
-	IsFinished bool                    `json:"isFinished"`
-	CardCount  int                     `json:"cardCount"`
-	Cards      []*OldMaidWebOutputCard `json:"cards"`
+	ID         int              `json:"id"`
+	IsHuman    bool             `json:"isHuman"`
+	IsFinished bool             `json:"isFinished"`
+	CardCount  int              `json:"cardCount"`
+	Cards      []*WebOutputCard `json:"cards"`
 }
 
 // OldMaidWebOutputCpuAction CPUターンの行動記録
 type OldMaidWebOutputCpuAction struct {
-	DrawPlayerIdx  int                     `json:"drawPlayerIdx"`
-	DrawFromIdx    int                     `json:"drawFromIdx"`
-	DrawnCard      *OldMaidWebOutputCard   `json:"drawnCard"`
-	DiscardedPairs int                     `json:"discardedPairs"`
-	DiscardedCards []*OldMaidWebOutputCard `json:"discardedCards"`
+	DrawPlayerIdx  int              `json:"drawPlayerIdx"`
+	DrawFromIdx    int              `json:"drawFromIdx"`
+	DrawnCard      *WebOutputCard   `json:"drawnCard"`
+	DiscardedPairs int              `json:"discardedPairs"`
+	DiscardedCards []*WebOutputCard `json:"discardedCards"`
 }
 
 // OldMaidWebOutput ババ抜きWebアウトプット
@@ -52,14 +46,14 @@ type OldMaidWebOutput struct {
 	LoserIdx              int                          `json:"loserIdx"`
 	LastDrawPlayerIdx     int                          `json:"lastDrawPlayerIdx"`
 	LastDrawFromIdx       int                          `json:"lastDrawFromIdx"`
-	LastDrawCard          *OldMaidWebOutputCard        `json:"lastDrawCard"`
+	LastDrawCard          *WebOutputCard               `json:"lastDrawCard"`
 	LastDiscardedPairs    int                          `json:"lastDiscardedPairs"`
-	LastDiscardedCards    []*OldMaidWebOutputCard      `json:"lastDiscardedCards"`
+	LastDiscardedCards    []*WebOutputCard             `json:"lastDiscardedCards"`
 	HasDrawn              bool                         `json:"hasDrawn"`
 	CpuActions            []*OldMaidWebOutputCpuAction `json:"cpuActions"`
 	HumanAction           *OldMaidWebOutputCpuAction   `json:"humanAction"`
 	CpuHighlightedCardIdx int                          `json:"cpuHighlightedCardIdx"`
-	RemovedCard           *OldMaidWebOutputCard        `json:"removedCard"`
+	RemovedCard           *WebOutputCard               `json:"removedCard"`
 	Mode                  int                          `json:"mode"`
 	Message               string                       `json:"message"`
 }

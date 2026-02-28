@@ -19,25 +19,19 @@ type HoldemWebInput struct {
 	BigBlind   *int   `json:"bigBlind,omitempty"`
 }
 
-// HoldemWebOutputCard テキサスホールデムWebアウトプットカード
-type HoldemWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
 type HoldemWebOutputPlayer struct {
-	ID            int                    `json:"id"`
-	IsHuman       bool                   `json:"isHuman"`
-	Cards         []*HoldemWebOutputCard `json:"cards"`
-	Chips         int                    `json:"chips"`
-	CurrentBet    int                    `json:"currentBet"`
-	Folded        bool                   `json:"folded"`
-	AllIn         bool                   `json:"allIn"`
-	HandRank      int                    `json:"handRank"`
-	HandName      string                 `json:"handName"`
-	BestHand      []*HoldemWebOutputCard `json:"bestHand"`
-	PlayStyleName string                 `json:"playStyleName"`
+	ID            int              `json:"id"`
+	IsHuman       bool             `json:"isHuman"`
+	Cards         []*WebOutputCard `json:"cards"`
+	Chips         int              `json:"chips"`
+	CurrentBet    int              `json:"currentBet"`
+	Folded        bool             `json:"folded"`
+	AllIn         bool             `json:"allIn"`
+	HandRank      int              `json:"handRank"`
+	HandName      string           `json:"handName"`
+	BestHand      []*WebOutputCard `json:"bestHand"`
+	PlayStyleName string           `json:"playStyleName"`
 }
 
 // HoldemWebOutputCpuAction テキサスホールデムCPU行動記録
@@ -49,11 +43,11 @@ type HoldemWebOutputCpuAction struct {
 
 // HoldemWebOutputResult テキサスホールデムショーダウン結果
 type HoldemWebOutputResult struct {
-	PlayerIdx int                    `json:"playerIdx"`
-	HandRank  int                    `json:"handRank"`
-	HandName  string                 `json:"handName"`
-	BestHand  []*HoldemWebOutputCard `json:"bestHand"`
-	WonAmount int                    `json:"wonAmount"`
+	PlayerIdx int              `json:"playerIdx"`
+	HandRank  int              `json:"handRank"`
+	HandName  string           `json:"handName"`
+	BestHand  []*WebOutputCard `json:"bestHand"`
+	WonAmount int              `json:"wonAmount"`
 }
 
 // HoldemWebOutputSidePot テキサスホールデムサイドポット
@@ -65,7 +59,7 @@ type HoldemWebOutputSidePot struct {
 // HoldemWebOutput テキサスホールデムWebアウトプット
 type HoldemWebOutput struct {
 	Players        []*HoldemWebOutputPlayer    `json:"players"`
-	CommunityCards []*HoldemWebOutputCard      `json:"communityCards"`
+	CommunityCards []*WebOutputCard            `json:"communityCards"`
 	Pot            int                         `json:"pot"`
 	SidePots       []*HoldemWebOutputSidePot   `json:"sidePots"`
 	DealerIdx      int                         `json:"dealerIdx"`
@@ -178,7 +172,7 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 func (hwc *HoldemWebController) newDefaultOutput(msg string) *HoldemWebOutput {
 	return &HoldemWebOutput{
 		Players:        make([]*HoldemWebOutputPlayer, 0),
-		CommunityCards: make([]*HoldemWebOutputCard, 0),
+		CommunityCards: make([]*WebOutputCard, 0),
 		SidePots:       make([]*HoldemWebOutputSidePot, 0),
 		RoundResults:   make([]*HoldemWebOutputResult, 0),
 		CpuActions:     make([]*HoldemWebOutputCpuAction, 0),

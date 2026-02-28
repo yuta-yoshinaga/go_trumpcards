@@ -16,31 +16,25 @@ type BlackJackWebInput struct {
 	SessionId string `json:"sessionId"`
 }
 
-// BlackJackWebOutputCard ブラックジャックWebアウトプットカード
-type BlackJackWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
 type BlackJackWebOutputHand struct {
-	Score        int                       `json:"score"`
-	Cards        []*BlackJackWebOutputCard `json:"cards"`
-	Bet          int                       `json:"bet"`
-	Stood        bool                      `json:"stood"`
-	Doubled      bool                      `json:"doubled"`
-	Busted       bool                      `json:"busted"`
-	IsBlackJack  bool                      `json:"isBlackJack"`
-	CanSplit     bool                      `json:"canSplit"`
-	Surrendered  bool                      `json:"surrendered"`
-	CanSurrender bool                      `json:"canSurrender"`
+	Score        int              `json:"score"`
+	Cards        []*WebOutputCard `json:"cards"`
+	Bet          int              `json:"bet"`
+	Stood        bool             `json:"stood"`
+	Doubled      bool             `json:"doubled"`
+	Busted       bool             `json:"busted"`
+	IsBlackJack  bool             `json:"isBlackJack"`
+	CanSplit     bool             `json:"canSplit"`
+	Surrendered  bool             `json:"surrendered"`
+	CanSurrender bool             `json:"canSurrender"`
 }
 
 // BlackJackWebOutputPlayer ブラックジャックWebアウトプットプレイヤー
 type BlackJackWebOutputPlayer struct {
-	Score int                       `json:"score"`
-	Cards []*BlackJackWebOutputCard `json:"cards"`
-	Chips int                       `json:"chips"`
+	Score int              `json:"score"`
+	Cards []*WebOutputCard `json:"cards"`
+	Chips int              `json:"chips"`
 }
 
 // BlackJackWebOutput ブラックジャックWebアウトプット
