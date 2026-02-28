@@ -32,15 +32,15 @@ func NewHoldemInteractor(h interfaces.HoldemGame, hp presenter.HoldemPresenter) 
 
 // Reset ゲーム初期化
 func (hi *HoldemInteractor) Reset() string {
-	hi.h.Reset()
-	return hi.hp.Output(hi.h, nil)
+	err := hi.h.Reset()
+	return hi.hp.Output(hi.h, err)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
 	hi.h.SetConfig(cfg)
-	hi.h.Reset()
-	return hi.hp.Output(hi.h, nil)
+	err := hi.h.Reset()
+	return hi.hp.Output(hi.h, err)
 }
 
 // Action プレイヤーアクション実行

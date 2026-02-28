@@ -269,6 +269,48 @@ func TestHoldemWebController_Reset_BigBlindOnly(t *testing.T) {
 	recorded.CodeIs(200)
 }
 
+func TestHoldemWebController_Reset_SmallBlindOnly_AutoAdjust(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api := newHoldemTestHandler(mi)
+
+	// smallBlind=20のみ指定: bigBlindがデフォルト(10)より大きいので自動調整 bb=40
+	sb := 20
+	cfg := domain.DefaultHoldemConfig()
+	cfg.SmallBlind = sb
+	cfg.BigBlind = sb * 2 // 自動調整: 40
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":    "reset",
+				"sessionId":  "s-sb-auto",
+				"smallBlind": sb,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_BigBlindOnly_AutoAdjust(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api := newHoldemTestHandler(mi)
+
+	// bigBlind=4のみ指定: smallBlindがデフォルト(5)より大きいので自動調整 sb=2
+	bb := 4
+	cfg := domain.DefaultHoldemConfig()
+	cfg.SmallBlind = bb / 2 // 自動調整: 2
+	cfg.BigBlind = bb
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s-bb-auto",
+				"bigBlind":  bb,
+			}))
+	recorded.CodeIs(200)
+}
+
 func TestHoldemWebController_Reset_SmallBlindGeBigBlind(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api := newHoldemTestHandler(mi)

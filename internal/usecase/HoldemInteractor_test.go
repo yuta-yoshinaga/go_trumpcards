@@ -37,12 +37,40 @@ func TestHoldemInteractor_Reset(t *testing.T) {
 	mp := new(presenter.MockHoldemPresenter)
 	hi := NewHoldemInteractor(mg, mp)
 
-	mg.On("Reset").Return()
+	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("reset output")
 
 	result := hi.Reset()
 	assert.Equal(t, "reset output", result)
 	mg.AssertCalled(t, "Reset")
+}
+
+func TestHoldemInteractor_Reset_Error(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	err := errors.New("reset failed")
+	mg.On("Reset").Return(err)
+	mp.On("Output", mg, err).Return("error output")
+
+	result := hi.Reset()
+	assert.Equal(t, "error output", result)
+}
+
+func TestHoldemInteractor_ResetWithConfig_Error(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	cfg := domain.HoldemConfig{SmallBlind: 10, BigBlind: 20, InitChips: 2000}
+	err := errors.New("reset failed")
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(err)
+	mp.On("Output", mg, err).Return("error output")
+
+	result := hi.ResetWithConfig(cfg)
+	assert.Equal(t, "error output", result)
 }
 
 func TestHoldemInteractor_ResetWithConfig(t *testing.T) {
@@ -52,7 +80,7 @@ func TestHoldemInteractor_ResetWithConfig(t *testing.T) {
 
 	cfg := domain.HoldemConfig{SmallBlind: 10, BigBlind: 20, InitChips: 2000}
 	mg.On("SetConfig", cfg).Return()
-	mg.On("Reset").Return()
+	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("reset with config output")
 
 	result := hi.ResetWithConfig(cfg)

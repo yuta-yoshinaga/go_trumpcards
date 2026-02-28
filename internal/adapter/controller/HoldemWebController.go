@@ -133,6 +133,16 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		if param.BigBlind != nil && *param.BigBlind >= 1 {
 			bb = *param.BigBlind
 		}
+		// 片方のみ指定された場合、もう片方を自動調整
+		if param.SmallBlind != nil && param.BigBlind == nil && sb >= bb {
+			bb = sb * 2
+		}
+		if param.BigBlind != nil && param.SmallBlind == nil && sb >= bb {
+			sb = bb / 2
+			if sb < 1 {
+				sb = 1
+			}
+		}
 		if sb >= bb {
 			w.WriteHeader(http.StatusBadRequest)
 			if err := w.WriteJson(hwc.newDefaultOutput("param error: smallBlind must be less than bigBlind.")); err != nil {

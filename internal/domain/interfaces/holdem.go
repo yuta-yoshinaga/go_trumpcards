@@ -4,7 +4,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // HoldemGame テキサスホールデムゲームインタフェース
 type HoldemGame interface {
-	Reset()
+	Reset() error
 	PlayerAction(action, amount int) error
 	GetPhase() int
 	GetPlayers() []*domain.HoldemPlayer

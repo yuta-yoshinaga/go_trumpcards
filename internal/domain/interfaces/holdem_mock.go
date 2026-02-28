@@ -11,8 +11,9 @@ type MockHoldemGame struct {
 }
 
 // Reset モック
-func (_m *MockHoldemGame) Reset() {
-	_m.Called()
+func (_m *MockHoldemGame) Reset() error {
+	ret := _m.Called()
+	return ret.Error(0)
 }
 
 // PlayerAction モック

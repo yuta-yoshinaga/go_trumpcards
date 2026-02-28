@@ -100,7 +100,7 @@ func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemCon
 }
 
 // Reset ゲーム初期化
-func (h *Holdem) Reset() {
+func (h *Holdem) Reset() error {
 	h.phase = HoldemPhaseInit
 	h.pot = 0
 	h.sidePots = make([]HoldemSidePot, 0)
@@ -150,10 +150,11 @@ func (h *Holdem) Reset() {
 	// UTG (ビッグブラインドの次) から開始
 	h.currentTurn = (h.dealerIdx + 3) % len(h.players)
 
-	// CPUプリフロップアクション実行 (Reset時のエラーは回復不能なため panic)
+	// CPUプリフロップアクション実行
 	if err := h.runCpuActions(); err != nil {
-		panic(fmt.Sprintf("runCpuActions failed during Reset: %v", err))
+		return fmt.Errorf("runCpuActions failed during Reset: %w", err)
 	}
+	return nil
 }
 
 // postBlinds ブラインド投入
