@@ -556,19 +556,30 @@ func (p *Poker) GameJudgment() int {
 
 // compareHighCards 同ランク時のハイカード比較
 func (p *Poker) compareHighCards() int {
-	playerValues := make([]int, p.player.GetCardsSize())
-	dealerValues := make([]int, p.dealer.GetCardsSize())
-
+	playerCards := make([]*Card, p.player.GetCardsSize())
 	for i := 0; i < p.player.GetCardsSize(); i++ {
-		v := p.player.GetCard(i).GetValue()
-		if v == 1 {
+		playerCards[i] = p.player.GetCard(i)
+	}
+	dealerCards := make([]*Card, p.dealer.GetCardsSize())
+	for i := 0; i < p.dealer.GetCardsSize(); i++ {
+		dealerCards[i] = p.dealer.GetCard(i)
+	}
+	playerIsWheel := isWheelHand(playerCards)
+	dealerIsWheel := isWheelHand(dealerCards)
+
+	playerValues := make([]int, len(playerCards))
+	dealerValues := make([]int, len(dealerCards))
+
+	for i, c := range playerCards {
+		v := c.GetValue()
+		if v == 1 && !playerIsWheel {
 			v = 14
 		}
 		playerValues[i] = v
 	}
-	for i := 0; i < p.dealer.GetCardsSize(); i++ {
-		v := p.dealer.GetCard(i).GetValue()
-		if v == 1 {
+	for i, c := range dealerCards {
+		v := c.GetValue()
+		if v == 1 && !dealerIsWheel {
 			v = 14
 		}
 		dealerValues[i] = v

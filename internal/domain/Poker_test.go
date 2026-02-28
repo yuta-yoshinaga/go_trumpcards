@@ -1463,6 +1463,39 @@ func TestPoker_CompareHighCards_TwoPairKickerDecides(t *testing.T) {
 	assert.Equal(t, 1, tp.GameJudgment())
 }
 
+func TestPoker_CompareHighCards_WheelLosesToSixHighStraight(t *testing.T) {
+	// Wheel (A-2-3-4-5) should lose to 6-high straight (2-3-4-5-6)
+	// Ace in wheel must stay as 1 (5-high), not become 14
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewPokerPlayer()
+	dealer := domain.NewPokerPlayer()
+	tp := domain.NewPoker(tc, player, dealer)
+	tp.SetFolded(domain.PokerFoldNone)
+	player.Reset()
+	dealer.Reset()
+
+	// Player: wheel (A-2-3-4-5)
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	player.AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	player.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	player.AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+	// Dealer: 6-high straight (2-3-4-5-6)
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	player.EvalHand()
+	dealer.EvalHand()
+	assert.Equal(t, domain.PokerHandStraight, player.GetHandRank())
+	assert.Equal(t, domain.PokerHandStraight, dealer.GetHandRank())
+	// Wheel (5-high) loses to 6-high
+	assert.Equal(t, -1, tp.GameJudgment())
+}
+
 // --- Coverage gap tests: compareHighCards dealer Ace=14 ---
 
 func TestPoker_CompareHighCards_DealerAce(t *testing.T) {
