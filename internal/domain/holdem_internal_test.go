@@ -246,7 +246,7 @@ func TestDealRemainingCommunity_DeckExhausted(t *testing.T) {
 	}
 
 	h.dealRemainingCommunity()
-	assert.Less(t, len(h.communityCards), 5)
+	assert.Len(t, h.communityCards, 1)
 }
 
 func TestFindNextActive(t *testing.T) {
