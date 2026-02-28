@@ -299,12 +299,15 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 		p.SetAllIn(true)
 		if newBet > h.lastBet {
 			raiseAmount := newBet - h.lastBet
-			if raiseAmount > h.minRaise {
-				h.minRaise = raiseAmount
-			}
 			h.lastBet = newBet
 			h.raiseCount++
-			h.resetActedExcept(playerIdx)
+			// ショートオールイン (最低レイズ額未満) はアクションを再開しない
+			if raiseAmount >= h.minRaise {
+				h.minRaise = raiseAmount
+				h.resetActedExcept(playerIdx)
+			} else {
+				h.actedFlags[playerIdx] = true
+			}
 		} else {
 			h.actedFlags[playerIdx] = true
 		}

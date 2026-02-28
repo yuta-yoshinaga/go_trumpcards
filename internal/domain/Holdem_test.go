@@ -720,3 +720,4 @@ func TestHoldem_AllIn_AboveLastBet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
 }
+

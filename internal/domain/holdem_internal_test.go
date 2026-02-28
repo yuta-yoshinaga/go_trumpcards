@@ -1921,3 +1921,45 @@ func TestHoldem_DealerRotation(t *testing.T) {
 
 	assert.Equal(t, 1, h.GetDealerIdx())
 }
+
+func TestExecuteAction_AllIn_ShortRaise_DoesNotReopenBetting(t *testing.T) {
+	h := newInternalTestHoldem()
+	h.phase = HoldemPhaseFlop
+	h.lastBet = 100
+	h.minRaise = 50
+	h.players[0].SetChips(120) // newBet=120, raiseAmount=20 < minRaise=50
+	h.players[0].SetCurrentBet(0)
+	h.actedFlags = []bool{false, true, true, true}
+
+	err := h.executeAction(0, HoldemActionAllIn, 0)
+	assert.NoError(t, err)
+	assert.True(t, h.players[0].GetAllIn())
+	// Short all-in should set actedFlags[0]=true but NOT reset others
+	assert.True(t, h.actedFlags[0])
+	assert.True(t, h.actedFlags[1]) // should remain true (not reset)
+	assert.True(t, h.actedFlags[2])
+	assert.True(t, h.actedFlags[3])
+	assert.Equal(t, 120, h.lastBet)
+	assert.Equal(t, 50, h.minRaise) // minRaise unchanged (short raise)
+}
+
+func TestExecuteAction_AllIn_FullRaise_ReopensBetting(t *testing.T) {
+	h := newInternalTestHoldem()
+	h.phase = HoldemPhaseFlop
+	h.lastBet = 100
+	h.minRaise = 50
+	h.players[0].SetChips(200) // newBet=200, raiseAmount=100 >= minRaise=50
+	h.players[0].SetCurrentBet(0)
+	h.actedFlags = []bool{false, true, true, true}
+
+	err := h.executeAction(0, HoldemActionAllIn, 0)
+	assert.NoError(t, err)
+	assert.True(t, h.players[0].GetAllIn())
+	// Full all-in raise SHOULD reopen betting
+	assert.True(t, h.actedFlags[0])   // self: acted
+	assert.False(t, h.actedFlags[1])  // should be reset
+	assert.False(t, h.actedFlags[2])  // should be reset
+	assert.False(t, h.actedFlags[3])  // should be reset
+	assert.Equal(t, 200, h.lastBet)
+	assert.Equal(t, 100, h.minRaise) // updated to raiseAmount
+}
