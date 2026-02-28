@@ -6,18 +6,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func setupInternalTestBJ(playerChips, dealerChips int) (*BlackJack, *BlackJackPlayer, *BlackJackPlayer) {
+	tc := NewTrumpCards(0)
+	player := NewBlackJackPlayer()
+	dealer := NewBlackJackPlayer()
+	player.SetChips(playerChips)
+	dealer.SetChips(dealerChips)
+	bj := NewBlackJack(tc, player, dealer)
+	return bj, player, dealer
+}
+
 // TestBlackJack_PlayerDoubleDown_Bust_Deterministic exercises lines 234-236 of
 // BlackJack.go: when score >= 22 after the double-down draw, the hand should be
 // marked as busted. Instead of retrying random shuffles, the deck is directly
 // stacked so the next drawn card is guaranteed to be a King (BJ value 10),
 // pushing the player's score from 20 to 30 (bust).
 func TestBlackJack_PlayerDoubleDown_Bust_Deterministic(t *testing.T) {
-	tc := NewTrumpCards(0)
-	player := NewBlackJackPlayer()
-	dealer := NewBlackJackPlayer()
-	player.SetChips(1000)
-	dealer.SetChips(1000)
-	bj := NewBlackJack(tc, player, dealer)
+	bj, _, dealer := setupInternalTestBJ(1000, 1000)
 
 	// Set up player hand with score 20 (10 + King=10)
 	hand := bj.playerHands[0]
@@ -62,12 +67,7 @@ func TestBlackJack_PlayerDoubleDown_Bust_Deterministic(t *testing.T) {
 // are busted, dealerPlay skips drawing cards. Uses internal access to stack the
 // deck and call PlayerHit to bust the hand naturally.
 func TestBlackJack_AllBustedSkipsDealerDraw(t *testing.T) {
-	tc := NewTrumpCards(0)
-	player := NewBlackJackPlayer()
-	dealer := NewBlackJackPlayer()
-	player.SetChips(900)
-	dealer.SetChips(1000)
-	bj := NewBlackJack(tc, player, dealer)
+	bj, _, dealer := setupInternalTestBJ(900, 1000)
 
 	// Set up player hand with score 20 (10 + 10)
 	hand := bj.playerHands[0]
@@ -101,12 +101,7 @@ func TestBlackJack_AllBustedSkipsDealerDraw(t *testing.T) {
 // BJPhaseInsurance. Instead of relying on random shuffles, the deck is
 // directly stacked so the dealer's first dealt card is guaranteed to be an Ace.
 func TestBlackJack_PlayerBet_DealerAceTriggersInsurance_Deterministic(t *testing.T) {
-	tc := NewTrumpCards(0)
-	player := NewBlackJackPlayer()
-	dealer := NewBlackJackPlayer()
-	player.SetChips(BJDefaultChips)
-	dealer.SetChips(BJDefaultChips)
-	bj := NewBlackJack(tc, player, dealer)
+	bj, _, _ := setupInternalTestBJ(BJDefaultChips, BJDefaultChips)
 
 	// Stack the deck so that the deal produces a known layout.
 	// PlayerBet deals cards in this order (2 iterations of the loop):
