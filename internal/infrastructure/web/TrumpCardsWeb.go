@@ -98,25 +98,27 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 func (web *TrumpCardsWeb) Exec() {
 	api := rest.NewApi()
 	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
-	if allowedOriginsStr == "" {
+	if allowedOriginsStr == "" && os.Getenv("APP_ENV") != "production" {
 		allowedOriginsStr = "http://localhost:5173,http://localhost:8080"
 	}
-	allowedOrigins := make(map[string]bool, strings.Count(allowedOriginsStr, ",")+1)
-	for _, origin := range strings.Split(allowedOriginsStr, ",") {
-		if o := strings.TrimSpace(origin); o != "" {
-			allowedOrigins[o] = true
+	if allowedOriginsStr != "" {
+		allowedOrigins := make(map[string]bool, strings.Count(allowedOriginsStr, ",")+1)
+		for _, origin := range strings.Split(allowedOriginsStr, ",") {
+			if o := strings.TrimSpace(origin); o != "" {
+				allowedOrigins[o] = true
+			}
 		}
+		api.Use(&rest.CorsMiddleware{
+			RejectNonCorsRequests: false,
+			OriginValidator: func(origin string, request *rest.Request) bool {
+				return allowedOrigins[origin]
+			},
+			AllowedMethods:                []string{"POST"},
+			AllowedHeaders:                []string{"Content-Type"},
+			AccessControlAllowCredentials: false,
+			AccessControlMaxAge:           3600,
+		})
 	}
-	api.Use(&rest.CorsMiddleware{
-		RejectNonCorsRequests: false,
-		OriginValidator: func(origin string, request *rest.Request) bool {
-			return allowedOrigins[origin]
-		},
-		AllowedMethods:                []string{"GET", "POST"},
-		AllowedHeaders:                []string{"Content-Type"},
-		AccessControlAllowCredentials: false,
-		AccessControlMaxAge:           3600,
-	})
 	stack := rest.DefaultDevStack
 	if os.Getenv("APP_ENV") == "production" {
 		stack = rest.DefaultProdStack
