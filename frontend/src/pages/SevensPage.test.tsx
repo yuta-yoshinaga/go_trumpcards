@@ -682,7 +682,7 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
   });
 
-  it('forced pass human action has red-styled wrapper', async () => {
+  it('forced pass human action has forced-pass testid', async () => {
     const forcedPassHumanState: SevensResponse = {
       ...humanTurnState,
       currentTurn: 1,
@@ -690,21 +690,38 @@ describe('SevensPage', () => {
     };
     mockExec.mockResolvedValue(forcedPassHumanState);
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByText(/あなたがパスしました/)).toBeInTheDocument());
-    const actionDiv = screen.getByText(/あなたがパスしました/).closest('div');
-    expect(actionDiv?.className).toContain('bg-red-900/50');
+    await waitFor(() => expect(screen.getByTestId('human-action-forced-pass')).toBeInTheDocument());
   });
 
-  it('forced pass CPU action has amber-styled text', async () => {
+  it('non-forced pass human action has normal testid', async () => {
+    const normalPassHumanState: SevensResponse = {
+      ...humanTurnState,
+      currentTurn: 1,
+      humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false },
+    };
+    mockExec.mockResolvedValue(normalPassHumanState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByTestId('human-action')).toBeInTheDocument());
+  });
+
+  it('forced pass CPU action has forced-pass testid', async () => {
     const forcedPassCpuState: SevensResponse = {
       ...humanTurnState,
       cpuActions: [{ playerIdx: 1, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: true }],
     };
     mockExec.mockResolvedValue(forcedPassCpuState);
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1がパスしました/)).toBeInTheDocument());
-    const cpuActionDiv = screen.getByText(/CPU 1がパスしました/).closest('div');
-    expect(cpuActionDiv?.className).toContain('text-[#fca]');
+    await waitFor(() => expect(screen.getByTestId('cpu-action-forced-pass-0')).toBeInTheDocument());
+  });
+
+  it('non-forced pass CPU action has normal testid', async () => {
+    const normalPassCpuState: SevensResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false }],
+    };
+    mockExec.mockResolvedValue(normalPassCpuState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByTestId('cpu-action-0')).toBeInTheDocument());
   });
 
   it('shows joker played without target info when targetSuit is 0', async () => {

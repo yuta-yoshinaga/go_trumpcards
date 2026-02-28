@@ -378,6 +378,7 @@ export function SevensPage() {
         {/* Human action log */}
         {state.humanAction && (
           <div
+            data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
             className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-[#fca] border border-red-500/50' : 'bg-black/40 text-[#cfc]'}`}
           >
             {actionDesc(state.players, state.humanAction)}
@@ -389,7 +390,11 @@ export function SevensPage() {
           <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
             <span className="text-[#ccc]">[CPUの行動]</span>
             {state.cpuActions.map((a, i) => (
-              <div key={`cpu-action-${a.playerIdx}-${i}`} className={a.forcedPass ? 'text-[#fca]' : 'text-[#ccc]'}>
+              <div
+                key={`cpu-action-${a.playerIdx}-${i}`}
+                data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
+                className={a.forcedPass ? 'text-[#fca]' : 'text-[#ccc]'}
+              >
                 {actionDesc(state.players, a)}
               </div>
             ))}
