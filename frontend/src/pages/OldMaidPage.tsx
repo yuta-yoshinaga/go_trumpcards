@@ -80,6 +80,15 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
 
   const [firstCpuAction] = finalState.cpuActions;
 
+  const cpuTransitionState = firstCpuAction
+    ? {
+        currentTurn: firstCpuAction.drawPlayerIdx,
+        gameEndFlag: false,
+        message: '',
+        nextDrawTargetIdx: firstCpuAction.drawFromIdx,
+      }
+    : {};
+
   return {
     ...finalState,
     players: finalState.players.map((p, idx) => ({
@@ -87,7 +96,6 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
       cardCount: Math.max(0, counts[idx]),
       isFinished: counts[idx] <= 0,
     })),
-    currentTurn: firstCpuAction ? firstCpuAction.drawPlayerIdx : finalState.currentTurn,
     hasDrawn: true,
     lastDrawPlayerIdx: ha.drawPlayerIdx,
     lastDrawFromIdx: ha.drawFromIdx,
@@ -95,9 +103,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     lastDiscardedPairs: ha.discardedPairs,
     lastDiscardedCards: ha.discardedCards ?? [],
     cpuActions: [],
-    gameEndFlag: firstCpuAction ? false : finalState.gameEndFlag,
-    message: firstCpuAction ? '' : finalState.message,
-    nextDrawTargetIdx: firstCpuAction ? firstCpuAction.drawFromIdx : finalState.nextDrawTargetIdx,
+    ...cpuTransitionState,
   };
 }
 
