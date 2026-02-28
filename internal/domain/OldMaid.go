@@ -247,6 +247,9 @@ func (o *OldMaid) advanceTurn() {
 
 // advancePastFinished currentTurnがフィニッシュしていたら次のアクティブプレイヤーへ進める
 func (o *OldMaid) advancePastFinished() {
+	if o.gameEndFlag {
+		return
+	}
 	for o.players[o.currentTurn].GetIsFinished() {
 		o.currentTurn = (o.currentTurn + 1) % OldMaidPlayerCnt
 	}
