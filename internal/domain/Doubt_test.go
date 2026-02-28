@@ -169,6 +169,14 @@ func TestDoubt_PlayerPlay_Errors(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 	})
 
+	t.Run("duplicate card index", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		err := game.PlayerPlay([]int{0, 0}, 1)
+		assert.ErrorIs(t, err, domain.ErrInvalidCard)
+	})
+
 	t.Run("out of range card index", func(t *testing.T) {
 		game, players := makeDoubtGame()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
