@@ -359,7 +359,7 @@ describe('SevensPage', () => {
   it('syncs config state from server response', async () => {
     const configState: SevensResponse = {
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5 },
+      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3 },
     };
     mockExec.mockResolvedValue(configState);
     render(<SevensPage />);
@@ -367,6 +367,7 @@ describe('SevensPage', () => {
       expect(screen.getByLabelText('トンネル')).toBeChecked();
       expect(screen.getByLabelText('CPU戦略')).toBeChecked();
       expect(screen.getByRole('combobox', { name: 'ジョーカー' })).toHaveValue('2');
+      expect(screen.getByRole('combobox', { name: 'パス回数' })).toHaveValue('3');
     });
   });
 
