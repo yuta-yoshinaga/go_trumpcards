@@ -103,7 +103,7 @@ func (web *TrumpCardsWeb) Exec() {
 	}
 	allowedOrigins := make(map[string]bool, strings.Count(allowedOriginsStr, ",")+1)
 	for _, origin := range strings.Split(allowedOriginsStr, ",") {
-		allowedOrigins[origin] = true
+		allowedOrigins[strings.TrimSpace(origin)] = true
 	}
 	api.Use(&rest.CorsMiddleware{
 		RejectNonCorsRequests: false,
