@@ -67,11 +67,11 @@ const initState: HoldemResponse = {
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
 const preFlopState: HoldemResponse = {
-  players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2)],
+  players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
   communityCards: [],
   pot: 30,
   sidePots: [],
-  dealerIdx: 2,
+  dealerIdx: 3,
   currentTurn: 0,
   phase: 1,
   gameEndFlag: false,
