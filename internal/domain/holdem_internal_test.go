@@ -236,6 +236,19 @@ func TestDealRemainingCommunity(t *testing.T) {
 	assert.Equal(t, 5, len(h.communityCards))
 }
 
+func TestDealRemainingCommunity_DeckExhausted(t *testing.T) {
+	h := newInternalTestHoldem()
+	// Drain the entire deck
+	for h.trumpCards.DrawCard() != nil {
+	}
+	h.communityCards = []*Card{
+		NewCard(CardDesignSpade, 2, false),
+	}
+
+	h.dealRemainingCommunity()
+	assert.Less(t, len(h.communityCards), 5)
+}
+
 func TestFindNextActive(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.players[1].SetFolded(true)
