@@ -1,5 +1,7 @@
+import type { Card } from '../types/card';
+
 /** Return a label for a card: "JOKER" for jokers, otherwise "DESIGN VALUE". */
-export function cardLabel(card: { design: string; value: number }): string {
+export function cardLabel(card: Card): string {
   if (card.design === 'JOKER') return 'JOKER';
   return `${card.design} ${card.value}`;
 }

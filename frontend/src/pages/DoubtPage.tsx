@@ -10,6 +10,8 @@ import type { Card, DoubtConfig, DoubtCpuAction, DoubtPlayerData } from '../type
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 
+const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_150px] min-w-[120px]`;
+
 // ── CPU player area ──────────────────────────────────────────────────────────
 
 interface CpuAreaProps {
@@ -22,7 +24,7 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
     ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
     : {};
   return (
-    <div className={`${playerAreaBase} p-[10px] flex-[1_1_150px] min-w-[120px]`} style={conditionalStyle}>
+    <div className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1 text-sm">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && <StatusBadge variant="success">上がり</StatusBadge>}
