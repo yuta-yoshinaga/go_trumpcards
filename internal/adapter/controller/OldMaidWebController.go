@@ -108,6 +108,13 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	errOutput := owc.newDefaultOutput("error.")
 	switch param.Command {
 	case "r", "reset":
+		if param.Mode < 0 || param.Mode > int(domain.OldMaidModeJijiNuki) {
+			w.WriteHeader(http.StatusBadRequest)
+			if err := w.WriteJson(owc.newDefaultOutput("param error: mode must be between 0 and 1.")); err != nil {
+				log.Printf("WriteJson error: %v", err)
+			}
+			return
+		}
 		cfg := domain.OldMaidConfig{
 			Mode:                 domain.OldMaidMode(param.Mode),
 			CpuPlacementStrategy: param.CpuPlacementStrategy,

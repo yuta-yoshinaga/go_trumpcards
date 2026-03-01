@@ -249,6 +249,54 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock.AssertNotCalled(t, "Reset")
 	})
 
+	t.Run("failed reset with invalid jokerCount negative", func(t *testing.T) {
+		sgiMock := new(usecase.MockSevensInteractor)
+		factory := func() uc.SevensInteractorIF { return sgiMock }
+		tswc := controller.NewSevensWebController(factory)
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
+		api.SetApp(router)
+
+		negOne := -1
+		input := controller.SevensWebInput{
+			Command:    "reset",
+			JokerCount: &negOne,
+			SessionId:  "test-cfg-neg",
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error: jokerCount must be between 0 and 2."}`)
+		sgiMock.AssertNotCalled(t, "ResetWithConfig")
+		sgiMock.AssertNotCalled(t, "Reset")
+	})
+
+	t.Run("failed reset with invalid jokerCount too large", func(t *testing.T) {
+		sgiMock := new(usecase.MockSevensInteractor)
+		factory := func() uc.SevensInteractorIF { return sgiMock }
+		tswc := controller.NewSevensWebController(factory)
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
+		api.SetApp(router)
+
+		hundred := 100
+		input := controller.SevensWebInput{
+			Command:    "reset",
+			JokerCount: &hundred,
+			SessionId:  "test-cfg-big",
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error: jokerCount must be between 0 and 2."}`)
+		sgiMock.AssertNotCalled(t, "ResetWithConfig")
+		sgiMock.AssertNotCalled(t, "Reset")
+	})
+
 	t.Run("reset with only maxPasses field calls ResetWithConfig with default maxPasses", func(t *testing.T) {
 		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
