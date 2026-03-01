@@ -2,20 +2,21 @@ import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { StatusBadge } from '../components/StatusBadge';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { playerAreaBase } from '../styles/gameStyles';
 import type {
-  Card,
   DaifugoAction,
   DaifugoConfigInput,
   DaifugoExchangeAction,
   DaifugoPlayerData,
   DaifugoResponse,
 } from '../types/card';
+import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
-const playerAreaBaseClass =
-  'bg-black/35 rounded-[10px] p-[10px] border-2 border-transparent flex-[1_1_180px] min-w-[150px]';
+const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_180px] min-w-[150px]`;
 
 function rankName(rank: number): string {
   switch (rank) {
@@ -31,10 +32,6 @@ function rankName(rank: number): string {
     default:
       return '';
   }
-}
-
-function cardLabel(card: Card): string {
-  return `${card.design} ${card.value}`;
 }
 
 function actionDescription(players: { id: number; isHuman: boolean }[], action: DaifugoAction): string {
@@ -57,38 +54,11 @@ function CpuPlayerArea({ player, isCurrentTurn }: CpuPlayerAreaProps) {
       ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
       : {};
   return (
-    <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
+    <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && (
-          <span
-            style={{
-              background: '#5cb85c',
-              color: '#fff',
-              borderRadius: 6,
-              padding: '1px 8px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-            }}
-          >
-            上がり ({rankName(player.rank)})
-          </span>
-        )}
-        {isCurrentTurn && !player.isFinished && (
-          <span
-            style={{
-              background: '#f0ad4e',
-              color: '#222',
-              borderRadius: 6,
-              padding: '1px 8px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-              fontWeight: 'bold',
-            }}
-          >
-            考え中...
-          </span>
-        )}
+        {player.isFinished && <StatusBadge variant="success">上がり ({rankName(player.rank)})</StatusBadge>}
+        {isCurrentTurn && !player.isFinished && <StatusBadge variant="warning">考え中...</StatusBadge>}
       </div>
       {!player.isFinished && <div className="text-[#ccc] text-[0.85em]">{player.cardCount}枚</div>}
     </div>
@@ -110,23 +80,10 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn, onD
       ? { border: '2px solid #5cb85c', boxShadow: '0 0 12px #5cb85c' }
       : {};
   return (
-    <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
+    <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && (
-          <span
-            style={{
-              background: '#5cb85c',
-              color: '#fff',
-              borderRadius: 6,
-              padding: '1px 8px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-            }}
-          >
-            上がり ({rankName(player.rank)})
-          </span>
-        )}
+        {player.isFinished && <StatusBadge variant="success">上がり ({rankName(player.rank)})</StatusBadge>}
       </div>
       {!player.isFinished && (
         <div style={{ color: '#ccc', fontSize: '0.85em', marginBottom: 4 }}>
