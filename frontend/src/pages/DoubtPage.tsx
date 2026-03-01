@@ -237,7 +237,8 @@ export function DoubtPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading} aria-live="polite">
+      {loading && <span className="sr-only">処理中...</span>}
       {/* Settings panel */}
       <details className="px-4 pt-2">
         <summary className="text-white/70 text-xs cursor-pointer select-none">設定</summary>

@@ -348,7 +348,8 @@ export function DaifugoPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
+      {loading && <span className="sr-only">処理中...</span>}
       {/* Scrollable: CPU rows + table cards + action logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* CPU row */}

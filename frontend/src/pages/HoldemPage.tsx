@@ -52,7 +52,8 @@ export function HoldemPage() {
   const minRaise = state?.minRaise ?? 0;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
+      {loading && <span className="sr-only">処理中...</span>}
       {/* Info bar */}
       <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
         <span>

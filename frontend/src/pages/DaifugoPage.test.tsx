@@ -615,6 +615,31 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0, 1]));
   });
 
+  it('sets aria-busy and sr-only loading text while loading', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+
+    const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-live]') as HTMLElement;
+    expect(container).toHaveAttribute('aria-busy', 'false');
+    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+
+    let resolve!: (value: DaifugoResponse) => void;
+    const slowPromise = new Promise<DaifugoResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+
+    expect(container).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByText('処理中...')).toBeInTheDocument();
+
+    resolve(humanTurnState);
+    await waitFor(() => {
+      expect(container).toHaveAttribute('aria-busy', 'false');
+      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+    });
+  });
+
   it('drop with invalid dataTransfer data is ignored (NaN guard)', async () => {
     render(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
