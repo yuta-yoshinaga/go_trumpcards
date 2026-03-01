@@ -15,7 +15,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		return nil, errors.New("marshal error")
 	}
 
-	const want = `{"error":"internal server error"}`
+	want := internalServerErrorJSON()
 
 	testCases := []struct {
 		name   string
