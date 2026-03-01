@@ -111,7 +111,7 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 
 	res, err := jsonMarshal(resObj)
 	if err != nil {
-		return `{"error":"internal server error"}`
+		return internalServerErrorJSON()
 	}
 	return string(res)
 }

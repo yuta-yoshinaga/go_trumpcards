@@ -1095,7 +1095,7 @@ func TestBlackJack_DoubleDown_NoBust(t *testing.T) {
 }
 
 func TestBlackJack_PlayerSplit_DeckExhausted(t *testing.T) {
-	// After split, deck is exhausted so both new hands get stood automatically.
+	// Deck exhausted before first draw → error returned and state reverted.
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -1112,6 +1112,8 @@ func TestBlackJack_PlayerSplit_DeckExhausted(t *testing.T) {
 	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 	bj.SetPhase(domain.BJPhaseAction)
 
+	chipsBefore := player.GetChips()
+
 	// Drain the deck completely (Reset rebuilds deck so use GetTrumpCards)
 	deck := bj.GetTrumpCards()
 	for i := 0; i < 52; i++ {
@@ -1119,16 +1121,87 @@ func TestBlackJack_PlayerSplit_DeckExhausted(t *testing.T) {
 	}
 
 	err := bj.PlayerSplit()
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(bj.GetPlayerHands()))
-	// Both hands should be stood because no cards could be drawn
-	assert.True(t, bj.GetPlayerHands()[0].IsStood(), "first hand should be auto-stood")
-	assert.True(t, bj.GetPlayerHands()[1].IsStood(), "second hand should be auto-stood")
-	// Each hand should have only 1 card (the original split card, no new card drawn)
-	assert.Equal(t, 1, bj.GetPlayerHands()[0].GetCardsSize())
-	assert.Equal(t, 1, bj.GetPlayerHands()[1].GetCardsSize())
-	// All hands finished → game should end
-	assert.True(t, bj.GetGameEndFlag())
+	assert.ErrorIs(t, err, domain.ErrDeckExhausted)
+	// State should be reverted: 1 hand with 2 original cards, chips refunded
+	assert.Equal(t, 1, len(bj.GetPlayerHands()))
+	assert.Equal(t, 2, bj.GetPlayerHands()[0].GetCardsSize())
+	assert.Equal(t, 100, bj.GetPlayerHands()[0].GetBet())
+	assert.Equal(t, chipsBefore, player.GetChips(), "split bet should be refunded")
+	assert.False(t, bj.GetGameEndFlag())
+}
+
+func TestBlackJack_PlayerSplit_DeckExhaustedAfterFirstDraw(t *testing.T) {
+	// First draw succeeds but second draw fails → error returned and state fully reverted.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	chipsBefore := player.GetChips()
+
+	// Drain the deck to leave exactly 1 card
+	deck := bj.GetTrumpCards()
+	for i := 0; i < 51; i++ {
+		deck.DrawCard()
+	}
+
+	err := bj.PlayerSplit()
+	assert.ErrorIs(t, err, domain.ErrDeckExhausted)
+	// State should be reverted: 1 hand with 2 original cards, chips refunded
+	assert.Equal(t, 1, len(bj.GetPlayerHands()))
+	assert.Equal(t, 2, bj.GetPlayerHands()[0].GetCardsSize())
+	assert.Equal(t, 100, bj.GetPlayerHands()[0].GetBet())
+	assert.Equal(t, chipsBefore, player.GetChips(), "split bet should be refunded")
+	assert.False(t, bj.GetGameEndFlag())
+}
+
+func TestBlackJack_PlayerDoubleDown_DeckExhausted(t *testing.T) {
+	// Deck exhausted during double down → error returned and state reverted.
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	chipsBefore := player.GetChips()
+
+	// Drain the deck completely
+	deck := bj.GetTrumpCards()
+	for i := 0; i < 52; i++ {
+		deck.DrawCard()
+	}
+
+	err := bj.PlayerDoubleDown()
+	assert.ErrorIs(t, err, domain.ErrDeckExhausted)
+	// State should be reverted: bet not doubled, chips not reduced, hand unchanged
+	assert.Equal(t, chipsBefore, player.GetChips(), "extra bet should be refunded")
+	assert.Equal(t, 100, hand.GetBet(), "bet should not be doubled")
+	assert.Equal(t, 2, hand.GetCardsSize(), "no card should be added")
+	assert.False(t, hand.IsDoubled(), "doubled flag should be reverted")
+	assert.False(t, hand.IsStood(), "hand should not be stood")
+	assert.False(t, hand.IsBusted(), "hand should not be busted")
+	assert.False(t, bj.GetGameEndFlag())
 }
 
 func TestBlackJack_PlayerInsurance_InsufficientChips(t *testing.T) {

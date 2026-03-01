@@ -61,7 +61,7 @@ func parseAmount(fields []string) (int, error) {
 		return 0, fmt.Errorf("ベット/レイズには金額の指定が必要です。")
 	}
 	amount, err := strconv.Atoi(fields[1])
-	if err != nil {
+	if err != nil || amount <= 0 {
 		return 0, fmt.Errorf("無効な金額です: %s", fields[1])
 	}
 	return amount, nil

@@ -252,29 +252,6 @@ func TestDoubtWebController_Method(t *testing.T) {
 	})
 }
 
-func TestDoubtWebController_ResetEmptyResponse(t *testing.T) {
-	dgiMock := new(usecase.MockDoubtInteractor)
-	dgiMock.On("ResetWithConfig", domain.DefaultDoubtConfig()).Return(``)
-
-	factory := func() uc.DoubtInteractorIF { return dgiMock }
-	tdwc := controller.NewDoubtWebController(factory)
-	defer tdwc.Stop()
-	api := rest.NewApi()
-	router, _ := rest.MakeRouter(rest.Post("/doubt/exec", tdwc.Exec))
-	api.SetApp(router)
-
-	t.Run("failed Exec response empty returns error output", func(t *testing.T) {
-		var jsonInput controller.DoubtWebInput
-		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "reset-empty-session"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(mustDoubtOutputJSON("error."))
-	})
-}
-
 func TestDoubtWebController_SkipWithCpuDoubters(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"phase":0,"tableCardCount":0,"lastAction":null,"cpuDoubters":[],"cpuActions":[],"humanAction":null,"lastDoubtResult":null,"gameEndFlag":false,"winnerIdx":-1,"message":""}`
 

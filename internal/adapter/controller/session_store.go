@@ -55,21 +55,8 @@ func (s *SessionStore[T]) GetWithLock(id string, factory func() T) (T, *sync.Mut
 		return zero, nil, false
 	}
 	s.mu.Lock()
-	if entry, ok := s.entries[id]; ok {
-		entry.lastUsed = time.Now()
-		s.mu.Unlock()
-		return entry.value, entry.mu, true
-	}
-	if len(s.entries) >= SessionMaxCount {
-		s.mu.Unlock()
-		return zero, nil, false
-	}
-	s.mu.Unlock()
-	// factory() をグローバルmutex外で実行（遅延時のブロッキングを防ぐ）
-	val := factory()
-	s.mu.Lock()
 	defer s.mu.Unlock()
-	// ダブルチェック: 他のゴルーチンが同じIDで作成していないか
+
 	if entry, ok := s.entries[id]; ok {
 		entry.lastUsed = time.Now()
 		return entry.value, entry.mu, true
@@ -77,6 +64,8 @@ func (s *SessionStore[T]) GetWithLock(id string, factory func() T) (T, *sync.Mut
 	if len(s.entries) >= SessionMaxCount {
 		return zero, nil, false
 	}
+
+	val := factory()
 	entry := &sessionEntry[T]{value: val, mu: &sync.Mutex{}, lastUsed: time.Now()}
 	s.entries[id] = entry
 	return entry.value, entry.mu, true

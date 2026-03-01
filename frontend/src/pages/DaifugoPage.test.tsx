@@ -116,8 +116,8 @@ describe('DaifugoPage', () => {
   it('shows human player face-up cards', async () => {
     render(<DaifugoPage />);
     await waitFor(() => {
-      expect(screen.getByAltText('SPADE 3')).toBeInTheDocument();
-      expect(screen.getAllByAltText('HEART 5').length).toBeGreaterThan(0);
+      expect(screen.getByAltText('♠ 3')).toBeInTheDocument();
+      expect(screen.getAllByAltText('♥ 5').length).toBeGreaterThan(0);
     });
   });
 
@@ -138,7 +138,7 @@ describe('DaifugoPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     render(<DaifugoPage />);
     await waitFor(() => {
-      const tableCard = screen.getAllByAltText('HEART 5');
+      const tableCard = screen.getAllByAltText('♥ 5');
       expect(tableCard.length).toBeGreaterThan(0);
     });
   });
@@ -185,16 +185,16 @@ describe('DaifugoPage', () => {
 
   it('selects a card on click and enables play button', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
-    const card = screen.getByAltText('SPADE 3');
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    const card = screen.getByAltText('♠ 3');
     fireEvent.click(card);
     expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
   });
 
   it('calls play with selected indices when play button is clicked', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
-    fireEvent.click(screen.getByAltText('SPADE 3'));
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
+    fireEvent.click(screen.getByAltText('♠ 3'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: '選択して出す' }));
@@ -438,9 +438,9 @@ describe('DaifugoPage', () => {
 
   it('toggles aria-pressed on card button click', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
-    const cardBtn = screen.getByAltText('SPADE 3').closest('button') as HTMLButtonElement;
+    const cardBtn = screen.getByAltText('♠ 3').closest('button') as HTMLButtonElement;
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
 
     fireEvent.click(cardBtn);
@@ -452,12 +452,12 @@ describe('DaifugoPage', () => {
 
   it('deselects a card by clicking it again', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     // Click SPADE 3 to select it
-    fireEvent.click(screen.getByAltText('SPADE 3'));
+    fireEvent.click(screen.getByAltText('♠ 3'));
     // Click SPADE 3 again to deselect it
-    fireEvent.click(screen.getByAltText('SPADE 3'));
+    fireEvent.click(screen.getByAltText('♠ 3'));
 
     // After deselection, the 選択して出す button should not show any selection count
     // (the card toggle state resets on the second click)
@@ -540,18 +540,18 @@ describe('DaifugoPage', () => {
     mockExec.mockResolvedValue(pendingCpuTurn);
     render(<DaifugoPage />);
     // Card buttons are disabled because isHumanTurn = false (currentTurn is CPU)
-    await waitFor(() => expect(screen.getByAltText('SPADE 3').closest('button')).toBeDisabled());
+    await waitFor(() => expect(screen.getByAltText('♠ 3').closest('button')).toBeDisabled());
   });
 
   it('drag card not in selection adds it to selection', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     // Initially no card selected → play button disabled
     expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
 
     // Fire dragStart on SPADE 3 (index 0, not in selection)
-    const cardButton = screen.getByAltText('SPADE 3').closest('button') as HTMLElement;
+    const cardButton = screen.getByAltText('♠ 3').closest('button') as HTMLElement;
     fireEvent.dragStart(cardButton, {
       dataTransfer: { setData: vi.fn() },
     });
@@ -562,9 +562,9 @@ describe('DaifugoPage', () => {
 
   it('drag card already in selection keeps it in selection', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
-    const cardButton = screen.getByAltText('SPADE 3').closest('button') as HTMLElement;
+    const cardButton = screen.getByAltText('♠ 3').closest('button') as HTMLElement;
     // First click to select
     fireEvent.click(cardButton);
     expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
@@ -578,7 +578,7 @@ describe('DaifugoPage', () => {
 
   it('drop on table plays dragged card when not in selection', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     // No cards selected; drag card index 0 onto the table
     const dropZone = screen.getByText('場札').closest('div') as HTMLElement;
@@ -595,11 +595,11 @@ describe('DaifugoPage', () => {
 
   it('drop on table plays selected cards when dragged card is in selection', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     // Select cards 0 and 1
-    fireEvent.click(screen.getByAltText('SPADE 3'));
-    fireEvent.click(screen.getAllByAltText('HEART 5')[0]);
+    fireEvent.click(screen.getByAltText('♠ 3'));
+    fireEvent.click(screen.getAllByAltText('♥ 5')[0]);
     expect(screen.getByRole('button', { name: '選択して出す' })).not.toBeDisabled();
 
     // Drop card 0 (which is in selection) → plays [0,1]
@@ -642,7 +642,7 @@ describe('DaifugoPage', () => {
 
   it('drop with invalid dataTransfer data is ignored (NaN guard)', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     const dropZone = screen.getByText('場札').closest('div') as HTMLElement;
     const dropEvent = createEvent.drop(dropZone);

@@ -112,7 +112,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 
 	res, err := jsonMarshal(resObj)
 	if err != nil {
-		return `{"error":"internal server error"}`
+		return internalServerErrorJSON()
 	}
 	return string(res)
 }

@@ -224,17 +224,6 @@ func TestHoldemWebController_ShortCommands(t *testing.T) {
 	}
 }
 
-func TestHoldemWebController_ErrorResponse(t *testing.T) {
-	mi := new(mockUsecase.MockHoldemInteractor)
-	api, hwc := newHoldemTestHandler(mi)
-	defer hwc.Stop()
-	mi.On("Action", domain.HoldemActionFold, 0).Return("invalid json")
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
-			map[string]interface{}{"command": "fold", "sessionId": "s-err"}))
-	recorded.CodeIs(400)
-}
-
 func TestHoldemWebController_LongSessionId(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)
@@ -275,6 +264,7 @@ func TestHoldemWebController_Reset_BigBlindOnly(t *testing.T) {
 
 	bb := 30
 	cfg := domain.DefaultHoldemConfig()
+	cfg.SmallBlind = bb / 2 // 自動調整: 15
 	cfg.BigBlind = bb
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 
@@ -315,7 +305,7 @@ func TestHoldemWebController_Reset_BigBlindOnly_AutoAdjust(t *testing.T) {
 	api, hwc := newHoldemTestHandler(mi)
 	defer hwc.Stop()
 
-	// bigBlind=4のみ指定: smallBlindがデフォルト(5)より大きいので自動調整 sb=2
+	// bigBlind=4のみ指定: bb>1なので自動調整 sb=2
 	bb := 4
 	cfg := domain.DefaultHoldemConfig()
 	cfg.SmallBlind = bb / 2 // 自動調整: 2

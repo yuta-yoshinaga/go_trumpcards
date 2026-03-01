@@ -243,9 +243,15 @@ func (b *BlackJack) PlayerDoubleDown() error {
 	hand.SetBet(bet * 2)
 	hand.SetDoubled(true)
 	// ダブルダウンは1枚だけ引いてスタンド
-	if card := b.drawCard(); card != nil {
-		hand.AddCard(card)
+	card := b.drawCard()
+	if card == nil {
+		// デッキ枯渇: ベットと状態を元に戻す
+		b.player.AddChips(bet)
+		hand.SetBet(bet)
+		hand.SetDoubled(false)
+		return ErrDeckExhausted
 	}
+	hand.AddCard(card)
 	if hand.GetScore() >= 22 {
 		hand.SetBusted(true)
 	} else {
@@ -288,17 +294,30 @@ func (b *BlackJack) PlayerSplit() error {
 	newHand.SetBet(bet)
 	newHand.AddCard(secondCard)
 
-	// 各ハンドに1枚ずつ配る（山札枯渇時は自動スタンド）
-	if card := b.drawCard(); card != nil {
-		hand.AddCard(card)
-	} else {
-		hand.SetStood(true)
+	// 各ハンドに1枚ずつ配る
+	card1 := b.drawCard()
+	if card1 == nil {
+		// デッキ枯渇: 元のハンドを復元してベットを返却
+		hand.Reset()
+		hand.SetBet(bet)
+		hand.AddCard(firstCard)
+		hand.AddCard(secondCard)
+		b.player.AddChips(bet)
+		return ErrDeckExhausted
 	}
-	if card := b.drawCard(); card != nil {
-		newHand.AddCard(card)
-	} else {
-		newHand.SetStood(true)
+	hand.AddCard(card1)
+
+	card2 := b.drawCard()
+	if card2 == nil {
+		// デッキ枯渇: 部分的なドローを元に戻し、元のハンドを復元してベットを返却
+		hand.Reset()
+		hand.SetBet(bet)
+		hand.AddCard(firstCard)
+		hand.AddCard(secondCard)
+		b.player.AddChips(bet)
+		return ErrDeckExhausted
 	}
+	newHand.AddCard(card2)
 
 	// 新しいハンドを挿入
 	b.playerHands = append(b.playerHands[:b.currentHandIdx+1], append([]*BlackJackHand{newHand}, b.playerHands[b.currentHandIdx+1:]...)...)

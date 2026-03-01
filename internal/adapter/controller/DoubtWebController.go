@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -21,6 +21,12 @@ type DoubtWebInput struct {
 	DoubtWindowSec *int   `json:"doubtWindowSec,omitempty"`
 	CpuMemoryLevel *int   `json:"cpuMemoryLevel,omitempty"`
 }
+
+// GetCommand returns the command string.
+func (i DoubtWebInput) GetCommand() string { return i.Command }
+
+// GetSessionID returns the session ID string.
+func (i DoubtWebInput) GetSessionID() string { return i.SessionId }
 
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
 type DoubtWebOutputPlayer struct {
@@ -84,86 +90,67 @@ func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebCo
 // MaxCardIndices カードインデックスの最大数 (52枚デッキ)
 const MaxCardIndices = 52
 
+// errCardIndicesOverflow is returned by the Doubt validate callback when CardIndices exceeds the limit.
+var errCardIndicesOverflow = errors.New("card indices overflow")
+
 // Exec ゲーム実行
 func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	var param DoubtWebInput
-	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" || param.SessionId == "" || len(param.CardIndices) > MaxCardIndices {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	if param.Command == "q" || param.Command == "quit" {
-		w.WriteHeader(http.StatusOK)
-		if err := w.WriteJson(dwc.newDefaultOutput("bye.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	dgi, mu, ok := dwc.store.GetWithLock(param.SessionId, dwc.factory)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	errOutput := dwc.newDefaultOutput("error.")
-	switch param.Command {
-	case "r", "reset":
-		cfg := domain.DefaultDoubtConfig()
-		if param.DoubtWindowSec != nil && *param.DoubtWindowSec >= 1 {
-			cfg.DoubtWindowSec = *param.DoubtWindowSec
-		}
-		if param.CpuMemoryLevel != nil {
-			level := *param.CpuMemoryLevel
-			if level >= int(domain.DoubtMemoryLevelEasy) && level <= int(domain.DoubtMemoryLevelHard) {
-				cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
+	execWithSession(&dwc.baseController, w, r, dwc.store, dwc.factory,
+		func(msg string) any { return dwc.newDefaultOutput(msg) },
+		func(param DoubtWebInput) error {
+			if len(param.CardIndices) > MaxCardIndices {
+				return errCardIndicesOverflow
 			}
-		}
-		dwc.writePresenterResponse(w, dgi.ResetWithConfig(cfg), errOutput)
-	case "p", "play":
-		if param.ClaimedValue < domain.MinClaimedValue || param.ClaimedValue > domain.MaxClaimedValue {
-			w.WriteHeader(http.StatusBadRequest)
-			if err := w.WriteJson(dwc.newDefaultOutput(fmt.Sprintf("param error: claimedValue must be between %d and %d.", domain.MinClaimedValue, domain.MaxClaimedValue))); err != nil {
-				log.Printf("WriteJson error: %v", err)
+			return nil
+		},
+		func(w rest.ResponseWriter, dgi usecase.DoubtInteractorIF, param DoubtWebInput) bool {
+			switch param.Command {
+			case "r", "reset":
+				cfg := domain.DefaultDoubtConfig()
+				if param.DoubtWindowSec != nil && *param.DoubtWindowSec >= 1 {
+					cfg.DoubtWindowSec = *param.DoubtWindowSec
+				}
+				if param.CpuMemoryLevel != nil {
+					level := *param.CpuMemoryLevel
+					if level >= int(domain.DoubtMemoryLevelEasy) && level <= int(domain.DoubtMemoryLevelHard) {
+						cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
+					}
+				}
+				dwc.writePresenterResponse(w, dgi.ResetWithConfig(cfg))
+			case "p", "play":
+				if param.ClaimedValue < domain.MinClaimedValue || param.ClaimedValue > domain.MaxClaimedValue {
+					dwc.writeJsonResponse(w, http.StatusBadRequest, dwc.newDefaultOutput(fmt.Sprintf("param error: claimedValue must be between %d and %d.", domain.MinClaimedValue, domain.MaxClaimedValue)))
+					return true
+				}
+				dwc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue))
+			case "d", "doubt":
+				cpuDoubters := dgi.GetCpuDoubters()
+				humanDoubts := false
+				for _, idx := range param.DoubterIndices {
+					if idx == 0 {
+						humanDoubts = true
+						break
+					}
+				}
+				var doubters []int
+				if humanDoubts {
+					doubters = append([]int{0}, cpuDoubters...)
+				} else {
+					doubters = cpuDoubters
+				}
+				dwc.writePresenterResponse(w, dgi.ResolveDoubt(doubters))
+			case "s", "skip":
+				cpuDoubters := dgi.GetCpuDoubters()
+				if len(cpuDoubters) > 0 {
+					dwc.writePresenterResponse(w, dgi.ResolveDoubt(cpuDoubters))
+				} else {
+					dwc.writePresenterResponse(w, dgi.SkipDoubt())
+				}
+			default:
+				return false
 			}
-			return
-		}
-		dwc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue), errOutput)
-	case "d", "doubt":
-		cpuDoubters := dgi.GetCpuDoubters()
-		humanDoubts := false
-		for _, idx := range param.DoubterIndices {
-			if idx == 0 {
-				humanDoubts = true
-				break
-			}
-		}
-		var doubters []int
-		if humanDoubts {
-			doubters = append([]int{0}, cpuDoubters...)
-		} else {
-			doubters = cpuDoubters
-		}
-		dwc.writePresenterResponse(w, dgi.ResolveDoubt(doubters), errOutput)
-	case "s", "skip":
-		cpuDoubters := dgi.GetCpuDoubters()
-		if len(cpuDoubters) > 0 {
-			dwc.writePresenterResponse(w, dgi.ResolveDoubt(cpuDoubters), errOutput)
-		} else {
-			dwc.writePresenterResponse(w, dgi.SkipDoubt(), errOutput)
-		}
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(dwc.newDefaultOutput("Unsupported command.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-	}
+			return true
+		})
 }
 
 // Stop stops the background cleanup goroutine of the session store.

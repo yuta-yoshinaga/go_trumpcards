@@ -1,9 +1,6 @@
 package controller
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
@@ -32,6 +29,12 @@ type DaifugoWebInput struct {
 	SessionId string                 `json:"sessionId"`
 	Config    *DaifugoWebInputConfig `json:"config"` // リセット時のローカルルール設定 (省略可)
 }
+
+// GetCommand returns the command string.
+func (i DaifugoWebInput) GetCommand() string { return i.Command }
+
+// GetSessionID returns the session ID string.
+func (i DaifugoWebInput) GetSessionID() string { return i.SessionId }
 
 // DaifugoWebOutputPlayer 大富豪Webアウトプットプレイヤー
 type DaifugoWebOutputPlayer struct {
@@ -109,53 +112,29 @@ func NewDaifugoWebController(factory func() usecase.DaifugoInteractorIF) *Daifug
 
 // Exec ゲーム実行
 func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	var param DaifugoWebInput
-	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" || param.SessionId == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	if param.Command == "q" || param.Command == "quit" {
-		w.WriteHeader(http.StatusOK)
-		if err := w.WriteJson(dwc.newDefaultOutput("bye.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	dgi, mu, ok := dwc.store.GetWithLock(param.SessionId, dwc.factory)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(dwc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	errOutput := dwc.newDefaultOutput("error.")
-	switch param.Command {
-	case "r", "reset":
-		if param.Config != nil {
-			dgConfig := convertWebInputConfig(*param.Config)
-			dwc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig), errOutput)
-		} else {
-			dwc.writePresenterResponse(w, dgi.Reset(), errOutput)
-		}
-	case "p", "play":
-		indices := param.Indices
-		if indices == nil {
-			indices = []int{}
-		}
-		dwc.writePresenterResponse(w, dgi.Play(indices), errOutput)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(dwc.newDefaultOutput("Unsupported command.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-	}
+	execWithSession(&dwc.baseController, w, r, dwc.store, dwc.factory,
+		func(msg string) any { return dwc.newDefaultOutput(msg) },
+		nil,
+		func(w rest.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput) bool {
+			switch param.Command {
+			case "r", "reset":
+				if param.Config != nil {
+					dgConfig := convertWebInputConfig(*param.Config)
+					dwc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig))
+				} else {
+					dwc.writePresenterResponse(w, dgi.Reset())
+				}
+			case "p", "play":
+				indices := param.Indices
+				if indices == nil {
+					indices = []int{}
+				}
+				dwc.writePresenterResponse(w, dgi.Play(indices))
+			default:
+				return false
+			}
+			return true
+		})
 }
 
 // convertWebInputConfig DaifugoWebInputConfig を domain.DaifugoConfig に変換

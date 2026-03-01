@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -18,6 +17,12 @@ type HoldemWebInput struct {
 	SmallBlind *int   `json:"smallBlind,omitempty"`
 	BigBlind   *int   `json:"bigBlind,omitempty"`
 }
+
+// GetCommand returns the command string.
+func (i HoldemWebInput) GetCommand() string { return i.Command }
+
+// GetSessionID returns the session ID string.
+func (i HoldemWebInput) GetSessionID() string { return i.SessionId }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
 type HoldemWebOutputPlayer struct {
@@ -90,82 +95,55 @@ func NewHoldemWebController(factory func() usecase.HoldemInteractorIF) *HoldemWe
 
 // Exec ゲーム実行
 func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	var param HoldemWebInput
-	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" || param.SessionId == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(hwc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	if param.Command == "q" || param.Command == "quit" {
-		w.WriteHeader(http.StatusOK)
-		if err := w.WriteJson(hwc.newDefaultOutput("bye.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	hgi, mu, ok := hwc.store.GetWithLock(param.SessionId, hwc.factory)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(hwc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	errOutput := hwc.newDefaultOutput("error.")
-	switch param.Command {
-	case "r", "reset":
-		cfg := domain.DefaultHoldemConfig()
-		sb, bb := cfg.SmallBlind, cfg.BigBlind
-		sbProvided := param.SmallBlind != nil && *param.SmallBlind >= 1
-		bbProvided := param.BigBlind != nil && *param.BigBlind >= 1
-		if sbProvided {
-			sb = *param.SmallBlind
-		}
-		if bbProvided {
-			bb = *param.BigBlind
-		}
-		// 片方のみ指定された場合、もう片方を自動調整
-		if sbProvided && !bbProvided && sb >= cfg.BigBlind {
-			bb = sb * 2
-		} else if bbProvided && !sbProvided && cfg.SmallBlind >= bb {
-			sb = bb / 2
-			if sb < 1 {
-				sb = 1
+	execWithSession(&hwc.baseController, w, r, hwc.store, hwc.factory,
+		func(msg string) any { return hwc.newDefaultOutput(msg) },
+		nil,
+		func(w rest.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput) bool {
+			switch param.Command {
+			case "r", "reset":
+				cfg := domain.DefaultHoldemConfig()
+				sb, bb := cfg.SmallBlind, cfg.BigBlind
+				sbProvided := param.SmallBlind != nil && *param.SmallBlind >= 1
+				bbProvided := param.BigBlind != nil && *param.BigBlind >= 1
+				if sbProvided {
+					sb = *param.SmallBlind
+				}
+				if bbProvided {
+					bb = *param.BigBlind
+				}
+				// 片方のみ指定された場合、もう片方を自動調整
+				if sbProvided && !bbProvided && sb >= cfg.BigBlind {
+					bb = sb * 2
+				} else if bbProvided && !sbProvided && bb > 1 {
+					sb = bb / 2
+					if sb < 1 {
+						sb = 1
+					}
+				}
+				if sb >= bb {
+					hwc.writeJsonResponse(w, http.StatusBadRequest, hwc.newDefaultOutput("param error: smallBlind must be less than bigBlind."))
+					return true
+				}
+				cfg.SmallBlind = sb
+				cfg.BigBlind = bb
+				hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
+			case "f", "fold":
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0))
+			case "ck", "check":
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0))
+			case "c", "call":
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0))
+			case "b", "bet":
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount))
+			case "ra", "raise":
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount))
+			case "a", "allin":
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0))
+			default:
+				return false
 			}
-		}
-		if sb >= bb {
-			w.WriteHeader(http.StatusBadRequest)
-			if err := w.WriteJson(hwc.newDefaultOutput("param error: smallBlind must be less than bigBlind.")); err != nil {
-				log.Printf("WriteJson error: %v", err)
-			}
-			return
-		}
-		cfg.SmallBlind = sb
-		cfg.BigBlind = bb
-		hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg), errOutput)
-	case "f", "fold":
-		hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0), errOutput)
-	case "ck", "check":
-		hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0), errOutput)
-	case "c", "call":
-		hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0), errOutput)
-	case "b", "bet":
-		hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount), errOutput)
-	case "ra", "raise":
-		hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount), errOutput)
-	case "a", "allin":
-		hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0), errOutput)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(hwc.newDefaultOutput("Unsupported command.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-	}
+			return true
+		})
 }
 
 // Stop stops the background cleanup goroutine of the session store.

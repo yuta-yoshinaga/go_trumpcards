@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -18,6 +17,12 @@ type OldMaidWebInput struct {
 	Mode                 int    `json:"mode"`
 	CpuPlacementStrategy bool   `json:"cpuPlacementStrategy"`
 }
+
+// GetCommand returns the command string.
+func (i OldMaidWebInput) GetCommand() string { return i.Command }
+
+// GetSessionID returns the session ID string.
+func (i OldMaidWebInput) GetSessionID() string { return i.SessionId }
 
 // OldMaidWebOutputPlayer ババ抜きWebアウトプットプレイヤー
 type OldMaidWebOutputPlayer struct {
@@ -75,59 +80,32 @@ func NewOldMaidWebController(factory func() usecase.OldMaidInteractorIF) *OldMai
 
 // Exec ゲーム実行
 func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	var param OldMaidWebInput
-	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" || param.SessionId == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(owc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	if param.Command == "q" || param.Command == "quit" {
-		w.WriteHeader(http.StatusOK)
-		if err := w.WriteJson(owc.newDefaultOutput("bye.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	omi, mu, ok := owc.store.GetWithLock(param.SessionId, owc.factory)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(owc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	drawIdx := -1
-	if param.DrawIdx != nil {
-		drawIdx = *param.DrawIdx
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	errOutput := owc.newDefaultOutput("error.")
-	switch param.Command {
-	case "r", "reset":
-		if param.Mode < 0 || param.Mode > int(domain.OldMaidModeJijiNuki) {
-			w.WriteHeader(http.StatusBadRequest)
-			if err := w.WriteJson(owc.newDefaultOutput("param error: mode must be between 0 and 1.")); err != nil {
-				log.Printf("WriteJson error: %v", err)
+	execWithSession(&owc.baseController, w, r, owc.store, owc.factory,
+		func(msg string) any { return owc.newDefaultOutput(msg) },
+		nil,
+		func(w rest.ResponseWriter, omi usecase.OldMaidInteractorIF, param OldMaidWebInput) bool {
+			switch param.Command {
+			case "r", "reset":
+				if param.Mode < 0 || param.Mode > int(domain.OldMaidModeJijiNuki) {
+					owc.writeJsonResponse(w, http.StatusBadRequest, owc.newDefaultOutput("param error: mode must be between 0 and 1."))
+					return true
+				}
+				cfg := domain.OldMaidConfig{
+					Mode:                 domain.OldMaidMode(param.Mode),
+					CpuPlacementStrategy: param.CpuPlacementStrategy,
+				}
+				owc.writePresenterResponse(w, omi.Reset(cfg))
+			case "d", "draw":
+				drawIdx := -1
+				if param.DrawIdx != nil {
+					drawIdx = *param.DrawIdx
+				}
+				owc.writePresenterResponse(w, omi.Draw(drawIdx))
+			default:
+				return false
 			}
-			return
-		}
-		cfg := domain.OldMaidConfig{
-			Mode:                 domain.OldMaidMode(param.Mode),
-			CpuPlacementStrategy: param.CpuPlacementStrategy,
-		}
-		owc.writePresenterResponse(w, omi.Reset(cfg), errOutput)
-	case "d", "draw":
-		owc.writePresenterResponse(w, omi.Draw(drawIdx), errOutput)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(owc.newDefaultOutput("Unsupported command.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-	}
+			return true
+		})
 }
 
 // Stop stops the background cleanup goroutine of the session store.

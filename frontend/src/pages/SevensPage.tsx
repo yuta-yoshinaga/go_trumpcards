@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { StatusBadge } from '../components/StatusBadge';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { playerAreaBase } from '../styles/gameStyles';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
 import { suitName, valueName } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
@@ -69,8 +71,7 @@ function actionDesc(players: { id: number; isHuman: boolean }[], action: SevensA
 
 // ── styles ──────────────────────────────────────────────────────────────────
 
-const playerAreaBaseClass =
-  'bg-black/35 rounded-[10px] p-[10px] border-2 border-transparent flex-[1_1_180px] min-w-[150px]';
+const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_180px] min-w-[150px]`;
 
 // ── Board component ──────────────────────────────────────────────────────────
 
@@ -157,38 +158,11 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
       ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
       : {};
   return (
-    <div className={playerAreaBaseClass} style={conditionalStyle}>
+    <div className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && (
-          <span
-            style={{
-              background: '#5cb85c',
-              color: '#fff',
-              borderRadius: 6,
-              padding: '1px 8px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-            }}
-          >
-            {player.rank}位
-          </span>
-        )}
-        {isCurrentTurn && !player.isFinished && (
-          <span
-            style={{
-              background: '#f0ad4e',
-              color: '#222',
-              borderRadius: 6,
-              padding: '1px 8px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-              fontWeight: 'bold',
-            }}
-          >
-            考え中...
-          </span>
-        )}
+        {player.isFinished && <StatusBadge variant="success">{player.rank}位</StatusBadge>}
+        {isCurrentTurn && !player.isFinished && <StatusBadge variant="warning">考え中...</StatusBadge>}
       </div>
       {!player.isFinished && (
         <div className="text-[#ccc] text-[0.85em]">
@@ -217,23 +191,10 @@ function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, loading,
       ? { border: '2px solid #5cb85c', boxShadow: '0 0 12px #5cb85c' }
       : {};
   return (
-    <div className={playerAreaBaseClass} style={conditionalStyle}>
+    <div className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && (
-          <span
-            style={{
-              background: '#5cb85c',
-              color: '#fff',
-              borderRadius: 6,
-              padding: '1px 8px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-            }}
-          >
-            {player.rank}位
-          </span>
-        )}
+        {player.isFinished && <StatusBadge variant="success">{player.rank}位</StatusBadge>}
       </div>
       {!player.isFinished && (
         <div className="text-[#ccc] text-[0.85em] mb-1">

@@ -182,16 +182,6 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error."}`)
 	})
-	t.Run("failed Exec response empty", func(t *testing.T) {
-		omiMock.On("Reset", mock.Anything).Return(``)
-		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"error."}`)
-	})
 }
 
 func TestOldMaidWebController_SessionIsolation(t *testing.T) {

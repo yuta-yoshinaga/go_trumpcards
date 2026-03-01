@@ -110,8 +110,8 @@ describe('DoubtPage', () => {
   it('shows human player hand cards', async () => {
     render(<DoubtPage />);
     await waitFor(() => {
-      expect(screen.getByAltText('SPADE 1')).toBeInTheDocument();
-      expect(screen.getByAltText('HEART 11')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+      expect(screen.getByAltText('♥ J')).toBeInTheDocument();
     });
   });
 
@@ -146,9 +146,9 @@ describe('DoubtPage', () => {
 
   it('toggles aria-pressed on HandCard button click', async () => {
     render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    const cardBtn = screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement;
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
 
     fireEvent.click(cardBtn);
@@ -160,9 +160,9 @@ describe('DoubtPage', () => {
 
   it('toggles card selection on click and enables 出す button', async () => {
     render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    const cardBtn = screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement;
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     fireEvent.click(cardBtn);
     expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
 
@@ -173,9 +173,9 @@ describe('DoubtPage', () => {
 
   it('shows claimed value input when cards are selected', async () => {
     render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     expect(screen.getByRole('spinbutton')).toBeInTheDocument();
     // Default value 1 shows (A)
     expect(screen.getByText('(A)')).toBeInTheDocument();
@@ -189,9 +189,9 @@ describe('DoubtPage', () => {
 
   it('changes claimed value and shows special name', async () => {
     render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     const input = screen.getByRole('spinbutton');
 
     fireEvent.change(input, { target: { value: '11' } });
@@ -219,9 +219,9 @@ describe('DoubtPage', () => {
 
   it('calls play command with selected cards when 出す clicked', async () => {
     render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
@@ -574,7 +574,7 @@ describe('DoubtPage', () => {
     await waitFor(() => {
       expect(screen.getByText('ダウト結果')).toBeInTheDocument();
       expect(screen.getByText('ウソでした！')).toBeInTheDocument();
-      expect(screen.getByAltText('SPADE 5')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ 5')).toBeInTheDocument();
     });
   });
 
