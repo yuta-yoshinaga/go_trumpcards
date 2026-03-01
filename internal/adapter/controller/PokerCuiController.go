@@ -46,6 +46,8 @@ func (pcc *PokerCuiController) Exec(command string) string {
 	case "s", "stand":
 		res = pcc.pi.Stand()
 	case "b", "bet":
+		// Negative/zero amounts fall back to 0 (no bet). Unlike BlackJack/Holdem,
+		// Poker's Bet(0) is a valid "no bet" action so we silently default.
 		amount := 0
 		if len(parts) > 1 {
 			if a, err := strconv.Atoi(parts[1]); err == nil && a > 0 {
@@ -56,6 +58,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 	case "c", "call":
 		res = pcc.pi.Call()
 	case "ra", "raise":
+		// Same fallback-to-zero semantics as "bet" above.
 		amount := 0
 		if len(parts) > 1 {
 			if a, err := strconv.Atoi(parts[1]); err == nil && a > 0 {
