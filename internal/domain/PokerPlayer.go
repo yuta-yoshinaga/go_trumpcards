@@ -1,7 +1,5 @@
 package domain
 
-import "sort"
-
 // ポーカーハンドランク定数
 const (
 	PokerHandHighCard      = 0
@@ -62,103 +60,8 @@ func (pp *PokerPlayer) ExchangeCard(idx int, card *Card) {
 
 // EvalHand ハンド評価
 func (pp *PokerPlayer) EvalHand() int {
-	if len(pp.cards) < 5 {
-		pp.handRank = PokerHandHighCard
-		return pp.handRank
-	}
-
-	values := make([]int, len(pp.cards))
-	designs := make([]int, len(pp.cards))
-	for i, c := range pp.cards {
-		values[i] = c.GetValue()
-		designs[i] = c.GetDesign()
-	}
-	sort.Ints(values)
-
-	// フラッシュチェック
-	isFlush := true
-	for i := 1; i < len(designs); i++ {
-		if designs[i] != designs[0] {
-			isFlush = false
-			break
-		}
-	}
-
-	// ストレートチェック
-	isStraight := pp.checkStraight(values)
-
-	// カード値の出現回数カウント
-	valueCounts := make(map[int]int)
-	for _, v := range values {
-		valueCounts[v]++
-	}
-	counts := make([]int, 0)
-	for _, c := range valueCounts {
-		counts = append(counts, c)
-	}
-	sort.Sort(sort.Reverse(sort.IntSlice(counts)))
-
-	// ハンドランク判定
-	if isFlush && isStraight {
-		if pp.checkRoyalStraight(values) {
-			pp.handRank = PokerHandRoyalFlush
-		} else {
-			pp.handRank = PokerHandStraightFlush
-		}
-	} else if counts[0] == 4 {
-		pp.handRank = PokerHandFourOfAKind
-	} else if len(counts) >= 2 && counts[0] == 3 && counts[1] == 2 {
-		pp.handRank = PokerHandFullHouse
-	} else if isFlush {
-		pp.handRank = PokerHandFlush
-	} else if isStraight {
-		pp.handRank = PokerHandStraight
-	} else if counts[0] == 3 {
-		pp.handRank = PokerHandThreeOfAKind
-	} else if len(counts) >= 2 && counts[0] == 2 && counts[1] == 2 {
-		pp.handRank = PokerHandTwoPair
-	} else if counts[0] == 2 {
-		pp.handRank = PokerHandOnePair
-	} else {
-		pp.handRank = PokerHandHighCard
-	}
-
+	pp.handRank = evalFiveCardHand(pp.cards)
 	return pp.handRank
-}
-
-// checkStraight ストレートチェック
-func (pp *PokerPlayer) checkStraight(sortedValues []int) bool {
-	// 通常のストレート
-	isNormal := true
-	for i := 1; i < len(sortedValues); i++ {
-		if sortedValues[i] != sortedValues[i-1]+1 {
-			isNormal = false
-			break
-		}
-	}
-	if isNormal {
-		return true
-	}
-
-	// A-10-J-Q-K のハイエーストレート
-	if len(sortedValues) == 5 &&
-		sortedValues[0] == 1 && sortedValues[1] == 10 &&
-		sortedValues[2] == 11 && sortedValues[3] == 12 && sortedValues[4] == 13 {
-		return true
-	}
-
-	return false
-}
-
-// checkRoyalStraight ロイヤルフラッシュかチェック (A-10-J-Q-K)
-func (pp *PokerPlayer) checkRoyalStraight(sortedValues []int) bool {
-	// sortedValues: [1, 10, 11, 12, 13]
-	return len(sortedValues) == 5 &&
-		sortedValues[0] == 1 &&
-		sortedValues[1] == 10 &&
-		sortedValues[2] == 11 &&
-		sortedValues[3] == 12 &&
-		sortedValues[4] == 13
 }
 
 // GetHandRank ハンドランク取得

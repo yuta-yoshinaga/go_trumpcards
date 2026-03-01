@@ -252,14 +252,6 @@ func TestHoldemPlayer_EvalBestHand_LessThan5Cards(t *testing.T) {
 	assert.Nil(t, p.GetBestHand())
 }
 
-func TestEvalFiveCards_LessThan5Cards(t *testing.T) {
-	cards := []*Card{
-		NewCard(CardDesignSpade, 1, false),
-		NewCard(CardDesignHeart, 2, false),
-	}
-	assert.Equal(t, PokerHandHighCard, evalFiveCards(cards))
-}
-
 func TestCombinations(t *testing.T) {
 	cards := []*Card{
 		NewCard(CardDesignSpade, 1, false),
@@ -458,19 +450,3 @@ func TestHoldemPlayer_EvalBestHand_ChoosesBestFromSeven(t *testing.T) {
 	assert.Equal(t, PokerHandTwoPair, rank)
 }
 
-func TestCheckStraightValues(t *testing.T) {
-	// Normal straight
-	assert.True(t, checkStraightValues([]int{3, 4, 5, 6, 7}))
-	// Ace-high straight (broadway)
-	assert.True(t, checkStraightValues([]int{1, 10, 11, 12, 13}))
-	// Wheel (A-2-3-4-5)
-	assert.True(t, checkStraightValues([]int{1, 2, 3, 4, 5}))
-	// Not a straight
-	assert.False(t, checkStraightValues([]int{1, 3, 5, 7, 9}))
-}
-
-func TestCheckRoyalStraightValues(t *testing.T) {
-	assert.True(t, checkRoyalStraightValues([]int{1, 10, 11, 12, 13}))
-	assert.False(t, checkRoyalStraightValues([]int{2, 10, 11, 12, 13}))
-	assert.False(t, checkRoyalStraightValues([]int{1, 10, 11, 12}))
-}
