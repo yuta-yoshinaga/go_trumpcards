@@ -267,7 +267,7 @@ function SetupScreen({
   loading,
 }: SetupScreenProps) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-[#1a5c1a] p-6 gap-4">
+    <div className="flex-1 flex flex-col items-center justify-center bg-[#1a5c1a] p-6 gap-4" aria-busy={loading}>
       <div className="text-white text-2xl font-bold mb-2">Old Maid 設定</div>
       <div className="bg-black/40 rounded-xl p-4 w-full max-w-sm flex flex-col gap-3">
         <div className="text-white font-bold mb-1">モード選択</div>
@@ -399,7 +399,8 @@ export function OldMaidPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
+      {loading && <span className="sr-only">処理中...</span>}
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Mode badge */}

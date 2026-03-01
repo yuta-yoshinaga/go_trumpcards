@@ -291,6 +291,31 @@ describe('DoubtPage', () => {
     );
   });
 
+  it('sets aria-busy and sr-only loading text while loading', async () => {
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+    expect(container).toHaveAttribute('aria-busy', 'false');
+    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+
+    let resolve!: (value: DoubtResponse) => void;
+    const slowPromise = new Promise<DoubtResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+
+    expect(container).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByText('処理中...')).toBeInTheDocument();
+
+    resolve(humanTurnState);
+    await waitFor(() => {
+      expect(container).toHaveAttribute('aria-busy', 'false');
+      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+    });
+  });
+
   // ── Table area ────────────────────────────────────────────────────────────
 
   it('shows lastAction in table area', async () => {

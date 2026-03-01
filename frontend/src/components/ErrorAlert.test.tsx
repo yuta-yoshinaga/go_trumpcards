@@ -11,5 +11,6 @@ describe('ErrorAlert', () => {
   it('renders the message when provided', () => {
     render(<ErrorAlert message="通信エラーが発生しました。もう一度お試しください。" />);
     expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 });

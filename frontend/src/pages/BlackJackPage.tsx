@@ -53,7 +53,8 @@ export function BlackJackPage() {
   const suggestedAction = state?.suggestedAction ?? BJ_SUGGEST_NONE;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#008000]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
+      {loading && <span className="sr-only">処理中...</span>}
       {/* Chip info bar */}
       {state && (
         <div className="shrink-0 bg-black/40 text-white text-sm px-4 py-1.5 flex justify-between">
