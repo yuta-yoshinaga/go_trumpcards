@@ -2,8 +2,11 @@ import { useCallback, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { StatusBadge } from '../components/StatusBadge';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import { playerAreaBase } from '../styles/gameStyles';
 import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
+import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const REPLAY_DELAY_MS = 800;
@@ -13,12 +16,7 @@ const OldMaidMode = {
   JijiNuki: 1,
 } as const;
 
-const playerAreaBaseClass = 'bg-black/35 rounded-[10px] p-2 border-2 border-transparent flex-[1_1_140px] min-w-[120px]';
-
-function cardLabel(card: Card): string {
-  if (card.design === 'JOKER') return 'JOKER';
-  return `${card.design} ${card.value}`;
-}
+const playerAreaClass = `${playerAreaBase} p-2 flex-[1_1_140px] min-w-[120px]`;
 
 const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
@@ -132,37 +130,12 @@ function PlayerArea({
   const showCount = Math.min(player.cardCount, 10);
 
   return (
-    <div id={`player-area-${player.id}`} className={playerAreaBaseClass} style={conditionalStyle}>
+    <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1 text-[0.9em]">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && (
-          <span
-            style={{
-              background: '#5cb85c',
-              color: '#fff',
-              borderRadius: 6,
-              padding: '1px 6px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-            }}
-          >
-            上がり
-          </span>
-        )}
+        {player.isFinished && <StatusBadge variant="success">上がり</StatusBadge>}
         {isTarget && !player.isHuman && !player.isFinished && !gameEndFlag && (
-          <span
-            style={{
-              background: '#f0ad4e',
-              color: '#222',
-              borderRadius: 6,
-              padding: '1px 6px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-              fontWeight: 'bold',
-            }}
-          >
-            ← 引く相手
-          </span>
+          <StatusBadge variant="warning">← 引く相手</StatusBadge>
         )}
       </div>
       {!player.isFinished && <div className="text-[#ccc] text-[0.8em] mb-1">{player.cardCount}枚</div>}

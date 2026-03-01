@@ -2,11 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { doubtApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { StatusBadge } from '../components/StatusBadge';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { playerAreaBase } from '../styles/gameStyles';
 import type { Card, DoubtConfig, DoubtCpuAction, DoubtPlayerData } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
+
+const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_150px] min-w-[120px]`;
 
 // ── CPU player area ──────────────────────────────────────────────────────────
 
@@ -20,41 +24,11 @@ function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
     ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
     : {};
   return (
-    <div
-      className="bg-black/35 rounded-[10px] p-[10px] border-2 border-transparent flex-[1_1_150px] min-w-[120px]"
-      style={conditionalStyle}
-    >
+    <div className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1 text-sm">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && (
-          <span
-            style={{
-              background: '#5cb85c',
-              color: '#fff',
-              borderRadius: 6,
-              padding: '1px 6px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-            }}
-          >
-            上がり
-          </span>
-        )}
-        {isCurrentTurn && !player.isFinished && (
-          <span
-            style={{
-              background: '#f0ad4e',
-              color: '#222',
-              borderRadius: 6,
-              padding: '1px 6px',
-              marginLeft: 6,
-              fontSize: '0.8em',
-              fontWeight: 'bold',
-            }}
-          >
-            考え中...
-          </span>
-        )}
+        {player.isFinished && <StatusBadge variant="success">上がり</StatusBadge>}
+        {isCurrentTurn && !player.isFinished && <StatusBadge variant="warning">考え中...</StatusBadge>}
       </div>
       <div className="text-[#ccc] text-[0.85em]">{player.cardCount}枚</div>
     </div>

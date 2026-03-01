@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`StatusBadge > renders success variant 1`] = `
+<span
+  style="background: rgb(92, 184, 92); color: rgb(255, 255, 255); border-radius: 6px; padding: 1px 8px; margin-left: 6px; font-size: 0.8em;"
+>
+  上がり
+</span>
+`;
+
+exports[`StatusBadge > renders warning variant 1`] = `
+<span
+  style="background: rgb(240, 173, 78); color: rgb(34, 34, 34); border-radius: 6px; padding: 1px 8px; margin-left: 6px; font-size: 0.8em; font-weight: bold;"
+>
+  考え中...
+</span>
+`;

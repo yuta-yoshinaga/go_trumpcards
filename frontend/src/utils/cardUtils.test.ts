@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { suitName, valueName } from './cardUtils';
+import { cardLabel, suitName, valueName } from './cardUtils';
+
+describe('cardLabel', () => {
+  it('returns JOKER for joker cards', () => {
+    expect(cardLabel({ design: 'JOKER', value: 0 })).toBe('JOKER');
+  });
+
+  it('returns "DESIGN VALUE" for non-joker cards', () => {
+    expect(cardLabel({ design: 'SPADE', value: 1 })).toBe('SPADE 1');
+    expect(cardLabel({ design: 'HEART', value: 13 })).toBe('HEART 13');
+  });
+});
 
 describe('valueName', () => {
   it('returns A for value 1', () => {
