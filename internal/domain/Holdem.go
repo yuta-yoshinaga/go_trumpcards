@@ -56,7 +56,7 @@ type cpuStyleParams struct {
 
 	// PostFlop Passive
 	postFlopPassFoldRank int // fold if handRank <= this
-	postFlopPassFoldMult int // fold if callAmount > BB*this (0=any callAmount)
+	postFlopPassFoldMult int // fold if callAmount > BB*this (-1=any callAmount)
 	postFlopBluffBetMult int // bluff bet = BB*this
 }
 
@@ -80,7 +80,7 @@ var holdemStyleParamsMap = map[HoldemPlayStyle]cpuStyleParams{
 		aggressive: false, bluffRate: 5,
 		preFlopFoldThreshold: 30, preFlopFoldCompound: false,
 		preFlopBluffBetMult:  2,
-		postFlopPassFoldRank: PokerHandHighCard,
+		postFlopPassFoldRank: PokerHandHighCard, postFlopPassFoldMult: -1,
 		postFlopBluffBetMult: 1,
 	},
 	HoldemStyleLAG: {
@@ -88,7 +88,7 @@ var holdemStyleParamsMap = map[HoldemPlayStyle]cpuStyleParams{
 		preFlopFoldThreshold: 15, preFlopFoldCompound: true, preFlopFoldCallMult: 3,
 		preFlopRaiseThreshold: 50, preFlopRaiseMult: 3,
 		postFlopRaiseRank: PokerHandOnePair, postFlopRaiseMult: 3,
-		postFlopCondCallRank: -1, postFlopFallbackFold: false,
+		postFlopFallbackFold: false,
 		postFlopAggrFoldRank: PokerHandHighCard, postFlopAggrFoldMult: 4,
 	},
 }
@@ -928,7 +928,7 @@ func (h *Holdem) cpuDecidePostFlop(idx int, params cpuStyleParams, callAmount in
 	// Passive: call block with conditional fold → bluff bet → check
 	if callAmount > 0 {
 		if handRank <= params.postFlopPassFoldRank {
-			if params.postFlopPassFoldMult == 0 || callAmount > h.config.BigBlind*params.postFlopPassFoldMult {
+			if params.postFlopPassFoldMult < 0 || callAmount > h.config.BigBlind*params.postFlopPassFoldMult {
 				return HoldemActionFold, 0
 			}
 		}
