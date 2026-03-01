@@ -571,9 +571,10 @@ describe('HoldemPage', () => {
   it('updates bet amount when changing input', async () => {
     mockExec.mockResolvedValue(preFlopState);
     render(<HoldemPage />);
-    await waitFor(() => expect(screen.getByLabelText('ベット額:')).toBeInTheDocument());
+    const betInput = await screen.findByLabelText('ベット額:');
+    // Wait for useEffect to settle the initial value from minRaise
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('20'));
 
-    const betInput = screen.getByLabelText('ベット額:');
     fireEvent.change(betInput, { target: { value: '50' } });
     expect((betInput as HTMLInputElement).value).toBe('50');
   });
