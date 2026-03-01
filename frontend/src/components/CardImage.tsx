@@ -45,7 +45,7 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
   const img = (
     <img
       src="/images/z01.png"
-      alt="カード裏面"
+      alt={onClick && ariaLabel ? '' : 'カード裏面'}
       style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
     />

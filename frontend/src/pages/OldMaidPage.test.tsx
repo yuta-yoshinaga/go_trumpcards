@@ -145,8 +145,9 @@ describe('OldMaidPage', () => {
     };
     mockExec.mockResolvedValue(highlightedState);
     await startGame();
-    const cardBacks = screen.getAllByAltText('カード裏面');
-    expect(cardBacks[0]).toHaveStyle({ transform: 'translateY(-8px)' });
+    const btn = screen.getByRole('button', { name: 'カード 1 枚目を引く' });
+    const img = btn.querySelector('img') as HTMLImageElement;
+    expect(img).toHaveStyle({ transform: 'translateY(-8px)' });
   });
 
   it('non-highlighted cards do not have translateY style', async () => {
@@ -317,8 +318,8 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     // CPU 1 is target player: click its first card back
-    const cardBacks = screen.getAllByAltText('カード裏面');
-    fireEvent.click(cardBacks[0]);
+    const btn = screen.getByRole('button', { name: 'カード 1 枚目を引く' });
+    fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', 0, undefined, undefined));
   });
 

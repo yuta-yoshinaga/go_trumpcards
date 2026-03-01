@@ -92,6 +92,13 @@ describe('CardBack', () => {
     expect(screen.getByRole('button', { name: 'カード 1 枚目を引く' })).toBeInTheDocument();
   });
 
+  it('sets empty alt on img when onClick and ariaLabel are both provided', () => {
+    render(<CardBack onClick={() => undefined} ariaLabel="カード 1 枚目を引く" />);
+    const btn = screen.getByRole('button', { name: 'カード 1 枚目を引く' });
+    const img = btn.querySelector('img') as HTMLImageElement;
+    expect(img).toHaveAttribute('alt', '');
+  });
+
   it('shows pointer cursor when onClick is provided', () => {
     render(<CardBack onClick={() => undefined} />);
     const img = screen.getByRole('button', { name: 'カード裏面' });
