@@ -25,6 +25,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	factory := func() uc.SevensInteractorIF { return sgiMock }
 	tswc := controller.NewSevensWebController(factory)
+	defer tswc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -168,6 +169,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock.On("ResetWithConfig", true, 2, true, 5).Return(mockOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
+		defer tswc.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
 		api.SetApp(router)
@@ -190,6 +192,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock.On("Reset").Return(defaultOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
+		defer tswc.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
 		api.SetApp(router)
@@ -212,6 +215,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock.On("ResetWithConfig", true, 0, false, 5).Return(partialOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
+		defer tswc.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
 		api.SetApp(router)
@@ -233,6 +237,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock.On("ResetWithConfig", false, 0, false, 3).Return(passesOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
+		defer tswc.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
 		api.SetApp(router)
@@ -253,6 +258,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock := new(usecase.MockSevensInteractor)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
+		defer tswc.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
 		api.SetApp(router)
@@ -277,6 +283,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock := new(usecase.MockSevensInteractor)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
+		defer tswc.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
 		api.SetApp(router)
@@ -303,6 +310,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock.On("ResetWithConfig", false, 0, false, 0).Return(passesOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
+		defer tswc.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
 		api.SetApp(router)
@@ -335,6 +343,7 @@ func TestSevensWebController_SessionIsolation(t *testing.T) {
 		}
 		return mockB
 	})
+	defer isoController.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -374,4 +383,12 @@ func TestSevensWebController_SessionIsolation(t *testing.T) {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
 		}
 	})
+}
+
+func TestSevensWebController_Stop(t *testing.T) {
+	sgiMock := new(usecase.MockSevensInteractor)
+	factory := func() uc.SevensInteractorIF { return sgiMock }
+	c := controller.NewSevensWebController(factory)
+	c.Stop()
+	c.Stop()
 }

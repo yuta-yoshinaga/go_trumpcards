@@ -168,6 +168,11 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
+// Stop stops the background cleanup goroutine of the session store.
+func (hwc *HoldemWebController) Stop() {
+	hwc.store.Stop()
+}
+
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (hwc *HoldemWebController) newDefaultOutput(msg string) *HoldemWebOutput {
 	return &HoldemWebOutput{

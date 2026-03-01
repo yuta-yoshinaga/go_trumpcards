@@ -24,6 +24,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 
 	factory := func() uc.OldMaidInteractorIF { return omiMock }
 	towc := controller.NewOldMaidWebController(factory)
+	defer towc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -208,6 +209,7 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 		}
 		return mockB
 	})
+	defer isoController.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -247,4 +249,12 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
 		}
 	})
+}
+
+func TestOldMaidWebController_Stop(t *testing.T) {
+	omiMock := new(usecase.MockOldMaidInteractor)
+	factory := func() uc.OldMaidInteractorIF { return omiMock }
+	c := controller.NewOldMaidWebController(factory)
+	c.Stop()
+	c.Stop()
 }

@@ -166,6 +166,11 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
+// Stop stops the background cleanup goroutine of the session store.
+func (dwc *DoubtWebController) Stop() {
+	dwc.store.Stop()
+}
+
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (dwc *DoubtWebController) newDefaultOutput(msg string) *DoubtWebOutput {
 	return &DoubtWebOutput{

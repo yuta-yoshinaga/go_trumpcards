@@ -1,10 +1,14 @@
 package web
 
 import (
+	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -153,9 +157,10 @@ func (web *TrumpCardsWeb) Exec() {
 	}
 	mux.Handle("/", http.FileServer(http.Dir("public")))
 	const (
-		readTimeout  = 10 * time.Second
-		writeTimeout = 30 * time.Second
-		idleTimeout  = 60 * time.Second
+		readTimeout     = 10 * time.Second
+		writeTimeout    = 30 * time.Second
+		idleTimeout     = 60 * time.Second
+		shutdownTimeout = 30 * time.Second
 	)
 	srv := &http.Server{
 		Addr:         getListenPort(),
@@ -164,7 +169,35 @@ func (web *TrumpCardsWeb) Exec() {
 		WriteTimeout: writeTimeout,
 		IdleTimeout:  idleTimeout,
 	}
-	log.Fatal(srv.ListenAndServe())
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	errCh := make(chan error, 1)
+	go func() { errCh <- srv.ListenAndServe() }()
+
+	select {
+	case err := <-errCh:
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal(err)
+		}
+	case <-ctx.Done():
+		log.Println("shutting down server...")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			log.Printf("server shutdown error: %v", err)
+		}
+	}
+
+	web.bjc.Stop()
+	web.pkc.Stop()
+	web.omc.Stop()
+	web.dgc.Stop()
+	web.sgc.Stop()
+	web.dwc.Stop()
+	web.hmc.Stop()
+	log.Println("server stopped")
 }
 
 func getListenPort() string {
