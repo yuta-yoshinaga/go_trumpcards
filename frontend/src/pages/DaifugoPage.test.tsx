@@ -436,6 +436,20 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByText(/上がり \(大貧民\)/)).toBeInTheDocument());
   });
 
+  it('toggles aria-pressed on card button click', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('SPADE 3').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('deselects a card by clicking it again', async () => {
     render(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('SPADE 3')).toBeInTheDocument());

@@ -139,6 +139,7 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn, onD
           <button
             key={`${card.design}-${card.value}`}
             type="button"
+            aria-pressed={selectedIndices.includes(i)}
             disabled={!isCurrentTurn}
             draggable={isCurrentTurn}
             onClick={() => onToggle(i)}

@@ -144,6 +144,20 @@ describe('DoubtPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
   });
 
+  it('toggles aria-pressed on HandCard button click', async () => {
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('toggles card selection on click and enables 出す button', async () => {
     render(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
