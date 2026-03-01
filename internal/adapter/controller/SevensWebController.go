@@ -114,7 +114,7 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "r", "reset":
 		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil {
 			jokerCount := derefInt(param.JokerCount)
-			if jokerCount < 0 || jokerCount > 2 {
+			if jokerCount < 0 || jokerCount > domain.SevensMaxJokerCount {
 				w.WriteHeader(http.StatusBadRequest)
 				if err := w.WriteJson(swc.newDefaultOutput("param error: jokerCount must be between 0 and 2.")); err != nil {
 					log.Printf("WriteJson error: %v", err)

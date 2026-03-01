@@ -2,6 +2,9 @@ package domain
 
 import "sort"
 
+// SevensMaxJokerCount 7並べで許可されるジョーカー最大枚数
+const SevensMaxJokerCount = 2
+
 // SevensMaxPasses 7並べで各プレイヤーに許可されるパス回数
 const SevensMaxPasses = 5
 
