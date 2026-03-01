@@ -737,9 +737,10 @@ describe('HoldemPage', () => {
   it('sends updated bet amount when raise is clicked after changing input', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
     render(<HoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ' })).not.toBeDisabled());
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('20'));
 
-    fireEvent.change(screen.getByLabelText('ベット額:'), { target: { value: '100' } });
+    fireEvent.change(betInput, { target: { value: '100' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
@@ -750,9 +751,10 @@ describe('HoldemPage', () => {
   it('sends updated bet amount when bet is clicked after changing input', async () => {
     mockExec.mockResolvedValue(preFlopState);
     render(<HoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('20'));
 
-    fireEvent.change(screen.getByLabelText('ベット額:'), { target: { value: '60' } });
+    fireEvent.change(betInput, { target: { value: '60' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
