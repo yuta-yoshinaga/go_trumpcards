@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -10,8 +9,7 @@ import (
 )
 
 // PokerCuiPresenter ポーカーCUIプレゼンタークラス
-type PokerCuiPresenter struct {
-}
+type PokerCuiPresenter struct{}
 
 // NewPokerCuiPresenter コンストラクタ
 func NewPokerCuiPresenter() *PokerCuiPresenter {
@@ -20,90 +18,165 @@ func NewPokerCuiPresenter() *PokerCuiPresenter {
 
 // Output ゲーム状態を出力
 func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) string {
-	player := p.GetPlayer()
-	dealer := p.GetDealer()
 	var b strings.Builder
+	players := p.GetPlayers()
 
-	b.WriteString("----------\n")
+	b.WriteString("==========\n")
+	b.WriteString("5-Card Draw Poker\n")
+	b.WriteString("==========\n")
 
-	// chips/pot info
-	fmt.Fprintf(&b, "Pot: %d | Player Chips: %d | Dealer Chips: %d\n", p.GetPot(), player.GetChips(), dealer.GetChips())
-	if p.GetDealerBet() > 0 {
-		fmt.Fprintf(&b, "Dealer Bet: %d\n", p.GetDealerBet())
+	// ディーラー位置
+	fmt.Fprintf(&b, "ディーラー: Player %d\n", p.GetDealerIdx())
+
+	// ポット
+	fmt.Fprintf(&b, "ポット: %d\n", p.GetPot())
+
+	// ジョーカー枚数
+	if p.GetConfig().JokerCount > 0 {
+		fmt.Fprintf(&b, "ジョーカー: %d枚\n", p.GetConfig().JokerCount)
 	}
-	b.WriteString("----------\n")
 
-	// player
-	b.WriteString("player hand")
-	if p.GetPhase() == domain.PokerPhaseEnd {
-		fmt.Fprintf(&b, " [%s]", player.GetHandName())
-	}
-	b.WriteString("\n")
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if i != 0 {
-			b.WriteString(",")
+	// プレイヤー情報
+	b.WriteString("----------\n")
+	isEnd := p.GetPhase() == domain.PokerPhaseEnd
+	for i, player := range players {
+		if player.GetIsHuman() {
+			b.WriteString("[You]")
+		} else {
+			fmt.Fprintf(&b, "CPU %d (%s)", i, player.GetPlayStyleName())
 		}
-		fmt.Fprintf(&b, "[%d]%s", i, pcp.GetCardStr(player.GetCard(i)))
-	}
-	b.WriteString("\n----------\n")
 
-	// dealer
-	b.WriteString("dealer hand")
-	if p.GetPhase() == domain.PokerPhaseEnd {
-		fmt.Fprintf(&b, " [%s]", dealer.GetHandName())
+		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
+
+		if player.GetFolded() {
+			b.WriteString(" [フォールド]")
+		} else if player.GetAllIn() {
+			b.WriteString(" [オールイン]")
+		}
+
+		if player.GetCurrentBet() > 0 {
+			fmt.Fprintf(&b, " ベット:%d", player.GetCurrentBet())
+		}
+
+		if player.GetExchangeCount() > 0 && (p.GetPhase() == domain.PokerPhaseSecondBet || isEnd) {
+			fmt.Fprintf(&b, " 交換:%d枚", player.GetExchangeCount())
+		}
 		b.WriteString("\n")
-		for i := 0; i < dealer.GetCardsSize(); i++ {
-			if i != 0 {
-				b.WriteString(",")
+
+		// 人間の手札は常に表示
+		if player.GetIsHuman() && !player.GetFolded() {
+			b.WriteString("  手札: ")
+			for j := 0; j < player.GetCardsSize(); j++ {
+				if j > 0 {
+					b.WriteString("  ")
+				}
+				fmt.Fprintf(&b, "[%d]%s", j, pcp.getCardStr(player.GetCard(j)))
 			}
-			b.WriteString(pcp.GetCardStr(dealer.GetCard(i)))
+			if isEnd {
+				fmt.Fprintf(&b, "  [%s]", player.GetHandName())
+			}
+			b.WriteString("\n")
 		}
-		b.WriteString("\n")
-	} else {
-		b.WriteString("\n")
+
+		// CPUの手札は終了時のみ表示
+		if !player.GetIsHuman() && isEnd && !player.GetFolded() {
+			b.WriteString("  手札: ")
+			for j := 0; j < player.GetCardsSize(); j++ {
+				if j > 0 {
+					b.WriteString("  ")
+				}
+				b.WriteString(pcp.getCardStr(player.GetCard(j)))
+			}
+			fmt.Fprintf(&b, "  [%s]", player.GetHandName())
+			b.WriteString("\n")
+		}
 	}
-	b.WriteString("----------\n")
+
+	// CPU行動記録
+	cpuActions := p.GetCpuActions()
+	if len(cpuActions) > 0 {
+		b.WriteString("----------\n")
+		b.WriteString("[CPU行動]\n")
+		for _, action := range cpuActions {
+			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, pcp.getActionName(action.Action))
+			if action.Amount > 0 {
+				fmt.Fprintf(&b, " (%d)", action.Amount)
+			}
+			b.WriteString("\n")
+		}
+	}
+
+	// CPU交換記録
+	cpuExchanges := p.GetCpuExchanges()
+	if len(cpuExchanges) > 0 {
+		b.WriteString("----------\n")
+		b.WriteString("[CPU交換]\n")
+		for _, ex := range cpuExchanges {
+			fmt.Fprintf(&b, "  Player %d: %d枚交換\n", ex.PlayerIdx, ex.ExchangeCount)
+		}
+	}
+
+	// ショーダウン結果
+	results := p.GetRoundResults()
+	if len(results) > 0 && isEnd {
+		b.WriteString("==========\n")
+		b.WriteString("[結果]\n")
+		for _, r := range results {
+			name := "You"
+			if !players[r.PlayerIdx].GetIsHuman() {
+				name = fmt.Sprintf("CPU %d", r.PlayerIdx)
+			}
+			if r.HandName != "" {
+				fmt.Fprintf(&b, "  %s: %s", name, r.HandName)
+			} else {
+				fmt.Fprintf(&b, "  %s", name)
+			}
+			if r.WonAmount > 0 {
+				fmt.Fprintf(&b, " → %dチップ獲得", r.WonAmount)
+			}
+			b.WriteString("\n")
+		}
+	}
 
 	// エラーメッセージ
 	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", lastErr.Error())
+		fmt.Fprintf(&b, "[エラー] %s\n", lastErr.Error())
 	}
 
-	if p.GetPhase() == domain.PokerPhaseEnd {
-		if p.GetFolded() == domain.PokerFoldByPlayer {
-			b.WriteString("You folded.\n")
-		} else if p.GetFolded() == domain.PokerFoldByDealer {
-			b.WriteString("Dealer folded. You win!\n")
-		} else {
-			switch p.GameJudgment() {
-			case 0:
-				b.WriteString("It is a draw.\n")
-			case 1:
-				b.WriteString("You are the winner.\n")
-			default:
-				b.WriteString("It is your loss.\n")
-			}
-		}
-		b.WriteString("----------\n")
+	// ゲーム終了メッセージ
+	if p.GetGameEndFlag() {
+		b.WriteString("ゲーム終了\n")
 	}
+
 	return b.String()
 }
 
-// GetCardStr カード情報文字列取得
-func (pcp *PokerCuiPresenter) GetCardStr(card *domain.Card) string {
-	res := ""
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		res = "SPADE "
-	case domain.CardDesignClover:
-		res = "CLOVER "
-	case domain.CardDesignHeart:
-		res = "HEART "
-	case domain.CardDesignDiamond:
-		res = "DIAMOND "
-	default:
-		res = "Unsupported card "
+// getCardStr カード文字列取得
+func (pcp *PokerCuiPresenter) getCardStr(card *domain.Card) string {
+	designs := []string{"🃏", "♠", "♣", "♥", "♦"}
+	d := card.GetDesign()
+	if d < 0 || d >= len(designs) {
+		d = 0
 	}
-	res += strconv.Itoa(card.GetValue())
-	return res
+	return fmt.Sprintf("%s%d", designs[d], card.GetValue())
+}
+
+// getActionName アクション名取得
+func (pcp *PokerCuiPresenter) getActionName(action int) string {
+	switch action {
+	case domain.PokerActionFold:
+		return "フォールド"
+	case domain.PokerActionCheck:
+		return "チェック"
+	case domain.PokerActionCall:
+		return "コール"
+	case domain.PokerActionBet:
+		return "ベット"
+	case domain.PokerActionRaise:
+		return "レイズ"
+	case domain.PokerActionAllIn:
+		return "オールイン"
+	default:
+		return "不明"
+	}
 }

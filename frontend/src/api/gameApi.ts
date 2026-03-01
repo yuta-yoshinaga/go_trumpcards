@@ -51,10 +51,12 @@ export const blackjackApi = {
 
 export const pokerApi = {
   exec: (
-    command: 'reset' | 'exchange' | 'stand' | 'bet' | 'call' | 'raise' | 'fold' | 'check',
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
     indices?: number[],
     amount?: number,
-  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, sessionId }),
+    cpuCount?: number,
+    jokerCount?: number,
+  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, cpuCount, jokerCount, sessionId }),
 };
 
 export const oldmaidApi = {

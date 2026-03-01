@@ -40,7 +40,14 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			)
 		}),
 		pkc: controller.NewPokerWebController(func() usecase.PokerInteractorIF {
-			poker := domain.NewPoker(domain.NewTrumpCards(0), domain.NewPokerPlayer(), domain.NewPokerPlayer())
+			config := domain.DefaultPokerConfig()
+			players := []*domain.PokerPlayer{
+				domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+				domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+				domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
+				domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
+			}
+			poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
 			return usecase.NewPokerInteractor(poker, presenter.NewPokerWebPresenter())
 		}),
 		omc: controller.NewOldMaidWebController(func() usecase.OldMaidInteractorIF {

@@ -11,8 +11,15 @@ type MockPokerGame struct {
 }
 
 // Reset モック
-func (_m *MockPokerGame) Reset() {
-	_m.Called()
+func (_m *MockPokerGame) Reset() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// PlayerAction モック
+func (_m *MockPokerGame) PlayerAction(action, amount int) error {
+	ret := _m.Called(action, amount)
+	return ret.Error(0)
 }
 
 // PlayerExchange モック
@@ -27,92 +34,91 @@ func (_m *MockPokerGame) PlayerStand() error {
 	return ret.Error(0)
 }
 
-// PlayerBet モック
-func (_m *MockPokerGame) PlayerBet(amount int) error {
-	ret := _m.Called(amount)
-	return ret.Error(0)
-}
-
-// PlayerCall モック
-func (_m *MockPokerGame) PlayerCall() error {
+// GetPlayers モック
+func (_m *MockPokerGame) GetPlayers() []*domain.PokerPlayer {
 	ret := _m.Called()
-	return ret.Error(0)
-}
-
-// PlayerRaise モック
-func (_m *MockPokerGame) PlayerRaise(amount int) error {
-	ret := _m.Called(amount)
-	return ret.Error(0)
-}
-
-// PlayerFold モック
-func (_m *MockPokerGame) PlayerFold() error {
-	ret := _m.Called()
-	return ret.Error(0)
-}
-
-// PlayerCheck モック
-func (_m *MockPokerGame) PlayerCheck() error {
-	ret := _m.Called()
-	return ret.Error(0)
-}
-
-// GetPlayer モック
-func (_m *MockPokerGame) GetPlayer() *domain.PokerPlayer {
-	ret := _m.Called()
-	if val, ok := ret.Get(0).(*domain.PokerPlayer); ok {
-		return val
-	}
-	return nil
-}
-
-// GetDealer モック
-func (_m *MockPokerGame) GetDealer() *domain.PokerPlayer {
-	ret := _m.Called()
-	if val, ok := ret.Get(0).(*domain.PokerPlayer); ok {
-		return val
-	}
-	return nil
-}
-
-// GetPot モック
-func (_m *MockPokerGame) GetPot() int {
-	ret := _m.Called()
-	return ret.Int(0)
-}
-
-// GetPlayerBet モック
-func (_m *MockPokerGame) GetPlayerBet() int {
-	ret := _m.Called()
-	return ret.Int(0)
-}
-
-// GetDealerBet モック
-func (_m *MockPokerGame) GetDealerBet() int {
-	ret := _m.Called()
-	return ret.Int(0)
+	return ret.Get(0).([]*domain.PokerPlayer)
 }
 
 // GetPhase モック
 func (_m *MockPokerGame) GetPhase() int {
 	ret := _m.Called()
-	return ret.Int(0)
+	return ret.Get(0).(int)
 }
 
-// GetFolded モック
-func (_m *MockPokerGame) GetFolded() int {
+// GetPot モック
+func (_m *MockPokerGame) GetPot() int {
 	ret := _m.Called()
-	return ret.Int(0)
+	return ret.Get(0).(int)
+}
+
+// GetSidePots モック
+func (_m *MockPokerGame) GetSidePots() []domain.PokerSidePot {
+	ret := _m.Called()
+	return ret.Get(0).([]domain.PokerSidePot)
+}
+
+// GetDealerIdx モック
+func (_m *MockPokerGame) GetDealerIdx() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetCurrentTurn モック
+func (_m *MockPokerGame) GetCurrentTurn() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetGameEndFlag モック
+func (_m *MockPokerGame) GetGameEndFlag() bool {
+	ret := _m.Called()
+	return ret.Get(0).(bool)
+}
+
+// GetLastBet モック
+func (_m *MockPokerGame) GetLastBet() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetMinRaise モック
+func (_m *MockPokerGame) GetMinRaise() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
 }
 
 // GetAnte モック
 func (_m *MockPokerGame) GetAnte() int {
 	ret := _m.Called()
-	return ret.Int(0)
+	return ret.Get(0).(int)
 }
 
-// GameJudgment モック
-func (_m *MockPokerGame) GameJudgment() int {
+// GetRoundResults モック
+func (_m *MockPokerGame) GetRoundResults() []domain.PokerResult {
 	ret := _m.Called()
-	return ret.Int(0)
+	return ret.Get(0).([]domain.PokerResult)
+}
+
+// GetCpuActions モック
+func (_m *MockPokerGame) GetCpuActions() []domain.PokerCpuAction {
+	ret := _m.Called()
+	return ret.Get(0).([]domain.PokerCpuAction)
+}
+
+// GetCpuExchanges モック
+func (_m *MockPokerGame) GetCpuExchanges() []domain.PokerCpuExchange {
+	ret := _m.Called()
+	return ret.Get(0).([]domain.PokerCpuExchange)
+}
+
+// GetConfig モック
+func (_m *MockPokerGame) GetConfig() domain.PokerConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.PokerConfig)
+}
+
+// SetConfig モック
+func (_m *MockPokerGame) SetConfig(cfg domain.PokerConfig) {
+	_m.Called(cfg)
 }

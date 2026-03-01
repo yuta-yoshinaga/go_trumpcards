@@ -24,6 +24,16 @@ export const PokerPhase = {
   END: 4,
 } as const;
 
+// Poker action constants (sync: internal/domain/Poker.go)
+export const PokerAction = {
+  FOLD: 0,
+  CHECK: 1,
+  CALL: 2,
+  BET: 3,
+  RAISE: 4,
+  ALL_IN: 5,
+} as const;
+
 // Texas Hold'em phase constants (sync: internal/domain/Holdem.go)
 export const HoldemPhase = {
   INIT: 0,

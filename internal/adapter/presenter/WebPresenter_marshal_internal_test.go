@@ -34,7 +34,11 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 			name: "PokerWebPresenter marshal error",
 			output: func() string {
 				p := NewPokerWebPresenter()
-				poker := domain.NewPoker(domain.NewTrumpCards(0), domain.NewPokerPlayer(), domain.NewPokerPlayer())
+				players := []*domain.PokerPlayer{
+					domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+					domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+				}
+				poker := domain.NewPoker(domain.NewTrumpCards(0), players, domain.DefaultPokerConfig())
 				return p.Output(poker, nil)
 			}(),
 		},
