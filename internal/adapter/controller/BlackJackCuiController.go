@@ -42,10 +42,10 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 			res = "Bet amount is required."
 		} else {
 			amount, err := strconv.Atoi(parts[1])
-			if err != nil {
-				res = "Invalid bet amount. Please enter a number."
-			} else {
+			if err == nil && amount > 0 {
 				res = bcc.bji.Bet(amount)
+			} else {
+				res = "Invalid bet amount. Please enter a number."
 			}
 		}
 	case "d", "doubledown":
@@ -65,10 +65,10 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 			res = "Deck count is required."
 		} else {
 			count, err := strconv.Atoi(parts[1])
-			if err != nil {
-				res = "Invalid deck count. Please enter a number."
-			} else {
+			if err == nil && count > 0 {
 				res = bcc.bji.SetDeckCount(count)
+			} else {
+				res = "Invalid deck count. Please enter a number."
 			}
 		}
 	default:

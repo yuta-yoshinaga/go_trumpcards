@@ -90,6 +90,18 @@ func TestPokerCuiController_Method(t *testing.T) {
 	t.Run("success Exec check", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tpc.Exec("check"))
 	})
+	t.Run("b with negative amount falls back to Bet(0)", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpc.Exec("b -20"))
+	})
+	t.Run("ra with negative amount falls back to Raise(0)", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpc.Exec("ra -30"))
+	})
+	t.Run("b with non-numeric falls back to Bet(0)", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpc.Exec("b abc"))
+	})
+	t.Run("ra with non-numeric falls back to Raise(0)", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tpc.Exec("ra abc"))
+	})
 	t.Run("success Exec other", func(t *testing.T) {
 		assert.Equal(t, "Unsupported command.", tpc.Exec("other"))
 	})
