@@ -18,14 +18,7 @@ type WebInput interface {
 type baseController struct{}
 
 // writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
-func (bc *baseController) writePresenterResponse(w rest.ResponseWriter, responseStr string, errorOutput any) {
-	if responseStr == "" || !json.Valid([]byte(responseStr)) {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(errorOutput); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
+func (bc *baseController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
 	w.WriteHeader(http.StatusOK)
 	if err := w.WriteJson(json.RawMessage(responseStr)); err != nil {
 		log.Printf("WriteJson error: %v", err)
@@ -50,7 +43,7 @@ func execWithSession[P WebInput, T any](
 	factory func() T,
 	newDefault func(string) any,
 	validate func(P) error,
-	handler func(w rest.ResponseWriter, interactor T, param P, errOutput any) bool,
+	handler func(w rest.ResponseWriter, interactor T, param P) bool,
 ) {
 	var param P
 	if err := r.DecodeJsonPayload(&param); err != nil || param.GetCommand() == "" || param.GetSessionID() == "" {
@@ -74,8 +67,7 @@ func execWithSession[P WebInput, T any](
 	}
 	mu.Lock()
 	defer mu.Unlock()
-	errOutput := newDefault("error.")
-	if !handler(w, interactor, param, errOutput) {
+	if !handler(w, interactor, param) {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("Unsupported command."))
 	}
 }

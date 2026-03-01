@@ -91,7 +91,7 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	execWithSession(&swc.baseController, w, r, swc.store, swc.factory,
 		func(msg string) any { return swc.newDefaultOutput(msg) },
 		nil,
-		func(w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput, errOutput any) bool {
+		func(w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
 				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil {
@@ -100,14 +100,14 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 						swc.writeJsonResponse(w, http.StatusBadRequest, swc.newDefaultOutput("param error: jokerCount must be between 0 and 2."))
 						return true
 					}
-					swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), jokerCount, derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses)), errOutput)
+					swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), jokerCount, derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses)))
 				} else {
-					swc.writePresenterResponse(w, sgi.Reset(), errOutput)
+					swc.writePresenterResponse(w, sgi.Reset())
 				}
 			case "p", "play":
-				swc.writePresenterResponse(w, sgi.Play(param.Index), errOutput)
+				swc.writePresenterResponse(w, sgi.Play(param.Index))
 			case "j", "joker":
-				swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue), errOutput)
+				swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue))
 			default:
 				return false
 			}

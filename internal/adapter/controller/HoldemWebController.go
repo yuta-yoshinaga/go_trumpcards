@@ -98,7 +98,7 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	execWithSession(&hwc.baseController, w, r, hwc.store, hwc.factory,
 		func(msg string) any { return hwc.newDefaultOutput(msg) },
 		nil,
-		func(w rest.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput, errOutput any) bool {
+		func(w rest.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
 				cfg := domain.DefaultHoldemConfig()
@@ -126,19 +126,19 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				}
 				cfg.SmallBlind = sb
 				cfg.BigBlind = bb
-				hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg), errOutput)
+				hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
 			case "f", "fold":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0), errOutput)
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0))
 			case "ck", "check":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0), errOutput)
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0))
 			case "c", "call":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0), errOutput)
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0))
 			case "b", "bet":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount), errOutput)
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount))
 			case "ra", "raise":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount), errOutput)
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount))
 			case "a", "allin":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0), errOutput)
+				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0))
 			default:
 				return false
 			}

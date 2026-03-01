@@ -149,16 +149,6 @@ func TestSevensWebController_Method(t *testing.T) {
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
 	})
 
-	t.Run("failed Exec response empty", func(t *testing.T) {
-		sgiMock.On("Reset").Return(``)
-		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"error."}`)
-	})
 }
 
 func TestSevensWebController_ResetWithConfig(t *testing.T) {

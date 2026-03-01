@@ -75,30 +75,30 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	execWithSession(&bwc.baseController, w, r, bwc.store, bwc.factory,
 		func(msg string) any { return bwc.newDefaultOutput(msg) },
 		nil,
-		func(w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput, errOutput any) bool {
+		func(w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				bwc.writePresenterResponse(w, bji.Reset(), errOutput)
+				bwc.writePresenterResponse(w, bji.Reset())
 			case "h", "hit":
-				bwc.writePresenterResponse(w, bji.Hit(), errOutput)
+				bwc.writePresenterResponse(w, bji.Hit())
 			case "s", "stand":
-				bwc.writePresenterResponse(w, bji.Stand(), errOutput)
+				bwc.writePresenterResponse(w, bji.Stand())
 			case "b", "bet":
-				bwc.writePresenterResponse(w, bji.Bet(param.Amount), errOutput)
+				bwc.writePresenterResponse(w, bji.Bet(param.Amount))
 			case "d", "doubledown":
-				bwc.writePresenterResponse(w, bji.DoubleDown(), errOutput)
+				bwc.writePresenterResponse(w, bji.DoubleDown())
 			case "sp", "split":
-				bwc.writePresenterResponse(w, bji.Split(), errOutput)
+				bwc.writePresenterResponse(w, bji.Split())
 			case "i", "insurance":
-				bwc.writePresenterResponse(w, bji.Insurance(), errOutput)
+				bwc.writePresenterResponse(w, bji.Insurance())
 			case "di", "declineinsurance":
-				bwc.writePresenterResponse(w, bji.DeclineInsurance(), errOutput)
+				bwc.writePresenterResponse(w, bji.DeclineInsurance())
 			case "sur", "surrender":
-				bwc.writePresenterResponse(w, bji.Surrender(), errOutput)
+				bwc.writePresenterResponse(w, bji.Surrender())
 			case "togglehint":
-				bwc.writePresenterResponse(w, bji.ToggleHint(), errOutput)
+				bwc.writePresenterResponse(w, bji.ToggleHint())
 			case "sd", "setdeckcount":
-				bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount), errOutput)
+				bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount))
 			default:
 				return false
 			}
