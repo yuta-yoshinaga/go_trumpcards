@@ -1,0 +1,33 @@
+name: Claude Code PR Review
+
+on:
+  pull_request:
+    types: [opened]
+    branches-ignore:
+      - master
+  issue_comment:
+    types: [created]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
+
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
