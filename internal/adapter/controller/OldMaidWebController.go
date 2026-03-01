@@ -83,7 +83,7 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	execWithSession(&owc.baseController, w, r, owc.store, owc.factory,
 		func(msg string) any { return owc.newDefaultOutput(msg) },
 		nil,
-		func(w rest.ResponseWriter, omi usecase.OldMaidInteractorIF, param OldMaidWebInput, errOutput any) bool {
+		func(w rest.ResponseWriter, omi usecase.OldMaidInteractorIF, param OldMaidWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
 				if param.Mode < 0 || param.Mode > int(domain.OldMaidModeJijiNuki) {
@@ -94,13 +94,13 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 					Mode:                 domain.OldMaidMode(param.Mode),
 					CpuPlacementStrategy: param.CpuPlacementStrategy,
 				}
-				owc.writePresenterResponse(w, omi.Reset(cfg), errOutput)
+				owc.writePresenterResponse(w, omi.Reset(cfg))
 			case "d", "draw":
 				drawIdx := -1
 				if param.DrawIdx != nil {
 					drawIdx = *param.DrawIdx
 				}
-				owc.writePresenterResponse(w, omi.Draw(drawIdx), errOutput)
+				owc.writePresenterResponse(w, omi.Draw(drawIdx))
 			default:
 				return false
 			}

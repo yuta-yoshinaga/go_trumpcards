@@ -174,15 +174,6 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 	})
-	t.Run("failed Exec response empty", func(t *testing.T) {
-		bjiMock.On("Reset").Return(``)
-		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonCase1)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-	})
 }
 
 func TestBlackJackWebController_SessionIsolation(t *testing.T) {

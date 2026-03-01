@@ -103,7 +103,7 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			}
 			return nil
 		},
-		func(w rest.ResponseWriter, dgi usecase.DoubtInteractorIF, param DoubtWebInput, errOutput any) bool {
+		func(w rest.ResponseWriter, dgi usecase.DoubtInteractorIF, param DoubtWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
 				cfg := domain.DefaultDoubtConfig()
@@ -116,13 +116,13 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 						cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
 					}
 				}
-				dwc.writePresenterResponse(w, dgi.ResetWithConfig(cfg), errOutput)
+				dwc.writePresenterResponse(w, dgi.ResetWithConfig(cfg))
 			case "p", "play":
 				if param.ClaimedValue < domain.MinClaimedValue || param.ClaimedValue > domain.MaxClaimedValue {
 					dwc.writeJsonResponse(w, http.StatusBadRequest, dwc.newDefaultOutput(fmt.Sprintf("param error: claimedValue must be between %d and %d.", domain.MinClaimedValue, domain.MaxClaimedValue)))
 					return true
 				}
-				dwc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue), errOutput)
+				dwc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue))
 			case "d", "doubt":
 				cpuDoubters := dgi.GetCpuDoubters()
 				humanDoubts := false
@@ -138,13 +138,13 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				} else {
 					doubters = cpuDoubters
 				}
-				dwc.writePresenterResponse(w, dgi.ResolveDoubt(doubters), errOutput)
+				dwc.writePresenterResponse(w, dgi.ResolveDoubt(doubters))
 			case "s", "skip":
 				cpuDoubters := dgi.GetCpuDoubters()
 				if len(cpuDoubters) > 0 {
-					dwc.writePresenterResponse(w, dgi.ResolveDoubt(cpuDoubters), errOutput)
+					dwc.writePresenterResponse(w, dgi.ResolveDoubt(cpuDoubters))
 				} else {
-					dwc.writePresenterResponse(w, dgi.SkipDoubt(), errOutput)
+					dwc.writePresenterResponse(w, dgi.SkipDoubt())
 				}
 			default:
 				return false

@@ -115,21 +115,21 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	execWithSession(&dwc.baseController, w, r, dwc.store, dwc.factory,
 		func(msg string) any { return dwc.newDefaultOutput(msg) },
 		nil,
-		func(w rest.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput, errOutput any) bool {
+		func(w rest.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
 				if param.Config != nil {
 					dgConfig := convertWebInputConfig(*param.Config)
-					dwc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig), errOutput)
+					dwc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig))
 				} else {
-					dwc.writePresenterResponse(w, dgi.Reset(), errOutput)
+					dwc.writePresenterResponse(w, dgi.Reset())
 				}
 			case "p", "play":
 				indices := param.Indices
 				if indices == nil {
 					indices = []int{}
 				}
-				dwc.writePresenterResponse(w, dgi.Play(indices), errOutput)
+				dwc.writePresenterResponse(w, dgi.Play(indices))
 			default:
 				return false
 			}

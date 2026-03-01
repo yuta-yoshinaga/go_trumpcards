@@ -241,16 +241,6 @@ func TestPokerWebController_Method(t *testing.T) {
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"param error.","pot":0,"ante":0}`)
 	})
-	t.Run("failed Exec response empty", func(t *testing.T) {
-		piMock.On("Reset").Return(``)
-		_ = json.Unmarshal([]byte(`{"command": "r", "sessionId": "test-session-1"}`), &jsonInput)
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"error.","pot":0,"ante":0}`)
-	})
 }
 
 func TestPokerWebController_SessionIsolation(t *testing.T) {

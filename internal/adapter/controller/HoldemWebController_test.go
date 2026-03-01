@@ -224,17 +224,6 @@ func TestHoldemWebController_ShortCommands(t *testing.T) {
 	}
 }
 
-func TestHoldemWebController_ErrorResponse(t *testing.T) {
-	mi := new(mockUsecase.MockHoldemInteractor)
-	api, hwc := newHoldemTestHandler(mi)
-	defer hwc.Stop()
-	mi.On("Action", domain.HoldemActionFold, 0).Return("invalid json")
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
-			map[string]interface{}{"command": "fold", "sessionId": "s-err"}))
-	recorded.CodeIs(400)
-}
-
 func TestHoldemWebController_LongSessionId(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)
