@@ -22,6 +22,12 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface BlackJackConfigInput {
+  dealerHitsSoft17?: boolean;
+  cpuPlayerCount?: number;
+  countingEnabled?: boolean;
+}
+
 export const blackjackApi = {
   exec: (
     command:
@@ -35,9 +41,12 @@ export const blackjackApi = {
       | 'declineinsurance'
       | 'surrender'
       | 'togglehint'
-      | 'setdeckcount',
+      | 'setdeckcount'
+      | 'togglesoft17'
+      | 'togglecounting',
     amount?: number,
-  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId }),
+    config?: BlackJackConfigInput,
+  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config }),
 };
 
 export const pokerApi = {

@@ -14,77 +14,77 @@ func TestGetBasicStrategyAction_Pairs(t *testing.T) {
 	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
 	for _, dealerVal := range []int{2, 5, 10, 1} {
 		upcard := domain.NewCard(domain.CardDesignClover, dealerVal, false)
-		assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand, upcard), "A,A vs %d", dealerVal)
+		assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand, upcard, false), "A,A vs %d", dealerVal)
 	}
 
 	// 8,8 always splits
 	hand8 := domain.NewBlackJackHand()
 	hand8.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
 	hand8.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
-	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand8, domain.NewCard(domain.CardDesignClover, 9, false)))
+	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand8, domain.NewCard(domain.CardDesignClover, 9, false), false))
 
 	// 10,10 never splits
 	hand10 := domain.NewBlackJackHand()
 	hand10.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 	hand10.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(hand10, domain.NewCard(domain.CardDesignClover, 6, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(hand10, domain.NewCard(domain.CardDesignClover, 6, false), false))
 
 	// 5,5 treated as hard 10 (double vs 2-9, hit vs 10/A)
 	hand5 := domain.NewBlackJackHand()
 	hand5.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 	hand5.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(hand5, domain.NewCard(domain.CardDesignClover, 6, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand5, domain.NewCard(domain.CardDesignClover, 10, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(hand5, domain.NewCard(domain.CardDesignClover, 6, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand5, domain.NewCard(domain.CardDesignClover, 10, false), false))
 
 	// 2,2 split vs 2-7, hit vs 8-A
 	hand2 := domain.NewBlackJackHand()
 	hand2.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 	hand2.AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand2, domain.NewCard(domain.CardDesignClover, 3, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand2, domain.NewCard(domain.CardDesignClover, 8, false)))
+	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand2, domain.NewCard(domain.CardDesignClover, 3, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand2, domain.NewCard(domain.CardDesignClover, 8, false), false))
 
 	// 3,3 split vs 2-7, hit vs 8-A
 	hand3 := domain.NewBlackJackHand()
 	hand3.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 	hand3.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand3, domain.NewCard(domain.CardDesignClover, 7, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand3, domain.NewCard(domain.CardDesignClover, 9, false)))
+	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand3, domain.NewCard(domain.CardDesignClover, 7, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand3, domain.NewCard(domain.CardDesignClover, 9, false), false))
 
 	// 4,4 split vs 5-6, hit otherwise
 	hand4 := domain.NewBlackJackHand()
 	hand4.AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
 	hand4.AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
-	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand4, domain.NewCard(domain.CardDesignClover, 5, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand4, domain.NewCard(domain.CardDesignClover, 2, false)))
+	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand4, domain.NewCard(domain.CardDesignClover, 5, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand4, domain.NewCard(domain.CardDesignClover, 2, false), false))
 
 	// 6,6 split vs 2-6, hit vs 7-A
 	hand6 := domain.NewBlackJackHand()
 	hand6.AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 	hand6.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
-	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand6, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand6, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand6, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand6, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// 7,7 split vs 2-7, hit vs 8-A
 	hand7 := domain.NewBlackJackHand()
 	hand7.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 	hand7.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand7, domain.NewCard(domain.CardDesignClover, 7, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand7, domain.NewCard(domain.CardDesignClover, 8, false)))
+	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand7, domain.NewCard(domain.CardDesignClover, 7, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(hand7, domain.NewCard(domain.CardDesignClover, 8, false), false))
 
 	// 9,9 split vs 2-9 (not 7,10,A), stand vs 7,10,A
 	hand9 := domain.NewBlackJackHand()
 	hand9.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
 	hand9.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand9, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(hand9, domain.NewCard(domain.CardDesignClover, 7, false)))
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(hand9, domain.NewCard(domain.CardDesignClover, 10, false)))
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(hand9, domain.NewCard(domain.CardDesignClover, 1, false)))
+	assert.Equal(t, domain.BJSuggestSplit, domain.GetBasicStrategyAction(hand9, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(hand9, domain.NewCard(domain.CardDesignClover, 7, false), false))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(hand9, domain.NewCard(domain.CardDesignClover, 10, false), false))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(hand9, domain.NewCard(domain.CardDesignClover, 1, false), false))
 
 	// J,J pair (bjValue 10 = index 9) stands
 	handJJ := domain.NewBlackJackHand()
 	handJJ.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
 	handJJ.AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(handJJ, domain.NewCard(domain.CardDesignClover, 5, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(handJJ, domain.NewCard(domain.CardDesignClover, 5, false), false))
 }
 
 func TestGetBasicStrategyAction_SoftHands(t *testing.T) {
@@ -97,45 +97,45 @@ func TestGetBasicStrategyAction_SoftHands(t *testing.T) {
 
 	// Soft 13 (A+2): double vs 5-6, hit otherwise
 	s13 := mkSoft(1, 2)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s13, domain.NewCard(domain.CardDesignClover, 5, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s13, domain.NewCard(domain.CardDesignClover, 2, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s13, domain.NewCard(domain.CardDesignClover, 5, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s13, domain.NewCard(domain.CardDesignClover, 2, false), false))
 
 	// Soft 14 (A+3): double vs 5-6
 	s14 := mkSoft(1, 3)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s14, domain.NewCard(domain.CardDesignClover, 6, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s14, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s14, domain.NewCard(domain.CardDesignClover, 6, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s14, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 15 (A+4): double vs 4-6
 	s15 := mkSoft(1, 4)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s15, domain.NewCard(domain.CardDesignClover, 4, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s15, domain.NewCard(domain.CardDesignClover, 3, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s15, domain.NewCard(domain.CardDesignClover, 4, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s15, domain.NewCard(domain.CardDesignClover, 3, false), false))
 
 	// Soft 16 (A+5): double vs 4-6
 	s16 := mkSoft(1, 5)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s16, domain.NewCard(domain.CardDesignClover, 4, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s16, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s16, domain.NewCard(domain.CardDesignClover, 4, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s16, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 17 (A+6): double vs 3-6, hit vs 2 and 7+
 	s17 := mkSoft(1, 6)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 3, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 3, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
-	// Soft 18 (A+7): double vs 2-6, stand vs 7-8, hit vs 9-A
+	// Soft 18 (A+7): Ds (double-else-stand) vs 2-6, stand vs 7-8, hit vs 9-A
 	s18 := mkSoft(1, 7)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 7, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 9, false)))
+	assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 7, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 9, false), false))
 
-	// Soft 19 (A+8): stand vs most, double vs 6
+	// Soft 19 (A+8): stand vs most, Ds (double-else-stand) vs 6
 	s19 := mkSoft(1, 8)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 6, false)))
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 6, false), false))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 20 (A+9): always stand
 	s20 := mkSoft(1, 9)
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s20, domain.NewCard(domain.CardDesignClover, 5, false)))
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s20, domain.NewCard(domain.CardDesignClover, 1, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s20, domain.NewCard(domain.CardDesignClover, 5, false), false))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s20, domain.NewCard(domain.CardDesignClover, 1, false), false))
 }
 
 func TestGetBasicStrategyAction_HardHands(t *testing.T) {
@@ -148,69 +148,69 @@ func TestGetBasicStrategyAction_HardHands(t *testing.T) {
 
 	// Hard <=8: always hit
 	h8 := mkHard(3, 5)
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h8, domain.NewCard(domain.CardDesignClover, 6, false)))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h8, domain.NewCard(domain.CardDesignClover, 6, false), false))
 
 	// Hard 9: double vs 3-6, hit otherwise
 	h9 := mkHard(5, 4)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h9, domain.NewCard(domain.CardDesignClover, 3, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h9, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h9, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h9, domain.NewCard(domain.CardDesignClover, 3, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h9, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h9, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Hard 10: double vs 2-9, hit vs 10/A
 	h10 := mkHard(6, 4)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h10, domain.NewCard(domain.CardDesignClover, 9, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h10, domain.NewCard(domain.CardDesignClover, 10, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h10, domain.NewCard(domain.CardDesignClover, 1, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h10, domain.NewCard(domain.CardDesignClover, 9, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h10, domain.NewCard(domain.CardDesignClover, 10, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h10, domain.NewCard(domain.CardDesignClover, 1, false), false))
 
 	// Hard 11: double vs 2-10, hit vs A
 	h11 := mkHard(7, 4)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h11, domain.NewCard(domain.CardDesignClover, 10, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h11, domain.NewCard(domain.CardDesignClover, 1, false)))
+	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h11, domain.NewCard(domain.CardDesignClover, 10, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h11, domain.NewCard(domain.CardDesignClover, 1, false), false))
 
 	// Hard 12: stand vs 4-6, hit otherwise
 	h12 := mkHard(8, 4)
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h12, domain.NewCard(domain.CardDesignClover, 4, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h12, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h12, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h12, domain.NewCard(domain.CardDesignClover, 4, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h12, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h12, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Hard 13-14: stand vs 2-6, hit otherwise
 	h13 := mkHard(9, 4)
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h13, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h13, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h13, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h13, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	h14 := mkHard(8, 6)
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h14, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h14, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h14, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h14, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Hard 15: stand vs 2-6, surrender vs 10, hit vs 7-9 and A
 	h15 := mkHard(8, 7)
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h15, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h15, domain.NewCard(domain.CardDesignClover, 10, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h15, domain.NewCard(domain.CardDesignClover, 7, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h15, domain.NewCard(domain.CardDesignClover, 1, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h15, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h15, domain.NewCard(domain.CardDesignClover, 10, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h15, domain.NewCard(domain.CardDesignClover, 7, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h15, domain.NewCard(domain.CardDesignClover, 1, false), false))
 
 	// Hard 16: stand vs 2-6, surrender vs 9/10/A, hit vs 7-8
 	h16 := mkHard(9, 7)
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 2, false)))
-	assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 9, false)))
-	assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 10, false)))
-	assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 1, false)))
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 7, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 9, false), false))
+	assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 10, false), false))
+	assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 1, false), false))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h16, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Hard 17+: always stand
 	h17 := mkHard(10, 7)
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h17, domain.NewCard(domain.CardDesignClover, 1, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h17, domain.NewCard(domain.CardDesignClover, 1, false), false))
 
 	// Hard 20 (clamped to 17 row): always stand
 	h20 := mkHard(10, 10)
-	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h20, domain.NewCard(domain.CardDesignClover, 6, false)))
+	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h20, domain.NewCard(domain.CardDesignClover, 6, false), false))
 
 	// Hard 3-card hand (not a pair, not soft): hard 7 (clamped to 5 in table -> hit)
 	h5 := domain.NewBlackJackHand()
 	h5.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 	h5.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 	h5.AddCard(domain.NewCard(domain.CardDesignClover, 2, false)) // score = 7 (hard, no ace)
-	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h5, domain.NewCard(domain.CardDesignDiamond, 6, false)))
+	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h5, domain.NewCard(domain.CardDesignDiamond, 6, false), false))
 }
 
 func TestGetBasicStrategyAction_DealerUpcardIndexes(t *testing.T) {
@@ -235,13 +235,13 @@ func TestGetBasicStrategyAction_DealerUpcardIndexes(t *testing.T) {
 	for dealerVal, want := range expected {
 		h := mkHard16()
 		upcard := domain.NewCard(domain.CardDesignClover, dealerVal, false)
-		assert.Equal(t, want, domain.GetBasicStrategyAction(h, upcard), "hard 16 vs %d", dealerVal)
+		assert.Equal(t, want, domain.GetBasicStrategyAction(h, upcard, false), "hard 16 vs %d", dealerVal)
 	}
 	// J,Q,K -> same as 10
 	for _, faceVal := range []int{10, 11, 12, 13} {
 		h := mkHard16()
 		upcard := domain.NewCard(domain.CardDesignClover, faceVal, false)
-		assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h, upcard), "hard 16 vs face %d", faceVal)
+		assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h, upcard, false), "hard 16 vs face %d", faceVal)
 	}
 }
 
@@ -293,7 +293,7 @@ func TestGetBasicStrategyAction_EdgeCases(t *testing.T) {
 		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))  // Ace
 		h.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false)) // King
 		upcard := domain.NewCard(domain.CardDesignClover, 6, false)
-		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h, upcard))
+		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h, upcard, false))
 	})
 
 	// softStrategy idx < 0: A+A = pair (goes to pairStrategy), so use 3 aces
@@ -304,10 +304,10 @@ func TestGetBasicStrategyAction_EdgeCases(t *testing.T) {
 	t.Run("soft 3-card A+Q+K = soft 21 clamped to soft20 stand", func(t *testing.T) {
 		h := domain.NewBlackJackHand()
 		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		h.AddCard(domain.NewCard(domain.CardDesignHeart, 12, false)) // Queen
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))  // Queen
 		h.AddCard(domain.NewCard(domain.CardDesignClover, 13, false)) // King
 		upcard := domain.NewCard(domain.CardDesignDiamond, 5, false)
-		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h, upcard))
+		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h, upcard, false))
 	})
 
 	// softStrategy idx < 0: A+9+A = 11+9+11=31, reduce→21, aces=1 (soft 21, idx=8>7)
@@ -319,7 +319,7 @@ func TestGetBasicStrategyAction_EdgeCases(t *testing.T) {
 		// softTotal = 11, idx = 11-13 = -2 → clamped to 0 (soft13 row) → H vs dealer 6
 		upcard := domain.NewCard(domain.CardDesignClover, 2, false)
 		// soft13 vs 2 → H (hit)
-		assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h, upcard))
+		assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h, upcard, false))
 	})
 
 	// hardStrategy clamped < 5: single card hand with value 3
@@ -327,7 +327,7 @@ func TestGetBasicStrategyAction_EdgeCases(t *testing.T) {
 		h := domain.NewBlackJackHand()
 		h.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false)) // value 3, hard
 		upcard := domain.NewCard(domain.CardDesignClover, 6, false)
-		assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h, upcard))
+		assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h, upcard, false))
 	})
 
 	// hardStrategy clamped > 17: non-pair non-soft hand with score > 17
@@ -337,6 +337,108 @@ func TestGetBasicStrategyAction_EdgeCases(t *testing.T) {
 		h.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
 		h.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
 		upcard := domain.NewCard(domain.CardDesignClover, 1, false)
-		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h, upcard))
+		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h, upcard, false))
+	})
+}
+
+func TestGetBasicStrategyAction_H17Overrides(t *testing.T) {
+	aceUpcard := domain.NewCard(domain.CardDesignClover, 1, false)
+
+	t.Run("hard 15 vs A: S17=Hit, H17=Surrender", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false)) // hard 15
+
+		// S17: hard 15 vs A → Hit
+		assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h, aceUpcard, false),
+			"S17: hard 15 vs A should be Hit")
+		// H17: hard 15 vs A → Surrender
+		assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h, aceUpcard, true),
+			"H17: hard 15 vs A should be Surrender")
+	})
+
+	t.Run("hard 17 vs A: S17=Stand, H17=Surrender", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false)) // hard 17
+
+		// S17: hard 17 vs A → Stand
+		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h, aceUpcard, false),
+			"S17: hard 17 vs A should be Stand")
+		// H17: hard 17 vs A → Surrender
+		assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h, aceUpcard, true),
+			"H17: hard 17 vs A should be Surrender")
+	})
+
+	t.Run("soft 19 vs 6: S17=DoubleStand, H17=DoubleStand", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false)) // soft 19
+		upcard6 := domain.NewCard(domain.CardDesignClover, 6, false)
+
+		// S17: soft 19 vs 6 → DoubleStand (from table)
+		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h, upcard6, false),
+			"S17: soft 19 vs 6 should be DoubleStand")
+		// H17: soft 19 vs 6 → DoubleStand (override confirms)
+		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h, upcard6, true),
+			"H17: soft 19 vs 6 should be DoubleStand")
+	})
+
+	t.Run("hard 11 vs A: S17=Hit, H17=Double", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 4, false)) // hard 11
+
+		// S17: hard 11 vs A → Hit
+		assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h, aceUpcard, false),
+			"S17: hard 11 vs A should be Hit")
+		// H17: hard 11 vs A → Double
+		assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h, aceUpcard, true),
+			"H17: hard 11 vs A should be Double")
+	})
+
+	t.Run("H17 no change for non-Ace dealer", func(t *testing.T) {
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false)) // hard 15
+		upcard10 := domain.NewCard(domain.CardDesignClover, 10, false)
+
+		// H17 override only applies to Ace (di=9)
+		// hard 15 vs 10 → Surrender (same for S17 and H17)
+		assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h, upcard10, false))
+		assert.Equal(t, domain.BJSuggestSurrender, domain.GetBasicStrategyAction(h, upcard10, true))
+	})
+
+	t.Run("soft H17 override only for soft 19 vs 6", func(t *testing.T) {
+		// Soft 18 vs 6: S17=DoubleStand, H17=DoubleStand (no change)
+		h18 := domain.NewBlackJackHand()
+		h18.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		h18.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false)) // soft 18
+		upcard6 := domain.NewCard(domain.CardDesignClover, 6, false)
+
+		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h18, upcard6, false))
+		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h18, upcard6, true))
+
+		// Soft 19 vs 5: S17=Stand (table: S,S,S,S,Ds → di=3 is S), H17=Stand (no override for di!=4)
+		h19 := domain.NewBlackJackHand()
+		h19.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		h19.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false)) // soft 19
+		upcard5 := domain.NewCard(domain.CardDesignClover, 5, false)
+
+		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h19, upcard5, false),
+			"S17: soft 19 vs 5 should be Stand")
+		assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(h19, upcard5, true),
+			"H17: soft 19 vs 5 should still be Stand (override only for di=4)")
+	})
+
+	t.Run("hard H17 default case returns s17Action", func(t *testing.T) {
+		// Hard 12 vs A: S17=Hit, H17=Hit (default case, no override)
+		h := domain.NewBlackJackHand()
+		h.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		h.AddCard(domain.NewCard(domain.CardDesignHeart, 4, false)) // hard 12
+
+		assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h, aceUpcard, false))
+		assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(h, aceUpcard, true),
+			"H17: hard 12 vs A should still be Hit (default case)")
 	})
 }

@@ -45,6 +45,12 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.HintEnabled = bj.IsHintEnabled()
 	resObj.SuggestedAction = int(bj.GetBasicStrategySuggestion())
 	resObj.DeckCount = bj.GetDeckCount()
+	config := bj.GetConfig()
+	resObj.DealerHitsSoft17 = config.DealerHitsSoft17
+	resObj.CountingEnabled = config.CountingEnabled
+	resObj.CpuPlayerCount = config.CpuPlayerCount
+	resObj.RunningCount = bj.GetRunningCount()
+	resObj.TrueCount = bj.GetTrueCount()
 
 	// hands
 	resObj.Hands = make([]*controller.BlackJackWebOutputHand, len(hands))
@@ -64,6 +70,37 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		h.Surrendered = hand.IsSurrendered()
 		h.CanSurrender = hand.CanSurrender()
 		resObj.Hands[i] = h
+	}
+
+	// CPUプレイヤー
+	cpuPlayers := bj.GetCpuPlayers()
+	if len(cpuPlayers) > 0 {
+		resObj.CpuPlayers = make([]*controller.BlackJackWebOutputCpuSeat, len(cpuPlayers))
+		for i, cpu := range cpuPlayers {
+			seat := new(controller.BlackJackWebOutputCpuSeat)
+			seat.Chips = cpu.GetPlayer().GetChips()
+			seat.Hands = make([]*controller.BlackJackWebOutputHand, len(cpu.GetHands()))
+			for j, hand := range cpu.GetHands() {
+				h := new(controller.BlackJackWebOutputHand)
+				h.Score = hand.GetScore()
+				h.Cards = make([]*controller.WebOutputCard, 0)
+				if bj.GetGameEndFlag() || bj.GetPhase() != domain.BJPhaseBet {
+					for k := 0; k < hand.GetCardsSize(); k++ {
+						h.Cards = append(h.Cards, cardToOutput(hand.GetCard(k)))
+					}
+				}
+				h.Bet = hand.GetBet()
+				h.Stood = hand.IsStood()
+				h.Doubled = hand.IsDoubled()
+				h.Busted = hand.IsBusted()
+				h.IsBlackJack = hand.IsBlackJack()
+				h.CanSplit = hand.CanSplit()
+				h.Surrendered = hand.IsSurrendered()
+				h.CanSurrender = hand.CanSurrender()
+				seat.Hands[j] = h
+			}
+			resObj.CpuPlayers[i] = seat
+		}
 	}
 
 	// エラーメッセージ（ベット失敗等）

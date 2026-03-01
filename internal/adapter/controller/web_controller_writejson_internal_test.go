@@ -37,6 +37,11 @@ func (m *mockBlackJackIF) DeclineInsurance() string  { return m.Called().String(
 func (m *mockBlackJackIF) Surrender() string         { return m.Called().String(0) }
 func (m *mockBlackJackIF) SetDeckCount(c int) string { return m.Called(c).String(0) }
 func (m *mockBlackJackIF) ToggleHint() string        { return m.Called().String(0) }
+func (m *mockBlackJackIF) ToggleSoft17() string      { return "" }
+func (m *mockBlackJackIF) ToggleCounting() string    { return "" }
+func (m *mockBlackJackIF) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string {
+	return ""
+}
 
 func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 	bjMock := &mockBlackJackIF{}

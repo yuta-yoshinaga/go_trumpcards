@@ -12,6 +12,7 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ant0ine/go-json-rest/rest/test"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestBlackJackWebController_Method(t *testing.T) {
@@ -288,6 +289,93 @@ func TestBlackJackWebController_NewCommands(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 	})
+}
+
+func TestBlackJackWebController_ToggleSoft17(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":0},"player":{"score":0,"cards":null,"chips":0},"message":"","dealerHitsSoft17":true}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("ToggleSoft17").Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	var input controller.BlackJackWebInput
+	_ = json.Unmarshal([]byte(`{"command":"togglesoft17","sessionId":"bj-soft17-1"}`), &input)
+	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded.CodeIs(http.StatusOK)
+	recorded.ContentTypeIsJson()
+}
+
+func TestBlackJackWebController_ToggleCounting(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":0},"player":{"score":0,"cards":null,"chips":0},"message":"","countingEnabled":true}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("ToggleCounting").Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	var input controller.BlackJackWebInput
+	_ = json.Unmarshal([]byte(`{"command":"togglecounting","sessionId":"bj-counting-1"}`), &input)
+	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded.CodeIs(http.StatusOK)
+	recorded.ContentTypeIsJson()
+}
+
+func TestBlackJackWebController_ResetWithConfig(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","dealerHitsSoft17":true,"cpuPlayerCount":2,"countingEnabled":true}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("ResetWithConfig", true, 2, true).Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	var input controller.BlackJackWebInput
+	_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"bj-config-1","dealerHitsSoft17":true,"cpuPlayerCount":2,"countingEnabled":true}`), &input)
+	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded.CodeIs(http.StatusOK)
+	recorded.ContentTypeIsJson()
+	bjiMock.AssertCalled(t, "ResetWithConfig", true, 2, true)
+}
+
+func TestBlackJackWebController_ResetWithoutConfig(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":""}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("Reset").Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	var input controller.BlackJackWebInput
+	_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"bj-noconfig-1"}`), &input)
+	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded.CodeIs(http.StatusOK)
+	recorded.ContentTypeIsJson()
+	bjiMock.AssertCalled(t, "Reset")
+	bjiMock.AssertNotCalled(t, "ResetWithConfig", mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestBlackJackWebController_Stop(t *testing.T) {

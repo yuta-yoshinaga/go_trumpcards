@@ -423,3 +423,277 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 		assert.Contains(t, output, "decks=1")
 	})
 }
+
+func TestBlackJackCuiPresenter_H17Display(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("H17 rule displayed when DealerHitsSoft17 is true", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 0, CountingEnabled: false})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "rule: H17 (Dealer hits soft 17)")
+	})
+
+	t.Run("H17 rule not displayed when DealerHitsSoft17 is false", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "rule: H17")
+	})
+}
+
+func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("counting display shown when CountingEnabled is true", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "count: RC=")
+		assert.Contains(t, output, "TC=")
+	})
+
+	t.Run("counting display not shown when CountingEnabled is false", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "count: RC=")
+	})
+}
+
+func TestBlackJackCuiPresenter_CpuPlayerDisplay(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("CPU player displayed in action phase", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "CPU 1")
+		assert.Contains(t, output, "chips:")
+	})
+
+	t.Run("no CPU player displayed when cpuPlayerCount is 0", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "CPU 1")
+	})
+
+	t.Run("CPU player displayed in end phase with cards", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		_ = bj.PlayerStand()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "CPU 1")
+	})
+}
+
+func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("CPU hand with DD flag", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		// Manually set CPU hand flags
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		cpuHand.SetBet(100)
+		cpuHand.SetDoubled(true)
+		cpuHand.SetStood(true)
+		// Player hand
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "[DD]")
+		assert.Contains(t, output, "[STAND]")
+		assert.Contains(t, output, "SPADE 5")
+	})
+
+	t.Run("CPU hand with BUST flag", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		cpuHand.SetBet(50)
+		cpuHand.SetBusted(true)
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "[BUST]")
+	})
+
+	t.Run("CPU hand with BJ flag", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		cpuHand.SetBet(50)
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "[BJ]")
+	})
+
+	t.Run("CPU hand with SURRENDER flag", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		cpuHand.SetBet(50)
+		cpuHand.SetSurrendered(true)
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "[SURRENDER]")
+	})
+
+	t.Run("CPU multi-hand display", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		// Create 2 hands for the CPU (simulating split)
+		cpuHand0 := domain.NewBlackJackHand()
+		cpuHand0.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		cpuHand0.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		cpuHand0.SetBet(50)
+		cpuHand0.SetStood(true)
+		cpuHand1 := domain.NewBlackJackHand()
+		cpuHand1.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		cpuHand1.AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+		cpuHand1.SetBet(50)
+		cpuHand1.SetStood(true)
+		cpuPlayers[0].SetHands([]*domain.BlackJackHand{cpuHand0, cpuHand1})
+		// Player hand
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		// Multi-hand prefix: "CPU 1 hand 1" and "CPU 1 hand 2"
+		assert.Contains(t, output, "CPU 1 hand 1")
+		assert.Contains(t, output, "CPU 1 hand 2")
+		// Cards should be displayed (comma-separated)
+		assert.Contains(t, output, "SPADE 8")
+		assert.Contains(t, output, "CLOVER 10")
+	})
+
+	t.Run("CPU hand cards with comma separator", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		cpuHand.SetBet(50)
+		cpuHand.SetStood(true)
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseEnd)
+		output := bjp.Output(bj, nil)
+		// Cards should be comma-separated: "SPADE 5,HEART 6,CLOVER 10"
+		assert.Contains(t, output, "SPADE 5,HEART 6")
+	})
+}

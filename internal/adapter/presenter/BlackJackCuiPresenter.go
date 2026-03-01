@@ -29,6 +29,15 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	// チップ情報
 	fmt.Fprintf(&b, "chips: player=%d dealer=%d decks=%d\n", player.GetChips(), dealer.GetChips(), bj.GetDeckCount())
 
+	// 設定情報
+	config := bj.GetConfig()
+	if config.DealerHitsSoft17 {
+		b.WriteString("rule: H17 (Dealer hits soft 17)\n")
+	}
+	if config.CountingEnabled {
+		fmt.Fprintf(&b, "count: RC=%d TC=%.1f\n", bj.GetRunningCount(), bj.GetTrueCount())
+	}
+
 	// フェーズ情報
 	fmt.Fprintf(&b, "phase: %s\n", bjp.phaseStr(bj.GetPhase()))
 
@@ -85,6 +94,44 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 			b.WriteString(bjp.GetCardStr(hand.GetCard(j)))
 		}
 		b.WriteString("\n")
+	}
+
+	// CPUプレイヤー
+	cpuPlayers := bj.GetCpuPlayers()
+	for cpuIdx, cpu := range cpuPlayers {
+		fmt.Fprintf(&b, "--- CPU %d (chips: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips())
+		for hi, hand := range cpu.GetHands() {
+			prefix := fmt.Sprintf("CPU %d", cpuIdx+1)
+			if len(cpu.GetHands()) > 1 {
+				prefix = fmt.Sprintf("CPU %d hand %d", cpuIdx+1, hi+1)
+			}
+			fmt.Fprintf(&b, "%s score %d bet=%d", prefix, hand.GetScore(), hand.GetBet())
+			if hand.IsDoubled() {
+				b.WriteString(" [DD]")
+			}
+			if hand.IsBusted() {
+				b.WriteString(" [BUST]")
+			}
+			if hand.IsStood() {
+				b.WriteString(" [STAND]")
+			}
+			if hand.IsBlackJack() {
+				b.WriteString(" [BJ]")
+			}
+			if hand.IsSurrendered() {
+				b.WriteString(" [SURRENDER]")
+			}
+			b.WriteString("\n")
+			if bj.GetGameEndFlag() || bj.GetPhase() != domain.BJPhaseBet {
+				for j := 0; j < hand.GetCardsSize(); j++ {
+					if j != 0 {
+						b.WriteString(",")
+					}
+					b.WriteString(bjp.GetCardStr(hand.GetCard(j)))
+				}
+				b.WriteString("\n")
+			}
+		}
 	}
 
 	b.WriteString("----------\n")
@@ -167,6 +214,8 @@ func (bjp *BlackJackCuiPresenter) suggestionStr(s domain.BJSuggestedAction) stri
 	case domain.BJSuggestStand:
 		return "STAND"
 	case domain.BJSuggestDouble:
+		return "DOUBLE"
+	case domain.BJSuggestDoubleStand:
 		return "DOUBLE"
 	case domain.BJSuggestSplit:
 		return "SPLIT"

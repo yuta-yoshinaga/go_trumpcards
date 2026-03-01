@@ -134,3 +134,24 @@ func TestBlackJackCuiController_NewCommands(t *testing.T) {
 		assert.Equal(t, "Invalid deck count. Please enter a number.", tbc.Exec("sd 0"))
 	})
 }
+
+func TestBlackJackCuiController_Soft17AndCountingCommands(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("ToggleSoft17").Return(mockOutput)
+	bjiMock.On("ToggleCounting").Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("soft17", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("soft17"))
+	})
+	t.Run("togglesoft17", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("togglesoft17"))
+	})
+	t.Run("counting", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("counting"))
+	})
+	t.Run("togglecounting", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("togglecounting"))
+	})
+}

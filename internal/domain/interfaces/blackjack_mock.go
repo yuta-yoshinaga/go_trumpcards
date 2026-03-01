@@ -125,3 +125,77 @@ func (_m *MockBlackJackGame) GameJudgment() domain.GameResult {
 	ret := _m.Called()
 	return domain.GameResult(ret.Int(0))
 }
+
+// PlayerSurrender モック
+func (_m *MockBlackJackGame) PlayerSurrender() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// SetDeckCount モック
+func (_m *MockBlackJackGame) SetDeckCount(count int) error {
+	ret := _m.Called(count)
+	return ret.Error(0)
+}
+
+// ToggleHint モック
+func (_m *MockBlackJackGame) ToggleHint() {
+	_m.Called()
+}
+
+// GetDeckCount モック
+func (_m *MockBlackJackGame) GetDeckCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+// IsHintEnabled モック
+func (_m *MockBlackJackGame) IsHintEnabled() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// GetBasicStrategySuggestion モック
+func (_m *MockBlackJackGame) GetBasicStrategySuggestion() domain.BJSuggestedAction {
+	ret := _m.Called()
+	return domain.BJSuggestedAction(ret.Int(0))
+}
+
+// SetConfig モック
+func (_m *MockBlackJackGame) SetConfig(config domain.BlackJackConfig) error {
+	ret := _m.Called(config)
+	return ret.Error(0)
+}
+
+// GetConfig モック
+func (_m *MockBlackJackGame) GetConfig() domain.BlackJackConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.BlackJackConfig)
+}
+
+// GetRunningCount モック
+func (_m *MockBlackJackGame) GetRunningCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+// GetTrueCount モック
+func (_m *MockBlackJackGame) GetTrueCount() float64 {
+	ret := _m.Called()
+	return ret.Get(0).(float64)
+}
+
+// IsCountingEnabled モック
+func (_m *MockBlackJackGame) IsCountingEnabled() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// GetCpuPlayers モック
+func (_m *MockBlackJackGame) GetCpuPlayers() []*domain.BlackJackCpuSeat {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.BlackJackCpuSeat); ok {
+		return val
+	}
+	return nil
+}

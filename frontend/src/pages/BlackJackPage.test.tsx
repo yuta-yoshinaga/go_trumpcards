@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { blackjackApi } from '../api/gameApi';
-import type { BlackJackHand, BlackJackResponse } from '../types/card';
+import type { BlackJackCpuSeat, BlackJackHand, BlackJackResponse } from '../types/card';
 import { BlackJackPage } from './BlackJackPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -21,6 +21,11 @@ const betPhaseState: BlackJackResponse = {
   hintEnabled: false,
   suggestedAction: 0,
   deckCount: 1,
+  dealerHitsSoft17: false,
+  countingEnabled: false,
+  cpuPlayerCount: 0,
+  runningCount: 0,
+  trueCount: 0,
 };
 
 const baseHand: BlackJackHand = {
@@ -51,6 +56,11 @@ const actionPhaseState: BlackJackResponse = {
   hintEnabled: false,
   suggestedAction: 0,
   deckCount: 1,
+  dealerHitsSoft17: false,
+  countingEnabled: false,
+  cpuPlayerCount: 0,
+  runningCount: 0,
+  trueCount: 0,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -65,6 +75,11 @@ const insurancePhaseState: BlackJackResponse = {
   hintEnabled: false,
   suggestedAction: 0,
   deckCount: 1,
+  dealerHitsSoft17: false,
+  countingEnabled: false,
+  cpuPlayerCount: 0,
+  runningCount: 0,
+  trueCount: 0,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -102,6 +117,11 @@ const endPhaseState: BlackJackResponse = {
   hintEnabled: false,
   suggestedAction: 0,
   deckCount: 1,
+  dealerHitsSoft17: false,
+  countingEnabled: false,
+  cpuPlayerCount: 0,
+  runningCount: 0,
+  trueCount: 0,
 };
 
 beforeEach(() => {
@@ -542,6 +562,20 @@ describe('BlackJackPage', () => {
     });
   });
 
+  it('highlights double down button when hint suggests doubleStand', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 7 });
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'ダブルダウン' })).toHaveClass('ring-2');
+    });
+  });
+
+  it('shows hint banner for doubleStand suggestion', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 7 });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('推奨: ダブルダウン')).toBeInTheDocument());
+  });
+
   it('highlights split button when hint suggests split', async () => {
     mockExec.mockResolvedValue({
       ...actionPhaseState,
@@ -615,5 +649,285 @@ describe('BlackJackPage', () => {
       expect(container).toHaveAttribute('aria-busy', 'false');
       expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
+  });
+
+  // --- S17/H17 and counting toggle tests ---
+
+  it('shows S17 button in bet phase by default', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'S17' })).toBeInTheDocument());
+  });
+
+  it('shows H17 button when dealerHitsSoft17 is true', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, dealerHitsSoft17: true });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'H17' })).toBeInTheDocument());
+  });
+
+  it('calls togglesoft17 when S17 button is clicked', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, dealerHitsSoft17: true });
+    fireEvent.click(screen.getByRole('button', { name: 'S17' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('togglesoft17'));
+  });
+
+  it('shows counting OFF button in bet phase by default', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'カウント OFF' })).toBeInTheDocument());
+  });
+
+  it('shows counting ON button when countingEnabled is true', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'カウント ON' })).toBeInTheDocument());
+  });
+
+  it('calls togglecounting when counting button is clicked', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true });
+    fireEvent.click(screen.getByRole('button', { name: 'カウント OFF' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('togglecounting'));
+  });
+
+  it('shows RC and TC when countingEnabled is true', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true, runningCount: 5, trueCount: 2.3 });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('RC=5 TC=2.3')).toBeInTheDocument());
+  });
+
+  it('does not show RC and TC when countingEnabled is false', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: false, runningCount: 5, trueCount: 2.3 });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー: 1000 chips/)).toBeInTheDocument());
+    expect(screen.queryByText(/RC=/)).not.toBeInTheDocument();
+  });
+
+  it('shows CPU count selector in bet phase', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('CPU人数:')).toBeInTheDocument());
+  });
+
+  it('shows CPU player hands in action phase when cpuPlayers exist', async () => {
+    const cpuSeat: BlackJackCpuSeat = {
+      chips: 800,
+      hands: [
+        {
+          score: 18,
+          cards: [
+            { design: 'HEART', value: 8 },
+            { design: 'DIAMOND', value: 10 },
+          ],
+          bet: 100,
+          stood: false,
+          doubled: false,
+          busted: false,
+          isBlackJack: false,
+          canSplit: false,
+          surrendered: false,
+          canSurrender: false,
+        },
+      ],
+    };
+    const stateWithCpu: BlackJackResponse = {
+      ...actionPhaseState,
+      cpuPlayerCount: 1,
+      cpuPlayers: [cpuSeat],
+    };
+    mockExec.mockResolvedValue(stateWithCpu);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    expect(screen.getByText(/スコア 18/)).toBeInTheDocument();
+  });
+
+  it('shows CPU hand flags (busted, doubled, blackjack, surrendered)', async () => {
+    const cpuSeat: BlackJackCpuSeat = {
+      chips: 800,
+      hands: [
+        {
+          score: 25,
+          cards: [
+            { design: 'HEART', value: 10 },
+            { design: 'DIAMOND', value: 10 },
+            { design: 'SPADE', value: 5 },
+          ],
+          bet: 100,
+          stood: false,
+          doubled: true,
+          busted: true,
+          isBlackJack: false,
+          canSplit: false,
+          surrendered: false,
+          canSurrender: false,
+        },
+      ],
+    };
+    const stateWithCpu: BlackJackResponse = {
+      ...actionPhaseState,
+      cpuPlayerCount: 1,
+      cpuPlayers: [cpuSeat],
+    };
+    mockExec.mockResolvedValue(stateWithCpu);
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/\[BUST\]/)).toBeInTheDocument();
+      expect(screen.getByText(/\[DD\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows CPU BJ and SUR flags', async () => {
+    const cpuSeat: BlackJackCpuSeat = {
+      chips: 800,
+      hands: [
+        {
+          score: 21,
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 10 },
+          ],
+          bet: 100,
+          stood: true,
+          doubled: false,
+          busted: false,
+          isBlackJack: true,
+          canSplit: false,
+          surrendered: true,
+          canSurrender: false,
+        },
+      ],
+    };
+    const stateWithCpu: BlackJackResponse = {
+      ...actionPhaseState,
+      cpuPlayerCount: 1,
+      cpuPlayers: [cpuSeat],
+    };
+    mockExec.mockResolvedValue(stateWithCpu);
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/\[BJ\]/)).toBeInTheDocument();
+      expect(screen.getByText(/\[SUR\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows hand labels when CPU has multiple hands', async () => {
+    const cpuSeat: BlackJackCpuSeat = {
+      chips: 800,
+      hands: [
+        {
+          score: 15,
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'DIAMOND', value: 10 },
+          ],
+          bet: 100,
+          stood: false,
+          doubled: false,
+          busted: false,
+          isBlackJack: false,
+          canSplit: false,
+          surrendered: false,
+          canSurrender: false,
+        },
+        {
+          score: 18,
+          cards: [
+            { design: 'CLOVER', value: 8 },
+            { design: 'SPADE', value: 10 },
+          ],
+          bet: 100,
+          stood: false,
+          doubled: false,
+          busted: false,
+          isBlackJack: false,
+          canSplit: false,
+          surrendered: false,
+          canSurrender: false,
+        },
+      ],
+    };
+    const stateWithCpu: BlackJackResponse = {
+      ...actionPhaseState,
+      cpuPlayerCount: 1,
+      cpuPlayers: [cpuSeat],
+    };
+    mockExec.mockResolvedValue(stateWithCpu);
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ハンド 1 スコア 15/)).toBeInTheDocument();
+      expect(screen.getByText(/ハンド 2 スコア 18/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows (H17) in dealer heading when dealerHitsSoft17 is true', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, dealerHitsSoft17: true });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/\(H17\)/)).toBeInTheDocument());
+  });
+
+  it('shows (S17) in dealer heading when dealerHitsSoft17 is false', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/\(S17\)/)).toBeInTheDocument());
+  });
+
+  it('updates bet amount when input value is changed', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ベット額:')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('ベット額:'), { target: { value: '50' } });
+    expect(screen.getByLabelText('ベット額:')).toHaveValue(50);
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 50));
+  });
+
+  it('updates CPU count when selector value is changed', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('CPU人数:')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('CPU人数:'), { target: { value: '2' } });
+    expect(screen.getByLabelText('CPU人数:')).toHaveValue('2');
+  });
+
+  it('calls doubledown command when double down button is clicked', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ダブルダウン' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubledown'));
+  });
+
+  it('calls split command when split button is clicked', async () => {
+    const splitState: BlackJackResponse = {
+      ...actionPhaseState,
+      hands: [{ ...baseHand, canSplit: true }],
+    };
+    mockExec.mockResolvedValue(splitState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'スプリット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('split'));
+  });
+
+  it('sends config params when reset button is clicked in end phase', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(betPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        dealerHitsSoft17: false,
+        cpuPlayerCount: 0,
+        countingEnabled: false,
+      }),
+    );
   });
 });

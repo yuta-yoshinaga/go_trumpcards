@@ -49,3 +49,9 @@ func (bp *BlackJackPlayer) SubtractChips(amount int) bool {
 	bp.chips -= amount
 	return true
 }
+
+// IsSoft ソフトハンド（11として有効なエースを含む）かどうか判定
+func (bp *BlackJackPlayer) IsSoft() bool {
+	_, isSoft := calcScore(bp.cards)
+	return isSoft
+}

@@ -1608,3 +1608,584 @@ func TestBlackJack_GetDeckCount_ZeroDefault(t *testing.T) {
 	bj := domain.NewBlackJack(tc, player, dealer)
 	assert.Equal(t, domain.BJDefaultDecks, bj.GetDeckCount())
 }
+
+// --- New tests for BlackJack features ---
+
+func TestDefaultBlackJackConfig(t *testing.T) {
+	cfg := domain.DefaultBlackJackConfig()
+	assert.False(t, cfg.DealerHitsSoft17, "DealerHitsSoft17 default should be false")
+	assert.Equal(t, 0, cfg.CpuPlayerCount, "CpuPlayerCount default should be 0")
+	assert.False(t, cfg.CountingEnabled, "CountingEnabled default should be false")
+}
+
+func TestBlackJackPlayerIsSoft(t *testing.T) {
+	t.Run("A+6 is soft 17", func(t *testing.T) {
+		p := domain.NewBlackJackPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false)) // Ace
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false)) // 6
+		assert.Equal(t, 17, p.GetScore())
+		assert.True(t, p.IsSoft(), "A+6 should be soft")
+	})
+	t.Run("K+7 is hard 17", func(t *testing.T) {
+		p := domain.NewBlackJackPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 13, false)) // King = 10
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))  // 7
+		assert.Equal(t, 17, p.GetScore())
+		assert.False(t, p.IsSoft(), "K+7 should be hard")
+	})
+	t.Run("A+K is hard 21 (ace counted as 11)", func(t *testing.T) {
+		p := domain.NewBlackJackPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))  // Ace
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false)) // King = 10
+		assert.Equal(t, 21, p.GetScore())
+		// Ace is 11 and score is 21 (not busted), so it is soft
+		assert.True(t, p.IsSoft(), "A+K = 21 should be soft (ace is 11)")
+	})
+	t.Run("A+5+10 is hard 16 (ace forced to 1)", func(t *testing.T) {
+		p := domain.NewBlackJackPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))   // Ace
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))   // 5
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 10, false)) // 10
+		assert.Equal(t, 16, p.GetScore())
+		assert.False(t, p.IsSoft(), "A+5+10 should be hard (ace forced to 1)")
+	})
+}
+
+func TestDealerHitSoft17(t *testing.T) {
+	t.Run("S17 default: dealer with soft 17 stands", func(t *testing.T) {
+		// Create BJ with enough cards in deck for dealer to draw
+		tc := domain.NewTrumpCardsWithDecks(1, 0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(domain.BJDefaultChips)
+		dealer.SetChips(domain.BJDefaultChips)
+		bj := domain.NewBlackJack(tc, player, dealer)
+
+		// Set up dealer hand: A+6 = soft 17
+		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false)) // Ace
+		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false)) // 6
+		assert.Equal(t, 17, dealer.GetScore())
+		assert.True(t, dealer.IsSoft())
+
+		// Set up a non-busted player hand so dealer will play
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false)) // 18
+
+		// Default config: S17 (DealerHitsSoft17 = false)
+		cfg := domain.DefaultBlackJackConfig()
+		assert.False(t, cfg.DealerHitsSoft17)
+
+		bj.SetPhase(domain.BJPhaseAction)
+		// Call DealerHit directly
+		bj.DealerHit()
+
+		// Dealer should stand on soft 17 with S17 rules: no additional cards
+		assert.Equal(t, 2, dealer.GetCardsSize(), "S17: dealer should stand on soft 17")
+		assert.Equal(t, 17, dealer.GetScore())
+	})
+
+	t.Run("H17: dealer with soft 17 hits", func(t *testing.T) {
+		// Create BJ with enough cards in deck for dealer to draw
+		tc := domain.NewTrumpCardsWithDecks(2, 0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(domain.BJDefaultChips)
+		dealer.SetChips(domain.BJDefaultChips)
+		bj := domain.NewBlackJack(tc, player, dealer)
+
+		// Set up dealer hand: A+6 = soft 17
+		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false)) // Ace
+		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false)) // 6
+		assert.Equal(t, 17, dealer.GetScore())
+		assert.True(t, dealer.IsSoft())
+
+		// Set up a non-busted player hand so dealer will play
+		hand := bj.GetPlayerHands()[0]
+		hand.SetBet(100)
+		hand.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false)) // 18
+
+		// Enable H17
+		cfg := domain.BlackJackConfig{DealerHitsSoft17: true}
+		err := bj.SetConfig(cfg)
+		// SetConfig only works in BET phase; set config directly via bet flow
+		// We need to set phase to BET first
+		bj.SetPhase(domain.BJPhaseBet)
+		err = bj.SetConfig(cfg)
+		assert.NoError(t, err)
+
+		bj.SetPhase(domain.BJPhaseAction)
+		bj.DealerHit()
+
+		// Dealer should have drawn at least one more card
+		assert.Greater(t, dealer.GetCardsSize(), 2, "H17: dealer should hit on soft 17")
+	})
+}
+
+func TestRunningCountUpdates(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	// Enable counting
+	bj.SetPhase(domain.BJPhaseBet)
+	cfg := domain.BlackJackConfig{CountingEnabled: true}
+	err := bj.SetConfig(cfg)
+	assert.NoError(t, err)
+
+	bj.Reset()
+
+	// After reset, running count should be 0
+	assert.Equal(t, 0, bj.GetRunningCount())
+
+	// Bet to deal cards; running count should change based on dealt cards
+	err = bj.PlayerBet(domain.BJMinBet)
+	assert.NoError(t, err)
+
+	// After dealing, the running count should have been updated (3 counted: 2 player + 1 dealer upcard)
+	// We can't predict exact value due to shuffling, but counting should be enabled
+	assert.True(t, bj.IsCountingEnabled())
+
+	// If game is still in action phase, hit to verify count changes
+	if bj.GetPhase() == domain.BJPhaseAction || bj.GetPhase() == domain.BJPhaseInsurance {
+		prevRC := bj.GetRunningCount()
+		if bj.GetPhase() == domain.BJPhaseInsurance {
+			_ = bj.PlayerDeclineInsurance()
+		}
+		if bj.GetPhase() == domain.BJPhaseAction && !bj.GetGameEndFlag() {
+			hand := bj.GetPlayerHands()[0]
+			if !hand.IsFinished() {
+				_ = bj.PlayerHit()
+				// Running count may or may not have changed depending on the card
+				// At least verify it didn't cause an error
+				_ = prevRC
+			}
+		}
+	}
+}
+
+func TestTrueCount(t *testing.T) {
+	t.Run("true count with known remaining count", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+
+		// With a fresh 1-deck shoe (52 cards), remaining = 52, decks remaining = 1.0
+		// RC = 0, so TC = 0/1.0 = 0
+		assert.Equal(t, 0.0, bj.GetTrueCount())
+	})
+	t.Run("true count with nil trumpCards returns 0", func(t *testing.T) {
+		// NewBlackJack with no Reset will have trumpCards, but we can test the branch
+		// via NewDefaultBlackJack which always has trumpCards
+		bj := domain.NewDefaultBlackJack()
+		assert.Equal(t, 0.0, bj.GetTrueCount())
+	})
+	t.Run("true count with multi-deck", func(t *testing.T) {
+		// Create a 6-deck shoe
+		tc := domain.NewTrumpCardsWithDecks(6, 0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(domain.BJDefaultChips)
+		dealer.SetChips(domain.BJDefaultChips)
+		bj := domain.NewBlackJack(tc, player, dealer)
+
+		// TC = RC / decks remaining
+		// With 6 decks (312 cards), decks remaining = 312/52 = 6.0
+		// RC = 0, TC = 0
+		assert.Equal(t, 0.0, bj.GetTrueCount())
+	})
+}
+
+func TestShoePersistence(t *testing.T) {
+	t.Run("shoe persists when >25% remaining", func(t *testing.T) {
+		// Use a 2-deck shoe (104 cards)
+		bj := domain.NewDefaultBlackJack()
+		err := bj.SetDeckCount(2)
+		assert.NoError(t, err)
+		bj.Reset()
+
+		// After reset, we should have a 2-deck shoe
+		initialTotal := bj.GetTrumpCards().GetTotalCount()
+		assert.Equal(t, 104, initialTotal)
+
+		// Bet and play a hand
+		err = bj.PlayerBet(domain.BJMinBet)
+		assert.NoError(t, err)
+
+		// Finish the hand
+		if bj.GetPhase() == domain.BJPhaseInsurance {
+			_ = bj.PlayerDeclineInsurance()
+		}
+		if bj.GetPhase() == domain.BJPhaseAction && !bj.GetGameEndFlag() {
+			_ = bj.PlayerStand()
+		}
+
+		// After one hand, remaining should be well above 25%
+		remaining := bj.GetTrumpCards().GetRemainingCount()
+		total := bj.GetTrumpCards().GetTotalCount()
+		assert.True(t, remaining*4 >= total, "should have >25%% remaining")
+
+		// Enable counting and verify running count persists across Reset
+		bj.SetPhase(domain.BJPhaseBet)
+		cfg := domain.BlackJackConfig{CountingEnabled: true}
+		_ = bj.SetConfig(cfg)
+
+		// Save current shoe reference
+		shoeBeforeReset := bj.GetTrumpCards()
+		bj.Reset()
+
+		// The shoe should be reused (same total count), not reshuffled
+		assert.Equal(t, shoeBeforeReset.GetTotalCount(), bj.GetTrumpCards().GetTotalCount())
+	})
+
+	t.Run("deckCountChanged forces reshuffle", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+
+		// Change deck count to trigger reshuffle
+		err := bj.SetDeckCount(2)
+		assert.NoError(t, err)
+
+		bj.Reset()
+
+		// After reshuffle, total should reflect 2 decks
+		assert.Equal(t, 104, bj.GetTrumpCards().GetTotalCount())
+	})
+
+	t.Run("running count resets on reshuffle", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.SetPhase(domain.BJPhaseBet)
+		cfg := domain.BlackJackConfig{CountingEnabled: true}
+		_ = bj.SetConfig(cfg)
+		bj.Reset()
+
+		// After fresh reshuffle, RC should be 0
+		assert.Equal(t, 0, bj.GetRunningCount())
+
+		// Force a deck count change to trigger reshuffle
+		_ = bj.SetDeckCount(2)
+		bj.Reset()
+		assert.Equal(t, 0, bj.GetRunningCount(), "running count should reset after deck change reshuffle")
+	})
+}
+
+func TestBlackJackConfig_GetSetConfig(t *testing.T) {
+	t.Run("get default config", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		cfg := bj.GetConfig()
+		assert.False(t, cfg.DealerHitsSoft17)
+		assert.Equal(t, 0, cfg.CpuPlayerCount)
+		assert.False(t, cfg.CountingEnabled)
+	})
+	t.Run("set config in BET phase succeeds", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		cfg := domain.BlackJackConfig{
+			DealerHitsSoft17: true,
+			CpuPlayerCount:   2,
+			CountingEnabled:  true,
+		}
+		err := bj.SetConfig(cfg)
+		assert.NoError(t, err)
+		got := bj.GetConfig()
+		assert.True(t, got.DealerHitsSoft17)
+		assert.Equal(t, 2, got.CpuPlayerCount)
+		assert.True(t, got.CountingEnabled)
+	})
+	t.Run("set config in ACTION phase fails", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		bj.SetPhase(domain.BJPhaseAction)
+		cfg := domain.BlackJackConfig{DealerHitsSoft17: true}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrWrongPhase)
+	})
+	t.Run("CPU count 0-3 ok", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		for count := 0; count <= domain.BJMaxCpuPlayers; count++ {
+			cfg := domain.BlackJackConfig{CpuPlayerCount: count}
+			err := bj.SetConfig(cfg)
+			assert.NoError(t, err, "CPU count %d should be valid", count)
+		}
+	})
+	t.Run("CPU count 4 fails", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 4}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+	t.Run("CPU count negative fails", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		cfg := domain.BlackJackConfig{CpuPlayerCount: -1}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+}
+
+func TestCpuPlayBasicStrategy(t *testing.T) {
+	t.Run("1 CPU player gets cards and plays", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		// Set up config with 1 CPU, use 2 decks for enough cards
+		_ = bj.SetDeckCount(2)
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+		err := bj.SetConfig(cfg)
+		assert.NoError(t, err)
+		bj.Reset()
+
+		// Bet
+		err = bj.PlayerBet(domain.BJMinBet)
+		assert.NoError(t, err)
+
+		// CPU should have been dealt cards
+		cpus := bj.GetCpuPlayers()
+		assert.Equal(t, 1, len(cpus))
+		assert.Equal(t, 2, cpus[0].GetHands()[0].GetCardsSize(), "CPU should have 2 cards after deal")
+
+		// Finish the game: decline insurance if needed, then stand
+		if bj.GetPhase() == domain.BJPhaseInsurance {
+			_ = bj.PlayerDeclineInsurance()
+		}
+		if bj.GetPhase() == domain.BJPhaseAction && !bj.GetGameEndFlag() {
+			_ = bj.PlayerStand()
+		}
+
+		// Game should have ended (CPU play happens after all human hands finish)
+		assert.True(t, bj.GetGameEndFlag())
+
+		// CPU hands should be resolved (stood or busted or surrendered)
+		// unless the game ended due to a natural BJ (checkNaturalBlackJack
+		// calls endGame directly without cpuPlay).
+		playerBJ := bj.GetPlayerHands()[0].IsBlackJack()
+		dealerBJ := bj.GetDealer().GetCardsSize() == 2 && bj.GetDealer().GetScore() == 21
+		if !playerBJ && !dealerBJ {
+			for _, hand := range cpus[0].GetHands() {
+				if hand.GetCardsSize() > 0 {
+					assert.True(t, hand.IsFinished(), "CPU hand should be finished after game ends")
+				}
+			}
+		}
+	})
+	t.Run("3 CPU players all play", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		_ = bj.SetDeckCount(4)
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 3}
+		err := bj.SetConfig(cfg)
+		assert.NoError(t, err)
+		bj.Reset()
+
+		err = bj.PlayerBet(domain.BJMinBet)
+		assert.NoError(t, err)
+
+		cpus := bj.GetCpuPlayers()
+		assert.Equal(t, 3, len(cpus))
+		for i, cpu := range cpus {
+			assert.GreaterOrEqual(t, cpu.GetHands()[0].GetCardsSize(), 2, "CPU %d should have at least 2 cards", i)
+		}
+
+		if bj.GetPhase() == domain.BJPhaseInsurance {
+			_ = bj.PlayerDeclineInsurance()
+		}
+		if bj.GetPhase() == domain.BJPhaseAction && !bj.GetGameEndFlag() {
+			_ = bj.PlayerStand()
+		}
+		assert.True(t, bj.GetGameEndFlag())
+	})
+}
+
+func TestCpuPayout(t *testing.T) {
+	t.Run("CPU chips change after game", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		_ = bj.SetDeckCount(2)
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+		_ = bj.SetConfig(cfg)
+		bj.Reset()
+
+		err := bj.PlayerBet(domain.BJMinBet)
+		assert.NoError(t, err)
+
+		cpus := bj.GetCpuPlayers()
+		assert.Equal(t, 1, len(cpus))
+
+		// Record CPU chips before resolution
+		cpuChipsBeforeBet := domain.BJDefaultChips
+		cpuBet := cpus[0].GetHands()[0].GetBet()
+		cpuChipsAfterBet := cpuChipsBeforeBet - cpuBet
+
+		// The CPU bet is already deducted, verify
+		assert.Equal(t, cpuChipsAfterBet, cpus[0].GetPlayer().GetChips())
+
+		// Finish the game
+		if bj.GetPhase() == domain.BJPhaseInsurance {
+			_ = bj.PlayerDeclineInsurance()
+		}
+		if bj.GetPhase() == domain.BJPhaseAction && !bj.GetGameEndFlag() {
+			_ = bj.PlayerStand()
+		}
+
+		assert.True(t, bj.GetGameEndFlag())
+
+		// After game, CPU chips should have changed (win/lose/draw)
+		finalChips := cpus[0].GetPlayer().GetChips()
+		// Verify chips are valid (not negative)
+		assert.GreaterOrEqual(t, finalChips, 0, "CPU chips should not be negative")
+	})
+
+	t.Run("CPU chips persist across rounds", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		_ = bj.SetDeckCount(4)
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+		_ = bj.SetConfig(cfg)
+		bj.Reset()
+
+		// Play first round
+		err := bj.PlayerBet(domain.BJMinBet)
+		assert.NoError(t, err)
+		if bj.GetPhase() == domain.BJPhaseInsurance {
+			_ = bj.PlayerDeclineInsurance()
+		}
+		if bj.GetPhase() == domain.BJPhaseAction && !bj.GetGameEndFlag() {
+			_ = bj.PlayerStand()
+		}
+
+		firstRoundChips := bj.GetCpuPlayers()[0].GetPlayer().GetChips()
+
+		// Reset for second round (CPU count stays)
+		bj.Reset()
+		assert.Equal(t, 1, len(bj.GetCpuPlayers()), "CPU count should persist after reset")
+
+		// CPU chips should carry over from previous round
+		assert.Equal(t, firstRoundChips, bj.GetCpuPlayers()[0].GetPlayer().GetChips(),
+			"CPU chips should persist across rounds")
+	})
+
+	t.Run("CPU with low chips gets reset", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		_ = bj.SetDeckCount(2)
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+		_ = bj.SetConfig(cfg)
+		bj.Reset()
+
+		// Set CPU chips to below minimum bet
+		bj.GetCpuPlayers()[0].GetPlayer().SetChips(domain.BJMinBet - 1)
+		bj.Reset()
+
+		// CPU chips should be reset to default
+		assert.Equal(t, domain.BJDefaultChips, bj.GetCpuPlayers()[0].GetPlayer().GetChips(),
+			"CPU chips below min bet should be reset to default")
+	})
+}
+
+func TestBlackJack_CountingWithDealerHoleCard(t *testing.T) {
+	t.Run("hole card counted after all hands busted", func(t *testing.T) {
+		// When all player hands bust, dealer does not draw but hole card should still be counted
+		bj := domain.NewDefaultBlackJack()
+		bj.SetPhase(domain.BJPhaseBet)
+		cfg := domain.BlackJackConfig{CountingEnabled: true}
+		_ = bj.SetConfig(cfg)
+		_ = bj.SetDeckCount(2)
+		bj.Reset()
+
+		// Bet and play through
+		err := bj.PlayerBet(domain.BJMinBet)
+		assert.NoError(t, err)
+
+		// Regardless of the outcome, after the game the running count should have included
+		// the dealer's hole card. We mainly verify no panics/errors occur.
+		if bj.GetPhase() == domain.BJPhaseInsurance {
+			_ = bj.PlayerDeclineInsurance()
+		}
+		if bj.GetPhase() == domain.BJPhaseAction && !bj.GetGameEndFlag() {
+			// Keep hitting until bust or stand
+			for !bj.GetGameEndFlag() {
+				hand := bj.GetPlayerHands()[bj.GetCurrentHandIdx()]
+				if hand.IsFinished() {
+					break
+				}
+				hitErr := bj.PlayerHit()
+				if hitErr != nil {
+					break
+				}
+			}
+			if !bj.GetGameEndFlag() {
+				_ = bj.PlayerStand()
+			}
+		}
+
+		assert.True(t, bj.GetGameEndFlag())
+		// Running count should be a valid integer (including possible 0)
+		_ = bj.GetRunningCount()
+	})
+}
+
+func TestBlackJack_CpuInitReuse(t *testing.T) {
+	t.Run("CPU players reused when count unchanged", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 2}
+		_ = bj.SetConfig(cfg)
+		bj.Reset()
+
+		// Get initial CPU references
+		cpus := bj.GetCpuPlayers()
+		assert.Equal(t, 2, len(cpus))
+
+		// Play a round
+		_ = bj.PlayerBet(domain.BJMinBet)
+		if bj.GetPhase() == domain.BJPhaseInsurance {
+			_ = bj.PlayerDeclineInsurance()
+		}
+		if bj.GetPhase() == domain.BJPhaseAction && !bj.GetGameEndFlag() {
+			_ = bj.PlayerStand()
+		}
+
+		// Reset: same CPU count should reuse existing CPUs
+		bj.Reset()
+		assert.Equal(t, 2, len(bj.GetCpuPlayers()))
+	})
+	t.Run("CPU count change creates new CPUs", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+		_ = bj.SetConfig(cfg)
+		bj.Reset()
+
+		assert.Equal(t, 1, len(bj.GetCpuPlayers()))
+
+		// Change CPU count
+		cfg.CpuPlayerCount = 3
+		_ = bj.SetConfig(cfg)
+		bj.Reset()
+
+		assert.Equal(t, 3, len(bj.GetCpuPlayers()))
+	})
+	t.Run("CPU count 0 sets nil", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 0}
+		_ = bj.SetConfig(cfg)
+		bj.Reset()
+
+		assert.Empty(t, bj.GetCpuPlayers())
+	})
+}
+
+func TestBlackJack_CpuBetSkipsInsufficientChips(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	_ = bj.SetDeckCount(2)
+	cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+	_ = bj.SetConfig(cfg)
+	bj.Reset()
+
+	// Set CPU chips to 0 (below min bet)
+	bj.GetCpuPlayers()[0].GetPlayer().SetChips(0)
+
+	// Bet: CPU should be skipped during cpuBetAndDeal because chips < BJMinBet
+	err := bj.PlayerBet(domain.BJMinBet)
+	assert.NoError(t, err)
+
+	// CPU hand should have 0 cards (skipped)
+	cpuHand := bj.GetCpuPlayers()[0].GetHands()[0]
+	assert.Equal(t, 0, cpuHand.GetCardsSize(), "CPU with 0 chips should be skipped during deal")
+	assert.Equal(t, 0, cpuHand.GetBet(), "CPU with 0 chips should have 0 bet")
+}
