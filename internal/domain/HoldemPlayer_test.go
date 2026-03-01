@@ -449,4 +449,3 @@ func TestHoldemPlayer_EvalBestHand_ChoosesBestFromSeven(t *testing.T) {
 	// AA + KK = Two Pair
 	assert.Equal(t, PokerHandTwoPair, rank)
 }
-

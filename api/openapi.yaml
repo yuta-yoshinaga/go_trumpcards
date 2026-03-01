@@ -59,6 +59,8 @@ paths:
         | `surrender` | `sur` | Surrender first 2 cards and receive half bet back |
         | `togglehint` | — | Toggle basic strategy hint on/off |
         | `setdeckcount` | `sd` | Set shoe deck count (requires `amount`: 1/2/4/6/8) |
+        | `togglesoft17` | `soft17` | Toggle dealer soft-17 rule (H17 ↔ S17) |
+        | `togglecounting` | `counting` | Toggle card counting display on/off |
         | `quit`  | `q`     | End the session |
       operationId: blackjackExec
       requestBody:
@@ -811,8 +813,9 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
             `hit` (`h`), `stand` (`s`), `doubledown` (`d`), `split` (`sp`),
-            `insurance` (`i`), `declineinsurance` (`di`), `quit` (`q`).
-          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, q, quit]
+            `insurance` (`i`), `declineinsurance` (`di`), `togglesoft17` (`soft17`),
+            `togglecounting` (`counting`), `quit` (`q`).
+          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, q, quit]
           example: hit
         amount:
           type: integer
@@ -822,6 +825,27 @@ components:
             Ignored for other commands.
           minimum: 1
           example: 100
+        dealerHitsSoft17:
+          type: boolean
+          description: |
+            Whether the dealer hits on soft 17.  Only used with `reset` command.
+            When true, dealer hits on soft 17 (H17); when false, dealer stands (S17).
+            Defaults to false (S17) when omitted.
+          example: false
+        cpuPlayerCount:
+          type: integer
+          description: |
+            Number of CPU players at the table (0–3).  Only used with `reset` command.
+            CPU players use basic strategy.  Defaults to 0 when omitted.
+          minimum: 0
+          maximum: 3
+          example: 0
+        countingEnabled:
+          type: boolean
+          description: |
+            Whether card counting display is enabled.  Only used with `reset` command.
+            Defaults to false when omitted.
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -916,6 +940,11 @@ components:
         - hintEnabled
         - suggestedAction
         - deckCount
+        - dealerHitsSoft17
+        - countingEnabled
+        - cpuPlayerCount
+        - runningCount
+        - trueCount
       properties:
         dealer:
           $ref: '#/components/schemas/BlackJackPlayer'
@@ -987,6 +1016,56 @@ components:
             Number of decks in the shoe.  Valid values: 1, 2, 4, 6, 8.
           enum: [1, 2, 4, 6, 8]
           example: 1
+        dealerHitsSoft17:
+          type: boolean
+          description: Whether the dealer hits on soft 17 (H17).  False means dealer stands on soft 17 (S17).
+          example: false
+        countingEnabled:
+          type: boolean
+          description: Whether card counting display is currently enabled.
+          example: false
+        cpuPlayerCount:
+          type: integer
+          description: Number of CPU players at the table (0–3).
+          minimum: 0
+          maximum: 3
+          example: 0
+        runningCount:
+          type: integer
+          description: |
+            Hi-Lo running count.  Only meaningful when `countingEnabled` is true.
+            Positive values favor the player; negative values favor the dealer.
+          example: 0
+        trueCount:
+          type: number
+          description: |
+            True count (running count divided by estimated remaining decks).
+            Only meaningful when `countingEnabled` is true.
+          example: 0.0
+        cpuPlayers:
+          type: array
+          description: |
+            CPU player seats.  Empty array when `cpuPlayerCount` is 0.
+            Each entry contains the CPU player's chip count and hands.
+          items:
+            $ref: '#/components/schemas/BlackJackCpuSeat'
+
+    BlackJackCpuSeat:
+      type: object
+      description: A CPU player seat in a multi-player BlackJack game
+      required:
+        - chips
+        - hands
+      properties:
+        chips:
+          type: integer
+          description: Current chip count for this CPU player.
+          example: 1000
+        hands:
+          type: array
+          description: Hands for this CPU player (one hand normally; multiple after split).
+          items:
+            $ref: '#/components/schemas/BlackJackHand'
 
     # -------------------------------------------------------------------------
     # Poker

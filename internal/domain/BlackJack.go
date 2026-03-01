@@ -29,19 +29,30 @@ const (
 // BJValidDeckCounts 有効なデッキ数
 var BJValidDeckCounts = []int{1, 2, 4, 6, 8}
 
+// BJMaxCpuPlayers CPUプレイヤー最大数
+const BJMaxCpuPlayers = 3
+
+// BJCpuBetAmount CPU自動ベット額
+const BJCpuBetAmount = 50
+
 // BlackJack ブラックジャッククラス
 type BlackJack struct {
-	trumpCards         *TrumpCards      // トランプカード
-	player             *BlackJackPlayer // プレイヤー
-	dealer             *BlackJackPlayer // ディーラー
-	gameEndFlag        bool             // ゲーム終了フラグ
-	phase              int              // 現在のフェーズ
-	playerHands        []*BlackJackHand // プレイヤーハンド（スプリット対応）
-	currentHandIdx     int              // 現在操作中のハンドインデックス
-	insuranceBet       int              // インシュランスベット額
-	insuranceAvailable bool             // インシュランス可能フラグ
-	deckCount          int              // デッキ数
-	hintEnabled        bool             // ヒント有効フラグ
+	trumpCards         *TrumpCards         // トランプカード
+	player             *BlackJackPlayer    // プレイヤー
+	dealer             *BlackJackPlayer    // ディーラー
+	gameEndFlag        bool                // ゲーム終了フラグ
+	phase              int                 // 現在のフェーズ
+	playerHands        []*BlackJackHand    // プレイヤーハンド（スプリット対応）
+	currentHandIdx     int                 // 現在操作中のハンドインデックス
+	insuranceBet       int                 // インシュランスベット額
+	insuranceAvailable bool                // インシュランス可能フラグ
+	deckCount          int                 // デッキ数
+	hintEnabled        bool                // ヒント有効フラグ
+	config             BlackJackConfig     // ゲーム設定
+	runningCount       int                 // ランニングカウント (Hi-Lo)
+	holeCardCounted    bool                // ホールカードをカウント済みか
+	deckCountChanged   bool                // デッキ数変更フラグ（シュー再構築判定用）
+	cpuPlayers         []*BlackJackCpuSeat // CPUプレイヤー
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -50,6 +61,7 @@ func NewDefaultBlackJack() *BlackJack {
 	bj.player.SetChips(BJDefaultChips)
 	bj.dealer.SetChips(BJDefaultChips)
 	bj.deckCount = BJDefaultDecks
+	bj.config = DefaultBlackJackConfig()
 	return bj
 }
 
@@ -64,10 +76,11 @@ func NewBlackJack(trumpCards *TrumpCards, player *BlackJackPlayer, dealer *Black
 		gameEndFlag: false,
 		phase:       BJPhaseBet,
 		playerHands: []*BlackJackHand{NewBlackJackHand()},
+		config:      DefaultBlackJackConfig(),
 	}
 }
 
-// Reset ゲーム初期化（hintEnabled/deckCountは保持）
+// Reset ゲーム初期化（hintEnabled/deckCount/configは保持）
 func (b *BlackJack) Reset() {
 	b.gameEndFlag = false
 	b.phase = BJPhaseBet
@@ -75,6 +88,7 @@ func (b *BlackJack) Reset() {
 	b.insuranceBet = 0
 	b.insuranceAvailable = false
 	b.playerHands = []*BlackJackHand{NewBlackJackHand()}
+	b.holeCardCounted = false
 	// チップが最低ベット額未満ならデフォルト値にリセット
 	if b.player.GetChips() < BJMinBet {
 		b.player.SetChips(BJDefaultChips)
@@ -82,18 +96,27 @@ func (b *BlackJack) Reset() {
 	if b.dealer.GetChips() < BJMinBet {
 		b.dealer.SetChips(BJDefaultChips)
 	}
-	// デッキ数を反映してシュー再構築
+	// デッキ数を反映してシュー再構築判定
 	if b.deckCount <= 0 {
 		b.deckCount = BJDefaultDecks
 	}
-	b.trumpCards = NewTrumpCardsWithDecks(b.deckCount, 0)
-	// 山札シャッフル
-	for i := 0; i < 10; i++ {
-		b.trumpCards.Shuffle()
+	needReshuffle := b.trumpCards == nil ||
+		b.deckCountChanged ||
+		b.trumpCards.GetRemainingCount()*4 < b.trumpCards.GetTotalCount() // 残り25%未満
+	if needReshuffle {
+		b.trumpCards = NewTrumpCardsWithDecks(b.deckCount, 0)
+		// 山札シャッフル
+		for i := 0; i < 10; i++ {
+			b.trumpCards.Shuffle()
+		}
+		b.runningCount = 0
+		b.deckCountChanged = false
 	}
 	// プレイヤー・ディーラー初期化
 	b.player.Reset()
 	b.dealer.Reset()
+	// CPUプレイヤー初期化
+	b.initCpuPlayers()
 }
 
 // drawCard 山札からカードを1枚引く（デッキ枯渇時はnilを返す）
@@ -138,6 +161,26 @@ func (b *BlackJack) PlayerBet(amount int) error {
 		return ErrDeckExhausted
 	}
 	b.phase = BJPhaseDeal
+
+	// CPUプレイヤーの自動ベットとカード配布
+	b.cpuBetAndDeal()
+
+	// カウンティング: プレイヤーの2枚 + ディーラーのアップカード + CPU表向きカードをカウント
+	if b.config.CountingEnabled {
+		for i := 0; i < b.playerHands[0].GetCardsSize(); i++ {
+			b.updateRunningCount(b.playerHands[0].GetCard(i))
+		}
+		if b.dealer.GetCardsSize() > 0 {
+			b.updateRunningCount(b.dealer.GetCard(0)) // アップカードのみ
+		}
+		for _, cpu := range b.cpuPlayers {
+			for _, hand := range cpu.GetHands() {
+				for j := 0; j < hand.GetCardsSize(); j++ {
+					b.updateRunningCount(hand.GetCard(j))
+				}
+			}
+		}
+	}
 
 	// ディーラーの表向きカード(1枚目)がエースならインシュランス可能
 	if b.dealer.GetCard(0) != nil && b.dealer.GetCard(0).GetValue() == 1 {
@@ -202,6 +245,7 @@ func (b *BlackJack) PlayerHit() error {
 		return ErrDeckExhausted
 	}
 	hand.AddCard(card)
+	b.updateRunningCount(card)
 	if hand.GetScore() >= 22 {
 		// バースト
 		hand.SetBusted(true)
@@ -252,6 +296,7 @@ func (b *BlackJack) PlayerDoubleDown() error {
 		return ErrDeckExhausted
 	}
 	hand.AddCard(card)
+	b.updateRunningCount(card)
 	if hand.GetScore() >= 22 {
 		hand.SetBusted(true)
 	} else {
@@ -306,6 +351,7 @@ func (b *BlackJack) PlayerSplit() error {
 		return ErrDeckExhausted
 	}
 	hand.AddCard(card1)
+	b.updateRunningCount(card1)
 
 	card2 := b.drawCard()
 	if card2 == nil {
@@ -318,6 +364,7 @@ func (b *BlackJack) PlayerSplit() error {
 		return ErrDeckExhausted
 	}
 	newHand.AddCard(card2)
+	b.updateRunningCount(card2)
 
 	// 新しいハンドを挿入
 	b.playerHands = append(b.playerHands[:b.currentHandIdx+1], append([]*BlackJackHand{newHand}, b.playerHands[b.currentHandIdx+1:]...)...)
@@ -343,7 +390,7 @@ func (b *BlackJack) PlayerSplit() error {
 	return nil
 }
 
-// advanceHand 次の未完了ハンドに進む。全ハンド完了ならディーラープレイ→精算
+// advanceHand 次の未完了ハンドに進む。全ハンド完了ならCPUプレイ→ディーラープレイ→精算
 func (b *BlackJack) advanceHand() {
 	// 次の未完了ハンドを探す
 	for i := 0; i < len(b.playerHands); i++ {
@@ -352,23 +399,38 @@ func (b *BlackJack) advanceHand() {
 			return
 		}
 	}
-	// 全ハンド完了 → ディーラープレイ
+	// 全人間ハンド完了 → CPUプレイ → ディーラープレイ
+	b.cpuPlay()
 	b.dealerPlay()
+}
+
+// allPlayerHandsDone 全プレイヤーハンド（人間+CPU）がバーストまたはサレンダーしているか
+func (b *BlackJack) allPlayerHandsDone() bool {
+	for _, hand := range b.playerHands {
+		if !hand.IsBusted() && !hand.IsSurrendered() {
+			return false
+		}
+	}
+	for _, cpu := range b.cpuPlayers {
+		for _, hand := range cpu.GetHands() {
+			if !hand.IsBusted() && !hand.IsSurrendered() {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // dealerPlay ディーラーのカードドロー＆精算
 func (b *BlackJack) dealerPlay() {
-	// 全ハンドがバースト or サレンダーしていればディーラーはカードを引かない
-	allDone := true
-	for _, hand := range b.playerHands {
-		if !hand.IsBusted() && !hand.IsSurrendered() {
-			allDone = false
-			break
-		}
-	}
-	if !allDone {
+	if !b.allPlayerHandsDone() {
 		b.DealerHit()
 	} else {
+		// 全ハンドバースト/サレンダーでもホールカードをカウント
+		if b.config.CountingEnabled && !b.holeCardCounted && b.dealer.GetCardsSize() >= 2 {
+			b.updateRunningCount(b.dealer.GetCard(1))
+			b.holeCardCounted = true
+		}
 		b.endGame()
 	}
 }
@@ -376,23 +438,40 @@ func (b *BlackJack) dealerPlay() {
 // endGame ゲーム終了処理
 func (b *BlackJack) endGame() {
 	b.resolvePayouts()
+	b.resolvePayoutsCpu()
 	b.gameEndFlag = true
 	b.phase = BJPhaseEnd
 }
 
+// dealerShouldHit ディーラーがヒットすべきか判定（ソフト17ルール対応）
+func (b *BlackJack) dealerShouldHit() bool {
+	score := b.dealer.GetScore()
+	if score < 17 {
+		return true
+	}
+	if score == 17 && b.config.DealerHitsSoft17 && b.dealer.IsSoft() {
+		return true
+	}
+	return false
+}
+
 // DealerHit ディーラーヒット
 func (b *BlackJack) DealerHit() {
+	// ホールカード（裏向きの2枚目）をカウント
+	if b.config.CountingEnabled && !b.holeCardCounted && b.dealer.GetCardsSize() >= 2 {
+		b.updateRunningCount(b.dealer.GetCard(1))
+		b.holeCardCounted = true
+	}
 	for {
-		if b.dealer.GetScore() < 17 {
-			// ディーラーは自分の手持ちのカードの合計が「17」以上になるまでヒットし続ける（カードを引き続ける）
+		if b.dealerShouldHit() {
 			card := b.drawCard()
 			if card == nil {
 				b.DealerStand()
 				break
 			}
 			b.dealer.AddCard(card)
+			b.updateRunningCount(card)
 		} else {
-			// ディーラーは自分の手持ちカードの合計が「17」以上になったらステイする（カードを引かない）。
 			b.DealerStand()
 			break
 		}
@@ -585,6 +664,9 @@ func (b *BlackJack) SetDeckCount(count int) error {
 	if !valid {
 		return NewDomainError(ErrInvalidAmount, "Invalid deck count. Use 1, 2, 4, 6, or 8.")
 	}
+	if count != b.deckCount {
+		b.deckCountChanged = true
+	}
 	b.deckCount = count
 	return nil
 }
@@ -626,5 +708,316 @@ func (b *BlackJack) GetBasicStrategySuggestion() BJSuggestedAction {
 	if dealerUpcard == nil {
 		return BJSuggestNone
 	}
-	return GetBasicStrategyAction(hand, dealerUpcard)
+	return GetBasicStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17)
+}
+
+// GetConfig ゲーム設定取得
+func (b *BlackJack) GetConfig() BlackJackConfig {
+	return b.config
+}
+
+// SetConfig ゲーム設定（BETフェーズのみ）
+func (b *BlackJack) SetConfig(config BlackJackConfig) error {
+	if b.phase != BJPhaseBet {
+		return NewDomainError(ErrWrongPhase, "Config can only be changed during the bet phase.")
+	}
+	if config.CpuPlayerCount < 0 || config.CpuPlayerCount > BJMaxCpuPlayers {
+		return NewDomainError(ErrInvalidAmount, "CPU player count must be 0-3.")
+	}
+	b.config = config
+	return nil
+}
+
+// hiLoValue Hi-Loカウンティングのカード値 (2-6: +1, 7-9: 0, 10/J/Q/K/A: -1)
+func hiLoValue(card *Card) int {
+	if card == nil {
+		return 0
+	}
+	v := card.GetValue()
+	switch {
+	case v >= 2 && v <= 6:
+		return 1
+	case v >= 7 && v <= 9:
+		return 0
+	default: // 1(A), 10, 11(J), 12(Q), 13(K)
+		return -1
+	}
+}
+
+// updateRunningCount ランニングカウントを更新（countingEnabled時のみ）
+func (b *BlackJack) updateRunningCount(card *Card) {
+	if !b.config.CountingEnabled {
+		return
+	}
+	b.runningCount += hiLoValue(card)
+}
+
+// GetRunningCount ランニングカウント取得
+func (b *BlackJack) GetRunningCount() int {
+	return b.runningCount
+}
+
+// GetTrueCount トゥルーカウント取得
+func (b *BlackJack) GetTrueCount() float64 {
+	if b.trumpCards == nil {
+		return 0
+	}
+	remaining := b.trumpCards.GetRemainingCount()
+	decksRemaining := float64(remaining) / 52.0
+	if decksRemaining < 1.0 {
+		decksRemaining = 1.0
+	}
+	return float64(b.runningCount) / decksRemaining
+}
+
+// IsCountingEnabled カウンティング有効か
+func (b *BlackJack) IsCountingEnabled() bool {
+	return b.config.CountingEnabled
+}
+
+// GetCpuPlayers CPUプレイヤー一覧
+func (b *BlackJack) GetCpuPlayers() []*BlackJackCpuSeat {
+	return b.cpuPlayers
+}
+
+// initCpuPlayers CPUプレイヤー初期化
+func (b *BlackJack) initCpuPlayers() {
+	count := b.config.CpuPlayerCount
+	if count <= 0 {
+		b.cpuPlayers = nil
+		return
+	}
+	// 既存CPUプレイヤーを再利用（チップ引き継ぎ）
+	if len(b.cpuPlayers) == count {
+		for _, cpu := range b.cpuPlayers {
+			cpu.Reset()
+			if cpu.GetPlayer().GetChips() < BJMinBet {
+				cpu.GetPlayer().SetChips(BJDefaultChips)
+			}
+		}
+		return
+	}
+	b.cpuPlayers = make([]*BlackJackCpuSeat, count)
+	for i := 0; i < count; i++ {
+		b.cpuPlayers[i] = NewBlackJackCpuSeat()
+	}
+}
+
+// cpuBetAndDeal CPUプレイヤーの自動ベットとカード配布
+func (b *BlackJack) cpuBetAndDeal() {
+	for _, cpu := range b.cpuPlayers {
+		betAmount := BJCpuBetAmount
+		if cpu.GetPlayer().GetChips() < betAmount {
+			betAmount = cpu.GetPlayer().GetChips()
+		}
+		if betAmount < BJMinBet {
+			continue
+		}
+		// ベット額をBJMinBetの倍数に丸める
+		betAmount = (betAmount / BJMinBet) * BJMinBet
+		cpu.GetPlayer().SubtractChips(betAmount)
+		hand := cpu.GetHands()[0]
+		hand.SetBet(betAmount)
+		// カードを2枚配る
+		for i := 0; i < 2; i++ {
+			card := b.drawCard()
+			if card != nil {
+				hand.AddCard(card)
+			}
+		}
+	}
+}
+
+// cpuPlay CPUプレイヤーのベーシックストラテジープレイ
+func (b *BlackJack) cpuPlay() {
+	dealerUpcard := b.dealer.GetCard(0)
+	if dealerUpcard == nil {
+		return
+	}
+	for _, cpu := range b.cpuPlayers {
+		b.cpuPlaySeat(cpu, dealerUpcard)
+	}
+}
+
+// cpuPlaySeat 個別CPUプレイヤーのプレイ
+func (b *BlackJack) cpuPlaySeat(cpu *BlackJackCpuSeat, dealerUpcard *Card) {
+	handIdx := 0
+	for handIdx < len(cpu.GetHands()) {
+		hand := cpu.GetHands()[handIdx]
+		if hand.IsFinished() || hand.GetCardsSize() == 0 {
+			handIdx++
+			continue
+		}
+		for !hand.IsFinished() {
+			action := GetBasicStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17)
+			switch action {
+			case BJSuggestHit:
+				b.cpuHit(hand)
+			case BJSuggestStand:
+				hand.SetStood(true)
+			case BJSuggestDouble:
+				if hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet() {
+					b.cpuDoubleDown(cpu, hand)
+				} else {
+					b.cpuHit(hand)
+				}
+			case BJSuggestSplit:
+				if hand.CanSplit() && len(cpu.GetHands()) < BJMaxHands && cpu.GetPlayer().GetChips() >= hand.GetBet() {
+					b.cpuSplit(cpu, hand, handIdx, dealerUpcard)
+					continue // cpuSplit may add hands, re-check current index
+				}
+				b.cpuHit(hand)
+			case BJSuggestSurrender:
+				if hand.CanSurrender() {
+					halfBet := hand.GetBet() / 2
+					cpu.GetPlayer().AddChips(halfBet)
+					hand.SetSurrendered(true)
+				} else {
+					b.cpuHit(hand)
+				}
+			}
+		}
+		handIdx++
+	}
+}
+
+// cpuHit CPUヒット
+func (b *BlackJack) cpuHit(hand *BlackJackHand) {
+	card := b.drawCard()
+	if card == nil {
+		hand.SetStood(true)
+		return
+	}
+	hand.AddCard(card)
+	b.updateRunningCount(card)
+	if hand.GetScore() >= 22 {
+		hand.SetBusted(true)
+	}
+}
+
+// cpuDoubleDown CPUダブルダウン
+func (b *BlackJack) cpuDoubleDown(cpu *BlackJackCpuSeat, hand *BlackJackHand) {
+	bet := hand.GetBet()
+	cpu.GetPlayer().SubtractChips(bet)
+	hand.SetBet(bet * 2)
+	hand.SetDoubled(true)
+	card := b.drawCard()
+	if card == nil {
+		// デッキ枯渇: 元に戻す
+		cpu.GetPlayer().AddChips(bet)
+		hand.SetBet(bet)
+		hand.SetDoubled(false)
+		hand.SetStood(true)
+		return
+	}
+	hand.AddCard(card)
+	b.updateRunningCount(card)
+	if hand.GetScore() >= 22 {
+		hand.SetBusted(true)
+	} else {
+		hand.SetStood(true)
+	}
+}
+
+// cpuSplit CPUスプリット
+func (b *BlackJack) cpuSplit(cpu *BlackJackCpuSeat, hand *BlackJackHand, handIdx int, dealerUpcard *Card) {
+	bet := hand.GetBet()
+	cpu.GetPlayer().SubtractChips(bet)
+
+	firstCard := hand.GetCard(0)
+	secondCard := hand.GetCard(1)
+	hand.Reset()
+	hand.SetBet(bet)
+	hand.AddCard(firstCard)
+
+	newHand := NewBlackJackHand()
+	newHand.SetBet(bet)
+	newHand.AddCard(secondCard)
+
+	// 各ハンドに1枚ずつ配る
+	card1 := b.drawCard()
+	if card1 != nil {
+		hand.AddCard(card1)
+		b.updateRunningCount(card1)
+	}
+	card2 := b.drawCard()
+	if card2 != nil {
+		newHand.AddCard(card2)
+		b.updateRunningCount(card2)
+	}
+
+	// 新しいハンドを挿入
+	hands := cpu.GetHands()
+	newHands := make([]*BlackJackHand, 0, len(hands)+1)
+	newHands = append(newHands, hands[:handIdx+1]...)
+	newHands = append(newHands, newHand)
+	newHands = append(newHands, hands[handIdx+1:]...)
+	cpu.SetHands(newHands)
+
+	// エースのスプリットの場合、両ハンドを自動スタンド
+	if firstCard.GetValue() == 1 {
+		hand.SetStood(true)
+		newHand.SetStood(true)
+	}
+}
+
+// resolvePayoutsCpu CPUプレイヤーの精算
+func (b *BlackJack) resolvePayoutsCpu() {
+	dealerScore := b.dealer.GetScore()
+	for _, cpu := range b.cpuPlayers {
+		for _, hand := range cpu.GetHands() {
+			if hand.GetCardsSize() == 0 {
+				continue
+			}
+			if hand.IsSurrendered() {
+				continue
+			}
+			bet := hand.GetBet()
+			result := b.judgeCpuHand(hand)
+			switch result {
+			case GameResultWin:
+				if hand.IsBlackJack() && len(cpu.GetHands()) == 1 {
+					cpu.GetPlayer().AddChips(bet + bet*3/2)
+				} else {
+					cpu.GetPlayer().AddChips(bet * 2)
+				}
+			case GameResultDraw:
+				cpu.GetPlayer().AddChips(bet)
+			case GameResultLose:
+				// 没収（何もしない）
+			}
+		}
+		_ = dealerScore
+	}
+}
+
+// judgeCpuHand CPU個別ハンドの勝敗判定
+func (b *BlackJack) judgeCpuHand(hand *BlackJackHand) GameResult {
+	playerScore := hand.GetScore()
+	dealerScore := b.dealer.GetScore()
+
+	if playerScore > 21 {
+		return GameResultLose
+	}
+	if dealerScore > 21 {
+		return GameResultWin
+	}
+	if playerScore > dealerScore {
+		return GameResultWin
+	}
+	if dealerScore > playerScore {
+		return GameResultLose
+	}
+
+	dealerBJ := b.dealer.GetCardsSize() == 2 && dealerScore == 21
+	playerBJ := hand.GetCardsSize() == 2 && playerScore == 21
+
+	if playerBJ && !dealerBJ {
+		return GameResultWin
+	}
+	if dealerBJ && !playerBJ {
+		return GameResultLose
+	}
+
+	return GameResultDraw
 }

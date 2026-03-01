@@ -41,9 +41,9 @@ func pairValue(hand *BlackJackHand) int {
 }
 
 // GetBasicStrategyAction ベーシックストラテジーによる推奨アクションを返す
-// (standard multi-deck, dealer stands on soft 17)
+// (standard multi-deck, S17 or H17)
 // H=Hit, S=Stand, D=Double(else Hit), Ds=Double(else Stand), Sp=Split, Rh=Surrender(else Hit)
-func GetBasicStrategyAction(hand *BlackJackHand, dealerUpcard *Card) BJSuggestedAction {
+func GetBasicStrategyAction(hand *BlackJackHand, dealerUpcard *Card, dealerHitsSoft17 bool) BJSuggestedAction {
 	di := dealerIdx(dealerUpcard)
 
 	// ① ペアチェック
@@ -53,12 +53,22 @@ func GetBasicStrategyAction(hand *BlackJackHand, dealerUpcard *Card) BJSuggested
 
 	// ② ソフトハンド
 	if hand.IsSoft() {
-		return softStrategy(hand.GetScore(), di)
+		action := softStrategy(hand.GetScore(), di)
+		// H17 overrides for soft hands
+		if dealerHitsSoft17 {
+			action = softH17Override(hand.GetScore(), di, action)
+		}
+		return action
 	}
 
 	// ③ ハードハンド
 	hardTotal := hand.GetScore()
-	return hardStrategy(hardTotal, di)
+	action := hardStrategy(hardTotal, di)
+	// H17 overrides for hard hands
+	if dealerHitsSoft17 {
+		action = hardH17Override(hardTotal, di, action)
+	}
+	return action
 }
 
 // Dealer upcard index: 2→0, 3→1, 4→2, 5→3, 6→4, 7→5, 8→6, 9→7, 10→8, A→9
@@ -154,4 +164,33 @@ func hardStrategy(hardTotal, di int) BJSuggestedAction {
 		clamped = 17
 	}
 	return table[clamped-5][di]
+}
+
+// hardH17Override ハードハンドのH17ルールでの変更
+// S17→H17で変わるセル: Hard 11 vs A: D→D (same), Hard 15 vs A: H→Rh, Hard 17 vs A: S→Rh
+func hardH17Override(hardTotal, di int, s17Action BJSuggestedAction) BJSuggestedAction {
+	// di=9 はエース
+	if di != 9 {
+		return s17Action
+	}
+	switch hardTotal {
+	case 11:
+		return BJSuggestDouble // S17でもDだが明示的にDを返す
+	case 15:
+		return BJSuggestSurrender
+	case 17:
+		return BJSuggestSurrender
+	default:
+		return s17Action
+	}
+}
+
+// softH17Override ソフトハンドのH17ルールでの変更
+// Soft 19 vs 6: S→Ds(Double)
+func softH17Override(softTotal, di int, s17Action BJSuggestedAction) BJSuggestedAction {
+	// di=4 は6
+	if softTotal == 19 && di == 4 {
+		return BJSuggestDouble
+	}
+	return s17Action
 }

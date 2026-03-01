@@ -232,4 +232,3 @@ func TestPokerPlayer_Method(t *testing.T) {
 		assert.Equal(t, 10, tpp.GetChips())
 	})
 }
-

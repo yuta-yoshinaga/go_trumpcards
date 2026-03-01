@@ -9,7 +9,7 @@
 
 以下のゲームを実装しています：
 
-- **ブラックジャック (BlackJack)**: CLI および Web GUIで遊べます（チップ/ベッティングシステム、スプリット、ダブルダウン、インシュランス付き） — [CUI版マニュアル](docs/manual/cui/blackjack.md) / [Web版マニュアル](docs/manual/web/blackjack.md)
+- **ブラックジャック (BlackJack)**: CLI および Web GUIで遊べます（チップ/ベッティングシステム、スプリット、ダブルダウン、インシュランス、ソフト17トグル、カードカウンティング練習、マルチプレイヤーCPU席付き） — [CUI版マニュアル](docs/manual/cui/blackjack.md) / [Web版マニュアル](docs/manual/web/blackjack.md)
 - **ポーカー (5-card Draw Poker)**: CLI および Web GUIで遊べます（チップ/ベッティングシステム付き） — [CUI版マニュアル](docs/manual/cui/poker.md) / [Web版マニュアル](docs/manual/web/poker.md)
 - **ババ抜き (Old Maid)**: CLI および Web GUIで遊べます — [CUI版マニュアル](docs/manual/cui/oldmaid.md) / [Web版マニュアル](docs/manual/web/oldmaid.md)
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます — [CUI版マニュアル](docs/manual/cui/daifugo.md) / [Web版マニュアル](docs/manual/web/daifugo.md)

@@ -198,6 +198,85 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with togglesoft17 command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          dealerHitsSoft17: true,
+        }),
+      );
+      await blackjackApi.exec('togglesoft17');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'togglesoft17', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with togglecounting command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          countingEnabled: true,
+        }),
+      );
+      await blackjackApi.exec('togglecounting');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'togglecounting', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reset command and config', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          dealerHitsSoft17: true,
+          cpuPlayerCount: 2,
+          countingEnabled: true,
+        }),
+      );
+      await blackjackApi.exec('reset', undefined, {
+        dealerHitsSoft17: true,
+        cpuPlayerCount: 2,
+        countingEnabled: true,
+      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            dealerHitsSoft17: true,
+            cpuPlayerCount: 2,
+            countingEnabled: true,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(blackjackApi.exec('reset')).rejects.toThrow('HTTP error: 500');

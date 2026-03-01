@@ -3,8 +3,8 @@ package presenter
 import (
 	"testing"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/stretchr/testify/assert"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
 func TestBlackJackCuiPresenter_suggestionStr(t *testing.T) {

@@ -16,6 +16,7 @@ type BlackJackGame interface {
 	PlayerSurrender() error
 	SetDeckCount(count int) error
 	ToggleHint()
+	SetConfig(config domain.BlackJackConfig) error
 
 	// presenter が呼ぶメソッド
 	GetPlayer() *domain.BlackJackPlayer
@@ -31,4 +32,9 @@ type BlackJackGame interface {
 	GetDeckCount() int
 	IsHintEnabled() bool
 	GetBasicStrategySuggestion() domain.BJSuggestedAction
+	GetConfig() domain.BlackJackConfig
+	GetRunningCount() int
+	GetTrueCount() float64
+	IsCountingEnabled() bool
+	GetCpuPlayers() []*domain.BlackJackCpuSeat
 }

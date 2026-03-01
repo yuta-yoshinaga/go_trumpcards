@@ -117,3 +117,97 @@ func TestTrumpCards_DrawCard(t *testing.T) {
 		}
 	})
 }
+
+func TestTrumpCards_GetRemainingCount(t *testing.T) {
+	t.Run("initial remaining equals total", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		if tc.GetRemainingCount() != 52 {
+			t.Errorf("expected 52 remaining, got %d", tc.GetRemainingCount())
+		}
+	})
+
+	t.Run("remaining decreases after draw", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		tc.DrawCard()
+		if tc.GetRemainingCount() != 51 {
+			t.Errorf("expected 51 remaining after 1 draw, got %d", tc.GetRemainingCount())
+		}
+	})
+
+	t.Run("remaining is 0 after all drawn", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		for i := 0; i < 52; i++ {
+			tc.DrawCard()
+		}
+		if tc.GetRemainingCount() != 0 {
+			t.Errorf("expected 0 remaining, got %d", tc.GetRemainingCount())
+		}
+	})
+
+	t.Run("multi-deck remaining count", func(t *testing.T) {
+		tc := domain.NewTrumpCardsWithDecks(2, 0)
+		if tc.GetRemainingCount() != 104 {
+			t.Errorf("expected 104 remaining for 2 decks, got %d", tc.GetRemainingCount())
+		}
+		for i := 0; i < 10; i++ {
+			tc.DrawCard()
+		}
+		if tc.GetRemainingCount() != 94 {
+			t.Errorf("expected 94 remaining after 10 draws, got %d", tc.GetRemainingCount())
+		}
+	})
+
+	t.Run("remaining with jokers", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		if tc.GetRemainingCount() != 54 {
+			t.Errorf("expected 54 remaining with 2 jokers, got %d", tc.GetRemainingCount())
+		}
+	})
+}
+
+func TestTrumpCards_GetTotalCount(t *testing.T) {
+	t.Run("single deck no jokers", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		if tc.GetTotalCount() != 52 {
+			t.Errorf("expected total 52, got %d", tc.GetTotalCount())
+		}
+	})
+
+	t.Run("single deck with 2 jokers", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		if tc.GetTotalCount() != 54 {
+			t.Errorf("expected total 54, got %d", tc.GetTotalCount())
+		}
+	})
+
+	t.Run("multi-deck total count", func(t *testing.T) {
+		tc := domain.NewTrumpCardsWithDecks(6, 0)
+		if tc.GetTotalCount() != 312 {
+			t.Errorf("expected total 312 for 6 decks, got %d", tc.GetTotalCount())
+		}
+	})
+
+	t.Run("total count unchanged after draws", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		for i := 0; i < 20; i++ {
+			tc.DrawCard()
+		}
+		if tc.GetTotalCount() != 52 {
+			t.Errorf("expected total 52 unchanged after draws, got %d", tc.GetTotalCount())
+		}
+	})
+
+	t.Run("total count reset after shuffle", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		for i := 0; i < 20; i++ {
+			tc.DrawCard()
+		}
+		tc.Shuffle()
+		if tc.GetTotalCount() != 52 {
+			t.Errorf("expected total 52 after shuffle, got %d", tc.GetTotalCount())
+		}
+		if tc.GetRemainingCount() != 52 {
+			t.Errorf("expected remaining 52 after shuffle, got %d", tc.GetRemainingCount())
+		}
+	})
+}

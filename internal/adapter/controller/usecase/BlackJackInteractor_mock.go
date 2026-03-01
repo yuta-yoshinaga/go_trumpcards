@@ -72,3 +72,21 @@ func (_m *MockBlackJackInteractor) ToggleHint() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// ToggleSoft17 モック
+func (_m *MockBlackJackInteractor) ToggleSoft17() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// ToggleCounting モック
+func (_m *MockBlackJackInteractor) ToggleCounting() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// ResetWithConfig モック
+func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string {
+	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled)
+	return ret.Get(0).(string)
+}

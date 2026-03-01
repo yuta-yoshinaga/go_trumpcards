@@ -1,9 +1,11 @@
 package usecase_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 
@@ -68,4 +70,87 @@ func TestBlackJackInteractor_NewMethods(t *testing.T) {
 	t.Run("ToggleHint delegates to presenter", func(t *testing.T) {
 		assert.Equal(t, "ok", tbj.ToggleHint())
 	})
+}
+
+func TestToggleSoft17(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("toggled")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	// GetConfig returns DealerHitsSoft17=false, so toggle sets it to true
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 0, CountingEnabled: false}).Return(nil)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ToggleSoft17()
+	assert.Equal(t, "toggled", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 0, CountingEnabled: false})
+}
+
+func TestToggleSoft17_Error(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("error output")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 0, CountingEnabled: false})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false}).Return(errors.New("config error"))
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ToggleSoft17()
+	assert.Equal(t, "error output", result)
+}
+
+func TestToggleCounting(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("counting toggled")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true}).Return(nil)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ToggleCounting()
+	assert.Equal(t, "counting toggled", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true})
+}
+
+func TestToggleCounting_Error(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("error output")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false}).Return(errors.New("config error"))
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ToggleCounting()
+	assert.Equal(t, "error output", result)
+}
+
+func TestResetWithConfig(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("reset done")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 2, CountingEnabled: true}).Return(nil)
+	bjMock.On("Reset").Return()
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ResetWithConfig(true, 2, true)
+	assert.Equal(t, "reset done", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 2, CountingEnabled: true})
+	bjMock.AssertCalled(t, "Reset")
+}
+
+func TestResetWithConfig_Error(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("config error output")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 5, CountingEnabled: false}).Return(errors.New("invalid cpu count"))
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ResetWithConfig(true, 5, false)
+	assert.Equal(t, "config error output", result)
+	bjMock.AssertNotCalled(t, "Reset")
 }

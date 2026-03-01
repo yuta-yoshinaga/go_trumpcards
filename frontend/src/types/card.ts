@@ -26,6 +26,11 @@ export interface BlackJackPlayer {
 
 export type BlackJackPhase = 1 | 2 | 3 | 4 | 5;
 
+export interface BlackJackCpuSeat {
+  chips: number;
+  hands: BlackJackHand[];
+}
+
 export interface BlackJackResponse {
   dealer: BlackJackPlayer;
   player: BlackJackPlayer;
@@ -38,6 +43,12 @@ export interface BlackJackResponse {
   hintEnabled: boolean;
   suggestedAction: number;
   deckCount: number;
+  dealerHitsSoft17: boolean;
+  countingEnabled: boolean;
+  cpuPlayerCount: number;
+  runningCount: number;
+  trueCount: number;
+  cpuPlayers?: BlackJackCpuSeat[];
 }
 
 export interface PokerPlayer {
