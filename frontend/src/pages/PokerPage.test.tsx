@@ -122,7 +122,7 @@ beforeEach(() => {
 describe('PokerPage', () => {
   it('calls reset command on mount', async () => {
     render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('renders dealer and player section labels', async () => {
@@ -207,7 +207,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue({ ...phase2State, phase: 3 });
     fireEvent.click(screen.getByRole('button', { name: '交換' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', expect.arrayContaining([0, 1]), undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', expect.arrayContaining([0, 1])));
   });
 
   it('calls stand command when stand button is clicked in phase 2', async () => {
@@ -218,16 +218,16 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(phase4State);
     fireEvent.click(screen.getByRole('button', { name: 'スタンド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
   });
 
   it('calls reset command when reset button is clicked', async () => {
     render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(phase0State);
     fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('shows instruction text in phase 2', async () => {
@@ -255,7 +255,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(phase2State);
     fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
   });
 
   it('calls fold command', async () => {
@@ -266,7 +266,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(phase4State);
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
   });
 
   it('calls call command when dealer has bet', async () => {
@@ -277,7 +277,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(phase2State);
     fireEvent.click(screen.getByRole('button', { name: 'コール' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
   });
 
   it('calls raise command with amount when dealer has bet', async () => {
@@ -320,7 +320,7 @@ describe('PokerPage', () => {
 
   it('shows error message when API call fails', async () => {
     render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByText('リセット'));
@@ -331,7 +331,7 @@ describe('PokerPage', () => {
 
   it('clears error message on successful API call after failure', async () => {
     render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByText('リセット'));

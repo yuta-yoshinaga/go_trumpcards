@@ -152,7 +152,7 @@ describe('HoldemPage', () => {
   // ---- mount & reset ----
   it('calls reset on mount', async () => {
     render(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   // ---- phase name display ----
@@ -598,7 +598,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
   });
 
   it('calls fold command', async () => {
@@ -609,7 +609,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
   });
 
   it('calls allin command', async () => {
@@ -620,7 +620,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'オールイン' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin'));
   });
 
   it('calls call command when has outstanding bet', async () => {
@@ -631,7 +631,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'コール' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
   });
 
   it('calls raise command with betAmount when has outstanding bet', async () => {
@@ -647,12 +647,12 @@ describe('HoldemPage', () => {
 
   it('calls reset command when reset button is clicked', async () => {
     render(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   // ---- loading / disabled state ----
@@ -681,7 +681,7 @@ describe('HoldemPage', () => {
   // ---- error handling ----
   it('shows error message when API call fails', async () => {
     render(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
@@ -692,7 +692,7 @@ describe('HoldemPage', () => {
 
   it('clears error on successful call after failure', async () => {
     render(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));

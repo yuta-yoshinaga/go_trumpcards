@@ -86,7 +86,7 @@ describe('SevensPage', () => {
 
   it('calls reset command on mount', async () => {
     render(<SevensPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('renders human player area labeled あなた', async () => {
@@ -146,7 +146,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1, 0, 0, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1));
   });
 
   it('calls play with card index when a playable card is clicked', async () => {
@@ -155,7 +155,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByAltText('SPADE 6'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0, 0, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
   it('does not call play when a non-playable card is clicked', async () => {
@@ -549,8 +549,8 @@ describe('SevensPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(boardButtons6[0]);
 
-    // exec is called as: sevensApi.exec('joker', 0, suit, 6, undefined)
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, expect.any(Number), 6, undefined));
+    // exec is called as: sevensApi.exec('joker', 0, suit, 6)
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, expect.any(Number), 6));
   }, 10000);
 
   it('shows rank badge when human player finishes', async () => {

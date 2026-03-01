@@ -111,7 +111,7 @@ beforeEach(() => {
 describe('BlackJackPage', () => {
   it('calls reset command on mount', async () => {
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('shows chip info bar', async () => {
@@ -132,7 +132,7 @@ describe('BlackJackPage', () => {
 
   it('calls bet command when bet button is clicked', async () => {
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
@@ -179,21 +179,21 @@ describe('BlackJackPage', () => {
   it('calls insurance command when insurance button is clicked', async () => {
     mockExec.mockResolvedValue(insurancePhaseState);
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'インシュランス' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('insurance', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('insurance'));
   });
 
   it('calls declineinsurance command when decline button is clicked', async () => {
     mockExec.mockResolvedValue(insurancePhaseState);
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '辞退' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineinsurance', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineinsurance'));
   });
 
   it('shows reset button in end phase', async () => {
@@ -218,21 +218,21 @@ describe('BlackJackPage', () => {
   it('calls hit command when Hit button is clicked', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hit', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hit'));
   });
 
   it('calls stand command when Stand button is clicked', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(endPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'スタンド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
   });
 
   it('displays player score and bet', async () => {
@@ -308,7 +308,7 @@ describe('BlackJackPage', () => {
 
   it('shows error message when API call fails', async () => {
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
@@ -319,7 +319,7 @@ describe('BlackJackPage', () => {
 
   it('clears error message on successful API call after failure', async () => {
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
@@ -438,7 +438,7 @@ describe('BlackJackPage', () => {
 
   it('calls setdeckcount when deck count is changed', async () => {
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(betPhaseState);
     fireEvent.change(screen.getByLabelText('デッキ数:'), { target: { value: '6' } });
@@ -452,11 +452,11 @@ describe('BlackJackPage', () => {
 
   it('calls togglehint when hint toggle button is clicked', async () => {
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(betPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ヒント OFF' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('togglehint', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('togglehint'));
   });
 
   it('shows hint button as ON when hintEnabled is true', async () => {
@@ -487,11 +487,11 @@ describe('BlackJackPage', () => {
       hands: [{ ...baseHand, canSurrender: true }],
     });
     render(<BlackJackPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     mockExec.mockResolvedValue(endPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'サレンダー' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('surrender', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('surrender'));
   });
 
   it('shows hint banner when hint is enabled and action is suggested', async () => {
