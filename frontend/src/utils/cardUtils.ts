@@ -7,8 +7,9 @@ export function valueName(v: number): string {
   return String(v);
 }
 
+const SUIT_NAMES: Record<number, string> = { 1: 'SPADE', 2: 'CLOVER', 3: 'HEART', 4: 'DIAMOND' };
+
 /** Return suit name for a numeric suit index (1→'SPADE', 2→'CLOVER', 3→'HEART', 4→'DIAMOND'). */
 export function suitName(suit: number): string {
-  const names: Record<number, string> = { 1: 'SPADE', 2: 'CLOVER', 3: 'HEART', 4: 'DIAMOND' };
-  return names[suit] ?? '';
+  return SUIT_NAMES[suit] ?? '';
 }

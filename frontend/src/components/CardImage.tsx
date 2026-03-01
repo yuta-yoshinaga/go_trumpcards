@@ -36,6 +36,7 @@ interface CardBackProps {
   style?: React.CSSProperties;
   className?: string;
   onClick?: () => void;
+  /** Only applies when onClick is provided (button mode). */
   ariaLabel?: string;
 }
 
