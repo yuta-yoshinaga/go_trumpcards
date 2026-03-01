@@ -94,7 +94,7 @@ export function PokerPage() {
                 {p.currentBet > 0 && <span className="ml-2 text-[0.85em]">ベット: {p.currentBet}</span>}
                 {p.folded && <span className="ml-2 text-red-300 text-[0.85em]">[フォールド]</span>}
                 {p.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[オールイン]</span>}
-                {(phase === PokerPhase.SECOND_BET || isEnd) && p.exchangeCount >= 0 && !p.folded && (
+                {(phase === PokerPhase.SECOND_BET || isEnd) && p.exchangeCount > 0 && !p.folded && (
                   <span className="ml-2 text-[0.85em]">交換: {p.exchangeCount}枚</span>
                 )}
                 {isEnd && !p.folded && p.handName && (

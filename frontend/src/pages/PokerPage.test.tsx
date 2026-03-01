@@ -228,14 +228,15 @@ describe('PokerPage', () => {
     await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
   });
 
-  it('shows CPU exchange count in SECOND_BET phase when not folded', async () => {
+  it('shows CPU exchange count in SECOND_BET phase when not folded and count > 0', async () => {
     mockExec.mockResolvedValue({
       ...secondBetState,
       players: [humanPlayer(), cpuPlayer(1, { exchangeCount: 2 }), cpuPlayer(2, { exchangeCount: 0 })],
     });
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/交換: 2枚/)).toBeInTheDocument());
-    expect(screen.getByText(/交換: 0枚/)).toBeInTheDocument();
+    // exchangeCount 0 (stood pat) should not show exchange label
+    expect(screen.queryByText(/交換: 0枚/)).not.toBeInTheDocument();
   });
 
   it('does not show CPU exchange count in DEAL phase', async () => {

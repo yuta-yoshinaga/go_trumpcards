@@ -543,6 +543,20 @@ func TestEvalFiveCardHandWithJokers(t *testing.T) {
 		assert.Equal(t, CardDesignJoker, cards[0].GetDesign())
 	})
 
+	t.Run("1 joker preserves original pointer identity after evaluation", func(t *testing.T) {
+		jokerCard := NewCard(CardDesignJoker, 1, false)
+		cards := []*Card{
+			jokerCard,
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignClover, 5, false),
+			NewCard(CardDesignHeart, 8, false),
+			NewCard(CardDesignDiamond, 11, false),
+		}
+		evalFiveCardHandWithJokers(cards)
+		// The original pointer must be restored, not a newly created card
+		assert.Same(t, jokerCard, cards[0])
+	})
+
 	// ----- 2 jokers tests -----
 
 	t.Run("2 jokers improve hand", func(t *testing.T) {
@@ -595,6 +609,22 @@ func TestEvalFiveCardHandWithJokers(t *testing.T) {
 		evalFiveCardHandWithJokers(cards)
 		assert.Equal(t, CardDesignJoker, cards[0].GetDesign())
 		assert.Equal(t, CardDesignJoker, cards[1].GetDesign())
+	})
+
+	t.Run("2 jokers preserve original pointer identity after evaluation", func(t *testing.T) {
+		jokerCard0 := NewCard(CardDesignJoker, 1, false)
+		jokerCard1 := NewCard(CardDesignJoker, 2, false)
+		cards := []*Card{
+			jokerCard0,
+			jokerCard1,
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignClover, 7, false),
+			NewCard(CardDesignHeart, 11, false),
+		}
+		evalFiveCardHandWithJokers(cards)
+		// The original pointers must be restored, not newly created cards
+		assert.Same(t, jokerCard0, cards[0])
+		assert.Same(t, jokerCard1, cards[1])
 	})
 
 	t.Run("2 jokers with pair does not trigger FiveOfAKind", func(t *testing.T) {

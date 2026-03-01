@@ -182,6 +182,7 @@ func evalFiveCardHandWithJokers(cards []*Card) int {
 	if len(jokerIndices) == 1 {
 		// ジョーカー1枚: 52通り試す
 		idx := jokerIndices[0]
+		original := cards[idx]
 		for _, sub := range substitutions {
 			cards[idx] = sub
 			rank := evalFiveCardHand(cards)
@@ -189,12 +190,14 @@ func evalFiveCardHandWithJokers(cards []*Card) int {
 				bestRank = rank
 			}
 		}
-		// ジョーカーを復元
-		cards[idx] = NewCard(CardDesignJoker, 1, false)
+		// 元のジョーカーポインタを復元
+		cards[idx] = original
 	} else {
 		// ジョーカー2枚: 52×52通り試す
 		idx0 := jokerIndices[0]
 		idx1 := jokerIndices[1]
+		original0 := cards[idx0]
+		original1 := cards[idx1]
 		for _, sub0 := range substitutions {
 			cards[idx0] = sub0
 			for _, sub1 := range substitutions {
@@ -205,9 +208,9 @@ func evalFiveCardHandWithJokers(cards []*Card) int {
 				}
 			}
 		}
-		// ジョーカーを復元
-		cards[idx0] = NewCard(CardDesignJoker, 1, false)
-		cards[idx1] = NewCard(CardDesignJoker, 2, false)
+		// 元のジョーカーポインタを復元
+		cards[idx0] = original0
+		cards[idx1] = original1
 	}
 
 	// FiveOfAKind判定: ジョーカーがある場合のみ可能

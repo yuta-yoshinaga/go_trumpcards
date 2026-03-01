@@ -139,8 +139,20 @@ func (p *Poker) Reset() error {
 	p.cpuActions = make([]PokerCpuAction, 0)
 	p.cpuExchanges = make([]PokerCpuExchange, 0)
 
+	// デッキをジョーカー枚数に合わせて再生成しシャッフル
+	p.trumpCards = NewTrumpCards(p.config.JokerCount)
 	p.trumpCards.Shuffle()
-	for _, pl := range p.players {
+
+	// アクティブ席数 = human(1) + CpuCount (上限: players配列長)
+	activeSeatCount := p.config.CpuCount + 1
+	if activeSeatCount > len(p.players) {
+		activeSeatCount = len(p.players)
+	}
+	if activeSeatCount < 1 {
+		activeSeatCount = 1
+	}
+
+	for i, pl := range p.players {
 		pl.Reset()
 		pl.SetFolded(false)
 		pl.SetAllIn(false)
@@ -149,6 +161,10 @@ func (p *Poker) Reset() error {
 		pl.handRank = 0
 		if pl.GetChips() <= 0 {
 			pl.SetChips(p.config.InitChips)
+		}
+		// 席数を超えるプレイヤーは即フォールド扱い
+		if i >= activeSeatCount {
+			pl.SetFolded(true)
 		}
 	}
 
@@ -161,10 +177,13 @@ func (p *Poker) Reset() error {
 	// アンティ徴収
 	p.collectAntes()
 
-	// カード配布 (ディーラーの左から5枚ずつ)
+	// カード配布 (アクティブプレイヤーのみ、ディーラーの左から5枚ずつ)
 	for c := 0; c < 5; c++ {
 		for j := 0; j < len(p.players); j++ {
 			idx := (p.dealerIdx + 1 + j) % len(p.players)
+			if p.players[idx].GetFolded() {
+				continue
+			}
 			card := p.trumpCards.DrawCard()
 			if card != nil {
 				p.players[idx].AddCard(card)
@@ -173,8 +192,8 @@ func (p *Poker) Reset() error {
 	}
 
 	p.phase = PokerPhaseDeal
-	// ディーラーの左から開始
-	p.currentTurn = (p.dealerIdx + 1) % len(p.players)
+	// ディーラーの左からアクティブプレイヤーを開始
+	p.currentTurn = p.findNextActive(p.dealerIdx)
 
 	// CPU第1ベットアクション実行
 	p.runCpuActions()
@@ -184,6 +203,9 @@ func (p *Poker) Reset() error {
 // collectAntes アンティ徴収
 func (p *Poker) collectAntes() {
 	for _, pl := range p.players {
+		if pl.GetFolded() {
+			continue
+		}
 		ante := p.config.Ante
 		if pl.GetChips() < ante {
 			ante = pl.GetChips()
@@ -433,8 +455,8 @@ func (p *Poker) advanceTurn() {
 	}
 }
 
-// isBettingRoundComplete ベッティングラウンドが完了したかチェック
-func (p *Poker) isBettingRoundComplete() bool {
+// isRoundComplete 全アクティブプレイヤーが行動済みかチェック
+func (p *Poker) isRoundComplete() bool {
 	for i, pl := range p.players {
 		if pl.GetFolded() || pl.GetAllIn() {
 			continue
@@ -446,17 +468,14 @@ func (p *Poker) isBettingRoundComplete() bool {
 	return true
 }
 
+// isBettingRoundComplete ベッティングラウンドが完了したかチェック
+func (p *Poker) isBettingRoundComplete() bool {
+	return p.isRoundComplete()
+}
+
 // isExchangeComplete 交換フェーズが完了したかチェック
 func (p *Poker) isExchangeComplete() bool {
-	for i, pl := range p.players {
-		if pl.GetFolded() || pl.GetAllIn() {
-			continue
-		}
-		if !p.actedFlags[i] {
-			return false
-		}
-	}
-	return true
+	return p.isRoundComplete()
 }
 
 // advancePhase 次のフェーズに進める
@@ -889,6 +908,11 @@ func (p *Poker) cpuDecideFirstBet(idx int, params pokerCpuStyleParams, callAmoun
 				return PokerActionFold, 0
 			}
 		} else {
+			// アグレッシブスタイル: ブラフ率を先にチェック
+			if rand.Intn(100) < params.bluffRate {
+				betAmt := p.config.MinBet * params.firstBetMult
+				return p.cpuRaiseOrBet(pl, callAmount, betAmt)
+			}
 			return p.cpuFoldOrCheck(callAmount)
 		}
 	}

@@ -758,7 +758,6 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 	}
 }
 
-
 // --- all short commands exercise ---
 
 func TestPokerWebController_AllShortCommands(t *testing.T) {
