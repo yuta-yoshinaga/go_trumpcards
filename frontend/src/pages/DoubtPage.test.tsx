@@ -296,48 +296,6 @@ describe('DoubtPage', () => {
     expect(screen.queryByText(/枚出しました/)).not.toBeInTheDocument();
   });
 
-  // ── valueName branches ───────────────────────────────────────────────────
-
-  it('valueName shows A for claimedValue 1', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastAction: { playerIdx: 1, claimedValue: 1, cardCount: 1, isBluff: false },
-    };
-    mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/宣言: A/)).toBeInTheDocument());
-  });
-
-  it('valueName shows J for claimedValue 11', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastAction: { playerIdx: 1, claimedValue: 11, cardCount: 1, isBluff: false },
-    };
-    mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/宣言: J/)).toBeInTheDocument());
-  });
-
-  it('valueName shows Q for claimedValue 12', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastAction: { playerIdx: 1, claimedValue: 12, cardCount: 1, isBluff: false },
-    };
-    mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/宣言: Q/)).toBeInTheDocument());
-  });
-
-  it('valueName shows K for claimedValue 13', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastAction: { playerIdx: 1, claimedValue: 13, cardCount: 1, isBluff: false },
-    };
-    mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/宣言: K/)).toBeInTheDocument());
-  });
-
   // ── actionDesc branches ───────────────────────────────────────────────────
 
   it('actionDesc uses Player index when player not found', async () => {

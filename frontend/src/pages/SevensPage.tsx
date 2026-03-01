@@ -5,6 +5,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
+import { valueName } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 // Design → suit index (matches Go backend: 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND)
@@ -24,14 +25,6 @@ const SUITS = [
   { idx: 3, name: 'HEART', label: '♥', color: '#f87171' },
   { idx: 4, name: 'DIAMOND', label: '♦', color: '#f87171' },
 ];
-
-function valueName(v: number): string {
-  if (v === 1) return 'A';
-  if (v === 11) return 'J';
-  if (v === 12) return 'Q';
-  if (v === 13) return 'K';
-  return String(v);
-}
 
 function isPositionPlaced(tablePlaced: number[], suit: number, value: number): boolean {
   return (tablePlaced[suit] & (1 << value)) !== 0;
