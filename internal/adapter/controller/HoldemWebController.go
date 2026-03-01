@@ -132,7 +132,7 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		// 片方のみ指定された場合、もう片方を自動調整
 		if sbProvided && !bbProvided && sb >= cfg.BigBlind {
 			bb = sb * 2
-		} else if bbProvided && !sbProvided && cfg.SmallBlind >= bb {
+		} else if bbProvided && !sbProvided && bb > 1 {
 			sb = bb / 2
 			if sb < 1 {
 				sb = 1
