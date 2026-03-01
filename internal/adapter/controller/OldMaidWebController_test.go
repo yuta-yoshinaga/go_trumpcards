@@ -116,6 +116,32 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 	})
+	t.Run("failed Exec reset with invalid mode negative", func(t *testing.T) {
+		input := controller.OldMaidWebInput{
+			Command:   "reset",
+			SessionId: "test-session-1",
+			Mode:      -1,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error: mode must be between 0 and 1."}`)
+	})
+	t.Run("failed Exec reset with invalid mode too large", func(t *testing.T) {
+		input := controller.OldMaidWebInput{
+			Command:   "reset",
+			SessionId: "test-session-1",
+			Mode:      99,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error: mode must be between 0 and 1."}`)
+	})
 	t.Run("failed Exec other", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "other", "sessionId": "test-session-1"}`), &jsonInput)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
