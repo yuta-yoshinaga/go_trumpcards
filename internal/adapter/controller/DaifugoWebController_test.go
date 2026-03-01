@@ -24,6 +24,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	factory := func() uc.DaifugoInteractorIF { return dgiMock }
 	tdwc := controller.NewDaifugoWebController(factory)
+	defer tdwc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -172,6 +173,7 @@ func TestDaifugoWebController_SessionIsolation(t *testing.T) {
 		}
 		return mockB
 	})
+	defer isoController.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -211,4 +213,12 @@ func TestDaifugoWebController_SessionIsolation(t *testing.T) {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
 		}
 	})
+}
+
+func TestDaifugoWebController_Stop(t *testing.T) {
+	dgiMock := new(usecase.MockDaifugoInteractor)
+	factory := func() uc.DaifugoInteractorIF { return dgiMock }
+	c := controller.NewDaifugoWebController(factory)
+	c.Stop()
+	c.Stop()
 }

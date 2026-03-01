@@ -109,6 +109,11 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
+// Stop stops the background cleanup goroutine of the session store.
+func (pwc *PokerWebController) Stop() {
+	pwc.store.Stop()
+}
+
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (pwc *PokerWebController) newDefaultOutput(msg string) *PokerWebOutput {
 	return &PokerWebOutput{

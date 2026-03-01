@@ -29,6 +29,7 @@ func TestPokerWebController_Method(t *testing.T) {
 
 	factory := func() uc.PokerInteractorIF { return piMock }
 	tpc := controller.NewPokerWebController(factory)
+	defer tpc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -267,6 +268,7 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 		}
 		return mockB
 	})
+	defer isoController.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -306,4 +308,12 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
 		}
 	})
+}
+
+func TestPokerWebController_Stop(t *testing.T) {
+	piMock := new(usecase.MockPokerInteractor)
+	factory := func() uc.PokerInteractorIF { return piMock }
+	c := controller.NewPokerWebController(factory)
+	c.Stop()
+	c.Stop()
 }

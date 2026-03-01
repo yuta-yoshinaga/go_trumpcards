@@ -48,6 +48,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 
 	factory := func() uc.DoubtInteractorIF { return dgiMock }
 	tdwc := controller.NewDoubtWebController(factory)
+	defer tdwc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -189,7 +190,6 @@ func TestDoubtWebController_Method(t *testing.T) {
 		recorded.BodyIs(mustDoubtOutputJSON("param error."))
 	})
 
-
 	claimedValueErrBody := mustDoubtOutputJSON(fmt.Sprintf(
 		"param error: claimedValue must be between %d and %d.",
 		domain.MinClaimedValue, domain.MaxClaimedValue,
@@ -258,6 +258,7 @@ func TestDoubtWebController_ResetEmptyResponse(t *testing.T) {
 
 	factory := func() uc.DoubtInteractorIF { return dgiMock }
 	tdwc := controller.NewDoubtWebController(factory)
+	defer tdwc.Stop()
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(rest.Post("/doubt/exec", tdwc.Exec))
 	api.SetApp(router)
@@ -283,6 +284,7 @@ func TestDoubtWebController_SkipWithCpuDoubters(t *testing.T) {
 
 	factory := func() uc.DoubtInteractorIF { return dgiMock }
 	tdwc := controller.NewDoubtWebController(factory)
+	defer tdwc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -319,6 +321,7 @@ func TestDoubtWebController_SessionIsolation(t *testing.T) {
 		}
 		return mockB
 	})
+	defer isoController.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -372,6 +375,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
 		api.SetApp(router)
@@ -398,6 +402,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
 		api.SetApp(router)
@@ -424,6 +429,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
 		api.SetApp(router)
@@ -450,6 +456,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 
 		factory := func() uc.DoubtInteractorIF { return dgiMock }
 		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
 		api := rest.NewApi()
 		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
 		api.SetApp(router)
@@ -466,4 +473,12 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
+}
+
+func TestDoubtWebController_Stop(t *testing.T) {
+	dgiMock := new(usecase.MockDoubtInteractor)
+	factory := func() uc.DoubtInteractorIF { return dgiMock }
+	c := controller.NewDoubtWebController(factory)
+	c.Stop()
+	c.Stop()
 }

@@ -127,6 +127,11 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	}
 }
 
+// Stop stops the background cleanup goroutine of the session store.
+func (bwc *BlackJackWebController) Stop() {
+	bwc.store.Stop()
+}
+
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (bwc *BlackJackWebController) newDefaultOutput(msg string) *BlackJackWebOutput {
 	return &BlackJackWebOutput{

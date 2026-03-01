@@ -130,6 +130,11 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
+// Stop stops the background cleanup goroutine of the session store.
+func (owc *OldMaidWebController) Stop() {
+	owc.store.Stop()
+}
+
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (owc *OldMaidWebController) newDefaultOutput(msg string) *OldMaidWebOutput {
 	return &OldMaidWebOutput{

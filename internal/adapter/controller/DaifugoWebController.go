@@ -175,6 +175,11 @@ func convertWebInputConfig(c DaifugoWebInputConfig) domain.DaifugoConfig {
 	}
 }
 
+// Stop stops the background cleanup goroutine of the session store.
+func (dwc *DaifugoWebController) Stop() {
+	dwc.store.Stop()
+}
+
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (dwc *DaifugoWebController) newDefaultOutput(msg string) *DaifugoWebOutput {
 	return &DaifugoWebOutput{

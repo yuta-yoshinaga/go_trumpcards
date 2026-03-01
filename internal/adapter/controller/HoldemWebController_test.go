@@ -11,7 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
-func newHoldemTestHandler(mi *mockUsecase.MockHoldemInteractor) *rest.Api {
+func newHoldemTestHandler(mi *mockUsecase.MockHoldemInteractor) (*rest.Api, *HoldemWebController) {
 	api := rest.NewApi()
 	api.Use(rest.DefaultDevStack...)
 	hwc := NewHoldemWebController(func() usecase.HoldemInteractorIF {
@@ -21,12 +21,13 @@ func newHoldemTestHandler(mi *mockUsecase.MockHoldemInteractor) *rest.Api {
 		rest.Post("/holdem/exec", hwc.Exec),
 	)
 	api.SetApp(router)
-	return api
+	return api, hwc
 }
 
 func TestHoldemWebController_Reset(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	cfg := domain.DefaultHoldemConfig()
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1,"message":""}`)
@@ -42,7 +43,8 @@ func TestHoldemWebController_Reset(t *testing.T) {
 
 func TestHoldemWebController_Reset_WithConfig(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	sb := 10
 	bb := 20
@@ -64,7 +66,8 @@ func TestHoldemWebController_Reset_WithConfig(t *testing.T) {
 
 func TestHoldemWebController_Fold(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	mi.On("Action", domain.HoldemActionFold, 0).Return(`{"phase":1}`)
 
@@ -79,7 +82,8 @@ func TestHoldemWebController_Fold(t *testing.T) {
 
 func TestHoldemWebController_Check(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	mi.On("Action", domain.HoldemActionCheck, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -89,7 +93,8 @@ func TestHoldemWebController_Check(t *testing.T) {
 
 func TestHoldemWebController_Call(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	mi.On("Action", domain.HoldemActionCall, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -99,7 +104,8 @@ func TestHoldemWebController_Call(t *testing.T) {
 
 func TestHoldemWebController_Bet(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	mi.On("Action", domain.HoldemActionBet, 50).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -109,7 +115,8 @@ func TestHoldemWebController_Bet(t *testing.T) {
 
 func TestHoldemWebController_Raise(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	mi.On("Action", domain.HoldemActionRaise, 30).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -119,7 +126,8 @@ func TestHoldemWebController_Raise(t *testing.T) {
 
 func TestHoldemWebController_AllIn(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	mi.On("Action", domain.HoldemActionAllIn, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -129,7 +137,8 @@ func TestHoldemWebController_AllIn(t *testing.T) {
 
 func TestHoldemWebController_Quit(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "quit", "sessionId": "s1"}))
@@ -138,7 +147,8 @@ func TestHoldemWebController_Quit(t *testing.T) {
 
 func TestHoldemWebController_QuitShort(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "q", "sessionId": "s1"}))
@@ -147,7 +157,8 @@ func TestHoldemWebController_QuitShort(t *testing.T) {
 
 func TestHoldemWebController_Unknown(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	// Must have a session first
 	cfg := domain.DefaultHoldemConfig()
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
@@ -163,7 +174,8 @@ func TestHoldemWebController_Unknown(t *testing.T) {
 
 func TestHoldemWebController_BadRequest_EmptyBody(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec", nil))
 	recorded.CodeIs(400)
@@ -171,7 +183,8 @@ func TestHoldemWebController_BadRequest_EmptyBody(t *testing.T) {
 
 func TestHoldemWebController_BadRequest_NoCommand(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"sessionId": "s1"}))
@@ -180,7 +193,8 @@ func TestHoldemWebController_BadRequest_NoCommand(t *testing.T) {
 
 func TestHoldemWebController_BadRequest_NoSession(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "reset"}))
@@ -189,7 +203,8 @@ func TestHoldemWebController_BadRequest_NoSession(t *testing.T) {
 
 func TestHoldemWebController_ShortCommands(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	cfg := domain.DefaultHoldemConfig()
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
@@ -211,7 +226,8 @@ func TestHoldemWebController_ShortCommands(t *testing.T) {
 
 func TestHoldemWebController_ErrorResponse(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	mi.On("Action", domain.HoldemActionFold, 0).Return("invalid json")
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -221,7 +237,8 @@ func TestHoldemWebController_ErrorResponse(t *testing.T) {
 
 func TestHoldemWebController_LongSessionId(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{
@@ -233,7 +250,8 @@ func TestHoldemWebController_LongSessionId(t *testing.T) {
 
 func TestHoldemWebController_Reset_SmallBlindOnly(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	sb := 3
 	cfg := domain.DefaultHoldemConfig()
@@ -252,7 +270,8 @@ func TestHoldemWebController_Reset_SmallBlindOnly(t *testing.T) {
 
 func TestHoldemWebController_Reset_BigBlindOnly(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	bb := 30
 	cfg := domain.DefaultHoldemConfig()
@@ -271,7 +290,8 @@ func TestHoldemWebController_Reset_BigBlindOnly(t *testing.T) {
 
 func TestHoldemWebController_Reset_SmallBlindOnly_AutoAdjust(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	// smallBlind=20のみ指定: bigBlindがデフォルト(10)より大きいので自動調整 bb=40
 	sb := 20
@@ -292,7 +312,8 @@ func TestHoldemWebController_Reset_SmallBlindOnly_AutoAdjust(t *testing.T) {
 
 func TestHoldemWebController_Reset_BigBlindOnly_AutoAdjust(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	// bigBlind=4のみ指定: smallBlindがデフォルト(5)より大きいので自動調整 sb=2
 	bb := 4
@@ -313,7 +334,8 @@ func TestHoldemWebController_Reset_BigBlindOnly_AutoAdjust(t *testing.T) {
 
 func TestHoldemWebController_Reset_SmallBlindGeBigBlind(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	// smallBlind >= bigBlind は不正
 	recorded := test.RunRequest(t, api.MakeHandler(),
@@ -340,7 +362,8 @@ func TestHoldemWebController_Reset_SmallBlindGeBigBlind(t *testing.T) {
 
 func TestHoldemWebController_Reset_InvalidBlinds(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
-	api := newHoldemTestHandler(mi)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
 
 	cfg := domain.DefaultHoldemConfig() // defaults unchanged when values < 1
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
@@ -354,4 +377,13 @@ func TestHoldemWebController_Reset_InvalidBlinds(t *testing.T) {
 				"bigBlind":   0,
 			}))
 	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Stop(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	c := NewHoldemWebController(func() usecase.HoldemInteractorIF {
+		return mi
+	})
+	c.Stop()
+	c.Stop()
 }
