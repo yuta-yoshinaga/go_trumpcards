@@ -89,6 +89,20 @@ func TestHoldemCuiController_Raise_InvalidAmount(t *testing.T) {
 	assert.Contains(t, c.Exec("raise xyz"), "無効な金額です")
 }
 
+func TestHoldemCuiController_Bet_NegativeAmount(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("b -50"), "無効な金額です")
+	assert.Contains(t, c.Exec("bet 0"), "無効な金額です")
+}
+
+func TestHoldemCuiController_Raise_NegativeAmount(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("ra -30"), "無効な金額です")
+	assert.Contains(t, c.Exec("raise 0"), "無効な金額です")
+}
+
 func TestHoldemCuiController_AllIn(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)

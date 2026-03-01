@@ -48,7 +48,9 @@ func (pcc *PokerCuiController) Exec(command string) string {
 	case "b", "bet":
 		amount := 0
 		if len(parts) > 1 {
-			amount, _ = strconv.Atoi(parts[1])
+			if a, err := strconv.Atoi(parts[1]); err == nil && a > 0 {
+				amount = a
+			}
 		}
 		res = pcc.pi.Bet(amount)
 	case "c", "call":
@@ -56,7 +58,9 @@ func (pcc *PokerCuiController) Exec(command string) string {
 	case "ra", "raise":
 		amount := 0
 		if len(parts) > 1 {
-			amount, _ = strconv.Atoi(parts[1])
+			if a, err := strconv.Atoi(parts[1]); err == nil && a > 0 {
+				amount = a
+			}
 		}
 		res = pcc.pi.Raise(amount)
 	case "f", "fold":

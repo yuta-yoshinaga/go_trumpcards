@@ -64,5 +64,8 @@ func parseAmount(fields []string) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("無効な金額です: %s", fields[1])
 	}
+	if amount <= 0 {
+		return 0, fmt.Errorf("無効な金額です: %s", fields[1])
+	}
 	return amount, nil
 }
