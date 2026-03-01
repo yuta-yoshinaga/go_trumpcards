@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -14,455 +15,44 @@ const (
 	PokerPhaseEnd       = 4 // ゲーム終了
 )
 
-// ポーカーデフォルト値
+// アクション定数
 const (
-	PokerDefaultChips = 1000
-	PokerDefaultAnte  = 10
-	PokerMinBet       = 10
+	PokerActionFold  = 0 // フォールド
+	PokerActionCheck = 1 // チェック
+	PokerActionCall  = 2 // コール
+	PokerActionBet   = 3 // ベット
+	PokerActionRaise = 4 // レイズ
+	PokerActionAllIn = 5 // オールイン
 )
 
-// ポーカーフォールド状態定数
-const (
-	PokerFoldNone     = iota // フォールドなし
-	PokerFoldByPlayer        // プレイヤーがフォールド
-	PokerFoldByDealer        // ディーラーがフォールド
-)
+// CPU AI 閾値
+const pokerMaxRaisesPerRound = 4
 
-// ディーラーAI閾値
-const (
-	dealerFoldPotOddsThreshold    = 0.4 // ポットオッズがこれを超えるとフォールド候補
-	dealerFoldBetMultiplierWeak   = 2   // 弱いハイカードでフォールドするベット倍率
-	dealerFoldBetMultiplierStrong = 3   // 高額ベットでフォールドするベット倍率
-	dealerFoldRateWeak            = 70  // 弱いハンド+悪いポットオッズ時のフォールド率(%)
-	dealerFoldRateStrong          = 50  // 高額ベット時のフォールド率(%)
-)
-
-// Poker ポーカークラス (5枚ドローポーカー)
-type Poker struct {
-	trumpCards *TrumpCards  // トランプカード
-	player     *PokerPlayer // プレイヤー
-	dealer     *PokerPlayer // ディーラー(CPU)
-	phase      int          // ゲームフェーズ
-	pot        int          // ポット
-	playerBet  int          // プレイヤーの現ラウンドベット
-	dealerBet  int          // ディーラーの現ラウンドベット
-	ante       int          // アンティ
-	folded     int          // フォールド状態 (PokerFoldNone/PokerFoldByPlayer/PokerFoldByDealer)
+// PokerSidePot サイドポット
+type PokerSidePot struct {
+	Amount          int   // ポット額
+	EligiblePlayers []int // 受取対象プレイヤーインデックス
 }
 
-// NewPoker コンストラクタ
-func NewPoker(trumpCards *TrumpCards, player *PokerPlayer, dealer *PokerPlayer) *Poker {
-	return &Poker{
-		trumpCards: trumpCards,
-		player:     player,
-		dealer:     dealer,
-		phase:      PokerPhaseInit,
-		ante:       PokerDefaultAnte,
-	}
+// PokerResult ショーダウン結果
+type PokerResult struct {
+	PlayerIdx int    // プレイヤーインデックス
+	HandRank  int    // ハンドランク
+	HandName  string // ハンド名
+	WonAmount int    // 獲得チップ
 }
 
-// Reset ゲーム初期化
-func (p *Poker) Reset() {
-	p.phase = PokerPhaseInit
-	p.pot = 0
-	p.playerBet = 0
-	p.dealerBet = 0
-	p.folded = PokerFoldNone
-	for i := 0; i < 10; i++ {
-		p.trumpCards.Shuffle()
-	}
-	p.player.Reset()
-	p.dealer.Reset()
-	// チップ初期化 (0以下の場合はデフォルト値)
-	if p.player.GetChips() <= 0 {
-		p.player.SetChips(PokerDefaultChips)
-	}
-	if p.dealer.GetChips() <= 0 {
-		p.dealer.SetChips(PokerDefaultChips)
-	}
-	// アンティ徴収
-	p.collectAnte()
-	// プレイヤー・ディーラーに5枚ずつ配る
-	for i := 0; i < 5; i++ {
-		p.player.AddCard(p.trumpCards.DrawCard())
-		p.dealer.AddCard(p.trumpCards.DrawCard())
-	}
-	// ディーラー第1ベット
-	p.dealerFirstBet()
-	p.phase = PokerPhaseDeal
+// PokerCpuAction CPU行動記録
+type PokerCpuAction struct {
+	PlayerIdx int // プレイヤーインデックス
+	Action    int // アクション
+	Amount    int // 金額
 }
 
-// collectAnte アンティ徴収
-func (p *Poker) collectAnte() {
-	playerAnte := p.ante
-	if p.player.GetChips() < playerAnte {
-		playerAnte = p.player.GetChips()
-	}
-	dealerAnte := p.ante
-	if p.dealer.GetChips() < dealerAnte {
-		dealerAnte = p.dealer.GetChips()
-	}
-	p.player.SubtractChips(playerAnte)
-	p.dealer.SubtractChips(dealerAnte)
-	p.pot = playerAnte + dealerAnte
-}
-
-// PlayerBet プレイヤーベット (フェーズ1,3)
-func (p *Poker) PlayerBet(amount int) error {
-	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return NewDomainError(ErrWrongPhase, "Bet is not allowed now.")
-	}
-	if amount < PokerMinBet {
-		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
-	}
-	if p.player.GetChips() < amount {
-		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
-	}
-	p.player.SubtractChips(amount)
-	p.playerBet += amount
-	p.pot += amount
-	// ディーラーのベットに対する応答
-	p.dealerRespondToBet()
-	// フォールドした場合は終了
-	if p.folded != PokerFoldNone {
-		p.phase = PokerPhaseEnd
-		return nil
-	}
-	p.advanceAfterBetting()
-	return nil
-}
-
-// PlayerCall プレイヤーコール (ディーラーのベットに合わせる)
-func (p *Poker) PlayerCall() error {
-	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return NewDomainError(ErrWrongPhase, "Call is not allowed now.")
-	}
-	diff := p.dealerBet - p.playerBet
-	if diff <= 0 {
-		return NewDomainError(ErrInvalidPlay, "Nothing to call.")
-	}
-	if p.player.GetChips() < diff {
-		// オールインの場合はあるだけ出す
-		diff = p.player.GetChips()
-	}
-	p.player.SubtractChips(diff)
-	p.playerBet += diff
-	p.pot += diff
-	p.advanceAfterBetting()
-	return nil
-}
-
-// PlayerRaise プレイヤーレイズ (ディーラーのベット以上に上乗せ)
-func (p *Poker) PlayerRaise(amount int) error {
-	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return NewDomainError(ErrWrongPhase, "Raise is not allowed now.")
-	}
-	if amount < PokerMinBet {
-		return NewDomainError(ErrInvalidAmount, "Invalid raise amount.")
-	}
-	diff := p.dealerBet - p.playerBet
-	if diff < 0 {
-		diff = 0
-	}
-	// オーバーフロー防止
-	if amount > p.player.GetChips()-diff {
-		return NewDomainError(ErrInsufficientChips, "Insufficient chips for raise.")
-	}
-	totalNeeded := diff + amount
-	p.player.SubtractChips(totalNeeded)
-	p.playerBet += totalNeeded
-	p.pot += totalNeeded
-	// ディーラーのレイズに対する応答
-	p.dealerRespondToBet()
-	if p.folded != PokerFoldNone {
-		p.phase = PokerPhaseEnd
-		return nil
-	}
-	p.advanceAfterBetting()
-	return nil
-}
-
-// PlayerFold プレイヤーフォールド
-func (p *Poker) PlayerFold() error {
-	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return NewDomainError(ErrWrongPhase, "Fold is not allowed now.")
-	}
-	p.folded = PokerFoldByPlayer
-	// ポットをディーラーに渡す
-	p.dealer.AddChips(p.pot)
-	p.pot = 0
-	p.phase = PokerPhaseEnd
-	return nil
-}
-
-// PlayerCheck プレイヤーチェック (ベットなしでパス)
-func (p *Poker) PlayerCheck() error {
-	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
-		return NewDomainError(ErrWrongPhase, "Check is not allowed now.")
-	}
-	// 未決済のベットがある場合はチェック不可
-	if p.dealerBet > p.playerBet {
-		return NewDomainError(ErrInvalidPlay, "Cannot check with outstanding bet.")
-	}
-	p.advanceAfterBetting()
-	return nil
-}
-
-// advanceAfterBetting ベッティング後のフェーズ遷移
-func (p *Poker) advanceAfterBetting() {
-	if p.phase == PokerPhaseDeal {
-		p.phase = PokerPhaseExchange
-	} else if p.phase == PokerPhaseSecondBet {
-		p.resolveShowdown()
-	}
-}
-
-// PlayerExchange プレイヤーカード交換
-func (p *Poker) PlayerExchange(indices []int) error {
-	if p.phase != PokerPhaseExchange {
-		return NewDomainError(ErrWrongPhase, "Exchange is not allowed now.")
-	}
-	// 指定カードを新しいカードと交換
-	for _, idx := range indices {
-		newCard := p.trumpCards.DrawCard()
-		if newCard != nil {
-			p.player.ExchangeCard(idx, newCard)
-		}
-	}
-	// ディーラーの自動カード交換
-	p.dealerExchange()
-	// ラウンドベットリセット
-	p.playerBet = 0
-	p.dealerBet = 0
-	// ディーラー第2ベット
-	p.dealerSecondBet()
-	p.phase = PokerPhaseSecondBet
-	return nil
-}
-
-// PlayerStand カード交換なしでショーダウン
-func (p *Poker) PlayerStand() error {
-	if p.phase != PokerPhaseExchange {
-		return NewDomainError(ErrWrongPhase, "Stand is not allowed now.")
-	}
-	// ディーラーの自動カード交換
-	p.dealerExchange()
-	// ラウンドベットリセット
-	p.playerBet = 0
-	p.dealerBet = 0
-	// ディーラー第2ベット
-	p.dealerSecondBet()
-	p.phase = PokerPhaseSecondBet
-	return nil
-}
-
-// resolveShowdown ショーダウン: ハンド評価・ポット配分
-func (p *Poker) resolveShowdown() {
-	p.player.EvalHand()
-	p.dealer.EvalHand()
-	switch p.GameJudgment() {
-	case 1:
-		p.player.AddChips(p.pot)
-	case -1:
-		p.dealer.AddChips(p.pot)
-	default:
-		// 引き分けの場合はポットを均等に分配
-		half := p.pot / 2
-		p.player.AddChips(half)
-		p.dealer.AddChips(p.pot - half)
-	}
-	p.pot = 0
-	p.phase = PokerPhaseEnd
-}
-
-// dealerFirstBet ディーラー第1ベット (カード配布直後)
-func (p *Poker) dealerFirstBet() {
-	// シンプルAI: ハンド評価してからベット判断
-	p.dealer.EvalHand()
-	rank := p.dealer.GetHandRank()
-	if rank >= PokerHandOnePair {
-		// ペア以上ならベット
-		bet := PokerMinBet
-		if p.dealer.GetChips() >= bet {
-			p.dealer.SubtractChips(bet)
-			p.dealerBet = bet
-			p.pot += bet
-		}
-	}
-	// ハイカードならチェック (dealerBetは0のまま)
-}
-
-// dealerRespondToBet ディーラーのプレイヤーベットへの応答
-func (p *Poker) dealerRespondToBet() {
-	p.dealer.EvalHand()
-	rank := p.dealer.GetHandRank()
-	diff := p.playerBet - p.dealerBet
-	if diff <= 0 {
-		return
-	}
-
-	if rank == PokerHandHighCard {
-		// ハイカードの強さを評価 (A,K を持っているか)
-		hasHighCard := false
-		for i := 0; i < p.dealer.GetCardsSize(); i++ {
-			v := p.dealer.GetCard(i).GetValue()
-			if v == 1 || v >= 12 { // A, Q, K
-				hasHighCard = true
-				break
-			}
-		}
-		// ポットオッズ: コールに必要な額 vs 獲得可能なポット
-		potOdds := 0.0
-		if p.pot+diff > 0 {
-			potOdds = float64(diff) / float64(p.pot+diff)
-		}
-		// フォールド判定: ハイカードなし かつ ポットオッズが悪い かつ 大きなベット
-		if !hasHighCard && potOdds > dealerFoldPotOddsThreshold && diff > PokerMinBet*dealerFoldBetMultiplierWeak {
-			// 70%の確率でフォールドする（残りの30%でコールを試みる）
-			if rand.Intn(100) < dealerFoldRateWeak {
-				p.folded = PokerFoldByDealer
-				p.player.AddChips(p.pot)
-				p.pot = 0
-				return
-			}
-		} else if !hasHighCard && diff > PokerMinBet*dealerFoldBetMultiplierStrong {
-			// 50%の確率でフォールドする（残りの50%でコールを試みる）
-			if rand.Intn(100) < dealerFoldRateStrong {
-				p.folded = PokerFoldByDealer
-				p.player.AddChips(p.pot)
-				p.pot = 0
-				return
-			}
-		}
-	}
-
-	// コール
-	callAmount := diff
-	if p.dealer.GetChips() < callAmount {
-		callAmount = p.dealer.GetChips()
-	}
-	p.dealer.SubtractChips(callAmount)
-	p.dealerBet += callAmount
-	p.pot += callAmount
-}
-
-// dealerSecondBet ディーラー第2ベット (カード交換後)
-func (p *Poker) dealerSecondBet() {
-	p.dealer.EvalHand()
-	rank := p.dealer.GetHandRank()
-	if rank >= PokerHandTwoPair {
-		// ツーペア以上ならベット
-		bet := PokerMinBet
-		if rank >= PokerHandFullHouse {
-			bet = PokerMinBet * 3
-		} else if rank >= PokerHandStraight {
-			bet = PokerMinBet * 2
-		}
-		if p.dealer.GetChips() >= bet {
-			p.dealer.SubtractChips(bet)
-			p.dealerBet = bet
-			p.pot += bet
-		}
-	}
-}
-
-// dealerExchange ディーラーの自動カード交換 (AI)
-func (p *Poker) dealerExchange() {
-	// まずハンドを評価
-	p.dealer.EvalHand()
-	rank := p.dealer.GetHandRank()
-
-	if rank >= PokerHandTwoPair {
-		// ツーペア以上はカード交換しない
-		return
-	}
-
-	// フラッシュドロー判定
-	if rank < PokerHandOnePair {
-		discardIdx := p.findFlushDrawDiscard()
-		if discardIdx >= 0 {
-			newCard := p.trumpCards.DrawCard()
-			if newCard != nil {
-				p.dealer.ExchangeCard(discardIdx, newCard)
-			}
-			return
-		}
-	}
-
-	// ストレートドロー判定
-	if rank < PokerHandOnePair {
-		discardIdx := p.findStraightDrawDiscard()
-		if discardIdx >= 0 {
-			newCard := p.trumpCards.DrawCard()
-			if newCard != nil {
-				p.dealer.ExchangeCard(discardIdx, newCard)
-			}
-			return
-		}
-	}
-
-	if rank == PokerHandOnePair {
-		// ワンペアならペア以外の3枚を交換
-		valueCounts := make(map[int][]int)
-		for i := 0; i < p.dealer.GetCardsSize(); i++ {
-			v := p.dealer.GetCard(i).GetValue()
-			valueCounts[v] = append(valueCounts[v], i)
-		}
-		indices := []int{}
-		for _, idxList := range valueCounts {
-			if len(idxList) == 1 {
-				indices = append(indices, idxList[0])
-			}
-		}
-		for _, idx := range indices {
-			newCard := p.trumpCards.DrawCard()
-			if newCard != nil {
-				p.dealer.ExchangeCard(idx, newCard)
-			}
-		}
-	} else {
-		// ハイカードなら最も低い3枚を交換
-		type cardIdx struct {
-			idx   int
-			value int
-		}
-		cards := make([]cardIdx, p.dealer.GetCardsSize())
-		for i := 0; i < p.dealer.GetCardsSize(); i++ {
-			v := p.dealer.GetCard(i).GetValue()
-			if v == 1 {
-				v = 14 // エースはハイカードとして扱う
-			}
-			cards[i] = cardIdx{i, v}
-		}
-		sort.Slice(cards, func(i, j int) bool {
-			return cards[i].value < cards[j].value
-		})
-		// 最も低い3枚を交換
-		for i := 0; i < 3 && i < len(cards); i++ {
-			newCard := p.trumpCards.DrawCard()
-			if newCard != nil {
-				p.dealer.ExchangeCard(cards[i].idx, newCard)
-			}
-		}
-	}
-}
-
-// findFlushDrawDiscard 4枚フラッシュドローの外れカード位置を返す (ドローなし: -1)
-func (p *Poker) findFlushDrawDiscard() int {
-	suitCounts := make(map[int]int)
-	for i := 0; i < p.dealer.GetCardsSize(); i++ {
-		suitCounts[p.dealer.GetCard(i).GetDesign()]++
-	}
-	for suit, count := range suitCounts {
-		if count == 4 {
-			for i := 0; i < p.dealer.GetCardsSize(); i++ {
-				if p.dealer.GetCard(i).GetDesign() != suit {
-					return i
-				}
-			}
-		}
-	}
-	return -1
+// PokerCpuExchange CPUカード交換記録
+type PokerCpuExchange struct {
+	PlayerIdx     int // プレイヤーインデックス
+	ExchangeCount int // 交換枚数
 }
 
 // straightDrawCardInfo ストレートドロー探索用のカード情報
@@ -497,22 +87,988 @@ func findOpenEndedDraw(cards []straightDrawCardInfo, check func(remaining []int)
 	return -1
 }
 
-// findStraightDrawDiscard 4枚オープンエンドストレートドローの外れカード位置を返す (ドローなし: -1)
-func (p *Poker) findStraightDrawDiscard() int {
-	// Ace high (14) として評価
-	cards := make([]straightDrawCardInfo, p.dealer.GetCardsSize())
-	for i := 0; i < p.dealer.GetCardsSize(); i++ {
-		v := p.dealer.GetCard(i).GetValue()
+// Poker ポーカークラス (5枚ドローポーカー・マルチプレイヤー)
+type Poker struct {
+	trumpCards    *TrumpCards
+	players       []*PokerPlayer
+	config        PokerConfig
+	phase         int
+	pot           int
+	dealerIdx     int
+	currentTurn   int
+	lastBet       int
+	minRaise      int
+	raiseCount    int
+	actedFlags    []bool
+	sidePots      []PokerSidePot
+	startingChips []int
+	roundResults  []PokerResult
+	cpuActions    []PokerCpuAction
+	cpuExchanges  []PokerCpuExchange
+	gameEndFlag   bool
+	lastCpuError  error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
+}
+
+// NewPoker コンストラクタ
+func NewPoker(trumpCards *TrumpCards, players []*PokerPlayer, config PokerConfig) *Poker {
+	return &Poker{
+		trumpCards:    trumpCards,
+		players:       players,
+		config:        config,
+		phase:         PokerPhaseInit,
+		sidePots:      make([]PokerSidePot, 0),
+		actedFlags:    make([]bool, len(players)),
+		roundResults:  make([]PokerResult, 0),
+		cpuActions:    make([]PokerCpuAction, 0),
+		cpuExchanges:  make([]PokerCpuExchange, 0),
+		startingChips: make([]int, len(players)),
+	}
+}
+
+// Reset ゲーム初期化
+func (p *Poker) Reset() error {
+	p.phase = PokerPhaseInit
+	p.pot = 0
+	p.sidePots = make([]PokerSidePot, 0)
+	p.gameEndFlag = false
+	p.lastBet = 0
+	p.minRaise = p.config.MinBet
+	p.raiseCount = 0
+	p.actedFlags = make([]bool, len(p.players))
+	p.roundResults = make([]PokerResult, 0)
+	p.cpuActions = make([]PokerCpuAction, 0)
+	p.cpuExchanges = make([]PokerCpuExchange, 0)
+
+	p.trumpCards.Shuffle()
+	for _, pl := range p.players {
+		pl.Reset()
+		pl.SetFolded(false)
+		pl.SetAllIn(false)
+		pl.SetCurrentBet(0)
+		pl.SetExchangeCount(0)
+		pl.handRank = 0
+		if pl.GetChips() <= 0 {
+			pl.SetChips(p.config.InitChips)
+		}
+	}
+
+	// ハンド開始時のチップを記録 (サイドポット計算用)
+	p.startingChips = make([]int, len(p.players))
+	for i, pl := range p.players {
+		p.startingChips[i] = pl.GetChips()
+	}
+
+	// アンティ徴収
+	p.collectAntes()
+
+	// カード配布 (ディーラーの左から5枚ずつ)
+	for c := 0; c < 5; c++ {
+		for j := 0; j < len(p.players); j++ {
+			idx := (p.dealerIdx + 1 + j) % len(p.players)
+			card := p.trumpCards.DrawCard()
+			if card != nil {
+				p.players[idx].AddCard(card)
+			}
+		}
+	}
+
+	p.phase = PokerPhaseDeal
+	// ディーラーの左から開始
+	p.currentTurn = (p.dealerIdx + 1) % len(p.players)
+
+	// CPU第1ベットアクション実行
+	p.runCpuActions()
+	return nil
+}
+
+// collectAntes アンティ徴収
+func (p *Poker) collectAntes() {
+	for _, pl := range p.players {
+		ante := p.config.Ante
+		if pl.GetChips() < ante {
+			ante = pl.GetChips()
+		}
+		pl.SubtractChips(ante)
+		p.pot += ante
+	}
+}
+
+// PlayerAction 人間プレイヤーのアクション実行
+func (p *Poker) PlayerAction(action, amount int) error {
+	if p.gameEndFlag {
+		return NewDomainError(ErrGameEnded, "Game has already ended.")
+	}
+	if p.phase != PokerPhaseDeal && p.phase != PokerPhaseSecondBet {
+		return NewDomainError(ErrWrongPhase, "Action is not allowed now.")
+	}
+	if !p.players[p.currentTurn].GetIsHuman() {
+		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
+	}
+
+	err := p.executeAction(p.currentTurn, action, amount)
+	if err != nil {
+		return err
+	}
+
+	p.advanceTurn()
+	p.runCpuActions()
+	return nil
+}
+
+// PlayerExchange プレイヤーカード交換
+func (p *Poker) PlayerExchange(indices []int) error {
+	if p.phase != PokerPhaseExchange {
+		return NewDomainError(ErrWrongPhase, "Exchange is not allowed now.")
+	}
+	if !p.players[p.currentTurn].GetIsHuman() {
+		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
+	}
+
+	// 指定カードを交換
+	for _, idx := range indices {
+		newCard := p.trumpCards.DrawCard()
+		if newCard != nil {
+			p.players[p.currentTurn].ExchangeCard(idx, newCard)
+		}
+	}
+	p.players[p.currentTurn].SetExchangeCount(len(indices))
+	p.actedFlags[p.currentTurn] = true
+
+	// 残りのCPU交換を実行
+	p.advanceTurn()
+	p.runCpuExchanges()
+
+	// 交換フェーズ完了判定
+	if p.isExchangeComplete() {
+		p.startSecondBettingRound()
+	}
+
+	return nil
+}
+
+// PlayerStand カード交換なし
+func (p *Poker) PlayerStand() error {
+	if p.phase != PokerPhaseExchange {
+		return NewDomainError(ErrWrongPhase, "Stand is not allowed now.")
+	}
+	if !p.players[p.currentTurn].GetIsHuman() {
+		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
+	}
+
+	p.players[p.currentTurn].SetExchangeCount(0)
+	p.actedFlags[p.currentTurn] = true
+
+	// 残りのCPU交換を実行
+	p.advanceTurn()
+	p.runCpuExchanges()
+
+	// 交換フェーズ完了判定
+	if p.isExchangeComplete() {
+		p.startSecondBettingRound()
+	}
+
+	return nil
+}
+
+// executeAction 指定プレイヤーのアクション実行
+func (p *Poker) executeAction(playerIdx, action, amount int) error {
+	pl := p.players[playerIdx]
+
+	switch action {
+	case PokerActionFold:
+		pl.SetFolded(true)
+		p.actedFlags[playerIdx] = true
+
+	case PokerActionCheck:
+		if p.lastBet > pl.GetCurrentBet() {
+			return NewDomainError(ErrInvalidPlay, "Cannot check with outstanding bet.")
+		}
+		p.actedFlags[playerIdx] = true
+
+	case PokerActionCall:
+		diff := p.lastBet - pl.GetCurrentBet()
+		if diff <= 0 {
+			return NewDomainError(ErrInvalidPlay, "Nothing to call.")
+		}
+		if pl.GetChips() <= diff {
+			// オールイン
+			allInAmount := pl.GetChips()
+			pl.SubtractChips(allInAmount)
+			pl.SetCurrentBet(pl.GetCurrentBet() + allInAmount)
+			p.pot += allInAmount
+			pl.SetAllIn(true)
+		} else {
+			pl.SubtractChips(diff)
+			pl.SetCurrentBet(pl.GetCurrentBet() + diff)
+			p.pot += diff
+		}
+		p.actedFlags[playerIdx] = true
+
+	case PokerActionBet:
+		if p.raiseCount >= pokerMaxRaisesPerRound {
+			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
+		}
+		if p.lastBet > 0 {
+			return NewDomainError(ErrInvalidPlay, "Cannot bet when there is an outstanding bet. Use raise.")
+		}
+		if amount < p.config.MinBet {
+			return NewDomainError(ErrInvalidAmount, "Bet must be at least the minimum bet.")
+		}
+		if amount > pl.GetChips() {
+			return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
+		}
+		pl.SubtractChips(amount)
+		pl.SetCurrentBet(pl.GetCurrentBet() + amount)
+		p.pot += amount
+		p.lastBet = pl.GetCurrentBet()
+		p.minRaise = amount
+		p.raiseCount++
+		p.resetActedExcept(playerIdx)
+		if pl.GetChips() == 0 {
+			pl.SetAllIn(true)
+		}
+
+	case PokerActionRaise:
+		if p.raiseCount >= pokerMaxRaisesPerRound {
+			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
+		}
+		diff := p.lastBet - pl.GetCurrentBet()
+		if diff < 0 {
+			diff = 0
+		}
+		if amount < p.minRaise {
+			return NewDomainError(ErrInvalidAmount, "Raise must be at least the minimum raise.")
+		}
+		totalNeeded := diff + amount
+		if totalNeeded >= pl.GetChips() {
+			return p.executeAction(playerIdx, PokerActionAllIn, 0)
+		}
+		pl.SubtractChips(totalNeeded)
+		pl.SetCurrentBet(pl.GetCurrentBet() + totalNeeded)
+		p.pot += totalNeeded
+		p.lastBet = pl.GetCurrentBet()
+		p.minRaise = amount
+		p.raiseCount++
+		p.resetActedExcept(playerIdx)
+
+	case PokerActionAllIn:
+		allInAmount := pl.GetChips()
+		if allInAmount <= 0 {
+			return NewDomainError(ErrInsufficientChips, "No chips to go all-in.")
+		}
+		pl.SubtractChips(allInAmount)
+		newBet := pl.GetCurrentBet() + allInAmount
+		pl.SetCurrentBet(newBet)
+		p.pot += allInAmount
+		pl.SetAllIn(true)
+		if newBet > p.lastBet {
+			raiseAmount := newBet - p.lastBet
+			p.lastBet = newBet
+			p.raiseCount++
+			if raiseAmount >= p.minRaise {
+				p.minRaise = raiseAmount
+				p.resetActedExcept(playerIdx)
+			} else {
+				p.actedFlags[playerIdx] = true
+			}
+		} else {
+			p.actedFlags[playerIdx] = true
+		}
+
+	default:
+		return NewDomainError(ErrInvalidPlay, "Unknown action.")
+	}
+
+	// フォールドでアクティブプレイヤーが1人になったらチェック
+	if p.countActivePlayers() == 1 {
+		p.resolveLastPlayer()
+		return nil
+	}
+
+	return nil
+}
+
+// resetActedExcept 指定プレイヤー以外のactedフラグをリセット
+func (p *Poker) resetActedExcept(exceptIdx int) {
+	for i := range p.actedFlags {
+		if i == exceptIdx {
+			p.actedFlags[i] = true
+			continue
+		}
+		if p.players[i].GetFolded() || p.players[i].GetAllIn() {
+			continue
+		}
+		p.actedFlags[i] = false
+	}
+}
+
+// advanceTurn 次のプレイヤーに進める
+func (p *Poker) advanceTurn() {
+	if p.gameEndFlag {
+		return
+	}
+
+	// ベッティングラウンド終了チェック
+	if p.phase == PokerPhaseDeal || p.phase == PokerPhaseSecondBet {
+		if p.isBettingRoundComplete() {
+			p.advancePhase()
+			return
+		}
+	}
+
+	// 交換フェーズでの終了チェック
+	if p.phase == PokerPhaseExchange {
+		if p.isExchangeComplete() {
+			return
+		}
+	}
+
+	// 次のアクティブプレイヤーを探す
+	for i := 1; i <= len(p.players); i++ {
+		next := (p.currentTurn + i) % len(p.players)
+		if !p.players[next].GetFolded() && !p.players[next].GetAllIn() && !p.actedFlags[next] {
+			p.currentTurn = next
+			return
+		}
+	}
+}
+
+// isBettingRoundComplete ベッティングラウンドが完了したかチェック
+func (p *Poker) isBettingRoundComplete() bool {
+	for i, pl := range p.players {
+		if pl.GetFolded() || pl.GetAllIn() {
+			continue
+		}
+		if !p.actedFlags[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// isExchangeComplete 交換フェーズが完了したかチェック
+func (p *Poker) isExchangeComplete() bool {
+	for i, pl := range p.players {
+		if pl.GetFolded() || pl.GetAllIn() {
+			continue
+		}
+		if !p.actedFlags[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// advancePhase 次のフェーズに進める
+func (p *Poker) advancePhase() {
+	switch p.phase {
+	case PokerPhaseDeal:
+		// ベッティングラウンド1完了 → 交換フェーズへ
+		p.phase = PokerPhaseExchange
+		// ラウンドベットリセット
+		for _, pl := range p.players {
+			pl.SetCurrentBet(0)
+		}
+		p.lastBet = 0
+		p.minRaise = p.config.MinBet
+		p.raiseCount = 0
+		p.actedFlags = make([]bool, len(p.players))
+		for i, pl := range p.players {
+			if pl.GetFolded() || pl.GetAllIn() {
+				p.actedFlags[i] = true
+			}
+		}
+		// ディーラーの左から開始
+		p.currentTurn = p.findNextActive(p.dealerIdx)
+
+	case PokerPhaseSecondBet:
+		// ベッティングラウンド2完了 → ショーダウン
+		p.resolveShowdown()
+	}
+}
+
+// startSecondBettingRound 第2ベッティングラウンド開始
+func (p *Poker) startSecondBettingRound() {
+	p.phase = PokerPhaseSecondBet
+	// ラウンドベットリセット
+	for _, pl := range p.players {
+		pl.SetCurrentBet(0)
+	}
+	p.lastBet = 0
+	p.minRaise = p.config.MinBet
+	p.raiseCount = 0
+	p.actedFlags = make([]bool, len(p.players))
+	for i, pl := range p.players {
+		if pl.GetFolded() || pl.GetAllIn() {
+			p.actedFlags[i] = true
+		}
+	}
+
+	// アクティブプレイヤーが0-1人ならショーダウンへ
+	activeCnt := 0
+	for _, pl := range p.players {
+		if !pl.GetFolded() && !pl.GetAllIn() {
+			activeCnt++
+		}
+	}
+	if activeCnt <= 1 {
+		p.resolveShowdown()
+		return
+	}
+
+	// ディーラーの左から開始
+	p.currentTurn = p.findNextActive(p.dealerIdx)
+
+	// CPU第2ベットアクション実行
+	p.runCpuActions()
+}
+
+// findNextActive 指定インデックスの次のアクティブプレイヤーを探す
+func (p *Poker) findNextActive(fromIdx int) int {
+	for i := 1; i <= len(p.players); i++ {
+		next := (fromIdx + i) % len(p.players)
+		if !p.players[next].GetFolded() && !p.players[next].GetAllIn() {
+			return next
+		}
+	}
+	return (fromIdx + 1) % len(p.players)
+}
+
+// countActivePlayers フォールドしていないプレイヤー数を返す
+func (p *Poker) countActivePlayers() int {
+	cnt := 0
+	for _, pl := range p.players {
+		if !pl.GetFolded() {
+			cnt++
+		}
+	}
+	return cnt
+}
+
+// resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
+func (p *Poker) resolveLastPlayer() {
+	for i, pl := range p.players {
+		if !pl.GetFolded() {
+			pl.AddChips(p.pot)
+			p.roundResults = []PokerResult{{
+				PlayerIdx: i,
+				WonAmount: p.pot,
+			}}
+			p.pot = 0
+			break
+		}
+	}
+	p.phase = PokerPhaseEnd
+	p.gameEndFlag = true
+	p.dealerIdx = (p.dealerIdx + 1) % len(p.players)
+}
+
+// resolveShowdown ショーダウン: ハンド評価・ポット配分
+func (p *Poker) resolveShowdown() {
+	// ハンド評価
+	for _, pl := range p.players {
+		if !pl.GetFolded() {
+			pl.EvalHand()
+		}
+	}
+
+	// サイドポット計算
+	p.calculateSidePots()
+
+	// 各ポットの配分
+	p.roundResults = make([]PokerResult, 0)
+	wonAmounts := make(map[int]int)
+
+	for _, sp := range p.sidePots {
+		winners := p.findPotWinners(sp.EligiblePlayers)
+		share := sp.Amount / len(winners)
+		remainder := sp.Amount % len(winners)
+		for i, wIdx := range winners {
+			won := share
+			if i == 0 {
+				won += remainder
+			}
+			p.players[wIdx].AddChips(won)
+			wonAmounts[wIdx] += won
+		}
+	}
+
+	// 結果を構築
+	for i, pl := range p.players {
+		if pl.GetFolded() {
+			continue
+		}
+		result := PokerResult{
+			PlayerIdx: i,
+			HandRank:  pl.GetHandRank(),
+			HandName:  pl.GetHandName(),
+			WonAmount: wonAmounts[i],
+		}
+		p.roundResults = append(p.roundResults, result)
+	}
+
+	p.phase = PokerPhaseEnd
+	p.gameEndFlag = true
+	p.dealerIdx = (p.dealerIdx + 1) % len(p.players)
+}
+
+// calculateSidePots サイドポット計算
+func (p *Poker) calculateSidePots() {
+	type playerContrib struct {
+		idx    int
+		amount int
+	}
+
+	contribs := make([]playerContrib, 0)
+	for i, pl := range p.players {
+		invested := p.startingChips[i] - pl.GetChips()
+		if invested < 0 {
+			invested = 0
+		}
+		contribs = append(contribs, playerContrib{idx: i, amount: invested})
+	}
+
+	// オールインプレイヤーがいない場合はシンプルなメインポット
+	hasAllIn := false
+	for _, pl := range p.players {
+		if pl.GetAllIn() && !pl.GetFolded() {
+			hasAllIn = true
+			break
+		}
+	}
+
+	if !hasAllIn {
+		eligible := make([]int, 0)
+		for i, pl := range p.players {
+			if !pl.GetFolded() {
+				eligible = append(eligible, i)
+			}
+		}
+		p.sidePots = []PokerSidePot{{Amount: p.pot, EligiblePlayers: eligible}}
+		return
+	}
+
+	// オールインがある場合: 各オールイン額でポットを分割
+	type allInLevel struct {
+		amount int
+		idx    int
+	}
+	levels := make([]allInLevel, 0)
+	for _, c := range contribs {
+		if p.players[c.idx].GetAllIn() && !p.players[c.idx].GetFolded() {
+			levels = append(levels, allInLevel{amount: c.amount, idx: c.idx})
+		}
+	}
+	sort.Slice(levels, func(i, j int) bool {
+		return levels[i].amount < levels[j].amount
+	})
+
+	p.sidePots = make([]PokerSidePot, 0)
+	prevLevel := 0
+	remaining := p.pot
+
+	for _, lv := range levels {
+		if lv.amount <= prevLevel {
+			continue
+		}
+		layerAmount := lv.amount - prevLevel
+		potAmount := 0
+		eligible := make([]int, 0)
+		for _, c := range contribs {
+			contribution := c.amount - prevLevel
+			if contribution <= 0 {
+				continue
+			}
+			if contribution > layerAmount {
+				contribution = layerAmount
+			}
+			potAmount += contribution
+			if !p.players[c.idx].GetFolded() {
+				eligible = append(eligible, c.idx)
+			}
+		}
+		if potAmount > 0 {
+			p.sidePots = append(p.sidePots, PokerSidePot{Amount: potAmount, EligiblePlayers: eligible})
+			remaining -= potAmount
+		}
+		prevLevel = lv.amount
+	}
+
+	if remaining > 0 {
+		eligible := make([]int, 0)
+		for i, pl := range p.players {
+			if !pl.GetFolded() && !pl.GetAllIn() {
+				eligible = append(eligible, i)
+			}
+		}
+		if len(eligible) == 0 {
+			for i, pl := range p.players {
+				if !pl.GetFolded() {
+					eligible = append(eligible, i)
+				}
+			}
+		}
+		p.sidePots = append(p.sidePots, PokerSidePot{Amount: remaining, EligiblePlayers: eligible})
+	}
+}
+
+// findPotWinners 対象プレイヤーから最強ハンドのプレイヤーを返す
+func (p *Poker) findPotWinners(eligible []int) []int {
+	bestRank := -1
+	var bestCards []*Card
+	var winners []int
+
+	for _, idx := range eligible {
+		pl := p.players[idx]
+		if pl.GetFolded() {
+			continue
+		}
+		rank := pl.GetHandRank()
+		cards := make([]*Card, pl.GetCardsSize())
+		for i := 0; i < pl.GetCardsSize(); i++ {
+			cards[i] = pl.GetCard(i)
+		}
+		if rank > bestRank {
+			bestRank = rank
+			bestCards = cards
+			winners = []int{idx}
+		} else if rank == bestRank {
+			cmp := compareHighCardsSlice(cards, bestCards)
+			if cmp > 0 {
+				bestCards = cards
+				winners = []int{idx}
+			} else if cmp == 0 {
+				winners = append(winners, idx)
+			}
+		}
+	}
+
+	return winners
+}
+
+// runCpuActions CPUプレイヤーのアクションを実行
+func (p *Poker) runCpuActions() {
+	if p.gameEndFlag {
+		return
+	}
+	for !p.gameEndFlag && (p.phase == PokerPhaseDeal || p.phase == PokerPhaseSecondBet) {
+		if p.players[p.currentTurn].GetIsHuman() {
+			return
+		}
+		if p.players[p.currentTurn].GetFolded() || p.players[p.currentTurn].GetAllIn() {
+			p.advanceTurn()
+			continue
+		}
+		action, amount := p.cpuDecide(p.currentTurn)
+		p.cpuActions = append(p.cpuActions, PokerCpuAction{
+			PlayerIdx: p.currentTurn,
+			Action:    action,
+			Amount:    amount,
+		})
+		err := p.executeAction(p.currentTurn, action, amount)
+		if err != nil {
+			p.lastCpuError = fmt.Errorf("CPU player %d action %d failed: %w", p.currentTurn, action, err)
+			callAmt := p.lastBet - p.players[p.currentTurn].GetCurrentBet()
+			if callAmt > 0 {
+				p.executeAction(p.currentTurn, PokerActionFold, 0)
+			} else {
+				p.executeAction(p.currentTurn, PokerActionCheck, 0)
+			}
+		}
+		if p.gameEndFlag {
+			return
+		}
+		p.advanceTurn()
+	}
+}
+
+// runCpuExchanges CPUプレイヤーのカード交換を実行
+func (p *Poker) runCpuExchanges() {
+	if p.gameEndFlag {
+		return
+	}
+	for p.phase == PokerPhaseExchange {
+		if p.isExchangeComplete() {
+			return
+		}
+		if p.players[p.currentTurn].GetIsHuman() {
+			return
+		}
+		if p.players[p.currentTurn].GetFolded() || p.players[p.currentTurn].GetAllIn() {
+			p.actedFlags[p.currentTurn] = true
+			p.advanceTurn()
+			continue
+		}
+
+		// CPU交換AI
+		indices := p.cpuDecideExchange(p.currentTurn)
+		for _, idx := range indices {
+			newCard := p.trumpCards.DrawCard()
+			if newCard != nil {
+				p.players[p.currentTurn].ExchangeCard(idx, newCard)
+			}
+		}
+		p.players[p.currentTurn].SetExchangeCount(len(indices))
+		p.cpuExchanges = append(p.cpuExchanges, PokerCpuExchange{
+			PlayerIdx:     p.currentTurn,
+			ExchangeCount: len(indices),
+		})
+		p.actedFlags[p.currentTurn] = true
+		p.advanceTurn()
+	}
+}
+
+// cpuDecide CPUプレイヤーの意思決定
+func (p *Poker) cpuDecide(idx int) (int, int) {
+	pl := p.players[idx]
+	style := pl.GetPlayStyle()
+	callAmount := p.lastBet - pl.GetCurrentBet()
+
+	params, ok := pokerStyleParamsMap[style]
+	if !ok {
+		return p.cpuCallOrCheck(callAmount)
+	}
+
+	pl.EvalHand()
+	handRank := pl.GetHandRank()
+
+	// 交換枚数読み: 他プレイヤーの交換枚数が少ない場合に警戒
+	exchangeWarning := p.calcExchangeWarning(idx, params.exchangeReadWeight)
+
+	var action, amount int
+	if p.phase == PokerPhaseDeal {
+		action, amount = p.cpuDecideFirstBet(idx, params, callAmount, handRank)
+	} else {
+		action, amount = p.cpuDecideSecondBet(idx, params, callAmount, handRank, exchangeWarning)
+	}
+
+	// レイズ上限に達したら変更
+	if p.raiseCount >= pokerMaxRaisesPerRound {
+		if action == PokerActionRaise || action == PokerActionBet {
+			if callAmount > 0 {
+				return PokerActionCall, 0
+			}
+			return PokerActionCheck, 0
+		}
+	}
+	return action, amount
+}
+
+// calcExchangeWarning 他プレイヤーの交換枚数から警戒度を計算 (0-100)
+func (p *Poker) calcExchangeWarning(idx, weight int) int {
+	if p.phase != PokerPhaseSecondBet {
+		return 0
+	}
+	minExchange := 5
+	for i, pl := range p.players {
+		if i == idx || pl.GetFolded() {
+			continue
+		}
+		ec := pl.GetExchangeCount()
+		if ec < minExchange {
+			minExchange = ec
+		}
+	}
+	// 交換枚数0 = 強い手の可能性高い → 警戒度Max
+	// 交換枚数が少ないほど警戒度が高い
+	if minExchange >= 3 {
+		return 0
+	}
+	// warning = (3 - minExchange) * weight / 3
+	return (3 - minExchange) * weight / 3
+}
+
+// cpuDecideFirstBet 第1ベッティングラウンドのCPU意思決定
+func (p *Poker) cpuDecideFirstBet(idx int, params pokerCpuStyleParams, callAmount, handRank int) (int, int) {
+	pl := p.players[idx]
+
+	// フォールド評価
+	if handRank <= params.firstFoldThreshold {
+		if !params.aggressive {
+			if callAmount > p.config.MinBet*params.firstCallMaxMult {
+				return PokerActionFold, 0
+			}
+		} else {
+			return p.cpuFoldOrCheck(callAmount)
+		}
+	}
+
+	// ベット/レイズ
+	if handRank >= params.firstBetThreshold || rand.Intn(100) < params.bluffRate {
+		betAmt := p.config.MinBet * params.firstBetMult
+		return p.cpuRaiseOrBet(pl, callAmount, betAmt)
+	}
+
+	return p.cpuCallOrCheck(callAmount)
+}
+
+// cpuDecideSecondBet 第2ベッティングラウンドのCPU意思決定
+func (p *Poker) cpuDecideSecondBet(idx int, params pokerCpuStyleParams, callAmount, handRank, exchangeWarning int) (int, int) {
+	pl := p.players[idx]
+
+	// 交換読み警戒が高い場合、フォールド閾値を上げる
+	adjustedFoldThreshold := params.secondFoldThreshold
+	if exchangeWarning > 50 {
+		adjustedFoldThreshold = params.secondFoldThreshold + 1
+	}
+
+	// フォールド評価
+	if handRank <= adjustedFoldThreshold {
+		if callAmount > p.config.MinBet*params.secondCallMaxMult {
+			return PokerActionFold, 0
+		}
+		if callAmount > 0 {
+			return p.cpuCallOrCheck(callAmount)
+		}
+	}
+
+	// ベット/レイズ
+	if handRank >= params.secondBetThreshold || rand.Intn(100) < params.bluffRate {
+		betAmt := p.config.MinBet * params.secondBetMult
+		return p.cpuRaiseOrBet(pl, callAmount, betAmt)
+	}
+
+	return p.cpuCallOrCheck(callAmount)
+}
+
+// cpuFoldOrCheck コール額がある場合はフォールド、なければチェック
+func (p *Poker) cpuFoldOrCheck(callAmount int) (int, int) {
+	if callAmount > 0 {
+		return PokerActionFold, 0
+	}
+	return PokerActionCheck, 0
+}
+
+// cpuCallOrCheck コール額がある場合はコール、なければチェック
+func (p *Poker) cpuCallOrCheck(callAmount int) (int, int) {
+	if callAmount > 0 {
+		return PokerActionCall, 0
+	}
+	return PokerActionCheck, 0
+}
+
+// cpuRaiseOrBet レイズまたはベット (チップ不足時はオールイン)
+func (p *Poker) cpuRaiseOrBet(pl *PokerPlayer, callAmount, raiseAmt int) (int, int) {
+	if raiseAmt > pl.GetChips() {
+		return PokerActionAllIn, 0
+	}
+	if callAmount > 0 {
+		if raiseAmt+callAmount > pl.GetChips() {
+			return PokerActionAllIn, 0
+		}
+		return PokerActionRaise, raiseAmt
+	}
+	return PokerActionBet, raiseAmt
+}
+
+// cpuDecideExchange CPUカード交換AI
+func (p *Poker) cpuDecideExchange(idx int) []int {
+	pl := p.players[idx]
+	pl.EvalHand()
+	rank := pl.GetHandRank()
+
+	if rank >= PokerHandTwoPair {
+		return []int{}
+	}
+
+	// フラッシュドロー判定
+	if rank < PokerHandOnePair {
+		discardIdx := p.findFlushDrawDiscard(idx)
+		if discardIdx >= 0 {
+			return []int{discardIdx}
+		}
+	}
+
+	// ストレートドロー判定
+	if rank < PokerHandOnePair {
+		discardIdx := p.findStraightDrawDiscard(idx)
+		if discardIdx >= 0 {
+			return []int{discardIdx}
+		}
+	}
+
+	if rank == PokerHandOnePair {
+		// ワンペアならペア以外の3枚を交換
+		valueCounts := make(map[int][]int)
+		for i := 0; i < pl.GetCardsSize(); i++ {
+			v := pl.GetCard(i).GetValue()
+			valueCounts[v] = append(valueCounts[v], i)
+		}
+		indices := []int{}
+		for _, idxList := range valueCounts {
+			if len(idxList) == 1 {
+				indices = append(indices, idxList[0])
+			}
+		}
+		return indices
+	}
+
+	// ハイカードなら最も低い3枚を交換
+	// Note: ジョーカーがある場合は必ずOnePair以上になるためここに到達しない
+	type cardIdx struct {
+		idx   int
+		value int
+	}
+	cards := make([]cardIdx, pl.GetCardsSize())
+	for i := 0; i < pl.GetCardsSize(); i++ {
+		v := pl.GetCard(i).GetValue()
 		if v == 1 {
 			v = 14
 		}
-		cards[i] = straightDrawCardInfo{i, v}
+		cards[i] = cardIdx{i, v}
+	}
+	sort.Slice(cards, func(i, j int) bool {
+		return cards[i].value < cards[j].value
+	})
+	result := []int{}
+	for i := 0; i < 3 && i < len(cards); i++ {
+		result = append(result, cards[i].idx)
+	}
+	return result
+}
+
+// findFlushDrawDiscard 4枚フラッシュドローの外れカード位置を返す
+func (p *Poker) findFlushDrawDiscard(playerIdx int) int {
+	pl := p.players[playerIdx]
+	suitCounts := make(map[int]int)
+	for i := 0; i < pl.GetCardsSize(); i++ {
+		if pl.GetCard(i).GetDesign() != CardDesignJoker {
+			suitCounts[pl.GetCard(i).GetDesign()]++
+		}
+	}
+	for suit, count := range suitCounts {
+		if count == 4 {
+			for i := 0; i < pl.GetCardsSize(); i++ {
+				if pl.GetCard(i).GetDesign() != suit && pl.GetCard(i).GetDesign() != CardDesignJoker {
+					return i
+				}
+			}
+		}
+	}
+	return -1
+}
+
+// findStraightDrawDiscard 4枚ストレートドローの外れカード位置を返す
+func (p *Poker) findStraightDrawDiscard(playerIdx int) int {
+	pl := p.players[playerIdx]
+	cards := make([]straightDrawCardInfo, 0, pl.GetCardsSize())
+	for i := 0; i < pl.GetCardsSize(); i++ {
+		if pl.GetCard(i).GetDesign() == CardDesignJoker {
+			continue // ジョーカーはストレートドロー計算から除外
+		}
+		v := pl.GetCard(i).GetValue()
+		if v == 1 {
+			v = 14
+		}
+		cards = append(cards, straightDrawCardInfo{i, v})
+	}
+	if len(cards) < 5 {
+		return -1 // ジョーカーがある場合はスキップ
 	}
 	sort.Slice(cards, func(i, j int) bool {
 		return cards[i].value < cards[j].value
 	})
 
-	// オープンエンド: 両端に拡張の余地がある (2以上 and 13以下)
 	idx := findOpenEndedDraw(cards, func(r []int) bool {
 		return r[0] > 1 && r[3] < 14
 	})
@@ -520,7 +1076,6 @@ func (p *Poker) findStraightDrawDiscard() int {
 		return idx
 	}
 
-	// Ace low: A-2-3-4 のパターン (Aceを1として再評価、同じスライスを再利用)
 	for i := range cards {
 		if cards[i].value == 14 {
 			cards[i].value = 1
@@ -535,120 +1090,106 @@ func (p *Poker) findStraightDrawDiscard() int {
 	})
 }
 
-// GameJudgment ゲーム勝敗判定 (1:勝ち, 0:引き分け, -1:負け)
-func (p *Poker) GameJudgment() int {
-	if p.folded == PokerFoldByPlayer {
-		return -1 // プレイヤーフォールド
-	}
-	if p.folded == PokerFoldByDealer {
-		return 1 // ディーラーフォールド
-	}
-	playerRank := p.player.GetHandRank()
-	dealerRank := p.dealer.GetHandRank()
+// --- ゲッター ---
 
-	if playerRank > dealerRank {
-		return 1
-	} else if playerRank < dealerRank {
-		return -1
-	}
-	return p.compareHighCards()
-}
+// GetPhase フェーズ取得
+func (p *Poker) GetPhase() int { return p.phase }
 
-// compareHighCards 同ランク時のハイカード比較
-func (p *Poker) compareHighCards() int {
-	playerCards := make([]*Card, p.player.GetCardsSize())
-	for i := 0; i < p.player.GetCardsSize(); i++ {
-		playerCards[i] = p.player.GetCard(i)
-	}
-	dealerCards := make([]*Card, p.dealer.GetCardsSize())
-	for i := 0; i < p.dealer.GetCardsSize(); i++ {
-		dealerCards[i] = p.dealer.GetCard(i)
-	}
-	playerIsWheel := isWheelHand(playerCards)
-	dealerIsWheel := isWheelHand(dealerCards)
-
-	playerValues := make([]int, len(playerCards))
-	dealerValues := make([]int, len(dealerCards))
-
-	for i, c := range playerCards {
-		v := c.GetValue()
-		if v == 1 && !playerIsWheel {
-			v = 14
-		}
-		playerValues[i] = v
-	}
-	for i, c := range dealerCards {
-		v := c.GetValue()
-		if v == 1 && !dealerIsWheel {
-			v = 14
-		}
-		dealerValues[i] = v
-	}
-
-	pTB := tieBreakValues(playerValues)
-	dTB := tieBreakValues(dealerValues)
-
-	for i := 0; i < len(pTB) && i < len(dTB); i++ {
-		if pTB[i] > dTB[i] {
-			return 1
-		} else if pTB[i] < dTB[i] {
-			return -1
-		}
-	}
-	return 0
-}
-
-// GetPhase ゲームフェーズ取得
-func (p *Poker) GetPhase() int {
-	return p.phase
-}
-
-// GetPlayer プレイヤー取得
-func (p *Poker) GetPlayer() *PokerPlayer {
-	return p.player
-}
-
-// GetDealer ディーラー取得
-func (p *Poker) GetDealer() *PokerPlayer {
-	return p.dealer
-}
+// GetPlayers プレイヤー一覧取得
+func (p *Poker) GetPlayers() []*PokerPlayer { return p.players }
 
 // GetPot ポット取得
-func (p *Poker) GetPot() int {
-	return p.pot
-}
+func (p *Poker) GetPot() int { return p.pot }
 
-// GetPlayerBet プレイヤーベット取得
-func (p *Poker) GetPlayerBet() int {
-	return p.playerBet
-}
+// GetSidePots サイドポット取得
+func (p *Poker) GetSidePots() []PokerSidePot { return p.sidePots }
 
-// GetDealerBet ディーラーベット取得
-func (p *Poker) GetDealerBet() int {
-	return p.dealerBet
-}
+// GetDealerIdx ディーラーインデックス取得
+func (p *Poker) GetDealerIdx() int { return p.dealerIdx }
+
+// GetCurrentTurn 現在のターン取得
+func (p *Poker) GetCurrentTurn() int { return p.currentTurn }
+
+// GetGameEndFlag ゲーム終了フラグ取得
+func (p *Poker) GetGameEndFlag() bool { return p.gameEndFlag }
+
+// GetLastBet 最後のベット取得
+func (p *Poker) GetLastBet() int { return p.lastBet }
+
+// GetMinRaise 最小レイズ額取得
+func (p *Poker) GetMinRaise() int { return p.minRaise }
 
 // GetAnte アンティ取得
-func (p *Poker) GetAnte() int {
-	return p.ante
-}
+func (p *Poker) GetAnte() int { return p.config.Ante }
 
-// GetFolded フォールド状態取得
-func (p *Poker) GetFolded() int {
-	return p.folded
-}
+// GetRoundResults ラウンド結果取得
+func (p *Poker) GetRoundResults() []PokerResult { return p.roundResults }
+
+// GetCpuActions CPU行動記録取得
+func (p *Poker) GetCpuActions() []PokerCpuAction { return p.cpuActions }
+
+// GetCpuExchanges CPU交換記録取得
+func (p *Poker) GetCpuExchanges() []PokerCpuExchange { return p.cpuExchanges }
+
+// GetConfig 設定取得
+func (p *Poker) GetConfig() PokerConfig { return p.config }
+
+// SetConfig 設定変更
+func (p *Poker) SetConfig(cfg PokerConfig) { p.config = cfg }
+
+// GetLastCpuError 最後のCPUアクションエラー取得 (テスト・デバッグ用)
+func (p *Poker) GetLastCpuError() error { return p.lastCpuError }
+
+// --- テスト用セッター ---
 
 // SetPhase フェーズ設定（テスト用）
-func (p *Poker) SetPhase(phase int) {
-	p.phase = phase
-}
+func (p *Poker) SetPhase(phase int) { p.phase = phase }
 
-// SetFolded フォールド状態設定（テスト用）
-func (p *Poker) SetFolded(folded int) {
-	p.folded = folded
-}
+// SetCurrentTurn 現在のターン設定（テスト用）
+func (p *Poker) SetCurrentTurn(turn int) { p.currentTurn = turn }
 
-// SetDealerBet ディーラーベット設定（テスト用）
-func (p *Poker) SetDealerBet(bet int) {
-	p.dealerBet = bet
+// SetPot ポット設定（テスト用）
+func (p *Poker) SetPot(pot int) { p.pot = pot }
+
+// SetDealerIdx ディーラーインデックス設定（テスト用）
+func (p *Poker) SetDealerIdx(idx int) { p.dealerIdx = idx }
+
+// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
+func (p *Poker) SetGameEndFlag(flag bool) { p.gameEndFlag = flag }
+
+// SetActedFlags actedフラグ設定（テスト用）
+func (p *Poker) SetActedFlags(flags []bool) { p.actedFlags = flags }
+
+// SetLastBet 最後のベット設定（テスト用）
+func (p *Poker) SetLastBet(bet int) { p.lastBet = bet }
+
+// SetMinRaise 最小レイズ額設定（テスト用）
+func (p *Poker) SetMinRaise(raise int) { p.minRaise = raise }
+
+// SetRaiseCount レイズ回数設定（テスト用）
+func (p *Poker) SetRaiseCount(count int) { p.raiseCount = count }
+
+// SetRoundResults ラウンド結果設定（テスト用）
+func (p *Poker) SetRoundResults(results []PokerResult) { p.roundResults = results }
+
+// SetCpuActions CPU行動記録設定（テスト用）
+func (p *Poker) SetCpuActions(actions []PokerCpuAction) { p.cpuActions = actions }
+
+// SetCpuExchanges CPU交換記録設定（テスト用）
+func (p *Poker) SetCpuExchanges(exchanges []PokerCpuExchange) { p.cpuExchanges = exchanges }
+
+// SetSidePots サイドポット設定（テスト用）
+func (p *Poker) SetSidePots(pots []PokerSidePot) { p.sidePots = pots }
+
+// SetStartingChips ハンド開始時チップ設定（テスト用）
+func (p *Poker) SetStartingChips(chips []int) { p.startingChips = chips }
+
+// GetStartingChips ハンド開始時チップ取得（テスト用）
+func (p *Poker) GetStartingChips() []int { return p.startingChips }
+
+// GetActedFlags actedフラグ取得（テスト用）
+func (p *Poker) GetActedFlags() []bool {
+	result := make([]bool, len(p.actedFlags))
+	copy(result, p.actedFlags)
+	return result
 }

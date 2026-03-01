@@ -18,7 +18,14 @@ type PokerCui struct {
 
 // NewPokerCui コンストラクタ
 func NewPokerCui() *PokerCui {
-	poker := domain.NewPoker(domain.NewTrumpCards(0), domain.NewPokerPlayer(), domain.NewPokerPlayer())
+	config := domain.DefaultPokerConfig()
+	players := []*domain.PokerPlayer{
+		domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+		domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
+		domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
+	}
+	poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
 	return &PokerCui{
 		pc: controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, presenter.NewPokerCuiPresenter())),
 	}
@@ -37,6 +44,7 @@ func (cui *PokerCui) Exec() {
 		fmt.Println("ra [amount]・・・raise (e.g. 'ra 30')")
 		fmt.Println("ck・・・check")
 		fmt.Println("f・・・fold")
+		fmt.Println("a・・・all-in")
 		fmt.Println("e [0-4]・・・exchange (e.g. 'e 0 2 4' to exchange cards at index 0, 2, 4)")
 		fmt.Println("s・・・stand (no exchange)")
 		input, exit := readInput(scanner)

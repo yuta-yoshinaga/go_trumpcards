@@ -86,14 +86,15 @@ func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 
 type mockPokerIF struct{ mock.Mock }
 
-func (m *mockPokerIF) Reset() string           { return m.Called().String(0) }
+func (m *mockPokerIF) Reset() string { return m.Called().String(0) }
+func (m *mockPokerIF) ResetWithConfig(cfg domain.PokerConfig) string {
+	return m.Called(cfg).String(0)
+}
+func (m *mockPokerIF) Action(action int, amount int) string {
+	return m.Called(action, amount).String(0)
+}
 func (m *mockPokerIF) Exchange(i []int) string { return m.Called(i).String(0) }
 func (m *mockPokerIF) Stand() string           { return m.Called().String(0) }
-func (m *mockPokerIF) Bet(a int) string        { return m.Called(a).String(0) }
-func (m *mockPokerIF) Call() string            { return m.Called().String(0) }
-func (m *mockPokerIF) Raise(a int) string      { return m.Called(a).String(0) }
-func (m *mockPokerIF) Fold() string            { return m.Called().String(0) }
-func (m *mockPokerIF) Check() string           { return m.Called().String(0) }
 
 func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 	pkMock := &mockPokerIF{}

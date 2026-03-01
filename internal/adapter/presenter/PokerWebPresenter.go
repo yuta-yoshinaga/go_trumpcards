@@ -7,64 +7,102 @@ import (
 )
 
 // PokerWebPresenter ポーカーWebプレゼンタークラス
-type PokerWebPresenter struct {
-}
+type PokerWebPresenter struct{}
 
 // NewPokerWebPresenter コンストラクタ
 func NewPokerWebPresenter() *PokerWebPresenter {
 	return &PokerWebPresenter{}
 }
 
-// Output ゲーム状態を出力
+// Output ゲーム状態をJSON出力
 func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	resObj := new(controller.PokerWebOutput)
 	resObj.Phase = p.GetPhase()
 	resObj.Pot = p.GetPot()
+	resObj.DealerIdx = p.GetDealerIdx()
+	resObj.CurrentTurn = p.GetCurrentTurn()
+	resObj.GameEndFlag = p.GetGameEndFlag()
+	resObj.LastBet = p.GetLastBet()
+	resObj.MinRaise = p.GetMinRaise()
 	resObj.Ante = p.GetAnte()
+	resObj.JokerCount = p.GetConfig().JokerCount
 
-	// player
-	player := p.GetPlayer()
-	resObj.Player = new(controller.PokerWebOutputPlayer)
-	resObj.Player.Cards = make([]*controller.WebOutputCard, 0)
-	resObj.Player.HandRank = player.GetHandRank()
-	resObj.Player.HandName = player.GetHandName()
-	resObj.Player.Chips = player.GetChips()
-	resObj.Player.Bet = p.GetPlayerBet()
-	for i := 0; i < player.GetCardsSize(); i++ {
-		resObj.Player.Cards = append(resObj.Player.Cards, cardToOutput(player.GetCard(i)))
+	// サイドポット
+	resObj.SidePots = make([]*controller.PokerWebOutputSidePot, 0)
+	for _, sp := range p.GetSidePots() {
+		resObj.SidePots = append(resObj.SidePots, &controller.PokerWebOutputSidePot{
+			Amount:          sp.Amount,
+			EligiblePlayers: sp.EligiblePlayers,
+		})
 	}
 
-	// dealer
-	dealer := p.GetDealer()
-	resObj.Dealer = new(controller.PokerWebOutputPlayer)
-	resObj.Dealer.Cards = make([]*controller.WebOutputCard, 0)
-	resObj.Dealer.Chips = dealer.GetChips()
-	resObj.Dealer.Bet = p.GetDealerBet()
-	// エラーメッセージ
-	if lastErr != nil {
-		resObj.Message = lastErr.Error()
-	}
-
-	if p.GetPhase() == domain.PokerPhaseEnd {
-		resObj.Dealer.HandRank = dealer.GetHandRank()
-		resObj.Dealer.HandName = dealer.GetHandName()
-		for i := 0; i < dealer.GetCardsSize(); i++ {
-			resObj.Dealer.Cards = append(resObj.Dealer.Cards, cardToOutput(dealer.GetCard(i)))
+	// プレイヤー情報
+	resObj.Players = make([]*controller.PokerWebOutputPlayer, 0)
+	isEnd := p.GetPhase() == domain.PokerPhaseEnd
+	for i, player := range p.GetPlayers() {
+		pObj := &controller.PokerWebOutputPlayer{
+			ID:            i,
+			IsHuman:       player.GetIsHuman(),
+			Chips:         player.GetChips(),
+			CurrentBet:    player.GetCurrentBet(),
+			Folded:        player.GetFolded(),
+			AllIn:         player.GetAllIn(),
+			ExchangeCount: player.GetExchangeCount(),
+			PlayStyleName: player.GetPlayStyleName(),
+			Cards:         make([]*controller.WebOutputCard, 0),
 		}
-		if p.GetFolded() == domain.PokerFoldByPlayer {
-			resObj.Message = "You folded."
-		} else if p.GetFolded() == domain.PokerFoldByDealer {
-			resObj.Message = "Dealer folded. You win!"
-		} else {
-			switch p.GameJudgment() {
-			case 0:
-				resObj.Message = "It is a draw."
-			case 1:
-				resObj.Message = "You are the winner."
-			default:
-				resObj.Message = "It is your loss."
+
+		// 人間のカードは常に表示、CPUのカードは終了時のみ表示
+		if player.GetIsHuman() || (isEnd && !player.GetFolded()) {
+			for j := 0; j < player.GetCardsSize(); j++ {
+				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
 			}
 		}
+
+		// 終了時のハンド情報
+		if isEnd && !player.GetFolded() {
+			pObj.HandRank = player.GetHandRank()
+			pObj.HandName = player.GetHandName()
+		}
+
+		resObj.Players = append(resObj.Players, pObj)
+	}
+
+	// CPU行動記録
+	resObj.CpuActions = make([]*controller.PokerWebOutputCpuAction, 0)
+	for _, action := range p.GetCpuActions() {
+		resObj.CpuActions = append(resObj.CpuActions, &controller.PokerWebOutputCpuAction{
+			PlayerIdx: action.PlayerIdx,
+			Action:    action.Action,
+			Amount:    action.Amount,
+		})
+	}
+
+	// CPU交換記録
+	resObj.CpuExchanges = make([]*controller.PokerWebOutputCpuExchange, 0)
+	for _, ex := range p.GetCpuExchanges() {
+		resObj.CpuExchanges = append(resObj.CpuExchanges, &controller.PokerWebOutputCpuExchange{
+			PlayerIdx:     ex.PlayerIdx,
+			ExchangeCount: ex.ExchangeCount,
+		})
+	}
+
+	// ラウンド結果
+	resObj.RoundResults = make([]*controller.PokerWebOutputResult, 0)
+	for _, r := range p.GetRoundResults() {
+		resObj.RoundResults = append(resObj.RoundResults, &controller.PokerWebOutputResult{
+			PlayerIdx: r.PlayerIdx,
+			HandRank:  r.HandRank,
+			HandName:  r.HandName,
+			WonAmount: r.WonAmount,
+		})
+	}
+
+	// メッセージ
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else if p.GetGameEndFlag() {
+		resObj.Message = pwp.buildResultMessage(p)
 	}
 
 	res, err := jsonMarshal(resObj)
@@ -72,4 +110,30 @@ func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		return internalServerErrorJSON()
 	}
 	return string(res)
+}
+
+// buildResultMessage builds the end-of-round message
+func (pwp *PokerWebPresenter) buildResultMessage(p interfaces.PokerGame) string {
+	results := p.GetRoundResults()
+	if len(results) == 0 {
+		return "Game over."
+	}
+
+	players := p.GetPlayers()
+	for _, r := range results {
+		if players[r.PlayerIdx].GetIsHuman() {
+			if r.WonAmount > 0 {
+				return "You are the winner."
+			}
+		}
+	}
+
+	// Human folded
+	for _, pl := range players {
+		if pl.GetIsHuman() && pl.GetFolded() {
+			return "You folded."
+		}
+	}
+
+	return "You lose."
 }

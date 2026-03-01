@@ -2,241 +2,449 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestPokerWebPresenter_Method(t *testing.T) {
-	tpp := presenter.NewPokerWebPresenter()
+func makePokerForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
 	tc := domain.NewTrumpCards(0)
-	player := domain.NewPokerPlayer()
-	dealer := domain.NewPokerPlayer()
-	tp := domain.NewPoker(tc, player, dealer)
+	players := []*domain.PokerPlayer{
+		domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+		domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
+		domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
+	}
+	cfg := domain.DefaultPokerConfig()
+	p := domain.NewPoker(tc, players, cfg)
+	return p, players
+}
 
-	t.Run("success Output deal phase", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		player.AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		output := tpp.Output(tp, nil)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
+func TestPokerWebPresenter_Output(t *testing.T) {
+	pres := presenter.NewPokerWebPresenter()
+
+	t.Run("initial state deal phase", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
 		assert.NoError(t, err)
-		assert.Equal(t, domain.PokerPhaseDeal, result.Phase)
-		assert.Equal(t, 5, len(result.Player.Cards))
-		assert.Equal(t, 0, len(result.Dealer.Cards))
-		assert.Equal(t, "", result.Dealer.HandName)
-		assert.True(t, result.Pot >= 0)
-		assert.Equal(t, domain.PokerDefaultAnte, result.Ante)
+		assert.Equal(t, domain.PokerPhaseDeal, out.Phase)
+		assert.Equal(t, 4, len(out.Players))
+		assert.False(t, out.GameEndFlag)
+		assert.Equal(t, "", out.Message)
+		assert.Len(t, out.SidePots, 0)
+		assert.Len(t, out.CpuActions, 0)
+		assert.Len(t, out.CpuExchanges, 0)
+		assert.Len(t, out.RoundResults, 0)
 	})
 
-	t.Run("success Output end phase player wins", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		// Move to exchange phase
-		if tp.GetDealerBet() > 0 {
-			_ = tp.PlayerCall()
-		} else {
-			_ = tp.PlayerCheck()
-		}
-		player.Reset()
-		dealer.Reset()
-		// player: Straight Flush (3-4-5-6-7 same suit)
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		// dealer: Full House (rank >= TwoPair -> no exchange)
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		_ = tp.PlayerStand()
-		// Move to end
-		if tp.GetDealerBet() > 0 {
-			_ = tp.PlayerCall()
-		} else {
-			_ = tp.PlayerCheck()
-		}
-		output := tpp.Output(tp, nil)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
-		assert.NoError(t, err)
-		assert.Equal(t, domain.PokerPhaseEnd, result.Phase)
-		assert.Equal(t, "Straight Flush", result.Player.HandName)
-		assert.Equal(t, "Full House", result.Dealer.HandName)
-		assert.Equal(t, "You are the winner.", result.Message)
-		assert.Equal(t, 5, len(result.Dealer.Cards))
+	t.Run("human cards visible in non-end phase", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		human := out.Players[0]
+		assert.True(t, human.IsHuman)
+		assert.Len(t, human.Cards, 2)
+		assert.Equal(t, "SPADE", human.Cards[0].Design)
+		assert.Equal(t, 10, human.Cards[0].Value)
+		assert.Equal(t, "HEART", human.Cards[1].Design)
+		assert.Equal(t, 11, human.Cards[1].Value)
 	})
 
-	t.Run("success Output end phase player loses", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		if tp.GetDealerBet() > 0 {
-			_ = tp.PlayerCall()
-		} else {
-			_ = tp.PlayerCheck()
-		}
-		player.Reset()
-		dealer.Reset()
-		// player: High Card
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
-		// dealer: Full House (rank >= TwoPair -> no exchange)
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		_ = tp.PlayerStand()
-		if tp.GetDealerBet() > 0 {
-			_ = tp.PlayerCall()
-		} else {
-			_ = tp.PlayerCheck()
-		}
-		output := tpp.Output(tp, nil)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
-		assert.NoError(t, err)
-		assert.Equal(t, domain.PokerPhaseEnd, result.Phase)
-		assert.Equal(t, "It is your loss.", result.Message)
+	t.Run("CPU cards hidden before end phase", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		cpu := out.Players[1]
+		assert.False(t, cpu.IsHuman)
+		assert.Len(t, cpu.Cards, 0)
 	})
 
-	t.Run("success Output end phase draw", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		if tp.GetDealerBet() > 0 {
-			_ = tp.PlayerCall()
-		} else {
-			_ = tp.PlayerCheck()
-		}
-		player.Reset()
-		dealer.Reset()
-		// player: Two Pair
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
-		// dealer: Two Pair with same values (rank >= TwoPair -> no exchange)
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
-		_ = tp.PlayerStand()
-		if tp.GetDealerBet() > 0 {
-			_ = tp.PlayerCall()
-		} else {
-			_ = tp.PlayerCheck()
-		}
-		output := tpp.Output(tp, nil)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
-		assert.NoError(t, err)
-		assert.Equal(t, domain.PokerPhaseEnd, result.Phase)
-		assert.Equal(t, "It is a draw.", result.Message)
+	t.Run("CPU cards visible at end phase when not folded", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseEnd)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].SetHandRank(domain.PokerHandTwoPair)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		cpu := out.Players[1]
+		assert.Len(t, cpu.Cards, 5)
+		assert.Equal(t, "SPADE", cpu.Cards[0].Design)
+		assert.Equal(t, domain.PokerHandTwoPair, cpu.HandRank)
+		assert.Equal(t, "Two Pair", cpu.HandName)
 	})
 
-	t.Run("success Output fold phase player folds", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		_ = tp.PlayerFold()
-		output := tpp.Output(tp, nil)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
-		assert.NoError(t, err)
-		assert.Equal(t, domain.PokerPhaseEnd, result.Phase)
-		assert.Equal(t, "You folded.", result.Message)
+	t.Run("folded CPU cards hidden at end phase", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseEnd)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].SetFolded(true)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		cpu := out.Players[1]
+		assert.Len(t, cpu.Cards, 0)
+		assert.Equal(t, 0, cpu.HandRank)
+		assert.Equal(t, "", cpu.HandName)
 	})
 
-	t.Run("success Output includes chip and bet info", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		output := tpp.Output(tp, nil)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
-		assert.NoError(t, err)
-		assert.True(t, result.Player.Chips >= 0)
-		assert.True(t, result.Dealer.Chips >= 0)
-		assert.True(t, result.Pot >= 0)
-		assert.Equal(t, domain.PokerDefaultAnte, result.Ante)
+	t.Run("hand rank and name only shown at end phase", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		players[1].SetHandRank(domain.PokerHandFlush)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		cpu := out.Players[1]
+		assert.Equal(t, 0, cpu.HandRank)
+		assert.Equal(t, "", cpu.HandName)
 	})
 
-	t.Run("success Output displays error message in JSON", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		testErr := domain.NewDomainError(domain.ErrWrongPhase, "Bet is not allowed now.")
-		output := tpp.Output(tp, testErr)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
-		assert.NoError(t, err)
-		assert.Equal(t, "Bet is not allowed now.", result.Message)
+	t.Run("player fields", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		players[0].SetChips(500)
+		players[0].SetCurrentBet(20)
+		players[0].SetFolded(false)
+		players[0].SetAllIn(false)
+		players[0].SetExchangeCount(3)
+		players[2].SetFolded(true)
+		players[3].SetAllIn(true)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 0, out.Players[0].ID)
+		assert.True(t, out.Players[0].IsHuman)
+		assert.Equal(t, 500, out.Players[0].Chips)
+		assert.Equal(t, 20, out.Players[0].CurrentBet)
+		assert.False(t, out.Players[0].Folded)
+		assert.False(t, out.Players[0].AllIn)
+		assert.Equal(t, 3, out.Players[0].ExchangeCount)
+
+		assert.True(t, out.Players[2].Folded)
+		assert.True(t, out.Players[3].AllIn)
 	})
 
-	t.Run("success Output dealer fold", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		tp.SetPhase(domain.PokerPhaseEnd)
-		tp.SetFolded(domain.PokerFoldByDealer)
-		output := tpp.Output(tp, nil)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
-		assert.NoError(t, err)
-		assert.Equal(t, domain.PokerPhaseEnd, result.Phase)
-		assert.Equal(t, "Dealer folded. You win!", result.Message)
+	t.Run("playStyleName included", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.NotEmpty(t, out.Players[1].PlayStyleName)
 	})
 
-	t.Run("success Output dealer cards hidden in non-end phase", func(t *testing.T) {
-		player.SetChips(0)
-		dealer.SetChips(0)
-		tp.Reset()
-		player.Reset()
-		dealer.Reset()
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		player.AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
-		player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
-		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
-		player.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
-		dealer.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-		output := tpp.Output(tp, nil)
-		var result controller.PokerWebOutput
-		err := json.Unmarshal([]byte(output), &result)
-		assert.NoError(t, err)
-		// In non-end phase, dealer cards should be empty
-		assert.Equal(t, 0, len(result.Dealer.Cards))
-		assert.Equal(t, "", result.Dealer.HandName)
+	t.Run("pot and game fields", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseSecondBet)
+		p.SetPot(300)
+		p.SetDealerIdx(2)
+		p.SetCurrentTurn(1)
+		p.SetLastBet(50)
+		p.SetMinRaise(100)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 300, out.Pot)
+		assert.Equal(t, 2, out.DealerIdx)
+		assert.Equal(t, 1, out.CurrentTurn)
+		assert.Equal(t, 50, out.LastBet)
+		assert.Equal(t, 100, out.MinRaise)
+		assert.Equal(t, domain.PokerPhaseSecondBet, out.Phase)
+	})
+
+	t.Run("ante and jokerCount from config", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 10, out.Ante)
+		assert.Equal(t, 0, out.JokerCount)
+	})
+
+	t.Run("side pots", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseEnd)
+		p.SetSidePots([]domain.PokerSidePot{
+			{Amount: 100, EligiblePlayers: []int{0, 1}},
+			{Amount: 50, EligiblePlayers: []int{0}},
+		})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Len(t, out.SidePots, 2)
+		assert.Equal(t, 100, out.SidePots[0].Amount)
+		assert.Equal(t, []int{0, 1}, out.SidePots[0].EligiblePlayers)
+		assert.Equal(t, 50, out.SidePots[1].Amount)
+		assert.Equal(t, []int{0}, out.SidePots[1].EligiblePlayers)
+	})
+
+	t.Run("CPU actions", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		p.SetCpuActions([]domain.PokerCpuAction{
+			{PlayerIdx: 1, Action: domain.PokerActionCall, Amount: 10},
+			{PlayerIdx: 2, Action: domain.PokerActionFold, Amount: 0},
+		})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Len(t, out.CpuActions, 2)
+		assert.Equal(t, 1, out.CpuActions[0].PlayerIdx)
+		assert.Equal(t, domain.PokerActionCall, out.CpuActions[0].Action)
+		assert.Equal(t, 10, out.CpuActions[0].Amount)
+		assert.Equal(t, 2, out.CpuActions[1].PlayerIdx)
+		assert.Equal(t, domain.PokerActionFold, out.CpuActions[1].Action)
+	})
+
+	t.Run("CPU exchanges", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseExchange)
+		p.SetCpuExchanges([]domain.PokerCpuExchange{
+			{PlayerIdx: 1, ExchangeCount: 3},
+			{PlayerIdx: 2, ExchangeCount: 0},
+		})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Len(t, out.CpuExchanges, 2)
+		assert.Equal(t, 1, out.CpuExchanges[0].PlayerIdx)
+		assert.Equal(t, 3, out.CpuExchanges[0].ExchangeCount)
+		assert.Equal(t, 2, out.CpuExchanges[1].PlayerIdx)
+		assert.Equal(t, 0, out.CpuExchanges[1].ExchangeCount)
+	})
+
+	t.Run("round results", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseEnd)
+		p.SetRoundResults([]domain.PokerResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 200},
+			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0},
+		})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Len(t, out.RoundResults, 2)
+		assert.Equal(t, 0, out.RoundResults[0].PlayerIdx)
+		assert.Equal(t, domain.PokerHandFlush, out.RoundResults[0].HandRank)
+		assert.Equal(t, "Flush", out.RoundResults[0].HandName)
+		assert.Equal(t, 200, out.RoundResults[0].WonAmount)
+		assert.Equal(t, 1, out.RoundResults[1].PlayerIdx)
+		assert.Equal(t, 0, out.RoundResults[1].WonAmount)
+	})
+
+	t.Run("error message", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, errors.New("invalid action"))
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "invalid action", out.Message)
+	})
+
+	t.Run("error message takes priority over game end", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetGameEndFlag(true)
+
+		result := pres.Output(p, errors.New("some error"))
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "some error", out.Message)
+	})
+
+	t.Run("game end message - human wins", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseEnd)
+		p.SetGameEndFlag(true)
+		p.SetRoundResults([]domain.PokerResult{
+			{PlayerIdx: 0, WonAmount: 100},
+		})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "You are the winner.", out.Message)
+	})
+
+	t.Run("game end message - human loses", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseEnd)
+		p.SetGameEndFlag(true)
+		p.SetRoundResults([]domain.PokerResult{
+			{PlayerIdx: 0, WonAmount: 0},
+			{PlayerIdx: 1, WonAmount: 100},
+		})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "You lose.", out.Message)
+	})
+
+	t.Run("game end message - human folded", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseEnd)
+		p.SetGameEndFlag(true)
+		players[0].SetFolded(true)
+		p.SetRoundResults([]domain.PokerResult{
+			{PlayerIdx: 1, WonAmount: 100},
+		})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "You folded.", out.Message)
+	})
+
+	t.Run("game end message - no results", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetGameEndFlag(true)
+		p.SetRoundResults([]domain.PokerResult{})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "Game over.", out.Message)
+	})
+
+	t.Run("game end - human in results with zero won (not winner)", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseEnd)
+		p.SetGameEndFlag(true)
+		// Human has WonAmount 0 - loop continues, then falls to "You lose."
+		p.SetRoundResults([]domain.PokerResult{
+			{PlayerIdx: 0, WonAmount: 0},
+		})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "You lose.", out.Message)
+	})
+
+	t.Run("no message when not game end and no error", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		p.SetGameEndFlag(false)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "", out.Message)
+	})
+
+	t.Run("exchange phase", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseExchange)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, domain.PokerPhaseExchange, out.Phase)
+		assert.Len(t, out.Players[0].Cards, 5)
+	})
+
+	t.Run("empty side pots and cpu actions", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		p.SetSidePots([]domain.PokerSidePot{})
+		p.SetCpuActions([]domain.PokerCpuAction{})
+		p.SetCpuExchanges([]domain.PokerCpuExchange{})
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Len(t, out.SidePots, 0)
+		assert.Len(t, out.CpuActions, 0)
+		assert.Len(t, out.CpuExchanges, 0)
+	})
+
+	t.Run("human folded but still visible cards", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].SetFolded(true)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		// Human cards visible (isHuman branch is true)
+		assert.Len(t, out.Players[0].Cards, 1)
+	})
+
+	t.Run("init phase", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseInit)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, domain.PokerPhaseInit, out.Phase)
 	})
 }

@@ -1,6 +1,7 @@
 package usecase_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,113 +12,160 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
 
-func newTestPoker() *domain.Poker {
-	return domain.NewPoker(domain.NewTrumpCards(0), domain.NewPokerPlayer(), domain.NewPokerPlayer())
+func TestNewPokerInteractor(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+	assert.NotNil(t, pi)
 }
 
-func TestNewPokerInteractor_NilGuards(t *testing.T) {
-	ppMock := new(presenter.MockPokerPresenter)
-	t.Run("panics when p is nil", func(t *testing.T) {
-		assert.PanicsWithValue(t, "PokerInteractor: p must not be nil", func() {
-			usecase.NewPokerInteractor(nil, ppMock)
-		})
-	})
-	t.Run("panics when pp is nil", func(t *testing.T) {
-		assert.PanicsWithValue(t, "PokerInteractor: pp must not be nil", func() {
-			usecase.NewPokerInteractor(newTestPoker(), nil)
-		})
+func TestNewPokerInteractor_NilGame(t *testing.T) {
+	mp := new(presenter.MockPokerPresenter)
+	assert.PanicsWithValue(t, "PokerInteractor: p must not be nil", func() {
+		usecase.NewPokerInteractor(nil, mp)
 	})
 }
 
-func TestPokerInteractor_Method(t *testing.T) {
-	mockOutput := `{"dealer":{"handRank":0,"handName":"High Card","cards":[]},"player":{"handRank":0,"handName":"High Card","cards":[]},"phase":1,"message":"","pot":20,"ante":10}`
-	ppMock := new(presenter.MockPokerPresenter)
-	ppMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	tpi := usecase.NewPokerInteractor(newTestPoker(), ppMock)
-
-	t.Run("success Reset", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Reset())
-	})
-	t.Run("success Exchange", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Exchange([]int{0, 1}))
-	})
-	t.Run("success Exchange empty indices", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Exchange([]int{}))
-	})
-	t.Run("success Stand", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Stand())
-	})
-	t.Run("success Bet", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Bet(10))
-	})
-	t.Run("success Call", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Call())
-	})
-	t.Run("success Raise", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Raise(20))
-	})
-	t.Run("success Fold", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Fold())
-	})
-	t.Run("success Check", func(t *testing.T) {
-		assert.Equal(t, mockOutput, tpi.Check())
+func TestNewPokerInteractor_NilPresenter(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	assert.PanicsWithValue(t, "PokerInteractor: pp must not be nil", func() {
+		usecase.NewPokerInteractor(mg, nil)
 	})
 }
 
-func TestPokerInteractor_MockGame(t *testing.T) {
-	mockOutput := `{"phase":0}`
-	ppMock := new(presenter.MockPokerPresenter)
-	ppMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
-	gameMock := new(interfaces.MockPokerGame)
-	gameMock.On("Reset").Return()
-	gameMock.On("PlayerBet", mock.Anything).Return(nil)
-	gameMock.On("PlayerCall").Return(nil)
-	gameMock.On("PlayerRaise", mock.Anything).Return(nil)
-	gameMock.On("PlayerFold").Return(nil)
-	gameMock.On("PlayerCheck").Return(nil)
-	gameMock.On("PlayerExchange", mock.Anything).Return(nil)
-	gameMock.On("PlayerStand").Return(nil)
+func TestPokerInteractor_Reset(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
 
-	pi := usecase.NewPokerInteractor(gameMock, ppMock)
+	mg.On("Reset").Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("reset output")
 
-	t.Run("Reset calls game.Reset", func(t *testing.T) {
-		result := pi.Reset()
-		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "Reset")
-	})
-	t.Run("Bet calls game.PlayerBet", func(t *testing.T) {
-		result := pi.Bet(100)
-		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "PlayerBet", 100)
-	})
-	t.Run("Call calls game.PlayerCall", func(t *testing.T) {
-		result := pi.Call()
-		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "PlayerCall")
-	})
-	t.Run("Raise calls game.PlayerRaise", func(t *testing.T) {
-		result := pi.Raise(50)
-		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "PlayerRaise", 50)
-	})
-	t.Run("Fold calls game.PlayerFold", func(t *testing.T) {
-		result := pi.Fold()
-		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "PlayerFold")
-	})
-	t.Run("Check calls game.PlayerCheck", func(t *testing.T) {
-		result := pi.Check()
-		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "PlayerCheck")
-	})
-	t.Run("Exchange calls game.PlayerExchange", func(t *testing.T) {
-		result := pi.Exchange([]int{0, 2})
-		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "PlayerExchange", []int{0, 2})
-	})
-	t.Run("Stand calls game.PlayerStand", func(t *testing.T) {
-		result := pi.Stand()
-		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "PlayerStand")
-	})
+	result := pi.Reset()
+	assert.Equal(t, "reset output", result)
+	mg.AssertCalled(t, "Reset")
+}
+
+func TestPokerInteractor_Reset_Error(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	err := errors.New("reset failed")
+	mg.On("Reset").Return(err)
+	mp.On("Output", mg, err).Return("error output")
+
+	result := pi.Reset()
+	assert.Equal(t, "error output", result)
+}
+
+func TestPokerInteractor_ResetWithConfig(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	cfg := domain.PokerConfig{InitChips: 2000, Ante: 20, MinBet: 20, CpuCount: 2, JokerCount: 1}
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("reset with config output")
+
+	result := pi.ResetWithConfig(cfg)
+	assert.Equal(t, "reset with config output", result)
+	mg.AssertCalled(t, "SetConfig", cfg)
+	mg.AssertCalled(t, "Reset")
+}
+
+func TestPokerInteractor_ResetWithConfig_Error(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	cfg := domain.PokerConfig{InitChips: 1000, Ante: 10, MinBet: 10, CpuCount: 3, JokerCount: 0}
+	err := errors.New("reset failed")
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(err)
+	mp.On("Output", mg, err).Return("error output")
+
+	result := pi.ResetWithConfig(cfg)
+	assert.Equal(t, "error output", result)
+}
+
+func TestPokerInteractor_Action(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	mg.On("PlayerAction", domain.PokerActionCheck, 0).Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("action output")
+
+	result := pi.Action(domain.PokerActionCheck, 0)
+	assert.Equal(t, "action output", result)
+	mg.AssertCalled(t, "PlayerAction", domain.PokerActionCheck, 0)
+}
+
+func TestPokerInteractor_Action_Error(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	err := errors.New("action failed")
+	mg.On("PlayerAction", domain.PokerActionBet, 50).Return(err)
+	mp.On("Output", mg, err).Return("error output")
+
+	result := pi.Action(domain.PokerActionBet, 50)
+	assert.Equal(t, "error output", result)
+}
+
+func TestPokerInteractor_Exchange(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	indices := []int{0, 2, 4}
+	mg.On("PlayerExchange", indices).Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("exchange output")
+
+	result := pi.Exchange(indices)
+	assert.Equal(t, "exchange output", result)
+	mg.AssertCalled(t, "PlayerExchange", indices)
+}
+
+func TestPokerInteractor_Exchange_Error(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	indices := []int{1}
+	err := errors.New("exchange failed")
+	mg.On("PlayerExchange", indices).Return(err)
+	mp.On("Output", mg, err).Return("error output")
+
+	result := pi.Exchange(indices)
+	assert.Equal(t, "error output", result)
+}
+
+func TestPokerInteractor_Stand(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	mg.On("PlayerStand").Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("stand output")
+
+	result := pi.Stand()
+	assert.Equal(t, "stand output", result)
+	mg.AssertCalled(t, "PlayerStand")
+}
+
+func TestPokerInteractor_Stand_Error(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	err := errors.New("stand failed")
+	mg.On("PlayerStand").Return(err)
+	mp.On("Output", mg, err).Return("error output")
+
+	result := pi.Stand()
+	assert.Equal(t, "error output", result)
 }

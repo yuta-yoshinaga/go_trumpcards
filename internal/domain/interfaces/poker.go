@@ -2,26 +2,28 @@ package interfaces
 
 import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
-// PokerGame ポーカーゲームインタフェース
+// PokerGame ポーカーゲームインタフェース (マルチプレイヤー)
 type PokerGame interface {
 	// interactor が呼ぶメソッド
-	Reset()
+	Reset() error
+	PlayerAction(action, amount int) error
 	PlayerExchange(indices []int) error
 	PlayerStand() error
-	PlayerBet(amount int) error
-	PlayerCall() error
-	PlayerRaise(amount int) error
-	PlayerFold() error
-	PlayerCheck() error
 
 	// presenter が呼ぶメソッド
-	GetPlayer() *domain.PokerPlayer
-	GetDealer() *domain.PokerPlayer
-	GetPot() int
-	GetPlayerBet() int
-	GetDealerBet() int
+	GetPlayers() []*domain.PokerPlayer
 	GetPhase() int
-	GetFolded() int
+	GetPot() int
+	GetSidePots() []domain.PokerSidePot
+	GetDealerIdx() int
+	GetCurrentTurn() int
+	GetGameEndFlag() bool
+	GetLastBet() int
+	GetMinRaise() int
 	GetAnte() int
-	GameJudgment() int
+	GetRoundResults() []domain.PokerResult
+	GetCpuActions() []domain.PokerCpuAction
+	GetCpuExchanges() []domain.PokerCpuExchange
+	GetConfig() domain.PokerConfig
+	SetConfig(cfg domain.PokerConfig)
 }
