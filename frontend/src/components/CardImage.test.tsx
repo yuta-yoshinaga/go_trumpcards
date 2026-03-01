@@ -64,6 +64,48 @@ describe('CardImage', () => {
     render(<CardImage card={card} />);
     expect(screen.getByRole('img')).toHaveStyle({ width: '80px' });
   });
+
+  it('sets draggable attribute when draggable prop is true', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    render(<CardImage card={card} draggable />);
+    expect(screen.getByRole('img')).toHaveAttribute('draggable', 'true');
+  });
+
+  it('does not set draggable when prop is omitted', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    render(<CardImage card={card} />);
+    expect(screen.getByRole('img')).not.toHaveAttribute('draggable', 'true');
+  });
+
+  it('fires onDragStart event handler', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    const onDragStart = vi.fn();
+    render(<CardImage card={card} draggable onDragStart={onDragStart} />);
+    const img = screen.getByRole('img');
+    const event = new Event('dragstart', { bubbles: true });
+    img.dispatchEvent(event);
+    expect(onDragStart).toHaveBeenCalledTimes(1);
+  });
+
+  it('fires onDragOver event handler', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    const onDragOver = vi.fn();
+    render(<CardImage card={card} onDragOver={onDragOver} />);
+    const img = screen.getByRole('img');
+    const event = new Event('dragover', { bubbles: true });
+    img.dispatchEvent(event);
+    expect(onDragOver).toHaveBeenCalledTimes(1);
+  });
+
+  it('fires onDrop event handler', () => {
+    const card: Card = { design: 'SPADE', value: 1 };
+    const onDrop = vi.fn();
+    render(<CardImage card={card} onDrop={onDrop} />);
+    const img = screen.getByRole('img');
+    const event = new Event('drop', { bubbles: true });
+    img.dispatchEvent(event);
+    expect(onDrop).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('CardBack', () => {

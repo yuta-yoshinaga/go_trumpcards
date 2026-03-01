@@ -1170,3 +1170,118 @@ func TestOldMaid_ArrangeTargetForHumanDraw_CoversEdgePlacements(t *testing.T) {
 	assert.True(t, frontHit, "Joker should sometimes be placed at front (position 0)")
 	assert.True(t, backHit, "Joker should sometimes be placed at back (position size-1)")
 }
+
+func TestOldMaid_ShuffleHumanHand(t *testing.T) {
+	makePlayers := func() []*domain.OldMaidPlayer {
+		return []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+	}
+
+	t.Run("success shuffles human hand", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		// Give human multiple cards
+		for i := 2; i <= 10; i++ {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, i, false))
+		}
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+		err := om.ShuffleHumanHand()
+		assert.NoError(t, err)
+		assert.Equal(t, 9, players[0].GetCardsSize())
+	})
+
+	t.Run("error game ended", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		om.SetGameEndFlag(true)
+
+		err := om.ShuffleHumanHand()
+		assert.ErrorIs(t, err, domain.ErrGameEnded)
+	})
+
+	t.Run("error no human player", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		cpuPlayers := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, cpuPlayers)
+		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+		err := om.ShuffleHumanHand()
+		assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
+	})
+}
+
+func TestOldMaid_ReorderHumanHand(t *testing.T) {
+	makePlayers := func() []*domain.OldMaidPlayer {
+		return []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+	}
+
+	t.Run("success reorders human hand", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+
+		err := om.ReorderHumanHand([]int{2, 0, 1})
+		assert.NoError(t, err)
+		assert.Equal(t, 7, players[0].GetCard(0).GetValue())
+		assert.Equal(t, 2, players[0].GetCard(1).GetValue())
+		assert.Equal(t, 5, players[0].GetCard(2).GetValue())
+	})
+
+	t.Run("error game ended", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		om.SetGameEndFlag(true)
+
+		err := om.ReorderHumanHand([]int{0})
+		assert.ErrorIs(t, err, domain.ErrGameEnded)
+	})
+
+	t.Run("error no human player", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		cpuPlayers := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, cpuPlayers)
+		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+		err := om.ReorderHumanHand([]int{0})
+		assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
+	})
+
+	t.Run("error invalid indices", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+
+		err := om.ReorderHumanHand([]int{0, 0})
+		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
+	})
+}

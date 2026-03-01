@@ -19,15 +19,32 @@ interface CardImageProps {
   width?: number;
   style?: React.CSSProperties;
   className?: string;
+  draggable?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent) => void;
 }
 
-export function CardImage({ card, width, style, className }: CardImageProps) {
+export function CardImage({
+  card,
+  width,
+  style,
+  className,
+  draggable,
+  onDragStart,
+  onDragOver,
+  onDrop,
+}: CardImageProps) {
   return (
     <img
       src={getImagePath(card)}
       alt={cardAlt(card)}
       style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
     />
   );
 }

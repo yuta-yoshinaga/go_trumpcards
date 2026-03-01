@@ -127,6 +127,54 @@ func TestOldMaidInteractor_Draw_PlayerDrawError(t *testing.T) {
 	gameMock.AssertNotCalled(t, "ArrangeTargetForHumanDraw")
 }
 
+func TestOldMaidInteractor_Shuffle(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	ompMock := new(presenter.MockOldMaidPresenter)
+	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+
+	t.Run("success calls ShuffleHumanHand", func(t *testing.T) {
+		gameMock := new(interfaces.MockOldMaidGame)
+		gameMock.On("ShuffleHumanHand").Return(nil)
+		oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+		result := oi.Shuffle()
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "ShuffleHumanHand")
+	})
+
+	t.Run("error propagates to Output", func(t *testing.T) {
+		gameMock := new(interfaces.MockOldMaidGame)
+		gameMock.On("ShuffleHumanHand").Return(domain.ErrGameEnded)
+		oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+		result := oi.Shuffle()
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "ShuffleHumanHand")
+	})
+}
+
+func TestOldMaidInteractor_Reorder(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	ompMock := new(presenter.MockOldMaidPresenter)
+	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+
+	t.Run("success calls ReorderHumanHand", func(t *testing.T) {
+		gameMock := new(interfaces.MockOldMaidGame)
+		gameMock.On("ReorderHumanHand", []int{2, 0, 1}).Return(nil)
+		oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+		result := oi.Reorder([]int{2, 0, 1})
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "ReorderHumanHand", []int{2, 0, 1})
+	})
+
+	t.Run("error propagates to Output", func(t *testing.T) {
+		gameMock := new(interfaces.MockOldMaidGame)
+		gameMock.On("ReorderHumanHand", []int{0, 0}).Return(domain.ErrInvalidIndices)
+		oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+		result := oi.Reorder([]int{0, 0})
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "ReorderHumanHand", []int{0, 0})
+	})
+}
+
 func TestOldMaidInteractor_Draw_GameEndsAfterCpuTurns(t *testing.T) {
 	// Game ends during runCpuTurns → ArrangeTargetForHumanDraw called but game ended
 	mockOutput := `{"players":[]}`

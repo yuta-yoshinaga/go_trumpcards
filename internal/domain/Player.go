@@ -47,6 +47,28 @@ func (p *Player) ShuffleCards() {
 	})
 }
 
+// ReorderCards indices で指定された順番に手札を並び替える。
+// indices は [0, len(cards)) の有効な順列でなければならない。
+func (p *Player) ReorderCards(indices []int) error {
+	n := len(p.cards)
+	if len(indices) != n {
+		return ErrInvalidIndices
+	}
+	used := make([]bool, n)
+	for _, idx := range indices {
+		if idx < 0 || idx >= n || used[idx] {
+			return ErrInvalidIndices
+		}
+		used[idx] = true
+	}
+	newCards := make([]*Card, n)
+	for i, idx := range indices {
+		newCards[i] = p.cards[idx]
+	}
+	p.cards = newCards
+	return nil
+}
+
 // PrependCard カードを手札の先頭に追加
 func (p *Player) PrependCard(card *Card) {
 	p.cards = append([]*Card{card}, p.cards...)

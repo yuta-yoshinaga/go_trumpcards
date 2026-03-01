@@ -12,6 +12,8 @@ type OldMaidGame interface {
 	IsHumanTurn() bool
 	PlayerDraw(cardIdx int) error
 	CpuDraw() error
+	ShuffleHumanHand() error
+	ReorderHumanHand(indices []int) error
 
 	// presenter が呼ぶメソッド
 	GetPlayerCnt() int

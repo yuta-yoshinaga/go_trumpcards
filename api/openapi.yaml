@@ -1361,8 +1361,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
-            `quit` (`q`).
-          enum: [r, reset, d, draw, q, quit]
+            `shuffle` (`s`), `reorder`, `quit` (`q`).
+          enum: [r, reset, d, draw, s, shuffle, reorder, q, quit]
           example: draw
         drawIdx:
           type: integer
@@ -1372,6 +1372,17 @@ components:
           nullable: true
           minimum: 0
           example: 1
+        reorderIndices:
+          type: array
+          description: |
+            Permutation of indices for reordering the human player's hand.
+            Required when command is `reorder`. Must be a valid permutation of
+            `[0, 1, ..., handSize-1]`.
+          nullable: true
+          items:
+            type: integer
+            minimum: 0
+          example: [2, 0, 1]
         mode:
           type: integer
           description: Game mode (0=Normal/ババ抜き, 1=JijiNuki/ジジ抜き)

@@ -21,6 +21,8 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	omiMock.On("Reset", mock.Anything).Return(mockOutput).Times(3)
 	omiMock.On("Draw", -1).Return(mockOutput)
 	omiMock.On("Draw", 2).Return(mockOutput)
+	omiMock.On("Shuffle").Return(mockOutput)
+	omiMock.On("Reorder", mock.Anything).Return(mockOutput)
 
 	factory := func() uc.OldMaidInteractorIF { return omiMock }
 	towc := controller.NewOldMaidWebController(factory)
@@ -116,6 +118,46 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
+	})
+	t.Run("success Exec s (shuffle)", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "s", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec shuffle", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "shuffle", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("success Exec reorder with indices", func(t *testing.T) {
+		input := controller.OldMaidWebInput{
+			Command:        "reorder",
+			ReorderIndices: []int{2, 0, 1},
+			SessionId:      "test-session-1",
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockOutput)
+	})
+	t.Run("failed Exec reorder without indices", func(t *testing.T) {
+		_ = json.Unmarshal([]byte(`{"command": "reorder", "sessionId": "test-session-1"}`), &jsonInput)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &jsonInput)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusBadRequest)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error: reorderIndices is required."}`)
 	})
 	t.Run("failed Exec reset with invalid mode negative", func(t *testing.T) {
 		input := controller.OldMaidWebInput{

@@ -402,6 +402,41 @@ func (o *OldMaid) ArrangeTargetForHumanDraw() {
 	}
 }
 
+// findHumanPlayer 人間プレイヤーを検索する
+func (o *OldMaid) findHumanPlayer() *OldMaidPlayer {
+	for _, p := range o.players {
+		if p.GetIsHuman() {
+			return p
+		}
+	}
+	return nil
+}
+
+// ShuffleHumanHand 人間プレイヤーの手札をシャッフルする
+func (o *OldMaid) ShuffleHumanHand() error {
+	if o.gameEndFlag {
+		return ErrGameEnded
+	}
+	human := o.findHumanPlayer()
+	if human == nil {
+		return ErrNotHumanTurn
+	}
+	human.ShuffleCards()
+	return nil
+}
+
+// ReorderHumanHand 人間プレイヤーの手札を指定された順番に並び替える
+func (o *OldMaid) ReorderHumanHand(indices []int) error {
+	if o.gameEndFlag {
+		return ErrGameEnded
+	}
+	human := o.findHumanPlayer()
+	if human == nil {
+		return ErrNotHumanTurn
+	}
+	return human.ReorderCards(indices)
+}
+
 // IsHumanTurn 現在の手番が人間かどうか
 func (o *OldMaid) IsHumanTurn() bool {
 	return o.players[o.currentTurn].GetIsHuman()

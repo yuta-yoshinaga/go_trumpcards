@@ -727,6 +727,162 @@ describe('OldMaidPage', () => {
     });
   });
 
+  it('shuffle button is rendered and enabled when game is active', async () => {
+    await startGame();
+    const btn = screen.getByRole('button', { name: 'シャッフル' });
+    expect(btn).not.toBeDisabled();
+  });
+
+  it('shuffle button is disabled when game has ended', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    await startGame();
+    const btn = screen.getByRole('button', { name: 'シャッフル' });
+    expect(btn).toBeDisabled();
+  });
+
+  it('shuffle button is disabled while loading', async () => {
+    await startGame();
+    let resolve!: (value: OldMaidResponse) => void;
+    const slowPromise = new Promise<OldMaidResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
+    expect(screen.getByRole('button', { name: 'シャッフル' })).toBeDisabled();
+    resolve(humanTurnState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'シャッフル' })).not.toBeDisabled());
+  });
+
+  it('shuffle button calls shuffle API and updates state', async () => {
+    await startGame();
+    mockExec.mockClear();
+    const shuffledState: OldMaidResponse = {
+      ...humanTurnState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 3,
+          cards: [
+            { design: 'JOKER', value: 0 },
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 2 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 4, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, cardCount: 2, cards: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(shuffledState);
+    fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('shuffle'));
+  });
+
+  it('shuffle shows error on API failure', async () => {
+    await startGame();
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  });
+
+  it('human cards are draggable when game is active', async () => {
+    await startGame();
+    const humanCards = screen.getAllByAltText(/♠ A|♥ 2|ジョーカー/);
+    for (const card of humanCards) {
+      expect(card).toHaveAttribute('draggable', 'true');
+    }
+  });
+
+  it('human cards are not draggable when game has ended', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    await startGame();
+    const humanCards = screen.getAllByAltText(/♠ A|♥ 2|ジョーカー/);
+    for (const card of humanCards) {
+      expect(card).not.toHaveAttribute('draggable', 'true');
+    }
+  });
+
+  it('drag and drop reorders cards via API', async () => {
+    await startGame();
+    mockExec.mockClear();
+    const reorderedState: OldMaidResponse = {
+      ...humanTurnState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 3,
+          cards: [
+            { design: 'HEART', value: 2 },
+            { design: 'SPADE', value: 1 },
+            { design: 'JOKER', value: 0 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: false, cardCount: 4, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, cardCount: 2, cards: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(reorderedState);
+
+    const cards = screen.getAllByAltText(/♠ A|♥ 2|ジョーカー/);
+    // Drag card at index 0 to index 1
+    fireEvent.dragStart(cards[0], { dataTransfer: { setData: vi.fn() } });
+    fireEvent.dragOver(cards[1]);
+    fireEvent.drop(cards[1], {
+      dataTransfer: { getData: () => '0' },
+    });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reorder', undefined, undefined, undefined, [1, 0, 2]));
+  });
+
+  it('drag and drop same position is no-op', async () => {
+    await startGame();
+    mockExec.mockClear();
+
+    const cards = screen.getAllByAltText(/♠ A|♥ 2|ジョーカー/);
+    // Drag card at index 0 to same index 0
+    fireEvent.dragStart(cards[0], { dataTransfer: { setData: vi.fn() } });
+    fireEvent.dragOver(cards[0]);
+    fireEvent.drop(cards[0], {
+      dataTransfer: { getData: () => '0' },
+    });
+
+    // Should NOT call API since from === to
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('drag and drop with empty data is no-op', async () => {
+    await startGame();
+    mockExec.mockClear();
+
+    const cards = screen.getAllByAltText(/♠ A|♥ 2|ジョーカー/);
+    fireEvent.drop(cards[1], {
+      dataTransfer: { getData: () => '' },
+    });
+
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('reorder shows error on API failure', async () => {
+    await startGame();
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+
+    const cards = screen.getAllByAltText(/♠ A|♥ 2|ジョーカー/);
+    fireEvent.drop(cards[1], {
+      dataTransfer: { getData: () => '0' },
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  });
+
   it('goes directly to CPU replay when humanAction is null', async () => {
     const directCpuState: OldMaidResponse = {
       ...humanTurnState,
