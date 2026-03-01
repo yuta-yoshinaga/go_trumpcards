@@ -31,7 +31,7 @@ describe('CardImage', () => {
   it('renders alt text with design and value', () => {
     const card: Card = { design: 'DIAMOND', value: 7 };
     render(<CardImage card={card} />);
-    expect(screen.getByRole('img')).toHaveAttribute('alt', 'DIAMOND 7');
+    expect(screen.getByRole('img')).toHaveAttribute('alt', '♦ 7');
   });
 
   it('applies custom className', () => {
@@ -71,7 +71,7 @@ describe('CardBack', () => {
     render(<CardBack />);
     const img = screen.getByRole('img');
     expect(img).toHaveAttribute('src', '/images/z01.png');
-    expect(img).toHaveAttribute('alt', 'card back');
+    expect(img).toHaveAttribute('alt', 'カード裏面');
   });
 
   it('applies custom className', () => {
@@ -82,7 +82,7 @@ describe('CardBack', () => {
   it('calls onClick when clicked', async () => {
     const onClick = vi.fn();
     render(<CardBack onClick={onClick} />);
-    screen.getByRole('button', { name: 'card back' }).click();
+    screen.getByRole('button', { name: 'カード裏面' }).click();
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
@@ -94,7 +94,7 @@ describe('CardBack', () => {
 
   it('shows pointer cursor when onClick is provided', () => {
     render(<CardBack onClick={() => undefined} />);
-    const img = screen.getByRole('button', { name: 'card back' });
+    const img = screen.getByRole('button', { name: 'カード裏面' });
     expect(img).toHaveStyle({ cursor: 'pointer' });
   });
 

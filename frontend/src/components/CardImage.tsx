@@ -1,4 +1,5 @@
 import type { Card } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 
 function getImagePath(card: Card): string {
   const zeroPad = (n: number) => String(n).padStart(2, '0');
@@ -24,7 +25,7 @@ export function CardImage({ card, width, style, className }: CardImageProps) {
   return (
     <img
       src={getImagePath(card)}
-      alt={`${card.design} ${card.value}`}
+      alt={cardAlt(card)}
       style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
     />
@@ -44,7 +45,7 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
   const img = (
     <img
       src="/images/z01.png"
-      alt="card back"
+      alt="カード裏面"
       style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
     />

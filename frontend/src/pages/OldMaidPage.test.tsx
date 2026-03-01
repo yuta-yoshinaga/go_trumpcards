@@ -145,13 +145,13 @@ describe('OldMaidPage', () => {
     };
     mockExec.mockResolvedValue(highlightedState);
     await startGame();
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     expect(cardBacks[0]).toHaveStyle({ transform: 'translateY(-8px)' });
   });
 
   it('non-highlighted cards do not have translateY style', async () => {
     await startGame();
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     for (const cardBack of cardBacks) {
       expect(cardBack).not.toHaveStyle({ transform: 'translateY(-8px)' });
     }
@@ -194,9 +194,9 @@ describe('OldMaidPage', () => {
 
   it('shows human player cards', async () => {
     await startGame();
-    expect(screen.getByAltText('SPADE 1')).toBeInTheDocument();
-    expect(screen.getByAltText('HEART 2')).toBeInTheDocument();
-    expect(screen.getByAltText('JOKER 0')).toBeInTheDocument();
+    expect(screen.getByAltText('♠ A')).toBeInTheDocument();
+    expect(screen.getByAltText('♥ 2')).toBeInTheDocument();
+    expect(screen.getByAltText('ジョーカー')).toBeInTheDocument();
   });
 
   it('shows card counts for CPU players', async () => {
@@ -317,7 +317,7 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     // CPU 1 is target player: click its first card back
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     fireEvent.click(cardBacks[0]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', 0, undefined, undefined));
   });
@@ -337,8 +337,8 @@ describe('OldMaidPage', () => {
     };
     mockExec.mockResolvedValue(stateWithDiscarded);
     await startGame();
-    expect(screen.getByAltText('SPADE 5')).toBeInTheDocument();
-    expect(screen.getByAltText('CLOVER 5')).toBeInTheDocument();
+    expect(screen.getByAltText('♠ 5')).toBeInTheDocument();
+    expect(screen.getByAltText('♣ 5')).toBeInTheDocument();
   });
 
   it('shows human draw status before CPU replay and eventually shows CPU log', async () => {
@@ -538,7 +538,7 @@ describe('OldMaidPage', () => {
     };
     mockExec.mockResolvedValue(stateWithOddDiscards);
     await startGame();
-    expect(screen.getByAltText('SPADE 3')).toBeInTheDocument();
+    expect(screen.getByAltText('♠ 3')).toBeInTheDocument();
   });
 
   it('shows discarded pair count in CPU log when discardedPairs > 0', async () => {
