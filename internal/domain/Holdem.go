@@ -31,13 +31,67 @@ const (
 )
 
 // CPU AI 閾値
-const (
-	holdemBluffRateTAG      = 15 // TAG ブラフ率(%)
-	holdemBluffRateLAP      = 5  // LAP ブラフ率(%)
-	holdemBluffRateTAP      = 5  // TAP ブラフ率(%)
-	holdemBluffRateLAG      = 30 // LAG ブラフ率(%)
-	holdemMaxRaisesPerRound = 4  // 1ラウンドの最大レイズ回数
-)
+const holdemMaxRaisesPerRound = 4 // 1ラウンドの最大レイズ回数
+
+// cpuStyleParams CPU意思決定パラメータ
+type cpuStyleParams struct {
+	aggressive bool // true=Aggressive(TAG/LAG), false=Passive(LAP/TAP)
+	bluffRate  int  // ブラフ率(%)
+
+	// PreFlop
+	preFlopFoldThreshold  int  // strength < this → fold評価
+	preFlopFoldCompound   bool // true: callAmount条件付きFold(Loose), false: foldOrCheck(Tight)
+	preFlopFoldCallMult   int  // Loose only: callAmount > BB*this でFold
+	preFlopRaiseThreshold int  // Aggressive only: strength >= this → raise
+	preFlopRaiseMult      int  // Aggressive only: raise = BB*this
+	preFlopBluffBetMult   int  // Passive only: bluff bet = BB*this
+
+	// PostFlop Aggressive
+	postFlopRaiseRank    int  // handRank >= this → raise
+	postFlopRaiseMult    int  // raise = BB*this
+	postFlopCondCallRank int  // handRank >= this → Call (-1=skip)
+	postFlopFallbackFold bool // true=foldOrCheck(TAG), false=callブロック+条件付きFold(LAG)
+	postFlopAggrFoldRank int  // fold if handRank <= this
+	postFlopAggrFoldMult int  // fold if callAmount > BB*this
+
+	// PostFlop Passive
+	postFlopPassFoldRank int // fold if handRank <= this
+	postFlopPassFoldMult int // fold if callAmount > BB*this (0=any callAmount)
+	postFlopBluffBetMult int // bluff bet = BB*this
+}
+
+// holdemStyleParamsMap スタイルごとのパラメータ
+var holdemStyleParamsMap = map[HoldemPlayStyle]cpuStyleParams{
+	HoldemStyleTAG: {
+		aggressive: true, bluffRate: 15,
+		preFlopFoldThreshold: 40, preFlopFoldCompound: false,
+		preFlopRaiseThreshold: 70, preFlopRaiseMult: 3,
+		postFlopRaiseRank: PokerHandTwoPair, postFlopRaiseMult: 2,
+		postFlopCondCallRank: PokerHandOnePair, postFlopFallbackFold: true,
+	},
+	HoldemStyleLAP: {
+		aggressive: false, bluffRate: 5,
+		preFlopFoldThreshold: 15, preFlopFoldCompound: true, preFlopFoldCallMult: 2,
+		preFlopBluffBetMult:  2,
+		postFlopPassFoldRank: PokerHandHighCard, postFlopPassFoldMult: 3,
+		postFlopBluffBetMult: 1,
+	},
+	HoldemStyleTAP: {
+		aggressive: false, bluffRate: 5,
+		preFlopFoldThreshold: 30, preFlopFoldCompound: false,
+		preFlopBluffBetMult:  2,
+		postFlopPassFoldRank: PokerHandHighCard,
+		postFlopBluffBetMult: 1,
+	},
+	HoldemStyleLAG: {
+		aggressive: true, bluffRate: 30,
+		preFlopFoldThreshold: 15, preFlopFoldCompound: true, preFlopFoldCallMult: 3,
+		preFlopRaiseThreshold: 50, preFlopRaiseMult: 3,
+		postFlopRaiseRank: PokerHandOnePair, postFlopRaiseMult: 3,
+		postFlopCondCallRank: -1, postFlopFallbackFold: false,
+		postFlopAggrFoldRank: PokerHandHighCard, postFlopAggrFoldMult: 4,
+	},
+}
 
 // HoldemSidePot サイドポット
 type HoldemSidePot struct {
@@ -748,11 +802,16 @@ func (h *Holdem) cpuDecide(idx int) (int, int) {
 	style := p.GetPlayStyle()
 	callAmount := h.lastBet - p.GetCurrentBet()
 
+	params, ok := holdemStyleParamsMap[style]
+	if !ok {
+		return h.cpuCallOrCheck(callAmount)
+	}
+
 	var action, amount int
 	if h.phase == HoldemPhasePreFlop {
-		action, amount = h.cpuDecidePreFlop(idx, style, callAmount)
+		action, amount = h.cpuDecidePreFlop(idx, params, callAmount)
 	} else {
-		action, amount = h.cpuDecidePostFlop(idx, style, callAmount)
+		action, amount = h.cpuDecidePostFlop(idx, params, callAmount)
 	}
 
 	// レイズ上限に達したら、レイズ/ベットをコール/チェックに変更
@@ -806,106 +865,59 @@ func (h *Holdem) cpuBetOrAllIn(p *HoldemPlayer, betAmt int) (int, int) {
 }
 
 // cpuDecidePreFlop プリフロップのCPU意思決定
-func (h *Holdem) cpuDecidePreFlop(idx int, style HoldemPlayStyle, callAmount int) (int, int) {
+func (h *Holdem) cpuDecidePreFlop(idx int, params cpuStyleParams, callAmount int) (int, int) {
 	p := h.players[idx]
 	strength := h.evalPreFlopStrength(idx)
 
-	switch style {
-	case HoldemStyleTAG:
-		if strength < 40 {
+	// Fold評価
+	if strength < params.preFlopFoldThreshold {
+		if params.preFlopFoldCompound {
+			if callAmount > h.config.BigBlind*params.preFlopFoldCallMult {
+				return HoldemActionFold, 0
+			}
+		} else {
 			return h.cpuFoldOrCheck(callAmount)
 		}
-		if strength >= 70 || rand.Intn(100) < holdemBluffRateTAG {
-			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*3)
-		}
-		return h.cpuCallOrCheck(callAmount)
+	}
 
-	case HoldemStyleLAP:
-		if strength < 15 && callAmount > h.config.BigBlind*2 {
-			return HoldemActionFold, 0
-		}
-		if callAmount > 0 {
-			return HoldemActionCall, 0
-		}
-		if rand.Intn(100) < holdemBluffRateLAP {
-			return h.cpuBetOrAllIn(p, h.config.BigBlind*2)
-		}
-		return HoldemActionCheck, 0
-
-	case HoldemStyleTAP:
-		if strength < 30 {
-			return h.cpuFoldOrCheck(callAmount)
-		}
-		if callAmount > 0 {
-			return HoldemActionCall, 0
-		}
-		if rand.Intn(100) < holdemBluffRateTAP {
-			return h.cpuBetOrAllIn(p, h.config.BigBlind*2)
-		}
-		return HoldemActionCheck, 0
-
-	case HoldemStyleLAG:
-		if strength < 15 && callAmount > h.config.BigBlind*3 {
-			return HoldemActionFold, 0
-		}
-		if strength >= 50 || rand.Intn(100) < holdemBluffRateLAG {
-			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*3)
+	if params.aggressive {
+		// Aggressive: raise or call
+		if strength >= params.preFlopRaiseThreshold || rand.Intn(100) < params.bluffRate {
+			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*params.preFlopRaiseMult)
 		}
 		return h.cpuCallOrCheck(callAmount)
 	}
 
-	// デフォルト: コールまたはチェック
+	// Passive: call, bluff bet, or check
 	if callAmount > 0 {
 		return HoldemActionCall, 0
+	}
+	if rand.Intn(100) < params.bluffRate {
+		return h.cpuBetOrAllIn(p, h.config.BigBlind*params.preFlopBluffBetMult)
 	}
 	return HoldemActionCheck, 0
 }
 
 // cpuDecidePostFlop フロップ以降のCPU意思決定
-func (h *Holdem) cpuDecidePostFlop(idx int, style HoldemPlayStyle, callAmount int) (int, int) {
+func (h *Holdem) cpuDecidePostFlop(idx int, params cpuStyleParams, callAmount int) (int, int) {
 	p := h.players[idx]
 	handRank := p.EvalBestHand(h.communityCards)
 
-	switch style {
-	case HoldemStyleTAG:
-		if handRank >= PokerHandTwoPair || rand.Intn(100) < holdemBluffRateTAG {
-			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*2)
+	if params.aggressive {
+		// Aggressive: raise → conditional call/fold
+		if handRank >= params.postFlopRaiseRank || rand.Intn(100) < params.bluffRate {
+			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*params.postFlopRaiseMult)
 		}
-		if handRank >= PokerHandOnePair && callAmount > 0 {
-			return HoldemActionCall, 0
-		}
-		return h.cpuFoldOrCheck(callAmount)
-
-	case HoldemStyleLAP:
-		if callAmount > 0 {
-			if handRank <= PokerHandHighCard && callAmount > h.config.BigBlind*3 {
-				return HoldemActionFold, 0
+		if params.postFlopFallbackFold {
+			// TAG: conditional call then foldOrCheck
+			if params.postFlopCondCallRank >= 0 && handRank >= params.postFlopCondCallRank && callAmount > 0 {
+				return HoldemActionCall, 0
 			}
-			return HoldemActionCall, 0
+			return h.cpuFoldOrCheck(callAmount)
 		}
-		if rand.Intn(100) < holdemBluffRateLAP {
-			return h.cpuBetOrAllIn(p, h.config.BigBlind)
-		}
-		return HoldemActionCheck, 0
-
-	case HoldemStyleTAP:
-		if handRank < PokerHandOnePair && callAmount > 0 {
-			return HoldemActionFold, 0
-		}
+		// LAG: call block with conditional fold
 		if callAmount > 0 {
-			return HoldemActionCall, 0
-		}
-		if rand.Intn(100) < holdemBluffRateTAP {
-			return h.cpuBetOrAllIn(p, h.config.BigBlind)
-		}
-		return HoldemActionCheck, 0
-
-	case HoldemStyleLAG:
-		if handRank >= PokerHandOnePair || rand.Intn(100) < holdemBluffRateLAG {
-			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*3)
-		}
-		if callAmount > 0 {
-			if handRank <= PokerHandHighCard && callAmount > h.config.BigBlind*4 {
+			if handRank <= params.postFlopAggrFoldRank && callAmount > h.config.BigBlind*params.postFlopAggrFoldMult {
 				return HoldemActionFold, 0
 			}
 			return HoldemActionCall, 0
@@ -913,8 +925,17 @@ func (h *Holdem) cpuDecidePostFlop(idx int, style HoldemPlayStyle, callAmount in
 		return HoldemActionCheck, 0
 	}
 
+	// Passive: call block with conditional fold → bluff bet → check
 	if callAmount > 0 {
+		if handRank <= params.postFlopPassFoldRank {
+			if params.postFlopPassFoldMult == 0 || callAmount > h.config.BigBlind*params.postFlopPassFoldMult {
+				return HoldemActionFold, 0
+			}
+		}
 		return HoldemActionCall, 0
+	}
+	if rand.Intn(100) < params.bluffRate {
+		return h.cpuBetOrAllIn(p, h.config.BigBlind*params.postFlopBluffBetMult)
 	}
 	return HoldemActionCheck, 0
 }
