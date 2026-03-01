@@ -1,9 +1,6 @@
 package controller
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -15,6 +12,12 @@ type BlackJackWebInput struct {
 	Amount    int    `json:"amount,omitempty"`
 	SessionId string `json:"sessionId"`
 }
+
+// GetCommand returns the command string.
+func (i BlackJackWebInput) GetCommand() string { return i.Command }
+
+// GetSessionID returns the session ID string.
+func (i BlackJackWebInput) GetSessionID() string { return i.SessionId }
 
 // BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
 type BlackJackWebOutputHand struct {
@@ -69,62 +72,38 @@ func NewBlackJackWebController(factory func() usecase.BlackJackInteractorIF) *Bl
 
 // Exec ゲーム実行
 func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	var param BlackJackWebInput
-	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" || param.SessionId == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(bwc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	if param.Command == "q" || param.Command == "quit" {
-		w.WriteHeader(http.StatusOK)
-		if err := w.WriteJson(bwc.newDefaultOutput("bye.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	bji, mu, ok := bwc.store.GetWithLock(param.SessionId, bwc.factory)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(bwc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	errOutput := bwc.newDefaultOutput("error.")
-	switch param.Command {
-	case "r", "reset":
-		bwc.writePresenterResponse(w, bji.Reset(), errOutput)
-	case "h", "hit":
-		bwc.writePresenterResponse(w, bji.Hit(), errOutput)
-	case "s", "stand":
-		bwc.writePresenterResponse(w, bji.Stand(), errOutput)
-	case "b", "bet":
-		bwc.writePresenterResponse(w, bji.Bet(param.Amount), errOutput)
-	case "d", "doubledown":
-		bwc.writePresenterResponse(w, bji.DoubleDown(), errOutput)
-	case "sp", "split":
-		bwc.writePresenterResponse(w, bji.Split(), errOutput)
-	case "i", "insurance":
-		bwc.writePresenterResponse(w, bji.Insurance(), errOutput)
-	case "di", "declineinsurance":
-		bwc.writePresenterResponse(w, bji.DeclineInsurance(), errOutput)
-	case "sur", "surrender":
-		bwc.writePresenterResponse(w, bji.Surrender(), errOutput)
-	case "togglehint":
-		bwc.writePresenterResponse(w, bji.ToggleHint(), errOutput)
-	case "sd", "setdeckcount":
-		bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount), errOutput)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(bwc.newDefaultOutput("Unsupported command.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-	}
+	execWithSession(&bwc.baseController, w, r, bwc.store, bwc.factory,
+		func(msg string) any { return bwc.newDefaultOutput(msg) },
+		nil,
+		func(w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput, errOutput any) bool {
+			switch param.Command {
+			case "r", "reset":
+				bwc.writePresenterResponse(w, bji.Reset(), errOutput)
+			case "h", "hit":
+				bwc.writePresenterResponse(w, bji.Hit(), errOutput)
+			case "s", "stand":
+				bwc.writePresenterResponse(w, bji.Stand(), errOutput)
+			case "b", "bet":
+				bwc.writePresenterResponse(w, bji.Bet(param.Amount), errOutput)
+			case "d", "doubledown":
+				bwc.writePresenterResponse(w, bji.DoubleDown(), errOutput)
+			case "sp", "split":
+				bwc.writePresenterResponse(w, bji.Split(), errOutput)
+			case "i", "insurance":
+				bwc.writePresenterResponse(w, bji.Insurance(), errOutput)
+			case "di", "declineinsurance":
+				bwc.writePresenterResponse(w, bji.DeclineInsurance(), errOutput)
+			case "sur", "surrender":
+				bwc.writePresenterResponse(w, bji.Surrender(), errOutput)
+			case "togglehint":
+				bwc.writePresenterResponse(w, bji.ToggleHint(), errOutput)
+			case "sd", "setdeckcount":
+				bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount), errOutput)
+			default:
+				return false
+			}
+			return true
+		})
 }
 
 // Stop stops the background cleanup goroutine of the session store.
