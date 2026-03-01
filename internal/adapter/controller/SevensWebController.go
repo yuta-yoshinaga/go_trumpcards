@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -22,6 +21,12 @@ type SevensWebInput struct {
 	MaxPasses        *int   `json:"maxPasses,omitempty"`     // 最大パス回数 (reset時のみ, 0=無制限)
 	SessionId        string `json:"sessionId"`
 }
+
+// GetCommand returns the command string.
+func (i SevensWebInput) GetCommand() string { return i.Command }
+
+// GetSessionID returns the session ID string.
+func (i SevensWebInput) GetSessionID() string { return i.SessionId }
 
 // SevensWebOutputPlayer 7並べWebアウトプットプレイヤー
 type SevensWebOutputPlayer struct {
@@ -83,58 +88,31 @@ func NewSevensWebController(factory func() usecase.SevensInteractorIF) *SevensWe
 
 // Exec ゲーム実行
 func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	var param SevensWebInput
-	err := r.DecodeJsonPayload(&param)
-	if err != nil || param.Command == "" || param.SessionId == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(swc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	if param.Command == "q" || param.Command == "quit" {
-		w.WriteHeader(http.StatusOK)
-		if err := w.WriteJson(swc.newDefaultOutput("bye.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	sgi, mu, ok := swc.store.GetWithLock(param.SessionId, swc.factory)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(swc.newDefaultOutput("param error.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-		return
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	errOutput := swc.newDefaultOutput("error.")
-	switch param.Command {
-	case "r", "reset":
-		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil {
-			jokerCount := derefInt(param.JokerCount)
-			if jokerCount < 0 || jokerCount > domain.SevensMaxJokerCount {
-				w.WriteHeader(http.StatusBadRequest)
-				if err := w.WriteJson(swc.newDefaultOutput("param error: jokerCount must be between 0 and 2.")); err != nil {
-					log.Printf("WriteJson error: %v", err)
+	execWithSession(&swc.baseController, w, r, swc.store, swc.factory,
+		func(msg string) any { return swc.newDefaultOutput(msg) },
+		nil,
+		func(w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput, errOutput any) bool {
+			switch param.Command {
+			case "r", "reset":
+				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil {
+					jokerCount := derefInt(param.JokerCount)
+					if jokerCount < 0 || jokerCount > domain.SevensMaxJokerCount {
+						swc.writeJsonResponse(w, http.StatusBadRequest, swc.newDefaultOutput("param error: jokerCount must be between 0 and 2."))
+						return true
+					}
+					swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), jokerCount, derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses)), errOutput)
+				} else {
+					swc.writePresenterResponse(w, sgi.Reset(), errOutput)
 				}
-				return
+			case "p", "play":
+				swc.writePresenterResponse(w, sgi.Play(param.Index), errOutput)
+			case "j", "joker":
+				swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue), errOutput)
+			default:
+				return false
 			}
-			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), jokerCount, derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses)), errOutput)
-		} else {
-			swc.writePresenterResponse(w, sgi.Reset(), errOutput)
-		}
-	case "p", "play":
-		swc.writePresenterResponse(w, sgi.Play(param.Index), errOutput)
-	case "j", "joker":
-		swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue), errOutput)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
-		if err := w.WriteJson(swc.newDefaultOutput("Unsupported command.")); err != nil {
-			log.Printf("WriteJson error: %v", err)
-		}
-	}
+			return true
+		})
 }
 
 func derefBool(p *bool) bool {
