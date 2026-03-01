@@ -180,7 +180,7 @@ describe('HoldemPage', () => {
     mockExec.mockResolvedValue(preFlopState);
     render(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('コミュニティカード')).toBeInTheDocument());
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     // 5 community card placeholders + 2 cards for each of the 3 CPUs = 11 card backs expected
     // but we just verify at least 5 exist for community cards
     expect(cardBacks.length).toBeGreaterThanOrEqual(5);
@@ -189,9 +189,9 @@ describe('HoldemPage', () => {
   it('shows CardImage when communityCards has cards', async () => {
     mockExec.mockResolvedValue(flopState);
     render(<HoldemPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 10')).toBeInTheDocument());
-    expect(screen.getByAltText('HEART 5')).toBeInTheDocument();
-    expect(screen.getByAltText('DIAMOND 8')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByAltText('♠ 10')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ 5')).toBeInTheDocument();
+    expect(screen.getByAltText('♦ 8')).toBeInTheDocument();
   });
 
   // ---- CPU players ----
@@ -273,15 +273,15 @@ describe('HoldemPage', () => {
   it('shows CPU cards face-up during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
     render(<HoldemPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 5')).toBeInTheDocument());
-    expect(screen.getByAltText('HEART 8')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ 8')).toBeInTheDocument();
   });
 
   it('shows CardBack for CPU cards when not in showdown', async () => {
     mockExec.mockResolvedValue(preFlopState);
     render(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     // 5 community card placeholders + 2 cards for each of the 3 CPUs = 11 card backs expected
     expect(cardBacks.length).toBeGreaterThanOrEqual(4);
   });
@@ -292,7 +292,7 @@ describe('HoldemPage', () => {
     // CPU 2 is folded → shows CardBack
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
     // CardBacks exist for CPU 2 (2 backs)
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     expect(cardBacks.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -428,8 +428,8 @@ describe('HoldemPage', () => {
   it('shows human cards when cards exist', async () => {
     mockExec.mockResolvedValue(preFlopState);
     render(<HoldemPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
-    expect(screen.getByAltText('HEART 13')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ K')).toBeInTheDocument();
   });
 
   it('shows CardBack for human when cards is empty and not folded', async () => {
@@ -440,7 +440,7 @@ describe('HoldemPage', () => {
     render(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     // Human has no cards, not folded → shows 2 CardBacks for human + 5 community + 4 CPU = many
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     expect(cardBacks.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -453,7 +453,7 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     // Folded human with no cards → !humanPlayer.folded is false → no CardBacks from human
     // CardBacks come from community (5) + CPU (2*2=4) = 9
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     expect(cardBacks).toHaveLength(9);
   });
 
@@ -729,7 +729,7 @@ describe('HoldemPage', () => {
     render(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
     // CPU 1 not folded but cards empty → falls to CardBack branch
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     expect(cardBacks.length).toBeGreaterThanOrEqual(2);
   });
 

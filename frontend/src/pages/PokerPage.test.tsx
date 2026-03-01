@@ -134,7 +134,7 @@ describe('PokerPage', () => {
   it('shows 5 card backs for dealer in phase 0', async () => {
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/ディーラー手札/)).toBeInTheDocument());
-    const cardBacks = screen.getAllByAltText('card back');
+    const cardBacks = screen.getAllByAltText('カード裏面');
     expect(cardBacks.length).toBeGreaterThanOrEqual(5);
   });
 
@@ -185,7 +185,7 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue(phase4State);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText('High Card')).toBeInTheDocument());
-    const cardBacks = screen.queryAllByAltText('card back');
+    const cardBacks = screen.queryAllByAltText('カード裏面');
     expect(cardBacks).toHaveLength(0);
   });
 
@@ -200,7 +200,7 @@ describe('PokerPage', () => {
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
 
-    const playerCardImgs = screen.getAllByAltText(/SPADE 1|HEART 5/);
+    const playerCardImgs = screen.getAllByAltText(/♠ A|♥ 5/);
     fireEvent.click(playerCardImgs[0]);
     fireEvent.click(playerCardImgs[1]);
 
@@ -352,7 +352,7 @@ describe('PokerPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
 
     // In bet phase (isExchangePhase=false), clicking a card exercises the `if (!isExchangePhase) return` branch
-    fireEvent.click(screen.getByAltText('SPADE 1'));
+    fireEvent.click(screen.getByAltText('♠ A'));
 
     // Verify page is still in bet phase (no navigation or error occurred)
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
@@ -364,9 +364,9 @@ describe('PokerPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
 
     // Click to select (prev.includes(idx) = false → adds idx)
-    fireEvent.click(screen.getByAltText('SPADE 1'));
+    fireEvent.click(screen.getByAltText('♠ A'));
     // Click again to deselect (prev.includes(idx) = true → filters out idx)
-    fireEvent.click(screen.getByAltText('SPADE 1'));
+    fireEvent.click(screen.getByAltText('♠ A'));
 
     // Page should remain stable in exchange phase
     expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument();
@@ -399,7 +399,7 @@ describe('PokerPage', () => {
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
 
-    const cardBtn = screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement;
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
 
     fireEvent.click(cardBtn);

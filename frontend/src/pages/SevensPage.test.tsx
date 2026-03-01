@@ -111,9 +111,9 @@ describe('SevensPage', () => {
   it('shows human player face-up cards', async () => {
     render(<SevensPage />);
     await waitFor(() => {
-      expect(screen.getByAltText('SPADE 6')).toBeInTheDocument();
-      expect(screen.getByAltText('HEART 5')).toBeInTheDocument();
-      expect(screen.getByAltText('CLOVER 8')).toBeInTheDocument();
+      expect(screen.getByAltText('♠ 6')).toBeInTheDocument();
+      expect(screen.getByAltText('♥ 5')).toBeInTheDocument();
+      expect(screen.getByAltText('♣ 8')).toBeInTheDocument();
     });
   });
 
@@ -151,18 +151,18 @@ describe('SevensPage', () => {
 
   it('calls play with card index when a playable card is clicked', async () => {
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 6')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
-    fireEvent.click(screen.getByAltText('SPADE 6'));
+    fireEvent.click(screen.getByAltText('♠ 6'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
   it('does not call play when a non-playable card is clicked', async () => {
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByAltText('HEART 5')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('♥ 5')).toBeInTheDocument());
     mockExec.mockClear();
-    fireEvent.click(screen.getByAltText('HEART 5'));
+    fireEvent.click(screen.getByAltText('♥ 5'));
     expect(mockExec).not.toHaveBeenCalled();
   });
 
@@ -288,7 +288,7 @@ describe('SevensPage', () => {
     mockExec.mockResolvedValue(jokerState);
     render(<SevensPage />);
     await waitFor(() => {
-      const jokerBtn = screen.getByAltText('JOKER 0').closest('button');
+      const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
       expect(jokerBtn).not.toBeDisabled();
     });
   });
@@ -433,8 +433,8 @@ describe('SevensPage', () => {
     };
     mockExec.mockResolvedValue(tunnelAState);
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
-    const btn = screen.getByAltText('SPADE 1').closest('button');
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const btn = screen.getByAltText('♠ A').closest('button');
     expect(btn).not.toBeDisabled();
   });
 
@@ -451,8 +451,8 @@ describe('SevensPage', () => {
     };
     mockExec.mockResolvedValue(tunnelKState);
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByAltText('SPADE 13')).toBeInTheDocument());
-    const btn = screen.getByAltText('SPADE 13').closest('button');
+    await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
+    const btn = screen.getByAltText('♠ K').closest('button');
     expect(btn).not.toBeDisabled();
   });
 
@@ -470,8 +470,8 @@ describe('SevensPage', () => {
     };
     mockExec.mockResolvedValue(fullBoardState);
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByAltText('JOKER 0')).toBeInTheDocument());
-    const jokerBtn = screen.getByAltText('JOKER 0').closest('button');
+    await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
+    const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
     expect(jokerBtn).toBeDisabled();
   });
 
@@ -492,9 +492,9 @@ describe('SevensPage', () => {
     };
     mockExec.mockResolvedValue(jokerHandState);
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByAltText('JOKER 0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('JOKER 0'));
+    fireEvent.click(screen.getByAltText('ジョーカー'));
 
     expect(screen.getByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
   });
@@ -516,9 +516,9 @@ describe('SevensPage', () => {
     };
     mockExec.mockResolvedValue(jokerHandState);
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByAltText('JOKER 0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByAltText('JOKER 0'));
+    fireEvent.click(screen.getByAltText('ジョーカー'));
     expect(screen.getByRole('button', { name: 'キャンセル' })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
@@ -536,10 +536,10 @@ describe('SevensPage', () => {
     };
     mockExec.mockResolvedValue(jokerHandState);
     render(<SevensPage />);
-    await waitFor(() => expect(screen.getByAltText('JOKER 0')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
 
     // Click JOKER card image to enter joker placement mode (same pattern as cancel test)
-    fireEvent.click(screen.getByAltText('JOKER 0'));
+    fireEvent.click(screen.getByAltText('ジョーカー'));
 
     // After click, board position buttons for value '6' appear synchronously (7 is placed)
     const boardButtons6 = screen.getAllByRole('button', { name: /6 に配置/ });
