@@ -121,15 +121,15 @@ func TestGetBasicStrategyAction_SoftHands(t *testing.T) {
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 2, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s17, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
-	// Soft 18 (A+7): double vs 2-6, stand vs 7-8, hit vs 9-A
+	// Soft 18 (A+7): Ds (double-else-stand) vs 2-6, stand vs 7-8, hit vs 9-A
 	s18 := mkSoft(1, 7)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 2, false), false))
+	assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 2, false), false))
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 7, false), false))
 	assert.Equal(t, domain.BJSuggestHit, domain.GetBasicStrategyAction(s18, domain.NewCard(domain.CardDesignClover, 9, false), false))
 
-	// Soft 19 (A+8): stand vs most, double vs 6
+	// Soft 19 (A+8): stand vs most, Ds (double-else-stand) vs 6
 	s19 := mkSoft(1, 8)
-	assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 6, false), false))
+	assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 6, false), false))
 	assert.Equal(t, domain.BJSuggestStand, domain.GetBasicStrategyAction(s19, domain.NewCard(domain.CardDesignClover, 7, false), false))
 
 	// Soft 20 (A+9): always stand
@@ -370,18 +370,18 @@ func TestGetBasicStrategyAction_H17Overrides(t *testing.T) {
 			"H17: hard 17 vs A should be Surrender")
 	})
 
-	t.Run("soft 19 vs 6: S17=Double(already), H17=Double", func(t *testing.T) {
+	t.Run("soft 19 vs 6: S17=DoubleStand, H17=DoubleStand", func(t *testing.T) {
 		h := domain.NewBlackJackHand()
 		h.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		h.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false)) // soft 19
 		upcard6 := domain.NewCard(domain.CardDesignClover, 6, false)
 
-		// S17: soft 19 vs 6 → Double (from table: row index 6 (soft 19 = idx 6), col 4 (6))
-		assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h, upcard6, false),
-			"S17: soft 19 vs 6 should be Double")
-		// H17: soft 19 vs 6 → Double (override confirms)
-		assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h, upcard6, true),
-			"H17: soft 19 vs 6 should be Double")
+		// S17: soft 19 vs 6 → DoubleStand (from table)
+		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h, upcard6, false),
+			"S17: soft 19 vs 6 should be DoubleStand")
+		// H17: soft 19 vs 6 → DoubleStand (override confirms)
+		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h, upcard6, true),
+			"H17: soft 19 vs 6 should be DoubleStand")
 	})
 
 	t.Run("hard 11 vs A: S17=Hit, H17=Double", func(t *testing.T) {
@@ -410,16 +410,16 @@ func TestGetBasicStrategyAction_H17Overrides(t *testing.T) {
 	})
 
 	t.Run("soft H17 override only for soft 19 vs 6", func(t *testing.T) {
-		// Soft 18 vs 6: S17=Double, H17=Double (no change)
+		// Soft 18 vs 6: S17=DoubleStand, H17=DoubleStand (no change)
 		h18 := domain.NewBlackJackHand()
 		h18.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		h18.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false)) // soft 18
 		upcard6 := domain.NewCard(domain.CardDesignClover, 6, false)
 
-		assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h18, upcard6, false))
-		assert.Equal(t, domain.BJSuggestDouble, domain.GetBasicStrategyAction(h18, upcard6, true))
+		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h18, upcard6, false))
+		assert.Equal(t, domain.BJSuggestDoubleStand, domain.GetBasicStrategyAction(h18, upcard6, true))
 
-		// Soft 19 vs 5: S17=Stand (table: S,S,S,S,D → di=3 is S), H17=Stand (no override for di!=4)
+		// Soft 19 vs 5: S17=Stand (table: S,S,S,S,Ds → di=3 is S), H17=Stand (no override for di!=4)
 		h19 := domain.NewBlackJackHand()
 		h19.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		h19.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false)) // soft 19

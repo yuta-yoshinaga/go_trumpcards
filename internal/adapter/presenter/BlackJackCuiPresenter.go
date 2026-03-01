@@ -215,6 +215,8 @@ func (bjp *BlackJackCuiPresenter) suggestionStr(s domain.BJSuggestedAction) stri
 		return "STAND"
 	case domain.BJSuggestDouble:
 		return "DOUBLE"
+	case domain.BJSuggestDoubleStand:
+		return "DOUBLE"
 	case domain.BJSuggestSplit:
 		return "SPLIT"
 	case domain.BJSuggestSurrender:

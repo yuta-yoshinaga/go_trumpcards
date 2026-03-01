@@ -16,6 +16,7 @@ const BJ_SUGGEST_DOUBLE = 3;
 const BJ_SUGGEST_SPLIT = 4;
 const BJ_SUGGEST_SURRENDER = 5;
 const BJ_SUGGEST_DECLINE_INSURANCE = 6;
+const BJ_SUGGEST_DOUBLE_STAND = 7;
 
 const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
 const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
@@ -27,6 +28,7 @@ const SUGGESTION_LABELS: Record<number, string> = {
   [BJ_SUGGEST_SPLIT]: 'スプリット',
   [BJ_SUGGEST_SURRENDER]: 'サレンダー',
   [BJ_SUGGEST_DECLINE_INSURANCE]: '辞退',
+  [BJ_SUGGEST_DOUBLE_STAND]: 'ダブルダウン',
 };
 
 function highlightClass(base: string, isHighlighted: boolean): string {
@@ -316,7 +318,11 @@ export function BlackJackPage() {
               {currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet && (
                 <button
                   type="button"
-                  className={highlightClass(btnWarning, suggestedAction === BJ_SUGGEST_DOUBLE && hintEnabled)}
+                  className={highlightClass(
+                    btnWarning,
+                    (suggestedAction === BJ_SUGGEST_DOUBLE || suggestedAction === BJ_SUGGEST_DOUBLE_STAND) &&
+                      hintEnabled,
+                  )}
                   disabled={loading}
                   onClick={() => exec('doubledown')}
                 >

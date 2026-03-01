@@ -361,6 +361,8 @@ func (b *BlackJack) PlayerSplit() error {
 		hand.AddCard(firstCard)
 		hand.AddCard(secondCard)
 		b.player.AddChips(bet)
+		// card1のランニングカウント更新を元に戻す
+		b.runningCount -= hiLoValue(card1)
 		return ErrDeckExhausted
 	}
 	newHand.AddCard(card2)
@@ -861,6 +863,12 @@ func (b *BlackJack) cpuPlaySeat(cpu *BlackJackCpuSeat, dealerUpcard *Card) {
 				} else {
 					b.cpuHit(hand)
 				}
+			case BJSuggestDoubleStand:
+				if hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet() {
+					b.cpuDoubleDown(cpu, hand)
+				} else {
+					hand.SetStood(true)
+				}
 			case BJSuggestSplit:
 				if hand.CanSplit() && len(cpu.GetHands()) < BJMaxHands && cpu.GetPlayer().GetChips() >= hand.GetBet() {
 					b.cpuSplit(cpu, hand, handIdx, dealerUpcard)
@@ -963,7 +971,6 @@ func (b *BlackJack) cpuSplit(cpu *BlackJackCpuSeat, hand *BlackJackHand, handIdx
 
 // resolvePayoutsCpu CPUプレイヤーの精算
 func (b *BlackJack) resolvePayoutsCpu() {
-	dealerScore := b.dealer.GetScore()
 	for _, cpu := range b.cpuPlayers {
 		for _, hand := range cpu.GetHands() {
 			if hand.GetCardsSize() == 0 {
@@ -987,7 +994,6 @@ func (b *BlackJack) resolvePayoutsCpu() {
 				// 没収（何もしない）
 			}
 		}
-		_ = dealerScore
 	}
 }
 

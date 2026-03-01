@@ -1175,3 +1175,98 @@ func TestCpuPlaySeat_SurrenderAction(t *testing.T) {
 		assert.True(t, hand.IsFinished())
 	})
 }
+
+func TestCpuPlaySeat_DoubleStandAction(t *testing.T) {
+	t.Run("DoubleStand with enough chips doubles", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		cpu := NewBlackJackCpuSeat()
+		hand := cpu.GetHands()[0]
+		hand.SetBet(50)
+		// A+7 = soft 18 vs dealer 2 → DoubleStand (Ds)
+		hand.AddCard(NewCard(CardDesignSpade, 1, false))
+		hand.AddCard(NewCard(CardDesignHeart, 7, false))
+		cpu.GetPlayer().SetChips(100) // enough to double
+
+		dealerUpcard := NewCard(CardDesignClover, 2, false)
+		bj.cpuPlaySeat(cpu, dealerUpcard)
+
+		assert.True(t, hand.IsDoubled(), "should have doubled down")
+	})
+
+	t.Run("DoubleStand without enough chips stands", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		cpu := NewBlackJackCpuSeat()
+		hand := cpu.GetHands()[0]
+		hand.SetBet(50)
+		// A+7 = soft 18 vs dealer 2 → DoubleStand (Ds)
+		hand.AddCard(NewCard(CardDesignSpade, 1, false))
+		hand.AddCard(NewCard(CardDesignHeart, 7, false))
+		cpu.GetPlayer().SetChips(10) // insufficient to double
+
+		dealerUpcard := NewCard(CardDesignClover, 2, false)
+		bj.cpuPlaySeat(cpu, dealerUpcard)
+
+		assert.False(t, hand.IsDoubled(), "should not have doubled (insufficient chips)")
+		assert.True(t, hand.IsStood(), "should stand as fallback (not hit)")
+		assert.Equal(t, 2, hand.GetCardsSize(), "should not have drawn extra cards")
+	})
+
+	t.Run("DoubleStand with 3 cards stands", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		cpu := NewBlackJackCpuSeat()
+		hand := cpu.GetHands()[0]
+		hand.SetBet(50)
+		// A+4+3 = soft 18 (not 2 cards) vs dealer 2 → DoubleStand
+		hand.AddCard(NewCard(CardDesignSpade, 1, false))
+		hand.AddCard(NewCard(CardDesignHeart, 4, false))
+		hand.AddCard(NewCard(CardDesignClover, 3, false))
+		cpu.GetPlayer().SetChips(100)
+
+		dealerUpcard := NewCard(CardDesignClover, 2, false)
+		bj.cpuPlaySeat(cpu, dealerUpcard)
+
+		assert.False(t, hand.IsDoubled(), "can't double with 3 cards")
+		assert.True(t, hand.IsStood(), "should stand as fallback")
+	})
+}
+
+func TestPlayerSplit_RunningCountRollbackOnPartialFailure(t *testing.T) {
+	t.Run("running count is corrected when card2 draw fails", func(t *testing.T) {
+		bj := NewDefaultBlackJack()
+		cfg := BlackJackConfig{CountingEnabled: true}
+		_ = bj.SetConfig(cfg)
+
+		// Create a tiny deck: enough for deal + 1 split card but not 2
+		tc := NewTrumpCardsWithDecks(1, 0)
+		bj.trumpCards = tc
+		bj.Reset()
+
+		// Set up manually: player has pair of 5s, dealer has 10+7
+		bj.player.Reset()
+		bj.dealer.Reset()
+		for _, h := range bj.playerHands {
+			h.Reset()
+		}
+		bj.playerHands[0].AddCard(NewCard(CardDesignSpade, 5, false))
+		bj.playerHands[0].AddCard(NewCard(CardDesignHeart, 5, false))
+		bj.playerHands[0].SetBet(10)
+		bj.dealer.AddCard(NewCard(CardDesignClover, 10, false))
+		bj.dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+		bj.player.SetChips(1000)
+		bj.phase = BJPhaseAction
+		bj.runningCount = 0
+
+		// Drain the deck until only 1 card remains
+		for tc.GetRemainingCount() > 1 {
+			tc.DrawCard()
+		}
+
+		// Now there's exactly 1 card left - split will draw card1 but fail on card2
+		countBefore := bj.runningCount
+		err := bj.PlayerSplit()
+		assert.Error(t, err, "should fail due to deck exhaustion on 2nd card")
+
+		// Running count should be back to what it was before the split attempt
+		assert.Equal(t, countBefore, bj.runningCount, "running count should be rolled back")
+	})
+}

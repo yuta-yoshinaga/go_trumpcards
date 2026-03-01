@@ -11,6 +11,7 @@ const (
 	BJSuggestSplit            BJSuggestedAction = 4
 	BJSuggestSurrender        BJSuggestedAction = 5
 	BJSuggestDeclineInsurance BJSuggestedAction = 6
+	BJSuggestDoubleStand      BJSuggestedAction = 7 // double if possible, otherwise stand
 )
 
 // dealerIdx ディーラーのアップカードをインデックスに変換
@@ -104,23 +105,20 @@ func pairStrategy(pv, di int) BJSuggestedAction {
 func softStrategy(softTotal, di int) BJSuggestedAction {
 	H := BJSuggestHit
 	S := BJSuggestStand
-	D := BJSuggestDouble  // double else hit
-	Ds := BJSuggestDouble // double else stand (we use same constant; caller shows same button)
-	// Note: for simplicity Ds and D map to same action (Double). The "else stand/hit" fallback
-	// only matters when doubling is not allowed (e.g. after split), which is not tracked here.
-	_ = Ds
+	D := BJSuggestDouble       // double else hit
+	Ds := BJSuggestDoubleStand // double else stand
 	type row [10]BJSuggestedAction
 	// Rows: softTotal 13..20 (index = softTotal-13)
 	table := [8]row{
-		// dealer: 2  3  4  5  6  7  8  9  10  A
-		{H, H, H, D, D, H, H, H, H, H}, // soft 13 (A+2)
-		{H, H, H, D, D, H, H, H, H, H}, // soft 14 (A+3)
-		{H, H, D, D, D, H, H, H, H, H}, // soft 15 (A+4)
-		{H, H, D, D, D, H, H, H, H, H}, // soft 16 (A+5)
-		{H, D, D, D, D, H, H, H, H, H}, // soft 17 (A+6)
-		{D, D, D, D, D, S, S, H, H, H}, // soft 18 (A+7)
-		{S, S, S, S, D, S, S, S, S, S}, // soft 19 (A+8)
-		{S, S, S, S, S, S, S, S, S, S}, // soft 20 (A+9)
+		// dealer: 2   3   4   5   6   7   8   9  10   A
+		{H, H, H, D, D, H, H, H, H, H},      // soft 13 (A+2)
+		{H, H, H, D, D, H, H, H, H, H},      // soft 14 (A+3)
+		{H, H, D, D, D, H, H, H, H, H},      // soft 15 (A+4)
+		{H, H, D, D, D, H, H, H, H, H},      // soft 16 (A+5)
+		{H, D, D, D, D, H, H, H, H, H},      // soft 17 (A+6)
+		{Ds, Ds, Ds, Ds, Ds, S, S, H, H, H}, // soft 18 (A+7)
+		{S, S, S, S, Ds, S, S, S, S, S},     // soft 19 (A+8)
+		{S, S, S, S, S, S, S, S, S, S},      // soft 20 (A+9)
 	}
 	idx := softTotal - 13
 	if idx < 0 {
@@ -167,7 +165,7 @@ func hardStrategy(hardTotal, di int) BJSuggestedAction {
 }
 
 // hardH17Override ハードハンドのH17ルールでの変更
-// S17→H17で変わるセル: Hard 11 vs A: D→D (same), Hard 15 vs A: H→Rh, Hard 17 vs A: S→Rh
+// S17→H17で変わるセル: Hard 11 vs A: H→D, Hard 15 vs A: H→Rh, Hard 17 vs A: S→Rh
 func hardH17Override(hardTotal, di int, s17Action BJSuggestedAction) BJSuggestedAction {
 	// di=9 はエース
 	if di != 9 {
@@ -186,11 +184,11 @@ func hardH17Override(hardTotal, di int, s17Action BJSuggestedAction) BJSuggested
 }
 
 // softH17Override ソフトハンドのH17ルールでの変更
-// Soft 19 vs 6: S→Ds(Double)
+// Soft 19 vs 6: S→Ds(DoubleStand)
 func softH17Override(softTotal, di int, s17Action BJSuggestedAction) BJSuggestedAction {
 	// di=4 は6
 	if softTotal == 19 && di == 4 {
-		return BJSuggestDouble
+		return BJSuggestDoubleStand
 	}
 	return s17Action
 }

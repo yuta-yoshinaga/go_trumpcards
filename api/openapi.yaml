@@ -1004,11 +1004,12 @@ components:
             - `0` — None
             - `1` — Hit
             - `2` — Stand
-            - `3` — Double Down
+            - `3` — Double Down (else Hit)
             - `4` — Split
             - `5` — Surrender
             - `6` — Decline Insurance
-          enum: [0, 1, 2, 3, 4, 5, 6]
+            - `7` — Double Down (else Stand)
+          enum: [0, 1, 2, 3, 4, 5, 6, 7]
           example: 1
         deckCount:
           type: integer

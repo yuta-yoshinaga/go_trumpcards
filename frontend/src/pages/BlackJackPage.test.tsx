@@ -562,6 +562,20 @@ describe('BlackJackPage', () => {
     });
   });
 
+  it('highlights double down button when hint suggests doubleStand', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 7 });
+    render(<BlackJackPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'ダブルダウン' })).toHaveClass('ring-2');
+    });
+  });
+
+  it('shows hint banner for doubleStand suggestion', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, hintEnabled: true, suggestedAction: 7 });
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('推奨: ダブルダウン')).toBeInTheDocument());
+  });
+
   it('highlights split button when hint suggests split', async () => {
     mockExec.mockResolvedValue({
       ...actionPhaseState,
