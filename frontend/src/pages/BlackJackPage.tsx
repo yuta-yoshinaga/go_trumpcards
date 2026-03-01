@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { blackjackApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
@@ -31,42 +32,13 @@ function highlightClass(base: string, isHighlighted: boolean): string {
 }
 
 export function BlackJackPage() {
-  const [state, setState] = useState<BlackJackResponse | null>(null);
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const exec = useCallback(
-    async (
-      command:
-        | 'reset'
-        | 'hit'
-        | 'stand'
-        | 'bet'
-        | 'doubledown'
-        | 'split'
-        | 'insurance'
-        | 'declineinsurance'
-        | 'surrender'
-        | 'togglehint'
-        | 'setdeckcount',
-      amount?: number,
-    ) => {
-      setLoading(true);
-      try {
-        setError(null);
-        const res = await blackjackApi.exec(command, amount);
-        setState(res);
-        setMessage(res.message);
-      } catch {
-        setError('通信エラーが発生しました。もう一度お試しください。');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const onSuccess = useCallback((res: BlackJackResponse) => {
+    setMessage(res.message);
+  }, []);
+  const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');

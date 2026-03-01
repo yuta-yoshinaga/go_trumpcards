@@ -2,8 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { doubtApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { Card, DoubtConfig, DoubtCpuAction, DoubtPlayerData, DoubtResponse } from '../types/card';
+import type { Card, DoubtConfig, DoubtCpuAction, DoubtPlayerData } from '../types/card';
 import { playerName } from '../utils/playerUtils';
 
 function valueName(v: number): string {
@@ -125,16 +126,19 @@ const CPU_MEMORY_OPTIONS = [
 ] as const;
 
 export function DoubtPage() {
-  const [state, setState] = useState<DoubtResponse | null>(null);
   const [selectedCardIndices, setSelectedCardIndices] = useState<number[]>([]);
   const [claimedValue, setClaimedValue] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [doubtConfig, setDoubtConfig] = useState<DoubtConfig>(DEFAULT_DOUBT_CONFIG);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoSkipRef = useRef(false);
   const cpuDoubtersRef = useRef<number[]>([]);
+
+  const onSuccess = useCallback(() => {
+    setSelectedCardIndices([]);
+    setClaimedValue(1);
+  }, []);
+  const { state, loading, error, exec: rawExec } = useGameApi(doubtApi.exec, { onSuccess });
 
   // Keep cpuDoubters ref current so the auto-skip effect avoids stale state
   useEffect(() => {
@@ -171,28 +175,11 @@ export function DoubtPage() {
   );
 
   const exec = useCallback(
-    async (
-      command: 'reset' | 'play' | 'doubt' | 'skip',
-      cardIndices?: number[],
-      cv?: number,
-      doubterIndices?: number[],
-      config?: DoubtConfig,
-    ) => {
-      setLoading(true);
+    (...args: Parameters<typeof rawExec>) => {
       stopCountdown();
-      try {
-        setError(null);
-        const res = await doubtApi.exec(command, cardIndices, cv, doubterIndices, config);
-        setState(res);
-        setSelectedCardIndices([]);
-        setClaimedValue(1);
-      } catch {
-        setError('通信エラーが発生しました。もう一度お試しください。');
-      } finally {
-        setLoading(false);
-      }
+      return rawExec(...args);
     },
-    [stopCountdown],
+    [rawExec, stopCountdown],
   );
 
   const handleConfigChange = useCallback((key: keyof DoubtConfig, value: string) => {

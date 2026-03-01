@@ -212,7 +212,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1));
   });
 
   it('calls reset when reset button is clicked', async () => {
@@ -385,7 +385,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'ダウト！' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0]));
   });
 
   it('calls skip with [] when スルー clicked (no cpu doubters)', async () => {
@@ -397,7 +397,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'スルー' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, [], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []));
   });
 
   it('calls doubt with [0, ...cpuDoubters] when ダウト！ clicked with cpu doubters', async () => {
@@ -410,7 +410,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'ダウト！' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0, 2, 3], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0, 2, 3]));
   });
 
   // ── Doubt phase: human played ─────────────────────────────────────────────
@@ -447,7 +447,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [1, 2], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [1, 2]));
   });
 
   // ── Doubt phase suppressed when gameEndFlag ───────────────────────────────
@@ -506,7 +506,7 @@ describe('DoubtPage', () => {
 
       // Auto-skip is called with the correct doubters
       await waitFor(() => {
-        expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, [], undefined);
+        expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []);
       });
     });
 

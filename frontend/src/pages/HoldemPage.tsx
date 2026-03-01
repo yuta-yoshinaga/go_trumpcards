@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { holdemApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { HoldemResponse } from '../types/card';
+
 import { HoldemAction, HoldemPhase } from '../types/phases';
 
 const ACTION_NAMES: Record<number, string> = {
@@ -25,26 +26,8 @@ const PHASE_NAMES: Record<number, string> = {
 };
 
 export function HoldemPage() {
-  const [state, setState] = useState<HoldemResponse | null>(null);
+  const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const [betAmount, setBetAmount] = useState(20);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const exec = useCallback(
-    async (command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin', amount?: number) => {
-      setLoading(true);
-      try {
-        setError(null);
-        const res = await holdemApi.exec(command, amount);
-        setState(res);
-      } catch {
-        setError('通信エラーが発生しました。もう一度お試しください。');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
 
   useEffect(() => {
     exec('reset');

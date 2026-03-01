@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { SevensConfigInput } from '../api/gameApi';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
 import { findPlayerName, playerName } from '../utils/playerUtils';
@@ -281,35 +281,20 @@ function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, loading,
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export function SevensPage() {
-  const [state, setState] = useState<SevensResponse | null>(null);
   const [jokerCardIdx, setJokerCardIdx] = useState<number | null>(null);
   const [cfgTunnel, setCfgTunnel] = useState(false);
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
   const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
   const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const exec = useCallback(
-    async (command: 'reset' | 'play' | 'joker', index = -1, suit = 0, value = 0, config?: SevensConfigInput) => {
-      setLoading(true);
-      try {
-        setError(null);
-        const res = await sevensApi.exec(command, index, suit, value, config);
-        setState(res);
-        setJokerCardIdx(null);
-        setCfgTunnel(res.config.tunnelEnabled);
-        setCfgJokerCount(res.config.jokerCount);
-        setCfgCpuStrategy(res.config.cpuStrategy);
-        setCfgMaxPasses(res.config.maxPasses);
-      } catch {
-        setError('通信エラーが発生しました。もう一度お試しください。');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const onSuccess = useCallback((res: SevensResponse) => {
+    setJokerCardIdx(null);
+    setCfgTunnel(res.config.tunnelEnabled);
+    setCfgJokerCount(res.config.jokerCount);
+    setCfgCpuStrategy(res.config.cpuStrategy);
+    setCfgMaxPasses(res.config.maxPasses);
+  }, []);
+  const { state, loading, error, exec } = useGameApi(sevensApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');

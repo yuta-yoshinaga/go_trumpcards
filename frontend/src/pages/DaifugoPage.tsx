@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type {
   Card,
@@ -288,25 +289,13 @@ const defaultConfigInput: DaifugoConfigInput = {
 };
 
 export function DaifugoPage() {
-  const [state, setState] = useState<DaifugoResponse | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [configInput, setConfigInput] = useState<DaifugoConfigInput>(defaultConfigInput);
 
-  const exec = useCallback(async (command: 'reset' | 'play', indices?: number[], config?: DaifugoConfigInput) => {
-    setLoading(true);
-    try {
-      setError(null);
-      const res = await daifugoApi.exec(command, indices, config);
-      setState(res);
-      setSelectedIndices([]);
-    } catch {
-      setError('通信エラーが発生しました。もう一度お試しください。');
-    } finally {
-      setLoading(false);
-    }
+  const onSuccess = useCallback(() => {
+    setSelectedIndices([]);
   }, []);
+  const { state, loading, error, exec } = useGameApi(daifugoApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');

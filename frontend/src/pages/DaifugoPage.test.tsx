@@ -96,7 +96,7 @@ describe('DaifugoPage', () => {
 
   it('calls reset command on mount', async () => {
     render(<DaifugoPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('renders human player area labeled あなた', async () => {
@@ -180,7 +180,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
   });
 
   it('selects a card on click and enables play button', async () => {
@@ -198,7 +198,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: '選択して出す' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
   });
 
   it('shows human action log after play', async () => {
@@ -576,7 +576,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent(dropZone, dropEvent);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
   });
 
   it('drop on table plays selected cards when dragged card is in selection', async () => {
@@ -598,7 +598,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent(dropZone, dropEvent);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0, 1], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0, 1]));
   });
 
   it('drop with invalid dataTransfer data is ignored (NaN guard)', async () => {
