@@ -5,15 +5,8 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { Card, DoubtConfig, DoubtCpuAction, DoubtPlayerData } from '../types/card';
+import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
-
-function valueName(v: number): string {
-  if (v === 1) return 'A';
-  if (v === 11) return 'J';
-  if (v === 12) return 'Q';
-  if (v === 13) return 'K';
-  return String(v);
-}
 
 // ── CPU player area ──────────────────────────────────────────────────────────
 
