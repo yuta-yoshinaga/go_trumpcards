@@ -1772,6 +1772,36 @@ func TestCpuDecide_PostFlop_LAG_AllIn_WithBet(t *testing.T) {
 	assert.True(t, found)
 }
 
+func TestCpuDecide_UnknownStyle(t *testing.T) {
+	players := []*HoldemPlayer{
+		NewHoldemPlayer(true, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemPlayStyle(99)),
+		NewHoldemPlayer(false, HoldemStyleTAP),
+		NewHoldemPlayer(false, HoldemStyleLAG),
+	}
+	cfg := DefaultHoldemConfig()
+	h := NewHoldem(NewTrumpCards(0), players, cfg)
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+
+	t.Run("with call amount", func(t *testing.T) {
+		h.SetPhase(HoldemPhasePreFlop)
+		h.SetLastBet(20)
+		action, amount := h.cpuDecide(1)
+		assert.Equal(t, HoldemActionCall, action)
+		assert.Equal(t, 0, amount)
+	})
+
+	t.Run("without call amount", func(t *testing.T) {
+		h.SetPhase(HoldemPhaseFlop)
+		h.SetLastBet(0)
+		action, amount := h.cpuDecide(1)
+		assert.Equal(t, HoldemActionCheck, action)
+		assert.Equal(t, 0, amount)
+	})
+}
+
 func TestRunCpuActions_StopsAtHuman(t *testing.T) {
 	h := newInternalTestHoldem()
 	for _, p := range h.players {
