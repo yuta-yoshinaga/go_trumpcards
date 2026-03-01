@@ -96,7 +96,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 
 	res, err := jsonMarshal(resObj)
 	if err != nil {
-		return `{"error":"internal server error"}`
+		return internalServerErrorJSON()
 	}
 	return string(res)
 }
