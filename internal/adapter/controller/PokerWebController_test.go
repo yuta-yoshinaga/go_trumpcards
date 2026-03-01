@@ -420,28 +420,14 @@ func TestPokerWebController_Bet_ShortCommand(t *testing.T) {
 	recorded.CodeIs(200)
 }
 
-func TestPokerWebController_Bet_AmountBelowMinBet(t *testing.T) {
-	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
-	defer pwc.Stop()
-
-	// MinBet is 10, so amount=5 should fail
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "bet",
-				"sessionId": "s1",
-				"amount":    5,
-			}))
-	recorded.CodeIs(400)
-}
-
 func TestPokerWebController_Bet_AmountZero(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	// amount=0, MinBet=10, 0 < 10 => error
+	// amount=0 passes through to domain which validates
+	mi.On("Action", domain.PokerActionBet, 0).Return(`{"phase":1,"message":"error"}`)
+
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
 			map[string]interface{}{
@@ -449,7 +435,7 @@ func TestPokerWebController_Bet_AmountZero(t *testing.T) {
 				"sessionId": "s1",
 				"amount":    0,
 			}))
-	recorded.CodeIs(400)
+	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Bet_AmountMissing(t *testing.T) {
@@ -457,14 +443,16 @@ func TestPokerWebController_Bet_AmountMissing(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	// No amount field => defaults to 0 in JSON, which is < MinBet(10)
+	// No amount field => defaults to 0, passes through to domain
+	mi.On("Action", domain.PokerActionBet, 0).Return(`{"phase":1,"message":"error"}`)
+
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
 			map[string]interface{}{
 				"command":   "b",
 				"sessionId": "s1",
 			}))
-	recorded.CodeIs(400)
+	recorded.CodeIs(200)
 }
 
 // --- raise command ---
@@ -503,25 +491,13 @@ func TestPokerWebController_Raise_ShortCommand(t *testing.T) {
 	recorded.CodeIs(200)
 }
 
-func TestPokerWebController_Raise_AmountBelowMinBet(t *testing.T) {
-	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
-	defer pwc.Stop()
-
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "raise",
-				"sessionId": "s1",
-				"amount":    5,
-			}))
-	recorded.CodeIs(400)
-}
-
 func TestPokerWebController_Raise_AmountZero(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
+
+	// amount=0 passes through to domain which validates
+	mi.On("Action", domain.PokerActionRaise, 0).Return(`{"phase":1,"message":"error"}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -530,7 +506,7 @@ func TestPokerWebController_Raise_AmountZero(t *testing.T) {
 				"sessionId": "s1",
 				"amount":    0,
 			}))
-	recorded.CodeIs(400)
+	recorded.CodeIs(200)
 }
 
 func TestPokerWebController_Raise_AmountMissing(t *testing.T) {
@@ -538,13 +514,16 @@ func TestPokerWebController_Raise_AmountMissing(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
+	// No amount => defaults to 0, passes through to domain
+	mi.On("Action", domain.PokerActionRaise, 0).Return(`{"phase":1,"message":"error"}`)
+
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
 			map[string]interface{}{
 				"command":   "raise",
 				"sessionId": "s1",
 			}))
-	recorded.CodeIs(400)
+	recorded.CodeIs(200)
 }
 
 // --- allin command ---
@@ -779,73 +758,6 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 	}
 }
 
-// --- Bet/Raise at exact MinBet boundary ---
-
-func TestPokerWebController_Bet_ExactMinBet(t *testing.T) {
-	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
-	defer pwc.Stop()
-
-	// MinBet=10, amount=10 => exactly at boundary, should succeed
-	mi.On("Action", domain.PokerActionBet, 10).Return(`{"phase":1}`)
-
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "bet",
-				"sessionId": "s1",
-				"amount":    10,
-			}))
-	recorded.CodeIs(200)
-}
-
-func TestPokerWebController_Raise_ExactMinBet(t *testing.T) {
-	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
-	defer pwc.Stop()
-
-	mi.On("Action", domain.PokerActionRaise, 10).Return(`{"phase":1}`)
-
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "raise",
-				"sessionId": "s1",
-				"amount":    10,
-			}))
-	recorded.CodeIs(200)
-}
-
-func TestPokerWebController_Bet_JustBelowMinBet(t *testing.T) {
-	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
-	defer pwc.Stop()
-
-	// MinBet=10, amount=9 => just below, should fail
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "bet",
-				"sessionId": "s1",
-				"amount":    9,
-			}))
-	recorded.CodeIs(400)
-}
-
-func TestPokerWebController_Raise_JustBelowMinBet(t *testing.T) {
-	mi := new(mockUsecase.MockPokerInteractor)
-	api, pwc := newPokerTestHandler(mi)
-	defer pwc.Stop()
-
-	recorded := test.RunRequest(t, api.MakeHandler(),
-		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
-			map[string]interface{}{
-				"command":   "raise",
-				"sessionId": "s1",
-				"amount":    9,
-			}))
-	recorded.CodeIs(400)
-}
 
 // --- all short commands exercise ---
 

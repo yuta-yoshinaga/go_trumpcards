@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"net/http"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
@@ -144,16 +142,8 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			case "c", "call":
 				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionCall, 0))
 			case "b", "bet":
-				if param.Amount < domain.DefaultPokerConfig().MinBet {
-					pwc.writeJsonResponse(w, http.StatusBadRequest, pwc.newDefaultOutput("param error: amount must be at least the minimum bet."))
-					return true
-				}
 				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionBet, param.Amount))
 			case "ra", "raise":
-				if param.Amount < domain.DefaultPokerConfig().MinBet {
-					pwc.writeJsonResponse(w, http.StatusBadRequest, pwc.newDefaultOutput("param error: amount must be at least the minimum raise."))
-					return true
-				}
 				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionRaise, param.Amount))
 			case "a", "allin":
 				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionAllIn, 0))
