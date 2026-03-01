@@ -542,7 +542,7 @@ describe('SevensPage', () => {
     fireEvent.click(screen.getByAltText('JOKER 0'));
 
     // After click, board position buttons for value '6' appear synchronously (7 is placed)
-    const boardButtons6 = screen.getAllByRole('button', { name: '6' });
+    const boardButtons6 = screen.getAllByRole('button', { name: /6 に配置/ });
     expect(boardButtons6.length).toBeGreaterThan(0);
 
     mockExec.mockClear();

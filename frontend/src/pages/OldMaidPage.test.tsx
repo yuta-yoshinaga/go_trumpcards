@@ -302,6 +302,16 @@ describe('OldMaidPage', () => {
     expect(screen.queryByText(/SPADE 3/)).not.toBeInTheDocument();
   });
 
+  it('renders aria-label on clickable card backs for screen reader accessibility', async () => {
+    await startGame();
+    // CPU 1 is target with 4 cards; only first 4 shown (capped at 10)
+    const drawButtons = screen.getAllByRole('button', { name: /枚目を引く/ });
+    expect(drawButtons[0]).toHaveAttribute('aria-label', 'カード 1 枚目を引く');
+    expect(drawButtons[1]).toHaveAttribute('aria-label', 'カード 2 枚目を引く');
+    expect(drawButtons[2]).toHaveAttribute('aria-label', 'カード 3 枚目を引く');
+    expect(drawButtons[3]).toHaveAttribute('aria-label', 'カード 4 枚目を引く');
+  });
+
   it('calls draw with drawIdx when a target player card back is clicked', async () => {
     await startGame();
     mockExec.mockClear();
