@@ -86,7 +86,7 @@ describe('SevensPage', () => {
 
   it('calls reset command on mount', async () => {
     render(<SevensPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('renders human player area labeled あなた', async () => {
@@ -146,7 +146,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1, 0, 0, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', -1));
   });
 
   it('calls play with card index when a playable card is clicked', async () => {
@@ -155,7 +155,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByAltText('SPADE 6'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0, 0, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
   it('does not call play when a non-playable card is clicked', async () => {
@@ -542,15 +542,15 @@ describe('SevensPage', () => {
     fireEvent.click(screen.getByAltText('JOKER 0'));
 
     // After click, board position buttons for value '6' appear synchronously (7 is placed)
-    const boardButtons6 = screen.getAllByRole('button', { name: '6' });
+    const boardButtons6 = screen.getAllByRole('button', { name: /6 に配置/ });
     expect(boardButtons6.length).toBeGreaterThan(0);
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(boardButtons6[0]);
 
-    // exec is called as: sevensApi.exec('joker', 0, suit, 6, undefined)
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, expect.any(Number), 6, undefined));
+    // exec is called as: sevensApi.exec('joker', 0, suit, 6)
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('joker', 0, expect.any(Number), 6));
   }, 10000);
 
   it('shows rank badge when human player finishes', async () => {
@@ -723,6 +723,31 @@ describe('SevensPage', () => {
     mockExec.mockResolvedValue(normalPassCpuState);
     render(<SevensPage />);
     await waitFor(() => expect(screen.getByTestId('cpu-action-0')).toBeInTheDocument());
+  });
+
+  it('sets aria-busy and sr-only loading text while loading', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+
+    const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-live]') as HTMLElement;
+    expect(container).toHaveAttribute('aria-busy', 'false');
+    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+
+    let resolve!: (value: SevensResponse) => void;
+    const slowPromise = new Promise<SevensResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+
+    expect(container).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByText('処理中...')).toBeInTheDocument();
+
+    resolve(humanTurnState);
+    await waitFor(() => {
+      expect(container).toHaveAttribute('aria-busy', 'false');
+      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+    });
   });
 
   it('shows joker played without target info when targetSuit is 0', async () => {

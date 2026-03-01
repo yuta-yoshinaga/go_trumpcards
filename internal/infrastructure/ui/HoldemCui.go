@@ -49,8 +49,11 @@ func (cui *HoldemCui) Exec() {
 
 	for {
 		fmt.Print("\nPlease enter a command > ")
-		scanner.Scan()
-		res := cui.hc.Exec(scanner.Text())
+		input, exit := readInput(scanner)
+		if exit {
+			break
+		}
+		res := cui.hc.Exec(input)
 		fmt.Println(res)
 		if res == "bye." {
 			break

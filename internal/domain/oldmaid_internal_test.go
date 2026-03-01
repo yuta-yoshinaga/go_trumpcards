@@ -138,6 +138,53 @@ func TestOldMaid_advancePastFinished_SkipsFinishedPlayer(t *testing.T) {
 	assert.Equal(t, 1, om.currentTurn, "advancePastFinished should skip finished player[0] and land on player[1]")
 }
 
+// TestOldMaid_advancePastFinished_GameEndFlag covers the guard that prevents an
+// infinite loop when all players are finished and gameEndFlag is true.
+func TestOldMaid_advancePastFinished_GameEndFlag(t *testing.T) {
+	tc := NewTrumpCards(1)
+	players := []*OldMaidPlayer{
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+	}
+	om := NewOldMaid(tc, players)
+
+	// All players finished + gameEndFlag set
+	for _, p := range players {
+		p.SetIsFinished(true)
+	}
+	om.gameEndFlag = true
+	om.currentTurn = 0
+
+	// Must return without hanging (would infinite-loop without the guard)
+	om.advancePastFinished()
+	assert.Equal(t, 0, om.currentTurn, "advancePastFinished should not change currentTurn when gameEndFlag is true")
+}
+
+// TestOldMaid_advancePastFinished_AllFinishedWithoutGameEndFlag verifies that the
+// bounded loop prevents an infinite loop even when gameEndFlag is false but all
+// players are finished. currentTurn wraps around and returns to its original value.
+func TestOldMaid_advancePastFinished_AllFinishedWithoutGameEndFlag(t *testing.T) {
+	tc := NewTrumpCards(1)
+	players := []*OldMaidPlayer{
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+	}
+	om := NewOldMaid(tc, players)
+
+	for _, p := range players {
+		p.SetIsFinished(true)
+	}
+	om.currentTurn = 1
+
+	om.advancePastFinished()
+
+	assert.Equal(t, 1, om.currentTurn, "currentTurn should loop back to its original value when all players are finished")
+}
+
 // TestOldMaid_drawCard_NoActiveTargetWith5Players covers drawCard returning nil
 // when getNextActivePlayer returns -1 (no active target).
 func TestOldMaid_drawCard_NoActiveTargetWith5Players(t *testing.T) {

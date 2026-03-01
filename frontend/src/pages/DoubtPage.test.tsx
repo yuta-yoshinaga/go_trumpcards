@@ -144,6 +144,20 @@ describe('DoubtPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
   });
 
+  it('toggles aria-pressed on HandCard button click', async () => {
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('toggles card selection on click and enables 出す button', async () => {
     render(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('SPADE 1')).toBeInTheDocument());
@@ -212,7 +226,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1));
   });
 
   it('calls reset when reset button is clicked', async () => {
@@ -277,6 +291,31 @@ describe('DoubtPage', () => {
     );
   });
 
+  it('sets aria-busy and sr-only loading text while loading', async () => {
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+    expect(container).toHaveAttribute('aria-busy', 'false');
+    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+
+    let resolve!: (value: DoubtResponse) => void;
+    const slowPromise = new Promise<DoubtResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+
+    expect(container).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByText('処理中...')).toBeInTheDocument();
+
+    resolve(humanTurnState);
+    await waitFor(() => {
+      expect(container).toHaveAttribute('aria-busy', 'false');
+      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+    });
+  });
+
   // ── Table area ────────────────────────────────────────────────────────────
 
   it('shows lastAction in table area', async () => {
@@ -294,48 +333,6 @@ describe('DoubtPage', () => {
     render(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.queryByText(/枚出しました/)).not.toBeInTheDocument();
-  });
-
-  // ── valueName branches ───────────────────────────────────────────────────
-
-  it('valueName shows A for claimedValue 1', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastAction: { playerIdx: 1, claimedValue: 1, cardCount: 1, isBluff: false },
-    };
-    mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/宣言: A/)).toBeInTheDocument());
-  });
-
-  it('valueName shows J for claimedValue 11', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastAction: { playerIdx: 1, claimedValue: 11, cardCount: 1, isBluff: false },
-    };
-    mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/宣言: J/)).toBeInTheDocument());
-  });
-
-  it('valueName shows Q for claimedValue 12', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastAction: { playerIdx: 1, claimedValue: 12, cardCount: 1, isBluff: false },
-    };
-    mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/宣言: Q/)).toBeInTheDocument());
-  });
-
-  it('valueName shows K for claimedValue 13', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastAction: { playerIdx: 1, claimedValue: 13, cardCount: 1, isBluff: false },
-    };
-    mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText(/宣言: K/)).toBeInTheDocument());
   });
 
   // ── actionDesc branches ───────────────────────────────────────────────────
@@ -385,7 +382,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'ダウト！' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0]));
   });
 
   it('calls skip with [] when スルー clicked (no cpu doubters)', async () => {
@@ -397,7 +394,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'スルー' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, [], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []));
   });
 
   it('calls doubt with [0, ...cpuDoubters] when ダウト！ clicked with cpu doubters', async () => {
@@ -410,7 +407,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'ダウト！' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0, 2, 3], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0, 2, 3]));
   });
 
   // ── Doubt phase: human played ─────────────────────────────────────────────
@@ -447,7 +444,7 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [1, 2], undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [1, 2]));
   });
 
   // ── Doubt phase suppressed when gameEndFlag ───────────────────────────────
@@ -506,7 +503,7 @@ describe('DoubtPage', () => {
 
       // Auto-skip is called with the correct doubters
       await waitFor(() => {
-        expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, [], undefined);
+        expect(mockExec).toHaveBeenCalledWith('skip', undefined, undefined, []);
       });
     });
 

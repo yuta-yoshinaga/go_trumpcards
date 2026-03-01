@@ -78,6 +78,8 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     counts[a.drawFromIdx] = counts[a.drawFromIdx] + 1;
   }
 
+  const [firstCpuAction] = finalState.cpuActions;
+
   return {
     ...finalState,
     players: finalState.players.map((p, idx) => ({
@@ -85,7 +87,6 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
       cardCount: Math.max(0, counts[idx]),
       isFinished: counts[idx] <= 0,
     })),
-    currentTurn: finalState.cpuActions[0].drawPlayerIdx,
     hasDrawn: true,
     lastDrawPlayerIdx: ha.drawPlayerIdx,
     lastDrawFromIdx: ha.drawFromIdx,
@@ -93,9 +94,12 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
     lastDiscardedPairs: ha.discardedPairs,
     lastDiscardedCards: ha.discardedCards ?? [],
     cpuActions: [],
-    gameEndFlag: false,
-    message: '',
-    nextDrawTargetIdx: finalState.cpuActions[0].drawFromIdx,
+    ...(firstCpuAction && {
+      currentTurn: firstCpuAction.drawPlayerIdx,
+      gameEndFlag: false,
+      message: '',
+      nextDrawTargetIdx: firstCpuAction.drawFromIdx,
+    }),
   };
 }
 
@@ -176,8 +180,16 @@ function PlayerArea({
                 cursor: 'pointer',
                 ...(isHighlighted ? { transform: 'translateY(-8px)', transition: 'transform 0.2s' } : {}),
               };
-              // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              return <CardBack key={i} width={40} style={cardStyle} onClick={() => onDraw(i)} />;
+              return (
+                <CardBack
+                  // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
+                  key={i}
+                  width={40}
+                  style={cardStyle}
+                  onClick={() => onDraw(i)}
+                  ariaLabel={`カード ${i + 1} 枚目を引く`}
+                />
+              );
             })}
             {player.cardCount > 10 && (
               <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
@@ -255,7 +267,7 @@ function SetupScreen({
   loading,
 }: SetupScreenProps) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-[#1a5c1a] p-6 gap-4">
+    <div className="flex-1 flex flex-col items-center justify-center bg-[#1a5c1a] p-6 gap-4" aria-busy={loading}>
       <div className="text-white text-2xl font-bold mb-2">Old Maid 設定</div>
       <div className="bg-black/40 rounded-xl p-4 w-full max-w-sm flex flex-col gap-3">
         <div className="text-white font-bold mb-1">モード選択</div>
@@ -307,7 +319,7 @@ export function OldMaidPage() {
         setError(null);
         const res = await oldmaidApi.exec(command, drawIdx, execMode, execStrategy);
 
-        if (command === 'reset' || res.cpuActions.length === 0) {
+        if (command === 'reset') {
           setDisplayState(res);
           return;
         }
@@ -317,6 +329,11 @@ export function OldMaidPage() {
         if (humanDrawState) {
           setDisplayState(humanDrawState);
           await delay(REPLAY_DELAY_MS);
+        }
+
+        if (res.cpuActions.length === 0) {
+          setDisplayState(res);
+          return;
         }
 
         // Replay each CPU action step by step
@@ -382,7 +399,8 @@ export function OldMaidPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
+      {loading && <span className="sr-only">処理中...</span>}
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Mode badge */}

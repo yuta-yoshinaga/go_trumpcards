@@ -99,6 +99,7 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
   src/
     api/                       # API client functions (fetch wrappers)
     components/                # Shared React components (NavBar, CardImage, CardBack)
+    hooks/                     # Custom React hooks (useGameApi)
     pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage, DaifugoPage)
     types/                     # TypeScript type definitions for card/game data
 public/                        # Built frontend assets served by Go web server

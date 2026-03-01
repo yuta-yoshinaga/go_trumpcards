@@ -30,12 +30,12 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 	lastDrawPlayerIdx := om.GetLastDrawPlayerIdx()
 	lastDrawPlayer := om.GetPlayer(lastDrawPlayerIdx)
 	if lastDrawPlayer != nil && lastDrawPlayer.GetIsHuman() {
-		resObj.LastDrawCard = owp.getCardObj(om.GetLastDrawCard())
+		resObj.LastDrawCard = cardToOutput(om.GetLastDrawCard())
 	}
 	resObj.LastDiscardedPairs = om.GetLastDiscardedPairs()
-	resObj.LastDiscardedCards = make([]*controller.OldMaidWebOutputCard, 0)
+	resObj.LastDiscardedCards = make([]*controller.WebOutputCard, 0)
 	for _, card := range om.GetLastDiscardedCards() {
-		resObj.LastDiscardedCards = append(resObj.LastDiscardedCards, owp.getCardObj(card))
+		resObj.LastDiscardedCards = append(resObj.LastDiscardedCards, cardToOutput(card))
 	}
 	resObj.HasDrawn = om.GetHasDrawn()
 
@@ -47,10 +47,10 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			DrawFromIdx:    action.DrawFromIdx,
 			DrawnCard:      nil, // CPU drawn card is hidden to preserve game fairness
 			DiscardedPairs: action.DiscardedPairs,
-			DiscardedCards: make([]*controller.OldMaidWebOutputCard, 0),
+			DiscardedCards: make([]*controller.WebOutputCard, 0),
 		}
 		for _, card := range action.DiscardedCards {
-			a.DiscardedCards = append(a.DiscardedCards, owp.getCardObj(card))
+			a.DiscardedCards = append(a.DiscardedCards, cardToOutput(card))
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
 	}
@@ -60,12 +60,12 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		haObj := &controller.OldMaidWebOutputCpuAction{
 			DrawPlayerIdx:  ha.DrawPlayerIdx,
 			DrawFromIdx:    ha.DrawFromIdx,
-			DrawnCard:      owp.getCardObj(ha.DrawnCard),
+			DrawnCard:      cardToOutput(ha.DrawnCard),
 			DiscardedPairs: ha.DiscardedPairs,
-			DiscardedCards: make([]*controller.OldMaidWebOutputCard, 0),
+			DiscardedCards: make([]*controller.WebOutputCard, 0),
 		}
 		for _, card := range ha.DiscardedCards {
-			haObj.DiscardedCards = append(haObj.DiscardedCards, owp.getCardObj(card))
+			haObj.DiscardedCards = append(haObj.DiscardedCards, cardToOutput(card))
 		}
 		resObj.HumanAction = haObj
 	}
@@ -77,10 +77,10 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		pObj.IsHuman = player.GetIsHuman()
 		pObj.IsFinished = player.GetIsFinished()
 		pObj.CardCount = player.GetCardsSize()
-		pObj.Cards = make([]*controller.OldMaidWebOutputCard, 0)
+		pObj.Cards = make([]*controller.WebOutputCard, 0)
 		if player.GetIsHuman() {
 			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, owp.getCardObj(player.GetCard(j)))
+				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
 			}
 		}
 		resObj.Players = append(resObj.Players, pObj)
@@ -92,7 +92,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 
 	// ジジ抜き: ゲーム終了時に除外カードを公開
 	if om.GetGameEndFlag() && om.GetConfig().Mode == domain.OldMaidModeJijiNuki {
-		resObj.RemovedCard = owp.getCardObj(om.GetRemovedCard())
+		resObj.RemovedCard = cardToOutput(om.GetRemovedCard())
 	}
 
 	// エラーメッセージ
@@ -115,15 +115,4 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		return `{"error":"internal server error"}`
 	}
 	return string(res)
-}
-
-// getCardObj カード情報オブジェクト取得 (nil の場合は nil を返す)
-func (owp *OldMaidWebPresenter) getCardObj(card *domain.Card) *controller.OldMaidWebOutputCard {
-	if card == nil {
-		return nil
-	}
-	res := new(controller.OldMaidWebOutputCard)
-	res.Design = cardDesignToString(card.GetDesign())
-	res.Value = card.GetValue()
-	return res
 }

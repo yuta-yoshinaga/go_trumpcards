@@ -1,6 +1,6 @@
 # Stage 1: Build React frontend
 # Pinned to a specific digest for reproducible builds
-FROM node:24-alpine@sha256:d88d203cab4ee6fa4897d8286f3caea2e9cf48db77176042fca2f4ac4a4414ce AS frontend-builder
+FROM node:24-alpine@sha256:7fddd9ddeae8196abf4a3ef2de34e11f7b1a722119f91f28ddf1e99dcafdf114 AS frontend-builder
 
 WORKDIR /app
 
@@ -54,6 +54,7 @@ COPY --from=frontend-builder --chown=appuser:appgroup /app/public ./public
 USER appuser
 
 # Use a non-privileged port; the server reads the PORT environment variable
+ENV APP_ENV=production
 ENV PORT=8080
 EXPOSE 8080
 

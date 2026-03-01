@@ -29,6 +29,7 @@ func TestPokerWebController_Method(t *testing.T) {
 
 	factory := func() uc.PokerInteractorIF { return piMock }
 	tpc := controller.NewPokerWebController(factory)
+	defer tpc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -206,7 +207,7 @@ func TestPokerWebController_Method(t *testing.T) {
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/poker/exec", &jsonInput)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusOK)
+		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"dealer":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"player":{"handRank":0,"handName":"","cards":null,"chips":0,"bet":0},"phase":0,"message":"Unsupported command.","pot":0,"ante":0}`)
 	})
@@ -267,6 +268,7 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 		}
 		return mockB
 	})
+	defer isoController.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -306,4 +308,12 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
 		}
 	})
+}
+
+func TestPokerWebController_Stop(t *testing.T) {
+	piMock := new(usecase.MockPokerInteractor)
+	factory := func() uc.PokerInteractorIF { return piMock }
+	c := controller.NewPokerWebController(factory)
+	c.Stop()
+	c.Stop()
 }

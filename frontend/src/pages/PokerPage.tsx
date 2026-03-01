@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { pokerApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { PokerResponse } from '../types/card';
+
 import { PokerPhase } from '../types/phases';
 
 const cardWrapBase: React.CSSProperties = {
@@ -16,32 +17,13 @@ const cardWrapBase: React.CSSProperties = {
 };
 
 export function PokerPage() {
-  const [state, setState] = useState<PokerResponse | null>(null);
   const [selected, setSelected] = useState<number[]>([]);
   const [betAmount, setBetAmount] = useState(10);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const exec = useCallback(
-    async (
-      command: 'reset' | 'exchange' | 'stand' | 'bet' | 'call' | 'raise' | 'fold' | 'check',
-      indices?: number[],
-      amount?: number,
-    ) => {
-      setLoading(true);
-      try {
-        setError(null);
-        const res = await pokerApi.exec(command, indices, amount);
-        setState(res);
-        setSelected([]);
-      } catch {
-        setError('通信エラーが発生しました。もう一度お試しください。');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const onSuccess = useCallback(() => {
+    setSelected([]);
+  }, []);
+  const { state, loading, error, exec } = useGameApi(pokerApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');
@@ -62,7 +44,8 @@ export function PokerPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
+      {loading && <span className="sr-only">処理中...</span>}
       {/* Chip/Pot info bar */}
       <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
         <span>
@@ -156,6 +139,7 @@ export function PokerPage() {
                 <button
                   key={`${card.design}-${card.value}`}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => toggleSelect(i)}
                   style={{
                     background: 'none',

@@ -26,9 +26,9 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	resObj.MinRaise = h.GetMinRaise()
 
 	// コミュニティカード
-	resObj.CommunityCards = make([]*controller.HoldemWebOutputCard, 0)
+	resObj.CommunityCards = make([]*controller.WebOutputCard, 0)
 	for _, card := range h.GetCommunityCards() {
-		resObj.CommunityCards = append(resObj.CommunityCards, hwp.cardToOutput(card))
+		resObj.CommunityCards = append(resObj.CommunityCards, cardToOutput(card))
 	}
 
 	// サイドポット
@@ -53,14 +53,14 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 			Folded:        player.GetFolded(),
 			AllIn:         player.GetAllIn(),
 			PlayStyleName: player.GetPlayStyleName(),
-			Cards:         make([]*controller.HoldemWebOutputCard, 0),
-			BestHand:      make([]*controller.HoldemWebOutputCard, 0),
+			Cards:         make([]*controller.WebOutputCard, 0),
+			BestHand:      make([]*controller.WebOutputCard, 0),
 		}
 
 		// 人間のカードは常に表示、CPUのカードはショーダウン時のみ表示
 		if player.GetIsHuman() || (isShowdown && !player.GetFolded()) {
 			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, hwp.cardToOutput(player.GetCard(j)))
+				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
 			}
 		}
 
@@ -69,7 +69,7 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 			pObj.HandRank = player.GetHandRank()
 			pObj.HandName = hwp.getHandName(player.GetHandRank())
 			for _, card := range player.GetBestHand() {
-				pObj.BestHand = append(pObj.BestHand, hwp.cardToOutput(card))
+				pObj.BestHand = append(pObj.BestHand, cardToOutput(card))
 			}
 		}
 
@@ -94,10 +94,10 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 			HandRank:  r.HandRank,
 			HandName:  r.HandName,
 			WonAmount: r.WonAmount,
-			BestHand:  make([]*controller.HoldemWebOutputCard, 0),
+			BestHand:  make([]*controller.WebOutputCard, 0),
 		}
 		for _, card := range r.BestHand {
-			result.BestHand = append(result.BestHand, hwp.cardToOutput(card))
+			result.BestHand = append(result.BestHand, cardToOutput(card))
 		}
 		resObj.RoundResults = append(resObj.RoundResults, result)
 	}
@@ -139,14 +139,6 @@ func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) strin
 	}
 
 	return "You lose."
-}
-
-// cardToOutput カードを出力オブジェクトに変換
-func (hwp *HoldemWebPresenter) cardToOutput(card *domain.Card) *controller.HoldemWebOutputCard {
-	return &controller.HoldemWebOutputCard{
-		Design: cardDesignToString(card.GetDesign()),
-		Value:  card.GetValue(),
-	}
 }
 
 // getHandName ハンドランクから名前を返す

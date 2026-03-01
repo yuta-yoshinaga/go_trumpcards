@@ -6,18 +6,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func setupInternalTestBJ(playerChips, dealerChips int) (*BlackJack, *BlackJackPlayer, *BlackJackPlayer) {
+	tc := NewTrumpCards(0)
+	player := NewBlackJackPlayer()
+	dealer := NewBlackJackPlayer()
+	player.SetChips(playerChips)
+	dealer.SetChips(dealerChips)
+	bj := NewBlackJack(tc, player, dealer)
+	return bj, player, dealer
+}
+
 // TestBlackJack_PlayerDoubleDown_Bust_Deterministic exercises lines 234-236 of
 // BlackJack.go: when score >= 22 after the double-down draw, the hand should be
 // marked as busted. Instead of retrying random shuffles, the deck is directly
 // stacked so the next drawn card is guaranteed to be a King (BJ value 10),
 // pushing the player's score from 20 to 30 (bust).
 func TestBlackJack_PlayerDoubleDown_Bust_Deterministic(t *testing.T) {
-	tc := NewTrumpCards(0)
-	player := NewBlackJackPlayer()
-	dealer := NewBlackJackPlayer()
-	player.SetChips(1000)
-	dealer.SetChips(1000)
-	bj := NewBlackJack(tc, player, dealer)
+	bj, _, dealer := setupInternalTestBJ(1000, 1000)
 
 	// Set up player hand with score 20 (10 + King=10)
 	hand := bj.playerHands[0]
@@ -58,18 +63,46 @@ func TestBlackJack_PlayerDoubleDown_Bust_Deterministic(t *testing.T) {
 	assert.Equal(t, GameResultLose, bj.GameJudgment())
 }
 
+// TestBlackJack_AllBustedSkipsDealerDraw verifies that when all player hands
+// are busted, dealerPlay skips drawing cards. Uses internal access to stack the
+// deck and call PlayerHit to bust the hand naturally.
+func TestBlackJack_AllBustedSkipsDealerDraw(t *testing.T) {
+	bj, player, dealer := setupInternalTestBJ(1000, 1000)
+
+	// Set up player hand with score 20 (10 + 10) and a 100 chip bet
+	hand := bj.playerHands[0]
+	hand.SetBet(100)
+	player.SubtractChips(100)
+	hand.AddCard(NewCard(CardDesignSpade, 10, false))
+	hand.AddCard(NewCard(CardDesignHeart, 10, false))
+
+	// Set up dealer with score 11 (5 + 6); would draw if not all-busted
+	dealer.AddCard(NewCard(CardDesignDiamond, 5, false))
+	dealer.AddCard(NewCard(CardDesignDiamond, 6, false))
+
+	// Stack the deck so PlayerHit draws a King (BJ value 10): 20 + 10 = 30 → bust
+	bj.trumpCards.deck[0] = NewCard(CardDesignClover, 13, false)
+	bj.trumpCards.deckDrawCnt = 0
+	bj.phase = BJPhaseAction
+
+	err := bj.PlayerHit()
+	assert.NoError(t, err)
+
+	// Hand should be busted, game should end
+	assert.True(t, hand.IsBusted())
+	assert.True(t, bj.gameEndFlag)
+	assert.Equal(t, BJPhaseEnd, bj.phase)
+	// Dealer should NOT have drawn any additional cards (still 2)
+	assert.Equal(t, 2, dealer.GetCardsSize())
+}
+
 // TestBlackJack_PlayerBet_DealerAceTriggersInsurance_Deterministic exercises
 // lines 131-134 of BlackJack.go: when the dealer's first card is an Ace
 // (value==1), insuranceAvailable is set to true and phase becomes
 // BJPhaseInsurance. Instead of relying on random shuffles, the deck is
 // directly stacked so the dealer's first dealt card is guaranteed to be an Ace.
 func TestBlackJack_PlayerBet_DealerAceTriggersInsurance_Deterministic(t *testing.T) {
-	tc := NewTrumpCards(0)
-	player := NewBlackJackPlayer()
-	dealer := NewBlackJackPlayer()
-	player.SetChips(BJDefaultChips)
-	dealer.SetChips(BJDefaultChips)
-	bj := NewBlackJack(tc, player, dealer)
+	bj, _, _ := setupInternalTestBJ(BJDefaultChips, BJDefaultChips)
 
 	// Stack the deck so that the deal produces a known layout.
 	// PlayerBet deals cards in this order (2 iterations of the loop):

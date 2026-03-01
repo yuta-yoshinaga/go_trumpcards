@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { SevensConfigInput } from '../api/gameApi';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
+import { suitName, valueName } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 // Design → suit index (matches Go backend: 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND)
@@ -16,22 +17,12 @@ const designToSuit: Record<CardDesign, number> = {
   JOKER: 0,
 };
 
-const suitNames: Record<number, string> = { 1: 'SPADE', 2: 'CLOVER', 3: 'HEART', 4: 'DIAMOND' };
-
 const SUITS = [
   { idx: 1, name: 'SPADE', label: '♠', color: '#e0e0e0' },
   { idx: 2, name: 'CLOVER', label: '♣', color: '#e0e0e0' },
   { idx: 3, name: 'HEART', label: '♥', color: '#f87171' },
   { idx: 4, name: 'DIAMOND', label: '♦', color: '#f87171' },
 ];
-
-function valueName(v: number): string {
-  if (v === 1) return 'A';
-  if (v === 11) return 'J';
-  if (v === 12) return 'Q';
-  if (v === 13) return 'K';
-  return String(v);
-}
 
 function isPositionPlaced(tablePlaced: number[], suit: number, value: number): boolean {
   return (tablePlaced[suit] & (1 << value)) !== 0;
@@ -71,7 +62,7 @@ function actionDesc(players: { id: number; isHuman: boolean }[], action: SevensA
   const c = action.playedCard;
   let desc = `${findPlayerName(players, action.playerIdx)}が出しました: ${c.design} ${valueName(c.value)}`;
   if (c.design === 'JOKER' && action.targetSuit > 0) {
-    desc += ` → ${suitNames[action.targetSuit]} ${valueName(action.targetValue)}`;
+    desc += ` → ${suitName(action.targetSuit)} ${valueName(action.targetValue)}`;
   }
   return desc;
 }
@@ -131,6 +122,7 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
                       key={v}
                       type="button"
                       onClick={() => onJokerPlace?.(idx, v)}
+                      aria-label={`${suitName(idx)} ${valueName(v)} に配置`}
                       style={{ ...cellStyle, border: '1px solid #60a5fa', cursor: 'pointer', padding: 0 }}
                     >
                       {valueName(v)}
@@ -281,35 +273,20 @@ function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, loading,
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export function SevensPage() {
-  const [state, setState] = useState<SevensResponse | null>(null);
   const [jokerCardIdx, setJokerCardIdx] = useState<number | null>(null);
   const [cfgTunnel, setCfgTunnel] = useState(false);
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
   const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
   const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const exec = useCallback(
-    async (command: 'reset' | 'play' | 'joker', index = -1, suit = 0, value = 0, config?: SevensConfigInput) => {
-      setLoading(true);
-      try {
-        setError(null);
-        const res = await sevensApi.exec(command, index, suit, value, config);
-        setState(res);
-        setJokerCardIdx(null);
-        setCfgTunnel(res.config.tunnelEnabled);
-        setCfgJokerCount(res.config.jokerCount);
-        setCfgCpuStrategy(res.config.cpuStrategy);
-        setCfgMaxPasses(res.config.maxPasses);
-      } catch {
-        setError('通信エラーが発生しました。もう一度お試しください。');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const onSuccess = useCallback((res: SevensResponse) => {
+    setJokerCardIdx(null);
+    setCfgTunnel(res.config.tunnelEnabled);
+    setCfgJokerCount(res.config.jokerCount);
+    setCfgCpuStrategy(res.config.cpuStrategy);
+    setCfgMaxPasses(res.config.maxPasses);
+  }, []);
+  const { state, loading, error, exec } = useGameApi(sevensApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');
@@ -341,7 +318,8 @@ export function SevensPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]">
+    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
+      {loading && <span className="sr-only">処理中...</span>}
       {/* Scrollable: CPU rows + board + action logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Config rules */}

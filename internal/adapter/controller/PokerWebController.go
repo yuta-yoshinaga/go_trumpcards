@@ -17,19 +17,13 @@ type PokerWebInput struct {
 	SessionId string `json:"sessionId"`
 }
 
-// PokerWebOutputCard ポーカーWebアウトプットカード
-type PokerWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
 type PokerWebOutputPlayer struct {
-	HandRank int                   `json:"handRank"`
-	HandName string                `json:"handName"`
-	Cards    []*PokerWebOutputCard `json:"cards"`
-	Chips    int                   `json:"chips"`
-	Bet      int                   `json:"bet"`
+	HandRank int              `json:"handRank"`
+	HandName string           `json:"handName"`
+	Cards    []*WebOutputCard `json:"cards"`
+	Chips    int              `json:"chips"`
+	Bet      int              `json:"bet"`
 }
 
 // PokerWebOutput ポーカーWebアウトプット
@@ -108,11 +102,16 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "ck", "check":
 		pwc.writePresenterResponse(w, pi.Check(), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(pwc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}
 	}
+}
+
+// Stop stops the background cleanup goroutine of the session store.
+func (pwc *PokerWebController) Stop() {
+	pwc.store.Stop()
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す

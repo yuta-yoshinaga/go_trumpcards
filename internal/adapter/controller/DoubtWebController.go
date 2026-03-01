@@ -22,19 +22,13 @@ type DoubtWebInput struct {
 	CpuMemoryLevel *int   `json:"cpuMemoryLevel,omitempty"`
 }
 
-// DoubtWebOutputCard ダウトWebアウトプットカード
-type DoubtWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
 type DoubtWebOutputPlayer struct {
-	ID         int                   `json:"id"`
-	IsHuman    bool                  `json:"isHuman"`
-	IsFinished bool                  `json:"isFinished"`
-	CardCount  int                   `json:"cardCount"`
-	Cards      []*DoubtWebOutputCard `json:"cards"`
+	ID         int              `json:"id"`
+	IsHuman    bool             `json:"isHuman"`
+	IsFinished bool             `json:"isFinished"`
+	CardCount  int              `json:"cardCount"`
+	Cards      []*WebOutputCard `json:"cards"`
 }
 
 // DoubtWebOutputAction ダウトのプレイヤー行動記録
@@ -47,12 +41,12 @@ type DoubtWebOutputAction struct {
 
 // DoubtWebOutputDoubtResult ダウト解決結果
 type DoubtWebOutputDoubtResult struct {
-	DoubterIdx    int                   `json:"doubterIdx"`
-	CardPlayerIdx int                   `json:"cardPlayerIdx"`
-	WasLying      bool                  `json:"wasLying"`
-	LoserIdx      int                   `json:"loserIdx"`
-	CardCount     int                   `json:"cardCount"`
-	RevealedCards []*DoubtWebOutputCard `json:"revealedCards"`
+	DoubterIdx    int              `json:"doubterIdx"`
+	CardPlayerIdx int              `json:"cardPlayerIdx"`
+	WasLying      bool             `json:"wasLying"`
+	LoserIdx      int              `json:"loserIdx"`
+	CardCount     int              `json:"cardCount"`
+	RevealedCards []*WebOutputCard `json:"revealedCards"`
 }
 
 // DoubtWebOutput ダウトWebアウトプット
@@ -165,11 +159,16 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			dwc.writePresenterResponse(w, dgi.SkipDoubt(), errOutput)
 		}
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(dwc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}
 	}
+}
+
+// Stop stops the background cleanup goroutine of the session store.
+func (dwc *DoubtWebController) Stop() {
+	dwc.store.Stop()
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す

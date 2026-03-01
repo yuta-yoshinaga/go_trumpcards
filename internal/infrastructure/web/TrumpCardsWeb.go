@@ -1,9 +1,15 @@
 package web
 
 import (
+	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -95,7 +101,33 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 // Exec ゲーム実行
 func (web *TrumpCardsWeb) Exec() {
 	api := rest.NewApi()
-	api.Use(rest.DefaultDevStack...)
+	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if allowedOriginsStr == "" && os.Getenv("APP_ENV") != "production" {
+		allowedOriginsStr = "http://localhost:5173,http://localhost:8080"
+	}
+	if allowedOriginsStr != "" {
+		allowedOrigins := make(map[string]bool, strings.Count(allowedOriginsStr, ",")+1)
+		for _, origin := range strings.Split(allowedOriginsStr, ",") {
+			if o := strings.TrimSpace(origin); o != "" {
+				allowedOrigins[o] = true
+			}
+		}
+		api.Use(&rest.CorsMiddleware{
+			RejectNonCorsRequests: false,
+			OriginValidator: func(origin string, request *rest.Request) bool {
+				return allowedOrigins[origin]
+			},
+			AllowedMethods:                []string{"POST"},
+			AllowedHeaders:                []string{"Content-Type"},
+			AccessControlAllowCredentials: false,
+			AccessControlMaxAge:           3600,
+		})
+	}
+	stack := rest.DefaultDevStack
+	if os.Getenv("APP_ENV") == "production" {
+		stack = rest.DefaultProdStack
+	}
+	api.Use(stack...)
 	router, err := rest.MakeRouter(
 		rest.Post("/blackjack/exec", web.bjc.Exec),
 		rest.Post("/poker/exec", web.pkc.Exec),
@@ -124,7 +156,48 @@ func (web *TrumpCardsWeb) Exec() {
 		mux.Handle(path, apiHandler)
 	}
 	mux.Handle("/", http.FileServer(http.Dir("public")))
-	log.Fatal(http.ListenAndServe(getListenPort(), mux))
+	const (
+		readTimeout     = 10 * time.Second
+		writeTimeout    = 30 * time.Second
+		idleTimeout     = 60 * time.Second
+		shutdownTimeout = 30 * time.Second
+	)
+	srv := &http.Server{
+		Addr:         getListenPort(),
+		Handler:      mux,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		IdleTimeout:  idleTimeout,
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	errCh := make(chan error, 1)
+	go func() { errCh <- srv.ListenAndServe() }()
+
+	select {
+	case err := <-errCh:
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal(err)
+		}
+	case <-ctx.Done():
+		log.Println("shutting down server...")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			log.Printf("server shutdown error: %v", err)
+		}
+	}
+
+	web.bjc.Stop()
+	web.pkc.Stop()
+	web.omc.Stop()
+	web.dgc.Stop()
+	web.sgc.Stop()
+	web.dwc.Stop()
+	web.hmc.Stop()
+	log.Println("server stopped")
 }
 
 func getListenPort() string {

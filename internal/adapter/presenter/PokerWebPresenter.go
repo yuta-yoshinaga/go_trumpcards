@@ -25,19 +25,19 @@ func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	// player
 	player := p.GetPlayer()
 	resObj.Player = new(controller.PokerWebOutputPlayer)
-	resObj.Player.Cards = make([]*controller.PokerWebOutputCard, 0)
+	resObj.Player.Cards = make([]*controller.WebOutputCard, 0)
 	resObj.Player.HandRank = player.GetHandRank()
 	resObj.Player.HandName = player.GetHandName()
 	resObj.Player.Chips = player.GetChips()
 	resObj.Player.Bet = p.GetPlayerBet()
 	for i := 0; i < player.GetCardsSize(); i++ {
-		resObj.Player.Cards = append(resObj.Player.Cards, pwp.GetCardObj(player.GetCard(i)))
+		resObj.Player.Cards = append(resObj.Player.Cards, cardToOutput(player.GetCard(i)))
 	}
 
 	// dealer
 	dealer := p.GetDealer()
 	resObj.Dealer = new(controller.PokerWebOutputPlayer)
-	resObj.Dealer.Cards = make([]*controller.PokerWebOutputCard, 0)
+	resObj.Dealer.Cards = make([]*controller.WebOutputCard, 0)
 	resObj.Dealer.Chips = dealer.GetChips()
 	resObj.Dealer.Bet = p.GetDealerBet()
 	// エラーメッセージ
@@ -49,7 +49,7 @@ func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		resObj.Dealer.HandRank = dealer.GetHandRank()
 		resObj.Dealer.HandName = dealer.GetHandName()
 		for i := 0; i < dealer.GetCardsSize(); i++ {
-			resObj.Dealer.Cards = append(resObj.Dealer.Cards, pwp.GetCardObj(dealer.GetCard(i)))
+			resObj.Dealer.Cards = append(resObj.Dealer.Cards, cardToOutput(dealer.GetCard(i)))
 		}
 		if p.GetFolded() == domain.PokerFoldByPlayer {
 			resObj.Message = "You folded."
@@ -72,12 +72,4 @@ func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		return `{"error":"internal server error"}`
 	}
 	return string(res)
-}
-
-// GetCardObj カード情報取得
-func (pwp *PokerWebPresenter) GetCardObj(card *domain.Card) *controller.PokerWebOutputCard {
-	res := new(controller.PokerWebOutputCard)
-	res.Design = cardDesignToString(card.GetDesign())
-	res.Value = card.GetValue()
-	return res
 }

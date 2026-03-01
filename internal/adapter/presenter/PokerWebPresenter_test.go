@@ -201,32 +201,6 @@ func TestPokerWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, "Bet is not allowed now.", result.Message)
 	})
 
-	t.Run("success GetCardObj SPADE", func(t *testing.T) {
-		card := tpp.GetCardObj(domain.NewCard(domain.CardDesignSpade, 1, false))
-		assert.Equal(t, "SPADE", card.Design)
-		assert.Equal(t, 1, card.Value)
-	})
-	t.Run("success GetCardObj CLOVER", func(t *testing.T) {
-		card := tpp.GetCardObj(domain.NewCard(domain.CardDesignClover, 1, false))
-		assert.Equal(t, "CLOVER", card.Design)
-		assert.Equal(t, 1, card.Value)
-	})
-	t.Run("success GetCardObj HEART", func(t *testing.T) {
-		card := tpp.GetCardObj(domain.NewCard(domain.CardDesignHeart, 1, false))
-		assert.Equal(t, "HEART", card.Design)
-		assert.Equal(t, 1, card.Value)
-	})
-	t.Run("success GetCardObj DIAMOND", func(t *testing.T) {
-		card := tpp.GetCardObj(domain.NewCard(domain.CardDesignDiamond, 1, false))
-		assert.Equal(t, "DIAMOND", card.Design)
-		assert.Equal(t, 1, card.Value)
-	})
-	t.Run("success GetCardObj JOKER", func(t *testing.T) {
-		card := tpp.GetCardObj(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
-		assert.Equal(t, "JOKER", card.Design)
-		assert.Equal(t, 0, card.Value)
-	})
-
 	t.Run("success Output dealer fold", func(t *testing.T) {
 		player.SetChips(0)
 		dealer.SetChips(0)

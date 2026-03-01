@@ -24,6 +24,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	factory := func() uc.DaifugoInteractorIF { return dgiMock }
 	tdwc := controller.NewDaifugoWebController(factory)
+	defer tdwc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -108,7 +109,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &jsonInput)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusOK)
+		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableCards":[],"lastPlayPlayerIdx":0,"gameEndFlag":false,"revolutionActive":false,"elevenBackActive":false,"suitLocked":false,"lockedSuit":"","tableIsSequence":false,"config":{"jokerCount":0,"eightCutEnabled":false,"suitLockEnabled":false,"elevenBackEnabled":false,"sequenceEnabled":false,"cardExchangeEnabled":false,"fiveSkipEnabled":false,"sevenPassEnabled":false,"tenDiscardEnabled":false,"spadeThreeEnabled":false,"capitalFallEnabled":false},"exchangeActions":[],"cpuActions":[],"humanAction":null,"message":"Unsupported command.","pendingAction":"none","pendingActionTarget":-1}`)
 	})
@@ -172,6 +173,7 @@ func TestDaifugoWebController_SessionIsolation(t *testing.T) {
 		}
 		return mockB
 	})
+	defer isoController.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -211,4 +213,12 @@ func TestDaifugoWebController_SessionIsolation(t *testing.T) {
 			t.Errorf("expected factory to be called 2 times, got %d", callCount)
 		}
 	})
+}
+
+func TestDaifugoWebController_Stop(t *testing.T) {
+	dgiMock := new(usecase.MockDaifugoInteractor)
+	factory := func() uc.DaifugoInteractorIF { return dgiMock }
+	c := controller.NewDaifugoWebController(factory)
+	c.Stop()
+	c.Stop()
 }

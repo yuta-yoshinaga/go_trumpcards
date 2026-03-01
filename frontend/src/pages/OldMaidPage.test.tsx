@@ -302,6 +302,16 @@ describe('OldMaidPage', () => {
     expect(screen.queryByText(/SPADE 3/)).not.toBeInTheDocument();
   });
 
+  it('renders aria-label on clickable card backs for screen reader accessibility', async () => {
+    await startGame();
+    // CPU 1 is target with 4 cards; only first 4 shown (capped at 10)
+    const drawButtons = screen.getAllByRole('button', { name: /枚目を引く/ });
+    expect(drawButtons[0]).toHaveAttribute('aria-label', 'カード 1 枚目を引く');
+    expect(drawButtons[1]).toHaveAttribute('aria-label', 'カード 2 枚目を引く');
+    expect(drawButtons[2]).toHaveAttribute('aria-label', 'カード 3 枚目を引く');
+    expect(drawButtons[3]).toHaveAttribute('aria-label', 'カード 4 枚目を引く');
+  });
+
   it('calls draw with drawIdx when a target player card back is clicked', async () => {
     await startGame();
     mockExec.mockClear();
@@ -632,6 +642,89 @@ describe('OldMaidPage', () => {
       timeout: 4000,
     });
   }, 10000);
+
+  it('handles humanAction with empty cpuActions without crashing', async () => {
+    const humanActionNoCpuState: OldMaidResponse = {
+      ...humanTurnState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          cardCount: 2,
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'JOKER', value: 0 },
+          ],
+        },
+        { id: 1, isHuman: false, isFinished: true, cardCount: 0, cards: [] },
+        { id: 2, isHuman: false, isFinished: true, cardCount: 0, cards: [] },
+      ],
+      currentTurn: 0,
+      nextDrawTargetIdx: 0,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'HEART', value: 3 },
+      lastDiscardedPairs: 1,
+      cpuActions: [],
+      humanAction: {
+        drawPlayerIdx: 0,
+        drawFromIdx: 1,
+        drawnCard: { design: 'HEART', value: 3 },
+        discardedPairs: 1,
+        discardedCards: [
+          { design: 'HEART', value: 3 },
+          { design: 'DIAMOND', value: 3 },
+        ],
+      },
+      gameEndFlag: true,
+      message: 'あなたが負けました',
+    };
+
+    mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(humanActionNoCpuState);
+    render(<OldMaidPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
+
+    fireEvent.click(screen.getByText('ランダムに引く'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+
+    // Should show the game end message without crashing
+    await waitFor(() => expect(screen.getByText(humanActionNoCpuState.message)).toBeInTheDocument(), {
+      timeout: 4000,
+    });
+  }, 10000);
+
+  it('setup screen has aria-busy attribute', () => {
+    render(<OldMaidPage />);
+    const setupContainer = screen.getByText('Old Maid 設定').closest('[aria-busy]') as HTMLElement;
+    expect(setupContainer).toHaveAttribute('aria-busy', 'false');
+  });
+
+  it('sets aria-busy and sr-only loading text on game screen while loading', async () => {
+    await startGame();
+
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+    expect(container).toHaveAttribute('aria-busy', 'false');
+    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+
+    let resolve!: (value: OldMaidResponse) => void;
+    const slowPromise = new Promise<OldMaidResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'ランダムに引く' }));
+
+    expect(container).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByText('処理中...')).toBeInTheDocument();
+
+    resolve(humanTurnState);
+    await waitFor(() => {
+      expect(container).toHaveAttribute('aria-busy', 'false');
+      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+    });
+  });
 
   it('goes directly to CPU replay when humanAction is null', async () => {
     const directCpuState: OldMaidResponse = {

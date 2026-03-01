@@ -152,7 +152,7 @@ describe('HoldemPage', () => {
   // ---- mount & reset ----
   it('calls reset on mount', async () => {
     render(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   // ---- phase name display ----
@@ -598,7 +598,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
   });
 
   it('calls fold command', async () => {
@@ -609,7 +609,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
   });
 
   it('calls allin command', async () => {
@@ -620,7 +620,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'オールイン' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin'));
   });
 
   it('calls call command when has outstanding bet', async () => {
@@ -631,7 +631,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'コール' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
   });
 
   it('calls raise command with betAmount when has outstanding bet', async () => {
@@ -647,12 +647,12 @@ describe('HoldemPage', () => {
 
   it('calls reset command when reset button is clicked', async () => {
     render(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   // ---- loading / disabled state ----
@@ -681,7 +681,7 @@ describe('HoldemPage', () => {
   // ---- error handling ----
   it('shows error message when API call fails', async () => {
     render(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
@@ -692,7 +692,7 @@ describe('HoldemPage', () => {
 
   it('clears error on successful call after failure', async () => {
     render(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
@@ -757,5 +757,31 @@ describe('HoldemPage', () => {
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 60));
+  });
+
+  it('sets aria-busy and sr-only loading text while loading', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    render(<HoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+
+    const container = screen.getByRole('button', { name: 'ベット' }).closest('[aria-live]') as HTMLElement;
+    expect(container).toHaveAttribute('aria-busy', 'false');
+    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+
+    let resolve!: (value: HoldemResponse) => void;
+    const slowPromise = new Promise<HoldemResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    expect(container).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByText('処理中...')).toBeInTheDocument();
+
+    resolve(preFlopState);
+    await waitFor(() => {
+      expect(container).toHaveAttribute('aria-busy', 'false');
+      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
+    });
   });
 });

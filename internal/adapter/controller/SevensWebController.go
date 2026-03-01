@@ -23,31 +23,25 @@ type SevensWebInput struct {
 	SessionId        string `json:"sessionId"`
 }
 
-// SevensWebOutputCard 7並べWebアウトプットカード
-type SevensWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // SevensWebOutputPlayer 7並べWebアウトプットプレイヤー
 type SevensWebOutputPlayer struct {
-	ID         int                    `json:"id"`
-	IsHuman    bool                   `json:"isHuman"`
-	IsFinished bool                   `json:"isFinished"`
-	Rank       int                    `json:"rank"`
-	CardCount  int                    `json:"cardCount"`
-	PassesUsed int                    `json:"passesUsed"`
-	MaxPasses  int                    `json:"maxPasses"`
-	Cards      []*SevensWebOutputCard `json:"cards"`
+	ID         int              `json:"id"`
+	IsHuman    bool             `json:"isHuman"`
+	IsFinished bool             `json:"isFinished"`
+	Rank       int              `json:"rank"`
+	CardCount  int              `json:"cardCount"`
+	PassesUsed int              `json:"passesUsed"`
+	MaxPasses  int              `json:"maxPasses"`
+	Cards      []*WebOutputCard `json:"cards"`
 }
 
 // SevensWebOutputAction 7並べのプレイヤー行動記録
 type SevensWebOutputAction struct {
-	PlayerIdx   int                  `json:"playerIdx"`
-	PlayedCard  *SevensWebOutputCard `json:"playedCard"` // nil = パス
-	TargetSuit  int                  `json:"targetSuit"`
-	TargetValue int                  `json:"targetValue"`
-	ForcedPass  bool                 `json:"forcedPass"`
+	PlayerIdx   int            `json:"playerIdx"`
+	PlayedCard  *WebOutputCard `json:"playedCard"` // nil = パス
+	TargetSuit  int            `json:"targetSuit"`
+	TargetValue int            `json:"targetValue"`
+	ForcedPass  bool           `json:"forcedPass"`
 }
 
 // SevensWebOutputConfig 7並べゲーム設定出力
@@ -119,7 +113,15 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	switch param.Command {
 	case "r", "reset":
 		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil {
-			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), derefInt(param.JokerCount), derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses)), errOutput)
+			jokerCount := derefInt(param.JokerCount)
+			if jokerCount < 0 || jokerCount > domain.SevensMaxJokerCount {
+				w.WriteHeader(http.StatusBadRequest)
+				if err := w.WriteJson(swc.newDefaultOutput("param error: jokerCount must be between 0 and 2.")); err != nil {
+					log.Printf("WriteJson error: %v", err)
+				}
+				return
+			}
+			swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), jokerCount, derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses)), errOutput)
 		} else {
 			swc.writePresenterResponse(w, sgi.Reset(), errOutput)
 		}
@@ -128,7 +130,7 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 	case "j", "joker":
 		swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(swc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}
@@ -154,6 +156,11 @@ func derefIntDefault(p *int, defaultVal int) int {
 		return defaultVal
 	}
 	return *p
+}
+
+// Stop stops the background cleanup goroutine of the session store.
+func (swc *SevensWebController) Stop() {
+	swc.store.Stop()
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す

@@ -236,6 +236,19 @@ func TestDealRemainingCommunity(t *testing.T) {
 	assert.Equal(t, 5, len(h.communityCards))
 }
 
+func TestDealRemainingCommunity_DeckExhausted(t *testing.T) {
+	h := newInternalTestHoldem()
+	// Drain the entire deck
+	for h.trumpCards.DrawCard() != nil {
+	}
+	h.communityCards = []*Card{
+		NewCard(CardDesignSpade, 2, false),
+	}
+
+	h.dealRemainingCommunity()
+	assert.Len(t, h.communityCards, 1)
+}
+
 func TestFindNextActive(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.players[1].SetFolded(true)
@@ -2160,4 +2173,42 @@ func TestExecuteAction_AllIn_FullRaise_ReopensBetting(t *testing.T) {
 	assert.False(t, h.actedFlags[3]) // should be reset
 	assert.Equal(t, 200, h.lastBet)
 	assert.Equal(t, 100, h.minRaise) // updated to raiseAmount
+}
+
+// --- tieBreakValues unit tests ---
+
+func TestTieBreakValues_HighCard(t *testing.T) {
+	// All unique: should sort by value desc
+	result := tieBreakValues([]int{3, 14, 7, 10, 5})
+	assert.Equal(t, []int{14, 10, 7, 5, 3}, result)
+}
+
+func TestTieBreakValues_OnePair(t *testing.T) {
+	// Pair of 4s with kickers K, 3, 2
+	result := tieBreakValues([]int{4, 4, 13, 3, 2})
+	assert.Equal(t, []int{4, 13, 3, 2}, result)
+}
+
+func TestTieBreakValues_TwoPair(t *testing.T) {
+	// 10-10-5-5-A: pairs first (by value desc), then kicker
+	result := tieBreakValues([]int{10, 10, 5, 5, 14})
+	assert.Equal(t, []int{10, 5, 14}, result)
+}
+
+func TestTieBreakValues_ThreeOfAKind(t *testing.T) {
+	// 7-7-7-K-3: trips first, then kickers desc
+	result := tieBreakValues([]int{7, 7, 7, 13, 3})
+	assert.Equal(t, []int{7, 13, 3}, result)
+}
+
+func TestTieBreakValues_FullHouse(t *testing.T) {
+	// 3-3-3-K-K: trips (3) first, then pair (K)
+	result := tieBreakValues([]int{3, 3, 3, 13, 13})
+	assert.Equal(t, []int{3, 13}, result)
+}
+
+func TestTieBreakValues_FourOfAKind(t *testing.T) {
+	// 9-9-9-9-5: quads first, then kicker
+	result := tieBreakValues([]int{9, 9, 9, 9, 5})
+	assert.Equal(t, []int{9, 5}, result)
 }

@@ -454,9 +454,10 @@ func (h *Holdem) advancePhase() {
 func (h *Holdem) dealRemainingCommunity() {
 	for len(h.communityCards) < 5 {
 		card := h.trumpCards.DrawCard()
-		if card != nil {
-			h.communityCards = append(h.communityCards, card)
+		if card == nil {
+			break
 		}
+		h.communityCards = append(h.communityCards, card)
 	}
 }
 

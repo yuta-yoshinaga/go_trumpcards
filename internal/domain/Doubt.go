@@ -141,6 +141,14 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 	if len(cardIndices) == 0 {
 		return NewDomainError(ErrInvalidPlay, "1枚以上のカードを指定してください")
 	}
+	// 重複チェック
+	seen := make(map[int]bool, len(cardIndices))
+	for _, idx := range cardIndices {
+		if seen[idx] {
+			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+		}
+		seen[idx] = true
+	}
 
 	player := d.players[d.currentTurn]
 	for _, idx := range cardIndices {

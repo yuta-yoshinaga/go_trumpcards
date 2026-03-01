@@ -27,6 +27,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	bjiMock.On("DeclineInsurance").Return(mockOutput)
 	factory := func() uc.BlackJackInteractorIF { return bjiMock }
 	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -143,7 +144,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &jsonCase1)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusOK)
+		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 	})
 	t.Run("failed Exec command empty", func(t *testing.T) {
@@ -199,6 +200,7 @@ func TestBlackJackWebController_SessionIsolation(t *testing.T) {
 		}
 		return mockB
 	})
+	defer isoController.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(
@@ -249,6 +251,7 @@ func TestBlackJackWebController_NewCommands(t *testing.T) {
 	bjiMock.On("SetDeckCount", 6).Return(mockOutput)
 	factory := func() uc.BlackJackInteractorIF { return bjiMock }
 	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
 
 	api := rest.NewApi()
 	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
@@ -294,4 +297,13 @@ func TestBlackJackWebController_NewCommands(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 	})
+}
+
+func TestBlackJackWebController_Stop(t *testing.T) {
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	c := controller.NewBlackJackWebController(factory)
+	// Stop should be idempotent and not panic when called multiple times.
+	c.Stop()
+	c.Stop()
 }

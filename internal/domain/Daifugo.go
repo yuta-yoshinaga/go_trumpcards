@@ -704,48 +704,44 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 
 	// カードを出す
 	cards := player.RemoveCards(indices)
-	d.tableCards = cards
-	d.lastPlayPlayerIdx = d.currentTurn
-	d.passCount = 0
 	d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: cards}
+	d.playCards(d.currentTurn, cards, isSeq, spadeThree)
+	return nil
+}
 
+// playCards はカードプレイ後の共通処理を実行する
+func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree bool) {
+	d.tableCards = cards
+	d.lastPlayPlayerIdx = playerIdx
+	d.passCount = 0
 	d.tableIsSequence = isSeq
 
-	// 革命チェック
 	d.triggerRevolutionIfNeeded(cards)
-
-	// 11バックチェック
 	d.triggerElevenBack(cards)
 
-	// プレイヤー上がりチェック
-	if player.GetCardsSize() == 0 {
-		d.finishPlayer(d.currentTurn)
+	if d.players[playerIdx].GetCardsSize() == 0 {
+		d.finishPlayer(playerIdx)
 	}
 
-	// 8切りチェック (上がりチェック後に実施)
 	eightCut := d.triggerEightCut(cards)
 
-	// ローカルルール: 5飛び / 7渡し / 10捨て
 	fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
 	d.triggerSevenPassIfNeeded(cards, isSeq)
 	d.triggerTenDiscardIfNeeded(cards, isSeq)
 
-	// ペンディングアクションがセットされた場合はターンを進めない
 	if d.pendingActionType != DaifugoPendingNone {
-		return nil
+		return
 	}
 
 	if !d.checkGameEnd() {
-		// 8切りまたはスペ3返し: 出したプレイヤーに手番が戻る (上がっていない場合のみ)
-		if (!eightCut && !spadeThree) || player.GetIsFinished() {
+		if (!eightCut && !spadeThree) || d.players[playerIdx].GetIsFinished() {
 			d.advanceTurn()
 			if fiveSkip && !d.gameEndFlag {
-				d.advanceTurn() // 5飛び: もう1人スキップ
+				d.advanceTurn()
 			}
 			d.checkPassClear()
 		}
 	}
-	return nil
 }
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行
@@ -790,43 +786,9 @@ func (d *Daifugo) CpuPlay() {
 		isSeq := d.config.SequenceEnabled && d.isValidSequence(selectedCards)
 
 		cards := player.RemoveCards(playIndices)
-		d.tableCards = cards
-		d.lastPlayPlayerIdx = playerIdx
-		d.passCount = 0
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		d.cpuActions = append(d.cpuActions, action)
-
-		d.tableIsSequence = isSeq
-
-		d.triggerRevolutionIfNeeded(cards)
-		d.triggerElevenBack(cards)
-
-		if player.GetCardsSize() == 0 {
-			d.finishPlayer(playerIdx)
-		}
-
-		eightCut := d.triggerEightCut(cards)
-
-		// ローカルルール: 5飛び / 7渡し / 10捨て
-		fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
-		d.triggerSevenPassIfNeeded(cards, isSeq)
-		d.triggerTenDiscardIfNeeded(cards, isSeq)
-
-		// ペンディングアクションがセットされた場合はターンを進めない
-		if d.pendingActionType != DaifugoPendingNone {
-			return
-		}
-
-		if !d.checkGameEnd() {
-			// 8切りまたはスペ3返し: 出したプレイヤーに手番が戻る (上がっていない場合のみ)
-			if (!eightCut && !spadeThree) || player.GetIsFinished() {
-				d.advanceTurn()
-				if fiveSkip && !d.gameEndFlag {
-					d.advanceTurn() // 5飛び: もう1人スキップ
-				}
-				d.checkPassClear()
-			}
-		}
+		d.playCards(playerIdx, cards, isSeq, spadeThree)
 	}
 }
 

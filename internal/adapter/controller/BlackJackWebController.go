@@ -16,31 +16,25 @@ type BlackJackWebInput struct {
 	SessionId string `json:"sessionId"`
 }
 
-// BlackJackWebOutputCard ブラックジャックWebアウトプットカード
-type BlackJackWebOutputCard struct {
-	Design string `json:"design"`
-	Value  int    `json:"value"`
-}
-
 // BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
 type BlackJackWebOutputHand struct {
-	Score        int                       `json:"score"`
-	Cards        []*BlackJackWebOutputCard `json:"cards"`
-	Bet          int                       `json:"bet"`
-	Stood        bool                      `json:"stood"`
-	Doubled      bool                      `json:"doubled"`
-	Busted       bool                      `json:"busted"`
-	IsBlackJack  bool                      `json:"isBlackJack"`
-	CanSplit     bool                      `json:"canSplit"`
-	Surrendered  bool                      `json:"surrendered"`
-	CanSurrender bool                      `json:"canSurrender"`
+	Score        int              `json:"score"`
+	Cards        []*WebOutputCard `json:"cards"`
+	Bet          int              `json:"bet"`
+	Stood        bool             `json:"stood"`
+	Doubled      bool             `json:"doubled"`
+	Busted       bool             `json:"busted"`
+	IsBlackJack  bool             `json:"isBlackJack"`
+	CanSplit     bool             `json:"canSplit"`
+	Surrendered  bool             `json:"surrendered"`
+	CanSurrender bool             `json:"canSurrender"`
 }
 
 // BlackJackWebOutputPlayer ブラックジャックWebアウトプットプレイヤー
 type BlackJackWebOutputPlayer struct {
-	Score int                       `json:"score"`
-	Cards []*BlackJackWebOutputCard `json:"cards"`
-	Chips int                       `json:"chips"`
+	Score int              `json:"score"`
+	Cards []*WebOutputCard `json:"cards"`
+	Chips int              `json:"chips"`
 }
 
 // BlackJackWebOutput ブラックジャックWebアウトプット
@@ -126,11 +120,16 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 	case "sd", "setdeckcount":
 		bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount), errOutput)
 	default:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusBadRequest)
 		if err := w.WriteJson(bwc.newDefaultOutput("Unsupported command.")); err != nil {
 			log.Printf("WriteJson error: %v", err)
 		}
 	}
+}
+
+// Stop stops the background cleanup goroutine of the session store.
+func (bwc *BlackJackWebController) Stop() {
+	bwc.store.Stop()
 }
 
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
