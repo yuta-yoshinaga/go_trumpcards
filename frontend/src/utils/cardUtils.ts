@@ -6,3 +6,9 @@ export function valueName(v: number): string {
   if (v === 13) return 'K';
   return String(v);
 }
+
+/** Return suit name for a numeric suit index (1→'SPADE', 2→'CLOVER', 3→'HEART', 4→'DIAMOND'). */
+export function suitName(suit: number): string {
+  const names: Record<number, string> = { 1: 'SPADE', 2: 'CLOVER', 3: 'HEART', 4: 'DIAMOND' };
+  return names[suit] ?? '';
+}

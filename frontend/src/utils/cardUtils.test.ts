@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { valueName } from './cardUtils';
+import { suitName, valueName } from './cardUtils';
 
 describe('valueName', () => {
   it('returns A for value 1', () => {
@@ -21,5 +21,28 @@ describe('valueName', () => {
   it('returns string representation for other values', () => {
     expect(valueName(5)).toBe('5');
     expect(valueName(10)).toBe('10');
+  });
+});
+
+describe('suitName', () => {
+  it('returns SPADE for suit 1', () => {
+    expect(suitName(1)).toBe('SPADE');
+  });
+
+  it('returns CLOVER for suit 2', () => {
+    expect(suitName(2)).toBe('CLOVER');
+  });
+
+  it('returns HEART for suit 3', () => {
+    expect(suitName(3)).toBe('HEART');
+  });
+
+  it('returns DIAMOND for suit 4', () => {
+    expect(suitName(4)).toBe('DIAMOND');
+  });
+
+  it('returns empty string for unknown suit', () => {
+    expect(suitName(0)).toBe('');
+    expect(suitName(99)).toBe('');
   });
 });

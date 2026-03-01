@@ -180,8 +180,16 @@ function PlayerArea({
                 cursor: 'pointer',
                 ...(isHighlighted ? { transform: 'translateY(-8px)', transition: 'transform 0.2s' } : {}),
               };
-              // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              return <CardBack key={i} width={40} style={cardStyle} onClick={() => onDraw(i)} />;
+              return (
+                <CardBack
+                  // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
+                  key={i}
+                  width={40}
+                  style={cardStyle}
+                  onClick={() => onDraw(i)}
+                  ariaLabel={`カード ${i + 1} 枚目を引く`}
+                />
+              );
             })}
             {player.cardCount > 10 && (
               <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>

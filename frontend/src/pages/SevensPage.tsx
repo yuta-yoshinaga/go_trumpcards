@@ -5,7 +5,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import type { Card, CardDesign, SevensAction, SevensPlayerData, SevensResponse } from '../types/card';
-import { valueName } from '../utils/cardUtils';
+import { suitName, valueName } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 // Design → suit index (matches Go backend: 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND)
@@ -16,8 +16,6 @@ const designToSuit: Record<CardDesign, number> = {
   DIAMOND: 4,
   JOKER: 0,
 };
-
-const suitNames: Record<number, string> = { 1: 'SPADE', 2: 'CLOVER', 3: 'HEART', 4: 'DIAMOND' };
 
 const SUITS = [
   { idx: 1, name: 'SPADE', label: '♠', color: '#e0e0e0' },
@@ -64,7 +62,7 @@ function actionDesc(players: { id: number; isHuman: boolean }[], action: SevensA
   const c = action.playedCard;
   let desc = `${findPlayerName(players, action.playerIdx)}が出しました: ${c.design} ${valueName(c.value)}`;
   if (c.design === 'JOKER' && action.targetSuit > 0) {
-    desc += ` → ${suitNames[action.targetSuit]} ${valueName(action.targetValue)}`;
+    desc += ` → ${suitName(action.targetSuit)} ${valueName(action.targetValue)}`;
   }
   return desc;
 }
@@ -124,6 +122,7 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
                       key={v}
                       type="button"
                       onClick={() => onJokerPlace?.(idx, v)}
+                      aria-label={`${suitName(idx)} ${valueName(v)} に配置`}
                       style={{ ...cellStyle, border: '1px solid #60a5fa', cursor: 'pointer', padding: 0 }}
                     >
                       {valueName(v)}

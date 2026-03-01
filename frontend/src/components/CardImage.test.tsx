@@ -86,6 +86,12 @@ describe('CardBack', () => {
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
+  it('renders button with custom aria-label when ariaLabel is provided', () => {
+    const onClick = vi.fn();
+    render(<CardBack onClick={onClick} ariaLabel="カード 1 枚目を引く" />);
+    expect(screen.getByRole('button', { name: 'カード 1 枚目を引く' })).toBeInTheDocument();
+  });
+
   it('shows pointer cursor when onClick is provided', () => {
     render(<CardBack onClick={() => undefined} />);
     const img = screen.getByRole('button', { name: 'card back' });

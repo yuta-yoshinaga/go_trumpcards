@@ -36,9 +36,10 @@ interface CardBackProps {
   style?: React.CSSProperties;
   className?: string;
   onClick?: () => void;
+  ariaLabel?: string;
 }
 
-export function CardBack({ width, style, className, onClick }: CardBackProps) {
+export function CardBack({ width, style, className, onClick, ariaLabel }: CardBackProps) {
   const img = (
     <img
       src="/images/z01.png"
@@ -52,6 +53,7 @@ export function CardBack({ width, style, className, onClick }: CardBackProps) {
       <button
         type="button"
         onClick={onClick}
+        aria-label={ariaLabel}
         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0 }}
       >
         {img}
