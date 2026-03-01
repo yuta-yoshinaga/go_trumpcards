@@ -394,6 +394,21 @@ describe('PokerPage', () => {
     expect(screen.queryByText('High Card')).not.toBeInTheDocument();
   });
 
+  it('toggles aria-pressed on card button click in exchange phase', async () => {
+    mockExec.mockResolvedValue(phase2State);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('SPADE 1').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('updates bet amount when changing the bet input', async () => {
     mockExec.mockResolvedValue(phase1State);
     render(<PokerPage />);

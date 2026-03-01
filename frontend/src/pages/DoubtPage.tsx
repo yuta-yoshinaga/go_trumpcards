@@ -75,6 +75,7 @@ function HandCard({ card, index, selected, selectable, onToggle }: HandCardProps
   return (
     <button
       type="button"
+      aria-pressed={selected}
       disabled={!selectable}
       onClick={() => onToggle(index)}
       style={{

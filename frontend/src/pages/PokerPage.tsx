@@ -138,6 +138,7 @@ export function PokerPage() {
                 <button
                   key={`${card.design}-${card.value}`}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => toggleSelect(i)}
                   style={{
                     background: 'none',
