@@ -47,42 +47,27 @@ func TestSevensInteractor_Method(t *testing.T) {
 	})
 
 	t.Run("success ResetWithConfig all enabled", func(t *testing.T) {
-		result := tsi.ResetWithConfig(true, 2, true, domain.SevensMaxPasses, false)
+		result := tsi.ResetWithConfig(domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true, MaxPasses: domain.SevensMaxPasses})
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig default values", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false, domain.SevensMaxPasses, false)
-		assert.Equal(t, mockOutput, result)
-	})
-
-	t.Run("success ResetWithConfig jokerCount clamped to 0", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, -5, false, domain.SevensMaxPasses, false)
-		assert.Equal(t, mockOutput, result)
-	})
-
-	t.Run("success ResetWithConfig jokerCount clamped to 2", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 10, false, domain.SevensMaxPasses, false)
+		result := tsi.ResetWithConfig(domain.SevensConfig{MaxPasses: domain.SevensMaxPasses})
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig maxPasses 0 (unlimited)", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false, 0, false)
+		result := tsi.ResetWithConfig(domain.SevensConfig{})
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig maxPasses 3", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false, 3, false)
-		assert.Equal(t, mockOutput, result)
-	})
-
-	t.Run("success ResetWithConfig maxPasses negative clamped to 0", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false, -1, false)
+		result := tsi.ResetWithConfig(domain.SevensConfig{MaxPasses: 3})
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig noJokerFinish enabled", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 1, false, domain.SevensMaxPasses, true)
+		result := tsi.ResetWithConfig(domain.SevensConfig{JokerCount: 1, MaxPasses: domain.SevensMaxPasses, NoJokerFinish: true})
 		assert.Equal(t, mockOutput, result)
 	})
 
@@ -104,6 +89,7 @@ func TestSevensInteractor_MockGame(t *testing.T) {
 	spMock := new(presenter.MockSevensPresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	gameMock := new(interfaces.MockSevensGame)
+	gameMock.On("SetConfig", mock.Anything).Return()
 	gameMock.On("Reset").Return()
 	gameMock.On("GetGameEndFlag").Return(false)
 	gameMock.On("IsHumanTurn").Return(true)
@@ -118,6 +104,13 @@ func TestSevensInteractor_MockGame(t *testing.T) {
 	t.Run("Reset calls game.Reset", func(t *testing.T) {
 		result := si.Reset()
 		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "Reset")
+	})
+	t.Run("ResetWithConfig calls game.SetConfig and game.Reset", func(t *testing.T) {
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: true, MaxPasses: 3, NoJokerFinish: true}
+		result := si.ResetWithConfig(cfg)
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "SetConfig", cfg)
 		gameMock.AssertCalled(t, "Reset")
 	})
 	t.Run("Play calls game.PlayerPlay when human turn", func(t *testing.T) {
