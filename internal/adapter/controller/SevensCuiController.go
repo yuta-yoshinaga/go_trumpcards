@@ -37,6 +37,7 @@ func (c *SevensCuiController) Exec(command string) string {
 			jokerCount := 0
 			cpuStrategy := false
 			maxPasses := domain.SevensMaxPasses
+			noJokerFinish := false
 			for _, f := range fields[1:] {
 				switch {
 				case f == "tunnel":
@@ -51,9 +52,11 @@ func (c *SevensCuiController) Exec(command string) string {
 					}
 				case f == "strategy":
 					cpuStrategy = true
+				case f == "nojokerfinish":
+					noJokerFinish = true
 				}
 			}
-			return c.sgi.ResetWithConfig(tunnelEnabled, jokerCount, cpuStrategy, maxPasses)
+			return c.sgi.ResetWithConfig(tunnelEnabled, jokerCount, cpuStrategy, maxPasses, noJokerFinish)
 		}
 		return c.sgi.Reset()
 	case "p", "play":

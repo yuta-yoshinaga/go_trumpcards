@@ -9,7 +9,7 @@ import (
 // SevensInteractorIF 7並べインタラクターインタフェース
 type SevensInteractorIF interface {
 	Reset() string
-	ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int) string
+	ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int, noJokerFinish bool) string
 	Play(idx int) string
 	PlayJoker(cardIdx, targetSuit, targetValue int) string
 }
@@ -35,7 +35,7 @@ func NewSevensInteractor(s interfaces.SevensGame, sp presenter.SevensPresenter) 
 }
 
 // ResetWithConfig 設定付きゲーム初期化
-func (si *SevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int) string {
+func (si *SevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int, noJokerFinish bool) string {
 	if jokerCount < 0 {
 		jokerCount = 0
 	}
@@ -50,6 +50,7 @@ func (si *SevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, 
 		JokerCount:    jokerCount,
 		CpuStrategy:   cpuStrategy,
 		MaxPasses:     maxPasses,
+		NoJokerFinish: noJokerFinish,
 	}
 	players := []*domain.SevensPlayer{
 		domain.NewSevensPlayer(true),

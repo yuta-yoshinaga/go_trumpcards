@@ -13,7 +13,7 @@ const mockExec = vi.mocked(sevensApi.exec);
 // tableMinVals/tableMaxVals: index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
 // tablePlaced: bitmask per suit; bit i = value i placed. 7 placed = 1<<7 = 128
 // With all 7s placed: value 6 or 8 of any suit is playable
-const defaultConfig = { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 };
+const defaultConfig = { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false };
 const allSevensPlaced = [0, 128, 128, 128, 128]; // bit 7 set = 128
 
 const humanTurnState: SevensResponse = {
@@ -178,6 +178,7 @@ describe('SevensPage', () => {
         jokerCount: 0,
         cpuStrategy: false,
         maxPasses: 5,
+        noJokerFinish: false,
       }),
     );
   });
@@ -251,7 +252,7 @@ describe('SevensPage', () => {
   it('shows rule header when config has features enabled', async () => {
     const stateWithConfig: SevensResponse = {
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5 },
+      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5, noJokerFinish: false },
     };
     mockExec.mockResolvedValue(stateWithConfig);
     render(<SevensPage />);
@@ -343,7 +344,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue({
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 1, cpuStrategy: true, maxPasses: 5 },
+      config: { tunnelEnabled: true, jokerCount: 1, cpuStrategy: true, maxPasses: 5, noJokerFinish: false },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     await waitFor(() =>
@@ -352,6 +353,7 @@ describe('SevensPage', () => {
         jokerCount: 1,
         cpuStrategy: true,
         maxPasses: 5,
+        noJokerFinish: false,
       }),
     );
   });
@@ -359,7 +361,7 @@ describe('SevensPage', () => {
   it('syncs config state from server response', async () => {
     const configState: SevensResponse = {
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3 },
+      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3, noJokerFinish: false },
     };
     mockExec.mockResolvedValue(configState);
     render(<SevensPage />);
@@ -593,6 +595,7 @@ describe('SevensPage', () => {
         jokerCount: 0,
         cpuStrategy: false,
         maxPasses: 3,
+        noJokerFinish: false,
       }),
     );
   });
@@ -748,6 +751,68 @@ describe('SevensPage', () => {
       expect(container).toHaveAttribute('aria-busy', 'false');
       expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
+  });
+
+  it('renders noJokerFinish checkbox with default unchecked state', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+    expect(screen.getByLabelText('ジョーカー上がり禁止')).not.toBeChecked();
+  });
+
+  it('sends noJokerFinish: true in config when checkbox is checked and reset is clicked', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('ジョーカー上がり禁止'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, noJokerFinish: true },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        jokerCount: 0,
+        cpuStrategy: false,
+        maxPasses: 5,
+        noJokerFinish: true,
+      }),
+    );
+  });
+
+  it('shows rule badge [ジョーカー上がり禁止] when config has noJokerFinish: true', async () => {
+    const noJokerFinishState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, noJokerFinish: true },
+    };
+    mockExec.mockResolvedValue(noJokerFinishState);
+    render(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[ジョーカー上がり禁止\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('joker card is not playable when noJokerFinish is true and player has only jokers', async () => {
+    const noJokerFinishOnlyJokers: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1, noJokerFinish: true },
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cardCount: 1,
+          cards: [{ design: 'JOKER', value: 0 }],
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(noJokerFinishOnlyJokers);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
+    const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
+    expect(jokerBtn).toBeDisabled();
   });
 
   it('shows joker played without target info when targetSuit is 0', async () => {

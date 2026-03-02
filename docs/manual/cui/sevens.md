@@ -27,8 +27,9 @@ go run ./cmd/cli sevens
 |------------|------|
 | トンネル | AとKが循環して繋がる（A↔K） |
 | ジョーカー | ジョーカーを場の任意の有効位置に配置できる（0〜2枚） |
-| CPU戦略 | CPUが戦略的にカードを選択する（自分に有利な手を評価） |
+| CPU戦略 | CPUが戦略的にカードを選択する（自分に有利な手を評価、相手のパス残数を考慮） |
 | パス回数 | 最大パス回数を変更（デフォルト5回、0で無制限） |
+| ジョーカー上がり禁止 | 最後のカードがジョーカーの場合、出せない（パスまたは失格） |
 
 ## ゲームの流れ
 
@@ -62,7 +63,7 @@ flowchart TD
 | コマンド | 短縮形 | 説明 |
 |----------|--------|------|
 | `reset` | `r` | デフォルト設定で新しいゲームを開始 |
-| `reset tunnel joker=N strategy passes=N` | `r tunnel joker=N strategy passes=N` | オプション指定で開始（例: `r tunnel joker=1 strategy passes=0`） |
+| `reset tunnel joker=N strategy passes=N nojokerfinish` | `r tunnel joker=N strategy passes=N nojokerfinish` | オプション指定で開始（例: `r tunnel joker=1 strategy passes=0 nojokerfinish`） |
 | `play N` | `p N` | インデックスNのカードを場に出す（例: `p 3`） |
 | `play` | `p` | パス（パス回数を1消費） |
 | `j cardIdx suitInt valueInt` | - | ジョーカーを配置（例: `j 0 1 6`） |
@@ -85,7 +86,7 @@ flowchart TD
 ```
 ==========
 Sevens (7並べ)
-ルール: [トンネル] [ジョーカー×1] [CPU戦略]
+ルール: [トンネル] [ジョーカー×1] [CPU戦略] [ジョーカー上がり禁止]
 ==========
 [You]: 12枚 (パス: 0/5)
 [0]SPADE 2  [1]SPADE 3  [2]HEART 10  ...

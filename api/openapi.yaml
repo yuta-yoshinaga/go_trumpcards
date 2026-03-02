@@ -1898,6 +1898,11 @@ components:
           minimum: 0
           default: 5
           example: 5
+        noJokerFinish:
+          type: boolean
+          description: |
+            Ban finishing the game by playing a joker as the last card. Only used with `reset` command.
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1994,6 +1999,7 @@ components:
         - jokerCount
         - cpuStrategy
         - maxPasses
+        - noJokerFinish
       properties:
         tunnelEnabled:
           type: boolean
@@ -2011,6 +2017,10 @@ components:
           type: integer
           description: Maximum number of passes per player (0 = unlimited)
           example: 5
+        noJokerFinish:
+          type: boolean
+          description: Whether finishing the game with a joker as the last card is banned
+          example: false
 
     SevensResponse:
       type: object

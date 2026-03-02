@@ -50,9 +50,22 @@ function hasAnyPlayablePosition(tablePlaced: number[], tunnelEnabled: boolean): 
   return false;
 }
 
-function isCardPlayable(card: Card, tablePlaced: number[], tunnelEnabled: boolean): boolean {
+function hasOnlyJokers(cards: Card[]): boolean {
+  return cards.length > 0 && cards.every((c) => c.design === 'JOKER');
+}
+
+function isCardPlayable(
+  card: Card,
+  tablePlaced: number[],
+  tunnelEnabled: boolean,
+  noJokerFinish: boolean,
+  allCards: Card[],
+): boolean {
+  if (card.design === 'JOKER') {
+    if (noJokerFinish && hasOnlyJokers(allCards)) return false;
+    return hasAnyPlayablePosition(tablePlaced, tunnelEnabled);
+  }
   const suit = designToSuit[card.design];
-  if (card.design === 'JOKER') return hasAnyPlayablePosition(tablePlaced, tunnelEnabled);
   return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled);
 }
 
@@ -180,11 +193,20 @@ interface HumanAreaProps {
   isCurrentTurn: boolean;
   tablePlaced: number[];
   tunnelEnabled: boolean;
+  noJokerFinish: boolean;
   loading: boolean;
   onPlay: (idx: number) => void;
 }
 
-function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, loading, onPlay }: HumanAreaProps) {
+function HumanArea({
+  player,
+  isCurrentTurn,
+  tablePlaced,
+  tunnelEnabled,
+  noJokerFinish,
+  loading,
+  onPlay,
+}: HumanAreaProps) {
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isCurrentTurn
@@ -204,7 +226,8 @@ function HumanArea({ player, isCurrentTurn, tablePlaced, tunnelEnabled, loading,
       )}
       <div className="flex flex-wrap gap-1">
         {player.cards?.map((card, i) => {
-          const playable = isCurrentTurn && !loading && isCardPlayable(card, tablePlaced, tunnelEnabled);
+          const playable =
+            isCurrentTurn && !loading && isCardPlayable(card, tablePlaced, tunnelEnabled, noJokerFinish, player.cards);
           return (
             <button
               key={`${card.design}-${card.value}`}
@@ -239,6 +262,7 @@ export function SevensPage() {
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
   const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
   const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
+  const [cfgNoJokerFinish, setCfgNoJokerFinish] = useState(false);
 
   const onSuccess = useCallback((res: SevensResponse) => {
     setJokerCardIdx(null);
@@ -246,6 +270,7 @@ export function SevensPage() {
     setCfgJokerCount(res.config.jokerCount);
     setCfgCpuStrategy(res.config.cpuStrategy);
     setCfgMaxPasses(res.config.maxPasses);
+    setCfgNoJokerFinish(res.config.noJokerFinish);
   }, []);
   const { state, loading, error, exec } = useGameApi(sevensApi.exec, { onSuccess });
 
@@ -288,7 +313,8 @@ export function SevensPage() {
           (state.config.tunnelEnabled ||
             state.config.jokerCount > 0 ||
             state.config.cpuStrategy ||
-            state.config.maxPasses !== 5) && (
+            state.config.maxPasses !== 5 ||
+            state.config.noJokerFinish) && (
             <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-[0.85em]">
               ルール:
               {state.config.tunnelEnabled && ' [トンネル]'}
@@ -296,6 +322,7 @@ export function SevensPage() {
               {state.config.cpuStrategy && ' [CPU戦略]'}
               {state.config.maxPasses === 0 && ' [パス無制限]'}
               {state.config.maxPasses !== 5 && state.config.maxPasses !== 0 && ` [パス${state.config.maxPasses}回]`}
+              {state.config.noJokerFinish && ' [ジョーカー上がり禁止]'}
             </div>
           )}
 
@@ -361,6 +388,7 @@ export function SevensPage() {
               isCurrentTurn={isHumanTurn}
               tablePlaced={tablePlaced}
               tunnelEnabled={tunnelEnabled}
+              noJokerFinish={state.config.noJokerFinish}
               loading={loading}
               onPlay={handleCardPlay}
             />
@@ -403,6 +431,10 @@ export function SevensPage() {
               <option value={0}>無制限</option>
             </select>
           </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" checked={cfgNoJokerFinish} onChange={(e) => setCfgNoJokerFinish(e.target.checked)} />
+            ジョーカー上がり禁止
+          </label>
         </div>
 
         <ErrorAlert message={error} />
@@ -419,6 +451,7 @@ export function SevensPage() {
                 jokerCount: cfgJokerCount,
                 cpuStrategy: cfgCpuStrategy,
                 maxPasses: cfgMaxPasses,
+                noJokerFinish: cfgNoJokerFinish,
               })
             }
           >
