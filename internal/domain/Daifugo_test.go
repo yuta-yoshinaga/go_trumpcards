@@ -3742,6 +3742,29 @@ func TestDaifugo_IntenseLock(t *testing.T) {
 		// but this tests that the updateSuitLock path handles jokers gracefully)
 		assert.False(t, dg.GetNumberLocked())
 	})
+
+	t.Run("激シバ: joker bypasses numberLocked consecutive constraint in isPlayable", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, intenseLockConfig())
+
+		// Set up: suit locked, number locked, table has spade 6
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetNumberLocked(true)
+		dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 6, false)})
+		dg.SetLastPlayPlayerIdx(1)
+
+		// Human has only a joker — joker bypasses consecutive constraint
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Joker (playBase < 0) should be playable even under numberLocked
+		err := dg.PlayerPlay([]int{0})
+		assert.NoError(t, err)
+	})
 }
 
 func TestDaifugo_CpuAI_SmartPending(t *testing.T) {
@@ -3882,6 +3905,66 @@ func TestDaifugo_CpuAI_SmartPending(t *testing.T) {
 		assert.True(t, dg.HasPendingAction())
 		// Human resolves — only jokers left, fallback to index 0
 		_ = dg.PlayerPlay([]int{0})
+		assert.False(t, dg.HasPendingAction())
+	})
+
+	t.Run("CPU all-jokers hand fallback for cpuResolvePendingAction seven pass", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		allCPUPlayers := []*domain.DaifugoPlayer{
+			domain.NewDaifugoPlayer(false), // 0 = CPU (first turn)
+			domain.NewDaifugoPlayer(false), // 1 = CPU
+			domain.NewDaifugoPlayer(false), // 2 = CPU
+			domain.NewDaifugoPlayer(true),  // 3 = Human
+		}
+		cfg := domain.DaifugoConfig{SevenPassEnabled: true}
+		dg := domain.NewDaifugo(tc, allCPUPlayers, cfg)
+
+		// CPU 0 has a 7 and only jokers remaining
+		allCPUPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		allCPUPlayers[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		allCPUPlayers[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		allCPUPlayers[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		allCPUPlayers[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		allCPUPlayers[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		allCPUPlayers[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		allCPUPlayers[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		allCPUPlayers[3].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+		// CPU 0 plays 7, triggering seven pass pending
+		dg.CpuPlay()
+		assert.True(t, dg.HasPendingAction())
+		// Next CpuPlay resolves pending: only jokers left → fallback index 0
+		dg.CpuPlay()
+		assert.False(t, dg.HasPendingAction())
+	})
+
+	t.Run("CPU all-jokers hand fallback for cpuResolvePendingAction ten discard", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		allCPUPlayers := []*domain.DaifugoPlayer{
+			domain.NewDaifugoPlayer(false), // 0 = CPU (first turn)
+			domain.NewDaifugoPlayer(false), // 1 = CPU
+			domain.NewDaifugoPlayer(false), // 2 = CPU
+			domain.NewDaifugoPlayer(true),  // 3 = Human
+		}
+		cfg := domain.DaifugoConfig{TenDiscardEnabled: true}
+		dg := domain.NewDaifugo(tc, allCPUPlayers, cfg)
+
+		// CPU 0 has a 10 and only jokers remaining
+		allCPUPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		allCPUPlayers[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		allCPUPlayers[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		allCPUPlayers[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		allCPUPlayers[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		allCPUPlayers[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		allCPUPlayers[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		allCPUPlayers[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		allCPUPlayers[3].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+		// CPU 0 plays 10, triggering ten discard pending
+		dg.CpuPlay()
+		assert.True(t, dg.HasPendingAction())
+		// Next CpuPlay resolves pending: only jokers left → fallback index 0
+		dg.CpuPlay()
 		assert.False(t, dg.HasPendingAction())
 	})
 }
@@ -4041,6 +4124,29 @@ func TestDaifugo_SortMode(t *testing.T) {
 
 		err := dg.SortHumanHand(domain.DaifugoSortBySuit)
 		assert.NoError(t, err) // no error, just no-op
+	})
+
+	t.Run("sortAllActiveHands skips finished player during revolution", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, noRulesConfig())
+
+		// Mark CPU 3 as finished
+		players[3].SetIsFinished(true)
+		players[3].SetRank(1)
+
+		// Human plays 4 cards of same value → revolution triggers sortAllActiveHands
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0, 1, 2, 3}) // revolution
+		assert.NoError(t, err)
+		assert.True(t, dg.GetRevolutionActive())
 	})
 }
 

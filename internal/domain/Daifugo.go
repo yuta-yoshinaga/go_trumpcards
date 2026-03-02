@@ -63,6 +63,9 @@ const (
 	DaifugoSortByStrength DaifugoSortMode = 0 // 強さ順 (デフォルト)
 	DaifugoSortBySuit     DaifugoSortMode = 1 // スート順
 	DaifugoSortByNumber   DaifugoSortMode = 2 // 数字順
+
+	// jokerSortWeight ジョーカーをソート末尾に配置するための重み (最大値 4*100+13=413 を十分超える)
+	jokerSortWeight = 10000
 )
 
 // DaifugoConfig 大富豪ローカルルール設定
@@ -196,6 +199,7 @@ func (d *Daifugo) Reset() {
 	d.pendingActionTarget = -1
 	d.reverseDirection = false
 	d.numberLocked = false
+	// sortMode は意図的にリセットしない: ユーザーの好みをラウンド間で維持する
 
 	// シャッフル
 	d.trumpCards.Shuffle()
@@ -439,7 +443,7 @@ func (d *Daifugo) getNextActivePlayer(from int) int {
 	for i := 1; i <= DaifugoPlayerCnt; i++ {
 		var next int
 		if d.reverseDirection {
-			next = (from - i%DaifugoPlayerCnt + DaifugoPlayerCnt) % DaifugoPlayerCnt
+			next = (from - i + DaifugoPlayerCnt) % DaifugoPlayerCnt
 		} else {
 			next = (from + i) % DaifugoPlayerCnt
 		}
@@ -664,13 +668,11 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 	}
 
 	// 激シバ: 連番縛り発動中は強さの差が1でなければ出せない
+	// ジョーカーは連番縛りをバイパスし、通常の強さ比較のみ適用
 	if d.numberLocked && d.config.IntenseLockEnabled && d.config.SuitLockEnabled {
 		if playBase > 0 && tableBase > 0 {
-			if playStrength-tableStrength != 1 {
-				return false
-			}
+			return playStrength-tableStrength == 1
 		}
-		return playStrength > tableStrength
 	}
 
 	return playStrength > tableStrength
@@ -1429,7 +1431,7 @@ func (d *Daifugo) sortPlayerCards(p *DaifugoPlayer) {
 func (d *Daifugo) sortBySuit(p *DaifugoPlayer) {
 	p.SortCardsByStrength(func(c *Card) int {
 		if IsJoker(c) {
-			return 10000 // ジョーカーは末尾
+			return jokerSortWeight // ジョーカーは末尾
 		}
 		return c.GetDesign()*100 + c.GetValue()
 	})
@@ -1439,7 +1441,7 @@ func (d *Daifugo) sortBySuit(p *DaifugoPlayer) {
 func (d *Daifugo) sortByNumber(p *DaifugoPlayer) {
 	p.SortCardsByStrength(func(c *Card) int {
 		if IsJoker(c) {
-			return 10000 // ジョーカーは末尾
+			return jokerSortWeight // ジョーカーは末尾
 		}
 		return c.GetValue()*100 + c.GetDesign()
 	})

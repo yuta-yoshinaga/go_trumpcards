@@ -143,7 +143,9 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			case "sort":
 				mode := domain.DaifugoSortByStrength
 				if param.SortMode != nil {
-					mode = domain.DaifugoSortMode(*param.SortMode)
+					if m := *param.SortMode; m >= int(domain.DaifugoSortByStrength) && m <= int(domain.DaifugoSortByNumber) {
+						mode = domain.DaifugoSortMode(m)
+					}
 				}
 				dwc.writePresenterResponse(w, dgi.Sort(mode))
 			default:

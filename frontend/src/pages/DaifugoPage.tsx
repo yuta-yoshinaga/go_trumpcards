@@ -18,6 +18,12 @@ import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_180px] min-w-[150px]`;
 
+const SORT_MODES = [
+  { mode: 0, label: '強さ順' },
+  { mode: 1, label: 'スート順' },
+  { mode: 2, label: '数字順' },
+] as const;
+
 function rankName(rank: number): string {
   switch (rank) {
     case 1:
@@ -392,11 +398,7 @@ export function DaifugoPage() {
 
         {/* Sort buttons */}
         <div className="text-center mb-1">
-          {[
-            { mode: 0, label: '強さ順' },
-            { mode: 1, label: 'スート順' },
-            { mode: 2, label: '数字順' },
-          ].map(({ mode, label }) => (
+          {SORT_MODES.map(({ mode, label }) => (
             <button
               key={mode}
               type="button"

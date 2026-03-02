@@ -42,7 +42,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 	case "sort":
 		mode := domain.DaifugoSortByStrength
 		if len(fields) > 1 {
-			if m, err := strconv.Atoi(fields[1]); err == nil {
+			if m, err := strconv.Atoi(fields[1]); err == nil && m >= int(domain.DaifugoSortByStrength) && m <= int(domain.DaifugoSortByNumber) {
 				mode = domain.DaifugoSortMode(m)
 			}
 		}
