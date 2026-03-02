@@ -20,6 +20,9 @@ type DaifugoWebInputConfig struct {
 	TenDiscardEnabled   bool `json:"tenDiscardEnabled"`
 	SpadeThreeEnabled   bool `json:"spadeThreeEnabled"`
 	CapitalFallEnabled  bool `json:"capitalFallEnabled"`
+	NineReverseEnabled  bool `json:"nineReverseEnabled"`
+	CoupDetatEnabled    bool `json:"coupDetatEnabled"`
+	IntenseLockEnabled  bool `json:"intenseLockEnabled"`
 }
 
 // DaifugoWebInput 大富豪Webインプット
@@ -27,7 +30,8 @@ type DaifugoWebInput struct {
 	Command   string                 `json:"command"`
 	Indices   []int                  `json:"indices"` // 出すカードのインデックス。play コマンド用。空の場合はパス。
 	SessionId string                 `json:"sessionId"`
-	Config    *DaifugoWebInputConfig `json:"config"` // リセット時のローカルルール設定 (省略可)
+	Config    *DaifugoWebInputConfig `json:"config"`   // リセット時のローカルルール設定 (省略可)
+	SortMode  *int                   `json:"sortMode"` // ソートモード (sort コマンド用、省略可)
 }
 
 // GetCommand returns the command string.
@@ -72,6 +76,9 @@ type DaifugoWebOutputConfig struct {
 	TenDiscardEnabled   bool `json:"tenDiscardEnabled"`
 	SpadeThreeEnabled   bool `json:"spadeThreeEnabled"`
 	CapitalFallEnabled  bool `json:"capitalFallEnabled"`
+	NineReverseEnabled  bool `json:"nineReverseEnabled"`
+	CoupDetatEnabled    bool `json:"coupDetatEnabled"`
+	IntenseLockEnabled  bool `json:"intenseLockEnabled"`
 }
 
 // DaifugoWebOutput 大富豪Webアウトプット
@@ -93,6 +100,9 @@ type DaifugoWebOutput struct {
 	Message             string                            `json:"message"`
 	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"
 	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
+	ReverseDirection    bool                              `json:"reverseDirection"`
+	NumberLocked        bool                              `json:"numberLocked"`
+	SortMode            int                               `json:"sortMode"`
 }
 
 // DaifugoWebController 大富豪Webコントローラークラス
@@ -130,6 +140,12 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 					indices = []int{}
 				}
 				dwc.writePresenterResponse(w, dgi.Play(indices))
+			case "sort":
+				mode := domain.DaifugoSortByStrength
+				if param.SortMode != nil {
+					mode = domain.DaifugoSortMode(*param.SortMode)
+				}
+				dwc.writePresenterResponse(w, dgi.Sort(mode))
 			default:
 				return false
 			}
@@ -151,6 +167,9 @@ func convertWebInputConfig(c DaifugoWebInputConfig) domain.DaifugoConfig {
 		TenDiscardEnabled:   c.TenDiscardEnabled,
 		SpadeThreeEnabled:   c.SpadeThreeEnabled,
 		CapitalFallEnabled:  c.CapitalFallEnabled,
+		NineReverseEnabled:  c.NineReverseEnabled,
+		CoupDetatEnabled:    c.CoupDetatEnabled,
+		IntenseLockEnabled:  c.IntenseLockEnabled,
 	}
 }
 

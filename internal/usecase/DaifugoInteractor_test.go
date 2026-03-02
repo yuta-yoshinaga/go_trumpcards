@@ -58,6 +58,10 @@ func TestDaifugoInteractor_Method(t *testing.T) {
 		config := domain.DefaultDaifugoConfig()
 		assert.Equal(t, mockOutput, tdi.ResetWithConfig(config))
 	})
+
+	t.Run("success Sort", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tdi.Sort(domain.DaifugoSortBySuit))
+	})
 }
 
 func TestDaifugoInteractor_MockGame(t *testing.T) {
@@ -72,6 +76,7 @@ func TestDaifugoInteractor_MockGame(t *testing.T) {
 	gameMock.On("CpuPlay").Return()
 	gameMock.On("PlayerPlay", mock.Anything).Return(nil)
 	gameMock.On("SetConfig", mock.Anything).Return()
+	gameMock.On("SortHumanHand", mock.Anything).Return(nil)
 
 	di := usecase.NewDaifugoInteractor(gameMock, dgpMock)
 
@@ -101,5 +106,10 @@ func TestDaifugoInteractor_MockGame(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "SetConfig", config)
 		gameMock.AssertCalled(t, "Reset")
+	})
+	t.Run("Sort calls game.SortHumanHand", func(t *testing.T) {
+		result := di.Sort(domain.DaifugoSortBySuit)
+		assert.Equal(t, mockOutput, result)
+		gameMock.AssertCalled(t, "SortHumanHand", domain.DaifugoSortBySuit)
 	})
 }

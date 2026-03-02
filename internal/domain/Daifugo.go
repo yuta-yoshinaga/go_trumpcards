@@ -56,6 +56,15 @@ const (
 	DaifugoPendingTenDiscard DaifugoPendingAction = 2 // 10捨て待ち
 )
 
+// DaifugoSortMode 手札ソートモード
+type DaifugoSortMode int
+
+const (
+	DaifugoSortByStrength DaifugoSortMode = 0 // 強さ順 (デフォルト)
+	DaifugoSortBySuit     DaifugoSortMode = 1 // スート順
+	DaifugoSortByNumber   DaifugoSortMode = 2 // 数字順
+)
+
 // DaifugoConfig 大富豪ローカルルール設定
 type DaifugoConfig struct {
 	JokerCount          int  // ジョーカー枚数 (default: 2)
@@ -69,6 +78,9 @@ type DaifugoConfig struct {
 	TenDiscardEnabled   bool // 10捨て
 	SpadeThreeEnabled   bool // スペ3返し
 	CapitalFallEnabled  bool // 都落ち
+	NineReverseEnabled  bool // 9リバース
+	CoupDetatEnabled    bool // クーデター (3枚の9で革命)
+	IntenseLockEnabled  bool // 激シバ (連番縛り)
 }
 
 // DefaultDaifugoConfig デフォルトのローカルルール設定 (全て有効)
@@ -85,6 +97,9 @@ func DefaultDaifugoConfig() DaifugoConfig {
 		TenDiscardEnabled:   false,
 		SpadeThreeEnabled:   false,
 		CapitalFallEnabled:  false,
+		NineReverseEnabled:  false,
+		CoupDetatEnabled:    false,
+		IntenseLockEnabled:  false,
 	}
 }
 
@@ -121,6 +136,9 @@ type Daifugo struct {
 	exchangeActions     []*DaifugoExchangeAction // カード交換記録
 	pendingActionType   DaifugoPendingAction     // ペンディングアクションの種類
 	pendingActionTarget int                      // 7渡しの対象プレイヤーインデックス (-1 = なし)
+	reverseDirection    bool                     // 9リバース: ターン方向が逆か
+	numberLocked        bool                     // 激シバ: 連番縛り発動中
+	sortMode            DaifugoSortMode          // 手札ソートモード
 }
 
 // NewDaifugo コンストラクタ
@@ -176,6 +194,8 @@ func (d *Daifugo) Reset() {
 	d.exchangeActions = nil
 	d.pendingActionType = DaifugoPendingNone
 	d.pendingActionTarget = -1
+	d.reverseDirection = false
+	d.numberLocked = false
 
 	// シャッフル
 	d.trumpCards.Shuffle()
@@ -204,9 +224,7 @@ func (d *Daifugo) Reset() {
 	}
 
 	// 各プレイヤーの手札をソート
-	for _, p := range d.players {
-		p.SortCardsByStrength(d.cardStrengthForCard)
-	}
+	d.sortAllActiveHands()
 
 	// カード交換
 	if d.config.CardExchangeEnabled && hasPrevRanks {
@@ -241,9 +259,7 @@ func (d *Daifugo) performCardExchange() {
 	}
 
 	// 交換後に再ソート
-	for _, p := range d.players {
-		p.SortCardsByStrength(d.cardStrengthForCard)
-	}
+	d.sortAllActiveHands()
 }
 
 // exchangeCardsBetween 上位プレイヤーと下位プレイヤー間でカード交換
@@ -321,11 +337,7 @@ func (d *Daifugo) triggerRevolutionIfNeeded(cards []*Card) {
 		return
 	}
 	d.revolutionActive = !d.revolutionActive
-	for _, p := range d.players {
-		if !p.GetIsFinished() {
-			p.SortCardsByStrength(d.cardStrengthForCard)
-		}
-	}
+	d.sortAllActiveHands()
 }
 
 // triggerEightCut 8切りチェック: 8が出されたら場をクリア
@@ -350,12 +362,7 @@ func (d *Daifugo) triggerElevenBack(cards []*Card) {
 	for _, c := range cards {
 		if !IsJoker(c) && c.GetValue() == 11 {
 			d.elevenBackActive = !d.elevenBackActive
-			// 手札を再ソート
-			for _, p := range d.players {
-				if !p.GetIsFinished() {
-					p.SortCardsByStrength(d.cardStrengthForCard)
-				}
-			}
+			d.sortAllActiveHands()
 			return
 		}
 	}
@@ -376,8 +383,22 @@ func (d *Daifugo) updateSuitLock(cards []*Card) {
 	prevSuit := d.getNonJokerSuit(d.tableCards)
 	newSuit := d.getNonJokerSuit(cards)
 	if prevSuit > 0 && newSuit > 0 && prevSuit == newSuit {
-		d.suitLocked = true
-		d.lockedSuit = prevSuit
+		if !d.suitLocked {
+			d.suitLocked = true
+			d.lockedSuit = prevSuit
+			// 激シバ: スート縛り発動時に連番かチェック
+			if d.config.IntenseLockEnabled {
+				prevBase := getBaseValue(d.tableCards)
+				newBase := getBaseValue(cards)
+				if prevBase > 0 && newBase > 0 {
+					prevStr := d.cardStrength(prevBase)
+					newStr := d.cardStrength(newBase)
+					if newStr-prevStr == 1 {
+						d.numberLocked = true
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -416,7 +437,12 @@ func (d *Daifugo) getActivePlayerCnt() int {
 // getNextActivePlayer fromの次のアクティブなプレイヤーインデックスを取得
 func (d *Daifugo) getNextActivePlayer(from int) int {
 	for i := 1; i <= DaifugoPlayerCnt; i++ {
-		next := (from + i) % DaifugoPlayerCnt
+		var next int
+		if d.reverseDirection {
+			next = (from - i%DaifugoPlayerCnt + DaifugoPlayerCnt) % DaifugoPlayerCnt
+		} else {
+			next = (from + i) % DaifugoPlayerCnt
+		}
 		if !d.players[next].GetIsFinished() {
 			return next
 		}
@@ -484,6 +510,7 @@ func (d *Daifugo) clearTableState() {
 	d.lockedSuit = 0
 	d.elevenBackActive = false
 	d.tableIsSequence = false
+	d.numberLocked = false
 }
 
 // getBaseValue ジョーカーを除いたカード配列の共通値を取得 (全ジョーカーなら-1)
@@ -635,6 +662,17 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 	} else {
 		playStrength = d.cardStrength(playBase)
 	}
+
+	// 激シバ: 連番縛り発動中は強さの差が1でなければ出せない
+	if d.numberLocked && d.config.IntenseLockEnabled && d.config.SuitLockEnabled {
+		if playBase > 0 && tableBase > 0 {
+			if playStrength-tableStrength != 1 {
+				return false
+			}
+		}
+		return playStrength > tableStrength
+	}
+
 	return playStrength > tableStrength
 }
 
@@ -717,7 +755,9 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	d.tableIsSequence = isSeq
 
 	d.triggerRevolutionIfNeeded(cards)
+	d.triggerCoupDetatIfNeeded(cards)
 	d.triggerElevenBack(cards)
+	d.triggerNineReverseIfNeeded(cards, isSeq)
 
 	if d.players[playerIdx].GetCardsSize() == 0 {
 		d.finishPlayer(playerIdx)
@@ -1115,21 +1155,35 @@ func (d *Daifugo) resolvePendingAction(indices []int) error {
 	return nil
 }
 
+// findStrongestNonJokerIndex プレイヤーの手札中の最強の非ジョーカーカードのインデックスを返す (末尾から探索)
+func (d *Daifugo) findStrongestNonJokerIndex(player *DaifugoPlayer) int {
+	for i := player.GetCardsSize() - 1; i >= 0; i-- {
+		if !IsJoker(player.GetCard(i)) {
+			return i
+		}
+	}
+	return 0
+}
+
+// findWeakestNonJokerIndex プレイヤーの手札中の最弱の非ジョーカーカードのインデックスを返す (先頭から探索)
+func (d *Daifugo) findWeakestNonJokerIndex(player *DaifugoPlayer) int {
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if !IsJoker(player.GetCard(i)) {
+			return i
+		}
+	}
+	return 0
+}
+
 // cpuResolvePendingAction CPUがペンディングアクションを自動解決する
 func (d *Daifugo) cpuResolvePendingAction() {
 	player := d.players[d.currentTurn]
 
-	// 最弱の非ジョーカーカードを探す (インデックス0 = 最弱)
-	idx := 0
-	for i := 0; i < player.GetCardsSize(); i++ {
-		if !IsJoker(player.GetCard(i)) {
-			idx = i
-			break
-		}
-	}
-
+	var idx int
 	switch d.pendingActionType {
 	case DaifugoPendingSevenPass:
+		// 7渡し: 最強の非ジョーカーカードを渡す
+		idx = d.findStrongestNonJokerIndex(player)
 		removed := player.RemoveCards([]int{idx})
 		target := d.players[d.pendingActionTarget]
 		target.AddCard(removed[0])
@@ -1137,6 +1191,8 @@ func (d *Daifugo) cpuResolvePendingAction() {
 		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
 		d.cpuActions = append(d.cpuActions, action)
 	case DaifugoPendingTenDiscard:
+		// 10捨て: 最弱の非ジョーカーカードを捨てる
+		idx = d.findWeakestNonJokerIndex(player)
 		removed := player.RemoveCards([]int{idx})
 		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
 		d.cpuActions = append(d.cpuActions, action)
@@ -1278,3 +1334,113 @@ func (d *Daifugo) SetTableCards(cards []*Card) { d.tableCards = cards }
 
 // SetLastPlayPlayerIdx 最後にカードを出したプレイヤーインデックスを設定（テスト用）
 func (d *Daifugo) SetLastPlayPlayerIdx(idx int) { d.lastPlayPlayerIdx = idx }
+
+// GetReverseDirection 9リバースの方向取得
+func (d *Daifugo) GetReverseDirection() bool { return d.reverseDirection }
+
+// SetReverseDirection 9リバースの方向設定（テスト用）
+func (d *Daifugo) SetReverseDirection(v bool) { d.reverseDirection = v }
+
+// GetNumberLocked 連番縛り発動中か取得
+func (d *Daifugo) GetNumberLocked() bool { return d.numberLocked }
+
+// SetNumberLocked 連番縛り設定（テスト用）
+func (d *Daifugo) SetNumberLocked(v bool) { d.numberLocked = v }
+
+// GetSortMode 手札ソートモード取得
+func (d *Daifugo) GetSortMode() DaifugoSortMode { return d.sortMode }
+
+// SetSortMode 手札ソートモード設定（テスト用）
+func (d *Daifugo) SetSortMode(mode DaifugoSortMode) { d.sortMode = mode }
+
+// triggerNineReverseIfNeeded 9リバースチェック: 非ジョーカーの9が出されたらターン方向を反転（階段時は無効）
+func (d *Daifugo) triggerNineReverseIfNeeded(cards []*Card, isSeq bool) {
+	if !d.config.NineReverseEnabled || isSeq {
+		return
+	}
+	for _, c := range cards {
+		if !IsJoker(c) && c.GetValue() == 9 {
+			d.reverseDirection = !d.reverseDirection
+			return
+		}
+	}
+}
+
+// triggerCoupDetatIfNeeded クーデターチェック: 3枚の非ジョーカー9で革命を起こす
+func (d *Daifugo) triggerCoupDetatIfNeeded(cards []*Card) {
+	if !d.config.CoupDetatEnabled {
+		return
+	}
+	if len(cards) != 3 {
+		return
+	}
+	for _, c := range cards {
+		if IsJoker(c) || c.GetValue() != 9 {
+			return
+		}
+	}
+	d.revolutionActive = !d.revolutionActive
+	d.sortAllActiveHands()
+}
+
+// SortHumanHand 人間プレイヤーの手札を指定モードでソートする
+func (d *Daifugo) SortHumanHand(mode DaifugoSortMode) error {
+	if d.gameEndFlag {
+		return ErrGameEnded
+	}
+	d.sortMode = mode
+	for _, p := range d.players {
+		if p.GetIsHuman() && !p.GetIsFinished() {
+			d.sortPlayerCards(p)
+			break
+		}
+	}
+	return nil
+}
+
+// sortAllActiveHands 全アクティブプレイヤーの手札をソートする
+// 人間プレイヤーは sortMode に従い、CPUは常に強さ順
+func (d *Daifugo) sortAllActiveHands() {
+	for _, p := range d.players {
+		if p.GetIsFinished() {
+			continue
+		}
+		if p.GetIsHuman() {
+			d.sortPlayerCards(p)
+		} else {
+			p.SortCardsByStrength(d.cardStrengthForCard)
+		}
+	}
+}
+
+// sortPlayerCards プレイヤーの手札を sortMode に従ってソートする
+func (d *Daifugo) sortPlayerCards(p *DaifugoPlayer) {
+	switch d.sortMode {
+	case DaifugoSortBySuit:
+		d.sortBySuit(p)
+	case DaifugoSortByNumber:
+		d.sortByNumber(p)
+	default:
+		p.SortCardsByStrength(d.cardStrengthForCard)
+	}
+}
+
+// sortBySuit スート順でソート (Spade < Clover < Heart < Diamond, 同スート内は値の昇順、ジョーカーは末尾)
+func (d *Daifugo) sortBySuit(p *DaifugoPlayer) {
+	p.SortCardsByStrength(func(c *Card) int {
+		if IsJoker(c) {
+			return 10000 // ジョーカーは末尾
+		}
+		return c.GetDesign()*100 + c.GetValue()
+	})
+}
+
+// sortByNumber 数字順でソート (値の昇順、同値ならスートの昇順、ジョーカーは末尾)
+func (d *Daifugo) sortByNumber(p *DaifugoPlayer) {
+	p.SortCardsByStrength(func(c *Card) int {
+		if IsJoker(c) {
+			return 10000 // ジョーカーは末尾
+		}
+		return c.GetValue()*100 + c.GetDesign()
+	})
+}

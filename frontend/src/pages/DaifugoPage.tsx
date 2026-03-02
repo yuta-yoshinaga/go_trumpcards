@@ -4,7 +4,7 @@ import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { StatusBadge } from '../components/StatusBadge';
 import { useGameApi } from '../hooks/useGameApi';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { playerAreaBase } from '../styles/gameStyles';
 import type {
   DaifugoAction,
@@ -145,6 +145,12 @@ function RulesBadges({ state }: { state: DaifugoResponse }) {
   if (state.tableIsSequence) {
     badges.push({ label: '階段', bg: '#9b59b6', color: '#fff' });
   }
+  if (state.reverseDirection) {
+    badges.push({ label: '9リバース', bg: '#e67e22', color: '#fff' });
+  }
+  if (state.numberLocked) {
+    badges.push({ label: '連番縛り', bg: '#1abc9c', color: '#fff' });
+  }
   if (badges.length === 0) return null;
   return (
     <div className="my-1 px-1">
@@ -195,6 +201,9 @@ function SettingsPanel({ config, onChange }: SettingsPanelProps) {
     { key: 'tenDiscardEnabled', label: '10捨て' },
     { key: 'spadeThreeEnabled', label: 'スペ3返し' },
     { key: 'capitalFallEnabled', label: '都落ち' },
+    { key: 'nineReverseEnabled', label: '9リバース' },
+    { key: 'coupDetatEnabled', label: 'クーデター' },
+    { key: 'intenseLockEnabled', label: '激シバ' },
   ];
   return (
     <details className="mb-2">
@@ -244,6 +253,9 @@ const defaultConfigInput: DaifugoConfigInput = {
   tenDiscardEnabled: false,
   spadeThreeEnabled: false,
   capitalFallEnabled: false,
+  nineReverseEnabled: false,
+  coupDetatEnabled: false,
+  intenseLockEnabled: false,
 };
 
 export function DaifugoPage() {
@@ -377,6 +389,25 @@ export function DaifugoPage() {
       >
         {/* Settings panel */}
         <SettingsPanel config={configInput} onChange={handleConfigChange} />
+
+        {/* Sort buttons */}
+        <div className="text-center mb-1">
+          {[
+            { mode: 0, label: '強さ順' },
+            { mode: 1, label: 'スート順' },
+            { mode: 2, label: '数字順' },
+          ].map(({ mode, label }) => (
+            <button
+              key={mode}
+              type="button"
+              className={state.sortMode === mode ? `${btnPrimary} min-w-[70px]` : `${btnSecondary} min-w-[70px]`}
+              disabled={loading}
+              onClick={() => exec('sort', undefined, undefined, mode)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         {/* Human player */}
         {humanPlayer && (

@@ -563,7 +563,13 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', indices: undefined, sessionId }),
+        body: JSON.stringify({
+          command: 'reset',
+          indices: undefined,
+          config: undefined,
+          sortMode: undefined,
+          sessionId,
+        }),
       });
       expect(result).toEqual(payload);
     });
@@ -585,7 +591,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         '/daifugo/exec',
         expect.objectContaining({
-          body: JSON.stringify({ command: 'play', indices: [0], sessionId }),
+          body: JSON.stringify({ command: 'play', indices: [0], config: undefined, sortMode: undefined, sessionId }),
         }),
       );
     });
@@ -607,7 +613,29 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         '/daifugo/exec',
         expect.objectContaining({
-          body: JSON.stringify({ command: 'play', indices: [], sessionId }),
+          body: JSON.stringify({ command: 'play', indices: [], config: undefined, sortMode: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with sort command and sortMode', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableCards: [],
+          lastPlayPlayerIdx: -1,
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await daifugoApi.exec('sort', undefined, undefined, 1);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/daifugo/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'sort', indices: undefined, config: undefined, sortMode: 1, sessionId }),
         }),
       );
     });
