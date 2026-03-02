@@ -16,5 +16,6 @@ func DefaultSevensConfig() SevensConfig {
 		JokerCount:    0,
 		CpuStrategy:   false,
 		MaxPasses:     SevensMaxPasses,
+		NoJokerFinish: false,
 	}
 }

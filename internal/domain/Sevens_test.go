@@ -6,6 +6,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func makeSevensPlayers() []*domain.SevensPlayer {
@@ -2055,10 +2056,9 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 		players[1].RemoveCard(0) // remove diamond 2
 		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 
-		if s.GetCurrentTurn() == 1 {
-			s.CpuPlay()
-			assert.True(t, players[1].GetIsEliminated())
-		}
+		require.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay()
+		assert.True(t, players[1].GetIsEliminated())
 	})
 
 	t.Run("CpuPlay passes when only jokers + NoJokerFinish + passes remain", func(t *testing.T) {
@@ -2079,16 +2079,14 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 		players[1].RemoveCard(0) // remove diamond 2
 		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 
-		if s.GetCurrentTurn() == 1 {
-			s.CpuPlay()
-			actions := s.GetCpuActions()
-			assert.NotEmpty(t, actions)
-			lastAction := actions[len(actions)-1]
-			if lastAction.PlayerIdx == 1 {
-				assert.Nil(t, lastAction.PlayedCard) // passed
-				assert.False(t, players[1].GetIsEliminated())
-			}
-		}
+		require.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay()
+		actions := s.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		lastAction := actions[len(actions)-1]
+		require.Equal(t, 1, lastAction.PlayerIdx)
+		assert.Nil(t, lastAction.PlayedCard) // passed
+		assert.False(t, players[1].GetIsEliminated())
 	})
 
 	t.Run("findPlayableSimple skips blocked jokers only-joker case", func(t *testing.T) {
@@ -2109,15 +2107,13 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 		players[1].RemoveCard(0) // remove diamond 2
 		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 
-		if s.GetCurrentTurn() == 1 {
-			s.CpuPlay()
-			actions := s.GetCpuActions()
-			assert.NotEmpty(t, actions)
-			lastAction := actions[len(actions)-1]
-			if lastAction.PlayerIdx == 1 {
-				assert.Nil(t, lastAction.PlayedCard) // passes because joker is blocked
-			}
-		}
+		require.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay()
+		actions := s.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		lastAction := actions[len(actions)-1]
+		require.Equal(t, 1, lastAction.PlayerIdx)
+		assert.Nil(t, lastAction.PlayedCard) // passes because joker is blocked
 	})
 
 	t.Run("findPlayableStrategic skips blocked jokers", func(t *testing.T) {
@@ -2138,15 +2134,13 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 		players[1].RemoveCard(0) // remove diamond 2
 		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 
-		if s.GetCurrentTurn() == 1 {
-			s.CpuPlay()
-			actions := s.GetCpuActions()
-			assert.NotEmpty(t, actions)
-			lastAction := actions[len(actions)-1]
-			if lastAction.PlayerIdx == 1 {
-				assert.Nil(t, lastAction.PlayedCard) // passes because joker is blocked
-			}
-		}
+		require.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay()
+		actions := s.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		lastAction := actions[len(actions)-1]
+		require.Equal(t, 1, lastAction.PlayerIdx)
+		assert.Nil(t, lastAction.PlayedCard) // passes because joker is blocked
 	})
 
 	t.Run("NewSevens stores NoJokerFinish config", func(t *testing.T) {
@@ -2188,15 +2182,13 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 		// CPU should pass (negative score, passes available)
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		if s.GetCurrentTurn() == 1 {
-			s.CpuPlay()
-			actions := s.GetCpuActions()
-			assert.NotEmpty(t, actions)
-			lastAction := actions[len(actions)-1]
-			if lastAction.PlayerIdx == 1 {
-				assert.Nil(t, lastAction.PlayedCard) // passes due to high weighted penalty
-			}
-		}
+		require.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay()
+		actions := s.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		lastAction := actions[len(actions)-1]
+		require.Equal(t, 1, lastAction.PlayerIdx)
+		assert.Nil(t, lastAction.PlayedCard) // passes due to high weighted penalty
 	})
 
 	t.Run("opponent with plenty of passes gets weight 1", func(t *testing.T) {
@@ -2223,16 +2215,14 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 
-		if s.GetCurrentTurn() == 1 {
-			s.CpuPlay()
-			actions := s.GetCpuActions()
-			assert.NotEmpty(t, actions)
-			lastAction := actions[len(actions)-1]
-			if lastAction.PlayerIdx == 1 {
-				assert.NotNil(t, lastAction.PlayedCard)
-				assert.Equal(t, 6, lastAction.PlayedCard.GetValue())
-			}
-		}
+		require.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay()
+		actions := s.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		lastAction := actions[len(actions)-1]
+		require.Equal(t, 1, lastAction.PlayerIdx)
+		assert.NotNil(t, lastAction.PlayedCard)
+		assert.Equal(t, 6, lastAction.PlayedCard.GetValue())
 	})
 
 	t.Run("opponent with unlimited passes gets weight 1", func(t *testing.T) {
@@ -2253,16 +2243,14 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		if s.GetCurrentTurn() == 1 {
-			s.CpuPlay()
-			actions := s.GetCpuActions()
-			assert.NotEmpty(t, actions)
-			lastAction := actions[len(actions)-1]
-			if lastAction.PlayerIdx == 1 {
-				// Score = -(1+1) = -2, passes available -> pass
-				assert.Nil(t, lastAction.PlayedCard)
-			}
-		}
+		require.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay()
+		actions := s.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		lastAction := actions[len(actions)-1]
+		require.Equal(t, 1, lastAction.PlayerIdx)
+		// Score = -(1+1) = -2, passes available -> pass
+		assert.Nil(t, lastAction.PlayedCard)
 	})
 
 	t.Run("opponent with 2 passes left gets weight 2", func(t *testing.T) {
@@ -2286,15 +2274,13 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 		// CPU 1 has spade 6. With weight 2: score -= (1+2) = -3
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		if s.GetCurrentTurn() == 1 {
-			s.CpuPlay()
-			actions := s.GetCpuActions()
-			assert.NotEmpty(t, actions)
-			lastAction := actions[len(actions)-1]
-			if lastAction.PlayerIdx == 1 {
-				assert.Nil(t, lastAction.PlayedCard) // passes due to negative score
-			}
-		}
+		require.Equal(t, 1, s.GetCurrentTurn())
+		s.CpuPlay()
+		actions := s.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		lastAction := actions[len(actions)-1]
+		require.Equal(t, 1, lastAction.PlayerIdx)
+		assert.Nil(t, lastAction.PlayedCard) // passes due to negative score
 	})
 }
 
@@ -2323,15 +2309,13 @@ func TestSevens_EvaluatePlay_PlayerHasNextHighCard(t *testing.T) {
 	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
 	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
 
-	if s.GetCurrentTurn() == 1 {
-		s.CpuPlay()
-		actions := s.GetCpuActions()
-		assert.NotEmpty(t, actions)
-		lastAction := actions[len(actions)-1]
-		if lastAction.PlayerIdx == 1 {
-			// CPU should play 8♠ because it has 9♠ (score = +2, positive)
-			assert.NotNil(t, lastAction.PlayedCard)
-			assert.Equal(t, 8, lastAction.PlayedCard.GetValue())
-		}
-	}
+	require.Equal(t, 1, s.GetCurrentTurn())
+	s.CpuPlay()
+	actions := s.GetCpuActions()
+	assert.NotEmpty(t, actions)
+	lastAction := actions[len(actions)-1]
+	require.Equal(t, 1, lastAction.PlayerIdx)
+	// CPU should play 8♠ because it has 9♠ (score = +2, positive)
+	assert.NotNil(t, lastAction.PlayedCard)
+	assert.Equal(t, 8, lastAction.PlayedCard.GetValue())
 }
