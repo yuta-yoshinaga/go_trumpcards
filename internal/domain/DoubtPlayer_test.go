@@ -103,8 +103,8 @@ func TestDoubtPlayer_RemoveCards(t *testing.T) {
 func TestDoubtPlayer_ResetMemory(t *testing.T) {
 	p := domain.NewDoubtPlayer(false)
 	// Record some cards first
-	p.RecordRevealedCard(5, 1.0)
-	p.RecordRevealedCard(5, 1.0)
+	p.RecordRevealedCard(5, 1.0, 0)
+	p.RecordRevealedCard(5, 1.0, 0)
 	assert.Equal(t, 2, p.CountKnownCards(5))
 
 	p.ResetMemory()
@@ -114,15 +114,15 @@ func TestDoubtPlayer_ResetMemory(t *testing.T) {
 func TestDoubtPlayer_RecordRevealedCard(t *testing.T) {
 	t.Run("full retention - always records", func(t *testing.T) {
 		p := domain.NewDoubtPlayer(false)
-		p.RecordRevealedCard(7, 1.0)
-		p.RecordRevealedCard(7, 1.0)
+		p.RecordRevealedCard(7, 1.0, 0)
+		p.RecordRevealedCard(7, 1.0, 0)
 		assert.Equal(t, 2, p.CountKnownCards(7))
 	})
 
 	t.Run("zero retention - never records", func(t *testing.T) {
 		p := domain.NewDoubtPlayer(false)
 		for i := 0; i < 100; i++ {
-			p.RecordRevealedCard(3, 0.0)
+			p.RecordRevealedCard(3, 0.0, 0)
 		}
 		assert.Equal(t, 0, p.CountKnownCards(3))
 	})
@@ -130,7 +130,7 @@ func TestDoubtPlayer_RecordRevealedCard(t *testing.T) {
 	t.Run("partial retention - sometimes records", func(t *testing.T) {
 		p := domain.NewDoubtPlayer(false)
 		for attempt := 0; attempt < 1000; attempt++ {
-			p.RecordRevealedCard(9, 0.5)
+			p.RecordRevealedCard(9, 0.5, 0)
 			if p.CountKnownCards(9) > 0 {
 				return // retention branch hit
 			}
@@ -151,8 +151,8 @@ func TestDoubtPlayer_CountKnownCards(t *testing.T) {
 	t.Run("combines memory and hand", func(t *testing.T) {
 		p := domain.NewDoubtPlayer(false)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		p.RecordRevealedCard(3, 1.0)
-		p.RecordRevealedCard(3, 1.0)
+		p.RecordRevealedCard(3, 1.0, 0)
+		p.RecordRevealedCard(3, 1.0, 0)
 		// 1 in hand + 2 in memory = 3
 		assert.Equal(t, 3, p.CountKnownCards(3))
 	})
@@ -160,5 +160,66 @@ func TestDoubtPlayer_CountKnownCards(t *testing.T) {
 	t.Run("unknown value returns zero", func(t *testing.T) {
 		p := domain.NewDoubtPlayer(false)
 		assert.Equal(t, 0, p.CountKnownCards(13))
+	})
+}
+
+func TestDoubtPlayer_DecayMemories(t *testing.T) {
+	t.Run("decayRate=0 never forgets", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		p.RecordRevealedCard(5, 1.0, 0)
+		p.RecordRevealedCard(7, 1.0, 0)
+		p.DecayMemories(100, 0.0) // rate=0 → 忘れない
+		assert.Equal(t, 1, p.CountKnownCards(5))
+		assert.Equal(t, 1, p.CountKnownCards(7))
+	})
+
+	t.Run("forgetProb >= 1.0 always forgets", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		p.RecordRevealedCard(5, 1.0, 0) // age = 10-0 = 10, forgetProb = 1.0*10 = 10.0 >= 1.0
+		p.DecayMemories(10, 1.0)
+		assert.Equal(t, 0, p.CountKnownCards(5))
+	})
+
+	t.Run("new memories survive, old memories forgotten", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		p.RecordRevealedCard(5, 1.0, 0)  // old: age=20
+		p.RecordRevealedCard(7, 1.0, 20) // new: age=0, forgetProb=0
+		p.DecayMemories(20, 1.0)         // rate=1.0, old: forgetProb=20 >= 1 → forget, new: forgetProb=0 → keep
+		assert.Equal(t, 0, p.CountKnownCards(5))
+		assert.Equal(t, 1, p.CountKnownCards(7))
+	})
+
+	t.Run("probabilistic decay - sometimes forgets", func(t *testing.T) {
+		forgotten := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			p := domain.NewDoubtPlayer(false)
+			p.RecordRevealedCard(5, 1.0, 0) // age=5, forgetProb=0.1*5=0.5
+			p.DecayMemories(5, 0.1)
+			if p.CountKnownCards(5) == 0 {
+				forgotten = true
+				break
+			}
+		}
+		assert.True(t, forgotten, "probabilistic decay should sometimes forget")
+	})
+
+	t.Run("probabilistic decay - sometimes remembers", func(t *testing.T) {
+		remembered := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			p := domain.NewDoubtPlayer(false)
+			p.RecordRevealedCard(5, 1.0, 0) // age=5, forgetProb=0.1*5=0.5
+			p.DecayMemories(5, 0.1)
+			if p.CountKnownCards(5) == 1 {
+				remembered = true
+				break
+			}
+		}
+		assert.True(t, remembered, "probabilistic decay should sometimes remember")
+	})
+
+	t.Run("empty memories - no panic", func(t *testing.T) {
+		p := domain.NewDoubtPlayer(false)
+		p.DecayMemories(10, 0.5) // 空スライス → no-op
+		assert.Equal(t, 0, p.CountKnownCards(1))
 	})
 }

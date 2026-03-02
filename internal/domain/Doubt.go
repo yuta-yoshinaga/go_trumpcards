@@ -21,6 +21,23 @@ const (
 	retentionChanceHard   = 1.0
 )
 
+// 記憶減衰率 (1ターンあたりの忘却ベースレート)
+const (
+	decayRateEasy   = 0.15
+	decayRateNormal = 0.05
+	decayRateHard   = 0.0
+)
+
+// 動的ブラフ確率の定数
+const (
+	bluffChanceBase          = 0.4
+	bluffChanceLastCard      = 0.1
+	bluffPenaltyLargeTable   = 0.15 // テーブル20枚以上
+	bluffPenaltyMediumTable  = 0.10 // テーブル10枚以上
+	bluffTableLargeThreshold = 20
+	bluffTableMedThreshold   = 10
+)
+
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
@@ -77,6 +94,7 @@ type Doubt struct {
 	humanAction     *DoubtCpuAction
 	lastDoubtResult *DoubtDoubtResult
 	config          DoubtConfig
+	turnCounter     int
 }
 
 // NewDoubt コンストラクタ
@@ -104,6 +122,7 @@ func (d *Doubt) Reset() {
 	d.cpuActions = nil
 	d.humanAction = nil
 	d.winnerIdx = -1
+	d.turnCounter = 0
 
 	for _, p := range d.players {
 		p.Reset()
@@ -212,8 +231,8 @@ func (d *Doubt) CpuPlay() {
 	played := player.RemoveCards(cardIndices)
 	d.tableCards = append(d.tableCards, played...)
 
-	// 40% の確率でブラフ
-	intentBluff := rand.Float64() < 0.4
+	// 状況に応じた動的ブラフ確率
+	intentBluff := rand.Float64() < d.calcBluffChance(player.GetCardsSize(), len(d.tableCards))
 	var claimedValue int
 	if intentBluff {
 		claimedValue = rand.Intn(13) + 1
@@ -276,6 +295,16 @@ func (d *Doubt) decideCpuDoubters() {
 	if d.lastAction == nil {
 		return
 	}
+
+	// 記憶の減衰処理
+	rate := memoryDecayRate(d.config.CpuMemoryLevel)
+	for i := 0; i < DoubtPlayerCnt; i++ {
+		if d.players[i].GetIsHuman() || d.players[i].GetIsFinished() {
+			continue
+		}
+		d.players[i].DecayMemories(d.turnCounter, rate)
+	}
+
 	cardPlayerIdx := d.lastAction.PlayerIdx
 	claimedValue := d.lastAction.ClaimedValue
 	claimedCount := d.lastAction.CardCount
@@ -375,10 +404,11 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 			continue
 		}
 		for _, card := range revealedCards {
-			p.RecordRevealedCard(card.GetValue(), retentionChance)
+			p.RecordRevealedCard(card.GetValue(), retentionChance, d.turnCounter)
 		}
 	}
 
+	d.turnCounter++
 	d.tableCards = nil
 	d.currentTurn = (d.lastAction.PlayerIdx + 1) % DoubtPlayerCnt
 	d.phase = DoubtPhasePlay
@@ -389,6 +419,7 @@ func (d *Doubt) SkipDoubt() {
 	if d.phase != DoubtPhaseDoubt || d.lastAction == nil {
 		return
 	}
+	d.turnCounter++
 	d.lastDoubtResult = nil
 	d.currentTurn = (d.lastAction.PlayerIdx + 1) % DoubtPlayerCnt
 	d.phase = DoubtPhasePlay
@@ -467,8 +498,42 @@ func (d *Doubt) SetLastDoubtResult(result *DoubtDoubtResult) { d.lastDoubtResult
 // SetWinnerIdx 勝者インデックス設定 (テスト用)
 func (d *Doubt) SetWinnerIdx(idx int) { d.winnerIdx = idx }
 
+// GetTurnCounter ターンカウンター取得
+func (d *Doubt) GetTurnCounter() int { return d.turnCounter }
+
+// SetTurnCounter ターンカウンター設定 (テスト用)
+func (d *Doubt) SetTurnCounter(v int) { d.turnCounter = v }
+
 // GetConfig ゲーム設定取得
 func (d *Doubt) GetConfig() DoubtConfig { return d.config }
 
 // SetConfig ゲーム設定変更
 func (d *Doubt) SetConfig(cfg DoubtConfig) { d.config = cfg }
+
+// memoryDecayRate 記憶力レベルに対応する記憶減衰率を返す
+func memoryDecayRate(level DoubtMemoryLevel) float64 {
+	switch level {
+	case DoubtMemoryLevelEasy:
+		return decayRateEasy
+	case DoubtMemoryLevelNormal:
+		return decayRateNormal
+	case DoubtMemoryLevelHard:
+		return decayRateHard
+	default:
+		return decayRateNormal
+	}
+}
+
+// calcBluffChance 手札枚数とテーブルカード枚数に応じた動的ブラフ確率を計算する
+func (d *Doubt) calcBluffChance(handSize, tableCardCount int) float64 {
+	if handSize <= 1 {
+		return bluffChanceLastCard
+	}
+	chance := bluffChanceBase
+	if tableCardCount >= bluffTableLargeThreshold {
+		chance -= bluffPenaltyLargeTable
+	} else if tableCardCount >= bluffTableMedThreshold {
+		chance -= bluffPenaltyMediumTable
+	}
+	return chance
+}

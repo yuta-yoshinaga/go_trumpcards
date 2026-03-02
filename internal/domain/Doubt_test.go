@@ -570,7 +570,7 @@ func TestDoubt_GetSetConfig(t *testing.T) {
 func TestDoubt_Reset_ClearsMemory(t *testing.T) {
 	game, players := makeDoubtGame()
 	// Use value 99 (impossible in deck) so hand cards after reset won't interfere
-	players[1].RecordRevealedCard(99, 1.0)
+	players[1].RecordRevealedCard(99, 1.0, 0)
 	assert.Equal(t, 1, players[1].CountKnownCards(99))
 
 	game.Reset()
@@ -586,7 +586,7 @@ func TestDoubt_DecideCpuDoubters_ImpossibleClaim(t *testing.T) {
 
 	// Give CPU 1 knowledge of 4 cards of value 5 (max in deck)
 	for i := 0; i < 4; i++ {
-		players[1].RecordRevealedCard(5, 1.0)
+		players[1].RecordRevealedCard(5, 1.0, 0)
 	}
 
 	// Human plays value=5 (claimed), count=1 → known(5)+1 = 5 > 4 → impossible
@@ -776,4 +776,125 @@ func TestDoubt_SettersForTest(t *testing.T) {
 
 	game.SetWinnerIdx(2)
 	assert.Equal(t, 2, game.GetWinnerIdx())
+}
+
+func TestDoubt_TurnCounter(t *testing.T) {
+	t.Run("initial value is 0", func(t *testing.T) {
+		game, _ := makeDoubtGame()
+		assert.Equal(t, 0, game.GetTurnCounter())
+	})
+
+	t.Run("SkipDoubt increments turnCounter", func(t *testing.T) {
+		game, _ := makeDoubtGame()
+		game.SetLastAction(&domain.DoubtAction{
+			PlayerIdx: 0, ClaimedValue: 1, CardCount: 1,
+			PlayedCards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)},
+		})
+		game.SetPhase(domain.DoubtPhaseDoubt)
+		game.SkipDoubt()
+		assert.Equal(t, 1, game.GetTurnCounter())
+	})
+
+	t.Run("ResolveDoubt increments turnCounter", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		playedCard := domain.NewCard(domain.CardDesignSpade, 5, false)
+		game.SetLastAction(&domain.DoubtAction{
+			PlayerIdx: 0, ClaimedValue: 3, CardCount: 1,
+			PlayedCards: []*domain.Card{playedCard},
+		})
+		game.SetPhase(domain.DoubtPhaseDoubt)
+		game.SetTableCards([]*domain.Card{playedCard})
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+		game.ResolveDoubt([]int{1})
+		assert.Equal(t, 1, game.GetTurnCounter())
+	})
+
+	t.Run("Reset clears turnCounter", func(t *testing.T) {
+		game, _ := makeDoubtGame()
+		game.SetTurnCounter(10)
+		game.Reset()
+		assert.Equal(t, 0, game.GetTurnCounter())
+	})
+
+	t.Run("SetTurnCounter sets value", func(t *testing.T) {
+		game, _ := makeDoubtGame()
+		game.SetTurnCounter(42)
+		assert.Equal(t, 42, game.GetTurnCounter())
+	})
+}
+
+func TestDoubt_MemoryDecay_EasyLevel(t *testing.T) {
+	// Easy level: memories should decay over turns
+	// Record a card at turn 0, then advance to a high turn and check if decay happens
+	forgotten := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelEasy})
+
+		// Record card for CPU 1 at turn 0
+		players[1].RecordRevealedCard(5, 1.0, 0)
+		assert.Equal(t, 1, players[1].CountKnownCards(5))
+
+		// Advance turnCounter to simulate many turns passed
+		game.SetTurnCounter(10)
+
+		// Trigger decideCpuDoubters which calls DecayMemories
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		_ = game.PlayerPlay([]int{0}, 1)
+
+		if players[1].CountKnownCards(5) == 0 {
+			forgotten = true
+			break
+		}
+	}
+	assert.True(t, forgotten, "easy level should eventually forget old memories")
+}
+
+func TestDoubt_MemoryDecay_HardLevel(t *testing.T) {
+	// Hard level: memories never decay (decayRate=0)
+	game, players := makeDoubtGame()
+	game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard})
+
+	// Record card for CPU 1 at turn 0
+	players[1].RecordRevealedCard(5, 1.0, 0)
+
+	// Advance turnCounter very far
+	game.SetTurnCounter(100)
+
+	// Trigger decideCpuDoubters which calls DecayMemories
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	_ = game.PlayerPlay([]int{0}, 1)
+
+	// Hard level: memory should never be lost
+	assert.Equal(t, 1, players[1].CountKnownCards(5))
+}
+
+func TestDoubt_DynamicBluffChance(t *testing.T) {
+	// When CPU has only 1 card, bluff rate should be lower (0.1 vs 0.4)
+	// We test by running 1000 trials and checking bluff rate is significantly lower
+	t.Run("last card reduces bluff rate", func(t *testing.T) {
+		bluffCount := 0
+		trials := 1000
+		for i := 0; i < trials; i++ {
+			game, players := makeDoubtGame()
+			advanceToCpuTurn(game)
+			// Give CPU 1 exactly 1 card (handSize=1 after play will be 0)
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+			game.CpuPlay()
+
+			cpuActions := game.GetCpuActions()
+			if len(cpuActions) > 0 && cpuActions[0].IsBluff {
+				bluffCount++
+			}
+		}
+		// With bluffChance=0.1, expected bluff rate ~10%
+		// With old bluffChance=0.4, expected bluff rate ~40%
+		// Use threshold of 25% to distinguish
+		bluffRate := float64(bluffCount) / float64(trials)
+		assert.Less(t, bluffRate, 0.25, "bluff rate with 1 card should be much lower than 40%%")
+	})
 }
