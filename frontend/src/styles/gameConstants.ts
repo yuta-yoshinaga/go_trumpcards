@@ -1,7 +1,12 @@
-import { HoldemAction, PokerAction } from '../types/phases';
+import { PokerAction } from '../types/phases';
 
-/** Poker action display names (Poker/Holdem share the same numeric values). */
-export const POKER_ACTION_NAMES: Record<number, string> = {
+/**
+ * Betting action display names shared by Poker and Holdem.
+ * PokerAction and HoldemAction have the same numeric values (0-5),
+ * so a single map is sufficient. Separate aliases are exported
+ * for semantic clarity at call sites.
+ */
+export const BETTING_ACTION_NAMES: Record<number, string> = {
   [PokerAction.FOLD]: 'フォールド',
   [PokerAction.CHECK]: 'チェック',
   [PokerAction.CALL]: 'コール',
@@ -10,15 +15,11 @@ export const POKER_ACTION_NAMES: Record<number, string> = {
   [PokerAction.ALL_IN]: 'オールイン',
 };
 
-/** Holdem action display names. */
-export const HOLDEM_ACTION_NAMES: Record<number, string> = {
-  [HoldemAction.FOLD]: 'フォールド',
-  [HoldemAction.CHECK]: 'チェック',
-  [HoldemAction.CALL]: 'コール',
-  [HoldemAction.BET]: 'ベット',
-  [HoldemAction.RAISE]: 'レイズ',
-  [HoldemAction.ALL_IN]: 'オールイン',
-};
+/** @see {@link BETTING_ACTION_NAMES} */
+export const POKER_ACTION_NAMES = BETTING_ACTION_NAMES;
+
+/** @see {@link BETTING_ACTION_NAMES} */
+export const HOLDEM_ACTION_NAMES = BETTING_ACTION_NAMES;
 
 /** Badge style for hand name display (e.g. "ツーペア"). */
 export const handNameBadgeStyle: React.CSSProperties = {

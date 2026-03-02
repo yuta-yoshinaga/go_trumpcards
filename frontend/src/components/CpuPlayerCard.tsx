@@ -36,7 +36,7 @@ export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, 
         )}
       </div>
       <div className="flex flex-wrap gap-1">
-        {showCards && !player.folded && player.cards?.length
+        {showCards && !player.folded && player.cards.length
           ? player.cards.map((card) => (
               <CardImage
                 key={`${card.design}-${card.value}`}
