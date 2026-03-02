@@ -633,6 +633,7 @@ func TestCpuDecide_PreFlop_TAG_StrongRaise_AllIn(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhasePreFlop)
 	h.SetLastBet(10)
+	h.SetPot(30)
 	h.players[1].SetChips(20) // Low chips
 
 	h.players[1].Reset()
@@ -654,6 +655,7 @@ func TestCpuDecide_PreFlop_TAG_StrongRaise_AllIn_NoBet(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhasePreFlop)
 	h.SetLastBet(0)
+	h.SetPot(30)
 	h.players[1].SetChips(20) // Low chips
 
 	h.players[1].Reset()
@@ -675,6 +677,7 @@ func TestCpuDecide_PreFlop_TAG_RaiseCallInsufficientChips(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhasePreFlop)
 	h.SetLastBet(20)
+	h.SetPot(30)
 	h.players[1].SetChips(35) // Can't afford call (20) + raise (30)
 
 	h.players[1].Reset()
@@ -777,6 +780,7 @@ func TestCpuDecide_PreFlop_LAP_Bluff_AllIn(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhasePreFlop)
 	h.SetLastBet(0)
+	h.SetPot(30)
 	h.players[2].SetChips(10)
 
 	h.players[2].Reset()
@@ -969,6 +973,7 @@ func TestCpuDecide_PreFlop_TAP_Bluff_AllIn(t *testing.T) {
 
 	h.SetPhase(HoldemPhasePreFlop)
 	h.SetLastBet(0)
+	h.SetPot(30)
 
 	h.players[2].Reset()
 	h.players[2].AddCard(NewCard(CardDesignSpade, 1, false))
@@ -1070,6 +1075,7 @@ func TestCpuDecide_PreFlop_LAG_AllIn_NoBet(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhasePreFlop)
 	h.SetLastBet(0)
+	h.SetPot(30)
 	h.players[3].SetChips(20)
 
 	h.players[3].Reset()
@@ -1091,6 +1097,7 @@ func TestCpuDecide_PreFlop_LAG_AllIn_WithBet(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhasePreFlop)
 	h.SetLastBet(10)
+	h.SetPot(30)
 	h.players[3].SetChips(35)
 
 	h.players[3].Reset()
@@ -1244,6 +1251,7 @@ func TestCpuDecide_PostFlop_TAG_AllIn_NoBet(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhaseFlop)
 	h.SetLastBet(0)
+	h.SetPot(30)
 	h.players[1].SetChips(10)
 
 	h.players[1].Reset()
@@ -1722,6 +1730,7 @@ func TestCpuDecide_PostFlop_LAG_AllIn_NoBet(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhaseFlop)
 	h.SetLastBet(0)
+	h.SetPot(30)
 	h.players[3].SetChips(20)
 
 	h.players[3].Reset()
@@ -1749,6 +1758,7 @@ func TestCpuDecide_PostFlop_LAG_AllIn_WithBet(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhaseFlop)
 	h.SetLastBet(20)
+	h.SetPot(50)
 	h.players[3].SetChips(35)
 
 	h.players[3].Reset()

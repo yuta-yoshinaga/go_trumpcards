@@ -984,6 +984,12 @@ describe('gameApi', () => {
       roundResults: [],
       cpuActions: [],
       message: '',
+      handCount: 0,
+      smallBlind: 5,
+      bigBlind: 10,
+      tournamentMode: false,
+      blindLevelHands: 10,
+      blindMultiplier: 200,
     };
 
     it('calls the correct URL with reset command', async () => {
@@ -996,8 +1002,6 @@ describe('gameApi', () => {
           command: 'reset',
           amount: undefined,
           sessionId,
-          smallBlind: undefined,
-          bigBlind: undefined,
         }),
       });
       expect(result).toEqual(payload);
@@ -1013,8 +1017,6 @@ describe('gameApi', () => {
             command: 'fold',
             amount: undefined,
             sessionId,
-            smallBlind: undefined,
-            bigBlind: undefined,
           }),
         }),
       );
@@ -1030,8 +1032,6 @@ describe('gameApi', () => {
             command: 'bet',
             amount: 50,
             sessionId,
-            smallBlind: undefined,
-            bigBlind: undefined,
           }),
         }),
       );
@@ -1039,7 +1039,7 @@ describe('gameApi', () => {
 
     it('calls with reset and custom blinds', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
-      await holdemApi.exec('reset', undefined, 10, 20);
+      await holdemApi.exec('reset', undefined, { smallBlind: 10, bigBlind: 20 });
       expect(mockFetch).toHaveBeenCalledWith(
         '/holdem/exec',
         expect.objectContaining({
@@ -1049,6 +1049,28 @@ describe('gameApi', () => {
             sessionId,
             smallBlind: 10,
             bigBlind: 20,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and tournament config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('reset', undefined, {
+        tournamentMode: true,
+        blindLevelHands: 5,
+        blindMultiplier: 200,
+      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            tournamentMode: true,
+            blindLevelHands: 5,
+            blindMultiplier: 200,
           }),
         }),
       );

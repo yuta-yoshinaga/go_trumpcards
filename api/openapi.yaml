@@ -2370,6 +2370,26 @@ components:
             `smallBlind` is auto-adjusted to `bigBlind / 2` (minimum 1).
           minimum: 1
           example: 10
+        tournamentMode:
+          type: boolean
+          description: |
+            Enable tournament mode with blind escalation (for the `reset` command).
+            Defaults to false when omitted.
+          example: false
+        blindLevelHands:
+          type: integer
+          description: |
+            Number of hands before blinds increase in tournament mode (for the `reset` command).
+            Defaults to 10 when omitted. Must be >= 1.
+          minimum: 1
+          example: 10
+        blindMultiplier:
+          type: integer
+          description: |
+            Blind multiplier as a percentage when blinds increase (for the `reset` command).
+            Defaults to 200 (= 2x). Must be >= 101.
+          minimum: 101
+          example: 200
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -2450,6 +2470,23 @@ components:
             TAP (Tight-Passive), LAG (Loose-Aggressive).
             Empty for human player.
           example: TAG
+        totalHands:
+          type: integer
+          description: Total number of hands played (for HUD stats)
+          minimum: 0
+          example: 10
+        vpip:
+          type: integer
+          description: VPIP percentage (Voluntarily Put $ In Pot) — preflop call/bet/raise/allin rate
+          minimum: 0
+          maximum: 100
+          example: 50
+        pfr:
+          type: integer
+          description: PFR percentage (Pre-Flop Raise) — preflop bet/raise/allin rate
+          minimum: 0
+          maximum: 100
+          example: 25
 
     HoldemCpuAction:
       type: object
@@ -2621,3 +2658,32 @@ components:
             - `"param error."` — invalid request
             - `"error."` — internal error
           example: ""
+        handCount:
+          type: integer
+          description: Number of hands played (for tournament mode display)
+          minimum: 0
+          example: 0
+        smallBlind:
+          type: integer
+          description: Current small blind amount
+          minimum: 1
+          example: 5
+        bigBlind:
+          type: integer
+          description: Current big blind amount
+          minimum: 2
+          example: 10
+        tournamentMode:
+          type: boolean
+          description: Whether tournament mode (blind escalation) is active
+          example: false
+        blindLevelHands:
+          type: integer
+          description: Number of hands before blinds increase
+          minimum: 1
+          example: 10
+        blindMultiplier:
+          type: integer
+          description: Blind multiplier percentage (e.g. 200 = 2x)
+          minimum: 101
+          example: 200

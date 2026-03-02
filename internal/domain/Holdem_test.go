@@ -744,6 +744,311 @@ func TestHoldem_Raise_NegativeDiff(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestHoldem_CpuPotBet(t *testing.T) {
+	h := newTestHoldem()
+
+	t.Run("normal pot-relative bet", func(t *testing.T) {
+		h.SetPot(200)
+		h.SetMinRaise(10)
+		h.config.BigBlind = 10
+		// 200 * 75 / 100 = 150
+		assert.Equal(t, 150, h.cpuPotBet(75))
+	})
+
+	t.Run("floor to BigBlind when pot is small", func(t *testing.T) {
+		h.SetPot(10)
+		h.SetMinRaise(5)
+		h.config.BigBlind = 20
+		// 10 * 50 / 100 = 5, but min is BB=20
+		assert.Equal(t, 20, h.cpuPotBet(50))
+	})
+
+	t.Run("floor to minRaise when pot*pct < minRaise", func(t *testing.T) {
+		h.SetPot(10)
+		h.SetMinRaise(30)
+		h.config.BigBlind = 10
+		// 10 * 50 / 100 = 5, BB floor=10, but minRaise=30
+		assert.Equal(t, 30, h.cpuPotBet(50))
+	})
+
+	t.Run("pot is zero floors to BigBlind", func(t *testing.T) {
+		h.SetPot(0)
+		h.SetMinRaise(5)
+		h.config.BigBlind = 10
+		// 0 * 50 / 100 = 0, but min is BB=10
+		assert.Equal(t, 10, h.cpuPotBet(50))
+	})
+
+	t.Run("100% pot bet", func(t *testing.T) {
+		h.SetPot(300)
+		h.SetMinRaise(10)
+		h.config.BigBlind = 10
+		assert.Equal(t, 300, h.cpuPotBet(100))
+	})
+}
+
+func TestHoldem_HUDStats_TotalHandsIncrement(t *testing.T) {
+	h := newTestHoldem()
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	assert.Equal(t, 0, h.players[0].GetTotalHands())
+
+	h.Reset()
+	assert.Equal(t, 1, h.players[0].GetTotalHands())
+
+	h.Reset()
+	assert.Equal(t, 2, h.players[0].GetTotalHands())
+}
+
+func TestHoldem_HUDStats_VPIP_Call(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	// vpipTracked/pfrTracked must be initialized
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.SetLastBet(20)
+
+	h.executeAction(0, HoldemActionCall, 0)
+	assert.Equal(t, 1, h.players[0].GetVPIPCount())
+	assert.Equal(t, 0, h.players[0].GetPFRCount())
+}
+
+func TestHoldem_HUDStats_VPIP_Bet(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+
+	h.executeAction(0, HoldemActionBet, 20)
+	assert.Equal(t, 1, h.players[0].GetVPIPCount())
+	assert.Equal(t, 1, h.players[0].GetPFRCount())
+}
+
+func TestHoldem_HUDStats_VPIP_Raise(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.SetLastBet(20)
+	h.SetMinRaise(10)
+
+	h.executeAction(0, HoldemActionRaise, 20)
+	assert.Equal(t, 1, h.players[0].GetVPIPCount())
+	assert.Equal(t, 1, h.players[0].GetPFRCount())
+}
+
+func TestHoldem_HUDStats_VPIP_AllIn(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+
+	h.executeAction(0, HoldemActionAllIn, 0)
+	assert.Equal(t, 1, h.players[0].GetVPIPCount())
+	assert.Equal(t, 1, h.players[0].GetPFRCount())
+}
+
+func TestHoldem_HUDStats_NoTrack_Check(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+
+	h.executeAction(0, HoldemActionCheck, 0)
+	assert.Equal(t, 0, h.players[0].GetVPIPCount())
+	assert.Equal(t, 0, h.players[0].GetPFRCount())
+}
+
+func TestHoldem_HUDStats_NoTrack_Fold(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+
+	h.executeAction(0, HoldemActionFold, 0)
+	assert.Equal(t, 0, h.players[0].GetVPIPCount())
+	assert.Equal(t, 0, h.players[0].GetPFRCount())
+}
+
+func TestHoldem_HUDStats_OncePerHand(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.SetLastBet(20)
+	h.SetMinRaise(10)
+
+	// First call increments VPIP
+	h.executeAction(0, HoldemActionCall, 0)
+	assert.Equal(t, 1, h.players[0].GetVPIPCount())
+
+	// Reset acted flags to allow second action
+	h.actedFlags[0] = false
+	h.SetLastBet(40)
+
+	// Second call should NOT increment again
+	h.executeAction(0, HoldemActionCall, 0)
+	assert.Equal(t, 1, h.players[0].GetVPIPCount())
+}
+
+func TestHoldem_HUDStats_PostFlop_NoTrack(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	h.executeAction(0, HoldemActionBet, 20)
+	assert.Equal(t, 0, h.players[0].GetVPIPCount())
+	assert.Equal(t, 0, h.players[0].GetPFRCount())
+}
+
+func TestHoldem_TournamentMode_BlindEscalation(t *testing.T) {
+	t.Run("blinds escalate after BlindLevelHands", func(t *testing.T) {
+		h := newTestHoldem()
+		for _, p := range h.players {
+			p.SetChips(10000)
+		}
+		cfg := HoldemConfig{
+			SmallBlind:      5,
+			BigBlind:        10,
+			InitChips:       10000,
+			TournamentMode:  true,
+			BlindLevelHands: 2,
+			BlindMultiplier: 200,
+		}
+		h.SetConfig(cfg)
+
+		// Hand 0: no escalation (handCount=0 → 0%2==0 but handCount>0 is false)
+		h.Reset()
+		assert.Equal(t, 5, h.GetConfig().SmallBlind)
+		assert.Equal(t, 10, h.GetConfig().BigBlind)
+		assert.Equal(t, 1, h.GetHandCount())
+
+		// Hand 1: no escalation (handCount=1 → 1%2!=0)
+		h.Reset()
+		assert.Equal(t, 5, h.GetConfig().SmallBlind)
+		assert.Equal(t, 10, h.GetConfig().BigBlind)
+		assert.Equal(t, 2, h.GetHandCount())
+
+		// Hand 2: escalation! (handCount=2 → 2%2==0 && handCount>0)
+		h.Reset()
+		assert.Equal(t, 10, h.GetConfig().SmallBlind)
+		assert.Equal(t, 20, h.GetConfig().BigBlind)
+		assert.Equal(t, 3, h.GetHandCount())
+
+		// Hand 3: no escalation
+		h.Reset()
+		assert.Equal(t, 10, h.GetConfig().SmallBlind)
+		assert.Equal(t, 20, h.GetConfig().BigBlind)
+
+		// Hand 4: escalation again
+		h.Reset()
+		assert.Equal(t, 20, h.GetConfig().SmallBlind)
+		assert.Equal(t, 40, h.GetConfig().BigBlind)
+	})
+
+	t.Run("no escalation when tournament mode is off", func(t *testing.T) {
+		h := newTestHoldem()
+		for _, p := range h.players {
+			p.SetChips(10000)
+		}
+		cfg := DefaultHoldemConfig()
+		cfg.TournamentMode = false
+		h.SetConfig(cfg)
+
+		h.Reset()
+		h.Reset()
+		h.Reset()
+		assert.Equal(t, 5, h.GetConfig().SmallBlind)
+		assert.Equal(t, 10, h.GetConfig().BigBlind)
+	})
+
+	t.Run("blind floor values", func(t *testing.T) {
+		h := newTestHoldem()
+		for _, p := range h.players {
+			p.SetChips(10000)
+		}
+		cfg := HoldemConfig{
+			SmallBlind:      1,
+			BigBlind:        2,
+			InitChips:       10000,
+			TournamentMode:  true,
+			BlindLevelHands: 1,
+			BlindMultiplier: 101, // 1.01x → floor(1*101/100)=1, floor(2*101/100)=2
+		}
+		h.SetConfig(cfg)
+
+		h.Reset() // hand 0: no escalation
+		assert.Equal(t, 1, h.GetConfig().SmallBlind)
+		assert.Equal(t, 2, h.GetConfig().BigBlind)
+
+		h.Reset() // hand 1: escalation → 1*101/100=1, 2*101/100=2
+		assert.Equal(t, 1, h.GetConfig().SmallBlind)
+		assert.Equal(t, 2, h.GetConfig().BigBlind)
+	})
+
+	t.Run("blind floor values hit - multiplier under 100", func(t *testing.T) {
+		h := newTestHoldem()
+		for _, p := range h.players {
+			p.SetChips(10000)
+		}
+		cfg := HoldemConfig{
+			SmallBlind:      1,
+			BigBlind:        2,
+			InitChips:       10000,
+			TournamentMode:  true,
+			BlindLevelHands: 1,
+			BlindMultiplier: 50, // 0.5x → 1*50/100=0, 2*50/100=1
+		}
+		h.SetConfig(cfg)
+
+		h.Reset() // hand 0: no escalation
+		assert.Equal(t, 1, h.GetConfig().SmallBlind)
+		assert.Equal(t, 2, h.GetConfig().BigBlind)
+
+		h.Reset() // hand 1: escalation → 0 < 1 → SmallBlind=1; 1 < 2 → BigBlind=2
+		assert.Equal(t, 1, h.GetConfig().SmallBlind)
+		assert.Equal(t, 2, h.GetConfig().BigBlind)
+	})
+
+	t.Run("no panic when BlindLevelHands is zero", func(t *testing.T) {
+		h := newTestHoldem()
+		for _, p := range h.players {
+			p.SetChips(10000)
+		}
+		cfg := HoldemConfig{
+			SmallBlind:      5,
+			BigBlind:        10,
+			InitChips:       10000,
+			TournamentMode:  true,
+			BlindLevelHands: 0, // should not panic
+			BlindMultiplier: 200,
+		}
+		h.SetConfig(cfg)
+
+		assert.NotPanics(t, func() {
+			h.Reset()
+			h.Reset()
+		})
+		// Blinds should remain unchanged since BlindLevelHands=0 guard prevents escalation
+		assert.Equal(t, 5, h.GetConfig().SmallBlind)
+		assert.Equal(t, 10, h.GetConfig().BigBlind)
+	})
+
+	t.Run("GetHandCount and SetHandCount", func(t *testing.T) {
+		h := newTestHoldem()
+		assert.Equal(t, 0, h.GetHandCount())
+		h.SetHandCount(5)
+		assert.Equal(t, 5, h.GetHandCount())
+	})
+}
+
 func TestHoldem_AllIn_AboveLastBet(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseFlop)
 	h.SetLastBet(50)
