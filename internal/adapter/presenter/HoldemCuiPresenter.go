@@ -44,7 +44,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			if i > 0 {
 				b.WriteString("  ")
 			}
-			b.WriteString(p.getCardStr(card))
+			b.WriteString(cuiCardStrEmoji(card))
 		}
 	}
 	b.WriteString("\n")
@@ -86,7 +86,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 				if j > 0 {
 					b.WriteString("  ")
 				}
-				b.WriteString(p.getCardStr(player.GetCard(j)))
+				b.WriteString(cuiCardStrEmoji(player.GetCard(j)))
 			}
 			b.WriteString("\n")
 		}
@@ -98,7 +98,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		b.WriteString("----------\n")
 		b.WriteString("[CPU行動]\n")
 		for _, action := range cpuActions {
-			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, p.getActionName(action.Action))
+			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
 			if action.Amount > 0 {
 				fmt.Fprintf(&b, " (%d)", action.Amount)
 			}
@@ -139,34 +139,4 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	}
 
 	return b.String()
-}
-
-// getCardStr カード文字列取得
-func (p *HoldemCuiPresenter) getCardStr(card *domain.Card) string {
-	designs := []string{"🃏", "♠", "♣", "♥", "♦"}
-	d := card.GetDesign()
-	if d < 0 || d >= len(designs) {
-		d = 0
-	}
-	return fmt.Sprintf("%s%d", designs[d], card.GetValue())
-}
-
-// getActionName アクション名取得
-func (p *HoldemCuiPresenter) getActionName(action int) string {
-	switch action {
-	case domain.HoldemActionFold:
-		return "フォールド"
-	case domain.HoldemActionCheck:
-		return "チェック"
-	case domain.HoldemActionCall:
-		return "コール"
-	case domain.HoldemActionBet:
-		return "ベット"
-	case domain.HoldemActionRaise:
-		return "レイズ"
-	case domain.HoldemActionAllIn:
-		return "オールイン"
-	default:
-		return "不明"
-	}
 }

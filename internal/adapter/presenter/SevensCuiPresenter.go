@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -69,7 +68,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 					if j != 0 {
 						b.WriteString("  ")
 					}
-					fmt.Fprintf(&b, "[%d]%s", j, p.getCardStr(player.GetCard(j)))
+					fmt.Fprintf(&b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
 				}
 				b.WriteString("\n")
 			}
@@ -100,11 +99,11 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		} else {
 			if humanAction.PlayedCard.GetDesign() == domain.CardDesignJoker && humanAction.TargetSuit > 0 {
 				fmt.Fprintf(&b, "%sが %s → %s %d を出しました\n",
-					p.getPlayerName(s, humanAction.PlayerIdx), p.getCardStr(humanAction.PlayedCard),
-					p.getSuitName(humanAction.TargetSuit), humanAction.TargetValue)
+					p.getPlayerName(s, humanAction.PlayerIdx), cuiCardStr(humanAction.PlayedCard),
+					cuiSuitName(humanAction.TargetSuit), humanAction.TargetValue)
 			} else {
 				fmt.Fprintf(&b, "%sが %s を出しました\n",
-					p.getPlayerName(s, humanAction.PlayerIdx), p.getCardStr(humanAction.PlayedCard))
+					p.getPlayerName(s, humanAction.PlayerIdx), cuiCardStr(humanAction.PlayedCard))
 			}
 		}
 	}
@@ -124,10 +123,10 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 			} else {
 				if action.PlayedCard.GetDesign() == domain.CardDesignJoker && action.TargetSuit > 0 {
 					fmt.Fprintf(&b, "%sが %s → %s %d を出しました\n",
-						actPlayerName, p.getCardStr(action.PlayedCard),
-						p.getSuitName(action.TargetSuit), action.TargetValue)
+						actPlayerName, cuiCardStr(action.PlayedCard),
+						cuiSuitName(action.TargetSuit), action.TargetValue)
 				} else {
-					fmt.Fprintf(&b, "%sが %s を出しました\n", actPlayerName, p.getCardStr(action.PlayedCard))
+					fmt.Fprintf(&b, "%sが %s を出しました\n", actPlayerName, cuiCardStr(action.PlayedCard))
 				}
 			}
 		}
@@ -162,47 +161,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 func (p *SevensCuiPresenter) getPlayerName(s interfaces.SevensGame, idx int) string {
 	player := s.GetPlayer(idx)
 	if player == nil {
-		return "不明"
-	}
-	if player.GetIsHuman() {
-		return "あなた"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// getCardStr カード情報文字列取得
-func (p *SevensCuiPresenter) getCardStr(card *domain.Card) string {
-	if card == nil {
-		return "??"
-	}
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		return "SPADE " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignClover:
-		return "CLOVER " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignHeart:
-		return "HEART " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignDiamond:
-		return "DIAMOND " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignJoker:
-		return "JOKER"
-	default:
 		return "UNKNOWN"
 	}
-}
-
-// getSuitName スート名取得
-func (p *SevensCuiPresenter) getSuitName(suit int) string {
-	switch suit {
-	case domain.CardDesignSpade:
-		return "SPADE"
-	case domain.CardDesignClover:
-		return "CLOVER"
-	case domain.CardDesignHeart:
-		return "HEART"
-	case domain.CardDesignDiamond:
-		return "DIAMOND"
-	default:
-		return "UNKNOWN"
-	}
+	return cuiPlayerName(player, idx)
 }

@@ -252,6 +252,6 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(game, nil)
-		assert.Contains(t, result, "不明")
+		assert.Contains(t, result, "UNKNOWN")
 	})
 }

@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -45,7 +44,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 					if j != 0 {
 						b.WriteString("  ")
 					}
-					fmt.Fprintf(&b, "[%d]%s", j, p.getCardStr(player.GetCard(j)))
+					fmt.Fprintf(&b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
 				}
 				b.WriteString("\n")
 			}
@@ -65,7 +64,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		fmt.Fprintf(&b, "%sが%sから1枚引きました", drawPlayerName, drawFromName)
 		// Only reveal drawn card for human players to preserve CPU game fairness
 		if drawnCard != nil && drawPlayer != nil && drawPlayer.GetIsHuman() {
-			fmt.Fprintf(&b, " (%s)", p.getCardStr(drawnCard))
+			fmt.Fprintf(&b, " (%s)", cuiCardStr(drawnCard))
 		}
 		if discarded > 0 {
 			fmt.Fprintf(&b, "。%d組捨てました", discarded)
@@ -100,7 +99,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 			loserName := p.getPlayerName(om, loserIdx)
 			gameEndLine := fmt.Sprintf("ゲーム終了！ %sの負け！", loserName)
 			if om.GetConfig().Mode == domain.OldMaidModeJijiNuki && om.GetRemovedCard() != nil {
-				gameEndLine += fmt.Sprintf("（除外カード: %s）", p.getCardStr(om.GetRemovedCard()))
+				gameEndLine += fmt.Sprintf("（除外カード: %s）", cuiCardStr(om.GetRemovedCard()))
 			}
 			fmt.Fprintf(&b, "%s\n", gameEndLine)
 		}
@@ -124,31 +123,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 func (p *OldMaidCuiPresenter) getPlayerName(om interfaces.OldMaidGame, idx int) string {
 	player := om.GetPlayer(idx)
 	if player == nil {
-		return "不明"
-	}
-	if player.GetIsHuman() {
-		return "あなた"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// getCardStr カード情報文字列取得
-func (p *OldMaidCuiPresenter) getCardStr(card *domain.Card) string {
-	if card == nil {
-		return "??"
-	}
-	switch card.GetDesign() {
-	case domain.CardDesignJoker:
-		return "JOKER"
-	case domain.CardDesignSpade:
-		return "SPADE " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignClover:
-		return "CLOVER " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignHeart:
-		return "HEART " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignDiamond:
-		return "DIAMOND " + strconv.Itoa(card.GetValue())
-	default:
 		return "UNKNOWN"
 	}
+	return cuiPlayerName(player, idx)
 }
