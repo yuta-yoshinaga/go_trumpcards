@@ -514,13 +514,14 @@ func (s *Sevens) passUrgencyWeight(player *SevensPlayer) int {
 		return 1
 	}
 	remaining := maxP - player.GetPassesUsed()
-	if remaining <= 1 {
+	switch {
+	case remaining <= 1:
 		return 3
-	}
-	if remaining <= 2 {
+	case remaining == 2:
 		return 2
+	default:
+		return 1
 	}
-	return 1
 }
 
 // countWeightedOpponentsBlocked パス残数で重み付けしたブロック相手数をカウント
