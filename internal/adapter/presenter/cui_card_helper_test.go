@@ -81,10 +81,11 @@ func (m *mockCuiPlayer) GetIsHuman() bool {
 func TestCuiPlayerName(t *testing.T) {
 	tests := []struct {
 		name     string
-		player   cuiPlayer
+		player   *mockCuiPlayer
 		idx      int
 		expected string
 	}{
+		{"nil player", nil, 0, "UNKNOWN"},
 		{"human player", &mockCuiPlayer{isHuman: true}, 0, "あなた"},
 		{"cpu player idx 1", &mockCuiPlayer{isHuman: false}, 1, "CPU 1"},
 		{"cpu player idx 3", &mockCuiPlayer{isHuman: false}, 3, "CPU 3"},
