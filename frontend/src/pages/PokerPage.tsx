@@ -1,20 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { pokerApi } from '../api/gameApi';
-import { CardBack, CardImage } from '../components/CardImage';
+import { BettingControls } from '../components/BettingControls';
+import { CardImage } from '../components/CardImage';
+import { CpuActionLog } from '../components/CpuActionLog';
+import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { RoundResults } from '../components/RoundResults';
 import { useGameApi } from '../hooks/useGameApi';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 
-import { PokerAction, PokerPhase } from '../types/phases';
-
-const ACTION_NAMES: Record<number, string> = {
-  [PokerAction.FOLD]: 'フォールド',
-  [PokerAction.CHECK]: 'チェック',
-  [PokerAction.CALL]: 'コール',
-  [PokerAction.BET]: 'ベット',
-  [PokerAction.RAISE]: 'レイズ',
-  [PokerAction.ALL_IN]: 'オールイン',
-};
+import { handNameBadgeStyle, POKER_ACTION_NAMES } from '../styles/gameConstants';
+import { PokerPhase } from '../types/phases';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -87,55 +83,22 @@ export function PokerPage() {
         {state?.players
           ?.filter((p) => !p.isHuman)
           .map((p) => (
-            <div key={p.id} className="mb-3">
-              <div className="text-white text-[0.95em] mb-1">
-                CPU {p.id} <span className="text-gray-300 text-[0.85em]">({p.playStyleName})</span>
-                <span className="ml-2 text-[0.85em]">チップ: {p.chips}</span>
-                {p.currentBet > 0 && <span className="ml-2 text-[0.85em]">ベット: {p.currentBet}</span>}
-                {p.folded && <span className="ml-2 text-red-300 text-[0.85em]">[フォールド]</span>}
-                {p.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[オールイン]</span>}
-                {(phase === PokerPhase.SECOND_BET || isEnd) && p.exchangeCount > 0 && !p.folded && (
+            <CpuPlayerCard
+              key={p.id}
+              player={p}
+              showCards={isEnd}
+              faceDownCount={5}
+              showHandName={isEnd}
+              extraInfo={
+                (phase === PokerPhase.SECOND_BET || isEnd) && p.exchangeCount > 0 && !p.folded ? (
                   <span className="ml-2 text-[0.85em]">交換: {p.exchangeCount}枚</span>
-                )}
-                {isEnd && !p.folded && p.handName && (
-                  <span
-                    className="inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5"
-                    style={{ background: '#f0ad4e', color: '#222' }}
-                  >
-                    {p.handName}
-                  </span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {isEnd && !p.folded && p.cards?.length
-                  ? p.cards.map((card) => (
-                      <CardImage
-                        key={`${card.design}-${card.value}`}
-                        card={card}
-                        width={50}
-                        style={{ border: '3px solid transparent' }}
-                      />
-                    ))
-                  : Array.from({ length: 5 }).map((_, i) => (
-                      // biome-ignore lint/suspicious/noArrayIndexKey: placeholder
-                      <CardBack key={i} width={50} />
-                    ))}
-              </div>
-            </div>
+                ) : undefined
+              }
+            />
           ))}
 
         {/* CPU actions log */}
-        {state?.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/30 rounded p-2 mb-3 text-white text-[0.85em]">
-            <div className="font-bold mb-1">CPU行動:</div>
-            {state.cpuActions.map((a, i) => (
-              <div key={`${i}-${a.playerIdx}-${a.action}`}>
-                Player {a.playerIdx}: {ACTION_NAMES[a.action] ?? '不明'}
-                {a.amount > 0 && ` (${a.amount})`}
-              </div>
-            ))}
-          </div>
-        )}
+        <CpuActionLog actions={state?.cpuActions} actionNames={POKER_ACTION_NAMES} />
 
         {/* CPU exchanges log */}
         {state?.cpuExchanges && state.cpuExchanges.length > 0 && (
@@ -150,18 +113,7 @@ export function PokerPage() {
         )}
 
         {/* Round results */}
-        {isEnd && state?.roundResults && state.roundResults.length > 0 && (
-          <div className="bg-black/30 rounded p-2 mb-3 text-white text-[0.85em]">
-            <div className="font-bold mb-1">結果:</div>
-            {state.roundResults.map((r) => (
-              <div key={r.playerIdx}>
-                {state.players[r.playerIdx]?.isHuman ? 'あなた' : `CPU ${r.playerIdx}`}
-                {r.handName && `: ${r.handName}`}
-                {r.wonAmount > 0 && <span className="text-yellow-300 ml-1"> +{r.wonAmount}チップ</span>}
-              </div>
-            ))}
-          </div>
-        )}
+        {isEnd && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
       </div>
 
       {/* Sticky footer: player hand + buttons */}
@@ -183,7 +135,7 @@ export function PokerPage() {
               {isEnd && !humanPlayer.folded && humanPlayer.handName && (
                 <span
                   className="inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5"
-                  style={{ background: '#f0ad4e', color: '#222' }}
+                  style={handNameBadgeStyle}
                 >
                   {humanPlayer.handName}
                 </span>
@@ -246,77 +198,20 @@ export function PokerPage() {
 
         {/* Betting controls */}
         {canAct && (
-          <div className="text-center mb-2">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <label htmlFor="pokerBetAmount" className="text-white text-sm">
-                ベット額:
-              </label>
-              <input
-                id="pokerBetAmount"
-                type="number"
-                min={minRaise}
-                step={10}
-                value={betAmount}
-                onChange={(e) => setBetAmount(Number(e.target.value))}
-                className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
-              />
-            </div>
-            {hasOutstandingBet ? (
-              <>
-                <button
-                  type="button"
-                  className={`${btnSuccess} min-w-[80px]`}
-                  disabled={loading}
-                  onClick={() => exec('call')}
-                >
-                  コール
-                </button>
-                <button
-                  type="button"
-                  className={`${btnWarning} min-w-[80px]`}
-                  disabled={loading}
-                  onClick={() => exec('raise', undefined, betAmount)}
-                >
-                  レイズ
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className={`${btnWarning} min-w-[80px]`}
-                  disabled={loading}
-                  onClick={() => exec('bet', undefined, betAmount)}
-                >
-                  ベット
-                </button>
-                <button
-                  type="button"
-                  className={`${btnSuccess} min-w-[80px]`}
-                  disabled={loading}
-                  onClick={() => exec('check')}
-                >
-                  チェック
-                </button>
-              </>
-            )}
-            <button
-              type="button"
-              className={`${btnDanger} min-w-[80px]`}
-              disabled={loading}
-              onClick={() => exec('fold')}
-            >
-              フォールド
-            </button>
-            <button
-              type="button"
-              className={`${btnWarning} min-w-[80px]`}
-              disabled={loading}
-              onClick={() => exec('allin')}
-            >
-              オールイン
-            </button>
-          </div>
+          <BettingControls
+            inputId="pokerBetAmount"
+            betAmount={betAmount}
+            onBetAmountChange={setBetAmount}
+            minRaise={minRaise}
+            hasOutstandingBet={hasOutstandingBet}
+            loading={loading}
+            onCall={() => exec('call')}
+            onRaise={() => exec('raise', undefined, betAmount)}
+            onBet={() => exec('bet', undefined, betAmount)}
+            onCheck={() => exec('check')}
+            onFold={() => exec('fold')}
+            onAllIn={() => exec('allin')}
+          />
         )}
 
         {/* Exchange controls */}
