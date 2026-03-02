@@ -302,6 +302,9 @@ export interface HoldemPlayerData {
   handName: string;
   bestHand: Card[];
   playStyleName: string;
+  totalHands: number;
+  vpip: number;
+  pfr: number;
 }
 
 export interface HoldemCpuAction {
@@ -337,4 +340,9 @@ export interface HoldemResponse {
   roundResults: HoldemResult[];
   cpuActions: HoldemCpuAction[];
   message: string;
+  handCount: number;
+  smallBlind: number;
+  bigBlind: number;
+  tournamentMode: boolean;
+  blindLevelHands: number;
 }

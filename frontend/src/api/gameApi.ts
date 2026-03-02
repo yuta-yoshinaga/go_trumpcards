@@ -127,18 +127,24 @@ export const sevensApi = {
     }),
 };
 
+export interface HoldemConfigInput {
+  smallBlind?: number;
+  bigBlind?: number;
+  tournamentMode?: boolean;
+  blindLevelHands?: number;
+  blindMultiplier?: number;
+}
+
 export const holdemApi = {
   exec: (
     command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
     amount?: number,
-    smallBlind?: number,
-    bigBlind?: number,
+    config?: HoldemConfigInput,
   ) =>
     postJson<HoldemResponse>('/holdem/exec', {
       command,
       amount,
       sessionId,
-      smallBlind,
-      bigBlind,
+      ...config,
     }),
 };

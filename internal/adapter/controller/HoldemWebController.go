@@ -11,11 +11,14 @@ import (
 
 // HoldemWebInput テキサスホールデムWebインプット
 type HoldemWebInput struct {
-	Command    string `json:"command"`
-	Amount     int    `json:"amount,omitempty"`
-	SessionId  string `json:"sessionId"`
-	SmallBlind *int   `json:"smallBlind,omitempty"`
-	BigBlind   *int   `json:"bigBlind,omitempty"`
+	Command         string `json:"command"`
+	Amount          int    `json:"amount,omitempty"`
+	SessionId       string `json:"sessionId"`
+	SmallBlind      *int   `json:"smallBlind,omitempty"`
+	BigBlind        *int   `json:"bigBlind,omitempty"`
+	TournamentMode  *bool  `json:"tournamentMode,omitempty"`
+	BlindLevelHands *int   `json:"blindLevelHands,omitempty"`
+	BlindMultiplier *int   `json:"blindMultiplier,omitempty"`
 }
 
 // GetCommand returns the command string.
@@ -37,6 +40,9 @@ type HoldemWebOutputPlayer struct {
 	HandName      string           `json:"handName"`
 	BestHand      []*WebOutputCard `json:"bestHand"`
 	PlayStyleName string           `json:"playStyleName"`
+	TotalHands    int              `json:"totalHands"`
+	VPIP          int              `json:"vpip"`
+	PFR           int              `json:"pfr"`
 }
 
 // HoldemWebOutputCpuAction テキサスホールデムCPU行動記録
@@ -63,19 +69,24 @@ type HoldemWebOutputSidePot struct {
 
 // HoldemWebOutput テキサスホールデムWebアウトプット
 type HoldemWebOutput struct {
-	Players        []*HoldemWebOutputPlayer    `json:"players"`
-	CommunityCards []*WebOutputCard            `json:"communityCards"`
-	Pot            int                         `json:"pot"`
-	SidePots       []*HoldemWebOutputSidePot   `json:"sidePots"`
-	DealerIdx      int                         `json:"dealerIdx"`
-	CurrentTurn    int                         `json:"currentTurn"`
-	Phase          int                         `json:"phase"`
-	GameEndFlag    bool                        `json:"gameEndFlag"`
-	LastBet        int                         `json:"lastBet"`
-	MinRaise       int                         `json:"minRaise"`
-	RoundResults   []*HoldemWebOutputResult    `json:"roundResults"`
-	CpuActions     []*HoldemWebOutputCpuAction `json:"cpuActions"`
-	Message        string                      `json:"message"`
+	Players         []*HoldemWebOutputPlayer    `json:"players"`
+	CommunityCards  []*WebOutputCard            `json:"communityCards"`
+	Pot             int                         `json:"pot"`
+	SidePots        []*HoldemWebOutputSidePot   `json:"sidePots"`
+	DealerIdx       int                         `json:"dealerIdx"`
+	CurrentTurn     int                         `json:"currentTurn"`
+	Phase           int                         `json:"phase"`
+	GameEndFlag     bool                        `json:"gameEndFlag"`
+	LastBet         int                         `json:"lastBet"`
+	MinRaise        int                         `json:"minRaise"`
+	RoundResults    []*HoldemWebOutputResult    `json:"roundResults"`
+	CpuActions      []*HoldemWebOutputCpuAction `json:"cpuActions"`
+	Message         string                      `json:"message"`
+	HandCount       int                         `json:"handCount"`
+	SmallBlind      int                         `json:"smallBlind"`
+	BigBlind        int                         `json:"bigBlind"`
+	TournamentMode  bool                        `json:"tournamentMode"`
+	BlindLevelHands int                         `json:"blindLevelHands"`
 }
 
 // HoldemWebController テキサスホールデムWebコントローラークラス
@@ -126,6 +137,16 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				}
 				cfg.SmallBlind = sb
 				cfg.BigBlind = bb
+				// トーナメントモード設定
+				if param.TournamentMode != nil {
+					cfg.TournamentMode = *param.TournamentMode
+				}
+				if param.BlindLevelHands != nil && *param.BlindLevelHands >= 1 {
+					cfg.BlindLevelHands = *param.BlindLevelHands
+				}
+				if param.BlindMultiplier != nil && *param.BlindMultiplier >= 101 {
+					cfg.BlindMultiplier = *param.BlindMultiplier
+				}
 				hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
 			case "f", "fold":
 				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0))

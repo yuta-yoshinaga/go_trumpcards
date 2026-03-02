@@ -63,8 +63,19 @@ export function HoldemPage() {
           ポット: <strong>{state?.pot ?? 0}</strong>
         </span>
         <span>
+          SB/BB:{' '}
+          <strong>
+            {state?.smallBlind ?? 0}/{state?.bigBlind ?? 0}
+          </strong>
+        </span>
+        <span>
           ディーラー: <strong>Player {state?.dealerIdx ?? 0}</strong>
         </span>
+        {state?.tournamentMode && (
+          <span>
+            ハンド#<strong>{state.handCount}</strong> (レベルアップ:{state.blindLevelHands}ハンド毎)
+          </span>
+        )}
       </div>
 
       {/* Scrollable: community cards + CPU players */}
@@ -97,6 +108,11 @@ export function HoldemPage() {
               <div className="text-white text-[0.95em] mb-1">
                 CPU {p.id} <span className="text-gray-300 text-[0.85em]">({p.playStyleName})</span>
                 <span className="ml-2 text-[0.85em]">チップ: {p.chips}</span>
+                {p.totalHands > 0 && (
+                  <span className="ml-2 text-cyan-300 text-[0.8em]">
+                    VPIP:{p.vpip}% PFR:{p.pfr}%
+                  </span>
+                )}
                 {p.currentBet > 0 && <span className="ml-2 text-[0.85em]">ベット: {p.currentBet}</span>}
                 {p.folded && <span className="ml-2 text-red-300 text-[0.85em]">[フォールド]</span>}
                 {p.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[オールイン]</span>}
@@ -166,6 +182,11 @@ export function HoldemPage() {
             <div className="text-white text-[1.1em] mb-1">
               あなたの手札
               <span className="ml-3 text-[0.85em]">チップ: {humanPlayer.chips}</span>
+              {humanPlayer.totalHands > 0 && (
+                <span className="ml-2 text-cyan-300 text-[0.8em]">
+                  VPIP:{humanPlayer.vpip}% PFR:{humanPlayer.pfr}%
+                </span>
+              )}
               {humanPlayer.currentBet > 0 && (
                 <span className="ml-2 text-[0.85em]">ベット: {humanPlayer.currentBet}</span>
               )}

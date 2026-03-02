@@ -449,3 +449,32 @@ func TestHoldemPlayer_EvalBestHand_ChoosesBestFromSeven(t *testing.T) {
 	// AA + KK = Two Pair
 	assert.Equal(t, PokerHandTwoPair, rank)
 }
+
+func TestHoldemPlayer_HUDStats(t *testing.T) {
+	p := NewHoldemPlayer(false, HoldemStyleTAG)
+
+	t.Run("initial stats are zero", func(t *testing.T) {
+		assert.Equal(t, 0, p.GetTotalHands())
+		assert.Equal(t, 0, p.GetVPIPCount())
+		assert.Equal(t, 0, p.GetPFRCount())
+		assert.Equal(t, 0, p.GetVPIP())
+		assert.Equal(t, 0, p.GetPFR())
+	})
+
+	t.Run("VPIP and PFR with totalHands", func(t *testing.T) {
+		p.IncrementTotalHands()
+		p.IncrementTotalHands()
+		p.IncrementTotalHands()
+		p.IncrementTotalHands() // totalHands=4
+		p.IncrementVPIP()
+		p.IncrementVPIP()
+		p.IncrementVPIP() // vpipCount=3
+		p.IncrementPFR()  // pfrCount=1
+
+		assert.Equal(t, 4, p.GetTotalHands())
+		assert.Equal(t, 3, p.GetVPIPCount())
+		assert.Equal(t, 1, p.GetPFRCount())
+		assert.Equal(t, 75, p.GetVPIP())  // 3*100/4=75
+		assert.Equal(t, 25, p.GetPFR())   // 1*100/4=25
+	})
+}

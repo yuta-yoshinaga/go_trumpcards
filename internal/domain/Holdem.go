@@ -43,12 +43,12 @@ type cpuStyleParams struct {
 	preFlopFoldCompound   bool // true: callAmount条件付きFold(Loose), false: foldOrCheck(Tight)
 	preFlopFoldCallMult   int  // Loose only: callAmount > BB*this でFold
 	preFlopRaiseThreshold int  // Aggressive only: strength >= this → raise
-	preFlopRaiseMult      int  // Aggressive only: raise = BB*this
-	preFlopBluffBetMult   int  // Passive only: bluff bet = BB*this
+	preFlopRaisePotPct    int  // Aggressive only: raise = pot*this/100
+	preFlopBluffPotPct    int  // Passive only: bluff bet = pot*this/100
 
 	// PostFlop Aggressive
 	postFlopRaiseRank    int  // handRank >= this → raise
-	postFlopRaiseMult    int  // raise = BB*this
+	postFlopRaisePotPct  int  // raise = pot*this/100
 	postFlopCondCallRank int  // handRank >= this → Call (-1=skip)
 	postFlopFallbackFold bool // true=foldOrCheck(TAG), false=callブロック+条件付きFold(LAG)
 	postFlopAggrFoldRank int  // fold if handRank <= this
@@ -57,7 +57,7 @@ type cpuStyleParams struct {
 	// PostFlop Passive
 	postFlopPassFoldRank int // fold if handRank <= this
 	postFlopPassFoldMult int // fold if callAmount > BB*this (-1=any callAmount)
-	postFlopBluffBetMult int // bluff bet = BB*this
+	postFlopBluffPotPct  int // bluff bet = pot*this/100
 }
 
 // holdemStyleParamsMap スタイルごとのパラメータ
@@ -65,29 +65,29 @@ var holdemStyleParamsMap = map[HoldemPlayStyle]cpuStyleParams{
 	HoldemStyleTAG: {
 		aggressive: true, bluffRate: 15,
 		preFlopFoldThreshold: 40, preFlopFoldCompound: false,
-		preFlopRaiseThreshold: 70, preFlopRaiseMult: 3,
-		postFlopRaiseRank: PokerHandTwoPair, postFlopRaiseMult: 2,
+		preFlopRaiseThreshold: 70, preFlopRaisePotPct: 75,
+		postFlopRaiseRank: PokerHandTwoPair, postFlopRaisePotPct: 66,
 		postFlopCondCallRank: PokerHandOnePair, postFlopFallbackFold: true,
 	},
 	HoldemStyleLAP: {
 		aggressive: false, bluffRate: 5,
 		preFlopFoldThreshold: 15, preFlopFoldCompound: true, preFlopFoldCallMult: 2,
-		preFlopBluffBetMult:  2,
+		preFlopBluffPotPct:   50,
 		postFlopPassFoldRank: PokerHandHighCard, postFlopPassFoldMult: 3,
-		postFlopBluffBetMult: 1,
+		postFlopBluffPotPct: 33,
 	},
 	HoldemStyleTAP: {
 		aggressive: false, bluffRate: 5,
 		preFlopFoldThreshold: 30, preFlopFoldCompound: false,
-		preFlopBluffBetMult:  2,
+		preFlopBluffPotPct:   50,
 		postFlopPassFoldRank: PokerHandHighCard, postFlopPassFoldMult: -1,
-		postFlopBluffBetMult: 1,
+		postFlopBluffPotPct: 33,
 	},
 	HoldemStyleLAG: {
 		aggressive: true, bluffRate: 30,
 		preFlopFoldThreshold: 15, preFlopFoldCompound: true, preFlopFoldCallMult: 3,
-		preFlopRaiseThreshold: 50, preFlopRaiseMult: 3,
-		postFlopRaiseRank: PokerHandOnePair, postFlopRaiseMult: 3,
+		preFlopRaiseThreshold: 50, preFlopRaisePotPct: 100,
+		postFlopRaiseRank: PokerHandOnePair, postFlopRaisePotPct: 100,
 		postFlopFallbackFold: false,
 		postFlopAggrFoldRank: PokerHandHighCard, postFlopAggrFoldMult: 4,
 	},
@@ -134,7 +134,10 @@ type Holdem struct {
 	roundResults   []HoldemResult
 	cpuActions     []HoldemCpuAction
 	startingChips  []int
-	lastCpuError   error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
+	vpipTracked    []bool // 当該ハンドでVPIP済みかどうか
+	pfrTracked     []bool // 当該ハンドでPFR済みかどうか
+	handCount      int    // ハンド数 (トーナメントモード用)
+	lastCpuError   error  // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 }
 
 // NewHoldem コンストラクタ
@@ -148,6 +151,8 @@ func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemCon
 		roundResults:   make([]HoldemResult, 0),
 		cpuActions:     make([]HoldemCpuAction, 0),
 		startingChips:  make([]int, len(players)),
+		vpipTracked:    make([]bool, len(players)),
+		pfrTracked:     make([]bool, len(players)),
 		config:         config,
 		phase:          HoldemPhaseInit,
 	}
@@ -178,7 +183,25 @@ func (h *Holdem) Reset() error {
 		if p.GetChips() <= 0 {
 			p.SetChips(h.config.InitChips)
 		}
+		p.IncrementTotalHands()
 	}
+
+	// HUDスタッツ追跡フラグをリセット
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+
+	// トーナメントモード: ブラインドエスカレーション
+	if h.config.TournamentMode && h.handCount > 0 && h.handCount%h.config.BlindLevelHands == 0 {
+		h.config.SmallBlind = h.config.SmallBlind * h.config.BlindMultiplier / 100
+		h.config.BigBlind = h.config.BigBlind * h.config.BlindMultiplier / 100
+		if h.config.SmallBlind < 1 {
+			h.config.SmallBlind = 1
+		}
+		if h.config.BigBlind < 2 {
+			h.config.BigBlind = 2
+		}
+	}
+	h.handCount++
 
 	// ハンド開始時のチップを記録 (サイドポット計算用)
 	h.startingChips = make([]int, len(h.players))
@@ -266,9 +289,35 @@ func (h *Holdem) PlayerAction(action, amount int) error {
 	return h.runCpuActions()
 }
 
+// trackPreFlopStats プリフロップのHUDスタッツを追跡
+func (h *Holdem) trackPreFlopStats(playerIdx, action int) {
+	if h.phase != HoldemPhasePreFlop {
+		return
+	}
+	// VPIP: Call/Bet/Raise/AllIn → ハンドにつき1回のみ
+	if !h.vpipTracked[playerIdx] {
+		switch action {
+		case HoldemActionCall, HoldemActionBet, HoldemActionRaise, HoldemActionAllIn:
+			h.players[playerIdx].IncrementVPIP()
+			h.vpipTracked[playerIdx] = true
+		}
+	}
+	// PFR: Bet/Raise/AllIn → ハンドにつき1回のみ
+	if !h.pfrTracked[playerIdx] {
+		switch action {
+		case HoldemActionBet, HoldemActionRaise, HoldemActionAllIn:
+			h.players[playerIdx].IncrementPFR()
+			h.pfrTracked[playerIdx] = true
+		}
+	}
+}
+
 // executeAction 指定プレイヤーのアクション実行
 func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 	p := h.players[playerIdx]
+
+	// プリフロップスタッツ追跡
+	h.trackPreFlopStats(playerIdx, action)
 
 	switch action {
 	case HoldemActionFold:
@@ -864,6 +913,18 @@ func (h *Holdem) cpuBetOrAllIn(p *HoldemPlayer, betAmt int) (int, int) {
 	return HoldemActionBet, betAmt
 }
 
+// cpuPotBet ポット比率ベースのベット額を計算 (最低BB, 最低minRaise)
+func (h *Holdem) cpuPotBet(potPct int) int {
+	bet := h.pot * potPct / 100
+	if bet < h.config.BigBlind {
+		bet = h.config.BigBlind
+	}
+	if bet < h.minRaise {
+		bet = h.minRaise
+	}
+	return bet
+}
+
 // cpuDecidePreFlop プリフロップのCPU意思決定
 func (h *Holdem) cpuDecidePreFlop(idx int, params cpuStyleParams, callAmount int) (int, int) {
 	p := h.players[idx]
@@ -883,7 +944,7 @@ func (h *Holdem) cpuDecidePreFlop(idx int, params cpuStyleParams, callAmount int
 	if params.aggressive {
 		// Aggressive: raise or call
 		if strength >= params.preFlopRaiseThreshold || rand.Intn(100) < params.bluffRate {
-			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*params.preFlopRaiseMult)
+			return h.cpuRaiseOrBet(p, callAmount, h.cpuPotBet(params.preFlopRaisePotPct))
 		}
 		return h.cpuCallOrCheck(callAmount)
 	}
@@ -893,7 +954,7 @@ func (h *Holdem) cpuDecidePreFlop(idx int, params cpuStyleParams, callAmount int
 		return HoldemActionCall, 0
 	}
 	if rand.Intn(100) < params.bluffRate {
-		return h.cpuBetOrAllIn(p, h.config.BigBlind*params.preFlopBluffBetMult)
+		return h.cpuBetOrAllIn(p, h.cpuPotBet(params.preFlopBluffPotPct))
 	}
 	return HoldemActionCheck, 0
 }
@@ -906,7 +967,7 @@ func (h *Holdem) cpuDecidePostFlop(idx int, params cpuStyleParams, callAmount in
 	if params.aggressive {
 		// Aggressive: raise → conditional call/fold
 		if handRank >= params.postFlopRaiseRank || rand.Intn(100) < params.bluffRate {
-			return h.cpuRaiseOrBet(p, callAmount, h.config.BigBlind*params.postFlopRaiseMult)
+			return h.cpuRaiseOrBet(p, callAmount, h.cpuPotBet(params.postFlopRaisePotPct))
 		}
 		if params.postFlopFallbackFold {
 			// TAG: conditional call then foldOrCheck
@@ -935,7 +996,7 @@ func (h *Holdem) cpuDecidePostFlop(idx int, params cpuStyleParams, callAmount in
 		return HoldemActionCall, 0
 	}
 	if rand.Intn(100) < params.bluffRate {
-		return h.cpuBetOrAllIn(p, h.config.BigBlind*params.postFlopBluffBetMult)
+		return h.cpuBetOrAllIn(p, h.cpuPotBet(params.postFlopBluffPotPct))
 	}
 	return HoldemActionCheck, 0
 }
@@ -1130,3 +1191,9 @@ func (h *Holdem) SetStartingChips(chips []int) { h.startingChips = chips }
 
 // GetStartingChips ハンド開始時チップ取得（テスト用）
 func (h *Holdem) GetStartingChips() []int { return h.startingChips }
+
+// GetHandCount ハンド数取得
+func (h *Holdem) GetHandCount() int { return h.handCount }
+
+// SetHandCount ハンド数設定（テスト用）
+func (h *Holdem) SetHandCount(count int) { h.handCount = count }

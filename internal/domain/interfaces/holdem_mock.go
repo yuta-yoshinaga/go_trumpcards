@@ -149,3 +149,9 @@ func (_m *MockHoldemGame) GetActedFlags() []bool {
 	}
 	return nil
 }
+
+// GetHandCount モック
+func (_m *MockHoldemGame) GetHandCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}

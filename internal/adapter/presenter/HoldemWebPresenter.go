@@ -24,6 +24,12 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	resObj.GameEndFlag = h.GetGameEndFlag()
 	resObj.LastBet = h.GetLastBet()
 	resObj.MinRaise = h.GetMinRaise()
+	cfg := h.GetConfig()
+	resObj.HandCount = h.GetHandCount()
+	resObj.SmallBlind = cfg.SmallBlind
+	resObj.BigBlind = cfg.BigBlind
+	resObj.TournamentMode = cfg.TournamentMode
+	resObj.BlindLevelHands = cfg.BlindLevelHands
 
 	// コミュニティカード
 	resObj.CommunityCards = make([]*controller.WebOutputCard, 0)
@@ -53,6 +59,9 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 			Folded:        player.GetFolded(),
 			AllIn:         player.GetAllIn(),
 			PlayStyleName: player.GetPlayStyleName(),
+			TotalHands:    player.GetTotalHands(),
+			VPIP:          player.GetVPIP(),
+			PFR:           player.GetPFR(),
 			Cards:         make([]*controller.WebOutputCard, 0),
 			BestHand:      make([]*controller.WebOutputCard, 0),
 		}
