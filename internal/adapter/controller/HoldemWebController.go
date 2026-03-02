@@ -87,6 +87,7 @@ type HoldemWebOutput struct {
 	BigBlind        int                         `json:"bigBlind"`
 	TournamentMode  bool                        `json:"tournamentMode"`
 	BlindLevelHands int                         `json:"blindLevelHands"`
+	BlindMultiplier int                         `json:"blindMultiplier"`
 }
 
 // HoldemWebController テキサスホールデムWebコントローラークラス

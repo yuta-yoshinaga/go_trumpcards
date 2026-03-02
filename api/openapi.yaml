@@ -2682,3 +2682,8 @@ components:
           description: Number of hands before blinds increase
           minimum: 1
           example: 10
+        blindMultiplier:
+          type: integer
+          description: Blind multiplier percentage (e.g. 200 = 2x)
+          minimum: 101
+          example: 200

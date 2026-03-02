@@ -191,7 +191,7 @@ func (h *Holdem) Reset() error {
 	h.pfrTracked = make([]bool, len(h.players))
 
 	// トーナメントモード: ブラインドエスカレーション
-	if h.config.TournamentMode && h.handCount > 0 && h.handCount%h.config.BlindLevelHands == 0 {
+	if h.config.TournamentMode && h.config.BlindLevelHands > 0 && h.handCount > 0 && h.handCount%h.config.BlindLevelHands == 0 {
 		h.config.SmallBlind = h.config.SmallBlind * h.config.BlindMultiplier / 100
 		h.config.BigBlind = h.config.BigBlind * h.config.BlindMultiplier / 100
 		if h.config.SmallBlind < 1 {

@@ -30,6 +30,7 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	resObj.BigBlind = cfg.BigBlind
 	resObj.TournamentMode = cfg.TournamentMode
 	resObj.BlindLevelHands = cfg.BlindLevelHands
+	resObj.BlindMultiplier = cfg.BlindMultiplier
 
 	// コミュニティカード
 	resObj.CommunityCards = make([]*controller.WebOutputCard, 0)

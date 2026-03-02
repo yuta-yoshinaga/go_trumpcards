@@ -74,6 +74,7 @@ const initState: HoldemResponse = {
   bigBlind: 10,
   tournamentMode: false,
   blindLevelHands: 10,
+  blindMultiplier: 200,
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -96,6 +97,7 @@ const preFlopState: HoldemResponse = {
   bigBlind: 10,
   tournamentMode: false,
   blindLevelHands: 10,
+  blindMultiplier: 200,
 };
 
 /** PRE_FLOP with outstanding bet: shows call/raise instead of bet/check */
@@ -156,6 +158,7 @@ const showdownState: HoldemResponse = {
   bigBlind: 10,
   tournamentMode: false,
   blindLevelHands: 10,
+  blindMultiplier: 200,
 };
 
 /** END (phase 6) — also isShowdown */

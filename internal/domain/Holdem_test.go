@@ -771,6 +771,14 @@ func TestHoldem_CpuPotBet(t *testing.T) {
 		assert.Equal(t, 30, h.cpuPotBet(50))
 	})
 
+	t.Run("pot is zero floors to BigBlind", func(t *testing.T) {
+		h.SetPot(0)
+		h.SetMinRaise(5)
+		h.config.BigBlind = 10
+		// 0 * 50 / 100 = 0, but min is BB=10
+		assert.Equal(t, 10, h.cpuPotBet(50))
+	})
+
 	t.Run("100% pot bet", func(t *testing.T) {
 		h.SetPot(300)
 		h.SetMinRaise(10)
@@ -983,6 +991,54 @@ func TestHoldem_TournamentMode_BlindEscalation(t *testing.T) {
 		h.Reset() // hand 1: escalation → 1*101/100=1, 2*101/100=2
 		assert.Equal(t, 1, h.GetConfig().SmallBlind)
 		assert.Equal(t, 2, h.GetConfig().BigBlind)
+	})
+
+	t.Run("blind floor values hit - multiplier under 100", func(t *testing.T) {
+		h := newTestHoldem()
+		for _, p := range h.players {
+			p.SetChips(10000)
+		}
+		cfg := HoldemConfig{
+			SmallBlind:      1,
+			BigBlind:        2,
+			InitChips:       10000,
+			TournamentMode:  true,
+			BlindLevelHands: 1,
+			BlindMultiplier: 50, // 0.5x → 1*50/100=0, 2*50/100=1
+		}
+		h.SetConfig(cfg)
+
+		h.Reset() // hand 0: no escalation
+		assert.Equal(t, 1, h.GetConfig().SmallBlind)
+		assert.Equal(t, 2, h.GetConfig().BigBlind)
+
+		h.Reset() // hand 1: escalation → 0 < 1 → SmallBlind=1; 1 < 2 → BigBlind=2
+		assert.Equal(t, 1, h.GetConfig().SmallBlind)
+		assert.Equal(t, 2, h.GetConfig().BigBlind)
+	})
+
+	t.Run("no panic when BlindLevelHands is zero", func(t *testing.T) {
+		h := newTestHoldem()
+		for _, p := range h.players {
+			p.SetChips(10000)
+		}
+		cfg := HoldemConfig{
+			SmallBlind:      5,
+			BigBlind:        10,
+			InitChips:       10000,
+			TournamentMode:  true,
+			BlindLevelHands: 0, // should not panic
+			BlindMultiplier: 200,
+		}
+		h.SetConfig(cfg)
+
+		assert.NotPanics(t, func() {
+			h.Reset()
+			h.Reset()
+		})
+		// Blinds should remain unchanged since BlindLevelHands=0 guard prevents escalation
+		assert.Equal(t, 5, h.GetConfig().SmallBlind)
+		assert.Equal(t, 10, h.GetConfig().BigBlind)
 	})
 
 	t.Run("GetHandCount and SetHandCount", func(t *testing.T) {

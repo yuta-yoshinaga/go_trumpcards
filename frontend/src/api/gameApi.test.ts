@@ -989,6 +989,7 @@ describe('gameApi', () => {
       bigBlind: 10,
       tournamentMode: false,
       blindLevelHands: 10,
+      blindMultiplier: 200,
     };
 
     it('calls the correct URL with reset command', async () => {

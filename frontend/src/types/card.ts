@@ -345,4 +345,5 @@ export interface HoldemResponse {
   bigBlind: number;
   tournamentMode: boolean;
   blindLevelHands: number;
+  blindMultiplier: number;
 }

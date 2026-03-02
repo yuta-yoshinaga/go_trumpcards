@@ -490,6 +490,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 20, out.BigBlind)
 		assert.True(t, out.TournamentMode)
 		assert.Equal(t, 5, out.BlindLevelHands)
+		assert.Equal(t, 200, out.BlindMultiplier)
 	})
 
 	t.Run("tournament mode fields default when not enabled", func(t *testing.T) {
@@ -505,5 +506,6 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 10, out.BigBlind)
 		assert.False(t, out.TournamentMode)
 		assert.Equal(t, 10, out.BlindLevelHands)
+		assert.Equal(t, 200, out.BlindMultiplier)
 	})
 }
