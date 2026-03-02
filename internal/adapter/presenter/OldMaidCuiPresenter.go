@@ -57,8 +57,8 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		drawPlayerIdx := om.GetLastDrawPlayerIdx()
 		drawFromIdx := om.GetLastDrawFromIdx()
 		discarded := om.GetLastDiscardedPairs()
-		drawPlayerName := p.getPlayerName(om, drawPlayerIdx)
-		drawFromName := p.getPlayerName(om, drawFromIdx)
+		drawPlayerName := cuiPlayerName(om.GetPlayer(drawPlayerIdx), drawPlayerIdx)
+		drawFromName := cuiPlayerName(om.GetPlayer(drawFromIdx), drawFromIdx)
 		drawnCard := om.GetLastDrawCard()
 		drawPlayer := om.GetPlayer(drawPlayerIdx)
 		fmt.Fprintf(&b, "%sが%sから1枚引きました", drawPlayerName, drawFromName)
@@ -77,8 +77,8 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 	if len(cpuActions) > 0 {
 		b.WriteString("[CPUの行動]\n")
 		for _, action := range cpuActions {
-			actPlayerName := p.getPlayerName(om, action.DrawPlayerIdx)
-			actFromName := p.getPlayerName(om, action.DrawFromIdx)
+			actPlayerName := cuiPlayerName(om.GetPlayer(action.DrawPlayerIdx), action.DrawPlayerIdx)
+			actFromName := cuiPlayerName(om.GetPlayer(action.DrawFromIdx), action.DrawFromIdx)
 			fmt.Fprintf(&b, "%sが%sから1枚引きました", actPlayerName, actFromName)
 			// CPU drawn card is intentionally hidden to preserve game fairness
 			if action.DiscardedPairs > 0 {
@@ -96,7 +96,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 	if om.GetGameEndFlag() {
 		loserIdx := om.GetLoserIdx()
 		if loserIdx >= 0 {
-			loserName := p.getPlayerName(om, loserIdx)
+			loserName := cuiPlayerName(om.GetPlayer(loserIdx), loserIdx)
 			gameEndLine := fmt.Sprintf("ゲーム終了！ %sの負け！", loserName)
 			if om.GetConfig().Mode == domain.OldMaidModeJijiNuki && om.GetRemovedCard() != nil {
 				gameEndLine += fmt.Sprintf("（除外カード: %s）", cuiCardStr(om.GetRemovedCard()))
@@ -105,10 +105,10 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		}
 	} else {
 		currentTurn := om.GetCurrentTurn()
-		currentName := p.getPlayerName(om, currentTurn)
+		currentName := cuiPlayerName(om.GetPlayer(currentTurn), currentTurn)
 		targetIdx := om.GetNextDrawTargetIdx()
 		if targetIdx >= 0 {
-			targetName := p.getPlayerName(om, targetIdx)
+			targetName := cuiPlayerName(om.GetPlayer(targetIdx), targetIdx)
 			fmt.Fprintf(&b, "手番: %s → %sから引きます\n", currentName, targetName)
 		} else {
 			fmt.Fprintf(&b, "手番: %s\n", currentName)
@@ -117,13 +117,4 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 
 	b.WriteString("==========\n")
 	return b.String()
-}
-
-// getPlayerName プレイヤー名取得
-func (p *OldMaidCuiPresenter) getPlayerName(om interfaces.OldMaidGame, idx int) string {
-	player := om.GetPlayer(idx)
-	if player == nil {
-		return "UNKNOWN"
-	}
-	return cuiPlayerName(player, idx)
 }

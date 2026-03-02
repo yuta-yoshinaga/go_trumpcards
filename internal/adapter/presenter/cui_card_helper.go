@@ -7,8 +7,9 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
-// cuiPlayer is the minimal interface required by cuiPlayerName.
+// cuiPlayer is the minimal type constraint required by cuiPlayerName.
 type cuiPlayer interface {
+	comparable
 	GetIsHuman() bool
 }
 
@@ -65,9 +66,14 @@ func cuiSuitName(suit int) string {
 	return "UNKNOWN"
 }
 
-// cuiPlayerName returns "あなた" for human players, "CPU N" for CPU players.
+// cuiPlayerName returns "あなた" for human players, "CPU N" for CPU players,
+// or "UNKNOWN" if the player is nil/zero.
 // Used by OldMaid, Daifugo, Sevens, and Doubt CUI presenters.
-func cuiPlayerName(player cuiPlayer, idx int) string {
+func cuiPlayerName[P cuiPlayer](player P, idx int) string {
+	var zero P
+	if player == zero {
+		return "UNKNOWN"
+	}
 	if player.GetIsHuman() {
 		return "あなた"
 	}

@@ -79,8 +79,8 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 				cardStrs[i] = cuiCardStr(c)
 			}
 			fmt.Fprintf(&b, "%s → %s: %s\n",
-				p.getPlayerName(dg, ex.FromPlayerIdx),
-				p.getPlayerName(dg, ex.ToPlayerIdx),
+				cuiPlayerName(dg.GetPlayer(ex.FromPlayerIdx), ex.FromPlayerIdx),
+				cuiPlayerName(dg.GetPlayer(ex.ToPlayerIdx), ex.ToPlayerIdx),
 				strings.Join(cardStrs, ", "))
 		}
 	}
@@ -92,9 +92,10 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 		for i, c := range tableCards {
 			cardStrs[i] = cuiCardStr(c)
 		}
+		lastPlayIdx := dg.GetLastPlayPlayerIdx()
 		fmt.Fprintf(&b, "場: %s (出したプレイヤー: %s)\n",
 			strings.Join(cardStrs, ", "),
-			p.getPlayerName(dg, dg.GetLastPlayPlayerIdx()))
+			cuiPlayerName(dg.GetPlayer(lastPlayIdx), lastPlayIdx))
 	} else {
 		b.WriteString("場: なし (誰でも出せます)\n")
 	}
@@ -103,14 +104,14 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 	humanAction := dg.GetHumanAction()
 	if humanAction != nil {
 		if len(humanAction.PlayedCards) == 0 {
-			fmt.Fprintf(&b, "%sがパスしました\n", p.getPlayerName(dg, humanAction.PlayerIdx))
+			fmt.Fprintf(&b, "%sがパスしました\n", cuiPlayerName(dg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx))
 		} else {
 			cardStrs := make([]string, len(humanAction.PlayedCards))
 			for i, c := range humanAction.PlayedCards {
 				cardStrs[i] = cuiCardStr(c)
 			}
 			fmt.Fprintf(&b, "%sが %s を出しました\n",
-				p.getPlayerName(dg, humanAction.PlayerIdx),
+				cuiPlayerName(dg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx),
 				strings.Join(cardStrs, ", "))
 		}
 	}
@@ -120,7 +121,7 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 	if len(cpuActions) > 0 {
 		b.WriteString("[CPUの行動]\n")
 		for _, action := range cpuActions {
-			actPlayerName := p.getPlayerName(dg, action.PlayerIdx)
+			actPlayerName := cuiPlayerName(dg.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 			if len(action.PlayedCards) == 0 {
 				fmt.Fprintf(&b, "%sがパスしました\n", actPlayerName)
 			} else {
@@ -142,11 +143,11 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 		b.WriteString("ゲーム終了！\n")
 		for i := 0; i < dg.GetPlayerCnt(); i++ {
 			player := dg.GetPlayer(i)
-			fmt.Fprintf(&b, "  %s: %s\n", p.getPlayerName(dg, i), p.rankName(player.GetRank()))
+			fmt.Fprintf(&b, "  %s: %s\n", cuiPlayerName(dg.GetPlayer(i), i), p.rankName(player.GetRank()))
 		}
 	} else {
 		currentTurn := dg.GetCurrentTurn()
-		currentName := p.getPlayerName(dg, currentTurn)
+		currentName := cuiPlayerName(dg.GetPlayer(currentTurn), currentTurn)
 		fmt.Fprintf(&b, "手番: %s\n", currentName)
 		switch dg.GetPendingActionType() {
 		case domain.DaifugoPendingSevenPass:
@@ -160,15 +161,6 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 
 	b.WriteString("==========\n")
 	return b.String()
-}
-
-// getPlayerName プレイヤー名取得
-func (p *DaifugoCuiPresenter) getPlayerName(dg interfaces.DaifugoGame, idx int) string {
-	player := dg.GetPlayer(idx)
-	if player == nil {
-		return "UNKNOWN"
-	}
-	return cuiPlayerName(player, idx)
 }
 
 // rankName ランク名取得

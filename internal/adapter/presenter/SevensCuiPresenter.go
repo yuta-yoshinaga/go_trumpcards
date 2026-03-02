@@ -92,18 +92,18 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	if humanAction != nil {
 		if humanAction.PlayedCard == nil {
 			if humanAction.ForcedPass {
-				fmt.Fprintf(&b, "%sがパスしました (出せるカードなし)\n", p.getPlayerName(s, humanAction.PlayerIdx))
+				fmt.Fprintf(&b, "%sがパスしました (出せるカードなし)\n", cuiPlayerName(s.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx))
 			} else {
-				fmt.Fprintf(&b, "%sがパスしました\n", p.getPlayerName(s, humanAction.PlayerIdx))
+				fmt.Fprintf(&b, "%sがパスしました\n", cuiPlayerName(s.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx))
 			}
 		} else {
 			if humanAction.PlayedCard.GetDesign() == domain.CardDesignJoker && humanAction.TargetSuit > 0 {
 				fmt.Fprintf(&b, "%sが %s → %s %d を出しました\n",
-					p.getPlayerName(s, humanAction.PlayerIdx), cuiCardStr(humanAction.PlayedCard),
+					cuiPlayerName(s.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx), cuiCardStr(humanAction.PlayedCard),
 					cuiSuitName(humanAction.TargetSuit), humanAction.TargetValue)
 			} else {
 				fmt.Fprintf(&b, "%sが %s を出しました\n",
-					p.getPlayerName(s, humanAction.PlayerIdx), cuiCardStr(humanAction.PlayedCard))
+					cuiPlayerName(s.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx), cuiCardStr(humanAction.PlayedCard))
 			}
 		}
 	}
@@ -113,7 +113,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	if len(cpuActions) > 0 {
 		b.WriteString("[CPUの行動]\n")
 		for _, action := range cpuActions {
-			actPlayerName := p.getPlayerName(s, action.PlayerIdx)
+			actPlayerName := cuiPlayerName(s.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 			if action.PlayedCard == nil {
 				if action.ForcedPass {
 					fmt.Fprintf(&b, "%sがパスしました (出せるカードなし)\n", actPlayerName)
@@ -141,11 +141,11 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		b.WriteString("ゲーム終了！\n")
 		for i := 0; i < s.GetPlayerCnt(); i++ {
 			player := s.GetPlayer(i)
-			fmt.Fprintf(&b, "  %s: %d位\n", p.getPlayerName(s, i), player.GetRank())
+			fmt.Fprintf(&b, "  %s: %d位\n", cuiPlayerName(s.GetPlayer(i), i), player.GetRank())
 		}
 	} else {
 		currentTurn := s.GetCurrentTurn()
-		currentName := p.getPlayerName(s, currentTurn)
+		currentName := cuiPlayerName(s.GetPlayer(currentTurn), currentTurn)
 		fmt.Fprintf(&b, "手番: %s\n", currentName)
 		b.WriteString("p [インデックス] でカードを出す / p でパス\n")
 		if config.JokerCount > 0 {
@@ -155,13 +155,4 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 
 	b.WriteString("==========\n")
 	return b.String()
-}
-
-// getPlayerName プレイヤー名取得
-func (p *SevensCuiPresenter) getPlayerName(s interfaces.SevensGame, idx int) string {
-	player := s.GetPlayer(idx)
-	if player == nil {
-		return "UNKNOWN"
-	}
-	return cuiPlayerName(player, idx)
 }
