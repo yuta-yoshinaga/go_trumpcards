@@ -13,6 +13,7 @@ import (
 type OldMaidWebInput struct {
 	Command              string `json:"command"`
 	DrawIdx              *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
+	ReorderIndices       []int  `json:"reorderIndices"`
 	SessionId            string `json:"sessionId"`
 	Mode                 int    `json:"mode"`
 	CpuPlacementStrategy bool   `json:"cpuPlacementStrategy"`
@@ -101,6 +102,14 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 					drawIdx = *param.DrawIdx
 				}
 				owc.writePresenterResponse(w, omi.Draw(drawIdx))
+			case "s", "shuffle":
+				owc.writePresenterResponse(w, omi.Shuffle())
+			case "reorder":
+				if param.ReorderIndices == nil {
+					owc.writeJsonResponse(w, http.StatusBadRequest, owc.newDefaultOutput("param error: reorderIndices is required."))
+					return true
+				}
+				owc.writePresenterResponse(w, omi.Reorder(param.ReorderIndices))
 			default:
 				return false
 			}

@@ -109,6 +109,7 @@ interface PlayerAreaProps {
   loading: boolean;
   highlightedCardIdx: number;
   onDraw: (drawIdx: number) => void;
+  onReorder?: (indices: number[]) => void;
 }
 
 function PlayerArea({
@@ -119,6 +120,7 @@ function PlayerArea({
   loading,
   highlightedCardIdx,
   onDraw,
+  onReorder,
 }: PlayerAreaProps) {
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
@@ -142,7 +144,29 @@ function PlayerArea({
       {showSelectable && !player.isFinished && <div className="text-[#cfc] text-[0.75em] mb-1">引く</div>}
       <div className="flex flex-wrap gap-0.5 justify-center">
         {player.isFinished ? null : player.isHuman ? (
-          player.cards?.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={50} />)
+          player.cards?.map((card, i) => (
+            <CardImage
+              key={`${card.design}-${card.value}`}
+              card={card}
+              width={50}
+              draggable={!gameEndFlag && !!onReorder}
+              onDragStart={(e: React.DragEvent) => {
+                e.dataTransfer.setData('oldmaidCardIndex', String(i));
+              }}
+              onDragOver={(e: React.DragEvent) => e.preventDefault()}
+              onDrop={(e: React.DragEvent) => {
+                e.preventDefault();
+                const fromStr = e.dataTransfer.getData('oldmaidCardIndex');
+                if (!fromStr || !onReorder || !player.cards) return;
+                const from = Number(fromStr);
+                if (from === i) return;
+                const indices = player.cards.map((_, idx) => idx);
+                indices.splice(from, 1);
+                indices.splice(i, 0, from);
+                onReorder(indices);
+              }}
+            />
+          ))
         ) : showSelectable ? (
           <>
             {Array.from({ length: showCount }, (_, i) => {
@@ -338,6 +362,32 @@ export function OldMaidPage() {
     }
   }, [exec, gameSettings]);
 
+  const handleShuffle = useCallback(async () => {
+    setLoading(true);
+    try {
+      setError(null);
+      const res = await oldmaidApi.exec('shuffle');
+      setDisplayState(res);
+    } catch {
+      setError('通信エラーが発生しました。もう一度お試しください。');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleReorder = useCallback(async (indices: number[]) => {
+    setLoading(true);
+    try {
+      setError(null);
+      const res = await oldmaidApi.exec('reorder', undefined, undefined, undefined, indices);
+      setDisplayState(res);
+    } catch {
+      setError('通信エラーが発生しました。もう一度お試しください。');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   if (!gameSettings) {
     return (
       <SetupScreen
@@ -455,6 +505,7 @@ export function OldMaidPage() {
               loading={loading}
               highlightedCardIdx={-1}
               onDraw={(drawIdx) => exec('draw', drawIdx)}
+              onReorder={handleReorder}
             />
           </div>
         )}
@@ -481,6 +532,14 @@ export function OldMaidPage() {
             onClick={() => exec('draw')}
           >
             ランダムに引く
+          </button>
+          <button
+            type="button"
+            className={`${btnSecondary} min-w-[110px]`}
+            disabled={loading || state.gameEndFlag}
+            onClick={handleShuffle}
+          >
+            シャッフル
           </button>
         </div>
       </div>

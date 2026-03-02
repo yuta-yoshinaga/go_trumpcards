@@ -488,6 +488,56 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with shuffle command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          nextDrawTargetIdx: 1,
+          gameEndFlag: false,
+          hasDrawn: false,
+          lastDrawPlayerIdx: 0,
+          lastDrawFromIdx: 0,
+          lastDrawCard: null,
+          lastDiscardedPairs: 0,
+          cpuActions: [],
+          message: '',
+        }),
+      );
+      await oldmaidApi.exec('shuffle');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/oldmaid/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'shuffle', sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reorder command and reorderIndices', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          nextDrawTargetIdx: 1,
+          gameEndFlag: false,
+          hasDrawn: false,
+          lastDrawPlayerIdx: 0,
+          lastDrawFromIdx: 0,
+          lastDrawCard: null,
+          lastDiscardedPairs: 0,
+          cpuActions: [],
+          message: '',
+        }),
+      );
+      await oldmaidApi.exec('reorder', undefined, undefined, undefined, [2, 0, 1]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/oldmaid/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'reorder', reorderIndices: [2, 0, 1], sessionId }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 404));
       await expect(oldmaidApi.exec('reset')).rejects.toThrow('HTTP error: 404');

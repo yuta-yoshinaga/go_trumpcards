@@ -162,3 +162,15 @@ func (_m *MockOldMaidGame) GetCpuHighlightedCardIdx() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// ShuffleHumanHand モック
+func (_m *MockOldMaidGame) ShuffleHumanHand() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// ReorderHumanHand モック
+func (_m *MockOldMaidGame) ReorderHumanHand(indices []int) error {
+	ret := _m.Called(indices)
+	return ret.Error(0)
+}

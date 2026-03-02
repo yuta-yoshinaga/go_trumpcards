@@ -10,6 +10,8 @@ import (
 type OldMaidInteractorIF interface {
 	Reset(config domain.OldMaidConfig) string
 	Draw(cardIdx int) string
+	Shuffle() string
+	Reorder(indices []int) string
 }
 
 // OldMaidInteractor ババ抜きインタラクタークラス
@@ -55,6 +57,18 @@ func (oi *OldMaidInteractor) Draw(cardIdx int) string {
 		oi.runCpuTurns()
 		oi.om.ArrangeTargetForHumanDraw()
 	}
+	return oi.omp.Output(oi.om, err)
+}
+
+// Shuffle 人間プレイヤーの手札をシャッフルする
+func (oi *OldMaidInteractor) Shuffle() string {
+	err := oi.om.ShuffleHumanHand()
+	return oi.omp.Output(oi.om, err)
+}
+
+// Reorder 人間プレイヤーの手札を並び替える
+func (oi *OldMaidInteractor) Reorder(indices []int) string {
+	err := oi.om.ReorderHumanHand(indices)
 	return oi.omp.Output(oi.om, err)
 }
 

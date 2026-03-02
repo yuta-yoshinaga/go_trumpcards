@@ -18,6 +18,7 @@ func TestOldMaidCuiController_Method(t *testing.T) {
 	omiMock.On("Draw", -1).Return(mockOutput)
 	omiMock.On("Draw", 0).Return(mockOutput)
 	omiMock.On("Draw", 2).Return(mockOutput)
+	omiMock.On("Shuffle").Return(mockOutput)
 
 	tomc := controller.NewOldMaidCuiController(omiMock)
 
@@ -46,6 +47,14 @@ func TestOldMaidCuiController_Method(t *testing.T) {
 	})
 	t.Run("success Exec draw 2", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tomc.Exec("draw 2"))
+	})
+	t.Run("success Exec s (shuffle)", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tomc.Exec("s"))
+		omiMock.AssertCalled(t, "Shuffle")
+	})
+	t.Run("success Exec shuffle", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tomc.Exec("shuffle"))
+		omiMock.AssertCalled(t, "Shuffle")
 	})
 	t.Run("success Exec other", func(t *testing.T) {
 		assert.Equal(t, "コマンドが不明です: other", tomc.Exec("other"))
