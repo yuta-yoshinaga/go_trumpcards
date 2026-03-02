@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
+import { CpuTurnArea } from '../components/CpuTurnArea';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { StatusBadge } from '../components/StatusBadge';
 import { useGameApi } from '../hooks/useGameApi';
@@ -48,26 +49,19 @@ function actionDescription(players: { id: number; isHuman: boolean }[], action: 
   return `${findPlayerName(players, action.playerIdx)}が出しました: ${cards}`;
 }
 
-interface CpuPlayerAreaProps {
-  player: DaifugoPlayerData;
-  isCurrentTurn: boolean;
-}
-
-function CpuPlayerArea({ player, isCurrentTurn }: CpuPlayerAreaProps) {
-  const conditionalStyle: React.CSSProperties = player.isFinished
-    ? { opacity: 0.5 }
-    : isCurrentTurn
-      ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
-      : {};
+function CpuPlayerAreaWrapper({ player, isCurrentTurn }: { player: DaifugoPlayerData; isCurrentTurn: boolean }) {
   return (
-    <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
-      <div className="text-white font-bold mb-1">
-        {playerName(player.id, player.isHuman)}
-        {player.isFinished && <StatusBadge variant="success">上がり ({rankName(player.rank)})</StatusBadge>}
-        {isCurrentTurn && !player.isFinished && <StatusBadge variant="warning">考え中...</StatusBadge>}
-      </div>
+    <CpuTurnArea
+      id={`player-area-${player.id}`}
+      playerId={player.id}
+      isHuman={player.isHuman}
+      isCurrentTurn={isCurrentTurn}
+      isFinished={player.isFinished}
+      finishedLabel={player.isFinished ? `上がり (${rankName(player.rank)})` : undefined}
+      className={playerAreaClass}
+    >
       {!player.isFinished && <div className="text-[#ccc] text-[0.85em]">{player.cardCount}枚</div>}
-    </div>
+    </CpuTurnArea>
   );
 }
 
@@ -330,7 +324,7 @@ export function DaifugoPage() {
         {/* CPU row */}
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
-            <CpuPlayerArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+            <CpuPlayerAreaWrapper key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
           ))}
         </div>
 
