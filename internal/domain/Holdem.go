@@ -3,7 +3,6 @@ package domain
 import (
 	"fmt"
 	"math/rand"
-	"sort"
 )
 
 // テキサスホールデムプレイヤー数
@@ -20,18 +19,18 @@ const (
 	HoldemPhaseEnd      = 6 // ゲーム終了
 )
 
-// アクション定数
+// アクション定数 (共通定数のエイリアス)
 const (
-	HoldemActionFold  = 0 // フォールド
-	HoldemActionCheck = 1 // チェック
-	HoldemActionCall  = 2 // コール
-	HoldemActionBet   = 3 // ベット
-	HoldemActionRaise = 4 // レイズ
-	HoldemActionAllIn = 5 // オールイン
+	HoldemActionFold  = bettingActionFold  // フォールド
+	HoldemActionCheck = bettingActionCheck // チェック
+	HoldemActionCall  = bettingActionCall  // コール
+	HoldemActionBet   = bettingActionBet   // ベット
+	HoldemActionRaise = bettingActionRaise // レイズ
+	HoldemActionAllIn = bettingActionAllIn // オールイン
 )
 
 // CPU AI 閾値
-const holdemMaxRaisesPerRound = 4 // 1ラウンドの最大レイズ回数
+const holdemMaxRaisesPerRound = bettingMaxRaisesPerRound // 1ラウンドの最大レイズ回数
 
 // cpuStyleParams CPU意思決定パラメータ
 type cpuStyleParams struct {
@@ -93,11 +92,8 @@ var holdemStyleParamsMap = map[HoldemPlayStyle]cpuStyleParams{
 	},
 }
 
-// HoldemSidePot サイドポット
-type HoldemSidePot struct {
-	Amount          int   // ポット額
-	EligiblePlayers []int // 受取対象プレイヤーインデックス
-}
+// HoldemSidePot サイドポット (共通SidePot型のエイリアス)
+type HoldemSidePot = SidePot
 
 // HoldemResult ショーダウン結果
 type HoldemResult struct {
@@ -317,144 +313,40 @@ func (h *Holdem) trackPreFlopStats(playerIdx, action int) {
 	}
 }
 
+// bettingPlayers BettingPlayerスライスを生成
+func (h *Holdem) bettingPlayers() []BettingPlayer {
+	bp := make([]BettingPlayer, len(h.players))
+	for i, pl := range h.players {
+		bp[i] = pl
+	}
+	return bp
+}
+
 // executeAction 指定プレイヤーのアクション実行
 func (h *Holdem) executeAction(playerIdx, action, amount int) error {
-	p := h.players[playerIdx]
-
-	// プリフロップスタッツ追跡
+	// プリフロップスタッツ追跡 (Holdem固有)
 	h.trackPreFlopStats(playerIdx, action)
 
-	switch action {
-	case HoldemActionFold:
-		p.SetFolded(true)
-		h.actedFlags[playerIdx] = true
-
-	case HoldemActionCheck:
-		if h.lastBet > p.GetCurrentBet() {
-			return NewDomainError(ErrInvalidPlay, "Cannot check with outstanding bet.")
-		}
-		h.actedFlags[playerIdx] = true
-
-	case HoldemActionCall:
-		diff := h.lastBet - p.GetCurrentBet()
-		if diff <= 0 {
-			return NewDomainError(ErrInvalidPlay, "Nothing to call.")
-		}
-		if p.GetChips() <= diff {
-			// オールイン (チップ不足)
-			allInAmount := p.GetChips()
-			p.SubtractChips(allInAmount)
-			p.SetCurrentBet(p.GetCurrentBet() + allInAmount)
-			h.pot += allInAmount
-			p.SetAllIn(true)
-		} else {
-			p.SubtractChips(diff)
-			p.SetCurrentBet(p.GetCurrentBet() + diff)
-			h.pot += diff
-		}
-		h.actedFlags[playerIdx] = true
-
-	case HoldemActionBet:
-		if h.raiseCount >= holdemMaxRaisesPerRound {
-			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
-		}
-		if h.lastBet > 0 {
-			return NewDomainError(ErrInvalidPlay, "Cannot bet when there is an outstanding bet. Use raise.")
-		}
-		if amount < h.config.BigBlind {
-			return NewDomainError(ErrInvalidAmount, "Bet must be at least the big blind.")
-		}
-		if amount > p.GetChips() {
-			return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
-		}
-		p.SubtractChips(amount)
-		p.SetCurrentBet(p.GetCurrentBet() + amount)
-		h.pot += amount
-		h.lastBet = p.GetCurrentBet()
-		h.minRaise = amount
-		h.raiseCount++
-		// 他の全員のactedフラグをリセット (ベットしたプレイヤー以外)
-		h.resetActedExcept(playerIdx)
-		if p.GetChips() == 0 {
-			p.SetAllIn(true)
-		}
-
-	case HoldemActionRaise:
-		if h.raiseCount >= holdemMaxRaisesPerRound {
-			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
-		}
-		diff := h.lastBet - p.GetCurrentBet()
-		if diff < 0 {
-			diff = 0
-		}
-		if amount < h.minRaise {
-			return NewDomainError(ErrInvalidAmount, "Raise must be at least the minimum raise.")
-		}
-		totalNeeded := diff + amount
-		if totalNeeded >= p.GetChips() {
-			return h.executeAction(playerIdx, HoldemActionAllIn, 0)
-		}
-		p.SubtractChips(totalNeeded)
-		p.SetCurrentBet(p.GetCurrentBet() + totalNeeded)
-		h.pot += totalNeeded
-		h.lastBet = p.GetCurrentBet()
-		h.minRaise = amount
-		h.raiseCount++
-		h.resetActedExcept(playerIdx)
-		if p.GetChips() == 0 {
-			p.SetAllIn(true)
-		}
-
-	case HoldemActionAllIn:
-		allInAmount := p.GetChips()
-		if allInAmount <= 0 {
-			return NewDomainError(ErrInsufficientChips, "No chips to go all-in.")
-		}
-		p.SubtractChips(allInAmount)
-		newBet := p.GetCurrentBet() + allInAmount
-		p.SetCurrentBet(newBet)
-		h.pot += allInAmount
-		p.SetAllIn(true)
-		if newBet > h.lastBet {
-			raiseAmount := newBet - h.lastBet
-			h.lastBet = newBet
-			h.raiseCount++
-			// ショートオールイン (最低レイズ額未満) はアクションを再開しない
-			if raiseAmount >= h.minRaise {
-				h.minRaise = raiseAmount
-				h.resetActedExcept(playerIdx)
-			} else {
-				h.actedFlags[playerIdx] = true
-			}
-		} else {
-			h.actedFlags[playerIdx] = true
-		}
-
-	default:
-		return NewDomainError(ErrInvalidPlay, "Unknown action.")
+	bp := h.bettingPlayers()
+	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が h.actedFlags に直接反映される
+	state := &BettingState{
+		Pot: h.pot, LastBet: h.lastBet, MinRaise: h.minRaise,
+		RaiseCount: h.raiseCount, ActedFlags: h.actedFlags,
+	}
+	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, h.config.BigBlind)
+	h.pot = state.Pot
+	h.lastBet = state.LastBet
+	h.minRaise = state.MinRaise
+	h.raiseCount = state.RaiseCount
+	if err != nil {
+		return err
 	}
 
 	// フォールドでアクティブプレイヤーが1人になったらチェック
 	if h.countActivePlayers() == 1 {
 		h.resolveLastPlayer()
-		return nil
 	}
-
 	return nil
-}
-
-// resetActedExcept 指定プレイヤー以外のactedフラグをリセット (フォールド・オールイン除く)
-func (h *Holdem) resetActedExcept(exceptIdx int) {
-	for i := range h.actedFlags {
-		if i == exceptIdx {
-			h.actedFlags[i] = true
-			continue
-		}
-		if h.players[i].GetFolded() || h.players[i].GetAllIn() {
-			continue
-		}
-		h.actedFlags[i] = false
-	}
 }
 
 // advanceTurn 次のプレイヤーに進める
@@ -618,28 +510,13 @@ func (h *Holdem) resolveShowdown() {
 		}
 	}
 
-	// サイドポット計算
-	h.calculateSidePots()
-
-	// 各ポットの配分
-	h.roundResults = make([]HoldemResult, 0)
-	wonAmounts := make(map[int]int)
-
-	for _, sp := range h.sidePots {
-		winners := h.findPotWinners(sp.EligiblePlayers)
-		share := sp.Amount / len(winners)
-		remainder := sp.Amount % len(winners)
-		for i, wIdx := range winners {
-			won := share
-			if i == 0 {
-				won += remainder
-			}
-			h.players[wIdx].AddChips(won)
-			wonAmounts[wIdx] += won
-		}
-	}
+	// サイドポット計算・配分
+	bp := h.bettingPlayers()
+	h.sidePots = CalculateSidePots(bp, h.pot, h.startingChips)
+	wonAmounts := DistributePots(bp, h.sidePots)
 
 	// 結果を構築
+	h.roundResults = make([]HoldemResult, 0)
 	for i, p := range h.players {
 		if p.GetFolded() {
 			continue
@@ -657,141 +534,6 @@ func (h *Holdem) resolveShowdown() {
 	h.phase = HoldemPhaseEnd
 	h.gameEndFlag = true
 	h.dealerIdx = (h.dealerIdx + 1) % len(h.players)
-}
-
-// calculateSidePots サイドポット計算
-func (h *Holdem) calculateSidePots() {
-	type playerContrib struct {
-		idx    int
-		amount int
-	}
-
-	// 各プレイヤーの合計投入額を計算
-	contribs := make([]playerContrib, 0)
-	for i, p := range h.players {
-		// 投入額 = ハンド開始時チップ - 現在のチップ
-		invested := h.startingChips[i] - p.GetChips()
-		if invested < 0 {
-			invested = 0
-		}
-		contribs = append(contribs, playerContrib{idx: i, amount: invested})
-	}
-
-	// オールインプレイヤーがいない場合はシンプルなメインポット
-	hasAllIn := false
-	for _, p := range h.players {
-		if p.GetAllIn() && !p.GetFolded() {
-			hasAllIn = true
-			break
-		}
-	}
-
-	if !hasAllIn {
-		eligible := make([]int, 0)
-		for i, p := range h.players {
-			if !p.GetFolded() {
-				eligible = append(eligible, i)
-			}
-		}
-		h.sidePots = []HoldemSidePot{{Amount: h.pot, EligiblePlayers: eligible}}
-		return
-	}
-
-	// オールインがある場合: 各オールイン額でポットを分割
-	type allInLevel struct {
-		amount int
-		idx    int
-	}
-	levels := make([]allInLevel, 0)
-	for _, c := range contribs {
-		if h.players[c.idx].GetAllIn() && !h.players[c.idx].GetFolded() {
-			levels = append(levels, allInLevel{amount: c.amount, idx: c.idx})
-		}
-	}
-	// 投入額の昇順でソート
-	sort.Slice(levels, func(i, j int) bool {
-		return levels[i].amount < levels[j].amount
-	})
-
-	h.sidePots = make([]HoldemSidePot, 0)
-	prevLevel := 0
-	remaining := h.pot
-
-	for _, lv := range levels {
-		if lv.amount <= prevLevel {
-			continue
-		}
-		layerAmount := lv.amount - prevLevel
-		potAmount := 0
-		eligible := make([]int, 0)
-		for _, c := range contribs {
-			contribution := c.amount - prevLevel
-			if contribution <= 0 {
-				continue
-			}
-			if contribution > layerAmount {
-				contribution = layerAmount
-			}
-			potAmount += contribution
-			if !h.players[c.idx].GetFolded() {
-				eligible = append(eligible, c.idx)
-			}
-		}
-		if potAmount > 0 {
-			h.sidePots = append(h.sidePots, HoldemSidePot{Amount: potAmount, EligiblePlayers: eligible})
-			remaining -= potAmount
-		}
-		prevLevel = lv.amount
-	}
-
-	// 残りのポット (非オールインプレイヤー分)
-	if remaining > 0 {
-		eligible := make([]int, 0)
-		for i, p := range h.players {
-			if !p.GetFolded() && !p.GetAllIn() {
-				eligible = append(eligible, i)
-			}
-		}
-		if len(eligible) == 0 {
-			// 全員オールインの場合は全未フォールドプレイヤーが対象
-			for i, p := range h.players {
-				if !p.GetFolded() {
-					eligible = append(eligible, i)
-				}
-			}
-		}
-		h.sidePots = append(h.sidePots, HoldemSidePot{Amount: remaining, EligiblePlayers: eligible})
-	}
-}
-
-// findPotWinners 対象プレイヤーから最強ハンドのプレイヤーを返す (複数ならスプリット)
-func (h *Holdem) findPotWinners(eligible []int) []int {
-	bestRank := -1
-	var bestCards []*Card
-	var winners []int
-
-	for _, idx := range eligible {
-		p := h.players[idx]
-		if p.GetFolded() {
-			continue
-		}
-		rank := p.GetHandRank()
-		if rank > bestRank {
-			bestRank = rank
-			bestCards = p.GetBestHand()
-			winners = []int{idx}
-		} else if rank == bestRank {
-			cmp := compareHighCardsSlice(p.GetBestHand(), bestCards)
-			if cmp > 0 {
-				bestCards = p.GetBestHand()
-				winners = []int{idx}
-			} else if cmp == 0 {
-				winners = append(winners, idx)
-			}
-		}
-	}
-
-	return winners
 }
 
 // getHandName ハンドランクから名前を返す
@@ -882,32 +624,17 @@ func (h *Holdem) cpuDecide(idx int) (int, int) {
 
 // cpuFoldOrCheck コール額がある場合はフォールド、なければチェック
 func (h *Holdem) cpuFoldOrCheck(callAmount int) (int, int) {
-	if callAmount > 0 {
-		return HoldemActionFold, 0
-	}
-	return HoldemActionCheck, 0
+	return CpuFoldOrCheck(callAmount)
 }
 
 // cpuCallOrCheck コール額がある場合はコール、なければチェック
 func (h *Holdem) cpuCallOrCheck(callAmount int) (int, int) {
-	if callAmount > 0 {
-		return HoldemActionCall, 0
-	}
-	return HoldemActionCheck, 0
+	return CpuCallOrCheck(callAmount)
 }
 
 // cpuRaiseOrBet コール額がある場合はレイズ、なければベット (チップ不足時はオールイン)
 func (h *Holdem) cpuRaiseOrBet(p *HoldemPlayer, callAmount, raiseAmt int) (int, int) {
-	if raiseAmt > p.GetChips() {
-		return HoldemActionAllIn, 0
-	}
-	if callAmount > 0 {
-		if raiseAmt+callAmount > p.GetChips() {
-			return HoldemActionAllIn, 0
-		}
-		return HoldemActionRaise, raiseAmt
-	}
-	return HoldemActionBet, raiseAmt
+	return CpuRaiseOrBet(p.GetChips(), callAmount, raiseAmt)
 }
 
 // cpuBetOrAllIn ベットする (チップ不足時はオールイン)

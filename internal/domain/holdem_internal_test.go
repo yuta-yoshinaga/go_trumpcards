@@ -57,29 +57,6 @@ func TestPostBlinds_BigBlindAllIn(t *testing.T) {
 	assert.True(t, h.actedFlags[2])
 }
 
-func TestResetActedExcept(t *testing.T) {
-	h := newInternalTestHoldem()
-	h.actedFlags = []bool{true, true, true, true}
-	h.players[2].SetFolded(true)
-
-	h.resetActedExcept(0)
-
-	assert.True(t, h.actedFlags[0])  // except
-	assert.False(t, h.actedFlags[1]) // reset
-	assert.True(t, h.actedFlags[2])  // folded, not reset
-	assert.False(t, h.actedFlags[3]) // reset
-}
-
-func TestResetActedExcept_AllIn(t *testing.T) {
-	h := newInternalTestHoldem()
-	h.actedFlags = []bool{true, true, true, true}
-	h.players[3].SetAllIn(true)
-
-	h.resetActedExcept(0)
-
-	assert.True(t, h.actedFlags[3]) // all-in, not reset
-}
-
 func TestAdvanceTurn(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhaseFlop)
@@ -297,119 +274,6 @@ func TestResolveLastPlayer(t *testing.T) {
 	assert.Equal(t, 1, len(h.roundResults))
 	assert.Equal(t, 3, h.roundResults[0].PlayerIdx)
 	assert.Equal(t, 200, h.roundResults[0].WonAmount)
-}
-
-func TestCalculateSidePots_NoAllIn(t *testing.T) {
-	h := newInternalTestHoldem()
-	h.SetPot(200)
-
-	h.calculateSidePots()
-
-	assert.Equal(t, 1, len(h.sidePots))
-	assert.Equal(t, 200, h.sidePots[0].Amount)
-	assert.Equal(t, 4, len(h.sidePots[0].EligiblePlayers))
-}
-
-func TestCalculateSidePots_WithAllIn(t *testing.T) {
-	h := newInternalTestHoldem()
-
-	// Player 0: all-in with 50, Player 1: all-in with 100, others: normal
-	h.startingChips = []int{100, 100, 100, 100}
-	h.players[0].SetChips(50) // invested 50
-	h.players[0].SetAllIn(true)
-	h.players[1].SetChips(0) // invested 100
-	h.players[1].SetAllIn(true)
-	h.players[2].SetChips(0) // invested 100
-	h.players[3].SetChips(0) // invested 100
-
-	h.SetPot(350)
-
-	h.calculateSidePots()
-	assert.True(t, len(h.sidePots) > 0)
-}
-
-func TestFindPotWinners(t *testing.T) {
-	h := newInternalTestHoldem()
-
-	// Give players hands
-	h.players[0].Reset()
-	h.players[0].AddCard(NewCard(CardDesignSpade, 1, false))
-	h.players[0].AddCard(NewCard(CardDesignHeart, 1, false))
-
-	h.players[1].Reset()
-	h.players[1].AddCard(NewCard(CardDesignClover, 2, false))
-	h.players[1].AddCard(NewCard(CardDesignDiamond, 3, false))
-
-	community := []*Card{
-		NewCard(CardDesignSpade, 5, false),
-		NewCard(CardDesignHeart, 7, false),
-		NewCard(CardDesignClover, 9, false),
-		NewCard(CardDesignDiamond, 11, false),
-		NewCard(CardDesignSpade, 13, false),
-	}
-	h.SetCommunityCards(community)
-
-	h.players[0].EvalBestHand(community)
-	h.players[1].EvalBestHand(community)
-
-	winners := h.findPotWinners([]int{0, 1})
-	assert.Equal(t, []int{0}, winners) // Aces > 2-3
-}
-
-func TestFindPotWinners_Tie(t *testing.T) {
-	h := newInternalTestHoldem()
-
-	// Give identical hands
-	h.players[0].Reset()
-	h.players[0].AddCard(NewCard(CardDesignSpade, 10, false))
-	h.players[0].AddCard(NewCard(CardDesignHeart, 11, false))
-
-	h.players[1].Reset()
-	h.players[1].AddCard(NewCard(CardDesignClover, 10, false))
-	h.players[1].AddCard(NewCard(CardDesignDiamond, 11, false))
-
-	community := []*Card{
-		NewCard(CardDesignSpade, 1, false),
-		NewCard(CardDesignHeart, 13, false),
-		NewCard(CardDesignClover, 12, false),
-		NewCard(CardDesignDiamond, 9, false),
-		NewCard(CardDesignSpade, 8, false),
-	}
-	h.SetCommunityCards(community)
-
-	h.players[0].EvalBestHand(community)
-	h.players[1].EvalBestHand(community)
-
-	winners := h.findPotWinners([]int{0, 1})
-	assert.Equal(t, 2, len(winners))
-}
-
-func TestFindPotWinners_FoldedExcluded(t *testing.T) {
-	h := newInternalTestHoldem()
-
-	h.players[0].Reset()
-	h.players[0].AddCard(NewCard(CardDesignSpade, 1, false))
-	h.players[0].AddCard(NewCard(CardDesignHeart, 1, false))
-	h.players[0].SetFolded(true)
-
-	h.players[1].Reset()
-	h.players[1].AddCard(NewCard(CardDesignClover, 2, false))
-	h.players[1].AddCard(NewCard(CardDesignDiamond, 3, false))
-
-	community := []*Card{
-		NewCard(CardDesignSpade, 5, false),
-		NewCard(CardDesignHeart, 7, false),
-		NewCard(CardDesignClover, 9, false),
-		NewCard(CardDesignDiamond, 11, false),
-		NewCard(CardDesignSpade, 13, false),
-	}
-	h.SetCommunityCards(community)
-
-	h.players[0].EvalBestHand(community)
-	h.players[1].EvalBestHand(community)
-
-	winners := h.findPotWinners([]int{0, 1})
-	assert.Equal(t, []int{1}, winners)
 }
 
 func TestClamp(t *testing.T) {
@@ -2092,51 +1956,6 @@ func TestResolveShowdown_WithSidePots(t *testing.T) {
 	assert.True(t, h.gameEndFlag)
 	assert.Equal(t, HoldemPhaseEnd, h.phase)
 	assert.True(t, len(h.roundResults) > 0)
-}
-
-func TestCalculateSidePots_DuplicateAllInLevel(t *testing.T) {
-	h := newInternalTestHoldem()
-
-	// Two players all-in at the same level
-	h.startingChips = []int{100, 100, 100, 100}
-	h.players[0].SetChips(50)
-	h.players[0].SetAllIn(true)
-	h.players[1].SetChips(50)
-	h.players[1].SetAllIn(true)
-	h.players[2].SetChips(0)
-	h.players[3].SetChips(0)
-
-	h.SetPot(400)
-
-	h.calculateSidePots()
-	assert.True(t, len(h.sidePots) > 0)
-}
-
-func TestCalculateSidePots_AllAllIn_Remaining(t *testing.T) {
-	h := newInternalTestHoldem()
-
-	// All players all-in with different amounts
-	h.startingChips = []int{100, 100, 100, 100}
-	h.players[0].SetChips(70) // invested 30
-	h.players[0].SetAllIn(true)
-	h.players[1].SetChips(50) // invested 50
-	h.players[1].SetAllIn(true)
-	h.players[2].SetChips(0) // invested 100
-	h.players[2].SetAllIn(true)
-	h.players[3].SetChips(0) // invested 100
-	h.players[3].SetAllIn(true)
-
-	h.SetPot(280)
-
-	h.calculateSidePots()
-	assert.True(t, len(h.sidePots) > 0)
-
-	// Total side pot amounts should equal the pot
-	total := 0
-	for _, sp := range h.sidePots {
-		total += sp.Amount
-	}
-	assert.Equal(t, 280, total)
 }
 
 func TestHoldem_DealerRotation(t *testing.T) {

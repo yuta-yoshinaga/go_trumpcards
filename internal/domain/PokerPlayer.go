@@ -147,6 +147,13 @@ func (pp *PokerPlayer) GetExchangeCount() int { return pp.exchangeCount }
 // SetExchangeCount 交換枚数設定
 func (pp *PokerPlayer) SetExchangeCount(count int) { pp.exchangeCount = count }
 
+// GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
+func (pp *PokerPlayer) GetComparisonCards() []*Card {
+	cards := make([]*Card, len(pp.cards))
+	copy(cards, pp.cards)
+	return cards
+}
+
 // SetHandRank ハンドランク設定（テスト用）
 func (pp *PokerPlayer) SetHandRank(rank int) { pp.handRank = rank }
 

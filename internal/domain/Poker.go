@@ -15,24 +15,21 @@ const (
 	PokerPhaseEnd       = 4 // ゲーム終了
 )
 
-// アクション定数
+// アクション定数 (共通定数のエイリアス)
 const (
-	PokerActionFold  = 0 // フォールド
-	PokerActionCheck = 1 // チェック
-	PokerActionCall  = 2 // コール
-	PokerActionBet   = 3 // ベット
-	PokerActionRaise = 4 // レイズ
-	PokerActionAllIn = 5 // オールイン
+	PokerActionFold  = bettingActionFold  // フォールド
+	PokerActionCheck = bettingActionCheck // チェック
+	PokerActionCall  = bettingActionCall  // コール
+	PokerActionBet   = bettingActionBet   // ベット
+	PokerActionRaise = bettingActionRaise // レイズ
+	PokerActionAllIn = bettingActionAllIn // オールイン
 )
 
 // CPU AI 閾値
-const pokerMaxRaisesPerRound = 4
+const pokerMaxRaisesPerRound = bettingMaxRaisesPerRound
 
-// PokerSidePot サイドポット
-type PokerSidePot struct {
-	Amount          int   // ポット額
-	EligiblePlayers []int // 受取対象プレイヤーインデックス
-}
+// PokerSidePot サイドポット (共通SidePot型のエイリアス)
+type PokerSidePot = SidePot
 
 // PokerResult ショーダウン結果
 type PokerResult struct {
@@ -292,136 +289,37 @@ func (p *Poker) PlayerStand() error {
 	return nil
 }
 
+// bettingPlayers BettingPlayerスライスを生成
+func (p *Poker) bettingPlayers() []BettingPlayer {
+	bp := make([]BettingPlayer, len(p.players))
+	for i, pl := range p.players {
+		bp[i] = pl
+	}
+	return bp
+}
+
 // executeAction 指定プレイヤーのアクション実行
 func (p *Poker) executeAction(playerIdx, action, amount int) error {
-	pl := p.players[playerIdx]
-
-	switch action {
-	case PokerActionFold:
-		pl.SetFolded(true)
-		p.actedFlags[playerIdx] = true
-
-	case PokerActionCheck:
-		if p.lastBet > pl.GetCurrentBet() {
-			return NewDomainError(ErrInvalidPlay, "Cannot check with outstanding bet.")
-		}
-		p.actedFlags[playerIdx] = true
-
-	case PokerActionCall:
-		diff := p.lastBet - pl.GetCurrentBet()
-		if diff <= 0 {
-			return NewDomainError(ErrInvalidPlay, "Nothing to call.")
-		}
-		if pl.GetChips() <= diff {
-			// オールイン
-			allInAmount := pl.GetChips()
-			pl.SubtractChips(allInAmount)
-			pl.SetCurrentBet(pl.GetCurrentBet() + allInAmount)
-			p.pot += allInAmount
-			pl.SetAllIn(true)
-		} else {
-			pl.SubtractChips(diff)
-			pl.SetCurrentBet(pl.GetCurrentBet() + diff)
-			p.pot += diff
-		}
-		p.actedFlags[playerIdx] = true
-
-	case PokerActionBet:
-		if p.raiseCount >= pokerMaxRaisesPerRound {
-			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
-		}
-		if p.lastBet > 0 {
-			return NewDomainError(ErrInvalidPlay, "Cannot bet when there is an outstanding bet. Use raise.")
-		}
-		if amount < p.config.MinBet {
-			return NewDomainError(ErrInvalidAmount, "Bet must be at least the minimum bet.")
-		}
-		if amount > pl.GetChips() {
-			return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
-		}
-		pl.SubtractChips(amount)
-		pl.SetCurrentBet(pl.GetCurrentBet() + amount)
-		p.pot += amount
-		p.lastBet = pl.GetCurrentBet()
-		p.minRaise = amount
-		p.raiseCount++
-		p.resetActedExcept(playerIdx)
-		if pl.GetChips() == 0 {
-			pl.SetAllIn(true)
-		}
-
-	case PokerActionRaise:
-		if p.raiseCount >= pokerMaxRaisesPerRound {
-			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
-		}
-		diff := p.lastBet - pl.GetCurrentBet()
-		if diff < 0 {
-			diff = 0
-		}
-		if amount < p.minRaise {
-			return NewDomainError(ErrInvalidAmount, "Raise must be at least the minimum raise.")
-		}
-		totalNeeded := diff + amount
-		if totalNeeded >= pl.GetChips() {
-			return p.executeAction(playerIdx, PokerActionAllIn, 0)
-		}
-		pl.SubtractChips(totalNeeded)
-		pl.SetCurrentBet(pl.GetCurrentBet() + totalNeeded)
-		p.pot += totalNeeded
-		p.lastBet = pl.GetCurrentBet()
-		p.minRaise = amount
-		p.raiseCount++
-		p.resetActedExcept(playerIdx)
-
-	case PokerActionAllIn:
-		allInAmount := pl.GetChips()
-		if allInAmount <= 0 {
-			return NewDomainError(ErrInsufficientChips, "No chips to go all-in.")
-		}
-		pl.SubtractChips(allInAmount)
-		newBet := pl.GetCurrentBet() + allInAmount
-		pl.SetCurrentBet(newBet)
-		p.pot += allInAmount
-		pl.SetAllIn(true)
-		if newBet > p.lastBet {
-			raiseAmount := newBet - p.lastBet
-			p.lastBet = newBet
-			p.raiseCount++
-			if raiseAmount >= p.minRaise {
-				p.minRaise = raiseAmount
-				p.resetActedExcept(playerIdx)
-			} else {
-				p.actedFlags[playerIdx] = true
-			}
-		} else {
-			p.actedFlags[playerIdx] = true
-		}
-
-	default:
-		return NewDomainError(ErrInvalidPlay, "Unknown action.")
+	bp := p.bettingPlayers()
+	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が p.actedFlags に直接反映される
+	state := &BettingState{
+		Pot: p.pot, LastBet: p.lastBet, MinRaise: p.minRaise,
+		RaiseCount: p.raiseCount, ActedFlags: p.actedFlags,
+	}
+	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, p.config.MinBet)
+	p.pot = state.Pot
+	p.lastBet = state.LastBet
+	p.minRaise = state.MinRaise
+	p.raiseCount = state.RaiseCount
+	if err != nil {
+		return err
 	}
 
 	// フォールドでアクティブプレイヤーが1人になったらチェック
 	if p.countActivePlayers() == 1 {
 		p.resolveLastPlayer()
-		return nil
 	}
-
 	return nil
-}
-
-// resetActedExcept 指定プレイヤー以外のactedフラグをリセット
-func (p *Poker) resetActedExcept(exceptIdx int) {
-	for i := range p.actedFlags {
-		if i == exceptIdx {
-			p.actedFlags[i] = true
-			continue
-		}
-		if p.players[i].GetFolded() || p.players[i].GetAllIn() {
-			continue
-		}
-		p.actedFlags[i] = false
-	}
 }
 
 // advanceTurn 次のプレイヤーに進める
@@ -591,28 +489,13 @@ func (p *Poker) resolveShowdown() {
 		}
 	}
 
-	// サイドポット計算
-	p.calculateSidePots()
-
-	// 各ポットの配分
-	p.roundResults = make([]PokerResult, 0)
-	wonAmounts := make(map[int]int)
-
-	for _, sp := range p.sidePots {
-		winners := p.findPotWinners(sp.EligiblePlayers)
-		share := sp.Amount / len(winners)
-		remainder := sp.Amount % len(winners)
-		for i, wIdx := range winners {
-			won := share
-			if i == 0 {
-				won += remainder
-			}
-			p.players[wIdx].AddChips(won)
-			wonAmounts[wIdx] += won
-		}
-	}
+	// サイドポット計算・配分
+	bp := p.bettingPlayers()
+	p.sidePots = CalculateSidePots(bp, p.pot, p.startingChips)
+	wonAmounts := DistributePots(bp, p.sidePots)
 
 	// 結果を構築
+	p.roundResults = make([]PokerResult, 0)
 	for i, pl := range p.players {
 		if pl.GetFolded() {
 			continue
@@ -629,140 +512,6 @@ func (p *Poker) resolveShowdown() {
 	p.phase = PokerPhaseEnd
 	p.gameEndFlag = true
 	p.dealerIdx = (p.dealerIdx + 1) % len(p.players)
-}
-
-// calculateSidePots サイドポット計算
-func (p *Poker) calculateSidePots() {
-	type playerContrib struct {
-		idx    int
-		amount int
-	}
-
-	contribs := make([]playerContrib, 0)
-	for i, pl := range p.players {
-		invested := p.startingChips[i] - pl.GetChips()
-		if invested < 0 {
-			invested = 0
-		}
-		contribs = append(contribs, playerContrib{idx: i, amount: invested})
-	}
-
-	// オールインプレイヤーがいない場合はシンプルなメインポット
-	hasAllIn := false
-	for _, pl := range p.players {
-		if pl.GetAllIn() && !pl.GetFolded() {
-			hasAllIn = true
-			break
-		}
-	}
-
-	if !hasAllIn {
-		eligible := make([]int, 0)
-		for i, pl := range p.players {
-			if !pl.GetFolded() {
-				eligible = append(eligible, i)
-			}
-		}
-		p.sidePots = []PokerSidePot{{Amount: p.pot, EligiblePlayers: eligible}}
-		return
-	}
-
-	// オールインがある場合: 各オールイン額でポットを分割
-	type allInLevel struct {
-		amount int
-		idx    int
-	}
-	levels := make([]allInLevel, 0)
-	for _, c := range contribs {
-		if p.players[c.idx].GetAllIn() && !p.players[c.idx].GetFolded() {
-			levels = append(levels, allInLevel{amount: c.amount, idx: c.idx})
-		}
-	}
-	sort.Slice(levels, func(i, j int) bool {
-		return levels[i].amount < levels[j].amount
-	})
-
-	p.sidePots = make([]PokerSidePot, 0)
-	prevLevel := 0
-	remaining := p.pot
-
-	for _, lv := range levels {
-		if lv.amount <= prevLevel {
-			continue
-		}
-		layerAmount := lv.amount - prevLevel
-		potAmount := 0
-		eligible := make([]int, 0)
-		for _, c := range contribs {
-			contribution := c.amount - prevLevel
-			if contribution <= 0 {
-				continue
-			}
-			if contribution > layerAmount {
-				contribution = layerAmount
-			}
-			potAmount += contribution
-			if !p.players[c.idx].GetFolded() {
-				eligible = append(eligible, c.idx)
-			}
-		}
-		if potAmount > 0 {
-			p.sidePots = append(p.sidePots, PokerSidePot{Amount: potAmount, EligiblePlayers: eligible})
-			remaining -= potAmount
-		}
-		prevLevel = lv.amount
-	}
-
-	if remaining > 0 {
-		eligible := make([]int, 0)
-		for i, pl := range p.players {
-			if !pl.GetFolded() && !pl.GetAllIn() {
-				eligible = append(eligible, i)
-			}
-		}
-		if len(eligible) == 0 {
-			for i, pl := range p.players {
-				if !pl.GetFolded() {
-					eligible = append(eligible, i)
-				}
-			}
-		}
-		p.sidePots = append(p.sidePots, PokerSidePot{Amount: remaining, EligiblePlayers: eligible})
-	}
-}
-
-// findPotWinners 対象プレイヤーから最強ハンドのプレイヤーを返す
-func (p *Poker) findPotWinners(eligible []int) []int {
-	bestRank := -1
-	var bestCards []*Card
-	var winners []int
-
-	for _, idx := range eligible {
-		pl := p.players[idx]
-		if pl.GetFolded() {
-			continue
-		}
-		rank := pl.GetHandRank()
-		cards := make([]*Card, pl.GetCardsSize())
-		for i := 0; i < pl.GetCardsSize(); i++ {
-			cards[i] = pl.GetCard(i)
-		}
-		if rank > bestRank {
-			bestRank = rank
-			bestCards = cards
-			winners = []int{idx}
-		} else if rank == bestRank {
-			cmp := compareHighCardsSlice(cards, bestCards)
-			if cmp > 0 {
-				bestCards = cards
-				winners = []int{idx}
-			} else if cmp == 0 {
-				winners = append(winners, idx)
-			}
-		}
-	}
-
-	return winners
 }
 
 // runCpuActions CPUプレイヤーのアクションを実行
@@ -957,32 +706,17 @@ func (p *Poker) cpuDecideSecondBet(idx int, params pokerCpuStyleParams, callAmou
 
 // cpuFoldOrCheck コール額がある場合はフォールド、なければチェック
 func (p *Poker) cpuFoldOrCheck(callAmount int) (int, int) {
-	if callAmount > 0 {
-		return PokerActionFold, 0
-	}
-	return PokerActionCheck, 0
+	return CpuFoldOrCheck(callAmount)
 }
 
 // cpuCallOrCheck コール額がある場合はコール、なければチェック
 func (p *Poker) cpuCallOrCheck(callAmount int) (int, int) {
-	if callAmount > 0 {
-		return PokerActionCall, 0
-	}
-	return PokerActionCheck, 0
+	return CpuCallOrCheck(callAmount)
 }
 
 // cpuRaiseOrBet レイズまたはベット (チップ不足時はオールイン)
 func (p *Poker) cpuRaiseOrBet(pl *PokerPlayer, callAmount, raiseAmt int) (int, int) {
-	if raiseAmt > pl.GetChips() {
-		return PokerActionAllIn, 0
-	}
-	if callAmount > 0 {
-		if raiseAmt+callAmount > pl.GetChips() {
-			return PokerActionAllIn, 0
-		}
-		return PokerActionRaise, raiseAmt
-	}
-	return PokerActionBet, raiseAmt
+	return CpuRaiseOrBet(pl.GetChips(), callAmount, raiseAmt)
 }
 
 // cpuDecideExchange CPUカード交換AI
