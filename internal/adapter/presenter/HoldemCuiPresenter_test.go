@@ -309,4 +309,57 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "オールイン")
 		assert.Contains(t, result, "不明")
 	})
+
+	t.Run("HUD stats shown when totalHands > 0", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementTotalHands()
+		players[0].IncrementVPIP()
+		players[1].IncrementTotalHands()
+		players[1].IncrementTotalHands()
+		players[1].IncrementTotalHands()
+		players[1].IncrementVPIP()
+		players[1].IncrementVPIP()
+		players[1].IncrementPFR()
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "VPIP:50% PFR:0%")
+		assert.Contains(t, result, "VPIP:66% PFR:33%")
+	})
+
+	t.Run("HUD stats not shown when totalHands is 0", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "VPIP:")
+		assert.NotContains(t, result, "PFR:")
+	})
+
+	t.Run("tournament mode header shown when enabled", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		cfg := domain.HoldemConfig{
+			SmallBlind:      10,
+			BigBlind:        20,
+			InitChips:       1000,
+			TournamentMode:  true,
+			BlindLevelHands: 5,
+			BlindMultiplier: 200,
+		}
+		h.SetConfig(cfg)
+		h.SetHandCount(3)
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "トーナメント ハンド#3 SB:10 BB:20 (レベルアップ:5ハンド毎)")
+	})
+
+	t.Run("tournament mode header not shown when disabled", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "トーナメント")
+	})
 }

@@ -178,6 +178,219 @@ func TestSevens_setCurrentTurn(t *testing.T) {
 	assert.Equal(t, 2, s.currentTurn)
 }
 
+func TestSevens_hasOnlyJokers(t *testing.T) {
+	tc := NewTrumpCards(1)
+	players := makeSevensPlayersInternal()
+	cfg := SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: SevensMaxPasses}
+	s := NewSevens(tc, players, cfg)
+
+	t.Run("empty hand returns false", func(t *testing.T) {
+		assert.False(t, s.hasOnlyJokers(players[0]))
+	})
+
+	t.Run("only joker returns true", func(t *testing.T) {
+		players[0].AddCard(NewCard(CardDesignJoker, 0, false))
+		assert.True(t, s.hasOnlyJokers(players[0]))
+		players[0].RemoveCard(0)
+	})
+
+	t.Run("joker + normal card returns false", func(t *testing.T) {
+		players[0].AddCard(NewCard(CardDesignJoker, 0, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+		assert.False(t, s.hasOnlyJokers(players[0]))
+		players[0].RemoveCard(0)
+		players[0].RemoveCard(0)
+	})
+
+	t.Run("only normal cards returns false", func(t *testing.T) {
+		players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+		assert.False(t, s.hasOnlyJokers(players[0]))
+		players[0].RemoveCard(0)
+	})
+}
+
+func TestSevens_isJokerBlockedByFinishRule(t *testing.T) {
+	t.Run("blocked when NoJokerFinish and only jokers", func(t *testing.T) {
+		tc := NewTrumpCards(1)
+		players := makeSevensPlayersInternal()
+		cfg := SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: SevensMaxPasses}
+		s := NewSevens(tc, players, cfg)
+		players[0].AddCard(NewCard(CardDesignJoker, 0, false))
+		assert.True(t, s.isJokerBlockedByFinishRule(players[0]))
+	})
+
+	t.Run("not blocked when NoJokerFinish off", func(t *testing.T) {
+		tc := NewTrumpCards(1)
+		players := makeSevensPlayersInternal()
+		cfg := SevensConfig{JokerCount: 1, NoJokerFinish: false, MaxPasses: SevensMaxPasses}
+		s := NewSevens(tc, players, cfg)
+		players[0].AddCard(NewCard(CardDesignJoker, 0, false))
+		assert.False(t, s.isJokerBlockedByFinishRule(players[0]))
+	})
+
+	t.Run("not blocked when mixed cards", func(t *testing.T) {
+		tc := NewTrumpCards(1)
+		players := makeSevensPlayersInternal()
+		cfg := SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: SevensMaxPasses}
+		s := NewSevens(tc, players, cfg)
+		players[0].AddCard(NewCard(CardDesignJoker, 0, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+		assert.False(t, s.isJokerBlockedByFinishRule(players[0]))
+	})
+}
+
+func TestSevens_passUrgencyWeight(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := makeSevensPlayersInternal()
+	cfg := DefaultSevensConfig()
+	s := NewSevens(tc, players, cfg)
+
+	t.Run("unlimited passes returns weight 1", func(t *testing.T) {
+		players[0].SetMaxPasses(0) // unlimited
+		assert.Equal(t, 1, s.passUrgencyWeight(players[0]))
+		players[0].SetMaxPasses(SevensMaxPasses) // restore
+	})
+
+	t.Run("1 pass remaining returns weight 3", func(t *testing.T) {
+		players[0].SetMaxPasses(3)
+		players[0].ResetPasses()
+		players[0].IncrPassesUsed()
+		players[0].IncrPassesUsed() // used 2/3 -> 1 remaining
+		assert.Equal(t, 3, s.passUrgencyWeight(players[0]))
+	})
+
+	t.Run("0 passes remaining returns weight 3", func(t *testing.T) {
+		players[0].SetMaxPasses(3)
+		players[0].ResetPasses()
+		players[0].IncrPassesUsed()
+		players[0].IncrPassesUsed()
+		players[0].IncrPassesUsed() // used 3/3 -> 0 remaining
+		assert.Equal(t, 3, s.passUrgencyWeight(players[0]))
+	})
+
+	t.Run("2 passes remaining returns weight 2", func(t *testing.T) {
+		players[0].SetMaxPasses(3)
+		players[0].ResetPasses()
+		players[0].IncrPassesUsed() // used 1/3 -> 2 remaining
+		assert.Equal(t, 2, s.passUrgencyWeight(players[0]))
+	})
+
+	t.Run("plenty of passes returns weight 1", func(t *testing.T) {
+		players[0].SetMaxPasses(10)
+		players[0].ResetPasses()
+		assert.Equal(t, 1, s.passUrgencyWeight(players[0]))
+	})
+}
+
+func TestSevens_countWeightedOpponentsBlocked(t *testing.T) {
+	t.Run("weighted count higher for low-pass opponents", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := makeSevensPlayersInternal()
+		cfg := SevensConfig{CpuStrategy: true, MaxPasses: 3}
+		s := NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(3)
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+
+		// Opponent (player 2) has 1 pass remaining
+		players[2].IncrPassesUsed()
+		players[2].IncrPassesUsed()
+		players[2].AddCard(NewCard(CardDesignSpade, 5, false))
+
+		// Count weighted blocked for suit spade from value 6 going low
+		count := s.countWeightedOpponentsBlocked(players[1], CardDesignSpade, 6, -1)
+		// Opponent 2 has 5♠, weight = 3 (1 pass remaining)
+		assert.Equal(t, 3, count)
+	})
+
+	t.Run("unweighted count for unlimited-pass opponents", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := makeSevensPlayersInternal()
+		cfg := SevensConfig{CpuStrategy: true, MaxPasses: 0}
+		s := NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(0)
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+
+		players[2].AddCard(NewCard(CardDesignSpade, 5, false))
+
+		count := s.countWeightedOpponentsBlocked(players[1], CardDesignSpade, 6, -1)
+		// Opponent 2 has 5♠, weight = 1 (unlimited passes)
+		assert.Equal(t, 1, count)
+	})
+
+	t.Run("skips finished opponents", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := makeSevensPlayersInternal()
+		cfg := SevensConfig{CpuStrategy: true, MaxPasses: 3}
+		s := NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(3)
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+
+		players[2].AddCard(NewCard(CardDesignSpade, 5, false))
+		players[2].SetIsFinished(true)
+
+		count := s.countWeightedOpponentsBlocked(players[1], CardDesignSpade, 6, -1)
+		assert.Equal(t, 0, count) // finished player skipped
+	})
+
+	t.Run("tunnel wrapping in weighted count", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := makeSevensPlayersInternal()
+		cfg := SevensConfig{TunnelEnabled: true, CpuStrategy: true, MaxPasses: 3}
+		s := NewSevens(tc, players, cfg)
+
+		// Build board: place spade 2-7
+		var placed [5]uint16
+		for i := 1; i <= 4; i++ {
+			placed[i] = 1 << 7
+		}
+		placed[CardDesignSpade] |= (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6)
+		s.tablePlaced = placed
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(3)
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+
+		// Opponent has King (13) of spades - reachable via tunnel from Ace going low
+		players[2].IncrPassesUsed()
+		players[2].IncrPassesUsed() // 1 pass remaining
+		players[2].AddCard(NewCard(CardDesignSpade, 13, false))
+
+		// Count from value 1 going low (-1) should tunnel wrap to 13
+		count := s.countWeightedOpponentsBlocked(players[1], CardDesignSpade, 1, -1)
+		assert.Equal(t, 3, count) // weight 3 for near-eliminated opponent
+	})
+
+	t.Run("tunnel full loop returns to fromValue", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := makeSevensPlayersInternal()
+		cfg := SevensConfig{TunnelEnabled: true, CpuStrategy: true, MaxPasses: 3}
+		s := NewSevens(tc, players, cfg)
+
+		// Board: nothing placed for spade (clear even 7)
+		var placed [5]uint16
+		s.tablePlaced = placed
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(3)
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+
+		// No opponent has any spade card → scan wraps all the way around to fromValue
+		count := s.countWeightedOpponentsBlocked(players[0], CardDesignSpade, 6, -1)
+		assert.Equal(t, 0, count)
+	})
+}
+
 func TestSevens_setTablePlaced(t *testing.T) {
 	tc := NewTrumpCards(0)
 	players := makeSevensPlayersInternal()

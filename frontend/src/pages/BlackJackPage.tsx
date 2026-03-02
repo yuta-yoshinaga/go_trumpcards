@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -15,8 +16,10 @@ const BJ_SUGGEST_DOUBLE = 3;
 const BJ_SUGGEST_SPLIT = 4;
 const BJ_SUGGEST_SURRENDER = 5;
 const BJ_SUGGEST_DECLINE_INSURANCE = 6;
+const BJ_SUGGEST_DOUBLE_STAND = 7;
 
 const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
+const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
 
 const SUGGESTION_LABELS: Record<number, string> = {
   [BJ_SUGGEST_HIT]: 'ヒット',
@@ -25,6 +28,7 @@ const SUGGESTION_LABELS: Record<number, string> = {
   [BJ_SUGGEST_SPLIT]: 'スプリット',
   [BJ_SUGGEST_SURRENDER]: 'サレンダー',
   [BJ_SUGGEST_DECLINE_INSURANCE]: '辞退',
+  [BJ_SUGGEST_DOUBLE_STAND]: 'ダブルダウン',
 };
 
 function highlightClass(base: string, isHighlighted: boolean): string {
@@ -34,9 +38,15 @@ function highlightClass(base: string, isHighlighted: boolean): string {
 export function BlackJackPage() {
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
+  const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
+  const [countingEnabled, setCountingEnabled] = useState(false);
+  const [cpuPlayerCount, setCpuPlayerCount] = useState(0);
 
   const onSuccess = useCallback((res: BlackJackResponse) => {
     setMessage(res.message);
+    setDealerHitsSoft17(res.dealerHitsSoft17);
+    setCountingEnabled(res.countingEnabled);
+    setCpuPlayerCount(res.cpuPlayerCount);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
@@ -51,24 +61,39 @@ export function BlackJackPage() {
   const playerChips = state?.player?.chips ?? 0;
   const hintEnabled = state?.hintEnabled ?? false;
   const suggestedAction = state?.suggestedAction ?? BJ_SUGGEST_NONE;
+  const cpuPlayers = state?.cpuPlayers ?? [];
+
+  const handleReset = useCallback(() => {
+    const config: BlackJackConfigInput = {
+      dealerHitsSoft17,
+      cpuPlayerCount,
+      countingEnabled,
+    };
+    exec('reset', undefined, config);
+  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
       {loading && <span className="sr-only">処理中...</span>}
       {/* Chip info bar */}
       {state && (
-        <div className="shrink-0 bg-black/40 text-white text-sm px-4 py-1.5 flex justify-between">
+        <div className="shrink-0 bg-black/40 text-white text-sm px-4 py-1.5 flex justify-between flex-wrap gap-1">
           <span>プレイヤー: {state.player.chips} chips</span>
           <span>デッキ: {state.deckCount}デッキ</span>
+          {countingEnabled && (
+            <span>
+              RC={state.runningCount} TC={state.trueCount.toFixed(1)}
+            </span>
+          )}
           <span>ディーラー: {state.dealer.chips} chips</span>
         </div>
       )}
 
-      {/* Scrollable: dealer area */}
+      {/* Scrollable: dealer area + CPU players */}
       <div className="flex-1 overflow-y-auto p-4">
         {state && phase !== BjPhase.BET && (
           <div>
-            <h3 className="text-white">ディーラー手札</h3>
+            <h3 className="text-white">ディーラー手札{dealerHitsSoft17 ? ' (H17)' : ' (S17)'}</h3>
             <h3 className="text-white">スコア {state.dealer.score ? state.dealer.score : ''}</h3>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card) => (
@@ -76,6 +101,42 @@ export function BlackJackPage() {
               ))}
               {!state.dealer.score && <CardBack width={60} />}
             </div>
+          </div>
+        )}
+
+        {/* CPU players */}
+        {state && phase !== BjPhase.BET && cpuPlayers.length > 0 && (
+          <div className="mt-4">
+            {cpuPlayers.map((cpu, cpuIdx) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: CPU seats have fixed order
+              <div key={cpuIdx} className="mb-3">
+                <h3 className="text-yellow-200 mt-0 mb-1">
+                  CPU {cpuIdx + 1} ({cpu.chips} chips)
+                </h3>
+                {cpu.hands.map((hand, handIdx) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: CPU hands have fixed order
+                  <div key={handIdx} className="mb-1">
+                    <div className="text-yellow-100 text-sm">
+                      {cpu.hands.length > 1 ? `ハンド ${handIdx + 1} ` : ''}
+                      スコア {hand.score} / ベット {hand.bet}
+                      {hand.busted && ' [BUST]'}
+                      {hand.doubled && ' [DD]'}
+                      {hand.isBlackJack && ' [BJ]'}
+                      {hand.surrendered && ' [SUR]'}
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {hand.cards.map((card) => (
+                        <CardImage
+                          key={`cpu${cpuIdx}-${card.design}-${card.value}-${handIdx}`}
+                          card={card}
+                          width={50}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -171,6 +232,24 @@ export function BlackJackPage() {
                 </select>
               </div>
               <div className="flex items-center justify-center gap-2 mb-2">
+                <label htmlFor="bj-cpu-count" className="text-white text-sm">
+                  CPU人数:
+                </label>
+                <select
+                  id="bj-cpu-count"
+                  value={cpuPlayerCount}
+                  onChange={(e) => setCpuPlayerCount(Number(e.target.value))}
+                  className="px-2 py-1 rounded text-sm"
+                  disabled={loading}
+                >
+                  {VALID_CPU_COUNTS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}人
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
                 <button
                   type="button"
                   className={hintEnabled ? btnSuccess : btnWarning}
@@ -178,6 +257,22 @@ export function BlackJackPage() {
                   onClick={() => exec('togglehint')}
                 >
                   ヒント {hintEnabled ? 'ON' : 'OFF'}
+                </button>
+                <button
+                  type="button"
+                  className={dealerHitsSoft17 ? btnSuccess : btnWarning}
+                  disabled={loading}
+                  onClick={() => exec('togglesoft17')}
+                >
+                  {dealerHitsSoft17 ? 'H17' : 'S17'}
+                </button>
+                <button
+                  type="button"
+                  className={countingEnabled ? btnSuccess : btnWarning}
+                  disabled={loading}
+                  onClick={() => exec('togglecounting')}
+                >
+                  カウント {countingEnabled ? 'ON' : 'OFF'}
                 </button>
               </div>
               <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('bet', betAmount)}>
@@ -223,7 +318,11 @@ export function BlackJackPage() {
               {currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet && (
                 <button
                   type="button"
-                  className={highlightClass(btnWarning, suggestedAction === BJ_SUGGEST_DOUBLE && hintEnabled)}
+                  className={highlightClass(
+                    btnWarning,
+                    (suggestedAction === BJ_SUGGEST_DOUBLE || suggestedAction === BJ_SUGGEST_DOUBLE_STAND) &&
+                      hintEnabled,
+                  )}
                   disabled={loading}
                   onClick={() => exec('doubledown')}
                 >
@@ -254,7 +353,7 @@ export function BlackJackPage() {
           )}
 
           {phase === BjPhase.END && (
-            <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('reset')}>
+            <button type="button" className={btnPrimary} disabled={loading} onClick={handleReset}>
               リセット
             </button>
           )}

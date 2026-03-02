@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,6 +18,7 @@ func TestDaifugoCuiController_Exec(t *testing.T) {
 		m := new(mockUsecases.MockDaifugoInteractor)
 		m.On("Reset").Return(mockOutput)
 		m.On("Play", mock.Anything).Return(mockOutput)
+		m.On("Sort", mock.Anything).Return(mockOutput)
 		return m
 	}
 
@@ -88,5 +90,39 @@ func TestDaifugoCuiController_Exec(t *testing.T) {
 		c := controller.NewDaifugoCuiController(newMock())
 		result := c.Exec("")
 		assert.Contains(t, result, "コマンドが不明です")
+	})
+
+	t.Run("sort command default mode", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDaifugoCuiController(m)
+		result := c.Exec("sort")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Sort", mock.MatchedBy(func(mode interface{}) bool {
+			return mode == domain.DaifugoSortByStrength
+		}))
+	})
+
+	t.Run("sort command with mode argument", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDaifugoCuiController(m)
+		result := c.Exec("sort 1")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Sort", domain.DaifugoSortBySuit)
+	})
+
+	t.Run("sort command with invalid mode argument uses default", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDaifugoCuiController(m)
+		result := c.Exec("sort abc")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Sort", domain.DaifugoSortByStrength)
+	})
+
+	t.Run("play command ignores non-numeric index", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDaifugoCuiController(m)
+		result := c.Exec("p 0 abc 2")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Play", []int{0, 2})
 	})
 }

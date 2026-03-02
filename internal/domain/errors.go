@@ -24,6 +24,8 @@ var (
 	ErrCannotPass = errors.New("cannot pass")
 	// ErrHandFinished indicates the hand has already been resolved.
 	ErrHandFinished = errors.New("hand already finished")
+	// ErrInvalidIndices indicates the provided index permutation is invalid.
+	ErrInvalidIndices = errors.New("invalid indices")
 )
 
 // DomainError wraps a sentinel error with a user-facing message.

@@ -16,7 +16,7 @@ func TestSevensCuiController_Exec(t *testing.T) {
 	newMock := func() *mockUsecases.MockSevensInteractor {
 		m := new(mockUsecases.MockSevensInteractor)
 		m.On("Reset").Return(mockOutput)
-		m.On("ResetWithConfig", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
+		m.On("ResetWithConfig", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("Play", mock.Anything).Return(mockOutput)
 		m.On("PlayJoker", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		return m
@@ -110,56 +110,65 @@ func TestSevensCuiController_Exec(t *testing.T) {
 
 	t.Run("reset with tunnel flag", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", true, 0, false, 5).Return(mockOutput)
+		m.On("ResetWithConfig", true, 0, false, 5, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r tunnel")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", true, 0, false, 5)
+		m.AssertCalled(t, "ResetWithConfig", true, 0, false, 5, false)
 	})
 
 	t.Run("reset with joker=2 flag", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", false, 2, false, 5).Return(mockOutput)
+		m.On("ResetWithConfig", false, 2, false, 5, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r joker=2")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", false, 2, false, 5)
+		m.AssertCalled(t, "ResetWithConfig", false, 2, false, 5, false)
 	})
 
 	t.Run("reset with all flags", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", true, 1, true, 5).Return(mockOutput)
+		m.On("ResetWithConfig", true, 1, true, 5, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r tunnel joker=1 strategy")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", true, 1, true, 5)
+		m.AssertCalled(t, "ResetWithConfig", true, 1, true, 5, false)
 	})
 
 	t.Run("reset with passes=3 flag", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", false, 0, false, 3).Return(mockOutput)
+		m.On("ResetWithConfig", false, 0, false, 3, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r passes=3")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", false, 0, false, 3)
+		m.AssertCalled(t, "ResetWithConfig", false, 0, false, 3, false)
 	})
 
 	t.Run("reset with passes=0 flag (unlimited)", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", false, 0, false, 0).Return(mockOutput)
+		m.On("ResetWithConfig", false, 0, false, 0, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r passes=0")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", false, 0, false, 0)
+		m.AssertCalled(t, "ResetWithConfig", false, 0, false, 0, false)
 	})
 
 	t.Run("reset with tunnel passes=10 strategy", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", true, 0, true, 10).Return(mockOutput)
+		m.On("ResetWithConfig", true, 0, true, 10, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r tunnel passes=10 strategy")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", true, 0, true, 10)
+		m.AssertCalled(t, "ResetWithConfig", true, 0, true, 10, false)
+	})
+
+	t.Run("reset with nojokerfinish flag", func(t *testing.T) {
+		m := newMock()
+		m.On("ResetWithConfig", false, 0, false, 5, true).Return(mockOutput)
+		c := controller.NewSevensCuiController(m)
+		result := c.Exec("r nojokerfinish")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetWithConfig", false, 0, false, 5, true)
 	})
 
 	t.Run("plain r still calls Reset", func(t *testing.T) {

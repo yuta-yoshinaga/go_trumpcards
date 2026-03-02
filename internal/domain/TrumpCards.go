@@ -75,6 +75,16 @@ func (t *TrumpCards) Shuffle() {
 	t.deckInit()
 }
 
+// GetRemainingCount 山札の残り枚数
+func (t *TrumpCards) GetRemainingCount() int {
+	return t.deckCnt - t.deckDrawCnt
+}
+
+// GetTotalCount 山札の総枚数
+func (t *TrumpCards) GetTotalCount() int {
+	return t.deckCnt
+}
+
 // DrawCard 山札配る
 func (t *TrumpCards) DrawCard() *Card {
 	var res *Card = nil

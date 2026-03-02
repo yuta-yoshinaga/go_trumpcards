@@ -21,3 +21,15 @@ func (_m *MockOldMaidInteractor) Draw(cardIdx int) string {
 	ret := _m.Called(cardIdx)
 	return ret.Get(0).(string)
 }
+
+// Shuffle モック
+func (_m *MockOldMaidInteractor) Shuffle() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// Reorder モック
+func (_m *MockOldMaidInteractor) Reorder(indices []int) string {
+	ret := _m.Called(indices)
+	return ret.Get(0).(string)
+}

@@ -198,6 +198,85 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with togglesoft17 command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          dealerHitsSoft17: true,
+        }),
+      );
+      await blackjackApi.exec('togglesoft17');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'togglesoft17', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with togglecounting command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          countingEnabled: true,
+        }),
+      );
+      await blackjackApi.exec('togglecounting');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'togglecounting', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reset command and config', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          dealerHitsSoft17: true,
+          cpuPlayerCount: 2,
+          countingEnabled: true,
+        }),
+      );
+      await blackjackApi.exec('reset', undefined, {
+        dealerHitsSoft17: true,
+        cpuPlayerCount: 2,
+        countingEnabled: true,
+      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            dealerHitsSoft17: true,
+            cpuPlayerCount: 2,
+            countingEnabled: true,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(blackjackApi.exec('reset')).rejects.toThrow('HTTP error: 500');
@@ -409,6 +488,56 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with shuffle command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          nextDrawTargetIdx: 1,
+          gameEndFlag: false,
+          hasDrawn: false,
+          lastDrawPlayerIdx: 0,
+          lastDrawFromIdx: 0,
+          lastDrawCard: null,
+          lastDiscardedPairs: 0,
+          cpuActions: [],
+          message: '',
+        }),
+      );
+      await oldmaidApi.exec('shuffle');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/oldmaid/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'shuffle', sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reorder command and reorderIndices', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          nextDrawTargetIdx: 1,
+          gameEndFlag: false,
+          hasDrawn: false,
+          lastDrawPlayerIdx: 0,
+          lastDrawFromIdx: 0,
+          lastDrawCard: null,
+          lastDiscardedPairs: 0,
+          cpuActions: [],
+          message: '',
+        }),
+      );
+      await oldmaidApi.exec('reorder', undefined, undefined, undefined, [2, 0, 1]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/oldmaid/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'reorder', reorderIndices: [2, 0, 1], sessionId }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 404));
       await expect(oldmaidApi.exec('reset')).rejects.toThrow('HTTP error: 404');
@@ -434,7 +563,13 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', indices: undefined, sessionId }),
+        body: JSON.stringify({
+          command: 'reset',
+          indices: undefined,
+          config: undefined,
+          sortMode: undefined,
+          sessionId,
+        }),
       });
       expect(result).toEqual(payload);
     });
@@ -456,7 +591,7 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         '/daifugo/exec',
         expect.objectContaining({
-          body: JSON.stringify({ command: 'play', indices: [0], sessionId }),
+          body: JSON.stringify({ command: 'play', indices: [0], config: undefined, sortMode: undefined, sessionId }),
         }),
       );
     });
@@ -478,7 +613,29 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith(
         '/daifugo/exec',
         expect.objectContaining({
-          body: JSON.stringify({ command: 'play', indices: [], sessionId }),
+          body: JSON.stringify({ command: 'play', indices: [], config: undefined, sortMode: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with sort command and sortMode', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableCards: [],
+          lastPlayPlayerIdx: -1,
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await daifugoApi.exec('sort', undefined, undefined, 1);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/daifugo/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'sort', indices: undefined, config: undefined, sortMode: 1, sessionId }),
         }),
       );
     });
@@ -617,7 +774,7 @@ describe('gameApi', () => {
         tableMinVals: [0, 7, 7, 7, 7],
         tableMaxVals: [0, 7, 7, 7, 7],
         tablePlaced: [0, 128, 128, 128, 128],
-        config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 },
+        config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
         gameEndFlag: false,
         cpuActions: [],
         humanAction: null,
@@ -643,7 +800,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 6, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 192, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 }, targetSuit: 0, targetValue: 0 },
@@ -667,7 +824,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0 },
@@ -691,7 +848,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 6, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 192, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 1, cpuStrategy: false, maxPasses: 5 },
+          config: { tunnelEnabled: false, jokerCount: 1, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: {
@@ -725,14 +882,19 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5 },
+          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5, noJokerFinish: true },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: null,
           message: '',
         }),
       );
-      await sevensApi.exec('reset', -1, 0, 0, { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true });
+      await sevensApi.exec('reset', -1, 0, 0, {
+        tunnelEnabled: true,
+        jokerCount: 2,
+        cpuStrategy: true,
+        noJokerFinish: true,
+      });
       expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -745,6 +907,7 @@ describe('gameApi', () => {
           tunnelEnabled: true,
           jokerCount: 2,
           cpuStrategy: true,
+          noJokerFinish: true,
         }),
       });
     });
@@ -757,7 +920,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3 },
+          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: null,
@@ -790,7 +953,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5 },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: null,
@@ -821,6 +984,12 @@ describe('gameApi', () => {
       roundResults: [],
       cpuActions: [],
       message: '',
+      handCount: 0,
+      smallBlind: 5,
+      bigBlind: 10,
+      tournamentMode: false,
+      blindLevelHands: 10,
+      blindMultiplier: 200,
     };
 
     it('calls the correct URL with reset command', async () => {
@@ -833,8 +1002,6 @@ describe('gameApi', () => {
           command: 'reset',
           amount: undefined,
           sessionId,
-          smallBlind: undefined,
-          bigBlind: undefined,
         }),
       });
       expect(result).toEqual(payload);
@@ -850,8 +1017,6 @@ describe('gameApi', () => {
             command: 'fold',
             amount: undefined,
             sessionId,
-            smallBlind: undefined,
-            bigBlind: undefined,
           }),
         }),
       );
@@ -867,8 +1032,6 @@ describe('gameApi', () => {
             command: 'bet',
             amount: 50,
             sessionId,
-            smallBlind: undefined,
-            bigBlind: undefined,
           }),
         }),
       );
@@ -876,7 +1039,7 @@ describe('gameApi', () => {
 
     it('calls with reset and custom blinds', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
-      await holdemApi.exec('reset', undefined, 10, 20);
+      await holdemApi.exec('reset', undefined, { smallBlind: 10, bigBlind: 20 });
       expect(mockFetch).toHaveBeenCalledWith(
         '/holdem/exec',
         expect.objectContaining({
@@ -886,6 +1049,28 @@ describe('gameApi', () => {
             sessionId,
             smallBlind: 10,
             bigBlind: 20,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and tournament config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('reset', undefined, {
+        tournamentMode: true,
+        blindLevelHands: 5,
+        blindMultiplier: 200,
+      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            tournamentMode: true,
+            blindLevelHands: 5,
+            blindMultiplier: 200,
           }),
         }),
       );

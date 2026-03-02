@@ -369,6 +369,72 @@ func TestHoldemWebController_Reset_InvalidBlinds(t *testing.T) {
 	recorded.CodeIs(200)
 }
 
+func TestHoldemWebController_Reset_TournamentMode(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	tm := true
+	blh := 5
+	blm := 200
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TournamentMode = true
+	cfg.BlindLevelHands = 5
+	cfg.BlindMultiplier = 200
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":         "reset",
+				"sessionId":       "s-tm",
+				"tournamentMode":  tm,
+				"blindLevelHands": blh,
+				"blindMultiplier": blm,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_TournamentMode_InvalidValues(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	// blindLevelHands=0 and blindMultiplier=100 should be ignored (below threshold)
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TournamentMode = true
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":         "reset",
+				"sessionId":       "s-tm-inv",
+				"tournamentMode":  true,
+				"blindLevelHands": 0,
+				"blindMultiplier": 100,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_TournamentMode_Nil(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	// No tournament params → default config
+	cfg := domain.DefaultHoldemConfig()
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s-tm-nil",
+			}))
+	recorded.CodeIs(200)
+}
+
 func TestHoldemWebController_Stop(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	c := NewHoldemWebController(func() usecase.HoldemInteractorIF {

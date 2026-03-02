@@ -24,6 +24,13 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	b.WriteString("Texas Hold'em\n")
 	b.WriteString("==========\n")
 
+	// トーナメントモードヘッダー
+	cfg := h.GetConfig()
+	if cfg.TournamentMode {
+		fmt.Fprintf(&b, "トーナメント ハンド#%d SB:%d BB:%d (レベルアップ:%dハンド毎)\n",
+			h.GetHandCount(), cfg.SmallBlind, cfg.BigBlind, cfg.BlindLevelHands)
+	}
+
 	// ディーラー位置
 	fmt.Fprintf(&b, "ディーラー: Player %d\n", h.GetDealerIdx())
 
@@ -56,6 +63,10 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		}
 
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
+
+		if player.GetTotalHands() > 0 {
+			fmt.Fprintf(&b, " VPIP:%d%% PFR:%d%%", player.GetVPIP(), player.GetPFR())
+		}
 
 		if player.GetFolded() {
 			b.WriteString(" [フォールド]")

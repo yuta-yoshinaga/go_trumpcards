@@ -39,6 +39,8 @@ func (c *OldMaidCuiController) Exec(command string) string {
 			}
 		}
 		return c.omi.Draw(cardIdx)
+	case "s", "shuffle":
+		return c.omi.Shuffle()
 	default:
 		return "コマンドが不明です: " + command
 	}

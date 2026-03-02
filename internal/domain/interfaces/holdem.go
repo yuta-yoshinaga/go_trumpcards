@@ -24,4 +24,5 @@ type HoldemGame interface {
 	SetConfig(cfg domain.HoldemConfig)
 	IsHumanTurn() bool
 	GetActedFlags() []bool
+	GetHandCount() int
 }

@@ -5,21 +5,27 @@ import (
 	"sort"
 )
 
+// cardMemoryEntry 記憶したカード1枚分の情報
+type cardMemoryEntry struct {
+	value    int // カードの値 (1-13)
+	turnSeen int // 記憶したターン番号
+}
+
 // DoubtPlayer ダウトプレイヤークラス
 type DoubtPlayer struct {
 	Player
-	isHuman    bool
-	isFinished bool
-	cardMemory map[int]int // value (1-13) → 見えたカードの枚数
+	isHuman      bool
+	isFinished   bool
+	cardMemories []cardMemoryEntry // 記憶したカードのリスト
 }
 
 // NewDoubtPlayer コンストラクタ
 func NewDoubtPlayer(isHuman bool) *DoubtPlayer {
 	return &DoubtPlayer{
-		Player:     Player{cards: make([]*Card, 0)},
-		isHuman:    isHuman,
-		isFinished: false,
-		cardMemory: make(map[int]int),
+		Player:       Player{cards: make([]*Card, 0)},
+		isHuman:      isHuman,
+		isFinished:   false,
+		cardMemories: nil,
 	}
 }
 
@@ -34,25 +40,45 @@ func (p *DoubtPlayer) SetIsFinished(v bool) { p.isFinished = v }
 
 // ResetMemory カード記憶をリセットする
 func (p *DoubtPlayer) ResetMemory() {
-	p.cardMemory = make(map[int]int)
+	p.cardMemories = nil
 }
 
 // RecordRevealedCard 公開されたカードを記憶する (retentionChance の確率で記録)
-func (p *DoubtPlayer) RecordRevealedCard(value int, retentionChance float64) {
+func (p *DoubtPlayer) RecordRevealedCard(value int, retentionChance float64, turnNumber int) {
 	if rand.Float64() < retentionChance {
-		p.cardMemory[value]++
+		p.cardMemories = append(p.cardMemories, cardMemoryEntry{value: value, turnSeen: turnNumber})
 	}
 }
 
 // CountKnownCards 指定した値のカードを何枚知っているか返す (記憶 + 手札)
 func (p *DoubtPlayer) CountKnownCards(value int) int {
-	count := p.cardMemory[value]
+	count := 0
+	for _, entry := range p.cardMemories {
+		if entry.value == value {
+			count++
+		}
+	}
 	for _, card := range p.cards {
 		if card.GetValue() == value {
 			count++
 		}
 	}
 	return count
+}
+
+// DecayMemories 古い記憶を確率的に忘却する
+// 忘却確率 = decayRate * (currentTurn - turnSeen)
+func (p *DoubtPlayer) DecayMemories(currentTurn int, decayRate float64) {
+	kept := p.cardMemories[:0]
+	for _, entry := range p.cardMemories {
+		age := currentTurn - entry.turnSeen
+		forgetProb := decayRate * float64(age)
+		if forgetProb >= 1.0 || rand.Float64() < forgetProb {
+			continue // 忘却
+		}
+		kept = append(kept, entry)
+	}
+	p.cardMemories = kept
 }
 
 // RemoveCards 指定インデックスのカードを手札から取り除いて返す

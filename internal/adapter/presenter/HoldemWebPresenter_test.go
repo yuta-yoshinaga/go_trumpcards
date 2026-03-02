@@ -384,6 +384,8 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
 		gameMock.On("GetRoundResults").Return([]domain.HoldemResult{})
 		gameMock.On("GetPlayerCnt").Return(1)
+		gameMock.On("GetConfig").Return(domain.DefaultHoldemConfig())
+		gameMock.On("GetHandCount").Return(0)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(99) // out of range
@@ -410,6 +412,8 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
 		gameMock.On("GetRoundResults").Return([]domain.HoldemResult{})
 		gameMock.On("GetPlayerCnt").Return(1)
+		gameMock.On("GetConfig").Return(domain.DefaultHoldemConfig())
+		gameMock.On("GetHandCount").Return(0)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(-1) // negative
@@ -431,5 +435,77 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.NotEmpty(t, out.Players[1].PlayStyleName)
+	})
+
+	t.Run("HUD stats included in output", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementTotalHands()
+		players[0].IncrementVPIP()
+		players[0].IncrementPFR()
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 2, out.Players[0].TotalHands)
+		assert.Equal(t, 50, out.Players[0].VPIP)
+		assert.Equal(t, 50, out.Players[0].PFR)
+	})
+
+	t.Run("HUD stats zero when no hands played", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 0, out.Players[0].TotalHands)
+		assert.Equal(t, 0, out.Players[0].VPIP)
+		assert.Equal(t, 0, out.Players[0].PFR)
+	})
+
+	t.Run("tournament mode fields included in output", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		cfg := domain.HoldemConfig{
+			SmallBlind:      10,
+			BigBlind:        20,
+			InitChips:       1000,
+			TournamentMode:  true,
+			BlindLevelHands: 5,
+			BlindMultiplier: 200,
+		}
+		h.SetConfig(cfg)
+		h.SetHandCount(3)
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 3, out.HandCount)
+		assert.Equal(t, 10, out.SmallBlind)
+		assert.Equal(t, 20, out.BigBlind)
+		assert.True(t, out.TournamentMode)
+		assert.Equal(t, 5, out.BlindLevelHands)
+		assert.Equal(t, 200, out.BlindMultiplier)
+	})
+
+	t.Run("tournament mode fields default when not enabled", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 0, out.HandCount)
+		assert.Equal(t, 5, out.SmallBlind)
+		assert.Equal(t, 10, out.BigBlind)
+		assert.False(t, out.TournamentMode)
+		assert.Equal(t, 10, out.BlindLevelHands)
+		assert.Equal(t, 200, out.BlindMultiplier)
 	})
 }

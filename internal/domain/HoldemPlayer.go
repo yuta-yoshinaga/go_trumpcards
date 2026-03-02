@@ -13,6 +13,9 @@ type HoldemPlayer struct {
 	allIn      bool            // オールイン済
 	currentBet int             // 現ラウンドベット額
 	playStyle  HoldemPlayStyle // CPUプレイスタイル
+	totalHands int             // 総ハンド数 (セッション通算)
+	vpipCount  int             // VPIP対象ハンド数
+	pfrCount   int             // PFR対象ハンド数
 }
 
 // NewHoldemPlayer コンストラクタ
@@ -79,6 +82,40 @@ func (hp *HoldemPlayer) GetPlayStyleName() string {
 	}
 	return "Unknown"
 }
+
+// GetTotalHands 総ハンド数取得
+func (hp *HoldemPlayer) GetTotalHands() int { return hp.totalHands }
+
+// GetVPIPCount VPIP対象ハンド数取得
+func (hp *HoldemPlayer) GetVPIPCount() int { return hp.vpipCount }
+
+// GetPFRCount PFR対象ハンド数取得
+func (hp *HoldemPlayer) GetPFRCount() int { return hp.pfrCount }
+
+// GetVPIP VPIP%取得 (0 if totalHands==0)
+func (hp *HoldemPlayer) GetVPIP() int {
+	if hp.totalHands == 0 {
+		return 0
+	}
+	return hp.vpipCount * 100 / hp.totalHands
+}
+
+// GetPFR PFR%取得 (0 if totalHands==0)
+func (hp *HoldemPlayer) GetPFR() int {
+	if hp.totalHands == 0 {
+		return 0
+	}
+	return hp.pfrCount * 100 / hp.totalHands
+}
+
+// IncrementTotalHands 総ハンド数をインクリメント
+func (hp *HoldemPlayer) IncrementTotalHands() { hp.totalHands++ }
+
+// IncrementVPIP VPIP対象ハンド数をインクリメント
+func (hp *HoldemPlayer) IncrementVPIP() { hp.vpipCount++ }
+
+// IncrementPFR PFR対象ハンド数をインクリメント
+func (hp *HoldemPlayer) IncrementPFR() { hp.pfrCount++ }
 
 // SetHandRank ハンドランク設定（テスト用）
 func (hp *HoldemPlayer) SetHandRank(rank int) { hp.handRank = rank }

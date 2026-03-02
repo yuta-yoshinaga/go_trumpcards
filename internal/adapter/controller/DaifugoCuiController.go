@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -38,6 +39,14 @@ func (c *DaifugoCuiController) Exec(command string) string {
 			}
 		}
 		return c.dgi.Play(indices)
+	case "sort":
+		mode := domain.DaifugoSortByStrength
+		if len(fields) > 1 {
+			if m, err := strconv.Atoi(fields[1]); err == nil && m >= int(domain.DaifugoSortByStrength) && m <= int(domain.DaifugoSortByNumber) {
+				mode = domain.DaifugoSortMode(m)
+			}
+		}
+		return c.dgi.Sort(mode)
 	default:
 		return "コマンドが不明です: " + command
 	}

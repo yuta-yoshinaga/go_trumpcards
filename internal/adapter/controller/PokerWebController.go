@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -8,10 +9,12 @@ import (
 
 // PokerWebInput ポーカーWebインプット
 type PokerWebInput struct {
-	Command   string `json:"command"`
-	Indices   []int  `json:"indices,omitempty"`
-	Amount    int    `json:"amount,omitempty"`
-	SessionId string `json:"sessionId"`
+	Command    string `json:"command"`
+	Indices    []int  `json:"indices,omitempty"`
+	Amount     int    `json:"amount,omitempty"`
+	SessionId  string `json:"sessionId"`
+	CpuCount   *int   `json:"cpuCount,omitempty"`
+	JokerCount *int   `json:"jokerCount,omitempty"`
 }
 
 // GetCommand returns the command string.
@@ -22,21 +25,63 @@ func (i PokerWebInput) GetSessionID() string { return i.SessionId }
 
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
 type PokerWebOutputPlayer struct {
-	HandRank int              `json:"handRank"`
-	HandName string           `json:"handName"`
-	Cards    []*WebOutputCard `json:"cards"`
-	Chips    int              `json:"chips"`
-	Bet      int              `json:"bet"`
+	ID            int              `json:"id"`
+	IsHuman       bool             `json:"isHuman"`
+	Cards         []*WebOutputCard `json:"cards"`
+	Chips         int              `json:"chips"`
+	CurrentBet    int              `json:"currentBet"`
+	Folded        bool             `json:"folded"`
+	AllIn         bool             `json:"allIn"`
+	HandRank      int              `json:"handRank"`
+	HandName      string           `json:"handName"`
+	ExchangeCount int              `json:"exchangeCount"`
+	PlayStyleName string           `json:"playStyleName"`
+}
+
+// PokerWebOutputCpuAction ポーカーCPU行動記録
+type PokerWebOutputCpuAction struct {
+	PlayerIdx int `json:"playerIdx"`
+	Action    int `json:"action"`
+	Amount    int `json:"amount"`
+}
+
+// PokerWebOutputCpuExchange ポーカーCPU交換記録
+type PokerWebOutputCpuExchange struct {
+	PlayerIdx     int `json:"playerIdx"`
+	ExchangeCount int `json:"exchangeCount"`
+}
+
+// PokerWebOutputResult ポーカーショーダウン結果
+type PokerWebOutputResult struct {
+	PlayerIdx int    `json:"playerIdx"`
+	HandRank  int    `json:"handRank"`
+	HandName  string `json:"handName"`
+	WonAmount int    `json:"wonAmount"`
+}
+
+// PokerWebOutputSidePot ポーカーサイドポット
+type PokerWebOutputSidePot struct {
+	Amount          int   `json:"amount"`
+	EligiblePlayers []int `json:"eligiblePlayers"`
 }
 
 // PokerWebOutput ポーカーWebアウトプット
 type PokerWebOutput struct {
-	Dealer  *PokerWebOutputPlayer `json:"dealer"`
-	Player  *PokerWebOutputPlayer `json:"player"`
-	Phase   int                   `json:"phase"`
-	Message string                `json:"message"`
-	Pot     int                   `json:"pot"`
-	Ante    int                   `json:"ante"`
+	Players      []*PokerWebOutputPlayer      `json:"players"`
+	Pot          int                          `json:"pot"`
+	SidePots     []*PokerWebOutputSidePot     `json:"sidePots"`
+	DealerIdx    int                          `json:"dealerIdx"`
+	CurrentTurn  int                          `json:"currentTurn"`
+	Phase        int                          `json:"phase"`
+	GameEndFlag  bool                         `json:"gameEndFlag"`
+	LastBet      int                          `json:"lastBet"`
+	MinRaise     int                          `json:"minRaise"`
+	Ante         int                          `json:"ante"`
+	JokerCount   int                          `json:"jokerCount"`
+	RoundResults []*PokerWebOutputResult      `json:"roundResults"`
+	CpuActions   []*PokerWebOutputCpuAction   `json:"cpuActions"`
+	CpuExchanges []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
+	Message      string                       `json:"message"`
 }
 
 // PokerWebController ポーカーWebコントローラークラス
@@ -62,7 +107,26 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		func(w rest.ResponseWriter, pi usecase.PokerInteractorIF, param PokerWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				pwc.writePresenterResponse(w, pi.Reset())
+				cfg := domain.DefaultPokerConfig()
+				if param.CpuCount != nil {
+					cc := *param.CpuCount
+					if cc < 1 {
+						cc = 1
+					} else if cc > 3 {
+						cc = 3
+					}
+					cfg.CpuCount = cc
+				}
+				if param.JokerCount != nil {
+					jc := *param.JokerCount
+					if jc < 0 {
+						jc = 0
+					} else if jc > 2 {
+						jc = 2
+					}
+					cfg.JokerCount = jc
+				}
+				pwc.writePresenterResponse(w, pi.ResetWithConfig(cfg))
 			case "e", "exchange":
 				indices := param.Indices
 				if indices == nil {
@@ -71,16 +135,18 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				pwc.writePresenterResponse(w, pi.Exchange(indices))
 			case "s", "stand":
 				pwc.writePresenterResponse(w, pi.Stand())
-			case "b", "bet":
-				pwc.writePresenterResponse(w, pi.Bet(param.Amount))
-			case "c", "call":
-				pwc.writePresenterResponse(w, pi.Call())
-			case "ra", "raise":
-				pwc.writePresenterResponse(w, pi.Raise(param.Amount))
 			case "f", "fold":
-				pwc.writePresenterResponse(w, pi.Fold())
+				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionFold, 0))
 			case "ck", "check":
-				pwc.writePresenterResponse(w, pi.Check())
+				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionCheck, 0))
+			case "c", "call":
+				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionCall, 0))
+			case "b", "bet":
+				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionBet, param.Amount))
+			case "ra", "raise":
+				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionRaise, param.Amount))
+			case "a", "allin":
+				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionAllIn, 0))
 			default:
 				return false
 			}
@@ -96,8 +162,11 @@ func (pwc *PokerWebController) Stop() {
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (pwc *PokerWebController) newDefaultOutput(msg string) *PokerWebOutput {
 	return &PokerWebOutput{
-		Dealer:  &PokerWebOutputPlayer{},
-		Player:  &PokerWebOutputPlayer{},
-		Message: msg,
+		Players:      make([]*PokerWebOutputPlayer, 0),
+		SidePots:     make([]*PokerWebOutputSidePot, 0),
+		RoundResults: make([]*PokerWebOutputResult, 0),
+		CpuActions:   make([]*PokerWebOutputCpuAction, 0),
+		CpuExchanges: make([]*PokerWebOutputCpuExchange, 0),
+		Message:      msg,
 	}
 }

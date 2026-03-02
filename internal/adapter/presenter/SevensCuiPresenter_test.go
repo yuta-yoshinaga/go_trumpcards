@@ -433,6 +433,18 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "パスしました (出せるカードなし)")
 	})
 
+	t.Run("success Output rule header with NoJokerFinish", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{NoJokerFinish: true, JokerCount: 1, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[ジョーカー上がり禁止]")
+	})
+
 	t.Run("success Output non-forced pass does not show forced annotation", func(t *testing.T) {
 		s, _ := setupSevensCuiTest()
 		s.SetHumanAction(&domain.SevensCpuAction{

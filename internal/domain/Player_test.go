@@ -83,6 +83,62 @@ func TestPlayer_Method(t *testing.T) {
 	})
 }
 
+func TestPlayer_ReorderCards(t *testing.T) {
+	t.Run("success valid permutation", func(t *testing.T) {
+		p := domain.NewPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		err := p.ReorderCards([]int{2, 0, 1})
+		assert.NoError(t, err)
+		assert.Equal(t, 7, p.GetCard(0).GetValue())
+		assert.Equal(t, 2, p.GetCard(1).GetValue())
+		assert.Equal(t, 5, p.GetCard(2).GetValue())
+	})
+	t.Run("success identity permutation", func(t *testing.T) {
+		p := domain.NewPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		err := p.ReorderCards([]int{0, 1})
+		assert.NoError(t, err)
+		assert.Equal(t, 2, p.GetCard(0).GetValue())
+		assert.Equal(t, 5, p.GetCard(1).GetValue())
+	})
+	t.Run("success empty hand", func(t *testing.T) {
+		p := domain.NewPlayer()
+		err := p.ReorderCards([]int{})
+		assert.NoError(t, err)
+	})
+	t.Run("error length mismatch", func(t *testing.T) {
+		p := domain.NewPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		err := p.ReorderCards([]int{0})
+		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
+	})
+	t.Run("error duplicate indices", func(t *testing.T) {
+		p := domain.NewPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		err := p.ReorderCards([]int{0, 0})
+		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
+	})
+	t.Run("error out of range positive", func(t *testing.T) {
+		p := domain.NewPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		err := p.ReorderCards([]int{0, 5})
+		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
+	})
+	t.Run("error out of range negative", func(t *testing.T) {
+		p := domain.NewPlayer()
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		err := p.ReorderCards([]int{-1, 0})
+		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
+	})
+}
+
 func TestPlayer_PrependCard(t *testing.T) {
 	p := domain.NewPlayer()
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))

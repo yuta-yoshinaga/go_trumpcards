@@ -59,6 +59,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.False(t, resObj.Config.TunnelEnabled)
 		assert.Equal(t, 0, resObj.Config.JokerCount)
 		assert.False(t, resObj.Config.CpuStrategy)
+		assert.False(t, resObj.Config.NoJokerFinish)
 		// TablePlaced: bit 7 set for each suit = 128
 		assert.Equal(t, 128, resObj.TablePlaced[domain.CardDesignSpade])
 		assert.Equal(t, 128, resObj.TablePlaced[domain.CardDesignHeart])
@@ -217,7 +218,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 	t.Run("success Output config with features enabled", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true, MaxPasses: 3}
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true, MaxPasses: 3, NoJokerFinish: true}
 		s := domain.NewSevens(tc, players, cfg)
 
 		result := tswp.Output(s, nil)
@@ -227,6 +228,22 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 2, resObj.Config.JokerCount)
 		assert.True(t, resObj.Config.CpuStrategy)
 		assert.Equal(t, 3, resObj.Config.MaxPasses)
+		assert.True(t, resObj.Config.NoJokerFinish)
+	})
+
+	t.Run("success Output config NoJokerFinish true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{NoJokerFinish: true, JokerCount: 1, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.NoJokerFinish)
+		assert.Equal(t, 1, resObj.Config.JokerCount)
 	})
 
 	t.Run("success Output tablePlaced updated after play", func(t *testing.T) {

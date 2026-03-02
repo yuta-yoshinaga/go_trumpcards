@@ -26,6 +26,11 @@ export interface BlackJackPlayer {
 
 export type BlackJackPhase = 1 | 2 | 3 | 4 | 5;
 
+export interface BlackJackCpuSeat {
+  chips: number;
+  hands: BlackJackHand[];
+}
+
 export interface BlackJackResponse {
   dealer: BlackJackPlayer;
   player: BlackJackPlayer;
@@ -38,25 +43,69 @@ export interface BlackJackResponse {
   hintEnabled: boolean;
   suggestedAction: number;
   deckCount: number;
+  dealerHitsSoft17: boolean;
+  countingEnabled: boolean;
+  cpuPlayerCount: number;
+  runningCount: number;
+  trueCount: number;
+  cpuPlayers?: BlackJackCpuSeat[];
 }
 
-export interface PokerPlayer {
+export interface PokerPlayerData {
+  id: number;
+  isHuman: boolean;
   cards: Card[];
+  chips: number;
+  currentBet: number;
+  folded: boolean;
+  allIn: boolean;
   handRank: number;
   handName: string;
-  chips: number;
-  bet: number;
+  exchangeCount: number;
+  playStyleName: string;
+}
+
+export interface PokerCpuAction {
+  playerIdx: number;
+  action: number;
+  amount: number;
+}
+
+export interface PokerCpuExchange {
+  playerIdx: number;
+  exchangeCount: number;
+}
+
+export interface PokerResult {
+  playerIdx: number;
+  handRank: number;
+  handName: string;
+  wonAmount: number;
+}
+
+export interface PokerSidePot {
+  amount: number;
+  eligiblePlayers: number[];
 }
 
 export type PokerPhase = 0 | 1 | 2 | 3 | 4;
 
 export interface PokerResponse {
-  phase: PokerPhase;
-  player: PokerPlayer;
-  dealer: PokerPlayer;
-  message: string;
+  players: PokerPlayerData[];
   pot: number;
+  sidePots: PokerSidePot[];
+  dealerIdx: number;
+  currentTurn: number;
+  phase: PokerPhase;
+  gameEndFlag: boolean;
+  lastBet: number;
+  minRaise: number;
   ante: number;
+  jokerCount: number;
+  roundResults: PokerResult[];
+  cpuActions: PokerCpuAction[];
+  cpuExchanges: PokerCpuExchange[];
+  message: string;
 }
 
 export interface OldMaidPlayerData {
@@ -120,6 +169,9 @@ export interface DaifugoConfig {
   tenDiscardEnabled: boolean;
   spadeThreeEnabled: boolean;
   capitalFallEnabled: boolean;
+  nineReverseEnabled: boolean;
+  coupDetatEnabled: boolean;
+  intenseLockEnabled: boolean;
 }
 
 export type DaifugoConfigInput = DaifugoConfig;
@@ -148,6 +200,9 @@ export interface DaifugoResponse {
   message: string;
   pendingAction: 'none' | 'sevenPass' | 'tenDiscard';
   pendingActionTarget: number;
+  reverseDirection: boolean;
+  numberLocked: boolean;
+  sortMode: number;
 }
 
 export interface SevensPlayerData {
@@ -174,6 +229,7 @@ export interface SevensConfig {
   jokerCount: number;
   cpuStrategy: boolean;
   maxPasses: number;
+  noJokerFinish: boolean;
 }
 
 export interface SevensResponse {
@@ -246,6 +302,9 @@ export interface HoldemPlayerData {
   handName: string;
   bestHand: Card[];
   playStyleName: string;
+  totalHands: number;
+  vpip: number;
+  pfr: number;
 }
 
 export interface HoldemCpuAction {
@@ -281,4 +340,10 @@ export interface HoldemResponse {
   roundResults: HoldemResult[];
   cpuActions: HoldemCpuAction[];
   message: string;
+  handCount: number;
+  smallBlind: number;
+  bigBlind: number;
+  tournamentMode: boolean;
+  blindLevelHands: number;
+  blindMultiplier: number;
 }

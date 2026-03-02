@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -18,6 +19,9 @@ type BlackJackInteractorIF interface {
 	Surrender() string
 	SetDeckCount(count int) string
 	ToggleHint() string
+	ToggleSoft17() string
+	ToggleCounting() string
+	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -103,5 +107,35 @@ func (bi *BlackJackInteractor) SetDeckCount(count int) string {
 // ToggleHint ヒント表示切り替え
 func (bi *BlackJackInteractor) ToggleHint() string {
 	bi.bj.ToggleHint()
+	return bi.bjp.Output(bi.bj, nil)
+}
+
+// ToggleSoft17 ソフト17ルール切り替え
+func (bi *BlackJackInteractor) ToggleSoft17() string {
+	config := bi.bj.GetConfig()
+	config.DealerHitsSoft17 = !config.DealerHitsSoft17
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// ToggleCounting カウンティング表示切り替え
+func (bi *BlackJackInteractor) ToggleCounting() string {
+	config := bi.bj.GetConfig()
+	config.CountingEnabled = !config.CountingEnabled
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// ResetWithConfig 設定付きリセット
+func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string {
+	err := bi.bj.SetConfig(domain.BlackJackConfig{
+		DealerHitsSoft17: dealerHitsSoft17,
+		CpuPlayerCount:   cpuPlayerCount,
+		CountingEnabled:  countingEnabled,
+	})
+	if err != nil {
+		return bi.bjp.Output(bi.bj, err)
+	}
+	bi.bj.Reset()
 	return bi.bjp.Output(bi.bj, nil)
 }

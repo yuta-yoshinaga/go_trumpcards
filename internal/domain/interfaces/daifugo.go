@@ -12,6 +12,7 @@ type DaifugoGame interface {
 	CpuPlay()
 	HasPendingAction() bool
 	SetConfig(config domain.DaifugoConfig)
+	SortHumanHand(mode domain.DaifugoSortMode) error
 
 	// presenter が呼ぶメソッド
 	GetPlayerCnt() int
@@ -31,4 +32,7 @@ type DaifugoGame interface {
 	GetPassCount() int
 	GetPendingActionType() domain.DaifugoPendingAction
 	GetPendingActionTarget() int
+	GetReverseDirection() bool
+	GetNumberLocked() bool
+	GetSortMode() domain.DaifugoSortMode
 }

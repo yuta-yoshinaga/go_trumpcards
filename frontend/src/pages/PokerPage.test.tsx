@@ -10,392 +10,584 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(pokerApi.exec);
 
-const phase0State: PokerResponse = {
+/** Helper: base human player */
+const humanPlayer = (overrides: Partial<import('../types/card').PokerPlayerData> = {}) => ({
+  id: 0,
+  isHuman: true,
+  cards: [
+    { design: 'SPADE' as const, value: 1 },
+    { design: 'HEART' as const, value: 5 },
+    { design: 'DIAMOND' as const, value: 10 },
+    { design: 'CLOVER' as const, value: 3 },
+    { design: 'SPADE' as const, value: 7 },
+  ],
+  chips: 990,
+  currentBet: 0,
+  folded: false,
+  allIn: false,
+  handRank: 0,
+  handName: '',
+  exchangeCount: -1,
+  playStyleName: '',
+  ...overrides,
+});
+
+/** Helper: base CPU player */
+const cpuPlayer = (id: number, overrides: Partial<import('../types/card').PokerPlayerData> = {}) => ({
+  id,
+  isHuman: false,
+  cards: [
+    { design: 'DIAMOND' as const, value: 2 },
+    { design: 'CLOVER' as const, value: 7 },
+    { design: 'HEART' as const, value: 9 },
+    { design: 'SPADE' as const, value: 11 },
+    { design: 'DIAMOND' as const, value: 13 },
+  ],
+  chips: 990,
+  currentBet: 0,
+  folded: false,
+  allIn: false,
+  handRank: 0,
+  handName: '',
+  exchangeCount: -1,
+  playStyleName: 'バランス型',
+  ...overrides,
+});
+
+/** INIT state (phase 0): no players yet */
+const initState: PokerResponse = {
+  players: [],
+  pot: 0,
+  sidePots: [],
+  dealerIdx: 0,
+  currentTurn: 0,
   phase: 0,
-  player: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
-  dealer: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+  gameEndFlag: false,
+  lastBet: 0,
+  minRaise: 10,
+  ante: 10,
+  jokerCount: 0,
+  roundResults: [],
+  cpuActions: [],
+  cpuExchanges: [],
   message: 'リセットしました',
-  pot: 0,
-  ante: 10,
 };
 
-const phase1State: PokerResponse = {
-  phase: 1,
-  player: {
-    cards: [
-      { design: 'SPADE', value: 1 },
-      { design: 'HEART', value: 5 },
-      { design: 'DIAMOND', value: 10 },
-      { design: 'CLOVER', value: 3 },
-      { design: 'SPADE', value: 7 },
-    ],
-    handRank: 0,
-    handName: '',
-    chips: 990,
-    bet: 0,
-  },
-  dealer: { cards: [], handRank: 0, handName: '', chips: 990, bet: 0 },
-  message: '',
-  pot: 20,
-  ante: 10,
-};
-
-const phase1StateWithDealerBet: PokerResponse = {
-  phase: 1,
-  player: {
-    cards: [
-      { design: 'SPADE', value: 1 },
-      { design: 'HEART', value: 5 },
-      { design: 'DIAMOND', value: 10 },
-      { design: 'CLOVER', value: 3 },
-      { design: 'SPADE', value: 7 },
-    ],
-    handRank: 0,
-    handName: '',
-    chips: 990,
-    bet: 0,
-  },
-  dealer: { cards: [], handRank: 0, handName: '', chips: 980, bet: 10 },
-  message: '',
-  pot: 30,
-  ante: 10,
-};
-
-const phase2State: PokerResponse = {
-  phase: 2,
-  player: {
-    cards: [
-      { design: 'SPADE', value: 1 },
-      { design: 'HEART', value: 5 },
-      { design: 'DIAMOND', value: 10 },
-      { design: 'CLOVER', value: 3 },
-      { design: 'SPADE', value: 7 },
-    ],
-    handRank: 0,
-    handName: '',
-    chips: 980,
-    bet: 0,
-  },
-  dealer: { cards: [], handRank: 0, handName: '', chips: 980, bet: 0 },
-  message: '',
+/** DEAL phase (phase 1): human's turn, no outstanding bet */
+const dealState: PokerResponse = {
+  players: [humanPlayer(), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
   pot: 40,
+  sidePots: [],
+  dealerIdx: 3,
+  currentTurn: 0,
+  phase: 1,
+  gameEndFlag: false,
+  lastBet: 0,
+  minRaise: 10,
   ante: 10,
+  jokerCount: 0,
+  roundResults: [],
+  cpuActions: [],
+  cpuExchanges: [],
+  message: 'あなたの番です',
 };
 
-const phase4State: PokerResponse = {
-  phase: 4,
-  player: {
-    cards: [
-      { design: 'SPADE', value: 1 },
-      { design: 'HEART', value: 5 },
-      { design: 'DIAMOND', value: 10 },
-      { design: 'CLOVER', value: 3 },
-      { design: 'SPADE', value: 7 },
-    ],
-    handRank: 0,
-    handName: 'High Card',
-    chips: 960,
-    bet: 0,
-  },
-  dealer: {
-    cards: [
-      { design: 'HEART', value: 2 },
-      { design: 'DIAMOND', value: 4 },
-      { design: 'CLOVER', value: 6 },
-      { design: 'SPADE', value: 8 },
-      { design: 'HEART', value: 10 },
-    ],
-    handRank: 1,
-    handName: 'Pair',
-    chips: 1040,
-    bet: 0,
-  },
-  message: 'あなたの負け',
+/** DEAL with outstanding bet: shows call/raise */
+const dealWithBetState: PokerResponse = {
+  ...dealState,
+  lastBet: 40,
+  cpuActions: [{ playerIdx: 1, action: 3, amount: 40 }],
+};
+
+/** EXCHANGE phase (phase 2): human's turn to exchange */
+const exchangeState: PokerResponse = {
+  ...dealState,
+  phase: 2,
+  message: '交換するカードを選んでください',
+};
+
+/** SECOND_BET phase (phase 3): human's turn */
+const secondBetState: PokerResponse = {
+  ...dealState,
+  phase: 3,
+  cpuExchanges: [
+    { playerIdx: 1, exchangeCount: 2 },
+    { playerIdx: 2, exchangeCount: 0 },
+  ],
+};
+
+/** END phase (phase 4) */
+const endState: PokerResponse = {
+  players: [
+    humanPlayer({ handName: 'High Card', chips: 960 }),
+    cpuPlayer(1, {
+      handName: 'One Pair',
+      folded: false,
+      exchangeCount: 2,
+      cards: [
+        { design: 'HEART', value: 2 },
+        { design: 'DIAMOND', value: 4 },
+        { design: 'CLOVER', value: 6 },
+        { design: 'SPADE', value: 8 },
+        { design: 'HEART', value: 10 },
+      ],
+    }),
+    cpuPlayer(2, { folded: true }),
+  ],
   pot: 0,
+  sidePots: [],
+  dealerIdx: 2,
+  currentTurn: -1,
+  phase: 4,
+  gameEndFlag: false,
+  lastBet: 0,
+  minRaise: 0,
   ante: 10,
+  jokerCount: 0,
+  roundResults: [
+    { playerIdx: 0, handRank: 0, handName: 'High Card', wonAmount: 0 },
+    { playerIdx: 1, handRank: 1, handName: 'One Pair', wonAmount: 200 },
+  ],
+  cpuActions: [],
+  cpuExchanges: [],
+  message: 'あなたの負け',
 };
 
 beforeEach(() => {
-  mockExec.mockResolvedValue(phase0State);
+  mockExec.mockResolvedValue(initState);
 });
 
 describe('PokerPage', () => {
-  it('calls reset command on mount', async () => {
+  // ---- mount & reset ----
+  it('calls reset on mount', async () => {
     render(<PokerPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('renders dealer and player section labels', async () => {
+  // ---- info bar ----
+  it('shows pot and dealer index', async () => {
+    mockExec.mockResolvedValue(dealState);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText(/ディーラー手札/)).toBeInTheDocument());
-    expect(screen.getByText(/プレイヤー手札/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
   });
 
-  it('shows 5 card backs for dealer in phase 0', async () => {
+  it('shows joker count when jokerCount > 0', async () => {
+    mockExec.mockResolvedValue({ ...dealState, jokerCount: 2 });
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText(/ディーラー手札/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/ジョーカー:/)).toBeInTheDocument());
+  });
+
+  it('does not show joker count when jokerCount is 0', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    expect(screen.queryByText(/ジョーカー:/)).not.toBeInTheDocument();
+  });
+
+  // ---- CPU players ----
+  it('renders CPU player info with playStyleName and chips', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.getByText(/CPU 2/)).toBeInTheDocument();
+    expect(screen.getAllByText(/バランス型/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows CPU bet when currentBet > 0', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      players: [humanPlayer(), cpuPlayer(1, { currentBet: 50 }), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/ベット: 50/)).toBeInTheDocument());
+  });
+
+  it('does not show CPU bet when currentBet is 0', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByText(/ベット: 0/)).not.toBeInTheDocument();
+  });
+
+  it('shows fold badge for folded CPU', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      players: [humanPlayer(), cpuPlayer(1, { folded: true }), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('[フォールド]')).toBeInTheDocument());
+  });
+
+  it('shows all-in badge for all-in CPU', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      players: [humanPlayer(), cpuPlayer(1, { allIn: true }), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
+  });
+
+  it('shows CPU exchange count in SECOND_BET phase when not folded and count > 0', async () => {
+    mockExec.mockResolvedValue({
+      ...secondBetState,
+      players: [humanPlayer(), cpuPlayer(1, { exchangeCount: 2 }), cpuPlayer(2, { exchangeCount: 0 })],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/交換: 2枚/)).toBeInTheDocument());
+    // exchangeCount 0 (stood pat) should not show exchange label
+    expect(screen.queryByText(/交換: 0枚/)).not.toBeInTheDocument();
+  });
+
+  it('does not show CPU exchange count in DEAL phase', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByText(/交換:.*枚/)).not.toBeInTheDocument();
+  });
+
+  it('does not show CPU exchange count when folded in SECOND_BET', async () => {
+    mockExec.mockResolvedValue({
+      ...secondBetState,
+      players: [humanPlayer(), cpuPlayer(1, { folded: true, exchangeCount: 2 }), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('[フォールド]')).toBeInTheDocument());
+    expect(screen.queryByText(/交換: 2枚/)).not.toBeInTheDocument();
+  });
+
+  it('does not show CPU exchange count when exchangeCount < 0 in SECOND_BET', async () => {
+    mockExec.mockResolvedValue({
+      ...secondBetState,
+      players: [humanPlayer(), cpuPlayer(1, { exchangeCount: -1 }), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    // exchangeCount -1 means not yet exchanged, should not display
+    expect(screen.queryByText(/交換:.*枚/)).not.toBeInTheDocument();
+  });
+
+  it('shows CPU hand name badge in END phase when not folded', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('One Pair')).toBeInTheDocument());
+  });
+
+  it('does not show CPU hand name badge when folded in END phase', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('One Pair')).toBeInTheDocument());
+    // CPU 2 is folded → no hand name badge for it
+  });
+
+  it('does not show CPU hand name badge when handName is empty in END', async () => {
+    mockExec.mockResolvedValue({
+      ...endState,
+      players: [
+        humanPlayer({ handName: 'High Card' }),
+        cpuPlayer(1, { handName: '', folded: false }),
+        cpuPlayer(2, { folded: true }),
+      ],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('High Card')).toBeInTheDocument());
+    // CPU 1 has empty handName → no badge
+  });
+
+  it('shows CPU cards face-up in END phase when not folded', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ 2')).toBeInTheDocument());
+    expect(screen.getByAltText('♦ 4')).toBeInTheDocument();
+  });
+
+  it('shows CardBack for CPU cards when not in END phase', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    const cardBacks = screen.getAllByAltText('カード裏面');
+    // 3 CPUs * 5 cards each = 15 card backs
+    expect(cardBacks.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('shows CardBack for folded CPU in END phase', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('One Pair')).toBeInTheDocument());
+    // CPU 2 is folded → shows CardBack
     const cardBacks = screen.getAllByAltText('カード裏面');
     expect(cardBacks.length).toBeGreaterThanOrEqual(5);
   });
 
-  it('shows pot and chip info', async () => {
-    mockExec.mockResolvedValue(phase1State);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
-    expect(screen.getByText(/プレイヤー チップ:/)).toBeInTheDocument();
-    expect(screen.getByText(/ディーラー チップ:/)).toBeInTheDocument();
-  });
-
-  it('shows betting buttons in phase 1 without dealer bet', async () => {
-    mockExec.mockResolvedValue(phase1State);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
-  });
-
-  it('shows call/raise buttons in phase 1 with dealer bet', async () => {
-    mockExec.mockResolvedValue(phase1StateWithDealerBet);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
-  });
-
-  it('shows exchange and stand buttons in phase 2', async () => {
-    mockExec.mockResolvedValue(phase2State);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument();
-  });
-
-  it('shows player hand name in phase 4', async () => {
-    mockExec.mockResolvedValue(phase4State);
+  it('shows CardBack for CPU in END when cards is empty and not folded', async () => {
+    mockExec.mockResolvedValue({
+      ...endState,
+      players: [
+        humanPlayer({ handName: 'High Card' }),
+        cpuPlayer(1, { handName: 'One Pair', folded: false, cards: [] }),
+        cpuPlayer(2, { folded: true }),
+      ],
+    });
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText('High Card')).toBeInTheDocument());
+    const cardBacks = screen.getAllByAltText('カード裏面');
+    expect(cardBacks.length).toBeGreaterThanOrEqual(5);
   });
 
-  it('shows dealer hand name in phase 4', async () => {
-    mockExec.mockResolvedValue(phase4State);
+  it('shows exchange count for CPU in END phase when not folded', async () => {
+    mockExec.mockResolvedValue(endState);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText('Pair')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/交換: 2枚/)).toBeInTheDocument());
   });
 
-  it('shows dealer cards (not card backs) in phase 4', async () => {
-    mockExec.mockResolvedValue(phase4State);
+  // ---- CPU actions log ----
+  it('shows CPU actions log when cpuActions is non-empty', async () => {
+    mockExec.mockResolvedValue(dealWithBetState);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText('High Card')).toBeInTheDocument());
-    const cardBacks = screen.queryAllByAltText('カード裏面');
-    expect(cardBacks).toHaveLength(0);
+    await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
+    expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
   });
 
-  it('shows result message', async () => {
-    mockExec.mockResolvedValue(phase4State);
+  it('does not show CPU actions log when cpuActions is empty', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByText('CPU行動:')).not.toBeInTheDocument();
+  });
+
+  it('shows amount in CPU action when amount > 0', async () => {
+    mockExec.mockResolvedValue(dealWithBetState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
+  });
+
+  it('does not show amount when action amount is 0', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      cpuActions: [{ playerIdx: 1, action: 1, amount: 0 }],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
+    expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
+    expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
+  });
+
+  it('shows "不明" for unknown action type', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
+  });
+
+  // ---- CPU exchanges log ----
+  it('shows CPU exchanges log when cpuExchanges is non-empty', async () => {
+    mockExec.mockResolvedValue(secondBetState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('CPU交換:')).toBeInTheDocument());
+    expect(screen.getByText(/Player 1: 2枚交換/)).toBeInTheDocument();
+    expect(screen.getByText(/Player 2: 0枚交換/)).toBeInTheDocument();
+  });
+
+  it('does not show CPU exchanges log when cpuExchanges is empty', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByText('CPU交換:')).not.toBeInTheDocument();
+  });
+
+  // ---- round results ----
+  it('shows round results in END phase', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
+  });
+
+  it('does not show round results when not END phase', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByText('結果:')).not.toBeInTheDocument();
+  });
+
+  it('does not show round results when roundResults is empty in END', async () => {
+    mockExec.mockResolvedValue({
+      ...endState,
+      roundResults: [],
+    });
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText('あなたの負け')).toBeInTheDocument());
+    expect(screen.queryByText('結果:')).not.toBeInTheDocument();
   });
 
-  it('calls exchange with selected indices when exchange button clicked', async () => {
-    mockExec.mockResolvedValue(phase2State);
+  it('shows "あなた" for human player in results', async () => {
+    mockExec.mockResolvedValue(endState);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
-
-    const playerCardImgs = screen.getAllByAltText(/♠ A|♥ 5/);
-    fireEvent.click(playerCardImgs[0]);
-    fireEvent.click(playerCardImgs[1]);
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue({ ...phase2State, phase: 3 });
-    fireEvent.click(screen.getByRole('button', { name: '交換' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', expect.arrayContaining([0, 1])));
+    await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
+    expect(screen.getByText(/あなた: High Card/)).toBeInTheDocument();
   });
 
-  it('calls stand command when stand button is clicked in phase 2', async () => {
-    mockExec.mockResolvedValue(phase2State);
+  it('shows "CPU X" for non-human player in results', async () => {
+    mockExec.mockResolvedValue(endState);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(phase4State);
-    fireEvent.click(screen.getByRole('button', { name: 'スタンド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
+    await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
+    expect(screen.getByText(/CPU 1: One Pair/)).toBeInTheDocument();
   });
 
-  it('calls reset command when reset button is clicked', async () => {
+  it('shows hand name in results when present', async () => {
+    mockExec.mockResolvedValue(endState);
     render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(phase0State);
-    fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(screen.getByText(/: High Card/)).toBeInTheDocument());
+    expect(screen.getByText(/: One Pair/)).toBeInTheDocument();
   });
 
-  it('shows instruction text in phase 2', async () => {
-    mockExec.mockResolvedValue(phase2State);
+  it('does not show hand name colon when handName is empty in results', async () => {
+    mockExec.mockResolvedValue({
+      ...endState,
+      roundResults: [
+        { playerIdx: 0, handRank: 0, handName: '', wonAmount: 0 },
+        { playerIdx: 1, handRank: 2, handName: 'One Pair', wonAmount: 200 },
+      ],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
+  });
+
+  it('shows won chips when wonAmount > 0', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/\+200チップ/)).toBeInTheDocument());
+  });
+
+  it('does not show won chips when wonAmount is 0', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
+    expect(screen.queryByText(/\+0チップ/)).not.toBeInTheDocument();
+  });
+
+  // ---- human player section ----
+  it('shows human player section when humanPlayer exists', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+  });
+
+  it('does not show human player section when no players', async () => {
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('リセットしました')).toBeInTheDocument());
+    expect(screen.queryByText(/あなたの手札/)).not.toBeInTheDocument();
+  });
+
+  it('shows human cards', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ 5')).toBeInTheDocument();
+  });
+
+  it('shows human bet when currentBet > 0', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      players: [humanPlayer({ currentBet: 30 }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/ベット: 30/)).toBeInTheDocument());
+  });
+
+  it('shows human fold badge', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('[フォールド]')).toBeInTheDocument());
+  });
+
+  it('shows human all-in badge', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      players: [humanPlayer({ allIn: true }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
+  });
+
+  it('shows human hand name badge in END phase when not folded', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('High Card')).toBeInTheDocument());
+  });
+
+  it('does not show human hand name badge when handName is empty in END', async () => {
+    mockExec.mockResolvedValue({
+      ...endState,
+      players: [
+        humanPlayer({ handName: '' }),
+        cpuPlayer(1, { handName: 'One Pair', folded: false }),
+        cpuPlayer(2, { folded: true }),
+      ],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('One Pair')).toBeInTheDocument());
+  });
+
+  // ---- exchange phase ----
+  it('shows instruction text in EXCHANGE phase', async () => {
+    mockExec.mockResolvedValue(exchangeState);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByText(/交換したいカードをクリックして選択/)).toBeInTheDocument());
   });
 
-  it('calls bet command with amount', async () => {
-    mockExec.mockResolvedValue(phase1State);
+  it('shows exchange and stand buttons in EXCHANGE phase', async () => {
+    mockExec.mockResolvedValue(exchangeState);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(phase2State);
-    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10));
-  });
-
-  it('calls check command', async () => {
-    mockExec.mockResolvedValue(phase1State);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(phase2State);
-    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
-  });
-
-  it('calls fold command', async () => {
-    mockExec.mockResolvedValue(phase1State);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(phase4State);
-    fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
-  });
-
-  it('calls call command when dealer has bet', async () => {
-    mockExec.mockResolvedValue(phase1StateWithDealerBet);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(phase2State);
-    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
-  });
-
-  it('calls raise command with amount when dealer has bet', async () => {
-    mockExec.mockResolvedValue(phase1StateWithDealerBet);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument());
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(phase2State);
-    fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, 10));
-  });
-
-  it('shows dealer bet info when dealer has bet', async () => {
-    mockExec.mockResolvedValue(phase1StateWithDealerBet);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText(/ディーラー ベット:/)).toBeInTheDocument());
-  });
-
-  it('disables betting buttons while loading', async () => {
-    mockExec.mockResolvedValue(phase1State);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
-
-    let resolve!: (value: PokerResponse) => void;
-    const slowPromise = new Promise<PokerResponse>((res) => {
-      resolve = res;
-    });
-    mockExec.mockReturnValueOnce(slowPromise);
-    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-
-    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'チェック' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'フォールド' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
-
-    resolve(phase1State);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
-  });
-
-  it('shows error message when API call fails', async () => {
-    render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-
-    mockExec.mockRejectedValueOnce(new Error('network error'));
-    fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
-  });
-
-  it('clears error message on successful API call after failure', async () => {
-    render(<PokerPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-
-    mockExec.mockRejectedValueOnce(new Error('network error'));
-    fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
-
-    mockExec.mockResolvedValueOnce(phase0State);
-    fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() =>
-      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
-    );
-  });
-
-  it('does not select card when clicking in non-exchange phase', async () => {
-    mockExec.mockResolvedValue(phase1State);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
-
-    // In bet phase (isExchangePhase=false), clicking a card exercises the `if (!isExchangePhase) return` branch
-    fireEvent.click(screen.getByAltText('♠ A'));
-
-    // Verify page is still in bet phase (no navigation or error occurred)
-    expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
-  });
-
-  it('deselects a card by clicking it again in exchange phase', async () => {
-    mockExec.mockResolvedValue(phase2State);
-    render(<PokerPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
-
-    // Click to select (prev.includes(idx) = false → adds idx)
-    fireEvent.click(screen.getByAltText('♠ A'));
-    // Click again to deselect (prev.includes(idx) = true → filters out idx)
-    fireEvent.click(screen.getByAltText('♠ A'));
-
-    // Page should remain stable in exchange phase
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument();
   });
 
-  it('does not show dealer hand name badge when handName is empty in end phase', async () => {
-    const phase4EmptyDealerName: PokerResponse = {
-      ...phase4State,
-      dealer: { ...phase4State.dealer, handName: '' },
-    };
-    mockExec.mockResolvedValue(phase4EmptyDealerName);
+  it('does not show exchange buttons when not EXCHANGE phase', async () => {
+    mockExec.mockResolvedValue(dealState);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText('あなたの負け')).toBeInTheDocument());
-    expect(screen.queryByText('Pair')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'スタンド' })).not.toBeInTheDocument();
   });
 
-  it('does not show player hand name badge when handName is empty in end phase', async () => {
-    const phase4EmptyPlayerName: PokerResponse = {
-      ...phase4State,
-      player: { ...phase4State.player, handName: '' },
-    };
-    mockExec.mockResolvedValue(phase4EmptyPlayerName);
+  it('does not show exchange buttons when it is not human turn', async () => {
+    mockExec.mockResolvedValue({ ...exchangeState, currentTurn: 1 });
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByText('あなたの負け')).toBeInTheDocument());
-    expect(screen.queryByText('High Card')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'スタンド' })).not.toBeInTheDocument();
   });
 
-  it('toggles aria-pressed on card button click in exchange phase', async () => {
-    mockExec.mockResolvedValue(phase2State);
+  it('calls exchange with selected indices', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByAltText('♥ 5'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...exchangeState, phase: 3 });
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', expect.arrayContaining([0, 1])));
+  });
+
+  it('calls stand command', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endState);
+    fireEvent.click(screen.getByRole('button', { name: 'スタンド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
+  });
+
+  it('toggles card selection in exchange phase', async () => {
+    mockExec.mockResolvedValue(exchangeState);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
 
@@ -409,19 +601,284 @@ describe('PokerPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('updates bet amount when changing the bet input', async () => {
-    mockExec.mockResolvedValue(phase1State);
+  it('does not select card when not in exchange phase', async () => {
+    mockExec.mockResolvedValue(dealState);
     render(<PokerPage />);
-    await waitFor(() => expect(screen.getByLabelText('ベット額:')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
 
-    const betInput = screen.getByLabelText('ベット額:');
-    fireEvent.change(betInput, { target: { value: '20' } });
-
-    expect((betInput as HTMLInputElement).value).toBe('20');
+    fireEvent.click(screen.getByAltText('♠ A'));
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('clears selection on successful API call', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...exchangeState, phase: 3 });
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(cardBtn).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  // ---- canAct / betting controls ----
+  it('shows bet/check buttons when canAct and no outstanding bet', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
+  });
+
+  it('shows call/raise buttons when canAct and has outstanding bet', async () => {
+    mockExec.mockResolvedValue(dealWithBetState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
+  });
+
+  it('shows betting controls in SECOND_BET phase', async () => {
+    mockExec.mockResolvedValue(secondBetState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+  });
+
+  it('hides betting controls in END phase', async () => {
+    mockExec.mockResolvedValue(endState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('あなたの負け')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+  });
+
+  it('hides betting controls when human is folded', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+  });
+
+  it('hides betting controls when human is all-in', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      players: [humanPlayer({ allIn: true }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+  });
+
+  it('hides betting controls when it is not human turn', async () => {
+    mockExec.mockResolvedValue({
+      ...dealState,
+      currentTurn: 1,
+    });
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
+  });
+
+  // ---- bet amount input ----
+  it('updates bet amount when changing input', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('10'));
+
+    fireEvent.change(betInput, { target: { value: '50' } });
+    expect((betInput as HTMLInputElement).value).toBe('50');
+  });
+
+  it('sets betAmount to minRaise when state changes', async () => {
+    mockExec.mockResolvedValue({ ...dealState, minRaise: 30 });
+    render(<PokerPage />);
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('30'));
+  });
+
+  it('sets betAmount to 10 when minRaise is 0', async () => {
+    mockExec.mockResolvedValue({ ...dealState, minRaise: 0 });
+    render(<PokerPage />);
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('10'));
+  });
+
+  // ---- button click handlers ----
+  it('calls bet command with betAmount', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(dealState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10));
+  });
+
+  it('calls check command', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(dealState);
+    fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
+  });
+
+  it('calls fold command', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endState);
+    fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
+  });
+
+  it('calls allin command', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(dealState);
+    fireEvent.click(screen.getByRole('button', { name: 'オールイン' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin'));
+  });
+
+  it('calls call command when has outstanding bet', async () => {
+    mockExec.mockResolvedValue(dealWithBetState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(dealState);
+    fireEvent.click(screen.getByRole('button', { name: 'コール' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
+  });
+
+  it('calls raise command with betAmount when has outstanding bet', async () => {
+    mockExec.mockResolvedValue(dealWithBetState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(dealState);
+    fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, 10));
+  });
+
+  it('sends updated bet amount when bet is clicked after changing input', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('10'));
+
+    fireEvent.change(betInput, { target: { value: '60' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(dealState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 60));
+  });
+
+  it('sends updated bet amount when raise is clicked after changing input', async () => {
+    mockExec.mockResolvedValue(dealWithBetState);
+    render(<PokerPage />);
+    const betInput = await screen.findByLabelText('ベット額:');
+    await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('10'));
+
+    fireEvent.change(betInput, { target: { value: '100' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(dealState);
+    fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, 100));
+  });
+
+  it('calls reset command when reset button is clicked', async () => {
+    render(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  // ---- loading / disabled state ----
+  it('disables buttons while loading', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+
+    let resolve!: (value: PokerResponse) => void;
+    const slowPromise = new Promise<PokerResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(slowPromise);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'チェック' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'フォールド' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'オールイン' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+
+    resolve(dealState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
+  });
+
+  // ---- error handling ----
+  it('shows error message when API call fails', async () => {
+    render(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+  });
+
+  it('clears error on successful call after failure', async () => {
+    render(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
+
+    mockExec.mockResolvedValueOnce(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
+    );
+  });
+
+  // ---- message ----
+  it('shows game message', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('あなたの番です')).toBeInTheDocument());
+  });
+
+  // ---- aria-busy / sr-only ----
   it('sets aria-busy and sr-only loading text while loading', async () => {
-    mockExec.mockResolvedValue(phase1State);
+    mockExec.mockResolvedValue(dealState);
     render(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
@@ -439,7 +896,7 @@ describe('PokerPage', () => {
     expect(container).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByText('処理中...')).toBeInTheDocument();
 
-    resolve(phase1State);
+    resolve(dealState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
       expect(screen.queryByText('処理中...')).not.toBeInTheDocument();

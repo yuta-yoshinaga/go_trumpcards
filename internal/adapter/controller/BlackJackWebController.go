@@ -8,9 +8,12 @@ import (
 
 // BlackJackWebInput ブラックジャックWebインプット
 type BlackJackWebInput struct {
-	Command   string `json:"command"`
-	Amount    int    `json:"amount,omitempty"`
-	SessionId string `json:"sessionId"`
+	Command          string `json:"command"`
+	Amount           int    `json:"amount,omitempty"`
+	SessionId        string `json:"sessionId"`
+	DealerHitsSoft17 *bool  `json:"dealerHitsSoft17,omitempty"`
+	CpuPlayerCount   *int   `json:"cpuPlayerCount,omitempty"`
+	CountingEnabled  *bool  `json:"countingEnabled,omitempty"`
 }
 
 // GetCommand returns the command string.
@@ -40,19 +43,31 @@ type BlackJackWebOutputPlayer struct {
 	Chips int              `json:"chips"`
 }
 
+// BlackJackWebOutputCpuSeat CPUプレイヤー席アウトプット
+type BlackJackWebOutputCpuSeat struct {
+	Chips int                       `json:"chips"`
+	Hands []*BlackJackWebOutputHand `json:"hands"`
+}
+
 // BlackJackWebOutput ブラックジャックWebアウトプット
 type BlackJackWebOutput struct {
-	Dealer             *BlackJackWebOutputPlayer `json:"dealer"`
-	Player             *BlackJackWebOutputPlayer `json:"player"`
-	Hands              []*BlackJackWebOutputHand `json:"hands,omitempty"`
-	CurrentHandIdx     int                       `json:"currentHandIdx"`
-	Phase              int                       `json:"phase"`
-	InsuranceBet       int                       `json:"insuranceBet"`
-	InsuranceAvailable bool                      `json:"insuranceAvailable"`
-	Message            string                    `json:"message"`
-	HintEnabled        bool                      `json:"hintEnabled"`
-	SuggestedAction    int                       `json:"suggestedAction"`
-	DeckCount          int                       `json:"deckCount"`
+	Dealer             *BlackJackWebOutputPlayer    `json:"dealer"`
+	Player             *BlackJackWebOutputPlayer    `json:"player"`
+	Hands              []*BlackJackWebOutputHand    `json:"hands,omitempty"`
+	CurrentHandIdx     int                          `json:"currentHandIdx"`
+	Phase              int                          `json:"phase"`
+	InsuranceBet       int                          `json:"insuranceBet"`
+	InsuranceAvailable bool                         `json:"insuranceAvailable"`
+	Message            string                       `json:"message"`
+	HintEnabled        bool                         `json:"hintEnabled"`
+	SuggestedAction    int                          `json:"suggestedAction"`
+	DeckCount          int                          `json:"deckCount"`
+	DealerHitsSoft17   bool                         `json:"dealerHitsSoft17"`
+	CountingEnabled    bool                         `json:"countingEnabled"`
+	CpuPlayerCount     int                          `json:"cpuPlayerCount"`
+	RunningCount       int                          `json:"runningCount"`
+	TrueCount          float64                      `json:"trueCount"`
+	CpuPlayers         []*BlackJackWebOutputCpuSeat `json:"cpuPlayers,omitempty"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -78,7 +93,23 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 		func(w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				bwc.writePresenterResponse(w, bji.Reset())
+				if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil {
+					h17 := false
+					if param.DealerHitsSoft17 != nil {
+						h17 = *param.DealerHitsSoft17
+					}
+					cpuCount := 0
+					if param.CpuPlayerCount != nil {
+						cpuCount = *param.CpuPlayerCount
+					}
+					counting := false
+					if param.CountingEnabled != nil {
+						counting = *param.CountingEnabled
+					}
+					bwc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting))
+				} else {
+					bwc.writePresenterResponse(w, bji.Reset())
+				}
 			case "h", "hit":
 				bwc.writePresenterResponse(w, bji.Hit())
 			case "s", "stand":
@@ -99,6 +130,10 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 				bwc.writePresenterResponse(w, bji.ToggleHint())
 			case "sd", "setdeckcount":
 				bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount))
+			case "togglesoft17":
+				bwc.writePresenterResponse(w, bji.ToggleSoft17())
+			case "togglecounting":
+				bwc.writePresenterResponse(w, bji.ToggleCounting())
 			default:
 				return false
 			}

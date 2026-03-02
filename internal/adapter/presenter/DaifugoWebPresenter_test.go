@@ -288,6 +288,41 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.True(t, resObj.TableIsSequence)
 	})
 
+	t.Run("success Output reverseDirection numberLocked sortMode fields", func(t *testing.T) {
+		dg, _ := setupDGWebTest()
+		dg.SetReverseDirection(true)
+		dg.SetNumberLocked(true)
+		dg.SetSortMode(domain.DaifugoSortBySuit)
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.ReverseDirection)
+		assert.True(t, resObj.NumberLocked)
+		assert.Equal(t, 1, resObj.SortMode)
+	})
+
+	t.Run("success Output new config fields mapped", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		cfg := domain.DefaultDaifugoConfig()
+		cfg.NineReverseEnabled = true
+		cfg.CoupDetatEnabled = true
+		cfg.IntenseLockEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.NineReverseEnabled)
+		assert.True(t, resObj.Config.CoupDetatEnabled)
+		assert.True(t, resObj.Config.IntenseLockEnabled)
+	})
+
 	t.Run("success Output lockedSuit all suits", func(t *testing.T) {
 		suitTests := []struct {
 			suit     int
@@ -400,13 +435,16 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		m.On("GetTableCards").Return([]*domain.Card(nil))
 		m.On("GetCpuActions").Return([]*domain.DaifugoCpuAction(nil))
 		m.On("GetHumanAction").Return((*domain.DaifugoCpuAction)(nil))
-		m.On("GetPendingActionType").Return(domain.DaifugoPendingNone)
-		m.On("GetPendingActionTarget").Return(-1)
+		m.On("GetReverseDirection").Return(false)
+		m.On("GetNumberLocked").Return(false)
+		m.On("GetSortMode").Return(domain.DaifugoSortByStrength)
 		return m
 	}
 
 	t.Run("success Output skips nil player in player loop", func(t *testing.T) {
 		m := setupDGMock()
+		m.On("GetPendingActionType").Return(domain.DaifugoPendingNone)
+		m.On("GetPendingActionTarget").Return(-1)
 		m.On("GetGameEndFlag").Return(false)
 		m.On("GetPlayerCnt").Return(1)
 		m.On("GetPlayer", 0).Return((*domain.DaifugoPlayer)(nil))
@@ -420,6 +458,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 
 	t.Run("success buildResultMessage skips nil player", func(t *testing.T) {
 		m := setupDGMock()
+		m.On("GetPendingActionType").Return(domain.DaifugoPendingNone)
+		m.On("GetPendingActionTarget").Return(-1)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetPlayerCnt").Return(1)
 		m.On("GetPlayer", 0).Return((*domain.DaifugoPlayer)(nil))
@@ -433,19 +473,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output pendingAction sevenPass", func(t *testing.T) {
-		m := new(interfaces.MockDaifugoGame)
-		m.On("GetCurrentTurn").Return(0)
-		m.On("GetLastPlayPlayerIdx").Return(-1)
-		m.On("GetRevolutionActive").Return(false)
-		m.On("GetElevenBackActive").Return(false)
-		m.On("GetSuitLocked").Return(false)
-		m.On("GetLockedSuit").Return(0)
-		m.On("GetTableIsSequence").Return(false)
-		m.On("GetConfig").Return(domain.DaifugoConfig{})
-		m.On("GetExchangeActions").Return([]*domain.DaifugoExchangeAction(nil))
-		m.On("GetTableCards").Return([]*domain.Card(nil))
-		m.On("GetCpuActions").Return([]*domain.DaifugoCpuAction(nil))
-		m.On("GetHumanAction").Return((*domain.DaifugoCpuAction)(nil))
+		m := setupDGMock()
 		m.On("GetPendingActionType").Return(domain.DaifugoPendingSevenPass)
 		m.On("GetPendingActionTarget").Return(1)
 		m.On("GetGameEndFlag").Return(false)
@@ -460,19 +488,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	})
 
 	t.Run("success Output pendingAction tenDiscard", func(t *testing.T) {
-		m := new(interfaces.MockDaifugoGame)
-		m.On("GetCurrentTurn").Return(0)
-		m.On("GetLastPlayPlayerIdx").Return(-1)
-		m.On("GetRevolutionActive").Return(false)
-		m.On("GetElevenBackActive").Return(false)
-		m.On("GetSuitLocked").Return(false)
-		m.On("GetLockedSuit").Return(0)
-		m.On("GetTableIsSequence").Return(false)
-		m.On("GetConfig").Return(domain.DaifugoConfig{})
-		m.On("GetExchangeActions").Return([]*domain.DaifugoExchangeAction(nil))
-		m.On("GetTableCards").Return([]*domain.Card(nil))
-		m.On("GetCpuActions").Return([]*domain.DaifugoCpuAction(nil))
-		m.On("GetHumanAction").Return((*domain.DaifugoCpuAction)(nil))
+		m := setupDGMock()
 		m.On("GetPendingActionType").Return(domain.DaifugoPendingTenDiscard)
 		m.On("GetPendingActionTarget").Return(-1)
 		m.On("GetGameEndFlag").Return(false)

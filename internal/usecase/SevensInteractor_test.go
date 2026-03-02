@@ -47,37 +47,42 @@ func TestSevensInteractor_Method(t *testing.T) {
 	})
 
 	t.Run("success ResetWithConfig all enabled", func(t *testing.T) {
-		result := tsi.ResetWithConfig(true, 2, true, domain.SevensMaxPasses)
+		result := tsi.ResetWithConfig(true, 2, true, domain.SevensMaxPasses, false)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig default values", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false, domain.SevensMaxPasses)
+		result := tsi.ResetWithConfig(false, 0, false, domain.SevensMaxPasses, false)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig jokerCount clamped to 0", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, -5, false, domain.SevensMaxPasses)
+		result := tsi.ResetWithConfig(false, -5, false, domain.SevensMaxPasses, false)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig jokerCount clamped to 2", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 10, false, domain.SevensMaxPasses)
+		result := tsi.ResetWithConfig(false, 10, false, domain.SevensMaxPasses, false)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig maxPasses 0 (unlimited)", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false, 0)
+		result := tsi.ResetWithConfig(false, 0, false, 0, false)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig maxPasses 3", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false, 3)
+		result := tsi.ResetWithConfig(false, 0, false, 3, false)
 		assert.Equal(t, mockOutput, result)
 	})
 
 	t.Run("success ResetWithConfig maxPasses negative clamped to 0", func(t *testing.T) {
-		result := tsi.ResetWithConfig(false, 0, false, -1)
+		result := tsi.ResetWithConfig(false, 0, false, -1, false)
+		assert.Equal(t, mockOutput, result)
+	})
+
+	t.Run("success ResetWithConfig noJokerFinish enabled", func(t *testing.T) {
+		result := tsi.ResetWithConfig(false, 1, false, domain.SevensMaxPasses, true)
 		assert.Equal(t, mockOutput, result)
 	})
 

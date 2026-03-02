@@ -22,6 +22,12 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface BlackJackConfigInput {
+  dealerHitsSoft17?: boolean;
+  cpuPlayerCount?: number;
+  countingEnabled?: boolean;
+}
+
 export const blackjackApi = {
   exec: (
     command:
@@ -35,27 +41,45 @@ export const blackjackApi = {
       | 'declineinsurance'
       | 'surrender'
       | 'togglehint'
-      | 'setdeckcount',
+      | 'setdeckcount'
+      | 'togglesoft17'
+      | 'togglecounting',
     amount?: number,
-  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId }),
+    config?: BlackJackConfigInput,
+  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config }),
 };
 
 export const pokerApi = {
   exec: (
-    command: 'reset' | 'exchange' | 'stand' | 'bet' | 'call' | 'raise' | 'fold' | 'check',
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
     indices?: number[],
     amount?: number,
-  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, sessionId }),
+    cpuCount?: number,
+    jokerCount?: number,
+  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, cpuCount, jokerCount, sessionId }),
 };
 
 export const oldmaidApi = {
-  exec: (command: 'reset' | 'draw', drawIdx?: number, mode?: number, cpuPlacementStrategy?: boolean) =>
-    postJson<OldMaidResponse>('/oldmaid/exec', { command, drawIdx, mode, cpuPlacementStrategy, sessionId }),
+  exec: (
+    command: 'reset' | 'draw' | 'shuffle' | 'reorder',
+    drawIdx?: number,
+    mode?: number,
+    cpuPlacementStrategy?: boolean,
+    reorderIndices?: number[],
+  ) =>
+    postJson<OldMaidResponse>('/oldmaid/exec', {
+      command,
+      drawIdx,
+      mode,
+      cpuPlacementStrategy,
+      reorderIndices,
+      sessionId,
+    }),
 };
 
 export const daifugoApi = {
-  exec: (command: 'reset' | 'play', indices?: number[], config?: DaifugoConfigInput) =>
-    postJson<DaifugoResponse>('/daifugo/exec', { command, indices, config, sessionId }),
+  exec: (command: 'reset' | 'play' | 'sort', indices?: number[], config?: DaifugoConfigInput, sortMode?: number) =>
+    postJson<DaifugoResponse>('/daifugo/exec', { command, indices, config, sortMode, sessionId }),
 };
 
 export const doubtApi = {
@@ -82,6 +106,7 @@ export interface SevensConfigInput {
   jokerCount?: number;
   cpuStrategy?: boolean;
   maxPasses?: number;
+  noJokerFinish?: boolean;
 }
 
 export const sevensApi = {
@@ -102,18 +127,24 @@ export const sevensApi = {
     }),
 };
 
+export interface HoldemConfigInput {
+  smallBlind?: number;
+  bigBlind?: number;
+  tournamentMode?: boolean;
+  blindLevelHands?: number;
+  blindMultiplier?: number;
+}
+
 export const holdemApi = {
   exec: (
     command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
     amount?: number,
-    smallBlind?: number,
-    bigBlind?: number,
+    config?: HoldemConfigInput,
   ) =>
     postJson<HoldemResponse>('/holdem/exec', {
       command,
       amount,
       sessionId,
-      smallBlind,
-      bigBlind,
+      ...config,
     }),
 };

@@ -26,6 +26,9 @@ const humanPlayer = (overrides: Partial<import('../types/card').HoldemPlayerData
   handName: '',
   bestHand: [],
   playStyleName: '',
+  totalHands: 0,
+  vpip: 0,
+  pfr: 0,
   ...overrides,
 });
 
@@ -45,6 +48,9 @@ const cpuPlayer = (id: number, overrides: Partial<import('../types/card').Holdem
   handName: '',
   bestHand: [],
   playStyleName: 'タイト',
+  totalHands: 0,
+  vpip: 0,
+  pfr: 0,
   ...overrides,
 });
 
@@ -63,6 +69,12 @@ const initState: HoldemResponse = {
   roundResults: [],
   cpuActions: [],
   message: '',
+  handCount: 0,
+  smallBlind: 5,
+  bigBlind: 10,
+  tournamentMode: false,
+  blindLevelHands: 10,
+  blindMultiplier: 200,
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -80,6 +92,12 @@ const preFlopState: HoldemResponse = {
   roundResults: [],
   cpuActions: [],
   message: 'あなたの番です',
+  handCount: 1,
+  smallBlind: 5,
+  bigBlind: 10,
+  tournamentMode: false,
+  blindLevelHands: 10,
+  blindMultiplier: 200,
 };
 
 /** PRE_FLOP with outstanding bet: shows call/raise instead of bet/check */
@@ -135,6 +153,12 @@ const showdownState: HoldemResponse = {
   ],
   cpuActions: [],
   message: 'CPU 1 の勝ち',
+  handCount: 1,
+  smallBlind: 5,
+  bigBlind: 10,
+  tournamentMode: false,
+  blindLevelHands: 10,
+  blindMultiplier: 200,
 };
 
 /** END (phase 6) — also isShowdown */
@@ -786,5 +810,70 @@ describe('HoldemPage', () => {
       expect(container).toHaveAttribute('aria-busy', 'false');
       expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
+  });
+
+  // ---- HUD stats ----
+  it('shows HUD stats for CPU when totalHands > 0', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [humanPlayer(), cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20 }), cpuPlayer(2)],
+    });
+    render(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/VPIP:60% PFR:20%/)).toBeInTheDocument());
+  });
+
+  it('does not show HUD stats for CPU when totalHands is 0', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    render(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByText(/VPIP:/)).not.toBeInTheDocument();
+  });
+
+  it('shows HUD stats for human when totalHands > 0', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      players: [humanPlayer({ totalHands: 3, vpip: 33, pfr: 0 }), cpuPlayer(1), cpuPlayer(2)],
+    });
+    render(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/VPIP:33% PFR:0%/)).toBeInTheDocument());
+  });
+
+  it('does not show HUD stats for human when totalHands is 0', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    render(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
+    expect(screen.queryByText(/VPIP:/)).not.toBeInTheDocument();
+  });
+
+  // ---- SB/BB info bar ----
+  it('shows SB/BB in info bar', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    render(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/SB\/BB:/)).toBeInTheDocument());
+    expect(screen.getByText(/5\/10/)).toBeInTheDocument();
+  });
+
+  // ---- tournament mode ----
+  it('shows tournament info when tournamentMode is true', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      tournamentMode: true,
+      handCount: 7,
+      blindLevelHands: 5,
+      smallBlind: 20,
+      bigBlind: 40,
+    });
+    render(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/ハンド#/)).toBeInTheDocument());
+    expect(screen.getByText(/レベルアップ:5ハンド毎/)).toBeInTheDocument();
+    expect(screen.getByText(/20\/40/)).toBeInTheDocument();
+  });
+
+  it('does not show tournament info when tournamentMode is false', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    render(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/SB\/BB:/)).toBeInTheDocument());
+    expect(screen.queryByText(/ハンド#/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/レベルアップ:/)).not.toBeInTheDocument();
   });
 });

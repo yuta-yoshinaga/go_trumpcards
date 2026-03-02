@@ -11,6 +11,7 @@ const (
 	BJSuggestSplit            BJSuggestedAction = 4
 	BJSuggestSurrender        BJSuggestedAction = 5
 	BJSuggestDeclineInsurance BJSuggestedAction = 6
+	BJSuggestDoubleStand      BJSuggestedAction = 7 // double if possible, otherwise stand
 )
 
 // dealerIdx ディーラーのアップカードをインデックスに変換
@@ -41,9 +42,9 @@ func pairValue(hand *BlackJackHand) int {
 }
 
 // GetBasicStrategyAction ベーシックストラテジーによる推奨アクションを返す
-// (standard multi-deck, dealer stands on soft 17)
+// (standard multi-deck, S17 or H17)
 // H=Hit, S=Stand, D=Double(else Hit), Ds=Double(else Stand), Sp=Split, Rh=Surrender(else Hit)
-func GetBasicStrategyAction(hand *BlackJackHand, dealerUpcard *Card) BJSuggestedAction {
+func GetBasicStrategyAction(hand *BlackJackHand, dealerUpcard *Card, dealerHitsSoft17 bool) BJSuggestedAction {
 	di := dealerIdx(dealerUpcard)
 
 	// ① ペアチェック
@@ -53,12 +54,22 @@ func GetBasicStrategyAction(hand *BlackJackHand, dealerUpcard *Card) BJSuggested
 
 	// ② ソフトハンド
 	if hand.IsSoft() {
-		return softStrategy(hand.GetScore(), di)
+		action := softStrategy(hand.GetScore(), di)
+		// H17 overrides for soft hands
+		if dealerHitsSoft17 {
+			action = softH17Override(hand.GetScore(), di, action)
+		}
+		return action
 	}
 
 	// ③ ハードハンド
 	hardTotal := hand.GetScore()
-	return hardStrategy(hardTotal, di)
+	action := hardStrategy(hardTotal, di)
+	// H17 overrides for hard hands
+	if dealerHitsSoft17 {
+		action = hardH17Override(hardTotal, di, action)
+	}
+	return action
 }
 
 // Dealer upcard index: 2→0, 3→1, 4→2, 5→3, 6→4, 7→5, 8→6, 9→7, 10→8, A→9
@@ -94,23 +105,20 @@ func pairStrategy(pv, di int) BJSuggestedAction {
 func softStrategy(softTotal, di int) BJSuggestedAction {
 	H := BJSuggestHit
 	S := BJSuggestStand
-	D := BJSuggestDouble  // double else hit
-	Ds := BJSuggestDouble // double else stand (we use same constant; caller shows same button)
-	// Note: for simplicity Ds and D map to same action (Double). The "else stand/hit" fallback
-	// only matters when doubling is not allowed (e.g. after split), which is not tracked here.
-	_ = Ds
+	D := BJSuggestDouble       // double else hit
+	Ds := BJSuggestDoubleStand // double else stand
 	type row [10]BJSuggestedAction
 	// Rows: softTotal 13..20 (index = softTotal-13)
 	table := [8]row{
-		// dealer: 2  3  4  5  6  7  8  9  10  A
-		{H, H, H, D, D, H, H, H, H, H}, // soft 13 (A+2)
-		{H, H, H, D, D, H, H, H, H, H}, // soft 14 (A+3)
-		{H, H, D, D, D, H, H, H, H, H}, // soft 15 (A+4)
-		{H, H, D, D, D, H, H, H, H, H}, // soft 16 (A+5)
-		{H, D, D, D, D, H, H, H, H, H}, // soft 17 (A+6)
-		{D, D, D, D, D, S, S, H, H, H}, // soft 18 (A+7)
-		{S, S, S, S, D, S, S, S, S, S}, // soft 19 (A+8)
-		{S, S, S, S, S, S, S, S, S, S}, // soft 20 (A+9)
+		// dealer: 2   3   4   5   6   7   8   9  10   A
+		{H, H, H, D, D, H, H, H, H, H},      // soft 13 (A+2)
+		{H, H, H, D, D, H, H, H, H, H},      // soft 14 (A+3)
+		{H, H, D, D, D, H, H, H, H, H},      // soft 15 (A+4)
+		{H, H, D, D, D, H, H, H, H, H},      // soft 16 (A+5)
+		{H, D, D, D, D, H, H, H, H, H},      // soft 17 (A+6)
+		{Ds, Ds, Ds, Ds, Ds, S, S, H, H, H}, // soft 18 (A+7)
+		{S, S, S, S, Ds, S, S, S, S, S},     // soft 19 (A+8)
+		{S, S, S, S, S, S, S, S, S, S},      // soft 20 (A+9)
 	}
 	idx := softTotal - 13
 	if idx < 0 {
@@ -154,4 +162,33 @@ func hardStrategy(hardTotal, di int) BJSuggestedAction {
 		clamped = 17
 	}
 	return table[clamped-5][di]
+}
+
+// hardH17Override ハードハンドのH17ルールでの変更
+// S17→H17で変わるセル: Hard 11 vs A: H→D, Hard 15 vs A: H→Rh, Hard 17 vs A: S→Rh
+func hardH17Override(hardTotal, di int, s17Action BJSuggestedAction) BJSuggestedAction {
+	// di=9 はエース
+	if di != 9 {
+		return s17Action
+	}
+	switch hardTotal {
+	case 11:
+		return BJSuggestDouble // S17でもDだが明示的にDを返す
+	case 15:
+		return BJSuggestSurrender
+	case 17:
+		return BJSuggestSurrender
+	default:
+		return s17Action
+	}
+}
+
+// softH17Override ソフトハンドのH17ルールでの変更
+// Soft 19 vs 6: S→Ds(DoubleStand)
+func softH17Override(softTotal, di int, s17Action BJSuggestedAction) BJSuggestedAction {
+	// di=4 は6
+	if softTotal == 19 && di == 4 {
+		return BJSuggestDoubleStand
+	}
+	return s17Action
 }

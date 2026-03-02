@@ -60,6 +60,10 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 		res = bcc.bji.Surrender()
 	case "hint", "togglehint":
 		res = bcc.bji.ToggleHint()
+	case "soft17", "togglesoft17":
+		res = bcc.bji.ToggleSoft17()
+	case "counting", "togglecounting":
+		res = bcc.bji.ToggleCounting()
 	case "sd", "setdeckcount":
 		if len(parts) < 2 {
 			res = "Deck count is required."
