@@ -169,6 +169,9 @@ export interface DaifugoConfig {
   tenDiscardEnabled: boolean;
   spadeThreeEnabled: boolean;
   capitalFallEnabled: boolean;
+  nineReverseEnabled: boolean;
+  coupDetatEnabled: boolean;
+  intenseLockEnabled: boolean;
 }
 
 export type DaifugoConfigInput = DaifugoConfig;
@@ -197,6 +200,9 @@ export interface DaifugoResponse {
   message: string;
   pendingAction: 'none' | 'sevenPass' | 'tenDiscard';
   pendingActionTarget: number;
+  reverseDirection: boolean;
+  numberLocked: boolean;
+  sortMode: number;
 }
 
 export interface SevensPlayerData {

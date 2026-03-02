@@ -194,6 +194,9 @@ func (m *mockDaifugoIF) Play(i []int) string {
 func (m *mockDaifugoIF) ResetWithConfig(config domain.DaifugoConfig) string {
 	return m.Called(config).String(0)
 }
+func (m *mockDaifugoIF) Sort(mode domain.DaifugoSortMode) string {
+	return m.Called(mode).String(0)
+}
 
 func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 	dgMock := &mockDaifugoIF{}

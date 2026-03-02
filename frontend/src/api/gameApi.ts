@@ -78,8 +78,8 @@ export const oldmaidApi = {
 };
 
 export const daifugoApi = {
-  exec: (command: 'reset' | 'play', indices?: number[], config?: DaifugoConfigInput) =>
-    postJson<DaifugoResponse>('/daifugo/exec', { command, indices, config, sessionId }),
+  exec: (command: 'reset' | 'play' | 'sort', indices?: number[], config?: DaifugoConfigInput, sortMode?: number) =>
+    postJson<DaifugoResponse>('/daifugo/exec', { command, indices, config, sortMode, sessionId }),
 };
 
 export const doubtApi = {

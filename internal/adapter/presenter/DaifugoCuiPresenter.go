@@ -63,6 +63,12 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 	if dg.GetTableIsSequence() {
 		b.WriteString("【階段】\n")
 	}
+	if dg.GetReverseDirection() {
+		b.WriteString("【9リバース】\n")
+	}
+	if dg.GetNumberLocked() {
+		b.WriteString("【連番縛り】\n")
+	}
 
 	// カード交換記録
 	exchangeActions := dg.GetExchangeActions()

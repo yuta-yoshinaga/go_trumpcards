@@ -27,3 +27,9 @@ func (_m *MockDaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) st
 	ret := _m.Called(config)
 	return ret.Get(0).(string)
 }
+
+// Sort モック
+func (_m *MockDaifugoInteractor) Sort(mode domain.DaifugoSortMode) string {
+	ret := _m.Called(mode)
+	return ret.Get(0).(string)
+}

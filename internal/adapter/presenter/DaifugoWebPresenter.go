@@ -44,7 +44,14 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		TenDiscardEnabled:   config.TenDiscardEnabled,
 		SpadeThreeEnabled:   config.SpadeThreeEnabled,
 		CapitalFallEnabled:  config.CapitalFallEnabled,
+		NineReverseEnabled:  config.NineReverseEnabled,
+		CoupDetatEnabled:    config.CoupDetatEnabled,
+		IntenseLockEnabled:  config.IntenseLockEnabled,
 	}
+
+	resObj.ReverseDirection = dg.GetReverseDirection()
+	resObj.NumberLocked = dg.GetNumberLocked()
+	resObj.SortMode = int(dg.GetSortMode())
 
 	// ペンディングアクション
 	switch dg.GetPendingActionType() {

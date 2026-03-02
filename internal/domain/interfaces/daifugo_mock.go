@@ -168,3 +168,27 @@ func (_m *MockDaifugoGame) GetPendingActionTarget() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// GetReverseDirection モック
+func (_m *MockDaifugoGame) GetReverseDirection() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// GetNumberLocked モック
+func (_m *MockDaifugoGame) GetNumberLocked() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// SortHumanHand モック
+func (_m *MockDaifugoGame) SortHumanHand(mode domain.DaifugoSortMode) error {
+	ret := _m.Called(mode)
+	return ret.Error(0)
+}
+
+// GetSortMode モック
+func (_m *MockDaifugoGame) GetSortMode() domain.DaifugoSortMode {
+	ret := _m.Called()
+	return ret.Get(0).(domain.DaifugoSortMode)
+}

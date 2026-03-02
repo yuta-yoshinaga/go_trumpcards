@@ -22,6 +22,9 @@ const defaultConfig = {
   tenDiscardEnabled: false,
   spadeThreeEnabled: false,
   capitalFallEnabled: false,
+  nineReverseEnabled: false,
+  coupDetatEnabled: false,
+  intenseLockEnabled: false,
 };
 
 const humanTurnState: DaifugoResponse = {
@@ -58,6 +61,9 @@ const humanTurnState: DaifugoResponse = {
   message: '',
   pendingAction: 'none',
   pendingActionTarget: -1,
+  reverseDirection: false,
+  numberLocked: false,
+  sortMode: 0,
 };
 
 const cpuTurnState: DaifugoResponse = {
@@ -638,6 +644,53 @@ describe('DaifugoPage', () => {
       expect(container).toHaveAttribute('aria-busy', 'false');
       expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
+  });
+
+  it('shows 9リバース badge when reverseDirection is true', async () => {
+    const reverseState: DaifugoResponse = {
+      ...humanTurnState,
+      reverseDirection: true,
+    };
+    mockExec.mockResolvedValue(reverseState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('9リバース', { selector: 'span' })).toBeInTheDocument());
+  });
+
+  it('shows 連番縛り badge when numberLocked is true', async () => {
+    const numberLockedState: DaifugoResponse = {
+      ...humanTurnState,
+      numberLocked: true,
+    };
+    mockExec.mockResolvedValue(numberLockedState);
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('連番縛り')).toBeInTheDocument());
+  });
+
+  it('renders sort buttons and active button is highlighted', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '強さ順' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'スート順' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '数字順' })).toBeInTheDocument();
+    // Default sortMode=0 → 強さ順 should have primary style
+    expect(screen.getByRole('button', { name: '強さ順' }).className).toContain('bg-blue-600');
+    expect(screen.getByRole('button', { name: 'スート順' }).className).toContain('bg-gray-600');
+  });
+
+  it('calls sort command when sort button is clicked', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スート順' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...humanTurnState, sortMode: 1 });
+    fireEvent.click(screen.getByRole('button', { name: 'スート順' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('sort', undefined, undefined, 1));
+  });
+
+  it('settings panel renders new rule checkboxes', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('9リバース')).toBeInTheDocument();
+    expect(screen.getByLabelText('クーデター')).toBeInTheDocument();
+    expect(screen.getByLabelText('激シバ')).toBeInTheDocument();
   });
 
   it('drop with invalid dataTransfer data is ignored (NaN guard)', async () => {
