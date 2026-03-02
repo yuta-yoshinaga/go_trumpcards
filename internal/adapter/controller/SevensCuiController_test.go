@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -16,7 +17,7 @@ func TestSevensCuiController_Exec(t *testing.T) {
 	newMock := func() *mockUsecases.MockSevensInteractor {
 		m := new(mockUsecases.MockSevensInteractor)
 		m.On("Reset").Return(mockOutput)
-		m.On("ResetWithConfig", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("Play", mock.Anything).Return(mockOutput)
 		m.On("PlayJoker", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		return m
@@ -110,65 +111,58 @@ func TestSevensCuiController_Exec(t *testing.T) {
 
 	t.Run("reset with tunnel flag", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", true, 0, false, 5, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r tunnel")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", true, 0, false, 5, false)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, MaxPasses: 5})
 	})
 
 	t.Run("reset with joker=2 flag", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", false, 2, false, 5, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r joker=2")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", false, 2, false, 5, false)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{JokerCount: 2, MaxPasses: 5})
 	})
 
 	t.Run("reset with all flags", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", true, 1, true, 5, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r tunnel joker=1 strategy")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", true, 1, true, 5, false)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: true, MaxPasses: 5})
 	})
 
 	t.Run("reset with passes=3 flag", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", false, 0, false, 3, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r passes=3")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", false, 0, false, 3, false)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 3})
 	})
 
 	t.Run("reset with passes=0 flag (unlimited)", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", false, 0, false, 0, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r passes=0")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", false, 0, false, 0, false)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 0})
 	})
 
 	t.Run("reset with tunnel passes=10 strategy", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", true, 0, true, 10, false).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r tunnel passes=10 strategy")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", true, 0, true, 10, false)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, CpuStrategy: true, MaxPasses: 10})
 	})
 
 	t.Run("reset with nojokerfinish flag", func(t *testing.T) {
 		m := newMock()
-		m.On("ResetWithConfig", false, 0, false, 5, true).Return(mockOutput)
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r nojokerfinish")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", false, 0, false, 5, true)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, NoJokerFinish: true})
 	})
 
 	t.Run("plain r still calls Reset", func(t *testing.T) {

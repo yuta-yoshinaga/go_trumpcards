@@ -9,7 +9,7 @@ import (
 // SevensInteractorIF 7並べインタラクターインタフェース
 type SevensInteractorIF interface {
 	Reset() string
-	ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int, noJokerFinish bool) string
+	ResetWithConfig(cfg domain.SevensConfig) string
 	Play(idx int) string
 	PlayJoker(cardIdx, targetSuit, targetValue int) string
 }
@@ -35,30 +35,8 @@ func NewSevensInteractor(s interfaces.SevensGame, sp presenter.SevensPresenter) 
 }
 
 // ResetWithConfig 設定付きゲーム初期化
-func (si *SevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int, noJokerFinish bool) string {
-	if jokerCount < 0 {
-		jokerCount = 0
-	}
-	if jokerCount > 2 {
-		jokerCount = 2
-	}
-	if maxPasses < 0 {
-		maxPasses = 0
-	}
-	config := domain.SevensConfig{
-		TunnelEnabled: tunnelEnabled,
-		JokerCount:    jokerCount,
-		CpuStrategy:   cpuStrategy,
-		MaxPasses:     maxPasses,
-		NoJokerFinish: noJokerFinish,
-	}
-	players := []*domain.SevensPlayer{
-		domain.NewSevensPlayer(true),
-		domain.NewSevensPlayer(false),
-		domain.NewSevensPlayer(false),
-		domain.NewSevensPlayer(false),
-	}
-	si.s = domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
+func (si *SevensInteractor) ResetWithConfig(cfg domain.SevensConfig) string {
+	si.s.SetConfig(cfg)
 	si.s.Reset()
 	si.runCpuTurns()
 	return si.sp.Output(si.s, nil)

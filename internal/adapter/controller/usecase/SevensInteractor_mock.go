@@ -1,6 +1,9 @@
 package usecase
 
-import "github.com/stretchr/testify/mock"
+import (
+	"github.com/stretchr/testify/mock"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
 
 // MockSevensInteractor 7並べインタラクターモック
 type MockSevensInteractor struct {
@@ -8,8 +11,8 @@ type MockSevensInteractor struct {
 }
 
 // ResetWithConfig モック
-func (_m *MockSevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int, noJokerFinish bool) string {
-	ret := _m.Called(tunnelEnabled, jokerCount, cpuStrategy, maxPasses, noJokerFinish)
+func (_m *MockSevensInteractor) ResetWithConfig(cfg domain.SevensConfig) string {
+	ret := _m.Called(cfg)
 	return ret.Get(0).(string)
 }
 

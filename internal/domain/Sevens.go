@@ -78,7 +78,8 @@ func (s *Sevens) Reset() {
 		s.players[i], s.players[j] = s.players[j], s.players[i]
 	})
 
-	// シャッフルして配る
+	// デッキをジョーカー枚数に合わせて再生成しシャッフル
+	s.trumpCards = NewTrumpCards(s.config.JokerCount)
 	s.trumpCards.Shuffle()
 	idx := 0
 	for {
@@ -801,6 +802,20 @@ func (s *Sevens) GetCpuActions() []*SevensCpuAction { return s.cpuActions }
 
 // GetHumanAction 人間の最後の行動取得
 func (s *Sevens) GetHumanAction() *SevensCpuAction { return s.humanAction }
+
+// SetConfig 設定変更
+func (s *Sevens) SetConfig(config SevensConfig) {
+	if config.JokerCount < 0 {
+		config.JokerCount = 0
+	}
+	if config.JokerCount > SevensMaxJokerCount {
+		config.JokerCount = SevensMaxJokerCount
+	}
+	if config.MaxPasses < 0 {
+		config.MaxPasses = 0
+	}
+	s.config = config
+}
 
 // SetHumanAction 人間の行動設定（テスト用）
 func (s *Sevens) SetHumanAction(action *SevensCpuAction) { s.humanAction = action }

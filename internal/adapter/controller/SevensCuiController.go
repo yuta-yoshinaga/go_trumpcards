@@ -33,30 +33,26 @@ func (c *SevensCuiController) Exec(command string) string {
 		return "bye."
 	case "r", "reset":
 		if len(fields) > 1 {
-			tunnelEnabled := false
-			jokerCount := 0
-			cpuStrategy := false
-			maxPasses := domain.SevensMaxPasses
-			noJokerFinish := false
+			cfg := domain.SevensConfig{MaxPasses: domain.SevensMaxPasses}
 			for _, f := range fields[1:] {
 				switch {
 				case f == "tunnel":
-					tunnelEnabled = true
+					cfg.TunnelEnabled = true
 				case strings.HasPrefix(f, "joker="):
 					if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "joker=")); err == nil {
-						jokerCount = parsed
+						cfg.JokerCount = parsed
 					}
 				case strings.HasPrefix(f, "passes="):
 					if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "passes=")); err == nil {
-						maxPasses = parsed
+						cfg.MaxPasses = parsed
 					}
 				case f == "strategy":
-					cpuStrategy = true
+					cfg.CpuStrategy = true
 				case f == "nojokerfinish":
-					noJokerFinish = true
+					cfg.NoJokerFinish = true
 				}
 			}
-			return c.sgi.ResetWithConfig(tunnelEnabled, jokerCount, cpuStrategy, maxPasses, noJokerFinish)
+			return c.sgi.ResetWithConfig(cfg)
 		}
 		return c.sgi.Reset()
 	case "p", "play":
