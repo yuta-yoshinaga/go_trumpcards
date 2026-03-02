@@ -142,7 +142,7 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 func (p *DoubtCuiPresenter) getPlayerName(d interfaces.DoubtGame, idx int) string {
 	player := d.GetPlayer(idx)
 	if player == nil {
-		return "不明"
+		return "UNKNOWN"
 	}
 	return cuiPlayerName(player, idx)
 }

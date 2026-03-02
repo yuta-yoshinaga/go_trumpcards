@@ -248,7 +248,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		// Set a human action with out-of-bounds player idx to trigger nil player
 		dg.SetHumanAction(&domain.DaifugoCpuAction{PlayerIdx: 99, PlayedCards: nil})
 		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "不明")
+		assert.Contains(t, result, "UNKNOWN")
 	})
 
 	t.Run("success Output rankName all values", func(t *testing.T) {

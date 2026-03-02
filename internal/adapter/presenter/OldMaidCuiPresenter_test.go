@@ -255,7 +255,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		om.SetLastDrawPlayerIdx(99)
 		om.SetHasDrawn(true)
 		result := top.Output(om, nil)
-		assert.Contains(t, result, "不明")
+		assert.Contains(t, result, "UNKNOWN")
 	})
 }
 

@@ -123,7 +123,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 func (p *OldMaidCuiPresenter) getPlayerName(om interfaces.OldMaidGame, idx int) string {
 	player := om.GetPlayer(idx)
 	if player == nil {
-		return "不明"
+		return "UNKNOWN"
 	}
 	return cuiPlayerName(player, idx)
 }

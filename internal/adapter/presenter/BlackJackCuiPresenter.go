@@ -49,13 +49,13 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 			if i != 0 {
 				b.WriteString(",")
 			}
-			b.WriteString(bjp.GetCardStr(dealer.GetCard(i)))
+			b.WriteString(cuiCardStr(dealer.GetCard(i)))
 		}
 		b.WriteString("\n")
 	} else {
 		b.WriteString("\n")
 		if dealer.GetCardsSize() > 0 {
-			fmt.Fprintf(&b, "%s,\n", bjp.GetCardStr(dealer.GetCard(0)))
+			fmt.Fprintf(&b, "%s,\n", cuiCardStr(dealer.GetCard(0)))
 		}
 	}
 	b.WriteString("----------\n")
@@ -91,7 +91,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 			if j != 0 {
 				b.WriteString(",")
 			}
-			b.WriteString(bjp.GetCardStr(hand.GetCard(j)))
+			b.WriteString(cuiCardStr(hand.GetCard(j)))
 		}
 		b.WriteString("\n")
 	}
@@ -127,7 +127,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 					if j != 0 {
 						b.WriteString(",")
 					}
-					b.WriteString(bjp.GetCardStr(hand.GetCard(j)))
+					b.WriteString(cuiCardStr(hand.GetCard(j)))
 				}
 				b.WriteString("\n")
 			}
@@ -226,9 +226,4 @@ func (bjp *BlackJackCuiPresenter) suggestionStr(s domain.BJSuggestedAction) stri
 	default:
 		return ""
 	}
-}
-
-// GetCardStr カード情報文字列取得
-func (bjp *BlackJackCuiPresenter) GetCardStr(card *domain.Card) string {
-	return cuiCardStr(card)
 }

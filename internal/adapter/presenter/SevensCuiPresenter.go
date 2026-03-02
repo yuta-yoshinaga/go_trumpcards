@@ -161,7 +161,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 func (p *SevensCuiPresenter) getPlayerName(s interfaces.SevensGame, idx int) string {
 	player := s.GetPlayer(idx)
 	if player == nil {
-		return "不明"
+		return "UNKNOWN"
 	}
 	return cuiPlayerName(player, idx)
 }

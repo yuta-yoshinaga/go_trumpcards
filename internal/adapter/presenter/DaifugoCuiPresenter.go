@@ -166,7 +166,7 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 func (p *DaifugoCuiPresenter) getPlayerName(dg interfaces.DaifugoGame, idx int) string {
 	player := dg.GetPlayer(idx)
 	if player == nil {
-		return "不明"
+		return "UNKNOWN"
 	}
 	return cuiPlayerName(player, idx)
 }

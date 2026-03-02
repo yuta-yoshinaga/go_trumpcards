@@ -34,6 +34,7 @@ func TestCuiCardStrEmoji(t *testing.T) {
 		card     *domain.Card
 		expected string
 	}{
+		{"nil card", nil, "??"},
 		{"joker", domain.NewCard(domain.CardDesignJoker, 0, false), "🃏0"},
 		{"spade", domain.NewCard(domain.CardDesignSpade, 1, false), "♠1"},
 		{"clover", domain.NewCard(domain.CardDesignClover, 5, false), "♣5"},
