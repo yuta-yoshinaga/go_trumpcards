@@ -33,7 +33,7 @@ func (c *SevensCuiController) Exec(command string) string {
 		return "bye."
 	case "r", "reset":
 		if len(fields) > 1 {
-			cfg := domain.SevensConfig{MaxPasses: domain.SevensMaxPasses}
+			cfg := domain.DefaultSevensConfig()
 			for _, f := range fields[1:] {
 				switch {
 				case f == "tunnel":
