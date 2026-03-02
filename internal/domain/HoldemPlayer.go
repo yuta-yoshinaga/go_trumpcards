@@ -119,7 +119,9 @@ func (hp *HoldemPlayer) IncrementPFR() { hp.pfrCount++ }
 
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (hp *HoldemPlayer) GetComparisonCards() []*Card {
-	return hp.bestHand
+	cards := make([]*Card, len(hp.bestHand))
+	copy(cards, hp.bestHand)
+	return cards
 }
 
 // SetHandRank ハンドランク設定（テスト用）

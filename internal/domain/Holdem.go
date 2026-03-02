@@ -19,18 +19,18 @@ const (
 	HoldemPhaseEnd      = 6 // ゲーム終了
 )
 
-// アクション定数
+// アクション定数 (共通定数のエイリアス)
 const (
-	HoldemActionFold  = 0 // フォールド
-	HoldemActionCheck = 1 // チェック
-	HoldemActionCall  = 2 // コール
-	HoldemActionBet   = 3 // ベット
-	HoldemActionRaise = 4 // レイズ
-	HoldemActionAllIn = 5 // オールイン
+	HoldemActionFold  = bettingActionFold  // フォールド
+	HoldemActionCheck = bettingActionCheck // チェック
+	HoldemActionCall  = bettingActionCall  // コール
+	HoldemActionBet   = bettingActionBet   // ベット
+	HoldemActionRaise = bettingActionRaise // レイズ
+	HoldemActionAllIn = bettingActionAllIn // オールイン
 )
 
 // CPU AI 閾値
-const holdemMaxRaisesPerRound = 4 // 1ラウンドの最大レイズ回数
+const holdemMaxRaisesPerRound = bettingMaxRaisesPerRound // 1ラウンドの最大レイズ回数
 
 // cpuStyleParams CPU意思決定パラメータ
 type cpuStyleParams struct {
@@ -328,6 +328,7 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 	h.trackPreFlopStats(playerIdx, action)
 
 	bp := h.bettingPlayers()
+	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が h.actedFlags に直接反映される
 	state := &BettingState{
 		Pot: h.pot, LastBet: h.lastBet, MinRaise: h.minRaise,
 		RaiseCount: h.raiseCount, ActedFlags: h.actedFlags,
@@ -346,11 +347,6 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 		h.resolveLastPlayer()
 	}
 	return nil
-}
-
-// resetActedExcept 指定プレイヤー以外のactedフラグをリセット (フォールド・オールイン除く)
-func (h *Holdem) resetActedExcept(exceptIdx int) {
-	ResetActedExcept(h.bettingPlayers(), h.actedFlags, exceptIdx)
 }
 
 // advanceTurn 次のプレイヤーに進める
@@ -538,16 +534,6 @@ func (h *Holdem) resolveShowdown() {
 	h.phase = HoldemPhaseEnd
 	h.gameEndFlag = true
 	h.dealerIdx = (h.dealerIdx + 1) % len(h.players)
-}
-
-// calculateSidePots サイドポット計算
-func (h *Holdem) calculateSidePots() {
-	h.sidePots = CalculateSidePots(h.bettingPlayers(), h.pot, h.startingChips)
-}
-
-// findPotWinners 対象プレイヤーから最強ハンドのプレイヤーを返す (複数ならスプリット)
-func (h *Holdem) findPotWinners(eligible []int) []int {
-	return FindPotWinners(h.bettingPlayers(), eligible)
 }
 
 // getHandName ハンドランクから名前を返す

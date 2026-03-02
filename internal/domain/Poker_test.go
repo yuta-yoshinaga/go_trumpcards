@@ -515,25 +515,6 @@ func TestPoker_PlayerStand_CompletesExchange(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// resetActedExcept
-// ---------------------------------------------------------------------------
-
-func TestPoker_resetActedExcept(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetActedFlags([]bool{true, true, true, true})
-	players[2].SetFolded(true) // folded → not reset
-	players[3].SetAllIn(true)  // allIn → not reset
-
-	pk.resetActedExcept(0)
-
-	flags := pk.GetActedFlags()
-	assert.True(t, flags[0])  // excepted
-	assert.False(t, flags[1]) // reset
-	assert.True(t, flags[2])  // folded → unchanged
-	assert.True(t, flags[3])  // allIn → unchanged
-}
-
-// ---------------------------------------------------------------------------
 // advanceTurn
 // ---------------------------------------------------------------------------
 
@@ -805,215 +786,6 @@ func TestPoker_resolveShowdown_SplitPot(t *testing.T) {
 		totalWon += r.WonAmount
 	}
 	assert.Equal(t, 200, totalWon)
-}
-
-// ---------------------------------------------------------------------------
-// calculateSidePots
-// ---------------------------------------------------------------------------
-
-func TestPoker_calculateSidePots_NoAllIn(t *testing.T) {
-	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetPot(400)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
-	// No allIn → simple main pot
-	pk.calculateSidePots()
-	assert.Equal(t, 1, len(pk.GetSidePots()))
-	assert.Equal(t, 400, pk.GetSidePots()[0].Amount)
-}
-
-func TestPoker_calculateSidePots_WithAllIn(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetPot(300)
-	// Player 0 started with 1000, now has 900 → invested 100
-	// Player 1 started with 1000, now has 950 → invested 50 (allIn)
-	// Player 2 started with 1000, now has 900 → invested 100
-	// Player 3 folded, started with 1000, now has 950 → invested 50
-	players[0].SetChips(900)
-	players[1].SetChips(0)
-	players[1].SetAllIn(true)
-	players[2].SetChips(900)
-	players[3].SetChips(950)
-	players[3].SetFolded(true)
-	pk.SetStartingChips([]int{1000, 50, 1000, 1000})
-
-	// Adjust to match: p1 started with 50, invested 50 (all-in)
-	// p0 started with 1000, invested 100
-	// p2 started with 1000, invested 100
-	// p3 started with 1000, invested 50 (folded)
-	pk.calculateSidePots()
-	assert.True(t, len(pk.GetSidePots()) >= 1)
-}
-
-func TestPoker_calculateSidePots_AllInSameLevel(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetPot(200)
-	// Two allIn at same level → prevLevel skip
-	players[0].SetChips(900)
-	players[0].SetAllIn(true)
-	players[1].SetChips(900)
-	players[1].SetAllIn(true)
-	players[2].SetFolded(true)
-	players[3].SetFolded(true)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
-
-	pk.calculateSidePots()
-	assert.True(t, len(pk.GetSidePots()) >= 1)
-}
-
-func TestPoker_calculateSidePots_RemainingPot_NoEligible(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetPot(500)
-	// All non-folded are allIn → remaining has no non-allIn eligible → fallback to non-folded
-	players[0].SetChips(800)
-	players[0].SetAllIn(true)
-	players[1].SetChips(900)
-	players[1].SetAllIn(true)
-	players[2].SetFolded(true)
-	players[3].SetFolded(true)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
-
-	pk.calculateSidePots()
-	// Should have pots; the remaining goes to non-folded (allIn) players
-	totalPotAmount := 0
-	for _, sp := range pk.GetSidePots() {
-		totalPotAmount += sp.Amount
-	}
-	assert.Equal(t, 500, totalPotAmount)
-}
-
-func TestPoker_calculateSidePots_FoldedContributor(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetPot(400)
-	// Player 3 folded but contributed
-	players[0].SetChips(900)
-	players[1].SetChips(900)
-	players[2].SetChips(0)
-	players[2].SetAllIn(true)
-	players[3].SetChips(900)
-	players[3].SetFolded(true)
-	pk.SetStartingChips([]int{1000, 1000, 100, 1000})
-	// p2 invested 100 (allIn), others invested 100 each
-
-	pk.calculateSidePots()
-	assert.True(t, len(pk.GetSidePots()) >= 1)
-	// Folded player is not eligible for winnings
-	for _, sp := range pk.GetSidePots() {
-		for _, idx := range sp.EligiblePlayers {
-			assert.NotEqual(t, 3, idx)
-		}
-	}
-}
-
-func TestPoker_calculateSidePots_InvestedNegative(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetPot(100)
-	// Player has more chips than starting (e.g. if won from prior) → invested < 0 → clamped to 0
-	players[0].SetChips(1200)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
-
-	pk.calculateSidePots()
-	assert.True(t, len(pk.GetSidePots()) >= 1)
-}
-
-// ---------------------------------------------------------------------------
-// findPotWinners
-// ---------------------------------------------------------------------------
-
-func TestPoker_findPotWinners_Basic(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	// Player 0: Royal Flush
-	givePlayerHand(players[0], []*Card{
-		NewCard(CardDesignSpade, 1, false),
-		NewCard(CardDesignSpade, 10, false),
-		NewCard(CardDesignSpade, 11, false),
-		NewCard(CardDesignSpade, 12, false),
-		NewCard(CardDesignSpade, 13, false),
-	})
-	players[0].EvalHand()
-	// Player 1: High Card
-	givePlayerHand(players[1], []*Card{
-		NewCard(CardDesignClover, 2, false),
-		NewCard(CardDesignHeart, 5, false),
-		NewCard(CardDesignDiamond, 7, false),
-		NewCard(CardDesignClover, 9, false),
-		NewCard(CardDesignHeart, 11, false),
-	})
-	players[1].EvalHand()
-
-	winners := pk.findPotWinners([]int{0, 1})
-	assert.Equal(t, []int{0}, winners)
-}
-
-func TestPoker_findPotWinners_Tie(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	// Identical hands → tie
-	givePlayerHand(players[0], []*Card{
-		NewCard(CardDesignSpade, 2, false),
-		NewCard(CardDesignClover, 5, false),
-		NewCard(CardDesignHeart, 7, false),
-		NewCard(CardDesignDiamond, 9, false),
-		NewCard(CardDesignSpade, 11, false),
-	})
-	players[0].EvalHand()
-	givePlayerHand(players[1], []*Card{
-		NewCard(CardDesignClover, 2, false),
-		NewCard(CardDesignHeart, 5, false),
-		NewCard(CardDesignDiamond, 7, false),
-		NewCard(CardDesignSpade, 9, false),
-		NewCard(CardDesignClover, 11, false),
-	})
-	players[1].EvalHand()
-
-	winners := pk.findPotWinners([]int{0, 1})
-	assert.Equal(t, 2, len(winners))
-}
-
-func TestPoker_findPotWinners_SameRankHigherCards(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	// Both high card, but p0 has higher
-	givePlayerHand(players[0], []*Card{
-		NewCard(CardDesignSpade, 2, false),
-		NewCard(CardDesignClover, 5, false),
-		NewCard(CardDesignHeart, 7, false),
-		NewCard(CardDesignDiamond, 9, false),
-		NewCard(CardDesignSpade, 13, false),
-	})
-	players[0].EvalHand()
-	givePlayerHand(players[1], []*Card{
-		NewCard(CardDesignClover, 2, false),
-		NewCard(CardDesignHeart, 5, false),
-		NewCard(CardDesignDiamond, 7, false),
-		NewCard(CardDesignSpade, 9, false),
-		NewCard(CardDesignClover, 12, false),
-	})
-	players[1].EvalHand()
-
-	winners := pk.findPotWinners([]int{0, 1})
-	assert.Equal(t, []int{0}, winners)
-}
-
-func TestPoker_findPotWinners_SkipFolded(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	givePlayerHand(players[0], []*Card{
-		NewCard(CardDesignSpade, 2, false),
-		NewCard(CardDesignClover, 5, false),
-		NewCard(CardDesignHeart, 7, false),
-		NewCard(CardDesignDiamond, 9, false),
-		NewCard(CardDesignSpade, 11, false),
-	})
-	players[0].EvalHand()
-	players[0].SetFolded(true) // folded → skipped
-	givePlayerHand(players[1], []*Card{
-		NewCard(CardDesignClover, 2, false),
-		NewCard(CardDesignHeart, 3, false),
-		NewCard(CardDesignDiamond, 4, false),
-		NewCard(CardDesignSpade, 6, false),
-		NewCard(CardDesignClover, 8, false),
-	})
-	players[1].EvalHand()
-
-	winners := pk.findPotWinners([]int{0, 1})
-	assert.Equal(t, []int{1}, winners)
 }
 
 // ---------------------------------------------------------------------------
@@ -2188,35 +1960,6 @@ func TestPoker_executeAction_FoldLeadsToLastPlayer(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// Side pot with multiple all-in levels and prevLevel skip
-// ---------------------------------------------------------------------------
-
-func TestPoker_calculateSidePots_MultiLevel(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetPot(600)
-	// p0: invested 200, allIn
-	// p1: invested 100, allIn
-	// p2: invested 200
-	// p3: invested 100, folded
-	players[0].SetChips(800)
-	players[0].SetAllIn(true)
-	players[1].SetChips(900)
-	players[1].SetAllIn(true)
-	players[2].SetChips(800)
-	players[3].SetChips(900)
-	players[3].SetFolded(true)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
-
-	pk.calculateSidePots()
-
-	totalPotAmount := 0
-	for _, sp := range pk.GetSidePots() {
-		totalPotAmount += sp.Amount
-	}
-	assert.Equal(t, 600, totalPotAmount)
-}
-
-// ---------------------------------------------------------------------------
 // cpuDecideExchange: straight draw where A is treated as high then low
 // ---------------------------------------------------------------------------
 
@@ -2546,36 +2289,6 @@ func TestPoker_startSecondBettingRound_SetsActedForFoldedAllIn(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// Contribution < 0 clamped in calculateSidePots
-// ---------------------------------------------------------------------------
-
-func TestPoker_calculateSidePots_ContributionBelowPrevLevel(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetPot(300)
-	// p0: invested 50, allIn
-	// p1: invested 200, allIn
-	// p2: invested 50 (folded, contribution below level)
-	// p3: invested 0 (folded)
-	players[0].SetChips(950)
-	players[0].SetAllIn(true)
-	players[1].SetChips(800)
-	players[1].SetAllIn(true)
-	players[2].SetChips(950)
-	players[2].SetFolded(true)
-	players[3].SetChips(1000)
-	players[3].SetFolded(true)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
-
-	pk.calculateSidePots()
-
-	totalPot := 0
-	for _, sp := range pk.GetSidePots() {
-		totalPot += sp.Amount
-	}
-	assert.Equal(t, 300, totalPot)
-}
-
-// ---------------------------------------------------------------------------
 // pokerMaxRaisesPerRound value
 // ---------------------------------------------------------------------------
 
@@ -2616,34 +2329,6 @@ func TestPoker_advanceTurn_AllActedFallbackDeal(t *testing.T) {
 	pk.SetActedFlags([]bool{true, true, true, true})
 	pk.advanceTurn()
 	assert.Equal(t, PokerPhaseExchange, pk.GetPhase())
-}
-
-// ---------------------------------------------------------------------------
-// UNCOVERED: findPotWinners same rank but higher cards (line 745-747)
-// ---------------------------------------------------------------------------
-
-func TestPoker_findPotWinners_SameRankHigherKicker(t *testing.T) {
-	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	// Both OnePair, but player 1 has higher kicker
-	givePlayerHand(players[0], []*Card{
-		NewCard(CardDesignSpade, 5, false),
-		NewCard(CardDesignClover, 5, false),
-		NewCard(CardDesignHeart, 3, false),
-		NewCard(CardDesignDiamond, 4, false),
-		NewCard(CardDesignSpade, 7, false),
-	})
-	players[0].EvalHand()
-	givePlayerHand(players[1], []*Card{
-		NewCard(CardDesignHeart, 5, false),
-		NewCard(CardDesignDiamond, 5, false),
-		NewCard(CardDesignClover, 3, false),
-		NewCard(CardDesignSpade, 4, false),
-		NewCard(CardDesignHeart, 13, false), // higher kicker
-	})
-	players[1].EvalHand()
-
-	winners := pk.findPotWinners([]int{0, 1})
-	assert.Equal(t, []int{1}, winners)
 }
 
 // ---------------------------------------------------------------------------

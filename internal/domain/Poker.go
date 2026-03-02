@@ -15,18 +15,18 @@ const (
 	PokerPhaseEnd       = 4 // ゲーム終了
 )
 
-// アクション定数
+// アクション定数 (共通定数のエイリアス)
 const (
-	PokerActionFold  = 0 // フォールド
-	PokerActionCheck = 1 // チェック
-	PokerActionCall  = 2 // コール
-	PokerActionBet   = 3 // ベット
-	PokerActionRaise = 4 // レイズ
-	PokerActionAllIn = 5 // オールイン
+	PokerActionFold  = bettingActionFold  // フォールド
+	PokerActionCheck = bettingActionCheck // チェック
+	PokerActionCall  = bettingActionCall  // コール
+	PokerActionBet   = bettingActionBet   // ベット
+	PokerActionRaise = bettingActionRaise // レイズ
+	PokerActionAllIn = bettingActionAllIn // オールイン
 )
 
 // CPU AI 閾値
-const pokerMaxRaisesPerRound = 4
+const pokerMaxRaisesPerRound = bettingMaxRaisesPerRound
 
 // PokerSidePot サイドポット (共通SidePot型のエイリアス)
 type PokerSidePot = SidePot
@@ -301,6 +301,7 @@ func (p *Poker) bettingPlayers() []BettingPlayer {
 // executeAction 指定プレイヤーのアクション実行
 func (p *Poker) executeAction(playerIdx, action, amount int) error {
 	bp := p.bettingPlayers()
+	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が p.actedFlags に直接反映される
 	state := &BettingState{
 		Pot: p.pot, LastBet: p.lastBet, MinRaise: p.minRaise,
 		RaiseCount: p.raiseCount, ActedFlags: p.actedFlags,
@@ -319,11 +320,6 @@ func (p *Poker) executeAction(playerIdx, action, amount int) error {
 		p.resolveLastPlayer()
 	}
 	return nil
-}
-
-// resetActedExcept 指定プレイヤー以外のactedフラグをリセット
-func (p *Poker) resetActedExcept(exceptIdx int) {
-	ResetActedExcept(p.bettingPlayers(), p.actedFlags, exceptIdx)
 }
 
 // advanceTurn 次のプレイヤーに進める
@@ -516,16 +512,6 @@ func (p *Poker) resolveShowdown() {
 	p.phase = PokerPhaseEnd
 	p.gameEndFlag = true
 	p.dealerIdx = (p.dealerIdx + 1) % len(p.players)
-}
-
-// calculateSidePots サイドポット計算
-func (p *Poker) calculateSidePots() {
-	p.sidePots = CalculateSidePots(p.bettingPlayers(), p.pot, p.startingChips)
-}
-
-// findPotWinners 対象プレイヤーから最強ハンドのプレイヤーを返す
-func (p *Poker) findPotWinners(eligible []int) []int {
-	return FindPotWinners(p.bettingPlayers(), eligible)
 }
 
 // runCpuActions CPUプレイヤーのアクションを実行
