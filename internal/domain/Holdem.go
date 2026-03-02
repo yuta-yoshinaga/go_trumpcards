@@ -294,21 +294,26 @@ func (h *Holdem) trackPreFlopStats(playerIdx, action int) {
 	if h.phase != HoldemPhasePreFlop {
 		return
 	}
-	// VPIP: Call/Bet/Raise/AllIn → ハンドにつき1回のみ
-	if !h.vpipTracked[playerIdx] {
-		switch action {
-		case HoldemActionCall, HoldemActionBet, HoldemActionRaise, HoldemActionAllIn:
-			h.players[playerIdx].IncrementVPIP()
-			h.vpipTracked[playerIdx] = true
-		}
+
+	isVPIPAction := false
+	isPFRAction := false
+
+	switch action {
+	case HoldemActionCall:
+		isVPIPAction = true
+	case HoldemActionBet, HoldemActionRaise, HoldemActionAllIn:
+		isVPIPAction = true
+		isPFRAction = true
 	}
-	// PFR: Bet/Raise/AllIn → ハンドにつき1回のみ
-	if !h.pfrTracked[playerIdx] {
-		switch action {
-		case HoldemActionBet, HoldemActionRaise, HoldemActionAllIn:
-			h.players[playerIdx].IncrementPFR()
-			h.pfrTracked[playerIdx] = true
-		}
+
+	if isVPIPAction && !h.vpipTracked[playerIdx] {
+		h.players[playerIdx].IncrementVPIP()
+		h.vpipTracked[playerIdx] = true
+	}
+
+	if isPFRAction && !h.pfrTracked[playerIdx] {
+		h.players[playerIdx].IncrementPFR()
+		h.pfrTracked[playerIdx] = true
 	}
 }
 
