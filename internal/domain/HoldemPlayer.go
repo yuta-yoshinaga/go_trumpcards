@@ -117,6 +117,11 @@ func (hp *HoldemPlayer) IncrementVPIP() { hp.vpipCount++ }
 // IncrementPFR PFR対象ハンド数をインクリメント
 func (hp *HoldemPlayer) IncrementPFR() { hp.pfrCount++ }
 
+// GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
+func (hp *HoldemPlayer) GetComparisonCards() []*Card {
+	return hp.bestHand
+}
+
 // SetHandRank ハンドランク設定（テスト用）
 func (hp *HoldemPlayer) SetHandRank(rank int) { hp.handRank = rank }
 
