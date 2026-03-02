@@ -5,8 +5,8 @@ import "sort"
 // HoldemPlayer テキサスホールデムプレイヤークラス
 type HoldemPlayer struct {
 	Player                     // 親クラス
+	ChipHolder                 // チップ管理
 	isHuman    bool            // 人間フラグ
-	chips      int             // チップ
 	handRank   int             // ベストハンドランク
 	bestHand   []*Card         // ベスト5枚
 	folded     bool            // フォールド済
@@ -29,24 +29,6 @@ func NewHoldemPlayer(isHuman bool, style HoldemPlayStyle) *HoldemPlayer {
 
 // GetIsHuman 人間フラグ取得
 func (hp *HoldemPlayer) GetIsHuman() bool { return hp.isHuman }
-
-// GetChips チップ取得
-func (hp *HoldemPlayer) GetChips() int { return hp.chips }
-
-// SetChips チップ設定
-func (hp *HoldemPlayer) SetChips(chips int) { hp.chips = chips }
-
-// AddChips チップ追加
-func (hp *HoldemPlayer) AddChips(amount int) { hp.chips += amount }
-
-// SubtractChips チップ減算 (不足時はfalseを返す)
-func (hp *HoldemPlayer) SubtractChips(amount int) bool {
-	if hp.chips < amount {
-		return false
-	}
-	hp.chips -= amount
-	return true
-}
 
 // GetHandRank ハンドランク取得
 func (hp *HoldemPlayer) GetHandRank() int { return hp.handRank }
