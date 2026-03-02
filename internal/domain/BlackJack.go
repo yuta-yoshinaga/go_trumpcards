@@ -445,6 +445,57 @@ func (b *BlackJack) endGame() {
 	b.phase = BJPhaseEnd
 }
 
+// judgeHandCore 共通ハンド勝敗判定ロジック
+// handCount はスプリットBJ抑制用: handCount==1 の場合のみプレイヤーBJとして判定
+func (b *BlackJack) judgeHandCore(hand *BlackJackHand, handCount int /* 1=single hand, >1=split */) GameResult {
+	playerScore := hand.GetScore()
+	dealerScore := b.dealer.GetScore()
+
+	if playerScore > 21 {
+		return GameResultLose
+	}
+	if dealerScore > 21 {
+		return GameResultWin
+	}
+	if playerScore > dealerScore {
+		return GameResultWin
+	}
+	if dealerScore > playerScore {
+		return GameResultLose
+	}
+
+	// スコアが同じ場合、ナチュラルブラックジャックを確認
+	dealerBJ := b.dealer.GetCardsSize() == 2 && dealerScore == 21
+	playerBJ := hand.GetCardsSize() == 2 && playerScore == 21 && handCount == 1
+
+	if playerBJ && !dealerBJ {
+		return GameResultWin
+	}
+	if dealerBJ && !playerBJ {
+		return GameResultLose
+	}
+
+	return GameResultDraw
+}
+
+// payoutHand 共通ハンド精算ロジック
+// handCount はBJ 3:2配当判定用: handCount==1 かつ BJ の場合のみ 3:2 配当
+func payoutHand(player *BlackJackPlayer, hand *BlackJackHand, handCount int /* 1=single hand, >1=split */, result GameResult) {
+	bet := hand.GetBet()
+	switch result {
+	case GameResultWin:
+		if hand.IsBlackJack() && handCount == 1 {
+			player.AddChips(bet + bet*3/2)
+		} else {
+			player.AddChips(bet * 2)
+		}
+	case GameResultDraw:
+		player.AddChips(bet)
+	case GameResultLose:
+		// 没収（何もしない、既に減算済み）
+	}
+}
+
 // dealerShouldHit ディーラーがヒットすべきか判定（ソフト17ルール対応）
 func (b *BlackJack) dealerShouldHit() bool {
 	score := b.dealer.GetScore()
@@ -504,62 +555,14 @@ func (b *BlackJack) resolvePayouts() {
 			// サレンダー: 半額返却済み（PlayerSurrender内で処理）
 			continue
 		}
-		bet := hand.GetBet()
 		result := b.judgeHand(hand)
-		switch result {
-		case GameResultWin:
-			// ナチュラルBJ（2枚で21、スプリットからでない場合）は3:2配当
-			if hand.IsBlackJack() && len(b.playerHands) == 1 {
-				// 3:2配当: ベット額 + ベット額*3/2（ベット額はBJMinBetの倍数なので端数なし）
-				b.player.AddChips(bet + bet*3/2)
-			} else {
-				// 通常勝利: ベット額 + ベット額
-				b.player.AddChips(bet * 2)
-			}
-		case GameResultDraw:
-			// 引き分け: ベット額返却
-			b.player.AddChips(bet)
-		case GameResultLose:
-			// 負け: 没収（何もしない、既に減算済み）
-		}
+		payoutHand(b.player, hand, len(b.playerHands), result)
 	}
 }
 
-// judgeHand 個別ハンドの勝敗判定
+// judgeHand 個別ハンドの勝敗判定（人間プレイヤー用: スプリット時はBJ抑制）
 func (b *BlackJack) judgeHand(hand *BlackJackHand) GameResult {
-	playerScore := hand.GetScore()
-	playerCardsSize := hand.GetCardsSize()
-	dealerScore := b.dealer.GetScore()
-
-	// プレイヤーがバーストしているなら負け
-	if playerScore > 21 {
-		return GameResultLose
-	}
-	// ディーラーバーストしているので勝ち
-	if dealerScore > 21 {
-		return GameResultWin
-	}
-	// プレイヤーの方が21に近いので勝ち
-	if playerScore > dealerScore {
-		return GameResultWin
-	}
-	// ディーラーの方が21に近いので負け
-	if dealerScore > playerScore {
-		return GameResultLose
-	}
-
-	// スコアが同じ場合、ナチュラルブラックジャックを確認
-	dealerBJ := b.dealer.GetCardsSize() == 2 && dealerScore == 21
-	playerBJ := playerCardsSize == 2 && playerScore == 21 && len(b.playerHands) == 1
-
-	if playerBJ && !dealerBJ {
-		return GameResultWin
-	}
-	if dealerBJ && !playerBJ {
-		return GameResultLose
-	}
-
-	return GameResultDraw
+	return b.judgeHandCore(hand, len(b.playerHands))
 }
 
 // GameJudgment ゲーム勝敗判定（後方互換: ハンド0の結果を返す）
@@ -979,51 +982,13 @@ func (b *BlackJack) resolvePayoutsCpu() {
 			if hand.IsSurrendered() {
 				continue
 			}
-			bet := hand.GetBet()
 			result := b.judgeCpuHand(hand)
-			switch result {
-			case GameResultWin:
-				if hand.IsBlackJack() && len(cpu.GetHands()) == 1 {
-					cpu.GetPlayer().AddChips(bet + bet*3/2)
-				} else {
-					cpu.GetPlayer().AddChips(bet * 2)
-				}
-			case GameResultDraw:
-				cpu.GetPlayer().AddChips(bet)
-			case GameResultLose:
-				// 没収（何もしない）
-			}
+			payoutHand(cpu.GetPlayer(), hand, len(cpu.GetHands()), result)
 		}
 	}
 }
 
-// judgeCpuHand CPU個別ハンドの勝敗判定
+// judgeCpuHand CPU個別ハンドの勝敗判定（CPUはスプリット有無に関わらずBJ判定）
 func (b *BlackJack) judgeCpuHand(hand *BlackJackHand) GameResult {
-	playerScore := hand.GetScore()
-	dealerScore := b.dealer.GetScore()
-
-	if playerScore > 21 {
-		return GameResultLose
-	}
-	if dealerScore > 21 {
-		return GameResultWin
-	}
-	if playerScore > dealerScore {
-		return GameResultWin
-	}
-	if dealerScore > playerScore {
-		return GameResultLose
-	}
-
-	dealerBJ := b.dealer.GetCardsSize() == 2 && dealerScore == 21
-	playerBJ := hand.GetCardsSize() == 2 && playerScore == 21
-
-	if playerBJ && !dealerBJ {
-		return GameResultWin
-	}
-	if dealerBJ && !playerBJ {
-		return GameResultLose
-	}
-
-	return GameResultDraw
+	return b.judgeHandCore(hand, 1)
 }
