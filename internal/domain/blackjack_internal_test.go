@@ -404,7 +404,6 @@ func TestJudgeHandCore(t *testing.T) {
 
 func TestPayoutHand(t *testing.T) {
 	t.Run("win with BJ and handCount=1 gets 3:2 payout", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
 		player := NewBlackJackPlayer()
 		player.SetChips(900)
 
@@ -413,12 +412,11 @@ func TestPayoutHand(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignDiamond, 13, false)) // BJ
 		hand.SetBet(100)
 
-		bj.payoutHand(player, hand, 1, GameResultWin)
+		payoutHand(player, hand, 1, GameResultWin)
 		assert.Equal(t, 900+250, player.GetChips()) // 100 + 150 = 250
 	})
 
 	t.Run("win with BJ but handCount>1 gets 2x payout", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
 		player := NewBlackJackPlayer()
 		player.SetChips(900)
 
@@ -427,12 +425,11 @@ func TestPayoutHand(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignDiamond, 13, false)) // BJ
 		hand.SetBet(100)
 
-		bj.payoutHand(player, hand, 2, GameResultWin)
+		payoutHand(player, hand, 2, GameResultWin)
 		assert.Equal(t, 900+200, player.GetChips()) // normal 2x
 	})
 
 	t.Run("win without BJ gets 2x payout", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
 		player := NewBlackJackPlayer()
 		player.SetChips(900)
 
@@ -441,12 +438,11 @@ func TestPayoutHand(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignDiamond, 9, false)) // 19, not BJ
 		hand.SetBet(100)
 
-		bj.payoutHand(player, hand, 1, GameResultWin)
+		payoutHand(player, hand, 1, GameResultWin)
 		assert.Equal(t, 900+200, player.GetChips())
 	})
 
 	t.Run("draw returns bet", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
 		player := NewBlackJackPlayer()
 		player.SetChips(900)
 
@@ -455,12 +451,11 @@ func TestPayoutHand(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignDiamond, 8, false))
 		hand.SetBet(100)
 
-		bj.payoutHand(player, hand, 1, GameResultDraw)
+		payoutHand(player, hand, 1, GameResultDraw)
 		assert.Equal(t, 900+100, player.GetChips())
 	})
 
 	t.Run("lose adds nothing", func(t *testing.T) {
-		bj, _, _ := setupInternalTestBJ(1000, 1000)
 		player := NewBlackJackPlayer()
 		player.SetChips(900)
 
@@ -469,7 +464,7 @@ func TestPayoutHand(t *testing.T) {
 		hand.AddCard(NewCard(CardDesignDiamond, 7, false))
 		hand.SetBet(100)
 
-		bj.payoutHand(player, hand, 1, GameResultLose)
+		payoutHand(player, hand, 1, GameResultLose)
 		assert.Equal(t, 900, player.GetChips())
 	})
 }

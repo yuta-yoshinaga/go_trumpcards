@@ -447,7 +447,7 @@ func (b *BlackJack) endGame() {
 
 // judgeHandCore 共通ハンド勝敗判定ロジック
 // handCount はスプリットBJ抑制用: handCount==1 の場合のみプレイヤーBJとして判定
-func (b *BlackJack) judgeHandCore(hand *BlackJackHand, handCount int) GameResult {
+func (b *BlackJack) judgeHandCore(hand *BlackJackHand, handCount int /* 1=single hand, >1=split */) GameResult {
 	playerScore := hand.GetScore()
 	dealerScore := b.dealer.GetScore()
 
@@ -480,7 +480,7 @@ func (b *BlackJack) judgeHandCore(hand *BlackJackHand, handCount int) GameResult
 
 // payoutHand 共通ハンド精算ロジック
 // handCount はBJ 3:2配当判定用: handCount==1 かつ BJ の場合のみ 3:2 配当
-func (b *BlackJack) payoutHand(player *BlackJackPlayer, hand *BlackJackHand, handCount int, result GameResult) {
+func payoutHand(player *BlackJackPlayer, hand *BlackJackHand, handCount int /* 1=single hand, >1=split */, result GameResult) {
 	bet := hand.GetBet()
 	switch result {
 	case GameResultWin:
@@ -556,7 +556,7 @@ func (b *BlackJack) resolvePayouts() {
 			continue
 		}
 		result := b.judgeHand(hand)
-		b.payoutHand(b.player, hand, len(b.playerHands), result)
+		payoutHand(b.player, hand, len(b.playerHands), result)
 	}
 }
 
@@ -983,7 +983,7 @@ func (b *BlackJack) resolvePayoutsCpu() {
 				continue
 			}
 			result := b.judgeCpuHand(hand)
-			b.payoutHand(cpu.GetPlayer(), hand, len(cpu.GetHands()), result)
+			payoutHand(cpu.GetPlayer(), hand, len(cpu.GetHands()), result)
 		}
 	}
 }
