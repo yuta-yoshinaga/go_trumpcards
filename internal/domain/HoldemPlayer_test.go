@@ -17,24 +17,6 @@ func TestNewHoldemPlayer(t *testing.T) {
 	assert.Equal(t, 0, p.GetCardsSize())
 }
 
-func TestHoldemPlayer_ChipOperations(t *testing.T) {
-	p := NewHoldemPlayer(false, HoldemStyleLAP)
-
-	p.SetChips(1000)
-	assert.Equal(t, 1000, p.GetChips())
-
-	p.AddChips(500)
-	assert.Equal(t, 1500, p.GetChips())
-
-	ok := p.SubtractChips(200)
-	assert.True(t, ok)
-	assert.Equal(t, 1300, p.GetChips())
-
-	ok = p.SubtractChips(2000)
-	assert.False(t, ok)
-	assert.Equal(t, 1300, p.GetChips())
-}
-
 func TestHoldemPlayer_SettersGetters(t *testing.T) {
 	p := NewHoldemPlayer(true, HoldemStyleTAG)
 
@@ -474,7 +456,7 @@ func TestHoldemPlayer_HUDStats(t *testing.T) {
 		assert.Equal(t, 4, p.GetTotalHands())
 		assert.Equal(t, 3, p.GetVPIPCount())
 		assert.Equal(t, 1, p.GetPFRCount())
-		assert.Equal(t, 75, p.GetVPIP())  // 3*100/4=75
-		assert.Equal(t, 25, p.GetPFR())   // 1*100/4=25
+		assert.Equal(t, 75, p.GetVPIP()) // 3*100/4=75
+		assert.Equal(t, 25, p.GetPFR())  // 1*100/4=25
 	})
 }

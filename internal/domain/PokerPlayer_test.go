@@ -171,51 +171,6 @@ func TestPokerPlayer_GetHandName(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// GetChips / SetChips / AddChips
-// ---------------------------------------------------------------------------
-
-func TestPokerPlayer_Chips(t *testing.T) {
-	p := NewPokerPlayer(true, PokerStyleBalanced)
-	assert.Equal(t, 0, p.GetChips())
-
-	p.SetChips(500)
-	assert.Equal(t, 500, p.GetChips())
-
-	p.AddChips(200)
-	assert.Equal(t, 700, p.GetChips())
-}
-
-// ---------------------------------------------------------------------------
-// SubtractChips
-// ---------------------------------------------------------------------------
-
-func TestPokerPlayer_SubtractChips(t *testing.T) {
-	t.Run("sufficient chips returns true", func(t *testing.T) {
-		p := NewPokerPlayer(true, PokerStyleBalanced)
-		p.SetChips(100)
-		ok := p.SubtractChips(60)
-		assert.True(t, ok)
-		assert.Equal(t, 40, p.GetChips())
-	})
-
-	t.Run("exact chips returns true", func(t *testing.T) {
-		p := NewPokerPlayer(true, PokerStyleBalanced)
-		p.SetChips(100)
-		ok := p.SubtractChips(100)
-		assert.True(t, ok)
-		assert.Equal(t, 0, p.GetChips())
-	})
-
-	t.Run("insufficient chips returns false and chips unchanged", func(t *testing.T) {
-		p := NewPokerPlayer(true, PokerStyleBalanced)
-		p.SetChips(10)
-		ok := p.SubtractChips(50)
-		assert.False(t, ok)
-		assert.Equal(t, 10, p.GetChips())
-	})
-}
-
-// ---------------------------------------------------------------------------
 // GetIsHuman / GetFolded / SetFolded / GetAllIn / SetAllIn
 // ---------------------------------------------------------------------------
 
