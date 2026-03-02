@@ -271,6 +271,209 @@ func TestGetTrueCountInternal(t *testing.T) {
 	})
 }
 
+// --- judgeHandCore tests ---
+
+func TestJudgeHandCore(t *testing.T) {
+	t.Run("player bust loses", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 17
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 10, false))
+		hand.AddCard(NewCard(CardDesignSpade, 5, false)) // 25, bust
+
+		assert.Equal(t, GameResultLose, bj.judgeHandCore(hand, 1))
+	})
+
+	t.Run("dealer bust, player wins", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 10, false))
+		dealer.AddCard(NewCard(CardDesignClover, 5, false)) // 25, bust
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignDiamond, 10, false))
+		hand.AddCard(NewCard(CardDesignSpade, 8, false)) // 18
+
+		assert.Equal(t, GameResultWin, bj.judgeHandCore(hand, 1))
+	})
+
+	t.Run("player higher score wins", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 17
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 9, false)) // 19
+
+		assert.Equal(t, GameResultWin, bj.judgeHandCore(hand, 1))
+	})
+
+	t.Run("dealer higher score, player loses", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 9, false)) // 19
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 7, false)) // 17
+
+		assert.Equal(t, GameResultLose, bj.judgeHandCore(hand, 1))
+	})
+
+	t.Run("equal score, neither BJ, draw", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 8, false)) // 18
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 8, false)) // 18
+
+		assert.Equal(t, GameResultDraw, bj.judgeHandCore(hand, 1))
+	})
+
+	t.Run("both BJ draw", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 1, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 10, false)) // BJ
+
+		assert.Equal(t, GameResultDraw, bj.judgeHandCore(hand, 1))
+	})
+
+	t.Run("player BJ beats dealer non-BJ at 21 (handCount=1)", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 7, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
+		dealer.AddCard(NewCard(CardDesignClover, 7, false)) // 21, but 3 cards
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignDiamond, 1, false))
+		hand.AddCard(NewCard(CardDesignSpade, 13, false)) // BJ
+
+		assert.Equal(t, GameResultWin, bj.judgeHandCore(hand, 1))
+	})
+
+	t.Run("dealer BJ beats player non-BJ at 21", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 7, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 7, false))
+		hand.AddCard(NewCard(CardDesignSpade, 7, false)) // 21, but 3 cards
+
+		assert.Equal(t, GameResultLose, bj.judgeHandCore(hand, 1))
+	})
+
+	t.Run("handCount>1 suppresses player BJ, dealer not BJ, draw", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 7, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
+		dealer.AddCard(NewCard(CardDesignClover, 7, false)) // 21, 3 cards
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignDiamond, 1, false))
+		hand.AddCard(NewCard(CardDesignSpade, 13, false)) // 21, 2 cards but handCount=2
+
+		assert.Equal(t, GameResultDraw, bj.judgeHandCore(hand, 2))
+	})
+
+	t.Run("handCount>1 suppresses player BJ, dealer BJ, lose", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 1, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 10, false)) // 21, 2 cards but handCount=2
+
+		assert.Equal(t, GameResultLose, bj.judgeHandCore(hand, 2))
+	})
+}
+
+// --- payoutHand tests ---
+
+func TestPayoutHand(t *testing.T) {
+	t.Run("win with BJ and handCount=1 gets 3:2 payout", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		player := NewBlackJackPlayer()
+		player.SetChips(900)
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 1, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 13, false)) // BJ
+		hand.SetBet(100)
+
+		bj.payoutHand(player, hand, 1, GameResultWin)
+		assert.Equal(t, 900+250, player.GetChips()) // 100 + 150 = 250
+	})
+
+	t.Run("win with BJ but handCount>1 gets 2x payout", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		player := NewBlackJackPlayer()
+		player.SetChips(900)
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 1, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 13, false)) // BJ
+		hand.SetBet(100)
+
+		bj.payoutHand(player, hand, 2, GameResultWin)
+		assert.Equal(t, 900+200, player.GetChips()) // normal 2x
+	})
+
+	t.Run("win without BJ gets 2x payout", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		player := NewBlackJackPlayer()
+		player.SetChips(900)
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 9, false)) // 19, not BJ
+		hand.SetBet(100)
+
+		bj.payoutHand(player, hand, 1, GameResultWin)
+		assert.Equal(t, 900+200, player.GetChips())
+	})
+
+	t.Run("draw returns bet", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		player := NewBlackJackPlayer()
+		player.SetChips(900)
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 8, false))
+		hand.SetBet(100)
+
+		bj.payoutHand(player, hand, 1, GameResultDraw)
+		assert.Equal(t, 900+100, player.GetChips())
+	})
+
+	t.Run("lose adds nothing", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		player := NewBlackJackPlayer()
+		player.SetChips(900)
+
+		hand := NewBlackJackHand()
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 7, false))
+		hand.SetBet(100)
+
+		bj.payoutHand(player, hand, 1, GameResultLose)
+		assert.Equal(t, 900, player.GetChips())
+	})
+}
+
 // --- judgeCpuHand tests ---
 
 func TestJudgeCpuHand(t *testing.T) {
