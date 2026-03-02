@@ -229,6 +229,7 @@ export interface SevensConfig {
   jokerCount: number;
   cpuStrategy: boolean;
   maxPasses: number;
+  noJokerFinish: boolean;
 }
 
 export interface SevensResponse {

@@ -237,10 +237,33 @@ func (s *Sevens) hasAnyPlayablePosition() bool {
 	return false
 }
 
+// hasOnlyJokers プレイヤーの手札がすべてジョーカーかどうか判定
+func (s *Sevens) hasOnlyJokers(player *SevensPlayer) bool {
+	if player.GetCardsSize() == 0 {
+		return false
+	}
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if player.GetCard(i).GetDesign() != CardDesignJoker {
+			return false
+		}
+	}
+	return true
+}
+
+// isJokerBlockedByFinishRule ジョーカー上がり禁止ルールによりジョーカーが使用不可か判定
+func (s *Sevens) isJokerBlockedByFinishRule(player *SevensPlayer) bool {
+	return s.config.NoJokerFinish && s.hasOnlyJokers(player)
+}
+
 // hasPlayableCard プレイヤーが出せるカードを持っているか確認
 func (s *Sevens) hasPlayableCard(player *SevensPlayer) bool {
+	jokerBlocked := s.isJokerBlockedByFinishRule(player)
 	for i := 0; i < player.GetCardsSize(); i++ {
-		if s.IsPlayable(player.GetCard(i)) {
+		card := player.GetCard(i)
+		if jokerBlocked && card.GetDesign() == CardDesignJoker {
+			continue
+		}
+		if s.IsPlayable(card) {
 			return true
 		}
 	}
@@ -326,6 +349,9 @@ func (s *Sevens) PlayerPlay(idx int) error {
 	if card == nil {
 		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", idx))
 	}
+	if card.GetDesign() == CardDesignJoker && s.isJokerBlockedByFinishRule(player) {
+		return NewDomainError(ErrInvalidPlay, "cannot finish with a joker")
+	}
 	if !s.IsPlayable(card) {
 		return NewDomainError(ErrInvalidPlay, "card cannot be played on the board")
 	}
@@ -362,6 +388,9 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 	}
 	if card.GetDesign() != CardDesignJoker {
 		return NewDomainError(ErrInvalidCard, "card is not a joker")
+	}
+	if s.isJokerBlockedByFinishRule(player) {
+		return NewDomainError(ErrInvalidPlay, "cannot finish with a joker")
 	}
 	if !s.isPositionPlayable(targetSuit, targetValue) {
 		return NewDomainError(ErrInvalidPlay, "target position is not playable")
@@ -404,9 +433,13 @@ func (s *Sevens) findBestPlay(player *SevensPlayer) (int, int, int) {
 
 // findPlayableSimple 最初に見つかった出せるカードを返す (戦略なし)
 func (s *Sevens) findPlayableSimple(player *SevensPlayer) (int, int, int) {
+	jokerBlocked := s.isJokerBlockedByFinishRule(player)
 	for i := 0; i < player.GetCardsSize(); i++ {
 		card := player.GetCard(i)
 		if card.GetDesign() == CardDesignJoker {
+			if jokerBlocked {
+				continue
+			}
 			// ジョーカー: 最初に見つかった配置可能ポジションに出す
 			suit, value := s.findFirstPlayablePosition()
 			if suit > 0 {
@@ -424,10 +457,14 @@ func (s *Sevens) findPlayableSimple(player *SevensPlayer) (int, int, int) {
 // findPlayableStrategic 戦略的に最適な1手を探す
 func (s *Sevens) findPlayableStrategic(player *SevensPlayer) (int, int, int) {
 	var plays []sevensPlay
+	jokerBlocked := s.isJokerBlockedByFinishRule(player)
 
 	for i := 0; i < player.GetCardsSize(); i++ {
 		card := player.GetCard(i)
 		if card.GetDesign() == CardDesignJoker {
+			if jokerBlocked {
+				continue
+			}
 			// ジョーカー: 最も評価の高いポジションに配置
 			bestSuit, bestValue, bestScore := s.evaluateJokerPlays(player)
 			if bestSuit > 0 {
@@ -469,15 +506,30 @@ func (s *Sevens) findPlayableStrategic(player *SevensPlayer) (int, int, int) {
 	return best.cardIdx, best.targetSuit, best.targetValue
 }
 
-// countOpponentsBlocked 指定方向にブロックされている相手の数をカウント
-// direction: -1 = 下方向, +1 = 上方向
-func (s *Sevens) countOpponentsBlocked(self *SevensPlayer, suit, fromValue, direction int) int {
+// passUrgencyWeight パス残数に基づく緊急度重みを返す
+func (s *Sevens) passUrgencyWeight(player *SevensPlayer) int {
+	maxP := player.GetMaxPasses()
+	if maxP == 0 {
+		// 無制限パス → パス干上がりなし
+		return 1
+	}
+	remaining := maxP - player.GetPassesUsed()
+	if remaining <= 1 {
+		return 3
+	}
+	if remaining <= 2 {
+		return 2
+	}
+	return 1
+}
+
+// countWeightedOpponentsBlocked パス残数で重み付けしたブロック相手数をカウント
+func (s *Sevens) countWeightedOpponentsBlocked(self *SevensPlayer, suit, fromValue, direction int) int {
 	count := 0
 	for _, p := range s.players {
 		if p == self || p.GetIsFinished() {
 			continue
 		}
-		// fromValue から direction 方向に未配置の値を走査し、相手がその値のカードを持っていたらカウント
 		v := fromValue
 		for {
 			v += direction
@@ -495,10 +547,9 @@ func (s *Sevens) countOpponentsBlocked(self *SevensPlayer, suit, fromValue, dire
 				break
 			}
 			if s.playerHasCard(p, suit, v) {
-				count++
+				count += s.passUrgencyWeight(p)
 				break
 			}
-			// トンネルルールで1周して戻った場合は終了
 			if s.config.TunnelEnabled && v == fromValue {
 				break
 			}
@@ -524,7 +575,7 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 		if s.playerHasCard(player, suit, nextLow) {
 			score += 2
 		} else {
-			score -= 1 + s.countOpponentsBlocked(player, suit, value, -1)
+			score -= 1 + s.countWeightedOpponentsBlocked(player, suit, value, -1)
 		}
 	}
 
@@ -537,7 +588,7 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 		if s.playerHasCard(player, suit, nextHigh) {
 			score += 2
 		} else {
-			score -= 1 + s.countOpponentsBlocked(player, suit, value, +1)
+			score -= 1 + s.countWeightedOpponentsBlocked(player, suit, value, +1)
 		}
 	}
 

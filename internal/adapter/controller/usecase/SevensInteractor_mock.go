@@ -8,8 +8,8 @@ type MockSevensInteractor struct {
 }
 
 // ResetWithConfig モック
-func (_m *MockSevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int) string {
-	ret := _m.Called(tunnelEnabled, jokerCount, cpuStrategy, maxPasses)
+func (_m *MockSevensInteractor) ResetWithConfig(tunnelEnabled bool, jokerCount int, cpuStrategy bool, maxPasses int, noJokerFinish bool) string {
+	ret := _m.Called(tunnelEnabled, jokerCount, cpuStrategy, maxPasses, noJokerFinish)
 	return ret.Get(0).(string)
 }
 

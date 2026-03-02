@@ -37,6 +37,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		JokerCount:    cfg.JokerCount,
 		CpuStrategy:   cfg.CpuStrategy,
 		MaxPasses:     cfg.MaxPasses,
+		NoJokerFinish: cfg.NoJokerFinish,
 	}
 
 	// CPU行動履歴

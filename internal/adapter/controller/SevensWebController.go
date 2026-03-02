@@ -19,6 +19,7 @@ type SevensWebInput struct {
 	JokerCount       *int   `json:"jokerCount,omitempty"`    // ジョーカー枚数 (reset時のみ)
 	CpuStrategy      *bool  `json:"cpuStrategy,omitempty"`   // CPU戦略 (reset時のみ)
 	MaxPasses        *int   `json:"maxPasses,omitempty"`     // 最大パス回数 (reset時のみ, 0=無制限)
+	NoJokerFinish    *bool  `json:"noJokerFinish,omitempty"` // ジョーカー上がり禁止 (reset時のみ)
 	SessionId        string `json:"sessionId"`
 }
 
@@ -55,6 +56,7 @@ type SevensWebOutputConfig struct {
 	JokerCount    int  `json:"jokerCount"`
 	CpuStrategy   bool `json:"cpuStrategy"`
 	MaxPasses     int  `json:"maxPasses"`
+	NoJokerFinish bool `json:"noJokerFinish"`
 }
 
 // SevensWebOutput 7並べWebアウトプット
@@ -94,13 +96,13 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		func(w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil {
+				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil {
 					jokerCount := derefInt(param.JokerCount)
 					if jokerCount < 0 || jokerCount > domain.SevensMaxJokerCount {
 						swc.writeJsonResponse(w, http.StatusBadRequest, swc.newDefaultOutput("param error: jokerCount must be between 0 and 2."))
 						return true
 					}
-					swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), jokerCount, derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses)))
+					swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), jokerCount, derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses), derefBool(param.NoJokerFinish)))
 				} else {
 					swc.writePresenterResponse(w, sgi.Reset())
 				}

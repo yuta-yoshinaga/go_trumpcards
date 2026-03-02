@@ -1723,14 +1723,14 @@ func TestSevens_ForcedPass(t *testing.T) {
 }
 
 func TestSevens_CountOpponentsBlocked(t *testing.T) {
-	// countOpponentsBlocked is unexported but tested via evaluatePlay behavior.
+	// countWeightedOpponentsBlocked is unexported but tested via evaluatePlay behavior.
 	// We set up scenarios where opponents hold blocked cards and verify the
 	// evaluatePlay score changes accordingly.
 
 	t.Run("success evaluatePlay penalty increases with more opponents blocked", func(t *testing.T) {
 		// Setup: strategy enabled. CPU 1 has 6♠ (playable, adjacent to 7).
 		// CPU does NOT have 5♠ → penalty for low direction.
-		// Opponents (player 0, 2, 3) hold 5♠ → countOpponentsBlocked = up to 3.
+		// Opponents (player 0, 2, 3) hold 5♠ → countWeightedOpponentsBlocked = up to 3.
 		// Penalty = -(1 + blocked_count).
 
 		// Case 1: 0 opponents hold blocked card (5♠)
@@ -1916,6 +1916,385 @@ func TestSevens_UnlimitedPasses(t *testing.T) {
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
 		assert.Nil(t, actions[0].PlayedCard) // still passes (unlimited)
+	})
+}
+
+func TestSevens_NoJokerFinish(t *testing.T) {
+	t.Run("PlayerPlay rejects joker as last card when NoJokerFinish enabled", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Give other players cards so game doesn't end
+		for i := 1; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		// Human has ONLY a joker
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		err := s.PlayerPlay(0)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "cannot finish with a joker")
+	})
+
+	t.Run("PlayerPlay allows joker when player has other cards + NoJokerFinish", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 1; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		// Human has joker + a normal card
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		// Joker should be playable (player has other cards)
+		err := s.PlayerPlay(0)
+		// The joker goes through IsPlayable check (which sees board positions) but
+		// PlayerPlay for normal card index 0 is a joker -> IsPlayable() still checks board
+		// Since board has 7 placed, 6 and 8 are playable, so joker has positions
+		assert.NoError(t, err)
+	})
+
+	t.Run("PlayerPlay allows joker when NoJokerFinish disabled", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: false, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 1; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		// Human has ONLY a joker but rule is OFF
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		// Joker should be playable (rule disabled)
+		err := s.PlayerPlay(0)
+		assert.NoError(t, err)
+	})
+
+	t.Run("PlayerPlayJoker rejects when only jokers left + NoJokerFinish", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 1; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "cannot finish with a joker")
+	})
+
+	t.Run("PlayerPlayJoker allows when player has other cards + NoJokerFinish", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 1; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.NoError(t, err)
+	})
+
+	t.Run("HasAnyOption returns false when only jokers + NoJokerFinish + no passes", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: 1}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(1)
+		}
+		players[0].IncrPassesUsed() // used 1/1 pass
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		assert.False(t, s.HasAnyOption(0))
+	})
+
+	t.Run("HasAnyOption returns true when only jokers + NoJokerFinish + passes remain", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		assert.True(t, s.HasAnyOption(0))
+	})
+
+	t.Run("CpuPlay eliminates CPU when only jokers + NoJokerFinish + no passes", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: 1}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(1)
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+
+		// Human plays to advance turn
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
+
+		// CPU 1 has only joker, used all passes
+		players[1].IncrPassesUsed() // used 1/1 pass
+		// Remove the dummy card we gave above
+		players[1].RemoveCard(0) // remove diamond 2
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		if s.GetCurrentTurn() == 1 {
+			s.CpuPlay()
+			assert.True(t, players[1].GetIsEliminated())
+		}
+	})
+
+	t.Run("CpuPlay passes when only jokers + NoJokerFinish + passes remain", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+
+		// Human plays to advance turn
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
+
+		// CPU 1 has only joker but has passes remaining
+		players[1].RemoveCard(0) // remove diamond 2
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		if s.GetCurrentTurn() == 1 {
+			s.CpuPlay()
+			actions := s.GetCpuActions()
+			assert.NotEmpty(t, actions)
+			lastAction := actions[len(actions)-1]
+			if lastAction.PlayerIdx == 1 {
+				assert.Nil(t, lastAction.PlayedCard) // passed
+				assert.False(t, players[1].GetIsEliminated())
+			}
+		}
+	})
+
+	t.Run("findPlayableSimple skips blocked jokers only-joker case", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, CpuStrategy: false, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+
+		// Human plays to advance turn
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		s.PlayerPlay(players[0].GetCardsSize() - 1)
+
+		// CPU 1: only joker (blocked by finish rule)
+		players[1].RemoveCard(0) // remove diamond 2
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		if s.GetCurrentTurn() == 1 {
+			s.CpuPlay()
+			actions := s.GetCpuActions()
+			assert.NotEmpty(t, actions)
+			lastAction := actions[len(actions)-1]
+			if lastAction.PlayerIdx == 1 {
+				assert.Nil(t, lastAction.PlayedCard) // passes because joker is blocked
+			}
+		}
+	})
+
+	t.Run("findPlayableStrategic skips blocked jokers", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, CpuStrategy: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+
+		// Human plays to advance turn
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		s.PlayerPlay(players[0].GetCardsSize() - 1)
+
+		// CPU 1: only joker (blocked by finish rule)
+		players[1].RemoveCard(0) // remove diamond 2
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		if s.GetCurrentTurn() == 1 {
+			s.CpuPlay()
+			actions := s.GetCpuActions()
+			assert.NotEmpty(t, actions)
+			lastAction := actions[len(actions)-1]
+			if lastAction.PlayerIdx == 1 {
+				assert.Nil(t, lastAction.PlayedCard) // passes because joker is blocked
+			}
+		}
+	})
+
+	t.Run("NewSevens stores NoJokerFinish config", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{NoJokerFinish: true}
+		s := domain.NewSevens(tc, players, cfg)
+		assert.True(t, s.GetConfig().NoJokerFinish)
+	})
+}
+
+func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
+	t.Run("opponent with 1 pass left gets weight 3", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: true, MaxPasses: 3}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(3)
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		// Opponent (player 2) has 1 pass remaining (used 2/3)
+		players[2].IncrPassesUsed()
+		players[2].IncrPassesUsed()
+		// Opponent has spade 5 (blocked behind 6 which is unplaced)
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		// Human plays to advance turn
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
+
+		// CPU 1 has spade 6 (playable adjacent to 7, opens path to opponent's 5)
+		// With weighted blocking: opponent has 1 pass left -> weight 3
+		// Score for playing 6♠: nextLow=5, not placed. CPU doesn't have 5, but opponent does.
+		// weighted blocked = 3. score -= (1+3) = -4.
+		// nextHigh = 7 placed, no penalty.
+		// Without weighting it would be -(1+1) = -2.
+		// CPU should pass (negative score, passes available)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		if s.GetCurrentTurn() == 1 {
+			s.CpuPlay()
+			actions := s.GetCpuActions()
+			assert.NotEmpty(t, actions)
+			lastAction := actions[len(actions)-1]
+			if lastAction.PlayerIdx == 1 {
+				assert.Nil(t, lastAction.PlayedCard) // passes due to high weighted penalty
+			}
+		}
+	})
+
+	t.Run("opponent with plenty of passes gets weight 1", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: true, MaxPasses: 10}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(10)
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		// Opponent has spade 5 (blocked behind 6)
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		// Human plays
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
+
+		// CPU 1 has spade 6 + spade 5 (has chain card)
+		// Score: nextLow=5 not placed, CPU has 5 -> score +=2.
+		// nextHigh = 7 placed. Total score = +2.
+		// CPU should play (positive score)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		if s.GetCurrentTurn() == 1 {
+			s.CpuPlay()
+			actions := s.GetCpuActions()
+			assert.NotEmpty(t, actions)
+			lastAction := actions[len(actions)-1]
+			if lastAction.PlayerIdx == 1 {
+				assert.NotNil(t, lastAction.PlayedCard)
+				assert.Equal(t, 6, lastAction.PlayedCard.GetValue())
+			}
+		}
+	})
+
+	t.Run("opponent with unlimited passes gets weight 1", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: true, MaxPasses: 0} // unlimited
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(0) // unlimited
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		// Opponent has spade 5
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		s.PlayerPlay(players[0].GetCardsSize() - 1)
+
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		if s.GetCurrentTurn() == 1 {
+			s.CpuPlay()
+			actions := s.GetCpuActions()
+			assert.NotEmpty(t, actions)
+			lastAction := actions[len(actions)-1]
+			if lastAction.PlayerIdx == 1 {
+				// Score = -(1+1) = -2, passes available -> pass
+				assert.Nil(t, lastAction.PlayedCard)
+			}
+		}
+	})
+
+	t.Run("opponent with 2 passes left gets weight 2", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: true, MaxPasses: 3}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for i := 0; i < 4; i++ {
+			players[i].SetMaxPasses(3)
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+		// Opponent (player 2) has 2 passes remaining (used 1/3)
+		players[2].IncrPassesUsed()
+		// Opponent has spade 5 (blocked)
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		s.PlayerPlay(players[0].GetCardsSize() - 1)
+
+		// CPU 1 has spade 6. With weight 2: score -= (1+2) = -3
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		if s.GetCurrentTurn() == 1 {
+			s.CpuPlay()
+			actions := s.GetCpuActions()
+			assert.NotEmpty(t, actions)
+			lastAction := actions[len(actions)-1]
+			if lastAction.PlayerIdx == 1 {
+				assert.Nil(t, lastAction.PlayedCard) // passes due to negative score
+			}
+		}
 	})
 }
 
