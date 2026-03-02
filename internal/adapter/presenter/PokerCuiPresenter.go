@@ -70,7 +70,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 				if j > 0 {
 					b.WriteString("  ")
 				}
-				fmt.Fprintf(&b, "[%d]%s", j, pcp.getCardStr(player.GetCard(j)))
+				fmt.Fprintf(&b, "[%d]%s", j, cuiCardStrEmoji(player.GetCard(j)))
 			}
 			if isEnd {
 				fmt.Fprintf(&b, "  [%s]", player.GetHandName())
@@ -85,7 +85,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 				if j > 0 {
 					b.WriteString("  ")
 				}
-				b.WriteString(pcp.getCardStr(player.GetCard(j)))
+				b.WriteString(cuiCardStrEmoji(player.GetCard(j)))
 			}
 			fmt.Fprintf(&b, "  [%s]", player.GetHandName())
 			b.WriteString("\n")
@@ -98,7 +98,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		b.WriteString("----------\n")
 		b.WriteString("[CPU行動]\n")
 		for _, action := range cpuActions {
-			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, pcp.getActionName(action.Action))
+			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
 			if action.Amount > 0 {
 				fmt.Fprintf(&b, " (%d)", action.Amount)
 			}
@@ -149,34 +149,4 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	}
 
 	return b.String()
-}
-
-// getCardStr カード文字列取得
-func (pcp *PokerCuiPresenter) getCardStr(card *domain.Card) string {
-	designs := []string{"🃏", "♠", "♣", "♥", "♦"}
-	d := card.GetDesign()
-	if d < 0 || d >= len(designs) {
-		d = 0
-	}
-	return fmt.Sprintf("%s%d", designs[d], card.GetValue())
-}
-
-// getActionName アクション名取得
-func (pcp *PokerCuiPresenter) getActionName(action int) string {
-	switch action {
-	case domain.PokerActionFold:
-		return "フォールド"
-	case domain.PokerActionCheck:
-		return "チェック"
-	case domain.PokerActionCall:
-		return "コール"
-	case domain.PokerActionBet:
-		return "ベット"
-	case domain.PokerActionRaise:
-		return "レイズ"
-	case domain.PokerActionAllIn:
-		return "オールイン"
-	default:
-		return "不明"
-	}
 }

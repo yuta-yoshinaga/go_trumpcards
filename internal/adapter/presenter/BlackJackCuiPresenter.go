@@ -230,19 +230,5 @@ func (bjp *BlackJackCuiPresenter) suggestionStr(s domain.BJSuggestedAction) stri
 
 // GetCardStr カード情報文字列取得
 func (bjp *BlackJackCuiPresenter) GetCardStr(card *domain.Card) string {
-	res := ""
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		res = "SPADE "
-	case domain.CardDesignClover:
-		res = "CLOVER "
-	case domain.CardDesignHeart:
-		res = "HEART "
-	case domain.CardDesignDiamond:
-		res = "DIAMOND "
-	default:
-		res = "Unsupported card "
-	}
-	res += strconv.Itoa(card.GetValue())
-	return res
+	return cuiCardStr(card)
 }

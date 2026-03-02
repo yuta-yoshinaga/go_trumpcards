@@ -179,7 +179,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 			{domain.CardDesignClover, "CLOVER"},
 			{domain.CardDesignHeart, "HEART"},
 			{domain.CardDesignDiamond, "DIAMOND"},
-			{999, "不明"},
+			{999, "UNKNOWN"},
 		}
 		for _, st := range suitTests {
 			dg, _ := setupDaifugoCuiTest()

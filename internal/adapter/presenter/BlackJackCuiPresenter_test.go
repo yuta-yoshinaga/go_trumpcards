@@ -245,8 +245,14 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 	t.Run("success GetCardStr DIAMOND", func(t *testing.T) {
 		assert.Equal(t, "DIAMOND 1", tbp.GetCardStr(domain.NewCard(domain.CardDesignDiamond, 1, false)))
 	})
-	t.Run("success GetCardStr unsupported", func(t *testing.T) {
-		assert.Equal(t, "Unsupported card 0", tbp.GetCardStr(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false)))
+	t.Run("success GetCardStr joker", func(t *testing.T) {
+		assert.Equal(t, "JOKER", tbp.GetCardStr(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false)))
+	})
+	t.Run("success GetCardStr nil card", func(t *testing.T) {
+		assert.Equal(t, "??", tbp.GetCardStr(nil))
+	})
+	t.Run("success GetCardStr unknown design", func(t *testing.T) {
+		assert.Equal(t, "UNKNOWN", tbp.GetCardStr(domain.NewCard(99, 1, false)))
 	})
 	t.Run("success Output no dealer cards in bet phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)

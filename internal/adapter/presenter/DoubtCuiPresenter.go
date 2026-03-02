@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -42,7 +41,7 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 					if j != 0 {
 						b.WriteString("  ")
 					}
-					fmt.Fprintf(&b, "[%d]%s", j, p.getCardStr(player.GetCard(j)))
+					fmt.Fprintf(&b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
 				}
 				b.WriteString("\n")
 			}
@@ -82,7 +81,7 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 				if i != 0 {
 					b.WriteString(", ")
 				}
-				b.WriteString(p.getCardStr(card))
+				b.WriteString(cuiCardStr(card))
 			}
 			b.WriteString("\n")
 		}
@@ -145,27 +144,5 @@ func (p *DoubtCuiPresenter) getPlayerName(d interfaces.DoubtGame, idx int) strin
 	if player == nil {
 		return "不明"
 	}
-	if player.GetIsHuman() {
-		return "あなた"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// getCardStr カード情報文字列取得
-func (p *DoubtCuiPresenter) getCardStr(card *domain.Card) string {
-	if card == nil {
-		return "??"
-	}
-	switch card.GetDesign() {
-	case domain.CardDesignSpade:
-		return "SPADE " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignClover:
-		return "CLOVER " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignHeart:
-		return "HEART " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignDiamond:
-		return "DIAMOND " + strconv.Itoa(card.GetValue())
-	default:
-		return "UNKNOWN"
-	}
+	return cuiPlayerName(player, idx)
 }
