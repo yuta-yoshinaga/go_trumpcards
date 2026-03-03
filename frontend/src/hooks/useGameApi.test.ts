@@ -174,6 +174,30 @@ describe('useGameApi', () => {
     expect(result.current.state).toEqual({ v: 2 });
   });
 
+  it('keeps loading true until async onSuccess resolves', async () => {
+    let resolveCallback!: () => void;
+    const apiFn = vi.fn().mockResolvedValue({ v: 1 });
+    const onSuccess = vi.fn().mockReturnValue(
+      new Promise<void>((r) => {
+        resolveCallback = r;
+      }),
+    );
+    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }));
+
+    act(() => {
+      result.current.exec();
+    });
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    expect(result.current.loading).toBe(true);
+
+    await act(async () => {
+      resolveCallback();
+    });
+
+    expect(result.current.loading).toBe(false);
+  });
+
   it('uses latest onSuccess via ref', async () => {
     const apiFn = vi.fn().mockResolvedValue({ v: 1 });
     const onSuccess1 = vi.fn();

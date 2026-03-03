@@ -246,7 +246,7 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
   it('shows status message when hasDrawn is true', async () => {
@@ -288,8 +288,10 @@ describe('OldMaidPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCpuActions);
     await startGame();
-    expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument();
-    expect(screen.getByText(/CPU 1がCPU 2から1枚引きました/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument();
+      expect(screen.getByText(/CPU 1がCPU 2から1枚引きました/)).toBeInTheDocument();
+    });
   });
 
   it('does not show drawn card in CPU actions log', async () => {
@@ -320,7 +322,7 @@ describe('OldMaidPage', () => {
     // CPU 1 is target player: click its first card back
     const btn = screen.getByRole('button', { name: 'カード 1 枚目を引く' });
     fireEvent.click(btn);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', 0, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', 0));
   });
 
   it('shows stacked discarded cards when lastDiscardedCards has a pair', async () => {
@@ -386,7 +388,7 @@ describe('OldMaidPage', () => {
 
     // Trigger draw
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
 
     // After all replay delays, final state CPU log should be visible
     // Each delay is 800ms; humanAction + 1 cpuAction = 2 delays = 1600ms max
@@ -454,7 +456,7 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
 
     // After all replay delays, the final state (currentTurn=0) must be applied
     // so the button is re-enabled for the human's next turn
@@ -549,7 +551,9 @@ describe('OldMaidPage', () => {
     };
     mockExec.mockResolvedValue(stateWithDiscardedPairs);
     await startGame();
-    expect(screen.getByText(/CPU 1がCPU 2から1枚引きました。2組捨てました/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/CPU 1がCPU 2から1枚引きました。2組捨てました/)).toBeInTheDocument();
+    });
   });
 
   it('replays two CPU actions covering non-last-action branches', async () => {
@@ -589,7 +593,7 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
 
     // After CPU replay with 2 actions, the CPU action log should appear
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
@@ -637,7 +641,7 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
 
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
       timeout: 4000,
@@ -689,7 +693,7 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
 
     // Should show the game end message without crashing
     await waitFor(() => expect(screen.getByText(humanActionNoCpuState.message)).toBeInTheDocument(), {
@@ -917,7 +921,7 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
     fireEvent.click(screen.getByText('ランダムに引く'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw', undefined, undefined, undefined));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
 
     // After CPU replay, the CPU action log should appear
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
