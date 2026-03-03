@@ -913,7 +913,7 @@ func TestCpuSplitInternal(t *testing.T) {
 		assert.Equal(t, 2, len(cpu.GetHands()))
 	})
 
-	t.Run("split with partial deck exhaustion", func(t *testing.T) {
+	t.Run("split with partial deck exhaustion rolls back", func(t *testing.T) {
 		tc := NewTrumpCards(0)
 		player := NewBlackJackPlayer()
 		dealer := NewBlackJackPlayer()
@@ -927,6 +927,7 @@ func TestCpuSplitInternal(t *testing.T) {
 		}
 
 		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(200)
 		hand := cpu.GetHands()[0]
 		hand.AddCard(NewCard(CardDesignSpade, 8, false))
 		hand.AddCard(NewCard(CardDesignHeart, 8, false))
@@ -935,8 +936,70 @@ func TestCpuSplitInternal(t *testing.T) {
 		dealerUpcard := NewCard(CardDesignClover, 6, false)
 		bj.cpuSplit(cpu, hand, 0, dealerUpcard)
 
-		// Split should still create 2 hands, but second hand may have only 1 card
-		assert.Equal(t, 2, len(cpu.GetHands()))
+		// Rollback: should remain 1 hand with original 2 cards restored
+		// cpuSplit subtracts bet (50) at entry → 150, then rollback adds it back → 200
+		assert.Equal(t, 1, len(cpu.GetHands()))
+		assert.Equal(t, 2, hand.GetCardsSize())
+		assert.True(t, hand.IsStood(), "hand should be stood after rollback")
+		assert.Equal(t, 200, cpu.GetPlayer().GetChips(), "bet should be refunded")
+	})
+
+	t.Run("split with full deck exhaustion rolls back", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+
+		// Empty the deck completely
+		for tc.DrawCard() != nil {
+		}
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(200)
+		hand := cpu.GetHands()[0]
+		hand.AddCard(NewCard(CardDesignSpade, 8, false))
+		hand.AddCard(NewCard(CardDesignHeart, 8, false))
+		hand.SetBet(50)
+
+		dealerUpcard := NewCard(CardDesignClover, 6, false)
+		bj.cpuSplit(cpu, hand, 0, dealerUpcard)
+
+		// Rollback: should remain 1 hand with original 2 cards restored
+		assert.Equal(t, 1, len(cpu.GetHands()))
+		assert.Equal(t, 2, hand.GetCardsSize())
+		assert.True(t, hand.IsStood(), "hand should be stood after rollback")
+		assert.Equal(t, 200, cpu.GetPlayer().GetChips(), "bet should be refunded")
+	})
+
+	t.Run("split partial exhaustion restores running count", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+		bj.config.CountingEnabled = true
+
+		// Leave only 1 card in deck
+		for i := 0; i < 51; i++ {
+			tc.DrawCard()
+		}
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(200)
+		hand := cpu.GetHands()[0]
+		hand.AddCard(NewCard(CardDesignSpade, 8, false))
+		hand.AddCard(NewCard(CardDesignHeart, 8, false))
+		hand.SetBet(50)
+
+		countBefore := bj.runningCount
+		dealerUpcard := NewCard(CardDesignClover, 6, false)
+		bj.cpuSplit(cpu, hand, 0, dealerUpcard)
+
+		// Running count should be restored after rollback
+		assert.Equal(t, countBefore, bj.runningCount, "running count should be rolled back")
 	})
 }
 
@@ -1041,6 +1104,57 @@ func TestCpuBetAndDealLowChips(t *testing.T) {
 		cpuHand := cpu.GetHands()[0]
 		assert.Equal(t, 40, cpuHand.GetBet())
 		assert.Equal(t, 5, cpu.GetPlayer().GetChips())
+	})
+}
+
+// --- cpuBetAndDeal with deck exhaustion ---
+
+func TestCpuBetAndDealDeckExhaustion(t *testing.T) {
+	t.Run("full deck exhaustion refunds chips and resets hand", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+
+		// Empty the deck completely
+		for tc.DrawCard() != nil {
+		}
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(200)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuBetAndDeal()
+
+		cpuHand := cpu.GetHands()[0]
+		assert.Equal(t, 0, cpuHand.GetCardsSize(), "hand should be reset")
+		assert.Equal(t, 200, cpu.GetPlayer().GetChips(), "chips should be refunded")
+	})
+
+	t.Run("partial deck exhaustion refunds chips and resets hand", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+
+		// Leave only 1 card in deck
+		for i := 0; i < 51; i++ {
+			tc.DrawCard()
+		}
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(200)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuBetAndDeal()
+
+		cpuHand := cpu.GetHands()[0]
+		assert.Equal(t, 0, cpuHand.GetCardsSize(), "hand should be reset")
+		assert.Equal(t, 200, cpu.GetPlayer().GetChips(), "chips should be refunded")
 	})
 }
 
