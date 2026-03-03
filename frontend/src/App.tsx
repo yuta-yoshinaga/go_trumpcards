@@ -10,7 +10,8 @@ import { OldMaidPage } from './pages/OldMaidPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
 
-const pageByPath: Record<string, ReactNode> = {
+type GamePath = (typeof gameRoutes)[number]['path'];
+const pageByPath: Record<GamePath, ReactNode> = {
   '/': <BlackJackPage />,
   '/poker': <PokerPage />,
   '/oldmaid': <OldMaidPage />,

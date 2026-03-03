@@ -38,9 +38,8 @@ describe('NavBar', () => {
 
   it('links point to correct hrefs', () => {
     renderNavBar();
-    const links = screen.getAllByRole('link');
-    for (let i = 0; i < gameRoutes.length; i++) {
-      expect(links[i]).toHaveAttribute('href', gameRoutes[i].path);
+    for (const { path, label } of gameRoutes) {
+      expect(screen.getByRole('link', { name: label })).toHaveAttribute('href', path);
     }
   });
 });

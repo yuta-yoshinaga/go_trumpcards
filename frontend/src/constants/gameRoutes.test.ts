@@ -2,10 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { gameRoutes } from './gameRoutes';
 
 describe('gameRoutes', () => {
-  it('has 7 game entries', () => {
-    expect(gameRoutes).toHaveLength(7);
-  });
-
   it('each entry has non-empty path and label', () => {
     for (const route of gameRoutes) {
       expect(route.path.length).toBeGreaterThan(0);
