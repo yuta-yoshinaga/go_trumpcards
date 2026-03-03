@@ -81,15 +81,7 @@ func (s *Sevens) Reset() {
 	// デッキをジョーカー枚数に合わせて再生成しシャッフル
 	s.trumpCards = NewTrumpCards(s.config.JokerCount)
 	s.trumpCards.Shuffle()
-	idx := 0
-	for {
-		card := s.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		s.players[idx%SevensPlayerCnt].AddCard(card)
-		idx++
-	}
+	dealAllCards(s.trumpCards, s.players)
 
 	// 全プレイヤーの7をボードに出す
 	for _, p := range s.players {

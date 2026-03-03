@@ -116,15 +116,7 @@ func (o *OldMaid) Reset() {
 		// ノーマル: ジョーカー1枚付き53枚
 		o.trumpCards = newShuffledDeck(1)
 	}
-	idx := 0
-	for {
-		card := o.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		o.players[idx%OldMaidPlayerCnt].AddCard(card)
-		idx++
-	}
+	dealAllCards(o.trumpCards, o.players)
 
 	// 全プレイヤーのペアを捨てる
 	for _, p := range o.players {
