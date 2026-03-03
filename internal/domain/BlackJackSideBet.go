@@ -1,5 +1,7 @@
 package domain
 
+import "sort"
+
 // サイドベット種類定数
 const (
 	BJSideBetPerfectPairs = 1
@@ -159,14 +161,7 @@ func isFlush3(a, b, c *Card) bool {
 // isStraight3 3枚がストレート（連番）か（A-2-3 と Q-K-A のラップも許可）
 func isStraight3(a, b, c *Card) bool {
 	vals := []int{a.GetValue(), b.GetValue(), c.GetValue()}
-	// ソート
-	for i := 0; i < 2; i++ {
-		for j := i + 1; j < 3; j++ {
-			if vals[i] > vals[j] {
-				vals[i], vals[j] = vals[j], vals[i]
-			}
-		}
-	}
+	sort.Ints(vals)
 	// 通常ストレート: v[0]+1==v[1] && v[1]+1==v[2]
 	if vals[0]+1 == vals[1] && vals[1]+1 == vals[2] {
 		return true

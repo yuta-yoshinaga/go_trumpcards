@@ -50,6 +50,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           id="bj-pp-bet"
           type="number"
           min={0}
+          max={10000}
           step={10}
           value={props.perfectPairsBet}
           onChange={(e) => props.onPerfectPairsBetChange(Number(e.target.value))}
@@ -63,6 +64,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           id="bj-t3-bet"
           type="number"
           min={0}
+          max={10000}
           step={10}
           value={props.twentyOnePlus3Bet}
           onChange={(e) => props.onTwentyOnePlus3BetChange(Number(e.target.value))}

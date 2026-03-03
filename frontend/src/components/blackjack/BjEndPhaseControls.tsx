@@ -20,7 +20,8 @@ export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
     setCountdown(props.autoAdvanceSeconds);
     const id = setInterval(() => {
       setCountdown((prev) => {
-        const next = (prev as number) - 1;
+        if (prev === null) return null;
+        const next = prev - 1;
         if (next <= 0) {
           clearInterval(id);
           onResetRef.current();

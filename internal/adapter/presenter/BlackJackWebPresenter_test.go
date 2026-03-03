@@ -348,7 +348,7 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.Equal(t, 0, result.RunningCount)
 		assert.Equal(t, 0.0, result.TrueCount)
 	})
-	t.Run("success Output side bet results with win", func(t *testing.T) {
+	t.Run("success Output with no side bet results", func(t *testing.T) {
 		tc := domain.NewTrumpCardsWithDecks(1, 0)
 		for i := 0; i < 10; i++ {
 			tc.Shuffle()

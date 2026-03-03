@@ -20,10 +20,11 @@ const (
 
 // ブラックジャックデフォルト値
 const (
-	BJDefaultChips = 1000 // デフォルトチップ
-	BJMinBet       = 10   // 最低ベット額
-	BJMaxHands     = 4    // スプリットによる最大ハンド数
-	BJDefaultDecks = 1    // デフォルトデッキ数
+	BJDefaultChips = 1000  // デフォルトチップ
+	BJMinBet       = 10    // 最低ベット額
+	BJMaxBet       = 10000 // 最大ベット額（オーバーフロー防止）
+	BJMaxHands     = 4     // スプリットによる最大ハンド数
+	BJDefaultDecks = 1     // デフォルトデッキ数
 )
 
 // BJValidDeckCounts 有効なデッキ数
@@ -136,14 +137,14 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet int) error {
 	if b.phase != BJPhaseBet {
 		return NewDomainError(ErrWrongPhase, "Bet is only allowed during the bet phase.")
 	}
-	if amount < BJMinBet || amount%BJMinBet != 0 {
+	if amount < BJMinBet || amount%BJMinBet != 0 || amount > BJMaxBet {
 		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
 	}
-	// サイドベットのバリデーション: 0 または (BJMinBet以上かつBJMinBetの倍数)
-	if ppBet != 0 && (ppBet < BJMinBet || ppBet%BJMinBet != 0) {
+	// サイドベットのバリデーション: 0 または (BJMinBet以上かつBJMinBetの倍数かつBJMaxBet以下)
+	if ppBet != 0 && (ppBet < BJMinBet || ppBet%BJMinBet != 0 || ppBet > BJMaxBet) {
 		return NewDomainError(ErrInvalidAmount, "Invalid Perfect Pairs bet amount.")
 	}
-	if t3Bet != 0 && (t3Bet < BJMinBet || t3Bet%BJMinBet != 0) {
+	if t3Bet != 0 && (t3Bet < BJMinBet || t3Bet%BJMinBet != 0 || t3Bet > BJMaxBet) {
 		return NewDomainError(ErrInvalidAmount, "Invalid 21+3 bet amount.")
 	}
 	totalCost := amount + ppBet + t3Bet

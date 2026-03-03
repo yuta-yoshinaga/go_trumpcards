@@ -6,6 +6,7 @@ import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEndPhaseControls } from '../components/blackjack/BjEndPhaseControls';
 import { BjInsurancePhaseControls } from '../components/blackjack/BjInsurancePhaseControls';
 import {
+  BJ_SIDE_BET_PERFECT_PAIRS,
   BJ_SUGGEST_DECLINE_INSURANCE,
   BJ_SUGGEST_DOUBLE,
   BJ_SUGGEST_DOUBLE_STAND,
@@ -196,7 +197,7 @@ export function BlackJackPage() {
                 key={r.betType}
                 className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-yellow-400/90 text-gray-900 font-bold' : 'bg-gray-500/70 text-white'}`}
               >
-                {r.betType === 1 ? 'Perfect Pairs' : '21+3'}:{' '}
+                {r.betType === BJ_SIDE_BET_PERFECT_PAIRS ? 'Perfect Pairs' : '21+3'}:{' '}
                 {r.payout > 0 ? `${r.resultName} WIN +${r.payout}` : `LOSE -${r.betAmount}`}
               </div>
             ))}
