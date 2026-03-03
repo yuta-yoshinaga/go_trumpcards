@@ -77,16 +77,6 @@ func (p *SevensPlayer) ResetPasses() {
 	p.passesUsed = 0
 }
 
-// RemoveCard 指定インデックスのカードを手札から取り除いて返す
-func (p *SevensPlayer) RemoveCard(idx int) *Card {
-	if idx < 0 || idx >= len(p.cards) {
-		return nil
-	}
-	card := p.cards[idx]
-	p.cards = append(p.cards[:idx], p.cards[idx+1:]...)
-	return card
-}
-
 // RemoveSevens 手札からすべての7を取り除いて返す
 func (p *SevensPlayer) RemoveSevens() []*Card {
 	removed := make([]*Card, 0)
