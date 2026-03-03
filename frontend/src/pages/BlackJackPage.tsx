@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { BlackJackConfigInput } from '../api/gameApi';
+import type { BlackJackConfigInput, BlackJackSideBetInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
@@ -37,6 +37,9 @@ export function BlackJackPage() {
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
   const [cpuPlayerCount, setCpuPlayerCount] = useState(0);
+  const [perfectPairsBet, setPerfectPairsBet] = useState(0);
+  const [twentyOnePlus3Bet, setTwentyOnePlus3Bet] = useState(0);
+  const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback((res: BlackJackResponse) => {
     setMessage(res.message);
@@ -58,6 +61,7 @@ export function BlackJackPage() {
   const hintEnabled = state?.hintEnabled ?? false;
   const suggestedAction = state?.suggestedAction ?? BJ_SUGGEST_NONE;
   const cpuPlayers = state?.cpuPlayers ?? [];
+  const sideBetResults = state?.sideBetResults ?? [];
 
   const showDoubleDown = !!currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet;
   const showSplit = !!currentHand?.canSplit && playerChips >= currentHand.bet;
@@ -184,6 +188,21 @@ export function BlackJackPage() {
           <div className="text-yellow-300 text-sm mb-1">インシュランス: {state.insuranceBet}</div>
         )}
 
+        {/* Side bet results */}
+        {sideBetResults.length > 0 && (
+          <div className="mb-2">
+            {sideBetResults.map((r) => (
+              <div
+                key={r.betType}
+                className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-yellow-400/90 text-gray-900 font-bold' : 'bg-gray-500/70 text-white'}`}
+              >
+                {r.betType === 1 ? 'Perfect Pairs' : '21+3'}:{' '}
+                {r.payout > 0 ? `${r.resultName} WIN +${r.payout}` : `LOSE -${r.betAmount}`}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Hint banner */}
         {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
           <div className="bg-yellow-300/90 text-gray-900 text-center text-sm font-bold px-3 py-1 rounded mb-2">
@@ -203,22 +222,49 @@ export function BlackJackPage() {
         {/* Phase-based buttons */}
         <div className="text-center">
           {phase === BjPhase.BET && (
-            <BjBetPhaseControls
-              betAmount={betAmount}
-              onBetAmountChange={setBetAmount}
-              deckCount={state?.deckCount ?? 1}
-              onDeckCountChange={(v) => exec('setdeckcount', v)}
-              cpuPlayerCount={cpuPlayerCount}
-              onCpuPlayerCountChange={setCpuPlayerCount}
-              hintEnabled={hintEnabled}
-              onToggleHint={() => exec('togglehint')}
-              dealerHitsSoft17={dealerHitsSoft17}
-              onToggleSoft17={() => exec('togglesoft17')}
-              countingEnabled={countingEnabled}
-              onToggleCounting={() => exec('togglecounting')}
-              loading={loading}
-              onBet={() => exec('bet', betAmount)}
-            />
+            <>
+              <BjBetPhaseControls
+                betAmount={betAmount}
+                onBetAmountChange={setBetAmount}
+                deckCount={state?.deckCount ?? 1}
+                onDeckCountChange={(v) => exec('setdeckcount', v)}
+                cpuPlayerCount={cpuPlayerCount}
+                onCpuPlayerCountChange={setCpuPlayerCount}
+                hintEnabled={hintEnabled}
+                onToggleHint={() => exec('togglehint')}
+                dealerHitsSoft17={dealerHitsSoft17}
+                onToggleSoft17={() => exec('togglesoft17')}
+                countingEnabled={countingEnabled}
+                onToggleCounting={() => exec('togglecounting')}
+                loading={loading}
+                onBet={() => {
+                  const sideBets: BlackJackSideBetInput = {};
+                  if (perfectPairsBet > 0) sideBets.perfectPairsBet = perfectPairsBet;
+                  if (twentyOnePlus3Bet > 0) sideBets.twentyOnePlus3Bet = twentyOnePlus3Bet;
+                  exec('bet', betAmount, undefined, sideBets);
+                }}
+                perfectPairsBet={perfectPairsBet}
+                onPerfectPairsBetChange={setPerfectPairsBet}
+                twentyOnePlus3Bet={twentyOnePlus3Bet}
+                onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
+              />
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <label htmlFor="bj-auto-advance" className="text-white text-sm">
+                  自動進行:
+                </label>
+                <select
+                  id="bj-auto-advance"
+                  value={autoAdvance}
+                  onChange={(e) => setAutoAdvance(Number(e.target.value))}
+                  className="px-2 py-1 rounded text-sm"
+                >
+                  <option value={0}>OFF</option>
+                  <option value={3}>3秒</option>
+                  <option value={5}>5秒</option>
+                  <option value={10}>10秒</option>
+                </select>
+              </div>
+            </>
           )}
 
           {phase === BjPhase.INSURANCE && (
@@ -247,7 +293,13 @@ export function BlackJackPage() {
             />
           )}
 
-          {phase === BjPhase.END && <BjEndPhaseControls loading={loading} onReset={handleReset} />}
+          {phase === BjPhase.END && (
+            <BjEndPhaseControls
+              loading={loading}
+              onReset={handleReset}
+              autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
+            />
+          )}
         </div>
       </div>
     </div>

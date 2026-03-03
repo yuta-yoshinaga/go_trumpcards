@@ -27,6 +27,8 @@ const betPhaseState: BlackJackResponse = {
   cpuPlayerCount: 0,
   runningCount: 0,
   trueCount: 0,
+  perfectPairsBet: 0,
+  twentyOnePlus3Bet: 0,
 };
 
 const baseHand: BlackJackHand = {
@@ -62,6 +64,8 @@ const actionPhaseState: BlackJackResponse = {
   cpuPlayerCount: 0,
   runningCount: 0,
   trueCount: 0,
+  perfectPairsBet: 0,
+  twentyOnePlus3Bet: 0,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -81,6 +85,8 @@ const insurancePhaseState: BlackJackResponse = {
   cpuPlayerCount: 0,
   runningCount: 0,
   trueCount: 0,
+  perfectPairsBet: 0,
+  twentyOnePlus3Bet: 0,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -123,6 +129,8 @@ const endPhaseState: BlackJackResponse = {
   cpuPlayerCount: 0,
   runningCount: 0,
   trueCount: 0,
+  perfectPairsBet: 0,
+  twentyOnePlus3Bet: 0,
 };
 
 beforeEach(() => {
@@ -157,7 +165,7 @@ describe('BlackJackPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 10));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 10, undefined, {}));
   });
 
   it('shows hit and stand buttons in action phase', async () => {
@@ -876,7 +884,7 @@ describe('BlackJackPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 50));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 50, undefined, {}));
   });
 
   it('updates CPU count when selector value is changed', async () => {
@@ -924,5 +932,84 @@ describe('BlackJackPage', () => {
         countingEnabled: false,
       }),
     );
+  });
+
+  // --- Side bet tests ---
+
+  it('shows PP and 21+3 inputs in bet phase', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('PP:')).toBeInTheDocument());
+    expect(screen.getByLabelText('21+3:')).toBeInTheDocument();
+  });
+
+  it('sends side bets when PP and T3 are set', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.change(screen.getByLabelText('PP:'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('21+3:'), { target: { value: '20' } });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('bet', 10, undefined, {
+        perfectPairsBet: 10,
+        twentyOnePlus3Bet: 20,
+      }),
+    );
+  });
+
+  it('does not include side bets in body when they are zero', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 10, undefined, {}));
+  });
+
+  it('shows side bet results banner when sideBetResults exist (win)', async () => {
+    const stateWithSideBets: BlackJackResponse = {
+      ...actionPhaseState,
+      sideBetResults: [{ betType: 1, resultType: 1, resultName: 'Perfect Pair', betAmount: 10, payout: 250 }],
+    };
+    mockExec.mockResolvedValue(stateWithSideBets);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/Perfect Pairs:.*Perfect Pair WIN \+250/)).toBeInTheDocument());
+  });
+
+  it('shows side bet results banner when sideBetResults exist (lose)', async () => {
+    const stateWithSideBets: BlackJackResponse = {
+      ...actionPhaseState,
+      sideBetResults: [{ betType: 2, resultType: 0, resultName: '', betAmount: 20, payout: 0 }],
+    };
+    mockExec.mockResolvedValue(stateWithSideBets);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/21\+3:.*LOSE -20/)).toBeInTheDocument());
+  });
+
+  it('does not show side bet results when sideBetResults is empty', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByText(/Perfect Pairs:/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/21\+3:/)).not.toBeInTheDocument();
+  });
+
+  // --- Auto-advance tests ---
+
+  it('shows auto-advance selector in bet phase', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('自動進行:')).toBeInTheDocument());
+  });
+
+  it('auto-advance selector defaults to OFF', async () => {
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('自動進行:')).toHaveValue('0'));
+  });
+
+  it('does not show countdown on reset button when auto-advance is OFF', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    render(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
   });
 });

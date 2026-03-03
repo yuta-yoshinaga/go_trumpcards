@@ -31,6 +31,14 @@ export interface BlackJackCpuSeat {
   hands: BlackJackHand[];
 }
 
+export interface BlackJackSideBetResult {
+  betType: number;
+  resultType: number;
+  resultName: string;
+  betAmount: number;
+  payout: number;
+}
+
 export interface BlackJackResponse {
   dealer: BlackJackPlayer;
   player: BlackJackPlayer;
@@ -49,6 +57,9 @@ export interface BlackJackResponse {
   runningCount: number;
   trueCount: number;
   cpuPlayers?: BlackJackCpuSeat[];
+  perfectPairsBet: number;
+  twentyOnePlus3Bet: number;
+  sideBetResults?: BlackJackSideBetResult[];
 }
 
 export interface PokerPlayerData {

@@ -18,6 +18,10 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
     onToggleCounting: vi.fn(),
     loading: false,
     onBet: vi.fn(),
+    perfectPairsBet: 0,
+    onPerfectPairsBetChange: vi.fn(),
+    twentyOnePlus3Bet: 0,
+    onTwentyOnePlus3BetChange: vi.fn(),
     ...overrides,
   };
 }
@@ -117,6 +121,30 @@ describe('BjBetPhaseControls', () => {
     expect(onBet).toHaveBeenCalled();
   });
 
+  it('renders PP input with provided value', () => {
+    render(<BjBetPhaseControls {...defaultProps({ perfectPairsBet: 20 })} />);
+    expect(screen.getByLabelText('PP:')).toHaveValue(20);
+  });
+
+  it('calls onPerfectPairsBetChange when PP input changes', () => {
+    const onPerfectPairsBetChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onPerfectPairsBetChange })} />);
+    fireEvent.change(screen.getByLabelText('PP:'), { target: { value: '30' } });
+    expect(onPerfectPairsBetChange).toHaveBeenCalledWith(30);
+  });
+
+  it('renders 21+3 input with provided value', () => {
+    render(<BjBetPhaseControls {...defaultProps({ twentyOnePlus3Bet: 40 })} />);
+    expect(screen.getByLabelText('21+3:')).toHaveValue(40);
+  });
+
+  it('calls onTwentyOnePlus3BetChange when 21+3 input changes', () => {
+    const onTwentyOnePlus3BetChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onTwentyOnePlus3BetChange })} />);
+    fireEvent.change(screen.getByLabelText('21+3:'), { target: { value: '50' } });
+    expect(onTwentyOnePlus3BetChange).toHaveBeenCalledWith(50);
+  });
+
   it('disables inputs and buttons when loading is true', () => {
     render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
     expect(screen.getByLabelText('ベット額:')).toBeDisabled();
@@ -126,6 +154,8 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'ヒント OFF' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'S17' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'カウント OFF' })).toBeDisabled();
+    expect(screen.getByLabelText('PP:')).toBeDisabled();
+    expect(screen.getByLabelText('21+3:')).toBeDisabled();
   });
 
   it('enables inputs and buttons when loading is false', () => {
@@ -134,5 +164,7 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled();
     expect(screen.getByLabelText('デッキ数:')).not.toBeDisabled();
     expect(screen.getByLabelText('CPU人数:')).not.toBeDisabled();
+    expect(screen.getByLabelText('PP:')).not.toBeDisabled();
+    expect(screen.getByLabelText('21+3:')).not.toBeDisabled();
   });
 });

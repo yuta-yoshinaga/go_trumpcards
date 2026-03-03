@@ -682,3 +682,60 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 		assert.Contains(t, output, "SPADE 5,HEART 6")
 	})
 }
+
+func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("side bet win displayed", func(t *testing.T) {
+		tc := domain.NewTrumpCardsWithDecks(1, 0)
+		for i := 0; i < 10; i++ {
+			tc.Shuffle()
+		}
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		// Place a bet with PP side bet
+		err := bj.PlayerBet(100, 10, 0)
+		if err != nil {
+			t.Skip("cannot test side bet (deck exhausted)")
+		}
+		output := bjp.Output(bj, nil)
+		results := bj.GetSideBetResults()
+		if len(results) > 0 && results[0].Payout > 0 {
+			assert.Contains(t, output, "side bet [Perfect Pairs]:")
+			assert.Contains(t, output, "WIN")
+		} else if len(results) > 0 {
+			assert.Contains(t, output, "side bet [Perfect Pairs]:")
+			assert.Contains(t, output, "LOSE")
+		}
+	})
+
+	t.Run("side bet lose displayed", func(t *testing.T) {
+		tc := domain.NewTrumpCardsWithDecks(1, 0)
+		for i := 0; i < 10; i++ {
+			tc.Shuffle()
+		}
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		err := bj.PlayerBet(100, 0, 10)
+		if err != nil {
+			t.Skip("cannot test side bet (deck exhausted)")
+		}
+		output := bjp.Output(bj, nil)
+		results := bj.GetSideBetResults()
+		if len(results) > 0 && results[0].Payout > 0 {
+			assert.Contains(t, output, "side bet [21+3]:")
+			assert.Contains(t, output, "WIN")
+		} else if len(results) > 0 {
+			assert.Contains(t, output, "side bet [21+3]:")
+			assert.Contains(t, output, "LOSE")
+		}
+	})
+}

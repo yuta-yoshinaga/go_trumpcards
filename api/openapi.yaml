@@ -916,6 +916,22 @@ components:
             Whether card counting display is enabled.  Only used with `reset` command.
             Defaults to false when omitted.
           example: false
+        perfectPairsBet:
+          type: integer
+          description: |
+            Perfect Pairs side bet amount.  Only used with `bet` command.
+            Must be 0 (no bet) or a positive multiple of 10.
+            Defaults to 0 when omitted.
+          minimum: 0
+          example: 0
+        twentyOnePlus3Bet:
+          type: integer
+          description: |
+            21+3 side bet amount.  Only used with `bet` command.
+            Must be 0 (no bet) or a positive multiple of 10.
+            Defaults to 0 when omitted.
+          minimum: 0
+          example: 0
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1015,6 +1031,8 @@ components:
         - cpuPlayerCount
         - runningCount
         - trueCount
+        - perfectPairsBet
+        - twentyOnePlus3Bet
       properties:
         dealer:
           $ref: '#/components/schemas/BlackJackPlayer'
@@ -1120,6 +1138,69 @@ components:
             Each entry contains the CPU player's chip count and hands.
           items:
             $ref: '#/components/schemas/BlackJackCpuSeat'
+        perfectPairsBet:
+          type: integer
+          description: Current Perfect Pairs side bet amount (0 if no side bet placed).
+          example: 0
+        twentyOnePlus3Bet:
+          type: integer
+          description: Current 21+3 side bet amount (0 if no side bet placed).
+          example: 0
+        sideBetResults:
+          type: array
+          description: |
+            Side bet evaluation results.  Present after dealing when side bets were placed.
+            Each entry describes one side bet outcome (win or loss).
+          items:
+            $ref: '#/components/schemas/BlackJackSideBetResult'
+
+    BlackJackSideBetResult:
+      type: object
+      description: Result of a single side bet evaluation
+      required:
+        - betType
+        - resultType
+        - resultName
+        - betAmount
+        - payout
+      properties:
+        betType:
+          type: integer
+          description: |
+            Side bet type:
+            - `1` — Perfect Pairs
+            - `2` — 21+3
+          enum: [1, 2]
+          example: 1
+        resultType:
+          type: integer
+          description: |
+            Result type.  For Perfect Pairs:
+            - `0` — None (no pair)
+            - `1` — Perfect Pair (same suit, same value; 25:1)
+            - `2` — Colored Pair (same color, same value; 12:1)
+            - `3` — Mixed Pair (different color, same value; 6:1)
+
+            For 21+3:
+            - `0` — None (no hand)
+            - `1` — Suited Trips (same suit, same value; 100:1)
+            - `2` — Straight Flush (same suit, consecutive; 40:1)
+            - `3` — Three of a Kind (same value, different suits; 30:1)
+            - `4` — Straight (consecutive values; 10:1)
+            - `5` — Flush (same suit; 5:1)
+          example: 1
+        resultName:
+          type: string
+          description: Human-readable name of the result (e.g., "Perfect Pair", "Straight Flush").
+          example: Perfect Pair
+        betAmount:
+          type: integer
+          description: Amount wagered on this side bet.
+          example: 10
+        payout:
+          type: integer
+          description: Payout amount (0 if lost; betAmount × multiplier if won).
+          example: 250
 
     BlackJackCpuSeat:
       type: object

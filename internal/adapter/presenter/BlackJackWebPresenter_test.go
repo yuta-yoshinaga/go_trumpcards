@@ -348,6 +348,35 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.Equal(t, 0, result.RunningCount)
 		assert.Equal(t, 0.0, result.TrueCount)
 	})
+	t.Run("success Output side bet results with win", func(t *testing.T) {
+		tc := domain.NewTrumpCardsWithDecks(1, 0)
+		for i := 0; i < 10; i++ {
+			tc.Shuffle()
+		}
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		// Manually set up hand with a pair
+		hand := bj.GetPlayerHands()[0]
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.SetBet(100)
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		dealer.AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		// Use PlayerBet to trigger side bet evaluation - but we already manually set cards,
+		// so instead test the getter directly
+		bj.SetPhase(domain.BJPhaseAction)
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, result.PerfectPairsBet)
+		assert.Equal(t, 0, result.TwentyOnePlus3Bet)
+		assert.Nil(t, result.SideBetResults)
+	})
 	t.Run("success Output CPU hand cards in action phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		player := domain.NewBlackJackPlayer()

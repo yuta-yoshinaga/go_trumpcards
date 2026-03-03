@@ -26,10 +26,12 @@ func makeRestRequest(body string) *rest.Request {
 
 type mockBlackJackIF struct{ mock.Mock }
 
-func (m *mockBlackJackIF) Reset() string             { return m.Called().String(0) }
-func (m *mockBlackJackIF) Hit() string               { return m.Called().String(0) }
-func (m *mockBlackJackIF) Stand() string             { return m.Called().String(0) }
-func (m *mockBlackJackIF) Bet(a int) string          { return m.Called(a).String(0) }
+func (m *mockBlackJackIF) Reset() string { return m.Called().String(0) }
+func (m *mockBlackJackIF) Hit() string   { return m.Called().String(0) }
+func (m *mockBlackJackIF) Stand() string { return m.Called().String(0) }
+func (m *mockBlackJackIF) Bet(a, ppBet, t3Bet int) string {
+	return m.Called(a, ppBet, t3Bet).String(0)
+}
 func (m *mockBlackJackIF) DoubleDown() string        { return m.Called().String(0) }
 func (m *mockBlackJackIF) Split() string             { return m.Called().String(0) }
 func (m *mockBlackJackIF) Insurance() string         { return m.Called().String(0) }

@@ -15,7 +15,7 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 	bjiMock.On("Reset").Return(mockOutput)
 	bjiMock.On("Hit").Return(mockOutput)
 	bjiMock.On("Stand").Return(mockOutput)
-	bjiMock.On("Bet", 100).Return(mockOutput)
+	bjiMock.On("Bet", 100, 0, 0).Return(mockOutput)
 	bjiMock.On("DoubleDown").Return(mockOutput)
 	bjiMock.On("Split").Return(mockOutput)
 	bjiMock.On("Insurance").Return(mockOutput)
@@ -132,6 +132,28 @@ func TestBlackJackCuiController_NewCommands(t *testing.T) {
 	})
 	t.Run("sd with zero count", func(t *testing.T) {
 		assert.Equal(t, "Invalid deck count. Please enter a number.", tbc.Exec("sd 0"))
+	})
+}
+
+func TestBlackJackCuiController_BetWithSideBets(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("Bet", 100, 10, 20).Return(mockOutput)
+	bjiMock.On("Bet", 100, 10, 0).Return(mockOutput)
+	bjiMock.On("Bet", 100, 0, 0).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("bet with PP and T3", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("b 100 10 20"))
+	})
+	t.Run("bet with PP only", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("b 100 10"))
+	})
+	t.Run("bet with invalid PP (ignored)", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("b 100 abc"))
+	})
+	t.Run("bet with PP and invalid T3 (ignored)", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("b 100 10 xyz"))
 	})
 }
 
