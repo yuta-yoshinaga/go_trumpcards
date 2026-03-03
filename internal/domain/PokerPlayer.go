@@ -54,11 +54,6 @@ func NewPokerPlayer(isHuman bool, style PokerPlayStyle) *PokerPlayer {
 	}
 }
 
-// AddCard カード追加
-func (pp *PokerPlayer) AddCard(card *Card) {
-	pp.cards = append(pp.cards, card)
-}
-
 // ExchangeCard 指定インデックスのカードを交換
 func (pp *PokerPlayer) ExchangeCard(idx int, card *Card) {
 	if 0 <= idx && idx < len(pp.cards) {

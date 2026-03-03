@@ -15,11 +15,6 @@ func NewBlackJackPlayer() *BlackJackPlayer {
 	}
 }
 
-// AddCard カード追加
-func (bp *BlackJackPlayer) AddCard(card *Card) {
-	bp.cards = append(bp.cards, card)
-}
-
 // GetScore 手札から現在のスコア計算
 func (bp *BlackJackPlayer) GetScore() int {
 	return CalculateBlackJackScore(bp.cards)
