@@ -49,6 +49,32 @@ func TestDealAllCards(t *testing.T) {
 		}
 	})
 
+	t.Run("no players does not panic", func(t *testing.T) {
+		deck := NewTrumpCards(0) // 52 cards
+		var players []*testPlayer
+
+		dealAllCards(deck, players)
+
+		if deck.GetRemainingCount() != 52 {
+			t.Errorf("deck should not be drawn from when there are no players, remaining: %d", deck.GetRemainingCount())
+		}
+	})
+
+	t.Run("nil deck does not panic", func(t *testing.T) {
+		players := make([]*testPlayer, 2)
+		for i := range players {
+			players[i] = &testPlayer{}
+		}
+
+		dealAllCards(nil, players)
+
+		for i, p := range players {
+			if len(p.cards) != 0 {
+				t.Errorf("player %d got %d cards, want 0", i, len(p.cards))
+			}
+		}
+	})
+
 	t.Run("uneven distribution", func(t *testing.T) {
 		deck := NewTrumpCards(1) // 53 cards
 		players := make([]*testPlayer, 4)

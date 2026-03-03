@@ -8,6 +8,9 @@ type cardAdder interface {
 // dealAllCards draws all cards from the deck and distributes them
 // round-robin to players.
 func dealAllCards[T cardAdder](deck *TrumpCards, players []T) {
+	if deck == nil || len(players) == 0 {
+		return
+	}
 	idx := 0
 	for {
 		card := deck.DrawCard()
