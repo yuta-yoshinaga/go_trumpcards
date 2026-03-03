@@ -112,18 +112,6 @@ func TestPokerPlayer_EvalHand(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// GetHandRank / SetHandRank
-// ---------------------------------------------------------------------------
-
-func TestPokerPlayer_HandRank(t *testing.T) {
-	p := NewPokerPlayer(true, PokerStyleBalanced)
-	assert.Equal(t, PokerHandHighCard, p.GetHandRank())
-
-	p.SetHandRank(PokerHandRoyalFlush)
-	assert.Equal(t, PokerHandRoyalFlush, p.GetHandRank())
-}
-
-// ---------------------------------------------------------------------------
 // GetHandName
 // ---------------------------------------------------------------------------
 
@@ -168,40 +156,6 @@ func TestPokerPlayer_GetHandName(t *testing.T) {
 		p.SetHandRank(999)
 		assert.Equal(t, "Unknown", p.GetHandName())
 	})
-}
-
-// ---------------------------------------------------------------------------
-// GetIsHuman / GetFolded / SetFolded / GetAllIn / SetAllIn
-// ---------------------------------------------------------------------------
-
-func TestPokerPlayer_BoolFlags(t *testing.T) {
-	p := NewPokerPlayer(false, PokerStyleAggressive)
-
-	assert.False(t, p.GetIsHuman())
-	assert.False(t, p.GetFolded())
-	assert.False(t, p.GetAllIn())
-
-	p.SetFolded(true)
-	assert.True(t, p.GetFolded())
-	p.SetFolded(false)
-	assert.False(t, p.GetFolded())
-
-	p.SetAllIn(true)
-	assert.True(t, p.GetAllIn())
-	p.SetAllIn(false)
-	assert.False(t, p.GetAllIn())
-}
-
-// ---------------------------------------------------------------------------
-// GetCurrentBet / SetCurrentBet
-// ---------------------------------------------------------------------------
-
-func TestPokerPlayer_CurrentBet(t *testing.T) {
-	p := NewPokerPlayer(true, PokerStyleBalanced)
-	assert.Equal(t, 0, p.GetCurrentBet())
-
-	p.SetCurrentBet(50)
-	assert.Equal(t, 50, p.GetCurrentBet())
 }
 
 // ---------------------------------------------------------------------------

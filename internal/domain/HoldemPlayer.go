@@ -4,18 +4,15 @@ import "sort"
 
 // HoldemPlayer テキサスホールデムプレイヤークラス
 type HoldemPlayer struct {
-	Player                     // 親クラス
-	ChipHolder                 // チップ管理
-	isHuman    bool            // 人間フラグ
-	handRank   int             // ベストハンドランク
-	bestHand   []*Card         // ベスト5枚
-	folded     bool            // フォールド済
-	allIn      bool            // オールイン済
-	currentBet int             // 現ラウンドベット額
-	playStyle  HoldemPlayStyle // CPUプレイスタイル
-	totalHands int             // 総ハンド数 (セッション通算)
-	vpipCount  int             // VPIP対象ハンド数
-	pfrCount   int             // PFR対象ハンド数
+	Player                            // 親クラス
+	ChipHolder                        // チップ管理
+	bettingPlayerBase                 // ベッティング共通状態
+	isHuman           bool            // 人間フラグ
+	bestHand          []*Card         // ベスト5枚
+	playStyle         HoldemPlayStyle // CPUプレイスタイル
+	totalHands        int             // 総ハンド数 (セッション通算)
+	vpipCount         int             // VPIP対象ハンド数
+	pfrCount          int             // PFR対象ハンド数
 }
 
 // NewHoldemPlayer コンストラクタ
@@ -30,29 +27,8 @@ func NewHoldemPlayer(isHuman bool, style HoldemPlayStyle) *HoldemPlayer {
 // GetIsHuman 人間フラグ取得
 func (hp *HoldemPlayer) GetIsHuman() bool { return hp.isHuman }
 
-// GetHandRank ハンドランク取得
-func (hp *HoldemPlayer) GetHandRank() int { return hp.handRank }
-
 // GetBestHand ベストハンド取得
 func (hp *HoldemPlayer) GetBestHand() []*Card { return hp.bestHand }
-
-// GetFolded フォールド状態取得
-func (hp *HoldemPlayer) GetFolded() bool { return hp.folded }
-
-// SetFolded フォールド状態設定
-func (hp *HoldemPlayer) SetFolded(folded bool) { hp.folded = folded }
-
-// GetAllIn オールイン状態取得
-func (hp *HoldemPlayer) GetAllIn() bool { return hp.allIn }
-
-// SetAllIn オールイン状態設定
-func (hp *HoldemPlayer) SetAllIn(allIn bool) { hp.allIn = allIn }
-
-// GetCurrentBet 現ラウンドベット取得
-func (hp *HoldemPlayer) GetCurrentBet() int { return hp.currentBet }
-
-// SetCurrentBet 現ラウンドベット設定
-func (hp *HoldemPlayer) SetCurrentBet(bet int) { hp.currentBet = bet }
 
 // GetPlayStyle プレイスタイル取得
 func (hp *HoldemPlayer) GetPlayStyle() HoldemPlayStyle { return hp.playStyle }
@@ -105,9 +81,6 @@ func (hp *HoldemPlayer) GetComparisonCards() []*Card {
 	copy(cards, hp.bestHand)
 	return cards
 }
-
-// SetHandRank ハンドランク設定（テスト用）
-func (hp *HoldemPlayer) SetHandRank(rank int) { hp.handRank = rank }
 
 // SetBestHand ベストハンド設定（テスト用）
 func (hp *HoldemPlayer) SetBestHand(hand []*Card) { hp.bestHand = hand }
