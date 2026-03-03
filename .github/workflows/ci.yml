@@ -7,6 +7,20 @@ on:
     branches: [ develop ]
 
 jobs:
+  lint-backend:
+    name: Backend Lint (golangci-lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v7
+
   test-backend:
     name: Backend Tests
     runs-on: ubuntu-latest

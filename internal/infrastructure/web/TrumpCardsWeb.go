@@ -3,7 +3,7 @@ package web
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -145,7 +145,8 @@ func (web *TrumpCardsWeb) Exec() {
 		rest.Post("/holdem/exec", web.hmc.Exec),
 	)
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("failed to create router", "error", err)
+		os.Exit(1)
 	}
 	api.SetApp(router)
 	mux := http.NewServeMux()
@@ -186,14 +187,15 @@ func (web *TrumpCardsWeb) Exec() {
 	select {
 	case err := <-errCh:
 		if !errors.Is(err, http.ErrServerClosed) {
-			log.Fatal(err)
+			slog.Error("server error", "error", err)
+			os.Exit(1)
 		}
 	case <-ctx.Done():
-		log.Println("shutting down server...")
+		slog.Info("shutting down server")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
 		if err := srv.Shutdown(shutdownCtx); err != nil {
-			log.Printf("server shutdown error: %v", err)
+			slog.Error("server shutdown error", "error", err)
 		}
 	}
 
@@ -204,7 +206,7 @@ func (web *TrumpCardsWeb) Exec() {
 	web.sgc.Stop()
 	web.dwc.Stop()
 	web.hmc.Stop()
-	log.Println("server stopped")
+	slog.Info("server stopped")
 }
 
 func getListenPort() string {

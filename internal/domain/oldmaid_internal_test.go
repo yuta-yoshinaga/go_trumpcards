@@ -23,11 +23,12 @@ func TestOldMaid_cpuSelectCardIdx_AllBranches(t *testing.T) {
 
 	for i := 0; i < 5000; i++ {
 		idx := cpuSelectCardIdx(size)
-		if idx == 0 {
+		switch idx {
+		case 0:
 			hitFirst = true
-		} else if idx == size-1 {
+		case size - 1:
 			hitLast = true
-		} else {
+		default:
 			hitRandom = true
 		}
 		if hitFirst && hitLast && hitRandom {
