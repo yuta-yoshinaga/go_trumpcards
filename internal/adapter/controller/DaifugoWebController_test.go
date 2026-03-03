@@ -91,7 +91,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 		input := controller.DaifugoWebInput{
 			Command:   "reset",
 			SessionId: "test-session-1",
-			Config: &controller.DaifugoWebInputConfig{
+			Config: &controller.DaifugoWebConfig{
 				JokerCount:      2,
 				FiveSkipEnabled: true,
 			},

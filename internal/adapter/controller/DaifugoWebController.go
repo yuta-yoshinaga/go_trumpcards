@@ -7,8 +7,8 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
-// DaifugoWebInputConfig リセット時のローカルルール設定入力
-type DaifugoWebInputConfig struct {
+// DaifugoWebConfig ローカルルール設定 (入力・出力共用)
+type DaifugoWebConfig struct {
 	JokerCount          int  `json:"jokerCount"`
 	EightCutEnabled     bool `json:"eightCutEnabled"`
 	SuitLockEnabled     bool `json:"suitLockEnabled"`
@@ -27,11 +27,11 @@ type DaifugoWebInputConfig struct {
 
 // DaifugoWebInput 大富豪Webインプット
 type DaifugoWebInput struct {
-	Command   string                 `json:"command"`
-	Indices   []int                  `json:"indices"` // 出すカードのインデックス。play コマンド用。空の場合はパス。
-	SessionId string                 `json:"sessionId"`
-	Config    *DaifugoWebInputConfig `json:"config"`   // リセット時のローカルルール設定 (省略可)
-	SortMode  *int                   `json:"sortMode"` // ソートモード (sort コマンド用、省略可)
+	Command   string            `json:"command"`
+	Indices   []int             `json:"indices"` // 出すカードのインデックス。play コマンド用。空の場合はパス。
+	SessionId string            `json:"sessionId"`
+	Config    *DaifugoWebConfig `json:"config"`   // リセット時のローカルルール設定 (省略可)
+	SortMode  *int              `json:"sortMode"` // ソートモード (sort コマンド用、省略可)
 }
 
 // GetCommand returns the command string.
@@ -63,24 +63,6 @@ type DaifugoWebOutputExchangeAction struct {
 	Cards         []*WebOutputCard `json:"cards"`
 }
 
-// DaifugoWebOutputConfig ローカルルール設定
-type DaifugoWebOutputConfig struct {
-	JokerCount          int  `json:"jokerCount"`
-	EightCutEnabled     bool `json:"eightCutEnabled"`
-	SuitLockEnabled     bool `json:"suitLockEnabled"`
-	ElevenBackEnabled   bool `json:"elevenBackEnabled"`
-	SequenceEnabled     bool `json:"sequenceEnabled"`
-	CardExchangeEnabled bool `json:"cardExchangeEnabled"`
-	FiveSkipEnabled     bool `json:"fiveSkipEnabled"`
-	SevenPassEnabled    bool `json:"sevenPassEnabled"`
-	TenDiscardEnabled   bool `json:"tenDiscardEnabled"`
-	SpadeThreeEnabled   bool `json:"spadeThreeEnabled"`
-	CapitalFallEnabled  bool `json:"capitalFallEnabled"`
-	NineReverseEnabled  bool `json:"nineReverseEnabled"`
-	CoupDetatEnabled    bool `json:"coupDetatEnabled"`
-	IntenseLockEnabled  bool `json:"intenseLockEnabled"`
-}
-
 // DaifugoWebOutput 大富豪Webアウトプット
 type DaifugoWebOutput struct {
 	Players             []*DaifugoWebOutputPlayer         `json:"players"`
@@ -93,7 +75,7 @@ type DaifugoWebOutput struct {
 	SuitLocked          bool                              `json:"suitLocked"`
 	LockedSuit          string                            `json:"lockedSuit"`
 	TableIsSequence     bool                              `json:"tableIsSequence"`
-	Config              DaifugoWebOutputConfig            `json:"config"`
+	Config              DaifugoWebConfig                  `json:"config"`
 	ExchangeActions     []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
 	CpuActions          []*DaifugoWebOutputAction         `json:"cpuActions"`
 	HumanAction         *DaifugoWebOutputAction           `json:"humanAction"`
@@ -129,7 +111,7 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			switch param.Command {
 			case "r", "reset":
 				if param.Config != nil {
-					dgConfig := convertWebInputConfig(*param.Config)
+					dgConfig := convertWebConfig(*param.Config)
 					dwc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig))
 				} else {
 					dwc.writePresenterResponse(w, dgi.Reset())
@@ -155,8 +137,8 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		})
 }
 
-// convertWebInputConfig DaifugoWebInputConfig を domain.DaifugoConfig に変換
-func convertWebInputConfig(c DaifugoWebInputConfig) domain.DaifugoConfig {
+// convertWebConfig DaifugoWebConfig を domain.DaifugoConfig に変換
+func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
 	return domain.DaifugoConfig{
 		JokerCount:          c.JokerCount,
 		EightCutEnabled:     c.EightCutEnabled,
