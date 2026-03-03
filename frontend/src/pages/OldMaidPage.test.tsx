@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { oldmaidApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { OldMaidResponse } from '../types/card';
 import { OldMaidPage } from './OldMaidPage';
 
@@ -472,9 +473,7 @@ describe('OldMaidPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
   }, 10000);
 
   it('clears error message on successful API call after failure', async () => {
@@ -484,16 +483,12 @@ describe('OldMaidPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
   }, 10000);
 
   it('shows JOKER label in status when lastDrawCard is JOKER', async () => {
@@ -788,9 +783,7 @@ describe('OldMaidPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
   });
 
   it('human cards are draggable when game is active', async () => {
@@ -882,9 +875,7 @@ describe('OldMaidPage', () => {
       dataTransfer: { getData: () => '0' },
     });
 
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
   });
 
   it('goes directly to CPU replay when humanAction is null', async () => {
