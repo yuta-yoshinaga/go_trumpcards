@@ -5,6 +5,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 // SevensGame 7並べゲームインタフェース
 type SevensGame interface {
 	// interactor が呼ぶメソッド
+	SetConfig(config domain.SevensConfig)
 	Reset()
 	GetGameEndFlag() bool
 	IsHumanTurn() bool

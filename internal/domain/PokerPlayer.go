@@ -33,8 +33,8 @@ var PokerHandNames = []string{
 // PokerPlayer ポーカープレイヤークラス
 type PokerPlayer struct {
 	Player                       // 親クラス
+	ChipHolder                   // チップ管理
 	handRank      int            // ハンドランク
-	chips         int            // チップ
 	isHuman       bool           // 人間フラグ
 	folded        bool           // フォールド済
 	allIn         bool           // オールイン済
@@ -85,30 +85,6 @@ func (pp *PokerPlayer) GetHandName() string {
 	return "Unknown"
 }
 
-// GetChips チップ取得
-func (pp *PokerPlayer) GetChips() int {
-	return pp.chips
-}
-
-// SetChips チップ設定
-func (pp *PokerPlayer) SetChips(chips int) {
-	pp.chips = chips
-}
-
-// AddChips チップ追加
-func (pp *PokerPlayer) AddChips(amount int) {
-	pp.chips += amount
-}
-
-// SubtractChips チップ減算 (不足時はfalseを返す)
-func (pp *PokerPlayer) SubtractChips(amount int) bool {
-	if pp.chips < amount {
-		return false
-	}
-	pp.chips -= amount
-	return true
-}
-
 // GetIsHuman 人間フラグ取得
 func (pp *PokerPlayer) GetIsHuman() bool { return pp.isHuman }
 
@@ -146,6 +122,13 @@ func (pp *PokerPlayer) GetExchangeCount() int { return pp.exchangeCount }
 
 // SetExchangeCount 交換枚数設定
 func (pp *PokerPlayer) SetExchangeCount(count int) { pp.exchangeCount = count }
+
+// GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
+func (pp *PokerPlayer) GetComparisonCards() []*Card {
+	cards := make([]*Card, len(pp.cards))
+	copy(cards, pp.cards)
+	return cards
+}
 
 // SetHandRank ハンドランク設定（テスト用）
 func (pp *PokerPlayer) SetHandRank(rank int) { pp.handRank = rank }

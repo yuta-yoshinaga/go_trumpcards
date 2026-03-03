@@ -10,6 +10,11 @@ type MockSevensGame struct {
 	mock.Mock
 }
 
+// SetConfig モック
+func (_m *MockSevensGame) SetConfig(config domain.SevensConfig) {
+	_m.Called(config)
+}
+
 // Reset モック
 func (_m *MockSevensGame) Reset() {
 	_m.Called()

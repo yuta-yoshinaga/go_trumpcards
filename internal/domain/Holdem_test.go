@@ -227,7 +227,7 @@ func TestHoldem_PlayerAction_Bet_TooSmall(t *testing.T) {
 
 	err := h.PlayerAction(HoldemActionBet, 5)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "big blind")
+	assert.Contains(t, err.Error(), "minimum bet")
 }
 
 func TestHoldem_PlayerAction_Bet_InsufficientChips(t *testing.T) {

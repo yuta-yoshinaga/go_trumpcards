@@ -8,10 +8,12 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ant0ine/go-json-rest/rest/test"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestSevensWebController_Method(t *testing.T) {
@@ -156,7 +158,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 
 	t.Run("reset with all config fields calls ResetWithConfig", func(t *testing.T) {
 		sgiMock := new(usecase.MockSevensInteractor)
-		sgiMock.On("ResetWithConfig", true, 2, true, 5, false).Return(mockOutput)
+		sgiMock.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
@@ -172,7 +174,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(mockOutput)
-		sgiMock.AssertCalled(t, "ResetWithConfig", true, 2, true, 5, false)
+		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true, MaxPasses: 5})
 		sgiMock.AssertNotCalled(t, "Reset")
 	})
 
@@ -202,7 +204,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 	t.Run("reset with partial config calls ResetWithConfig with defaults", func(t *testing.T) {
 		partialOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":true,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
-		sgiMock.On("ResetWithConfig", true, 0, false, 5, false).Return(partialOutput)
+		sgiMock.On("ResetWithConfig", mock.Anything).Return(partialOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
@@ -218,13 +220,13 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(partialOutput)
-		sgiMock.AssertCalled(t, "ResetWithConfig", true, 0, false, 5, false)
+		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, MaxPasses: 5})
 	})
 
 	t.Run("reset with maxPasses field calls ResetWithConfig", func(t *testing.T) {
 		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":3,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
-		sgiMock.On("ResetWithConfig", false, 0, false, 3, false).Return(passesOutput)
+		sgiMock.On("ResetWithConfig", mock.Anything).Return(passesOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
@@ -240,12 +242,14 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(passesOutput)
-		sgiMock.AssertCalled(t, "ResetWithConfig", false, 0, false, 3, false)
+		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 3})
 		sgiMock.AssertNotCalled(t, "Reset")
 	})
 
-	t.Run("failed reset with invalid jokerCount negative", func(t *testing.T) {
+	t.Run("reset with negative jokerCount passes through to domain SetConfig", func(t *testing.T) {
+		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
+		sgiMock.On("ResetWithConfig", mock.Anything).Return(passesOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
@@ -262,42 +266,14 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error: jokerCount must be between 0 and 2."}`)
-		sgiMock.AssertNotCalled(t, "ResetWithConfig")
-		sgiMock.AssertNotCalled(t, "Reset")
-	})
-
-	t.Run("failed reset with invalid jokerCount too large", func(t *testing.T) {
-		sgiMock := new(usecase.MockSevensInteractor)
-		factory := func() uc.SevensInteractorIF { return sgiMock }
-		tswc := controller.NewSevensWebController(factory)
-		defer tswc.Stop()
-		api := rest.NewApi()
-		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
-		api.SetApp(router)
-
-		hundred := 100
-		input := controller.SevensWebInput{
-			Command:    "reset",
-			JokerCount: &hundred,
-			SessionId:  "test-cfg-big",
-		}
-		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
-		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
-		recorded := test.RunRequest(t, api.MakeHandler(), req)
-		recorded.CodeIs(http.StatusBadRequest)
-		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error: jokerCount must be between 0 and 2."}`)
-		sgiMock.AssertNotCalled(t, "ResetWithConfig")
-		sgiMock.AssertNotCalled(t, "Reset")
+		recorded.CodeIs(http.StatusOK)
+		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{JokerCount: -1, MaxPasses: 5})
 	})
 
 	t.Run("reset with only maxPasses field calls ResetWithConfig with default maxPasses", func(t *testing.T) {
 		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
-		sgiMock.On("ResetWithConfig", false, 0, false, 0, false).Return(passesOutput)
+		sgiMock.On("ResetWithConfig", mock.Anything).Return(passesOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
@@ -313,14 +289,14 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(passesOutput)
-		sgiMock.AssertCalled(t, "ResetWithConfig", false, 0, false, 0, false)
+		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 0})
 		sgiMock.AssertNotCalled(t, "Reset")
 	})
 
 	t.Run("reset with noJokerFinish field calls ResetWithConfig", func(t *testing.T) {
 		njfOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":true},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
-		sgiMock.On("ResetWithConfig", false, 0, false, 5, true).Return(njfOutput)
+		sgiMock.On("ResetWithConfig", mock.Anything).Return(njfOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
 		tswc := controller.NewSevensWebController(factory)
 		defer tswc.Stop()
@@ -336,7 +312,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(njfOutput)
-		sgiMock.AssertCalled(t, "ResetWithConfig", false, 0, false, 5, true)
+		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, NoJokerFinish: true})
 		sgiMock.AssertNotCalled(t, "Reset")
 	})
 }

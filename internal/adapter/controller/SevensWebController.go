@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"net/http"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
@@ -97,12 +95,14 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 			switch param.Command {
 			case "r", "reset":
 				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil {
-					jokerCount := derefInt(param.JokerCount)
-					if jokerCount < 0 || jokerCount > domain.SevensMaxJokerCount {
-						swc.writeJsonResponse(w, http.StatusBadRequest, swc.newDefaultOutput("param error: jokerCount must be between 0 and 2."))
-						return true
+					cfg := domain.SevensConfig{
+						TunnelEnabled: derefBool(param.TunnelEnabled),
+						JokerCount:    derefInt(param.JokerCount),
+						CpuStrategy:   derefBool(param.CpuStrategy),
+						MaxPasses:     derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
+						NoJokerFinish: derefBool(param.NoJokerFinish),
 					}
-					swc.writePresenterResponse(w, sgi.ResetWithConfig(derefBool(param.TunnelEnabled), jokerCount, derefBool(param.CpuStrategy), derefIntDefault(param.MaxPasses, domain.SevensMaxPasses), derefBool(param.NoJokerFinish)))
+					swc.writePresenterResponse(w, sgi.ResetWithConfig(cfg))
 				} else {
 					swc.writePresenterResponse(w, sgi.Reset())
 				}

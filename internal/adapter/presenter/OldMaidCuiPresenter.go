@@ -2,7 +2,6 @@ package presenter
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -45,7 +44,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 					if j != 0 {
 						b.WriteString("  ")
 					}
-					fmt.Fprintf(&b, "[%d]%s", j, p.getCardStr(player.GetCard(j)))
+					fmt.Fprintf(&b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
 				}
 				b.WriteString("\n")
 			}
@@ -58,14 +57,14 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		drawPlayerIdx := om.GetLastDrawPlayerIdx()
 		drawFromIdx := om.GetLastDrawFromIdx()
 		discarded := om.GetLastDiscardedPairs()
-		drawPlayerName := p.getPlayerName(om, drawPlayerIdx)
-		drawFromName := p.getPlayerName(om, drawFromIdx)
+		drawPlayerName := cuiPlayerName(om.GetPlayer(drawPlayerIdx), drawPlayerIdx)
+		drawFromName := cuiPlayerName(om.GetPlayer(drawFromIdx), drawFromIdx)
 		drawnCard := om.GetLastDrawCard()
 		drawPlayer := om.GetPlayer(drawPlayerIdx)
 		fmt.Fprintf(&b, "%sが%sから1枚引きました", drawPlayerName, drawFromName)
 		// Only reveal drawn card for human players to preserve CPU game fairness
 		if drawnCard != nil && drawPlayer != nil && drawPlayer.GetIsHuman() {
-			fmt.Fprintf(&b, " (%s)", p.getCardStr(drawnCard))
+			fmt.Fprintf(&b, " (%s)", cuiCardStr(drawnCard))
 		}
 		if discarded > 0 {
 			fmt.Fprintf(&b, "。%d組捨てました", discarded)
@@ -78,8 +77,8 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 	if len(cpuActions) > 0 {
 		b.WriteString("[CPUの行動]\n")
 		for _, action := range cpuActions {
-			actPlayerName := p.getPlayerName(om, action.DrawPlayerIdx)
-			actFromName := p.getPlayerName(om, action.DrawFromIdx)
+			actPlayerName := cuiPlayerName(om.GetPlayer(action.DrawPlayerIdx), action.DrawPlayerIdx)
+			actFromName := cuiPlayerName(om.GetPlayer(action.DrawFromIdx), action.DrawFromIdx)
 			fmt.Fprintf(&b, "%sが%sから1枚引きました", actPlayerName, actFromName)
 			// CPU drawn card is intentionally hidden to preserve game fairness
 			if action.DiscardedPairs > 0 {
@@ -97,19 +96,19 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 	if om.GetGameEndFlag() {
 		loserIdx := om.GetLoserIdx()
 		if loserIdx >= 0 {
-			loserName := p.getPlayerName(om, loserIdx)
+			loserName := cuiPlayerName(om.GetPlayer(loserIdx), loserIdx)
 			gameEndLine := fmt.Sprintf("ゲーム終了！ %sの負け！", loserName)
 			if om.GetConfig().Mode == domain.OldMaidModeJijiNuki && om.GetRemovedCard() != nil {
-				gameEndLine += fmt.Sprintf("（除外カード: %s）", p.getCardStr(om.GetRemovedCard()))
+				gameEndLine += fmt.Sprintf("（除外カード: %s）", cuiCardStr(om.GetRemovedCard()))
 			}
 			fmt.Fprintf(&b, "%s\n", gameEndLine)
 		}
 	} else {
 		currentTurn := om.GetCurrentTurn()
-		currentName := p.getPlayerName(om, currentTurn)
+		currentName := cuiPlayerName(om.GetPlayer(currentTurn), currentTurn)
 		targetIdx := om.GetNextDrawTargetIdx()
 		if targetIdx >= 0 {
-			targetName := p.getPlayerName(om, targetIdx)
+			targetName := cuiPlayerName(om.GetPlayer(targetIdx), targetIdx)
 			fmt.Fprintf(&b, "手番: %s → %sから引きます\n", currentName, targetName)
 		} else {
 			fmt.Fprintf(&b, "手番: %s\n", currentName)
@@ -118,37 +117,4 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 
 	b.WriteString("==========\n")
 	return b.String()
-}
-
-// getPlayerName プレイヤー名取得
-func (p *OldMaidCuiPresenter) getPlayerName(om interfaces.OldMaidGame, idx int) string {
-	player := om.GetPlayer(idx)
-	if player == nil {
-		return "不明"
-	}
-	if player.GetIsHuman() {
-		return "あなた"
-	}
-	return fmt.Sprintf("CPU %d", idx)
-}
-
-// getCardStr カード情報文字列取得
-func (p *OldMaidCuiPresenter) getCardStr(card *domain.Card) string {
-	if card == nil {
-		return "??"
-	}
-	switch card.GetDesign() {
-	case domain.CardDesignJoker:
-		return "JOKER"
-	case domain.CardDesignSpade:
-		return "SPADE " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignClover:
-		return "CLOVER " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignHeart:
-		return "HEART " + strconv.Itoa(card.GetValue())
-	case domain.CardDesignDiamond:
-		return "DIAMOND " + strconv.Itoa(card.GetValue())
-	default:
-		return "UNKNOWN"
-	}
 }

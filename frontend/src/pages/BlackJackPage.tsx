@@ -96,8 +96,8 @@ export function BlackJackPage() {
             <h3 className="text-white">ディーラー手札{dealerHitsSoft17 ? ' (H17)' : ' (S17)'}</h3>
             <h3 className="text-white">スコア {state.dealer.score ? state.dealer.score : ''}</h3>
             <div className="flex flex-wrap gap-2">
-              {state.dealer.cards?.map((card) => (
-                <CardImage key={`${card.design}-${card.value}`} card={card} width={60} />
+              {state.dealer.cards?.map((card, idx) => (
+                <CardImage key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={60} />
               ))}
               {!state.dealer.score && <CardBack width={60} />}
             </div>
@@ -125,9 +125,9 @@ export function BlackJackPage() {
                       {hand.surrendered && ' [SUR]'}
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {hand.cards.map((card) => (
+                      {hand.cards.map((card, cardIdx) => (
                         <CardImage
-                          key={`cpu${cpuIdx}-${card.design}-${card.value}-${handIdx}`}
+                          key={`cpu${cpuIdx}-hand${handIdx}-${cardIdx}-${card.design}-${card.value}`}
                           card={card}
                           width={50}
                         />
@@ -150,7 +150,8 @@ export function BlackJackPage() {
         {state && phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
             {hands.map((hand, handIndex) => (
-              <div key={`hand-${hand.score}-${hand.bet}-${hand.cards.length}`} className="mb-2">
+              // biome-ignore lint/suspicious/noArrayIndexKey: player hands have fixed order per round
+              <div key={`hand-${handIndex}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
                   {hands.length > 1 ? `ハンド ${handIndex + 1}` : 'プレイヤー手札'}
                   {handIndex === currentHandIdx && phase === BjPhase.ACTION && ' (*)'}
@@ -165,8 +166,12 @@ export function BlackJackPage() {
                   スコア {hand.score} / ベット {hand.bet}
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
-                  {hand.cards.map((card) => (
-                    <CardImage key={`${card.design}-${card.value}-${handIndex}`} card={card} width={60} />
+                  {hand.cards.map((card, cardIdx) => (
+                    <CardImage
+                      key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
+                      card={card}
+                      width={60}
+                    />
                   ))}
                 </div>
               </div>

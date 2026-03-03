@@ -1593,6 +1593,59 @@ func TestSevens_FindPlayableStrategic_BestScoreUpdated(t *testing.T) {
 	assert.Equal(t, 8, actions[0].PlayedCard.GetValue())
 }
 
+func TestSevens_SetConfig(t *testing.T) {
+	t.Run("success SetConfig with normal values", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: true, MaxPasses: 3, NoJokerFinish: true}
+		s.SetConfig(cfg)
+		assert.Equal(t, cfg, s.GetConfig())
+	})
+
+	t.Run("success SetConfig clamps negative jokerCount to 0", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{JokerCount: -5, MaxPasses: domain.SevensMaxPasses}
+		s.SetConfig(cfg)
+		assert.Equal(t, 0, s.GetConfig().JokerCount)
+	})
+
+	t.Run("success SetConfig clamps jokerCount above max to max", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{JokerCount: 10, MaxPasses: domain.SevensMaxPasses}
+		s.SetConfig(cfg)
+		assert.Equal(t, domain.SevensMaxJokerCount, s.GetConfig().JokerCount)
+	})
+
+	t.Run("success SetConfig clamps negative maxPasses to 0", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{JokerCount: 0, MaxPasses: -1}
+		s.SetConfig(cfg)
+		assert.Equal(t, 0, s.GetConfig().MaxPasses)
+	})
+
+	t.Run("success SetConfig then Reset recreates deck with joker", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{JokerCount: 1, MaxPasses: domain.SevensMaxPasses}
+		s.SetConfig(cfg)
+		s.Reset()
+		// After reset, total cards dealt = 52 + 1 joker - 4 sevens = 49
+		totalCards := 0
+		for i := 0; i < s.GetPlayerCnt(); i++ {
+			totalCards += s.GetPlayer(i).GetCardsSize()
+		}
+		assert.Equal(t, 49, totalCards)
+	})
+}
+
 func TestSevens_ResetAppliesMaxPasses(t *testing.T) {
 	t.Run("success Reset applies config.MaxPasses to all players", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)

@@ -242,8 +242,8 @@ func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 type mockSevensIF struct{ mock.Mock }
 
 func (m *mockSevensIF) Reset() string { return m.Called().String(0) }
-func (m *mockSevensIF) ResetWithConfig(t bool, j int, c bool, mp int, njf bool) string {
-	return m.Called(t, j, c, mp, njf).String(0)
+func (m *mockSevensIF) ResetWithConfig(cfg domain.SevensConfig) string {
+	return m.Called(cfg).String(0)
 }
 func (m *mockSevensIF) Play(idx int) string { return m.Called(idx).String(0) }
 func (m *mockSevensIF) PlayJoker(idx, suit, val int) string {

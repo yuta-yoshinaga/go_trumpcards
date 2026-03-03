@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
+import { CpuTurnArea } from '../components/CpuTurnArea';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { StatusBadge } from '../components/StatusBadge';
 import { useGameApi } from '../hooks/useGameApi';
@@ -159,30 +160,22 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
 
 // ── CPU player area ──────────────────────────────────────────────────────────
 
-interface CpuAreaProps {
-  player: SevensPlayerData;
-  isCurrentTurn: boolean;
-}
-
-function CpuArea({ player, isCurrentTurn }: CpuAreaProps) {
-  const conditionalStyle: React.CSSProperties = player.isFinished
-    ? { opacity: 0.5 }
-    : isCurrentTurn
-      ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
-      : {};
+function SevCpuArea({ player, isCurrentTurn }: { player: SevensPlayerData; isCurrentTurn: boolean }) {
   return (
-    <div className={playerAreaClass} style={conditionalStyle}>
-      <div className="text-white font-bold mb-1">
-        {playerName(player.id, player.isHuman)}
-        {player.isFinished && <StatusBadge variant="success">{player.rank}位</StatusBadge>}
-        {isCurrentTurn && !player.isFinished && <StatusBadge variant="warning">考え中...</StatusBadge>}
-      </div>
+    <CpuTurnArea
+      playerId={player.id}
+      isHuman={player.isHuman}
+      isCurrentTurn={isCurrentTurn}
+      isFinished={player.isFinished}
+      finishedLabel={player.isFinished ? `${player.rank}位` : undefined}
+      className={playerAreaClass}
+    >
       {!player.isFinished && (
         <div className="text-[#ccc] text-[0.85em]">
           {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses === 0 ? '∞' : player.maxPasses}
         </div>
       )}
-    </div>
+    </CpuTurnArea>
   );
 }
 
@@ -329,7 +322,7 @@ export function SevensPage() {
         {/* CPU row */}
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
-            <CpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+            <SevCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
           ))}
         </div>
 

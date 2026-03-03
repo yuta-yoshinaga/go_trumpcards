@@ -280,7 +280,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 			PlayedCard: nil,
 		})
 		result := tsp.Output(s, nil)
-		assert.Contains(t, result, "不明")
+		assert.Contains(t, result, "UNKNOWN")
 	})
 
 	t.Run("success Output human action pass", func(t *testing.T) {
