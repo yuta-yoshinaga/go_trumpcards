@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 
 export function useGameApi<TState, TArgs extends unknown[]>(
   apiFn: (...args: TArgs) => Promise<TState>,
-  options?: { onSuccess?: (res: TState) => void },
+  options?: { onSuccess?: (res: TState) => void | Promise<void> },
 ): {
   state: TState | null;
   setState: React.Dispatch<React.SetStateAction<TState | null>>;
@@ -24,7 +24,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
       setError(null);
       const res = await apiFnRef.current(...args);
       setState(res);
-      onSuccessRef.current?.(res);
+      await onSuccessRef.current?.(res);
     } catch {
       setError('通信エラーが発生しました。もう一度お試しください。');
     } finally {
