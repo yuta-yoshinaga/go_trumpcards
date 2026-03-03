@@ -104,35 +104,19 @@ func (s *Sevens) Reset() {
 
 // countFinished 終了済み (上がり・失格) プレイヤー数を返す
 func (s *Sevens) countFinished() int {
-	cnt := 0
-	for _, p := range s.players {
-		if p.GetIsFinished() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(s.players, func(p *SevensPlayer) bool { return p.GetIsFinished() })
 }
 
 // countNormalFinished 正常上がり (手札0枚) プレイヤー数を返す
 func (s *Sevens) countNormalFinished() int {
-	cnt := 0
-	for _, p := range s.players {
-		if p.GetIsFinished() && !p.GetIsEliminated() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(s.players, func(p *SevensPlayer) bool {
+		return p.GetIsFinished() && !p.GetIsEliminated()
+	})
 }
 
 // countEliminated 失格プレイヤー数を返す
 func (s *Sevens) countEliminated() int {
-	cnt := 0
-	for _, p := range s.players {
-		if p.GetIsEliminated() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(s.players, func(p *SevensPlayer) bool { return p.GetIsEliminated() })
 }
 
 // getActivePlayerCnt アクティブ (未終了) プレイヤー数取得
@@ -142,13 +126,7 @@ func (s *Sevens) getActivePlayerCnt() int {
 
 // getNextActivePlayer fromの次のアクティブなプレイヤーインデックスを取得
 func (s *Sevens) getNextActivePlayer(from int) int {
-	for i := 1; i <= SevensPlayerCnt; i++ {
-		next := (from + i) % SevensPlayerCnt
-		if !s.players[next].GetIsFinished() {
-			return next
-		}
-	}
-	return -1
+	return nextActivePlayer(s.players, from, 1)
 }
 
 // checkGameEnd ゲーム終了チェック (残り1人以下なら終了)
