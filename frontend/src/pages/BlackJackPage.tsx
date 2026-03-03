@@ -5,21 +5,21 @@ import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseCont
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEndPhaseControls } from '../components/blackjack/BjEndPhaseControls';
 import { BjInsurancePhaseControls } from '../components/blackjack/BjInsurancePhaseControls';
+import {
+  BJ_SUGGEST_DECLINE_INSURANCE,
+  BJ_SUGGEST_DOUBLE,
+  BJ_SUGGEST_DOUBLE_STAND,
+  BJ_SUGGEST_HIT,
+  BJ_SUGGEST_NONE,
+  BJ_SUGGEST_SPLIT,
+  BJ_SUGGEST_STAND,
+  BJ_SUGGEST_SURRENDER,
+} from '../components/blackjack/bjConstants';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { useGameApi } from '../hooks/useGameApi';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
-
-// suggestedAction constants (must match domain BJSuggestedAction)
-const BJ_SUGGEST_NONE = 0;
-const BJ_SUGGEST_HIT = 1;
-const BJ_SUGGEST_STAND = 2;
-const BJ_SUGGEST_DOUBLE = 3;
-const BJ_SUGGEST_SPLIT = 4;
-const BJ_SUGGEST_SURRENDER = 5;
-const BJ_SUGGEST_DECLINE_INSURANCE = 6;
-const BJ_SUGGEST_DOUBLE_STAND = 7;
 
 const SUGGESTION_LABELS: Record<number, string> = {
   [BJ_SUGGEST_HIT]: 'ヒット',

@@ -1,4 +1,5 @@
 // suggestedAction constants (must match domain BJSuggestedAction)
+export const BJ_SUGGEST_NONE = 0;
 export const BJ_SUGGEST_HIT = 1;
 export const BJ_SUGGEST_STAND = 2;
 export const BJ_SUGGEST_DOUBLE = 3;
