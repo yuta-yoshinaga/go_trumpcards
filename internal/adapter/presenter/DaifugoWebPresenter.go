@@ -32,7 +32,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 
 	// ローカルルール設定
 	config := dg.GetConfig()
-	resObj.Config = controller.DaifugoWebOutputConfig{
+	resObj.Config = controller.DaifugoWebConfig{
 		JokerCount:          config.JokerCount,
 		EightCutEnabled:     config.EightCutEnabled,
 		SuitLockEnabled:     config.SuitLockEnabled,
