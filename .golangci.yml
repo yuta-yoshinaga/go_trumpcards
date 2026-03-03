@@ -11,4 +11,5 @@ formatters:
     - goimports
   settings:
     goimports:
-      local-prefixes: github.com/yuta-yoshinaga/go_trumpcards
+      local-prefixes:
+        - github.com/yuta-yoshinaga/go_trumpcards
