@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -2070,4 +2071,37 @@ func TestTieBreakValues_FourOfAKind(t *testing.T) {
 	// 9-9-9-9-5: quads first, then kicker
 	result := tieBreakValues([]int{9, 9, 9, 9, 5})
 	assert.Equal(t, []int{9, 5}, result)
+}
+
+func TestHandleCpuActionError_FoldWhenCallAmtPositive(t *testing.T) {
+	h := newInternalTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetCurrentTurn(1)
+	h.SetLastBet(100)
+	h.players[1].SetCurrentBet(0)
+	h.actedFlags = make([]bool, len(h.players))
+
+	origErr := fmt.Errorf("test error")
+	h.handleCpuActionError(1, HoldemActionRaise, origErr)
+
+	assert.NotNil(t, h.GetLastCpuError())
+	assert.Contains(t, h.GetLastCpuError().Error(), "CPU player 1 action")
+	assert.True(t, h.players[1].GetFolded())
+}
+
+func TestHandleCpuActionError_CheckWhenCallAmtZero(t *testing.T) {
+	h := newInternalTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetCurrentTurn(1)
+	h.SetLastBet(50)
+	h.players[1].SetCurrentBet(50)
+	h.actedFlags = make([]bool, len(h.players))
+
+	origErr := fmt.Errorf("test error")
+	h.handleCpuActionError(1, HoldemActionBet, origErr)
+
+	assert.NotNil(t, h.GetLastCpuError())
+	assert.Contains(t, h.GetLastCpuError().Error(), "CPU player 1 action")
+	assert.False(t, h.players[1].GetFolded())
+	assert.True(t, h.actedFlags[1])
 }
