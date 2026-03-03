@@ -143,24 +143,12 @@ func (o *OldMaid) Reset() {
 
 // getNextActivePlayer fromの次のアクティブなプレイヤーインデックスを取得
 func (o *OldMaid) getNextActivePlayer(from int) int {
-	for i := 1; i <= OldMaidPlayerCnt; i++ {
-		next := (from + i) % OldMaidPlayerCnt
-		if !o.players[next].GetIsFinished() {
-			return next
-		}
-	}
-	return -1
+	return nextActivePlayer(o.players, from, 1)
 }
 
 // getActivePlayerCnt アクティブなプレイヤー数取得
 func (o *OldMaid) getActivePlayerCnt() int {
-	cnt := 0
-	for _, p := range o.players {
-		if !p.GetIsFinished() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(o.players, func(p *OldMaidPlayer) bool { return !p.GetIsFinished() })
 }
 
 // checkGameEnd ゲーム終了チェック (残り1人なら負け確定)

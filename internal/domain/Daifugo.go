@@ -424,13 +424,7 @@ func (d *Daifugo) getNonJokerSuit(cards []*Card) int {
 
 // countFinished 既に上がっているプレイヤー数を返す
 func (d *Daifugo) countFinished() int {
-	cnt := 0
-	for _, p := range d.players {
-		if p.GetIsFinished() {
-			cnt++
-		}
-	}
-	return cnt
+	return countPlayers(d.players, func(p *DaifugoPlayer) bool { return p.GetIsFinished() })
 }
 
 // getActivePlayerCnt アクティブ (未上がり) プレイヤー数取得
@@ -440,18 +434,11 @@ func (d *Daifugo) getActivePlayerCnt() int {
 
 // getNextActivePlayer fromの次のアクティブなプレイヤーインデックスを取得
 func (d *Daifugo) getNextActivePlayer(from int) int {
-	for i := 1; i <= DaifugoPlayerCnt; i++ {
-		var next int
-		if d.reverseDirection {
-			next = (from - i + DaifugoPlayerCnt) % DaifugoPlayerCnt
-		} else {
-			next = (from + i) % DaifugoPlayerCnt
-		}
-		if !d.players[next].GetIsFinished() {
-			return next
-		}
+	direction := 1
+	if d.reverseDirection {
+		direction = -1
 	}
-	return -1
+	return nextActivePlayer(d.players, from, direction)
 }
 
 // checkGameEnd ゲーム終了チェック (残り1人以下なら終了)
