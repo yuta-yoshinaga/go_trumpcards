@@ -68,25 +68,6 @@ func TestSevensPlayer_Method(t *testing.T) {
 		assert.True(t, p.CanPass())
 	})
 
-	t.Run("success RemoveCard valid index", func(t *testing.T) {
-		p := domain.NewSevensPlayer(true)
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
-		card := p.RemoveCard(0)
-		assert.NotNil(t, card)
-		assert.Equal(t, domain.CardDesignSpade, card.GetDesign())
-		assert.Equal(t, 3, card.GetValue())
-		assert.Equal(t, 1, p.GetCardsSize())
-	})
-
-	t.Run("success RemoveCard invalid index returns nil", func(t *testing.T) {
-		p := domain.NewSevensPlayer(true)
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		card := p.RemoveCard(5)
-		assert.Nil(t, card)
-		assert.Equal(t, 1, p.GetCardsSize())
-	})
-
 	t.Run("success RemoveSevens removes all 7s", func(t *testing.T) {
 		p := domain.NewSevensPlayer(true)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))

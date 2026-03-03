@@ -71,16 +71,3 @@ func (p *OldMaidPlayer) DiscardPairs() ([]*Card, int) {
 	}
 	return discardedCards, pairs
 }
-
-// RemoveCard 指定インデックスのカードを手札から取り除いて返す
-func (p *OldMaidPlayer) RemoveCard(idx int) *Card {
-	if idx < 0 || idx >= len(p.cards) {
-		return nil
-	}
-	card := p.cards[idx]
-	newCards := make([]*Card, 0, len(p.cards)-1)
-	newCards = append(newCards, p.cards[:idx]...)
-	newCards = append(newCards, p.cards[idx+1:]...)
-	p.cards = newCards
-	return card
-}
