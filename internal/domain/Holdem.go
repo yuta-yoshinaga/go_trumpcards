@@ -579,9 +579,9 @@ func (h *Holdem) runCpuActions() error {
 			h.lastCpuError = fmt.Errorf("CPU player %d action %d failed: %w", h.currentTurn, action, err)
 			callAmt := h.lastBet - h.players[h.currentTurn].GetCurrentBet()
 			if callAmt > 0 {
-				h.executeAction(h.currentTurn, HoldemActionFold, 0)
+				_ = h.executeAction(h.currentTurn, HoldemActionFold, 0)
 			} else {
-				h.executeAction(h.currentTurn, HoldemActionCheck, 0)
+				_ = h.executeAction(h.currentTurn, HoldemActionCheck, 0)
 			}
 		}
 		if h.gameEndFlag {
@@ -779,9 +779,10 @@ func (h *Holdem) evalPreFlopStrength(idx int) int {
 
 	// コネクタ (連続数字)
 	gap := high - low
-	if gap == 1 {
+	switch gap {
+	case 1:
 		score += 10
-	} else if gap == 2 {
+	case 2:
 		score += 5
 	}
 

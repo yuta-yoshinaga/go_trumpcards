@@ -1709,11 +1709,11 @@ func TestDealerHitSoft17(t *testing.T) {
 
 		// Enable H17
 		cfg := domain.BlackJackConfig{DealerHitsSoft17: true}
-		err := bj.SetConfig(cfg)
+		_ = bj.SetConfig(cfg)
 		// SetConfig only works in BET phase; set config directly via bet flow
 		// We need to set phase to BET first
 		bj.SetPhase(domain.BJPhaseBet)
-		err = bj.SetConfig(cfg)
+		err := bj.SetConfig(cfg)
 		assert.NoError(t, err)
 
 		bj.SetPhase(domain.BJPhaseAction)

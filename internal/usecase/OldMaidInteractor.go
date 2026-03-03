@@ -75,6 +75,6 @@ func (oi *OldMaidInteractor) Reorder(indices []int) string {
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (oi *OldMaidInteractor) runCpuTurns() {
 	for !oi.om.GetGameEndFlag() && !oi.om.IsHumanTurn() {
-		oi.om.CpuDraw()
+		_ = oi.om.CpuDraw()
 	}
 }

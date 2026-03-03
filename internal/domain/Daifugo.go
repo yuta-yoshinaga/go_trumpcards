@@ -377,7 +377,7 @@ func (d *Daifugo) updateSuitLock(cards []*Card) {
 	if !d.config.SuitLockEnabled {
 		return
 	}
-	if d.tableCards == nil || len(d.tableCards) == 0 {
+	if len(d.tableCards) == 0 {
 		// 場がクリアだった → 縛りなし、今出したカードのスートを記録のみ
 		d.suitLocked = false
 		d.lockedSuit = 0

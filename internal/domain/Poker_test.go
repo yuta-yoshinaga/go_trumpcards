@@ -1124,9 +1124,10 @@ func TestPoker_cpuDecideFirstBet_FoldAggressive(t *testing.T) {
 	gotBluff := false
 	for i := 0; i < 1000; i++ {
 		action, _ := pk.cpuDecideFirstBet(2, params, 50, PokerHandHighCard)
-		if action == PokerActionFold {
+		switch action {
+		case PokerActionFold:
 			gotFold = true
-		} else if action == PokerActionRaise || action == PokerActionBet || action == PokerActionAllIn {
+		case PokerActionRaise, PokerActionBet, PokerActionAllIn:
 			gotBluff = true
 		}
 		if gotFold && gotBluff {
@@ -1154,9 +1155,10 @@ func TestPoker_cpuDecideFirstBet_FoldAggressive_NoBet(t *testing.T) {
 	gotBluff := false
 	for i := 0; i < 1000; i++ {
 		action, _ := pk.cpuDecideFirstBet(2, params, 0, PokerHandHighCard)
-		if action == PokerActionCheck {
+		switch action {
+		case PokerActionCheck:
 			gotCheck = true
-		} else if action == PokerActionBet || action == PokerActionRaise || action == PokerActionAllIn {
+		case PokerActionBet, PokerActionRaise, PokerActionAllIn:
 			gotBluff = true
 		}
 		if gotCheck && gotBluff {
@@ -2421,7 +2423,7 @@ func TestPoker_Reset_JokerCount(t *testing.T) {
 		cfg := DefaultPokerConfig()
 		cfg.JokerCount = 2
 		pk := NewPoker(tc, players, cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// With 2 jokers the deck has 54 cards. 4 players * 5 = 20 dealt.
 		// Count jokers across all player hands.
@@ -2460,7 +2462,7 @@ func TestPoker_Reset_JokerCount(t *testing.T) {
 		pk := NewPoker(tc, players, cfg)
 
 		// First reset with 0 jokers — no jokers should exist
-		pk.Reset()
+		_ = pk.Reset()
 		jokerCountZero := 0
 		for _, pl := range players {
 			for i := 0; i < pl.GetCardsSize(); i++ {
@@ -2474,7 +2476,7 @@ func TestPoker_Reset_JokerCount(t *testing.T) {
 		// Now change config to 2 jokers and reset again
 		cfg.JokerCount = 2
 		pk.SetConfig(cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// Verify deck was recreated by checking total card pool
 		// (We can't guarantee jokers ended up in hands, but the deck
@@ -2505,7 +2507,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		cfg := DefaultPokerConfig()
 		cfg.CpuCount = 1 // only human + 1 CPU = seats 0,1 active
 		pk := NewPoker(tc, players, cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// Players 0 and 1 are active
 		assert.False(t, players[0].GetFolded())
@@ -2537,7 +2539,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		cfg := DefaultPokerConfig()
 		cfg.CpuCount = 0 // only human
 		pk := NewPoker(tc, players, cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// Only player 0 is active
 		assert.False(t, players[0].GetFolded())
@@ -2559,7 +2561,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		cfg := DefaultPokerConfig()
 		cfg.CpuCount = 3 // all 4 players active
 		pk := NewPoker(tc, players, cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// All players active (none folded by Reset itself; CPUs may fold during play)
 		for i, pl := range players {
@@ -2589,7 +2591,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		cfg := DefaultPokerConfig()
 		cfg.CpuCount = 10 // exceeds 2 players
 		pk := NewPoker(tc, players, cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// Both players should be active (clamped to array length)
 		assert.False(t, players[0].GetFolded())
@@ -2609,7 +2611,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		cfg := DefaultPokerConfig()
 		cfg.CpuCount = 1
 		pk := NewPoker(tc, players, cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// Players 2,3 should be folded
 		assert.True(t, players[2].GetFolded())
@@ -2620,7 +2622,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		// Now change to 3 CPUs and reset
 		cfg.CpuCount = 3
 		pk.SetConfig(cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// All players should now be active (or may have folded during CPU actions)
 		// Before CPU action processing, none should be force-folded by seat count
@@ -2645,7 +2647,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		cfg.CpuCount = 1 // 2 active players
 		cfg.Ante = 10
 		pk := NewPoker(tc, players, cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// Pot should only have antes from 2 active players (not 4)
 		// With CpuCount=1, active seats = 2, ante = 10 each = 20 minimum ante
@@ -2667,7 +2669,7 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		cfg := DefaultPokerConfig()
 		cfg.CpuCount = -5 // negative → activeSeatCount = max(1, -5+1) = 1
 		pk := NewPoker(tc, players, cfg)
-		pk.Reset()
+		_ = pk.Reset()
 
 		// Only player 0 active
 		assert.False(t, players[0].GetFolded())

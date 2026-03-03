@@ -90,7 +90,7 @@ func TestSevens_evaluatePlay_TunnelAceLow(t *testing.T) {
 
 	// Human plays some card to advance turn to CPU
 	players[0].AddCard(NewCard(CardDesignSpade, 8, false))
-	s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
+	_ = s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
 
 	// CPU 1 has Ace(1)♠ - playable since adjacent to 2♠
 	// It does NOT have King(13)♠, so tunnel wrap gives negative score
@@ -139,7 +139,7 @@ func TestSevens_evaluatePlay_TunnelKingHigh(t *testing.T) {
 
 	// Human plays some card to advance turn to CPU
 	players[0].AddCard(NewCard(CardDesignSpade, 6, false))
-	s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
+	_ = s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
 
 	// CPU 1 has King(13)♠ - playable since adjacent to 12♠
 	// It does NOT have Ace(1)♠, so tunnel wrap gives negative score

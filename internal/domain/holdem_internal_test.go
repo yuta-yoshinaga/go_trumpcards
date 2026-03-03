@@ -1987,7 +1987,7 @@ func TestHoldem_DealerRotation(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	h.PlayerAction(HoldemActionFold, 0)
+	_ = h.PlayerAction(HoldemActionFold, 0)
 
 	assert.Equal(t, 1, h.GetDealerIdx())
 }
