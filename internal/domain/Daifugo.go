@@ -217,15 +217,7 @@ func (d *Daifugo) Reset() {
 	})
 
 	// 全カードを配る (ジョーカー含む)
-	idx := 0
-	for {
-		card := d.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		d.players[idx%DaifugoPlayerCnt].AddCard(card)
-		idx++
-	}
+	dealAllCards(d.trumpCards, d.players)
 
 	// 各プレイヤーの手札をソート
 	d.sortAllActiveHands()
