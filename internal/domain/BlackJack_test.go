@@ -2010,13 +2010,14 @@ func TestCpuPayout(t *testing.T) {
 		cpus := bj.GetCpuPlayers()
 		assert.Equal(t, 1, len(cpus))
 
-		// Record CPU chips before resolution
-		cpuChipsBeforeBet := domain.BJDefaultChips
+		// If natural BJ was dealt, endGame (including CPU payout) has already
+		// run inside PlayerBet, so the pre-payout assertion only holds when
+		// the game has NOT ended yet.
 		cpuBet := cpus[0].GetHands()[0].GetBet()
-		cpuChipsAfterBet := cpuChipsBeforeBet - cpuBet
-
-		// The CPU bet is already deducted, verify
-		assert.Equal(t, cpuChipsAfterBet, cpus[0].GetPlayer().GetChips())
+		if !bj.GetGameEndFlag() {
+			cpuChipsAfterBet := domain.BJDefaultChips - cpuBet
+			assert.Equal(t, cpuChipsAfterBet, cpus[0].GetPlayer().GetChips())
+		}
 
 		// Finish the game
 		if bj.GetPhase() == domain.BJPhaseInsurance {
