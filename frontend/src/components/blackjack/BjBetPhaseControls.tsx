@@ -35,6 +35,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           value={props.betAmount}
           onChange={(e) => props.onBetAmountChange(Number(e.target.value))}
           className="w-20 px-2 py-1 rounded text-sm"
+          disabled={props.loading}
         />
       </div>
       <div className="flex items-center justify-center gap-2 mb-2">

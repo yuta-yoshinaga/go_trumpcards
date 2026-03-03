@@ -117,8 +117,9 @@ describe('BjBetPhaseControls', () => {
     expect(onBet).toHaveBeenCalled();
   });
 
-  it('disables buttons when loading is true', () => {
+  it('disables inputs and buttons when loading is true', () => {
     render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
+    expect(screen.getByLabelText('ベット額:')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
     expect(screen.getByLabelText('デッキ数:')).toBeDisabled();
     expect(screen.getByLabelText('CPU人数:')).toBeDisabled();
@@ -127,8 +128,9 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'カウント OFF' })).toBeDisabled();
   });
 
-  it('enables buttons when loading is false', () => {
+  it('enables inputs and buttons when loading is false', () => {
     render(<BjBetPhaseControls {...defaultProps({ loading: false })} />);
+    expect(screen.getByLabelText('ベット額:')).not.toBeDisabled();
     expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled();
     expect(screen.getByLabelText('デッキ数:')).not.toBeDisabled();
     expect(screen.getByLabelText('CPU人数:')).not.toBeDisabled();
