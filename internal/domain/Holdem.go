@@ -574,15 +574,7 @@ func (h *Holdem) runCpuActions() error {
 		})
 		err := h.executeAction(h.currentTurn, action, amount)
 		if err != nil {
-			// CPUの決定したアクションが失敗した場合 (例: チップ不足でレイズ不可)、
-			// エラーを記録し、フォールバック: コール額がある場合はフォールド、なければチェック。
-			h.lastCpuError = fmt.Errorf("CPU player %d action %d failed: %w", h.currentTurn, action, err)
-			callAmt := h.lastBet - h.players[h.currentTurn].GetCurrentBet()
-			if callAmt > 0 {
-				h.executeAction(h.currentTurn, HoldemActionFold, 0)
-			} else {
-				h.executeAction(h.currentTurn, HoldemActionCheck, 0)
-			}
+			h.handleCpuActionError(h.currentTurn, action, err)
 		}
 		if h.gameEndFlag {
 			return nil
@@ -590,6 +582,17 @@ func (h *Holdem) runCpuActions() error {
 		h.advanceTurn()
 	}
 	return nil
+}
+
+// handleCpuActionError CPUアクション失敗時のフォールバック処理
+func (h *Holdem) handleCpuActionError(playerIdx, action int, err error) {
+	h.lastCpuError = fmt.Errorf("CPU player %d action %d failed: %w", playerIdx, action, err)
+	callAmt := h.lastBet - h.players[playerIdx].GetCurrentBet()
+	if callAmt > 0 {
+		_ = h.executeAction(playerIdx, HoldemActionFold, 0)
+	} else {
+		_ = h.executeAction(playerIdx, HoldemActionCheck, 0)
+	}
 }
 
 // cpuDecide CPUプレイヤーの意思決定
@@ -779,9 +782,10 @@ func (h *Holdem) evalPreFlopStrength(idx int) int {
 
 	// コネクタ (連続数字)
 	gap := high - low
-	if gap == 1 {
+	switch gap {
+	case 1:
 		score += 10
-	} else if gap == 2 {
+	case 2:
 		score += 5
 	}
 

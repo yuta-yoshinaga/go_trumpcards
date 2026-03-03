@@ -1,25 +1,25 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
+import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
+import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
+import { BjEndPhaseControls } from '../components/blackjack/BjEndPhaseControls';
+import { BjInsurancePhaseControls } from '../components/blackjack/BjInsurancePhaseControls';
+import {
+  BJ_SUGGEST_DECLINE_INSURANCE,
+  BJ_SUGGEST_DOUBLE,
+  BJ_SUGGEST_DOUBLE_STAND,
+  BJ_SUGGEST_HIT,
+  BJ_SUGGEST_NONE,
+  BJ_SUGGEST_SPLIT,
+  BJ_SUGGEST_STAND,
+  BJ_SUGGEST_SURRENDER,
+} from '../components/blackjack/bjConstants';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { useGameApi } from '../hooks/useGameApi';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
-
-// suggestedAction constants (must match domain BJSuggestedAction)
-const BJ_SUGGEST_NONE = 0;
-const BJ_SUGGEST_HIT = 1;
-const BJ_SUGGEST_STAND = 2;
-const BJ_SUGGEST_DOUBLE = 3;
-const BJ_SUGGEST_SPLIT = 4;
-const BJ_SUGGEST_SURRENDER = 5;
-const BJ_SUGGEST_DECLINE_INSURANCE = 6;
-const BJ_SUGGEST_DOUBLE_STAND = 7;
-
-const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
-const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
 
 const SUGGESTION_LABELS: Record<number, string> = {
   [BJ_SUGGEST_HIT]: 'ヒット',
@@ -30,10 +30,6 @@ const SUGGESTION_LABELS: Record<number, string> = {
   [BJ_SUGGEST_DECLINE_INSURANCE]: '辞退',
   [BJ_SUGGEST_DOUBLE_STAND]: 'ダブルダウン',
 };
-
-function highlightClass(base: string, isHighlighted: boolean): string {
-  return isHighlighted ? `${base} ring-2 ring-white ring-offset-1` : base;
-}
 
 export function BlackJackPage() {
   const [message, setMessage] = useState('');
@@ -62,6 +58,10 @@ export function BlackJackPage() {
   const hintEnabled = state?.hintEnabled ?? false;
   const suggestedAction = state?.suggestedAction ?? BJ_SUGGEST_NONE;
   const cpuPlayers = state?.cpuPlayers ?? [];
+
+  const showDoubleDown = !!currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet;
+  const showSplit = !!currentHand?.canSplit && playerChips >= currentHand.bet;
+  const showSurrender = !!currentHand?.canSurrender;
 
   const handleReset = useCallback(() => {
     const config: BlackJackConfigInput = {
@@ -203,165 +203,51 @@ export function BlackJackPage() {
         {/* Phase-based buttons */}
         <div className="text-center">
           {phase === BjPhase.BET && (
-            <>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <label htmlFor="bj-bet-amount" className="text-white text-sm">
-                  ベット額:
-                </label>
-                <input
-                  id="bj-bet-amount"
-                  type="number"
-                  min={10}
-                  step={10}
-                  value={betAmount}
-                  onChange={(e) => setBetAmount(Number(e.target.value))}
-                  className="w-20 px-2 py-1 rounded text-sm"
-                />
-              </div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <label htmlFor="bj-deck-count" className="text-white text-sm">
-                  デッキ数:
-                </label>
-                <select
-                  id="bj-deck-count"
-                  value={state?.deckCount ?? 1}
-                  onChange={(e) => exec('setdeckcount', Number(e.target.value))}
-                  className="px-2 py-1 rounded text-sm"
-                  disabled={loading}
-                >
-                  {VALID_DECK_COUNTS.map((d) => (
-                    <option key={d} value={d}>
-                      {d}デッキ
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <label htmlFor="bj-cpu-count" className="text-white text-sm">
-                  CPU人数:
-                </label>
-                <select
-                  id="bj-cpu-count"
-                  value={cpuPlayerCount}
-                  onChange={(e) => setCpuPlayerCount(Number(e.target.value))}
-                  className="px-2 py-1 rounded text-sm"
-                  disabled={loading}
-                >
-                  {VALID_CPU_COUNTS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}人
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
-                <button
-                  type="button"
-                  className={hintEnabled ? btnSuccess : btnWarning}
-                  disabled={loading}
-                  onClick={() => exec('togglehint')}
-                >
-                  ヒント {hintEnabled ? 'ON' : 'OFF'}
-                </button>
-                <button
-                  type="button"
-                  className={dealerHitsSoft17 ? btnSuccess : btnWarning}
-                  disabled={loading}
-                  onClick={() => exec('togglesoft17')}
-                >
-                  {dealerHitsSoft17 ? 'H17' : 'S17'}
-                </button>
-                <button
-                  type="button"
-                  className={countingEnabled ? btnSuccess : btnWarning}
-                  disabled={loading}
-                  onClick={() => exec('togglecounting')}
-                >
-                  カウント {countingEnabled ? 'ON' : 'OFF'}
-                </button>
-              </div>
-              <button type="button" className={btnPrimary} disabled={loading} onClick={() => exec('bet', betAmount)}>
-                ベット
-              </button>
-            </>
+            <BjBetPhaseControls
+              betAmount={betAmount}
+              onBetAmountChange={setBetAmount}
+              deckCount={state?.deckCount ?? 1}
+              onDeckCountChange={(v) => exec('setdeckcount', v)}
+              cpuPlayerCount={cpuPlayerCount}
+              onCpuPlayerCountChange={setCpuPlayerCount}
+              hintEnabled={hintEnabled}
+              onToggleHint={() => exec('togglehint')}
+              dealerHitsSoft17={dealerHitsSoft17}
+              onToggleSoft17={() => exec('togglesoft17')}
+              countingEnabled={countingEnabled}
+              onToggleCounting={() => exec('togglecounting')}
+              loading={loading}
+              onBet={() => exec('bet', betAmount)}
+            />
           )}
 
           {phase === BjPhase.INSURANCE && (
-            <>
-              <button type="button" className={btnWarning} disabled={loading} onClick={() => exec('insurance')}>
-                インシュランス
-              </button>
-              <button
-                type="button"
-                className={highlightClass(btnDanger, suggestedAction === BJ_SUGGEST_DECLINE_INSURANCE && hintEnabled)}
-                disabled={loading}
-                onClick={() => exec('declineinsurance')}
-              >
-                辞退
-              </button>
-            </>
+            <BjInsurancePhaseControls
+              loading={loading}
+              hintEnabled={hintEnabled}
+              suggestedAction={suggestedAction}
+              onInsurance={() => exec('insurance')}
+              onDecline={() => exec('declineinsurance')}
+            />
           )}
 
           {phase === BjPhase.ACTION && (
-            <>
-              <button
-                type="button"
-                className={highlightClass(btnPrimary, suggestedAction === BJ_SUGGEST_HIT && hintEnabled)}
-                disabled={loading}
-                onClick={() => exec('hit')}
-              >
-                ヒット
-              </button>
-              <button
-                type="button"
-                className={highlightClass(btnPrimary, suggestedAction === BJ_SUGGEST_STAND && hintEnabled)}
-                disabled={loading}
-                onClick={() => exec('stand')}
-              >
-                スタンド
-              </button>
-              {currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet && (
-                <button
-                  type="button"
-                  className={highlightClass(
-                    btnWarning,
-                    (suggestedAction === BJ_SUGGEST_DOUBLE || suggestedAction === BJ_SUGGEST_DOUBLE_STAND) &&
-                      hintEnabled,
-                  )}
-                  disabled={loading}
-                  onClick={() => exec('doubledown')}
-                >
-                  ダブルダウン
-                </button>
-              )}
-              {currentHand?.canSplit && playerChips >= currentHand.bet && (
-                <button
-                  type="button"
-                  className={highlightClass(btnSuccess, suggestedAction === BJ_SUGGEST_SPLIT && hintEnabled)}
-                  disabled={loading}
-                  onClick={() => exec('split')}
-                >
-                  スプリット
-                </button>
-              )}
-              {currentHand?.canSurrender && (
-                <button
-                  type="button"
-                  className={highlightClass(btnDanger, suggestedAction === BJ_SUGGEST_SURRENDER && hintEnabled)}
-                  disabled={loading}
-                  onClick={() => exec('surrender')}
-                >
-                  サレンダー
-                </button>
-              )}
-            </>
+            <BjActionPhaseControls
+              loading={loading}
+              hintEnabled={hintEnabled}
+              suggestedAction={suggestedAction}
+              showDoubleDown={showDoubleDown}
+              showSplit={showSplit}
+              showSurrender={showSurrender}
+              onHit={() => exec('hit')}
+              onStand={() => exec('stand')}
+              onDoubleDown={() => exec('doubledown')}
+              onSplit={() => exec('split')}
+              onSurrender={() => exec('surrender')}
+            />
           )}
 
-          {phase === BjPhase.END && (
-            <button type="button" className={btnPrimary} disabled={loading} onClick={handleReset}>
-              リセット
-            </button>
-          )}
+          {phase === BjPhase.END && <BjEndPhaseControls loading={loading} onReset={handleReset} />}
         </div>
       </div>
     </div>

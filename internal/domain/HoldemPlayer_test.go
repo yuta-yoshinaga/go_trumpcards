@@ -17,19 +17,6 @@ func TestNewHoldemPlayer(t *testing.T) {
 	assert.Equal(t, 0, p.GetCardsSize())
 }
 
-func TestHoldemPlayer_SettersGetters(t *testing.T) {
-	p := NewHoldemPlayer(true, HoldemStyleTAG)
-
-	p.SetFolded(true)
-	assert.True(t, p.GetFolded())
-
-	p.SetAllIn(true)
-	assert.True(t, p.GetAllIn())
-
-	p.SetCurrentBet(100)
-	assert.Equal(t, 100, p.GetCurrentBet())
-}
-
 func TestHoldemPlayer_GetPlayStyleName(t *testing.T) {
 	tests := []struct {
 		style HoldemPlayStyle

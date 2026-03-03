@@ -795,11 +795,12 @@ func TestOldMaid_CpuSelectCardIdx_AllBranches(t *testing.T) {
 		actions := om.GetCpuActions()
 		if len(actions) == 1 && actions[0].DrawnCard != nil {
 			v := actions[0].DrawnCard.GetValue()
-			if v == firstVal {
+			switch v {
+			case firstVal:
 				firstHit = true
-			} else if v == lastVal {
+			case lastVal:
 				lastHit = true
-			} else {
+			default:
 				middleHit = true
 			}
 		}

@@ -1,0 +1,15 @@
+version: "2"
+
+run:
+  go: "1.26"
+
+linters:
+  default: standard
+
+formatters:
+  enable:
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/yuta-yoshinaga/go_trumpcards

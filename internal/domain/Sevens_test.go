@@ -122,7 +122,7 @@ func TestSevens_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-		s.PlayerPlay(0) // human plays 6♠ → board has 6,7
+		_ = s.PlayerPlay(0) // human plays 6♠ → board has 6,7
 
 		ace := domain.NewCard(domain.CardDesignSpade, 1, false)
 		// min is 6, so ace (1) is not adjacent to 6
@@ -138,7 +138,7 @@ func TestSevens_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-		s.PlayerPlay(0) // place 8♠ → max=8
+		_ = s.PlayerPlay(0) // place 8♠ → max=8
 		king := domain.NewCard(domain.CardDesignSpade, 13, false)
 		assert.False(t, s.IsPlayable(king)) // 13 != 9 (max+1=9)
 	})
@@ -223,7 +223,7 @@ func TestSevens_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlay(0) // human plays → advances to CPU 1
+		_ = s.PlayerPlay(0) // human plays → advances to CPU 1
 		if !s.IsHumanTurn() && !s.GetGameEndFlag() {
 			err := s.PlayerPlay(0)
 			assert.Error(t, err)
@@ -243,7 +243,7 @@ func TestSevens_Method(t *testing.T) {
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		s.PlayerPlay(0) // plays 8♠ → finishes → game ends
+		_ = s.PlayerPlay(0) // plays 8♠ → finishes → game ends
 		assert.True(t, s.GetGameEndFlag())
 		assert.Equal(t, 4, players[0].GetRank())
 
@@ -262,8 +262,8 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠ → advances to CPU 1
-		s.CpuPlay()     // CPU 1 plays 6♠
+		_ = s.PlayerPlay(0) // human plays 8♠ → advances to CPU 1
+		s.CpuPlay()         // CPU 1 plays 6♠
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
 		assert.NotNil(t, actions[0].PlayedCard)
@@ -280,8 +280,8 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: 5♠ not playable → passes
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: 5♠ not playable → passes
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
 		assert.Nil(t, actions[0].PlayedCard) // pass
@@ -302,8 +302,8 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays
-		s.CpuPlay()     // CPU 1: no playable, no passes → eliminated
+		_ = s.PlayerPlay(0) // human plays
+		s.CpuPlay()         // CPU 1: no playable, no passes → eliminated
 		assert.True(t, players[1].GetIsFinished())
 		assert.Greater(t, players[1].GetRank(), 0)
 	})
@@ -372,7 +372,7 @@ func TestSevens_Method(t *testing.T) {
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		s.PlayerPlay(0) // human plays last card → finishes → game ends
+		_ = s.PlayerPlay(0) // human plays last card → finishes → game ends
 		assert.True(t, s.GetGameEndFlag())
 		assert.Equal(t, 4, players[0].GetRank())
 	})
@@ -392,8 +392,8 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠ → SPADE max=8
-		s.CpuPlay()     // CPU 1: no playable, no passes → eliminated
+		_ = s.PlayerPlay(0) // human plays 8♠ → SPADE max=8
+		s.CpuPlay()         // CPU 1: no playable, no passes → eliminated
 
 		assert.True(t, players[1].GetIsFinished())
 		assert.True(t, players[1].GetIsEliminated())
@@ -418,7 +418,7 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human empties hand → rank 1
+		_ = s.PlayerPlay(0) // human empties hand → rank 1
 		assert.Equal(t, 1, players[0].GetRank())
 
 		s.CpuPlay() // CPU 1: no playable, no passes → eliminated → rank 4
@@ -443,8 +443,8 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // not playable
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays
-		s.CpuPlay()     // CPU 1 eliminated first → rank 4
+		_ = s.PlayerPlay(0) // human plays
+		s.CpuPlay()         // CPU 1 eliminated first → rank 4
 		assert.Equal(t, 4, players[1].GetRank())
 
 		if !s.GetGameEndFlag() && !s.IsHumanTurn() {
@@ -515,7 +515,7 @@ func TestSevens_Method(t *testing.T) {
 		// Initially only 7 is placed for each suit
 		assert.Equal(t, uint16(1<<7), placed[domain.CardDesignSpade])
 
-		s.PlayerPlay(0) // place 6♠
+		_ = s.PlayerPlay(0) // place 6♠
 		placed = s.GetTablePlaced()
 		assert.Equal(t, uint16((1<<7)|(1<<6)), placed[domain.CardDesignSpade])
 	})
@@ -530,7 +530,7 @@ func TestSevens_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // play 6♠
+		_ = s.PlayerPlay(0) // play 6♠
 		mins := s.GetTableMinVals()
 		maxs := s.GetTableMaxVals()
 		assert.Equal(t, 6, mins[domain.CardDesignSpade])
@@ -556,7 +556,7 @@ func setupSpadeBoard(config domain.SevensConfig, spadesToPlace []int) *domain.Se
 			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
 			// Play the last card (newly added spade)
 			idx := players[0].GetCardsSize() - 1
-			s.PlayerPlay(idx)
+			_ = s.PlayerPlay(idx)
 		} else {
 			cpuIdx := s.GetCurrentTurn()
 			players[cpuIdx].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
@@ -662,7 +662,7 @@ func TestSevens_Joker(t *testing.T) {
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		s.PlayerPlay(0) // game ends
+		_ = s.PlayerPlay(0) // game ends
 		assert.True(t, s.GetGameEndFlag())
 
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
@@ -682,8 +682,8 @@ func TestSevens_Joker(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1 plays joker
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1 plays joker
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -707,8 +707,8 @@ func TestSevens_Joker(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: 5♠ not playable, no passes → eliminated
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: 5♠ not playable, no passes → eliminated
 
 		assert.True(t, players[1].GetIsEliminated())
 		assert.Equal(t, 0, players[1].GetCardsSize())
@@ -738,7 +738,7 @@ func TestSevens_Joker(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
 		// Round 1: human plays 8♠ → CPU1 plays joker (playable) → CPU2 passes → CPU3 passes
-		s.PlayerPlay(0) // human: 8♠
+		_ = s.PlayerPlay(0) // human: 8♠
 		assert.Equal(t, 1, s.GetCurrentTurn())
 		s.CpuPlay() // CPU1: plays joker (board has open positions)
 		actions := s.GetCpuActions()
@@ -752,7 +752,7 @@ func TestSevens_Joker(t *testing.T) {
 		// Round 2: human plays 9♠ → CPU1: 5♠ not playable, no passes → eliminated
 		assert.Equal(t, 0, s.GetCurrentTurn())
 		placedBefore := s.GetTablePlaced()
-		s.PlayerPlay(0) // human: 9♠
+		_ = s.PlayerPlay(0) // human: 9♠
 		assert.Equal(t, 1, s.GetCurrentTurn())
 		s.CpuPlay() // CPU1: eliminated
 
@@ -791,13 +791,13 @@ func TestSevens_Joker(t *testing.T) {
 				played := false
 				for i := 0; i < players[0].GetCardsSize(); i++ {
 					if s.IsPlayable(players[0].GetCard(i)) {
-						s.PlayerPlay(i)
+						_ = s.PlayerPlay(i)
 						played = true
 						break
 					}
 				}
 				if !played {
-					s.PlayerPlay(-1) // pass to advance
+					_ = s.PlayerPlay(-1) // pass to advance
 				}
 			} else {
 				s.CpuPlay()
@@ -842,8 +842,8 @@ func TestSevens_CpuStrategy(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: strategic evaluation
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: strategic evaluation
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -864,8 +864,8 @@ func TestSevens_CpuStrategy(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: plays 6♠ (positive score: has 5♠)
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: plays 6♠ (positive score: has 5♠)
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -888,8 +888,8 @@ func TestSevens_CpuStrategy(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: forced to play (only 1 pass remaining)
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: forced to play (only 1 pass remaining)
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -909,8 +909,8 @@ func TestSevens_CpuStrategy(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: non-strategic, plays 6♠
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: non-strategic, plays 6♠
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -1049,7 +1049,7 @@ func TestSevens_PlayerPlayJoker_NotHumanTurn(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-	s.PlayerPlay(0) // human plays 8♠ → turn moves to CPU 1
+	_ = s.PlayerPlay(0) // human plays 8♠ → turn moves to CPU 1
 	assert.False(t, s.IsHumanTurn())
 
 	// Now try PlayerPlayJoker on CPU's turn
@@ -1080,10 +1080,7 @@ func TestSevens_FindPlayableSimple_JokerNoPosition(t *testing.T) {
 		}
 	}
 	// Play all cards until board is full
-	for {
-		if s.GetGameEndFlag() {
-			break
-		}
+	for !s.GetGameEndFlag() {
 		placed := s.GetTablePlaced()
 		allFull := true
 		for _, suit := range suits {
@@ -1104,13 +1101,13 @@ func TestSevens_FindPlayableSimple_JokerNoPosition(t *testing.T) {
 			played := false
 			for i := 0; i < players[0].GetCardsSize(); i++ {
 				if s.IsPlayable(players[0].GetCard(i)) {
-					s.PlayerPlay(i)
+					_ = s.PlayerPlay(i)
 					played = true
 					break
 				}
 			}
 			if !played {
-				s.PlayerPlay(-1) // pass
+				_ = s.PlayerPlay(-1) // pass
 			}
 		} else {
 			s.CpuPlay()
@@ -1124,7 +1121,7 @@ func TestSevens_FindPlayableSimple_JokerNoPosition(t *testing.T) {
 		// Find CPU 1 and give it only a joker
 		players[cpuIdx].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
 		// Human passes to advance to CPU
-		s.PlayerPlay(-1)
+		_ = s.PlayerPlay(-1)
 		if !s.GetGameEndFlag() && s.GetCurrentTurn() == cpuIdx {
 			s.CpuPlay() // CPU with joker on full board → should pass (joker not playable)
 			actions := s.GetCpuActions()
@@ -1154,8 +1151,8 @@ func TestSevens_FindPlayableStrategic_JokerEval(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-	s.PlayerPlay(0) // human plays 8♠
-	s.CpuPlay()     // CPU 1: strategic, plays joker
+	_ = s.PlayerPlay(0) // human plays 8♠
+	s.CpuPlay()         // CPU 1: strategic, plays joker
 
 	actions := s.GetCpuActions()
 	assert.Len(t, actions, 1)
@@ -1183,8 +1180,8 @@ func TestSevens_FindPlayableStrategic_Pass(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-	s.PlayerPlay(0) // human plays 8♠
-	s.CpuPlay()     // CPU 1: all plays negative → pass
+	_ = s.PlayerPlay(0) // human plays 8♠
+	s.CpuPlay()         // CPU 1: all plays negative → pass
 
 	actions := s.GetCpuActions()
 	assert.Len(t, actions, 1)
@@ -1209,8 +1206,8 @@ func TestSevens_EvaluatePlay_LowDirection(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-	s.PlayerPlay(0) // human plays 6♠ → board spade min=6
-	s.CpuPlay()     // CPU 1: plays 5♠ (score +2 for having 4♠)
+	_ = s.PlayerPlay(0) // human plays 6♠ → board spade min=6
+	s.CpuPlay()         // CPU 1: plays 5♠ (score +2 for having 4♠)
 
 	actions := s.GetCpuActions()
 	assert.Len(t, actions, 1)
@@ -1234,8 +1231,8 @@ func TestSevens_EvaluatePlay_LowDirection_NegativeScore(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-	s.PlayerPlay(0) // human plays 6♠
-	s.CpuPlay()     // CPU 1: 5♠ has score -1 → pass
+	_ = s.PlayerPlay(0) // human plays 6♠
+	s.CpuPlay()         // CPU 1: 5♠ has score -1 → pass
 
 	actions := s.GetCpuActions()
 	assert.Len(t, actions, 1)
@@ -1298,13 +1295,13 @@ func TestSevens_EvaluatePlay_TunnelWrap(t *testing.T) {
 			}
 			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
 			idx := players[0].GetCardsSize() - 1
-			s.PlayerPlay(idx)
+			_ = s.PlayerPlay(idx)
 		}
 
 		// Board now has spade 2-12. Ace(1) and King(13) are playable with tunnel.
 		// Advance to CPU 1's turn
 		for !s.GetGameEndFlag() && s.IsHumanTurn() {
-			s.PlayerPlay(-1)
+			_ = s.PlayerPlay(-1)
 		}
 
 		if !s.GetGameEndFlag() {
@@ -1343,8 +1340,8 @@ func TestSevens_EvaluateJokerPlays(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-	s.PlayerPlay(0) // human plays 8♠
-	s.CpuPlay()     // CPU 1: strategic joker evaluation
+	_ = s.PlayerPlay(0) // human plays 8♠
+	s.CpuPlay()         // CPU 1: strategic joker evaluation
 
 	actions := s.GetCpuActions()
 	assert.Len(t, actions, 1)
@@ -1376,10 +1373,7 @@ func TestSevens_FindFirstPlayablePosition_BoardFull(t *testing.T) {
 		}
 	}
 	// Play until board is full
-	for {
-		if s.GetGameEndFlag() {
-			break
-		}
+	for !s.GetGameEndFlag() {
 		placed := s.GetTablePlaced()
 		allFull := true
 		for _, suit := range suits {
@@ -1400,13 +1394,13 @@ func TestSevens_FindFirstPlayablePosition_BoardFull(t *testing.T) {
 			played := false
 			for i := 0; i < players[0].GetCardsSize(); i++ {
 				if s.IsPlayable(players[0].GetCard(i)) {
-					s.PlayerPlay(i)
+					_ = s.PlayerPlay(i)
 					played = true
 					break
 				}
 			}
 			if !played {
-				s.PlayerPlay(-1)
+				_ = s.PlayerPlay(-1)
 			}
 		} else {
 			s.CpuPlay()
@@ -1434,7 +1428,7 @@ func TestSevens_AutoHandleNoOption_CpuEliminated(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-	s.PlayerPlay(0) // human plays 8♠ → turn advances to CPU 1
+	_ = s.PlayerPlay(0) // human plays 8♠ → turn advances to CPU 1
 	assert.Equal(t, 1, s.GetCurrentTurn())
 	assert.False(t, s.IsHumanTurn())
 
@@ -1544,7 +1538,7 @@ func TestSevens_AdvanceTurn_GameEndFlagBlocksPlay(t *testing.T) {
 	players[3].SetRank(3)
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
 
-	s.PlayerPlay(0) // human plays last card -> checkGameEnd -> gameEndFlag=true
+	_ = s.PlayerPlay(0) // human plays last card -> checkGameEnd -> gameEndFlag=true
 	assert.True(t, s.GetGameEndFlag())
 	assert.Equal(t, 0, s.GetCurrentTurn())
 
@@ -1582,8 +1576,8 @@ func TestSevens_FindPlayableStrategic_BestScoreUpdated(t *testing.T) {
 	players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
 	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
 
-	s.PlayerPlay(0) // human plays 8♠
-	s.CpuPlay()     // CPU 1: strategic, evaluates both cards
+	_ = s.PlayerPlay(0) // human plays 8♠
+	s.CpuPlay()         // CPU 1: strategic, evaluates both cards
 
 	actions := s.GetCpuActions()
 	assert.Len(t, actions, 1)
@@ -1691,8 +1685,8 @@ func TestSevens_ForcedPass(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: 5♠ not playable → forced pass
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: 5♠ not playable → forced pass
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -1712,8 +1706,8 @@ func TestSevens_ForcedPass(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: has playable card but strategic pass (negative score)
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: has playable card but strategic pass (negative score)
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -1799,7 +1793,7 @@ func TestSevens_CountOpponentsBlocked(t *testing.T) {
 		// No opponent has 5♠
 		p0[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		p0[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s0.PlayerPlay(0)
+		_ = s0.PlayerPlay(0)
 		s0.CpuPlay()
 		actions0 := s0.GetCpuActions()
 		assert.Len(t, actions0, 1)
@@ -1815,7 +1809,7 @@ func TestSevens_CountOpponentsBlocked(t *testing.T) {
 		p1[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 		p1[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // opponent has 5♠
 		p1[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s1.PlayerPlay(0)
+		_ = s1.PlayerPlay(0)
 		s1.CpuPlay()
 		actions1 := s1.GetCpuActions()
 		assert.Len(t, actions1, 1)
@@ -1831,7 +1825,7 @@ func TestSevens_CountOpponentsBlocked(t *testing.T) {
 		p2[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 		p2[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // opponent has 5♠
 		p2[3].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // another opponent has 5♠
-		s2.PlayerPlay(0)
+		_ = s2.PlayerPlay(0)
 		s2.CpuPlay()
 		actions2 := s2.GetCpuActions()
 		assert.Len(t, actions2, 1)
@@ -1848,7 +1842,7 @@ func TestSevens_CountOpponentsBlocked(t *testing.T) {
 		p3[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 		p3[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // opponent has 5♠
 		p3[3].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // another opponent has 5♠
-		s3.PlayerPlay(0)
+		_ = s3.PlayerPlay(0)
 		s3.CpuPlay()
 		actions3 := s3.GetCpuActions()
 		assert.Len(t, actions3, 1)
@@ -1870,8 +1864,8 @@ func TestSevens_CountOpponentsBlocked(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false)) // opponent has 9♠
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 6♠
-		s.CpuPlay()     // CPU 1 evaluates 8♠
+		_ = s.PlayerPlay(0) // human plays 6♠
+		s.CpuPlay()         // CPU 1 evaluates 8♠
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -1900,8 +1894,8 @@ func TestSevens_UnlimitedPasses(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: unlimited passes, negative score → pass
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: unlimited passes, negative score → pass
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -1927,7 +1921,7 @@ func TestSevens_UnlimitedPasses(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
+		_ = s.PlayerPlay(0) // human plays 8♠
 		// CPU 1 passes multiple times without being eliminated
 		for i := 0; i < 10; i++ {
 			if s.GetGameEndFlag() {
@@ -1964,8 +1958,8 @@ func TestSevens_UnlimitedPasses(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1: unlimited passes → should still pass despite many passes used
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1: unlimited passes → should still pass despite many passes used
 
 		actions := s.GetCpuActions()
 		assert.Len(t, actions, 1)
@@ -2101,7 +2095,7 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 
 		// Human plays to advance turn
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
+		_ = s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
 
 		// CPU 1 has only joker, used all passes
 		players[1].IncrPassesUsed() // used 1/1 pass
@@ -2126,7 +2120,7 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 
 		// Human plays to advance turn
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
+		_ = s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
 
 		// CPU 1 has only joker but has passes remaining
 		players[1].RemoveCard(0) // remove diamond 2
@@ -2154,7 +2148,7 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 
 		// Human plays to advance turn
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		s.PlayerPlay(players[0].GetCardsSize() - 1)
+		_ = s.PlayerPlay(players[0].GetCardsSize() - 1)
 
 		// CPU 1: only joker (blocked by finish rule)
 		players[1].RemoveCard(0) // remove diamond 2
@@ -2181,7 +2175,7 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 
 		// Human plays to advance turn
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-		s.PlayerPlay(players[0].GetCardsSize() - 1)
+		_ = s.PlayerPlay(players[0].GetCardsSize() - 1)
 
 		// CPU 1: only joker (blocked by finish rule)
 		players[1].RemoveCard(0) // remove diamond 2
@@ -2224,7 +2218,7 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 
 		// Human plays to advance turn
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
+		_ = s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
 
 		// CPU 1 has spade 6 (playable adjacent to 7, opens path to opponent's 5)
 		// With weighted blocking: opponent has 1 pass left -> weight 3
@@ -2259,7 +2253,7 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 
 		// Human plays
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
+		_ = s.PlayerPlay(players[0].GetCardsSize() - 1) // play 8♠
 
 		// CPU 1 has spade 6 + spade 5 (has chain card)
 		// Score: nextLow=5 not placed, CPU has 5 -> score +=2.
@@ -2292,7 +2286,7 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		s.PlayerPlay(players[0].GetCardsSize() - 1)
+		_ = s.PlayerPlay(players[0].GetCardsSize() - 1)
 
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
@@ -2322,7 +2316,7 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
-		s.PlayerPlay(players[0].GetCardsSize() - 1)
+		_ = s.PlayerPlay(players[0].GetCardsSize() - 1)
 
 		// CPU 1 has spade 6. With weight 2: score -= (1+2) = -3
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
@@ -2356,7 +2350,7 @@ func TestSevens_EvaluatePlay_PlayerHasNextHighCard(t *testing.T) {
 
 	// Human plays to advance turn
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
-	s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
+	_ = s.PlayerPlay(players[0].GetCardsSize() - 1) // play 6♠
 
 	// CPU 1 has 8♠ (playable, adjacent to 7) and 9♠ (the next high card)
 	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))

@@ -23,11 +23,12 @@ func TestOldMaid_cpuSelectCardIdx_AllBranches(t *testing.T) {
 
 	for i := 0; i < 5000; i++ {
 		idx := cpuSelectCardIdx(size)
-		if idx == 0 {
+		switch idx {
+		case 0:
 			hitFirst = true
-		} else if idx == size-1 {
+		case size - 1:
 			hitLast = true
-		} else {
+		default:
 			hitRandom = true
 		}
 		if hitFirst && hitLast && hitRandom {
@@ -185,9 +186,10 @@ func TestOldMaid_advancePastFinished_AllFinishedWithoutGameEndFlag(t *testing.T)
 	assert.Equal(t, 1, om.currentTurn, "currentTurn should loop back to its original value when all players are finished")
 }
 
-// TestOldMaid_drawCard_NoActiveTargetWith5Players covers drawCard returning nil
-// when getNextActivePlayer returns -1 (no active target).
-func TestOldMaid_drawCard_NoActiveTargetWith5Players(t *testing.T) {
+// TestOldMaid_drawCard_SoleActivePlayerWith5Players covers drawCard when
+// the only active player draws from themselves (getNextActivePlayer wraps
+// around and returns the caller).
+func TestOldMaid_drawCard_SoleActivePlayerWith5Players(t *testing.T) {
 	tc := NewTrumpCards(1)
 	players := []*OldMaidPlayer{
 		NewOldMaidPlayer(false),
@@ -206,9 +208,9 @@ func TestOldMaid_drawCard_NoActiveTargetWith5Players(t *testing.T) {
 	players[2].SetIsFinished(true)
 	players[3].SetIsFinished(true)
 
-	// drawCard(4, 0): player 4 is not finished (passes check),
-	// getNextActivePlayer(4) checks indices 1,2,3,0 - all finished → returns -1.
-	// targetIdx = -1 < 0 → return nil.
+	// drawCard(4, 0): player 4 is the sole active player.
+	// getNextActivePlayer(4) wraps around and finds player 4 (self).
+	// Player draws from themselves, returning the card.
 	result := om.drawCard(4, 0)
-	assert.Nil(t, result, "drawCard should return nil when no active target is found")
+	assert.NotNil(t, result, "drawCard should return a card when player draws from self")
 }

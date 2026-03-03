@@ -2,7 +2,7 @@ package controller
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -21,7 +21,7 @@ type baseController struct{}
 func (bc *baseController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
 	w.WriteHeader(http.StatusOK)
 	if err := w.WriteJson(json.RawMessage(responseStr)); err != nil {
-		log.Printf("WriteJson error: %v", err)
+		slog.Error("WriteJson error", "error", err)
 	}
 }
 
@@ -29,7 +29,7 @@ func (bc *baseController) writePresenterResponse(w rest.ResponseWriter, response
 func (bc *baseController) writeJsonResponse(w rest.ResponseWriter, status int, body any) {
 	w.WriteHeader(status)
 	if err := w.WriteJson(body); err != nil {
-		log.Printf("WriteJson error: %v", err)
+		slog.Error("WriteJson error", "error", err)
 	}
 }
 

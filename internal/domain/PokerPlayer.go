@@ -32,15 +32,12 @@ var PokerHandNames = []string{
 
 // PokerPlayer ポーカープレイヤークラス
 type PokerPlayer struct {
-	Player                       // 親クラス
-	ChipHolder                   // チップ管理
-	handRank      int            // ハンドランク
-	isHuman       bool           // 人間フラグ
-	folded        bool           // フォールド済
-	allIn         bool           // オールイン済
-	currentBet    int            // 現ラウンドベット額
-	playStyle     PokerPlayStyle // CPUプレイスタイル
-	exchangeCount int            // カード交換枚数
+	Player                           // 親クラス
+	ChipHolder                       // チップ管理
+	bettingPlayerBase                // ベッティング共通状態
+	isHuman           bool           // 人間フラグ
+	playStyle         PokerPlayStyle // CPUプレイスタイル
+	exchangeCount     int            // カード交換枚数
 }
 
 // NewPokerPlayer コンストラクタ
@@ -52,11 +49,6 @@ func NewPokerPlayer(isHuman bool, style PokerPlayStyle) *PokerPlayer {
 		isHuman:   isHuman,
 		playStyle: style,
 	}
-}
-
-// AddCard カード追加
-func (pp *PokerPlayer) AddCard(card *Card) {
-	pp.cards = append(pp.cards, card)
 }
 
 // ExchangeCard 指定インデックスのカードを交換
@@ -72,11 +64,6 @@ func (pp *PokerPlayer) EvalHand() int {
 	return pp.handRank
 }
 
-// GetHandRank ハンドランク取得
-func (pp *PokerPlayer) GetHandRank() int {
-	return pp.handRank
-}
-
 // GetHandName ハンド名取得
 func (pp *PokerPlayer) GetHandName() string {
 	if 0 <= pp.handRank && pp.handRank < len(PokerHandNames) {
@@ -87,24 +74,6 @@ func (pp *PokerPlayer) GetHandName() string {
 
 // GetIsHuman 人間フラグ取得
 func (pp *PokerPlayer) GetIsHuman() bool { return pp.isHuman }
-
-// GetFolded フォールド状態取得
-func (pp *PokerPlayer) GetFolded() bool { return pp.folded }
-
-// SetFolded フォールド状態設定
-func (pp *PokerPlayer) SetFolded(folded bool) { pp.folded = folded }
-
-// GetAllIn オールイン状態取得
-func (pp *PokerPlayer) GetAllIn() bool { return pp.allIn }
-
-// SetAllIn オールイン状態設定
-func (pp *PokerPlayer) SetAllIn(allIn bool) { pp.allIn = allIn }
-
-// GetCurrentBet 現ラウンドベット取得
-func (pp *PokerPlayer) GetCurrentBet() int { return pp.currentBet }
-
-// SetCurrentBet 現ラウンドベット設定
-func (pp *PokerPlayer) SetCurrentBet(bet int) { pp.currentBet = bet }
 
 // GetPlayStyle プレイスタイル取得
 func (pp *PokerPlayer) GetPlayStyle() PokerPlayStyle { return pp.playStyle }
@@ -129,9 +98,6 @@ func (pp *PokerPlayer) GetComparisonCards() []*Card {
 	copy(cards, pp.cards)
 	return cards
 }
-
-// SetHandRank ハンドランク設定（テスト用）
-func (pp *PokerPlayer) SetHandRank(rank int) { pp.handRank = rank }
 
 // evalFiveCardHandWithJokers ジョーカー対応の5枚ハンド評価
 // ジョーカーがない場合は通常のevalFiveCardHandを呼ぶ

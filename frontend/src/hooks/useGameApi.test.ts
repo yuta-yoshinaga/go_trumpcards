@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useGameApi } from './useGameApi';
 
 describe('useGameApi', () => {
@@ -55,7 +56,7 @@ describe('useGameApi', () => {
       await result.current.exec();
     });
 
-    expect(result.current.error).toBe('通信エラーが発生しました。もう一度お試しください。');
+    expect(result.current.error).toBe(NETWORK_ERROR_MESSAGE);
     expect(result.current.state).toBeNull();
     expect(result.current.loading).toBe(false);
   });
@@ -172,6 +173,30 @@ describe('useGameApi', () => {
     });
     expect(apiFn2).toHaveBeenCalled();
     expect(result.current.state).toEqual({ v: 2 });
+  });
+
+  it('keeps loading true until async onSuccess resolves', async () => {
+    let resolveCallback!: () => void;
+    const apiFn = vi.fn().mockResolvedValue({ v: 1 });
+    const onSuccess = vi.fn().mockReturnValue(
+      new Promise<void>((r) => {
+        resolveCallback = r;
+      }),
+    );
+    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }));
+
+    act(() => {
+      result.current.exec();
+    });
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    expect(result.current.loading).toBe(true);
+
+    await act(async () => {
+      resolveCallback();
+    });
+
+    expect(result.current.loading).toBe(false);
   });
 
   it('uses latest onSuccess via ref', async () => {

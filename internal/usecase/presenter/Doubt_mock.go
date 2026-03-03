@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"github.com/stretchr/testify/mock"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 

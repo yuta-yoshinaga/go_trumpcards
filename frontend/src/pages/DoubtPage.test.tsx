@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubtApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
 
@@ -265,9 +266,7 @@ describe('DoubtPage', () => {
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
   });
 
   it('clears error message on successful API call after failure', async () => {
@@ -278,17 +277,13 @@ describe('DoubtPage', () => {
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
-    await waitFor(() =>
-      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
   });
 
   it('sets aria-busy and sr-only loading text while loading', async () => {

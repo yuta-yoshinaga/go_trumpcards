@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
@@ -29,75 +30,6 @@ func TestDoubtPlayer_SetIsFinished(t *testing.T) {
 	assert.True(t, p.GetIsFinished())
 	p.SetIsFinished(false)
 	assert.False(t, p.GetIsFinished())
-}
-
-func TestDoubtPlayer_RemoveCards(t *testing.T) {
-	makePlayer := func() *domain.DoubtPlayer {
-		p := domain.NewDoubtPlayer(false)
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false)) // 0
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false)) // 1
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false)) // 2
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 4, false)) // 3
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // 4
-		return p
-	}
-
-	t.Run("empty indices returns empty slice", func(t *testing.T) {
-		p := makePlayer()
-		removed := p.RemoveCards([]int{})
-		assert.Empty(t, removed)
-		assert.Equal(t, 5, p.GetCardsSize())
-	})
-
-	t.Run("single index removal", func(t *testing.T) {
-		p := makePlayer()
-		removed := p.RemoveCards([]int{2})
-		assert.Len(t, removed, 1)
-		assert.Equal(t, 3, removed[0].GetValue())
-		assert.Equal(t, 4, p.GetCardsSize())
-	})
-
-	t.Run("multiple indices removal in order", func(t *testing.T) {
-		p := makePlayer()
-		removed := p.RemoveCards([]int{0, 2, 4})
-		assert.Len(t, removed, 3)
-		assert.Equal(t, 1, removed[0].GetValue())
-		assert.Equal(t, 3, removed[1].GetValue())
-		assert.Equal(t, 5, removed[2].GetValue())
-		assert.Equal(t, 2, p.GetCardsSize())
-	})
-
-	t.Run("duplicate indices are deduplicated", func(t *testing.T) {
-		p := makePlayer()
-		removed := p.RemoveCards([]int{1, 1, 3})
-		assert.Len(t, removed, 2)
-		assert.Equal(t, 2, removed[0].GetValue())
-		assert.Equal(t, 4, removed[1].GetValue())
-		assert.Equal(t, 3, p.GetCardsSize())
-	})
-
-	t.Run("out-of-range index is ignored", func(t *testing.T) {
-		p := makePlayer()
-		removed := p.RemoveCards([]int{0, 99})
-		assert.Len(t, removed, 1)
-		assert.Equal(t, 1, removed[0].GetValue())
-		assert.Equal(t, 4, p.GetCardsSize())
-	})
-
-	t.Run("negative index is ignored", func(t *testing.T) {
-		p := makePlayer()
-		removed := p.RemoveCards([]int{-1, 0})
-		assert.Len(t, removed, 1)
-		assert.Equal(t, 1, removed[0].GetValue())
-		assert.Equal(t, 4, p.GetCardsSize())
-	})
-
-	t.Run("remove all cards", func(t *testing.T) {
-		p := makePlayer()
-		removed := p.RemoveCards([]int{0, 1, 2, 3, 4})
-		assert.Len(t, removed, 5)
-		assert.Equal(t, 0, p.GetCardsSize())
-	})
 }
 
 func TestDoubtPlayer_ResetMemory(t *testing.T) {

@@ -131,15 +131,7 @@ func (d *Doubt) Reset() {
 	}
 
 	d.trumpCards.Shuffle()
-	idx := 0
-	for {
-		card := d.trumpCards.DrawCard()
-		if card == nil {
-			break
-		}
-		d.players[idx%DoubtPlayerCnt].AddCard(card)
-		idx++
-	}
+	dealAllCards(d.trumpCards, d.players)
 }
 
 // PlayerPlay 人間プレイヤーがカードを出す

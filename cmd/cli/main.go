@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"log"
+	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
@@ -38,6 +38,7 @@ func main() {
 		w := web.NewTrumpCardsWeb()
 		w.Exec()
 	default:
-		log.Fatal(fmt.Errorf("Error: param not found %s", flag.Arg(0)))
+		slog.Error("unknown command", "arg", flag.Arg(0))
+		os.Exit(1)
 	}
 }

@@ -3,6 +3,7 @@ import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { StatusBadge } from '../components/StatusBadge';
+import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { playerAreaBase } from '../styles/gameStyles';
 import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
@@ -303,52 +304,29 @@ function SetupScreen({
 
 export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
   const [setupStrategy, setSetupStrategy] = useState(false);
   const [gameSettings, setGameSettings] = useState<{ mode: number; cpuPlacementStrategy: boolean } | null>(null);
 
-  const exec = useCallback(
-    async (command: 'reset' | 'draw', drawIdx?: number, execMode?: number, execStrategy?: boolean) => {
-      setLoading(true);
-      try {
-        setError(null);
-        const res = await oldmaidApi.exec(command, drawIdx, execMode, execStrategy);
+  const onSuccess = useCallback(async (res: OldMaidResponse) => {
+    const humanDrawState = buildHumanDrawState(res);
+    if (humanDrawState) {
+      setDisplayState(humanDrawState);
+      await delay(REPLAY_DELAY_MS);
+    }
+    const replayStates = buildReplayStates(res);
+    if (replayStates.length === 0) {
+      setDisplayState(res);
+      return;
+    }
+    for (const step of replayStates) {
+      setDisplayState(step);
+      await delay(REPLAY_DELAY_MS);
+    }
+    setDisplayState(res);
+  }, []);
 
-        if (command === 'reset') {
-          setDisplayState(res);
-          return;
-        }
-
-        // Show human's draw result first (if humanAction is available)
-        const humanDrawState = buildHumanDrawState(res);
-        if (humanDrawState) {
-          setDisplayState(humanDrawState);
-          await delay(REPLAY_DELAY_MS);
-        }
-
-        if (res.cpuActions.length === 0) {
-          setDisplayState(res);
-          return;
-        }
-
-        // Replay each CPU action step by step
-        const replayStates = buildReplayStates(res);
-        for (const state of replayStates) {
-          setDisplayState(state);
-          await delay(REPLAY_DELAY_MS);
-        }
-        // Restore the actual final state so currentTurn reflects the server response
-        setDisplayState(res);
-      } catch {
-        setError('通信エラーが発生しました。もう一度お試しください。');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+  const { loading, error, exec } = useGameApi(oldmaidApi.exec, { onSuccess });
 
   const handleStart = useCallback(() => {
     const settings = { mode: setupMode, cpuPlacementStrategy: setupStrategy };
@@ -362,31 +340,12 @@ export function OldMaidPage() {
     }
   }, [exec, gameSettings]);
 
-  const handleShuffle = useCallback(async () => {
-    setLoading(true);
-    try {
-      setError(null);
-      const res = await oldmaidApi.exec('shuffle');
-      setDisplayState(res);
-    } catch {
-      setError('通信エラーが発生しました。もう一度お試しください。');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const handleReorder = useCallback(async (indices: number[]) => {
-    setLoading(true);
-    try {
-      setError(null);
-      const res = await oldmaidApi.exec('reorder', undefined, undefined, undefined, indices);
-      setDisplayState(res);
-    } catch {
-      setError('通信エラーが発生しました。もう一度お試しください。');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const handleReorder = useCallback(
+    (indices: number[]) => {
+      exec('reorder', undefined, undefined, undefined, indices);
+    },
+    [exec],
+  );
 
   if (!gameSettings) {
     return (
@@ -537,7 +496,7 @@ export function OldMaidPage() {
             type="button"
             className={`${btnSecondary} min-w-[110px]`}
             disabled={loading || state.gameEndFlag}
-            onClick={handleShuffle}
+            onClick={() => exec('shuffle')}
           >
             シャッフル
           </button>

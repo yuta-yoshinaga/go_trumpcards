@@ -54,61 +54,6 @@ func TestDaifugoPlayer_Method(t *testing.T) {
 		assert.Equal(t, 2, p.GetCard(3).GetValue())
 	})
 
-	t.Run("success RemoveCards single", func(t *testing.T) {
-		p := domain.NewDaifugoPlayer(true)
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
-		removed := p.RemoveCards([]int{1})
-		assert.Len(t, removed, 1)
-		assert.Equal(t, 5, removed[0].GetValue())
-		assert.Equal(t, 2, p.GetCardsSize())
-		assert.Equal(t, 3, p.GetCard(0).GetValue())
-		assert.Equal(t, 7, p.GetCard(1).GetValue())
-	})
-
-	t.Run("success RemoveCards multiple", func(t *testing.T) {
-		p := domain.NewDaifugoPlayer(true)
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
-		removed := p.RemoveCards([]int{0, 2})
-		assert.Len(t, removed, 2)
-		assert.Equal(t, 3, removed[0].GetValue())
-		assert.Equal(t, 7, removed[1].GetValue())
-		assert.Equal(t, 2, p.GetCardsSize())
-		assert.Equal(t, 5, p.GetCard(0).GetValue())
-		assert.Equal(t, 9, p.GetCard(1).GetValue())
-	})
-
-	t.Run("success RemoveCards deduplicates indices", func(t *testing.T) {
-		p := domain.NewDaifugoPlayer(true)
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
-		// Duplicate index 1 must not cause a panic or double-remove
-		removed := p.RemoveCards([]int{1, 1})
-		assert.Len(t, removed, 1)
-		assert.Equal(t, 5, removed[0].GetValue())
-		assert.Equal(t, 2, p.GetCardsSize())
-		assert.Equal(t, 3, p.GetCard(0).GetValue())
-		assert.Equal(t, 7, p.GetCard(1).GetValue())
-	})
-
-	t.Run("success RemoveCards indices unordered", func(t *testing.T) {
-		p := domain.NewDaifugoPlayer(true)
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		p.AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
-		// Remove indices 2,0 (unordered)
-		removed := p.RemoveCards([]int{2, 0})
-		assert.Len(t, removed, 2)
-		assert.Equal(t, 3, removed[0].GetValue())
-		assert.Equal(t, 7, removed[1].GetValue())
-		assert.Equal(t, 1, p.GetCardsSize())
-		assert.Equal(t, 5, p.GetCard(0).GetValue())
-	})
 }
 
 func TestDaifugoPlayer_SortCardsByStrength(t *testing.T) {

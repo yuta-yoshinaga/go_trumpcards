@@ -60,7 +60,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 
-		s.PlayerPlay(-1) // human passes
+		_ = s.PlayerPlay(-1) // human passes
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "パス: 1/5")
@@ -76,7 +76,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlay(0) // play 6♠ → minVal[Spade] = 6
+		_ = s.PlayerPlay(0) // play 6♠ → minVal[Spade] = 6
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "SPADE: 6〜7")
@@ -93,7 +93,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[2].SetRank(2)
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
-		s.PlayerPlay(0)
+		_ = s.PlayerPlay(0)
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "ゲーム終了")
@@ -108,8 +108,8 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // not playable → pass
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1 passes
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1 passes
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "[CPUの行動]")
@@ -198,7 +198,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → SPADE 6
+		_ = s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → SPADE 6
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "JOKER")

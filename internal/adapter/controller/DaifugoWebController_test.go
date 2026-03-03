@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/mock"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"

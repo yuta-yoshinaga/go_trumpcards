@@ -107,7 +107,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlay(-1) // pass
+		_ = s.PlayerPlay(-1) // pass
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
@@ -128,7 +128,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlay(0) // play 6♠ → minVal[Spade] = 6
+		_ = s.PlayerPlay(0) // play 6♠ → minVal[Spade] = 6
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
@@ -151,7 +151,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[2].SetRank(2)
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
-		s.PlayerPlay(0) // human plays last card → game ends
+		_ = s.PlayerPlay(0) // human plays last card → game ends
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
@@ -169,8 +169,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false)) // not playable
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlay(0) // human plays 8♠
-		s.CpuPlay()     // CPU 1 passes
+		_ = s.PlayerPlay(0) // human plays 8♠
+		s.CpuPlay()         // CPU 1 passes
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
@@ -190,7 +190,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[2].SetRank(2)
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
-		s.PlayerPlay(0) // human → rank 4
+		_ = s.PlayerPlay(0) // human → rank 4
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
@@ -255,7 +255,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlay(0) // play 6♠
+		_ = s.PlayerPlay(0) // play 6♠
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
@@ -273,7 +273,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → SPADE 6
+		_ = s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → SPADE 6
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
@@ -309,7 +309,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		players[2].SetRank(2)
 		players[3].SetIsFinished(true)
 		players[3].SetRank(3)
-		s.PlayerPlay(0) // human plays last card → game ends
+		_ = s.PlayerPlay(0) // human plays last card → game ends
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput

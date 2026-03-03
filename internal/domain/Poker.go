@@ -538,9 +538,9 @@ func (p *Poker) runCpuActions() {
 			p.lastCpuError = fmt.Errorf("CPU player %d action %d failed: %w", p.currentTurn, action, err)
 			callAmt := p.lastBet - p.players[p.currentTurn].GetCurrentBet()
 			if callAmt > 0 {
-				p.executeAction(p.currentTurn, PokerActionFold, 0)
+				_ = p.executeAction(p.currentTurn, PokerActionFold, 0)
 			} else {
-				p.executeAction(p.currentTurn, PokerActionCheck, 0)
+				_ = p.executeAction(p.currentTurn, PokerActionCheck, 0)
 			}
 		}
 		if p.gameEndFlag {
