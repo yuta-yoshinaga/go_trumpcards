@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 
 export function useGameApi<TState, TArgs extends unknown[]>(
   apiFn: (...args: TArgs) => Promise<TState>,
@@ -26,7 +27,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
       setState(res);
       await onSuccessRef.current?.(res);
     } catch {
-      setError('通信エラーが発生しました。もう一度お試しください。');
+      setError(NETWORK_ERROR_MESSAGE);
     } finally {
       setLoading(false);
     }

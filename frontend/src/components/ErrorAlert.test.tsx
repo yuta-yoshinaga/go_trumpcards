@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { ErrorAlert } from './ErrorAlert';
 
 describe('ErrorAlert', () => {
@@ -9,8 +10,8 @@ describe('ErrorAlert', () => {
   });
 
   it('renders the message when provided', () => {
-    render(<ErrorAlert message="通信エラーが発生しました。もう一度お試しください。" />);
-    expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument();
+    render(<ErrorAlert message={NETWORK_ERROR_MESSAGE} />);
+    expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument();
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 });

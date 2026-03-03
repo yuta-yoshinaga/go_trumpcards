@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useGameApi } from './useGameApi';
 
 describe('useGameApi', () => {
@@ -55,7 +56,7 @@ describe('useGameApi', () => {
       await result.current.exec();
     });
 
-    expect(result.current.error).toBe('通信エラーが発生しました。もう一度お試しください。');
+    expect(result.current.error).toBe(NETWORK_ERROR_MESSAGE);
     expect(result.current.state).toBeNull();
     expect(result.current.loading).toBe(false);
   });

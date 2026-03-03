@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pokerApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { PokerResponse } from '../types/card';
 import { PokerPage } from './PokerPage';
 
@@ -847,9 +848,7 @@ describe('PokerPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
   });
 
   it('clears error on successful call after failure', async () => {
@@ -858,15 +857,11 @@ describe('PokerPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(screen.queryByText('通信エラーが発生しました。もう一度お試しください。')).not.toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
   });
 
   // ---- message ----
