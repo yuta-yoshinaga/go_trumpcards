@@ -1,21 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-
-const games = [
-  { path: '/', label: 'ブラックジャック' },
-  { path: '/poker', label: 'ポーカー' },
-  { path: '/oldmaid', label: 'ババ抜き' },
-  { path: '/daifugo', label: '大富豪' },
-  { path: '/sevens', label: '7並べ' },
-  { path: '/doubt', label: 'ダウト' },
-  { path: '/holdem', label: 'テキサスホールデム' },
-];
+import { gameRoutes } from '../constants/gameRoutes';
 
 export function NavBar() {
   const { pathname } = useLocation();
 
   return (
     <nav style={{ textAlign: 'right', margin: '8px 10px' }}>
-      {games.map(({ path, label }) => (
+      {gameRoutes.map(({ path, label }) => (
         <Link
           key={path}
           to={path}

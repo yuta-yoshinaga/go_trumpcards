@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { NavBar } from './components/NavBar';
+import { gameRoutes } from './constants/gameRoutes';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
@@ -8,6 +10,17 @@ import { OldMaidPage } from './pages/OldMaidPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
 
+type GamePath = (typeof gameRoutes)[number]['path'];
+const pageByPath: Record<GamePath, ReactNode> = {
+  '/': <BlackJackPage />,
+  '/poker': <PokerPage />,
+  '/oldmaid': <OldMaidPage />,
+  '/daifugo': <DaifugoPage />,
+  '/sevens': <SevensPage />,
+  '/doubt': <DoubtPage />,
+  '/holdem': <HoldemPage />,
+};
+
 export default function App() {
   return (
     <HashRouter>
@@ -15,13 +28,9 @@ export default function App() {
         <NavBar />
         <div className="flex-1 flex flex-col min-h-0">
           <Routes>
-            <Route path="/" element={<BlackJackPage />} />
-            <Route path="/poker" element={<PokerPage />} />
-            <Route path="/oldmaid" element={<OldMaidPage />} />
-            <Route path="/daifugo" element={<DaifugoPage />} />
-            <Route path="/sevens" element={<SevensPage />} />
-            <Route path="/doubt" element={<DoubtPage />} />
-            <Route path="/holdem" element={<HoldemPage />} />
+            {gameRoutes.map(({ path }) => (
+              <Route key={path} path={path} element={pageByPath[path]} />
+            ))}
           </Routes>
         </div>
       </div>
