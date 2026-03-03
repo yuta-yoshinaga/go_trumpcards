@@ -831,6 +831,7 @@ func (b *BlackJack) cpuBetAndDeal() {
 				hand.AddCard(card)
 			} else {
 				dealFailed = true
+				break
 			}
 		}
 		// 山札枯渇で必要な枚数を配れなかった場合、ベットを返却してリセット
@@ -955,29 +956,24 @@ func (b *BlackJack) cpuSplit(cpu *BlackJackCpuSeat, hand *BlackJackHand, handIdx
 
 	// 各ハンドに1枚ずつ配る
 	card1 := b.drawCard()
-	if card1 == nil {
+	var card2 *Card
+	if card1 != nil {
+		hand.AddCard(card1)
+		b.updateRunningCount(card1)
+		card2 = b.drawCard()
+	}
+
+	if card1 == nil || card2 == nil {
 		// デッキ枯渇: 元のハンドを復元してベットを返却
 		hand.Reset()
 		hand.SetBet(bet)
 		hand.AddCard(firstCard)
 		hand.AddCard(secondCard)
 		cpu.GetPlayer().AddChips(bet)
-		hand.SetStood(true)
-		return
-	}
-	hand.AddCard(card1)
-	b.updateRunningCount(card1)
-
-	card2 := b.drawCard()
-	if card2 == nil {
-		// デッキ枯渇: 部分的なドローを元に戻し、元のハンドを復元してベットを返却
-		hand.Reset()
-		hand.SetBet(bet)
-		hand.AddCard(firstCard)
-		hand.AddCard(secondCard)
-		cpu.GetPlayer().AddChips(bet)
-		// card1のランニングカウント更新を元に戻す
-		b.runningCount -= hiLoValue(card1)
+		if card1 != nil {
+			// card1のランニングカウント更新を元に戻す
+			b.runningCount -= hiLoValue(card1)
+		}
 		hand.SetStood(true)
 		return
 	}
