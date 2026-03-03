@@ -8,12 +8,14 @@ import (
 
 // BlackJackWebInput ブラックジャックWebインプット
 type BlackJackWebInput struct {
-	Command          string `json:"command"`
-	Amount           int    `json:"amount,omitempty"`
-	SessionId        string `json:"sessionId"`
-	DealerHitsSoft17 *bool  `json:"dealerHitsSoft17,omitempty"`
-	CpuPlayerCount   *int   `json:"cpuPlayerCount,omitempty"`
-	CountingEnabled  *bool  `json:"countingEnabled,omitempty"`
+	Command           string `json:"command"`
+	Amount            int    `json:"amount,omitempty"`
+	SessionId         string `json:"sessionId"`
+	DealerHitsSoft17  *bool  `json:"dealerHitsSoft17,omitempty"`
+	CpuPlayerCount    *int   `json:"cpuPlayerCount,omitempty"`
+	CountingEnabled   *bool  `json:"countingEnabled,omitempty"`
+	PerfectPairsBet   *int   `json:"perfectPairsBet,omitempty"`
+	TwentyOnePlus3Bet *int   `json:"twentyOnePlus3Bet,omitempty"`
 }
 
 // GetCommand returns the command string.
@@ -49,25 +51,37 @@ type BlackJackWebOutputCpuSeat struct {
 	Hands []*BlackJackWebOutputHand `json:"hands"`
 }
 
+// BlackJackWebOutputSideBetResult サイドベット結果アウトプット
+type BlackJackWebOutputSideBetResult struct {
+	BetType    int    `json:"betType"`
+	ResultType int    `json:"resultType"`
+	ResultName string `json:"resultName"`
+	BetAmount  int    `json:"betAmount"`
+	Payout     int    `json:"payout"`
+}
+
 // BlackJackWebOutput ブラックジャックWebアウトプット
 type BlackJackWebOutput struct {
-	Dealer             *BlackJackWebOutputPlayer    `json:"dealer"`
-	Player             *BlackJackWebOutputPlayer    `json:"player"`
-	Hands              []*BlackJackWebOutputHand    `json:"hands,omitempty"`
-	CurrentHandIdx     int                          `json:"currentHandIdx"`
-	Phase              int                          `json:"phase"`
-	InsuranceBet       int                          `json:"insuranceBet"`
-	InsuranceAvailable bool                         `json:"insuranceAvailable"`
-	Message            string                       `json:"message"`
-	HintEnabled        bool                         `json:"hintEnabled"`
-	SuggestedAction    int                          `json:"suggestedAction"`
-	DeckCount          int                          `json:"deckCount"`
-	DealerHitsSoft17   bool                         `json:"dealerHitsSoft17"`
-	CountingEnabled    bool                         `json:"countingEnabled"`
-	CpuPlayerCount     int                          `json:"cpuPlayerCount"`
-	RunningCount       int                          `json:"runningCount"`
-	TrueCount          float64                      `json:"trueCount"`
-	CpuPlayers         []*BlackJackWebOutputCpuSeat `json:"cpuPlayers,omitempty"`
+	Dealer             *BlackJackWebOutputPlayer          `json:"dealer"`
+	Player             *BlackJackWebOutputPlayer          `json:"player"`
+	Hands              []*BlackJackWebOutputHand          `json:"hands,omitempty"`
+	CurrentHandIdx     int                                `json:"currentHandIdx"`
+	Phase              int                                `json:"phase"`
+	InsuranceBet       int                                `json:"insuranceBet"`
+	InsuranceAvailable bool                               `json:"insuranceAvailable"`
+	Message            string                             `json:"message"`
+	HintEnabled        bool                               `json:"hintEnabled"`
+	SuggestedAction    int                                `json:"suggestedAction"`
+	DeckCount          int                                `json:"deckCount"`
+	DealerHitsSoft17   bool                               `json:"dealerHitsSoft17"`
+	CountingEnabled    bool                               `json:"countingEnabled"`
+	CpuPlayerCount     int                                `json:"cpuPlayerCount"`
+	RunningCount       int                                `json:"runningCount"`
+	TrueCount          float64                            `json:"trueCount"`
+	CpuPlayers         []*BlackJackWebOutputCpuSeat       `json:"cpuPlayers,omitempty"`
+	PerfectPairsBet    int                                `json:"perfectPairsBet"`
+	TwentyOnePlus3Bet  int                                `json:"twentyOnePlus3Bet"`
+	SideBetResults     []*BlackJackWebOutputSideBetResult `json:"sideBetResults,omitempty"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -115,7 +129,15 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 			case "s", "stand":
 				bwc.writePresenterResponse(w, bji.Stand())
 			case "b", "bet":
-				bwc.writePresenterResponse(w, bji.Bet(param.Amount))
+				ppBet := 0
+				if param.PerfectPairsBet != nil {
+					ppBet = *param.PerfectPairsBet
+				}
+				t3Bet := 0
+				if param.TwentyOnePlus3Bet != nil {
+					t3Bet = *param.TwentyOnePlus3Bet
+				}
+				bwc.writePresenterResponse(w, bji.Bet(param.Amount, ppBet, t3Bet))
 			case "d", "doubledown":
 				bwc.writePresenterResponse(w, bji.DoubleDown())
 			case "sp", "split":

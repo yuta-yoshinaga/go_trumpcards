@@ -28,6 +28,11 @@ export interface BlackJackConfigInput {
   countingEnabled?: boolean;
 }
 
+export interface BlackJackSideBetInput {
+  perfectPairsBet?: number;
+  twentyOnePlus3Bet?: number;
+}
+
 export const blackjackApi = {
   exec: (
     command:
@@ -46,7 +51,8 @@ export const blackjackApi = {
       | 'togglecounting',
     amount?: number,
     config?: BlackJackConfigInput,
-  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config }),
+    sideBets?: BlackJackSideBetInput,
+  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config, ...sideBets }),
 };
 
 export const pokerApi = {

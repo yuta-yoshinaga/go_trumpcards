@@ -18,6 +18,10 @@ export interface BjBetPhaseControlsProps {
   onToggleCounting: () => void;
   loading: boolean;
   onBet: () => void;
+  perfectPairsBet: number;
+  onPerfectPairsBetChange: (v: number) => void;
+  twentyOnePlus3Bet: number;
+  onTwentyOnePlus3BetChange: (v: number) => void;
 }
 
 export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
@@ -34,6 +38,36 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           step={10}
           value={props.betAmount}
           onChange={(e) => props.onBetAmountChange(Number(e.target.value))}
+          className="w-20 px-2 py-1 rounded text-sm"
+          disabled={props.loading}
+        />
+      </div>
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <label htmlFor="bj-pp-bet" className="text-white text-sm">
+          PP:
+        </label>
+        <input
+          id="bj-pp-bet"
+          type="number"
+          min={0}
+          max={10000}
+          step={10}
+          value={props.perfectPairsBet}
+          onChange={(e) => props.onPerfectPairsBetChange(Number(e.target.value))}
+          className="w-20 px-2 py-1 rounded text-sm"
+          disabled={props.loading}
+        />
+        <label htmlFor="bj-t3-bet" className="text-white text-sm">
+          21+3:
+        </label>
+        <input
+          id="bj-t3-bet"
+          type="number"
+          min={0}
+          max={10000}
+          step={10}
+          value={props.twentyOnePlus3Bet}
+          onChange={(e) => props.onTwentyOnePlus3BetChange(Number(e.target.value))}
           className="w-20 px-2 py-1 rounded text-sm"
           disabled={props.loading}
         />

@@ -17,8 +17,8 @@ func (_m *MockBlackJackGame) Reset() {
 }
 
 // PlayerBet モック
-func (_m *MockBlackJackGame) PlayerBet(amount int) error {
-	ret := _m.Called(amount)
+func (_m *MockBlackJackGame) PlayerBet(amount, ppBet, t3Bet int) error {
+	ret := _m.Called(amount, ppBet, t3Bet)
 	return ret.Error(0)
 }
 
@@ -199,4 +199,25 @@ func (_m *MockBlackJackGame) GetCpuPlayers() []*domain.BlackJackCpuSeat {
 		return val
 	}
 	return nil
+}
+
+// GetSideBetResults モック
+func (_m *MockBlackJackGame) GetSideBetResults() []*domain.BJSideBetResult {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.BJSideBetResult); ok {
+		return val
+	}
+	return nil
+}
+
+// GetPerfectPairsBet モック
+func (_m *MockBlackJackGame) GetPerfectPairsBet() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+// Get21Plus3Bet モック
+func (_m *MockBlackJackGame) Get21Plus3Bet() int {
+	ret := _m.Called()
+	return ret.Int(0)
 }

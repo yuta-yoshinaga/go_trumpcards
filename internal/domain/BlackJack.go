@@ -20,10 +20,11 @@ const (
 
 // ブラックジャックデフォルト値
 const (
-	BJDefaultChips = 1000 // デフォルトチップ
-	BJMinBet       = 10   // 最低ベット額
-	BJMaxHands     = 4    // スプリットによる最大ハンド数
-	BJDefaultDecks = 1    // デフォルトデッキ数
+	BJDefaultChips = 1000  // デフォルトチップ
+	BJMinBet       = 10    // 最低ベット額
+	BJMaxBet       = 10000 // 最大ベット額（オーバーフロー防止）
+	BJMaxHands     = 4     // スプリットによる最大ハンド数
+	BJDefaultDecks = 1     // デフォルトデッキ数
 )
 
 // BJValidDeckCounts 有効なデッキ数
@@ -53,6 +54,9 @@ type BlackJack struct {
 	holeCardCounted    bool                // ホールカードをカウント済みか
 	deckCountChanged   bool                // デッキ数変更フラグ（シュー再構築判定用）
 	cpuPlayers         []*BlackJackCpuSeat // CPUプレイヤー
+	perfectPairsBet    int                 // Perfect Pairsサイドベット額
+	twentyOnePlus3Bet  int                 // 21+3サイドベット額
+	sideBetResults     []*BJSideBetResult  // サイドベット結果
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -89,6 +93,9 @@ func (b *BlackJack) Reset() {
 	b.insuranceAvailable = false
 	b.playerHands = []*BlackJackHand{NewBlackJackHand()}
 	b.holeCardCounted = false
+	b.perfectPairsBet = 0
+	b.twentyOnePlus3Bet = 0
+	b.sideBetResults = nil
 	// チップが最低ベット額未満ならデフォルト値にリセット
 	if b.player.GetChips() < BJMinBet {
 		b.player.SetChips(BJDefaultChips)
@@ -126,17 +133,27 @@ func (b *BlackJack) drawCard() *Card {
 }
 
 // PlayerBet プレイヤーベット
-func (b *BlackJack) PlayerBet(amount int) error {
+func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet int) error {
 	if b.phase != BJPhaseBet {
 		return NewDomainError(ErrWrongPhase, "Bet is only allowed during the bet phase.")
 	}
-	if amount < BJMinBet || amount%BJMinBet != 0 {
+	if amount < BJMinBet || amount%BJMinBet != 0 || amount > BJMaxBet {
 		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
 	}
-	if !b.player.SubtractChips(amount) {
+	// サイドベットのバリデーション: 0 または (BJMinBet以上かつBJMinBetの倍数かつBJMaxBet以下)
+	if ppBet != 0 && (ppBet < BJMinBet || ppBet%BJMinBet != 0 || ppBet > BJMaxBet) {
+		return NewDomainError(ErrInvalidAmount, "Invalid Perfect Pairs bet amount.")
+	}
+	if t3Bet != 0 && (t3Bet < BJMinBet || t3Bet%BJMinBet != 0 || t3Bet > BJMaxBet) {
+		return NewDomainError(ErrInvalidAmount, "Invalid 21+3 bet amount.")
+	}
+	totalCost := amount + ppBet + t3Bet
+	if !b.player.SubtractChips(totalCost) {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	b.playerHands[0].SetBet(amount)
+	b.perfectPairsBet = ppBet
+	b.twentyOnePlus3Bet = t3Bet
 
 	// カードを2枚ずつ配る
 	dealFailed := false
@@ -155,12 +172,17 @@ func (b *BlackJack) PlayerBet(amount int) error {
 
 	// 山札枯渇で必要な枚数を配れなかった場合、ベットを返却してリセット
 	if dealFailed {
-		b.player.AddChips(amount)
+		b.player.AddChips(totalCost)
 		b.playerHands[0].Reset()
 		b.dealer.Reset()
+		b.perfectPairsBet = 0
+		b.twentyOnePlus3Bet = 0
 		return ErrDeckExhausted
 	}
 	b.phase = BJPhaseDeal
+
+	// サイドベット判定
+	b.evaluateSideBets()
 
 	// CPUプレイヤーの自動ベットとカード配布
 	b.cpuBetAndDeal()
@@ -1014,4 +1036,61 @@ func (b *BlackJack) resolvePayoutsCpu() {
 // judgeCpuHand CPU個別ハンドの勝敗判定（CPUはスプリット有無に関わらずBJ判定）
 func (b *BlackJack) judgeCpuHand(hand *BlackJackHand) GameResult {
 	return b.judgeHandCore(hand, 1)
+}
+
+// evaluateSideBets サイドベットの判定と精算
+func (b *BlackJack) evaluateSideBets() {
+	b.sideBetResults = nil
+	card1 := b.playerHands[0].GetCard(0)
+	card2 := b.playerHands[0].GetCard(1)
+	dealerUpcard := b.dealer.GetCard(0)
+
+	if b.perfectPairsBet > 0 {
+		resultType, resultName := EvaluatePerfectPairs(card1, card2)
+		payout := 0
+		if resultType != BJPPNone {
+			multiplier := PerfectPairsPayout(resultType)
+			payout = b.perfectPairsBet * multiplier
+			b.player.AddChips(b.perfectPairsBet + payout)
+		}
+		b.sideBetResults = append(b.sideBetResults, &BJSideBetResult{
+			BetType:    BJSideBetPerfectPairs,
+			ResultType: resultType,
+			ResultName: resultName,
+			BetAmount:  b.perfectPairsBet,
+			Payout:     payout,
+		})
+	}
+
+	if b.twentyOnePlus3Bet > 0 {
+		resultType, resultName := Evaluate21Plus3(card1, card2, dealerUpcard)
+		payout := 0
+		if resultType != BJT3None {
+			multiplier := TwentyOnePlus3Payout(resultType)
+			payout = b.twentyOnePlus3Bet * multiplier
+			b.player.AddChips(b.twentyOnePlus3Bet + payout)
+		}
+		b.sideBetResults = append(b.sideBetResults, &BJSideBetResult{
+			BetType:    BJSideBet21Plus3,
+			ResultType: resultType,
+			ResultName: resultName,
+			BetAmount:  b.twentyOnePlus3Bet,
+			Payout:     payout,
+		})
+	}
+}
+
+// GetSideBetResults サイドベット結果取得
+func (b *BlackJack) GetSideBetResults() []*BJSideBetResult {
+	return b.sideBetResults
+}
+
+// GetPerfectPairsBet Perfect Pairsベット額取得
+func (b *BlackJack) GetPerfectPairsBet() int {
+	return b.perfectPairsBet
+}
+
+// Get21Plus3Bet 21+3ベット額取得
+func (b *BlackJack) Get21Plus3Bet() int {
+	return b.twentyOnePlus3Bet
 }

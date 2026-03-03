@@ -1213,7 +1213,7 @@ func TestBlackJack_PlayerBet_DealerAceTriggersInsurance_Deterministic(t *testing
 	// Reset phase to Bet so PlayerBet can proceed
 	bj.phase = BJPhaseBet
 
-	err := bj.PlayerBet(BJMinBet)
+	err := bj.PlayerBet(BJMinBet, 0, 0)
 	assert.NoError(t, err)
 
 	// Verify insurance-specific state
@@ -1257,7 +1257,7 @@ func TestPlayerBet_CountingWithCpuPlayers(t *testing.T) {
 		bj.trumpCards.deck[5] = NewCard(CardDesignHeart, 4, false)   // CPU card 2 +1
 		bj.trumpCards.deckDrawCnt = 0
 
-		err := bj.PlayerBet(BJMinBet)
+		err := bj.PlayerBet(BJMinBet, 0, 0)
 		assert.NoError(t, err)
 
 		// Running count should include: player 2 cards + dealer upcard + CPU 2 cards
