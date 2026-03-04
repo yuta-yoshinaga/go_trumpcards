@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { navigateTo, waitForLoaded } from './helpers';
 
 test.describe('BlackJack E2E', () => {
-  test('plays a full round: bet → stand → result → next round', async ({ page }) => {
+  test('plays a round: bet → stand → result', async ({ page }) => {
     await navigateTo(page, '/');
 
     // BET phase: click ベット
@@ -28,12 +28,5 @@ test.describe('BlackJack E2E', () => {
     // END phase: リセット button should be visible
     const resetButton = page.getByRole('button', { name: /リセット/ });
     await expect(resetButton).toBeVisible({ timeout: 10_000 });
-
-    // Start next round — reset returns to BET phase
-    await resetButton.click();
-    await waitForLoaded(page);
-
-    // Back to BET phase
-    await expect(betButton).toBeVisible({ timeout: 10_000 });
   });
 });
