@@ -99,6 +99,14 @@ export interface PokerSidePot {
   eligiblePlayers: number[];
 }
 
+export interface PokerOdds {
+  handRank: number;
+  handName: string;
+  probability: number;
+  count: number;
+  total: number;
+}
+
 export type PokerPhase = 0 | 1 | 2 | 3 | 4;
 
 export interface PokerResponse {
@@ -116,6 +124,7 @@ export interface PokerResponse {
   roundResults: PokerResult[];
   cpuActions: PokerCpuAction[];
   cpuExchanges: PokerCpuExchange[];
+  odds?: PokerOdds[];
   message: string;
 }
 

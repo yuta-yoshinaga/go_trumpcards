@@ -16,6 +16,38 @@ func NewPokerWebPresenter() *PokerWebPresenter {
 
 // Output ゲーム状態をJSON出力
 func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) string {
+	resObj := pwp.buildOutput(p, lastErr)
+	res, err := jsonMarshal(resObj)
+	if err != nil {
+		return internalServerErrorJSON()
+	}
+	return string(res)
+}
+
+// OutputWithOdds ゲーム状態 + ドローオッズをJSON出力
+func (pwp *PokerWebPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr error, odds []domain.PokerDrawOdds) string {
+	resObj := pwp.buildOutput(p, lastErr)
+	if odds != nil {
+		resObj.Odds = make([]*controller.PokerWebOutputOdds, len(odds))
+		for i, o := range odds {
+			resObj.Odds[i] = &controller.PokerWebOutputOdds{
+				HandRank:    o.HandRank,
+				HandName:    o.HandName,
+				Probability: o.Probability,
+				Count:       o.Count,
+				Total:       o.Total,
+			}
+		}
+	}
+	res, err := jsonMarshal(resObj)
+	if err != nil {
+		return internalServerErrorJSON()
+	}
+	return string(res)
+}
+
+// buildOutput ゲーム状態をPokerWebOutputに変換
+func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error) *controller.PokerWebOutput {
 	resObj := new(controller.PokerWebOutput)
 	resObj.Phase = p.GetPhase()
 	resObj.Pot = p.GetPot()
@@ -105,11 +137,7 @@ func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		resObj.Message = pwp.buildResultMessage(p)
 	}
 
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return resObj
 }
 
 // buildResultMessage builds the end-of-round message

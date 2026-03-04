@@ -455,6 +455,23 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with odds command and indices', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          phase: 2,
+          odds: [{ handRank: 1, handName: 'One Pair', probability: 0.5, count: 5, total: 10 }],
+          message: '',
+        }),
+      );
+      await pokerApi.exec('odds', [0, 2]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/poker/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'odds', indices: [0, 2], amount: undefined, sessionId }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 503));
       await expect(pokerApi.exec('reset')).rejects.toThrow('HTTP error: 503');

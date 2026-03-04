@@ -65,6 +65,15 @@ type PokerWebOutputSidePot struct {
 	EligiblePlayers []int `json:"eligiblePlayers"`
 }
 
+// PokerWebOutputOdds ポーカードローオッズ
+type PokerWebOutputOdds struct {
+	HandRank    int     `json:"handRank"`
+	HandName    string  `json:"handName"`
+	Probability float64 `json:"probability"`
+	Count       int     `json:"count"`
+	Total       int     `json:"total"`
+}
+
 // PokerWebOutput ポーカーWebアウトプット
 type PokerWebOutput struct {
 	Players      []*PokerWebOutputPlayer      `json:"players"`
@@ -81,6 +90,7 @@ type PokerWebOutput struct {
 	RoundResults []*PokerWebOutputResult      `json:"roundResults"`
 	CpuActions   []*PokerWebOutputCpuAction   `json:"cpuActions"`
 	CpuExchanges []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
+	Odds         []*PokerWebOutputOdds        `json:"odds,omitempty"`
 	Message      string                       `json:"message"`
 }
 
@@ -147,6 +157,12 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionRaise, param.Amount))
 			case "a", "allin":
 				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionAllIn, 0))
+			case "o", "odds":
+				indices := param.Indices
+				if indices == nil {
+					indices = []int{}
+				}
+				pwc.writePresenterResponse(w, pi.Odds(indices))
 			default:
 				return false
 			}

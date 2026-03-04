@@ -561,6 +561,58 @@ func TestPokerWebController_AllIn_ShortCommand(t *testing.T) {
 	recorded.CodeIs(200)
 }
 
+// --- odds command ---
+
+func TestPokerWebController_Odds(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	mi.On("Odds", []int{0, 2}).Return(`{"phase":2,"odds":[]}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+			map[string]interface{}{
+				"command":   "odds",
+				"sessionId": "s1",
+				"indices":   []int{0, 2},
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestPokerWebController_Odds_ShortCommand(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	mi.On("Odds", []int{1}).Return(`{"phase":2,"odds":[]}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+			map[string]interface{}{
+				"command":   "o",
+				"sessionId": "s1",
+				"indices":   []int{1},
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestPokerWebController_Odds_NilIndices(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	mi.On("Odds", []int{}).Return(`{"phase":2}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+			map[string]interface{}{
+				"command":   "odds",
+				"sessionId": "s1",
+			}))
+	recorded.CodeIs(200)
+}
+
 // --- quit command ---
 
 func TestPokerWebController_Quit(t *testing.T) {
@@ -774,8 +826,9 @@ func TestPokerWebController_AllShortCommands(t *testing.T) {
 	mi.On("Action", domain.PokerActionCheck, 0).Return(`{"phase":1}`)
 	mi.On("Action", domain.PokerActionCall, 0).Return(`{"phase":1}`)
 	mi.On("Action", domain.PokerActionAllIn, 0).Return(`{"phase":1}`)
+	mi.On("Odds", mock.Anything).Return(`{"phase":2}`)
 
-	commands := []string{"r", "e", "s", "f", "ck", "c", "a"}
+	commands := []string{"r", "e", "s", "f", "ck", "c", "a", "o"}
 	for _, cmd := range commands {
 		recorded := test.RunRequest(t, api.MakeHandler(),
 			test.MakeSimpleRequest("POST", "http://localhost/poker/exec",

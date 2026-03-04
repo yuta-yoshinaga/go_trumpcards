@@ -123,3 +123,9 @@ func (_m *MockPokerGame) GetConfig() domain.PokerConfig {
 func (_m *MockPokerGame) SetConfig(cfg domain.PokerConfig) {
 	_m.Called(cfg)
 }
+
+// CalcDrawOdds モック
+func (_m *MockPokerGame) CalcDrawOdds(indices []int) ([]domain.PokerDrawOdds, error) {
+	ret := _m.Called(indices)
+	return ret.Get(0).([]domain.PokerDrawOdds), ret.Error(1)
+}
