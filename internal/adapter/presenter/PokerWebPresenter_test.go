@@ -485,6 +485,15 @@ func TestPokerWebPresenter_OutputWithOdds(t *testing.T) {
 		assert.NotContains(t, result, `"odds"`)
 	})
 
+	t.Run("with empty non-nil odds", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseExchange)
+
+		result := pres.OutputWithOdds(p, nil, []domain.PokerDrawOdds{})
+		// empty slice: odds field omitted via omitempty
+		assert.NotContains(t, result, `"odds"`)
+	})
+
 	t.Run("with error", func(t *testing.T) {
 		p, _ := makePokerForPresenter()
 		p.SetPhase(domain.PokerPhaseExchange)
