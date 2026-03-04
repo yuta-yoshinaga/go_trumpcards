@@ -6,6 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// GetTrumpCards トランプカード取得（テスト用）
+func (b *BlackJack) GetTrumpCards() *TrumpCards {
+	return b.trumpCards
+}
+
 func setupInternalTestBJ(playerChips, dealerChips int) (*BlackJack, *BlackJackPlayer, *BlackJackPlayer) {
 	tc := NewTrumpCards(0)
 	player := NewBlackJackPlayer()

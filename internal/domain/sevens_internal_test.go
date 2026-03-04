@@ -6,6 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// GetJokerPlaced ジョーカー配置ビットマスク取得（テスト用）
+func (s *Sevens) GetJokerPlaced() [5]uint16 { return s.jokerPlaced }
+
+// GetJokerCardsCount ボード上のジョーカーカード数取得（テスト用）
+func (s *Sevens) GetJokerCardsCount() int { return len(s.jokerCards) }
+
 func TestSevens_advanceTurn_gameEndFlag(t *testing.T) {
 	// Covers lines 176-178: advanceTurn returns immediately when gameEndFlag is true.
 	// This guard is defensive code unreachable through public API because all callers

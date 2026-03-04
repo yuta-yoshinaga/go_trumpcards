@@ -7,6 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// setActedFlags actedフラグ設定（テスト用）
+func (h *Holdem) setActedFlags(flags []bool) { h.actedFlags = flags }
+
+// setRaiseCount レイズ回数設定（テスト用）
+func (h *Holdem) setRaiseCount(count int) { h.raiseCount = count }
+
+// setStartingChips ハンド開始時チップ設定（テスト用）
+func (h *Holdem) setStartingChips(chips []int) { h.startingChips = chips }
+
 func newInternalTestHoldem() *Holdem {
 	players := []*HoldemPlayer{
 		NewHoldemPlayer(true, HoldemStyleTAG),
@@ -1971,7 +1980,7 @@ func TestHoldem_DealerRotation(t *testing.T) {
 	h.SetPot(100)
 	h.SetCurrentTurn(0)
 	h.SetLastBet(0)
-	h.SetActedFlags([]bool{false, true, true, true})
+	h.setActedFlags([]bool{false, true, true, true})
 
 	// Fold everyone except player 0 and 1
 	h.players[2].SetFolded(true)

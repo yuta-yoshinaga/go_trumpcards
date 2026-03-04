@@ -27,12 +27,12 @@ go run ./cmd/server         # Start REST API + web GUI server (direct)
 
 **Test:**
 ```sh
-go test ./...                                              # Run all tests
-go test ./internal/domain/...                              # Run tests in a specific package
-go test ./internal/domain/ -run TestBlackJack              # Run a single test by name
-go test -coverprofile=coverage.out -covermode=atomic ./... # Run all tests with coverage report
-go tool cover -func=coverage.out                           # Show coverage summary by function
-go tool cover -html=coverage.out -o coverage.html          # Generate HTML coverage report
+go test -tags test ./...                                              # Run all tests
+go test -tags test ./internal/domain/...                              # Run tests in a specific package
+go test -tags test ./internal/domain/ -run TestBlackJack              # Run a single test by name
+go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Run all tests with coverage report
+go tool cover -func=coverage.out                                      # Show coverage summary by function
+go tool cover -html=coverage.out -o coverage.html                     # Generate HTML coverage report
 ```
 
 **Format Go source files:**
@@ -166,7 +166,7 @@ Card games involve shuffling, so tests must not depend on random outcomes:
 Always run the full test suite before committing and ensure it passes:
 
 ```sh
-go test ./...
+go test -tags test ./...
 ```
 
 ### Frontend testing

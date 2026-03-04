@@ -6,6 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// SetTableCards テーブルカード設定（テスト用）
+func (d *Doubt) SetTableCards(cards []*Card) { d.tableCards = cards }
+
+// SetTurnCounter ターンカウンター設定（テスト用）
+func (d *Doubt) SetTurnCounter(v int) { d.turnCounter = v }
+
 // TestDecideCpuDoubters_NilLastAction lastAction が nil のとき早期リターンする
 func TestDecideCpuDoubters_NilLastAction(t *testing.T) {
 	players := []*DoubtPlayer{

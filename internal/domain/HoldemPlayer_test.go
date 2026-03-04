@@ -447,3 +447,10 @@ func TestHoldemPlayer_HUDStats(t *testing.T) {
 		assert.Equal(t, 25, p.GetPFR())  // 1*100/4=25
 	})
 }
+
+func TestHoldemPlayer_SetBestHand(t *testing.T) {
+	p := NewHoldemPlayer(true, HoldemStyleTAG)
+	hand := []*Card{NewCard(CardDesignSpade, 1, false)}
+	p.SetBestHand(hand)
+	assert.Equal(t, hand, p.GetBestHand())
+}
