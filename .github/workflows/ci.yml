@@ -36,7 +36,7 @@ jobs:
         run: go mod download
 
       - name: Run backend tests with coverage
-        run: go test -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -tags test -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Upload backend coverage to Codecov
         uses: codecov/codecov-action@v5

@@ -1,3 +1,5 @@
+//go:build test
+
 package domain
 
 // This file contains test helper methods for Daifugo.

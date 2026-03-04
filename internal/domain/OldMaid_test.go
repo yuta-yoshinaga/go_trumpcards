@@ -1286,3 +1286,16 @@ func TestOldMaid_ReorderHumanHand(t *testing.T) {
 		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
 	})
 }
+
+func TestOldMaid_SetRemovedCard(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	card := domain.NewCard(domain.CardDesignSpade, 1, false)
+	om.SetRemovedCard(card)
+	assert.Equal(t, card, om.GetRemovedCard())
+}
