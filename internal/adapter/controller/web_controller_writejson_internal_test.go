@@ -97,6 +97,7 @@ func (m *mockPokerIF) Action(action int, amount int) string {
 }
 func (m *mockPokerIF) Exchange(i []int) string { return m.Called(i).String(0) }
 func (m *mockPokerIF) Stand() string           { return m.Called().String(0) }
+func (m *mockPokerIF) Odds(i []int) string     { return m.Called(i).String(0) }
 
 func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 	pkMock := &mockPokerIF{}

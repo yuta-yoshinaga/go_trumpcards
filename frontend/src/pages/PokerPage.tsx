@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { pokerApi } from '../api/gameApi';
 import { BettingControls } from '../components/BettingControls';
 import { CardImage } from '../components/CardImage';
@@ -10,6 +10,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 
 import { handNameBadgeStyle, POKER_ACTION_NAMES } from '../styles/gameConstants';
+import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
 
 const cardWrapBase: React.CSSProperties = {
@@ -24,15 +25,24 @@ const cardWrapBase: React.CSSProperties = {
 export function PokerPage() {
   const [selected, setSelected] = useState<number[]>([]);
   const [betAmount, setBetAmount] = useState(10);
+  const [odds, setOdds] = useState<PokerOdds[] | null>(null);
+  const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const onSuccess = useCallback(() => {
     setSelected([]);
+    setOdds(null);
   }, []);
   const { state, loading, error, exec } = useGameApi(pokerApi.exec, { onSuccess });
 
   useEffect(() => {
     exec('reset');
   }, [exec]);
+
+  useEffect(() => {
+    return () => {
+      if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -56,7 +66,18 @@ export function PokerPage() {
 
   const toggleSelect = (idx: number) => {
     if (!canExchange) return;
-    setSelected((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
+    setSelected((prev) => {
+      const next = prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx];
+      if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
+      if (next.length === 0) {
+        setOdds(null);
+      } else {
+        oddsTimerRef.current = setTimeout(() => {
+          pokerApi.exec('odds', next).then((res) => setOdds(res.odds ?? null));
+        }, 300);
+      }
+      return next;
+    });
   };
 
   return (
@@ -212,6 +233,21 @@ export function PokerPage() {
             onFold={() => exec('fold')}
             onAllIn={() => exec('allin')}
           />
+        )}
+
+        {/* Draw odds panel */}
+        {canExchange && odds && odds.some((o) => o.probability > 0) && (
+          <div className="bg-black/40 rounded-lg px-4 py-2 mb-2 text-white text-[0.85em]" data-testid="odds-panel">
+            <div className="font-bold mb-1">ドローオッズ:</div>
+            {odds
+              .filter((o) => o.probability > 0)
+              .map((o) => (
+                <div key={o.handRank} className="flex justify-between">
+                  <span>{o.handName}</span>
+                  <span>{(o.probability * 100).toFixed(1)}%</span>
+                </div>
+              ))}
+          </div>
         )}
 
         {/* Exchange controls */}

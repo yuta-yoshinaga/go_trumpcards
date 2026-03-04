@@ -449,3 +449,55 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.PokerPhaseInit, out.Phase)
 	})
 }
+
+func TestPokerWebPresenter_OutputWithOdds(t *testing.T) {
+	pres := presenter.NewPokerWebPresenter()
+
+	t.Run("with odds data", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseExchange)
+
+		odds := []domain.PokerDrawOdds{
+			{HandRank: 0, HandName: "High Card", Probability: 0.5, Count: 5, Total: 10},
+			{HandRank: 1, HandName: "One Pair", Probability: 0.3, Count: 3, Total: 10},
+			{HandRank: 5, HandName: "Flush", Probability: 0.2, Count: 2, Total: 10},
+		}
+
+		result := pres.OutputWithOdds(p, nil, odds)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Len(t, out.Odds, 3)
+		assert.Equal(t, "High Card", out.Odds[0].HandName)
+		assert.Equal(t, 0.5, out.Odds[0].Probability)
+		assert.Equal(t, 5, out.Odds[0].Count)
+		assert.Equal(t, 10, out.Odds[0].Total)
+		assert.Equal(t, "One Pair", out.Odds[1].HandName)
+		assert.Equal(t, "Flush", out.Odds[2].HandName)
+	})
+
+	t.Run("with nil odds", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseExchange)
+
+		result := pres.OutputWithOdds(p, nil, nil)
+		// odds field should be omitted (omitempty)
+		assert.NotContains(t, result, `"odds"`)
+	})
+
+	t.Run("with error", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseExchange)
+
+		odds := []domain.PokerDrawOdds{
+			{HandRank: 0, HandName: "High Card", Probability: 1.0, Count: 1, Total: 1},
+		}
+		testErr := errors.New("test error")
+
+		result := pres.OutputWithOdds(p, testErr, odds)
+		var out controller.PokerWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+		assert.Equal(t, "test error", out.Message)
+		assert.Len(t, out.Odds, 1)
+	})
+}

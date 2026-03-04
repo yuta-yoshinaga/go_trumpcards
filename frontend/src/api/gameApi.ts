@@ -57,7 +57,7 @@ export const blackjackApi = {
 
 export const pokerApi = {
   exec: (
-    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin' | 'odds',
     indices?: number[],
     amount?: number,
     cpuCount?: number,

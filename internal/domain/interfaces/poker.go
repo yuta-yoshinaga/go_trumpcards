@@ -9,6 +9,7 @@ type PokerGame interface {
 	PlayerAction(action, amount int) error
 	PlayerExchange(indices []int) error
 	PlayerStand() error
+	CalcDrawOdds(indices []int) ([]domain.PokerDrawOdds, error)
 
 	// presenter が呼ぶメソッド
 	GetPlayers() []*domain.PokerPlayer

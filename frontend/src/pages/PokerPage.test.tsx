@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pokerApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -896,5 +896,144 @@ describe('PokerPage', () => {
       expect(container).toHaveAttribute('aria-busy', 'false');
       expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
+  });
+
+  // ---- draw odds ----
+  it('shows odds panel when odds data is present in exchange phase', async () => {
+    const oddsState: PokerResponse = {
+      ...exchangeState,
+      odds: [
+        { handRank: 0, handName: 'High Card', probability: 0.5, count: 5, total: 10 },
+        { handRank: 1, handName: 'One Pair', probability: 0.3, count: 3, total: 10 },
+        { handRank: 5, handName: 'Flush', probability: 0.2, count: 2, total: 10 },
+      ],
+    };
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    // Switch to fake timers for debounce control
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockResolvedValue(oddsState);
+    fireEvent.click(screen.getByAltText('♠ A'));
+
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+
+    await waitFor(() => expect(screen.getByTestId('odds-panel')).toBeInTheDocument());
+    expect(screen.getByText('ドローオッズ:')).toBeInTheDocument();
+    expect(screen.getByText('High Card')).toBeInTheDocument();
+    expect(screen.getByText('50.0%')).toBeInTheDocument();
+    expect(screen.getByText('One Pair')).toBeInTheDocument();
+    expect(screen.getByText('30.0%')).toBeInTheDocument();
+    expect(screen.getByText('Flush')).toBeInTheDocument();
+    expect(screen.getByText('20.0%')).toBeInTheDocument();
+  });
+
+  it('hides odds panel when not in exchange phase', async () => {
+    mockExec.mockResolvedValue(dealState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument();
+  });
+
+  it('clears odds after exchange', async () => {
+    const oddsState: PokerResponse = {
+      ...exchangeState,
+      odds: [{ handRank: 1, handName: 'One Pair', probability: 1.0, count: 1, total: 1 }],
+    };
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    // Toggle card to get odds
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockResolvedValue(oddsState);
+    fireEvent.click(screen.getByAltText('♠ A'));
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+    await waitFor(() => expect(screen.getByTestId('odds-panel')).toBeInTheDocument());
+
+    // Exchange clears odds via onSuccess
+    mockExec.mockResolvedValue({ ...exchangeState, phase: 3 });
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
+  });
+
+  it('clears odds when deselecting all cards', async () => {
+    const oddsState: PokerResponse = {
+      ...exchangeState,
+      odds: [{ handRank: 1, handName: 'One Pair', probability: 1.0, count: 1, total: 1 }],
+    };
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    // Select card → odds appear
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockResolvedValue(oddsState);
+    fireEvent.click(screen.getByAltText('♠ A'));
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+    await waitFor(() => expect(screen.getByTestId('odds-panel')).toBeInTheDocument());
+
+    // Deselect card → odds cleared immediately
+    fireEvent.click(screen.getByAltText('♠ A'));
+    await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
+  });
+
+  it('debounces odds API call', async () => {
+    const oddsState: PokerResponse = {
+      ...exchangeState,
+      odds: [{ handRank: 1, handName: 'One Pair', probability: 1.0, count: 1, total: 1 }],
+    };
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(oddsState);
+
+    // Rapidly toggle two cards
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByAltText('♥ 5'));
+
+    // Before debounce fires, no odds call
+    expect(mockExec).not.toHaveBeenCalledWith('odds', expect.anything());
+
+    // After 300ms, one odds call with both indices
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('odds', expect.arrayContaining([0, 1])));
+  });
+
+  it('does not show odds panel when all probabilities are 0', async () => {
+    const oddsState: PokerResponse = {
+      ...exchangeState,
+      odds: [{ handRank: 0, handName: 'High Card', probability: 0, count: 0, total: 10 }],
+    };
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockResolvedValue(oddsState);
+    fireEvent.click(screen.getByAltText('♠ A'));
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+
+    // Wait for state update then check panel is not shown
+    await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
   });
 });
