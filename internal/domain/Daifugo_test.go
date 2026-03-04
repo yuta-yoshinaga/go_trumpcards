@@ -4156,5 +4156,603 @@ func TestDaifugo_DefaultConfig_NewFields(t *testing.T) {
 		assert.False(t, cfg.NineReverseEnabled)
 		assert.False(t, cfg.CoupDetatEnabled)
 		assert.False(t, cfg.IntenseLockEnabled)
+		assert.False(t, cfg.SandstormEnabled)
+		assert.False(t, cfg.EmperorEnabled)
 	})
+}
+
+// =============================================================================
+// Sandstorm (砂嵐) tests
+// =============================================================================
+
+func sandstormConfig() domain.DaifugoConfig {
+	return domain.DaifugoConfig{SandstormEnabled: true}
+}
+
+func TestSandstorm_ThreeThrees_ClearTable(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, sandstormConfig())
+
+	// Human has 3 threes + a spare card so they don't finish
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false)) // spare
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2}) // play 3 threes → sandstorm → table clears
+	assert.NoError(t, err)
+	assert.Nil(t, dg.GetTableCards())       // table cleared
+	assert.True(t, dg.IsHumanTurn())        // player keeps turn
+	assert.Equal(t, 0, dg.GetCurrentTurn()) // still player 0
+}
+
+func TestSandstorm_Disabled_NoEffect(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	// SandstormEnabled is false (default)
+	dg := domain.NewDaifugo(tc, players, noRulesConfig())
+
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false)) // spare
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2}) // play 3 threes but sandstorm disabled
+	assert.NoError(t, err)
+	assert.NotNil(t, dg.GetTableCards())        // table NOT cleared
+	assert.Equal(t, 3, len(dg.GetTableCards())) // 3 cards on table
+	assert.False(t, dg.IsHumanTurn())           // turn advanced to CPU
+}
+
+func TestSandstorm_TwoThrees_NoEffect(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, sandstormConfig())
+
+	// Only 2 threes → sandstorm requires exactly 3
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false)) // spare
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	err := dg.PlayerPlay([]int{0, 1}) // play 2 threes
+	assert.NoError(t, err)
+	assert.NotNil(t, dg.GetTableCards())        // table NOT cleared
+	assert.Equal(t, 2, len(dg.GetTableCards())) // 2 cards on table
+}
+
+func TestSandstorm_ThreesWithJoker_NoEffect(t *testing.T) {
+	tc := domain.NewTrumpCards(2)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, sandstormConfig())
+
+	// 2 threes + 1 joker → sandstorm requires all 3 to be non-joker threes
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))   // joker
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false)) // spare
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2}) // play 2 threes + joker
+	assert.NoError(t, err)
+	assert.NotNil(t, dg.GetTableCards()) // table NOT cleared (joker present)
+	assert.Equal(t, 3, len(dg.GetTableCards()))
+}
+
+func TestSandstorm_FinishAndClear(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, sandstormConfig())
+
+	// 3 CPUs already finished; human plays 3 threes as last cards → finish + sandstorm
+	players[1].SetIsFinished(true)
+	players[1].SetRank(1)
+	players[2].SetIsFinished(true)
+	players[2].SetRank(2)
+	players[3].SetIsFinished(true)
+	players[3].SetRank(3)
+
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2}) // play 3 threes → finish + sandstorm
+	assert.NoError(t, err)
+	assert.True(t, dg.GetGameEndFlag())
+	assert.Equal(t, 4, players[0].GetRank())
+	assert.Nil(t, dg.GetTableCards()) // sandstorm clears table
+}
+
+// =============================================================================
+// Emperor (エンペラー) tests
+// =============================================================================
+
+func emperorConfig() domain.DaifugoConfig {
+	return domain.DaifugoConfig{EmperorEnabled: true}
+}
+
+func TestEmperor_ValidOnClearTable(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// 4 consecutive cards with all different suits on clear table
+	// Strengths 3,4,5,6 → values 3,4,5,6
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false)) // spare
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	assert.False(t, dg.GetRevolutionActive()) // initially no revolution
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3}) // play emperor
+	assert.NoError(t, err)
+	assert.True(t, dg.GetRevolutionActive()) // revolution toggled
+	assert.Nil(t, dg.GetTableCards())        // table cleared
+	assert.True(t, dg.IsHumanTurn())         // player keeps turn
+	assert.Equal(t, 0, dg.GetCurrentTurn())
+}
+
+func TestEmperor_InvalidOnOccupiedTable(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// Put a card on the table first
+	dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, false)})
+	dg.SetLastPlayPlayerIdx(3)
+
+	// 4 consecutive cards with different suits, but table is occupied
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+
+	// Playing 4 cards when table has 1 card → count mismatch → invalid play
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestEmperor_DuplicateSuit_Invalid(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// 4 consecutive cards but 2 have same suit (Spade)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false)) // duplicate Spade
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+
+	// These 4 cards have different values but duplicate suit → not valid emperor
+	// They are also not a valid group (different values) and not a valid sequence (need same suit in standard)
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestEmperor_NonConsecutive_Invalid(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// 4 cards with different suits but non-consecutive strengths
+	// Strengths: 3, 5, 7, 9 (gaps of 2)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestEmperor_WithJoker(t *testing.T) {
+	tc := domain.NewTrumpCards(2)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// 3 non-joker cards + 1 joker with consecutive values → valid emperor
+	// Non-jokers: strengths 3,4,5 (values 3,4,5) → joker fills gap for strength 6
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))    // joker
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false)) // spare
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	assert.False(t, dg.GetRevolutionActive())
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3}) // play emperor with joker
+	assert.NoError(t, err)
+	assert.True(t, dg.GetRevolutionActive()) // revolution toggled
+	assert.Nil(t, dg.GetTableCards())        // table cleared
+	assert.True(t, dg.IsHumanTurn())         // player keeps turn
+}
+
+func TestEmperor_AllJokers_Invalid(t *testing.T) {
+	tc := domain.NewTrumpCards(2)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// 4 jokers → invalid emperor (at least 1 non-joker required)
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+	// 4 jokers: not valid emperor, not valid group (jokers have value 0, all same → valid group actually)
+	// But jokers have design 0 (CardDesignJoker=0), value 0 → isValidGroup: all same value (0) → valid group
+	// So the play would be accepted as a group play on clear table, not as emperor
+	// The revolution from 4-card group play would toggle, but emperor would NOT trigger
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err) // valid as a group play (4 jokers, all same value 0)
+	// Emperor did NOT trigger (all jokers), but standard revolution DID trigger (4+ cards)
+	assert.True(t, dg.GetRevolutionActive()) // revolution from 4-card group, not emperor
+}
+
+func TestEmperor_Disabled_NoEffect(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	// EmperorEnabled is false (no rules config)
+	dg := domain.NewDaifugo(tc, players, noRulesConfig())
+
+	// 4 consecutive cards with different suits → would be emperor if enabled
+	// But since it's disabled, these cards aren't valid as a group (different values)
+	// and not valid as a sequence (different suits → needs same suit for sequence)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+	assert.False(t, dg.GetRevolutionActive()) // no revolution
+}
+
+func TestEmperor_RevolutionToggledOnce(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// Emperor triggers revolution toggle. Standard 4-card revolution should NOT also toggle.
+	// If both triggered, revolution would toggle twice (net: no change). We verify it toggles exactly once.
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false)) // spare
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	assert.False(t, dg.GetRevolutionActive())
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3}) // play emperor (4 cards)
+	assert.NoError(t, err)
+	// If emperor correctly guards against double-toggle, revolution is toggled exactly once → true
+	assert.True(t, dg.GetRevolutionActive())
+}
+
+func TestEmperor_CpuFindsEmperor(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// Human plays a card to advance turn to CPU 1, then CPUs pass until table clears,
+	// then we get back to human, play again to advance to CPU 1 on a clear table.
+	// Simpler approach: human plays strongest card, all CPUs pass, table clears, human plays again
+	// to advance turn to CPU 1, and CPU 1 has emperor cards on clear table.
+
+	// Setup: human plays a 2 (strongest), CPUs all pass, table clears, back to human.
+	// Then human passes, turn goes to CPU 1 on clear table.
+	// But passing on clear table might not be ideal. Let's use a different approach.
+
+	// Human plays a card → advances to CPU 1.
+	// CPU 1 has emperor cards but table is NOT clear (has human's card). CPU 1 cannot emperor.
+	// CPU 1 could pass. Then CPU 2 passes, CPU 3 passes → table clears → back to human.
+
+	// Simplest: make human play first card, then all CPUs pass (can't beat it) → table clears → back to human.
+	// Then human plays again → advances to CPU 1.
+	// BUT we need CPU 1's turn to have a clear table.
+
+	// Better approach: human plays a 2, CPUs all pass (table clears), back to human.
+	// Human passes on clear table — wait, you can't pass on clear table?
+	// Actually in Daifugo, passing is always allowed.
+
+	// Simplest setup: make player 0 play a card, all CPUs pass, table clears back to player 0.
+	// Then player 0 plays again, advancing to CPU 1.
+	// CPU 1's turn has table cards (player 0's card). Not clear.
+
+	// Let's do this differently: put emperor cards on CPU 1.
+	// Player 0 plays high card → CPU 1,2,3 can't beat → pass → table clears → back to player 0.
+	// Player 0 passes → advances to CPU 1 with clear table.
+	// Wait, can't pass on clear table. Let me re-read.
+
+	// Actually, passing IS allowed on clear table. PlayerPlay([]int{}) is a pass.
+	// But if we pass on clear table, does it work? Let's check existing tests.
+	// From code: pass just increments passCount and advances turn. checkPassClear may fire.
+
+	// Actually simpler: set player 0 as finished, CPU 1 gets the turn directly on clear table.
+	players[0].SetIsFinished(true)
+	players[0].SetRank(1)
+
+	// Give CPU 1 emperor cards: consecutive strengths 3,4,5,6 with all different suits
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false)) // spare
+
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	// Human (player 0) plays a card to advance turn. But player 0 is finished.
+	// We need to start CPU play. Since player 0 is human and finished,
+	// we need currentTurn to be on CPU 1.
+	// Human play will return ErrNotHumanTurn or similar if we advance.
+	// Actually, let's just have human play a pass to advance to CPU 1.
+	// But player 0 has no cards (finished). Let's manually set up.
+	// Player 0 still has the turn (currentTurn=0), but is finished.
+	// PlayerPlay on a finished player... let's just give player 0 a card and play it to advance.
+
+	// Reset approach: player 0 is NOT finished. Play a card, advance to CPU 1.
+	// CPU 1,2,3 can't beat player 0's card → pass → table clears → back to player 0.
+	// Then player 0 passes → advance to CPU 1 with clear table.
+
+	// Cleanest: just give everyone cards to make it work step by step.
+	players[0].SetIsFinished(false)
+	players[0].SetRank(-1)
+
+	// Clear and re-setup
+	for i := 0; i < 4; i++ {
+		for players[i].GetCardsSize() > 0 {
+			players[i].RemoveCard(0)
+		}
+	}
+
+	// Human has a 2 (strongest) + spare
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 7, false)) // spare
+
+	// CPU 1: emperor cards + spare
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false)) // spare
+
+	// CPU 2, CPU 3: weak cards
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+
+	// Human plays 2 (strongest single) → advances to CPU 1
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+
+	// CPU 1 can't beat 2 with emperor (table not clear). CPU 1 passes.
+	dg.CpuPlay() // CPU 1 passes
+	dg.CpuPlay() // CPU 2 passes
+	dg.CpuPlay() // CPU 3 passes → table clears → back to player 0
+
+	assert.True(t, dg.IsHumanTurn())
+	assert.Nil(t, dg.GetTableCards()) // table cleared
+
+	// Human passes → advances to CPU 1 with clear table
+	err = dg.PlayerPlay([]int{}) // pass
+	assert.NoError(t, err)
+
+	assert.False(t, dg.GetRevolutionActive()) // no revolution yet
+
+	// CPU 1 has emperor cards on clear table → findBestPlay should find emperor
+	dg.CpuPlay() // CPU 1 plays emperor
+
+	assert.True(t, dg.GetRevolutionActive()) // emperor triggered revolution
+	assert.Nil(t, dg.GetTableCards())        // emperor clears table
+}
+
+func TestEmperor_ThreeCards_Invalid(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// Only 3 cards with different suits and consecutive values → not emperor (needs 4)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+	// 3 cards with different values: not a valid group, not a valid emperor (needs 4)
+	// Not a valid sequence either (different suits in standard sequence)
+	err := dg.PlayerPlay([]int{0, 1, 2})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestEmperor_DuplicateStrength_Invalid(t *testing.T) {
+	// 4 cards with different suits but duplicate strength values → invalid emperor
+	// Use two cards with same strength: e.g., 3♠ and 3♣ have strength 3
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	cfg := domain.DaifugoConfig{EmperorEnabled: true}
+	dg := domain.NewDaifugo(tc, players, cfg)
+
+	// Strengths: 3, 3, 4, 5 → diff==0 at index 1 → invalid
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+	// Not valid emperor (duplicate strength), but IS valid group (two 3s would be a pair, not 4 of a kind)
+	// Actually all 4 have different values (3,3,4,5) → not same value → not valid group either
+	// Wait: 3,3 are same value. So it's invalid as group (need ALL same), invalid as emperor.
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestEmperor_TooManyGaps_WithJoker_Invalid(t *testing.T) {
+	// 3 non-jokers with large gaps + 1 joker → not enough jokers to fill gaps → invalid
+	tc := domain.NewTrumpCards(2)
+	players := makeDaifugoPlayers()
+	cfg := domain.DaifugoConfig{EmperorEnabled: true}
+	dg := domain.NewDaifugo(tc, players, cfg)
+
+	// Strengths: 3, 7, 12 → gaps = (7-3-1)+(12-7-1) = 3+4 = 7, jokerCount = 1
+	// remaining = 1 - 7 = -6 < 0 → invalid
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))  // strength 3
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 7, false)) // strength 7
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false)) // strength 12
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))  // joker
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestEmperor_PlayerFinishes_TurnAdvances(t *testing.T) {
+	// Emperor fires AND player plays their last cards, but 2 CPUs are still active.
+	// This covers the `|| d.players[playerIdx].GetIsFinished()` branch in playCards
+	// that allows turn advancement even when emperor=true (normally keeps turn).
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// CPU 1 already finished
+	players[1].SetIsFinished(true)
+	players[1].SetRank(1)
+
+	// CPUs 2 and 3 still active (prevents game from ending after human finishes)
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+
+	// Human has exactly 4 emperor cards (no spare → plays last cards)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err)
+	assert.True(t, dg.GetRevolutionActive(), "emperor toggled revolution")
+	assert.Nil(t, dg.GetTableCards(), "emperor cleared table")
+	assert.Equal(t, 0, players[0].GetCardsSize(), "human played all cards")
+	assert.True(t, players[0].GetIsFinished(), "human finished")
+	assert.False(t, dg.GetGameEndFlag(), "game not over: CPUs 2 and 3 still active")
+	// Turn should advance (GetIsFinished() == true drives turn advancement)
+	assert.False(t, dg.IsHumanTurn(), "turn advanced away from finished human")
+}
+
+func TestSandstorm_PlayerFinishes_GameContinues(t *testing.T) {
+	// Sandstorm fires AND player plays their last cards, but 2 CPUs are still active.
+	// This covers the `|| d.players[playerIdx].GetIsFinished()` branch in playCards
+	// that allows turn advancement even when sandstorm=true (normally keeps turn).
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, sandstormConfig())
+
+	// CPU 1 already finished
+	players[1].SetIsFinished(true)
+	players[1].SetRank(1)
+
+	// CPUs 2 and 3 still active
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+
+	// Human has exactly 3 threes (no spare → plays last cards)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2})
+	assert.NoError(t, err)
+	assert.Nil(t, dg.GetTableCards(), "sandstorm cleared table")
+	assert.Equal(t, 0, players[0].GetCardsSize(), "human played all cards")
+	assert.True(t, players[0].GetIsFinished(), "human finished")
+	assert.False(t, dg.GetGameEndFlag(), "game not over: CPUs 2 and 3 still active")
+	assert.False(t, dg.IsHumanTurn(), "turn advanced away from finished human")
+}
+
+func TestEmperor_CpuFewerThan4Cards(t *testing.T) {
+	// CPU has fewer than 4 cards on a clear table with emperor enabled.
+	// findEmperorPlay returns nil at the n < 4 guard and CPU plays normally.
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// Human has 1 card to pass with
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+	// CPU 1 has only 3 cards (< 4 → findEmperorPlay returns nil immediately)
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+	// CPUs 2 and 3 have cards to keep the game alive
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+
+	// Human passes → CPU 1's turn on clear table
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+
+	// CPU 1 plays (has 3 cards, no emperor possible → plays single weakest card)
+	dg.CpuPlay()
+
+	assert.False(t, dg.GetRevolutionActive(), "no revolution (n<4, no emperor)")
+	assert.NotNil(t, dg.GetTableCards(), "CPU 1 played a card normally")
+}
+
+func TestEmperor_CpuNoEmperorInHand(t *testing.T) {
+	// CPU has no emperor combination → findEmperorPlay returns nil, CPU plays normally
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// Human passes to advance to CPU 1
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+
+	// CPU 1 has cards that don't form emperor (same suit, non-consecutive)
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+
+	// Human passes
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+
+	// CPU 1 plays on clear table but has no emperor → plays weakest single card
+	assert.False(t, dg.GetRevolutionActive())
+	dg.CpuPlay()
+	assert.False(t, dg.GetRevolutionActive(), "no revolution (no emperor found)")
+	assert.NotNil(t, dg.GetTableCards(), "CPU should have played something")
 }

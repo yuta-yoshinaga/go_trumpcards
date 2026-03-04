@@ -26,6 +26,8 @@ const defaultConfig = {
   nineReverseEnabled: false,
   coupDetatEnabled: false,
   intenseLockEnabled: false,
+  sandstormEnabled: false,
+  emperorEnabled: false,
 };
 
 const humanTurnState: DaifugoResponse = {
@@ -702,5 +704,43 @@ describe('DaifugoPage', () => {
     fireEvent(dropZone, dropEvent);
     // exec should NOT be called when draggedIdx is NaN
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('settings panel renders 砂嵐 checkbox', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('砂嵐')).toBeInTheDocument();
+    expect(screen.getByLabelText('砂嵐')).not.toBeChecked();
+  });
+
+  it('settings panel renders エンペラー checkbox', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('エンペラー')).toBeInTheDocument();
+    expect(screen.getByLabelText('エンペラー')).not.toBeChecked();
+  });
+
+  it('砂嵐 checkbox toggle updates config on reset', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('砂嵐')).toBeInTheDocument());
+    fireEvent.click(screen.getByLabelText('砂嵐'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ sandstormEnabled: true })),
+    );
+  });
+
+  it('エンペラー checkbox toggle updates config on reset', async () => {
+    render(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('エンペラー')).toBeInTheDocument());
+    fireEvent.click(screen.getByLabelText('エンペラー'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ emperorEnabled: true })),
+    );
   });
 });

@@ -84,6 +84,8 @@ type DaifugoConfig struct {
 	NineReverseEnabled  bool // 9リバース
 	CoupDetatEnabled    bool // クーデター (3枚の9で革命)
 	IntenseLockEnabled  bool // 激シバ (連番縛り)
+	SandstormEnabled    bool // 砂嵐 (3枚の3で場をクリア)
+	EmperorEnabled      bool // エンペラー (4枚連番・全スート異なる→革命+場クリア)
 }
 
 // DefaultDaifugoConfig デフォルトのローカルルール設定 (全て有効)
@@ -103,6 +105,8 @@ func DefaultDaifugoConfig() DaifugoConfig {
 		NineReverseEnabled:  false,
 		CoupDetatEnabled:    false,
 		IntenseLockEnabled:  false,
+		SandstormEnabled:    false,
+		EmperorEnabled:      false,
 	}
 }
 
@@ -350,6 +354,88 @@ func (d *Daifugo) triggerEightCut(cards []*Card) bool {
 	return false
 }
 
+// triggerSandstorm 砂嵐チェック: 3枚の非ジョーカー3が出されたら場をクリア
+func (d *Daifugo) triggerSandstorm(cards []*Card) bool {
+	if !d.config.SandstormEnabled {
+		return false
+	}
+	if len(cards) != 3 {
+		return false
+	}
+	for _, c := range cards {
+		if IsJoker(c) || c.GetValue() != 3 {
+			return false
+		}
+	}
+	d.clearTableState()
+	return true
+}
+
+// isValidEmperor エンペラー判定: 4枚の連番カード(全スート異なる)を場がクリアの時に出す
+func (d *Daifugo) isValidEmperor(cards []*Card) bool {
+	if !d.config.EmperorEnabled || len(cards) != 4 || d.tableCards != nil {
+		return false
+	}
+	return d.isEmperorCards(cards)
+}
+
+// isEmperorCards カードがエンペラー条件を満たすか判定 (場の状態は見ない)
+func (d *Daifugo) isEmperorCards(cards []*Card) bool {
+	if len(cards) != 4 {
+		return false
+	}
+	suits := make(map[int]bool)
+	nonJokerValues := make([]int, 0, 4)
+	jokerCount := 0
+	for _, c := range cards {
+		if IsJoker(c) {
+			jokerCount++
+			continue
+		}
+		if suits[c.GetDesign()] {
+			return false // 同じスートが重複
+		}
+		suits[c.GetDesign()] = true
+		nonJokerValues = append(nonJokerValues, d.cardStrength(c.GetValue()))
+	}
+	if len(nonJokerValues) == 0 {
+		return false // 全ジョーカーは不可
+	}
+	sort.Ints(nonJokerValues)
+	// 非ジョーカーの値が連続しているか確認
+	gaps := 0
+	for i := 1; i < len(nonJokerValues); i++ {
+		diff := nonJokerValues[i] - nonJokerValues[i-1]
+		if diff == 0 {
+			return false // 重複値
+		}
+		gaps += diff - 1
+	}
+	// 非ジョーカー間の穴 + 両端への拡張で合計4枚になるか
+	// 全体のスパン = max - min + 1 + 端に追加するジョーカー
+	span := nonJokerValues[len(nonJokerValues)-1] - nonJokerValues[0] + 1
+	remaining := jokerCount - gaps
+	if remaining < 0 {
+		return false // 穴を埋められない
+	}
+	totalSpan := span + remaining
+	return totalSpan == 4
+}
+
+// triggerEmperor エンペラー発動: 革命を起こし場をクリア
+func (d *Daifugo) triggerEmperor(cards []*Card) bool {
+	if !d.config.EmperorEnabled {
+		return false
+	}
+	if !d.isEmperorCards(cards) {
+		return false
+	}
+	d.revolutionActive = !d.revolutionActive
+	d.sortAllActiveHands()
+	d.clearTableState()
+	return true
+}
+
 // triggerElevenBack 11バックチェック: J(11)が出されたら11バック発動
 func (d *Daifugo) triggerElevenBack(cards []*Card) {
 	if !d.config.ElevenBackEnabled {
@@ -592,8 +678,9 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 	// プレイタイプ判定
 	validGroup := isValidGroup(cards)
 	validSeq := d.config.SequenceEnabled && d.isValidSequence(cards)
+	validEmperor := d.isValidEmperor(cards)
 
-	if !validGroup && !validSeq {
+	if !validGroup && !validSeq && !validEmperor {
 		return false
 	}
 
@@ -735,7 +822,10 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	d.passCount = 0
 	d.tableIsSequence = isSeq
 
-	d.triggerRevolutionIfNeeded(cards)
+	emperor := d.triggerEmperor(cards)
+	if !emperor {
+		d.triggerRevolutionIfNeeded(cards)
+	}
 	d.triggerCoupDetatIfNeeded(cards)
 	d.triggerElevenBack(cards)
 	d.triggerNineReverseIfNeeded(cards, isSeq)
@@ -745,6 +835,7 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	}
 
 	eightCut := d.triggerEightCut(cards)
+	sandstorm := d.triggerSandstorm(cards)
 
 	fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
 	d.triggerSevenPassIfNeeded(cards, isSeq)
@@ -755,7 +846,7 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	}
 
 	if !d.checkGameEnd() {
-		if (!eightCut && !spadeThree) || d.players[playerIdx].GetIsFinished() {
+		if (!eightCut && !sandstorm && !emperor && !spadeThree) || d.players[playerIdx].GetIsFinished() {
 			d.advanceTurn()
 			if fiveSkip && !d.gameEndFlag {
 				d.advanceTurn()
@@ -817,6 +908,10 @@ func (d *Daifugo) CpuPlay() {
 // 出せるカードがない場合は nil を返す
 func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 	if d.tableCards == nil {
+		// エンペラーを探す (場がクリアの時のみ)
+		if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
+			return emperorIndices
+		}
 		// 場がクリアなら最弱の1枚を出す (ジョーカーと8は温存)
 		for i := 0; i < player.GetCardsSize(); i++ {
 			card := player.GetCard(i)
@@ -1024,6 +1119,36 @@ func (d *Daifugo) findBestSequencePlay(player *DaifugoPlayer) []int {
 				if minStr > tableMinStr {
 					sort.Ints(indices)
 					return indices
+				}
+			}
+		}
+	}
+	return nil
+}
+
+// findEmperorPlay エンペラーの組み合わせを探す (場がクリアの時のみ)
+func (d *Daifugo) findEmperorPlay(player *DaifugoPlayer) []int {
+	if !d.config.EmperorEnabled || d.tableCards != nil {
+		return nil
+	}
+	n := player.GetCardsSize()
+	if n < 4 {
+		return nil
+	}
+	// 全4枚の組み合わせを探索 (C(n,4))
+	for a := 0; a < n-3; a++ {
+		for b := a + 1; b < n-2; b++ {
+			for c := b + 1; c < n-1; c++ {
+				for dd := c + 1; dd < n; dd++ {
+					testCards := []*Card{
+						player.GetCard(a),
+						player.GetCard(b),
+						player.GetCard(c),
+						player.GetCard(dd),
+					}
+					if d.isEmperorCards(testCards) {
+						return []int{a, b, c, dd}
+					}
 				}
 			}
 		}

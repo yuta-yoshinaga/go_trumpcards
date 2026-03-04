@@ -2,11 +2,12 @@ package domain
 
 // SevensConfig 7並べゲーム設定
 type SevensConfig struct {
-	TunnelEnabled bool // トンネルルール (A↔K循環)
-	JokerCount    int  // ジョーカー枚数
-	CpuStrategy   bool // CPU戦略思考
-	MaxPasses     int  // 最大パス回数 (0 = 無制限)
-	NoJokerFinish bool // ジョーカー上がり禁止
+	TunnelEnabled       bool // トンネルルール (A↔K循環)
+	JokerCount          int  // ジョーカー枚数
+	CpuStrategy         bool // CPU戦略思考
+	MaxPasses           int  // 最大パス回数 (0 = 無制限)
+	NoJokerFinish       bool // ジョーカー上がり禁止
+	JokerReclaimEnabled bool // ジョーカー回収 (ジョーカー配置位置に本物のカードを出すとジョーカーが手札に戻る)
 }
 
 // DefaultSevensConfig デフォルト設定 (全機能無効)

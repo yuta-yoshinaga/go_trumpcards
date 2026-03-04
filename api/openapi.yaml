@@ -1831,6 +1831,14 @@ components:
           type: boolean
           description: Whether 激シバ (intense lock / number lock) rule is enabled (default false)
           example: false
+        sandstormEnabled:
+          type: boolean
+          description: Whether 砂嵐 (sandstorm — 3 non-joker 3s clear the table like 8-cut) rule is enabled (default false)
+          example: false
+        emperorEnabled:
+          type: boolean
+          description: Whether エンペラー (emperor — 4 consecutive cards of all different suits on clear table triggers revolution + table clear) rule is enabled (default false)
+          example: false
 
     DaifugoExchangeAction:
       type: object
@@ -2149,6 +2157,10 @@ components:
         noJokerFinish:
           type: boolean
           description: Whether finishing the game with a joker as the last card is banned
+          example: false
+        jokerReclaimEnabled:
+          type: boolean
+          description: Whether ジョーカー回収 (joker reclaim — playing a real card on a joker-occupied position returns the joker to the player's hand) is enabled (default false)
           example: false
 
     SevensResponse:

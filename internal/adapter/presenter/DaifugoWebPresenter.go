@@ -47,6 +47,8 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		NineReverseEnabled:  config.NineReverseEnabled,
 		CoupDetatEnabled:    config.CoupDetatEnabled,
 		IntenseLockEnabled:  config.IntenseLockEnabled,
+		SandstormEnabled:    config.SandstormEnabled,
+		EmperorEnabled:      config.EmperorEnabled,
 	}
 
 	resObj.ReverseDirection = dg.GetReverseDirection()

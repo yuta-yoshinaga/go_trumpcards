@@ -33,11 +33,12 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	// ゲーム設定
 	cfg := s.GetConfig()
 	resObj.Config = controller.SevensWebOutputConfig{
-		TunnelEnabled: cfg.TunnelEnabled,
-		JokerCount:    cfg.JokerCount,
-		CpuStrategy:   cfg.CpuStrategy,
-		MaxPasses:     cfg.MaxPasses,
-		NoJokerFinish: cfg.NoJokerFinish,
+		TunnelEnabled:       cfg.TunnelEnabled,
+		JokerCount:          cfg.JokerCount,
+		CpuStrategy:         cfg.CpuStrategy,
+		MaxPasses:           cfg.MaxPasses,
+		NoJokerFinish:       cfg.NoJokerFinish,
+		JokerReclaimEnabled: cfg.JokerReclaimEnabled,
 	}
 
 	// CPU行動履歴

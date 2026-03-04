@@ -17,7 +17,7 @@ import (
 )
 
 func TestSevensWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 	expectedBody := mockOutput
 	sgiMock := new(usecase.MockSevensInteractor)
 	sgiMock.On("Reset").Return(mockOutput).Times(2)
@@ -37,7 +37,7 @@ func TestSevensWebController_Method(t *testing.T) {
 
 	var jsonInput controller.SevensWebInput
 	// For "q"/"quit": responseStr = {"message":"bye."} → other fields get zero values
-	qBody := `{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"bye."}`
+	qBody := `{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"bye."}`
 
 	t.Run("success Exec q", func(t *testing.T) {
 		_ = json.Unmarshal([]byte(`{"command": "q", "sessionId": "test-session-1"}`), &jsonInput)
@@ -116,7 +116,7 @@ func TestSevensWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"Unsupported command."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"Unsupported command."}`)
 	})
 
 	t.Run("failed Exec command empty", func(t *testing.T) {
@@ -126,7 +126,7 @@ func TestSevensWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
 	})
 
 	t.Run("failed Exec sessionId empty", func(t *testing.T) {
@@ -136,7 +136,7 @@ func TestSevensWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.SevensWebInput{
@@ -148,13 +148,13 @@ func TestSevensWebController_Method(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
-		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
+		recorded.BodyIs(`{"players":[],"currentTurn":0,"tableMinVals":[0,0,0,0,0],"tableMaxVals":[0,0,0,0,0],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":"param error."}`)
 	})
 
 }
 
 func TestSevensWebController_ResetWithConfig(t *testing.T) {
-	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":true,"jokerCount":2,"cpuStrategy":true,"maxPasses":5,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":true,"jokerCount":2,"cpuStrategy":true,"maxPasses":5,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 
 	t.Run("reset with all config fields calls ResetWithConfig", func(t *testing.T) {
 		sgiMock := new(usecase.MockSevensInteractor)
@@ -179,7 +179,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("reset without config fields calls Reset", func(t *testing.T) {
-		defaultOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+		defaultOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
 		sgiMock.On("Reset").Return(defaultOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
@@ -202,7 +202,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("reset with partial config calls ResetWithConfig with defaults", func(t *testing.T) {
-		partialOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":true,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+		partialOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":true,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
 		sgiMock.On("ResetWithConfig", mock.Anything).Return(partialOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
@@ -224,7 +224,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("reset with maxPasses field calls ResetWithConfig", func(t *testing.T) {
-		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":3,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":3,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
 		sgiMock.On("ResetWithConfig", mock.Anything).Return(passesOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
@@ -247,7 +247,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("reset with negative jokerCount passes through to domain SetConfig", func(t *testing.T) {
-		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
 		sgiMock.On("ResetWithConfig", mock.Anything).Return(passesOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
@@ -271,7 +271,7 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("reset with only maxPasses field calls ResetWithConfig with default maxPasses", func(t *testing.T) {
-		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+		passesOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":0,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 		sgiMock := new(usecase.MockSevensInteractor)
 		sgiMock.On("ResetWithConfig", mock.Anything).Return(passesOutput)
 		factory := func() uc.SevensInteractorIF { return sgiMock }
@@ -315,10 +315,39 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, NoJokerFinish: true})
 		sgiMock.AssertNotCalled(t, "Reset")
 	})
+
+	t.Run("reset with jokerReclaim field calls ResetWithConfig", func(t *testing.T) {
+		jrOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":1,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false,"jokerReclaimEnabled":true},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+		sgiMock := new(usecase.MockSevensInteractor)
+		sgiMock.On("ResetWithConfig", mock.Anything).Return(jrOutput)
+		factory := func() uc.SevensInteractorIF { return sgiMock }
+		tswc := controller.NewSevensWebController(factory)
+		defer tswc.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/sevens/exec", tswc.Exec))
+		api.SetApp(router)
+
+		jokerCount := 1
+		jokerReclaim := true
+		input := controller.SevensWebInput{
+			Command:      "reset",
+			JokerCount:   &jokerCount,
+			JokerReclaim: &jokerReclaim,
+			SessionId:    "test-cfg-jr",
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(jrOutput)
+		sgiMock.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{JokerCount: 1, JokerReclaimEnabled: true, MaxPasses: 5})
+		sgiMock.AssertNotCalled(t, "Reset")
+	})
 }
 
 func TestSevensWebController_SessionIsolation(t *testing.T) {
-	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
+	mockOutput := `{"players":[],"currentTurn":0,"tableMinVals":[0,7,7,7,7],"tableMaxVals":[0,7,7,7,7],"tablePlaced":[0,0,0,0,0],"config":{"tunnelEnabled":false,"jokerCount":0,"cpuStrategy":false,"maxPasses":5,"noJokerFinish":false,"jokerReclaimEnabled":false},"gameEndFlag":false,"cpuActions":[],"humanAction":null,"message":""}`
 	mockA := new(usecase.MockSevensInteractor)
 	mockA.On("Reset").Return(mockOutput)
 	mockB := new(usecase.MockSevensInteractor)
