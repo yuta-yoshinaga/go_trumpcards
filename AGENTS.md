@@ -70,6 +70,7 @@ cd frontend && npm run check                  # Run Biome lint + format check
 cd frontend && npm run check:write            # Run Biome lint + format check and auto-fix
 cd frontend && npm test                       # Run frontend unit tests (Vitest)
 cd frontend && npm run test:coverage          # Run frontend tests with coverage (outputs to frontend/coverage/)
+cd frontend && npm run e2e                   # Run Playwright E2E tests (auto-starts Go server)
 ```
 
 ## Go Formatting Rule
@@ -99,9 +100,11 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
   src/
     api/                       # API client functions (fetch wrappers)
     components/                # Shared React components (NavBar, CardImage, CardBack)
-    hooks/                     # Custom React hooks (useGameApi)
+    hooks/                     # Custom React hooks (useGameApi, backed by TanStack React Query)
     pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage, DaifugoPage)
+    providers/                 # React context providers (QueryProvider for TanStack React Query)
     types/                     # TypeScript type definitions for card/game data
+  e2e/                         # Playwright E2E test specs
 public/                        # Built frontend assets served by Go web server
   assets/                      # Vite-compiled JS/CSS bundles
   images/                      # Card images (PNG)
@@ -187,6 +190,7 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 - **Wrap router-dependent components**: render `NavBar` (and any component using `useLocation`) inside `<MemoryRouter initialEntries={['/path']}>`
 - **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
 - **Query buttons by role**: when a text string appears in multiple elements, use `screen.getByRole('button', { name: '...' })` instead of `getByText`
+- **Wrap with QueryClientProvider**: page tests and hook tests must render inside a `QueryClientProvider` (use `renderWithProviders` from `frontend/src/test/renderWithProviders.tsx`)
 
 **Run build, Biome check, and frontend tests before committing:**
 
@@ -194,6 +198,15 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 cd frontend && npm run build
 cd frontend && npm run check
 cd frontend && npm test
+```
+
+### E2E testing
+
+E2E tests use **Playwright** (Chromium only) and live in `frontend/e2e/`. They verify game flows against the real Go server.
+
+```sh
+cd frontend && npm run e2e          # Run E2E tests (auto-starts Go server on port 8080)
+cd frontend && npm run e2e:headed   # Run in headed browser
 ```
 
 ## Documentation Maintenance

@@ -240,6 +240,7 @@ function HumanArea({
               disabled={!playable}
               onClick={() => onPlay(i)}
               title={playable ? `出す: ${card.design} ${valueName(card.value)}` : undefined}
+              data-testid={playable ? 'playable-card' : undefined}
               style={{
                 background: 'none',
                 padding: 0,

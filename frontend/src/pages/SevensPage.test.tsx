@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevensResponse } from '../types/card';
 import { SevensPage } from './SevensPage';
 
@@ -88,22 +89,22 @@ beforeEach(() => {
 describe('SevensPage', () => {
   it('renders nothing before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = render(<SevensPage />);
+    const { container } = renderWithProviders(<SevensPage />);
     expect(container.firstChild).toBeNull();
   });
 
   it('calls reset command on mount', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('renders human player area labeled あなた', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
   });
 
   it('renders CPU player areas with correct labels', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByText('CPU 1')).toBeInTheDocument();
       expect(screen.getByText('CPU 2')).toBeInTheDocument();
@@ -112,12 +113,12 @@ describe('SevensPage', () => {
   });
 
   it('renders the board section', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
   });
 
   it('shows human player face-up cards', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByAltText('♠ 6')).toBeInTheDocument();
       expect(screen.getByAltText('♥ 5')).toBeInTheDocument();
@@ -126,30 +127,30 @@ describe('SevensPage', () => {
   });
 
   it('pass button is enabled on human turn with passes remaining', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
   });
 
   it('pass button is disabled on CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
   });
 
   it('pass button is disabled when game has ended', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
   });
 
   it('pass button is disabled when passes are exhausted', async () => {
     mockExec.mockResolvedValue(passesExhaustedState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
   });
 
   it('calls play with -1 when pass button is clicked', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
@@ -158,7 +159,7 @@ describe('SevensPage', () => {
   });
 
   it('calls play with card index when a playable card is clicked', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
@@ -167,7 +168,7 @@ describe('SevensPage', () => {
   });
 
   it('does not call play when a non-playable card is clicked', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('♥ 5')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.click(screen.getByAltText('♥ 5'));
@@ -175,7 +176,7 @@ describe('SevensPage', () => {
   });
 
   it('calls reset when reset button is clicked', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
@@ -194,7 +195,7 @@ describe('SevensPage', () => {
 
   it('shows human action log after play', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText(/あなたが出しました/)).toBeInTheDocument());
   });
 
@@ -204,7 +205,7 @@ describe('SevensPage', () => {
       humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false },
     };
     mockExec.mockResolvedValue(passState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText(/あなたがパスしました/)).toBeInTheDocument());
   });
 
@@ -217,7 +218,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithCpuActions);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument());
     expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument();
     expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument();
@@ -225,7 +226,7 @@ describe('SevensPage', () => {
 
   it('shows game result message when game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('1位: あなた')).toBeInTheDocument());
   });
 
@@ -240,18 +241,18 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithFinished);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('1位')).toBeInTheDocument());
   });
 
   it('shows thinking indicator on current CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('考え中...')).toBeInTheDocument());
   });
 
   it('shows pass counts for CPU players', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       // CPU 2 has passesUsed=1
       expect(screen.getByText(/パス: 1\/5/)).toBeInTheDocument();
@@ -271,7 +272,7 @@ describe('SevensPage', () => {
       },
     };
     mockExec.mockResolvedValue(stateWithConfig);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByText(/ルール:/)).toBeInTheDocument();
       expect(screen.getAllByText(/\[トンネル\]/).length).toBeGreaterThanOrEqual(1);
@@ -281,7 +282,7 @@ describe('SevensPage', () => {
   });
 
   it('does not show rule header with default config', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     expect(screen.queryByText(/ルール:/)).not.toBeInTheDocument();
   });
@@ -303,7 +304,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(jokerState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
       expect(jokerBtn).not.toBeDisabled();
@@ -323,7 +324,7 @@ describe('SevensPage', () => {
       },
     };
     mockExec.mockResolvedValue(jokerActionState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByText(/JOKER/)).toBeInTheDocument();
       expect(screen.getByText(/SPADE 6/)).toBeInTheDocument();
@@ -336,12 +337,12 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, tunnelEnabled: true },
     };
     mockExec.mockResolvedValue(tunnelState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('[トンネル]')).toBeInTheDocument());
   });
 
   it('renders config panel with default values', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
     expect(screen.getByLabelText('トンネル')).not.toBeChecked();
     expect(screen.getByLabelText('CPU戦略')).not.toBeChecked();
@@ -350,7 +351,7 @@ describe('SevensPage', () => {
   });
 
   it('sends config to API when reset button is clicked with config toggled', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
 
     fireEvent.click(screen.getByLabelText('トンネル'));
@@ -395,7 +396,7 @@ describe('SevensPage', () => {
       },
     };
     mockExec.mockResolvedValue(configState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByLabelText('トンネル')).toBeChecked();
       expect(screen.getByLabelText('CPU戦略')).toBeChecked();
@@ -405,7 +406,7 @@ describe('SevensPage', () => {
   });
 
   it('disables action buttons while loading', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     let resolve!: (value: SevensResponse) => void;
@@ -423,7 +424,7 @@ describe('SevensPage', () => {
   });
 
   it('shows error message when API call fails', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     mockExec.mockReset();
@@ -433,7 +434,7 @@ describe('SevensPage', () => {
   }, 10000);
 
   it('clears error message on successful API call after failure', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     mockExec.mockReset();
@@ -459,7 +460,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(tunnelAState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     const btn = screen.getByAltText('♠ A').closest('button');
     expect(btn).not.toBeDisabled();
@@ -477,7 +478,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(tunnelKState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('♠ K')).toBeInTheDocument());
     const btn = screen.getByAltText('♠ K').closest('button');
     expect(btn).not.toBeDisabled();
@@ -496,7 +497,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(fullBoardState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
     const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
     expect(jokerBtn).toBeDisabled();
@@ -518,7 +519,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(jokerHandState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('ジョーカー'));
@@ -542,7 +543,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(jokerHandState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('ジョーカー'));
@@ -562,7 +563,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(jokerHandState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
 
     // Click JOKER card image to enter joker placement mode (same pattern as cancel test)
@@ -589,12 +590,12 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(humanFinishedState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getAllByText('2位').length).toBeGreaterThan(0));
   });
 
   it('pass count dropdown renders with correct options', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
     const passSelect = screen.getByRole('combobox', { name: 'パス回数' });
     const options = Array.from(passSelect.querySelectorAll('option'));
@@ -603,7 +604,7 @@ describe('SevensPage', () => {
   });
 
   it('pass count included in reset config', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
 
     fireEvent.change(screen.getByRole('combobox', { name: 'パス回数' }), { target: { value: '3' } });
@@ -633,7 +634,7 @@ describe('SevensPage', () => {
       players: humanTurnState.players.map((p) => ({ ...p, maxPasses: 0 })),
     };
     mockExec.mockResolvedValue(unlimitedState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getAllByText(/0\/∞/).length).toBeGreaterThan(0));
   });
 
@@ -644,7 +645,7 @@ describe('SevensPage', () => {
       players: humanTurnState.players.map((p) => ({ ...p, maxPasses: 3 })),
     };
     mockExec.mockResolvedValue(customState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getAllByText(/0\/3/).length).toBeGreaterThan(0));
   });
 
@@ -655,7 +656,7 @@ describe('SevensPage', () => {
       humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: true },
     };
     mockExec.mockResolvedValue(forcedPassState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText(/⚠ 出せるカードなし!/)).toBeInTheDocument());
   });
 
@@ -665,7 +666,7 @@ describe('SevensPage', () => {
       humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false },
     };
     mockExec.mockResolvedValue(passState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText(/あなたがパスしました/)).toBeInTheDocument());
     expect(screen.queryByText(/⚠ 出せるカードなし!/)).not.toBeInTheDocument();
   });
@@ -677,7 +678,7 @@ describe('SevensPage', () => {
       players: humanTurnState.players.map((p) => ({ ...p, maxPasses: 0 })),
     };
     mockExec.mockResolvedValue(unlimitedRuleState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByText(/ルール:/)).toBeInTheDocument();
       expect(screen.getByText(/\[パス無制限\]/)).toBeInTheDocument();
@@ -691,7 +692,7 @@ describe('SevensPage', () => {
       players: humanTurnState.players.map((p) => ({ ...p, maxPasses: 3 })),
     };
     mockExec.mockResolvedValue(customRuleState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByText(/ルール:/)).toBeInTheDocument();
       expect(screen.getByText(/\[パス3回\]/)).toBeInTheDocument();
@@ -708,7 +709,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(unlimitedPassState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
   });
 
@@ -719,7 +720,7 @@ describe('SevensPage', () => {
       humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: true },
     };
     mockExec.mockResolvedValue(forcedPassHumanState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByTestId('human-action-forced-pass')).toBeInTheDocument());
   });
 
@@ -730,7 +731,7 @@ describe('SevensPage', () => {
       humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false },
     };
     mockExec.mockResolvedValue(normalPassHumanState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByTestId('human-action')).toBeInTheDocument());
   });
 
@@ -740,7 +741,7 @@ describe('SevensPage', () => {
       cpuActions: [{ playerIdx: 1, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: true }],
     };
     mockExec.mockResolvedValue(forcedPassCpuState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByTestId('cpu-action-forced-pass-0')).toBeInTheDocument());
   });
 
@@ -750,12 +751,12 @@ describe('SevensPage', () => {
       cpuActions: [{ playerIdx: 1, playedCard: null, targetSuit: 0, targetValue: 0, forcedPass: false }],
     };
     mockExec.mockResolvedValue(normalPassCpuState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByTestId('cpu-action-0')).toBeInTheDocument());
   });
 
   it('sets aria-busy and sr-only loading text while loading', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-live]') as HTMLElement;
@@ -780,13 +781,13 @@ describe('SevensPage', () => {
   });
 
   it('renders noJokerFinish checkbox with default unchecked state', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
     expect(screen.getByLabelText('ジョーカー上がり禁止')).not.toBeChecked();
   });
 
   it('sends noJokerFinish: true in config when checkbox is checked and reset is clicked', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
 
     fireEvent.click(screen.getByLabelText('ジョーカー上がり禁止'));
@@ -815,7 +816,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, noJokerFinish: true },
     };
     mockExec.mockResolvedValue(noJokerFinishState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByText(/ルール:/)).toBeInTheDocument();
       expect(screen.getByText(/\[ジョーカー上がり禁止\]/)).toBeInTheDocument();
@@ -836,7 +837,7 @@ describe('SevensPage', () => {
       ],
     };
     mockExec.mockResolvedValue(noJokerFinishOnlyJokers);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
     const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
     expect(jokerBtn).toBeDisabled();
@@ -855,19 +856,19 @@ describe('SevensPage', () => {
       },
     };
     mockExec.mockResolvedValue(jokerNoTargetState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText(/あなたが出しました: JOKER/)).toBeInTheDocument());
     expect(screen.queryByText(/→/)).not.toBeInTheDocument();
   });
 
   it('renders ジョーカー回収 checkbox with default unchecked state', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
     expect(screen.getByLabelText('ジョーカー回収')).not.toBeChecked();
   });
 
   it('sends jokerReclaim: true in config when checkbox is checked and reset is clicked', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
 
     fireEvent.click(screen.getByLabelText('ジョーカー回収'));
@@ -896,7 +897,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, jokerReclaimEnabled: true },
     };
     mockExec.mockResolvedValue(configState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByLabelText('ジョーカー回収')).toBeChecked());
   });
 
@@ -906,7 +907,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, jokerReclaimEnabled: true },
     };
     mockExec.mockResolvedValue(jokerReclaimState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByText(/ルール:/)).toBeInTheDocument();
       expect(screen.getByText(/\[ジョーカー回収\]/)).toBeInTheDocument();
@@ -919,7 +920,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, tunnelEnabled: true },
     };
     mockExec.mockResolvedValue(tunnelState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     const connectors = screen.getAllByLabelText('トンネル接続');
     // 4 suit rows, each has one ↔ connector
@@ -930,7 +931,7 @@ describe('SevensPage', () => {
   });
 
   it('does not render ↔ tunnel connector when tunnelEnabled is false', async () => {
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     expect(screen.queryByLabelText('トンネル接続')).not.toBeInTheDocument();
   });
@@ -943,7 +944,7 @@ describe('SevensPage', () => {
       tablePlaced: [0, 128 | 8192, 128, 128, 128],
     };
     mockExec.mockResolvedValue(tunnelHighlightState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     // Find A cells in the SPADE row — the first suit row's value 1 (A)
     // Board renders values 1-13 as spans; A is valueName(1) = 'A'
@@ -963,7 +964,7 @@ describe('SevensPage', () => {
       tablePlaced: [0, 128 | 2, 128, 128, 128],
     };
     mockExec.mockResolvedValue(tunnelHighlightKState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     const allKCells = screen.getAllByText('K');
     // The SPADE K cell should have yellow border because A (1) is placed and tunnel is enabled
@@ -980,7 +981,7 @@ describe('SevensPage', () => {
       tablePlaced: [0, 128 | 8192, 128, 128, 128],
     };
     mockExec.mockResolvedValue(noTunnelState);
-    render(<SevensPage />);
+    renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     const allACells = screen.getAllByText('A');
     // No A cell should have yellow border when tunnel is disabled
