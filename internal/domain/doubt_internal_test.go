@@ -102,6 +102,25 @@ func TestCalcBluffChance(t *testing.T) {
 	})
 }
 
+// TestCalcTellChance テル表示確率のテスト
+func TestCalcTellChance(t *testing.T) {
+	t.Run("easy", func(t *testing.T) {
+		assert.InDelta(t, tellChanceEasy, calcTellChance(DoubtMemoryLevelEasy), 0.001)
+	})
+
+	t.Run("normal", func(t *testing.T) {
+		assert.InDelta(t, tellChanceNormal, calcTellChance(DoubtMemoryLevelNormal), 0.001)
+	})
+
+	t.Run("hard", func(t *testing.T) {
+		assert.InDelta(t, tellChanceHard, calcTellChance(DoubtMemoryLevelHard), 0.001)
+	})
+
+	t.Run("unknown level defaults to normal", func(t *testing.T) {
+		assert.InDelta(t, tellChanceNormal, calcTellChance(DoubtMemoryLevel(99)), 0.001)
+	})
+}
+
 // TestMemoryDecayRate 記憶減衰率のテスト
 func TestMemoryDecayRate(t *testing.T) {
 	t.Run("easy", func(t *testing.T) {

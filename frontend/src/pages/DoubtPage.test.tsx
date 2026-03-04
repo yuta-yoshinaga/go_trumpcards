@@ -744,6 +744,50 @@ describe('DoubtPage', () => {
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
+  // ── CPU Tell indicator ──────────────────────────────────────────────────
+
+  it('shows sweat indicator when cpuAction has hasTell true', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true }],
+    };
+    mockExec.mockResolvedValue(s);
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByLabelText('テル')).toBeInTheDocument());
+  });
+
+  it('shows sweat indicator when lastAction has hasTell true', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      lastAction: { playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true },
+    };
+    mockExec.mockResolvedValue(s);
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByLabelText('テル')).toBeInTheDocument());
+  });
+
+  it('does not show sweat indicator when hasTell is false', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: false }],
+    };
+    mockExec.mockResolvedValue(s);
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByLabelText('テル')).not.toBeInTheDocument();
+  });
+
+  it('does not show sweat indicator when hasTell is undefined', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true }],
+    };
+    mockExec.mockResolvedValue(s);
+    render(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByLabelText('テル')).not.toBeInTheDocument();
+  });
+
   // ── Settings panel ────────────────────────────────────────────────────────
 
   it('renders settings panel with default values', async () => {

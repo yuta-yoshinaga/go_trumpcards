@@ -278,6 +278,7 @@ export interface DoubtCpuAction {
   claimedValue: number;
   cardCount: number;
   isBluff: boolean;
+  hasTell?: boolean;
 }
 
 export interface DoubtDoubtResult {
