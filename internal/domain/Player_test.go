@@ -9,7 +9,7 @@ import (
 )
 
 func TestPlayer_Method(t *testing.T) {
-	tp := domain.NewPlayer()
+	tp := new(domain.Player)
 	t.Run("success AddCard", func(t *testing.T) {
 		tp.AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
 		assert.Equal(t, 1, tp.GetCardsSize())
@@ -33,7 +33,7 @@ func TestPlayer_Method(t *testing.T) {
 		assert.Equal(t, 0, tp.GetCardsSize())
 	})
 	t.Run("success ShuffleCards does not change size", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		p.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
@@ -41,7 +41,7 @@ func TestPlayer_Method(t *testing.T) {
 		assert.Equal(t, 3, p.GetCardsSize())
 	})
 	t.Run("success ShuffleCards randomizes order", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		for i := 2; i <= 10; i++ {
 			p.AddCard(domain.NewCard(domain.CardDesignSpade, i, false))
 		}
@@ -52,7 +52,7 @@ func TestPlayer_Method(t *testing.T) {
 		// 多数回シャッフルして順番が変わることを確認
 		changed := false
 		for attempt := 0; attempt < 100; attempt++ {
-			p2 := domain.NewPlayer()
+			p2 := new(domain.Player)
 			for _, v := range original {
 				p2.AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
 			}
@@ -70,12 +70,12 @@ func TestPlayer_Method(t *testing.T) {
 		assert.True(t, changed, "ShuffleCards should change card order")
 	})
 	t.Run("success ShuffleCards on empty hand", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.ShuffleCards()
 		assert.Equal(t, 0, p.GetCardsSize())
 	})
 	t.Run("success ShuffleCards on single card hand", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.ShuffleCards()
 		assert.Equal(t, 1, p.GetCardsSize())
@@ -85,7 +85,7 @@ func TestPlayer_Method(t *testing.T) {
 
 func TestPlayer_ReorderCards(t *testing.T) {
 	t.Run("success valid permutation", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		p.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
@@ -96,7 +96,7 @@ func TestPlayer_ReorderCards(t *testing.T) {
 		assert.Equal(t, 5, p.GetCard(2).GetValue())
 	})
 	t.Run("success identity permutation", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		err := p.ReorderCards([]int{0, 1})
@@ -105,33 +105,33 @@ func TestPlayer_ReorderCards(t *testing.T) {
 		assert.Equal(t, 5, p.GetCard(1).GetValue())
 	})
 	t.Run("success empty hand", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		err := p.ReorderCards([]int{})
 		assert.NoError(t, err)
 	})
 	t.Run("error length mismatch", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		err := p.ReorderCards([]int{0})
 		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
 	})
 	t.Run("error duplicate indices", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		err := p.ReorderCards([]int{0, 0})
 		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
 	})
 	t.Run("error out of range positive", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		err := p.ReorderCards([]int{0, 5})
 		assert.ErrorIs(t, err, domain.ErrInvalidIndices)
 	})
 	t.Run("error out of range negative", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		err := p.ReorderCards([]int{-1, 0})
@@ -141,7 +141,7 @@ func TestPlayer_ReorderCards(t *testing.T) {
 
 func TestPlayer_RemoveCard(t *testing.T) {
 	t.Run("valid first index", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		p.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
@@ -153,7 +153,7 @@ func TestPlayer_RemoveCard(t *testing.T) {
 	})
 
 	t.Run("valid middle index", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		p.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
@@ -164,7 +164,7 @@ func TestPlayer_RemoveCard(t *testing.T) {
 	})
 
 	t.Run("valid last index", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		card := p.RemoveCard(1)
@@ -174,7 +174,7 @@ func TestPlayer_RemoveCard(t *testing.T) {
 	})
 
 	t.Run("negative index returns nil", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		card := p.RemoveCard(-1)
 		assert.Nil(t, card)
@@ -182,7 +182,7 @@ func TestPlayer_RemoveCard(t *testing.T) {
 	})
 
 	t.Run("out-of-bounds index returns nil", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		card := p.RemoveCard(5)
 		assert.Nil(t, card)
@@ -190,7 +190,7 @@ func TestPlayer_RemoveCard(t *testing.T) {
 	})
 
 	t.Run("empty hand returns nil", func(t *testing.T) {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		card := p.RemoveCard(0)
 		assert.Nil(t, card)
 		assert.Equal(t, 0, p.GetCardsSize())
@@ -199,7 +199,7 @@ func TestPlayer_RemoveCard(t *testing.T) {
 
 func TestPlayer_RemoveCards(t *testing.T) {
 	makePlayer := func() *domain.Player {
-		p := domain.NewPlayer()
+		p := new(domain.Player)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false)) // 0
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false)) // 1
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false)) // 2
@@ -277,7 +277,7 @@ func TestPlayer_RemoveCards(t *testing.T) {
 }
 
 func TestPlayer_PrependCard(t *testing.T) {
-	p := domain.NewPlayer()
+	p := new(domain.Player)
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
 	front := domain.NewCard(domain.CardDesignHeart, 1, false)
