@@ -192,6 +192,8 @@ export interface DaifugoConfig {
   nineReverseEnabled: boolean;
   coupDetatEnabled: boolean;
   intenseLockEnabled: boolean;
+  sandstormEnabled: boolean;
+  emperorEnabled: boolean;
 }
 
 export type DaifugoConfigInput = DaifugoConfig;
@@ -250,6 +252,7 @@ export interface SevensConfig {
   cpuStrategy: boolean;
   maxPasses: number;
   noJokerFinish: boolean;
+  jokerReclaimEnabled: boolean;
 }
 
 export interface SevensResponse {

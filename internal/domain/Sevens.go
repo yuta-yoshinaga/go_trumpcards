@@ -32,6 +32,8 @@ type Sevens struct {
 	gameEndFlag bool               // ゲーム終了フラグ
 	cpuActions  []*SevensCpuAction // 人間ターン後のCPUの行動履歴
 	humanAction *SevensCpuAction   // 人間の最後の行動
+	jokerPlaced [5]uint16          // jokerPlaced[suit] = ジョーカーが配置されたポジションのビットマスク
+	jokerCards  []*Card            // ボード上のジョーカーカードオブジェクト (回収用)
 }
 
 // NewSevens コンストラクタ
@@ -62,6 +64,8 @@ func (s *Sevens) Reset() {
 		s.tablePlaced[i] = 1 << 7
 	}
 	s.tablePlaced[0] = 0
+	s.jokerPlaced = [5]uint16{}
+	s.jokerCards = nil
 
 	// 全プレイヤーのリセット
 	for _, p := range s.players {
@@ -286,6 +290,39 @@ func (s *Sevens) placePosition(suit, value int) {
 	}
 }
 
+// recordJokerCard ジョーカー配置時にジョーカーカードオブジェクトを記録し、配置ビットマスクを更新
+func (s *Sevens) recordJokerCard(card *Card, suit, value int) {
+	if !s.config.JokerReclaimEnabled {
+		return
+	}
+	s.jokerCards = append(s.jokerCards, card)
+	if suit >= CardDesignSpade && suit <= CardDesignDiamond && value >= 1 && value <= 13 {
+		s.jokerPlaced[suit] |= 1 << uint(value)
+	}
+}
+
+// reclaimJokerIfNeeded 非ジョーカーカードでジョーカー配置済みポジションに置いた場合、ジョーカーを回収
+func (s *Sevens) reclaimJokerIfNeeded(playerIdx, suit, value int) {
+	if !s.config.JokerReclaimEnabled {
+		return
+	}
+	if suit < CardDesignSpade || suit > CardDesignDiamond || value < 1 || value > 13 {
+		return
+	}
+	if s.jokerPlaced[suit]&(1<<uint(value)) == 0 {
+		return
+	}
+	// ジョーカーマークをクリア
+	s.jokerPlaced[suit] &^= 1 << uint(value)
+	// jokerCards から1枚取り出してプレイヤーに戻す
+	if len(s.jokerCards) > 0 {
+		joker := s.jokerCards[len(s.jokerCards)-1]
+		s.jokerCards = s.jokerCards[:len(s.jokerCards)-1]
+		s.players[playerIdx].AddCard(joker)
+		s.players[playerIdx].SortCards()
+	}
+}
+
 // PlayerPlay 人間プレイヤーがカードを出す (または パスする)
 // idx: 出すカードのインデックス。-1 の場合はパス。
 func (s *Sevens) PlayerPlay(idx int) error {
@@ -329,6 +366,7 @@ func (s *Sevens) PlayerPlay(idx int) error {
 
 	s.placeCard(card)
 	playedCard := player.RemoveCard(idx)
+	s.reclaimJokerIfNeeded(s.currentTurn, card.GetDesign(), card.GetValue())
 	s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: playedCard}
 
 	if player.GetCardsSize() == 0 {
@@ -369,6 +407,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 
 	s.placePosition(targetSuit, targetValue)
 	playedCard := player.RemoveCard(cardIdx)
+	s.recordJokerCard(playedCard, targetSuit, targetValue)
 	s.humanAction = &SevensCpuAction{
 		PlayerIdx:   s.currentTurn,
 		PlayedCard:  playedCard,
@@ -635,6 +674,11 @@ func (s *Sevens) CpuPlay() {
 			s.placeCard(card)
 		}
 		playedCard := player.RemoveCard(playIdx)
+		if card.GetDesign() == CardDesignJoker {
+			s.recordJokerCard(playedCard, targetSuit, targetValue)
+		} else {
+			s.reclaimJokerIfNeeded(playerIdx, card.GetDesign(), card.GetValue())
+		}
 		action := &SevensCpuAction{
 			PlayerIdx:   playerIdx,
 			PlayedCard:  playedCard,
@@ -792,3 +836,9 @@ func (s *Sevens) SetHumanAction(action *SevensCpuAction) { s.humanAction = actio
 
 // SetCpuActions CPU行動設定（テスト用）
 func (s *Sevens) SetCpuActions(actions []*SevensCpuAction) { s.cpuActions = actions }
+
+// GetJokerPlaced ジョーカー配置ビットマスク取得（テスト用）
+func (s *Sevens) GetJokerPlaced() [5]uint16 { return s.jokerPlaced }
+
+// GetJokerCardsCount ボード上のジョーカーカード数取得（テスト用）
+func (s *Sevens) GetJokerCardsCount() int { return len(s.jokerCards) }

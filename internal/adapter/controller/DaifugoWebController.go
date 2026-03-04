@@ -23,6 +23,8 @@ type DaifugoWebConfig struct {
 	NineReverseEnabled  bool `json:"nineReverseEnabled"`
 	CoupDetatEnabled    bool `json:"coupDetatEnabled"`
 	IntenseLockEnabled  bool `json:"intenseLockEnabled"`
+	SandstormEnabled    bool `json:"sandstormEnabled"`
+	EmperorEnabled      bool `json:"emperorEnabled"`
 }
 
 // DaifugoWebInput 大富豪Webインプット
@@ -154,6 +156,8 @@ func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
 		NineReverseEnabled:  c.NineReverseEnabled,
 		CoupDetatEnabled:    c.CoupDetatEnabled,
 		IntenseLockEnabled:  c.IntenseLockEnabled,
+		SandstormEnabled:    c.SandstormEnabled,
+		EmperorEnabled:      c.EmperorEnabled,
 	}
 }
 

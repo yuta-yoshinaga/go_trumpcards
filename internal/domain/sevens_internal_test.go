@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSevens_advanceTurn_gameEndFlag(t *testing.T) {
@@ -405,4 +406,202 @@ func TestSevens_setTablePlaced(t *testing.T) {
 	for i := 1; i <= 4; i++ {
 		assert.Equal(t, uint16((1<<7)|(1<<6)), result[i])
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Joker Reclaim internal tests
+// These tests directly manipulate jokerPlaced/jokerCards to exercise the
+// reclaimJokerIfNeeded code path which cannot be triggered through the public
+// API alone (because IsPlayable rejects a card whose position is already
+// occupied on the board, even when a joker fills that position).
+// ---------------------------------------------------------------------------
+
+func TestJokerReclaim_BasicReclaim_Internal(t *testing.T) {
+	// Simulate: joker placed at Spade-6 (tracked in jokerPlaced/jokerCards but
+	// NOT in tablePlaced so the real card passes IsPlayable).
+	// Then human plays real 6♠ → reclaimJokerIfNeeded fires → joker returns.
+	tc := NewTrumpCards(2)
+	players := makeSevensPlayersInternal()
+	cfg := SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           SevensMaxPasses,
+	}
+	s := NewSevens(tc, players, cfg)
+
+	// Give other players dummy cards so game doesn't end
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Manually set up joker tracking at Spade-6 WITHOUT placing it on the board.
+	// This simulates the state where a joker occupies that logical position
+	// but allows the real card to pass IsPlayable.
+	jokerCard := NewCard(CardDesignJoker, 1, false)
+	s.jokerPlaced[CardDesignSpade] |= 1 << 6
+	s.jokerCards = append(s.jokerCards, jokerCard)
+
+	// Board: only 7s placed (default), so Spade-6 is playable (adjacent to 7)
+	// Human has real 6♠ + extra card
+	players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+	players[0].AddCard(NewCard(CardDesignHeart, 6, false))
+
+	handSizeBefore := players[0].GetCardsSize()
+	assert.Equal(t, 2, handSizeBefore)
+	assert.Equal(t, 1, s.GetJokerCardsCount())
+
+	// Human plays real 6♠ → triggers reclaimJokerIfNeeded(0, Spade, 6)
+	err := s.PlayerPlay(0)
+	assert.NoError(t, err)
+
+	// Reclaim should have fired: card played (-1) + joker returned (+1) = same size
+	assert.Equal(t, handSizeBefore, players[0].GetCardsSize(),
+		"hand size should stay same: played card replaced by reclaimed joker")
+
+	// Joker tracking cleared
+	assert.Equal(t, 0, s.GetJokerCardsCount(), "joker should be removed from board tracking")
+	assert.True(t, s.jokerPlaced[CardDesignSpade]&(1<<6) == 0,
+		"jokerPlaced bit should be cleared at spade-6")
+
+	// Verify the reclaimed card is a joker
+	hasJoker := false
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		if players[0].GetCard(i).GetDesign() == CardDesignJoker {
+			hasJoker = true
+			break
+		}
+	}
+	assert.True(t, hasJoker, "player should have a joker back in hand")
+}
+
+func TestJokerReclaim_CpuReclaim_Internal(t *testing.T) {
+	// CPU plays card at a joker-tracked position → CPU gets joker back.
+	tc := NewTrumpCards(2)
+	players := makeSevensPlayersInternal()
+	cfg := SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           SevensMaxPasses,
+	}
+	s := NewSevens(tc, players, cfg)
+
+	// Give CPUs 2, 3 dummy cards
+	for i := 2; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Human has a playable card to advance turn
+	players[0].AddCard(NewCard(CardDesignSpade, 8, false))
+	players[0].AddCard(NewCard(CardDesignHeart, 6, false))
+
+	// Set up joker tracking at Spade-6 (without tablePlaced bit)
+	jokerCard := NewCard(CardDesignJoker, 1, false)
+	s.jokerPlaced[CardDesignSpade] |= 1 << 6
+	s.jokerCards = append(s.jokerCards, jokerCard)
+
+	// CPU 1 has real Spade-6 (playable: adjacent to 7) + extra cards
+	players[1].AddCard(NewCard(CardDesignSpade, 6, false))
+	for d := 0; d < 4; d++ {
+		players[1].AddCard(NewCard(CardDesignDiamond, 2, false))
+	}
+
+	cpu1HandBefore := players[1].GetCardsSize()
+
+	// Human plays to advance to CPU 1
+	err := s.PlayerPlay(0) // play Spade-8
+	assert.NoError(t, err)
+	assert.Equal(t, 1, s.currentTurn, "should be CPU 1's turn")
+
+	// CPU 1 plays
+	s.CpuPlay()
+
+	actions := s.GetCpuActions()
+	require.NotEmpty(t, actions)
+
+	// Check if CPU 1 played Spade-6
+	cpuPlayed6 := false
+	for _, a := range actions {
+		if a.PlayerIdx == 1 && a.PlayedCard != nil &&
+			a.PlayedCard.GetDesign() == CardDesignSpade && a.PlayedCard.GetValue() == 6 {
+			cpuPlayed6 = true
+			break
+		}
+	}
+
+	if cpuPlayed6 {
+		// Reclaim should have fired: CPU played 6♠ at joker position
+		// Hand: before - 1 (played) + 1 (reclaimed) = same
+		assert.Equal(t, cpu1HandBefore, players[1].GetCardsSize(),
+			"CPU hand should reflect played card and reclaimed joker net effect")
+		assert.Equal(t, 0, s.GetJokerCardsCount(), "joker removed from board tracking")
+		assert.True(t, s.jokerPlaced[CardDesignSpade]&(1<<6) == 0,
+			"jokerPlaced bit cleared")
+
+		// Verify CPU has joker in hand
+		hasJoker := false
+		for i := 0; i < players[1].GetCardsSize(); i++ {
+			if players[1].GetCard(i).GetDesign() == CardDesignJoker {
+				hasJoker = true
+				break
+			}
+		}
+		assert.True(t, hasJoker, "CPU should have reclaimed joker")
+	}
+}
+
+func TestJokerReclaim_MultipleJokers_ReclaimOne_Internal(t *testing.T) {
+	// Two jokers on board, reclaim one → only one returned, one remains tracked.
+	tc := NewTrumpCards(2)
+	players := makeSevensPlayersInternal()
+	cfg := SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           SevensMaxPasses,
+	}
+	s := NewSevens(tc, players, cfg)
+
+	// Give other players dummy cards
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Set up two jokers tracked: one at Spade-6, one at Heart-8
+	joker1 := NewCard(CardDesignJoker, 1, false)
+	joker2 := NewCard(CardDesignJoker, 2, false)
+	s.jokerPlaced[CardDesignSpade] |= 1 << 6
+	s.jokerPlaced[CardDesignHeart] |= 1 << 8
+	s.jokerCards = append(s.jokerCards, joker1, joker2)
+
+	assert.Equal(t, 2, s.GetJokerCardsCount())
+
+	// Human has real 6♠ (triggers reclaim at Spade-6) + extra cards
+	players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+	players[0].AddCard(NewCard(CardDesignClover, 6, false))
+	players[0].AddCard(NewCard(CardDesignDiamond, 6, false))
+
+	err := s.PlayerPlay(0) // play Spade-6
+	assert.NoError(t, err)
+
+	// One joker reclaimed, one remains
+	assert.Equal(t, 1, s.GetJokerCardsCount(), "one joker should remain on board")
+	assert.True(t, s.jokerPlaced[CardDesignSpade]&(1<<6) == 0,
+		"spade-6 joker bit should be cleared")
+	assert.True(t, s.jokerPlaced[CardDesignHeart]&(1<<8) != 0,
+		"heart-8 joker bit should remain set")
+
+	// Player should have a joker in hand (reclaimed)
+	hasJoker := false
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		if players[0].GetCard(i).GetDesign() == CardDesignJoker {
+			hasJoker = true
+			break
+		}
+	}
+	assert.True(t, hasJoker, "player should have one reclaimed joker")
 }

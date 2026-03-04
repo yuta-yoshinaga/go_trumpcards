@@ -14,7 +14,14 @@ const mockExec = vi.mocked(sevensApi.exec);
 // tableMinVals/tableMaxVals: index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
 // tablePlaced: bitmask per suit; bit i = value i placed. 7 placed = 1<<7 = 128
 // With all 7s placed: value 6 or 8 of any suit is playable
-const defaultConfig = { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false };
+const defaultConfig = {
+  tunnelEnabled: false,
+  jokerCount: 0,
+  cpuStrategy: false,
+  maxPasses: 5,
+  noJokerFinish: false,
+  jokerReclaimEnabled: false,
+};
 const allSevensPlaced = [0, 128, 128, 128, 128]; // bit 7 set = 128
 
 const humanTurnState: SevensResponse = {
@@ -180,6 +187,7 @@ describe('SevensPage', () => {
         cpuStrategy: false,
         maxPasses: 5,
         noJokerFinish: false,
+        jokerReclaim: false,
       }),
     );
   });
@@ -253,7 +261,14 @@ describe('SevensPage', () => {
   it('shows rule header when config has features enabled', async () => {
     const stateWithConfig: SevensResponse = {
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5, noJokerFinish: false },
+      config: {
+        tunnelEnabled: true,
+        jokerCount: 2,
+        cpuStrategy: true,
+        maxPasses: 5,
+        noJokerFinish: false,
+        jokerReclaimEnabled: false,
+      },
     };
     mockExec.mockResolvedValue(stateWithConfig);
     render(<SevensPage />);
@@ -345,7 +360,14 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue({
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 1, cpuStrategy: true, maxPasses: 5, noJokerFinish: false },
+      config: {
+        tunnelEnabled: true,
+        jokerCount: 1,
+        cpuStrategy: true,
+        maxPasses: 5,
+        noJokerFinish: false,
+        jokerReclaimEnabled: false,
+      },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     await waitFor(() =>
@@ -355,6 +377,7 @@ describe('SevensPage', () => {
         cpuStrategy: true,
         maxPasses: 5,
         noJokerFinish: false,
+        jokerReclaim: false,
       }),
     );
   });
@@ -362,7 +385,14 @@ describe('SevensPage', () => {
   it('syncs config state from server response', async () => {
     const configState: SevensResponse = {
       ...humanTurnState,
-      config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3, noJokerFinish: false },
+      config: {
+        tunnelEnabled: true,
+        jokerCount: 2,
+        cpuStrategy: true,
+        maxPasses: 3,
+        noJokerFinish: false,
+        jokerReclaimEnabled: false,
+      },
     };
     mockExec.mockResolvedValue(configState);
     render(<SevensPage />);
@@ -591,6 +621,7 @@ describe('SevensPage', () => {
         cpuStrategy: false,
         maxPasses: 3,
         noJokerFinish: false,
+        jokerReclaim: false,
       }),
     );
   });
@@ -773,6 +804,7 @@ describe('SevensPage', () => {
         cpuStrategy: false,
         maxPasses: 5,
         noJokerFinish: true,
+        jokerReclaim: false,
       }),
     );
   });
@@ -826,5 +858,133 @@ describe('SevensPage', () => {
     render(<SevensPage />);
     await waitFor(() => expect(screen.getByText(/あなたが出しました: JOKER/)).toBeInTheDocument());
     expect(screen.queryByText(/→/)).not.toBeInTheDocument();
+  });
+
+  it('renders ジョーカー回収 checkbox with default unchecked state', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+    expect(screen.getByLabelText('ジョーカー回収')).not.toBeChecked();
+  });
+
+  it('sends jokerReclaim: true in config when checkbox is checked and reset is clicked', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('ジョーカー回収'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerReclaimEnabled: true },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        jokerCount: 0,
+        cpuStrategy: false,
+        maxPasses: 5,
+        noJokerFinish: false,
+        jokerReclaim: true,
+      }),
+    );
+  });
+
+  it('syncs jokerReclaim checkbox state from server response', async () => {
+    const configState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerReclaimEnabled: true },
+    };
+    mockExec.mockResolvedValue(configState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByLabelText('ジョーカー回収')).toBeChecked());
+  });
+
+  it('shows rule badge [ジョーカー回収] when config has jokerReclaimEnabled: true', async () => {
+    const jokerReclaimState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerReclaimEnabled: true },
+    };
+    mockExec.mockResolvedValue(jokerReclaimState);
+    render(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[ジョーカー回収\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('renders ↔ tunnel connector after value 13 in each suit row when tunnelEnabled', async () => {
+    const tunnelState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelEnabled: true },
+    };
+    mockExec.mockResolvedValue(tunnelState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const connectors = screen.getAllByLabelText('トンネル接続');
+    // 4 suit rows, each has one ↔ connector
+    expect(connectors).toHaveLength(4);
+    for (const connector of connectors) {
+      expect(connector.textContent).toBe('↔');
+    }
+  });
+
+  it('does not render ↔ tunnel connector when tunnelEnabled is false', async () => {
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    expect(screen.queryByLabelText('トンネル接続')).not.toBeInTheDocument();
+  });
+
+  it('shows yellow border on A cell when K is placed (tunnel highlight)', async () => {
+    // SPADE: bit 7 (128) + bit 13 (8192) placed; A (bit 1) not placed
+    const tunnelHighlightState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelEnabled: true },
+      tablePlaced: [0, 128 | 8192, 128, 128, 128],
+    };
+    mockExec.mockResolvedValue(tunnelHighlightState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    // Find A cells in the SPADE row — the first suit row's value 1 (A)
+    // Board renders values 1-13 as spans; A is valueName(1) = 'A'
+    // The SPADE A cell should have yellow border because K (13) is placed and tunnel is enabled
+    const allACells = screen.getAllByText('A');
+    // Find the one in SPADE row (first occurrence) that has tunnel highlight border
+    const spadeACell = allACells.find((el) => el.style.borderColor !== '');
+    expect(spadeACell).toBeDefined();
+    expect(spadeACell).toHaveStyle({ borderColor: '#f59e0b' });
+  });
+
+  it('shows yellow border on K cell when A is placed (tunnel highlight)', async () => {
+    // SPADE: bit 7 (128) + bit 1 (2) placed; K (bit 13) not placed
+    const tunnelHighlightKState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelEnabled: true },
+      tablePlaced: [0, 128 | 2, 128, 128, 128],
+    };
+    mockExec.mockResolvedValue(tunnelHighlightKState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const allKCells = screen.getAllByText('K');
+    // The SPADE K cell should have yellow border because A (1) is placed and tunnel is enabled
+    const spadeKCell = allKCells.find((el) => el.style.borderColor !== '');
+    expect(spadeKCell).toBeDefined();
+    expect(spadeKCell).toHaveStyle({ borderColor: '#f59e0b' });
+  });
+
+  it('does not show tunnel highlight when tunnelEnabled is false', async () => {
+    // SPADE: bit 7 (128) + bit 13 (8192) placed; A not placed, but tunnel disabled
+    const noTunnelState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelEnabled: false },
+      tablePlaced: [0, 128 | 8192, 128, 128, 128],
+    };
+    mockExec.mockResolvedValue(noTunnelState);
+    render(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const allACells = screen.getAllByText('A');
+    // No A cell should have yellow border when tunnel is disabled
+    const highlightedA = allACells.find((el) => el.style.borderColor !== '');
+    expect(highlightedA).toBeUndefined();
   });
 });

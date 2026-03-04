@@ -323,6 +323,41 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.True(t, resObj.Config.IntenseLockEnabled)
 	})
 
+	t.Run("success Output config sandstormEnabled and emperorEnabled mapped", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		cfg := domain.DefaultDaifugoConfig()
+		cfg.SandstormEnabled = true
+		cfg.EmperorEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.SandstormEnabled)
+		assert.True(t, resObj.Config.EmperorEnabled)
+	})
+
+	t.Run("success Output config sandstormEnabled and emperorEnabled false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.False(t, resObj.Config.SandstormEnabled)
+		assert.False(t, resObj.Config.EmperorEnabled)
+	})
+
 	t.Run("success Output lockedSuit all suits", func(t *testing.T) {
 		suitTests := []struct {
 			suit     int
