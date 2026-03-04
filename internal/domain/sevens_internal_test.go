@@ -459,6 +459,45 @@ func TestJokerReclaim_JokerCardsEmpty_DefensiveCheck_Internal(t *testing.T) {
 	}
 }
 
+func TestReclaimJokerIfNeeded_InvalidBounds_Internal(t *testing.T) {
+	// reclaimJokerIfNeeded with invalid suit or value returns immediately (defensive guard).
+	// This is unreachable via the public API since valid cards always have valid suit/value.
+	tc := NewTrumpCards(2)
+	players := makeSevensPlayersInternal()
+	cfg := SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           SevensMaxPasses,
+	}
+	s := NewSevens(tc, players, cfg)
+
+	// Pre-set joker tracking so the bounds guard is the only thing stopping reclaim.
+	s.jokerPlaced[CardDesignSpade] |= 1 << 6
+	s.jokerCards = append(s.jokerCards, NewCard(CardDesignJoker, 1, false))
+
+	initial := s.GetJokerCardsCount()
+
+	// Invalid suit (0 = CardDesignJoker < CardDesignSpade)
+	s.reclaimJokerIfNeeded(0, 0, 6)
+	assert.Equal(t, initial, s.GetJokerCardsCount(), "invalid suit 0: no change")
+
+	// Invalid suit (5 > CardDesignDiamond=4)
+	s.reclaimJokerIfNeeded(0, 5, 6)
+	assert.Equal(t, initial, s.GetJokerCardsCount(), "invalid suit 5: no change")
+
+	// Invalid value (0 < 1)
+	s.reclaimJokerIfNeeded(0, CardDesignSpade, 0)
+	assert.Equal(t, initial, s.GetJokerCardsCount(), "invalid value 0: no change")
+
+	// Invalid value (14 > 13)
+	s.reclaimJokerIfNeeded(0, CardDesignSpade, 14)
+	assert.Equal(t, initial, s.GetJokerCardsCount(), "invalid value 14: no change")
+
+	// Sanity check: valid call with jokerPlaced bit set does perform reclaim
+	s.reclaimJokerIfNeeded(0, CardDesignSpade, 6)
+	assert.Equal(t, initial-1, s.GetJokerCardsCount(), "valid call: joker reclaimed")
+}
+
 func TestJokerReclaim_RecordJokerCard_InvalidBounds_Internal(t *testing.T) {
 	// recordJokerCard with invalid suit/value should still append to jokerCards
 	// but NOT set jokerPlaced bit.

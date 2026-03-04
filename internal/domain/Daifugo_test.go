@@ -4631,6 +4631,99 @@ func TestEmperor_TooManyGaps_WithJoker_Invalid(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 }
 
+func TestEmperor_PlayerFinishes_TurnAdvances(t *testing.T) {
+	// Emperor fires AND player plays their last cards, but 2 CPUs are still active.
+	// This covers the `|| d.players[playerIdx].GetIsFinished()` branch in playCards
+	// that allows turn advancement even when emperor=true (normally keeps turn).
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// CPU 1 already finished
+	players[1].SetIsFinished(true)
+	players[1].SetRank(1)
+
+	// CPUs 2 and 3 still active (prevents game from ending after human finishes)
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+
+	// Human has exactly 4 emperor cards (no spare → plays last cards)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err)
+	assert.True(t, dg.GetRevolutionActive(), "emperor toggled revolution")
+	assert.Nil(t, dg.GetTableCards(), "emperor cleared table")
+	assert.Equal(t, 0, players[0].GetCardsSize(), "human played all cards")
+	assert.True(t, players[0].GetIsFinished(), "human finished")
+	assert.False(t, dg.GetGameEndFlag(), "game not over: CPUs 2 and 3 still active")
+	// Turn should advance (GetIsFinished() == true drives turn advancement)
+	assert.False(t, dg.IsHumanTurn(), "turn advanced away from finished human")
+}
+
+func TestSandstorm_PlayerFinishes_GameContinues(t *testing.T) {
+	// Sandstorm fires AND player plays their last cards, but 2 CPUs are still active.
+	// This covers the `|| d.players[playerIdx].GetIsFinished()` branch in playCards
+	// that allows turn advancement even when sandstorm=true (normally keeps turn).
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, sandstormConfig())
+
+	// CPU 1 already finished
+	players[1].SetIsFinished(true)
+	players[1].SetRank(1)
+
+	// CPUs 2 and 3 still active
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+
+	// Human has exactly 3 threes (no spare → plays last cards)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2})
+	assert.NoError(t, err)
+	assert.Nil(t, dg.GetTableCards(), "sandstorm cleared table")
+	assert.Equal(t, 0, players[0].GetCardsSize(), "human played all cards")
+	assert.True(t, players[0].GetIsFinished(), "human finished")
+	assert.False(t, dg.GetGameEndFlag(), "game not over: CPUs 2 and 3 still active")
+	assert.False(t, dg.IsHumanTurn(), "turn advanced away from finished human")
+}
+
+func TestEmperor_CpuFewerThan4Cards(t *testing.T) {
+	// CPU has fewer than 4 cards on a clear table with emperor enabled.
+	// findEmperorPlay returns nil at the n < 4 guard and CPU plays normally.
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// Human has 1 card to pass with
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+	// CPU 1 has only 3 cards (< 4 → findEmperorPlay returns nil immediately)
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+	// CPUs 2 and 3 have cards to keep the game alive
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+
+	// Human passes → CPU 1's turn on clear table
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+
+	// CPU 1 plays (has 3 cards, no emperor possible → plays single weakest card)
+	dg.CpuPlay()
+
+	assert.False(t, dg.GetRevolutionActive(), "no revolution (n<4, no emperor)")
+	assert.NotNil(t, dg.GetTableCards(), "CPU 1 played a card normally")
+}
+
 func TestEmperor_CpuNoEmperorInHand(t *testing.T) {
 	// CPU has no emperor combination → findEmperorPlay returns nil, CPU plays normally
 	tc := domain.NewTrumpCards(0)
