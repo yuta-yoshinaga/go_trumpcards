@@ -313,10 +313,6 @@ export function OldMaidPage() {
 
   // Card reveal suspense: show card-back for 600ms, then flip to actual card
   useEffect(() => {
-    if (revealTimerRef.current !== null) {
-      clearTimeout(revealTimerRef.current);
-      revealTimerRef.current = null;
-    }
     const card = displayState?.lastDrawCard;
     if (!card) {
       setRevealedCard(null);
