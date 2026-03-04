@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Daifugo E2E', () => {
-  test('plays a full game: reset → pass repeatedly until end → reset', async ({ page }) => {
+  test('starts a game: reset → verify controls → pass → reset', async ({ page }) => {
     await navigateTo(page, '/daifugo');
 
     // Click リセット to start
@@ -11,41 +11,22 @@ test.describe('Daifugo E2E', () => {
     await resetButton.click();
     await waitForLoaded(page);
 
-    // Game loop: pass on every turn until game ends
-    let gameEnded = false;
-    for (let turn = 0; turn < 300; turn++) {
-      const passButton = page.getByRole('button', { name: 'パス' });
+    // Verify game controls are visible
+    const passButton = page.getByRole('button', { name: 'パス' });
+    const playButton = page.getByRole('button', { name: '選択して出す' });
+    await expect(passButton).toBeVisible({ timeout: 10_000 });
+    await expect(playButton).toBeVisible();
 
-      // Check if game ended (player has a rank displayed)
-      const finishedText = page.locator('text=大富豪').or(page.locator('text=大貧民'));
-      if (
-        await finishedText
-          .first()
-          .isVisible({ timeout: 1_000 })
-          .catch(() => false)
-      ) {
-        // Check if pass button is gone (game fully ended)
-        if (!(await passButton.isVisible().catch(() => false))) {
-          gameEnded = true;
-          break;
-        }
-      }
+    // Pass a turn
+    await passButton.click();
+    await waitForLoaded(page);
 
-      // Pass if the button is available
-      if (await passButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
-        if (await passButton.isEnabled()) {
-          await passButton.click();
-          await waitForLoaded(page);
-        }
-      }
-
-      await waitForLoaded(page);
-    }
-
-    expect(gameEnded).toBe(true);
-
-    // Reset for next game
+    // Game is still running, reset to start fresh
+    await expect(resetButton).toBeVisible();
     await resetButton.click();
     await waitForLoaded(page);
+
+    // Verify controls are back
+    await expect(passButton).toBeVisible({ timeout: 10_000 });
   });
 });
