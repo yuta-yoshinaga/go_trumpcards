@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { holdemApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { renderWithProviders } from '../test/renderWithProviders';
 import type { HoldemResponse } from '../types/card';
 import { HoldemPage } from './HoldemPage';
 
@@ -176,26 +177,26 @@ beforeEach(() => {
 describe('HoldemPage', () => {
   // ---- mount & reset ----
   it('calls reset on mount', async () => {
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   // ---- phase name display ----
   it('shows "初期化中" when phase is INIT (not in PHASE_NAMES)', async () => {
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('初期化中')).toBeInTheDocument());
   });
 
   it('shows known phase name for PRE_FLOP', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('プリフロップ')).toBeInTheDocument());
   });
 
   // ---- info bar ----
   it('shows pot and dealer index', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
   });
@@ -203,7 +204,7 @@ describe('HoldemPage', () => {
   // ---- community cards ----
   it('shows 5 CardBack placeholders when communityCards is empty', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('コミュニティカード')).toBeInTheDocument());
     const cardBacks = screen.getAllByAltText('カード裏面');
     // 5 community card placeholders + 2 cards for each of the 3 CPUs = 11 card backs expected
@@ -213,7 +214,7 @@ describe('HoldemPage', () => {
 
   it('shows CardImage when communityCards has cards', async () => {
     mockExec.mockResolvedValue(flopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 10')).toBeInTheDocument());
     expect(screen.getByAltText('♥ 5')).toBeInTheDocument();
     expect(screen.getByAltText('♦ 8')).toBeInTheDocument();
@@ -222,7 +223,7 @@ describe('HoldemPage', () => {
   // ---- CPU players ----
   it('renders CPU player info with playStyleName and chips', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     expect(screen.getByText(/CPU 2/)).toBeInTheDocument();
     expect(screen.getAllByText(/タイト/).length).toBeGreaterThanOrEqual(1);
@@ -233,13 +234,13 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer(), cpuPlayer(1, { currentBet: 50 }), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/ベット: 50/)).toBeInTheDocument());
   });
 
   it('does not show CPU bet when currentBet is 0', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     // CPU players have currentBet=0, so no "ベット:" text for them
     // (human section is not rendered because humanPlayer.currentBet is also 0 — but let's check CPU specifically)
@@ -251,7 +252,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer(), cpuPlayer(1, { folded: true }), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('[フォールド]')).toBeInTheDocument());
   });
 
@@ -260,20 +261,20 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer(), cpuPlayer(1, { allIn: true }), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
   });
 
   it('shows CPU hand name badge during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
   it('does not show CPU hand name badge when CPU is folded in showdown', async () => {
     // CPU 2 is folded in showdownState → no hand name
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
     // CPU 2 folded, no extra hand name badge for it
     const handBadges = screen.getAllByText(/ツーペア|ワンペア/);
@@ -290,21 +291,21 @@ describe('HoldemPage', () => {
         cpuPlayer(2, { folded: true }),
       ],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ワンペア')).toBeInTheDocument());
     // CPU 1 has empty handName → no badge for it
   });
 
   it('shows CPU cards face-up during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 5')).toBeInTheDocument());
     expect(screen.getByAltText('♥ 8')).toBeInTheDocument();
   });
 
   it('shows CardBack for CPU cards when not in showdown', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     const cardBacks = screen.getAllByAltText('カード裏面');
     // 5 community card placeholders + 2 cards for each of the 3 CPUs = 11 card backs expected
@@ -313,7 +314,7 @@ describe('HoldemPage', () => {
 
   it('shows CardBack for folded CPU in showdown (isShowdown && !p.folded is false)', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     // CPU 2 is folded → shows CardBack
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
     // CardBacks exist for CPU 2 (2 backs)
@@ -324,21 +325,21 @@ describe('HoldemPage', () => {
   // ---- CPU actions log ----
   it('shows CPU actions log when cpuActions is non-empty', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
     expect(screen.getByText(/Player 1: ベット/)).toBeInTheDocument();
   });
 
   it('does not show CPU actions log when cpuActions is empty', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     expect(screen.queryByText('CPU行動:')).not.toBeInTheDocument();
   });
 
   it('shows amount in CPU action when amount > 0', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/Player 1: ベット \(40\)/)).toBeInTheDocument());
   });
 
@@ -347,7 +348,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       cpuActions: [{ playerIdx: 1, action: 1, amount: 0 }],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('CPU行動:')).toBeInTheDocument());
     expect(screen.getByText(/Player 1: チェック/)).toBeInTheDocument();
     expect(screen.queryByText(/\(0\)/)).not.toBeInTheDocument();
@@ -358,20 +359,20 @@ describe('HoldemPage', () => {
       ...preFlopState,
       cpuActions: [{ playerIdx: 1, action: 99, amount: 0 }],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/Player 1: 不明/)).toBeInTheDocument());
   });
 
   // ---- round results ----
   it('shows round results in showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
   });
 
   it('does not show round results when not in showdown', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     expect(screen.queryByText('結果:')).not.toBeInTheDocument();
   });
@@ -381,14 +382,14 @@ describe('HoldemPage', () => {
       ...showdownState,
       roundResults: [],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
     expect(screen.queryByText('結果:')).not.toBeInTheDocument();
   });
 
   it('shows "あなた" for human player in results', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
     // Human (playerIdx 0) → "あなた: ワンペア"
     expect(screen.getByText(/あなた: ワンペア/)).toBeInTheDocument();
@@ -396,7 +397,7 @@ describe('HoldemPage', () => {
 
   it('shows "CPU X" for non-human player in results', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
     // CPU (playerIdx 1) → "CPU 1: ツーペア"
     expect(screen.getByText(/CPU 1: ツーペア/)).toBeInTheDocument();
@@ -404,7 +405,7 @@ describe('HoldemPage', () => {
 
   it('shows hand name in results when present', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/: ワンペア/)).toBeInTheDocument());
     expect(screen.getByText(/: ツーペア/)).toBeInTheDocument();
   });
@@ -417,7 +418,7 @@ describe('HoldemPage', () => {
         { playerIdx: 1, handRank: 2, handName: 'ツーペア', bestHand: [], wonAmount: 200 },
       ],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
     // human result has no handName → no ":"
     // The human row should just be "あなた" without ":"
@@ -425,13 +426,13 @@ describe('HoldemPage', () => {
 
   it('shows won chips when wonAmount > 0', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/\+200チップ/)).toBeInTheDocument());
   });
 
   it('does not show won chips when wonAmount is 0', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
     // Player 0 has wonAmount=0 → no "+0チップ"
     expect(screen.queryByText(/\+0チップ/)).not.toBeInTheDocument();
@@ -440,19 +441,19 @@ describe('HoldemPage', () => {
   // ---- human player section ----
   it('shows human player section when humanPlayer exists', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
   });
 
   it('does not show human player section when no players', async () => {
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('初期化中')).toBeInTheDocument());
     expect(screen.queryByText(/あなたの手札/)).not.toBeInTheDocument();
   });
 
   it('shows human cards when cards exist', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
     expect(screen.getByAltText('♥ K')).toBeInTheDocument();
   });
@@ -462,7 +463,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer({ cards: [] }), cpuPlayer(1), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     // Human has no cards, not folded → shows 2 CardBacks for human + 5 community + 4 CPU = many
     const cardBacks = screen.getAllByAltText('カード裏面');
@@ -474,7 +475,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer({ cards: [], folded: true }), cpuPlayer(1), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     // Folded human with no cards → !humanPlayer.folded is false → no CardBacks from human
     // CardBacks come from community (5) + CPU (2*2=4) = 9
@@ -487,7 +488,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer({ currentBet: 30 }), cpuPlayer(1), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/ベット: 30/)).toBeInTheDocument());
   });
 
@@ -496,7 +497,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('[フォールド]')).toBeInTheDocument());
   });
 
@@ -505,13 +506,13 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer({ allIn: true }), cpuPlayer(1), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('[オールイン]')).toBeInTheDocument());
   });
 
   it('shows human hand name badge during showdown when not folded', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ワンペア')).toBeInTheDocument());
   });
 
@@ -524,21 +525,21 @@ describe('HoldemPage', () => {
         cpuPlayer(2, { folded: true }),
       ],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
   });
 
   // ---- message ----
   it('shows game message', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('あなたの番です')).toBeInTheDocument());
   });
 
   // ---- canAct / betting controls ----
   it('shows bet/check buttons when canAct and no outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
@@ -547,7 +548,7 @@ describe('HoldemPage', () => {
 
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
@@ -556,7 +557,7 @@ describe('HoldemPage', () => {
 
   it('hides betting controls when not active phase', async () => {
     mockExec.mockResolvedValue(showdownState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'チェック' })).not.toBeInTheDocument();
@@ -567,7 +568,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer({ folded: true }), cpuPlayer(1), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
   });
@@ -577,7 +578,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer({ allIn: true }), cpuPlayer(1), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
   });
@@ -587,7 +588,7 @@ describe('HoldemPage', () => {
       ...preFlopState,
       currentTurn: 1,
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'ベット' })).not.toBeInTheDocument();
   });
@@ -595,7 +596,7 @@ describe('HoldemPage', () => {
   // ---- bet amount input ----
   it('updates bet amount when changing input', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     const betInput = await screen.findByLabelText('ベット額:');
     // Wait for useEffect to settle the initial value from minRaise
     await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('20'));
@@ -607,7 +608,7 @@ describe('HoldemPage', () => {
   // ---- button click handlers ----
   it('calls bet command with betAmount', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -618,7 +619,7 @@ describe('HoldemPage', () => {
 
   it('calls check command', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -629,7 +630,7 @@ describe('HoldemPage', () => {
 
   it('calls fold command', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -640,7 +641,7 @@ describe('HoldemPage', () => {
 
   it('calls allin command', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -651,7 +652,7 @@ describe('HoldemPage', () => {
 
   it('calls call command when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -662,7 +663,7 @@ describe('HoldemPage', () => {
 
   it('calls raise command with betAmount when has outstanding bet', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -672,7 +673,7 @@ describe('HoldemPage', () => {
   });
 
   it('calls reset command when reset button is clicked', async () => {
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockClear();
@@ -684,7 +685,7 @@ describe('HoldemPage', () => {
   // ---- loading / disabled state ----
   it('disables buttons while loading', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
     let resolve!: (value: HoldemResponse) => void;
@@ -706,7 +707,7 @@ describe('HoldemPage', () => {
 
   // ---- error handling ----
   it('shows error message when API call fails', async () => {
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
@@ -715,7 +716,7 @@ describe('HoldemPage', () => {
   });
 
   it('clears error on successful call after failure', async () => {
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
@@ -730,7 +731,7 @@ describe('HoldemPage', () => {
   // ---- END phase (also isShowdown) ----
   it('shows results in END phase (phase 6)', async () => {
     mockExec.mockResolvedValue(endState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果')).toBeInTheDocument());
     expect(screen.getByText('結果:')).toBeInTheDocument();
   });
@@ -745,7 +746,7 @@ describe('HoldemPage', () => {
         cpuPlayer(2, { folded: true }),
       ],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
     // CPU 1 not folded but cards empty → falls to CardBack branch
     const cardBacks = screen.getAllByAltText('カード裏面');
@@ -755,7 +756,7 @@ describe('HoldemPage', () => {
   // ---- bet amount used by raise ----
   it('sends updated bet amount when raise is clicked after changing input', async () => {
     mockExec.mockResolvedValue(preFlopWithBetState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     const betInput = await screen.findByLabelText('ベット額:');
     await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('20'));
 
@@ -769,7 +770,7 @@ describe('HoldemPage', () => {
 
   it('sends updated bet amount when bet is clicked after changing input', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     const betInput = await screen.findByLabelText('ベット額:');
     await waitFor(() => expect((betInput as HTMLInputElement).value).toBe('20'));
 
@@ -783,7 +784,7 @@ describe('HoldemPage', () => {
 
   it('sets aria-busy and sr-only loading text while loading', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'ベット' }).closest('[aria-live]') as HTMLElement;
@@ -813,13 +814,13 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer(), cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20 }), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/VPIP:60% PFR:20%/)).toBeInTheDocument());
   });
 
   it('does not show HUD stats for CPU when totalHands is 0', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     expect(screen.queryByText(/VPIP:/)).not.toBeInTheDocument();
   });
@@ -829,13 +830,13 @@ describe('HoldemPage', () => {
       ...preFlopState,
       players: [humanPlayer({ totalHands: 3, vpip: 33, pfr: 0 }), cpuPlayer(1), cpuPlayer(2)],
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/VPIP:33% PFR:0%/)).toBeInTheDocument());
   });
 
   it('does not show HUD stats for human when totalHands is 0', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
     expect(screen.queryByText(/VPIP:/)).not.toBeInTheDocument();
   });
@@ -843,7 +844,7 @@ describe('HoldemPage', () => {
   // ---- SB/BB info bar ----
   it('shows SB/BB in info bar', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/SB\/BB:/)).toBeInTheDocument());
     expect(screen.getByText(/5\/10/)).toBeInTheDocument();
   });
@@ -858,7 +859,7 @@ describe('HoldemPage', () => {
       smallBlind: 20,
       bigBlind: 40,
     });
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/ハンド#/)).toBeInTheDocument());
     expect(screen.getByText(/レベルアップ:5ハンド毎/)).toBeInTheDocument();
     expect(screen.getByText(/20\/40/)).toBeInTheDocument();
@@ -866,7 +867,7 @@ describe('HoldemPage', () => {
 
   it('does not show tournament info when tournamentMode is false', async () => {
     mockExec.mockResolvedValue(preFlopState);
-    render(<HoldemPage />);
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/SB\/BB:/)).toBeInTheDocument());
     expect(screen.queryByText(/ハンド#/)).not.toBeInTheDocument();
     expect(screen.queryByText(/レベルアップ:/)).not.toBeInTheDocument();

@@ -1,7 +1,8 @@
-import { createEvent, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { daifugoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { renderWithProviders } from '../test/renderWithProviders';
 import type { DaifugoResponse } from '../types/card';
 import { DaifugoPage } from './DaifugoPage';
 
@@ -99,22 +100,22 @@ beforeEach(() => {
 describe('DaifugoPage', () => {
   it('renders nothing before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = render(<DaifugoPage />);
+    const { container } = renderWithProviders(<DaifugoPage />);
     expect(container.firstChild).toBeNull();
   });
 
   it('calls reset command on mount', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('renders human player area labeled あなた', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
   });
 
   it('renders CPU player areas with correct labels', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => {
       expect(screen.getByText('CPU 1')).toBeInTheDocument();
       expect(screen.getByText('CPU 2')).toBeInTheDocument();
@@ -123,7 +124,7 @@ describe('DaifugoPage', () => {
   });
 
   it('shows human player face-up cards', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => {
       expect(screen.getByAltText('♠ 3')).toBeInTheDocument();
       expect(screen.getAllByAltText('♥ 5').length).toBeGreaterThan(0);
@@ -131,7 +132,7 @@ describe('DaifugoPage', () => {
   });
 
   it('shows card counts for CPU players', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => {
       expect(screen.getByText('4枚')).toBeInTheDocument();
       expect(screen.getByText('5枚')).toBeInTheDocument();
@@ -139,13 +140,13 @@ describe('DaifugoPage', () => {
   });
 
   it('shows empty table message when tableCards is empty', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('（なし）')).toBeInTheDocument());
   });
 
   it('shows table cards when tableCards is non-empty', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => {
       const tableCard = screen.getAllByAltText('♥ 5');
       expect(tableCard.length).toBeGreaterThan(0);
@@ -153,29 +154,29 @@ describe('DaifugoPage', () => {
   });
 
   it('pass button is enabled on human turn', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
   });
 
   it('pass button is disabled on CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
   });
 
   it('pass button is disabled when game has ended', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
   });
 
   it('play button is disabled when no cards are selected', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled());
   });
 
   it('calls reset when reset button is clicked', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
@@ -184,7 +185,7 @@ describe('DaifugoPage', () => {
   });
 
   it('calls play with empty indices when pass button is clicked', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
     mockExec.mockClear();
     mockExec.mockResolvedValue(cpuTurnState);
@@ -193,7 +194,7 @@ describe('DaifugoPage', () => {
   });
 
   it('selects a card on click and enables play button', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
     const card = screen.getByAltText('♠ 3');
     fireEvent.click(card);
@@ -201,7 +202,7 @@ describe('DaifugoPage', () => {
   });
 
   it('calls play with selected indices when play button is clicked', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
     fireEvent.click(screen.getByAltText('♠ 3'));
     mockExec.mockClear();
@@ -212,7 +213,7 @@ describe('DaifugoPage', () => {
 
   it('shows human action log after play', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/あなたが出しました/)).toBeInTheDocument());
   });
 
@@ -225,7 +226,7 @@ describe('DaifugoPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithCpuActions);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument());
     expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument();
     expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument();
@@ -233,7 +234,7 @@ describe('DaifugoPage', () => {
 
   it('shows game result message when game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('大富豪: あなた')).toBeInTheDocument());
   });
 
@@ -248,13 +249,13 @@ describe('DaifugoPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithFinished);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/上がり.*大富豪/)).toBeInTheDocument());
   });
 
   it('shows thinking indicator on current CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('考え中...')).toBeInTheDocument());
   });
 
@@ -264,7 +265,7 @@ describe('DaifugoPage', () => {
       revolutionActive: true,
     };
     mockExec.mockResolvedValue(revolutionState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('革命中')).toBeInTheDocument());
   });
 
@@ -274,7 +275,7 @@ describe('DaifugoPage', () => {
       elevenBackActive: true,
     };
     mockExec.mockResolvedValue(elevenBackState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     // Use selector:'span' to find the badge (not the settings panel label)
     await waitFor(() => expect(screen.getByText('11バック', { selector: 'span' })).toBeInTheDocument());
   });
@@ -286,7 +287,7 @@ describe('DaifugoPage', () => {
       lockedSuit: 'SPADE',
     };
     mockExec.mockResolvedValue(suitLockedState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('スート縛り: SPADE')).toBeInTheDocument());
   });
 
@@ -296,7 +297,7 @@ describe('DaifugoPage', () => {
       tableIsSequence: true,
     };
     mockExec.mockResolvedValue(seqState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     // Use selector:'span' to find the badge (not the settings panel label)
     await waitFor(() => expect(screen.getByText('階段', { selector: 'span' })).toBeInTheDocument());
   });
@@ -313,13 +314,13 @@ describe('DaifugoPage', () => {
       ],
     };
     mockExec.mockResolvedValue(exchangeState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     // Use bracketed form to distinguish from settings panel label
     await waitFor(() => expect(screen.getByText(/\[カード交換\]/)).toBeInTheDocument());
   });
 
   it('disables action buttons while loading', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     let resolve!: (value: DaifugoResponse) => void;
@@ -338,7 +339,7 @@ describe('DaifugoPage', () => {
   });
 
   it('shows error message when API call fails', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     mockExec.mockReset();
@@ -348,7 +349,7 @@ describe('DaifugoPage', () => {
   }, 10000);
 
   it('clears error message on successful API call after failure', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     mockExec.mockReset();
@@ -368,7 +369,7 @@ describe('DaifugoPage', () => {
       humanAction: { playerIdx: 0, playedCards: [] },
     };
     mockExec.mockResolvedValue(stateWithEmptyPlay);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('あなたがパスしました')).toBeInTheDocument());
   });
 
@@ -383,13 +384,13 @@ describe('DaifugoPage', () => {
       ],
     };
     mockExec.mockResolvedValue(humanFinishedState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getAllByText(/上がり.*大富豪/).length).toBeGreaterThan(0));
   });
 
   it('does not show selection hint when not human turn in HumanPlayerArea', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('考え中...')).toBeInTheDocument());
     expect(screen.queryByText('カードをクリックして選択')).not.toBeInTheDocument();
   });
@@ -405,7 +406,7 @@ describe('DaifugoPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithRank2);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/上がり \(富豪\)/)).toBeInTheDocument());
   });
 
@@ -420,7 +421,7 @@ describe('DaifugoPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithRank3);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/上がり \(平民\)/)).toBeInTheDocument());
   });
 
@@ -435,12 +436,12 @@ describe('DaifugoPage', () => {
       ],
     };
     mockExec.mockResolvedValue(stateWithRank4);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/上がり \(大貧民\)/)).toBeInTheDocument());
   });
 
   it('toggles aria-pressed on card button click', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     const cardBtn = screen.getByAltText('♠ 3').closest('button') as HTMLButtonElement;
@@ -454,7 +455,7 @@ describe('DaifugoPage', () => {
   });
 
   it('deselects a card by clicking it again', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     // Click SPADE 3 to select it
@@ -469,7 +470,7 @@ describe('DaifugoPage', () => {
   });
 
   it('settings panel renders checkbox labels', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
     expect(screen.getByLabelText('8切り')).toBeInTheDocument();
     expect(screen.getByLabelText('5飛び')).toBeInTheDocument();
@@ -480,7 +481,7 @@ describe('DaifugoPage', () => {
   });
 
   it('settings panel joker count dropdown changes config', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByLabelText('ジョーカー枚数:')).toBeInTheDocument());
     // Change joker count to 0
     fireEvent.change(screen.getByLabelText('ジョーカー枚数:'), { target: { value: '0' } });
@@ -492,7 +493,7 @@ describe('DaifugoPage', () => {
   });
 
   it('settings panel boolean checkbox toggle updates config', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByLabelText('5飛び')).toBeInTheDocument());
     // Enable 5飛び
     fireEvent.click(screen.getByLabelText('5飛び'));
@@ -512,7 +513,7 @@ describe('DaifugoPage', () => {
       pendingActionTarget: 1,
     } as DaifugoResponse;
     mockExec.mockResolvedValue(sevenPassState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/【7渡し】/)).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '渡す' })).toBeInTheDocument();
     // Pass button is disabled when pending action is active
@@ -526,7 +527,7 @@ describe('DaifugoPage', () => {
       pendingActionTarget: -1,
     } as DaifugoResponse;
     mockExec.mockResolvedValue(tenDiscardState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/【10捨て】/)).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument();
   });
@@ -541,13 +542,13 @@ describe('DaifugoPage', () => {
       pendingActionTarget: 2,
     } as DaifugoResponse;
     mockExec.mockResolvedValue(pendingCpuTurn);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     // Card buttons are disabled because isHumanTurn = false (currentTurn is CPU)
     await waitFor(() => expect(screen.getByAltText('♠ 3').closest('button')).toBeDisabled());
   });
 
   it('drag card not in selection adds it to selection', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     // Initially no card selected → play button disabled
@@ -564,7 +565,7 @@ describe('DaifugoPage', () => {
   });
 
   it('drag card already in selection keeps it in selection', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     const cardButton = screen.getByAltText('♠ 3').closest('button') as HTMLElement;
@@ -580,7 +581,7 @@ describe('DaifugoPage', () => {
   });
 
   it('drop on table plays dragged card when not in selection', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     // No cards selected; drag card index 0 onto the table
@@ -597,7 +598,7 @@ describe('DaifugoPage', () => {
   });
 
   it('drop on table plays selected cards when dragged card is in selection', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     // Select cards 0 and 1
@@ -619,7 +620,7 @@ describe('DaifugoPage', () => {
   });
 
   it('sets aria-busy and sr-only loading text while loading', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-live]') as HTMLElement;
@@ -649,7 +650,7 @@ describe('DaifugoPage', () => {
       reverseDirection: true,
     };
     mockExec.mockResolvedValue(reverseState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('9リバース', { selector: 'span' })).toBeInTheDocument());
   });
 
@@ -659,12 +660,12 @@ describe('DaifugoPage', () => {
       numberLocked: true,
     };
     mockExec.mockResolvedValue(numberLockedState);
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('連番縛り')).toBeInTheDocument());
   });
 
   it('renders sort buttons and active button is highlighted', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '強さ順' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'スート順' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '数字順' })).toBeInTheDocument();
@@ -674,7 +675,7 @@ describe('DaifugoPage', () => {
   });
 
   it('calls sort command when sort button is clicked', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'スート順' })).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue({ ...humanTurnState, sortMode: 1 });
@@ -683,7 +684,7 @@ describe('DaifugoPage', () => {
   });
 
   it('settings panel renders new rule checkboxes', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
     expect(screen.getByLabelText('9リバース')).toBeInTheDocument();
     expect(screen.getByLabelText('クーデター')).toBeInTheDocument();
@@ -691,7 +692,7 @@ describe('DaifugoPage', () => {
   });
 
   it('drop with invalid dataTransfer data is ignored (NaN guard)', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
 
     const dropZone = screen.getByText('場札').closest('div') as HTMLElement;
@@ -707,21 +708,21 @@ describe('DaifugoPage', () => {
   });
 
   it('settings panel renders 砂嵐 checkbox', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
     expect(screen.getByLabelText('砂嵐')).toBeInTheDocument();
     expect(screen.getByLabelText('砂嵐')).not.toBeChecked();
   });
 
   it('settings panel renders エンペラー checkbox', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
     expect(screen.getByLabelText('エンペラー')).toBeInTheDocument();
     expect(screen.getByLabelText('エンペラー')).not.toBeChecked();
   });
 
   it('砂嵐 checkbox toggle updates config on reset', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByLabelText('砂嵐')).toBeInTheDocument());
     fireEvent.click(screen.getByLabelText('砂嵐'));
     mockExec.mockClear();
@@ -733,7 +734,7 @@ describe('DaifugoPage', () => {
   });
 
   it('エンペラー checkbox toggle updates config on reset', async () => {
-    render(<DaifugoPage />);
+    renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByLabelText('エンペラー')).toBeInTheDocument());
     fireEvent.click(screen.getByLabelText('エンペラー'));
     mockExec.mockClear();

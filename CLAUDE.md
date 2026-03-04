@@ -64,6 +64,9 @@ npm run format           # Run Biome formatter (auto-fix)
 npm test                 # Run frontend unit tests (Vitest)
 npm run test:coverage    # Run frontend unit tests with coverage report (outputs to frontend/coverage/)
 npm run test:watch       # Run frontend tests in watch mode
+npm run e2e              # Run Playwright E2E tests (auto-starts Go server)
+npm run e2e:ui           # Run Playwright E2E tests with UI
+npm run e2e:headed       # Run Playwright E2E tests in headed mode
 ```
 
 
@@ -94,9 +97,11 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
   src/
     api/                       # API client functions (fetch wrappers for game endpoints)
     components/                # Shared React components (NavBar, CardImage, CardBack)
-    hooks/                     # Custom React hooks (useGameApi)
+    hooks/                     # Custom React hooks (useGameApi, backed by TanStack React Query)
     pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
+    providers/                 # React context providers (QueryProvider for TanStack React Query)
     types/                     # TypeScript type definitions for card/game data
+  e2e/                         # Playwright E2E test specs
 public/                        # Built frontend assets served by Go web server
   assets/                      # Vite-compiled JS/CSS bundles
   images/                      # Card images (PNG)
@@ -182,6 +187,7 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 - **Wrap router-dependent components**: render `NavBar` (and any component using `useLocation`) inside `<MemoryRouter initialEntries={['/path']}>`
 - **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
 - **Query buttons by role**: when a text string appears in multiple elements (e.g., "交換" appears on both cards and a button), use `screen.getByRole('button', { name: '交換' })` instead of `getByText`
+- **Wrap with QueryClientProvider**: page tests and hook tests must render inside a `QueryClientProvider` (use `renderWithProviders` from `frontend/src/test/renderWithProviders.tsx`)
 
 **Run build, Biome check, and frontend tests before committing:**
 
@@ -190,6 +196,18 @@ cd frontend && npm run build
 cd frontend && npm run check
 cd frontend && npm test
 ```
+
+### E2E testing
+
+E2E tests use **Playwright** (Chromium only) and live in `frontend/e2e/`. They verify game flows (navigation, button availability, phase transitions) against the real Go server.
+
+```sh
+cd frontend && npm run e2e          # Run E2E tests (auto-starts Go server on port 8080)
+cd frontend && npm run e2e:headed   # Run E2E tests in headed browser
+cd frontend && npm run e2e:ui       # Run with Playwright UI
+```
+
+E2E tests should not assert on specific card values (randomness). Instead, verify flow: button visibility, phase transitions, and reset behavior.
 
 ## Documentation Maintenance
 

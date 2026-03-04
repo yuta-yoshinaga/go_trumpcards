@@ -11,12 +11,17 @@ This project uses [Vite](https://vitejs.dev/) with [React](https://react.dev/) a
 - `npm run check:write`: Run Biome and automatically fix linting/formatting errors
 - `npm test`: Run tests with [Vitest](https://vitest.dev/)
 - `npm run test:coverage`: Run tests with coverage
+- `npm run e2e`: Run [Playwright](https://playwright.dev/) E2E tests (auto-starts Go server)
+- `npm run e2e:ui`: Run Playwright E2E tests with UI
+- `npm run e2e:headed`: Run Playwright E2E tests in headed mode
 
 ## Tooling
 
 - **Build**: Vite
 - **Framework**: React
 - **Language**: TypeScript
+- **Server State**: TanStack React Query
 - **Linting & Formatting**: Biome
-- **Testing**: Vitest + React Testing Library
+- **Unit Testing**: Vitest + React Testing Library
+- **E2E Testing**: Playwright
 - **Styling**: Tailwind CSS (v4)
