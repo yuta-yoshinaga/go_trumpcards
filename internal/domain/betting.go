@@ -326,17 +326,6 @@ func DistributePots(players []BettingPlayer, sidePots []SidePot) map[int]int {
 	return wonAmounts
 }
 
-// CountActiveBettingPlayers フォールドしていないプレイヤー数を返す
-func CountActiveBettingPlayers(players []BettingPlayer) int {
-	cnt := 0
-	for _, pl := range players {
-		if !pl.GetFolded() {
-			cnt++
-		}
-	}
-	return cnt
-}
-
 // CpuFoldOrCheck コール額がある場合はフォールド、なければチェック
 func CpuFoldOrCheck(callAmount int) (int, int) {
 	if callAmount > 0 {

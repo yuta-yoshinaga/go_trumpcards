@@ -44,13 +44,3 @@ export const HoldemPhase = {
   SHOWDOWN: 5,
   END: 6,
 } as const;
-
-// Texas Hold'em action constants (sync: internal/domain/Holdem.go)
-export const HoldemAction = {
-  FOLD: 0,
-  CHECK: 1,
-  CALL: 2,
-  BET: 3,
-  RAISE: 4,
-  ALL_IN: 5,
-} as const;

@@ -716,20 +716,6 @@ func TestDistributePots_EmptyWinners(t *testing.T) {
 	assert.Equal(t, 0, won[0])
 }
 
-// --- CountActiveBettingPlayers tests ---
-
-func TestCountActiveBettingPlayers_AllActive(t *testing.T) {
-	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100), newMockPlayer(100)}
-	assert.Equal(t, 3, CountActiveBettingPlayers(players))
-}
-
-func TestCountActiveBettingPlayers_SomeFolded(t *testing.T) {
-	p0 := newMockPlayer(100)
-	p0.folded = true
-	players := []BettingPlayer{p0, newMockPlayer(100), newMockPlayer(100)}
-	assert.Equal(t, 2, CountActiveBettingPlayers(players))
-}
-
 // --- CPU helper tests ---
 
 func TestCpuFoldOrCheck(t *testing.T) {

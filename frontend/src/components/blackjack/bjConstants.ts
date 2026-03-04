@@ -1,6 +1,5 @@
 // Side bet type constants (must match domain BJSideBet constants)
 export const BJ_SIDE_BET_PERFECT_PAIRS = 1;
-export const BJ_SIDE_BET_21_PLUS_3 = 2;
 
 // suggestedAction constants (must match domain BJSuggestedAction)
 export const BJ_SUGGEST_NONE = 0;

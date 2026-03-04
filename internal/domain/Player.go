@@ -10,13 +10,6 @@ type Player struct {
 	cards []*Card // プレイヤーカード
 }
 
-// NewPlayer コンストラクタ
-func NewPlayer() *Player {
-	return &Player{
-		cards: make([]*Card, 0),
-	}
-}
-
 // GetCardsSize プレイヤーカードの枚数取得
 func (p *Player) GetCardsSize() int {
 	return len(p.cards)

@@ -2,7 +2,7 @@ import { PokerAction } from '../types/phases';
 
 /**
  * Betting action display names shared by Poker and Holdem.
- * PokerAction and HoldemAction have the same numeric values (0-5),
+ * Both games use the same numeric action values (0-5),
  * so a single map is sufficient. Separate aliases are exported
  * for semantic clarity at call sites.
  */
