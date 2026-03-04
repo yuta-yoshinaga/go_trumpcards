@@ -51,10 +51,10 @@ func (p *Poker) CalcDrawOdds(indices []int) ([]PokerDrawOdds, error) {
 	// 全組み合わせを列挙して各ハンドランクをカウント
 	counts := make([]int, len(PokerHandNames))
 	total := 0
+	testHand := make([]*Card, len(hand))
 
 	pokerCombinations(pool, k, func(combo []*Card) {
 		// 交換後のハンドを構築
-		testHand := make([]*Card, len(hand))
 		copy(testHand, hand)
 		for i, idx := range indices {
 			testHand[idx] = combo[i]

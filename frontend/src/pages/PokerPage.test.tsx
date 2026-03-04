@@ -1016,6 +1016,63 @@ describe('PokerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('odds', expect.arrayContaining([0, 1])));
   });
 
+  it('discards stale odds response after exchange (race condition)', async () => {
+    let oddsResolve!: (value: PokerResponse) => void;
+    const oddsState: PokerResponse = {
+      ...exchangeState,
+      odds: [{ handRank: 1, handName: 'One Pair', probability: 1.0, count: 1, total: 1 }],
+    };
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    // Toggle card, start debounce
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    // Make odds call return a slow promise
+    mockExec.mockImplementation(
+      (cmd: string) =>
+        new Promise<PokerResponse>((resolve) => {
+          if (cmd === 'odds') {
+            oddsResolve = resolve;
+          } else {
+            resolve({ ...exchangeState, phase: 3 });
+          }
+        }),
+    );
+    fireEvent.click(screen.getByAltText('♠ A'));
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+
+    // Exchange before odds resolves → onSuccess increments generation
+    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
+
+    // Now resolve the stale odds response → should be ignored
+    await act(async () => {
+      oddsResolve(oddsState);
+    });
+    expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument();
+  });
+
+  it('ignores odds API error silently', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    render(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '交換' })).toBeInTheDocument());
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByAltText('♠ A'));
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    vi.useRealTimers();
+
+    // No crash, no odds panel
+    await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
+  });
+
   it('does not show odds panel when all probabilities are 0', async () => {
     const oddsState: PokerResponse = {
       ...exchangeState,

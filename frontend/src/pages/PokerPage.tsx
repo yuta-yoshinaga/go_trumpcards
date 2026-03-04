@@ -27,10 +27,12 @@ export function PokerPage() {
   const [betAmount, setBetAmount] = useState(10);
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);
   const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const oddsGenRef = useRef(0);
 
   const onSuccess = useCallback(() => {
     setSelected([]);
     setOdds(null);
+    oddsGenRef.current++;
   }, []);
   const { state, loading, error, exec } = useGameApi(pokerApi.exec, { onSuccess });
 
@@ -73,7 +75,13 @@ export function PokerPage() {
         setOdds(null);
       } else {
         oddsTimerRef.current = setTimeout(() => {
-          pokerApi.exec('odds', next).then((res) => setOdds(res.odds ?? null));
+          const gen = ++oddsGenRef.current;
+          pokerApi
+            .exec('odds', next)
+            .then((res) => {
+              if (gen === oddsGenRef.current) setOdds(res.odds ?? null);
+            })
+            .catch(() => {});
         }, 300);
       }
       return next;

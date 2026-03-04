@@ -44,6 +44,21 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 			}(),
 		},
 		{
+			name: "PokerWebPresenter OutputWithOdds marshal error",
+			output: func() string {
+				p := NewPokerWebPresenter()
+				players := []*domain.PokerPlayer{
+					domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+					domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+				}
+				poker := domain.NewPoker(domain.NewTrumpCards(0), players, domain.DefaultPokerConfig())
+				odds := []domain.PokerDrawOdds{
+					{HandRank: 0, HandName: "High Card", Probability: 1.0, Count: 1, Total: 1},
+				}
+				return p.OutputWithOdds(poker, nil, odds)
+			}(),
+		},
+		{
 			name: "OldMaidWebPresenter marshal error",
 			output: func() string {
 				p := NewOldMaidWebPresenter()
