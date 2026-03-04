@@ -406,3 +406,130 @@ func TestSevens_setTablePlaced(t *testing.T) {
 		assert.Equal(t, uint16((1<<7)|(1<<6)), result[i])
 	}
 }
+
+// ---------------------------------------------------------------------------
+// Joker Reclaim internal tests
+// These tests exercise edge cases that require internal struct manipulation.
+// The main round-trip tests are in Sevens_test.go (public API).
+// ---------------------------------------------------------------------------
+
+func TestJokerReclaim_JokerCardsEmpty_DefensiveCheck_Internal(t *testing.T) {
+	// Edge case: jokerPlaced bit is set but jokerCards slice is empty.
+	// reclaimJokerIfNeeded should clear the bit but not crash.
+	tc := NewTrumpCards(2)
+	players := makeSevensPlayersInternal()
+	cfg := SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           SevensMaxPasses,
+	}
+	s := NewSevens(tc, players, cfg)
+
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Manually set jokerPlaced bit WITHOUT adding to jokerCards (out-of-sync state)
+	s.jokerPlaced[CardDesignSpade] |= 1 << 6
+	// Also set tablePlaced so the position is "placed" on the board
+	s.tablePlaced[CardDesignSpade] |= 1 << 6
+
+	// Human has real Spade-6 + extra
+	players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+	players[0].AddCard(NewCard(CardDesignHeart, 6, false))
+
+	handSizeBefore := players[0].GetCardsSize()
+
+	// Play Spade-6 on joker-occupied position
+	err := s.PlayerPlay(0)
+	assert.NoError(t, err)
+
+	// Bit should be cleared but no joker returned (jokerCards was empty)
+	assert.True(t, s.jokerPlaced[CardDesignSpade]&(1<<6) == 0,
+		"jokerPlaced bit should be cleared")
+	assert.Equal(t, handSizeBefore-1, players[0].GetCardsSize(),
+		"hand size should decrease by 1 (no joker to return)")
+
+	// No joker in hand
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		assert.NotEqual(t, CardDesignJoker, players[0].GetCard(i).GetDesign(),
+			"player should not have any joker")
+	}
+}
+
+func TestReclaimJokerIfNeeded_InvalidBounds_Internal(t *testing.T) {
+	// reclaimJokerIfNeeded with invalid suit or value returns immediately (defensive guard).
+	// This is unreachable via the public API since valid cards always have valid suit/value.
+	tc := NewTrumpCards(2)
+	players := makeSevensPlayersInternal()
+	cfg := SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           SevensMaxPasses,
+	}
+	s := NewSevens(tc, players, cfg)
+
+	// Pre-set joker tracking so the bounds guard is the only thing stopping reclaim.
+	s.jokerPlaced[CardDesignSpade] |= 1 << 6
+	s.jokerCards = append(s.jokerCards, NewCard(CardDesignJoker, 1, false))
+
+	initial := s.GetJokerCardsCount()
+
+	// Invalid suit (0 = CardDesignJoker < CardDesignSpade)
+	s.reclaimJokerIfNeeded(0, 0, 6)
+	assert.Equal(t, initial, s.GetJokerCardsCount(), "invalid suit 0: no change")
+
+	// Invalid suit (5 > CardDesignDiamond=4)
+	s.reclaimJokerIfNeeded(0, 5, 6)
+	assert.Equal(t, initial, s.GetJokerCardsCount(), "invalid suit 5: no change")
+
+	// Invalid value (0 < 1)
+	s.reclaimJokerIfNeeded(0, CardDesignSpade, 0)
+	assert.Equal(t, initial, s.GetJokerCardsCount(), "invalid value 0: no change")
+
+	// Invalid value (14 > 13)
+	s.reclaimJokerIfNeeded(0, CardDesignSpade, 14)
+	assert.Equal(t, initial, s.GetJokerCardsCount(), "invalid value 14: no change")
+
+	// Sanity check: valid call with jokerPlaced bit set does perform reclaim
+	s.reclaimJokerIfNeeded(0, CardDesignSpade, 6)
+	assert.Equal(t, initial-1, s.GetJokerCardsCount(), "valid call: joker reclaimed")
+}
+
+func TestJokerReclaim_RecordJokerCard_InvalidBounds_Internal(t *testing.T) {
+	// recordJokerCard with invalid suit/value should still append to jokerCards
+	// but NOT set jokerPlaced bit.
+	tc := NewTrumpCards(2)
+	players := makeSevensPlayersInternal()
+	cfg := SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           SevensMaxPasses,
+	}
+	s := NewSevens(tc, players, cfg)
+
+	joker := NewCard(CardDesignJoker, 1, false)
+
+	// Call with out-of-range suit (0 = CardDesignJoker)
+	s.recordJokerCard(joker, 0, 6)
+	assert.Equal(t, 1, s.GetJokerCardsCount(), "joker card should be tracked")
+	// No jokerPlaced bits should be set
+	for suit := 1; suit <= 4; suit++ {
+		assert.Equal(t, uint16(0), s.jokerPlaced[suit],
+			"no jokerPlaced bits should be set for invalid suit")
+	}
+
+	// Call with out-of-range value
+	joker2 := NewCard(CardDesignJoker, 2, false)
+	s.recordJokerCard(joker2, CardDesignSpade, 0)
+	assert.Equal(t, 2, s.GetJokerCardsCount())
+	assert.Equal(t, uint16(0), s.jokerPlaced[CardDesignSpade],
+		"no jokerPlaced bits set for invalid value")
+
+	s.recordJokerCard(NewCard(CardDesignJoker, 3, false), CardDesignSpade, 14)
+	assert.Equal(t, 3, s.GetJokerCardsCount())
+	assert.Equal(t, uint16(0), s.jokerPlaced[CardDesignSpade],
+		"no jokerPlaced bits set for value 14")
+}

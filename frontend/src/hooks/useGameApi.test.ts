@@ -1,12 +1,21 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { createElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { useGameApi } from './useGameApi';
 
+function createWrapper() {
+  const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+  return ({ children }: { children: ReactNode }) =>
+    createElement(QueryClientProvider, { client: queryClient }, children);
+}
+
 describe('useGameApi', () => {
   it('has correct initial state', () => {
     const apiFn = vi.fn();
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
     expect(result.current.state).toBeNull();
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBeNull();
@@ -14,7 +23,7 @@ describe('useGameApi', () => {
 
   it('sets state on success', async () => {
     const apiFn = vi.fn().mockResolvedValue({ value: 42 });
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec('arg1', 'arg2');
@@ -33,7 +42,7 @@ describe('useGameApi', () => {
         resolve = r;
       }),
     );
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
 
     act(() => {
       result.current.exec();
@@ -50,7 +59,7 @@ describe('useGameApi', () => {
 
   it('sets error on failure', async () => {
     const apiFn = vi.fn().mockRejectedValue(new Error('network'));
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec();
@@ -63,7 +72,7 @@ describe('useGameApi', () => {
 
   it('clears error on successful retry', async () => {
     const apiFn = vi.fn().mockRejectedValueOnce(new Error('fail')).mockResolvedValueOnce({ ok: true });
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec();
@@ -80,7 +89,7 @@ describe('useGameApi', () => {
   it('calls onSuccess with response', async () => {
     const apiFn = vi.fn().mockResolvedValue({ data: 'hello' });
     const onSuccess = vi.fn();
-    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }));
+    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec();
@@ -91,7 +100,7 @@ describe('useGameApi', () => {
 
   it('works without onSuccess option', async () => {
     const apiFn = vi.fn().mockResolvedValue({ v: 1 });
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec();
@@ -103,7 +112,7 @@ describe('useGameApi', () => {
   it('does not call onSuccess on error', async () => {
     const apiFn = vi.fn().mockRejectedValue(new Error('err'));
     const onSuccess = vi.fn();
-    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }));
+    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec();
@@ -114,7 +123,7 @@ describe('useGameApi', () => {
 
   it('allows direct setState usage', async () => {
     const apiFn = vi.fn().mockResolvedValue({ init: true });
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec();
@@ -129,7 +138,7 @@ describe('useGameApi', () => {
 
   it('passes all arguments through to the api function', async () => {
     const apiFn = vi.fn().mockResolvedValue(null);
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec('cmd', [1, 2], 99);
@@ -140,7 +149,7 @@ describe('useGameApi', () => {
 
   it('preserves state on error', async () => {
     const apiFn = vi.fn().mockResolvedValueOnce({ initial: true }).mockRejectedValueOnce(new Error('fail'));
-    const { result } = renderHook(() => useGameApi(apiFn));
+    const { result } = renderHook(() => useGameApi(apiFn), { wrapper: createWrapper() });
 
     await act(async () => {
       await result.current.exec();
@@ -157,8 +166,10 @@ describe('useGameApi', () => {
   it('uses latest apiFn via ref', async () => {
     const apiFn1 = vi.fn().mockResolvedValue({ v: 1 });
     const apiFn2 = vi.fn().mockResolvedValue({ v: 2 });
+    const wrapper = createWrapper();
     const { result, rerender } = renderHook(({ fn }) => useGameApi(fn), {
       initialProps: { fn: apiFn1 },
+      wrapper,
     });
 
     await act(async () => {
@@ -183,7 +194,7 @@ describe('useGameApi', () => {
         resolveCallback = r;
       }),
     );
-    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }));
+    const { result } = renderHook(() => useGameApi(apiFn, { onSuccess }), { wrapper: createWrapper() });
 
     act(() => {
       result.current.exec();
@@ -203,8 +214,10 @@ describe('useGameApi', () => {
     const apiFn = vi.fn().mockResolvedValue({ v: 1 });
     const onSuccess1 = vi.fn();
     const onSuccess2 = vi.fn();
+    const wrapper = createWrapper();
     const { result, rerender } = renderHook(({ cb }) => useGameApi(apiFn, { onSuccess: cb }), {
       initialProps: { cb: onSuccess1 },
+      wrapper,
     });
 
     await act(async () => {

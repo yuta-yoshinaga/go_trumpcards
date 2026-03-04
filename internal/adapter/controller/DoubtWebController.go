@@ -43,6 +43,7 @@ type DoubtWebOutputAction struct {
 	ClaimedValue int  `json:"claimedValue"`
 	CardCount    int  `json:"cardCount"`
 	IsBluff      bool `json:"isBluff"`
+	HasTell      bool `json:"hasTell"`
 }
 
 // DoubtWebOutputDoubtResult ダウト解決結果

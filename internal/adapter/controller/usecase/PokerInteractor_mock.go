@@ -40,3 +40,9 @@ func (_m *MockPokerInteractor) Stand() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Odds モック
+func (_m *MockPokerInteractor) Odds(indices []int) string {
+	ret := _m.Called(indices)
+	return ret.Get(0).(string)
+}

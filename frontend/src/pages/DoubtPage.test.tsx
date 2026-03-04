@@ -1,7 +1,8 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
 
@@ -84,17 +85,17 @@ beforeEach(() => {
 describe('DoubtPage', () => {
   it('renders nothing before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = render(<DoubtPage />);
+    const { container } = renderWithProviders(<DoubtPage />);
     expect(container.firstChild).toBeNull();
   });
 
   it('calls reset command on mount', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, defaultConfig));
   });
 
   it('renders CPU player areas', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => {
       expect(screen.getByText('CPU 1')).toBeInTheDocument();
       expect(screen.getByText('CPU 2')).toBeInTheDocument();
@@ -103,13 +104,13 @@ describe('DoubtPage', () => {
   });
 
   it('renders table area', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.getByText('場のカード: 0枚')).toBeInTheDocument();
   });
 
   it('shows human player hand cards', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => {
       expect(screen.getByAltText('♠ A')).toBeInTheDocument();
       expect(screen.getByAltText('♥ J')).toBeInTheDocument();
@@ -117,36 +118,36 @@ describe('DoubtPage', () => {
   });
 
   it('shows selection hint on human turn phase 0', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('カードを選んで出してください')).toBeInTheDocument());
   });
 
   it('does not show selection hint when not human turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
     expect(screen.queryByText('カードを選んで出してください')).not.toBeInTheDocument();
   });
 
   it('shows 出す button only on human turn phase 0', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());
   });
 
   it('does not show 出す button on CPU turn', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
   it('出す button is disabled when no cards are selected', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
   });
 
   it('toggles aria-pressed on HandCard button click', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
@@ -160,7 +161,7 @@ describe('DoubtPage', () => {
   });
 
   it('toggles card selection on click and enables 出す button', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
@@ -173,7 +174,7 @@ describe('DoubtPage', () => {
   });
 
   it('shows claimed value input when cards are selected', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
@@ -183,13 +184,13 @@ describe('DoubtPage', () => {
   });
 
   it('claimed value input is hidden when no cards are selected', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
   it('changes claimed value and shows special name', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
@@ -219,7 +220,7 @@ describe('DoubtPage', () => {
   });
 
   it('calls play command with selected cards when 出す clicked', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
@@ -231,7 +232,7 @@ describe('DoubtPage', () => {
   });
 
   it('calls reset when reset button is clicked', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     mockExec.mockClear();
@@ -242,7 +243,7 @@ describe('DoubtPage', () => {
   });
 
   it('disables buttons while loading', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     let resolve!: (value: DoubtResponse) => void;
@@ -259,7 +260,7 @@ describe('DoubtPage', () => {
   });
 
   it('shows error message when API call fails', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     mockExec.mockReset();
@@ -270,7 +271,7 @@ describe('DoubtPage', () => {
   });
 
   it('clears error message on successful API call after failure', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     mockExec.mockReset();
@@ -287,7 +288,7 @@ describe('DoubtPage', () => {
   });
 
   it('sets aria-busy and sr-only loading text while loading', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
@@ -320,12 +321,12 @@ describe('DoubtPage', () => {
       lastAction: { playerIdx: 1, claimedValue: 5, cardCount: 2, isBluff: false },
     };
     mockExec.mockResolvedValue(stateWithLastAction);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1が2枚出しました.*宣言: 5/)).toBeInTheDocument());
   });
 
   it('hides lastAction display when lastAction is null', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.queryByText(/枚出しました/)).not.toBeInTheDocument();
   });
@@ -338,7 +339,7 @@ describe('DoubtPage', () => {
       cpuActions: [{ playerIdx: 99, claimedValue: 5, cardCount: 2, isBluff: false }],
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/Player 99が2枚出しました/)).toBeInTheDocument());
   });
 
@@ -346,7 +347,7 @@ describe('DoubtPage', () => {
 
   it('shows doubt/skip UI when CPU played in doubt phase', async () => {
     mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => {
       expect(screen.getByText('ダウトしますか？')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'ダウト！' })).toBeInTheDocument();
@@ -360,7 +361,7 @@ describe('DoubtPage', () => {
       cpuDoubters: [2, 3],
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => {
       const el = screen.getByText(/ダウト宣言CPU/);
       expect(el.textContent).toContain('CPU 2');
@@ -370,7 +371,7 @@ describe('DoubtPage', () => {
 
   it('calls doubt with [0] when ダウト！ clicked (no cpu doubters)', async () => {
     mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ダウト！' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -382,7 +383,7 @@ describe('DoubtPage', () => {
 
   it('calls skip with [] when スルー clicked (no cpu doubters)', async () => {
     mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'スルー' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -395,7 +396,7 @@ describe('DoubtPage', () => {
   it('calls doubt with [0, ...cpuDoubters] when ダウト！ clicked with cpu doubters', async () => {
     const s: DoubtResponse = { ...doubtPhaseCpuPlayedState, cpuDoubters: [2, 3] };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ダウト！' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -409,7 +410,7 @@ describe('DoubtPage', () => {
 
   it('shows confirm UI when human played in doubt phase', async () => {
     mockExec.mockResolvedValue(doubtPhaseHumanPlayedState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => {
       expect(screen.getByText('CPUがダウトを判定中...')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '確認' })).toBeInTheDocument();
@@ -418,21 +419,21 @@ describe('DoubtPage', () => {
 
   it('shows cpu doubters in human-played doubt phase', async () => {
     mockExec.mockResolvedValue(doubtPhaseHumanPlayedState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/ダウト！.*CPU 1/)).toBeInTheDocument());
   });
 
   it('does not show cpuDoubters label when empty in human-played phase', async () => {
     const s: DoubtResponse = { ...doubtPhaseHumanPlayedState, cpuDoubters: [] };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('CPUがダウトを判定中...')).toBeInTheDocument());
     expect(screen.queryByText(/ダウト！/)).not.toBeInTheDocument();
   });
 
   it('calls doubt with cpuDoubters when 確認 clicked', async () => {
     mockExec.mockResolvedValue(doubtPhaseHumanPlayedState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '確認' })).toBeInTheDocument());
 
     mockExec.mockClear();
@@ -447,7 +448,7 @@ describe('DoubtPage', () => {
   it('does not show doubt UI when gameEndFlag is true', async () => {
     const s: DoubtResponse = { ...doubtPhaseCpuPlayedState, gameEndFlag: true, message: 'ゲーム終了！' };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'ダウト！' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '確認' })).not.toBeInTheDocument();
@@ -467,14 +468,14 @@ describe('DoubtPage', () => {
 
     it('starts countdown display when CPU played in doubt phase', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
-      render(<DoubtPage />);
+      renderWithProviders(<DoubtPage />);
       // Wait directly for countdown text (appears after 2nd render: state→doubt phase, effect→countdown)
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
     });
 
     it('decrements countdown each second', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
-      render(<DoubtPage />);
+      renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
 
       act(() => {
@@ -487,7 +488,7 @@ describe('DoubtPage', () => {
       mockExec
         .mockResolvedValueOnce(doubtPhaseCpuPlayedState) // initial reset
         .mockResolvedValueOnce(humanTurnState); // skip response → leave doubt phase
-      render(<DoubtPage />);
+      renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
 
       act(() => {
@@ -504,7 +505,7 @@ describe('DoubtPage', () => {
 
     it('stops countdown when ダウト！ is clicked', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
-      render(<DoubtPage />);
+      renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
 
       mockExec.mockResolvedValue(humanTurnState);
@@ -516,7 +517,7 @@ describe('DoubtPage', () => {
 
     it('stops countdown when スルー is clicked', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
-      render(<DoubtPage />);
+      renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
 
       mockExec.mockResolvedValue(humanTurnState);
@@ -530,7 +531,7 @@ describe('DoubtPage', () => {
   // ── No countdown in other phases ─────────────────────────────────────────
 
   it('does not show countdown in play phase', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.queryByText(/残り/)).not.toBeInTheDocument();
   });
@@ -538,14 +539,14 @@ describe('DoubtPage', () => {
   it('does not start countdown when lastAction is null in doubt phase', async () => {
     const s: DoubtResponse = { ...humanTurnState, phase: 1, lastAction: null };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.queryByText(/残り/)).not.toBeInTheDocument();
   });
 
   it('does not start countdown when human played in doubt phase', async () => {
     mockExec.mockResolvedValue(doubtPhaseHumanPlayedState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('CPUがダウトを判定中...')).toBeInTheDocument());
     expect(screen.queryByText(/残り/)).not.toBeInTheDocument();
   });
@@ -565,7 +566,7 @@ describe('DoubtPage', () => {
       },
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => {
       expect(screen.getByText('ダウト結果')).toBeInTheDocument();
       expect(screen.getByText('ウソでした！')).toBeInTheDocument();
@@ -586,7 +587,7 @@ describe('DoubtPage', () => {
       },
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('本当でした！')).toBeInTheDocument());
   });
 
@@ -603,7 +604,7 @@ describe('DoubtPage', () => {
       },
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1が2枚引き取りました/)).toBeInTheDocument());
   });
 
@@ -620,12 +621,12 @@ describe('DoubtPage', () => {
       },
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/99が1枚引き取りました/)).toBeInTheDocument());
   });
 
   it('does not show ダウト結果 when lastDoubtResult is null', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.queryByText('ダウト結果')).not.toBeInTheDocument();
   });
@@ -634,7 +635,7 @@ describe('DoubtPage', () => {
 
   it('shows human action log in non-doubt phase', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/あなたが2枚出しました/)).toBeInTheDocument());
   });
 
@@ -644,7 +645,7 @@ describe('DoubtPage', () => {
       humanAction: { playerIdx: 0, claimedValue: 2, cardCount: 2, isBluff: false },
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('CPUがダウトを判定中...')).toBeInTheDocument());
     // humanAction log div is not rendered in doubt phase
     // The lastAction is shown in table area but the log section is suppressed
@@ -662,14 +663,14 @@ describe('DoubtPage', () => {
       ],
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument());
     expect(screen.getByText(/CPU 1が2枚出しました/)).toBeInTheDocument();
     expect(screen.getByText(/CPU 2が1枚出しました/)).toBeInTheDocument();
   });
 
   it('does not show CPU action log when cpuActions is empty', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.queryByText(/\[CPUの行動\]/)).not.toBeInTheDocument();
   });
@@ -678,12 +679,12 @@ describe('DoubtPage', () => {
 
   it('shows game result message when game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
   });
 
   it('does not show result message when message is empty', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     // message is '', no result div shown
     expect(screen.queryByText('ゲーム終了')).not.toBeInTheDocument();
@@ -702,13 +703,13 @@ describe('DoubtPage', () => {
       ],
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('上がり')).toBeInTheDocument());
   });
 
   it('shows 考え中... for current CPU turn when not finished', async () => {
     mockExec.mockResolvedValue(cpuTurnState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('考え中...')).toBeInTheDocument());
   });
 
@@ -724,13 +725,13 @@ describe('DoubtPage', () => {
       ],
     };
     mockExec.mockResolvedValue(s);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('上がり')).toBeInTheDocument());
     expect(screen.queryByText('考え中...')).not.toBeInTheDocument();
   });
 
   it('does not show 考え中... when human is current turn', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     expect(screen.queryByText('考え中...')).not.toBeInTheDocument();
   });
@@ -739,15 +740,59 @@ describe('DoubtPage', () => {
 
   it('hides 出す button when game has ended', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  // ── CPU Tell indicator ──────────────────────────────────────────────────
+
+  it('shows sweat indicator when cpuAction has hasTell true', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true }],
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByLabelText('テル')).toBeInTheDocument());
+  });
+
+  it('shows sweat indicator when lastAction has hasTell true', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      lastAction: { playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true },
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByLabelText('テル')).toBeInTheDocument());
+  });
+
+  it('does not show sweat indicator when hasTell is false', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: false }],
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByLabelText('テル')).not.toBeInTheDocument();
+  });
+
+  it('does not show sweat indicator when hasTell is undefined', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true }],
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+    expect(screen.queryByLabelText('テル')).not.toBeInTheDocument();
   });
 
   // ── Settings panel ────────────────────────────────────────────────────────
 
   it('renders settings panel with default values', async () => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
     const summary = screen.getByText('設定');
     expect(summary).toBeInTheDocument();
@@ -759,7 +804,7 @@ describe('DoubtPage', () => {
     { label: 'cpuMemoryLevel to Hard', selectIdx: 1, value: '2', expected: { doubtWindowSec: 10, cpuMemoryLevel: 2 } },
     { label: 'cpuMemoryLevel to Easy', selectIdx: 1, value: '0', expected: { doubtWindowSec: 10, cpuMemoryLevel: 0 } },
   ])('changing $label updates config passed to reset', async ({ selectIdx, value, expected }) => {
-    render(<DoubtPage />);
+    renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
 
     fireEvent.click(screen.getByText('設定'));
@@ -791,7 +836,7 @@ describe('DoubtPage', () => {
         doubtWindowSec: 3,
       };
       mockExec.mockResolvedValue(shortState);
-      render(<DoubtPage />);
+      renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 3 秒/)).toBeInTheDocument());
     });
 
@@ -801,7 +846,7 @@ describe('DoubtPage', () => {
         doubtWindowSec: 5,
       };
       mockExec.mockResolvedValue(midState);
-      render(<DoubtPage />);
+      renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 5 秒/)).toBeInTheDocument());
     });
   });

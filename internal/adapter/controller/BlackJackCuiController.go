@@ -43,7 +43,19 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 		} else {
 			amount, err := strconv.Atoi(parts[1])
 			if err == nil && amount > 0 {
-				res = bcc.bji.Bet(amount)
+				ppBet := 0
+				t3Bet := 0
+				if len(parts) >= 3 {
+					if v, e := strconv.Atoi(parts[2]); e == nil {
+						ppBet = v
+					}
+				}
+				if len(parts) >= 4 {
+					if v, e := strconv.Atoi(parts[3]); e == nil {
+						t3Bet = v
+					}
+				}
+				res = bcc.bji.Bet(amount, ppBet, t3Bet)
 			} else {
 				res = "Invalid bet amount. Please enter a number."
 			}

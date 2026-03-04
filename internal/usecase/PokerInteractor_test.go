@@ -170,3 +170,34 @@ func TestPokerInteractor_Stand_Error(t *testing.T) {
 	result := pi.Stand()
 	assert.Equal(t, "error output", result)
 }
+
+func TestPokerInteractor_Odds(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	odds := []domain.PokerDrawOdds{
+		{HandRank: 0, HandName: "High Card", Probability: 0.5, Count: 1, Total: 2},
+	}
+	indices := []int{0, 1}
+	mg.On("CalcDrawOdds", indices).Return(odds, nil)
+	mp.On("OutputWithOdds", mg, mock.Anything, odds).Return("odds output")
+
+	result := pi.Odds(indices)
+	assert.Equal(t, "odds output", result)
+	mg.AssertCalled(t, "CalcDrawOdds", indices)
+}
+
+func TestPokerInteractor_Odds_Error(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	err := errors.New("odds failed")
+	indices := []int{0}
+	mg.On("CalcDrawOdds", indices).Return([]domain.PokerDrawOdds(nil), err)
+	mp.On("Output", mg, err).Return("error output")
+
+	result := pi.Odds(indices)
+	assert.Equal(t, "error output", result)
+}

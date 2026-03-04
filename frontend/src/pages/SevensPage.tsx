@@ -108,11 +108,16 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
         {SUITS.map(({ idx, name, label, color }) => (
           <div key={name} className="bg-white/[0.08] rounded-lg py-1.5 px-2.5 flex items-center gap-2">
             <span style={{ color, fontWeight: 'bold', fontSize: '1.1em', minWidth: 18 }}>{label}</span>
-            <div className="flex flex-wrap gap-[3px]">
+            <div className="flex flex-wrap gap-[3px] items-center">
               {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
                 const placed = isPositionPlaced(tablePlaced, idx, v);
                 const isCenter = v === 7;
                 const canPlace = jokerSelecting && isPositionPlayable(tablePlaced, idx, v, tunnelEnabled);
+                const tunnelHighlight =
+                  tunnelEnabled &&
+                  !placed &&
+                  ((v === 1 && isPositionPlaced(tablePlaced, idx, 13)) ||
+                    (v === 13 && isPositionPlaced(tablePlaced, idx, 1)));
                 const cellStyle: React.CSSProperties = {
                   display: 'inline-block',
                   width: 22,
@@ -130,6 +135,8 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
                         : '#5cb85c'
                       : 'rgba(255,255,255,0.1)',
                   color: canPlace ? '#fff' : placed ? '#000' : '#555',
+                  border: tunnelHighlight ? '1px solid #f59e0b' : undefined,
+                  boxSizing: 'border-box',
                 };
                 if (canPlace) {
                   return (
@@ -150,6 +157,11 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
                   </span>
                 );
               })}
+              {tunnelEnabled && (
+                <span role="img" className="text-yellow-400 text-[0.65em] ml-0.5" aria-label="トンネル接続">
+                  ↔
+                </span>
+              )}
             </div>
           </div>
         ))}
@@ -228,6 +240,7 @@ function HumanArea({
               disabled={!playable}
               onClick={() => onPlay(i)}
               title={playable ? `出す: ${card.design} ${valueName(card.value)}` : undefined}
+              data-testid={playable ? 'playable-card' : undefined}
               style={{
                 background: 'none',
                 padding: 0,
@@ -256,6 +269,7 @@ export function SevensPage() {
   const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
   const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
   const [cfgNoJokerFinish, setCfgNoJokerFinish] = useState(false);
+  const [cfgJokerReclaim, setCfgJokerReclaim] = useState(false);
 
   const onSuccess = useCallback((res: SevensResponse) => {
     setJokerCardIdx(null);
@@ -264,6 +278,7 @@ export function SevensPage() {
     setCfgCpuStrategy(res.config.cpuStrategy);
     setCfgMaxPasses(res.config.maxPasses);
     setCfgNoJokerFinish(res.config.noJokerFinish);
+    setCfgJokerReclaim(res.config.jokerReclaimEnabled);
   }, []);
   const { state, loading, error, exec } = useGameApi(sevensApi.exec, { onSuccess });
 
@@ -307,7 +322,8 @@ export function SevensPage() {
             state.config.jokerCount > 0 ||
             state.config.cpuStrategy ||
             state.config.maxPasses !== 5 ||
-            state.config.noJokerFinish) && (
+            state.config.noJokerFinish ||
+            state.config.jokerReclaimEnabled) && (
             <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-[0.85em]">
               ルール:
               {state.config.tunnelEnabled && ' [トンネル]'}
@@ -316,6 +332,7 @@ export function SevensPage() {
               {state.config.maxPasses === 0 && ' [パス無制限]'}
               {state.config.maxPasses !== 5 && state.config.maxPasses !== 0 && ` [パス${state.config.maxPasses}回]`}
               {state.config.noJokerFinish && ' [ジョーカー上がり禁止]'}
+              {state.config.jokerReclaimEnabled && ' [ジョーカー回収]'}
             </div>
           )}
 
@@ -428,6 +445,10 @@ export function SevensPage() {
             <input type="checkbox" checked={cfgNoJokerFinish} onChange={(e) => setCfgNoJokerFinish(e.target.checked)} />
             ジョーカー上がり禁止
           </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" checked={cfgJokerReclaim} onChange={(e) => setCfgJokerReclaim(e.target.checked)} />
+            ジョーカー回収
+          </label>
         </div>
 
         <ErrorAlert message={error} />
@@ -445,6 +466,7 @@ export function SevensPage() {
                 cpuStrategy: cfgCpuStrategy,
                 maxPasses: cfgMaxPasses,
                 noJokerFinish: cfgNoJokerFinish,
+                jokerReclaim: cfgJokerReclaim,
               })
             }
           >

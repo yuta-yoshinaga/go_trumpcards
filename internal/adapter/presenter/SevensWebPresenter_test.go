@@ -231,6 +231,33 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.True(t, resObj.Config.NoJokerFinish)
 	})
 
+	t.Run("success Output config jokerReclaimEnabled true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{JokerReclaimEnabled: true, JokerCount: 1, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.JokerReclaimEnabled)
+	})
+
+	t.Run("success Output config jokerReclaimEnabled false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.False(t, resObj.Config.JokerReclaimEnabled)
+	})
+
 	t.Run("success Output config NoJokerFinish true", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()

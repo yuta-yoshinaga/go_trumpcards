@@ -277,6 +277,56 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with bet command and side bets', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 15, cards: [], chips: 880 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          perfectPairsBet: 10,
+          twentyOnePlus3Bet: 20,
+        }),
+      );
+      await blackjackApi.exec('bet', 100, undefined, { perfectPairsBet: 10, twentyOnePlus3Bet: 20 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'bet',
+            amount: 100,
+            sessionId,
+            perfectPairsBet: 10,
+            twentyOnePlus3Bet: 20,
+          }),
+        }),
+      );
+    });
+
+    it('does not include side bet fields when sideBets is omitted', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 15, cards: [], chips: 900 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+        }),
+      );
+      await blackjackApi.exec('bet', 100);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'bet', amount: 100, sessionId }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(blackjackApi.exec('reset')).rejects.toThrow('HTTP error: 500');
@@ -401,6 +451,23 @@ describe('gameApi', () => {
         '/poker/exec',
         expect.objectContaining({
           body: JSON.stringify({ command: 'check', indices: undefined, amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with odds command and indices', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          phase: 2,
+          odds: [{ handRank: 1, handName: 'One Pair', probability: 0.5, count: 5, total: 10 }],
+          message: '',
+        }),
+      );
+      await pokerApi.exec('odds', [0, 2]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/poker/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'odds', indices: [0, 2], amount: undefined, sessionId }),
         }),
       );
     });

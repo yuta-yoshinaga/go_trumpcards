@@ -526,3 +526,30 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "チップ:750")
 	})
 }
+
+func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
+	pres := presenter.NewPokerCuiPresenter()
+	p, players := makePokerCuiForPresenter()
+	p.SetPhase(domain.PokerPhaseExchange)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+
+	odds := []domain.PokerDrawOdds{
+		{HandRank: 0, HandName: "High Card", Probability: 1.0, Count: 1, Total: 1},
+	}
+
+	// OutputWithOdds delegates to Output (CUI ignores odds)
+	resultWithOdds := pres.OutputWithOdds(p, nil, odds)
+	resultPlain := pres.Output(p, nil)
+	assert.Equal(t, resultPlain, resultWithOdds)
+}
+
+func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
+	pres := presenter.NewPokerCuiPresenter()
+	p, players := makePokerCuiForPresenter()
+	p.SetPhase(domain.PokerPhaseExchange)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+
+	resultWithOdds := pres.OutputWithOdds(p, nil, nil)
+	resultPlain := pres.Output(p, nil)
+	assert.Equal(t, resultPlain, resultWithOdds)
+}

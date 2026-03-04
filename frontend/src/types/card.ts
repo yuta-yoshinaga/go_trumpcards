@@ -31,6 +31,14 @@ export interface BlackJackCpuSeat {
   hands: BlackJackHand[];
 }
 
+export interface BlackJackSideBetResult {
+  betType: number;
+  resultType: number;
+  resultName: string;
+  betAmount: number;
+  payout: number;
+}
+
 export interface BlackJackResponse {
   dealer: BlackJackPlayer;
   player: BlackJackPlayer;
@@ -49,6 +57,9 @@ export interface BlackJackResponse {
   runningCount: number;
   trueCount: number;
   cpuPlayers?: BlackJackCpuSeat[];
+  perfectPairsBet: number;
+  twentyOnePlus3Bet: number;
+  sideBetResults?: BlackJackSideBetResult[];
 }
 
 export interface PokerPlayerData {
@@ -88,6 +99,14 @@ export interface PokerSidePot {
   eligiblePlayers: number[];
 }
 
+export interface PokerOdds {
+  handRank: number;
+  handName: string;
+  probability: number;
+  count: number;
+  total: number;
+}
+
 export type PokerPhase = 0 | 1 | 2 | 3 | 4;
 
 export interface PokerResponse {
@@ -105,6 +124,7 @@ export interface PokerResponse {
   roundResults: PokerResult[];
   cpuActions: PokerCpuAction[];
   cpuExchanges: PokerCpuExchange[];
+  odds?: PokerOdds[];
   message: string;
 }
 
@@ -172,6 +192,8 @@ export interface DaifugoConfig {
   nineReverseEnabled: boolean;
   coupDetatEnabled: boolean;
   intenseLockEnabled: boolean;
+  sandstormEnabled: boolean;
+  emperorEnabled: boolean;
 }
 
 export type DaifugoConfigInput = DaifugoConfig;
@@ -230,6 +252,7 @@ export interface SevensConfig {
   cpuStrategy: boolean;
   maxPasses: number;
   noJokerFinish: boolean;
+  jokerReclaimEnabled: boolean;
 }
 
 export interface SevensResponse {
@@ -258,6 +281,7 @@ export interface DoubtCpuAction {
   claimedValue: number;
   cardCount: number;
   isBluff: boolean;
+  hasTell?: boolean;
 }
 
 export interface DoubtDoubtResult {

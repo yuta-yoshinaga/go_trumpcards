@@ -38,6 +38,13 @@ const (
 	bluffTableMedThreshold   = 10
 )
 
+// テル（緊張の兆候）表示確率の定数
+const (
+	tellChanceEasy   = 0.4
+	tellChanceNormal = 0.2
+	tellChanceHard   = 0.05
+)
+
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
@@ -64,6 +71,7 @@ type DoubtCpuAction struct {
 	ClaimedValue int  // 宣言した値
 	CardCount    int  // 出した枚数
 	IsBluff      bool // ブラフかどうか (CPU のみ追跡)
+	HasTell      bool // テル（緊張の兆候）を見せているか
 }
 
 // DoubtDoubtResult ダウト解決結果
@@ -252,6 +260,9 @@ func (d *Doubt) CpuPlay() {
 		ClaimedValue: claimedValue,
 		CardCount:    numCards,
 		IsBluff:      isActuallyBluff,
+	}
+	if isActuallyBluff {
+		cpuAction.HasTell = rand.Float64() < calcTellChance(d.config.CpuMemoryLevel)
 	}
 	d.cpuActions = append(d.cpuActions, cpuAction)
 
@@ -513,6 +524,20 @@ func memoryDecayRate(level DoubtMemoryLevel) float64 {
 		return decayRateHard
 	default:
 		return decayRateNormal
+	}
+}
+
+// calcTellChance 記憶力レベルに対応するテル表示確率を返す
+func calcTellChance(level DoubtMemoryLevel) float64 {
+	switch level {
+	case DoubtMemoryLevelEasy:
+		return tellChanceEasy
+	case DoubtMemoryLevelNormal:
+		return tellChanceNormal
+	case DoubtMemoryLevelHard:
+		return tellChanceHard
+	default:
+		return tellChanceNormal
 	}
 }
 

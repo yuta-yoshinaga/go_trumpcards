@@ -103,6 +103,23 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		}
 	}
 
+	// サイドベット情報
+	resObj.PerfectPairsBet = bj.GetPerfectPairsBet()
+	resObj.TwentyOnePlus3Bet = bj.Get21Plus3Bet()
+	sideBetResults := bj.GetSideBetResults()
+	if len(sideBetResults) > 0 {
+		resObj.SideBetResults = make([]*controller.BlackJackWebOutputSideBetResult, len(sideBetResults))
+		for i, r := range sideBetResults {
+			resObj.SideBetResults[i] = &controller.BlackJackWebOutputSideBetResult{
+				BetType:    r.BetType,
+				ResultType: r.ResultType,
+				ResultName: r.ResultName,
+				BetAmount:  r.BetAmount,
+				Payout:     r.Payout,
+			}
+		}
+	}
+
 	// エラーメッセージ（ベット失敗等）
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

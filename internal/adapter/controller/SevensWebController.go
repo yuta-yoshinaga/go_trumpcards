@@ -18,6 +18,7 @@ type SevensWebInput struct {
 	CpuStrategy      *bool  `json:"cpuStrategy,omitempty"`   // CPU戦略 (reset時のみ)
 	MaxPasses        *int   `json:"maxPasses,omitempty"`     // 最大パス回数 (reset時のみ, 0=無制限)
 	NoJokerFinish    *bool  `json:"noJokerFinish,omitempty"` // ジョーカー上がり禁止 (reset時のみ)
+	JokerReclaim     *bool  `json:"jokerReclaim,omitempty"`  // ジョーカー回収 (reset時のみ)
 	SessionId        string `json:"sessionId"`
 }
 
@@ -50,11 +51,12 @@ type SevensWebOutputAction struct {
 
 // SevensWebOutputConfig 7並べゲーム設定出力
 type SevensWebOutputConfig struct {
-	TunnelEnabled bool `json:"tunnelEnabled"`
-	JokerCount    int  `json:"jokerCount"`
-	CpuStrategy   bool `json:"cpuStrategy"`
-	MaxPasses     int  `json:"maxPasses"`
-	NoJokerFinish bool `json:"noJokerFinish"`
+	TunnelEnabled       bool `json:"tunnelEnabled"`
+	JokerCount          int  `json:"jokerCount"`
+	CpuStrategy         bool `json:"cpuStrategy"`
+	MaxPasses           int  `json:"maxPasses"`
+	NoJokerFinish       bool `json:"noJokerFinish"`
+	JokerReclaimEnabled bool `json:"jokerReclaimEnabled"`
 }
 
 // SevensWebOutput 7並べWebアウトプット
@@ -94,13 +96,14 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		func(w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil {
+				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil {
 					cfg := domain.SevensConfig{
-						TunnelEnabled: derefBool(param.TunnelEnabled),
-						JokerCount:    derefInt(param.JokerCount),
-						CpuStrategy:   derefBool(param.CpuStrategy),
-						MaxPasses:     derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
-						NoJokerFinish: derefBool(param.NoJokerFinish),
+						TunnelEnabled:       derefBool(param.TunnelEnabled),
+						JokerCount:          derefInt(param.JokerCount),
+						CpuStrategy:         derefBool(param.CpuStrategy),
+						MaxPasses:           derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
+						NoJokerFinish:       derefBool(param.NoJokerFinish),
+						JokerReclaimEnabled: derefBool(param.JokerReclaim),
 					}
 					swc.writePresenterResponse(w, sgi.ResetWithConfig(cfg))
 				} else {

@@ -64,6 +64,9 @@ npm run format           # Run Biome formatter (auto-fix)
 npm test                 # Run frontend unit tests (Vitest)
 npm run test:coverage    # Run frontend unit tests with coverage report (outputs to frontend/coverage/)
 npm run test:watch       # Run frontend tests in watch mode
+npm run e2e              # Run Playwright E2E tests (auto-starts Go server)
+npm run e2e:ui           # Run Playwright E2E tests with UI
+npm run e2e:headed       # Run Playwright E2E tests in headed mode
 ```
 
 
@@ -94,9 +97,11 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
   src/
     api/                       # API client functions (fetch wrappers for game endpoints)
     components/                # Shared React components (NavBar, CardImage, CardBack)
-    hooks/                     # Custom React hooks (useGameApi)
+    hooks/                     # Custom React hooks (useGameApi, backed by TanStack React Query)
     pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
+    providers/                 # React context providers (QueryProvider for TanStack React Query)
     types/                     # TypeScript type definitions for card/game data
+  e2e/                         # Playwright E2E test specs
 public/                        # Built frontend assets served by Go web server
   assets/                      # Vite-compiled JS/CSS bundles
   images/                      # Card images (PNG)
@@ -113,11 +118,11 @@ public/                        # Built frontend assets served by Go web server
 
 ### Games implemented
 
-- **BlackJack**: Entities in `internal/domain/BlackJack.go`, `internal/domain/BlackJackPlayer.go`, `internal/domain/BlackJackHand.go`; interactor in `internal/usecase/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, natural BJ 3:2 payout, soft-17 rule toggle (H17/S17), card counting training (Hi-Lo running count / true count display), and multi-player CPU seats (0-3 CPU players using basic strategy)
-- **Poker (5-card Draw)**: Entities in `internal/domain/Poker.go`, `internal/domain/PokerPlayer.go`, `internal/domain/PokerConfig.go`; interactor in `internal/usecase/PokerInteractor.go`. CLI and Web GUI (1 human vs 1-3 CPU), 4 CPU play styles (Conservative/Balanced/Aggressive/Bluffer) with exchange-count reading and bluff AI, optional joker wild cards (0-2, Five of a Kind rank), full side pot support
+- **BlackJack**: Entities in `internal/domain/BlackJack.go`, `internal/domain/BlackJackPlayer.go`, `internal/domain/BlackJackHand.go`, `internal/domain/BlackJackSideBet.go`; interactor in `internal/usecase/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, natural BJ 3:2 payout, soft-17 rule toggle (H17/S17), card counting training (Hi-Lo running count / true count display), multi-player CPU seats (0-3 CPU players using basic strategy), side bets (Perfect Pairs and 21+3), and auto-advance round timer
+- **Poker (5-card Draw)**: Entities in `internal/domain/Poker.go`, `internal/domain/PokerPlayer.go`, `internal/domain/PokerConfig.go`, `internal/domain/PokerOdds.go`; interactor in `internal/usecase/PokerInteractor.go`. CLI and Web GUI (1 human vs 1-3 CPU), 4 CPU play styles (Conservative/Balanced/Aggressive/Bluffer) with exchange-count reading and bluff AI, optional joker wild cards (0-2, Five of a Kind rank), full side pot support, draw odds calculator (brute-force enumeration of all combinations during exchange phase)
 - **Old Maid (Babanuki)**: Entities in `internal/domain/OldMaid.go`, `internal/domain/OldMaidPlayer.go`; interactor in `internal/usecase/OldMaidInteractor.go`
-- **Daifugo**: Entities in `internal/domain/Daifugo.go`, `internal/domain/DaifugoPlayer.go`; interactor in `internal/usecase/DaifugoInteractor.go`
-- **Sevens (7並べ)**: Entities in `internal/domain/Sevens.go`, `internal/domain/SevensPlayer.go`, `internal/domain/SevensConfig.go`; interactor in `internal/usecase/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, CPU strategy, configurable max passes (0 = unlimited), and no-joker-finish (ban finishing with a joker). CPU AI uses pass-urgency weighting to block opponents near pass exhaustion
+- **Daifugo**: Entities in `internal/domain/Daifugo.go`, `internal/domain/DaifugoPlayer.go`; interactor in `internal/usecase/DaifugoInteractor.go`. Supports optional rules: sandstorm (3 non-joker 3s clear the table like 8-cut), emperor (4 consecutive cards of all different suits on clear table triggers revolution + table clear, CPU AI can find emperor plays)
+- **Sevens (7並べ)**: Entities in `internal/domain/Sevens.go`, `internal/domain/SevensPlayer.go`, `internal/domain/SevensConfig.go`; interactor in `internal/usecase/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, CPU strategy, configurable max passes (0 = unlimited), no-joker-finish (ban finishing with a joker), and joker reclaim (playing a real card on a joker-occupied position returns the joker to the player's hand). CPU AI uses pass-urgency weighting to block opponents near pass exhaustion
 - **Doubt (ダウト)**: Entities in `internal/domain/Doubt.go`, `internal/domain/DoubtPlayer.go`; interactor in `internal/usecase/DoubtInteractor.go`. CLI and Web GUI (1 human vs 3 CPUs), 10-second async doubt window (CLI) / frontend countdown timer (Web), random CPU bluff/doubt AI
 - **Texas Hold'em**: Entities in `internal/domain/Holdem.go`, `internal/domain/HoldemPlayer.go`, `internal/domain/HoldemConfig.go`; interactor in `internal/usecase/HoldemInteractor.go`. CLI and Web GUI (1 human vs 3 CPU), 4 CPU play styles (TAG/LAP/TAP/LAG) with bluff AI, full side pot support, HUD stats (VPIP%/PFR%), pot-relative AI bet sizing, tournament mode with blind escalation
 
@@ -182,6 +187,7 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 - **Wrap router-dependent components**: render `NavBar` (and any component using `useLocation`) inside `<MemoryRouter initialEntries={['/path']}>`
 - **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
 - **Query buttons by role**: when a text string appears in multiple elements (e.g., "交換" appears on both cards and a button), use `screen.getByRole('button', { name: '交換' })` instead of `getByText`
+- **Wrap with QueryClientProvider**: page tests and hook tests must render inside a `QueryClientProvider` (use `renderWithProviders` from `frontend/src/test/renderWithProviders.tsx`)
 
 **Run build, Biome check, and frontend tests before committing:**
 
@@ -190,6 +196,18 @@ cd frontend && npm run build
 cd frontend && npm run check
 cd frontend && npm test
 ```
+
+### E2E testing
+
+E2E tests use **Playwright** (Chromium only) and live in `frontend/e2e/`. They verify game flows (navigation, button availability, phase transitions) against the real Go server.
+
+```sh
+cd frontend && npm run e2e          # Run E2E tests (auto-starts Go server on port 8080)
+cd frontend && npm run e2e:headed   # Run E2E tests in headed browser
+cd frontend && npm run e2e:ui       # Run with Playwright UI
+```
+
+E2E tests should not assert on specific card values (randomness). Instead, verify flow: button visibility, phase transitions, and reset behavior.
 
 ## Documentation Maintenance
 

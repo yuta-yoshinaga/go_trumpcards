@@ -28,6 +28,11 @@ export interface BlackJackConfigInput {
   countingEnabled?: boolean;
 }
 
+export interface BlackJackSideBetInput {
+  perfectPairsBet?: number;
+  twentyOnePlus3Bet?: number;
+}
+
 export const blackjackApi = {
   exec: (
     command:
@@ -46,12 +51,13 @@ export const blackjackApi = {
       | 'togglecounting',
     amount?: number,
     config?: BlackJackConfigInput,
-  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config }),
+    sideBets?: BlackJackSideBetInput,
+  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config, ...sideBets }),
 };
 
 export const pokerApi = {
   exec: (
-    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin' | 'odds',
     indices?: number[],
     amount?: number,
     cpuCount?: number,
@@ -107,6 +113,7 @@ export interface SevensConfigInput {
   cpuStrategy?: boolean;
   maxPasses?: number;
   noJokerFinish?: boolean;
+  jokerReclaim?: boolean;
 }
 
 export const sevensApi = {

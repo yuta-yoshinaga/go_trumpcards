@@ -1,7 +1,8 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { renderWithProviders } from '../test/renderWithProviders';
 import type { OldMaidResponse } from '../types/card';
 import { OldMaidPage } from './OldMaidPage';
 
@@ -65,53 +66,53 @@ beforeEach(() => {
 });
 
 async function startGame() {
-  render(<OldMaidPage />);
+  renderWithProviders(<OldMaidPage />);
   fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
   await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
 }
 
 describe('OldMaidPage', () => {
   it('shows setup screen on initial render without calling exec', () => {
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     expect(screen.getByText('Old Maid 設定')).toBeInTheDocument();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('renders null game area while API call is pending after setup', async () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     expect(screen.queryByText('あなた')).not.toBeInTheDocument();
   });
 
   it('mode 0 radio is selected by default', () => {
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     const radios = screen.getAllByRole('radio');
     expect(radios[0]).toBeChecked();
     expect(radios[1]).not.toBeChecked();
   });
 
   it('can select mode 1', () => {
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     const radios = screen.getAllByRole('radio');
     fireEvent.click(radios[1]);
     expect(radios[1]).toBeChecked();
   });
 
   it('CPU心理戦 checkbox is unchecked by default', () => {
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     expect(screen.getByRole('checkbox')).not.toBeChecked();
   });
 
   it('CPU心理戦 checkbox can be toggled', () => {
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     const checkbox = screen.getByRole('checkbox');
     fireEvent.click(checkbox);
     expect(checkbox).toBeChecked();
   });
 
   it('ゲーム開始 calls reset with mode=1 and cpuPlacementStrategy=true after changes', async () => {
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     const radios = screen.getAllByRole('radio');
     fireEvent.click(radios[1]);
     fireEvent.click(screen.getByRole('checkbox'));
@@ -383,7 +384,7 @@ describe('OldMaidPage', () => {
 
     // reset returns humanTurnState, draw returns stateWithCpuActions
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithCpuActions);
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'ランダムに引く' })).not.toBeDisabled());
 
@@ -452,7 +453,7 @@ describe('OldMaidPage', () => {
     };
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(finalState);
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
@@ -583,7 +584,7 @@ describe('OldMaidPage', () => {
     };
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(twoCpuActionsState);
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
@@ -631,7 +632,7 @@ describe('OldMaidPage', () => {
     };
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithUndefinedDiscards);
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
@@ -683,7 +684,7 @@ describe('OldMaidPage', () => {
     };
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(humanActionNoCpuState);
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 
@@ -697,7 +698,7 @@ describe('OldMaidPage', () => {
   }, 10000);
 
   it('setup screen has aria-busy attribute', () => {
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     const setupContainer = screen.getByText('Old Maid 設定').closest('[aria-busy]') as HTMLElement;
     expect(setupContainer).toHaveAttribute('aria-busy', 'false');
   });
@@ -878,6 +879,85 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
   });
 
+  // ── Card reveal suspense & Joker shake ─────────────────────────────────
+
+  it('shows card-back during reveal delay and revealed card after timer', async () => {
+    const drawState: OldMaidResponse = {
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'HEART', value: 5 },
+      lastDiscardedPairs: 0,
+    };
+    mockExec.mockResolvedValue(drawState);
+    await startGame();
+
+    // Card-back is shown during the 600ms reveal delay
+    const revealArea = screen.getByTestId('card-reveal-area');
+    expect(revealArea.querySelector('img[alt="カード裏面"]')).toBeInTheDocument();
+
+    // After 600ms, the actual card is revealed with flip animation
+    await waitFor(() => {
+      expect(screen.getByTestId('card-reveal-area').querySelector('img[alt="♥ 5"]')).toBeInTheDocument();
+    });
+  });
+
+  it('applies animate-shake class when Joker is drawn', async () => {
+    const jokerDrawState: OldMaidResponse = {
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'JOKER', value: 0 },
+      lastDiscardedPairs: 0,
+    };
+    mockExec.mockResolvedValue(jokerDrawState);
+    await startGame();
+
+    // After the 600ms reveal timer, shake is triggered
+    await waitFor(() => {
+      const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+      expect(container.className).toContain('animate-shake');
+    });
+  });
+
+  it('does not apply animate-shake for non-Joker cards', async () => {
+    const normalDrawState: OldMaidResponse = {
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'HEART', value: 5 },
+      lastDiscardedPairs: 0,
+    };
+    mockExec.mockResolvedValue(normalDrawState);
+    await startGame();
+
+    // Wait for reveal to complete (600ms)
+    await waitFor(() => {
+      expect(screen.getByTestId('card-reveal-area').querySelector('img[alt="♥ 5"]')).toBeInTheDocument();
+    });
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+    expect(container.className).not.toContain('animate-shake');
+  });
+
+  it('does not show card reveal area when lastDrawCard is null', async () => {
+    await startGame();
+    expect(screen.queryByTestId('card-reveal-area')).not.toBeInTheDocument();
+  });
+
+  it('does not show card reveal area when game has ended', async () => {
+    const endWithDraw: OldMaidResponse = {
+      ...gameEndState,
+      hasDrawn: true,
+      lastDrawCard: { design: 'HEART', value: 5 },
+    };
+    mockExec.mockResolvedValue(endWithDraw);
+    await startGame();
+    expect(screen.queryByTestId('card-reveal-area')).not.toBeInTheDocument();
+  });
+
   it('goes directly to CPU replay when humanAction is null', async () => {
     const directCpuState: OldMaidResponse = {
       ...humanTurnState,
@@ -907,7 +987,7 @@ describe('OldMaidPage', () => {
     };
 
     mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(directCpuState);
-    render(<OldMaidPage />);
+    renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled());
 

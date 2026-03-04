@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 
@@ -19,11 +20,17 @@ export function useGameApi<TState, TArgs extends unknown[]>(
   const onSuccessRef = useRef(options?.onSuccess);
   onSuccessRef.current = options?.onSuccess;
 
+  const mutation = useMutation({
+    mutationFn: (args: TArgs) => apiFnRef.current(...args),
+  });
+  const mutateAsyncRef = useRef(mutation.mutateAsync);
+  mutateAsyncRef.current = mutation.mutateAsync;
+
   const exec = useCallback(async (...args: TArgs) => {
     setLoading(true);
     try {
       setError(null);
-      const res = await apiFnRef.current(...args);
+      const res = await mutateAsyncRef.current(args);
       setState(res);
       await onSuccessRef.current?.(res);
     } catch {

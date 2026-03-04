@@ -14,7 +14,15 @@ const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_150px] min-w-[120p
 
 // ── CPU player area ──────────────────────────────────────────────────────────
 
-function DoubtCpuArea({ player, isCurrentTurn }: { player: DoubtPlayerData; isCurrentTurn: boolean }) {
+function DoubtCpuArea({
+  player,
+  isCurrentTurn,
+  hasTell,
+}: {
+  player: DoubtPlayerData;
+  isCurrentTurn: boolean;
+  hasTell: boolean;
+}) {
   return (
     <CpuTurnArea
       playerId={player.id}
@@ -27,6 +35,11 @@ function DoubtCpuArea({ player, isCurrentTurn }: { player: DoubtPlayerData; isCu
       nameClassName="text-sm"
     >
       <div className="text-[#ccc] text-[0.85em]">{player.cardCount}枚</div>
+      {hasTell && (
+        <span className="animate-sweat-drop text-lg" role="img" aria-label="テル">
+          💧
+        </span>
+      )}
     </CpuTurnArea>
   );
 }
@@ -184,6 +197,12 @@ export function DoubtPage() {
   const isDoubtPhase = state.phase === 1;
   const cpuPlayed = isDoubtPhase && state.lastAction !== null && !state.players[state.lastAction.playerIdx]?.isHuman;
 
+  const cpuTells = new Set(
+    [...state.cpuActions, state.lastAction]
+      .filter((a): a is DoubtCpuAction => a !== null && a.hasTell === true)
+      .map((a) => a.playerIdx),
+  );
+
   const toggleCard = (idx: number) => {
     setSelectedCardIndices((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
   };
@@ -249,7 +268,12 @@ export function DoubtPage() {
         {/* CPU player areas */}
         <div className="flex gap-2 flex-wrap mb-3">
           {cpuPlayers.map((player) => (
-            <DoubtCpuArea key={player.id} player={player} isCurrentTurn={state.currentTurn === player.id} />
+            <DoubtCpuArea
+              key={player.id}
+              player={player}
+              isCurrentTurn={state.currentTurn === player.id}
+              hasTell={cpuTells.has(player.id)}
+            />
           ))}
         </div>
 

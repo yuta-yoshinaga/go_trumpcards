@@ -146,6 +146,45 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.False(t, resObj.CpuActions[0].IsBluff) // IsBluff is not sent to client (hidden game state)
 	})
 
+	t.Run("success Output cpuActions HasTell true is passed through", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetCpuActions([]*domain.DoubtCpuAction{
+			{PlayerIdx: 1, ClaimedValue: 3, CardCount: 1, IsBluff: true, HasTell: true},
+		})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Len(t, resObj.CpuActions, 1)
+		assert.True(t, resObj.CpuActions[0].HasTell)
+	})
+
+	t.Run("success Output cpuActions HasTell false by default", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetCpuActions([]*domain.DoubtCpuAction{
+			{PlayerIdx: 1, ClaimedValue: 3, CardCount: 1, IsBluff: true},
+		})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Len(t, resObj.CpuActions, 1)
+		assert.False(t, resObj.CpuActions[0].HasTell)
+	})
+
+	t.Run("success Output humanAction HasTell is passed through", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetHumanAction(&domain.DoubtCpuAction{
+			PlayerIdx: 0, ClaimedValue: 5, CardCount: 1, HasTell: false,
+		})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.NotNil(t, resObj.HumanAction)
+		assert.False(t, resObj.HumanAction.HasTell)
+	})
+
 	t.Run("success Output cpuDoubters non-empty", func(t *testing.T) {
 		d, _ := setupDoubtWebTest()
 		d.SetCpuDoubters([]int{1, 2})

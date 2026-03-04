@@ -144,6 +144,16 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		b.WriteString("Insurance available!\n")
 	}
 
+	// サイドベット情報
+	sideBetResults := bj.GetSideBetResults()
+	for _, r := range sideBetResults {
+		if r.Payout > 0 {
+			fmt.Fprintf(&b, "side bet [%s]: %s WIN +%d (bet=%d)\n", r.BetTypeName(), r.ResultName, r.Payout, r.BetAmount)
+		} else {
+			fmt.Fprintf(&b, "side bet [%s]: LOSE -%d\n", r.BetTypeName(), r.BetAmount)
+		}
+	}
+
 	// ヒント情報
 	if bj.IsHintEnabled() {
 		suggestion := bj.GetBasicStrategySuggestion()

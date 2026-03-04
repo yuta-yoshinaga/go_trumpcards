@@ -204,6 +204,8 @@ function SettingsPanel({ config, onChange }: SettingsPanelProps) {
     { key: 'nineReverseEnabled', label: '9リバース' },
     { key: 'coupDetatEnabled', label: 'クーデター' },
     { key: 'intenseLockEnabled', label: '激シバ' },
+    { key: 'sandstormEnabled', label: '砂嵐' },
+    { key: 'emperorEnabled', label: 'エンペラー' },
   ];
   return (
     <details className="mb-2">
@@ -256,6 +258,8 @@ const defaultConfigInput: DaifugoConfigInput = {
   nineReverseEnabled: false,
   coupDetatEnabled: false,
   intenseLockEnabled: false,
+  sandstormEnabled: false,
+  emperorEnabled: false,
 };
 
 export function DaifugoPage() {

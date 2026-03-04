@@ -459,3 +459,35 @@ func TestDoubtWebController_Stop(t *testing.T) {
 	c.Stop()
 	c.Stop()
 }
+
+func TestDoubtWebOutputAction_HasTell_JSON(t *testing.T) {
+	action := &controller.DoubtWebOutputAction{
+		PlayerIdx:    1,
+		ClaimedValue: 5,
+		CardCount:    2,
+		IsBluff:      false,
+		HasTell:      true,
+	}
+	b, err := json.Marshal(action)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var parsed controller.DoubtWebOutputAction
+	if err := json.Unmarshal(b, &parsed); err != nil {
+		t.Fatal(err)
+	}
+	if !parsed.HasTell {
+		t.Error("expected HasTell to be true after JSON round-trip")
+	}
+	if parsed.PlayerIdx != 1 || parsed.ClaimedValue != 5 || parsed.CardCount != 2 {
+		t.Error("unexpected field values after round-trip")
+	}
+
+	// Also verify HasTell=false round-trip
+	action.HasTell = false
+	b, _ = json.Marshal(action)
+	_ = json.Unmarshal(b, &parsed)
+	if parsed.HasTell {
+		t.Error("expected HasTell to be false after JSON round-trip")
+	}
+}

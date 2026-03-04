@@ -30,6 +30,7 @@ go run ./cmd/cli sevens
 | CPU戦略 | CPUが戦略的にカードを選択する（自分に有利な手を評価、相手のパス残数を考慮） |
 | パス回数 | 最大パス回数を変更（デフォルト5回、0で無制限） |
 | ジョーカー上がり禁止 | 最後のカードがジョーカーの場合、出せない（パスまたは失格） |
+| ジョーカー回収 | ジョーカーが配置された位置に本物のカードを出すと、ジョーカーが手札に戻る |
 
 ## ゲームの流れ
 
@@ -63,7 +64,7 @@ flowchart TD
 | コマンド | 短縮形 | 説明 |
 |----------|--------|------|
 | `reset` | `r` | デフォルト設定で新しいゲームを開始 |
-| `reset tunnel joker=N strategy passes=N nojokerfinish` | `r tunnel joker=N strategy passes=N nojokerfinish` | オプション指定で開始（例: `r tunnel joker=1 strategy passes=0 nojokerfinish`） |
+| `reset tunnel joker=N strategy passes=N nojokerfinish jokerreclaim` | `r tunnel joker=N strategy passes=N nojokerfinish jokerreclaim` | オプション指定で開始（例: `r tunnel joker=1 strategy passes=0 nojokerfinish jokerreclaim`） |
 | `play N` | `p N` | インデックスNのカードを場に出す（例: `p 3`） |
 | `play` | `p` | パス（パス回数を1消費） |
 | `j cardIdx suitInt valueInt` | - | ジョーカーを配置（例: `j 0 1 6`） |

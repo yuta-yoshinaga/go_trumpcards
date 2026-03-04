@@ -899,3 +899,76 @@ func TestDoubt_DynamicBluffChance(t *testing.T) {
 		assert.Less(t, bluffRate, 0.25, "bluff rate with 1 card should be much lower than 40%%")
 	})
 }
+
+func TestDoubt_HasTell(t *testing.T) {
+	t.Run("HasTell is set on bluff actions", func(t *testing.T) {
+		tellSeen := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelEasy})
+			advanceToCpuTurn(game)
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+			game.CpuPlay()
+
+			cpuActions := game.GetCpuActions()
+			if len(cpuActions) > 0 && cpuActions[0].IsBluff && cpuActions[0].HasTell {
+				tellSeen = true
+				break
+			}
+		}
+		assert.True(t, tellSeen, "HasTell should be set on at least one bluff action after 1000 attempts (Easy=40%% tell chance)")
+	})
+
+	t.Run("HasTell is false on non-bluff actions", func(t *testing.T) {
+		for attempt := 0; attempt < 1000; attempt++ {
+			game, players := makeDoubtGame()
+			advanceToCpuTurn(game)
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+			game.CpuPlay()
+
+			cpuActions := game.GetCpuActions()
+			if len(cpuActions) > 0 && !cpuActions[0].IsBluff {
+				assert.False(t, cpuActions[0].HasTell, "HasTell should be false when not bluffing")
+				return
+			}
+		}
+		t.Fatal("could not find a non-bluff action after 1000 attempts")
+	})
+
+	t.Run("HasTell not set on bluff with retry (false branch)", func(t *testing.T) {
+		noTellSeen := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelEasy})
+			advanceToCpuTurn(game)
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+			game.CpuPlay()
+
+			cpuActions := game.GetCpuActions()
+			if len(cpuActions) > 0 && cpuActions[0].IsBluff && !cpuActions[0].HasTell {
+				noTellSeen = true
+				break
+			}
+		}
+		assert.True(t, noTellSeen, "HasTell should be false on at least one bluff action after 1000 attempts")
+	})
+
+	t.Run("human action never has HasTell", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		_ = game.PlayerPlay([]int{0}, 5)
+		ha := game.GetHumanAction()
+		assert.NotNil(t, ha)
+		assert.False(t, ha.HasTell)
+	})
+}

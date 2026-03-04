@@ -2366,3 +2366,470 @@ func TestSevens_EvaluatePlay_PlayerHasNextHighCard(t *testing.T) {
 	assert.NotNil(t, lastAction.PlayedCard)
 	assert.Equal(t, 8, lastAction.PlayedCard.GetValue())
 }
+
+// ---------------------------------------------------------------------------
+// Joker Reclaim tests
+// ---------------------------------------------------------------------------
+
+func TestJokerReclaim_BasicReclaim(t *testing.T) {
+	// Full round-trip: play joker at position → play real card at same position → joker returns.
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+
+	// Give other players dummy cards so game doesn't end
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Human has joker + real Spade-6 + extra cards to avoid finishing
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	require.Equal(t, 4, players[0].GetCardsSize())
+
+	// Play joker at Spade-6
+	err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+	require.NoError(t, err)
+
+	// Verify joker tracking
+	assert.Equal(t, 1, s.GetJokerCardsCount(), "one joker should be tracked on board")
+	jp := s.GetJokerPlaced()
+	assert.True(t, jp[domain.CardDesignSpade]&(1<<6) != 0, "jokerPlaced bit should be set at spade-6")
+	assert.Equal(t, 3, players[0].GetCardsSize(), "hand size should decrease by 1 after playing joker")
+
+	// Board should have Spade-6 placed
+	placed := s.GetTablePlaced()
+	assert.True(t, placed[domain.CardDesignSpade]&(1<<6) != 0, "board should have spade-6")
+
+	// Advance through CPUs back to human turn
+	for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+		s.CpuPlay()
+	}
+	require.True(t, s.IsHumanTurn(), "should be back to human's turn")
+
+	// Find real Spade-6 in hand
+	spade6Idx := -1
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		c := players[0].GetCard(i)
+		if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 6 {
+			spade6Idx = i
+			break
+		}
+	}
+	require.NotEqual(t, -1, spade6Idx, "should have real Spade-6 in hand")
+
+	handSizeBefore := players[0].GetCardsSize()
+
+	// Play real Spade-6 at joker-occupied position → triggers reclaim
+	err = s.PlayerPlay(spade6Idx)
+	require.NoError(t, err)
+
+	// Reclaim should have fired: card played (-1) + joker returned (+1) = same size
+	assert.Equal(t, handSizeBefore, players[0].GetCardsSize(),
+		"hand size should stay same: played card replaced by reclaimed joker")
+
+	// Joker tracking cleared
+	assert.Equal(t, 0, s.GetJokerCardsCount(), "joker should be removed from board tracking")
+	jp = s.GetJokerPlaced()
+	assert.True(t, jp[domain.CardDesignSpade]&(1<<6) == 0, "jokerPlaced bit should be cleared at spade-6")
+
+	// Verify the reclaimed card is a joker
+	hasJoker := false
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		if players[0].GetCard(i).GetDesign() == domain.CardDesignJoker {
+			hasJoker = true
+			break
+		}
+	}
+	assert.True(t, hasJoker, "player should have a joker back in hand")
+}
+
+func TestJokerReclaim_DifferentPosition_NoReclaim(t *testing.T) {
+	// Play joker at Spade-6, then play card at Heart-6 → no reclaim
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+	require.NoError(t, err)
+	assert.Equal(t, 1, s.GetJokerCardsCount())
+
+	for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+		s.CpuPlay()
+	}
+
+	// Find Heart-6
+	var heart6Idx int
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		c := players[0].GetCard(i)
+		if c.GetDesign() == domain.CardDesignHeart && c.GetValue() == 6 {
+			heart6Idx = i
+			break
+		}
+	}
+
+	err = s.PlayerPlay(heart6Idx)
+	require.NoError(t, err)
+
+	// Joker tracking should remain (played card was Heart-6, not Spade-6)
+	assert.Equal(t, 1, s.GetJokerCardsCount(), "joker should still be tracked")
+	jp := s.GetJokerPlaced()
+	assert.True(t, jp[domain.CardDesignSpade]&(1<<6) != 0, "jokerPlaced bit should still be set")
+}
+
+func TestJokerReclaim_Disabled_NoReclaim(t *testing.T) {
+	// JokerReclaimEnabled=false -> joker placement is NOT tracked for reclaim
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: false,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+
+	// Give other players dummy cards
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Human has joker + extras
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	// Play joker at Spade-6
+	err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+	require.NoError(t, err)
+
+	// With reclaim disabled, joker tracking should NOT be populated
+	assert.Equal(t, 0, s.GetJokerCardsCount(), "no joker cards tracked when reclaim disabled")
+	jp := s.GetJokerPlaced()
+	assert.True(t, jp[domain.CardDesignSpade]&(1<<6) == 0, "jokerPlaced bit not set when reclaim disabled")
+
+	// Board should still have the position placed (game mechanics work regardless)
+	placed := s.GetTablePlaced()
+	assert.True(t, placed[domain.CardDesignSpade]&(1<<6) != 0, "board should have spade-6 regardless")
+	assert.Equal(t, 2, players[0].GetCardsSize(), "hand size decreased by 1")
+}
+
+func TestJokerReclaim_CpuReclaim(t *testing.T) {
+	// Full round-trip for CPU: human plays joker at Spade-6, CPU plays real Spade-6 → joker returns to CPU.
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+
+	// Give CPUs 2, 3 dummy cards
+	for i := 2; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Human places joker at Spade-6
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+	require.NoError(t, err)
+	assert.Equal(t, 1, s.GetJokerCardsCount())
+
+	// CPU 1 has real Spade-6 (playable at joker-occupied position) + extra cards
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	for d := 0; d < 4; d++ {
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+	}
+
+	cpu1HandBefore := players[1].GetCardsSize()
+
+	// CPU 1 plays
+	s.CpuPlay()
+	actions := s.GetCpuActions()
+	require.NotEmpty(t, actions)
+
+	// Check if CPU 1 played Spade-6
+	cpuPlayed6 := false
+	for _, a := range actions {
+		if a.PlayerIdx == 1 && a.PlayedCard != nil &&
+			a.PlayedCard.GetDesign() == domain.CardDesignSpade && a.PlayedCard.GetValue() == 6 {
+			cpuPlayed6 = true
+			break
+		}
+	}
+
+	if cpuPlayed6 {
+		// Reclaim should have fired: CPU played 6♠ at joker position
+		// Hand: before - 1 (played) + 1 (reclaimed) = same
+		assert.Equal(t, cpu1HandBefore, players[1].GetCardsSize(),
+			"CPU hand should reflect played card and reclaimed joker net effect")
+		assert.Equal(t, 0, s.GetJokerCardsCount(), "joker removed from board tracking")
+		jp := s.GetJokerPlaced()
+		assert.True(t, jp[domain.CardDesignSpade]&(1<<6) == 0, "jokerPlaced bit cleared")
+
+		// Verify CPU has joker in hand
+		hasJoker := false
+		for i := 0; i < players[1].GetCardsSize(); i++ {
+			if players[1].GetCard(i).GetDesign() == domain.CardDesignJoker {
+				hasJoker = true
+				break
+			}
+		}
+		assert.True(t, hasJoker, "CPU should have reclaimed joker")
+	}
+}
+
+func TestJokerReclaim_CpuNoDifferentPosition(t *testing.T) {
+	// CPU plays at a different position than joker → no reclaim
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+
+	for i := 2; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Human places joker at Spade-8
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 8)
+	require.NoError(t, err)
+	assert.Equal(t, 1, s.GetJokerCardsCount())
+
+	// CPU 1 has Spade-6 (different from joker position Spade-8)
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	for d := 0; d < 4; d++ {
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+	}
+
+	s.CpuPlay()
+	actions := s.GetCpuActions()
+	require.NotEmpty(t, actions)
+
+	// Joker should still be tracked (CPU played at Spade-6, not Spade-8)
+	assert.Equal(t, 1, s.GetJokerCardsCount(), "joker should remain tracked")
+	jp := s.GetJokerPlaced()
+	assert.True(t, jp[domain.CardDesignSpade]&(1<<8) != 0, "jokerPlaced bit should still be set at spade-8")
+}
+
+func TestJokerReclaim_NoJokerAtPosition_NoOp(t *testing.T) {
+	// Playing a card at a position without a joker -> no reclaim occurs
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+
+	// Give other players dummy cards
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Human has a normal card (no joker has been placed anywhere)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+	// No jokers on board
+	assert.Equal(t, 0, s.GetJokerCardsCount())
+	jp := s.GetJokerPlaced()
+	for suit := 1; suit <= 4; suit++ {
+		assert.Equal(t, uint16(0), jp[suit], "no jokerPlaced bits should be set")
+	}
+
+	handSizeBefore := players[0].GetCardsSize()
+	err := s.PlayerPlay(0) // play Spade-6
+	require.NoError(t, err)
+
+	// Hand size decreased by exactly 1 (no joker returned)
+	assert.Equal(t, handSizeBefore-1, players[0].GetCardsSize(), "hand should lose exactly 1 card")
+
+	// Still no jokers tracked
+	assert.Equal(t, 0, s.GetJokerCardsCount(), "no jokers should appear from nowhere")
+
+	// No joker in player's hand
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		assert.NotEqual(t, domain.CardDesignJoker, players[0].GetCard(i).GetDesign(),
+			"player should not have a joker")
+	}
+}
+
+func TestJokerReclaim_MultipleJokersOnBoard(t *testing.T) {
+	// Two jokers placed, then reclaim one → only one returned, one remains tracked.
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: true,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+
+	// Give other players dummy cards
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Human has two jokers + real Spade-6 for reclaim + extra cards
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 2, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	require.Equal(t, 5, players[0].GetCardsSize())
+
+	// Place first joker at Spade-6
+	err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+	require.NoError(t, err)
+	assert.Equal(t, 1, s.GetJokerCardsCount(), "one joker tracked after first placement")
+
+	// Advance through CPUs back to human turn
+	for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+		s.CpuPlay()
+	}
+	require.True(t, s.IsHumanTurn())
+
+	// Place second joker at Spade-5
+	jokerIdx := -1
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		if players[0].GetCard(i).GetDesign() == domain.CardDesignJoker {
+			jokerIdx = i
+			break
+		}
+	}
+	require.NotEqual(t, -1, jokerIdx, "should still have a joker in hand")
+
+	err = s.PlayerPlayJoker(jokerIdx, domain.CardDesignSpade, 5)
+	require.NoError(t, err)
+	assert.Equal(t, 2, s.GetJokerCardsCount(), "two jokers tracked after second placement")
+
+	// Advance through CPUs back to human turn
+	for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+		s.CpuPlay()
+	}
+	require.True(t, s.IsHumanTurn())
+
+	// Now play real Spade-6 at joker-occupied position → reclaim one joker
+	spade6Idx := -1
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		c := players[0].GetCard(i)
+		if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 6 {
+			spade6Idx = i
+			break
+		}
+	}
+	require.NotEqual(t, -1, spade6Idx, "should have real Spade-6 in hand")
+
+	err = s.PlayerPlay(spade6Idx)
+	require.NoError(t, err)
+
+	// One joker reclaimed, one remains
+	assert.Equal(t, 1, s.GetJokerCardsCount(), "one joker should remain on board")
+	jp := s.GetJokerPlaced()
+	assert.True(t, jp[domain.CardDesignSpade]&(1<<6) == 0, "spade-6 joker bit should be cleared")
+	assert.True(t, jp[domain.CardDesignSpade]&(1<<5) != 0, "spade-5 joker bit should remain set")
+
+	// Player should have a joker in hand (reclaimed)
+	hasJoker := false
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		if players[0].GetCard(i).GetDesign() == domain.CardDesignJoker {
+			hasJoker = true
+			break
+		}
+	}
+	assert.True(t, hasJoker, "player should have reclaimed joker in hand")
+}
+
+func TestJokerReclaim_ReclaimDisabled_PositionNotPlayable(t *testing.T) {
+	// When reclaim is disabled, a joker-occupied position should NOT be playable
+	tc := domain.NewTrumpCards(2)
+	players := makeSevensPlayers()
+	cfg := domain.SevensConfig{
+		JokerCount:          2,
+		JokerReclaimEnabled: false,
+		MaxPasses:           domain.SevensMaxPasses,
+	}
+	s := domain.NewSevens(tc, players, cfg)
+
+	for i := 1; i <= 3; i++ {
+		for d := 0; d < 5; d++ {
+			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		}
+	}
+
+	// Human has joker + real Spade-6 + extra
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+	// Play joker at Spade-6
+	err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+	require.NoError(t, err)
+
+	for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+		s.CpuPlay()
+	}
+
+	// Find real Spade-6
+	spade6Idx := -1
+	for i := 0; i < players[0].GetCardsSize(); i++ {
+		c := players[0].GetCard(i)
+		if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 6 {
+			spade6Idx = i
+			break
+		}
+	}
+	require.NotEqual(t, -1, spade6Idx)
+
+	// Playing real Spade-6 should fail (position already occupied, no reclaim enabled)
+	err = s.PlayerPlay(spade6Idx)
+	assert.Error(t, err, "should not be able to play on joker-occupied position when reclaim disabled")
+}

@@ -238,6 +238,7 @@ paths:
         | `allin`    | `a`     | Go all-in (bet all remaining chips) |
         | `exchange` | `e`     | Exchange selected cards (use `indices` to specify which) |
         | `stand`    | `s`     | Keep current hand (no exchange) |
+        | `odds`     | `o`     | Calculate draw odds for selected cards (read-only, exchange phase only) |
         | `quit`     | `q`     | End the session |
       operationId: pokerExec
       requestBody:
@@ -285,6 +286,12 @@ paths:
                 summary: Stand (no exchange)
                 value:
                   command: stand
+                  sessionId: my-session-001
+              odds:
+                summary: Calculate draw odds for cards at positions 0 and 2
+                value:
+                  command: odds
+                  indices: [0, 2]
                   sessionId: my-session-001
       responses:
         '200':
@@ -916,6 +923,22 @@ components:
             Whether card counting display is enabled.  Only used with `reset` command.
             Defaults to false when omitted.
           example: false
+        perfectPairsBet:
+          type: integer
+          description: |
+            Perfect Pairs side bet amount.  Only used with `bet` command.
+            Must be 0 (no bet) or a positive multiple of 10.
+            Defaults to 0 when omitted.
+          minimum: 0
+          example: 0
+        twentyOnePlus3Bet:
+          type: integer
+          description: |
+            21+3 side bet amount.  Only used with `bet` command.
+            Must be 0 (no bet) or a positive multiple of 10.
+            Defaults to 0 when omitted.
+          minimum: 0
+          example: 0
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1015,6 +1038,8 @@ components:
         - cpuPlayerCount
         - runningCount
         - trueCount
+        - perfectPairsBet
+        - twentyOnePlus3Bet
       properties:
         dealer:
           $ref: '#/components/schemas/BlackJackPlayer'
@@ -1120,6 +1145,69 @@ components:
             Each entry contains the CPU player's chip count and hands.
           items:
             $ref: '#/components/schemas/BlackJackCpuSeat'
+        perfectPairsBet:
+          type: integer
+          description: Current Perfect Pairs side bet amount (0 if no side bet placed).
+          example: 0
+        twentyOnePlus3Bet:
+          type: integer
+          description: Current 21+3 side bet amount (0 if no side bet placed).
+          example: 0
+        sideBetResults:
+          type: array
+          description: |
+            Side bet evaluation results.  Present after dealing when side bets were placed.
+            Each entry describes one side bet outcome (win or loss).
+          items:
+            $ref: '#/components/schemas/BlackJackSideBetResult'
+
+    BlackJackSideBetResult:
+      type: object
+      description: Result of a single side bet evaluation
+      required:
+        - betType
+        - resultType
+        - resultName
+        - betAmount
+        - payout
+      properties:
+        betType:
+          type: integer
+          description: |
+            Side bet type:
+            - `1` — Perfect Pairs
+            - `2` — 21+3
+          enum: [1, 2]
+          example: 1
+        resultType:
+          type: integer
+          description: |
+            Result type.  For Perfect Pairs:
+            - `0` — None (no pair)
+            - `1` — Perfect Pair (same suit, same value; 25:1)
+            - `2` — Colored Pair (same color, same value; 12:1)
+            - `3` — Mixed Pair (different color, same value; 6:1)
+
+            For 21+3:
+            - `0` — None (no hand)
+            - `1` — Suited Trips (same suit, same value; 100:1)
+            - `2` — Straight Flush (same suit, consecutive; 40:1)
+            - `3` — Three of a Kind (same value, different suits; 30:1)
+            - `4` — Straight (consecutive values; 10:1)
+            - `5` — Flush (same suit; 5:1)
+          example: 1
+        resultName:
+          type: string
+          description: Human-readable name of the result (e.g., "Perfect Pair", "Straight Flush").
+          example: Perfect Pair
+        betAmount:
+          type: integer
+          description: Amount wagered on this side bet.
+          example: 10
+        payout:
+          type: integer
+          description: Payout amount (0 if lost; betAmount × multiplier if won).
+          example: 250
 
     BlackJackCpuSeat:
       type: object
@@ -1152,13 +1240,14 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `exchange` (`e`),
             `stand` (`s`), `bet` (`b`), `call` (`c`), `raise` (`ra`),
-            `check` (`ck`), `fold` (`f`), `allin` (`a`), `quit` (`q`).
-          enum: [r, reset, e, exchange, s, stand, b, bet, c, call, ra, raise, ck, check, f, fold, a, allin, q, quit]
+            `check` (`ck`), `fold` (`f`), `allin` (`a`), `odds` (`o`), `quit` (`q`).
+          enum: [r, reset, e, exchange, s, stand, b, bet, c, call, ra, raise, ck, check, f, fold, a, allin, o, odds, q, quit]
           example: bet
         indices:
           type: array
           description: |
-            Zero-based indices of cards to exchange (for the `exchange` command).
+            Zero-based indices of cards to exchange (for the `exchange` command)
+            or to calculate draw odds for (for the `odds` command).
             Omit or send an empty array to keep all cards.
           items:
             type: integer
@@ -1280,6 +1369,39 @@ components:
           items:
             type: integer
 
+    PokerOdds:
+      type: object
+      description: Draw odds for a single hand rank
+      required:
+        - handRank
+        - handName
+        - probability
+        - count
+        - total
+      properties:
+        handRank:
+          type: integer
+          description: "Hand rank index (0=HighCard..10=FiveOfAKind)"
+          minimum: 0
+          maximum: 10
+        handName:
+          type: string
+          description: Human-readable hand name (e.g. "Flush", "Full House")
+        probability:
+          type: number
+          format: double
+          description: Probability of achieving this hand (0.0 to 1.0)
+          minimum: 0
+          maximum: 1
+        count:
+          type: integer
+          description: Number of combinations that result in this hand
+          minimum: 0
+        total:
+          type: integer
+          description: Total number of combinations evaluated
+          minimum: 0
+
     PokerResponse:
       type: object
       required:
@@ -1346,6 +1468,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PokerCpuExchange'
+        odds:
+          type: array
+          description: |
+            Draw odds for each hand rank.  Only present when the `odds` command
+            is used during the exchange phase.
+          items:
+            $ref: '#/components/schemas/PokerOdds'
         message:
           type: string
 
@@ -1702,6 +1831,14 @@ components:
           type: boolean
           description: Whether 激シバ (intense lock / number lock) rule is enabled (default false)
           example: false
+        sandstormEnabled:
+          type: boolean
+          description: Whether 砂嵐 (sandstorm — 3 non-joker 3s clear the table like 8-cut) rule is enabled (default false)
+          example: false
+        emperorEnabled:
+          type: boolean
+          description: Whether エンペラー (emperor — 4 consecutive cards of all different suits on clear table triggers revolution + table clear) rule is enabled (default false)
+          example: false
 
     DaifugoExchangeAction:
       type: object
@@ -2021,6 +2158,10 @@ components:
           type: boolean
           description: Whether finishing the game with a joker as the last card is banned
           example: false
+        jokerReclaimEnabled:
+          type: boolean
+          description: Whether ジョーカー回収 (joker reclaim — playing a real card on a joker-occupied position returns the joker to the player's hand) is enabled (default false)
+          example: false
 
     SevensResponse:
       type: object
@@ -2212,6 +2353,10 @@ components:
         isBluff:
           type: boolean
           description: Whether the play was a bluff (always false until revealed)
+          example: false
+        hasTell:
+          type: boolean
+          description: Whether the CPU showed a visible "tell" (nervousness indicator) during this play
           example: false
 
     DoubtDoubtResult:
