@@ -12,6 +12,7 @@ test.describe('Old Maid E2E', () => {
     await waitForLoaded(page);
 
     // Game loop: keep drawing until finished
+    let gameEnded = false;
     for (let turn = 0; turn < 200; turn++) {
       const randomDrawButton = page.getByRole('button', { name: 'ランダムに引く' });
       const resetButton = page.getByRole('button', { name: 'リセット' });
@@ -20,12 +21,13 @@ test.describe('Old Maid E2E', () => {
       if (await resetButton.isVisible({ timeout: 1_000 }).catch(() => false)) {
         const drawVisible = await randomDrawButton.isVisible().catch(() => false);
         if (!drawVisible) {
+          gameEnded = true;
           // Game has ended
           await resetButton.click();
           await waitForLoaded(page);
           // Back to setup screen
           await expect(startButton).toBeVisible();
-          return;
+          break;
         }
       }
 
@@ -35,8 +37,10 @@ test.describe('Old Maid E2E', () => {
         await waitForLoaded(page);
       }
 
-      // Wait a bit for CPU turns to process
-      await page.waitForTimeout(500);
+      // Wait for CPU turns to process
+      await waitForLoaded(page);
     }
+
+    expect(gameEnded).toBe(true);
   });
 });

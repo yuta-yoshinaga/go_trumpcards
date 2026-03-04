@@ -12,17 +12,19 @@ test.describe('Sevens E2E', () => {
     await waitForLoaded(page);
 
     // Game loop
+    let gameEnded = false;
     for (let turn = 0; turn < 300; turn++) {
       const passButton = page.getByRole('button', { name: 'パス' });
 
       // Check if game ended: all players finished
       const gameEnd = page.locator('text=ゲーム終了');
       if (await gameEnd.isVisible({ timeout: 1_000 }).catch(() => false)) {
+        gameEnded = true;
         break;
       }
 
-      // Try to find a playable card (green-bordered) and click it
-      const playableCards = page.locator('.border-green-400, .border-green-500, [class*="border-green"]');
+      // Try to find a playable card via data-testid and click it
+      const playableCards = page.locator('[data-testid="playable-card"]');
       const playableCount = await playableCards.count();
 
       if (playableCount > 0) {
@@ -35,8 +37,10 @@ test.describe('Sevens E2E', () => {
         }
       }
 
-      await page.waitForTimeout(200);
+      await waitForLoaded(page);
     }
+
+    expect(gameEnded).toBe(true);
 
     // Reset for next game
     await resetButton.click();

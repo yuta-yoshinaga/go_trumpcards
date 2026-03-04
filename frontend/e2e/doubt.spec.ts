@@ -12,10 +12,12 @@ test.describe('Doubt E2E', () => {
     await waitForLoaded(page);
 
     // Game loop
+    let gameEnded = false;
     for (let turn = 0; turn < 200; turn++) {
       // Check if game ended
       const gameEnd = page.locator('text=ゲーム終了');
       if (await gameEnd.isVisible({ timeout: 1_000 }).catch(() => false)) {
+        gameEnded = true;
         break;
       }
 
@@ -58,8 +60,10 @@ test.describe('Doubt E2E', () => {
         }
       }
 
-      await page.waitForTimeout(500);
+      await waitForLoaded(page);
     }
+
+    expect(gameEnded).toBe(true);
 
     // Reset
     await resetButton.click();

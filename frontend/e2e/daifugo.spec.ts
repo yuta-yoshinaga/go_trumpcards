@@ -12,6 +12,7 @@ test.describe('Daifugo E2E', () => {
     await waitForLoaded(page);
 
     // Game loop: pass on every turn until game ends
+    let gameEnded = false;
     for (let turn = 0; turn < 300; turn++) {
       const passButton = page.getByRole('button', { name: 'パス' });
 
@@ -25,6 +26,7 @@ test.describe('Daifugo E2E', () => {
       ) {
         // Check if pass button is gone (game fully ended)
         if (!(await passButton.isVisible().catch(() => false))) {
+          gameEnded = true;
           break;
         }
       }
@@ -37,8 +39,10 @@ test.describe('Daifugo E2E', () => {
         }
       }
 
-      await page.waitForTimeout(200);
+      await waitForLoaded(page);
     }
+
+    expect(gameEnded).toBe(true);
 
     // Reset for next game
     await resetButton.click();

@@ -12,6 +12,7 @@ test.describe("Texas Hold'em E2E", () => {
     await waitForLoaded(page);
 
     // Play through betting rounds: PRE_FLOP → FLOP → TURN → RIVER → SHOWDOWN
+    let roundEnded = false;
     for (let round = 0; round < 20; round++) {
       const checkButton = page.getByRole('button', { name: 'チェック' });
       const callButton = page.getByRole('button', { name: 'コール' });
@@ -21,6 +22,7 @@ test.describe("Texas Hold'em E2E", () => {
         const checkVisible = await checkButton.isVisible().catch(() => false);
         const callVisible = await callButton.isVisible().catch(() => false);
         if (!checkVisible && !callVisible) {
+          roundEnded = true;
           break;
         }
       }
@@ -42,8 +44,10 @@ test.describe("Texas Hold'em E2E", () => {
         }
       }
 
-      await page.waitForTimeout(300);
+      await waitForLoaded(page);
     }
+
+    expect(roundEnded).toBe(true);
 
     // Start next round
     await resetButton.click();
