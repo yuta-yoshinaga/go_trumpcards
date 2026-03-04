@@ -29,11 +29,11 @@ func setupPokerForHumanAction(phase int) (*Poker, []*PokerPlayer) {
 	pk, players := newTestPoker()
 	pk.SetPhase(phase)
 	pk.SetCurrentTurn(0)
-	pk.SetActedFlags([]bool{false, true, true, true})
+	pk.setActedFlags([]bool{false, true, true, true})
 	pk.SetLastBet(0)
 	pk.SetMinRaise(10)
 	pk.SetPot(40)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
 	for _, pl := range players {
 		pl.Reset()
 		pl.SetChips(990)
@@ -180,7 +180,7 @@ func TestPoker_Fold_LastPlayerWins(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	players[1].SetFolded(true)
 	players[2].SetFolded(true)
-	pk.SetActedFlags([]bool{false, true, true, true})
+	pk.setActedFlags([]bool{false, true, true, true})
 	// Only p0 and p3 active; p0 folds → p3 wins
 	err := pk.PlayerAction(PokerActionFold, 0)
 	assert.NoError(t, err)
@@ -249,7 +249,7 @@ func TestPoker_PlayerAction_Bet(t *testing.T) {
 
 func TestPoker_PlayerAction_Bet_MaxRaises(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetRaiseCount(4)
+	pk.setRaiseCount(4)
 	err := pk.PlayerAction(PokerActionBet, 50)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
@@ -300,7 +300,7 @@ func TestPoker_PlayerAction_Raise(t *testing.T) {
 func TestPoker_PlayerAction_Raise_MaxRaises(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(20)
-	pk.SetRaiseCount(4)
+	pk.setRaiseCount(4)
 	err := pk.PlayerAction(PokerActionRaise, 20)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
@@ -464,7 +464,7 @@ func TestPoker_PlayerExchange_CompletesPhase(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseExchange)
 	pk.trumpCards.Shuffle()
 	// Mark all CPUs as already acted
-	pk.SetActedFlags([]bool{false, true, true, true})
+	pk.setActedFlags([]bool{false, true, true, true})
 	// Fold CPUs 1-3 so they won't be processed in CPU exchanges
 	players[1].SetFolded(true)
 	players[2].SetFolded(true)
@@ -505,7 +505,7 @@ func TestPoker_PlayerStand_NotHumanTurn(t *testing.T) {
 func TestPoker_PlayerStand_CompletesExchange(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseExchange)
 	pk.trumpCards.Shuffle()
-	pk.SetActedFlags([]bool{false, true, true, true})
+	pk.setActedFlags([]bool{false, true, true, true})
 	players[1].SetFolded(true)
 	players[2].SetFolded(true)
 	players[3].SetFolded(true)
@@ -529,7 +529,7 @@ func TestPoker_advanceTurn_gameEndFlag(t *testing.T) {
 
 func TestPoker_advanceTurn_bettingComplete(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetActedFlags([]bool{true, true, true, true})
+	pk.setActedFlags([]bool{true, true, true, true})
 	pk.advanceTurn()
 	// All acted → advancePhase (Deal → Exchange)
 	assert.Equal(t, PokerPhaseExchange, pk.GetPhase())
@@ -537,7 +537,7 @@ func TestPoker_advanceTurn_bettingComplete(t *testing.T) {
 
 func TestPoker_advanceTurn_exchangeComplete(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseExchange)
-	pk.SetActedFlags([]bool{true, true, true, true})
+	pk.setActedFlags([]bool{true, true, true, true})
 	pk.advanceTurn()
 	// Exchange complete → should return (no advance here, just return)
 	// The phase stays Exchange because advanceTurn just returns
@@ -547,14 +547,14 @@ func TestPoker_advanceTurn_exchangeComplete(t *testing.T) {
 func TestPoker_advanceTurn_findNextActive(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetCurrentTurn(0)
-	pk.SetActedFlags([]bool{true, false, true, true})
+	pk.setActedFlags([]bool{true, false, true, true})
 	pk.advanceTurn()
 	assert.Equal(t, 1, pk.GetCurrentTurn())
 }
 
 func TestPoker_advanceTurn_allActed_SecondBet(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseSecondBet)
-	pk.SetActedFlags([]bool{true, true, true, true})
+	pk.setActedFlags([]bool{true, true, true, true})
 	pk.advanceTurn()
 	// All acted in SecondBet → resolveShowdown → End
 	assert.Equal(t, PokerPhaseEnd, pk.GetPhase())
@@ -566,14 +566,14 @@ func TestPoker_advanceTurn_allActed_SecondBet(t *testing.T) {
 
 func TestPoker_isBettingRoundComplete(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetActedFlags([]bool{true, true, true, true})
+	pk.setActedFlags([]bool{true, true, true, true})
 	assert.True(t, pk.isBettingRoundComplete())
 
-	pk.SetActedFlags([]bool{false, true, true, true})
+	pk.setActedFlags([]bool{false, true, true, true})
 	assert.False(t, pk.isBettingRoundComplete())
 
 	// Folded player doesn't matter
-	pk.SetActedFlags([]bool{false, true, true, true})
+	pk.setActedFlags([]bool{false, true, true, true})
 	players[0].SetFolded(true)
 	assert.True(t, pk.isBettingRoundComplete())
 
@@ -585,10 +585,10 @@ func TestPoker_isBettingRoundComplete(t *testing.T) {
 
 func TestPoker_isExchangeComplete(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseExchange)
-	pk.SetActedFlags([]bool{true, true, true, true})
+	pk.setActedFlags([]bool{true, true, true, true})
 	assert.True(t, pk.isExchangeComplete())
 
-	pk.SetActedFlags([]bool{true, false, true, true})
+	pk.setActedFlags([]bool{true, false, true, true})
 	assert.False(t, pk.isExchangeComplete())
 
 	players[1].SetFolded(true)
@@ -606,7 +606,7 @@ func TestPoker_advancePhase_Deal(t *testing.T) {
 	assert.Equal(t, PokerPhaseExchange, pk.GetPhase())
 	assert.Equal(t, 0, pk.GetLastBet())
 	// Folded player should have actedFlags=true
-	flags := pk.GetActedFlags()
+	flags := pk.getActedFlags()
 	assert.True(t, flags[1])
 }
 
@@ -717,7 +717,7 @@ func TestPoker_resolveLastPlayer(t *testing.T) {
 func TestPoker_resolveShowdown_SingleWinner(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetPot(400)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
 
 	// Player 0: Royal Flush
 	givePlayerHand(players[0], []*Card{
@@ -756,7 +756,7 @@ func TestPoker_resolveShowdown_SingleWinner(t *testing.T) {
 func TestPoker_resolveShowdown_SplitPot(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetPot(200)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
 
 	// Give identical hands
 	hand := []*Card{
@@ -801,7 +801,7 @@ func TestPoker_runCpuActions_GameEnded(t *testing.T) {
 func TestPoker_runCpuActions_HumanTurn(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetCurrentTurn(0)
-	pk.SetActedFlags([]bool{false, false, false, false})
+	pk.setActedFlags([]bool{false, false, false, false})
 	pk.runCpuActions()
 	// Should stop at human turn
 	assert.Equal(t, 0, pk.GetCurrentTurn())
@@ -812,7 +812,7 @@ func TestPoker_runCpuActions_SkipFoldedAllIn(t *testing.T) {
 	pk.SetCurrentTurn(1) // Start from CPU 1
 	players[1].SetFolded(true)
 	players[2].SetAllIn(true)
-	pk.SetActedFlags([]bool{false, false, false, false})
+	pk.setActedFlags([]bool{false, false, false, false})
 	pk.runCpuActions()
 }
 
@@ -820,7 +820,7 @@ func TestPoker_runCpuActions_CpuError_Fold(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetCurrentTurn(1)
 	pk.SetLastBet(100)
-	pk.SetRaiseCount(4) // max raises reached
+	pk.setRaiseCount(4) // max raises reached
 	// CPU 1 will try to bet/raise but fail → fallback
 	// Give CPU a strong hand so it tries to bet
 	givePlayerHand(players[1], []*Card{
@@ -831,7 +831,7 @@ func TestPoker_runCpuActions_CpuError_Fold(t *testing.T) {
 		NewCard(CardDesignSpade, 13, false),
 	})
 	// With lastBet=100, callAmount>0, so fallback should fold
-	pk.SetActedFlags([]bool{false, false, true, true})
+	pk.setActedFlags([]bool{false, false, true, true})
 	pk.runCpuActions()
 }
 
@@ -839,7 +839,7 @@ func TestPoker_runCpuActions_CpuError_Check(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetCurrentTurn(1)
 	pk.SetLastBet(0) // no outstanding bet
-	pk.SetRaiseCount(4)
+	pk.setRaiseCount(4)
 	givePlayerHand(players[1], []*Card{
 		NewCard(CardDesignSpade, 1, false),
 		NewCard(CardDesignSpade, 10, false),
@@ -849,7 +849,7 @@ func TestPoker_runCpuActions_CpuError_Check(t *testing.T) {
 	})
 	// cpuDecide would return bet/raise, but raiseCount max → converted to check
 	// The converted check should succeed
-	pk.SetActedFlags([]bool{false, false, true, true})
+	pk.setActedFlags([]bool{false, false, true, true})
 	pk.runCpuActions()
 }
 
@@ -866,7 +866,7 @@ func TestPoker_runCpuExchanges_GameEnded(t *testing.T) {
 
 func TestPoker_runCpuExchanges_ExchangeComplete(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseExchange)
-	pk.SetActedFlags([]bool{true, true, true, true})
+	pk.setActedFlags([]bool{true, true, true, true})
 	pk.runCpuExchanges()
 	// Already complete
 }
@@ -874,7 +874,7 @@ func TestPoker_runCpuExchanges_ExchangeComplete(t *testing.T) {
 func TestPoker_runCpuExchanges_HumanTurn(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseExchange)
 	pk.SetCurrentTurn(0)
-	pk.SetActedFlags([]bool{false, false, false, false})
+	pk.setActedFlags([]bool{false, false, false, false})
 	pk.runCpuExchanges()
 	// Stops at human
 	assert.Equal(t, 0, pk.GetCurrentTurn())
@@ -885,7 +885,7 @@ func TestPoker_runCpuExchanges_SkipFoldedAllIn(t *testing.T) {
 	pk.trumpCards.Shuffle()
 	pk.SetCurrentTurn(1)
 	players[1].SetFolded(true)
-	pk.SetActedFlags([]bool{true, false, false, false})
+	pk.setActedFlags([]bool{true, false, false, false})
 	pk.runCpuExchanges()
 	// Should skip folded p1 and continue
 }
@@ -894,7 +894,7 @@ func TestPoker_runCpuExchanges_NormalCPU(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseExchange)
 	pk.trumpCards.Shuffle()
 	pk.SetCurrentTurn(1)
-	pk.SetActedFlags([]bool{true, false, false, false})
+	pk.setActedFlags([]bool{true, false, false, false})
 	// Give CPUs hands
 	for i := 1; i <= 3; i++ {
 		givePlayerHand(players[i], []*Card{
@@ -982,7 +982,7 @@ func TestPoker_cpuDecide_SecondBetPhase(t *testing.T) {
 
 func TestPoker_cpuDecide_RaiseCountMax_WithBet(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetRaiseCount(4)
+	pk.setRaiseCount(4)
 	pk.SetLastBet(20)
 	// Give strong hand so CPU wants to bet/raise
 	givePlayerHand(players[1], []*Card{
@@ -999,7 +999,7 @@ func TestPoker_cpuDecide_RaiseCountMax_WithBet(t *testing.T) {
 
 func TestPoker_cpuDecide_RaiseCountMax_NoBet(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	pk.SetRaiseCount(4)
+	pk.setRaiseCount(4)
 	pk.SetLastBet(0)
 	givePlayerHand(players[1], []*Card{
 		NewCard(CardDesignSpade, 10, false),
@@ -1770,8 +1770,8 @@ func TestPoker_GettersSetters(t *testing.T) {
 	assert.True(t, pk.GetGameEndFlag())
 
 	flags := []bool{true, false, true, false}
-	pk.SetActedFlags(flags)
-	assert.Equal(t, flags, pk.GetActedFlags())
+	pk.setActedFlags(flags)
+	assert.Equal(t, flags, pk.getActedFlags())
 
 	pk.SetLastBet(100)
 	assert.Equal(t, 100, pk.GetLastBet())
@@ -1779,7 +1779,7 @@ func TestPoker_GettersSetters(t *testing.T) {
 	pk.SetMinRaise(50)
 	assert.Equal(t, 50, pk.GetMinRaise())
 
-	pk.SetRaiseCount(3)
+	pk.setRaiseCount(3)
 
 	results := []PokerResult{{PlayerIdx: 0, WonAmount: 100}}
 	pk.SetRoundResults(results)
@@ -1798,8 +1798,8 @@ func TestPoker_GettersSetters(t *testing.T) {
 	assert.Equal(t, 1, len(pk.GetSidePots()))
 
 	chips := []int{100, 200, 300, 400}
-	pk.SetStartingChips(chips)
-	assert.Equal(t, chips, pk.GetStartingChips())
+	pk.setStartingChips(chips)
+	assert.Equal(t, chips, pk.getStartingChips())
 
 	assert.Equal(t, 10, pk.GetAnte())
 
@@ -1909,7 +1909,7 @@ func TestPoker_advanceTurn_noActivePlayer(t *testing.T) {
 	players[1].SetFolded(true)
 	players[2].SetAllIn(true)
 	players[3].SetAllIn(true)
-	pk.SetActedFlags([]bool{true, true, true, true})
+	pk.setActedFlags([]bool{true, true, true, true})
 	pk.advanceTurn()
 	// All acted → advancePhase
 	assert.True(t, pk.GetPhase() == PokerPhaseExchange || pk.GetPhase() == PokerPhaseEnd)
@@ -1922,7 +1922,7 @@ func TestPoker_advanceTurn_noActivePlayer(t *testing.T) {
 func TestPoker_resolveShowdown_Remainder(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetPot(301) // not evenly divisible
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
 
 	// Give identical hands for 3-way tie
 	for i := 0; i < 3; i++ {
@@ -2005,7 +2005,7 @@ func TestPoker_PlayerAction_SecondBet_AdvancesToEnd(t *testing.T) {
 	players[1].SetFolded(true)
 	players[2].SetFolded(true)
 	players[3].SetFolded(true)
-	pk.SetActedFlags([]bool{false, true, true, true})
+	pk.setActedFlags([]bool{false, true, true, true})
 	err := pk.PlayerAction(PokerActionCheck, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, PokerPhaseEnd, pk.GetPhase())
@@ -2097,7 +2097,7 @@ func TestPoker_DealerIdxRotation(t *testing.T) {
 func TestPoker_resolveShowdown_FoldedExcluded(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetPot(200)
-	pk.SetStartingChips([]int{1000, 1000, 1000, 1000})
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
 	players[0].SetFolded(true)
 	players[3].SetFolded(true)
 
@@ -2131,7 +2131,7 @@ func TestPoker_resolveShowdown_FoldedExcluded(t *testing.T) {
 func TestPoker_advanceTurn_wrapsAround(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetCurrentTurn(3)
-	pk.SetActedFlags([]bool{false, true, true, true})
+	pk.setActedFlags([]bool{false, true, true, true})
 	pk.advanceTurn()
 	assert.Equal(t, 0, pk.GetCurrentTurn()) // wraps to 0
 }
@@ -2207,7 +2207,7 @@ func TestPoker_PlayerExchange_DeckExhausted(t *testing.T) {
 func TestPoker_runCpuExchanges_DeckExhausted(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseExchange)
 	pk.SetCurrentTurn(1)
-	pk.SetActedFlags([]bool{true, false, true, true})
+	pk.setActedFlags([]bool{true, false, true, true})
 	for pk.trumpCards.DrawCard() != nil {
 	}
 	givePlayerHand(players[1], []*Card{
@@ -2268,7 +2268,7 @@ func TestPoker_advancePhase_Deal_SetsActedForFoldedAllIn(t *testing.T) {
 	players[1].SetFolded(true)
 	players[2].SetAllIn(true)
 	pk.advancePhase()
-	flags := pk.GetActedFlags()
+	flags := pk.getActedFlags()
 	assert.True(t, flags[1])  // folded
 	assert.True(t, flags[2])  // allIn
 	assert.False(t, flags[0]) // active, not acted
@@ -2285,7 +2285,7 @@ func TestPoker_startSecondBettingRound_SetsActedForFoldedAllIn(t *testing.T) {
 	players[1].SetFolded(true)
 	players[2].SetAllIn(true)
 	pk.startSecondBettingRound()
-	flags := pk.GetActedFlags()
+	flags := pk.getActedFlags()
 	assert.True(t, flags[1])
 	assert.True(t, flags[2])
 }
@@ -2328,7 +2328,7 @@ func TestPoker_advanceTurn_AllActedFallbackDeal(t *testing.T) {
 	players[1].SetAllIn(true)
 	players[2].SetAllIn(true)
 	players[3].SetAllIn(true)
-	pk.SetActedFlags([]bool{true, true, true, true})
+	pk.setActedFlags([]bool{true, true, true, true})
 	pk.advanceTurn()
 	assert.Equal(t, PokerPhaseExchange, pk.GetPhase())
 }
@@ -2378,7 +2378,7 @@ func TestPoker_runCpuActions_CpuFallback_Check(t *testing.T) {
 		NewCard(CardDesignSpade, 12, false),
 		NewCard(CardDesignSpade, 13, false),
 	})
-	pk.SetActedFlags([]bool{false, false, true, true})
+	pk.setActedFlags([]bool{false, false, true, true})
 	pk.runCpuActions()
 	// Verify the fallback was triggered
 	assert.NotNil(t, pk.GetLastCpuError())
@@ -2399,7 +2399,7 @@ func TestPoker_runCpuActions_CpuFallback_Fold(t *testing.T) {
 		NewCard(CardDesignSpade, 12, false),
 		NewCard(CardDesignSpade, 13, false),
 	})
-	pk.SetActedFlags([]bool{false, false, true, true})
+	pk.setActedFlags([]bool{false, false, true, true})
 	pk.runCpuActions()
 	assert.NotNil(t, pk.GetLastCpuError())
 	assert.True(t, players[1].GetFolded())

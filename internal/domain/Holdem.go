@@ -881,55 +881,5 @@ func (h *Holdem) GetActedFlags() []bool {
 	return result
 }
 
-// --- テスト用セッター ---
-
-// SetPhase フェーズ設定（テスト用）
-func (h *Holdem) SetPhase(phase int) { h.phase = phase }
-
-// SetCurrentTurn 現在のターン設定（テスト用）
-func (h *Holdem) SetCurrentTurn(turn int) { h.currentTurn = turn }
-
-// SetCommunityCards コミュニティカード設定（テスト用）
-func (h *Holdem) SetCommunityCards(cards []*Card) { h.communityCards = cards }
-
-// SetPot ポット設定（テスト用）
-func (h *Holdem) SetPot(pot int) { h.pot = pot }
-
-// SetDealerIdx ディーラーインデックス設定（テスト用）
-func (h *Holdem) SetDealerIdx(idx int) { h.dealerIdx = idx }
-
-// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
-func (h *Holdem) SetGameEndFlag(flag bool) { h.gameEndFlag = flag }
-
-// SetActedFlags actedフラグ設定（テスト用）
-func (h *Holdem) SetActedFlags(flags []bool) { h.actedFlags = flags }
-
-// SetLastBet 最後のベット設定（テスト用）
-func (h *Holdem) SetLastBet(bet int) { h.lastBet = bet }
-
-// SetMinRaise 最小レイズ額設定（テスト用）
-func (h *Holdem) SetMinRaise(raise int) { h.minRaise = raise }
-
-// SetRaiseCount レイズ回数設定（テスト用）
-func (h *Holdem) SetRaiseCount(count int) { h.raiseCount = count }
-
-// SetRoundResults ラウンド結果設定（テスト用）
-func (h *Holdem) SetRoundResults(results []HoldemResult) { h.roundResults = results }
-
-// SetCpuActions CPU行動記録設定（テスト用）
-func (h *Holdem) SetCpuActions(actions []HoldemCpuAction) { h.cpuActions = actions }
-
-// SetSidePots サイドポット設定（テスト用）
-func (h *Holdem) SetSidePots(pots []HoldemSidePot) { h.sidePots = pots }
-
-// SetStartingChips ハンド開始時チップ設定（テスト用）
-func (h *Holdem) SetStartingChips(chips []int) { h.startingChips = chips }
-
-// GetStartingChips ハンド開始時チップ取得（テスト用）
-func (h *Holdem) GetStartingChips() []int { return h.startingChips }
-
 // GetHandCount ハンド数取得
 func (h *Holdem) GetHandCount() int { return h.handCount }
-
-// SetHandCount ハンド数設定（テスト用）
-func (h *Holdem) SetHandCount(count int) { h.handCount = count }

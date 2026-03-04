@@ -25,13 +25,13 @@ func setupHoldemForHumanAction(phase int) *Holdem {
 	for _, p := range h.players {
 		p.SetChips(1000)
 	}
-	h.SetStartingChips([]int{1000, 1000, 1000, 1000})
+	h.setStartingChips([]int{1000, 1000, 1000, 1000})
 	h.SetPhase(phase)
 	h.SetCurrentTurn(0)
 	h.SetLastBet(0)
 	h.SetMinRaise(10)
 	h.SetPot(30)
-	h.SetActedFlags([]bool{false, true, true, true})
+	h.setActedFlags([]bool{false, true, true, true})
 	// Give players cards
 	for _, p := range h.players {
 		p.Reset()
@@ -326,7 +326,7 @@ func TestHoldem_PlayerAction_Raise_MaxRaisesReached(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseFlop)
 	h.SetLastBet(20)
 	h.SetMinRaise(10)
-	h.SetRaiseCount(4) // holdemMaxRaisesPerRound = 4
+	h.setRaiseCount(4) // holdemMaxRaisesPerRound = 4
 	h.SetCommunityCards([]*Card{
 		NewCard(CardDesignSpade, 2, false),
 		NewCard(CardDesignHeart, 3, false),
@@ -342,7 +342,7 @@ func TestHoldem_PlayerAction_Bet_MaxRaisesReached(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseFlop)
 	h.SetLastBet(0)
 	h.SetMinRaise(10)
-	h.SetRaiseCount(4) // holdemMaxRaisesPerRound = 4
+	h.setRaiseCount(4) // holdemMaxRaisesPerRound = 4
 	h.SetCommunityCards([]*Card{
 		NewCard(CardDesignSpade, 2, false),
 		NewCard(CardDesignHeart, 3, false),
@@ -489,7 +489,7 @@ func TestHoldem_GettersSetters(t *testing.T) {
 	assert.True(t, h.GetGameEndFlag())
 
 	flags := []bool{true, false, true, false}
-	h.SetActedFlags(flags)
+	h.setActedFlags(flags)
 	assert.Equal(t, flags, h.GetActedFlags())
 
 	h.SetLastBet(100)
@@ -524,7 +524,7 @@ func TestHoldem_Showdown(t *testing.T) {
 	h.SetPot(200)
 	h.SetCurrentTurn(0)
 	h.SetLastBet(0)
-	h.SetActedFlags([]bool{false, true, true, true})
+	h.setActedFlags([]bool{false, true, true, true})
 
 	// Give player 0 pocket aces
 	h.players[0].Reset()
@@ -637,7 +637,7 @@ func TestHoldem_SidePots_AllIn(t *testing.T) {
 	h.players[2].SetFolded(true)
 	h.players[3].SetFolded(true)
 
-	h.SetActedFlags([]bool{true, true, true, true})
+	h.setActedFlags([]bool{true, true, true, true})
 
 	// Give hands
 	h.players[0].Reset()
@@ -673,7 +673,7 @@ func TestHoldem_SplitPot(t *testing.T) {
 	h.SetPot(200)
 	h.SetCurrentTurn(0)
 	h.SetLastBet(0)
-	h.SetActedFlags([]bool{false, true, true, true})
+	h.setActedFlags([]bool{false, true, true, true})
 
 	// Give identical hands (same values, different suits)
 	h.players[0].Reset()
@@ -720,7 +720,7 @@ func TestHoldem_FullGame_AllFold(t *testing.T) {
 	h.players[1].SetFolded(true)
 	h.players[2].SetFolded(true)
 	// Player 3 is still active
-	h.SetActedFlags([]bool{false, true, true, false})
+	h.setActedFlags([]bool{false, true, true, false})
 
 	err := h.PlayerAction(HoldemActionFold, 0)
 	assert.NoError(t, err)

@@ -6,6 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// SetTableCards 場のカードを直接設定（テスト用）
+func (d *Daifugo) SetTableCards(cards []*Card) { d.tableCards = cards }
+
+// SetLastPlayPlayerIdx 最後にカードを出したプレイヤーインデックスを設定（テスト用）
+func (d *Daifugo) SetLastPlayPlayerIdx(idx int) { d.lastPlayPlayerIdx = idx }
+
 // TestDaifugo_exchangeCardsBetween_InsufficientCards covers lines 231-233:
 // exchangeCardsBetween returns early when upper or lower has fewer cards than count.
 func TestDaifugo_exchangeCardsBetween_InsufficientCards(t *testing.T) {

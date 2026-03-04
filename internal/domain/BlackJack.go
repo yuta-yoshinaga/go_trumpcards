@@ -640,25 +640,6 @@ func (b *BlackJack) IsInsuranceAvailable() bool {
 	return b.insuranceAvailable
 }
 
-// GetTrumpCards トランプカード取得（テスト用）
-func (b *BlackJack) GetTrumpCards() *TrumpCards {
-	return b.trumpCards
-}
-
-// SetPlayerHands プレイヤーハンド設定（テスト用）
-func (b *BlackJack) SetPlayerHands(hands []*BlackJackHand) {
-	b.playerHands = hands
-}
-
-// SetPhase フェーズ設定（テスト用）
-func (b *BlackJack) SetPhase(phase int) {
-	b.phase = phase
-	b.gameEndFlag = phase == BJPhaseEnd
-	if phase == BJPhaseInsurance {
-		b.insuranceAvailable = true
-	}
-}
-
 // PlayerSurrender プレイヤーサレンダー（ベット半額返却して降りる）
 func (b *BlackJack) PlayerSurrender() error {
 	if b.phase != BJPhaseAction {

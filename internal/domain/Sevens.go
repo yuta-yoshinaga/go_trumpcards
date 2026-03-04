@@ -831,15 +831,3 @@ func (s *Sevens) SetConfig(config SevensConfig) {
 	}
 	s.config = config
 }
-
-// SetHumanAction 人間の行動設定（テスト用）
-func (s *Sevens) SetHumanAction(action *SevensCpuAction) { s.humanAction = action }
-
-// SetCpuActions CPU行動設定（テスト用）
-func (s *Sevens) SetCpuActions(actions []*SevensCpuAction) { s.cpuActions = actions }
-
-// GetJokerPlaced ジョーカー配置ビットマスク取得（テスト用）
-func (s *Sevens) GetJokerPlaced() [5]uint16 { return s.jokerPlaced }
-
-// GetJokerCardsCount ボード上のジョーカーカード数取得（テスト用）
-func (s *Sevens) GetJokerCardsCount() int { return len(s.jokerCards) }

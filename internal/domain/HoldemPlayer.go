@@ -82,9 +82,6 @@ func (hp *HoldemPlayer) GetComparisonCards() []*Card {
 	return cards
 }
 
-// SetBestHand ベストハンド設定（テスト用）
-func (hp *HoldemPlayer) SetBestHand(hand []*Card) { hp.bestHand = hand }
-
 // EvalBestHand コミュニティカードとホールカードからベスト5枚を評価
 func (hp *HoldemPlayer) EvalBestHand(communityCards []*Card) int {
 	all := make([]*Card, 0, len(hp.cards)+len(communityCards))

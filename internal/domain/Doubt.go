@@ -477,35 +477,8 @@ func (d *Doubt) GetHumanAction() *DoubtCpuAction { return d.humanAction }
 // GetLastDoubtResult 最後のダウト結果取得
 func (d *Doubt) GetLastDoubtResult() *DoubtDoubtResult { return d.lastDoubtResult }
 
-// SetTableCards テーブルカード設定 (テスト用)
-func (d *Doubt) SetTableCards(cards []*Card) { d.tableCards = cards }
-
-// SetLastAction 最後のプレイアクション設定 (テスト用)
-func (d *Doubt) SetLastAction(action *DoubtAction) { d.lastAction = action }
-
-// SetPhase フェーズ設定 (テスト用)
-func (d *Doubt) SetPhase(phase DoubtPhase) { d.phase = phase }
-
-// SetCpuDoubters CPUダウターリスト設定 (テスト用)
-func (d *Doubt) SetCpuDoubters(doubters []int) { d.cpuDoubters = doubters }
-
-// SetCpuActions CPU行動設定 (テスト用)
-func (d *Doubt) SetCpuActions(actions []*DoubtCpuAction) { d.cpuActions = actions }
-
-// SetHumanAction 人間の行動設定 (テスト用)
-func (d *Doubt) SetHumanAction(action *DoubtCpuAction) { d.humanAction = action }
-
-// SetLastDoubtResult ダウト結果設定 (テスト用)
-func (d *Doubt) SetLastDoubtResult(result *DoubtDoubtResult) { d.lastDoubtResult = result }
-
-// SetWinnerIdx 勝者インデックス設定 (テスト用)
-func (d *Doubt) SetWinnerIdx(idx int) { d.winnerIdx = idx }
-
 // GetTurnCounter ターンカウンター取得
 func (d *Doubt) GetTurnCounter() int { return d.turnCounter }
-
-// SetTurnCounter ターンカウンター設定 (テスト用)
-func (d *Doubt) SetTurnCounter(v int) { d.turnCounter = v }
 
 // GetConfig ゲーム設定取得
 func (d *Doubt) GetConfig() DoubtConfig { return d.config }

@@ -1405,24 +1405,6 @@ func (d *Daifugo) GetTableIsSequence() bool { return d.tableIsSequence }
 // GetExchangeActions カード交換記録取得
 func (d *Daifugo) GetExchangeActions() []*DaifugoExchangeAction { return d.exchangeActions }
 
-// SetElevenBackActive 11バック設定（テスト用）
-func (d *Daifugo) SetElevenBackActive(active bool) { d.elevenBackActive = active }
-
-// SetSuitLocked スート縛り設定（テスト用）
-func (d *Daifugo) SetSuitLocked(locked bool, suit int) {
-	d.suitLocked = locked
-	d.lockedSuit = suit
-}
-
-// SetTableIsSequence 階段フラグ設定（テスト用）
-func (d *Daifugo) SetTableIsSequence(seq bool) { d.tableIsSequence = seq }
-
-// SetExchangeActions カード交換記録設定（テスト用）
-func (d *Daifugo) SetExchangeActions(actions []*DaifugoExchangeAction) { d.exchangeActions = actions }
-
-// SetHumanAction 人間の行動設定（テスト用）
-func (d *Daifugo) SetHumanAction(action *DaifugoCpuAction) { d.humanAction = action }
-
 // GetPendingActionType ペンディングアクションの種類取得
 func (d *Daifugo) GetPendingActionType() DaifugoPendingAction { return d.pendingActionType }
 
@@ -1435,29 +1417,14 @@ func (d *Daifugo) HasPendingAction() bool { return d.pendingActionType != Daifug
 // SetConfig ローカルルール設定を変更（ResetWithConfig用）
 func (d *Daifugo) SetConfig(config DaifugoConfig) { d.config = config }
 
-// SetTableCards 場のカードを直接設定（テスト用）
-func (d *Daifugo) SetTableCards(cards []*Card) { d.tableCards = cards }
-
-// SetLastPlayPlayerIdx 最後にカードを出したプレイヤーインデックスを設定（テスト用）
-func (d *Daifugo) SetLastPlayPlayerIdx(idx int) { d.lastPlayPlayerIdx = idx }
-
 // GetReverseDirection 9リバースの方向取得
 func (d *Daifugo) GetReverseDirection() bool { return d.reverseDirection }
-
-// SetReverseDirection 9リバースの方向設定（テスト用）
-func (d *Daifugo) SetReverseDirection(v bool) { d.reverseDirection = v }
 
 // GetNumberLocked 連番縛り発動中か取得
 func (d *Daifugo) GetNumberLocked() bool { return d.numberLocked }
 
-// SetNumberLocked 連番縛り設定（テスト用）
-func (d *Daifugo) SetNumberLocked(v bool) { d.numberLocked = v }
-
 // GetSortMode 手札ソートモード取得
 func (d *Daifugo) GetSortMode() DaifugoSortMode { return d.sortMode }
-
-// SetSortMode 手札ソートモード設定（テスト用）
-func (d *Daifugo) SetSortMode(mode DaifugoSortMode) { d.sortMode = mode }
 
 // triggerNineReverseIfNeeded 9リバースチェック: 非ジョーカーの9が出されたらターン方向を反転（階段時は無効）
 func (d *Daifugo) triggerNineReverseIfNeeded(cards []*Card, isSeq bool) {
