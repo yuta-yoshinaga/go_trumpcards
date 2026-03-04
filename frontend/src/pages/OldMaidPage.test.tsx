@@ -878,6 +878,85 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
   });
 
+  // ── Card reveal suspense & Joker shake ─────────────────────────────────
+
+  it('shows card-back during reveal delay and revealed card after timer', async () => {
+    const drawState: OldMaidResponse = {
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'HEART', value: 5 },
+      lastDiscardedPairs: 0,
+    };
+    mockExec.mockResolvedValue(drawState);
+    await startGame();
+
+    // Card-back is shown during the 600ms reveal delay
+    const revealArea = screen.getByTestId('card-reveal-area');
+    expect(revealArea.querySelector('img[alt="カード裏面"]')).toBeInTheDocument();
+
+    // After 600ms, the actual card is revealed with flip animation
+    await waitFor(() => {
+      expect(screen.getByTestId('card-reveal-area').querySelector('img[alt="♥ 5"]')).toBeInTheDocument();
+    });
+  });
+
+  it('applies animate-shake class when Joker is drawn', async () => {
+    const jokerDrawState: OldMaidResponse = {
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'JOKER', value: 0 },
+      lastDiscardedPairs: 0,
+    };
+    mockExec.mockResolvedValue(jokerDrawState);
+    await startGame();
+
+    // After the 600ms reveal timer, shake is triggered
+    await waitFor(() => {
+      const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+      expect(container.className).toContain('animate-shake');
+    });
+  });
+
+  it('does not apply animate-shake for non-Joker cards', async () => {
+    const normalDrawState: OldMaidResponse = {
+      ...humanTurnState,
+      hasDrawn: true,
+      lastDrawPlayerIdx: 0,
+      lastDrawFromIdx: 1,
+      lastDrawCard: { design: 'HEART', value: 5 },
+      lastDiscardedPairs: 0,
+    };
+    mockExec.mockResolvedValue(normalDrawState);
+    await startGame();
+
+    // Wait for reveal to complete (600ms)
+    await waitFor(() => {
+      expect(screen.getByTestId('card-reveal-area').querySelector('img[alt="♥ 5"]')).toBeInTheDocument();
+    });
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
+    expect(container.className).not.toContain('animate-shake');
+  });
+
+  it('does not show card reveal area when lastDrawCard is null', async () => {
+    await startGame();
+    expect(screen.queryByTestId('card-reveal-area')).not.toBeInTheDocument();
+  });
+
+  it('does not show card reveal area when game has ended', async () => {
+    const endWithDraw: OldMaidResponse = {
+      ...gameEndState,
+      hasDrawn: true,
+      lastDrawCard: { design: 'HEART', value: 5 },
+    };
+    mockExec.mockResolvedValue(endWithDraw);
+    await startGame();
+    expect(screen.queryByTestId('card-reveal-area')).not.toBeInTheDocument();
+  });
+
   it('goes directly to CPU replay when humanAction is null', async () => {
     const directCpuState: OldMaidResponse = {
       ...humanTurnState,

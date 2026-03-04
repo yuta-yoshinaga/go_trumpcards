@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -307,6 +307,32 @@ export function OldMaidPage() {
   const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
   const [setupStrategy, setSetupStrategy] = useState(false);
   const [gameSettings, setGameSettings] = useState<{ mode: number; cpuPlacementStrategy: boolean } | null>(null);
+  const [shakeKey, setShakeKey] = useState(0);
+  const [revealedCard, setRevealedCard] = useState<Card | null>(null);
+  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Card reveal suspense: show card-back for 600ms, then flip to actual card
+  useEffect(() => {
+    const card = displayState?.lastDrawCard;
+    if (!card) {
+      setRevealedCard(null);
+      return;
+    }
+    setRevealedCard(null);
+    revealTimerRef.current = setTimeout(() => {
+      setRevealedCard(card);
+      revealTimerRef.current = null;
+      if (card.design === 'JOKER') {
+        setShakeKey((k) => k + 1);
+      }
+    }, 600);
+    return () => {
+      if (revealTimerRef.current !== null) {
+        clearTimeout(revealTimerRef.current);
+        revealTimerRef.current = null;
+      }
+    };
+  }, [displayState?.lastDrawCard]);
 
   const onSuccess = useCallback(async (res: OldMaidResponse) => {
     const humanDrawState = buildHumanDrawState(res);
@@ -381,7 +407,12 @@ export function OldMaidPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
+    <div
+      key={shakeKey}
+      className={`flex-1 flex flex-col min-h-0 bg-[#1a5c1a]${shakeKey > 0 ? ' animate-shake' : ''}`}
+      aria-busy={loading}
+      aria-live="polite"
+    >
       {loading && <span className="sr-only">処理中...</span>}
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
@@ -412,6 +443,19 @@ export function OldMaidPage() {
 
         {/* Discarded Area */}
         <DiscardedArea cards={state.lastDiscardedCards} />
+
+        {/* Card reveal area */}
+        {state.lastDrawCard && !state.gameEndFlag && (
+          <div className="flex justify-center my-2" data-testid="card-reveal-area">
+            {revealedCard ? (
+              <div className="animate-flipIn">
+                <CardImage card={revealedCard} width={60} />
+              </div>
+            ) : (
+              <CardBack width={60} />
+            )}
+          </div>
+        )}
 
         {/* Status */}
         {statusLines.length > 0 && (

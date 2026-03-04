@@ -2342,6 +2342,10 @@ components:
           type: boolean
           description: Whether the play was a bluff (always false until revealed)
           example: false
+        hasTell:
+          type: boolean
+          description: Whether the CPU showed a visible "tell" (nervousness indicator) during this play
+          example: false
 
     DoubtDoubtResult:
       type: object
