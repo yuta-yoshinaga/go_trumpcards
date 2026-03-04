@@ -179,7 +179,8 @@ func (s *Sevens) isPositionPlayable(suit, value int) bool {
 		return false
 	}
 	if s.isPositionPlaced(suit, value) {
-		return false
+		// ジョーカー回収が有効な場合、ジョーカーが置かれた場所はプレイ可能
+		return s.config.JokerReclaimEnabled && (s.jokerPlaced[suit]&(1<<uint(value)) != 0)
 	}
 	// 隣接する値が配置済みか確認
 	if s.isPositionPlaced(suit, value+1) {

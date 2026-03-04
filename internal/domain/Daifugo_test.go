@@ -4589,3 +4589,77 @@ func TestEmperor_ThreeCards_Invalid(t *testing.T) {
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 }
+
+func TestEmperor_DuplicateStrength_Invalid(t *testing.T) {
+	// 4 cards with different suits but duplicate strength values → invalid emperor
+	// Use two cards with same strength: e.g., 3♠ and 3♣ have strength 3
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	cfg := domain.DaifugoConfig{EmperorEnabled: true}
+	dg := domain.NewDaifugo(tc, players, cfg)
+
+	// Strengths: 3, 3, 4, 5 → diff==0 at index 1 → invalid
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+	// Not valid emperor (duplicate strength), but IS valid group (two 3s would be a pair, not 4 of a kind)
+	// Actually all 4 have different values (3,3,4,5) → not same value → not valid group either
+	// Wait: 3,3 are same value. So it's invalid as group (need ALL same), invalid as emperor.
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestEmperor_TooManyGaps_WithJoker_Invalid(t *testing.T) {
+	// 3 non-jokers with large gaps + 1 joker → not enough jokers to fill gaps → invalid
+	tc := domain.NewTrumpCards(2)
+	players := makeDaifugoPlayers()
+	cfg := domain.DaifugoConfig{EmperorEnabled: true}
+	dg := domain.NewDaifugo(tc, players, cfg)
+
+	// Strengths: 3, 7, 12 → gaps = (7-3-1)+(12-7-1) = 3+4 = 7, jokerCount = 1
+	// remaining = 1 - 7 = -6 < 0 → invalid
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))  // strength 3
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 7, false)) // strength 7
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false)) // strength 12
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))  // joker
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestEmperor_CpuNoEmperorInHand(t *testing.T) {
+	// CPU has no emperor combination → findEmperorPlay returns nil, CPU plays normally
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, emperorConfig())
+
+	// Human passes to advance to CPU 1
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+
+	// CPU 1 has cards that don't form emperor (same suit, non-consecutive)
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+
+	// Human passes
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+
+	// CPU 1 plays on clear table but has no emperor → plays weakest single card
+	assert.False(t, dg.GetRevolutionActive())
+	dg.CpuPlay()
+	assert.False(t, dg.GetRevolutionActive(), "no revolution (no emperor found)")
+	assert.NotNil(t, dg.GetTableCards(), "CPU should have played something")
+}
