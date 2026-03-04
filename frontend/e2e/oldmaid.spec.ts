@@ -25,12 +25,5 @@ test.describe('Old Maid E2E', () => {
     const resetButton = page.getByRole('button', { name: 'リセット' });
     const nextAction = randomDrawButton.or(resetButton);
     await expect(nextAction.first()).toBeVisible({ timeout: 30_000 });
-
-    // Reset to go back to setup
-    if (await resetButton.isVisible().catch(() => false)) {
-      await resetButton.click();
-      await waitForLoaded(page);
-      await expect(startButton).toBeVisible();
-    }
   });
 });

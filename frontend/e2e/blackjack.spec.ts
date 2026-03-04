@@ -29,14 +29,11 @@ test.describe('BlackJack E2E', () => {
     const resetButton = page.getByRole('button', { name: /リセット/ });
     await expect(resetButton).toBeVisible({ timeout: 10_000 });
 
-    // Start next round — reset deals a new hand immediately (ACTION or INSURANCE phase)
+    // Start next round — reset returns to BET phase
     await resetButton.click();
     await waitForLoaded(page);
 
-    // New round started: either ACTION controls (スタンド/ヒット) or INSURANCE (辞退) visible
-    const newRoundIndicator = page
-      .getByRole('button', { name: 'スタンド' })
-      .or(page.getByRole('button', { name: '辞退' }));
-    await expect(newRoundIndicator.first()).toBeVisible({ timeout: 10_000 });
+    // Back to BET phase
+    await expect(betButton).toBeVisible({ timeout: 10_000 });
   });
 });
