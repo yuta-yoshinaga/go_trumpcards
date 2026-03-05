@@ -17,11 +17,7 @@ func NewPokerWebPresenter() *PokerWebPresenter {
 // Output ゲーム状態をJSON出力
 func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	resObj := pwp.buildOutput(p, lastErr)
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // OutputWithOdds ゲーム状態 + ドローオッズをJSON出力
@@ -39,11 +35,7 @@ func (pwp *PokerWebPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 			}
 		}
 	}
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // buildOutput ゲーム状態をPokerWebOutputに変換
