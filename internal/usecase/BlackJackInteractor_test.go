@@ -139,7 +139,7 @@ func TestResetWithConfig(t *testing.T) {
 	result := tbj.ResetWithConfig(true, 2, true)
 	assert.Equal(t, "reset done", result)
 	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 2, CountingEnabled: true})
-	bjMock.AssertCalled(t, "Reset")
+	bjMock.AssertNumberOfCalls(t, "Reset", 2)
 }
 
 func TestResetWithConfig_Error(t *testing.T) {
@@ -148,9 +148,10 @@ func TestResetWithConfig_Error(t *testing.T) {
 
 	bjMock := new(interfaces.MockBlackJackGame)
 	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 5, CountingEnabled: false}).Return(errors.New("invalid cpu count"))
+	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
 	result := tbj.ResetWithConfig(true, 5, false)
 	assert.Equal(t, "config error output", result)
-	bjMock.AssertNotCalled(t, "Reset")
+	bjMock.AssertNumberOfCalls(t, "Reset", 1)
 }
