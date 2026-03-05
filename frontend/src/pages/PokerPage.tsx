@@ -6,12 +6,13 @@ import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { RoundResults } from '../components/RoundResults';
+import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-
 import { handNameBadgeStyle, POKER_ACTION_NAMES } from '../styles/gameConstants';
 import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
+import { toggleArrayItem } from '../utils/arrayUtils';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -23,17 +24,17 @@ const cardWrapBase: React.CSSProperties = {
 };
 
 export function PokerPage() {
-  const [selected, setSelected] = useState<number[]>([]);
+  const { selected, setSelected, clear: clearSelection } = useCardSelection();
   const [betAmount, setBetAmount] = useState(10);
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);
   const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const oddsGenRef = useRef(0);
 
   const onSuccess = useCallback(() => {
-    setSelected([]);
+    clearSelection();
     setOdds(null);
     oddsGenRef.current++;
-  }, []);
+  }, [clearSelection]);
   const { state, loading, error, exec } = useGameApi(pokerApi.exec, { onSuccess });
 
   useEffect(() => {
@@ -69,7 +70,7 @@ export function PokerPage() {
   const toggleSelect = (idx: number) => {
     if (!canExchange) return;
     setSelected((prev) => {
-      const next = prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx];
+      const next = toggleArrayItem(prev, idx);
       if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
       if (next.length === 0) {
         setOdds(null);

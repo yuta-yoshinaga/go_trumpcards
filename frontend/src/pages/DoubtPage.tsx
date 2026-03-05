@@ -3,6 +3,7 @@ import { doubtApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { CpuTurnArea } from '../components/CpuTurnArea';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { playerAreaBase } from '../styles/gameStyles';
@@ -104,7 +105,7 @@ const CPU_MEMORY_OPTIONS = [
 ] as const;
 
 export function DoubtPage() {
-  const [selectedCardIndices, setSelectedCardIndices] = useState<number[]>([]);
+  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const [claimedValue, setClaimedValue] = useState(1);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [doubtConfig, setDoubtConfig] = useState<DoubtConfig>(DEFAULT_DOUBT_CONFIG);
@@ -113,9 +114,9 @@ export function DoubtPage() {
   const cpuDoubtersRef = useRef<number[]>([]);
 
   const onSuccess = useCallback(() => {
-    setSelectedCardIndices([]);
+    clearSelection();
     setClaimedValue(1);
-  }, []);
+  }, [clearSelection]);
   const { state, loading, error, exec: rawExec } = useGameApi(doubtApi.exec, { onSuccess });
 
   // Keep cpuDoubters ref current so the auto-skip effect avoids stale state
@@ -203,10 +204,6 @@ export function DoubtPage() {
       .filter((a): a is DoubtCpuAction => a !== null && a.hasTell === true)
       .map((a) => a.playerIdx),
   );
-
-  const toggleCard = (idx: number) => {
-    setSelectedCardIndices((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
-  };
 
   const handlePlay = () => {
     exec('play', selectedCardIndices, claimedValue);
