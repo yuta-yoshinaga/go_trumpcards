@@ -128,6 +128,7 @@ func (bi *BlackJackInteractor) ToggleCounting() string {
 
 // ResetWithConfig 設定付きリセット
 func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string {
+	bi.bj.Reset()
 	err := bi.bj.SetConfig(domain.BlackJackConfig{
 		DealerHitsSoft17: dealerHitsSoft17,
 		CpuPlayerCount:   cpuPlayerCount,
