@@ -75,6 +75,8 @@ type HoldemWebOutput struct {
 	RoundResults    []*HoldemWebOutputResult    `json:"roundResults"`
 	CpuActions      []*HoldemWebOutputCpuAction `json:"cpuActions"`
 	Message         string                      `json:"message"`
+	MessageCode     string                      `json:"messageCode,omitempty"`
+	MessageParams   map[string]string           `json:"messageParams,omitempty"`
 	HandCount       int                         `json:"handCount"`
 	SmallBlind      int                         `json:"smallBlind"`
 	BigBlind        int                         `json:"bigBlind"`

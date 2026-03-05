@@ -1,1 +1,3 @@
-export const NETWORK_ERROR_MESSAGE = '通信エラーが発生しました。もう一度お試しください。';
+import i18n from '../i18n';
+
+export const NETWORK_ERROR_MESSAGE = i18n.t('label.networkError');

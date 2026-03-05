@@ -317,6 +317,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You are the winner.", out.Message)
+		assert.Equal(t, "poker.result.win", out.MessageCode)
 	})
 
 	t.Run("game end message - human loses", func(t *testing.T) {
@@ -333,6 +334,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You lose.", out.Message)
+		assert.Equal(t, "poker.result.lose", out.MessageCode)
 	})
 
 	t.Run("game end message - human folded", func(t *testing.T) {
@@ -349,6 +351,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You folded.", out.Message)
+		assert.Equal(t, "poker.result.folded", out.MessageCode)
 	})
 
 	t.Run("game end message - no results", func(t *testing.T) {
@@ -361,6 +364,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "Game over.", out.Message)
+		assert.Equal(t, "poker.result.gameOver", out.MessageCode)
 	})
 
 	t.Run("game end - human in results with zero won (not winner)", func(t *testing.T) {
@@ -377,6 +381,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You lose.", out.Message)
+		assert.Equal(t, "poker.result.lose", out.MessageCode)
 	})
 
 	t.Run("no message when not game end and no error", func(t *testing.T) {

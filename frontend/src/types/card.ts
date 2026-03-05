@@ -48,6 +48,8 @@ export interface BlackJackResponse {
   insuranceBet: number;
   insuranceAvailable: boolean;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
   hintEnabled: boolean;
   suggestedAction: number;
   deckCount: number;
@@ -126,6 +128,8 @@ export interface PokerResponse {
   cpuExchanges: PokerCpuExchange[];
   odds?: PokerOdds[];
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }
 
 export interface OldMaidPlayerData {
@@ -161,6 +165,8 @@ export interface OldMaidResponse {
   removedCard: Card | null;
   mode: number;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }
 
 export interface DaifugoPlayerData {
@@ -220,6 +226,8 @@ export interface DaifugoResponse {
   cpuActions: DaifugoAction[];
   humanAction: DaifugoAction | null;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
   pendingAction: 'none' | 'sevenPass' | 'tenDiscard';
   pendingActionTarget: number;
   reverseDirection: boolean;
@@ -266,6 +274,8 @@ export interface SevensResponse {
   cpuActions: SevensAction[];
   humanAction: SevensAction | null;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }
 
 export interface DoubtPlayerData {
@@ -311,6 +321,8 @@ export interface DoubtResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
   doubtWindowSec: number;
 }
 
@@ -364,6 +376,8 @@ export interface HoldemResponse {
   roundResults: HoldemResult[];
   cpuActions: HoldemCpuAction[];
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
   handCount: number;
   smallBlind: number;
   bigBlind: number;

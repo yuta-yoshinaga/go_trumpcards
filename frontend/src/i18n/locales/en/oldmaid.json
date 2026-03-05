@@ -1,0 +1,29 @@
+{
+  "setup": {
+    "title": "Old Maid Settings",
+    "modeSelect": "Mode",
+    "normal": "Old Maid (Joker is the odd card)",
+    "jijiNuki": "Jiji-Nuki (Random card removed)",
+    "cpuStrategy": "CPU Psychology (place odd card at edges)",
+    "start": "Start Game"
+  },
+  "badge": {
+    "jijiNuki": "Jiji-Nuki"
+  },
+  "cardCount": "{{count}} cards",
+  "draw": "Draw",
+  "drawTarget": "← Target",
+  "discardArea": "Discard Area",
+  "lastDiscarded": "Recently Discarded",
+  "drawCardAriaLabel": "Draw card #{{idx}}",
+  "drewCard": "{{from}} drew from {{target}}",
+  "drewCardWithLabel": "{{from}} drew from {{target}} ({{card}})",
+  "discardedPairs": ". Discarded {{count}} pair(s)",
+  "yourTurn": "Your turn! Click a card from {{target}} to draw.",
+  "removedCard": "Removed Card: {{card}}",
+  "button": {
+    "settings": "Settings",
+    "drawRandom": "Draw Random",
+    "shuffle": "Shuffle"
+  }
+}

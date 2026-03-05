@@ -63,6 +63,8 @@ type DoubtWebOutput struct {
 	GameEndFlag     bool                       `json:"gameEndFlag"`
 	WinnerIdx       int                        `json:"winnerIdx"`
 	Message         string                     `json:"message"`
+	MessageCode     string                     `json:"messageCode,omitempty"`
+	MessageParams   map[string]string          `json:"messageParams,omitempty"`
 	DoubtWindowSec  int                        `json:"doubtWindowSec"`
 }
 

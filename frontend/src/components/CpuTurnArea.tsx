@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { activeTurnStyle, finishedPlayerStyle } from '../styles/gameConstants';
 import { playerName } from '../utils/playerUtils';
 import { StatusBadge } from './StatusBadge';
@@ -27,6 +28,7 @@ export function CpuTurnArea({
   nameClassName,
   children,
 }: CpuTurnAreaProps) {
+  const { t } = useTranslation('common');
   const conditionalStyle: React.CSSProperties =
     isFinished && dimFinished ? finishedPlayerStyle : isCurrentTurn ? activeTurnStyle : {};
   return (
@@ -34,7 +36,7 @@ export function CpuTurnArea({
       <div className={`text-white font-bold mb-1${nameClassName ? ` ${nameClassName}` : ''}`}>
         {playerName(playerId, isHuman)}
         {isFinished && finishedLabel && <StatusBadge variant="success">{finishedLabel}</StatusBadge>}
-        {isCurrentTurn && !isFinished && <StatusBadge variant="warning">考え中...</StatusBadge>}
+        {isCurrentTurn && !isFinished && <StatusBadge variant="warning">{t('status.thinking')}</StatusBadge>}
       </div>
       {children}
     </div>

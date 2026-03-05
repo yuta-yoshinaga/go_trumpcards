@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { gameRoutes } from './gameRoutes';
 
 describe('gameRoutes', () => {
-  it('each entry has non-empty path and label', () => {
+  it('each entry has non-empty path and labelKey', () => {
     for (const route of gameRoutes) {
       expect(route.path.length).toBeGreaterThan(0);
-      expect(route.label.length).toBeGreaterThan(0);
+      expect(route.labelKey.length).toBeGreaterThan(0);
     }
   });
 

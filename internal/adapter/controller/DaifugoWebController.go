@@ -75,6 +75,8 @@ type DaifugoWebOutput struct {
 	CpuActions          []*DaifugoWebOutputAction         `json:"cpuActions"`
 	HumanAction         *DaifugoWebOutputAction           `json:"humanAction"`
 	Message             string                            `json:"message"`
+	MessageCode         string                            `json:"messageCode,omitempty"`
+	MessageParams       map[string]string                 `json:"messageParams,omitempty"`
 	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"
 	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
 	ReverseDirection    bool                              `json:"reverseDirection"`

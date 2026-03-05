@@ -127,6 +127,8 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		resObj.Message = lastErr.Error()
 	} else if dg.GetGameEndFlag() {
 		resObj.Message = dwp.buildResultMessage(dg)
+		resObj.MessageCode = "daifugo.result.rankings"
+		resObj.MessageParams = map[string]string{"rankings": resObj.Message}
 	}
 
 	return marshalOrError(resObj)

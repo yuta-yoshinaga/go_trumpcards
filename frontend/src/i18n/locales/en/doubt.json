@@ -1,0 +1,31 @@
+{
+  "cardCount": "{{count}} cards",
+  "table": "Table",
+  "tableCards": "Table Cards: {{count}}",
+  "actionDesc": "{{name}} played {{count}} card(s) (claimed: {{value}})",
+  "doubtQuestion": "Doubt?",
+  "countdown": "{{sec}} sec left",
+  "cpuDoubters": "CPU doubters: {{names}}",
+  "doubtButton": "Doubt!",
+  "skipButton": "Skip",
+  "cpuJudging": "CPUs are judging...",
+  "cpuDoubtExclaim": "Doubt! {{names}}",
+  "confirmButton": "Confirm",
+  "doubtResult": {
+    "title": "Doubt Result",
+    "wasLying": "It was a lie!",
+    "wasTruth": "It was the truth!",
+    "loserTook": "{{name}} took {{count}} cards"
+  },
+  "yourCards": "You ({{count}} cards)",
+  "selectPrompt": "Select cards to play",
+  "claimedValue": "Claimed Value:",
+  "playButton": "Play",
+  "tell": "Tell",
+  "settings": {
+    "title": "Settings",
+    "doubtTime": "Doubt Time:",
+    "cpuMemory": "CPU Memory:",
+    "sec": "{{sec}}s"
+  }
+}

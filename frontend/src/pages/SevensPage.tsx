@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { sevensApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { CpuTurnArea } from '../components/CpuTurnArea';
@@ -72,17 +73,30 @@ function isCardPlayable(
   return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled);
 }
 
-function actionDesc(players: { id: number; isHuman: boolean }[], action: SevensAction): string {
+function actionDesc(
+  players: { id: number; isHuman: boolean }[],
+  action: SevensAction,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
   if (!action.playedCard) {
-    const base = `${findPlayerName(players, action.playerIdx)}がパスしました`;
-    return action.forcedPass ? `${base} ⚠ 出せるカードなし!` : base;
+    const base = t('actionPassed', { name: findPlayerName(players, action.playerIdx) });
+    return action.forcedPass ? t('actionForcedPass', { base }) : base;
   }
   const c = action.playedCard;
-  let desc = `${findPlayerName(players, action.playerIdx)}が出しました: ${c.design} ${valueName(c.value)}`;
   if (c.design === 'JOKER' && action.targetSuit > 0) {
-    desc += ` → ${suitName(action.targetSuit)} ${valueName(action.targetValue)}`;
+    return t('actionPlayedJoker', {
+      name: findPlayerName(players, action.playerIdx),
+      design: c.design,
+      value: valueName(c.value),
+      targetSuit: suitName(action.targetSuit),
+      targetValue: valueName(action.targetValue),
+    });
   }
-  return desc;
+  return t('actionPlayed', {
+    name: findPlayerName(players, action.playerIdx),
+    design: c.design,
+    value: valueName(c.value),
+  });
 }
 
 // ── styles ──────────────────────────────────────────────────────────────────
@@ -99,12 +113,13 @@ interface BoardProps {
 }
 
 function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: BoardProps) {
+  const { t } = useTranslation('sevens');
   return (
     <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
       <div className="text-white font-bold mb-2">
-        ボード
-        {tunnelEnabled && <span className="text-yellow-400 text-xs ml-2">[トンネル]</span>}
-        {jokerSelecting && <span className="text-green-400 text-xs ml-2">配置先を選択してください</span>}
+        {t('board')}
+        {tunnelEnabled && <span className="text-yellow-400 text-xs ml-2">{t('tunnelTag')}</span>}
+        {jokerSelecting && <span className="text-green-400 text-xs ml-2">{t('jokerSelectHint')}</span>}
       </div>
       <div className="grid grid-cols-2 gap-2">
         {SUITS.map(({ idx, name, label, color }) => (
@@ -146,7 +161,7 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
                       key={v}
                       type="button"
                       onClick={() => onJokerPlace?.(idx, v)}
-                      aria-label={`${suitName(idx)} ${valueName(v)} に配置`}
+                      aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
                       style={{ ...cellStyle, border: '1px solid #60a5fa', cursor: 'pointer', padding: 0 }}
                     >
                       {valueName(v)}
@@ -160,7 +175,7 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
                 );
               })}
               {tunnelEnabled && (
-                <span role="img" className="text-yellow-400 text-[0.65em] ml-0.5" aria-label="トンネル接続">
+                <span role="img" className="text-yellow-400 text-[0.65em] ml-0.5" aria-label={t('tunnelConnection')}>
                   ↔
                 </span>
               )}
@@ -175,18 +190,24 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
 // ── CPU player area ──────────────────────────────────────────────────────────
 
 function SevCpuArea({ player, isCurrentTurn }: { player: SevensPlayerData; isCurrentTurn: boolean }) {
+  const { t } = useTranslation('sevens');
   return (
     <CpuTurnArea
       playerId={player.id}
       isHuman={player.isHuman}
       isCurrentTurn={isCurrentTurn}
       isFinished={player.isFinished}
-      finishedLabel={player.isFinished ? `${player.rank}位` : undefined}
+      finishedLabel={player.isFinished ? t('rankLabel', { rank: player.rank }) : undefined}
       className={playerAreaClass}
     >
       {!player.isFinished && (
         <div className="text-[#ccc] text-[0.85em]">
-          {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses === 0 ? '∞' : player.maxPasses}
+          {t('cardCount', { count: player.cardCount })}
+          {'　'}
+          {t('passCount', {
+            used: player.passesUsed,
+            max: player.maxPasses === 0 ? t('passUnlimited') : player.maxPasses,
+          })}
         </div>
       )}
     </CpuTurnArea>
@@ -214,6 +235,7 @@ function HumanArea({
   loading,
   onPlay,
 }: HumanAreaProps) {
+  const { t } = useTranslation('sevens');
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isCurrentTurn
@@ -223,12 +245,17 @@ function HumanArea({
     <div className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && <StatusBadge variant="success">{player.rank}位</StatusBadge>}
+        {player.isFinished && <StatusBadge variant="success">{t('rankLabel', { rank: player.rank })}</StatusBadge>}
       </div>
       {!player.isFinished && (
         <div className="text-[#ccc] text-[0.85em] mb-1">
-          {player.cardCount}枚　パス: {player.passesUsed}/{player.maxPasses === 0 ? '∞' : player.maxPasses}
-          {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>出せるカードをクリック</span>}
+          {t('cardCount', { count: player.cardCount })}
+          {'　'}
+          {t('passCount', {
+            used: player.passesUsed,
+            max: player.maxPasses === 0 ? t('passUnlimited') : player.maxPasses,
+          })}
+          {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>{t('clickPlayable')}</span>}
         </div>
       )}
       <div className="flex flex-wrap gap-1">
@@ -265,6 +292,8 @@ function HumanArea({
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export function SevensPage() {
+  const { t } = useTranslation('sevens');
+  const { t: tc } = useTranslation('common');
   const [jokerCardIdx, setJokerCardIdx] = useState<number | null>(null);
   const [cfgTunnel, setCfgTunnel] = useState(false);
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
@@ -315,7 +344,7 @@ export function SevensPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">処理中...</span>}
+      {loading && <span className="sr-only">{tc('status.loading')}</span>}
       {/* Scrollable: CPU rows + board + action logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Config rules */}
@@ -327,14 +356,16 @@ export function SevensPage() {
             state.config.noJokerFinish ||
             state.config.jokerReclaimEnabled) && (
             <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-[0.85em]">
-              ルール:
-              {state.config.tunnelEnabled && ' [トンネル]'}
-              {state.config.jokerCount > 0 && ` [ジョーカー×${state.config.jokerCount}]`}
-              {state.config.cpuStrategy && ' [CPU戦略]'}
-              {state.config.maxPasses === 0 && ' [パス無制限]'}
-              {state.config.maxPasses !== 5 && state.config.maxPasses !== 0 && ` [パス${state.config.maxPasses}回]`}
-              {state.config.noJokerFinish && ' [ジョーカー上がり禁止]'}
-              {state.config.jokerReclaimEnabled && ' [ジョーカー回収]'}
+              {t('rules.title')}
+              {state.config.tunnelEnabled && ` ${t('rules.tunnelTag')}`}
+              {state.config.jokerCount > 0 && ` ${t('rules.jokerTag', { count: state.config.jokerCount })}`}
+              {state.config.cpuStrategy && ` ${t('rules.cpuStrategy')}`}
+              {state.config.maxPasses === 0 && ` ${t('rules.passUnlimited')}`}
+              {state.config.maxPasses !== 5 &&
+                state.config.maxPasses !== 0 &&
+                ` ${t('rules.passCount', { count: state.config.maxPasses })}`}
+              {state.config.noJokerFinish && ` ${t('rules.noJokerFinish')}`}
+              {state.config.jokerReclaimEnabled && ` ${t('rules.jokerReclaim')}`}
             </div>
           )}
 
@@ -359,28 +390,28 @@ export function SevensPage() {
             data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
             className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-[#fca] border border-red-500/50' : 'bg-black/40 text-[#cfc]'}`}
           >
-            {actionDesc(state.players, state.humanAction)}
+            {actionDesc(state.players, state.humanAction, t)}
           </div>
         )}
 
         {/* CPU action log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
           <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-[0.85em]">
-            <span className="text-[#ccc]">[CPUの行動]</span>
+            <span className="text-[#ccc]">{tc('label.cpuActions')}</span>
             {state.cpuActions.map((a, i) => (
               <div
                 key={`cpu-action-${a.playerIdx}-${i}`}
                 data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
                 className={a.forcedPass ? 'text-[#fca]' : 'text-[#ccc]'}
               >
-                {actionDesc(state.players, a)}
+                {actionDesc(state.players, a, t)}
               </div>
             ))}
           </div>
         )}
 
         {/* Result message */}
-        <GameMessageBox message={state.message} />
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
@@ -402,13 +433,13 @@ export function SevensPage() {
 
         {/* Config panel */}
         <div className="bg-black/30 rounded-lg py-1.5 px-3 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.85em] text-white/80">
-          <span className="text-yellow-300 font-bold">ルール設定 (リセット時に適用)</span>
+          <span className="text-yellow-300 font-bold">{t('config.title')}</span>
           <label className="flex items-center gap-1 cursor-pointer">
             <input type="checkbox" checked={cfgTunnel} onChange={(e) => setCfgTunnel(e.target.checked)} />
-            トンネル
+            {t('config.tunnel')}
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
-            ジョーカー
+            {t('config.joker')}
             <select
               value={cfgJokerCount}
               onChange={(e) => setCfgJokerCount(Number(e.target.value))}
@@ -421,10 +452,10 @@ export function SevensPage() {
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
             <input type="checkbox" checked={cfgCpuStrategy} onChange={(e) => setCfgCpuStrategy(e.target.checked)} />
-            CPU戦略
+            {t('config.cpuStrategy')}
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
-            パス回数
+            {t('config.passCount')}
             <select
               value={cfgMaxPasses}
               onChange={(e) => setCfgMaxPasses(Number(e.target.value))}
@@ -433,16 +464,16 @@ export function SevensPage() {
               <option value={3}>3</option>
               <option value={5}>5</option>
               <option value={10}>10</option>
-              <option value={0}>無制限</option>
+              <option value={0}>{t('config.passUnlimited')}</option>
             </select>
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
             <input type="checkbox" checked={cfgNoJokerFinish} onChange={(e) => setCfgNoJokerFinish(e.target.checked)} />
-            ジョーカー上がり禁止
+            {t('config.noJokerFinish')}
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
             <input type="checkbox" checked={cfgJokerReclaim} onChange={(e) => setCfgJokerReclaim(e.target.checked)} />
-            ジョーカー回収
+            {t('config.jokerReclaim')}
           </label>
         </div>
 
@@ -465,7 +496,7 @@ export function SevensPage() {
               })
             }
           >
-            リセット
+            {tc('button.reset')}
           </button>
           <button
             type="button"
@@ -473,11 +504,11 @@ export function SevensPage() {
             disabled={loading || !canPass}
             onClick={() => exec('play', -1)}
           >
-            パス
+            {tc('button.pass')}
           </button>
           {jokerCardIdx !== null && (
             <button type="button" className={`${btnWarning} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
-              キャンセル
+              {tc('button.cancel')}
             </button>
           )}
         </div>

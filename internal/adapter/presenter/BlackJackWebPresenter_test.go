@@ -83,6 +83,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		assert.Equal(t, 22, result.Dealer.Score)
 		assert.Equal(t, 3, len(result.Dealer.Cards))
 		assert.Equal(t, "It is your loss.", result.Message)
+		assert.Equal(t, "blackjack.result.lose", result.MessageCode)
 		assert.Equal(t, domain.BJPhaseEnd, result.Phase)
 	})
 	t.Run("success Output end phase draw", func(t *testing.T) {
@@ -106,6 +107,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
 		assert.Equal(t, "It is a draw.", result.Message)
+		assert.Equal(t, "blackjack.result.draw", result.MessageCode)
 	})
 	t.Run("success Output end phase win", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -129,6 +131,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
 		assert.Equal(t, "You are the winner.", result.Message)
+		assert.Equal(t, "blackjack.result.win", result.MessageCode)
 	})
 	t.Run("success Output hands fields", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)

@@ -81,6 +81,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, `"hasDrawn":true`)
 		assert.Contains(t, result, `"humanAction":{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"HEART","value":7},"discardedPairs":1`)
 		assert.Contains(t, result, `"message":"ゲーム終了！ あなたの負け！"`)
+		assert.Contains(t, result, `"messageCode":"oldmaid.result.humanLose"`)
 	})
 
 	t.Run("success Output game not ended with draw and no discard", func(t *testing.T) {
@@ -135,6 +136,8 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, `{"design":"CLOVER","value":3}`)
 		assert.Contains(t, result, `"hasDrawn":true`)
 		assert.Contains(t, result, `"message":"ゲーム終了！ CPU 2の負け！"`)
+		assert.Contains(t, result, `"messageCode":"oldmaid.result.cpuLose"`)
+		assert.Contains(t, result, `"messageParams":{"cpuId":"2"}`)
 	})
 
 	t.Run("success Output with CpuActions and discarded cards", func(t *testing.T) {
@@ -191,6 +194,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		_ = om.CpuDraw()
 		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"message":"ゲーム終了！ あなたの負け！"`)
+		assert.Contains(t, result, `"messageCode":"oldmaid.result.humanLose"`)
 	})
 
 	t.Run("success Output game ended cpu loses at index 0", func(t *testing.T) {
@@ -216,6 +220,8 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		_ = om.CpuDraw()
 		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"message":"ゲーム終了！ CPU 0の負け！"`)
+		assert.Contains(t, result, `"messageCode":"oldmaid.result.cpuLose"`)
+		assert.Contains(t, result, `"messageParams":{"cpuId":"0"}`)
 	})
 
 	t.Run("success Output displays error message", func(t *testing.T) {

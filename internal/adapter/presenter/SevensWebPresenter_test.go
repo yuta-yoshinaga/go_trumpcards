@@ -158,6 +158,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.GameEndFlag)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "sevens.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 	})
 
 	t.Run("success Output CPU actions after human play", func(t *testing.T) {
@@ -343,6 +345,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "sevens.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 		assert.NotContains(t, resObj.Message, "CPU 1") // skipped due to rank 0
 	})
 
@@ -407,6 +411,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, resObj.Players, 0)           // nil player skipped in Output loop
 		assert.Equal(t, "ゲーム終了！ ", resObj.Message) // buildResultMessage called
+		assert.Equal(t, "sevens.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 	})
 
 	t.Run("success Output config includes MaxPasses", func(t *testing.T) {

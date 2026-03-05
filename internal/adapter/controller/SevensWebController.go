@@ -54,16 +54,18 @@ type SevensWebOutputConfig struct {
 
 // SevensWebOutput 7並べWebアウトプット
 type SevensWebOutput struct {
-	Players      []*SevensWebOutputPlayer `json:"players"`
-	CurrentTurn  int                      `json:"currentTurn"`
-	TableMinVals [5]int                   `json:"tableMinVals"`
-	TableMaxVals [5]int                   `json:"tableMaxVals"`
-	TablePlaced  [5]int                   `json:"tablePlaced"`
-	Config       SevensWebOutputConfig    `json:"config"`
-	GameEndFlag  bool                     `json:"gameEndFlag"`
-	CpuActions   []*SevensWebOutputAction `json:"cpuActions"`
-	HumanAction  *SevensWebOutputAction   `json:"humanAction"`
-	Message      string                   `json:"message"`
+	Players       []*SevensWebOutputPlayer `json:"players"`
+	CurrentTurn   int                      `json:"currentTurn"`
+	TableMinVals  [5]int                   `json:"tableMinVals"`
+	TableMaxVals  [5]int                   `json:"tableMaxVals"`
+	TablePlaced   [5]int                   `json:"tablePlaced"`
+	Config        SevensWebOutputConfig    `json:"config"`
+	GameEndFlag   bool                     `json:"gameEndFlag"`
+	CpuActions    []*SevensWebOutputAction `json:"cpuActions"`
+	HumanAction   *SevensWebOutputAction   `json:"humanAction"`
+	Message       string                   `json:"message"`
+	MessageCode   string                   `json:"messageCode,omitempty"`
+	MessageParams map[string]string        `json:"messageParams,omitempty"`
 }
 
 // SevensWebController 7並べWebコントローラークラス

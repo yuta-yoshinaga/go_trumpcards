@@ -1,0 +1,70 @@
+{
+  "nav": {
+    "blackjack": "ブラックジャック",
+    "poker": "ポーカー",
+    "oldmaid": "ババ抜き",
+    "daifugo": "大富豪",
+    "sevens": "7並べ",
+    "doubt": "ダウト",
+    "holdem": "テキサスホールデム"
+  },
+  "player": {
+    "you": "あなた",
+    "cpu": "CPU {{id}}",
+    "player": "Player {{idx}}"
+  },
+  "action": {
+    "fold": "フォールド",
+    "check": "チェック",
+    "call": "コール",
+    "bet": "ベット",
+    "raise": "レイズ",
+    "allIn": "オールイン",
+    "unknown": "不明"
+  },
+  "betting": {
+    "betAmount": "ベット額:",
+    "chips": "チップ:",
+    "currentBet": "ベット:"
+  },
+  "button": {
+    "reset": "リセット",
+    "pass": "パス",
+    "cancel": "キャンセル"
+  },
+  "status": {
+    "loading": "処理中...",
+    "folded": "フォールド",
+    "allIn": "オールイン",
+    "finished": "上がり",
+    "thinking": "考え中..."
+  },
+  "label": {
+    "result": "結果:",
+    "cpuAction": "CPU行動:",
+    "cpuActions": "[CPUの行動]",
+    "pot": "ポット:",
+    "dealer": "ディーラー:",
+    "networkError": "通信エラーが発生しました。もう一度お試しください。",
+    "chipsWon": "+{{amount}}チップ"
+  },
+  "messageCode": {
+    "blackjack.result.draw": "引き分けです。",
+    "blackjack.result.win": "あなたの勝ちです。",
+    "blackjack.result.lose": "あなたの負けです。",
+    "poker.result.gameOver": "ゲーム終了。",
+    "poker.result.win": "あなたの勝ちです。",
+    "poker.result.folded": "フォールドしました。",
+    "poker.result.lose": "あなたの負けです。",
+    "oldmaid.result.humanLose": "ゲーム終了 あなたの負け",
+    "oldmaid.result.cpuLose": "ゲーム終了 CPU {{cpuId}}の負け",
+    "daifugo.result.rankings": "{{rankings}}",
+    "sevens.result.rankings": "{{rankings}}",
+    "doubt.result.humanWin": "あなたの勝ち",
+    "doubt.result.cpuWin": "CPU {{cpuId}}の勝ち",
+    "holdem.result.gameOver": "ゲーム終了。",
+    "holdem.result.win": "あなたの勝ちです。",
+    "holdem.result.folded": "フォールドしました。",
+    "holdem.result.lose": "あなたの負けです。"
+  }
+}

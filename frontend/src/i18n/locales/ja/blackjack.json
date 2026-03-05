@@ -1,0 +1,43 @@
+{
+  "player": "プレイヤー:",
+  "deck": "デッキ:",
+  "deckUnit": "デッキ",
+  "dealerHand": "ディーラー手札",
+  "score": "スコア",
+  "playerHand": "プレイヤー手札",
+  "hand": "ハンド {{idx}}",
+  "insurance": "インシュランス:",
+  "suggestion": "推奨:",
+  "suggest": {
+    "hit": "ヒット",
+    "stand": "スタンド",
+    "double": "ダブルダウン",
+    "split": "スプリット",
+    "surrender": "サレンダー",
+    "decline": "辞退"
+  },
+  "button": {
+    "hit": "ヒット",
+    "stand": "スタンド",
+    "doubleDown": "ダブルダウン",
+    "split": "スプリット",
+    "surrender": "サレンダー",
+    "insurance": "インシュランス",
+    "decline": "辞退",
+    "bet": "ベット"
+  },
+  "betAmount": "ベット額:",
+  "deckCount": "デッキ数:",
+  "cpuCount": "CPU人数:",
+  "cpuUnit": "人",
+  "hint": "ヒント",
+  "counting": "カウント",
+  "autoAdvance": "自動進行:",
+  "autoAdvanceSec": "{{sec}}秒",
+  "sideBet": {
+    "perfectPairs": "Perfect Pairs",
+    "twentyOnePlus3": "21+3",
+    "win": "{{name}} WIN +{{payout}}",
+    "lose": "{{name}} LOSE -{{amount}}"
+  }
+}

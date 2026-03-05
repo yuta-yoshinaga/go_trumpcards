@@ -1,0 +1,56 @@
+{
+  "rank": {
+    "1": "大富豪",
+    "2": "富豪",
+    "3": "平民",
+    "4": "大貧民"
+  },
+  "finishedWithRank": "上がり ({{rank}})",
+  "cardCount": "{{count}}枚",
+  "selectToPlay": "カードをクリックして選択",
+  "tableCards": "場札",
+  "tableEmpty": "（なし）",
+  "playButton": "選択して出す",
+  "passButton": "渡す",
+  "discardButton": "捨てる",
+  "sevenPassBanner": "【7渡し】{{target}}にカードを1枚渡してください",
+  "tenDiscardBanner": "【10捨て】捨てるカードを1枚選択してください",
+  "actionPlayed": "{{name}}が出しました: {{cards}}",
+  "actionPassed": "{{name}}がパスしました",
+  "badge": {
+    "revolution": "革命中",
+    "elevenBack": "11バック",
+    "suitLock": "スート縛り: {{suit}}",
+    "sequence": "階段",
+    "nineReverse": "9リバース",
+    "numberLock": "連番縛り"
+  },
+  "exchange": {
+    "title": "[カード交換]",
+    "entry": "{{from}} → {{to}}: {{cards}}"
+  },
+  "sort": {
+    "strength": "強さ順",
+    "suit": "スート順",
+    "number": "数字順"
+  },
+  "settings": {
+    "title": "ルール設定",
+    "jokerCount": "ジョーカー枚数:",
+    "eightCut": "8切り",
+    "suitLock": "スート縛り",
+    "elevenBack": "11バック",
+    "sequence": "階段",
+    "cardExchange": "カード交換",
+    "fiveSkip": "5飛び",
+    "sevenPass": "7渡し",
+    "tenDiscard": "10捨て",
+    "spadeThree": "スペ3返し",
+    "capitalFall": "都落ち",
+    "nineReverse": "9リバース",
+    "coupDetat": "クーデター",
+    "intenseLock": "激シバ",
+    "sandstorm": "砂嵐",
+    "emperor": "エンペラー"
+  }
+}

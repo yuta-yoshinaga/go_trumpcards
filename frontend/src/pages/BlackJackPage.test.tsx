@@ -269,7 +269,7 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText(/スコア 15/)).toBeInTheDocument());
-    expect(screen.getByText(/ベット 100/)).toBeInTheDocument();
+    expect(screen.getByText(/ベット:? ?100/)).toBeInTheDocument();
   });
 
   it('displays dealer score when non-zero in end phase', async () => {

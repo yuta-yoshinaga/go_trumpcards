@@ -1,0 +1,14 @@
+{
+  "phase": {
+    "preFlop": "プリフロップ",
+    "flop": "フロップ",
+    "turn": "ターン",
+    "river": "リバー",
+    "showdown": "ショーダウン",
+    "end": "結果",
+    "init": "初期化中"
+  },
+  "communityCards": "コミュニティカード",
+  "yourHand": "あなたの手札",
+  "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)"
+}

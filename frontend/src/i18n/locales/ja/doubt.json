@@ -1,0 +1,31 @@
+{
+  "cardCount": "{{count}}枚",
+  "table": "テーブル",
+  "tableCards": "場のカード: {{count}}枚",
+  "actionDesc": "{{name}}が{{count}}枚出しました (宣言: {{value}})",
+  "doubtQuestion": "ダウトしますか？",
+  "countdown": "残り {{sec}} 秒",
+  "cpuDoubters": "ダウト宣言CPU: {{names}}",
+  "doubtButton": "ダウト！",
+  "skipButton": "スルー",
+  "cpuJudging": "CPUがダウトを判定中...",
+  "cpuDoubtExclaim": "ダウト！ {{names}}",
+  "confirmButton": "確認",
+  "doubtResult": {
+    "title": "ダウト結果",
+    "wasLying": "ウソでした！",
+    "wasTruth": "本当でした！",
+    "loserTook": "{{name}}が{{count}}枚引き取りました"
+  },
+  "yourCards": "あなた ({{count}}枚)",
+  "selectPrompt": "カードを選んで出してください",
+  "claimedValue": "宣言する値:",
+  "playButton": "出す",
+  "tell": "テル",
+  "settings": {
+    "title": "設定",
+    "doubtTime": "ダウト時間:",
+    "cpuMemory": "CPU記憶力:",
+    "sec": "{{sec}}秒"
+  }
+}

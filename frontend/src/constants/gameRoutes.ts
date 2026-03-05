@@ -1,9 +1,9 @@
 export const gameRoutes = [
-  { path: '/', label: 'ブラックジャック' },
-  { path: '/poker', label: 'ポーカー' },
-  { path: '/oldmaid', label: 'ババ抜き' },
-  { path: '/daifugo', label: '大富豪' },
-  { path: '/sevens', label: '7並べ' },
-  { path: '/doubt', label: 'ダウト' },
-  { path: '/holdem', label: 'テキサスホールデム' },
+  { path: '/', labelKey: 'nav.blackjack' },
+  { path: '/poker', labelKey: 'nav.poker' },
+  { path: '/oldmaid', labelKey: 'nav.oldmaid' },
+  { path: '/daifugo', labelKey: 'nav.daifugo' },
+  { path: '/sevens', labelKey: 'nav.sevens' },
+  { path: '/doubt', labelKey: 'nav.doubt' },
+  { path: '/holdem', labelKey: 'nav.holdem' },
 ] as const;

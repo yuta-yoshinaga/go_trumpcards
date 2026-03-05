@@ -126,24 +126,26 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if p.GetGameEndFlag() {
-		resObj.Message = pwp.buildResultMessage(p)
+		msg, code := pwp.buildResultMessage(p)
+		resObj.Message = msg
+		resObj.MessageCode = code
 	}
 
 	return resObj
 }
 
-// buildResultMessage builds the end-of-round message
-func (pwp *PokerWebPresenter) buildResultMessage(p interfaces.PokerGame) string {
+// buildResultMessage builds the end-of-round message and its i18n code
+func (pwp *PokerWebPresenter) buildResultMessage(p interfaces.PokerGame) (string, string) {
 	results := p.GetRoundResults()
 	if len(results) == 0 {
-		return "Game over."
+		return "Game over.", "poker.result.gameOver"
 	}
 
 	players := p.GetPlayers()
 	for _, r := range results {
 		if players[r.PlayerIdx].GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "You are the winner."
+				return "You are the winner.", "poker.result.win"
 			}
 		}
 	}
@@ -151,9 +153,9 @@ func (pwp *PokerWebPresenter) buildResultMessage(p interfaces.PokerGame) string 
 	// Human folded
 	for _, pl := range players {
 		if pl.GetIsHuman() && pl.GetFolded() {
-			return "You folded."
+			return "You folded.", "poker.result.folded"
 		}
 	}
 
-	return "You lose."
+	return "You lose.", "poker.result.lose"
 }

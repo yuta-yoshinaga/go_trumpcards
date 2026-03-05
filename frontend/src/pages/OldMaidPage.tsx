@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -125,6 +126,8 @@ function PlayerArea({
   onDraw,
   onReorder,
 }: PlayerAreaProps) {
+  const { t } = useTranslation('oldmaid');
+  const { t: tc } = useTranslation('common');
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isTarget && !gameEndFlag
@@ -138,13 +141,15 @@ function PlayerArea({
     <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1 text-[0.9em]">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && <StatusBadge variant="success">上がり</StatusBadge>}
+        {player.isFinished && <StatusBadge variant="success">{tc('status.finished')}</StatusBadge>}
         {isTarget && !player.isHuman && !player.isFinished && !gameEndFlag && (
-          <StatusBadge variant="warning">← 引く相手</StatusBadge>
+          <StatusBadge variant="warning">{t('drawTarget')}</StatusBadge>
         )}
       </div>
-      {!player.isFinished && <div className="text-[#ccc] text-[0.8em] mb-1">{player.cardCount}枚</div>}
-      {showSelectable && !player.isFinished && <div className="text-[#cfc] text-[0.75em] mb-1">引く</div>}
+      {!player.isFinished && (
+        <div className="text-[#ccc] text-[0.8em] mb-1">{t('cardCount', { count: player.cardCount })}</div>
+      )}
+      {showSelectable && !player.isFinished && <div className="text-[#cfc] text-[0.75em] mb-1">{t('draw')}</div>}
       <div className="flex flex-wrap gap-0.5 justify-center">
         {player.isFinished ? null : player.isHuman ? (
           player.cards?.map((card, i) => (
@@ -187,7 +192,7 @@ function PlayerArea({
                   width={40}
                   style={cardStyle}
                   onClick={() => onDraw(i)}
-                  ariaLabel={`カード ${i + 1} 枚目を引く`}
+                  ariaLabel={t('drawCardAriaLabel', { idx: i + 1 })}
                 />
               );
             })}
@@ -217,10 +222,11 @@ function PlayerArea({
 
 /** Show discarded card pairs stacked (overlapping) to represent a pair being set aside. */
 function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
+  const { t } = useTranslation('oldmaid');
   if (!cards || cards.length === 0) {
     return (
       <div className="h-[90px] flex items-center justify-center border-2 border-dashed border-white/15 rounded-[10px] my-2 text-white/30 text-[0.9em]">
-        捨て札エリア
+        {t('discardArea')}
       </div>
     );
   }
@@ -235,7 +241,7 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
 
   return (
     <div className="my-2 p-2 bg-black/20 rounded-[10px] text-center min-h-[90px]">
-      <div className="text-[#ccc] text-[0.8em] mb-1.5">直前に捨てられたカード</div>
+      <div className="text-[#ccc] text-[0.8em] mb-1.5">{t('lastDiscarded')}</div>
       <div className="flex justify-center gap-5 items-end">
         {pairs.map(([c1, c2]) => (
           <div key={`${c1.design}-${c1.value}`} style={{ position: 'relative', width: 65, height: 82 }}>
@@ -266,11 +272,12 @@ function SetupScreen({
   onStart,
   loading,
 }: SetupScreenProps) {
+  const { t } = useTranslation('oldmaid');
   return (
     <div className="flex-1 flex flex-col items-center justify-center bg-[#1a5c1a] p-6 gap-4" aria-busy={loading}>
-      <div className="text-white text-2xl font-bold mb-2">Old Maid 設定</div>
+      <div className="text-white text-2xl font-bold mb-2">{t('setup.title')}</div>
       <div className="bg-black/40 rounded-xl p-4 w-full max-w-sm flex flex-col gap-3">
-        <div className="text-white font-bold mb-1">モード選択</div>
+        <div className="text-white font-bold mb-1">{t('setup.modeSelect')}</div>
         <label className="flex items-center gap-2 text-white cursor-pointer">
           <input
             type="radio"
@@ -279,7 +286,7 @@ function SetupScreen({
             checked={mode === OldMaidMode.Normal}
             onChange={() => onModeChange(OldMaidMode.Normal)}
           />
-          ババ抜き（ジョーカーが奇数カード）
+          {t('setup.normal')}
         </label>
         <label className="flex items-center gap-2 text-white cursor-pointer">
           <input
@@ -289,22 +296,24 @@ function SetupScreen({
             checked={mode === OldMaidMode.JijiNuki}
             onChange={() => onModeChange(OldMaidMode.JijiNuki)}
           />
-          ジジ抜き（ランダム1枚除外）
+          {t('setup.jijiNuki')}
         </label>
         <div className="border-t border-white/20 my-1" />
         <label className="flex items-center gap-2 text-white cursor-pointer">
           <input type="checkbox" checked={cpuPlacementStrategy} onChange={(e) => onStrategyChange(e.target.checked)} />
-          CPU心理戦（奇数カードを端に配置）
+          {t('setup.cpuStrategy')}
         </label>
       </div>
       <button type="button" className={`${btnPrimary} min-w-[120px] mt-2`} disabled={loading} onClick={onStart}>
-        ゲーム開始
+        {t('setup.start')}
       </button>
     </div>
   );
 }
 
 export function OldMaidPage() {
+  const { t } = useTranslation('oldmaid');
+  const { t: tc } = useTranslation('common');
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
   const [setupStrategy, setSetupStrategy] = useState(false);
@@ -397,15 +406,16 @@ export function OldMaidPage() {
 
   const statusLines: string[] = [];
   if (!state.gameEndFlag && state.hasDrawn) {
-    let msg = `${findPlayerName(state.players, state.lastDrawPlayerIdx)}が${findPlayerName(state.players, state.lastDrawFromIdx)}から1枚引きました`;
-    if (state.lastDrawCard) msg += ` (${cardLabel(state.lastDrawCard)})`;
-    if (state.lastDiscardedPairs > 0) msg += `。${state.lastDiscardedPairs}組捨てました`;
+    const from = findPlayerName(state.players, state.lastDrawPlayerIdx);
+    const target = findPlayerName(state.players, state.lastDrawFromIdx);
+    let msg = state.lastDrawCard
+      ? t('drewCardWithLabel', { from, target, card: cardLabel(state.lastDrawCard) })
+      : t('drewCard', { from, target });
+    if (state.lastDiscardedPairs > 0) msg += t('discardedPairs', { count: state.lastDiscardedPairs });
     statusLines.push(msg);
   }
   if (isHumanTurn) {
-    statusLines.push(
-      `あなたの番！ ${findPlayerName(state.players, state.nextDrawTargetIdx)}のカードをクリックして引いてください。`,
-    );
+    statusLines.push(t('yourTurn', { target: findPlayerName(state.players, state.nextDrawTargetIdx) }));
   }
 
   return (
@@ -415,14 +425,14 @@ export function OldMaidPage() {
       aria-busy={loading}
       aria-live="polite"
     >
-      {loading && <span className="sr-only">処理中...</span>}
+      {loading && <span className="sr-only">{tc('status.loading')}</span>}
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Mode badge */}
         {state.mode === OldMaidMode.JijiNuki && (
           <div className="text-center mb-1">
             <span className="inline-block rounded-md bg-red-600 px-2.5 py-0.5 text-sm font-bold text-white">
-              ジジ抜き
+              {t('badge.jijiNuki')}
             </span>
           </div>
         )}
@@ -470,11 +480,13 @@ export function OldMaidPage() {
         {state.cpuActions && state.cpuActions.length > 0 && (
           <div className="bg-black/40 rounded-lg text-[#ccc] py-1.5 px-2.5 my-1.5 whitespace-pre-line text-[0.8em] max-h-[120px] overflow-y-auto">
             {[
-              '[CPUの行動]',
+              tc('label.cpuActions'),
               ...state.cpuActions.map((action: CpuAction) => {
-                let msg = `${findPlayerName(state.players, action.drawPlayerIdx)}が${findPlayerName(state.players, action.drawFromIdx)}から1枚引きました`;
+                const from = findPlayerName(state.players, action.drawPlayerIdx);
+                const target = findPlayerName(state.players, action.drawFromIdx);
+                let msg = t('drewCard', { from, target });
                 // CPU drawn card is intentionally hidden to preserve game fairness
-                if (action.discardedPairs > 0) msg += `。${action.discardedPairs}組捨てました`;
+                if (action.discardedPairs > 0) msg += t('discardedPairs', { count: action.discardedPairs });
                 return msg;
               }),
             ].join('\n')}
@@ -482,11 +494,13 @@ export function OldMaidPage() {
         )}
 
         {/* Result */}
-        <GameMessageBox message={state.message} />
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {/* JijiNuki: show removed card at game end */}
         {state.gameEndFlag && state.removedCard && (
-          <div className="text-center my-2 text-white text-[0.9em]">除外カード: {cardLabel(state.removedCard)}</div>
+          <div className="text-center my-2 text-white text-[0.9em]">
+            {t('removedCard', { card: cardLabel(state.removedCard) })}
+          </div>
         )}
       </div>
 
@@ -518,10 +532,10 @@ export function OldMaidPage() {
             disabled={loading}
             onClick={() => setGameSettings(null)}
           >
-            設定
+            {t('button.settings')}
           </button>
           <button type="button" className={`${btnPrimary} min-w-[80px]`} disabled={loading} onClick={handleReset}>
-            リセット
+            {tc('button.reset')}
           </button>
           <button
             type="button"
@@ -529,7 +543,7 @@ export function OldMaidPage() {
             disabled={loading || !isHumanTurn || state.gameEndFlag}
             onClick={() => exec('draw')}
           >
-            ランダムに引く
+            {t('button.drawRandom')}
           </button>
           <button
             type="button"
@@ -537,7 +551,7 @@ export function OldMaidPage() {
             disabled={loading || state.gameEndFlag}
             onClick={() => exec('shuffle')}
           >
-            シャッフル
+            {t('button.shuffle')}
           </button>
         </div>
       </GameFooter>
