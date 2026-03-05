@@ -10,8 +10,8 @@ describe('ErrorAlert', () => {
   });
 
   it('renders the message when provided', () => {
-    render(<ErrorAlert message={NETWORK_ERROR_MESSAGE} />);
-    expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument();
+    render(<ErrorAlert message={NETWORK_ERROR_MESSAGE()} />);
+    expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument();
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 });

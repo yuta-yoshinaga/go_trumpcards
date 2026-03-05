@@ -411,7 +411,21 @@ export function SevensPage() {
         )}
 
         {/* Result message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <GameMessageBox
+          message={
+            state.gameEndFlag
+              ? `${t('resultPrefix')} ${state.players
+                  .filter((p) => p.rank > 0)
+                  .sort((a, b) => a.rank - b.rank)
+                  .map((p) =>
+                    t('resultEntry', { name: playerName(p.id, p.isHuman), rank: t('rankLabel', { rank: p.rank }) }),
+                  )
+                  .join(' ')}`
+              : state.message
+          }
+          messageCode={state.gameEndFlag ? undefined : state.messageCode}
+          messageParams={state.gameEndFlag ? undefined : state.messageParams}
+        />
       </div>
 
       {/* Sticky footer: human player hand + buttons */}

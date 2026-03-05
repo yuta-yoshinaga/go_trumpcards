@@ -34,6 +34,8 @@
     "suit": "By Suit",
     "number": "By Number"
   },
+  "resultPrefix": "Game Over!",
+  "resultEntry": "{{name}}: {{rank}}",
   "settings": {
     "title": "Rule Settings",
     "jokerCount": "Jokers:",

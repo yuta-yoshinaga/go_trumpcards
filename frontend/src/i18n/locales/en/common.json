@@ -23,7 +23,7 @@
     "unknown": "Unknown"
   },
   "betting": {
-    "betAmount": "Bet:",
+    "betAmount": "Bet Amount:",
     "chips": "Chips:",
     "currentBet": "Bet:"
   },

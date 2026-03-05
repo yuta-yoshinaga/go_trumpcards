@@ -34,6 +34,8 @@
     "suit": "スート順",
     "number": "数字順"
   },
+  "resultPrefix": "ゲーム終了！",
+  "resultEntry": "{{name}}:{{rank}}",
   "settings": {
     "title": "ルール設定",
     "jokerCount": "ジョーカー枚数:",

@@ -267,7 +267,7 @@ describe('DoubtPage', () => {
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
   it('clears error message on successful API call after failure', async () => {
@@ -278,13 +278,13 @@ describe('DoubtPage', () => {
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
   it('sets aria-busy and sr-only loading text while loading', async () => {
