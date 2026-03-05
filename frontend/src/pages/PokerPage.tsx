@@ -9,10 +9,10 @@ import { RoundResults } from '../components/RoundResults';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-
 import { handNameBadgeStyle, POKER_ACTION_NAMES } from '../styles/gameConstants';
 import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
+import { toggleArrayItem } from '../utils/arrayUtils';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -70,7 +70,7 @@ export function PokerPage() {
   const toggleSelect = (idx: number) => {
     if (!canExchange) return;
     setSelected((prev) => {
-      const next = prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx];
+      const next = toggleArrayItem(prev, idx);
       if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
       if (next.length === 0) {
         setOdds(null);
