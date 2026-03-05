@@ -21,7 +21,8 @@ type BlackJackInteractorIF interface {
 	ToggleHint() string
 	ToggleSoft17() string
 	ToggleCounting() string
-	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string
+	ToggleDAS() string
+	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool) string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -126,13 +127,22 @@ func (bi *BlackJackInteractor) ToggleCounting() string {
 	return bi.bjp.Output(bi.bj, err)
 }
 
+// ToggleDAS スプリット後ダブルダウン許可切り替え
+func (bi *BlackJackInteractor) ToggleDAS() string {
+	config := bi.bj.GetConfig()
+	config.DoubleAfterSplit = !config.DoubleAfterSplit
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
 // ResetWithConfig 設定付きリセット
-func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string {
+func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool) string {
 	bi.bj.Reset()
 	err := bi.bj.SetConfig(domain.BlackJackConfig{
 		DealerHitsSoft17: dealerHitsSoft17,
 		CpuPlayerCount:   cpuPlayerCount,
 		CountingEnabled:  countingEnabled,
+		DoubleAfterSplit: doubleAfterSplit,
 	})
 	if err != nil {
 		return bi.bjp.Output(bi.bj, err)

@@ -32,6 +32,7 @@
   "cpuUnit": "人",
   "hint": "ヒント",
   "counting": "カウント",
+  "das": "DAS",
   "autoAdvance": "自動進行:",
   "autoAdvanceSec": "{{sec}}秒",
   "sideBet": {

@@ -350,6 +350,22 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.Equal(t, 0, result.CpuPlayerCount)
 		assert.Equal(t, 0, result.RunningCount)
 		assert.Equal(t, 0.0, result.TrueCount)
+		assert.True(t, result.DoubleAfterSplit, "default DAS should be true")
+	})
+	t.Run("success Output includes doubleAfterSplit false", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DoubleAfterSplit: false})
+		bj.Reset()
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.False(t, result.DoubleAfterSplit)
 	})
 	t.Run("success Output with no side bet results", func(t *testing.T) {
 		tc := domain.NewTrumpCardsWithDecks(1, 0)

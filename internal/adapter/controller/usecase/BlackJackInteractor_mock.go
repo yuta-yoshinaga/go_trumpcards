@@ -85,8 +85,14 @@ func (_m *MockBlackJackInteractor) ToggleCounting() string {
 	return ret.Get(0).(string)
 }
 
+// ToggleDAS モック
+func (_m *MockBlackJackInteractor) ToggleDAS() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ResetWithConfig モック
-func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string {
-	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled)
+func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool) string {
+	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit)
 	return ret.Get(0).(string)
 }

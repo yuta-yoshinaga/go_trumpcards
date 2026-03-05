@@ -450,6 +450,26 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 	})
 }
 
+func TestBlackJackCuiPresenter_DASDisplay(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("No DAS rule displayed when DoubleAfterSplit is false", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: false})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "rule: No DAS (No double after split)")
+	})
+
+	t.Run("No DAS rule not displayed when DoubleAfterSplit is true", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "rule: No DAS")
+	})
+}
+
 func TestBlackJackCuiPresenter_CpuPlayerDisplay(t *testing.T) {
 	bjp := presenter.NewBlackJackCuiPresenter()
 

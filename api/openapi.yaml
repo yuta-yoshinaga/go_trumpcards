@@ -61,6 +61,7 @@ paths:
         | `setdeckcount` | `sd` | Set shoe deck count (requires `amount`: 1/2/4/6/8) |
         | `togglesoft17` | `soft17` | Toggle dealer soft-17 rule (H17 ↔ S17) |
         | `togglecounting` | `counting` | Toggle card counting display on/off |
+        | `toggledas` | `das` | Toggle double-after-split (DAS) on/off |
         | `quit`  | `q`     | End the session |
       operationId: blackjackExec
       requestBody:
@@ -891,8 +892,8 @@ components:
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
             `hit` (`h`), `stand` (`s`), `doubledown` (`d`), `split` (`sp`),
             `insurance` (`i`), `declineinsurance` (`di`), `togglesoft17` (`soft17`),
-            `togglecounting` (`counting`), `quit` (`q`).
-          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, q, quit]
+            `togglecounting` (`counting`), `toggledas` (`das`), `quit` (`q`).
+          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, q, quit]
           example: hit
         amount:
           type: integer
@@ -923,6 +924,12 @@ components:
             Whether card counting display is enabled.  Only used with `reset` command.
             Defaults to false when omitted.
           example: false
+        doubleAfterSplit:
+          type: boolean
+          description: |
+            Whether double-after-split (DAS) is allowed.  Only used with `reset` command.
+            Defaults to true when omitted.
+          example: true
         perfectPairsBet:
           type: integer
           description: |
@@ -1040,6 +1047,7 @@ components:
         - trueCount
         - perfectPairsBet
         - twentyOnePlus3Bet
+        - doubleAfterSplit
       properties:
         dealer:
           $ref: '#/components/schemas/BlackJackPlayer'
@@ -1134,6 +1142,10 @@ components:
           minimum: 0
           maximum: 3
           example: 0
+        doubleAfterSplit:
+          type: boolean
+          description: Whether double-after-split (DAS) is currently allowed.
+          example: true
         runningCount:
           type: integer
           description: |

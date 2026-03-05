@@ -26,6 +26,7 @@ export interface BlackJackConfigInput {
   dealerHitsSoft17?: boolean;
   cpuPlayerCount?: number;
   countingEnabled?: boolean;
+  doubleAfterSplit?: boolean;
 }
 
 export interface BlackJackSideBetInput {
@@ -48,7 +49,8 @@ export const blackjackApi = {
       | 'togglehint'
       | 'setdeckcount'
       | 'togglesoft17'
-      | 'togglecounting',
+      | 'togglecounting'
+      | 'toggledas',
     amount?: number,
     config?: BlackJackConfigInput,
     sideBets?: BlackJackSideBetInput,

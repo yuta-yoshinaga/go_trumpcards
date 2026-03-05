@@ -68,6 +68,8 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return bcc.bji.ToggleSoft17(), true
 			case "counting", "togglecounting":
 				return bcc.bji.ToggleCounting(), true
+			case "das", "toggledas":
+				return bcc.bji.ToggleDAS(), true
 			case "sd", "setdeckcount":
 				if len(args) < 1 {
 					return "Deck count is required.", true

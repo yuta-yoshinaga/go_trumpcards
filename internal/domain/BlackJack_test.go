@@ -6,6 +6,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewDefaultBlackJack(t *testing.T) {
@@ -1616,6 +1617,93 @@ func TestDefaultBlackJackConfig(t *testing.T) {
 	assert.False(t, cfg.DealerHitsSoft17, "DealerHitsSoft17 default should be false")
 	assert.Equal(t, 0, cfg.CpuPlayerCount, "CpuPlayerCount default should be 0")
 	assert.False(t, cfg.CountingEnabled, "CountingEnabled default should be false")
+	assert.True(t, cfg.DoubleAfterSplit, "DoubleAfterSplit default should be true")
+}
+
+func TestBlackJack_DAS_Enabled(t *testing.T) {
+	// DAS enabled (default) → double down after split should succeed
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Perform split
+	err := bj.PlayerSplit()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(bj.GetPlayerHands()))
+
+	// Double down on the first split hand should succeed (DAS default true)
+	splitHand := bj.GetPlayerHands()[bj.GetCurrentHandIdx()]
+	require.True(t, splitHand.GetCardsSize() == 2 && !splitHand.IsFinished(), "split hand must have exactly 2 cards and not be finished")
+	err = bj.PlayerDoubleDown()
+	assert.NoError(t, err, "DD after split should be allowed when DAS is enabled")
+}
+
+func TestBlackJack_DAS_Disabled(t *testing.T) {
+	// DAS disabled → double down after split should be rejected
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{DoubleAfterSplit: false})
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Perform split
+	err := bj.PlayerSplit()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(bj.GetPlayerHands()))
+
+	// Double down on split hand should be rejected
+	splitHand := bj.GetPlayerHands()[bj.GetCurrentHandIdx()]
+	require.True(t, splitHand.GetCardsSize() == 2 && !splitHand.IsFinished(), "split hand must have exactly 2 cards and not be finished")
+	err = bj.PlayerDoubleDown()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Double after split is not allowed")
+}
+
+func TestBlackJack_DAS_Disabled_NonSplitHandAllowed(t *testing.T) {
+	// DAS disabled but non-split hand → double down should succeed
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{DoubleAfterSplit: false})
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Single hand → DD should be allowed regardless of DAS setting
+	err := bj.PlayerDoubleDown()
+	assert.NoError(t, err, "DD on non-split hand should be allowed even when DAS is disabled")
 }
 
 func TestBlackJackPlayerIsSoft(t *testing.T) {

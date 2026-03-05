@@ -5,6 +5,7 @@ type BlackJackConfig struct {
 	DealerHitsSoft17 bool // ディーラーがソフト17でヒットするか (H17 vs S17)
 	CpuPlayerCount   int  // CPUプレイヤー数 (0-3)
 	CountingEnabled  bool // カウンティング表示有効
+	DoubleAfterSplit bool // スプリット後のダブルダウン許可 (DAS)
 }
 
 // DefaultBlackJackConfig デフォルト設定 (全機能無効)
@@ -13,5 +14,6 @@ func DefaultBlackJackConfig() BlackJackConfig {
 		DealerHitsSoft17: false,
 		CpuPlayerCount:   0,
 		CountingEnabled:  false,
+		DoubleAfterSplit: true,
 	}
 }

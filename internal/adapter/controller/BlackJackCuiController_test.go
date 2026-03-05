@@ -162,6 +162,7 @@ func TestBlackJackCuiController_Soft17AndCountingCommands(t *testing.T) {
 	bjiMock := new(usecase.MockBlackJackInteractor)
 	bjiMock.On("ToggleSoft17").Return(mockOutput)
 	bjiMock.On("ToggleCounting").Return(mockOutput)
+	bjiMock.On("ToggleDAS").Return(mockOutput)
 	tbc := controller.NewBlackJackCuiController(bjiMock)
 
 	t.Run("soft17", func(t *testing.T) {
@@ -175,5 +176,11 @@ func TestBlackJackCuiController_Soft17AndCountingCommands(t *testing.T) {
 	})
 	t.Run("togglecounting", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("togglecounting"))
+	})
+	t.Run("das", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("das"))
+	})
+	t.Run("toggledas", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("toggledas"))
 	})
 }

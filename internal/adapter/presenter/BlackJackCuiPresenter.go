@@ -34,6 +34,9 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	if config.DealerHitsSoft17 {
 		b.WriteString("rule: H17 (Dealer hits soft 17)\n")
 	}
+	if !config.DoubleAfterSplit {
+		b.WriteString("rule: No DAS (No double after split)\n")
+	}
 	if config.CountingEnabled {
 		fmt.Fprintf(&b, "count: RC=%d TC=%.1f\n", bj.GetRunningCount(), bj.GetTrueCount())
 	}
