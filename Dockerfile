@@ -38,24 +38,16 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o go_trumpcards ./cmd/se
 
 # Stage 3: Final production image
 # Pinned to a specific digest for reproducible builds
-FROM alpine:3.21@sha256:22e0ec13c0db6b3e1ba3280e831fc50ba7bffe58e81f31670a64b1afede247bc
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 
-# Create non-root user/group first, then install packages — all in one
-# layer to minimise image size
-RUN addgroup -S appgroup && \
-    adduser -S appuser -G appgroup && \
-    apk --no-cache add ca-certificates
-
-COPY --from=go-builder --chown=appuser:appgroup /app/go_trumpcards .
-COPY --from=frontend-builder --chown=appuser:appgroup /app/public ./public
-
-USER appuser
+COPY --from=go-builder --chown=nonroot:nonroot /app/go_trumpcards .
+COPY --from=frontend-builder --chown=nonroot:nonroot /app/public ./public
 
 # Use a non-privileged port; the server reads the PORT environment variable
 ENV APP_ENV=production
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["./go_trumpcards"]
+CMD ["/app/go_trumpcards"]
