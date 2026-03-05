@@ -38,7 +38,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o go_trumpcards ./cmd/se
 
 # Stage 3: Final production image
 # Pinned to a specific digest for reproducible builds
-FROM gcr.io/distroless/static-debian12:nonroot
+FROM gcr.io/distroless/static-debian12:nonroot@sha256:a9329520abc449e3b14d5bc3a6ffae065bdde0f02667fa10880c49b35c109fd1
 
 WORKDIR /app
 
