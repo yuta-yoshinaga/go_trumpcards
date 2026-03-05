@@ -13,6 +13,7 @@ type BlackJackWebInput struct {
 	DealerHitsSoft17  *bool `json:"dealerHitsSoft17,omitempty"`
 	CpuPlayerCount    *int  `json:"cpuPlayerCount,omitempty"`
 	CountingEnabled   *bool `json:"countingEnabled,omitempty"`
+	DoubleAfterSplit  *bool `json:"doubleAfterSplit,omitempty"`
 	PerfectPairsBet   *int  `json:"perfectPairsBet,omitempty"`
 	TwentyOnePlus3Bet *int  `json:"twentyOnePlus3Bet,omitempty"`
 }
@@ -77,6 +78,7 @@ type BlackJackWebOutput struct {
 	PerfectPairsBet    int                                `json:"perfectPairsBet"`
 	TwentyOnePlus3Bet  int                                `json:"twentyOnePlus3Bet"`
 	SideBetResults     []*BlackJackWebOutputSideBetResult `json:"sideBetResults,omitempty"`
+	DoubleAfterSplit   bool                               `json:"doubleAfterSplit"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -102,7 +104,7 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 		func(w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil {
+				if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil {
 					h17 := false
 					if param.DealerHitsSoft17 != nil {
 						h17 = *param.DealerHitsSoft17
@@ -115,7 +117,11 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 					if param.CountingEnabled != nil {
 						counting = *param.CountingEnabled
 					}
-					bwc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting))
+					das := true
+					if param.DoubleAfterSplit != nil {
+						das = *param.DoubleAfterSplit
+					}
+					bwc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das))
 				} else {
 					bwc.writePresenterResponse(w, bji.Reset())
 				}
@@ -151,6 +157,8 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 				bwc.writePresenterResponse(w, bji.ToggleSoft17())
 			case "togglecounting":
 				bwc.writePresenterResponse(w, bji.ToggleCounting())
+			case "toggledas":
+				bwc.writePresenterResponse(w, bji.ToggleDAS())
 			default:
 				return false
 			}

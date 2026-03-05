@@ -30,6 +30,7 @@ const betPhaseState: BlackJackResponse = {
   trueCount: 0,
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
+  doubleAfterSplit: true,
 };
 
 const baseHand: BlackJackHand = {
@@ -67,6 +68,7 @@ const actionPhaseState: BlackJackResponse = {
   trueCount: 0,
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
+  doubleAfterSplit: true,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -88,6 +90,7 @@ const insurancePhaseState: BlackJackResponse = {
   trueCount: 0,
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
+  doubleAfterSplit: true,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -132,6 +135,7 @@ const endPhaseState: BlackJackResponse = {
   trueCount: 0,
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
+  doubleAfterSplit: true,
 };
 
 beforeEach(() => {
@@ -931,8 +935,90 @@ describe('BlackJackPage', () => {
         dealerHitsSoft17: false,
         cpuPlayerCount: 0,
         countingEnabled: false,
+        doubleAfterSplit: true,
       }),
     );
+  });
+
+  // --- DAS toggle tests ---
+
+  it('shows DAS ON button in bet phase by default', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'DAS ON' })).toBeInTheDocument());
+  });
+
+  it('shows DAS OFF button when doubleAfterSplit is false', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, doubleAfterSplit: false });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'DAS OFF' })).toBeInTheDocument());
+  });
+
+  it('calls toggledas when DAS button is clicked', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, doubleAfterSplit: false });
+    fireEvent.click(screen.getByRole('button', { name: 'DAS ON' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('toggledas'));
+  });
+
+  it('hides double down button after split when DAS is disabled', async () => {
+    const splitHands: BlackJackHand[] = [
+      {
+        ...baseHand,
+        score: 10,
+        cards: [
+          { design: 'SPADE', value: 8 },
+          { design: 'HEART', value: 2 },
+        ],
+      },
+      {
+        ...baseHand,
+        score: 12,
+        cards: [
+          { design: 'DIAMOND', value: 8 },
+          { design: 'CLOVER', value: 4 },
+        ],
+      },
+    ];
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: splitHands,
+      doubleAfterSplit: false,
+      player: { chips: 900 },
+    });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ダブルダウン' })).not.toBeInTheDocument();
+  });
+
+  it('shows double down button after split when DAS is enabled', async () => {
+    const splitHands: BlackJackHand[] = [
+      {
+        ...baseHand,
+        score: 10,
+        cards: [
+          { design: 'SPADE', value: 8 },
+          { design: 'HEART', value: 2 },
+        ],
+      },
+      {
+        ...baseHand,
+        score: 12,
+        cards: [
+          { design: 'DIAMOND', value: 8 },
+          { design: 'CLOVER', value: 4 },
+        ],
+      },
+    ];
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: splitHands,
+      doubleAfterSplit: true,
+      player: { chips: 900 },
+    });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ダブルダウン' })).toBeInTheDocument());
   });
 
   // --- Side bet tests ---

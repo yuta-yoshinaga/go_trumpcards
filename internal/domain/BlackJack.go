@@ -299,6 +299,9 @@ func (b *BlackJack) PlayerDoubleDown() error {
 	if hand.GetCardsSize() != 2 {
 		return NewDomainError(ErrInvalidPlay, "Double down is only allowed with 2 cards.")
 	}
+	if len(b.playerHands) > 1 && !b.config.DoubleAfterSplit {
+		return NewDomainError(ErrInvalidPlay, "Double after split is not allowed.")
+	}
 	if hand.IsFinished() {
 		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
@@ -873,13 +876,15 @@ func (b *BlackJack) cpuPlaySeat(cpu *BlackJackCpuSeat, dealerUpcard *Card) {
 			case BJSuggestStand:
 				hand.SetStood(true)
 			case BJSuggestDouble:
-				if hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet() {
+				canDD := hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet()
+				if canDD && (len(cpu.GetHands()) <= 1 || b.config.DoubleAfterSplit) {
 					b.cpuDoubleDown(cpu, hand)
 				} else {
 					b.cpuHit(hand)
 				}
 			case BJSuggestDoubleStand:
-				if hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet() {
+				canDD := hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet()
+				if canDD && (len(cpu.GetHands()) <= 1 || b.config.DoubleAfterSplit) {
 					b.cpuDoubleDown(cpu, hand)
 				} else {
 					hand.SetStood(true)

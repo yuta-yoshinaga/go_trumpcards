@@ -62,6 +62,7 @@ export interface BlackJackResponse {
   perfectPairsBet: number;
   twentyOnePlus3Bet: number;
   sideBetResults?: BlackJackSideBetResult[];
+  doubleAfterSplit: boolean;
 }
 
 export interface PokerPlayerData {

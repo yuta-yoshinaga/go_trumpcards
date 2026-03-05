@@ -49,6 +49,7 @@ export function BlackJackPage() {
   const [cpuPlayerCount, setCpuPlayerCount] = useState(0);
   const [perfectPairsBet, setPerfectPairsBet] = useState(0);
   const [twentyOnePlus3Bet, setTwentyOnePlus3Bet] = useState(0);
+  const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback((res: BlackJackResponse) => {
@@ -56,6 +57,7 @@ export function BlackJackPage() {
     setDealerHitsSoft17(res.dealerHitsSoft17);
     setCountingEnabled(res.countingEnabled);
     setCpuPlayerCount(res.cpuPlayerCount);
+    setDoubleAfterSplit(res.doubleAfterSplit);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
@@ -73,7 +75,11 @@ export function BlackJackPage() {
   const cpuPlayers = state?.cpuPlayers ?? [];
   const sideBetResults = state?.sideBetResults ?? [];
 
-  const showDoubleDown = !!currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet;
+  const showDoubleDown =
+    !!currentHand &&
+    currentHand.cards.length === 2 &&
+    playerChips >= currentHand.bet &&
+    ((hands?.length ?? 0) <= 1 || doubleAfterSplit);
   const showSplit = !!currentHand?.canSplit && playerChips >= currentHand.bet;
   const showSurrender = !!currentHand?.canSurrender;
 
@@ -82,9 +88,10 @@ export function BlackJackPage() {
       dealerHitsSoft17,
       cpuPlayerCount,
       countingEnabled,
+      doubleAfterSplit,
     };
     exec('reset', undefined, config);
-  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled]);
+  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
@@ -255,6 +262,8 @@ export function BlackJackPage() {
                 onToggleSoft17={() => exec('togglesoft17')}
                 countingEnabled={countingEnabled}
                 onToggleCounting={() => exec('togglecounting')}
+                doubleAfterSplit={doubleAfterSplit}
+                onToggleDAS={() => exec('toggledas')}
                 loading={loading}
                 onBet={() => {
                   const sideBets: BlackJackSideBetInput = {};

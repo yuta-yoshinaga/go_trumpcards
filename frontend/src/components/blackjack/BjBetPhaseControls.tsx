@@ -17,6 +17,8 @@ export interface BjBetPhaseControlsProps {
   onToggleSoft17: () => void;
   countingEnabled: boolean;
   onToggleCounting: () => void;
+  doubleAfterSplit: boolean;
+  onToggleDAS: () => void;
   loading: boolean;
   onBet: () => void;
   perfectPairsBet: number;
@@ -136,6 +138,14 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           onClick={props.onToggleCounting}
         >
           {t('counting')} {props.countingEnabled ? 'ON' : 'OFF'}
+        </button>
+        <button
+          type="button"
+          className={props.doubleAfterSplit ? btnSuccess : btnWarning}
+          disabled={props.loading}
+          onClick={props.onToggleDAS}
+        >
+          {t('das')} {props.doubleAfterSplit ? 'ON' : 'OFF'}
         </button>
       </div>
       <button type="button" className={btnPrimary} disabled={props.loading} onClick={props.onBet}>

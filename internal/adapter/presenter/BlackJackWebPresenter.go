@@ -49,6 +49,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.DealerHitsSoft17 = config.DealerHitsSoft17
 	resObj.CountingEnabled = config.CountingEnabled
 	resObj.CpuPlayerCount = config.CpuPlayerCount
+	resObj.DoubleAfterSplit = config.DoubleAfterSplit
 	resObj.RunningCount = bj.GetRunningCount()
 	resObj.TrueCount = bj.GetTrueCount()
 

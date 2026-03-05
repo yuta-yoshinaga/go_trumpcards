@@ -32,6 +32,7 @@
   "cpuUnit": "",
   "hint": "Hint",
   "counting": "Count",
+  "das": "DAS",
   "autoAdvance": "Auto Advance:",
   "autoAdvanceSec": "{{sec}}s",
   "sideBet": {

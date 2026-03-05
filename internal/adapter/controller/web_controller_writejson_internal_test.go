@@ -41,7 +41,8 @@ func (m *mockBlackJackIF) SetDeckCount(c int) string { return m.Called(c).String
 func (m *mockBlackJackIF) ToggleHint() string        { return m.Called().String(0) }
 func (m *mockBlackJackIF) ToggleSoft17() string      { return "" }
 func (m *mockBlackJackIF) ToggleCounting() string    { return "" }
-func (m *mockBlackJackIF) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string {
+func (m *mockBlackJackIF) ToggleDAS() string         { return "" }
+func (m *mockBlackJackIF) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool) string {
 	return ""
 }
 
