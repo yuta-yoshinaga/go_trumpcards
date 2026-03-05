@@ -20,6 +20,25 @@ func nextActivePlayer[T finishable](players []T, from, direction int) int {
 	return -1
 }
 
+// resettable is satisfied by player types whose hands can be cleared
+// and whose finish flag can be toggled (OldMaidPlayer, DaifugoPlayer, etc.).
+type resettable interface {
+	Reset()
+	SetIsFinished(bool)
+}
+
+// resetPlayers resets all players' hands and clears their finish flags.
+// If extra is non-nil it is called per player for game-specific cleanup.
+func resetPlayers[T resettable](players []T, extra func(T)) {
+	for _, p := range players {
+		p.Reset()
+		p.SetIsFinished(false)
+		if extra != nil {
+			extra(p)
+		}
+	}
+}
+
 // countPlayers counts players matching a predicate.
 func countPlayers[T any](players []T, pred func(T) bool) int {
 	cnt := 0

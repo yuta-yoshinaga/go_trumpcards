@@ -132,11 +132,7 @@ func (d *Doubt) Reset() {
 	d.winnerIdx = -1
 	d.turnCounter = 0
 
-	for _, p := range d.players {
-		p.Reset()
-		p.SetIsFinished(false)
-		p.ResetMemory()
-	}
+	resetPlayers(d.players, func(p *DoubtPlayer) { p.ResetMemory() })
 
 	d.trumpCards.Shuffle()
 	dealAllCards(d.trumpCards, d.players)

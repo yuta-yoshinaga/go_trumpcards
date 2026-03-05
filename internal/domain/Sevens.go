@@ -68,14 +68,12 @@ func (s *Sevens) Reset() {
 	s.jokerCards = nil
 
 	// 全プレイヤーのリセット
-	for _, p := range s.players {
-		p.Reset()
-		p.SetIsFinished(false)
+	resetPlayers(s.players, func(p *SevensPlayer) {
 		p.SetIsEliminated(false)
 		p.SetRank(-1)
 		p.ResetPasses()
 		p.SetMaxPasses(s.config.MaxPasses)
-	}
+	})
 
 	// プレイ順をランダムにする
 	rand.Shuffle(len(s.players), func(i, j int) {
