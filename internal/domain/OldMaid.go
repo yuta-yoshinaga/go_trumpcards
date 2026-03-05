@@ -97,10 +97,7 @@ func (o *OldMaid) Reset() {
 	o.cpuHighlightedCardIdx = -1
 
 	// 全プレイヤーのカードリセット
-	for _, p := range o.players {
-		p.Reset()
-		p.SetIsFinished(false)
-	}
+	resetPlayers(o.players, nil)
 
 	// プレイ順をランダムにする
 	rand.Shuffle(len(o.players), func(i, j int) {

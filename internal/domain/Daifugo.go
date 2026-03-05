@@ -209,11 +209,7 @@ func (d *Daifugo) Reset() {
 	d.trumpCards.Shuffle()
 
 	// 全プレイヤーのカードリセット
-	for _, p := range d.players {
-		p.Reset()
-		p.SetIsFinished(false)
-		p.SetRank(-1)
-	}
+	resetPlayers(d.players, func(p *DaifugoPlayer) { p.SetRank(-1) })
 
 	// プレイ順をランダムにする
 	rand.Shuffle(len(d.players), func(i, j int) {
