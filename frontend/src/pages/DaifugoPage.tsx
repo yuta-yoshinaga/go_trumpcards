@@ -4,6 +4,7 @@ import { CardImage } from '../components/CardImage';
 import { CpuTurnArea } from '../components/CpuTurnArea';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { StatusBadge } from '../components/StatusBadge';
+import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { playerAreaBase } from '../styles/gameStyles';
@@ -263,12 +264,17 @@ const defaultConfigInput: DaifugoConfigInput = {
 };
 
 export function DaifugoPage() {
-  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const {
+    selected: selectedIndices,
+    toggle: toggleCardSelection,
+    clear: clearSelection,
+    setSelected: setSelectedIndices,
+  } = useCardSelection();
   const [configInput, setConfigInput] = useState<DaifugoConfigInput>(defaultConfigInput);
 
   const onSuccess = useCallback(() => {
-    setSelectedIndices([]);
-  }, []);
+    clearSelection();
+  }, [clearSelection]);
   const { state, loading, error, exec } = useGameApi(daifugoApi.exec, { onSuccess });
 
   useEffect(() => {
@@ -281,10 +287,6 @@ export function DaifugoPage() {
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const humanPlayer = state.players.find((p) => p.isHuman);
-
-  const toggleCardSelection = (idx: number) => {
-    setSelectedIndices((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
-  };
 
   const handleDragCard = (idx: number) => {
     // Ensure dragged card is in selection

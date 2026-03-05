@@ -6,6 +6,7 @@ import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { RoundResults } from '../components/RoundResults';
+import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 
@@ -23,17 +24,17 @@ const cardWrapBase: React.CSSProperties = {
 };
 
 export function PokerPage() {
-  const [selected, setSelected] = useState<number[]>([]);
+  const { selected, setSelected, clear: clearSelection } = useCardSelection();
   const [betAmount, setBetAmount] = useState(10);
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);
   const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const oddsGenRef = useRef(0);
 
   const onSuccess = useCallback(() => {
-    setSelected([]);
+    clearSelection();
     setOdds(null);
     oddsGenRef.current++;
-  }, []);
+  }, [clearSelection]);
   const { state, loading, error, exec } = useGameApi(pokerApi.exec, { onSuccess });
 
   useEffect(() => {
