@@ -92,11 +92,7 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 		resObj.Message = dwp.buildResultMessage(d)
 	}
 
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // buildResultMessage ゲーム終了メッセージを生成

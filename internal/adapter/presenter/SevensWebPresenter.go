@@ -96,11 +96,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		resObj.Message = swp.buildResultMessage(s)
 	}
 
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // buildResultMessage ゲーム終了メッセージを生成
