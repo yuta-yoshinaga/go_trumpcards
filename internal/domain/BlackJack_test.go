@@ -6,6 +6,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewDefaultBlackJack(t *testing.T) {
@@ -1644,10 +1645,9 @@ func TestBlackJack_DAS_Enabled(t *testing.T) {
 
 	// Double down on the first split hand should succeed (DAS default true)
 	splitHand := bj.GetPlayerHands()[bj.GetCurrentHandIdx()]
-	if splitHand.GetCardsSize() == 2 && !splitHand.IsFinished() {
-		err = bj.PlayerDoubleDown()
-		assert.NoError(t, err, "DD after split should be allowed when DAS is enabled")
-	}
+	require.True(t, splitHand.GetCardsSize() == 2 && !splitHand.IsFinished(), "split hand must have exactly 2 cards and not be finished")
+	err = bj.PlayerDoubleDown()
+	assert.NoError(t, err, "DD after split should be allowed when DAS is enabled")
 }
 
 func TestBlackJack_DAS_Disabled(t *testing.T) {
@@ -1676,11 +1676,10 @@ func TestBlackJack_DAS_Disabled(t *testing.T) {
 
 	// Double down on split hand should be rejected
 	splitHand := bj.GetPlayerHands()[bj.GetCurrentHandIdx()]
-	if splitHand.GetCardsSize() == 2 && !splitHand.IsFinished() {
-		err = bj.PlayerDoubleDown()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "Double after split is not allowed")
-	}
+	require.True(t, splitHand.GetCardsSize() == 2 && !splitHand.IsFinished(), "split hand must have exactly 2 cards and not be finished")
+	err = bj.PlayerDoubleDown()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Double after split is not allowed")
 }
 
 func TestBlackJack_DAS_Disabled_NonSplitHandAllowed(t *testing.T) {
