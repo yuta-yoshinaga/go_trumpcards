@@ -95,9 +95,8 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	t.Run("success Exec draw with drawIdx", func(t *testing.T) {
 		drawIdx := 2
 		input := controller.OldMaidWebInput{
-			Command:   "d",
-			DrawIdx:   &drawIdx,
-			SessionId: "test-session-1",
+			BaseWebInput: controller.BaseWebInput{Command: "d", SessionId: "test-session-1"},
+			DrawIdx:      &drawIdx,
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -108,8 +107,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec reset with mode and cpuPlacementStrategy", func(t *testing.T) {
 		input := controller.OldMaidWebInput{
-			Command:              "reset",
-			SessionId:            "test-session-1",
+			BaseWebInput:         controller.BaseWebInput{Command: "reset", SessionId: "test-session-1"},
 			Mode:                 1,
 			CpuPlacementStrategy: true,
 		}
@@ -139,9 +137,8 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	})
 	t.Run("success Exec reorder with indices", func(t *testing.T) {
 		input := controller.OldMaidWebInput{
-			Command:        "reorder",
+			BaseWebInput:   controller.BaseWebInput{Command: "reorder", SessionId: "test-session-1"},
 			ReorderIndices: []int{2, 0, 1},
-			SessionId:      "test-session-1",
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -161,9 +158,8 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec reset with invalid mode negative", func(t *testing.T) {
 		input := controller.OldMaidWebInput{
-			Command:   "reset",
-			SessionId: "test-session-1",
-			Mode:      -1,
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: "test-session-1"},
+			Mode:         -1,
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -174,9 +170,8 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec reset with invalid mode too large", func(t *testing.T) {
 		input := controller.OldMaidWebInput{
-			Command:   "reset",
-			SessionId: "test-session-1",
-			Mode:      99,
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: "test-session-1"},
+			Mode:         99,
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -214,8 +209,7 @@ func TestOldMaidWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.OldMaidWebInput{
-			Command:   "reset",
-			SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1),
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")

@@ -11,19 +11,12 @@ import (
 
 // OldMaidWebInput ババ抜きWebインプット
 type OldMaidWebInput struct {
-	Command              string `json:"command"`
-	DrawIdx              *int   `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
-	ReorderIndices       []int  `json:"reorderIndices"`
-	SessionId            string `json:"sessionId"`
-	Mode                 int    `json:"mode"`
-	CpuPlacementStrategy bool   `json:"cpuPlacementStrategy"`
+	BaseWebInput
+	DrawIdx              *int  `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
+	ReorderIndices       []int `json:"reorderIndices"`
+	Mode                 int   `json:"mode"`
+	CpuPlacementStrategy bool  `json:"cpuPlacementStrategy"`
 }
-
-// GetCommand returns the command string.
-func (i OldMaidWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i OldMaidWebInput) GetSessionID() string { return i.SessionId }
 
 // OldMaidWebOutputPlayer ババ抜きWebアウトプットプレイヤー
 type OldMaidWebOutputPlayer struct {

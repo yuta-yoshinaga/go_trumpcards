@@ -29,18 +29,11 @@ type DaifugoWebConfig struct {
 
 // DaifugoWebInput 大富豪Webインプット
 type DaifugoWebInput struct {
-	Command   string            `json:"command"`
-	Indices   []int             `json:"indices"` // 出すカードのインデックス。play コマンド用。空の場合はパス。
-	SessionId string            `json:"sessionId"`
-	Config    *DaifugoWebConfig `json:"config"`   // リセット時のローカルルール設定 (省略可)
-	SortMode  *int              `json:"sortMode"` // ソートモード (sort コマンド用、省略可)
+	BaseWebInput
+	Indices  []int             `json:"indices"`  // 出すカードのインデックス。play コマンド用。空の場合はパス。
+	Config   *DaifugoWebConfig `json:"config"`   // リセット時のローカルルール設定 (省略可)
+	SortMode *int              `json:"sortMode"` // ソートモード (sort コマンド用、省略可)
 }
-
-// GetCommand returns the command string.
-func (i DaifugoWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i DaifugoWebInput) GetSessionID() string { return i.SessionId }
 
 // DaifugoWebOutputPlayer 大富豪Webアウトプットプレイヤー
 type DaifugoWebOutputPlayer struct {

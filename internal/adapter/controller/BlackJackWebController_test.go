@@ -166,8 +166,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.BlackJackWebInput{
-			Command:   "reset",
-			SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1),
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")

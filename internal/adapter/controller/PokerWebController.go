@@ -9,19 +9,12 @@ import (
 
 // PokerWebInput ポーカーWebインプット
 type PokerWebInput struct {
-	Command    string `json:"command"`
-	Indices    []int  `json:"indices,omitempty"`
-	Amount     int    `json:"amount,omitempty"`
-	SessionId  string `json:"sessionId"`
-	CpuCount   *int   `json:"cpuCount,omitempty"`
-	JokerCount *int   `json:"jokerCount,omitempty"`
+	BaseWebInput
+	Indices    []int `json:"indices,omitempty"`
+	Amount     int   `json:"amount,omitempty"`
+	CpuCount   *int  `json:"cpuCount,omitempty"`
+	JokerCount *int  `json:"jokerCount,omitempty"`
 }
-
-// GetCommand returns the command string.
-func (i PokerWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i PokerWebInput) GetSessionID() string { return i.SessionId }
 
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
 type PokerWebOutputPlayer struct {

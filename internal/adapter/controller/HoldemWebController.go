@@ -11,21 +11,14 @@ import (
 
 // HoldemWebInput テキサスホールデムWebインプット
 type HoldemWebInput struct {
-	Command         string `json:"command"`
-	Amount          int    `json:"amount,omitempty"`
-	SessionId       string `json:"sessionId"`
-	SmallBlind      *int   `json:"smallBlind,omitempty"`
-	BigBlind        *int   `json:"bigBlind,omitempty"`
-	TournamentMode  *bool  `json:"tournamentMode,omitempty"`
-	BlindLevelHands *int   `json:"blindLevelHands,omitempty"`
-	BlindMultiplier *int   `json:"blindMultiplier,omitempty"`
+	BaseWebInput
+	Amount          int   `json:"amount,omitempty"`
+	SmallBlind      *int  `json:"smallBlind,omitempty"`
+	BigBlind        *int  `json:"bigBlind,omitempty"`
+	TournamentMode  *bool `json:"tournamentMode,omitempty"`
+	BlindLevelHands *int  `json:"blindLevelHands,omitempty"`
+	BlindMultiplier *int  `json:"blindMultiplier,omitempty"`
 }
-
-// GetCommand returns the command string.
-func (i HoldemWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i HoldemWebInput) GetSessionID() string { return i.SessionId }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
 type HoldemWebOutputPlayer struct {

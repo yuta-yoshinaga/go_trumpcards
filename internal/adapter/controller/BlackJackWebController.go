@@ -8,21 +8,14 @@ import (
 
 // BlackJackWebInput ブラックジャックWebインプット
 type BlackJackWebInput struct {
-	Command           string `json:"command"`
-	Amount            int    `json:"amount,omitempty"`
-	SessionId         string `json:"sessionId"`
-	DealerHitsSoft17  *bool  `json:"dealerHitsSoft17,omitempty"`
-	CpuPlayerCount    *int   `json:"cpuPlayerCount,omitempty"`
-	CountingEnabled   *bool  `json:"countingEnabled,omitempty"`
-	PerfectPairsBet   *int   `json:"perfectPairsBet,omitempty"`
-	TwentyOnePlus3Bet *int   `json:"twentyOnePlus3Bet,omitempty"`
+	BaseWebInput
+	Amount            int   `json:"amount,omitempty"`
+	DealerHitsSoft17  *bool `json:"dealerHitsSoft17,omitempty"`
+	CpuPlayerCount    *int  `json:"cpuPlayerCount,omitempty"`
+	CountingEnabled   *bool `json:"countingEnabled,omitempty"`
+	PerfectPairsBet   *int  `json:"perfectPairsBet,omitempty"`
+	TwentyOnePlus3Bet *int  `json:"twentyOnePlus3Bet,omitempty"`
 }
-
-// GetCommand returns the command string.
-func (i BlackJackWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i BlackJackWebInput) GetSessionID() string { return i.SessionId }
 
 // BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
 type BlackJackWebOutputHand struct {

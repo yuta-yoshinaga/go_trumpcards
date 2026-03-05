@@ -13,20 +13,13 @@ import (
 
 // DoubtWebInput ダウトWebインプット
 type DoubtWebInput struct {
-	Command        string `json:"command"`
-	CardIndices    []int  `json:"cardIndices,omitempty"`
-	ClaimedValue   int    `json:"claimedValue,omitempty"`
-	DoubterIndices []int  `json:"doubterIndices,omitempty"`
-	SessionId      string `json:"sessionId"`
-	DoubtWindowSec *int   `json:"doubtWindowSec,omitempty"`
-	CpuMemoryLevel *int   `json:"cpuMemoryLevel,omitempty"`
+	BaseWebInput
+	CardIndices    []int `json:"cardIndices,omitempty"`
+	ClaimedValue   int   `json:"claimedValue,omitempty"`
+	DoubterIndices []int `json:"doubterIndices,omitempty"`
+	DoubtWindowSec *int  `json:"doubtWindowSec,omitempty"`
+	CpuMemoryLevel *int  `json:"cpuMemoryLevel,omitempty"`
 }
-
-// GetCommand returns the command string.
-func (i DoubtWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i DoubtWebInput) GetSessionID() string { return i.SessionId }
 
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
 type DoubtWebOutputPlayer struct {

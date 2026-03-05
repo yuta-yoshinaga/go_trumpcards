@@ -14,6 +14,18 @@ type WebInput interface {
 	GetSessionID() string
 }
 
+// BaseWebInput holds fields common to all game WebInput structs.
+type BaseWebInput struct {
+	Command   string `json:"command"`
+	SessionId string `json:"sessionId"`
+}
+
+// GetCommand returns the command string.
+func (b BaseWebInput) GetCommand() string { return b.Command }
+
+// GetSessionID returns the session ID string.
+func (b BaseWebInput) GetSessionID() string { return b.SessionId }
+
 // baseController 各WebController共通のレスポンス書き込みロジック
 type baseController struct{}
 

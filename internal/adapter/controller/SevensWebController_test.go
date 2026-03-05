@@ -140,8 +140,7 @@ func TestSevensWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.SevensWebInput{
-			Command:   "reset",
-			SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1),
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -259,9 +258,8 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 
 		negOne := -1
 		input := controller.SevensWebInput{
-			Command:    "reset",
-			JokerCount: &negOne,
-			SessionId:  "test-cfg-neg",
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: "test-cfg-neg"},
+			JokerCount:   &negOne,
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -330,10 +328,9 @@ func TestSevensWebController_ResetWithConfig(t *testing.T) {
 		jokerCount := 1
 		jokerReclaim := true
 		input := controller.SevensWebInput{
-			Command:      "reset",
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: "test-cfg-jr"},
 			JokerCount:   &jokerCount,
 			JokerReclaim: &jokerReclaim,
-			SessionId:    "test-cfg-jr",
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/sevens/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
