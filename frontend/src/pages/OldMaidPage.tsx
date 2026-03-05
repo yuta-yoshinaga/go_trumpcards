@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
 import { StatusBadge } from '../components/StatusBadge';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
@@ -480,11 +482,7 @@ export function OldMaidPage() {
         )}
 
         {/* Result */}
-        {state.message && (
-          <div className="bg-black/60 rounded-[10px] text-white text-center py-2.5 px-4 text-[1.2em] font-bold my-2">
-            {state.message}
-          </div>
-        )}
+        <GameMessageBox message={state.message} />
 
         {/* JijiNuki: show removed card at game end */}
         {state.gameEndFlag && state.removedCard && (
@@ -493,10 +491,7 @@ export function OldMaidPage() {
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
-      <div
-        className="shrink-0 bg-[#163e16] border-t border-white/20 px-4 py-2.5"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
-      >
+      <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
@@ -545,7 +540,7 @@ export function OldMaidPage() {
             シャッフル
           </button>
         </div>
-      </div>
+      </GameFooter>
     </div>
   );
 }

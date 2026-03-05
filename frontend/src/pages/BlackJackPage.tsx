@@ -18,6 +18,8 @@ import {
 } from '../components/blackjack/bjConstants';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
 import { useGameApi } from '../hooks/useGameApi';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
@@ -147,10 +149,7 @@ export function BlackJackPage() {
       </div>
 
       {/* Sticky footer: player hand + result + buttons */}
-      <div
-        className="shrink-0 bg-[#005a00] border-t border-white/15 px-4 py-3"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
-      >
+      <GameFooter className="bg-[#005a00] border-white/15 px-4 py-3">
         {/* Player hands */}
         {state && phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
@@ -212,11 +211,7 @@ export function BlackJackPage() {
         )}
 
         {/* Result message */}
-        {message && (
-          <div className="bg-black/70 text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 rounded-lg">
-            {message}
-          </div>
-        )}
+        <GameMessageBox message={message} />
 
         <ErrorAlert message={error} />
 
@@ -302,7 +297,7 @@ export function BlackJackPage() {
             />
           )}
         </div>
-      </div>
+      </GameFooter>
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { CardBack, CardImage } from '../components/CardImage';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
 import { RoundResults } from '../components/RoundResults';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary } from '../styles/buttonStyles';
@@ -124,10 +126,7 @@ export function HoldemPage() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <div
-        className="shrink-0 bg-[#155715] border-t border-white/20 px-5 py-3"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
-      >
+      <GameFooter className="bg-[#155715] border-white/20 px-5 py-3">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
@@ -173,9 +172,7 @@ export function HoldemPage() {
         )}
 
         {/* Message */}
-        <div className="bg-black/55 rounded-lg text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 min-h-[36px]">
-          {state?.message ?? ''}
-        </div>
+        <GameMessageBox message={state?.message} alwaysVisible />
 
         <ErrorAlert message={error} />
 
@@ -208,7 +205,7 @@ export function HoldemPage() {
             リセット
           </button>
         </div>
-      </div>
+      </GameFooter>
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { doubtApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { CpuTurnArea } from '../components/CpuTurnArea';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -360,18 +362,11 @@ export function DoubtPage() {
         )}
 
         {/* Result message */}
-        {state.message && (
-          <div className="bg-black/55 rounded-[10px] text-white text-center py-2.5 px-4 text-[1.2em] font-bold my-2">
-            {state.message}
-          </div>
-        )}
+        <GameMessageBox message={state.message} />
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
-      <div
-        className="shrink-0 bg-[#101c3a] border-t border-white/20 px-4 py-2.5"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
-      >
+      <GameFooter className="bg-[#101c3a] border-white/20 px-4 py-2.5">
         {/* Human player info */}
         {humanPlayer && (
           <div className="mb-2">
@@ -439,7 +434,7 @@ export function DoubtPage() {
             </button>
           )}
         </div>
-      </div>
+      </GameFooter>
     </div>
   );
 }
