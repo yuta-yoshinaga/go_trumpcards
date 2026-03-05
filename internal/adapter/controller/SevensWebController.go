@@ -9,24 +9,17 @@ import (
 
 // SevensWebInput 7並べWebインプット
 type SevensWebInput struct {
-	Command          string `json:"command"`
-	Index            int    `json:"index"`                   // 出すカードのインデックス。play コマンド用。-1 でパス。
-	JokerTargetSuit  int    `json:"jokerTargetSuit"`         // ジョーカー配置先スート
-	JokerTargetValue int    `json:"jokerTargetValue"`        // ジョーカー配置先値
-	TunnelEnabled    *bool  `json:"tunnelEnabled,omitempty"` // トンネルルール (reset時のみ)
-	JokerCount       *int   `json:"jokerCount,omitempty"`    // ジョーカー枚数 (reset時のみ)
-	CpuStrategy      *bool  `json:"cpuStrategy,omitempty"`   // CPU戦略 (reset時のみ)
-	MaxPasses        *int   `json:"maxPasses,omitempty"`     // 最大パス回数 (reset時のみ, 0=無制限)
-	NoJokerFinish    *bool  `json:"noJokerFinish,omitempty"` // ジョーカー上がり禁止 (reset時のみ)
-	JokerReclaim     *bool  `json:"jokerReclaim,omitempty"`  // ジョーカー回収 (reset時のみ)
-	SessionId        string `json:"sessionId"`
+	BaseWebInput
+	Index            int   `json:"index"`                   // 出すカードのインデックス。play コマンド用。-1 でパス。
+	JokerTargetSuit  int   `json:"jokerTargetSuit"`         // ジョーカー配置先スート
+	JokerTargetValue int   `json:"jokerTargetValue"`        // ジョーカー配置先値
+	TunnelEnabled    *bool `json:"tunnelEnabled,omitempty"` // トンネルルール (reset時のみ)
+	JokerCount       *int  `json:"jokerCount,omitempty"`    // ジョーカー枚数 (reset時のみ)
+	CpuStrategy      *bool `json:"cpuStrategy,omitempty"`   // CPU戦略 (reset時のみ)
+	MaxPasses        *int  `json:"maxPasses,omitempty"`     // 最大パス回数 (reset時のみ, 0=無制限)
+	NoJokerFinish    *bool `json:"noJokerFinish,omitempty"` // ジョーカー上がり禁止 (reset時のみ)
+	JokerReclaim     *bool `json:"jokerReclaim,omitempty"`  // ジョーカー回収 (reset時のみ)
 }
-
-// GetCommand returns the command string.
-func (i SevensWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i SevensWebInput) GetSessionID() string { return i.SessionId }
 
 // SevensWebOutputPlayer 7並べWebアウトプットプレイヤー
 type SevensWebOutputPlayer struct {
