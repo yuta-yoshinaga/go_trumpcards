@@ -30,4 +30,24 @@ describe('GameMessageBox', () => {
     render(<GameMessageBox message="勝ちました" alwaysVisible />);
     expect(screen.getByText('勝ちました')).toBeInTheDocument();
   });
+
+  it('translates messageCode when translation exists', () => {
+    render(<GameMessageBox message="fallback" messageCode="blackjack.result.draw" />);
+    expect(screen.getByText('引き分けです。')).toBeInTheDocument();
+  });
+
+  it('falls back to message when messageCode has no translation', () => {
+    render(<GameMessageBox message="fallback text" messageCode="nonexistent.code" />);
+    expect(screen.getByText('fallback text')).toBeInTheDocument();
+  });
+
+  it('translates messageCode with messageParams', () => {
+    render(<GameMessageBox message="fallback" messageCode="doubt.result.cpuWin" messageParams={{ cpuId: '2' }} />);
+    expect(screen.getByText('ゲーム終了！ CPU 2の勝ち！')).toBeInTheDocument();
+  });
+
+  it('translates messageCode without messageParams using default empty object', () => {
+    render(<GameMessageBox message="fallback" messageCode="blackjack.result.win" />);
+    expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument();
+  });
 });

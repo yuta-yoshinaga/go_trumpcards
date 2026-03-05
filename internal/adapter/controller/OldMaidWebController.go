@@ -55,6 +55,8 @@ type OldMaidWebOutput struct {
 	RemovedCard           *WebOutputCard               `json:"removedCard"`
 	Mode                  int                          `json:"mode"`
 	Message               string                       `json:"message"`
+	MessageCode           string                       `json:"messageCode,omitempty"`
+	MessageParams         map[string]string            `json:"messageParams,omitempty"`
 }
 
 // OldMaidWebController ババ抜きWebコントローラークラス

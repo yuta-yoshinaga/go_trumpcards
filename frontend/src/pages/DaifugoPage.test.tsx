@@ -90,7 +90,13 @@ const cpuTurnState: DaifugoResponse = {
 const gameEndState: DaifugoResponse = {
   ...humanTurnState,
   gameEndFlag: true,
-  message: '大富豪: あなた',
+  message: 'ゲーム終了！ あなた:大富豪 CPU 1:富豪 CPU 2:平民 CPU 3:大貧民',
+  players: [
+    { id: 0, isHuman: true, isFinished: true, rank: 1, cardCount: 0, cards: [] },
+    { id: 1, isHuman: false, isFinished: true, rank: 2, cardCount: 0, cards: [] },
+    { id: 2, isHuman: false, isFinished: true, rank: 3, cardCount: 0, cards: [] },
+    { id: 3, isHuman: false, isFinished: true, rank: 4, cardCount: 0, cards: [] },
+  ],
 };
 
 beforeEach(() => {
@@ -235,7 +241,7 @@ describe('DaifugoPage', () => {
   it('shows game result message when game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText('大富豪: あなた')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/ゲーム終了！ あなた:大富豪/)).toBeInTheDocument());
   });
 
   it('shows rank badge for finished CPU players', async () => {
@@ -345,7 +351,7 @@ describe('DaifugoPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   }, 10000);
 
   it('clears error message on successful API call after failure', async () => {
@@ -355,12 +361,12 @@ describe('DaifugoPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   }, 10000);
 
   it('shows pass message for empty playedCards array', async () => {

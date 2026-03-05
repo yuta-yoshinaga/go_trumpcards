@@ -69,22 +69,24 @@ type PokerWebOutputOdds struct {
 
 // PokerWebOutput ポーカーWebアウトプット
 type PokerWebOutput struct {
-	Players      []*PokerWebOutputPlayer      `json:"players"`
-	Pot          int                          `json:"pot"`
-	SidePots     []*PokerWebOutputSidePot     `json:"sidePots"`
-	DealerIdx    int                          `json:"dealerIdx"`
-	CurrentTurn  int                          `json:"currentTurn"`
-	Phase        int                          `json:"phase"`
-	GameEndFlag  bool                         `json:"gameEndFlag"`
-	LastBet      int                          `json:"lastBet"`
-	MinRaise     int                          `json:"minRaise"`
-	Ante         int                          `json:"ante"`
-	JokerCount   int                          `json:"jokerCount"`
-	RoundResults []*PokerWebOutputResult      `json:"roundResults"`
-	CpuActions   []*PokerWebOutputCpuAction   `json:"cpuActions"`
-	CpuExchanges []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
-	Odds         []*PokerWebOutputOdds        `json:"odds,omitempty"`
-	Message      string                       `json:"message"`
+	Players       []*PokerWebOutputPlayer      `json:"players"`
+	Pot           int                          `json:"pot"`
+	SidePots      []*PokerWebOutputSidePot     `json:"sidePots"`
+	DealerIdx     int                          `json:"dealerIdx"`
+	CurrentTurn   int                          `json:"currentTurn"`
+	Phase         int                          `json:"phase"`
+	GameEndFlag   bool                         `json:"gameEndFlag"`
+	LastBet       int                          `json:"lastBet"`
+	MinRaise      int                          `json:"minRaise"`
+	Ante          int                          `json:"ante"`
+	JokerCount    int                          `json:"jokerCount"`
+	RoundResults  []*PokerWebOutputResult      `json:"roundResults"`
+	CpuActions    []*PokerWebOutputCpuAction   `json:"cpuActions"`
+	CpuExchanges  []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
+	Odds          []*PokerWebOutputOdds        `json:"odds,omitempty"`
+	Message       string                       `json:"message"`
+	MessageCode   string                       `json:"messageCode,omitempty"`
+	MessageParams map[string]string            `json:"messageParams,omitempty"`
 }
 
 // PokerWebController ポーカーWebコントローラークラス

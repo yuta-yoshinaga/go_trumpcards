@@ -104,8 +104,11 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			loser := om.GetPlayer(loserIdx)
 			if loser != nil && loser.GetIsHuman() {
 				resObj.Message = "ゲーム終了！ あなたの負け！"
+				resObj.MessageCode = "oldmaid.result.humanLose"
 			} else {
 				resObj.Message = fmt.Sprintf("ゲーム終了！ CPU %dの負け！", loserIdx)
+				resObj.MessageCode = "oldmaid.result.cpuLose"
+				resObj.MessageParams = map[string]string{"cpuId": fmt.Sprintf("%d", loserIdx)}
 			}
 		}
 	}

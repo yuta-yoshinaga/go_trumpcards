@@ -74,7 +74,13 @@ const cpuTurnState: SevensResponse = {
 const gameEndState: SevensResponse = {
   ...humanTurnState,
   gameEndFlag: true,
-  message: '1位: あなた',
+  message: 'ゲーム終了！ あなた:1位 CPU 1:2位 CPU 2:3位 CPU 3:4位',
+  players: [
+    { ...humanTurnState.players[0], isFinished: true, rank: 1, cardCount: 0, cards: [] },
+    { id: 1, isHuman: false, isFinished: true, rank: 2, cardCount: 0, passesUsed: 0, maxPasses: 5, cards: [] },
+    { id: 2, isHuman: false, isFinished: true, rank: 3, cardCount: 0, passesUsed: 0, maxPasses: 5, cards: [] },
+    { id: 3, isHuman: false, isFinished: true, rank: 4, cardCount: 0, passesUsed: 0, maxPasses: 5, cards: [] },
+  ],
 };
 
 const passesExhaustedState: SevensResponse = {
@@ -227,7 +233,7 @@ describe('SevensPage', () => {
   it('shows game result message when game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<SevensPage />);
-    await waitFor(() => expect(screen.getByText('1位: あなた')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/ゲーム終了！ あなた:1位/)).toBeInTheDocument());
   });
 
   it('shows rank badge for finished players', async () => {
@@ -430,7 +436,7 @@ describe('SevensPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   }, 10000);
 
   it('clears error message on successful API call after failure', async () => {
@@ -440,12 +446,12 @@ describe('SevensPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   }, 10000);
 
   it('A is playable via tunnel when K is placed', async () => {

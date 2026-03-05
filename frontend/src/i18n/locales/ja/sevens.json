@@ -1,0 +1,39 @@
+{
+  "board": "ボード",
+  "tunnel": "トンネル",
+  "tunnelTag": "[トンネル]",
+  "jokerSelectHint": "配置先を選択してください",
+  "cardCount": "{{count}}枚",
+  "passCount": "パス: {{used}}/{{max}}",
+  "passUnlimited": "∞",
+  "clickPlayable": "出せるカードをクリック",
+  "rankLabel": "{{rank}}位",
+  "placeAriaLabel": "{{suit}} {{value}} に配置",
+  "tunnelConnection": "トンネル接続",
+  "actionPlayed": "{{name}}が出しました: {{design}} {{value}}",
+  "actionPlayedJoker": "{{name}}が出しました: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
+  "actionPassed": "{{name}}がパスしました",
+  "actionForcedPass": "{{base}} ⚠ 出せるカードなし!",
+  "resultPrefix": "ゲーム終了！",
+  "resultEntry": "{{name}}:{{rank}}",
+  "rules": {
+    "title": "ルール:",
+    "tunnelTag": "[トンネル]",
+    "jokerTag": "[ジョーカー×{{count}}]",
+    "cpuStrategy": "[CPU戦略]",
+    "passUnlimited": "[パス無制限]",
+    "passCount": "[パス{{count}}回]",
+    "noJokerFinish": "[ジョーカー上がり禁止]",
+    "jokerReclaim": "[ジョーカー回収]"
+  },
+  "config": {
+    "title": "ルール設定 (リセット時に適用)",
+    "tunnel": "トンネル",
+    "joker": "ジョーカー",
+    "cpuStrategy": "CPU戦略",
+    "passCount": "パス回数",
+    "passUnlimited": "無制限",
+    "noJokerFinish": "ジョーカー上がり禁止",
+    "jokerReclaim": "ジョーカー回収"
+  }
+}

@@ -34,7 +34,7 @@ export function useGameApi<TState, TArgs extends unknown[]>(
       setState(res);
       await onSuccessRef.current?.(res);
     } catch {
-      setError(NETWORK_ERROR_MESSAGE);
+      setError(NETWORK_ERROR_MESSAGE());
     } finally {
       setLoading(false);
     }

@@ -134,6 +134,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.GameEndFlag)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "daifugo.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 	})
 
 	t.Run("success Output human action after play", func(t *testing.T) {
@@ -409,6 +411,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "daifugo.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 		// CPU 1 with rank 0 should be skipped
 		assert.NotContains(t, resObj.Message, "CPU 1")
 	})
@@ -453,6 +457,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "daifugo.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 		assert.NotContains(t, resObj.Message, "CPU 1")
 	})
 
@@ -505,6 +511,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, resObj.Players, 0)           // nil player skipped in Output loop
 		assert.Equal(t, "ゲーム終了！ ", resObj.Message) // buildResultMessage called
+		assert.Equal(t, "daifugo.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 	})
 
 	t.Run("success Output pendingAction sevenPass", func(t *testing.T) {

@@ -89,7 +89,15 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if d.GetGameEndFlag() {
+		winnerIdx := d.GetWinnerIdx()
 		resObj.Message = dwp.buildResultMessage(d)
+		player := d.GetPlayer(winnerIdx)
+		if player != nil && player.GetIsHuman() {
+			resObj.MessageCode = "doubt.result.humanWin"
+		} else {
+			resObj.MessageCode = "doubt.result.cpuWin"
+			resObj.MessageParams = map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
+		}
 	}
 
 	return marshalOrError(resObj)

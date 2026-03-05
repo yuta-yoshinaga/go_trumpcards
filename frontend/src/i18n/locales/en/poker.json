@@ -1,0 +1,11 @@
+{
+  "yourHand": "Your Hand",
+  "joker": "Jokers:",
+  "exchangeInstruction": "Click cards to select, then press \"Exchange\" or \"Stand\".",
+  "exchangeLabel": "Exchange",
+  "standLabel": "Stand",
+  "drawOdds": "Draw Odds:",
+  "cpuExchange": "CPU Exchange:",
+  "cpuExchangeEntry": "Player {{idx}}: exchanged {{count}} card(s)",
+  "exchangeCount": "Exchanged: {{count}}"
+}

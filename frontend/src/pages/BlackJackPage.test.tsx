@@ -269,7 +269,7 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText(/スコア 15/)).toBeInTheDocument());
-    expect(screen.getByText(/ベット 100/)).toBeInTheDocument();
+    expect(screen.getByText(/ベット:? ?100/)).toBeInTheDocument();
   });
 
   it('displays dealer score when non-zero in end phase', async () => {
@@ -342,7 +342,7 @@ describe('BlackJackPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
   it('clears error message on successful API call after failure', async () => {
@@ -351,11 +351,11 @@ describe('BlackJackPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
   it('shows [BUST] flag for busted hand', async () => {

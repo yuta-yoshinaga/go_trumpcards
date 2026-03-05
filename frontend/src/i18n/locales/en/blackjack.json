@@ -1,0 +1,43 @@
+{
+  "player": "Player:",
+  "deck": "Deck:",
+  "deckUnit": "deck(s)",
+  "dealerHand": "Dealer Hand",
+  "score": "Score",
+  "playerHand": "Player Hand",
+  "hand": "Hand {{idx}}",
+  "insurance": "Insurance:",
+  "suggestion": "Suggested:",
+  "suggest": {
+    "hit": "Hit",
+    "stand": "Stand",
+    "double": "Double Down",
+    "split": "Split",
+    "surrender": "Surrender",
+    "decline": "Decline"
+  },
+  "button": {
+    "hit": "Hit",
+    "stand": "Stand",
+    "doubleDown": "Double Down",
+    "split": "Split",
+    "surrender": "Surrender",
+    "insurance": "Insurance",
+    "decline": "Decline",
+    "bet": "Bet"
+  },
+  "betAmount": "Bet Amount:",
+  "deckCount": "Decks:",
+  "cpuCount": "CPU Players:",
+  "cpuUnit": "",
+  "hint": "Hint",
+  "counting": "Count",
+  "autoAdvance": "Auto Advance:",
+  "autoAdvanceSec": "{{sec}}s",
+  "sideBet": {
+    "perfectPairs": "Perfect Pairs",
+    "twentyOnePlus3": "21+3",
+    "win": "{{name}} WIN +{{payout}}",
+    "lose": "{{name}} LOSE -{{amount}}"
+  }
+}

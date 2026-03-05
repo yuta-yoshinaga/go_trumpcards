@@ -1088,6 +1088,14 @@ components:
             - `"param error."` — invalid request
             - `"error."` — internal error
           example: You are the winner.
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         hintEnabled:
           type: boolean
           description: Whether the basic strategy hint is currently enabled.
@@ -1477,6 +1485,14 @@ components:
             $ref: '#/components/schemas/PokerOdds'
         message:
           type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
     # Old Maid
@@ -1654,6 +1670,14 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         cpuHighlightedCardIdx:
           type: integer
           description: Index of the highlighted card for the target CPU player (-1 if none)
@@ -1945,6 +1969,14 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         pendingAction:
           type: string
           description: |
@@ -2241,6 +2273,14 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
 
 
     # Doubt
@@ -2468,6 +2508,14 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         doubtWindowSec:
           type: integer
           description: Duration of the doubt window in seconds (reflects current game config)
@@ -2803,6 +2851,14 @@ components:
             - `"param error."` — invalid request
             - `"error."` — internal error
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         handCount:
           type: integer
           description: Number of hands played (for tournament mode display)

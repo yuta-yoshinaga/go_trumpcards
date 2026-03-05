@@ -1,0 +1,14 @@
+{
+  "phase": {
+    "preFlop": "Pre-Flop",
+    "flop": "Flop",
+    "turn": "Turn",
+    "river": "River",
+    "showdown": "Showdown",
+    "end": "Result",
+    "init": "Initializing"
+  },
+  "communityCards": "Community Cards",
+  "yourHand": "Your Hand",
+  "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)"
+}

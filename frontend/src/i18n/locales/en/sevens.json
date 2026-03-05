@@ -1,0 +1,39 @@
+{
+  "board": "Board",
+  "tunnel": "Tunnel",
+  "tunnelTag": "[Tunnel]",
+  "jokerSelectHint": "Select placement",
+  "cardCount": "{{count}} cards",
+  "passCount": "Pass: {{used}}/{{max}}",
+  "passUnlimited": "∞",
+  "clickPlayable": "Click a playable card",
+  "rankLabel": "#{{rank}}",
+  "placeAriaLabel": "Place at {{suit}} {{value}}",
+  "tunnelConnection": "Tunnel connection",
+  "actionPlayed": "{{name}} played: {{design}} {{value}}",
+  "actionPlayedJoker": "{{name}} played: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
+  "actionPassed": "{{name}} passed",
+  "actionForcedPass": "{{base}} ⚠ No playable cards!",
+  "resultPrefix": "Game Over!",
+  "resultEntry": "{{name}}: {{rank}}",
+  "rules": {
+    "title": "Rules:",
+    "tunnelTag": "[Tunnel]",
+    "jokerTag": "[Joker ×{{count}}]",
+    "cpuStrategy": "[CPU Strategy]",
+    "passUnlimited": "[Unlimited Pass]",
+    "passCount": "[Pass {{count}}×]",
+    "noJokerFinish": "[No Joker Finish]",
+    "jokerReclaim": "[Joker Reclaim]"
+  },
+  "config": {
+    "title": "Rule Settings (applied on reset)",
+    "tunnel": "Tunnel",
+    "joker": "Joker",
+    "cpuStrategy": "CPU Strategy",
+    "passCount": "Max Passes",
+    "passUnlimited": "Unlimited",
+    "noJokerFinish": "No Joker Finish",
+    "jokerReclaim": "Joker Reclaim"
+  }
+}

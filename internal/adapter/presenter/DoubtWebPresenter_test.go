@@ -268,6 +268,8 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.True(t, resObj.GameEndFlag)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
 		assert.Contains(t, resObj.Message, "あなた")
+		assert.Equal(t, "doubt.result.humanWin", resObj.MessageCode)
+		assert.Nil(t, resObj.MessageParams)
 	})
 
 	t.Run("success Output gameEndFlag CPU wins", func(t *testing.T) {
@@ -290,6 +292,8 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.True(t, resObj.GameEndFlag)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
 		assert.Contains(t, resObj.Message, "CPU 1")
+		assert.Equal(t, "doubt.result.cpuWin", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"cpuId": "1"}, resObj.MessageParams)
 	})
 
 	t.Run("success Output error message", func(t *testing.T) {
@@ -343,5 +347,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.True(t, resObj.GameEndFlag)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
 		assert.Contains(t, resObj.Message, "CPU 99")
+		assert.Equal(t, "doubt.result.cpuWin", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"cpuId": "99"}, resObj.MessageParams)
 	})
 }

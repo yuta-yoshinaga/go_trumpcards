@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { daifugoApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { CpuTurnArea } from '../components/CpuTurnArea';
@@ -22,37 +23,9 @@ import { findPlayerName, playerName } from '../utils/playerUtils';
 
 const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_180px] min-w-[150px]`;
 
-const SORT_MODES = [
-  { mode: 0, label: '強さ順' },
-  { mode: 1, label: 'スート順' },
-  { mode: 2, label: '数字順' },
-] as const;
-
-function rankName(rank: number): string {
-  switch (rank) {
-    case 1:
-      return '大富豪';
-    case 2:
-      return '富豪';
-    case 3:
-      return '平民';
-    case 4:
-      return '大貧民';
-    /* v8 ignore next 2 */
-    default:
-      return '';
-  }
-}
-
-function actionDescription(players: { id: number; isHuman: boolean }[], action: DaifugoAction): string {
-  if (!action.playedCards || action.playedCards.length === 0) {
-    return `${findPlayerName(players, action.playerIdx)}がパスしました`;
-  }
-  const cards = action.playedCards.map(cardLabel).join(', ');
-  return `${findPlayerName(players, action.playerIdx)}が出しました: ${cards}`;
-}
-
 function CpuPlayerAreaWrapper({ player, isCurrentTurn }: { player: DaifugoPlayerData; isCurrentTurn: boolean }) {
+  const { t } = useTranslation('daifugo');
+  const finishedLabel = player.isFinished ? t('finishedWithRank', { rank: t(`rank.${player.rank}`) }) : undefined;
   return (
     <CpuTurnArea
       id={`player-area-${player.id}`}
@@ -60,10 +33,12 @@ function CpuPlayerAreaWrapper({ player, isCurrentTurn }: { player: DaifugoPlayer
       isHuman={player.isHuman}
       isCurrentTurn={isCurrentTurn}
       isFinished={player.isFinished}
-      finishedLabel={player.isFinished ? `上がり (${rankName(player.rank)})` : undefined}
+      finishedLabel={finishedLabel}
       className={playerAreaClass}
     >
-      {!player.isFinished && <div className="text-[#ccc] text-[0.85em]">{player.cardCount}枚</div>}
+      {!player.isFinished && (
+        <div className="text-[#ccc] text-[0.85em]">{t('cardCount', { count: player.cardCount })}</div>
+      )}
     </CpuTurnArea>
   );
 }
@@ -77,6 +52,7 @@ interface HumanPlayerAreaProps {
 }
 
 function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn, onDragCard }: HumanPlayerAreaProps) {
+  const { t } = useTranslation('daifugo');
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
     : isCurrentTurn
@@ -86,12 +62,14 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn, onD
     <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
       <div className="text-white font-bold mb-1">
         {playerName(player.id, player.isHuman)}
-        {player.isFinished && <StatusBadge variant="success">上がり ({rankName(player.rank)})</StatusBadge>}
+        {player.isFinished && (
+          <StatusBadge variant="success">{t('finishedWithRank', { rank: t(`rank.${player.rank}`) })}</StatusBadge>
+        )}
       </div>
       {!player.isFinished && (
         <div style={{ color: '#ccc', fontSize: '0.85em', marginBottom: 4 }}>
-          {player.cardCount}枚
-          {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>カードをクリックして選択</span>}
+          {t('cardCount', { count: player.cardCount })}
+          {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>{t('selectToPlay')}</span>}
         </div>
       )}
       <div className="flex flex-wrap gap-1">
@@ -135,24 +113,25 @@ const badgeStyle: React.CSSProperties = {
 };
 
 function RulesBadges({ state }: { state: DaifugoResponse }) {
+  const { t } = useTranslation('daifugo');
   const badges: { label: string; bg: string; color: string }[] = [];
   if (state.revolutionActive) {
-    badges.push({ label: '革命中', bg: '#d9534f', color: '#fff' });
+    badges.push({ label: t('badge.revolution'), bg: '#d9534f', color: '#fff' });
   }
   if (state.elevenBackActive) {
-    badges.push({ label: '11バック', bg: '#f0ad4e', color: '#222' });
+    badges.push({ label: t('badge.elevenBack'), bg: '#f0ad4e', color: '#222' });
   }
   if (state.suitLocked) {
-    badges.push({ label: `スート縛り: ${state.lockedSuit}`, bg: '#5bc0de', color: '#222' });
+    badges.push({ label: t('badge.suitLock', { suit: state.lockedSuit }), bg: '#5bc0de', color: '#222' });
   }
   if (state.tableIsSequence) {
-    badges.push({ label: '階段', bg: '#9b59b6', color: '#fff' });
+    badges.push({ label: t('badge.sequence'), bg: '#9b59b6', color: '#fff' });
   }
   if (state.reverseDirection) {
-    badges.push({ label: '9リバース', bg: '#e67e22', color: '#fff' });
+    badges.push({ label: t('badge.nineReverse'), bg: '#e67e22', color: '#fff' });
   }
   if (state.numberLocked) {
-    badges.push({ label: '連番縛り', bg: '#1abc9c', color: '#fff' });
+    badges.push({ label: t('badge.numberLock'), bg: '#1abc9c', color: '#fff' });
   }
   if (badges.length === 0) return null;
   return (
@@ -166,13 +145,6 @@ function RulesBadges({ state }: { state: DaifugoResponse }) {
   );
 }
 
-function exchangeDescription(players: { id: number; isHuman: boolean }[], action: DaifugoExchangeAction): string {
-  const from = findPlayerName(players, action.fromPlayerIdx);
-  const to = findPlayerName(players, action.toPlayerIdx);
-  const cards = action.cards.map(cardLabel).join(', ');
-  return `${from} → ${to}: ${cards}`;
-}
-
 function ExchangeLog({
   players,
   actions,
@@ -180,9 +152,18 @@ function ExchangeLog({
   players: { id: number; isHuman: boolean }[];
   actions: DaifugoExchangeAction[];
 }) {
+  const { t } = useTranslation('daifugo');
   return (
     <div className="bg-black/40 rounded-lg text-[#ffd] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
-      {['[カード交換]', ...actions.map((a) => exchangeDescription(players, a))].join('\n')}
+      {[
+        t('exchange.title'),
+        ...actions.map((a) => {
+          const from = findPlayerName(players, a.fromPlayerIdx);
+          const to = findPlayerName(players, a.toPlayerIdx);
+          const cards = a.cards.map(cardLabel).join(', ');
+          return t('exchange.entry', { from, to, cards });
+        }),
+      ].join('\n')}
     </div>
   );
 }
@@ -193,30 +174,31 @@ interface SettingsPanelProps {
 }
 
 function SettingsPanel({ config, onChange }: SettingsPanelProps) {
+  const { t } = useTranslation('daifugo');
   const boolRules: { key: keyof DaifugoConfigInput; label: string }[] = [
-    { key: 'eightCutEnabled', label: '8切り' },
-    { key: 'suitLockEnabled', label: 'スート縛り' },
-    { key: 'elevenBackEnabled', label: '11バック' },
-    { key: 'sequenceEnabled', label: '階段' },
-    { key: 'cardExchangeEnabled', label: 'カード交換' },
-    { key: 'fiveSkipEnabled', label: '5飛び' },
-    { key: 'sevenPassEnabled', label: '7渡し' },
-    { key: 'tenDiscardEnabled', label: '10捨て' },
-    { key: 'spadeThreeEnabled', label: 'スペ3返し' },
-    { key: 'capitalFallEnabled', label: '都落ち' },
-    { key: 'nineReverseEnabled', label: '9リバース' },
-    { key: 'coupDetatEnabled', label: 'クーデター' },
-    { key: 'intenseLockEnabled', label: '激シバ' },
-    { key: 'sandstormEnabled', label: '砂嵐' },
-    { key: 'emperorEnabled', label: 'エンペラー' },
+    { key: 'eightCutEnabled', label: t('settings.eightCut') },
+    { key: 'suitLockEnabled', label: t('settings.suitLock') },
+    { key: 'elevenBackEnabled', label: t('settings.elevenBack') },
+    { key: 'sequenceEnabled', label: t('settings.sequence') },
+    { key: 'cardExchangeEnabled', label: t('settings.cardExchange') },
+    { key: 'fiveSkipEnabled', label: t('settings.fiveSkip') },
+    { key: 'sevenPassEnabled', label: t('settings.sevenPass') },
+    { key: 'tenDiscardEnabled', label: t('settings.tenDiscard') },
+    { key: 'spadeThreeEnabled', label: t('settings.spadeThree') },
+    { key: 'capitalFallEnabled', label: t('settings.capitalFall') },
+    { key: 'nineReverseEnabled', label: t('settings.nineReverse') },
+    { key: 'coupDetatEnabled', label: t('settings.coupDetat') },
+    { key: 'intenseLockEnabled', label: t('settings.intenseLock') },
+    { key: 'sandstormEnabled', label: t('settings.sandstorm') },
+    { key: 'emperorEnabled', label: t('settings.emperor') },
   ];
   return (
     <details className="mb-2">
-      <summary className="cursor-pointer text-[#ccc] text-[0.85em] select-none">ルール設定</summary>
+      <summary className="cursor-pointer text-[#ccc] text-[0.85em] select-none">{t('settings.title')}</summary>
       <div className="bg-black/40 rounded-lg p-2 mt-1 text-[0.82em] text-white">
         <div className="mb-1">
           <label htmlFor="joker-count" className="mr-2">
-            ジョーカー枚数:
+            {t('settings.jokerCount')}
           </label>
           <select
             id="joker-count"
@@ -266,6 +248,8 @@ const defaultConfigInput: DaifugoConfigInput = {
 };
 
 export function DaifugoPage() {
+  const { t } = useTranslation('daifugo');
+  const { t: tc } = useTranslation('common');
   const {
     selected: selectedIndices,
     toggle: toggleCardSelection,
@@ -313,20 +297,34 @@ export function DaifugoPage() {
   };
 
   // Pending action UI
-  let playButtonLabel = '選択して出す';
+  let playButtonLabel = t('playButton');
   let pendingBanner: string | null = null;
   if (pendingAction === 'sevenPass') {
-    playButtonLabel = '渡す';
+    playButtonLabel = t('passButton');
     const targetName = findPlayerName(state.players, state.pendingActionTarget);
-    pendingBanner = `【7渡し】${targetName}にカードを1枚渡してください`;
+    pendingBanner = t('sevenPassBanner', { target: targetName });
   } else if (pendingAction === 'tenDiscard') {
-    playButtonLabel = '捨てる';
-    pendingBanner = '【10捨て】捨てるカードを1枚選択してください';
+    playButtonLabel = t('discardButton');
+    pendingBanner = t('tenDiscardBanner');
   }
+
+  const actionDescription = (players: { id: number; isHuman: boolean }[], action: DaifugoAction): string => {
+    if (!action.playedCards || action.playedCards.length === 0) {
+      return t('actionPassed', { name: findPlayerName(players, action.playerIdx) });
+    }
+    const cards = action.playedCards.map(cardLabel).join(', ');
+    return t('actionPlayed', { name: findPlayerName(players, action.playerIdx), cards });
+  };
+
+  const sortModes = [
+    { mode: 0, label: t('sort.strength') },
+    { mode: 1, label: t('sort.suit') },
+    { mode: 2, label: t('sort.number') },
+  ] as const;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">処理中...</span>}
+      {loading && <span className="sr-only">{tc('status.loading')}</span>}
       {/* Scrollable: CPU rows + table cards + action logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* CPU row */}
@@ -343,10 +341,10 @@ export function DaifugoPage() {
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
         >
-          <div className="text-white font-bold mb-1.5">場札</div>
+          <div className="text-white font-bold mb-1.5">{t('tableCards')}</div>
           <div className="flex flex-wrap gap-1">
             {!state.tableCards || state.tableCards.length === 0 ? (
-              <span style={{ color: '#aaa' }}>（なし）</span>
+              <span style={{ color: '#aaa' }}>{t('tableEmpty')}</span>
             ) : (
               state.tableCards.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={52} />)
             )}
@@ -378,12 +376,24 @@ export function DaifugoPage() {
         {/* CPU action log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
           <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
-            {['[CPUの行動]', ...state.cpuActions.map((a) => actionDescription(state.players, a))].join('\n')}
+            {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDescription(state.players, a))].join('\n')}
           </div>
         )}
 
         {/* Result message */}
-        <GameMessageBox message={state.message} />
+        <GameMessageBox
+          message={
+            state.gameEndFlag
+              ? `${t('resultPrefix')} ${state.players
+                  .filter((p) => p.rank > 0)
+                  .sort((a, b) => a.rank - b.rank)
+                  .map((p) => t('resultEntry', { name: playerName(p.id, p.isHuman), rank: t(`rank.${p.rank}`) }))
+                  .join(' ')}`
+              : state.message
+          }
+          messageCode={state.gameEndFlag ? undefined : state.messageCode}
+          messageParams={state.gameEndFlag ? undefined : state.messageParams}
+        />
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
@@ -393,7 +403,7 @@ export function DaifugoPage() {
 
         {/* Sort buttons */}
         <div className="text-center mb-1">
-          {SORT_MODES.map(({ mode, label }) => (
+          {sortModes.map(({ mode, label }) => (
             <button
               key={mode}
               type="button"
@@ -429,7 +439,7 @@ export function DaifugoPage() {
             disabled={loading}
             onClick={() => exec('reset', [], configInput)}
           >
-            リセット
+            {tc('button.reset')}
           </button>
           <button
             type="button"
@@ -437,7 +447,7 @@ export function DaifugoPage() {
             disabled={loading || !isHumanTurn || state.gameEndFlag || pendingAction !== 'none'}
             onClick={() => exec('play', [])}
           >
-            パス
+            {tc('button.pass')}
           </button>
           <button
             type="button"

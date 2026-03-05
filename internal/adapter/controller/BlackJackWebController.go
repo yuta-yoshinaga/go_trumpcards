@@ -63,6 +63,8 @@ type BlackJackWebOutput struct {
 	InsuranceBet       int                                `json:"insuranceBet"`
 	InsuranceAvailable bool                               `json:"insuranceAvailable"`
 	Message            string                             `json:"message"`
+	MessageCode        string                             `json:"messageCode,omitempty"`
+	MessageParams      map[string]string                  `json:"messageParams,omitempty"`
 	HintEnabled        bool                               `json:"hintEnabled"`
 	SuggestedAction    int                                `json:"suggestedAction"`
 	DeckCount          int                                `json:"deckCount"`

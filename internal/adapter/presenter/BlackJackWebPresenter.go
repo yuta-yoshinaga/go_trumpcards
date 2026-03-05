@@ -127,10 +127,13 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		switch bj.GameJudgment() {
 		case domain.GameResultDraw:
 			resObj.Message = "It is a draw."
+			resObj.MessageCode = "blackjack.result.draw"
 		case domain.GameResultWin:
 			resObj.Message = "You are the winner."
+			resObj.MessageCode = "blackjack.result.win"
 		case domain.GameResultLose:
 			resObj.Message = "It is your loss."
+			resObj.MessageCode = "blackjack.result.lose"
 		}
 	}
 	return marshalOrError(resObj)

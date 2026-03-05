@@ -101,6 +101,7 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
     api/                       # API client functions (fetch wrappers)
     components/                # Shared React components (NavBar, CardImage, CardBack)
     hooks/                     # Custom React hooks (useGameApi, backed by TanStack React Query)
+    i18n/                      # i18n config and translation files (ja/en)
     pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage, DaifugoPage)
     providers/                 # React context providers (QueryProvider for TanStack React Query)
     types/                     # TypeScript type definitions for card/game data
@@ -208,6 +209,17 @@ E2E tests use **Playwright** (Chromium only) and live in `frontend/e2e/`. They v
 cd frontend && npm run e2e          # Run E2E tests (auto-starts Go server on port 8080)
 cd frontend && npm run e2e:headed   # Run in headed browser
 ```
+
+### i18n (Internationalization)
+
+The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
+
+- **Config**: `frontend/src/i18n/index.ts`
+- **Translation files**: `frontend/src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem}.json`
+- **In components**: use the `useTranslation()` hook
+- **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
+- **Tests**: i18n is initialized in `frontend/src/test/setup.ts` with ja translations loaded
+- **Server responses**: Web presenters send `messageCode` and `messageParams` alongside `message` for i18n-ready frontend rendering
 
 ## Documentation Maintenance
 

@@ -94,6 +94,8 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		resObj.Message = lastErr.Error()
 	} else if s.GetGameEndFlag() {
 		resObj.Message = swp.buildResultMessage(s)
+		resObj.MessageCode = "sevens.result.rankings"
+		resObj.MessageParams = map[string]string{"rankings": resObj.Message}
 	}
 
 	return marshalOrError(resObj)

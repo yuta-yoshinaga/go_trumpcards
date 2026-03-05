@@ -1,0 +1,58 @@
+{
+  "rank": {
+    "1": "Daifugo",
+    "2": "Fugo",
+    "3": "Heimin",
+    "4": "Daihinmin"
+  },
+  "finishedWithRank": "Finished ({{rank}})",
+  "cardCount": "{{count}} cards",
+  "selectToPlay": "Click cards to select",
+  "tableCards": "Table",
+  "tableEmpty": "(empty)",
+  "playButton": "Play Selected",
+  "passButton": "Pass",
+  "discardButton": "Discard",
+  "sevenPassBanner": "[7-Pass] Give 1 card to {{target}}",
+  "tenDiscardBanner": "[10-Discard] Select 1 card to discard",
+  "actionPlayed": "{{name}} played: {{cards}}",
+  "actionPassed": "{{name}} passed",
+  "badge": {
+    "revolution": "Revolution",
+    "elevenBack": "11-Back",
+    "suitLock": "Suit Lock: {{suit}}",
+    "sequence": "Sequence",
+    "nineReverse": "9-Reverse",
+    "numberLock": "Number Lock"
+  },
+  "exchange": {
+    "title": "[Card Exchange]",
+    "entry": "{{from}} → {{to}}: {{cards}}"
+  },
+  "sort": {
+    "strength": "By Strength",
+    "suit": "By Suit",
+    "number": "By Number"
+  },
+  "resultPrefix": "Game Over!",
+  "resultEntry": "{{name}}: {{rank}}",
+  "settings": {
+    "title": "Rule Settings",
+    "jokerCount": "Jokers:",
+    "eightCut": "8-Cut",
+    "suitLock": "Suit Lock",
+    "elevenBack": "11-Back",
+    "sequence": "Sequence",
+    "cardExchange": "Card Exchange",
+    "fiveSkip": "5-Skip",
+    "sevenPass": "7-Pass",
+    "tenDiscard": "10-Discard",
+    "spadeThree": "Spade 3",
+    "capitalFall": "Capital Fall",
+    "nineReverse": "9-Reverse",
+    "coupDetat": "Coup d'état",
+    "intenseLock": "Intense Lock",
+    "sandstorm": "Sandstorm",
+    "emperor": "Emperor"
+  }
+}

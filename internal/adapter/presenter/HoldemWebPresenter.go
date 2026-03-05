@@ -116,23 +116,25 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if h.GetGameEndFlag() {
-		resObj.Message = hwp.buildResultMessage(h)
+		msg, code := hwp.buildResultMessage(h)
+		resObj.Message = msg
+		resObj.MessageCode = code
 	}
 
 	return marshalOrError(resObj)
 }
 
-// buildResultMessage builds the end-of-round message
-func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) string {
+// buildResultMessage builds the end-of-round message and its i18n code
+func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) (string, string) {
 	results := h.GetRoundResults()
 	if len(results) == 0 {
-		return "Game over."
+		return "Game over.", "holdem.result.gameOver"
 	}
 
 	for _, r := range results {
 		if h.GetPlayer(r.PlayerIdx).GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "You are the winner."
+				return "You are the winner.", "holdem.result.win"
 			}
 		}
 	}
@@ -140,11 +142,11 @@ func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) strin
 	// Human not in results (folded)
 	for i := 0; i < h.GetPlayerCnt(); i++ {
 		if h.GetPlayer(i).GetIsHuman() && h.GetPlayer(i).GetFolded() {
-			return "You folded."
+			return "You folded.", "holdem.result.folded"
 		}
 	}
 
-	return "You lose."
+	return "You lose.", "holdem.result.lose"
 }
 
 // getHandName ハンドランクから名前を返す
