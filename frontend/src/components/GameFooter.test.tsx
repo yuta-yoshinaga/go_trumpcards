@@ -33,6 +33,17 @@ describe('GameFooter', () => {
     expect(div.className).toContain('border-t');
   });
 
+  it('renders without className prop', () => {
+    const { container } = render(
+      <GameFooter>
+        <span>content</span>
+      </GameFooter>,
+    );
+    const div = container.firstChild as HTMLElement;
+    expect(div.className).toContain('shrink-0');
+    expect(div.className).toContain('border-t');
+  });
+
   it('merges provided className', () => {
     const { container } = render(
       <GameFooter className="bg-[#005a00] border-white/15 px-4 py-3">
