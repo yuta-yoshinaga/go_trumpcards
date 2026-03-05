@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/web"
 )
@@ -35,6 +36,7 @@ func main() {
 		holdem := ui.NewHoldemCui()
 		holdem.Exec()
 	case "web":
+		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
 		w.Exec()
 	default:
