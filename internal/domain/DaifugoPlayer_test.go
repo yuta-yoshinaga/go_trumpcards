@@ -23,22 +23,6 @@ func TestDaifugoPlayer_Method(t *testing.T) {
 		assert.False(t, p.GetIsHuman())
 	})
 
-	t.Run("success SetIsFinished", func(t *testing.T) {
-		p := domain.NewDaifugoPlayer(true)
-		p.SetIsFinished(true)
-		assert.True(t, p.GetIsFinished())
-		p.SetIsFinished(false)
-		assert.False(t, p.GetIsFinished())
-	})
-
-	t.Run("success SetRank and GetRank", func(t *testing.T) {
-		p := domain.NewDaifugoPlayer(true)
-		p.SetRank(1)
-		assert.Equal(t, 1, p.GetRank())
-		p.SetRank(4)
-		assert.Equal(t, 4, p.GetRank())
-	})
-
 	t.Run("success SortCards sorts by Daifugo strength", func(t *testing.T) {
 		p := domain.NewDaifugoPlayer(true)
 		// Add cards in non-sorted order: A(1), K(13), 3, 2

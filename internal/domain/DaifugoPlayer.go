@@ -4,38 +4,17 @@ import "sort"
 
 // DaifugoPlayer 大富豪プレイヤークラス
 type DaifugoPlayer struct {
-	Player
-	isHuman    bool
-	isFinished bool
-	rank       int // -1 = まだ確定していない, 1 = 大富豪, 2 = 富豪, 3 = 平民, 4 = 大貧民
-	prevRank   int // 前回のランク (-1 = なし)
+	RankedGamePlayer
+	prevRank int // 前回のランク (-1 = なし)
 }
 
 // NewDaifugoPlayer コンストラクタ
 func NewDaifugoPlayer(isHuman bool) *DaifugoPlayer {
 	return &DaifugoPlayer{
-		Player:     Player{cards: make([]*Card, 0)},
-		isHuman:    isHuman,
-		isFinished: false,
-		rank:       -1,
-		prevRank:   -1,
+		RankedGamePlayer: NewRankedGamePlayer(isHuman),
+		prevRank:         -1,
 	}
 }
-
-// GetIsHuman 人間プレイヤーかどうか
-func (p *DaifugoPlayer) GetIsHuman() bool { return p.isHuman }
-
-// GetIsFinished 上がっているかどうか
-func (p *DaifugoPlayer) GetIsFinished() bool { return p.isFinished }
-
-// SetIsFinished 上がり状態設定
-func (p *DaifugoPlayer) SetIsFinished(v bool) { p.isFinished = v }
-
-// GetRank ランク取得 (-1 = 未確定)
-func (p *DaifugoPlayer) GetRank() int { return p.rank }
-
-// SetRank ランク設定
-func (p *DaifugoPlayer) SetRank(r int) { p.rank = r }
 
 // GetPrevRank 前回のランク取得 (-1 = なし)
 func (p *DaifugoPlayer) GetPrevRank() int { return p.prevRank }

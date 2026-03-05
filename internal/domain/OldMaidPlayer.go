@@ -2,33 +2,14 @@ package domain
 
 // OldMaidPlayer ババ抜きプレイヤークラス
 type OldMaidPlayer struct {
-	Player
-	isHuman    bool
-	isFinished bool
+	GamePlayer
 }
 
 // NewOldMaidPlayer コンストラクタ
 func NewOldMaidPlayer(isHuman bool) *OldMaidPlayer {
 	return &OldMaidPlayer{
-		Player:     Player{cards: make([]*Card, 0)},
-		isHuman:    isHuman,
-		isFinished: false,
+		GamePlayer: NewGamePlayer(isHuman),
 	}
-}
-
-// GetIsHuman 人間プレイヤーかどうか
-func (p *OldMaidPlayer) GetIsHuman() bool {
-	return p.isHuman
-}
-
-// GetIsFinished 上がっているかどうか
-func (p *OldMaidPlayer) GetIsFinished() bool {
-	return p.isFinished
-}
-
-// SetIsFinished 上がり状態設定
-func (p *OldMaidPlayer) SetIsFinished(v bool) {
-	p.isFinished = v
 }
 
 // DiscardPairs ペアのカードを捨てる (捨てたカードとペア数を返す)
