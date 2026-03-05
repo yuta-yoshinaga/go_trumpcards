@@ -12,7 +12,7 @@ type cardMemoryEntry struct {
 
 // DoubtPlayer ダウトプレイヤークラス
 type DoubtPlayer struct {
-	GamePlayer
+	*GamePlayer
 	cardMemories []cardMemoryEntry // 記憶したカードのリスト
 }
 

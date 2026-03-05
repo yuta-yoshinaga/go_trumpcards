@@ -2,7 +2,7 @@ package domain
 
 // OldMaidPlayer ババ抜きプレイヤークラス
 type OldMaidPlayer struct {
-	GamePlayer
+	*GamePlayer
 }
 
 // NewOldMaidPlayer コンストラクタ

@@ -8,11 +8,10 @@ type GamePlayer struct {
 }
 
 // NewGamePlayer コンストラクタ
-func NewGamePlayer(isHuman bool) GamePlayer {
-	return GamePlayer{
-		Player:     Player{cards: make([]*Card, 0)},
-		isHuman:    isHuman,
-		isFinished: false,
+func NewGamePlayer(isHuman bool) *GamePlayer {
+	return &GamePlayer{
+		Player:  Player{cards: make([]*Card, 0)},
+		isHuman: isHuman,
 	}
 }
 
@@ -27,13 +26,13 @@ func (gp *GamePlayer) SetIsFinished(v bool) { gp.isFinished = v }
 
 // RankedGamePlayer ランク付きプレイヤー共通構造体
 type RankedGamePlayer struct {
-	GamePlayer
+	*GamePlayer
 	rank int
 }
 
 // NewRankedGamePlayer コンストラクタ (rank defaults to -1)
-func NewRankedGamePlayer(isHuman bool) RankedGamePlayer {
-	return RankedGamePlayer{
+func NewRankedGamePlayer(isHuman bool) *RankedGamePlayer {
+	return &RankedGamePlayer{
 		GamePlayer: NewGamePlayer(isHuman),
 		rank:       -1,
 	}

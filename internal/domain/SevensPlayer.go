@@ -10,7 +10,7 @@ const SevensMaxPasses = 5
 
 // SevensPlayer 7並べプレイヤークラス
 type SevensPlayer struct {
-	RankedGamePlayer
+	*RankedGamePlayer
 	isEliminated bool // パス切れによる失格フラグ
 	passesUsed   int  // 使用済みパス回数
 	maxPasses    int  // 最大パス回数
@@ -20,7 +20,6 @@ type SevensPlayer struct {
 func NewSevensPlayer(isHuman bool) *SevensPlayer {
 	return &SevensPlayer{
 		RankedGamePlayer: NewRankedGamePlayer(isHuman),
-		passesUsed:       0,
 		maxPasses:        SevensMaxPasses,
 	}
 }

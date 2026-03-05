@@ -4,7 +4,7 @@ import "sort"
 
 // DaifugoPlayer 大富豪プレイヤークラス
 type DaifugoPlayer struct {
-	RankedGamePlayer
+	*RankedGamePlayer
 	prevRank int // 前回のランク (-1 = なし)
 }
 
