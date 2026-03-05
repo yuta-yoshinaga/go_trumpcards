@@ -179,7 +179,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.DoubtWebInput{
-			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1)},
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -221,7 +221,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	for _, tc := range claimedValueTests {
 		t.Run("Exec p play claimedValue "+tc.name, func(t *testing.T) {
 			input := controller.DoubtWebInput{
-				BaseWebInput: controller.BaseWebInput{Command: "p", SessionId: "test-session-1"},
+				BaseWebInput: controller.BaseWebInput{Command: "p", SessionID: "test-session-1"},
 				CardIndices:  []int{0},
 				ClaimedValue: tc.claimedValue,
 			}
@@ -237,7 +237,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("failed Exec cardIndices too large", func(t *testing.T) {
 		indices := make([]int, controller.MaxCardIndices+1)
 		input := controller.DoubtWebInput{
-			BaseWebInput: controller.BaseWebInput{Command: "p", SessionId: "test-session-1"},
+			BaseWebInput: controller.BaseWebInput{Command: "p", SessionID: "test-session-1"},
 			CardIndices:  indices,
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
@@ -355,7 +355,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
-			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionId: "cfg-session-1"},
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-1"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
@@ -381,7 +381,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
-			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionId: "cfg-session-2"},
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-2"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
@@ -407,7 +407,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
-			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionId: "cfg-session-3"},
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-3"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
@@ -433,7 +433,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
-			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionId: "cfg-session-4"},
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-4"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}

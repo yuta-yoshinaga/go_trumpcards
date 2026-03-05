@@ -90,7 +90,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("success Exec reset with config calls ResetWithConfig", func(t *testing.T) {
 		input := controller.DaifugoWebInput{
-			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: "test-session-1"},
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "test-session-1"},
 			Config: &controller.DaifugoWebConfig{
 				JokerCount:      2,
 				FiveSkipEnabled: true,
@@ -107,7 +107,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("success Exec reset with sandstorm and emperor config calls ResetWithConfig", func(t *testing.T) {
 		input := controller.DaifugoWebInput{
-			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: "test-session-1"},
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "test-session-1"},
 			Config: &controller.DaifugoWebConfig{
 				SandstormEnabled: true,
 				EmperorEnabled:   true,
@@ -134,7 +134,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 
 	t.Run("success Exec sort with sortMode", func(t *testing.T) {
 		input := controller.DaifugoWebInput{
-			BaseWebInput: controller.BaseWebInput{Command: "sort", SessionId: "test-session-1"},
+			BaseWebInput: controller.BaseWebInput{Command: "sort", SessionID: "test-session-1"},
 			SortMode:     func() *int { v := 2; return &v }(),
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
@@ -176,7 +176,7 @@ func TestDaifugoWebController_Method(t *testing.T) {
 	})
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.DaifugoWebInput{
-			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1)},
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
