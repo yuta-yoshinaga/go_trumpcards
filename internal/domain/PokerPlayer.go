@@ -80,10 +80,7 @@ func (pp *PokerPlayer) GetPlayStyle() PokerPlayStyle { return pp.playStyle }
 
 // GetPlayStyleName プレイスタイル名取得
 func (pp *PokerPlayer) GetPlayStyleName() string {
-	if int(pp.playStyle) < len(PokerPlayStyleNames) {
-		return PokerPlayStyleNames[pp.playStyle]
-	}
-	return "Unknown"
+	return playStyleName(int(pp.playStyle), PokerPlayStyleNames)
 }
 
 // GetExchangeCount 交換枚数取得

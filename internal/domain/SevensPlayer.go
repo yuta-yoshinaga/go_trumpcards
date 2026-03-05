@@ -10,11 +10,8 @@ const SevensMaxPasses = 5
 
 // SevensPlayer 7並べプレイヤークラス
 type SevensPlayer struct {
-	Player
-	isHuman      bool
-	isFinished   bool
+	*RankedGamePlayer
 	isEliminated bool // パス切れによる失格フラグ
-	rank         int  // -1 = 未確定, 1 = 1位, ...
 	passesUsed   int  // 使用済みパス回数
 	maxPasses    int  // 最大パス回数
 }
@@ -22,35 +19,16 @@ type SevensPlayer struct {
 // NewSevensPlayer コンストラクタ
 func NewSevensPlayer(isHuman bool) *SevensPlayer {
 	return &SevensPlayer{
-		Player:     Player{cards: make([]*Card, 0)},
-		isHuman:    isHuman,
-		isFinished: false,
-		rank:       -1,
-		passesUsed: 0,
-		maxPasses:  SevensMaxPasses,
+		RankedGamePlayer: NewRankedGamePlayer(isHuman),
+		maxPasses:        SevensMaxPasses,
 	}
 }
-
-// GetIsHuman 人間プレイヤーかどうか
-func (p *SevensPlayer) GetIsHuman() bool { return p.isHuman }
-
-// GetIsFinished 終了しているかどうか (上がりまたは失格)
-func (p *SevensPlayer) GetIsFinished() bool { return p.isFinished }
-
-// SetIsFinished 終了状態設定
-func (p *SevensPlayer) SetIsFinished(v bool) { p.isFinished = v }
 
 // GetIsEliminated 失格かどうか
 func (p *SevensPlayer) GetIsEliminated() bool { return p.isEliminated }
 
 // SetIsEliminated 失格フラグ設定
 func (p *SevensPlayer) SetIsEliminated(v bool) { p.isEliminated = v }
-
-// GetRank ランク取得 (-1 = 未確定)
-func (p *SevensPlayer) GetRank() int { return p.rank }
-
-// SetRank ランク設定
-func (p *SevensPlayer) SetRank(r int) { p.rank = r }
 
 // GetPassesUsed 使用済みパス回数取得
 func (p *SevensPlayer) GetPassesUsed() int { return p.passesUsed }

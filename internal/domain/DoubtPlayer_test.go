@@ -23,15 +23,6 @@ func TestNewDoubtPlayer(t *testing.T) {
 	})
 }
 
-func TestDoubtPlayer_SetIsFinished(t *testing.T) {
-	p := domain.NewDoubtPlayer(true)
-	assert.False(t, p.GetIsFinished())
-	p.SetIsFinished(true)
-	assert.True(t, p.GetIsFinished())
-	p.SetIsFinished(false)
-	assert.False(t, p.GetIsFinished())
-}
-
 func TestDoubtPlayer_ResetMemory(t *testing.T) {
 	p := domain.NewDoubtPlayer(false)
 	// Record some cards first

@@ -21,19 +21,6 @@ func TestOldMaidPlayer_Method(t *testing.T) {
 		assert.False(t, p.GetIsFinished())
 	})
 
-	t.Run("success SetIsFinished true", func(t *testing.T) {
-		p := domain.NewOldMaidPlayer(false)
-		p.SetIsFinished(true)
-		assert.True(t, p.GetIsFinished())
-	})
-
-	t.Run("success SetIsFinished false", func(t *testing.T) {
-		p := domain.NewOldMaidPlayer(false)
-		p.SetIsFinished(true)
-		p.SetIsFinished(false)
-		assert.False(t, p.GetIsFinished())
-	})
-
 	t.Run("success DiscardPairs no pairs", func(t *testing.T) {
 		p := domain.NewOldMaidPlayer(false)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))

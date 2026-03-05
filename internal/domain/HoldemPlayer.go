@@ -35,10 +35,7 @@ func (hp *HoldemPlayer) GetPlayStyle() HoldemPlayStyle { return hp.playStyle }
 
 // GetPlayStyleName プレイスタイル名取得
 func (hp *HoldemPlayer) GetPlayStyleName() string {
-	if int(hp.playStyle) < len(HoldemPlayStyleNames) {
-		return HoldemPlayStyleNames[hp.playStyle]
-	}
-	return "Unknown"
+	return playStyleName(int(hp.playStyle), HoldemPlayStyleNames)
 }
 
 // GetTotalHands 総ハンド数取得
