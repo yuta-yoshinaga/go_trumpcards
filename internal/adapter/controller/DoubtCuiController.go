@@ -30,7 +30,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.di.Reset() },
-		func(cmd string) string { return "コマンドが不明です: " + cmd },
+		func(command string) string { return "コマンドが不明です: " + command },
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":

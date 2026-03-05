@@ -51,7 +51,7 @@ func (c *SevensCuiController) Exec(command string) string {
 			}
 			return c.sgi.Reset()
 		},
-		func(cmd string) string { return "コマンドが不明です: " + cmd },
+		func(command string) string { return "コマンドが不明です: " + command },
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
