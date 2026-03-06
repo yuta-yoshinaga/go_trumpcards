@@ -197,15 +197,39 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
+	t.Run("showdown results with kickers", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 12, 10}, WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "You: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "100チップ獲得")
+	})
+
+	t.Run("showdown results without kickers", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", Kickers: nil, WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "You: Flush")
+		assert.NotContains(t, result, "キッカー")
+	})
+
 	t.Run("showdown results with CPU winner", func(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
 		h.SetPhase(domain.HoldemPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 50, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{13, 12, 11}, WonAmount: 50, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "CPU 1: One Pair")
+		assert.Contains(t, result, "CPU 1: One Pair (キッカー: K, Q, J)")
 		assert.Contains(t, result, "50チップ獲得")
 	})
 

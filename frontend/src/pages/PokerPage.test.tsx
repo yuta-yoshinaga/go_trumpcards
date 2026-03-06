@@ -153,8 +153,8 @@ const endState: PokerResponse = {
   ante: 10,
   jokerCount: 0,
   roundResults: [
-    { playerIdx: 0, handRank: 0, handName: 'High Card', wonAmount: 0 },
-    { playerIdx: 1, handRank: 1, handName: 'One Pair', wonAmount: 200 },
+    { playerIdx: 0, handRank: 0, handName: 'High Card', kickers: '', wonAmount: 0 },
+    { playerIdx: 1, handRank: 1, handName: 'One Pair', kickers: 'A, Q, 10', wonAmount: 200 },
   ],
   cpuActions: [],
   cpuExchanges: [],
@@ -457,8 +457,8 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue({
       ...endState,
       roundResults: [
-        { playerIdx: 0, handRank: 0, handName: '', wonAmount: 0 },
-        { playerIdx: 1, handRank: 2, handName: 'One Pair', wonAmount: 200 },
+        { playerIdx: 0, handRank: 0, handName: '', kickers: '', wonAmount: 0 },
+        { playerIdx: 1, handRank: 2, handName: 'One Pair', kickers: '', wonAmount: 200 },
       ],
     });
     renderWithProviders(<PokerPage />);

@@ -106,6 +106,7 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 			PlayerIdx: r.PlayerIdx,
 			HandRank:  r.HandRank,
 			HandName:  r.HandName,
+			Kickers:   domain.FormatKickers(r.Kickers),
 			WonAmount: r.WonAmount,
 			BestHand:  make([]*controller.WebOutputCard, 0),
 		}

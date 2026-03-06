@@ -232,9 +232,32 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, out.RoundResults[0].PlayerIdx)
 		assert.Equal(t, domain.PokerHandFlush, out.RoundResults[0].HandRank)
 		assert.Equal(t, "Flush", out.RoundResults[0].HandName)
+		assert.Equal(t, "", out.RoundResults[0].Kickers)
 		assert.Equal(t, 200, out.RoundResults[0].WonAmount)
 		assert.Len(t, out.RoundResults[0].BestHand, 2)
 		assert.Equal(t, "SPADE", out.RoundResults[0].BestHand[0].Design)
+	})
+
+	t.Run("round results with kickers", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{
+				PlayerIdx: 0,
+				HandRank:  domain.PokerHandOnePair,
+				HandName:  "One Pair",
+				Kickers:   []int{14, 13, 12},
+				WonAmount: 200,
+				BestHand:  nil,
+			},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Len(t, out.RoundResults, 1)
+		assert.Equal(t, "A, K, Q", out.RoundResults[0].Kickers)
 	})
 
 	t.Run("best hand cards at showdown", func(t *testing.T) {

@@ -51,6 +51,7 @@ type HoldemWebOutputResult struct {
 	PlayerIdx int              `json:"playerIdx"`
 	HandRank  int              `json:"handRank"`
 	HandName  string           `json:"handName"`
+	Kickers   string           `json:"kickers"`
 	BestHand  []*WebOutputCard `json:"bestHand"`
 	WonAmount int              `json:"wonAmount"`
 }

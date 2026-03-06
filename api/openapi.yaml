@@ -1419,6 +1419,9 @@ components:
           type: integer
         handName:
           type: string
+        kickers:
+          type: string
+          description: Kicker card values formatted as display string (e.g., "A, Q, 10"). Empty for hands without kickers.
         wonAmount:
           type: integer
 
@@ -2805,6 +2808,9 @@ components:
           type: string
           description: Hand name (e.g., "One Pair")
           example: One Pair
+        kickers:
+          type: string
+          description: Kicker card values formatted as display string (e.g., "A, Q, 10"). Empty for hands without kickers.
         bestHand:
           type: array
           description: Best 5-card hand

@@ -552,6 +552,67 @@ func TestHoldem_Showdown(t *testing.T) {
 	// Game should be at showdown or end
 	assert.True(t, h.GetGameEndFlag())
 	assert.True(t, len(h.GetRoundResults()) > 0)
+	// Player 0 has pair of aces → kickers should be populated
+	for _, r := range h.GetRoundResults() {
+		if r.PlayerIdx == 0 && r.HandRank == PokerHandOnePair {
+			assert.NotNil(t, r.Kickers)
+			assert.Len(t, r.Kickers, 3)
+		}
+	}
+}
+
+func TestHoldem_Showdown_Kickers(t *testing.T) {
+	h := newTestHoldem()
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.SetPhase(HoldemPhaseRiver)
+	h.SetPot(200)
+	h.SetCurrentTurn(0)
+	h.SetLastBet(0)
+	h.setActedFlags([]bool{false, true, true, true})
+
+	// Player 0: pair of 5s with A, K, Q kickers
+	h.players[0].Reset()
+	h.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
+	h.players[0].AddCard(NewCard(CardDesignHeart, 5, false))
+
+	// Player 1: three of a kind (8s) with A, K kickers
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignClover, 8, false))
+	h.players[1].AddCard(NewCard(CardDesignDiamond, 8, false))
+
+	for i := 2; i < 4; i++ {
+		h.players[i].SetFolded(true)
+		h.players[i].Reset()
+		h.players[i].AddCard(NewCard(CardDesignSpade, 2, false))
+		h.players[i].AddCard(NewCard(CardDesignHeart, 3, false))
+	}
+
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 8, false),
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignHeart, 13, false),
+		NewCard(CardDesignClover, 12, false),
+		NewCard(CardDesignSpade, 9, false),
+	})
+
+	err := h.PlayerAction(HoldemActionCheck, 0)
+	assert.NoError(t, err)
+	assert.True(t, h.GetGameEndFlag())
+
+	for _, r := range h.GetRoundResults() {
+		if r.PlayerIdx == 0 {
+			// One Pair (5s) → 3 kickers: A(14), K(13), Q(12)
+			assert.Equal(t, PokerHandOnePair, r.HandRank)
+			assert.Equal(t, []int{14, 13, 12}, r.Kickers)
+		}
+		if r.PlayerIdx == 1 {
+			// Three of a Kind (8s) → 2 kickers: A(14), K(13)
+			assert.Equal(t, PokerHandThreeOfAKind, r.HandRank)
+			assert.Equal(t, []int{14, 13}, r.Kickers)
+		}
+	}
 }
 
 func TestHoldem_BlindPosting(t *testing.T) {

@@ -36,6 +36,7 @@ type PokerResult struct {
 	PlayerIdx int    // プレイヤーインデックス
 	HandRank  int    // ハンドランク
 	HandName  string // ハンド名
+	Kickers   []int  // キッカーカード値
 	WonAmount int    // 獲得チップ
 }
 
@@ -505,6 +506,7 @@ func (p *Poker) resolveShowdown() {
 			PlayerIdx: i,
 			HandRank:  pl.GetHandRank(),
 			HandName:  pl.GetHandName(),
+			Kickers:   ExtractKickers(pl.GetComparisonCards(), pl.GetHandRank()),
 			WonAmount: wonAmounts[i],
 		}
 		p.roundResults = append(p.roundResults, result)

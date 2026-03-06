@@ -7,12 +7,12 @@ This file provides guidance to AI coding agents when working with code in this r
 This repository contains a Go implementation of trump card game algorithms. The project is structured following the principles of Clean Architecture. The following games are implemented:
 
 - **BlackJack**: CLI and Web GUI (chip/betting system, split, double down, insurance, soft-17 toggle, DAS toggle, configurable deck penetration, card counting training with selectable counting system, multi-player CPU seats)
-- **Poker (5-card Draw)**: CLI and Web GUI (1 human vs 1-3 CPUs, 4 play styles, joker wild cards, side pots, draw odds calculator, configurable betting limit)
+- **Poker (5-card Draw)**: CLI and Web GUI (1 human vs 1-3 CPUs, 4 play styles, joker wild cards, side pots, draw odds calculator, configurable betting limit, kicker display)
 - **Old Maid (Babanuki)**: CLI and Web GUI
 - **Daifugo**: CLI and Web GUI (sandstorm, emperor, and other optional rules)
 - **Sevens (7並べ)**: CLI and Web GUI (optional rules: tunnel, joker, CPU strategy, no-joker-finish, joker reclaim, pass-exhaustion AI)
 - **Doubt (ダウト)**: CLI and Web GUI (1 human vs 3 CPUs, 10-second async doubt window)
-- **Texas Hold'em**: CLI and Web GUI (1 human vs 3 CPUs, 4 play styles, side pots, HUD stats, pot-relative AI sizing, tournament mode, configurable betting limit)
+- **Texas Hold'em**: CLI and Web GUI (1 human vs 3 CPUs, 4 play styles, side pots, HUD stats, pot-relative AI sizing, tournament mode, configurable betting limit, kicker display)
 
 ## Requirements
 
@@ -123,12 +123,12 @@ public/                        # Built frontend assets served by Go web server
 ### Games implemented
 
 - **BlackJack**: Entities in `internal/domain/BlackJack.go`, `internal/domain/BlackJackPlayer.go`, `internal/domain/BlackJackHand.go`, `internal/domain/BlackJackSideBet.go`; interactor in `internal/usecase/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, natural BJ 3:2 payout, soft-17 rule toggle (H17/S17), double-after-split toggle (DAS), configurable deck penetration (50%/75%), card counting training (Hi-Lo / KO / Zen Count / Omega II running count / true count display with selectable counting system), multi-player CPU seats (0-3 CPU players using basic strategy), side bets (Perfect Pairs and 21+3), and auto-advance round timer
-- **Poker (5-card Draw)**: Entities in `internal/domain/Poker.go`, `internal/domain/PokerPlayer.go`, `internal/domain/PokerConfig.go`, `internal/domain/PokerOdds.go`; interactor in `internal/usecase/PokerInteractor.go`. CLI and Web GUI (1 human vs 1-3 CPU), 4 CPU play styles (Conservative/Balanced/Aggressive/Bluffer) with exchange-count reading and bluff AI, optional joker wild cards (0-2, Five of a Kind rank), full side pot support, draw odds calculator (brute-force enumeration of all combinations during exchange phase), configurable betting limit (Fixed/Pot Limit/No Limit)
+- **Poker (5-card Draw)**: Entities in `internal/domain/Poker.go`, `internal/domain/PokerPlayer.go`, `internal/domain/PokerConfig.go`, `internal/domain/PokerOdds.go`; interactor in `internal/usecase/PokerInteractor.go`. CLI and Web GUI (1 human vs 1-3 CPU), 4 CPU play styles (Conservative/Balanced/Aggressive/Bluffer) with exchange-count reading and bluff AI, optional joker wild cards (0-2, Five of a Kind rank), full side pot support, draw odds calculator (brute-force enumeration of all combinations during exchange phase), configurable betting limit (Fixed/Pot Limit/No Limit), kicker display at showdown
 - **Old Maid (Babanuki)**: Entities in `internal/domain/OldMaid.go`, `internal/domain/OldMaidPlayer.go`; interactor in `internal/usecase/OldMaidInteractor.go`
 - **Daifugo**: Entities in `internal/domain/Daifugo.go`, `internal/domain/DaifugoPlayer.go`; interactor in `internal/usecase/DaifugoInteractor.go`. Supports optional rules: sandstorm (3 non-joker 3s clear the table like 8-cut), emperor (4 consecutive cards of all different suits on clear table triggers revolution + table clear, CPU AI can find emperor plays)
 - **Sevens (7並べ)**: Entities in `internal/domain/Sevens.go`, `internal/domain/SevensPlayer.go`, `internal/domain/SevensConfig.go`; interactor in `internal/usecase/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, CPU strategy, configurable max passes (0 = unlimited), no-joker-finish (ban finishing with a joker), and joker reclaim (playing a real card on a joker-occupied position returns the joker to the player's hand). CPU AI uses pass-urgency weighting to block opponents near pass exhaustion
 - **Doubt (ダウト)**: Entities in `internal/domain/Doubt.go`, `internal/domain/DoubtPlayer.go`; interactor in `internal/usecase/DoubtInteractor.go`. CLI and Web GUI (1 human vs 3 CPUs), 10-second async doubt window (CLI) / frontend countdown timer (Web), random CPU bluff/doubt AI
-- **Texas Hold'em**: Entities in `internal/domain/Holdem.go`, `internal/domain/HoldemPlayer.go`, `internal/domain/HoldemConfig.go`; interactor in `internal/usecase/HoldemInteractor.go`. CLI and Web GUI (1 human vs 3 CPU), 4 CPU play styles (TAG/LAP/TAP/LAG) with bluff AI, full side pot support, HUD stats (VPIP%/PFR%), pot-relative AI bet sizing, tournament mode with blind escalation, configurable betting limit (Fixed/Pot Limit/No Limit)
+- **Texas Hold'em**: Entities in `internal/domain/Holdem.go`, `internal/domain/HoldemPlayer.go`, `internal/domain/HoldemConfig.go`; interactor in `internal/usecase/HoldemInteractor.go`. CLI and Web GUI (1 human vs 3 CPU), 4 CPU play styles (TAG/LAP/TAP/LAG) with bluff AI, full side pot support, HUD stats (VPIP%/PFR%), pot-relative AI bet sizing, tournament mode with blind escalation, configurable betting limit (Fixed/Pot Limit/No Limit), kicker display at showdown
 
 ## Testing Policy
 

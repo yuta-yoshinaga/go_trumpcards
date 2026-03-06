@@ -50,6 +50,7 @@ type PokerWebOutputResult struct {
 	PlayerIdx int    `json:"playerIdx"`
 	HandRank  int    `json:"handRank"`
 	HandName  string `json:"handName"`
+	Kickers   string `json:"kickers"`
 	WonAmount int    `json:"wonAmount"`
 }
 

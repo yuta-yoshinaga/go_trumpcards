@@ -748,6 +748,12 @@ func TestPoker_resolveShowdown_SingleWinner(t *testing.T) {
 	for _, r := range pk.GetRoundResults() {
 		if r.PlayerIdx == 0 && r.WonAmount > 0 {
 			found = true
+			// Royal Flush has no kickers
+			assert.Nil(t, r.Kickers)
+		}
+		if r.PlayerIdx == 1 {
+			// High Card has no kickers
+			assert.Nil(t, r.Kickers)
 		}
 	}
 	assert.True(t, found)
@@ -786,6 +792,42 @@ func TestPoker_resolveShowdown_SplitPot(t *testing.T) {
 		totalWon += r.WonAmount
 	}
 	assert.Equal(t, 200, totalWon)
+}
+
+func TestPoker_resolveShowdown_Kickers(t *testing.T) {
+	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+	pk.SetPot(200)
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
+
+	// Player 0: One Pair (5s), kickers A, Q, 10
+	givePlayerHand(players[0], []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 12, false),
+		NewCard(CardDesignSpade, 10, false),
+	})
+	// Player 1: Two Pair (Ks, 3s), kicker 8
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignHeart, 13, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 3, false),
+		NewCard(CardDesignSpade, 8, false),
+	})
+	players[2].SetFolded(true)
+	players[3].SetFolded(true)
+
+	pk.resolveShowdown()
+
+	for _, r := range pk.GetRoundResults() {
+		if r.PlayerIdx == 0 {
+			assert.Equal(t, []int{14, 12, 10}, r.Kickers)
+		}
+		if r.PlayerIdx == 1 {
+			assert.Equal(t, []int{8}, r.Kickers)
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------

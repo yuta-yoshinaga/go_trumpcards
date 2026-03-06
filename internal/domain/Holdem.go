@@ -101,6 +101,7 @@ type HoldemResult struct {
 	HandRank  int     // ハンドランク
 	HandName  string  // ハンド名
 	BestHand  []*Card // ベスト5枚
+	Kickers   []int   // キッカーカード値
 	WonAmount int     // 獲得チップ
 }
 
@@ -527,6 +528,7 @@ func (h *Holdem) resolveShowdown() {
 			HandRank:  p.GetHandRank(),
 			HandName:  h.getHandName(p.GetHandRank()),
 			BestHand:  p.GetBestHand(),
+			Kickers:   ExtractKickers(p.GetBestHand(), p.GetHandRank()),
 			WonAmount: wonAmounts[i],
 		}
 		h.roundResults = append(h.roundResults, result)
