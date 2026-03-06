@@ -97,8 +97,14 @@ func (_m *MockBlackJackInteractor) SetCountingSystem(system int) string {
 	return ret.Get(0).(string)
 }
 
+// SetDeckPenetration モック
+func (_m *MockBlackJackInteractor) SetDeckPenetration(penetration int) string {
+	ret := _m.Called(penetration)
+	return ret.Get(0).(string)
+}
+
 // ResetWithConfig モック
-func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int) string {
-	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem)
+func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
+	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration)
 	return ret.Get(0).(string)
 }

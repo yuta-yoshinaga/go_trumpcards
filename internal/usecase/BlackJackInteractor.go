@@ -23,7 +23,8 @@ type BlackJackInteractorIF interface {
 	ToggleCounting() string
 	ToggleDAS() string
 	SetCountingSystem(system int) string
-	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int) string
+	SetDeckPenetration(penetration int) string
+	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -144,8 +145,16 @@ func (bi *BlackJackInteractor) SetCountingSystem(system int) string {
 	return bi.bjp.Output(bi.bj, err)
 }
 
+// SetDeckPenetration デッキペネトレーション率設定
+func (bi *BlackJackInteractor) SetDeckPenetration(penetration int) string {
+	config := bi.bj.GetConfig()
+	config.DeckPenetration = penetration
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
 // ResetWithConfig 設定付きリセット
-func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int) string {
+func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
 	bi.bj.Reset()
 	err := bi.bj.SetConfig(domain.BlackJackConfig{
 		DealerHitsSoft17: dealerHitsSoft17,
@@ -153,6 +162,7 @@ func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerC
 		CountingEnabled:  countingEnabled,
 		DoubleAfterSplit: doubleAfterSplit,
 		CountingSystem:   countingSystem,
+		DeckPenetration:  deckPenetration,
 	})
 	if err != nil {
 		return bi.bjp.Output(bi.bj, err)

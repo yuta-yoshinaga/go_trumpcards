@@ -41,6 +41,7 @@
   },
   "trueCountNA": "TC=N/A",
   "das": "DAS",
+  "penetration": "Penetration:",
   "autoAdvance": "Auto Advance:",
   "autoAdvanceSec": "{{sec}}s",
   "sideBet": {

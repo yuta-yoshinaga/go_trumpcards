@@ -210,3 +210,39 @@ func TestBlackJackCuiController_Soft17AndCountingCommands(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("toggledas"))
 	})
 }
+
+func TestBlackJackCuiController_SetPenetration_Valid(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 50).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, mockOutput, tbc.Exec("pen 50"))
+}
+
+func TestBlackJackCuiController_SetPenetration_75(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 75).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, mockOutput, tbc.Exec("pen 75"))
+}
+
+func TestBlackJackCuiController_SetPenetration_MissingArg(t *testing.T) {
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, "Penetration rate is required.", tbc.Exec("pen"))
+}
+
+func TestBlackJackCuiController_SetPenetration_Invalid(t *testing.T) {
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, "Invalid penetration rate. Use 50 or 75.", tbc.Exec("pen 60"))
+}
+
+func TestBlackJackCuiController_SetPenetration_LongForm(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 50).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, mockOutput, tbc.Exec("setpenetration 50"))
+}

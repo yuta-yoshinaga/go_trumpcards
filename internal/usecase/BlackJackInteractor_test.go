@@ -136,7 +136,7 @@ func TestResetWithConfig(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 2, true, true, domain.BJCountingKO)
+	result := tbj.ResetWithConfig(true, 2, true, true, domain.BJCountingKO, 0)
 	assert.Equal(t, "reset done", result)
 	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 2, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingKO})
 	bjMock.AssertNumberOfCalls(t, "Reset", 2)
@@ -151,7 +151,7 @@ func TestResetWithConfig_Error(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 5, false, false, 0)
+	result := tbj.ResetWithConfig(true, 5, false, false, 0, 0)
 	assert.Equal(t, "config error output", result)
 	bjMock.AssertNumberOfCalls(t, "Reset", 1)
 }
@@ -208,4 +208,46 @@ func TestToggleDAS_Error(t *testing.T) {
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
 	result := tbj.ToggleDAS()
 	assert.Equal(t, "error output", result)
+}
+
+func TestSetDeckPenetration(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("penetration changed")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true, DeckPenetration: 50}).Return(nil)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.SetDeckPenetration(50)
+	assert.Equal(t, "penetration changed", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true, DeckPenetration: 50})
+}
+
+func TestSetDeckPenetration_Error(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("error output")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true, DeckPenetration: 60}).Return(errors.New("invalid penetration"))
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.SetDeckPenetration(60)
+	assert.Equal(t, "error output", result)
+}
+
+func TestResetWithConfig_WithPenetration(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("reset done")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50}).Return(nil)
+	bjMock.On("Reset").Return()
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ResetWithConfig(true, 1, true, true, domain.BJCountingHiLo, 50)
+	assert.Equal(t, "reset done", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50})
+	bjMock.AssertNumberOfCalls(t, "Reset", 2)
 }

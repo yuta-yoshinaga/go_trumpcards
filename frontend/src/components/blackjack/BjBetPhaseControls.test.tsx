@@ -20,6 +20,8 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
     onToggleDAS: vi.fn(),
     countingSystem: 0,
     onCountingSystemChange: vi.fn(),
+    deckPenetration: 75,
+    onDeckPenetrationChange: vi.fn(),
     loading: false,
     onBet: vi.fn(),
     perfectPairsBet: 0,
@@ -191,6 +193,28 @@ describe('BjBetPhaseControls', () => {
   it('disables counting system selector when loading', () => {
     render(<BjBetPhaseControls {...defaultProps({ countingEnabled: true, loading: true })} />);
     expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
+  });
+
+  it('renders penetration selector with provided value', () => {
+    render(<BjBetPhaseControls {...defaultProps({ deckPenetration: 50 })} />);
+    expect(screen.getByLabelText('ペネトレーション:')).toHaveValue('50');
+  });
+
+  it('calls onDeckPenetrationChange when penetration selector changes', () => {
+    const onDeckPenetrationChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onDeckPenetrationChange })} />);
+    fireEvent.change(screen.getByLabelText('ペネトレーション:'), { target: { value: '50' } });
+    expect(onDeckPenetrationChange).toHaveBeenCalledWith(50);
+  });
+
+  it('disables penetration selector when loading', () => {
+    render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
+    expect(screen.getByLabelText('ペネトレーション:')).toBeDisabled();
+  });
+
+  it('enables penetration selector when not loading', () => {
+    render(<BjBetPhaseControls {...defaultProps({ loading: false })} />);
+    expect(screen.getByLabelText('ペネトレーション:')).not.toBeDisabled();
   });
 
   it('disables inputs and buttons when loading is true', () => {

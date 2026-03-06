@@ -32,18 +32,19 @@ func (m *mockBlackJackIF) Stand() string { return m.Called().String(0) }
 func (m *mockBlackJackIF) Bet(a, ppBet, t3Bet int) string {
 	return m.Called(a, ppBet, t3Bet).String(0)
 }
-func (m *mockBlackJackIF) DoubleDown() string                  { return m.Called().String(0) }
-func (m *mockBlackJackIF) Split() string                       { return m.Called().String(0) }
-func (m *mockBlackJackIF) Insurance() string                   { return m.Called().String(0) }
-func (m *mockBlackJackIF) DeclineInsurance() string            { return m.Called().String(0) }
-func (m *mockBlackJackIF) Surrender() string                   { return m.Called().String(0) }
-func (m *mockBlackJackIF) SetDeckCount(c int) string           { return m.Called(c).String(0) }
-func (m *mockBlackJackIF) ToggleHint() string                  { return m.Called().String(0) }
-func (m *mockBlackJackIF) ToggleSoft17() string                { return "" }
-func (m *mockBlackJackIF) ToggleCounting() string              { return "" }
-func (m *mockBlackJackIF) ToggleDAS() string                   { return "" }
-func (m *mockBlackJackIF) SetCountingSystem(system int) string { return "" }
-func (m *mockBlackJackIF) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int) string {
+func (m *mockBlackJackIF) DoubleDown() string                        { return m.Called().String(0) }
+func (m *mockBlackJackIF) Split() string                             { return m.Called().String(0) }
+func (m *mockBlackJackIF) Insurance() string                         { return m.Called().String(0) }
+func (m *mockBlackJackIF) DeclineInsurance() string                  { return m.Called().String(0) }
+func (m *mockBlackJackIF) Surrender() string                         { return m.Called().String(0) }
+func (m *mockBlackJackIF) SetDeckCount(c int) string                 { return m.Called(c).String(0) }
+func (m *mockBlackJackIF) ToggleHint() string                        { return m.Called().String(0) }
+func (m *mockBlackJackIF) ToggleSoft17() string                      { return "" }
+func (m *mockBlackJackIF) ToggleCounting() string                    { return "" }
+func (m *mockBlackJackIF) ToggleDAS() string                         { return "" }
+func (m *mockBlackJackIF) SetCountingSystem(system int) string       { return "" }
+func (m *mockBlackJackIF) SetDeckPenetration(penetration int) string { return "" }
+func (m *mockBlackJackIF) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
 	return ""
 }
 

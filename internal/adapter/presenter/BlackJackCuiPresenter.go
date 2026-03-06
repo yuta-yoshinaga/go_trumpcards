@@ -37,6 +37,9 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	if !config.DoubleAfterSplit {
 		b.WriteString("rule: No DAS (No double after split)\n")
 	}
+	if config.DeckPenetration != 0 && config.DeckPenetration != domain.BJDefaultPenetration {
+		fmt.Fprintf(&b, "rule: Penetration %d%%\n", config.DeckPenetration)
+	}
 	if config.CountingEnabled {
 		sysName := countingSystemName(config.CountingSystem)
 		if domain.IsBalancedCountingSystem(config.CountingSystem) {

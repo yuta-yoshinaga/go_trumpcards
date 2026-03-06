@@ -4,6 +4,9 @@ export const BJ_COUNTING_KO = 1;
 export const BJ_COUNTING_ZEN = 2;
 export const BJ_COUNTING_OMEGA2 = 3;
 
+// Deck penetration constants (must match domain BJPenetration constants)
+export const BJ_VALID_PENETRATIONS = [50, 75] as const;
+
 // Side bet type constants (must match domain BJSideBet constants)
 export const BJ_SIDE_BET_PERFECT_PAIRS = 1;
 

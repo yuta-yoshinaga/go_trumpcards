@@ -64,6 +64,7 @@ export interface BlackJackResponse {
   sideBetResults?: BlackJackSideBetResult[];
   doubleAfterSplit: boolean;
   countingSystem: number;
+  deckPenetration: number;
 }
 
 export interface PokerPlayerData {

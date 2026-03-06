@@ -446,3 +446,31 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.Equal(t, 10, result.CpuPlayers[0].Hands[0].Cards[0].Value)
 	})
 }
+
+func TestBlackJackWebPresenter_DeckPenetration(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	bj := domain.NewDefaultBlackJack()
+	bj.Reset()
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 75, result.DeckPenetration)
+}
+
+func TestBlackJackWebPresenter_DeckPenetration50(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
+	bj.Reset()
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 50, result.DeckPenetration)
+}

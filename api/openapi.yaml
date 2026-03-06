@@ -894,8 +894,8 @@ components:
             `hit` (`h`), `stand` (`s`), `doubledown` (`d`), `split` (`sp`),
             `insurance` (`i`), `declineinsurance` (`di`), `togglesoft17` (`soft17`),
             `togglecounting` (`counting`), `toggledas` (`das`),
-            `setcountingsystem` (`scs`), `quit` (`q`).
-          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, scs, setcountingsystem, q, quit]
+            `setcountingsystem` (`scs`), `setpenetration` (`pen`), `quit` (`q`).
+          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, scs, setcountingsystem, pen, setpenetration, q, quit]
           example: hit
         amount:
           type: integer
@@ -903,6 +903,7 @@ components:
             Bet amount.  Required for `bet` command (minimum 10).
             Deck count for `setdeckcount` command (valid values: 1, 2, 4, 6, 8).
             Counting system for `setcountingsystem` command (0=Hi-Lo, 1=KO, 2=Zen Count, 3=Omega II).
+            Penetration rate for `setpenetration` command (valid values: 50, 75).
             Ignored for other commands.
           minimum: 1
           example: 100
@@ -941,6 +942,15 @@ components:
           minimum: 0
           maximum: 3
           example: 0
+        deckPenetration:
+          type: integer
+          description: |
+            Deck penetration rate in percent (50 or 75).
+            Only used with `reset` command.  Defaults to 75 when omitted.
+            At 75%, the shoe is reshuffled when less than 25% of cards remain.
+            At 50%, the shoe is reshuffled when less than 50% of cards remain.
+          enum: [50, 75]
+          example: 75
         perfectPairsBet:
           type: integer
           description: |
@@ -1164,6 +1174,13 @@ components:
           minimum: 0
           maximum: 3
           example: 0
+        deckPenetration:
+          type: integer
+          description: |
+            Current deck penetration rate in percent (50 or 75).
+            Controls when the shoe is reshuffled based on remaining cards.
+          enum: [50, 75]
+          example: 75
         runningCount:
           type: integer
           description: |

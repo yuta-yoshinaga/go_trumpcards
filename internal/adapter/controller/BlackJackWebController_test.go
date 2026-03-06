@@ -356,7 +356,7 @@ func TestBlackJackWebController_ToggleDAS(t *testing.T) {
 func TestBlackJackWebController_ResetWithDASParam(t *testing.T) {
 	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","doubleAfterSplit":false}`
 	bjiMock := new(usecase.MockBlackJackInteractor)
-	bjiMock.On("ResetWithConfig", false, 0, false, false, 0).Return(mockOutput)
+	bjiMock.On("ResetWithConfig", false, 0, false, false, 0, 0).Return(mockOutput)
 	factory := func() uc.BlackJackInteractorIF { return bjiMock }
 	tbc := controller.NewBlackJackWebController(factory)
 	defer tbc.Stop()
@@ -372,13 +372,13 @@ func TestBlackJackWebController_ResetWithDASParam(t *testing.T) {
 	recorded2 := test.RunRequest(t, api.MakeHandler(), req)
 	recorded2.CodeIs(http.StatusOK)
 	recorded2.ContentTypeIsJson()
-	bjiMock.AssertCalled(t, "ResetWithConfig", false, 0, false, false, 0)
+	bjiMock.AssertCalled(t, "ResetWithConfig", false, 0, false, false, 0, 0)
 }
 
 func TestBlackJackWebController_ResetWithConfig(t *testing.T) {
 	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","dealerHitsSoft17":true,"cpuPlayerCount":2,"countingEnabled":true,"doubleAfterSplit":true,"countingSystem":1}`
 	bjiMock := new(usecase.MockBlackJackInteractor)
-	bjiMock.On("ResetWithConfig", true, 2, true, true, 1).Return(mockOutput)
+	bjiMock.On("ResetWithConfig", true, 2, true, true, 1, 0).Return(mockOutput)
 	factory := func() uc.BlackJackInteractorIF { return bjiMock }
 	tbc := controller.NewBlackJackWebController(factory)
 	defer tbc.Stop()
@@ -394,7 +394,7 @@ func TestBlackJackWebController_ResetWithConfig(t *testing.T) {
 	recorded := test.RunRequest(t, api.MakeHandler(), req)
 	recorded.CodeIs(http.StatusOK)
 	recorded.ContentTypeIsJson()
-	bjiMock.AssertCalled(t, "ResetWithConfig", true, 2, true, true, 1)
+	bjiMock.AssertCalled(t, "ResetWithConfig", true, 2, true, true, 1, 0)
 }
 
 func TestBlackJackWebController_ResetWithoutConfig(t *testing.T) {
@@ -417,7 +417,7 @@ func TestBlackJackWebController_ResetWithoutConfig(t *testing.T) {
 	recorded.CodeIs(http.StatusOK)
 	recorded.ContentTypeIsJson()
 	bjiMock.AssertCalled(t, "Reset")
-	bjiMock.AssertNotCalled(t, "ResetWithConfig", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+	bjiMock.AssertNotCalled(t, "ResetWithConfig", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
 }
 
 func TestBlackJackWebController_SetCountingSystem(t *testing.T) {
@@ -496,6 +496,60 @@ func TestBlackJackWebController_BetWithoutSideBets(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		bjiMock.AssertCalled(t, "Bet", 100, 0, 0)
 	})
+}
+
+func TestBlackJackWebController_SetPenetration(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","deckPenetration":50}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 50).Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	t.Run("setpenetration with amount", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"setpenetration","amount":50,"sessionId":"bj-pen-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+	})
+
+	t.Run("pen shorthand", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"pen","amount":50,"sessionId":"bj-pen-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+	})
+}
+
+func TestBlackJackWebController_ResetWithPenetration(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","deckPenetration":50}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("ResetWithConfig", false, 0, false, true, 0, 50).Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	var input controller.BlackJackWebInput
+	_ = json.Unmarshal([]byte(`{"command":"reset","sessionId":"bj-pen-config-1","deckPenetration":50}`), &input)
+	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded.CodeIs(http.StatusOK)
+	recorded.ContentTypeIsJson()
+	bjiMock.AssertCalled(t, "ResetWithConfig", false, 0, false, true, 0, 50)
 }
 
 func TestBlackJackWebController_Stop(t *testing.T) {
