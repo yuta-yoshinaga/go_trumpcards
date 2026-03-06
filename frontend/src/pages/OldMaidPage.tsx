@@ -45,6 +45,8 @@ function buildReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
     counts[a.drawPlayerIdx] += 1 - 2 * a.discardedPairs;
 
     const isLastAction = i === actions.length - 1;
+    // Intermediate replay states carry the full final drawHistory intentionally:
+    // history entries don't reveal card contents, so showing all entries is safe.
     states.push({
       ...finalState,
       players: finalState.players.map((p, idx) => ({
@@ -273,11 +275,13 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
 
 function DrawHistoryTimeline({ entries, players }: { entries: DrawHistoryEntry[]; players: OldMaidPlayerData[] }) {
   const { t } = useTranslation('oldmaid');
-  const scrollRef = useCallback((node: HTMLDivElement | null) => {
-    if (node) {
-      node.scrollTop = node.scrollHeight;
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: entries triggers scroll on new history entries
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, []);
+  }, [entries]);
 
   if (entries.length === 0) return null;
 
