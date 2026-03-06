@@ -156,6 +156,9 @@ func TestBlackJackCuiController_SetCountingSystem(t *testing.T) {
 	t.Run("scs with negative arg", func(t *testing.T) {
 		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs -1"))
 	})
+	t.Run("scs with out-of-range arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs 4"))
+	})
 }
 
 func TestBlackJackCuiController_BetWithSideBets(t *testing.T) {

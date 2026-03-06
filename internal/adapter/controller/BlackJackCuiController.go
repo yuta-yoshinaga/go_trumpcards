@@ -3,6 +3,7 @@ package controller
 import (
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -84,7 +85,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 					return "Counting system is required.", true
 				}
 				system, err := strconv.Atoi(args[0])
-				if err != nil || system < 0 {
+				if err != nil || system < 0 || system > domain.BJCountingMax {
 					return "Invalid counting system. Please enter a number (0-3).", true
 				}
 				return bcc.bji.SetCountingSystem(system), true
