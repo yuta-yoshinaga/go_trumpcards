@@ -101,12 +101,24 @@ describe('OldMaidPage', () => {
 
   it('CPU心理戦 checkbox is unchecked by default', () => {
     renderWithProviders(<OldMaidPage />);
-    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByLabelText('CPU心理戦（奇数カードを端に配置）')).not.toBeChecked();
   });
 
   it('CPU心理戦 checkbox can be toggled', () => {
     renderWithProviders(<OldMaidPage />);
-    const checkbox = screen.getByRole('checkbox');
+    const checkbox = screen.getByLabelText('CPU心理戦（奇数カードを端に配置）');
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+  });
+
+  it('CPU記憶AI checkbox is unchecked by default', () => {
+    renderWithProviders(<OldMaidPage />);
+    expect(screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）')).not.toBeChecked();
+  });
+
+  it('CPU記憶AI checkbox can be toggled', () => {
+    renderWithProviders(<OldMaidPage />);
+    const checkbox = screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）');
     fireEvent.click(checkbox);
     expect(checkbox).toBeChecked();
   });
@@ -115,9 +127,16 @@ describe('OldMaidPage', () => {
     renderWithProviders(<OldMaidPage />);
     const radios = screen.getAllByRole('radio');
     fireEvent.click(radios[1]);
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByLabelText('CPU心理戦（奇数カードを端に配置）'));
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true, undefined, false));
+  });
+
+  it('ゲーム開始 calls reset with cpuMemoryAI=true when checkbox enabled', async () => {
+    renderWithProviders(<OldMaidPage />);
+    fireEvent.click(screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）'));
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, true));
   });
 
   it('hides setup screen after ゲーム開始', async () => {
@@ -240,7 +259,7 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false));
   });
 
   it('calls draw when random draw button is clicked', async () => {

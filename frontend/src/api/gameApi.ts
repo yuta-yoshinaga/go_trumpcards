@@ -83,6 +83,7 @@ export const oldmaidApi = {
     mode?: number,
     cpuPlacementStrategy?: boolean,
     reorderIndices?: number[],
+    cpuMemoryAI?: boolean,
   ) =>
     postJson<OldMaidResponse>('/oldmaid/exec', {
       command,
@@ -90,6 +91,7 @@ export const oldmaidApi = {
       mode,
       cpuPlacementStrategy,
       reorderIndices,
+      cpuMemoryAI,
       sessionId,
     }),
 };

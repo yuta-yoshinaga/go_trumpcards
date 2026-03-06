@@ -625,6 +625,37 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with reset command and cpuMemoryAI', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          nextDrawTargetIdx: 1,
+          gameEndFlag: false,
+          hasDrawn: false,
+          lastDrawPlayerIdx: 0,
+          lastDrawFromIdx: 0,
+          lastDrawCard: null,
+          lastDiscardedPairs: 0,
+          cpuActions: [],
+          message: '',
+        }),
+      );
+      await oldmaidApi.exec('reset', undefined, 1, true, undefined, true);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/oldmaid/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            mode: 1,
+            cpuPlacementStrategy: true,
+            cpuMemoryAI: true,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('calls with shuffle command', async () => {
       mockFetch.mockReturnValue(
         makeResponse({
