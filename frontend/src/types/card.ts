@@ -96,6 +96,7 @@ export interface PokerResult {
   playerIdx: number;
   handRank: number;
   handName: string;
+  kickers: string;
   wonAmount: number;
 }
 
@@ -359,6 +360,7 @@ export interface HoldemResult {
   playerIdx: number;
   handRank: number;
   handName: string;
+  kickers: string;
   bestHand: Card[];
   wonAmount: number;
 }

@@ -134,6 +134,9 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 			}
 			if r.HandName != "" {
 				fmt.Fprintf(&b, "  %s: %s", name, r.HandName)
+				if ks := domain.FormatKickers(r.Kickers); ks != "" {
+					fmt.Fprintf(&b, " (Kicker: %s)", ks)
+				}
 			} else {
 				fmt.Fprintf(&b, "  %s", name)
 			}

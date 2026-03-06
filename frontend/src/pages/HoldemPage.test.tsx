@@ -156,8 +156,8 @@ const showdownState: HoldemResponse = {
   lastBet: 0,
   minRaise: 0,
   roundResults: [
-    { playerIdx: 0, handRank: 1, handName: 'ワンペア', bestHand: [], wonAmount: 0 },
-    { playerIdx: 1, handRank: 2, handName: 'ツーペア', bestHand: [], wonAmount: 200 },
+    { playerIdx: 0, handRank: 1, handName: 'ワンペア', kickers: 'A, Q, 10', bestHand: [], wonAmount: 0 },
+    { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '8', bestHand: [], wonAmount: 200 },
   ],
   cpuActions: [],
   message: 'CPU 1 の勝ち',
@@ -423,8 +423,8 @@ describe('HoldemPage', () => {
     mockExec.mockResolvedValue({
       ...showdownState,
       roundResults: [
-        { playerIdx: 0, handRank: 0, handName: '', bestHand: [], wonAmount: 0 },
-        { playerIdx: 1, handRank: 2, handName: 'ツーペア', bestHand: [], wonAmount: 200 },
+        { playerIdx: 0, handRank: 0, handName: '', kickers: '', bestHand: [], wonAmount: 0 },
+        { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '', bestHand: [], wonAmount: 200 },
       ],
     });
     renderWithProviders(<HoldemPage />);

@@ -50,7 +50,8 @@
     "pot": "ポット:",
     "dealer": "ディーラー:",
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
-    "chipsWon": "+{{amount}}チップ"
+    "chipsWon": "+{{amount}}チップ",
+    "kicker": "Kicker: {{kickers}}"
   },
   "messageCode": {
     "blackjack.result.draw": "引き分けです。",

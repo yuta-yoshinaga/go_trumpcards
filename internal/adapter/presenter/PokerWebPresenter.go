@@ -121,6 +121,7 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 			PlayerIdx: r.PlayerIdx,
 			HandRank:  r.HandRank,
 			HandName:  r.HandName,
+			Kickers:   domain.FormatKickers(r.Kickers),
 			WonAmount: r.WonAmount,
 		})
 	}
