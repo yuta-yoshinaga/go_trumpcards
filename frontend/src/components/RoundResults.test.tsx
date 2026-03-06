@@ -47,18 +47,18 @@ describe('RoundResults', () => {
   it('renders kickers when present', () => {
     const results = [{ playerIdx: 0, handName: 'One Pair', kickers: 'A, Q, 10', wonAmount: 100 }];
     render(<RoundResults results={results} players={players} />);
-    expect(screen.getByText(/Kicker: A, Q, 10/)).toBeInTheDocument();
+    expect(screen.getByText(/キッカー: A, Q, 10/)).toBeInTheDocument();
   });
 
   it('does not render kickers when absent', () => {
     const results = [{ playerIdx: 0, handName: 'Flush', wonAmount: 100 }];
     render(<RoundResults results={results} players={players} />);
-    expect(screen.queryByText(/Kicker/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/キッカー/)).not.toBeInTheDocument();
   });
 
   it('does not render kickers when empty string', () => {
     const results = [{ playerIdx: 0, handName: 'Flush', kickers: '', wonAmount: 100 }];
     render(<RoundResults results={results} players={players} />);
-    expect(screen.queryByText(/Kicker/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/キッカー/)).not.toBeInTheDocument();
   });
 });

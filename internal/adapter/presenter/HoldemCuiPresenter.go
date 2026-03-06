@@ -124,7 +124,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			if r.HandName != "" {
 				fmt.Fprintf(&b, "  %s: %s", name, r.HandName)
 				if ks := domain.FormatKickers(r.Kickers); ks != "" {
-					fmt.Fprintf(&b, " (Kicker: %s)", ks)
+					fmt.Fprintf(&b, " (キッカー: %s)", ks)
 				}
 			} else {
 				fmt.Fprintf(&b, "  %s", name)

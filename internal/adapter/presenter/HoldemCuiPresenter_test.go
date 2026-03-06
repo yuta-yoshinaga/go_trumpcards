@@ -205,7 +205,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "You: One Pair (Kicker: A, Q, 10)")
+		assert.Contains(t, result, "You: One Pair (キッカー: A, Q, 10)")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -218,7 +218,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "You: Flush")
-		assert.NotContains(t, result, "Kicker")
+		assert.NotContains(t, result, "キッカー")
 	})
 
 	t.Run("showdown results with CPU winner", func(t *testing.T) {
@@ -229,7 +229,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "CPU 1: One Pair (Kicker: K, Q, J)")
+		assert.Contains(t, result, "CPU 1: One Pair (キッカー: K, Q, J)")
 		assert.Contains(t, result, "50チップ獲得")
 	})
 

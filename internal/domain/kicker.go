@@ -47,14 +47,14 @@ func ExtractKickers(cards []*Card, handRank int) []int {
 	// Determine the "group" frequency for the hand rank
 	var groupFreq int
 	switch handRank {
-	case PokerHandOnePair:
-		groupFreq = 2
-	case PokerHandTwoPair:
+	case PokerHandOnePair, PokerHandTwoPair:
 		groupFreq = 2
 	case PokerHandThreeOfAKind:
 		groupFreq = 3
 	case PokerHandFourOfAKind:
 		groupFreq = 4
+	default:
+		return nil
 	}
 
 	// Collect kicker values (cards not part of the hand group)
