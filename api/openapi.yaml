@@ -1891,6 +1891,10 @@ components:
           description: Cards in hand (only populated for the human player)
           items:
             $ref: '#/components/schemas/Card'
+        illegalFinishPenalty:
+          type: boolean
+          description: Whether this player received an illegal finish penalty (反則上がり)
+          example: false
 
     DaifugoAction:
       type: object
@@ -1976,6 +1980,14 @@ components:
         emperorEnabled:
           type: boolean
           description: Whether エンペラー (emperor — 4 consecutive cards of all different suits on clear table triggers revolution + table clear) rule is enabled (default false)
+          example: false
+        sequenceRevolutionEnabled:
+          type: boolean
+          description: Whether 階段革命 (sequence revolution — 4+ card sequences trigger revolution) rule is enabled (default false)
+          example: false
+        illegalFinishEnabled:
+          type: boolean
+          description: Whether 反則上がり (illegal finish — finishing with 8-cut, joker, or revolution is penalized) rule is enabled (default false)
           example: false
 
     DaifugoExchangeAction:

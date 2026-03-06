@@ -39,6 +39,7 @@ function CpuPlayerAreaWrapper({ player, isCurrentTurn }: { player: DaifugoPlayer
       {!player.isFinished && (
         <div className="text-[#ccc] text-[0.85em]">{t('cardCount', { count: player.cardCount })}</div>
       )}
+      {player.illegalFinishPenalty && <StatusBadge variant="danger">{t('badge.illegalFinishPenalty')}</StatusBadge>}
     </CpuTurnArea>
   );
 }
@@ -65,6 +66,7 @@ function HumanPlayerArea({ player, selectedIndices, onToggle, isCurrentTurn, onD
         {player.isFinished && (
           <StatusBadge variant="success">{t('finishedWithRank', { rank: t(`rank.${player.rank}`) })}</StatusBadge>
         )}
+        {player.illegalFinishPenalty && <StatusBadge variant="danger">{t('badge.illegalFinishPenalty')}</StatusBadge>}
       </div>
       {!player.isFinished && (
         <div style={{ color: '#ccc', fontSize: '0.85em', marginBottom: 4 }}>
@@ -191,6 +193,8 @@ function SettingsPanel({ config, onChange }: SettingsPanelProps) {
     { key: 'intenseLockEnabled', label: t('settings.intenseLock') },
     { key: 'sandstormEnabled', label: t('settings.sandstorm') },
     { key: 'emperorEnabled', label: t('settings.emperor') },
+    { key: 'sequenceRevolutionEnabled', label: t('settings.sequenceRevolution') },
+    { key: 'illegalFinishEnabled', label: t('settings.illegalFinish') },
   ];
   return (
     <details className="mb-2">
@@ -245,6 +249,8 @@ const defaultConfigInput: DaifugoConfigInput = {
   intenseLockEnabled: false,
   sandstormEnabled: false,
   emperorEnabled: false,
+  sequenceRevolutionEnabled: false,
+  illegalFinishEnabled: false,
 };
 
 export function DaifugoPage() {
