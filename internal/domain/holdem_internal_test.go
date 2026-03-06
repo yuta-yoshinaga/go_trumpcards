@@ -1743,7 +1743,7 @@ func TestRunCpuActions_FallbackOnError(t *testing.T) {
 	h.players[0].SetFolded(true)
 	h.actedFlags[0] = true
 	// raiseCountを上限に設定: CPUがbet/raiseを選択してもエラーになりフォールバックする
-	h.raiseCount = holdemMaxRaisesPerRound
+	h.raiseCount = holdemDefaultMaxRaises
 
 	for _, p := range h.players {
 		p.Reset()
@@ -1796,14 +1796,14 @@ func TestRunCpuActions_FallbackCheckOnError(t *testing.T) {
 
 	// executeActionを直接呼び出してエラーケースをテスト
 	// bet (lastBet=0) にレイズ上限超過を設定
-	h.raiseCount = holdemMaxRaisesPerRound
+	h.raiseCount = holdemDefaultMaxRaises
 
 	// cpuDecideのレイズ上限チェックをバイパスするため、直接executeActionを呼ぶ
 	execErr := h.executeAction(1, HoldemActionBet, 20)
 	assert.Error(t, execErr) // "Maximum number of raises" エラー
 
 	// runCpuActionsのフォールバックはlastCpuErrorに記録される
-	h.raiseCount = holdemMaxRaisesPerRound
+	h.raiseCount = holdemDefaultMaxRaises
 	h.lastCpuError = nil
 	h.actedFlags[1] = false
 	// lastBet=0でフォールバック: チェック
@@ -1828,7 +1828,7 @@ func TestRunCpuActions_FallbackFoldOnError(t *testing.T) {
 	h.players[2].SetFolded(true)
 	h.players[3].SetFolded(true)
 	// raiseCountを上限に設定
-	h.raiseCount = holdemMaxRaisesPerRound
+	h.raiseCount = holdemDefaultMaxRaises
 
 	for _, p := range h.players {
 		p.Reset()

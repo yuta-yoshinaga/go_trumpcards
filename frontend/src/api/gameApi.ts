@@ -68,7 +68,9 @@ export const pokerApi = {
     amount?: number,
     cpuCount?: number,
     jokerCount?: number,
-  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, cpuCount, jokerCount, sessionId }),
+    bettingLimit?: number,
+  ) =>
+    postJson<PokerResponse>('/poker/exec', { command, indices, amount, cpuCount, jokerCount, bettingLimit, sessionId }),
 };
 
 export const oldmaidApi = {
@@ -146,6 +148,7 @@ export interface HoldemConfigInput {
   tournamentMode?: boolean;
   blindLevelHands?: number;
   blindMultiplier?: number;
+  bettingLimit?: number;
 }
 
 export const holdemApi = {

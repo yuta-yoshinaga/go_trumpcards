@@ -25,8 +25,8 @@ const (
 	PokerActionAllIn = bettingActionAllIn // オールイン
 )
 
-// CPU AI 閾値
-const pokerMaxRaisesPerRound = bettingMaxRaisesPerRound
+// pokerDefaultMaxRaises Fixed/PotLimit時のデフォルト最大レイズ回数
+const pokerDefaultMaxRaises = bettingMaxRaisesPerRound
 
 // PokerSidePot サイドポット (共通SidePot型のエイリアス)
 type PokerSidePot = SidePot
@@ -306,7 +306,8 @@ func (p *Poker) executeAction(playerIdx, action, amount int) error {
 		Pot: p.pot, LastBet: p.lastBet, MinRaise: p.minRaise,
 		RaiseCount: p.raiseCount, ActedFlags: p.actedFlags,
 	}
-	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, p.config.MinBet)
+	maxRaises, maxBetAmount := p.bettingLimits()
+	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, p.config.MinBet, maxRaises, maxBetAmount)
 	p.pot = state.Pot
 	p.lastBet = state.LastBet
 	p.minRaise = state.MinRaise
@@ -586,6 +587,22 @@ func (p *Poker) runCpuExchanges() {
 	}
 }
 
+// bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
+func (p *Poker) bettingLimits() (maxRaises, maxBetAmount int) {
+	switch p.config.BettingLimit {
+	case BettingLimitPotLimit:
+		maxRaises = pokerDefaultMaxRaises
+		maxBetAmount = p.pot + p.lastBet
+	case BettingLimitNoLimit:
+		maxRaises = 0
+		maxBetAmount = 0
+	default: // Fixed
+		maxRaises = pokerDefaultMaxRaises
+		maxBetAmount = 0
+	}
+	return
+}
+
 // cpuDecide CPUプレイヤーの意思決定
 func (p *Poker) cpuDecide(idx int) (int, int) {
 	pl := p.players[idx]
@@ -610,8 +627,15 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 		action, amount = p.cpuDecideSecondBet(idx, params, callAmount, handRank, exchangeWarning)
 	}
 
+	maxRaises, maxBetAmount := p.bettingLimits()
+
+	// PotLimit: CPUベット額をポットサイズに制限
+	if maxBetAmount > 0 && amount > maxBetAmount {
+		amount = maxBetAmount
+	}
+
 	// レイズ上限に達したら変更
-	if p.raiseCount >= pokerMaxRaisesPerRound {
+	if maxRaises > 0 && p.raiseCount >= maxRaises {
 		if action == PokerActionRaise || action == PokerActionBet {
 			if callAmount > 0 {
 				return PokerActionCall, 0
@@ -876,6 +900,9 @@ func (p *Poker) GetLastBet() int { return p.lastBet }
 
 // GetMinRaise 最小レイズ額取得
 func (p *Poker) GetMinRaise() int { return p.minRaise }
+
+// GetRaiseCount 現在のレイズ回数取得
+func (p *Poker) GetRaiseCount() int { return p.raiseCount }
 
 // GetAnte アンティ取得
 func (p *Poker) GetAnte() int { return p.config.Ante }

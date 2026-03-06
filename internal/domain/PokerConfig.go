@@ -20,11 +20,12 @@ var PokerPlayStyleNames = []string{
 
 // PokerConfig ポーカー設定
 type PokerConfig struct {
-	InitChips  int // 初期チップ
-	Ante       int // アンティ
-	MinBet     int // 最小ベット
-	CpuCount   int // CPU数 (1-3)
-	JokerCount int // ジョーカー枚数 (0-2)
+	InitChips    int              // 初期チップ
+	Ante         int              // アンティ
+	MinBet       int              // 最小ベット
+	CpuCount     int              // CPU数 (1-3)
+	JokerCount   int              // ジョーカー枚数 (0-2)
+	BettingLimit BettingLimitType // ベッティングリミット
 }
 
 // DefaultPokerConfig デフォルト設定

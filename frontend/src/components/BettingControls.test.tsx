@@ -105,4 +105,38 @@ describe('BettingControls', () => {
     const input = screen.getByLabelText('ベット額:');
     expect(input).toHaveAttribute('min', '25');
   });
+
+  it('sets max attribute on input when maxBetAmount is positive', () => {
+    render(<BettingControls {...makeProps({ maxBetAmount: 100 })} />);
+    const input = screen.getByLabelText('ベット額:');
+    expect(input).toHaveAttribute('max', '100');
+  });
+
+  it('does not set max attribute when maxBetAmount is 0', () => {
+    render(<BettingControls {...makeProps({ maxBetAmount: 0 })} />);
+    const input = screen.getByLabelText('ベット額:');
+    expect(input).not.toHaveAttribute('max');
+  });
+
+  it('does not set max attribute when maxBetAmount is undefined', () => {
+    render(<BettingControls {...makeProps()} />);
+    const input = screen.getByLabelText('ベット額:');
+    expect(input).not.toHaveAttribute('max');
+  });
+
+  it('clamps input value to maxBetAmount', () => {
+    const onBetAmountChange = vi.fn();
+    render(<BettingControls {...makeProps({ maxBetAmount: 50, onBetAmountChange })} />);
+    const input = screen.getByLabelText('ベット額:');
+    fireEvent.change(input, { target: { value: '80' } });
+    expect(onBetAmountChange).toHaveBeenCalledWith(50);
+  });
+
+  it('does not clamp when value is within maxBetAmount', () => {
+    const onBetAmountChange = vi.fn();
+    render(<BettingControls {...makeProps({ maxBetAmount: 100, onBetAmountChange })} />);
+    const input = screen.getByLabelText('ベット額:');
+    fireEvent.change(input, { target: { value: '80' } });
+    expect(onBetAmountChange).toHaveBeenCalledWith(80);
+  });
 });

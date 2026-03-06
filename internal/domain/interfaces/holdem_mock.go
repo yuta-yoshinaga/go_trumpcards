@@ -107,6 +107,12 @@ func (_m *MockHoldemGame) GetMinRaise() int {
 	return ret.Int(0)
 }
 
+// GetRaiseCount モック
+func (_m *MockHoldemGame) GetRaiseCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetRoundResults モック
 func (_m *MockHoldemGame) GetRoundResults() []domain.HoldemResult {
 	ret := _m.Called()

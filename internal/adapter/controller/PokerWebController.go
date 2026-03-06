@@ -10,10 +10,11 @@ import (
 // PokerWebInput ポーカーWebインプット
 type PokerWebInput struct {
 	BaseWebInput
-	Indices    []int `json:"indices,omitempty"`
-	Amount     int   `json:"amount,omitempty"`
-	CpuCount   *int  `json:"cpuCount,omitempty"`
-	JokerCount *int  `json:"jokerCount,omitempty"`
+	Indices      []int `json:"indices,omitempty"`
+	Amount       int   `json:"amount,omitempty"`
+	CpuCount     *int  `json:"cpuCount,omitempty"`
+	JokerCount   *int  `json:"jokerCount,omitempty"`
+	BettingLimit *int  `json:"bettingLimit,omitempty"`
 }
 
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
@@ -80,6 +81,9 @@ type PokerWebOutput struct {
 	MinRaise      int                          `json:"minRaise"`
 	Ante          int                          `json:"ante"`
 	JokerCount    int                          `json:"jokerCount"`
+	BettingLimit  int                          `json:"bettingLimit"`
+	RaiseCount    int                          `json:"raiseCount"`
+	MaxBetAmount  int                          `json:"maxBetAmount"`
 	RoundResults  []*PokerWebOutputResult      `json:"roundResults"`
 	CpuActions    []*PokerWebOutputCpuAction   `json:"cpuActions"`
 	CpuExchanges  []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
@@ -130,6 +134,15 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 						jc = 2
 					}
 					cfg.JokerCount = jc
+				}
+				if param.BettingLimit != nil {
+					bl := *param.BettingLimit
+					if bl < 0 {
+						bl = 0
+					} else if bl > 2 {
+						bl = 2
+					}
+					cfg.BettingLimit = domain.BettingLimitType(bl)
 				}
 				pwc.writePresenterResponse(w, pi.ResetWithConfig(cfg))
 			case "e", "exchange":

@@ -32,6 +32,7 @@ export function HoldemPage() {
   const phaseNames = usePhaseNames(t);
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const [betAmount, setBetAmount] = useState(20);
+  const [bettingLimit, setBettingLimit] = useState(0);
 
   useEffect(() => {
     exec('reset');
@@ -196,6 +197,7 @@ export function HoldemPage() {
             betAmount={betAmount}
             onBetAmountChange={setBetAmount}
             minRaise={minRaise}
+            maxBetAmount={state?.maxBetAmount}
             hasOutstandingBet={hasOutstandingBet}
             loading={loading}
             onCall={() => exec('call')}
@@ -207,13 +209,25 @@ export function HoldemPage() {
           />
         )}
 
-        {/* Reset button */}
-        <div className="text-center">
+        {/* Settings + Reset */}
+        <div className="text-center flex items-center justify-center gap-3">
+          <label className="text-white text-sm flex items-center gap-1">
+            {tc('betting.bettingLimit')}
+            <select
+              value={bettingLimit}
+              onChange={(e) => setBettingLimit(Number(e.target.value))}
+              className="px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
+            >
+              <option value={0}>{tc('betting.fixed')}</option>
+              <option value={1}>{tc('betting.potLimit')}</option>
+              <option value={2}>{tc('betting.noLimit')}</option>
+            </select>
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset')}
+            onClick={() => exec('reset', undefined, { bettingLimit })}
           >
             {tc('button.reset')}
           </button>

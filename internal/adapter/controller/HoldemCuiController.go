@@ -46,6 +46,17 @@ func (c *HoldemCuiController) Exec(command string) string {
 				return c.hi.Action(domain.HoldemActionRaise, amount), true
 			case "a", "allin":
 				return c.hi.Action(domain.HoldemActionAllIn, 0), true
+			case "bl", "bettinglimit":
+				if len(args) < 1 {
+					return "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", true
+				}
+				bl, err := strconv.Atoi(args[0])
+				if err != nil || bl < 0 || bl > 2 {
+					return fmt.Sprintf("Invalid betting limit: %s. Please enter 0-2.", args[0]), true
+				}
+				cfg := domain.DefaultHoldemConfig()
+				cfg.BettingLimit = domain.BettingLimitType(bl)
+				return c.hi.ResetWithConfig(cfg), true
 			}
 			return "", false
 		},

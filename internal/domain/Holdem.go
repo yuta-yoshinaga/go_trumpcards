@@ -29,8 +29,8 @@ const (
 	HoldemActionAllIn = bettingActionAllIn // オールイン
 )
 
-// CPU AI 閾値
-const holdemMaxRaisesPerRound = bettingMaxRaisesPerRound // 1ラウンドの最大レイズ回数
+// holdemDefaultMaxRaises Fixed/PotLimit時のデフォルト最大レイズ回数
+const holdemDefaultMaxRaises = bettingMaxRaisesPerRound
 
 // cpuStyleParams CPU意思決定パラメータ
 type cpuStyleParams struct {
@@ -333,7 +333,8 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 		Pot: h.pot, LastBet: h.lastBet, MinRaise: h.minRaise,
 		RaiseCount: h.raiseCount, ActedFlags: h.actedFlags,
 	}
-	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, h.config.BigBlind)
+	maxRaises, maxBetAmount := h.bettingLimits()
+	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, h.config.BigBlind, maxRaises, maxBetAmount)
 	h.pot = state.Pot
 	h.lastBet = state.LastBet
 	h.minRaise = state.MinRaise
@@ -595,6 +596,22 @@ func (h *Holdem) handleCpuActionError(playerIdx, action int, err error) {
 	}
 }
 
+// bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
+func (h *Holdem) bettingLimits() (maxRaises, maxBetAmount int) {
+	switch h.config.BettingLimit {
+	case BettingLimitPotLimit:
+		maxRaises = holdemDefaultMaxRaises
+		maxBetAmount = h.pot + h.lastBet
+	case BettingLimitNoLimit:
+		maxRaises = 0
+		maxBetAmount = 0
+	default: // Fixed
+		maxRaises = holdemDefaultMaxRaises
+		maxBetAmount = 0
+	}
+	return
+}
+
 // cpuDecide CPUプレイヤーの意思決定
 func (h *Holdem) cpuDecide(idx int) (int, int) {
 	p := h.players[idx]
@@ -613,8 +630,15 @@ func (h *Holdem) cpuDecide(idx int) (int, int) {
 		action, amount = h.cpuDecidePostFlop(idx, params, callAmount)
 	}
 
+	maxRaises, maxBetAmount := h.bettingLimits()
+
+	// PotLimit: CPUベット額をポットサイズに制限
+	if maxBetAmount > 0 && amount > maxBetAmount {
+		amount = maxBetAmount
+	}
+
 	// レイズ上限に達したら、レイズ/ベットをコール/チェックに変更
-	if h.raiseCount >= holdemMaxRaisesPerRound {
+	if maxRaises > 0 && h.raiseCount >= maxRaises {
 		if action == HoldemActionRaise || action == HoldemActionBet {
 			if callAmount > 0 {
 				return HoldemActionCall, 0
@@ -850,6 +874,9 @@ func (h *Holdem) GetLastBet() int { return h.lastBet }
 
 // GetMinRaise 最小レイズ額取得
 func (h *Holdem) GetMinRaise() int { return h.minRaise }
+
+// GetRaiseCount 現在のレイズ回数取得
+func (h *Holdem) GetRaiseCount() int { return h.raiseCount }
 
 // GetRoundResults ラウンド結果取得
 func (h *Holdem) GetRoundResults() []HoldemResult { return h.roundResults }

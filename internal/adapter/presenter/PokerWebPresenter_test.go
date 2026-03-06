@@ -515,3 +515,44 @@ func TestPokerWebPresenter_OutputWithOdds(t *testing.T) {
 		assert.Len(t, out.Odds, 1)
 	})
 }
+
+func TestPokerWebPresenter_Output_BettingLimitFields(t *testing.T) {
+	pres := presenter.NewPokerWebPresenter()
+
+	t.Run("default Fixed limit", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, out.BettingLimit)
+		assert.Equal(t, 0, out.RaiseCount)
+		assert.Equal(t, 0, out.MaxBetAmount)
+	})
+
+	t.Run("PotLimit returns maxBetAmount", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.PokerPlayer{
+			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		}
+		cfg := domain.DefaultPokerConfig()
+		cfg.BettingLimit = domain.BettingLimitPotLimit
+		cfg.CpuCount = 1
+		p := domain.NewPoker(tc, players, cfg)
+		p.SetPhase(domain.PokerPhaseDeal)
+		p.SetPot(100)
+		p.SetLastBet(20)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, out.BettingLimit)
+		assert.Equal(t, 120, out.MaxBetAmount) // pot(100) + lastBet(20)
+	})
+}

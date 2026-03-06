@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -63,6 +64,17 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				return pcc.pi.Action(domain.PokerActionCheck, 0), true
 			case "a", "allin":
 				return pcc.pi.Action(domain.PokerActionAllIn, 0), true
+			case "bl", "bettinglimit":
+				if len(args) < 1 {
+					return "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", true
+				}
+				bl, err := strconv.Atoi(args[0])
+				if err != nil || bl < 0 || bl > 2 {
+					return fmt.Sprintf("Invalid betting limit: %s. Please enter 0-2.", args[0]), true
+				}
+				cfg := domain.DefaultPokerConfig()
+				cfg.BettingLimit = domain.BettingLimitType(bl)
+				return pcc.pi.ResetWithConfig(cfg), true
 			}
 			return "", false
 		},

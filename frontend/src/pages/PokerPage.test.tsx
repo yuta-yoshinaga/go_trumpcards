@@ -73,6 +73,9 @@ const initState: PokerResponse = {
   cpuActions: [],
   cpuExchanges: [],
   message: 'リセットしました',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** DEAL phase (phase 1): human's turn, no outstanding bet */
@@ -92,6 +95,9 @@ const dealState: PokerResponse = {
   cpuActions: [],
   cpuExchanges: [],
   message: 'あなたの番です',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** DEAL with outstanding bet: shows call/raise */
@@ -153,6 +159,9 @@ const endState: PokerResponse = {
   cpuActions: [],
   cpuExchanges: [],
   message: 'あなたの負け',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 beforeEach(() => {
@@ -816,7 +825,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, undefined, 0));
   });
 
   // ---- loading / disabled state ----

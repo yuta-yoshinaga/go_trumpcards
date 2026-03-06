@@ -77,6 +77,9 @@ const initState: HoldemResponse = {
   tournamentMode: false,
   blindLevelHands: 10,
   blindMultiplier: 200,
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -100,6 +103,9 @@ const preFlopState: HoldemResponse = {
   tournamentMode: false,
   blindLevelHands: 10,
   blindMultiplier: 200,
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** PRE_FLOP with outstanding bet: shows call/raise instead of bet/check */
@@ -161,6 +167,9 @@ const showdownState: HoldemResponse = {
   tournamentMode: false,
   blindLevelHands: 10,
   blindMultiplier: 200,
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** END (phase 6) — also isShowdown */
@@ -679,7 +688,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0 }));
   });
 
   // ---- loading / disabled state ----

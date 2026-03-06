@@ -836,3 +836,62 @@ func TestPokerWebController_AllShortCommands(t *testing.T) {
 		recorded.CodeIs(200)
 	}
 }
+
+// --- betting limit ---
+
+func TestPokerWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	cfg := domain.DefaultPokerConfig()
+	cfg.BettingLimit = domain.BettingLimitPotLimit
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+			map[string]interface{}{
+				"command":      "reset",
+				"sessionId":    "s1",
+				"bettingLimit": 1,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestPokerWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	cfg := domain.DefaultPokerConfig()
+	cfg.BettingLimit = domain.BettingLimitNoLimit // clamped from 5 to 2
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+			map[string]interface{}{
+				"command":      "reset",
+				"sessionId":    "s1",
+				"bettingLimit": 5,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestPokerWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	cfg := domain.DefaultPokerConfig()
+	cfg.BettingLimit = domain.BettingLimitFixed // clamped from -1 to 0
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+			map[string]interface{}{
+				"command":      "reset",
+				"sessionId":    "s1",
+				"bettingLimit": -1,
+			}))
+	recorded.CodeIs(200)
+}

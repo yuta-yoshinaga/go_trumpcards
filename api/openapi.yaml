@@ -1328,6 +1328,14 @@ components:
           minimum: 0
           maximum: 2
           example: 1
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type (used with `reset` command).
+            0 = Fixed (default), 1 = Pot Limit, 2 = No Limit.
+          minimum: 0
+          maximum: 2
+          example: 0
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1511,6 +1519,21 @@ components:
           type: integer
         jokerCount:
           type: integer
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type: 0 = Fixed, 1 = Pot Limit, 2 = No Limit.
+          enum: [0, 1, 2]
+        raiseCount:
+          type: integer
+          description: Number of raises in the current betting round.
+          minimum: 0
+        maxBetAmount:
+          type: integer
+          description: |
+            Maximum allowed bet/raise amount for Pot Limit mode.
+            0 means no limit (Fixed or No Limit mode).
+          minimum: 0
         roundResults:
           type: array
           items:
@@ -2630,6 +2653,14 @@ components:
             Defaults to 200 (= 2x). Must be >= 101.
           minimum: 101
           example: 200
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type (used with `reset` command).
+            0 = Fixed (default), 1 = Pot Limit, 2 = No Limit.
+          minimum: 0
+          maximum: 2
+          example: 0
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -2874,6 +2905,21 @@ components:
           description: Minimum raise amount
           minimum: 0
           example: 20
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type: 0 = Fixed, 1 = Pot Limit, 2 = No Limit.
+          enum: [0, 1, 2]
+        raiseCount:
+          type: integer
+          description: Number of raises in the current betting round.
+          minimum: 0
+        maxBetAmount:
+          type: integer
+          description: |
+            Maximum allowed bet/raise amount for Pot Limit mode.
+            0 means no limit (Fixed or No Limit mode).
+          minimum: 0
         roundResults:
           type: array
           description: Results for each non-folded player at showdown

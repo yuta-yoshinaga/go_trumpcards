@@ -2,6 +2,22 @@ package domain
 
 import "sort"
 
+// BettingLimitType ベッティングリミットタイプ
+type BettingLimitType int
+
+const (
+	BettingLimitFixed    BettingLimitType = iota // Fixed limit (max 4 raises)
+	BettingLimitPotLimit                         // Pot limit (bet/raise ≤ pot)
+	BettingLimitNoLimit                          // No limit
+)
+
+// BettingLimitNames リミットタイプ名
+var BettingLimitNames = []string{
+	"Fixed",
+	"Pot Limit",
+	"No Limit",
+}
+
 // ベッティングアクション定数 (Poker/Holdem共通)
 const (
 	bettingActionFold  = 0
@@ -45,7 +61,9 @@ type BettingState struct {
 }
 
 // ExecuteBettingAction 共通ベッティングアクション実行
-func ExecuteBettingAction(players []BettingPlayer, state *BettingState, playerIdx, action, amount, minBetAmount int) error {
+// maxRaises: 最大レイズ回数 (0以下で無制限=NoLimit)
+// maxBetAmount: 最大ベット額 (0以下で無制限)
+func ExecuteBettingAction(players []BettingPlayer, state *BettingState, playerIdx, action, amount, minBetAmount, maxRaises, maxBetAmount int) error {
 	pl := players[playerIdx]
 
 	switch action {
@@ -79,7 +97,7 @@ func ExecuteBettingAction(players []BettingPlayer, state *BettingState, playerId
 		state.ActedFlags[playerIdx] = true
 
 	case bettingActionBet:
-		if state.RaiseCount >= bettingMaxRaisesPerRound {
+		if maxRaises > 0 && state.RaiseCount >= maxRaises {
 			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
 		}
 		if state.LastBet > 0 {
@@ -87,6 +105,9 @@ func ExecuteBettingAction(players []BettingPlayer, state *BettingState, playerId
 		}
 		if amount < minBetAmount {
 			return NewDomainError(ErrInvalidAmount, "Bet must be at least the minimum bet.")
+		}
+		if maxBetAmount > 0 && amount > maxBetAmount {
+			return NewDomainError(ErrInvalidAmount, "Bet exceeds maximum allowed amount.")
 		}
 		if amount > pl.GetChips() {
 			return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
@@ -103,7 +124,7 @@ func ExecuteBettingAction(players []BettingPlayer, state *BettingState, playerId
 		}
 
 	case bettingActionRaise:
-		if state.RaiseCount >= bettingMaxRaisesPerRound {
+		if maxRaises > 0 && state.RaiseCount >= maxRaises {
 			return NewDomainError(ErrInvalidPlay, "Maximum number of raises for this round has been reached.")
 		}
 		diff := state.LastBet - pl.GetCurrentBet()
@@ -113,9 +134,12 @@ func ExecuteBettingAction(players []BettingPlayer, state *BettingState, playerId
 		if amount < state.MinRaise {
 			return NewDomainError(ErrInvalidAmount, "Raise must be at least the minimum raise.")
 		}
+		if maxBetAmount > 0 && amount > maxBetAmount {
+			return NewDomainError(ErrInvalidAmount, "Raise exceeds maximum allowed amount.")
+		}
 		totalNeeded := diff + amount
 		if totalNeeded >= pl.GetChips() {
-			return ExecuteBettingAction(players, state, playerIdx, bettingActionAllIn, 0, minBetAmount)
+			return ExecuteBettingAction(players, state, playerIdx, bettingActionAllIn, 0, minBetAmount, maxRaises, maxBetAmount)
 		}
 		pl.SubtractChips(totalNeeded)
 		pl.SetCurrentBet(pl.GetCurrentBet() + totalNeeded)

@@ -326,7 +326,7 @@ func TestHoldem_PlayerAction_Raise_MaxRaisesReached(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseFlop)
 	h.SetLastBet(20)
 	h.SetMinRaise(10)
-	h.setRaiseCount(4) // holdemMaxRaisesPerRound = 4
+	h.setRaiseCount(4) // holdemDefaultMaxRaises = 4
 	h.SetCommunityCards([]*Card{
 		NewCard(CardDesignSpade, 2, false),
 		NewCard(CardDesignHeart, 3, false),
@@ -342,7 +342,7 @@ func TestHoldem_PlayerAction_Bet_MaxRaisesReached(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseFlop)
 	h.SetLastBet(0)
 	h.SetMinRaise(10)
-	h.setRaiseCount(4) // holdemMaxRaisesPerRound = 4
+	h.setRaiseCount(4) // holdemDefaultMaxRaises = 4
 	h.SetCommunityCards([]*Card{
 		NewCard(CardDesignSpade, 2, false),
 		NewCard(CardDesignHeart, 3, false),
@@ -1063,4 +1063,84 @@ func TestHoldem_AllIn_AboveLastBet(t *testing.T) {
 	err := h.PlayerAction(HoldemActionAllIn, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
+}
+
+func setupHoldemForHumanActionWithConfig(phase int, limit BettingLimitType) *Holdem {
+	players := []*HoldemPlayer{
+		NewHoldemPlayer(true, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleLAP),
+		NewHoldemPlayer(false, HoldemStyleLAG),
+	}
+	cfg := DefaultHoldemConfig()
+	cfg.BettingLimit = limit
+	tc := NewTrumpCards(0)
+	h := NewHoldem(tc, players, cfg)
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.setStartingChips([]int{1000, 1000, 1000, 1000})
+	h.SetPhase(phase)
+	h.SetCurrentTurn(0)
+	h.SetLastBet(0)
+	h.SetMinRaise(10)
+	h.SetPot(100)
+	h.setActedFlags([]bool{false, true, true, true})
+	for _, p := range h.players {
+		p.Reset()
+		p.AddCard(NewCard(CardDesignSpade, 1, false))
+		p.AddCard(NewCard(CardDesignHeart, 13, false))
+	}
+	return h
+}
+
+func TestHoldem_GetRaiseCount(t *testing.T) {
+	h := newTestHoldem()
+	assert.Equal(t, 0, h.GetRaiseCount())
+}
+
+func TestHoldem_BettingLimits_PotLimit(t *testing.T) {
+	t.Run("bet exceeding pot limit is rejected", func(t *testing.T) {
+		h := setupHoldemForHumanActionWithConfig(HoldemPhaseFlop, BettingLimitPotLimit)
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignHeart, 3, false),
+			NewCard(CardDesignClover, 4, false),
+		})
+		h.SetPot(100)
+		h.SetLastBet(0)
+		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 130 > 100
+		err := h.PlayerAction(HoldemActionBet, 130)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidAmount)
+	})
+
+	t.Run("bet within pot limit succeeds", func(t *testing.T) {
+		h := setupHoldemForHumanActionWithConfig(HoldemPhaseFlop, BettingLimitPotLimit)
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignHeart, 3, false),
+			NewCard(CardDesignClover, 4, false),
+		})
+		h.SetPot(100)
+		h.SetLastBet(0)
+		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 100 is within limit
+		err := h.PlayerAction(HoldemActionBet, 100)
+		assert.NoError(t, err)
+	})
+}
+
+func TestHoldem_BettingLimits_NoLimit(t *testing.T) {
+	t.Run("bet succeeds even when raiseCount exceeds fixed limit cap", func(t *testing.T) {
+		h := setupHoldemForHumanActionWithConfig(HoldemPhaseFlop, BettingLimitNoLimit)
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignHeart, 3, false),
+			NewCard(CardDesignClover, 4, false),
+		})
+		h.setRaiseCount(10) // well past fixed limit of 4
+		// NoLimit has maxRaises=0, so no raise cap
+		err := h.PlayerAction(HoldemActionBet, 20)
+		assert.NoError(t, err)
+	})
 }

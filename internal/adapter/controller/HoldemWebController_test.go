@@ -444,3 +444,62 @@ func TestHoldemWebController_Stop(t *testing.T) {
 	c.Stop()
 	c.Stop()
 }
+
+// --- betting limit ---
+
+func TestHoldemWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.BettingLimit = domain.BettingLimitPotLimit
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":      "reset",
+				"sessionId":    "s1",
+				"bettingLimit": 1,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.BettingLimit = domain.BettingLimitNoLimit // clamped from 5 to 2
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":      "reset",
+				"sessionId":    "s1",
+				"bettingLimit": 5,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.BettingLimit = domain.BettingLimitFixed // clamped from -1 to 0
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":      "reset",
+				"sessionId":    "s1",
+				"bettingLimit": -1,
+			}))
+	recorded.CodeIs(200)
+}

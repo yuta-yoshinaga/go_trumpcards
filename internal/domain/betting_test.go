@@ -53,7 +53,7 @@ func TestExecuteBettingAction_Fold(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionFold, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionFold, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetFolded())
 	assert.True(t, state.ActedFlags[0])
@@ -63,7 +63,7 @@ func TestExecuteBettingAction_Check_Success(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionCheck, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionCheck, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.True(t, state.ActedFlags[0])
 }
@@ -73,7 +73,7 @@ func TestExecuteBettingAction_Check_OutstandingBet(t *testing.T) {
 	state := newBettingState(2)
 	state.LastBet = 20
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionCheck, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionCheck, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 	assert.Contains(t, err.Error(), "outstanding bet")
 }
@@ -83,7 +83,7 @@ func TestExecuteBettingAction_Call_Success(t *testing.T) {
 	state := newBettingState(2)
 	state.LastBet = 20
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 80, players[0].GetChips())
 	assert.Equal(t, 20, players[0].GetCurrentBet())
@@ -95,7 +95,7 @@ func TestExecuteBettingAction_Call_NothingToCall(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 	assert.Contains(t, err.Error(), "Nothing to call")
 }
@@ -105,7 +105,7 @@ func TestExecuteBettingAction_Call_ShortAllIn(t *testing.T) {
 	state := newBettingState(2)
 	state.LastBet = 50
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionCall, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, players[0].GetChips())
 	assert.Equal(t, 10, players[0].GetCurrentBet())
@@ -118,7 +118,7 @@ func TestExecuteBettingAction_Bet_Success(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 80, players[0].GetChips())
 	assert.Equal(t, 20, players[0].GetCurrentBet())
@@ -135,7 +135,7 @@ func TestExecuteBettingAction_Bet_AllInOnExact(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(20), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, players[0].GetChips())
 	assert.True(t, players[0].GetAllIn())
@@ -146,7 +146,7 @@ func TestExecuteBettingAction_Bet_MaxRaisesReached(t *testing.T) {
 	state := newBettingState(2)
 	state.RaiseCount = bettingMaxRaisesPerRound
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 	assert.Contains(t, err.Error(), "Maximum number of raises")
 }
@@ -156,7 +156,7 @@ func TestExecuteBettingAction_Bet_OutstandingBet(t *testing.T) {
 	state := newBettingState(2)
 	state.LastBet = 10
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 	assert.Contains(t, err.Error(), "outstanding bet")
 }
@@ -165,7 +165,7 @@ func TestExecuteBettingAction_Bet_TooSmall(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 5, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 5, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidAmount)
 	assert.Contains(t, err.Error(), "minimum bet")
 }
@@ -174,7 +174,7 @@ func TestExecuteBettingAction_Bet_InsufficientChips(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(5), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 10, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 10, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInsufficientChips)
 }
 
@@ -184,7 +184,7 @@ func TestExecuteBettingAction_Raise_Success(t *testing.T) {
 	state.LastBet = 20
 	state.MinRaise = 10
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 20, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	// diff=20, totalNeeded=40
 	assert.Equal(t, 60, players[0].GetChips())
@@ -202,7 +202,7 @@ func TestExecuteBettingAction_Raise_MaxRaisesReached(t *testing.T) {
 	state.MinRaise = 10
 	state.RaiseCount = bettingMaxRaisesPerRound
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 20, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 }
 
@@ -212,7 +212,7 @@ func TestExecuteBettingAction_Raise_TooSmall(t *testing.T) {
 	state.LastBet = 20
 	state.MinRaise = 20
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 10, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 10, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidAmount)
 	assert.Contains(t, err.Error(), "minimum raise")
 }
@@ -224,7 +224,7 @@ func TestExecuteBettingAction_Raise_RedirectToAllIn(t *testing.T) {
 	state.LastBet = 20
 	state.MinRaise = 20
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 20, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 20, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, players[0].GetChips())
 	assert.True(t, players[0].GetAllIn())
@@ -241,7 +241,7 @@ func TestExecuteBettingAction_Raise_NegativeDiff(t *testing.T) {
 	state.LastBet = 20
 	state.MinRaise = 10
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 10, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 10, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	// diff=0, totalNeeded=10
 	assert.Equal(t, 90, players[0].GetChips())
@@ -254,7 +254,7 @@ func TestExecuteBettingAction_AllIn_Success(t *testing.T) {
 	state.LastBet = 20
 	state.MinRaise = 10
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, players[0].GetChips())
 	assert.Equal(t, 50, players[0].GetCurrentBet())
@@ -273,7 +273,7 @@ func TestExecuteBettingAction_AllIn_ShortAllIn(t *testing.T) {
 	state.LastBet = 20
 	state.MinRaise = 20
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 	assert.True(t, state.ActedFlags[0])
@@ -292,7 +292,7 @@ func TestExecuteBettingAction_AllIn_NewBetAboveLastBet_ShortRaise(t *testing.T) 
 	state.MinRaise = 20
 	state.ActedFlags[1] = true
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	// newBet = 10 + 25 = 35, lastBet = 20, raiseAmount = 15 < minRaise (20)
 	assert.Equal(t, 35, state.LastBet)
@@ -310,7 +310,7 @@ func TestExecuteBettingAction_AllIn_NewBetAboveLastBet_FullRaise(t *testing.T) {
 	state.MinRaise = 20
 	state.ActedFlags[1] = true
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.NoError(t, err)
 	// newBet = 10 + 50 = 60, lastBet = 20, raiseAmount = 40 >= minRaise (20)
 	assert.Equal(t, 60, state.LastBet)
@@ -323,7 +323,7 @@ func TestExecuteBettingAction_AllIn_NoChips(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(0), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, bettingActionAllIn, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInsufficientChips)
 	assert.Contains(t, err.Error(), "No chips to go all-in")
 }
@@ -332,9 +332,79 @@ func TestExecuteBettingAction_UnknownAction(t *testing.T) {
 	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
 	state := newBettingState(2)
 
-	err := ExecuteBettingAction(players, state, 0, 99, 0, 10)
+	err := ExecuteBettingAction(players, state, 0, 99, 0, 10, bettingMaxRaisesPerRound, 0)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 	assert.Contains(t, err.Error(), "Unknown action")
+}
+
+// --- NoLimit: maxRaises=0 means unlimited ---
+
+func TestExecuteBettingAction_Bet_NoLimit_UnlimitedRaises(t *testing.T) {
+	players := []BettingPlayer{newMockPlayer(100), newMockPlayer(100)}
+	state := newBettingState(2)
+	state.RaiseCount = 10 // well past the Fixed limit of 4
+
+	// maxRaises=0 → no raise cap (NoLimit)
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 20, 10, 0, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, 11, state.RaiseCount)
+}
+
+func TestExecuteBettingAction_Raise_NoLimit_UnlimitedRaises(t *testing.T) {
+	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(100)}
+	state := newBettingState(2)
+	state.LastBet = 20
+	state.MinRaise = 10
+	state.RaiseCount = 10
+
+	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 20, 10, 0, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, 11, state.RaiseCount)
+}
+
+// --- PotLimit: maxBetAmount caps bet/raise ---
+
+func TestExecuteBettingAction_Bet_PotLimit_ExceedsMax(t *testing.T) {
+	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(200)}
+	state := newBettingState(2)
+
+	// maxBetAmount=50, bet=60 → error
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 60, 10, bettingMaxRaisesPerRound, 50)
+	assert.ErrorIs(t, err, ErrInvalidAmount)
+	assert.Contains(t, err.Error(), "Bet exceeds maximum allowed amount")
+}
+
+func TestExecuteBettingAction_Bet_PotLimit_WithinMax(t *testing.T) {
+	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(200)}
+	state := newBettingState(2)
+
+	// maxBetAmount=50, bet=50 → success
+	err := ExecuteBettingAction(players, state, 0, bettingActionBet, 50, 10, bettingMaxRaisesPerRound, 50)
+	assert.NoError(t, err)
+	assert.Equal(t, 150, players[0].GetChips())
+}
+
+func TestExecuteBettingAction_Raise_PotLimit_ExceedsMax(t *testing.T) {
+	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(200)}
+	state := newBettingState(2)
+	state.LastBet = 20
+	state.MinRaise = 10
+
+	// maxBetAmount=30, raise=40 → error
+	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 40, 10, bettingMaxRaisesPerRound, 30)
+	assert.ErrorIs(t, err, ErrInvalidAmount)
+	assert.Contains(t, err.Error(), "Raise exceeds maximum allowed amount")
+}
+
+func TestExecuteBettingAction_Raise_PotLimit_WithinMax(t *testing.T) {
+	players := []BettingPlayer{newMockPlayer(200), newMockPlayer(200)}
+	state := newBettingState(2)
+	state.LastBet = 20
+	state.MinRaise = 10
+
+	// maxBetAmount=30, raise=30 → success
+	err := ExecuteBettingAction(players, state, 0, bettingActionRaise, 30, 10, bettingMaxRaisesPerRound, 30)
+	assert.NoError(t, err)
 }
 
 // --- ResetActedExcept tests ---

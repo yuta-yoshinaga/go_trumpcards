@@ -384,6 +384,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("GetLastBet").Return(0)
 		gameMock.On("GetMinRaise").Return(0)
+		gameMock.On("GetRaiseCount").Return(0)
 		gameMock.On("GetCommunityCards").Return([]*domain.Card{})
 		gameMock.On("GetSidePots").Return([]domain.HoldemSidePot{})
 		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
@@ -412,6 +413,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("GetLastBet").Return(0)
 		gameMock.On("GetMinRaise").Return(0)
+		gameMock.On("GetRaiseCount").Return(0)
 		gameMock.On("GetCommunityCards").Return([]*domain.Card{})
 		gameMock.On("GetSidePots").Return([]domain.HoldemSidePot{})
 		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
@@ -512,5 +514,36 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.False(t, out.TournamentMode)
 		assert.Equal(t, 10, out.BlindLevelHands)
 		assert.Equal(t, 200, out.BlindMultiplier)
+	})
+}
+
+func TestHoldemWebPresenter_Output_BettingLimitFields(t *testing.T) {
+	p := presenter.NewHoldemWebPresenter()
+
+	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.HoldemPlayer{
+			domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+		}
+		h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+		return h, players
+	}
+
+	t.Run("default Fixed limit", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, out.BettingLimit)
+		assert.Equal(t, 0, out.RaiseCount)
+		assert.Equal(t, 0, out.MaxBetAmount)
 	})
 }

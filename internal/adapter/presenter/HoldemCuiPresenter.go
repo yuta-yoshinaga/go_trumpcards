@@ -52,6 +52,11 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	// ポット
 	fmt.Fprintf(&b, "ポット: %d\n", h.GetPot())
 
+	// ベッティングリミット
+	if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
+		fmt.Fprintf(&b, "リミット: %s\n", domain.BettingLimitNames[cfg.BettingLimit])
+	}
+
 	// プレイヤー情報
 	b.WriteString("----------\n")
 	for i := 0; i < h.GetPlayerCnt(); i++ {
