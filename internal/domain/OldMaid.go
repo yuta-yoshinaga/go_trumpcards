@@ -345,9 +345,7 @@ func (o *OldMaid) cpuSelectWithMemory(playerIdx, targetIdx, size int) int {
 			if lastPos+1 < size {
 				candidates = append(candidates, lastPos+1)
 			}
-			if len(candidates) > 0 {
-				return candidates[rand.Intn(len(candidates))]
-			}
+			return candidates[rand.Intn(len(candidates))]
 		}
 		return rand.Intn(size)
 	}

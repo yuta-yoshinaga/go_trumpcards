@@ -1410,30 +1410,6 @@ func TestOldMaid_ResetClearsPlayerMemory(t *testing.T) {
 }
 
 func TestOldMaid_CpuDraw_MemoryAI(t *testing.T) {
-	t.Run("records memory when CpuMemoryAI is true", func(t *testing.T) {
-		tc := domain.NewTrumpCards(1)
-		players := []*domain.OldMaidPlayer{
-			domain.NewOldMaidPlayer(true),
-			domain.NewOldMaidPlayer(false),
-			domain.NewOldMaidPlayer(false),
-		}
-		om := domain.NewOldMaid(tc, players)
-		om.SetConfig(domain.OldMaidConfig{CpuMemoryAI: true})
-		// Setup: CPU 1 (idx=1) draws from CPU 2 (idx=2)
-		// Human at idx=0 finished, CPU 1 turn, CPU 2 has cards
-		players[0].SetIsFinished(true)
-		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
-		// Force currentTurn to CPU 1
-		// Since human is finished, need to start with CPU 1's turn
-		// currentTurn=0 by default, but player 0 is finished
-		// We need to manually advance past finished
-		err := om.CpuDraw()
-		// Should skip since currentTurn=0 is human (even if finished)
-		// Let's set up properly
-		assert.Error(t, err) // ErrNotHumanTurn since players[0] is human
-	})
-
 	t.Run("records memory correctly via Reset+CpuDraw flow", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := []*domain.OldMaidPlayer{
@@ -1546,10 +1522,14 @@ func TestOldMaid_CpuSelectWithMemory(t *testing.T) {
 		}
 		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		_ = om.ShuffleHumanHand()
-		_ = om.CpuDraw()
-		// After draw with dirty flag, old memory (pos=2, gotPair=true) should have been reset
-		// New memory from this draw should have been recorded
-		// The key point: memory was reset before selection
+		err := om.CpuDraw()
+		assert.NoError(t, err)
+		// After draw with dirty flag, old memory (pos=2, gotPair=true) was reset before selection.
+		// New memory from this draw should have been recorded with a valid position.
+		pos := players[0].GetMemLastDrawPos()
+		assert.GreaterOrEqual(t, pos, 0, "new draw position should be recorded")
+		assert.Less(t, pos, 3, "draw position should be within human's hand size (3 cards)")
+		assert.False(t, players[0].GetMemGotPair(), "no pair formed (Clover10 cannot pair with Spade1/2/3)")
 	})
 
 	t.Run("valid memory with no pair avoids position sometimes", func(t *testing.T) {
