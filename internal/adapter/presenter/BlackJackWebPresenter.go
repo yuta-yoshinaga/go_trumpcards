@@ -51,6 +51,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.CpuPlayerCount = config.CpuPlayerCount
 	resObj.DoubleAfterSplit = config.DoubleAfterSplit
 	resObj.CountingSystem = config.CountingSystem
+	resObj.DeckPenetration = bj.GetDeckPenetration()
 	resObj.RunningCount = bj.GetRunningCount()
 	resObj.TrueCount = bj.GetTrueCount()
 

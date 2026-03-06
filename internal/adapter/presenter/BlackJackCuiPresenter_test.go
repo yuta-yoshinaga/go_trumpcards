@@ -789,3 +789,30 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 		}
 	})
 }
+
+func TestBlackJackCuiPresenter_Penetration50(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	bj, _ := setupBJCuiTest(1000, 1000)
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
+	bj.Reset()
+	output := bjp.Output(bj, nil)
+	assert.Contains(t, output, "rule: Penetration 50%")
+}
+
+func TestBlackJackCuiPresenter_Penetration75(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	bj, _ := setupBJCuiTest(1000, 1000)
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 75, DoubleAfterSplit: true})
+	bj.Reset()
+	output := bjp.Output(bj, nil)
+	assert.NotContains(t, output, "Penetration")
+}
+
+func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	bj, _ := setupBJCuiTest(1000, 1000)
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 0, DoubleAfterSplit: true})
+	bj.Reset()
+	output := bjp.Output(bj, nil)
+	assert.NotContains(t, output, "Penetration")
+}

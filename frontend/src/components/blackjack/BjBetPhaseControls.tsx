@@ -1,6 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSuccess, btnWarning } from '../../styles/buttonStyles';
-import { BJ_COUNTING_HILO, BJ_COUNTING_KO, BJ_COUNTING_OMEGA2, BJ_COUNTING_ZEN } from './bjConstants';
+import {
+  BJ_COUNTING_HILO,
+  BJ_COUNTING_KO,
+  BJ_COUNTING_OMEGA2,
+  BJ_COUNTING_ZEN,
+  BJ_VALID_PENETRATIONS,
+} from './bjConstants';
 
 const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
 const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
@@ -23,6 +29,8 @@ export interface BjBetPhaseControlsProps {
   onToggleDAS: () => void;
   countingSystem: number;
   onCountingSystemChange: (v: number) => void;
+  deckPenetration: number;
+  onDeckPenetrationChange: (v: number) => void;
   loading: boolean;
   onBet: () => void;
   perfectPairsBet: number;
@@ -164,6 +172,22 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         >
           {t('das')} {props.doubleAfterSplit ? 'ON' : 'OFF'}
         </button>
+        <label htmlFor="bj-penetration" className="text-white text-sm">
+          {t('penetration')}
+        </label>
+        <select
+          id="bj-penetration"
+          value={props.deckPenetration}
+          onChange={(e) => props.onDeckPenetrationChange(Number(e.target.value))}
+          className="px-2 py-1 rounded text-sm"
+          disabled={props.loading}
+        >
+          {BJ_VALID_PENETRATIONS.map((p) => (
+            <option key={p} value={p}>
+              {p}%
+            </option>
+          ))}
+        </select>
       </div>
       <button type="button" className={btnPrimary} disabled={props.loading} onClick={props.onBet}>
         {t('button.bet')}

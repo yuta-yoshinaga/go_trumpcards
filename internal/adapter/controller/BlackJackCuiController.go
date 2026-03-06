@@ -89,6 +89,15 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 					return "Invalid counting system. Please enter a number (0-3).", true
 				}
 				return bcc.bji.SetCountingSystem(system), true
+			case "pen", "setpenetration":
+				if len(args) < 1 {
+					return "Penetration rate is required.", true
+				}
+				pen, err := strconv.Atoi(args[0])
+				if err != nil {
+					return "Invalid penetration rate. Please enter a number.", true
+				}
+				return bcc.bji.SetDeckPenetration(pen), true
 			}
 			return "", false
 		},

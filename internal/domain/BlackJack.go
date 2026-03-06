@@ -107,9 +107,10 @@ func (b *BlackJack) Reset() {
 	if b.deckCount <= 0 {
 		b.deckCount = BJDefaultDecks
 	}
+	pen := b.GetDeckPenetration()
 	needReshuffle := b.trumpCards == nil ||
 		b.deckCountChanged ||
-		b.trumpCards.GetRemainingCount()*4 < b.trumpCards.GetTotalCount() // 残り25%未満
+		b.trumpCards.GetRemainingCount()*100 < b.trumpCards.GetTotalCount()*(100-pen) // ペネトレーション率に基づく
 	if needReshuffle {
 		b.trumpCards = NewTrumpCardsWithDecks(b.deckCount, 0)
 		// 山札シャッフル
@@ -690,6 +691,14 @@ func (b *BlackJack) GetDeckCount() int {
 	return b.deckCount
 }
 
+// GetDeckPenetration デッキペネトレーション率取得
+func (b *BlackJack) GetDeckPenetration() int {
+	if b.config.DeckPenetration <= 0 {
+		return BJDefaultPenetration
+	}
+	return b.config.DeckPenetration
+}
+
 // ToggleHint ヒント表示のON/OFF切り替え
 func (b *BlackJack) ToggleHint() {
 	b.hintEnabled = !b.hintEnabled
@@ -737,6 +746,18 @@ func (b *BlackJack) SetConfig(config BlackJackConfig) error {
 	}
 	if config.CountingSystem < 0 || config.CountingSystem > BJCountingMax {
 		return NewDomainError(ErrInvalidAmount, "Invalid counting system.")
+	}
+	if config.DeckPenetration != 0 {
+		validPen := false
+		for _, v := range BJValidPenetrations {
+			if v == config.DeckPenetration {
+				validPen = true
+				break
+			}
+		}
+		if !validPen {
+			return NewDomainError(ErrInvalidAmount, "Invalid deck penetration. Use 50 or 75.")
+		}
 	}
 	// カウンティングシステム変更時はランニングカウントをリセット
 	if config.CountingSystem != b.config.CountingSystem {

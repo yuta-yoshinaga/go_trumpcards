@@ -9,6 +9,16 @@ const (
 	BJCountingMax     = 3 // 最大値
 )
 
+// デッキペネトレーション定数
+const (
+	BJDefaultPenetration = 75 // デフォルトペネトレーション率(%)
+	BJPenetrationMin     = 50 // 最小ペネトレーション率(%)
+	BJPenetrationMax     = 75 // 最大ペネトレーション率(%)
+)
+
+// BJValidPenetrations 有効なペネトレーション値
+var BJValidPenetrations = []int{50, 75}
+
 // BlackJackConfig ブラックジャックゲーム設定
 type BlackJackConfig struct {
 	DealerHitsSoft17 bool // ディーラーがソフト17でヒットするか (H17 vs S17)
@@ -16,6 +26,7 @@ type BlackJackConfig struct {
 	CountingEnabled  bool // カウンティング表示有効
 	DoubleAfterSplit bool // スプリット後のダブルダウン許可 (DAS)
 	CountingSystem   int  // カウンティングシステム (0=Hi-Lo, 1=KO, 2=Zen, 3=Omega II)
+	DeckPenetration  int  // デッキペネトレーション率(%) (50 or 75, 0=デフォルト75)
 }
 
 // DefaultBlackJackConfig デフォルト設定 (全機能無効)

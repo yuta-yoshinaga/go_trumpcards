@@ -15,6 +15,7 @@ type BlackJackWebInput struct {
 	CountingEnabled   *bool `json:"countingEnabled,omitempty"`
 	DoubleAfterSplit  *bool `json:"doubleAfterSplit,omitempty"`
 	CountingSystem    *int  `json:"countingSystem,omitempty"`
+	DeckPenetration   *int  `json:"deckPenetration,omitempty"`
 	PerfectPairsBet   *int  `json:"perfectPairsBet,omitempty"`
 	TwentyOnePlus3Bet *int  `json:"twentyOnePlus3Bet,omitempty"`
 }
@@ -81,6 +82,7 @@ type BlackJackWebOutput struct {
 	SideBetResults     []*BlackJackWebOutputSideBetResult `json:"sideBetResults,omitempty"`
 	DoubleAfterSplit   bool                               `json:"doubleAfterSplit"`
 	CountingSystem     int                                `json:"countingSystem"`
+	DeckPenetration    int                                `json:"deckPenetration"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -106,7 +108,7 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 		func(w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil {
+				if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil || param.DeckPenetration != nil {
 					h17 := false
 					if param.DealerHitsSoft17 != nil {
 						h17 = *param.DealerHitsSoft17
@@ -127,7 +129,11 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 					if param.CountingSystem != nil {
 						cs = *param.CountingSystem
 					}
-					bwc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs))
+					dp := 0
+					if param.DeckPenetration != nil {
+						dp = *param.DeckPenetration
+					}
+					bwc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp))
 				} else {
 					bwc.writePresenterResponse(w, bji.Reset())
 				}
@@ -167,6 +173,8 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 				bwc.writePresenterResponse(w, bji.ToggleDAS())
 			case "scs", "setcountingsystem":
 				bwc.writePresenterResponse(w, bji.SetCountingSystem(param.Amount))
+			case "pen", "setpenetration":
+				bwc.writePresenterResponse(w, bji.SetDeckPenetration(param.Amount))
 			default:
 				return false
 			}
@@ -182,9 +190,10 @@ func (bwc *BlackJackWebController) Stop() {
 // newDefaultOutput エラー・定型応答用のデフォルト出力を返す
 func (bwc *BlackJackWebController) newDefaultOutput(msg string) *BlackJackWebOutput {
 	return &BlackJackWebOutput{
-		Dealer:    &BlackJackWebOutputPlayer{},
-		Player:    &BlackJackWebOutputPlayer{},
-		Message:   msg,
-		DeckCount: 1,
+		Dealer:          &BlackJackWebOutputPlayer{},
+		Player:          &BlackJackWebOutputPlayer{},
+		Message:         msg,
+		DeckCount:       1,
+		DeckPenetration: 75,
 	}
 }

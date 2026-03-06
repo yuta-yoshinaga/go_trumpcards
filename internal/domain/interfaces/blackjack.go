@@ -40,4 +40,5 @@ type BlackJackGame interface {
 	GetSideBetResults() []*domain.BJSideBetResult
 	GetPerfectPairsBet() int
 	Get21Plus3Bet() int
+	GetDeckPenetration() int
 }

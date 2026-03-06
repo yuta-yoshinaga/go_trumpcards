@@ -41,6 +41,7 @@
   },
   "trueCountNA": "TC=N/A",
   "das": "DAS",
+  "penetration": "ペネトレーション:",
   "autoAdvance": "自動進行:",
   "autoAdvanceSec": "{{sec}}秒",
   "sideBet": {

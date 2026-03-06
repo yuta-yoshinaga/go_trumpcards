@@ -32,6 +32,7 @@ const betPhaseState: BlackJackResponse = {
   twentyOnePlus3Bet: 0,
   doubleAfterSplit: true,
   countingSystem: 0,
+  deckPenetration: 75,
 };
 
 const baseHand: BlackJackHand = {
@@ -71,6 +72,7 @@ const actionPhaseState: BlackJackResponse = {
   twentyOnePlus3Bet: 0,
   doubleAfterSplit: true,
   countingSystem: 0,
+  deckPenetration: 75,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -94,6 +96,7 @@ const insurancePhaseState: BlackJackResponse = {
   twentyOnePlus3Bet: 0,
   doubleAfterSplit: true,
   countingSystem: 0,
+  deckPenetration: 75,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -140,6 +143,7 @@ const endPhaseState: BlackJackResponse = {
   twentyOnePlus3Bet: 0,
   doubleAfterSplit: true,
   countingSystem: 0,
+  deckPenetration: 75,
 };
 
 beforeEach(() => {
@@ -959,6 +963,7 @@ describe('BlackJackPage', () => {
         countingEnabled: false,
         doubleAfterSplit: true,
         countingSystem: 0,
+        deckPenetration: 75,
       }),
     );
   });
@@ -1065,6 +1070,28 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true, countingSystem: 1 });
     fireEvent.change(screen.getByLabelText('カウンティング方式'), { target: { value: '1' } });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setcountingsystem', 1));
+  });
+
+  // --- Deck penetration tests ---
+
+  it('shows penetration selector in bet phase', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ペネトレーション:')).toBeInTheDocument());
+  });
+
+  it('syncs deckPenetration from response', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, deckPenetration: 50 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ペネトレーション:')).toHaveValue('50'));
+  });
+
+  it('calls setpenetration when penetration selector is changed', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, deckPenetration: 50 });
+    fireEvent.change(screen.getByLabelText('ペネトレーション:'), { target: { value: '50' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setpenetration', 50));
   });
 
   // --- Side bet tests ---

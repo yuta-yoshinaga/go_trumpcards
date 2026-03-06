@@ -52,6 +52,7 @@ export function BlackJackPage() {
   const [twentyOnePlus3Bet, setTwentyOnePlus3Bet] = useState(0);
   const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
   const [countingSystem, setCountingSystem] = useState(0);
+  const [deckPenetration, setDeckPenetration] = useState(75);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback((res: BlackJackResponse) => {
@@ -61,6 +62,7 @@ export function BlackJackPage() {
     setCpuPlayerCount(res.cpuPlayerCount);
     setDoubleAfterSplit(res.doubleAfterSplit);
     setCountingSystem(res.countingSystem);
+    setDeckPenetration(res.deckPenetration);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
@@ -93,9 +95,10 @@ export function BlackJackPage() {
       countingEnabled,
       doubleAfterSplit,
       countingSystem,
+      deckPenetration,
     };
     exec('reset', undefined, config);
-  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem]);
+  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
@@ -271,6 +274,8 @@ export function BlackJackPage() {
                 onToggleDAS={() => exec('toggledas')}
                 countingSystem={countingSystem}
                 onCountingSystemChange={(v) => exec('setcountingsystem', v)}
+                deckPenetration={deckPenetration}
+                onDeckPenetrationChange={(v) => exec('setpenetration', v)}
                 loading={loading}
                 onBet={() => {
                   const sideBets: BlackJackSideBetInput = {};
