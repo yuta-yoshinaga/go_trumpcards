@@ -172,8 +172,11 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         >
           {t('das')} {props.doubleAfterSplit ? 'ON' : 'OFF'}
         </button>
+        <label htmlFor="bj-penetration" className="text-white text-sm">
+          {t('penetration')}
+        </label>
         <select
-          aria-label={t('penetration')}
+          id="bj-penetration"
           value={props.deckPenetration}
           onChange={(e) => props.onDeckPenetrationChange(Number(e.target.value))}
           className="px-2 py-1 rounded text-sm"
@@ -181,7 +184,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         >
           {BJ_VALID_PENETRATIONS.map((p) => (
             <option key={p} value={p}>
-              {t('penetration')} {p}%
+              {p}%
             </option>
           ))}
         </select>

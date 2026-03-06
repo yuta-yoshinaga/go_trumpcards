@@ -233,10 +233,18 @@ func TestBlackJackCuiController_SetPenetration_MissingArg(t *testing.T) {
 	assert.Equal(t, "Penetration rate is required.", tbc.Exec("pen"))
 }
 
-func TestBlackJackCuiController_SetPenetration_Invalid(t *testing.T) {
+func TestBlackJackCuiController_SetPenetration_NonNumeric(t *testing.T) {
 	bjiMock := new(usecase.MockBlackJackInteractor)
 	tbc := controller.NewBlackJackCuiController(bjiMock)
-	assert.Equal(t, "Invalid penetration rate. Use 50 or 75.", tbc.Exec("pen 60"))
+	assert.Equal(t, "Invalid penetration rate. Please enter a number.", tbc.Exec("pen abc"))
+}
+
+func TestBlackJackCuiController_SetPenetration_InvalidValue(t *testing.T) {
+	mockOutput := "error from domain"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 60).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, mockOutput, tbc.Exec("pen 60"))
 }
 
 func TestBlackJackCuiController_SetPenetration_LongForm(t *testing.T) {

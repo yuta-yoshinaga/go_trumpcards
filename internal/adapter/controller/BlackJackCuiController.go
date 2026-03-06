@@ -94,8 +94,8 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 					return "Penetration rate is required.", true
 				}
 				pen, err := strconv.Atoi(args[0])
-				if err != nil || (pen != domain.BJPenetrationMin && pen != domain.BJPenetrationMax) {
-					return "Invalid penetration rate. Use 50 or 75.", true
+				if err != nil {
+					return "Invalid penetration rate. Please enter a number.", true
 				}
 				return bcc.bji.SetDeckPenetration(pen), true
 			}
