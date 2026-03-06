@@ -36,6 +36,12 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		fmt.Fprintf(&b, "ジョーカー: %d枚\n", p.GetConfig().JokerCount)
 	}
 
+	// ベッティングリミット
+	cfg := p.GetConfig()
+	if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
+		fmt.Fprintf(&b, "リミット: %s\n", domain.BettingLimitNames[cfg.BettingLimit])
+	}
+
 	// プレイヤー情報
 	b.WriteString("----------\n")
 	isEnd := p.GetPhase() == domain.PokerPhaseEnd

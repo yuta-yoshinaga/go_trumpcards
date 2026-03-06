@@ -18,6 +18,7 @@ type HoldemWebInput struct {
 	TournamentMode  *bool `json:"tournamentMode,omitempty"`
 	BlindLevelHands *int  `json:"blindLevelHands,omitempty"`
 	BlindMultiplier *int  `json:"blindMultiplier,omitempty"`
+	BettingLimit    *int  `json:"bettingLimit,omitempty"`
 }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
@@ -72,6 +73,9 @@ type HoldemWebOutput struct {
 	GameEndFlag     bool                        `json:"gameEndFlag"`
 	LastBet         int                         `json:"lastBet"`
 	MinRaise        int                         `json:"minRaise"`
+	BettingLimit    int                         `json:"bettingLimit"`
+	RaiseCount      int                         `json:"raiseCount"`
+	MaxBetAmount    int                         `json:"maxBetAmount"`
 	RoundResults    []*HoldemWebOutputResult    `json:"roundResults"`
 	CpuActions      []*HoldemWebOutputCpuAction `json:"cpuActions"`
 	Message         string                      `json:"message"`
@@ -142,6 +146,15 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				}
 				if param.BlindMultiplier != nil && *param.BlindMultiplier >= 101 {
 					cfg.BlindMultiplier = *param.BlindMultiplier
+				}
+				if param.BettingLimit != nil {
+					bl := *param.BettingLimit
+					if bl < 0 {
+						bl = 0
+					} else if bl > 2 {
+						bl = 2
+					}
+					cfg.BettingLimit = domain.BettingLimitType(bl)
 				}
 				hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
 			case "f", "fold":

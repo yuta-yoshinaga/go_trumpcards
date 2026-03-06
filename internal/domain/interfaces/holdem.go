@@ -18,6 +18,7 @@ type HoldemGame interface {
 	GetGameEndFlag() bool
 	GetLastBet() int
 	GetMinRaise() int
+	GetRaiseCount() int
 	GetRoundResults() []domain.HoldemResult
 	GetCpuActions() []domain.HoldemCpuAction
 	GetConfig() domain.HoldemConfig

@@ -226,3 +226,37 @@ func TestPokerCuiController_Unknown(t *testing.T) {
 	c := NewPokerCuiController(mi)
 	assert.Equal(t, "Unsupported command.", c.Exec("xyz"))
 }
+
+// --- betting limit ---
+
+func TestPokerCuiController_BettingLimit_Valid(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	cfg.BettingLimit = domain.BettingLimitPotLimit
+	mi.On("ResetWithConfig", cfg).Return("bl ok")
+	assert.Equal(t, "bl ok", c.Exec("bl 1"))
+}
+
+func TestPokerCuiController_BettingLimit_LongCommand(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	cfg.BettingLimit = domain.BettingLimitNoLimit
+	mi.On("ResetWithConfig", cfg).Return("bl ok")
+	assert.Equal(t, "bl ok", c.Exec("bettinglimit 2"))
+}
+
+func TestPokerCuiController_BettingLimit_NoArgs(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	assert.Contains(t, c.Exec("bl"), "Betting limit type is required")
+}
+
+func TestPokerCuiController_BettingLimit_InvalidValue(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	assert.Contains(t, c.Exec("bl 5"), "Invalid betting limit: 5")
+	assert.Contains(t, c.Exec("bl abc"), "Invalid betting limit: abc")
+	assert.Contains(t, c.Exec("bl -1"), "Invalid betting limit: -1")
+}

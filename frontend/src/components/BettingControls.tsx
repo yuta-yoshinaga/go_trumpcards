@@ -6,6 +6,7 @@ interface BettingControlsProps {
   betAmount: number;
   onBetAmountChange: (v: number) => void;
   minRaise: number;
+  maxBetAmount?: number;
   hasOutstandingBet: boolean;
   loading: boolean;
   onCall: () => void;
@@ -21,6 +22,7 @@ export function BettingControls({
   betAmount,
   onBetAmountChange,
   minRaise,
+  maxBetAmount,
   hasOutstandingBet,
   loading,
   onCall,
@@ -41,9 +43,14 @@ export function BettingControls({
           id={inputId}
           type="number"
           min={minRaise}
+          max={(maxBetAmount ?? 0) > 0 ? maxBetAmount : undefined}
           step={10}
           value={betAmount}
-          onChange={(e) => onBetAmountChange(Number(e.target.value))}
+          onChange={(e) => {
+            let v = Number(e.target.value);
+            if ((maxBetAmount ?? 0) > 0 && v > maxBetAmount!) v = maxBetAmount!;
+            onBetAmountChange(v);
+          }}
           className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
         />
       </div>

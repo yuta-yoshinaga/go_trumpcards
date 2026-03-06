@@ -553,3 +553,14 @@ func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
 	resultPlain := pres.Output(p, nil)
 	assert.Equal(t, resultPlain, resultWithOdds)
 }
+
+func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
+	pres := presenter.NewPokerCuiPresenter()
+
+	t.Run("displays Fixed limit", func(t *testing.T) {
+		p, _ := makePokerCuiForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		result := pres.Output(p, nil)
+		assert.Contains(t, result, "Fixed")
+	})
+}

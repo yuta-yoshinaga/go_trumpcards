@@ -45,6 +45,7 @@ func (cui *HoldemCui) Exec() {
 	fmt.Println("b [amount]・・・bet (e.g. 'b 20')")
 	fmt.Println("ra [amount]・・・raise (e.g. 'ra 30')")
 	fmt.Println("a・・・allin")
+	fmt.Println("bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)")
 	fmt.Println("----------------")
 
 	for {

@@ -25,7 +25,11 @@
   "betting": {
     "betAmount": "ベット額:",
     "chips": "チップ:",
-    "currentBet": "ベット:"
+    "currentBet": "ベット:",
+    "bettingLimit": "リミット:",
+    "fixed": "Fixed",
+    "potLimit": "Pot Limit",
+    "noLimit": "No Limit"
   },
   "button": {
     "reset": "リセット",

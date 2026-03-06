@@ -25,7 +25,11 @@
   "betting": {
     "betAmount": "Bet Amount:",
     "chips": "Chips:",
-    "currentBet": "Bet:"
+    "currentBet": "Bet:",
+    "bettingLimit": "Limit:",
+    "fixed": "Fixed",
+    "potLimit": "Pot Limit",
+    "noLimit": "No Limit"
   },
   "button": {
     "reset": "Reset",

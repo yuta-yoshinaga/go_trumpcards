@@ -47,6 +47,7 @@ func (cui *PokerCui) Exec() {
 		fmt.Println("a・・・all-in")
 		fmt.Println("e [0-4]・・・exchange (e.g. 'e 0 2 4' to exchange cards at index 0, 2, 4)")
 		fmt.Println("s・・・stand (no exchange)")
+		fmt.Println("bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)")
 		input, exit := readInput(scanner)
 		if exit {
 			break

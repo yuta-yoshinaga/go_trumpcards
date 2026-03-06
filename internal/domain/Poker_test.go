@@ -2291,11 +2291,11 @@ func TestPoker_startSecondBettingRound_SetsActedForFoldedAllIn(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// pokerMaxRaisesPerRound value
+// pokerDefaultMaxRaises value
 // ---------------------------------------------------------------------------
 
-func TestPokerMaxRaisesPerRound(t *testing.T) {
-	assert.Equal(t, 4, pokerMaxRaisesPerRound)
+func TestPokerDefaultMaxRaises(t *testing.T) {
+	assert.Equal(t, 4, pokerDefaultMaxRaises)
 }
 
 // ---------------------------------------------------------------------------
@@ -2674,5 +2674,92 @@ func TestPoker_Reset_CpuCount(t *testing.T) {
 		// Only player 0 active
 		assert.False(t, players[0].GetFolded())
 		assert.True(t, players[1].GetFolded())
+	})
+}
+
+func makePokerWithConfig(phase int, limit BettingLimitType) (*Poker, []*PokerPlayer) {
+	tc := NewTrumpCards(0)
+	players := []*PokerPlayer{
+		NewPokerPlayer(true, PokerStyleBalanced),
+		NewPokerPlayer(false, PokerStyleConservative),
+		NewPokerPlayer(false, PokerStyleAggressive),
+		NewPokerPlayer(false, PokerStyleBluffer),
+	}
+	cfg := DefaultPokerConfig()
+	cfg.BettingLimit = limit
+	pk := NewPoker(tc, players, cfg)
+	for _, p := range players {
+		p.SetChips(1000)
+	}
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
+	pk.SetPhase(phase)
+	pk.SetCurrentTurn(0)
+	pk.SetLastBet(0)
+	pk.SetMinRaise(10)
+	pk.SetPot(100)
+	pk.setActedFlags([]bool{false, true, true, true})
+	for _, p := range players {
+		p.Reset()
+		for j := 0; j < 5; j++ {
+			p.AddCard(NewCard(CardDesignSpade, j+2, false))
+		}
+	}
+	pk.trumpCards.Shuffle()
+	return pk, players
+}
+
+func TestPoker_GetRaiseCount(t *testing.T) {
+	pk, _ := newTestPoker()
+	assert.Equal(t, 0, pk.GetRaiseCount())
+}
+
+func TestPoker_BettingLimits_PotLimit(t *testing.T) {
+	t.Run("bet exceeding pot limit is rejected", func(t *testing.T) {
+		pk, _ := makePokerWithConfig(PokerPhaseDeal, BettingLimitPotLimit)
+		pk.SetPot(100)
+		pk.SetLastBet(0)
+		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 130 > 100
+		err := pk.PlayerAction(PokerActionBet, 130)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidAmount)
+	})
+
+	t.Run("bet within pot limit succeeds", func(t *testing.T) {
+		pk, _ := makePokerWithConfig(PokerPhaseDeal, BettingLimitPotLimit)
+		pk.SetPot(100)
+		pk.SetLastBet(0)
+		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 100 is within limit
+		err := pk.PlayerAction(PokerActionBet, 100)
+		assert.NoError(t, err)
+	})
+}
+
+func TestPoker_cpuDecide_PotLimitClamp(t *testing.T) {
+	// PotLimit 時、CPUのベット額がポット上限を超えた場合にクランプされることを確認
+	pk, players := makePokerWithConfig(PokerPhaseDeal, BettingLimitPotLimit)
+	pk.SetPot(15)
+	pk.SetLastBet(0)
+	// maxBetAmount = pot + lastBet = 15
+	// Aggressive (player 2): firstBetMult=2 → bet = MinBet(10)*2 = 20 > 15
+	givePlayerHand(players[2], []*Card{
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignClover, 10, false),
+		NewCard(CardDesignHeart, 10, false),
+		NewCard(CardDesignDiamond, 10, false),
+		NewCard(CardDesignSpade, 3, false),
+	})
+	action, amount := pk.cpuDecide(2)
+	// Aggressive CPU with FourOfAKind → bet. Bet=20, clamped to maxBetAmount=15
+	assert.Equal(t, PokerActionBet, action)
+	assert.Equal(t, 15, amount)
+}
+
+func TestPoker_BettingLimits_NoLimit(t *testing.T) {
+	t.Run("bet succeeds even when raiseCount exceeds fixed limit cap", func(t *testing.T) {
+		pk, _ := makePokerWithConfig(PokerPhaseDeal, BettingLimitNoLimit)
+		pk.setRaiseCount(10) // well past fixed limit of 4
+		// NoLimit has maxRaises=0, so no raise cap
+		err := pk.PlayerAction(PokerActionBet, 20)
+		assert.NoError(t, err)
 	})
 }

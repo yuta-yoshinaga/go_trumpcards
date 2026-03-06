@@ -516,6 +516,32 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with reset command and bettingLimit', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          phase: 0,
+          player: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+          dealer: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+          message: '',
+          pot: 0,
+          ante: 10,
+        }),
+      );
+      await pokerApi.exec('reset', undefined, undefined, { bettingLimit: 1 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/poker/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            indices: undefined,
+            amount: undefined,
+            bettingLimit: 1,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 503));
       await expect(pokerApi.exec('reset')).rejects.toThrow('HTTP error: 503');
@@ -1182,6 +1208,22 @@ describe('gameApi', () => {
             tournamentMode: true,
             blindLevelHands: 5,
             blindMultiplier: 200,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and bettingLimit config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('reset', undefined, { bettingLimit: 2 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            bettingLimit: 2,
           }),
         }),
       );

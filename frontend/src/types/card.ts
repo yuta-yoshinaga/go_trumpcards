@@ -126,6 +126,9 @@ export interface PokerResponse {
   minRaise: number;
   ante: number;
   jokerCount: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
   roundResults: PokerResult[];
   cpuActions: PokerCpuAction[];
   cpuExchanges: PokerCpuExchange[];
@@ -376,6 +379,9 @@ export interface HoldemResponse {
   gameEndFlag: boolean;
   lastBet: number;
   minRaise: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
   roundResults: HoldemResult[];
   cpuActions: HoldemCpuAction[];
   message: string;

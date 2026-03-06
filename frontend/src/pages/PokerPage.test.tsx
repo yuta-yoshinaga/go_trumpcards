@@ -73,6 +73,9 @@ const initState: PokerResponse = {
   cpuActions: [],
   cpuExchanges: [],
   message: 'リセットしました',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** DEAL phase (phase 1): human's turn, no outstanding bet */
@@ -92,6 +95,9 @@ const dealState: PokerResponse = {
   cpuActions: [],
   cpuExchanges: [],
   message: 'あなたの番です',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** DEAL with outstanding bet: shows call/raise */
@@ -153,6 +159,9 @@ const endState: PokerResponse = {
   cpuActions: [],
   cpuExchanges: [],
   message: 'あなたの負け',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 beforeEach(() => {
@@ -816,7 +825,20 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0 }));
+  });
+
+  it('sends updated bettingLimit when select is changed before reset', async () => {
+    renderWithProviders(<PokerPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = screen.getByLabelText('リミット:');
+    fireEvent.change(select, { target: { value: '1' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1 }));
   });
 
   // ---- loading / disabled state ----

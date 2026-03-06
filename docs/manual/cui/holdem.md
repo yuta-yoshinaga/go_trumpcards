@@ -103,6 +103,7 @@ flowchart TD
 | `bet <額>` | `b <額>` | ベットする |
 | `raise <額>` | `ra <額>` | レイズする |
 | `allin` | `a` | オールイン |
+| `bl [0-2]` | | ベッティングリミット変更（0=Fixed, 1=PotLimit, 2=NoLimit） |
 | `quit` | `q` | ゲーム終了 |
 
 例:

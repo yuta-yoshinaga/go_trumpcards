@@ -180,6 +180,15 @@ API経由で以下のパラメータを指定できます：
 - **tournamentMode**: `true` でトーナメントモードを有効化
 - **blindLevelHands**: ブラインドレベルアップまでのハンド数（デフォルト10）
 - **blindMultiplier**: ブラインド倍率（百分率、デフォルト200 = 2倍）
+- **bettingLimit**: ベッティングリミット（0=Fixed, 1=PotLimit, 2=NoLimit、デフォルト0）
+
+### レスポンスのベッティングリミット関連フィールド
+
+| フィールド | 型 | 説明 |
+|------------|------|------|
+| `bettingLimit` | int | 現在のベッティングリミット（0=Fixed, 1=PotLimit, 2=NoLimit） |
+| `raiseCount` | int | 現在のベッティングラウンドでのレイズ回数 |
+| `maxBetAmount` | int | 現在のベッティングリミットに基づく最大ベット額 |
 
 ## 遊び方のコツ
 

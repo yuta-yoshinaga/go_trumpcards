@@ -364,3 +364,14 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, result, "トーナメント")
 	})
 }
+
+func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("displays Fixed limit", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Fixed")
+	})
+}

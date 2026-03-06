@@ -21,6 +21,7 @@ type PokerGame interface {
 	GetGameEndFlag() bool
 	GetLastBet() int
 	GetMinRaise() int
+	GetRaiseCount() int
 	GetAnte() int
 	GetRoundResults() []domain.PokerResult
 	GetCpuActions() []domain.PokerCpuAction

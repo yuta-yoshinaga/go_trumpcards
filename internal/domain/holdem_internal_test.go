@@ -1743,7 +1743,7 @@ func TestRunCpuActions_FallbackOnError(t *testing.T) {
 	h.players[0].SetFolded(true)
 	h.actedFlags[0] = true
 	// raiseCountを上限に設定: CPUがbet/raiseを選択してもエラーになりフォールバックする
-	h.raiseCount = holdemMaxRaisesPerRound
+	h.raiseCount = holdemDefaultMaxRaises
 
 	for _, p := range h.players {
 		p.Reset()
@@ -1796,14 +1796,14 @@ func TestRunCpuActions_FallbackCheckOnError(t *testing.T) {
 
 	// executeActionを直接呼び出してエラーケースをテスト
 	// bet (lastBet=0) にレイズ上限超過を設定
-	h.raiseCount = holdemMaxRaisesPerRound
+	h.raiseCount = holdemDefaultMaxRaises
 
 	// cpuDecideのレイズ上限チェックをバイパスするため、直接executeActionを呼ぶ
 	execErr := h.executeAction(1, HoldemActionBet, 20)
 	assert.Error(t, execErr) // "Maximum number of raises" エラー
 
 	// runCpuActionsのフォールバックはlastCpuErrorに記録される
-	h.raiseCount = holdemMaxRaisesPerRound
+	h.raiseCount = holdemDefaultMaxRaises
 	h.lastCpuError = nil
 	h.actedFlags[1] = false
 	// lastBet=0でフォールバック: チェック
@@ -1828,7 +1828,7 @@ func TestRunCpuActions_FallbackFoldOnError(t *testing.T) {
 	h.players[2].SetFolded(true)
 	h.players[3].SetFolded(true)
 	// raiseCountを上限に設定
-	h.raiseCount = holdemMaxRaisesPerRound
+	h.raiseCount = holdemDefaultMaxRaises
 
 	for _, p := range h.players {
 		p.Reset()
@@ -2096,6 +2096,45 @@ func TestHandleCpuActionError_FoldWhenCallAmtPositive(t *testing.T) {
 	assert.NotNil(t, h.GetLastCpuError())
 	assert.Contains(t, h.GetLastCpuError().Error(), "CPU player 1 action")
 	assert.True(t, h.players[1].GetFolded())
+}
+
+func TestCpuDecide_PotLimitClamp(t *testing.T) {
+	// PotLimit 時、CPUのベット額がポット上限を超えた場合にクランプされることを確認
+	players := []*HoldemPlayer{
+		NewHoldemPlayer(true, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleLAP),
+		NewHoldemPlayer(false, HoldemStyleLAG), // postFlopRaisePotPct=100
+	}
+	cfg := DefaultHoldemConfig()
+	cfg.BettingLimit = BettingLimitPotLimit
+	tc := NewTrumpCards(0)
+	h := NewHoldem(tc, players, cfg)
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.startingChips = []int{1000, 1000, 1000, 1000}
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetCurrentTurn(0)
+	h.SetLastBet(0)
+	h.SetMinRaise(20) // cpuPotBet → max(pot*100/100, BB=10, minRaise=20) = 20
+	h.SetPot(10)      // maxBetAmount = pot + lastBet = 10
+	h.actedFlags = []bool{false, true, true, false}
+	// Give LAG (player 3) a strong hand → must raise
+	for _, p := range h.players {
+		p.Reset()
+		p.AddCard(NewCard(CardDesignSpade, 1, false))
+		p.AddCard(NewCard(CardDesignHeart, 1, false))
+	}
+	h.communityCards = []*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 10, false),
+		NewCard(CardDesignSpade, 5, false),
+	}
+	// LAG cpuPotBet(100)=max(10,10,20)=20 > maxBetAmount=10 → clamped to 10
+	action, amount := h.cpuDecide(3)
+	assert.Equal(t, HoldemActionBet, action)
+	assert.Equal(t, 10, amount)
 }
 
 func TestHandleCpuActionError_CheckWhenCallAmtZero(t *testing.T) {
