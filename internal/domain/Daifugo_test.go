@@ -5275,3 +5275,46 @@ func TestDaifugo_DefaultConfig_SequenceRevolutionAndIllegalFinish(t *testing.T) 
 	assert.False(t, cfg.SequenceRevolutionEnabled, "SequenceRevolutionEnabled should default to false")
 	assert.False(t, cfg.IllegalFinishEnabled, "IllegalFinishEnabled should default to false")
 }
+
+func TestIllegalFinish_MultiplePenalizedPlayers_RankOrder(t *testing.T) {
+	// Two players both finish with illegal plays. The one who finishes "earlier"
+	// (lower original rank) should get the better rank among the penalized players.
+	// Non-penalized players keep their relative order at the top.
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+		EightCutEnabled:      true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// P0 (human) will finish 1st with joker (illegal) → original rank 1
+	// P1 (CPU) will finish 2nd with joker (illegal) → original rank 2
+	// P2 (CPU) will finish 3rd normally → original rank 3
+	// P3 (CPU) will finish 4th normally → original rank 4
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+
+	// Human plays joker (1st finish, illegal)
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+	assert.True(t, players[0].GetIllegalFinishPenalty())
+
+	// CPU 1 (joker): finishes 2nd, illegal
+	// CPU 2 (3♥): finishes 3rd, legal
+	// CPU 3 (4♥): finishes 4th, legal
+	for !dg.GetGameEndFlag() {
+		dg.CpuPlay()
+	}
+
+	assert.True(t, dg.GetGameEndFlag())
+
+	// P2 and P3 (non-penalized) take ranks 1 and 2 in their original order
+	assert.Equal(t, 1, players[2].GetRank(), "first non-penalized finisher should be rank 1")
+	assert.Equal(t, 2, players[3].GetRank(), "second non-penalized finisher should be rank 2")
+	// P0 finished before P1 illegally, so P0 gets rank 3 and P1 gets rank 4
+	assert.Equal(t, 3, players[0].GetRank(), "first illegal finisher should be rank 3")
+	assert.Equal(t, 4, players[1].GetRank(), "second illegal finisher should be rank 4")
+}

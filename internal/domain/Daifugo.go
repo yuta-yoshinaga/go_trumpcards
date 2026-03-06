@@ -955,7 +955,7 @@ func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 		}
 		// 8以外の非ジョーカーがない: 8を使う (ジョーカーより優先)
 		for i := 0; i < player.GetCardsSize(); i++ {
-			if !IsJoker(player.GetCard(i)) {
+			if !IsJoker(player.GetCard(i)) && player.GetCard(i).GetValue() == 8 {
 				if !d.wouldCauseIllegalFinish(player, []int{i}) {
 					return []int{i}
 				}
@@ -1433,25 +1433,32 @@ func (d *Daifugo) applyIllegalFinishPenalty() {
 	if !d.config.IllegalFinishEnabled {
 		return
 	}
-	totalPlayers := len(d.players)
+	penalized := make([]*DaifugoPlayer, 0)
+	nonPenalized := make([]*DaifugoPlayer, 0)
 	for _, p := range d.players {
-		if !p.GetIllegalFinishPenalty() {
-			continue
+		if p.GetIllegalFinishPenalty() {
+			penalized = append(penalized, p)
+		} else {
+			nonPenalized = append(nonPenalized, p)
 		}
-		currentRank := p.GetRank()
-		if currentRank == totalPlayers {
-			continue // 既に最下位
-		}
-		// currentRank より下位のプレイヤーのランクを1つ上げる
-		for _, other := range d.players {
-			if other == p {
-				continue
-			}
-			if other.GetRank() > currentRank && other.GetRank() <= totalPlayers {
-				other.SetRank(other.GetRank() - 1)
-			}
-		}
-		p.SetRank(totalPlayers)
+	}
+	if len(penalized) == 0 {
+		return
+	}
+	sort.Slice(nonPenalized, func(i, j int) bool {
+		return nonPenalized[i].GetRank() < nonPenalized[j].GetRank()
+	})
+	sort.Slice(penalized, func(i, j int) bool {
+		return penalized[i].GetRank() < penalized[j].GetRank()
+	})
+	rank := 1
+	for _, p := range nonPenalized {
+		p.SetRank(rank)
+		rank++
+	}
+	for _, p := range penalized {
+		p.SetRank(rank)
+		rank++
 	}
 }
 
