@@ -44,6 +44,7 @@ type OldMaid struct {
 	config                OldMaidConfig       // ゲーム設定
 	removedCard           *Card               // ジジ抜き: 除外されたカード
 	cpuHighlightedCardIdx int                 // CPU心理戦: 奇数カードの位置 (-1=なし)
+	humanHandDirty        bool                // 人間がシャッフル/並び替えしたフラグ
 }
 
 // NewOldMaid コンストラクタ
@@ -80,6 +81,9 @@ func (o *OldMaid) GetRemovedCard() *Card { return o.removedCard }
 // GetCpuHighlightedCardIdx CPU心理戦で強調された奇数カードの位置取得 (-1=なし)
 func (o *OldMaid) GetCpuHighlightedCardIdx() int { return o.cpuHighlightedCardIdx }
 
+// GetHumanHandDirty 人間がシャッフル/並び替えしたか
+func (o *OldMaid) GetHumanHandDirty() bool { return o.humanHandDirty }
+
 // Reset ゲーム初期化
 func (o *OldMaid) Reset() {
 	o.gameEndFlag = false
@@ -95,9 +99,12 @@ func (o *OldMaid) Reset() {
 	o.humanAction = nil
 	o.removedCard = nil
 	o.cpuHighlightedCardIdx = -1
+	o.humanHandDirty = false
 
-	// 全プレイヤーのカードリセット
-	resetPlayers(o.players, nil)
+	// 全プレイヤーのカードリセット (記憶もクリア)
+	resetPlayers(o.players, func(p *OldMaidPlayer) {
+		p.ResetDrawMemory()
+	})
 
 	// プレイ順をランダムにする
 	rand.Shuffle(len(o.players), func(i, j int) {
@@ -247,6 +254,8 @@ func (o *OldMaid) PlayerDraw(cardIdx int) error {
 	// 人間のターン開始時にCPU行動履歴をリセット
 	o.cpuActions = nil
 	o.drawCard(o.currentTurn, cardIdx)
+	// 人間が引いたらdirtyフラグをリセット (CPU記憶AI用)
+	o.humanHandDirty = false
 	// 人間の行動を記録
 	o.humanAction = &OldMaidCpuAction{
 		DrawPlayerIdx:  o.lastDrawPlayerIdx,
@@ -268,6 +277,13 @@ const (
 	cpuEdgeSides           = 2  // 先頭か末尾か
 )
 
+// CPU記憶AI用定数
+const (
+	cpuMemoryEdgeThreshold   = 5 // 人間がシャッフルした時の端選択閾値 (50% = 5/10)
+	cpuMemoryAvoidThreshold  = 4 // 前回ペア不成立時の回避閾値 (40% = 4/10)
+	cpuMemoryPreferThreshold = 4 // 前回ペア成立時の近傍選好閾値 (40% = 4/10)
+)
+
 // cpuSelectCardIdx 対象プレイヤーの手札枚数を受け取り、引くカードのインデックスを戦略的に選択する。
 // 30%の確率で端のカード（先頭または末尾）を選択し、残りはランダム選択。
 // 「誰から引くか」の解決は呼び出し元が担う。
@@ -285,6 +301,61 @@ func cpuSelectCardIdx(size int) int {
 	return rand.Intn(size)
 }
 
+// cpuSelectWithMemory 記憶AIを使ったカード選択
+// playerIdx: CPU自身のインデックス, targetIdx: 引く相手のインデックス, size: 相手の手札枚数
+func (o *OldMaid) cpuSelectWithMemory(playerIdx, targetIdx, size int) int {
+	if size <= 1 {
+		return 0
+	}
+	cpu := o.players[playerIdx]
+
+	// 対象が人間 かつ humanHandDirty → 50%の確率で端を選択, 記憶を無効化
+	if o.players[targetIdx].GetIsHuman() && o.humanHandDirty {
+		cpu.ResetDrawMemory()
+		if rand.Intn(cpuSelectTotalCases) < cpuMemoryEdgeThreshold {
+			if rand.Intn(cpuEdgeSides) == 0 {
+				return 0
+			}
+			return size - 1
+		}
+		return rand.Intn(size)
+	}
+
+	lastPos := cpu.GetMemLastDrawPos()
+	// 有効な記憶がある場合 (前回引いた位置が現在の手札サイズ範囲内)
+	if lastPos >= 0 && lastPos < size {
+		if !cpu.GetMemGotPair() {
+			// 前回ペア不成立 → 40%の確率でその位置を回避
+			if rand.Intn(cpuSelectTotalCases) < cpuMemoryAvoidThreshold {
+				// lastPosを除外してランダム選択
+				idx := rand.Intn(size - 1)
+				if idx >= lastPos {
+					idx++
+				}
+				return idx
+			}
+			return rand.Intn(size)
+		}
+		// 前回ペア成立 → 40%の確率で近傍(±1)を選好
+		if rand.Intn(cpuSelectTotalCases) < cpuMemoryPreferThreshold {
+			candidates := make([]int, 0, 2)
+			if lastPos-1 >= 0 {
+				candidates = append(candidates, lastPos-1)
+			}
+			if lastPos+1 < size {
+				candidates = append(candidates, lastPos+1)
+			}
+			if len(candidates) > 0 {
+				return candidates[rand.Intn(len(candidates))]
+			}
+		}
+		return rand.Intn(size)
+	}
+
+	// 記憶なし → デフォルト戦略にフォールバック
+	return cpuSelectCardIdx(size)
+}
+
 // CpuDraw 現在の手番がCPUの場合に1ターン実行
 func (o *OldMaid) CpuDraw() error {
 	if o.gameEndFlag {
@@ -298,8 +369,18 @@ func (o *OldMaid) CpuDraw() error {
 	if targetIdx < 0 || targetIdx >= len(o.players) {
 		return nil
 	}
-	cardIdx := cpuSelectCardIdx(o.players[targetIdx].GetCardsSize())
+	var cardIdx int
+	if o.config.CpuMemoryAI {
+		cardIdx = o.cpuSelectWithMemory(playerIdx, targetIdx, o.players[targetIdx].GetCardsSize())
+	} else {
+		cardIdx = cpuSelectCardIdx(o.players[targetIdx].GetCardsSize())
+	}
 	card := o.drawCard(playerIdx, cardIdx)
+	// CPU記憶AI: 引いた位置とペア結果を記録
+	if o.config.CpuMemoryAI {
+		o.players[playerIdx].SetMemLastDrawPos(cardIdx)
+		o.players[playerIdx].SetMemGotPair(o.lastDiscardedPairs > 0)
+	}
 	action := &OldMaidCpuAction{
 		DrawPlayerIdx:  playerIdx,
 		DrawFromIdx:    o.lastDrawFromIdx,
@@ -399,6 +480,7 @@ func (o *OldMaid) ShuffleHumanHand() error {
 		return ErrNotHumanTurn
 	}
 	human.ShuffleCards()
+	o.humanHandDirty = true
 	return nil
 }
 
@@ -411,7 +493,11 @@ func (o *OldMaid) ReorderHumanHand(indices []int) error {
 	if human == nil {
 		return ErrNotHumanTurn
 	}
-	return human.ReorderCards(indices)
+	err := human.ReorderCards(indices)
+	if err == nil {
+		o.humanHandDirty = true
+	}
+	return err
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

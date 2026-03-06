@@ -258,8 +258,10 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
 interface SetupScreenProps {
   mode: number;
   cpuPlacementStrategy: boolean;
+  cpuMemoryAI: boolean;
   onModeChange: (m: number) => void;
   onStrategyChange: (v: boolean) => void;
+  onMemoryAIChange: (v: boolean) => void;
   onStart: () => void;
   loading: boolean;
 }
@@ -267,8 +269,10 @@ interface SetupScreenProps {
 function SetupScreen({
   mode,
   cpuPlacementStrategy,
+  cpuMemoryAI,
   onModeChange,
   onStrategyChange,
+  onMemoryAIChange,
   onStart,
   loading,
 }: SetupScreenProps) {
@@ -303,6 +307,10 @@ function SetupScreen({
           <input type="checkbox" checked={cpuPlacementStrategy} onChange={(e) => onStrategyChange(e.target.checked)} />
           {t('setup.cpuStrategy')}
         </label>
+        <label className="flex items-center gap-2 text-white cursor-pointer">
+          <input type="checkbox" checked={cpuMemoryAI} onChange={(e) => onMemoryAIChange(e.target.checked)} />
+          {t('setup.cpuMemoryAI')}
+        </label>
       </div>
       <button type="button" className={`${btnPrimary} min-w-[120px] mt-2`} disabled={loading} onClick={onStart}>
         {t('setup.start')}
@@ -317,7 +325,12 @@ export function OldMaidPage() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
   const [setupStrategy, setSetupStrategy] = useState(false);
-  const [gameSettings, setGameSettings] = useState<{ mode: number; cpuPlacementStrategy: boolean } | null>(null);
+  const [setupMemoryAI, setSetupMemoryAI] = useState(false);
+  const [gameSettings, setGameSettings] = useState<{
+    mode: number;
+    cpuPlacementStrategy: boolean;
+    cpuMemoryAI: boolean;
+  } | null>(null);
   const [shakeKey, setShakeKey] = useState(0);
   const [revealedCard, setRevealedCard] = useState<Card | null>(null);
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -366,14 +379,21 @@ export function OldMaidPage() {
   const { loading, error, exec } = useGameApi(oldmaidApi.exec, { onSuccess });
 
   const handleStart = useCallback(() => {
-    const settings = { mode: setupMode, cpuPlacementStrategy: setupStrategy };
+    const settings = { mode: setupMode, cpuPlacementStrategy: setupStrategy, cpuMemoryAI: setupMemoryAI };
     setGameSettings(settings);
-    exec('reset', undefined, settings.mode, settings.cpuPlacementStrategy);
-  }, [exec, setupMode, setupStrategy]);
+    exec('reset', undefined, settings.mode, settings.cpuPlacementStrategy, undefined, settings.cpuMemoryAI);
+  }, [exec, setupMode, setupStrategy, setupMemoryAI]);
 
   const handleReset = useCallback(() => {
     if (gameSettings) {
-      exec('reset', undefined, gameSettings.mode, gameSettings.cpuPlacementStrategy);
+      exec(
+        'reset',
+        undefined,
+        gameSettings.mode,
+        gameSettings.cpuPlacementStrategy,
+        undefined,
+        gameSettings.cpuMemoryAI,
+      );
     }
   }, [exec, gameSettings]);
 
@@ -389,8 +409,10 @@ export function OldMaidPage() {
       <SetupScreen
         mode={setupMode}
         cpuPlacementStrategy={setupStrategy}
+        cpuMemoryAI={setupMemoryAI}
         onModeChange={setSetupMode}
         onStrategyChange={setSetupStrategy}
+        onMemoryAIChange={setSetupMemoryAI}
         onStart={handleStart}
         loading={loading}
       />

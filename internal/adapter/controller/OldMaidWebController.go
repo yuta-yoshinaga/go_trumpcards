@@ -16,6 +16,7 @@ type OldMaidWebInput struct {
 	ReorderIndices       []int `json:"reorderIndices"`
 	Mode                 int   `json:"mode"`
 	CpuPlacementStrategy bool  `json:"cpuPlacementStrategy"`
+	CpuMemoryAI          bool  `json:"cpuMemoryAI"`
 }
 
 // OldMaidWebOutputPlayer ババ抜きWebアウトプットプレイヤー
@@ -89,6 +90,7 @@ func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				cfg := domain.OldMaidConfig{
 					Mode:                 domain.OldMaidMode(param.Mode),
 					CpuPlacementStrategy: param.CpuPlacementStrategy,
+					CpuMemoryAI:          param.CpuMemoryAI,
 				}
 				owc.writePresenterResponse(w, omi.Reset(cfg))
 			case "d", "draw":

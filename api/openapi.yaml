@@ -1612,6 +1612,11 @@ components:
           description: When true, CPUs place the odd card at the edge of their hand
           default: false
           example: false
+        cpuMemoryAI:
+          type: boolean
+          description: When true, CPUs remember draw positions and adjust selection strategy
+          default: false
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
