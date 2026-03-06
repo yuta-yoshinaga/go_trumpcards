@@ -51,6 +51,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		EmperorEnabled:            config.EmperorEnabled,
 		SequenceRevolutionEnabled: config.SequenceRevolutionEnabled,
 		IllegalFinishEnabled:      config.IllegalFinishEnabled,
+		CpuDifficulty:             int(config.CpuDifficulty),
 	}
 
 	resObj.ReverseDirection = dg.GetReverseDirection()

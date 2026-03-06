@@ -219,6 +219,7 @@ export interface DaifugoConfig {
   emperorEnabled: boolean;
   sequenceRevolutionEnabled: boolean;
   illegalFinishEnabled: boolean;
+  cpuDifficulty: number;
 }
 
 export type DaifugoConfigInput = DaifugoConfig;

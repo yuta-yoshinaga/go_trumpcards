@@ -579,6 +579,38 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.False(t, resObj.Config.IllegalFinishEnabled)
 	})
 
+	t.Run("success Output config cpuDifficulty mapped", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		cfg := domain.DefaultDaifugoConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, resObj.Config.CpuDifficulty)
+	})
+
+	t.Run("success Output config cpuDifficulty default is 0", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := domain.NewDaifugo(tc, players, domain.DaifugoConfig{})
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, resObj.Config.CpuDifficulty)
+	})
+
 	t.Run("success Output illegalFinishPenalty flag in player output", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDGPlayers()

@@ -56,6 +56,10 @@
     "sandstorm": "砂嵐",
     "emperor": "エンペラー",
     "sequenceRevolution": "階段革命",
-    "illegalFinish": "反則上がり"
+    "illegalFinish": "反則上がり",
+    "cpuDifficulty": "CPU難易度:",
+    "difficultyNormal": "ふつう",
+    "difficultyEasy": "よわい",
+    "difficultyHard": "つよい"
   }
 }

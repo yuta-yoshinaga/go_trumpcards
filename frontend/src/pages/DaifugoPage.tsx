@@ -200,20 +200,37 @@ function SettingsPanel({ config, onChange }: SettingsPanelProps) {
     <details className="mb-2">
       <summary className="cursor-pointer text-[#ccc] text-[0.85em] select-none">{t('settings.title')}</summary>
       <div className="bg-black/40 rounded-lg p-2 mt-1 text-[0.82em] text-white">
-        <div className="mb-1">
-          <label htmlFor="joker-count" className="mr-2">
-            {t('settings.jokerCount')}
-          </label>
-          <select
-            id="joker-count"
-            value={config.jokerCount}
-            onChange={(e) => onChange('jokerCount', Number(e.target.value))}
-            className="bg-black/50 text-white rounded px-1"
-          >
-            <option value={0}>0</option>
-            <option value={1}>1</option>
-            <option value={2}>2</option>
-          </select>
+        <div className="mb-1 flex flex-wrap gap-x-4 gap-y-1">
+          <span>
+            <label htmlFor="joker-count" className="mr-2">
+              {t('settings.jokerCount')}
+            </label>
+            <select
+              id="joker-count"
+              value={config.jokerCount}
+              onChange={(e) => onChange('jokerCount', Number(e.target.value))}
+              className="bg-black/50 text-white rounded px-1"
+            >
+              <option value={0}>0</option>
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+            </select>
+          </span>
+          <span>
+            <label htmlFor="cpu-difficulty" className="mr-2">
+              {t('settings.cpuDifficulty')}
+            </label>
+            <select
+              id="cpu-difficulty"
+              value={config.cpuDifficulty}
+              onChange={(e) => onChange('cpuDifficulty', Number(e.target.value))}
+              className="bg-black/50 text-white rounded px-1"
+            >
+              <option value={0}>{t('settings.difficultyNormal')}</option>
+              <option value={1}>{t('settings.difficultyEasy')}</option>
+              <option value={2}>{t('settings.difficultyHard')}</option>
+            </select>
+          </span>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           {boolRules.map(({ key, label }) => (
@@ -251,6 +268,7 @@ const defaultConfigInput: DaifugoConfigInput = {
   emperorEnabled: false,
   sequenceRevolutionEnabled: false,
   illegalFinishEnabled: false,
+  cpuDifficulty: 0,
 };
 
 export function DaifugoPage() {

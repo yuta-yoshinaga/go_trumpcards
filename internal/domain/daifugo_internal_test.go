@@ -6,12 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// SetTableCards 場のカードを直接設定（テスト用）
-func (d *Daifugo) SetTableCards(cards []*Card) { d.tableCards = cards }
-
-// SetLastPlayPlayerIdx 最後にカードを出したプレイヤーインデックスを設定（テスト用）
-func (d *Daifugo) SetLastPlayPlayerIdx(idx int) { d.lastPlayPlayerIdx = idx }
-
 // TestDaifugo_exchangeCardsBetween_InsufficientCards covers lines 231-233:
 // exchangeCardsBetween returns early when upper or lower has fewer cards than count.
 func TestDaifugo_exchangeCardsBetween_InsufficientCards(t *testing.T) {
@@ -392,4 +386,238 @@ func TestDaifugo_applyCapitalFall_FormerDaifugoIsLast(t *testing.T) {
 	assert.True(t, d.gameEndFlag)
 	assert.Equal(t, 4, players[1].GetRank()) // still last
 	assert.Equal(t, 1, players[0].GetRank()) // unchanged
+}
+
+// TestDaifugo_findBestPlayEasy_FollowWithJokerSkip covers the IsJoker skip in Easy follow mode
+func TestDaifugo_findBestPlayEasy_FollowWithJokerSkip(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyEasy}
+	d := NewDaifugo(tc, players, cfg)
+
+	// Table has a single card
+	d.tableCards = []*Card{NewCard(CardDesignSpade, 3, false)}
+	// CPU has joker first, then a normal card
+	players[1].AddCard(NewCard(CardDesignJoker, 0, false))
+	players[1].AddCard(NewCard(CardDesignHeart, 5, false))
+
+	result := d.findBestPlayEasy(players[1])
+	// Should skip joker in main loop, find 5
+	assert.Equal(t, []int{1}, result)
+}
+
+// TestDaifugo_findBestPlayHard_UrgentFollowAllJokerTable covers tableBase < 0 in Hard
+func TestDaifugo_findBestPlayHard_UrgentFollowAllJokerTable(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
+	d := NewDaifugo(tc, players, cfg)
+
+	// All-joker table (tableBase < 0 → strength = JokerStrength)
+	d.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
+	// CPU 1 has only weak cards → can't beat joker → passes
+	players[1].AddCard(NewCard(CardDesignHeart, 3, false))
+	// Urgent
+	players[2].AddCard(NewCard(CardDesignClover, 2, false))
+	players[3].AddCard(NewCard(CardDesignDiamond, 2, false))
+
+	result := d.findBestPlayHard(players[1])
+	assert.Nil(t, result)
+}
+
+// TestDaifugo_findBestPlayEasy_AllJokerTable covers tableBase < 0 in Easy
+func TestDaifugo_findBestPlayEasy_AllJokerTable(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyEasy}
+	d := NewDaifugo(tc, players, cfg)
+
+	d.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
+	players[1].AddCard(NewCard(CardDesignHeart, 3, false))
+
+	result := d.findBestPlayEasy(players[1])
+	assert.Nil(t, result) // Can't beat joker
+}
+
+// TestDaifugo_shouldStrategicPass_AllJokerTable covers tableBase < 0 branch
+func TestDaifugo_shouldStrategicPass_AllJokerTable(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
+	d := NewDaifugo(tc, players, cfg)
+
+	d.tableCards = []*Card{NewCard(CardDesignJoker, 0, false)}
+	// 6+ cards in hand
+	for i := 3; i <= 8; i++ {
+		players[1].AddCard(NewCard(CardDesignHeart, i, false))
+	}
+
+	// JokerStrength = 16 which is > 10, so shouldStrategicPass returns false
+	result := d.shouldStrategicPass(players[1], []int{0})
+	assert.False(t, result)
+}
+
+// TestDaifugo_findBestPlayHard_UrgentClearTableIllegalFinishFallbackNil covers
+// the fallbackIdx nil branch and empty hand in urgent clear table
+func TestDaifugo_findBestPlayHard_UrgentClearTableEmptyHand(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
+	d := NewDaifugo(tc, players, cfg)
+	// Urgent
+	players[2].AddCard(NewCard(CardDesignClover, 2, false))
+	players[3].AddCard(NewCard(CardDesignDiamond, 2, false))
+
+	result := d.findBestPlayHard(players[1]) // empty hand, clear table, urgent
+	assert.Nil(t, result)
+}
+
+// TestDaifugo_findBestPlayHard_UrgentClearTableOnlyNonJoker exercises the
+// reverse iteration for strongest non-joker + wouldCauseIllegalFinish fallback branch
+func TestDaifugo_findBestPlayHard_UrgentClearTableIllegalFallback(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard, IllegalFinishEnabled: true, EightCutEnabled: true}
+	d := NewDaifugo(tc, players, cfg)
+	// CPU 1 has only 8s (illegal finish) — iterates from end, all cause illegal finish
+	players[1].AddCard(NewCard(CardDesignHeart, 8, false))
+	players[1].AddCard(NewCard(CardDesignClover, 8, false))
+	// Urgent
+	players[2].AddCard(NewCard(CardDesignClover, 2, false))
+	players[3].AddCard(NewCard(CardDesignDiamond, 2, false))
+
+	result := d.findBestPlayHard(players[1])
+	// Should use fallback (accepts penalty)
+	assert.NotNil(t, result)
+}
+
+// TestDaifugo_findBestPlayHard_UrgentFollowJokerComplement covers joker complement + suit lock branches
+func TestDaifugo_findBestPlayHard_UrgentFollowOverflowBreak(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
+	d := NewDaifugo(tc, players, cfg)
+
+	// Table has pair
+	d.tableCards = []*Card{
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 3, false),
+	}
+	// CPU 1: has pairs that beat table
+	players[1].AddCard(NewCard(CardDesignHeart, 5, false))
+	players[1].AddCard(NewCard(CardDesignClover, 5, false))
+	players[1].AddCard(NewCard(CardDesignHeart, 9, false))
+	players[1].AddCard(NewCard(CardDesignClover, 9, false))
+	// Urgent
+	players[2].AddCard(NewCard(CardDesignClover, 2, false))
+	players[3].AddCard(NewCard(CardDesignDiamond, 2, false))
+
+	result := d.findBestPlayHard(players[1])
+	// Urgent: should pick strongest pair (9s), not weakest (5s)
+	assert.NotNil(t, result)
+	assert.Equal(t, 2, len(result))
+	// Check that 9s were selected (indices 2,3)
+	assert.Equal(t, 2, result[0])
+	assert.Equal(t, 3, result[1])
+}
+
+// TestDaifugo_findBestSequencePlayHard_UrgentJokerFill covers joker fill + joker/suit skip branches
+func TestDaifugo_findBestSequencePlayHard_UrgentJokerFill(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard, SequenceEnabled: true, JokerCount: 2}
+	d := NewDaifugo(tc, players, cfg)
+
+	// Table: 3-card sequence
+	d.tableCards = []*Card{
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignHeart, 5, false),
+	}
+	d.tableIsSequence = true
+
+	// CPU 1: has joker + cards with gap → joker fills the gap
+	// Spade 7, Spade 9 (gap at 8) + Joker
+	players[1].AddCard(NewCard(CardDesignJoker, 0, false)) // joker first (will be skipped in loop)
+	players[1].AddCard(NewCard(CardDesignSpade, 7, false))
+	players[1].AddCard(NewCard(CardDesignSpade, 9, false))
+	// Also add some non-matching suit cards to exercise suit skip
+	players[1].AddCard(NewCard(CardDesignHeart, 10, false))
+	// Urgent
+	players[2].AddCard(NewCard(CardDesignClover, 2, false))
+	players[3].AddCard(NewCard(CardDesignDiamond, 2, false))
+
+	result := d.findBestSequencePlayHard(players[1])
+	assert.NotNil(t, result)
+	assert.Equal(t, 3, len(result))
+}
+
+// TestDaifugo_findBestSequencePlayHard_UrgentNoJokerFill covers insufficient jokers
+func TestDaifugo_findBestSequencePlayHard_UrgentNoJokerFill(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard, SequenceEnabled: true}
+	d := NewDaifugo(tc, players, cfg)
+
+	d.tableCards = []*Card{
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignHeart, 5, false),
+	}
+	d.tableIsSequence = true
+
+	// CPU 1: gap with no joker
+	players[1].AddCard(NewCard(CardDesignSpade, 7, false))
+	players[1].AddCard(NewCard(CardDesignSpade, 9, false)) // gap at 8, no joker
+	// Urgent
+	players[2].AddCard(NewCard(CardDesignClover, 2, false))
+	players[3].AddCard(NewCard(CardDesignDiamond, 2, false))
+
+	result := d.findBestSequencePlayHard(players[1])
+	assert.Nil(t, result) // Can't make a valid sequence
 }
