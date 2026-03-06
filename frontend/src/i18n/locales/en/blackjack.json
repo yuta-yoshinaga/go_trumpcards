@@ -32,6 +32,14 @@
   "cpuUnit": "",
   "hint": "Hint",
   "counting": "Count",
+  "countingSystem": "Counting System",
+  "countingSystemNames": {
+    "0": "Hi-Lo",
+    "1": "KO",
+    "2": "Zen Count",
+    "3": "Omega II"
+  },
+  "trueCountNA": "TC=N/A",
   "das": "DAS",
   "autoAdvance": "Auto Advance:",
   "autoAdvanceSec": "{{sec}}s",

@@ -104,6 +104,150 @@ func TestHiLoValue(t *testing.T) {
 	}
 }
 
+// --- koValue tests ---
+
+func TestKoValue(t *testing.T) {
+	t.Run("nil card returns 0", func(t *testing.T) {
+		assert.Equal(t, 0, koValue(nil))
+	})
+
+	// KO: 2-7 = +1, 8-9 = 0, 10/J/Q/K/A = -1
+	tests := []struct {
+		value    int
+		expected int
+		label    string
+	}{
+		{1, -1, "Ace"},
+		{2, 1, "2"},
+		{3, 1, "3"},
+		{4, 1, "4"},
+		{5, 1, "5"},
+		{6, 1, "6"},
+		{7, 1, "7"},
+		{8, 0, "8"},
+		{9, 0, "9"},
+		{10, -1, "10"},
+		{11, -1, "J"},
+		{12, -1, "Q"},
+		{13, -1, "K"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.label, func(t *testing.T) {
+			card := NewCard(CardDesignSpade, tc.value, false)
+			assert.Equal(t, tc.expected, koValue(card), "koValue for %s (value=%d)", tc.label, tc.value)
+		})
+	}
+}
+
+// --- zenValue tests ---
+
+func TestZenValue(t *testing.T) {
+	t.Run("nil card returns 0", func(t *testing.T) {
+		assert.Equal(t, 0, zenValue(nil))
+	})
+
+	// Zen: 2-3 = +1, 4-6 = +2, 7 = +1, 8 = 0, 9 = -1, 10/J/Q/K = -2, A = -1
+	tests := []struct {
+		value    int
+		expected int
+		label    string
+	}{
+		{1, -1, "Ace"},
+		{2, 1, "2"},
+		{3, 1, "3"},
+		{4, 2, "4"},
+		{5, 2, "5"},
+		{6, 2, "6"},
+		{7, 1, "7"},
+		{8, 0, "8"},
+		{9, -1, "9"},
+		{10, -2, "10"},
+		{11, -2, "J"},
+		{12, -2, "Q"},
+		{13, -2, "K"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.label, func(t *testing.T) {
+			card := NewCard(CardDesignSpade, tc.value, false)
+			assert.Equal(t, tc.expected, zenValue(card), "zenValue for %s (value=%d)", tc.label, tc.value)
+		})
+	}
+}
+
+// --- omegaIIValue tests ---
+
+func TestOmegaIIValue(t *testing.T) {
+	t.Run("nil card returns 0", func(t *testing.T) {
+		assert.Equal(t, 0, omegaIIValue(nil))
+	})
+
+	// Omega II: 2-3 = +1, 4-6 = +2, 7 = +1, 8 = 0, 9 = -1, 10/J/Q/K = -2, A = 0
+	tests := []struct {
+		value    int
+		expected int
+		label    string
+	}{
+		{1, 0, "Ace"},
+		{2, 1, "2"},
+		{3, 1, "3"},
+		{4, 2, "4"},
+		{5, 2, "5"},
+		{6, 2, "6"},
+		{7, 1, "7"},
+		{8, 0, "8"},
+		{9, -1, "9"},
+		{10, -2, "10"},
+		{11, -2, "J"},
+		{12, -2, "Q"},
+		{13, -2, "K"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.label, func(t *testing.T) {
+			card := NewCard(CardDesignSpade, tc.value, false)
+			assert.Equal(t, tc.expected, omegaIIValue(card), "omegaIIValue for %s (value=%d)", tc.label, tc.value)
+		})
+	}
+}
+
+// --- countingValue tests ---
+
+func TestCountingValue(t *testing.T) {
+	card5 := NewCard(CardDesignSpade, 5, false)
+	card7 := NewCard(CardDesignSpade, 7, false)
+	cardA := NewCard(CardDesignSpade, 1, false)
+
+	t.Run("HiLo system", func(t *testing.T) {
+		assert.Equal(t, 1, countingValue(card5, BJCountingHiLo))
+		assert.Equal(t, 0, countingValue(card7, BJCountingHiLo))
+		assert.Equal(t, -1, countingValue(cardA, BJCountingHiLo))
+	})
+
+	t.Run("KO system", func(t *testing.T) {
+		assert.Equal(t, 1, countingValue(card5, BJCountingKO))
+		assert.Equal(t, 1, countingValue(card7, BJCountingKO))
+		assert.Equal(t, -1, countingValue(cardA, BJCountingKO))
+	})
+
+	t.Run("Zen system", func(t *testing.T) {
+		assert.Equal(t, 2, countingValue(card5, BJCountingZen))
+		assert.Equal(t, 1, countingValue(card7, BJCountingZen))
+		assert.Equal(t, -1, countingValue(cardA, BJCountingZen))
+	})
+
+	t.Run("OmegaII system", func(t *testing.T) {
+		assert.Equal(t, 2, countingValue(card5, BJCountingOmegaII))
+		assert.Equal(t, 1, countingValue(card7, BJCountingOmegaII))
+		assert.Equal(t, 0, countingValue(cardA, BJCountingOmegaII))
+	})
+
+	t.Run("unknown system defaults to HiLo", func(t *testing.T) {
+		assert.Equal(t, 1, countingValue(card5, 99))
+	})
+}
+
 // --- dealerShouldHit tests ---
 
 func TestDealerShouldHit(t *testing.T) {
@@ -273,6 +417,112 @@ func TestGetTrueCountInternal(t *testing.T) {
 		// 4 decks = 208 cards, decks remaining = 208/52 = 4.0
 		expected := float64(8) / 4.0
 		assert.InDelta(t, expected, bj.GetTrueCount(), 0.01)
+	})
+
+	t.Run("KO system returns 0 (unbalanced)", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingSystem = BJCountingKO
+		bj.runningCount = 10
+		assert.Equal(t, 0.0, bj.GetTrueCount())
+	})
+
+	t.Run("Zen system calculates TC (balanced)", func(t *testing.T) {
+		tc := NewTrumpCardsWithDecks(4, 0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+		bj.config.CountingSystem = BJCountingZen
+		bj.runningCount = 8
+		expected := float64(8) / 4.0
+		assert.InDelta(t, expected, bj.GetTrueCount(), 0.01)
+	})
+
+	t.Run("OmegaII system calculates TC (balanced)", func(t *testing.T) {
+		tc := NewTrumpCardsWithDecks(2, 0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+		bj.config.CountingSystem = BJCountingOmegaII
+		bj.runningCount = 6
+		expected := float64(6) / 2.0
+		assert.InDelta(t, expected, bj.GetTrueCount(), 0.01)
+	})
+}
+
+// --- updateRunningCount with different counting systems ---
+
+func TestUpdateRunningCountWithSystems(t *testing.T) {
+	t.Run("KO system counts 7 as +1", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingKO
+		bj.runningCount = 0
+		bj.updateRunningCount(NewCard(CardDesignSpade, 7, false))
+		assert.Equal(t, 1, bj.runningCount)
+	})
+
+	t.Run("Zen system counts 5 as +2", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingZen
+		bj.runningCount = 0
+		bj.updateRunningCount(NewCard(CardDesignSpade, 5, false))
+		assert.Equal(t, 2, bj.runningCount)
+	})
+
+	t.Run("OmegaII system counts Ace as 0", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingOmegaII
+		bj.runningCount = 0
+		bj.updateRunningCount(NewCard(CardDesignSpade, 1, false))
+		assert.Equal(t, 0, bj.runningCount)
+	})
+}
+
+// --- SetConfig counting system validation ---
+
+func TestSetConfigCountingSystem(t *testing.T) {
+	t.Run("valid counting systems accepted", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		for _, sys := range []int{BJCountingHiLo, BJCountingKO, BJCountingZen, BJCountingOmegaII} {
+			err := bj.SetConfig(BlackJackConfig{CountingSystem: sys, DoubleAfterSplit: true})
+			assert.NoError(t, err, "system %d should be valid", sys)
+		}
+	})
+
+	t.Run("invalid counting system rejected", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		err := bj.SetConfig(BlackJackConfig{CountingSystem: BJCountingMax + 1, DoubleAfterSplit: true})
+		assert.Error(t, err)
+	})
+
+	t.Run("negative counting system rejected", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		err := bj.SetConfig(BlackJackConfig{CountingSystem: -1, DoubleAfterSplit: true})
+		assert.Error(t, err)
+	})
+
+	t.Run("changing counting system resets running count", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingSystem = BJCountingHiLo
+		bj.runningCount = 5
+		err := bj.SetConfig(BlackJackConfig{CountingSystem: BJCountingKO, DoubleAfterSplit: true})
+		assert.NoError(t, err)
+		assert.Equal(t, 0, bj.runningCount)
+	})
+
+	t.Run("same counting system does not reset running count", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingSystem = BJCountingHiLo
+		bj.runningCount = 5
+		err := bj.SetConfig(BlackJackConfig{CountingSystem: BJCountingHiLo, DoubleAfterSplit: true})
+		assert.NoError(t, err)
+		assert.Equal(t, 5, bj.runningCount)
 	})
 }
 

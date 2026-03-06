@@ -135,6 +135,29 @@ func TestBlackJackCuiController_NewCommands(t *testing.T) {
 	})
 }
 
+func TestBlackJackCuiController_SetCountingSystem(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetCountingSystem", 2).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("scs with valid system", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("scs 2"))
+	})
+	t.Run("setcountingsystem with valid system", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("setcountingsystem 2"))
+	})
+	t.Run("scs without arg", func(t *testing.T) {
+		assert.Equal(t, "Counting system is required.", tbc.Exec("scs"))
+	})
+	t.Run("scs with invalid arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs abc"))
+	})
+	t.Run("scs with negative arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs -1"))
+	})
+}
+
 func TestBlackJackCuiController_BetWithSideBets(t *testing.T) {
 	mockOutput := "----------\n"
 	bjiMock := new(usecase.MockBlackJackInteractor)

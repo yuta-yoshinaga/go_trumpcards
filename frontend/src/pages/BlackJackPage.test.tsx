@@ -31,6 +31,7 @@ const betPhaseState: BlackJackResponse = {
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
   doubleAfterSplit: true,
+  countingSystem: 0,
 };
 
 const baseHand: BlackJackHand = {
@@ -69,6 +70,7 @@ const actionPhaseState: BlackJackResponse = {
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
   doubleAfterSplit: true,
+  countingSystem: 0,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -91,6 +93,7 @@ const insurancePhaseState: BlackJackResponse = {
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
   doubleAfterSplit: true,
+  countingSystem: 0,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -136,6 +139,7 @@ const endPhaseState: BlackJackResponse = {
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
   doubleAfterSplit: true,
+  countingSystem: 0,
 };
 
 beforeEach(() => {
@@ -701,10 +705,28 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('togglecounting'));
   });
 
-  it('shows RC and TC when countingEnabled is true', async () => {
-    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true, runningCount: 5, trueCount: 2.3 });
+  it('shows RC and TC with system name when countingEnabled is true (Hi-Lo)', async () => {
+    mockExec.mockResolvedValue({
+      ...betPhaseState,
+      countingEnabled: true,
+      runningCount: 5,
+      trueCount: 2.3,
+      countingSystem: 0,
+    });
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText('RC=5 TC=2.3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Hi-Lo RC=5 TC=2\.3/)).toBeInTheDocument());
+  });
+
+  it('shows TC=N/A for KO system', async () => {
+    mockExec.mockResolvedValue({
+      ...betPhaseState,
+      countingEnabled: true,
+      runningCount: 3,
+      trueCount: 0,
+      countingSystem: 1,
+    });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/KO RC=3 TC=N\/A/)).toBeInTheDocument());
   });
 
   it('does not show RC and TC when countingEnabled is false', async () => {
@@ -936,6 +958,7 @@ describe('BlackJackPage', () => {
         cpuPlayerCount: 0,
         countingEnabled: false,
         doubleAfterSplit: true,
+        countingSystem: 0,
       }),
     );
   });
@@ -1019,6 +1042,29 @@ describe('BlackJackPage', () => {
     });
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ダブルダウン' })).toBeInTheDocument());
+  });
+
+  // --- Counting system tests ---
+
+  it('shows counting system selector in bet phase', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('カウンティング方式')).toBeInTheDocument());
+  });
+
+  it('counting system selector is disabled when counting is off', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('カウンティング方式')).toBeDisabled());
+  });
+
+  it('calls setcountingsystem when counting system is changed', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true, countingSystem: 1 });
+    fireEvent.change(screen.getByLabelText('カウンティング方式'), { target: { value: '1' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setcountingsystem', 1));
   });
 
   // --- Side bet tests ---

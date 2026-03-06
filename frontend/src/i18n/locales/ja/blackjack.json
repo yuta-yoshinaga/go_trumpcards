@@ -32,6 +32,14 @@
   "cpuUnit": "人",
   "hint": "ヒント",
   "counting": "カウント",
+  "countingSystem": "カウンティング方式",
+  "countingSystemNames": {
+    "0": "Hi-Lo",
+    "1": "KO",
+    "2": "Zen Count",
+    "3": "Omega II"
+  },
+  "trueCountNA": "TC=N/A",
   "das": "DAS",
   "autoAdvance": "自動進行:",
   "autoAdvanceSec": "{{sec}}秒",

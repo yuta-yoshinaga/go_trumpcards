@@ -62,6 +62,7 @@ paths:
         | `togglesoft17` | `soft17` | Toggle dealer soft-17 rule (H17 ↔ S17) |
         | `togglecounting` | `counting` | Toggle card counting display on/off |
         | `toggledas` | `das` | Toggle double-after-split (DAS) on/off |
+        | `setcountingsystem` | `scs` | Set counting system (requires `amount`: 0=Hi-Lo/1=KO/2=Zen Count/3=Omega II) |
         | `quit`  | `q`     | End the session |
       operationId: blackjackExec
       requestBody:
@@ -892,14 +893,16 @@ components:
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
             `hit` (`h`), `stand` (`s`), `doubledown` (`d`), `split` (`sp`),
             `insurance` (`i`), `declineinsurance` (`di`), `togglesoft17` (`soft17`),
-            `togglecounting` (`counting`), `toggledas` (`das`), `quit` (`q`).
-          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, q, quit]
+            `togglecounting` (`counting`), `toggledas` (`das`),
+            `setcountingsystem` (`scs`), `quit` (`q`).
+          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, scs, setcountingsystem, q, quit]
           example: hit
         amount:
           type: integer
           description: |
             Bet amount.  Required for `bet` command (minimum 10).
             Deck count for `setdeckcount` command (valid values: 1, 2, 4, 6, 8).
+            Counting system for `setcountingsystem` command (0=Hi-Lo, 1=KO, 2=Zen Count, 3=Omega II).
             Ignored for other commands.
           minimum: 1
           example: 100
@@ -930,6 +933,14 @@ components:
             Whether double-after-split (DAS) is allowed.  Only used with `reset` command.
             Defaults to true when omitted.
           example: true
+        countingSystem:
+          type: integer
+          description: |
+            Card counting system (0=Hi-Lo, 1=KO, 2=Zen Count, 3=Omega II).
+            Only used with `reset` command.  Defaults to 0 (Hi-Lo) when omitted.
+          minimum: 0
+          maximum: 3
+          example: 0
         perfectPairsBet:
           type: integer
           description: |
@@ -1146,17 +1157,24 @@ components:
           type: boolean
           description: Whether double-after-split (DAS) is currently allowed.
           example: true
+        countingSystem:
+          type: integer
+          description: |
+            Current card counting system (0=Hi-Lo, 1=KO, 2=Zen Count, 3=Omega II).
+          minimum: 0
+          maximum: 3
+          example: 0
         runningCount:
           type: integer
           description: |
-            Hi-Lo running count.  Only meaningful when `countingEnabled` is true.
+            Running count based on the active counting system.  Only meaningful when `countingEnabled` is true.
             Positive values favor the player; negative values favor the dealer.
           example: 0
         trueCount:
           type: number
           description: |
             True count (running count divided by estimated remaining decks).
-            Only meaningful when `countingEnabled` is true.
+            Only meaningful when `countingEnabled` is true.  Returns 0 for unbalanced systems (KO).
           example: 0.0
         cpuPlayers:
           type: array

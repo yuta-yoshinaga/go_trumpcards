@@ -1,3 +1,9 @@
+// Counting system constants (must match domain BJCounting constants)
+export const BJ_COUNTING_HILO = 0;
+export const BJ_COUNTING_KO = 1;
+export const BJ_COUNTING_ZEN = 2;
+export const BJ_COUNTING_OMEGA2 = 3;
+
 // Side bet type constants (must match domain BJSideBet constants)
 export const BJ_SIDE_BET_PERFECT_PAIRS = 1;
 

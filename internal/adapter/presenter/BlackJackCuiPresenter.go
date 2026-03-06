@@ -38,7 +38,12 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		b.WriteString("rule: No DAS (No double after split)\n")
 	}
 	if config.CountingEnabled {
-		fmt.Fprintf(&b, "count: RC=%d TC=%.1f\n", bj.GetRunningCount(), bj.GetTrueCount())
+		sysName := countingSystemName(config.CountingSystem)
+		if domain.IsBalancedCountingSystem(config.CountingSystem) {
+			fmt.Fprintf(&b, "count (%s): RC=%d TC=%.1f\n", sysName, bj.GetRunningCount(), bj.GetTrueCount())
+		} else {
+			fmt.Fprintf(&b, "count (%s): RC=%d TC=N/A\n", sysName, bj.GetRunningCount())
+		}
 	}
 
 	// フェーズ情報
@@ -216,6 +221,20 @@ func (bjp *BlackJackCuiPresenter) phaseStr(phase int) string {
 		return "END"
 	default:
 		return "UNKNOWN"
+	}
+}
+
+// countingSystemName カウンティングシステム名
+func countingSystemName(system int) string {
+	switch system {
+	case domain.BJCountingKO:
+		return "KO"
+	case domain.BJCountingZen:
+		return "Zen Count"
+	case domain.BJCountingOmegaII:
+		return "Omega II"
+	default:
+		return "Hi-Lo"
 	}
 }
 

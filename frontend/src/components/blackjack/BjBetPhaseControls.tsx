@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSuccess, btnWarning } from '../../styles/buttonStyles';
+import { BJ_COUNTING_HILO, BJ_COUNTING_KO, BJ_COUNTING_OMEGA2, BJ_COUNTING_ZEN } from './bjConstants';
 
 const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
 const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
+const COUNTING_SYSTEMS = [BJ_COUNTING_HILO, BJ_COUNTING_KO, BJ_COUNTING_ZEN, BJ_COUNTING_OMEGA2] as const;
 
 export interface BjBetPhaseControlsProps {
   betAmount: number;
@@ -19,6 +21,8 @@ export interface BjBetPhaseControlsProps {
   onToggleCounting: () => void;
   doubleAfterSplit: boolean;
   onToggleDAS: () => void;
+  countingSystem: number;
+  onCountingSystemChange: (v: number) => void;
   loading: boolean;
   onBet: () => void;
   perfectPairsBet: number;
@@ -139,6 +143,19 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         >
           {t('counting')} {props.countingEnabled ? 'ON' : 'OFF'}
         </button>
+        <select
+          aria-label={t('countingSystem')}
+          value={props.countingSystem}
+          onChange={(e) => props.onCountingSystemChange(Number(e.target.value))}
+          className="px-2 py-1 rounded text-sm"
+          disabled={props.loading || !props.countingEnabled}
+        >
+          {COUNTING_SYSTEMS.map((cs) => (
+            <option key={cs} value={cs}>
+              {t(`countingSystemNames.${cs}`)}
+            </option>
+          ))}
+        </select>
         <button
           type="button"
           className={props.doubleAfterSplit ? btnSuccess : btnWarning}
