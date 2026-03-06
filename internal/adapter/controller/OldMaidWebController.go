@@ -37,27 +37,37 @@ type OldMaidWebOutputCpuAction struct {
 	DiscardedCards []*WebOutputCard `json:"discardedCards"`
 }
 
+// OldMaidWebOutputDrawHistoryEntry ゲーム全体の引き履歴エントリ
+type OldMaidWebOutputDrawHistoryEntry struct {
+	DrawPlayerIdx  int  `json:"drawPlayerIdx"`
+	DrawFromIdx    int  `json:"drawFromIdx"`
+	DiscardedPairs int  `json:"discardedPairs"`
+	DrawerFinished bool `json:"drawerFinished"`
+	TargetFinished bool `json:"targetFinished"`
+}
+
 // OldMaidWebOutput ババ抜きWebアウトプット
 type OldMaidWebOutput struct {
-	Players               []*OldMaidWebOutputPlayer    `json:"players"`
-	CurrentTurn           int                          `json:"currentTurn"`
-	NextDrawTargetIdx     int                          `json:"nextDrawTargetIdx"`
-	GameEndFlag           bool                         `json:"gameEndFlag"`
-	LoserIdx              int                          `json:"loserIdx"`
-	LastDrawPlayerIdx     int                          `json:"lastDrawPlayerIdx"`
-	LastDrawFromIdx       int                          `json:"lastDrawFromIdx"`
-	LastDrawCard          *WebOutputCard               `json:"lastDrawCard"`
-	LastDiscardedPairs    int                          `json:"lastDiscardedPairs"`
-	LastDiscardedCards    []*WebOutputCard             `json:"lastDiscardedCards"`
-	HasDrawn              bool                         `json:"hasDrawn"`
-	CpuActions            []*OldMaidWebOutputCpuAction `json:"cpuActions"`
-	HumanAction           *OldMaidWebOutputCpuAction   `json:"humanAction"`
-	CpuHighlightedCardIdx int                          `json:"cpuHighlightedCardIdx"`
-	RemovedCard           *WebOutputCard               `json:"removedCard"`
-	Mode                  int                          `json:"mode"`
-	Message               string                       `json:"message"`
-	MessageCode           string                       `json:"messageCode,omitempty"`
-	MessageParams         map[string]string            `json:"messageParams,omitempty"`
+	Players               []*OldMaidWebOutputPlayer           `json:"players"`
+	CurrentTurn           int                                 `json:"currentTurn"`
+	NextDrawTargetIdx     int                                 `json:"nextDrawTargetIdx"`
+	GameEndFlag           bool                                `json:"gameEndFlag"`
+	LoserIdx              int                                 `json:"loserIdx"`
+	LastDrawPlayerIdx     int                                 `json:"lastDrawPlayerIdx"`
+	LastDrawFromIdx       int                                 `json:"lastDrawFromIdx"`
+	LastDrawCard          *WebOutputCard                      `json:"lastDrawCard"`
+	LastDiscardedPairs    int                                 `json:"lastDiscardedPairs"`
+	LastDiscardedCards    []*WebOutputCard                    `json:"lastDiscardedCards"`
+	HasDrawn              bool                                `json:"hasDrawn"`
+	CpuActions            []*OldMaidWebOutputCpuAction        `json:"cpuActions"`
+	HumanAction           *OldMaidWebOutputCpuAction          `json:"humanAction"`
+	DrawHistory           []*OldMaidWebOutputDrawHistoryEntry `json:"drawHistory"`
+	CpuHighlightedCardIdx int                                 `json:"cpuHighlightedCardIdx"`
+	RemovedCard           *WebOutputCard                      `json:"removedCard"`
+	Mode                  int                                 `json:"mode"`
+	Message               string                              `json:"message"`
+	MessageCode           string                              `json:"messageCode,omitempty"`
+	MessageParams         map[string]string                   `json:"messageParams,omitempty"`
 }
 
 // OldMaidWebController ババ抜きWebコントローラークラス
@@ -124,6 +134,7 @@ func (owc *OldMaidWebController) newDefaultOutput(msg string) *OldMaidWebOutput 
 	return &OldMaidWebOutput{
 		Players:               make([]*OldMaidWebOutputPlayer, 0),
 		CpuActions:            make([]*OldMaidWebOutputCpuAction, 0),
+		DrawHistory:           make([]*OldMaidWebOutputDrawHistoryEntry, 0),
 		CpuHighlightedCardIdx: -1,
 		Message:               msg,
 	}

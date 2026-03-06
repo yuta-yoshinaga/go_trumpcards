@@ -53,6 +53,7 @@ func TestOldMaid_Method(t *testing.T) {
 		assert.Nil(t, om.GetLastDiscardedCards())
 		assert.False(t, om.GetHasDrawn())
 		assert.Nil(t, om.GetHumanAction())
+		assert.Nil(t, om.GetDrawHistory())
 	})
 
 	t.Run("success GetPlayer valid index", func(t *testing.T) {
@@ -1692,5 +1693,102 @@ func TestOldMaid_CpuSelectWithMemory(t *testing.T) {
 		}
 		assert.True(t, edgePicked, "no memory fallback: edge should be picked")
 		assert.True(t, nonEdgePicked, "no memory fallback: non-edge should be picked")
+	})
+}
+
+func TestOldMaid_DrawHistory(t *testing.T) {
+	makePlayers := func() []*domain.OldMaidPlayer {
+		return []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+	}
+
+	t.Run("initially nil", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		assert.Nil(t, om.GetDrawHistory())
+	})
+
+	t.Run("PlayerDraw appends entry", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		// player 0 (human): SPADE 5
+		// player 1 (CPU): CLOVER 7 — 1 card (deterministic)
+		// player 2: HEART 9 — active
+		// player 3: finished
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].SetIsFinished(true)
+		_ = om.PlayerDraw(0)
+		history := om.GetDrawHistory()
+		assert.Equal(t, 1, len(history))
+		assert.Equal(t, 0, history[0].DrawPlayerIdx)
+		assert.Equal(t, 1, history[0].DrawFromIdx)
+		assert.Equal(t, 0, history[0].DiscardedPairs)
+		assert.False(t, history[0].DrawerFinished)
+		assert.True(t, history[0].TargetFinished)
+	})
+
+	t.Run("CpuDraw appends entry", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		cpuPlayers := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, cpuPlayers)
+		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		cpuPlayers[2].SetIsFinished(true)
+		cpuPlayers[3].SetIsFinished(true)
+		_ = om.CpuDraw()
+		history := om.GetDrawHistory()
+		assert.Equal(t, 1, len(history))
+		assert.Equal(t, 0, history[0].DrawPlayerIdx)
+		assert.Equal(t, 1, history[0].DrawFromIdx)
+		assert.Equal(t, 1, history[0].DiscardedPairs)
+		assert.True(t, history[0].DrawerFinished)
+		assert.True(t, history[0].TargetFinished)
+	})
+
+	t.Run("Reset clears draw history", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].SetIsFinished(true)
+		_ = om.PlayerDraw(0)
+		assert.NotNil(t, om.GetDrawHistory())
+		om.Reset()
+		assert.Nil(t, om.GetDrawHistory())
+	})
+
+	t.Run("drawerFinished and targetFinished set correctly when pair formed", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makePlayers()
+		om := domain.NewOldMaid(tc, players)
+		// player 0 (human): SPADE 3 → draws CLOVER 3 → pair → finishes
+		// player 1: CLOVER 3 — 1 card → also finishes
+		// player 2: JOKER — loser
+		// player 3: finished
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+		players[3].SetIsFinished(true)
+		_ = om.PlayerDraw(0)
+		history := om.GetDrawHistory()
+		assert.Equal(t, 1, len(history))
+		assert.Equal(t, 1, history[0].DiscardedPairs)
+		assert.True(t, history[0].DrawerFinished)
+		assert.True(t, history[0].TargetFinished)
 	})
 }

@@ -23,3 +23,6 @@ func (o *OldMaid) SetCpuHighlightedCardIdx(v int) { o.cpuHighlightedCardIdx = v 
 
 // SetRemovedCard 除外カード設定（テスト用）
 func (o *OldMaid) SetRemovedCard(card *Card) { o.removedCard = card }
+
+// SetDrawHistory 引き履歴設定（テスト用）
+func (o *OldMaid) SetDrawHistory(h []*OldMaidDrawHistoryEntry) { o.drawHistory = h }

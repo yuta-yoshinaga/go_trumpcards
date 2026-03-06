@@ -1678,6 +1678,37 @@ components:
           description: Number of pairs discarded as a result of this draw
           example: 1
 
+    OldMaidDrawHistoryEntry:
+      type: object
+      description: A single draw event in the game-wide draw history (card info omitted for fairness)
+      required:
+        - drawPlayerIdx
+        - drawFromIdx
+        - discardedPairs
+        - drawerFinished
+        - targetFinished
+      properties:
+        drawPlayerIdx:
+          type: integer
+          description: Index of the player who drew a card
+          example: 0
+        drawFromIdx:
+          type: integer
+          description: Index of the player the card was drawn from
+          example: 1
+        discardedPairs:
+          type: integer
+          description: Number of pairs discarded as a result of this draw
+          example: 0
+        drawerFinished:
+          type: boolean
+          description: Whether the drawing player finished (0 cards) after this draw
+          example: false
+        targetFinished:
+          type: boolean
+          description: Whether the target player finished (0 cards) after this draw
+          example: true
+
     OldMaidResponse:
       type: object
       required:
@@ -1743,6 +1774,11 @@ components:
           description: List of CPU actions that occurred since the last human action
           items:
             $ref: '#/components/schemas/OldMaidCpuAction'
+        drawHistory:
+          type: array
+          description: Full draw history throughout the entire game (card info omitted for fairness)
+          items:
+            $ref: '#/components/schemas/OldMaidDrawHistoryEntry'
         message:
           type: string
           description: |

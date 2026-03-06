@@ -14,4 +14,10 @@ describe('StatusBadge', () => {
     expect(screen.getByText('考え中...')).toBeInTheDocument();
     expect(container.firstChild).toMatchSnapshot();
   });
+
+  it('renders danger variant', () => {
+    const { container } = render(<StatusBadge variant="danger">容疑者</StatusBadge>);
+    expect(screen.getByText('容疑者')).toBeInTheDocument();
+    expect(container.firstChild).toMatchSnapshot();
+  });
 });
