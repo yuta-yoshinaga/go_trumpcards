@@ -43,12 +43,12 @@ export function BettingControls({
           id={inputId}
           type="number"
           min={minRaise}
-          max={maxBetAmount && maxBetAmount > 0 ? maxBetAmount : undefined}
+          max={(maxBetAmount ?? 0) > 0 ? maxBetAmount : undefined}
           step={10}
           value={betAmount}
           onChange={(e) => {
             let v = Number(e.target.value);
-            if (maxBetAmount && maxBetAmount > 0 && v > maxBetAmount) v = maxBetAmount;
+            if ((maxBetAmount ?? 0) > 0 && v > maxBetAmount!) v = maxBetAmount!;
             onBetAmountChange(v);
           }}
           className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
