@@ -226,8 +226,8 @@ function SettingsPanel({ config, onChange }: SettingsPanelProps) {
               onChange={(e) => onChange('cpuDifficulty', Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1"
             >
-              <option value={0}>{t('settings.difficultyNormal')}</option>
               <option value={1}>{t('settings.difficultyEasy')}</option>
+              <option value={0}>{t('settings.difficultyNormal')}</option>
               <option value={2}>{t('settings.difficultyHard')}</option>
             </select>
           </span>

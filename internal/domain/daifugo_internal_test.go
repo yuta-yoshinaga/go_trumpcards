@@ -477,6 +477,49 @@ func TestDaifugo_shouldStrategicPass_AllJokerTable(t *testing.T) {
 	assert.False(t, result)
 }
 
+// TestDaifugo_shouldStrategicPass_Revolution covers shouldStrategicPass during revolution.
+// Before the fix, d.cardStrength(1) returned 4 during revolution, causing almost every card
+// to be considered "Ace or above" and triggering excessive strategic passes.
+func TestDaifugo_shouldStrategicPass_Revolution(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
+	d := NewDaifugo(tc, players, cfg)
+	d.revolutionActive = true
+
+	// Table: 3 (revolution strength = 15, which is > 10 → returns false early)
+	d.tableCards = []*Card{NewCard(CardDesignSpade, 3, false)}
+	// 6+ cards in hand
+	for i := 4; i <= 10; i++ {
+		players[1].AddCard(NewCard(CardDesignHeart, i, false))
+	}
+	// Table strength during revolution: DaifugoCardStrengthRevolution(3) = 18-3 = 15 > 10
+	result := d.shouldStrategicPass(players[1], []int{0})
+	assert.False(t, result, "table strength > 10 during revolution → should not pass")
+
+	// Table: Ace (revolution strength = 18-14 = 4, which is ≤ 10)
+	// Hand has a 10 (revolution strength = 18-10 = 8, which is < DaifugoCardStrength(1)=14)
+	d.tableCards = []*Card{NewCard(CardDesignSpade, 1, false)}
+	result = d.shouldStrategicPass(players[1], []int{0})
+	// Card 4 has revolution strength 18-4=14 which equals DaifugoCardStrength(1)=14 → pass
+	assert.True(t, result, "revolution: card strength 14 >= threshold 14 → should pass")
+
+	// Now test with a weak card: value 2 (revolution strength = 18-15 = 3, < 14)
+	players[1] = NewDaifugoPlayer(false)
+	for i := 0; i < 6; i++ {
+		players[1].AddCard(NewCard(CardDesignHeart, 2, false))
+	}
+	d.players[1] = players[1]
+	result = d.shouldStrategicPass(players[1], []int{0})
+	// Card 2 has revolution strength 18-15=3 < 14 → should not pass
+	assert.False(t, result, "revolution: card strength 3 < threshold 14 → should not pass")
+}
+
 // TestDaifugo_findBestPlayHard_UrgentClearTableIllegalFinishFallbackNil covers
 // the fallbackIdx nil branch and empty hand in urgent clear table
 func TestDaifugo_findBestPlayHard_UrgentClearTableEmptyHand(t *testing.T) {

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"sort"
 )
@@ -960,7 +961,7 @@ func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 
 // opponentMinCards 対戦相手の中で最小の手札枚数を返す
 func (d *Daifugo) opponentMinCards(player *DaifugoPlayer) int {
-	minCards := 999
+	minCards := math.MaxInt
 	for _, p := range d.players {
 		if p == player || p.GetIsFinished() {
 			continue
@@ -999,7 +1000,7 @@ func (d *Daifugo) shouldStrategicPass(player *DaifugoPlayer, indices []int) bool
 		if IsJoker(card) {
 			return true // ジョーカーは温存
 		}
-		if d.cardStrength(card.GetValue()) >= d.cardStrength(1) { // A以上
+		if d.cardStrength(card.GetValue()) >= DaifugoCardStrength(1) { // A以上 (革命に依存しない固定閾値)
 			return true
 		}
 	}
@@ -1154,7 +1155,7 @@ func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
 // findBestPlayEasy 簡単難易度: 単純に出せる最弱のカードを出す (8/ジョーカー温存なし、エンペラー探索なし、革命防止なし)
 func (d *Daifugo) findBestPlayEasy(player *DaifugoPlayer) []int {
 	if d.tableCards == nil {
-		// 場がクリアなら最弱の1枚を出す (温存戦略なし)
+		// 場がクリアなら最弱の1枚を出す (温存戦略なし、反則上がりチェックなし: Easy AIは戦略なしで失敗もする)
 		if player.GetCardsSize() > 0 {
 			return []int{0}
 		}
@@ -1442,6 +1443,7 @@ func (d *Daifugo) findBestSequencePlayHard(player *DaifugoPlayer) []int {
 						sci++
 						found = true
 					}
+					// suitCards are in ascending strength order, so once strength >= targetStr, stop
 					break
 				}
 				if !found {
