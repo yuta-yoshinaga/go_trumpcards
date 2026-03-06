@@ -29,6 +29,8 @@ const defaultConfig = {
   intenseLockEnabled: false,
   sandstormEnabled: false,
   emperorEnabled: false,
+  sequenceRevolutionEnabled: false,
+  illegalFinishEnabled: false,
 };
 
 const humanTurnState: DaifugoResponse = {
@@ -749,5 +751,96 @@ describe('DaifugoPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ emperorEnabled: true })),
     );
+  });
+
+  it('settings panel renders 階段革命 checkbox', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('階段革命')).toBeInTheDocument();
+    expect(screen.getByLabelText('階段革命')).not.toBeChecked();
+  });
+
+  it('settings panel renders 反則上がり checkbox', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('反則上がり')).toBeInTheDocument();
+    expect(screen.getByLabelText('反則上がり')).not.toBeChecked();
+  });
+
+  it('階段革命 checkbox toggle updates config on reset', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('階段革命')).toBeInTheDocument());
+    fireEvent.click(screen.getByLabelText('階段革命'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ sequenceRevolutionEnabled: true })),
+    );
+  });
+
+  it('反則上がり checkbox toggle updates config on reset', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('反則上がり')).toBeInTheDocument());
+    fireEvent.click(screen.getByLabelText('反則上がり'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ illegalFinishEnabled: true })),
+    );
+  });
+
+  it('shows 反則上がり penalty badge for CPU player', async () => {
+    const penaltyState: DaifugoResponse = {
+      ...gameEndState,
+      players: [
+        { id: 0, isHuman: true, isFinished: true, rank: 1, cardCount: 0, cards: [] },
+        {
+          id: 1,
+          isHuman: false,
+          isFinished: true,
+          rank: 4,
+          cardCount: 0,
+          cards: [],
+          illegalFinishPenalty: true,
+        },
+        { id: 2, isHuman: false, isFinished: true, rank: 2, cardCount: 0, cards: [] },
+        { id: 3, isHuman: false, isFinished: true, rank: 3, cardCount: 0, cards: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('反則上がり', { selector: 'span' })).toBeInTheDocument());
+  });
+
+  it('shows 反則上がり penalty badge for human player', async () => {
+    const penaltyState: DaifugoResponse = {
+      ...gameEndState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: true,
+          rank: 4,
+          cardCount: 0,
+          cards: [],
+          illegalFinishPenalty: true,
+        },
+        { id: 1, isHuman: false, isFinished: true, rank: 1, cardCount: 0, cards: [] },
+        { id: 2, isHuman: false, isFinished: true, rank: 2, cardCount: 0, cards: [] },
+        { id: 3, isHuman: false, isFinished: true, rank: 3, cardCount: 0, cards: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('反則上がり', { selector: 'span' })).toBeInTheDocument());
+  });
+
+  it('does not show 反則上がり badge when no penalty', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/ゲーム終了！/)).toBeInTheDocument());
+    expect(screen.queryByText('反則上がり', { selector: 'span' })).not.toBeInTheDocument();
   });
 });

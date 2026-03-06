@@ -364,4 +364,40 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "【連番縛り】")
 	})
+
+	t.Run("success Output shows 反則上がり indicator for penalized player", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+		// Set up game end: finish 3 CPUs, human plays last card
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].SetIsFinished(true)
+		players[1].SetRank(1)
+		players[2].SetIsFinished(true)
+		players[2].SetRank(2)
+		players[3].SetIsFinished(true)
+		players[3].SetRank(3)
+		_ = dg.PlayerPlay([]int{0}) // human plays last card → game ends
+		// Set penalty after game end
+		players[0].SetIllegalFinishPenalty(true)
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "[反則上がり]")
+		assert.Contains(t, result, "ゲーム終了")
+	})
+
+	t.Run("success Output does not show 反則上がり for non-penalized player", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+		players[0].SetIsFinished(true)
+		players[0].SetRank(1)
+		players[1].SetIsFinished(true)
+		players[1].SetRank(2)
+		players[2].SetIsFinished(true)
+		players[2].SetRank(3)
+		players[3].SetIsFinished(true)
+		players[3].SetRank(4)
+		result := tdp.Output(dg, nil)
+		assert.NotContains(t, result, "[反則上がり]")
+	})
 }

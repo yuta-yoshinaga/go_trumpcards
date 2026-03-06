@@ -70,22 +70,24 @@ const (
 
 // DaifugoConfig 大富豪ローカルルール設定
 type DaifugoConfig struct {
-	JokerCount          int  // ジョーカー枚数 (default: 2)
-	EightCutEnabled     bool // 8切り
-	SuitLockEnabled     bool // スート縛り
-	ElevenBackEnabled   bool // 11バック
-	SequenceEnabled     bool // 階段
-	CardExchangeEnabled bool // カード交換
-	FiveSkipEnabled     bool // 5飛び
-	SevenPassEnabled    bool // 7渡し
-	TenDiscardEnabled   bool // 10捨て
-	SpadeThreeEnabled   bool // スペ3返し
-	CapitalFallEnabled  bool // 都落ち
-	NineReverseEnabled  bool // 9リバース
-	CoupDetatEnabled    bool // クーデター (3枚の9で革命)
-	IntenseLockEnabled  bool // 激シバ (連番縛り)
-	SandstormEnabled    bool // 砂嵐 (3枚の3で場をクリア)
-	EmperorEnabled      bool // エンペラー (4枚連番・全スート異なる→革命+場クリア)
+	JokerCount                int  // ジョーカー枚数 (default: 2)
+	EightCutEnabled           bool // 8切り
+	SuitLockEnabled           bool // スート縛り
+	ElevenBackEnabled         bool // 11バック
+	SequenceEnabled           bool // 階段
+	CardExchangeEnabled       bool // カード交換
+	FiveSkipEnabled           bool // 5飛び
+	SevenPassEnabled          bool // 7渡し
+	TenDiscardEnabled         bool // 10捨て
+	SpadeThreeEnabled         bool // スペ3返し
+	CapitalFallEnabled        bool // 都落ち
+	NineReverseEnabled        bool // 9リバース
+	CoupDetatEnabled          bool // クーデター (3枚の9で革命)
+	IntenseLockEnabled        bool // 激シバ (連番縛り)
+	SandstormEnabled          bool // 砂嵐 (3枚の3で場をクリア)
+	EmperorEnabled            bool // エンペラー (4枚連番・全スート異なる→革命+場クリア)
+	SequenceRevolutionEnabled bool // 階段革命 (4枚以上の階段で革命)
+	IllegalFinishEnabled      bool // 反則上がり (8切り/ジョーカー/革命で上がりはペナルティ)
 }
 
 // DefaultDaifugoConfig デフォルトのローカルルール設定 (全て有効)
@@ -209,7 +211,10 @@ func (d *Daifugo) Reset() {
 	d.trumpCards.Shuffle()
 
 	// 全プレイヤーのカードリセット
-	resetPlayers(d.players, func(p *DaifugoPlayer) { p.SetRank(-1) })
+	resetPlayers(d.players, func(p *DaifugoPlayer) {
+		p.SetRank(-1)
+		p.SetIllegalFinishPenalty(false)
+	})
 
 	// プレイ順をランダムにする
 	rand.Shuffle(len(d.players), func(i, j int) {
@@ -328,8 +333,12 @@ func IsJoker(card *Card) bool {
 }
 
 // triggerRevolutionIfNeeded 4枚出しで革命が起きるか判定し、起きた場合は革命フラグを切り替えて全プレイヤーの手札を再ソートする
-func (d *Daifugo) triggerRevolutionIfNeeded(cards []*Card) {
+// isSeq が true の場合は階段革命ルール (SequenceRevolutionEnabled) が有効な時のみ発動する
+func (d *Daifugo) triggerRevolutionIfNeeded(cards []*Card, isSeq bool) {
 	if len(cards) < 4 {
+		return
+	}
+	if isSeq && !d.config.SequenceRevolutionEnabled {
 		return
 	}
 	d.revolutionActive = !d.revolutionActive
@@ -527,6 +536,7 @@ func (d *Daifugo) checkGameEnd() bool {
 		}
 		d.gameEndFlag = true
 		d.applyCapitalFall()
+		d.applyIllegalFinishPenalty()
 		return true
 	}
 	return false
@@ -820,13 +830,16 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 
 	emperor := d.triggerEmperor(cards)
 	if !emperor {
-		d.triggerRevolutionIfNeeded(cards)
+		d.triggerRevolutionIfNeeded(cards, isSeq)
 	}
 	d.triggerCoupDetatIfNeeded(cards)
 	d.triggerElevenBack(cards)
 	d.triggerNineReverseIfNeeded(cards, isSeq)
 
 	if d.players[playerIdx].GetCardsSize() == 0 {
+		if d.isIllegalFinish(cards, isSeq) {
+			d.players[playerIdx].SetIllegalFinishPenalty(true)
+		}
 		d.finishPlayer(playerIdx)
 	}
 
@@ -900,30 +913,71 @@ func (d *Daifugo) CpuPlay() {
 	}
 }
 
+// wouldCauseIllegalFinish 指定カードで上がった場合に反則上がりになるか判定 (CPU AI用)
+func (d *Daifugo) wouldCauseIllegalFinish(player *DaifugoPlayer, indices []int) bool {
+	if !d.config.IllegalFinishEnabled || len(indices) == 0 {
+		return false
+	}
+	if player.GetCardsSize() != len(indices) {
+		return false // 上がりにならない
+	}
+	cards := make([]*Card, len(indices))
+	for i, idx := range indices {
+		cards[i] = player.GetCard(idx)
+	}
+	isSeq := d.config.SequenceEnabled && d.isValidSequence(cards)
+	return d.isIllegalFinish(cards, isSeq)
+}
+
 // findBestPlay プレイヤーが出せる最弱のカードセットのインデックスを返す
 // 出せるカードがない場合は nil を返す
 func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 	if d.tableCards == nil {
 		// エンペラーを探す (場がクリアの時のみ)
 		if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
-			return emperorIndices
+			if !d.wouldCauseIllegalFinish(player, emperorIndices) {
+				return emperorIndices
+			}
 		}
 		// 場がクリアなら最弱の1枚を出す (ジョーカーと8は温存)
+		var fallbackIdx *int
 		for i := 0; i < player.GetCardsSize(); i++ {
 			card := player.GetCard(i)
 			if !IsJoker(card) && card.GetValue() != 8 {
-				return []int{i}
+				if !d.wouldCauseIllegalFinish(player, []int{i}) {
+					return []int{i}
+				}
+				if fallbackIdx == nil {
+					v := i
+					fallbackIdx = &v
+				}
 			}
 		}
 		// 8以外の非ジョーカーがない: 8を使う (ジョーカーより優先)
 		for i := 0; i < player.GetCardsSize(); i++ {
-			if !IsJoker(player.GetCard(i)) {
-				return []int{i}
+			if !IsJoker(player.GetCard(i)) && player.GetCard(i).GetValue() == 8 {
+				if !d.wouldCauseIllegalFinish(player, []int{i}) {
+					return []int{i}
+				}
+				if fallbackIdx == nil {
+					v := i
+					fallbackIdx = &v
+				}
 			}
 		}
 		// ジョーカーしかない場合
 		if player.GetCardsSize() > 0 {
-			return []int{0}
+			if !d.wouldCauseIllegalFinish(player, []int{0}) {
+				return []int{0}
+			}
+			if fallbackIdx == nil {
+				v := 0
+				fallbackIdx = &v
+			}
+		}
+		// 全ての選択肢が反則上がりの場合はfallbackを使用 (ペナルティ受け入れ)
+		if fallbackIdx != nil {
+			return []int{*fallbackIdx}
 		}
 		return nil
 	}
@@ -1341,6 +1395,71 @@ func (d *Daifugo) applyCapitalFall() {
 	prevRank := d.players[prevDaifugoIdx].GetRank()
 	d.players[prevDaifugoIdx].SetRank(d.players[lowestIdx].GetRank())
 	d.players[lowestIdx].SetRank(prevRank)
+}
+
+// isIllegalFinish 反則上がり判定: 8切り/ジョーカー/革命で上がりとなる手かどうか
+func (d *Daifugo) isIllegalFinish(cards []*Card, isSeq bool) bool {
+	if !d.config.IllegalFinishEnabled {
+		return false
+	}
+	// 8切り上がり: 非ジョーカーの8が含まれている && 8切りが有効
+	if d.config.EightCutEnabled {
+		for _, c := range cards {
+			if !IsJoker(c) && c.GetValue() == 8 {
+				return true
+			}
+		}
+	}
+	// ジョーカー上がり
+	for _, c := range cards {
+		if IsJoker(c) {
+			return true
+		}
+	}
+	// 革命上がり: 4枚以上 (グループまたは階段)
+	if len(cards) >= 4 {
+		// 階段の場合は階段革命が有効な時のみ
+		if isSeq && !d.config.SequenceRevolutionEnabled {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+// applyIllegalFinishPenalty 反則上がりペナルティを適用する
+// ペナルティを受けたプレイヤーを最下位に降格し、他のプレイヤーのランクを調整する
+func (d *Daifugo) applyIllegalFinishPenalty() {
+	if !d.config.IllegalFinishEnabled {
+		return
+	}
+	penalized := make([]*DaifugoPlayer, 0)
+	nonPenalized := make([]*DaifugoPlayer, 0)
+	for _, p := range d.players {
+		if p.GetIllegalFinishPenalty() {
+			penalized = append(penalized, p)
+		} else {
+			nonPenalized = append(nonPenalized, p)
+		}
+	}
+	if len(penalized) == 0 {
+		return
+	}
+	sort.Slice(nonPenalized, func(i, j int) bool {
+		return nonPenalized[i].GetRank() < nonPenalized[j].GetRank()
+	})
+	sort.Slice(penalized, func(i, j int) bool {
+		return penalized[i].GetRank() < penalized[j].GetRank()
+	})
+	rank := 1
+	for _, p := range nonPenalized {
+		p.SetRank(rank)
+		rank++
+	}
+	for _, p := range penalized {
+		p.SetRank(rank)
+		rank++
+	}
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

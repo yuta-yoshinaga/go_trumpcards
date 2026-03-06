@@ -23,7 +23,8 @@
     "suitLock": "スート縛り: {{suit}}",
     "sequence": "階段",
     "nineReverse": "9リバース",
-    "numberLock": "連番縛り"
+    "numberLock": "連番縛り",
+    "illegalFinishPenalty": "反則上がり"
   },
   "exchange": {
     "title": "[カード交換]",
@@ -53,6 +54,8 @@
     "coupDetat": "クーデター",
     "intenseLock": "激シバ",
     "sandstorm": "砂嵐",
-    "emperor": "エンペラー"
+    "emperor": "エンペラー",
+    "sequenceRevolution": "階段革命",
+    "illegalFinish": "反則上がり"
   }
 }

@@ -192,6 +192,7 @@ export interface DaifugoPlayerData {
   rank: number;
   cardCount: number;
   cards: Card[];
+  illegalFinishPenalty?: boolean;
 }
 
 export interface DaifugoAction {
@@ -216,6 +217,8 @@ export interface DaifugoConfig {
   intenseLockEnabled: boolean;
   sandstormEnabled: boolean;
   emperorEnabled: boolean;
+  sequenceRevolutionEnabled: boolean;
+  illegalFinishEnabled: boolean;
 }
 
 export type DaifugoConfigInput = DaifugoConfig;

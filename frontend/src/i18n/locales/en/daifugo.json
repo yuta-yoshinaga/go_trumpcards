@@ -23,7 +23,8 @@
     "suitLock": "Suit Lock: {{suit}}",
     "sequence": "Sequence",
     "nineReverse": "9-Reverse",
-    "numberLock": "Number Lock"
+    "numberLock": "Number Lock",
+    "illegalFinishPenalty": "Illegal Finish"
   },
   "exchange": {
     "title": "[Card Exchange]",
@@ -53,6 +54,8 @@
     "coupDetat": "Coup d'état",
     "intenseLock": "Intense Lock",
     "sandstorm": "Sandstorm",
-    "emperor": "Emperor"
+    "emperor": "Emperor",
+    "sequenceRevolution": "Sequence Revolution",
+    "illegalFinish": "Illegal Finish"
   }
 }
