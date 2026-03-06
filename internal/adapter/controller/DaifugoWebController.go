@@ -27,6 +27,7 @@ type DaifugoWebConfig struct {
 	EmperorEnabled            bool `json:"emperorEnabled"`
 	SequenceRevolutionEnabled bool `json:"sequenceRevolutionEnabled"`
 	IllegalFinishEnabled      bool `json:"illegalFinishEnabled"`
+	CpuDifficulty             int  `json:"cpuDifficulty"`
 }
 
 // DaifugoWebInput 大富豪Webインプット
@@ -158,6 +159,7 @@ func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
 		EmperorEnabled:            c.EmperorEnabled,
 		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
 		IllegalFinishEnabled:      c.IllegalFinishEnabled,
+		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
 	}
 }
 

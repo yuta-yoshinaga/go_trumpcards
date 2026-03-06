@@ -56,6 +56,10 @@
     "sandstorm": "Sandstorm",
     "emperor": "Emperor",
     "sequenceRevolution": "Sequence Revolution",
-    "illegalFinish": "Illegal Finish"
+    "illegalFinish": "Illegal Finish",
+    "cpuDifficulty": "CPU Difficulty:",
+    "difficultyNormal": "Normal",
+    "difficultyEasy": "Easy",
+    "difficultyHard": "Hard"
   }
 }

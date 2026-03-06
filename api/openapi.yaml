@@ -1989,6 +1989,15 @@ components:
           type: boolean
           description: Whether 反則上がり (illegal finish — finishing with 8-cut, joker, or revolution is penalized) rule is enabled (default false)
           example: false
+        cpuDifficulty:
+          type: integer
+          description: |
+            CPU difficulty level.
+            0 = Normal (default, balanced AI with card preservation),
+            1 = Easy (simple greedy play),
+            2 = Hard (strategic AI that adapts to opponent hand sizes)
+          enum: [0, 1, 2]
+          example: 0
 
     DaifugoExchangeAction:
       type: object

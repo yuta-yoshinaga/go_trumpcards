@@ -34,3 +34,15 @@ func (d *Daifugo) SetNumberLocked(v bool) { d.numberLocked = v }
 
 // SetSortMode 手札ソートモード設定（テスト用）
 func (d *Daifugo) SetSortMode(mode DaifugoSortMode) { d.sortMode = mode }
+
+// SetTableCards 場札設定（テスト用）
+func (d *Daifugo) SetTableCards(cards []*Card) { d.tableCards = cards }
+
+// SetCurrentTurn ターン設定（テスト用）
+func (d *Daifugo) SetCurrentTurn(turn int) { d.currentTurn = turn }
+
+// SetLastPlayPlayerIdx 最後にカードを出したプレイヤー設定（テスト用）
+func (d *Daifugo) SetLastPlayPlayerIdx(idx int) { d.lastPlayPlayerIdx = idx }
+
+// SetRevolutionActive 革命フラグ設定（テスト用）
+func (d *Daifugo) SetRevolutionActive(v bool) { d.revolutionActive = v }

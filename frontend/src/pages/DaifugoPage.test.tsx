@@ -31,6 +31,7 @@ const defaultConfig = {
   emperorEnabled: false,
   sequenceRevolutionEnabled: false,
   illegalFinishEnabled: false,
+  cpuDifficulty: 0,
 };
 
 const humanTurnState: DaifugoResponse = {
@@ -842,5 +843,27 @@ describe('DaifugoPage', () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText(/ゲーム終了！/)).toBeInTheDocument());
     expect(screen.queryByText('反則上がり', { selector: 'span' })).not.toBeInTheDocument();
+  });
+
+  it('settings panel renders CPU difficulty dropdown', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('CPU難易度:')).toBeInTheDocument());
+    const select = screen.getByLabelText('CPU難易度:') as HTMLSelectElement;
+    expect(select.value).toBe('0');
+    expect(screen.getByText('ふつう')).toBeInTheDocument();
+    expect(screen.getByText('よわい')).toBeInTheDocument();
+    expect(screen.getByText('つよい')).toBeInTheDocument();
+  });
+
+  it('CPU difficulty dropdown change updates config on reset', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('CPU難易度:')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('CPU難易度:'), { target: { value: '2' } });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ cpuDifficulty: 2 })),
+    );
   });
 });

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"sort"
 )
@@ -68,26 +69,43 @@ const (
 	jokerSortWeight = 10000
 )
 
+// DaifugoCpuDifficulty CPU難易度レベル
+type DaifugoCpuDifficulty int
+
+const (
+	DaifugoDifficultyNormal DaifugoCpuDifficulty = 0 // 通常 (デフォルト、既存ロジック)
+	DaifugoDifficultyEasy   DaifugoCpuDifficulty = 1 // 簡単 (単純なグリーディ)
+	DaifugoDifficultyHard   DaifugoCpuDifficulty = 2 // 難しい (ヒューリスティックAI)
+)
+
+// DaifugoDifficultyNames 難易度名マップ
+var DaifugoDifficultyNames = map[DaifugoCpuDifficulty]string{
+	DaifugoDifficultyNormal: "Normal",
+	DaifugoDifficultyEasy:   "Easy",
+	DaifugoDifficultyHard:   "Hard",
+}
+
 // DaifugoConfig 大富豪ローカルルール設定
 type DaifugoConfig struct {
-	JokerCount                int  // ジョーカー枚数 (default: 2)
-	EightCutEnabled           bool // 8切り
-	SuitLockEnabled           bool // スート縛り
-	ElevenBackEnabled         bool // 11バック
-	SequenceEnabled           bool // 階段
-	CardExchangeEnabled       bool // カード交換
-	FiveSkipEnabled           bool // 5飛び
-	SevenPassEnabled          bool // 7渡し
-	TenDiscardEnabled         bool // 10捨て
-	SpadeThreeEnabled         bool // スペ3返し
-	CapitalFallEnabled        bool // 都落ち
-	NineReverseEnabled        bool // 9リバース
-	CoupDetatEnabled          bool // クーデター (3枚の9で革命)
-	IntenseLockEnabled        bool // 激シバ (連番縛り)
-	SandstormEnabled          bool // 砂嵐 (3枚の3で場をクリア)
-	EmperorEnabled            bool // エンペラー (4枚連番・全スート異なる→革命+場クリア)
-	SequenceRevolutionEnabled bool // 階段革命 (4枚以上の階段で革命)
-	IllegalFinishEnabled      bool // 反則上がり (8切り/ジョーカー/革命で上がりはペナルティ)
+	JokerCount                int                  // ジョーカー枚数 (default: 2)
+	EightCutEnabled           bool                 // 8切り
+	SuitLockEnabled           bool                 // スート縛り
+	ElevenBackEnabled         bool                 // 11バック
+	SequenceEnabled           bool                 // 階段
+	CardExchangeEnabled       bool                 // カード交換
+	FiveSkipEnabled           bool                 // 5飛び
+	SevenPassEnabled          bool                 // 7渡し
+	TenDiscardEnabled         bool                 // 10捨て
+	SpadeThreeEnabled         bool                 // スペ3返し
+	CapitalFallEnabled        bool                 // 都落ち
+	NineReverseEnabled        bool                 // 9リバース
+	CoupDetatEnabled          bool                 // クーデター (3枚の9で革命)
+	IntenseLockEnabled        bool                 // 激シバ (連番縛り)
+	SandstormEnabled          bool                 // 砂嵐 (3枚の3で場をクリア)
+	EmperorEnabled            bool                 // エンペラー (4枚連番・全スート異なる→革命+場クリア)
+	SequenceRevolutionEnabled bool                 // 階段革命 (4枚以上の階段で革命)
+	IllegalFinishEnabled      bool                 // 反則上がり (8切り/ジョーカー/革命で上がりはペナルティ)
+	CpuDifficulty             DaifugoCpuDifficulty // CPU難易度 (0=Normal, 1=Easy, 2=Hard)
 }
 
 // DefaultDaifugoConfig デフォルトのローカルルール設定 (全て有効)
@@ -929,9 +947,68 @@ func (d *Daifugo) wouldCauseIllegalFinish(player *DaifugoPlayer, indices []int) 
 	return d.isIllegalFinish(cards, isSeq)
 }
 
-// findBestPlay プレイヤーが出せる最弱のカードセットのインデックスを返す
-// 出せるカードがない場合は nil を返す
+// findBestPlay 難易度に応じたCPUプレイ戦略のディスパッチャー
 func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
+	switch d.config.CpuDifficulty {
+	case DaifugoDifficultyEasy:
+		return d.findBestPlayEasy(player)
+	case DaifugoDifficultyHard:
+		return d.findBestPlayHard(player)
+	default:
+		return d.findBestPlayNormal(player)
+	}
+}
+
+// opponentMinCards 対戦相手の中で最小の手札枚数を返す
+func (d *Daifugo) opponentMinCards(player *DaifugoPlayer) int {
+	minCards := math.MaxInt
+	for _, p := range d.players {
+		if p == player || p.GetIsFinished() {
+			continue
+		}
+		if p.GetCardsSize() < minCards {
+			minCards = p.GetCardsSize()
+		}
+	}
+	return minCards
+}
+
+// isUrgent 対戦相手が3枚以下の手札を持っているか (緊急モード判定)
+func (d *Daifugo) isUrgent(player *DaifugoPlayer) bool {
+	return d.opponentMinCards(player) <= 3
+}
+
+// shouldStrategicPass Hard AIの戦略的パス判定
+// 場の強さが10以下で、出そうとしているカードがA(14)以上の強さで、手札が6枚以上の場合にパス
+func (d *Daifugo) shouldStrategicPass(player *DaifugoPlayer, indices []int) bool {
+	if player.GetCardsSize() <= 5 {
+		return false
+	}
+	tableBase := getBaseValue(d.tableCards)
+	var tableStrength int
+	if tableBase < 0 {
+		tableStrength = DaifugoJokerStrength
+	} else {
+		tableStrength = d.cardStrength(tableBase)
+	}
+	if tableStrength > 10 {
+		return false
+	}
+	// 出そうとしているカードの強さを確認
+	for _, idx := range indices {
+		card := player.GetCard(idx)
+		if IsJoker(card) {
+			return true // ジョーカーは温存
+		}
+		if d.cardStrength(card.GetValue()) >= DaifugoCardStrength(1) { // A以上 (革命に依存しない固定閾値)
+			return true
+		}
+	}
+	return false
+}
+
+// findBestPlayNormal 通常難易度: 既存ロジック (最弱のカードを出す、8/ジョーカー温存)
+func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
 	if d.tableCards == nil {
 		// エンペラーを探す (場がクリアの時のみ)
 		if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
@@ -1073,6 +1150,327 @@ func (d *Daifugo) findBestPlay(player *DaifugoPlayer) []int {
 	}
 
 	return nil
+}
+
+// findBestPlayEasy 簡単難易度: 単純に出せる最弱のカードを出す (8/ジョーカー温存なし、エンペラー探索なし、革命防止なし)
+func (d *Daifugo) findBestPlayEasy(player *DaifugoPlayer) []int {
+	if d.tableCards == nil {
+		// 場がクリアなら最弱の1枚を出す (温存戦略なし、反則上がりチェックなし: Easy AIは戦略なしで失敗もする)
+		if player.GetCardsSize() > 0 {
+			return []int{0}
+		}
+		return nil
+	}
+
+	// 場が階段の場合
+	if d.tableIsSequence && d.config.SequenceEnabled {
+		return d.findBestSequencePlay(player)
+	}
+
+	needed := len(d.tableCards)
+	tableBase := getBaseValue(d.tableCards)
+	var tableStrength int
+	if tableBase < 0 {
+		tableStrength = DaifugoJokerStrength
+	} else {
+		tableStrength = d.cardStrength(tableBase)
+	}
+
+	// 最弱のグループを探す (革命防止なし、ジョーカー温存なし)
+	jokerIndices := d.findJokerIndices(player)
+	i := 0
+	for i < player.GetCardsSize() {
+		card := player.GetCard(i)
+		if IsJoker(card) {
+			i++
+			continue
+		}
+		v := card.GetValue()
+		j := i
+		for j < player.GetCardsSize() && !IsJoker(player.GetCard(j)) && player.GetCard(j).GetValue() == v {
+			j++
+		}
+		count := j - i
+		if count >= needed && d.cardStrength(v) > tableStrength {
+			// スート縛りチェック
+			if d.suitLocked && d.config.SuitLockEnabled {
+				suit := player.GetCard(i).GetDesign()
+				if suit != d.lockedSuit {
+					i = j
+					continue
+				}
+			}
+			indices := make([]int, needed)
+			for k := 0; k < needed; k++ {
+				indices[k] = i + k
+			}
+			return indices
+		}
+		// ジョーカー補完
+		if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
+			if count+len(jokerIndices) >= needed {
+				if d.suitLocked && d.config.SuitLockEnabled {
+					suit := player.GetCard(i).GetDesign()
+					if suit != d.lockedSuit {
+						i = j
+						continue
+					}
+				}
+				indices := make([]int, 0, needed)
+				for k := 0; k < count && len(indices) < needed; k++ {
+					indices = append(indices, i+k)
+				}
+				for _, ji := range jokerIndices {
+					if len(indices) >= needed {
+						break
+					}
+					indices = append(indices, ji)
+				}
+				sort.Ints(indices)
+				return indices
+			}
+		}
+		i = j
+	}
+
+	// ジョーカー単体 (温存判定なし)
+	if needed == 1 {
+		for i := 0; i < player.GetCardsSize(); i++ {
+			if IsJoker(player.GetCard(i)) && DaifugoJokerStrength > tableStrength {
+				return []int{i}
+			}
+		}
+	}
+
+	return nil
+}
+
+// findBestPlayHard 難しい難易度: 対戦相手の手札状況を考慮したヒューリスティックAI
+func (d *Daifugo) findBestPlayHard(player *DaifugoPlayer) []int {
+	urgent := d.isUrgent(player)
+
+	if d.tableCards == nil {
+		// エンペラーを探す
+		if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
+			if !d.wouldCauseIllegalFinish(player, emperorIndices) {
+				return emperorIndices
+			}
+		}
+
+		if urgent {
+			// 緊急時: 最強の非ジョーカーカードを出す (手札末尾から探索)
+			var fallbackIdx *int
+			for i := player.GetCardsSize() - 1; i >= 0; i-- {
+				card := player.GetCard(i)
+				if !IsJoker(card) {
+					if !d.wouldCauseIllegalFinish(player, []int{i}) {
+						return []int{i}
+					}
+					if fallbackIdx == nil {
+						v := i
+						fallbackIdx = &v
+					}
+				}
+			}
+			// ジョーカーしかない場合
+			if player.GetCardsSize() > 0 {
+				if !d.wouldCauseIllegalFinish(player, []int{0}) {
+					return []int{0}
+				}
+				if fallbackIdx == nil {
+					v := 0
+					fallbackIdx = &v
+				}
+			}
+			if fallbackIdx != nil {
+				return []int{*fallbackIdx}
+			}
+			return nil
+		}
+
+		// 非緊急時: Normalと同じ (最弱の1枚、8/ジョーカー温存)
+		return d.findBestPlayNormal(player)
+	}
+
+	// 場が階段の場合
+	if d.tableIsSequence && d.config.SequenceEnabled {
+		return d.findBestSequencePlayHard(player)
+	}
+
+	needed := len(d.tableCards)
+	tableBase := getBaseValue(d.tableCards)
+	var tableStrength int
+	if tableBase < 0 {
+		tableStrength = DaifugoJokerStrength
+	} else {
+		tableStrength = d.cardStrength(tableBase)
+	}
+
+	if urgent {
+		// 緊急時: 最強のグループを出す (末尾から探索)
+		jokerIndices := d.findJokerIndices(player)
+		var bestIndices []int
+		i := 0
+		for i < player.GetCardsSize() {
+			card := player.GetCard(i)
+			if IsJoker(card) {
+				i++
+				continue
+			}
+			v := card.GetValue()
+			j := i
+			for j < player.GetCardsSize() && !IsJoker(player.GetCard(j)) && player.GetCard(j).GetValue() == v {
+				j++
+			}
+			count := j - i
+			if count >= needed && d.cardStrength(v) > tableStrength {
+				if d.suitLocked && d.config.SuitLockEnabled {
+					suit := player.GetCard(i).GetDesign()
+					if suit != d.lockedSuit {
+						i = j
+						continue
+					}
+				}
+				indices := make([]int, needed)
+				for k := 0; k < needed; k++ {
+					indices[k] = i + k
+				}
+				bestIndices = indices // 後のグループほど強い → 上書きし続ける
+			}
+			if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
+				if count+len(jokerIndices) >= needed {
+					if d.suitLocked && d.config.SuitLockEnabled {
+						suit := player.GetCard(i).GetDesign()
+						if suit != d.lockedSuit {
+							i = j
+							continue
+						}
+					}
+					indices := make([]int, 0, needed)
+					for k := 0; k < count && len(indices) < needed; k++ {
+						indices = append(indices, i+k)
+					}
+					for _, ji := range jokerIndices {
+						if len(indices) >= needed {
+							break
+						}
+						indices = append(indices, ji)
+					}
+					sort.Ints(indices)
+					bestIndices = indices
+				}
+			}
+			i = j
+		}
+		if bestIndices != nil {
+			return bestIndices
+		}
+		// ジョーカー単体 (緊急時は温存しない)
+		if needed == 1 {
+			for i := 0; i < player.GetCardsSize(); i++ {
+				if IsJoker(player.GetCard(i)) && DaifugoJokerStrength > tableStrength {
+					return []int{i}
+				}
+			}
+		}
+		return nil
+	}
+
+	// 非緊急時: 最弱のグループを探し、戦略的パスを検討
+	normalIndices := d.findBestPlayNormal(player)
+	if normalIndices != nil && d.shouldStrategicPass(player, normalIndices) {
+		return nil
+	}
+	return normalIndices
+}
+
+// findBestSequencePlayHard Hard AIの階段モード
+func (d *Daifugo) findBestSequencePlayHard(player *DaifugoPlayer) []int {
+	if !d.isUrgent(player) {
+		// 非緊急時: 通常の最弱階段
+		return d.findBestSequencePlay(player)
+	}
+	// 緊急時: 最強の階段を出す
+	needed := len(d.tableCards)
+	tableMinStr := d.getSequenceMinStrength(d.tableCards)
+	jokerIndices := d.findJokerIndices(player)
+
+	var bestIndices []int
+	for startIdx := 0; startIdx < player.GetCardsSize(); startIdx++ {
+		card := player.GetCard(startIdx)
+		if IsJoker(card) {
+			continue
+		}
+		suit := card.GetDesign()
+		startStrength := d.cardStrengthForCard(card)
+
+		suitCards := []struct {
+			idx      int
+			strength int
+		}{{startIdx, startStrength}}
+
+		for nextIdx := startIdx + 1; nextIdx < player.GetCardsSize(); nextIdx++ {
+			nextCard := player.GetCard(nextIdx)
+			if IsJoker(nextCard) {
+				continue
+			}
+			if nextCard.GetDesign() != suit {
+				continue
+			}
+			nextStr := d.cardStrengthForCard(nextCard)
+			if nextStr <= startStrength {
+				continue
+			}
+			suitCards = append(suitCards, struct {
+				idx      int
+				strength int
+			}{nextIdx, nextStr})
+		}
+
+		for si := 0; si < len(suitCards); si++ {
+			indices := []int{suitCards[si].idx}
+			lastStr := suitCards[si].strength
+			jokersUsed := 0
+			sci := si + 1
+
+			for len(indices) < needed {
+				targetStr := lastStr + 1
+				found := false
+				for sci < len(suitCards) {
+					if suitCards[sci].strength == targetStr {
+						indices = append(indices, suitCards[sci].idx)
+						lastStr = targetStr
+						sci++
+						found = true
+					}
+					// suitCards are in ascending strength order, so once strength >= targetStr, stop
+					break
+				}
+				if !found {
+					if jokersUsed < len(jokerIndices) {
+						indices = append(indices, jokerIndices[jokersUsed])
+						jokersUsed++
+						lastStr = targetStr
+					} else {
+						break
+					}
+				}
+			}
+
+			if len(indices) == needed {
+				testCards := make([]*Card, len(indices))
+				for i, idx := range indices {
+					testCards[i] = player.GetCard(idx)
+				}
+				minStr := d.getSequenceMinStrength(testCards)
+				if minStr > tableMinStr {
+					sort.Ints(indices)
+					bestIndices = indices // 後の方が強い → 上書き
+				}
+			}
+		}
+	}
+	return bestIndices
 }
 
 // findJokerIndices プレイヤーの手札中のジョーカーのインデックスを返す
