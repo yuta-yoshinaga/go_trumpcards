@@ -22,6 +22,17 @@
   "discardedPairs": ". Discarded {{count}} pair(s)",
   "yourTurn": "Your turn! Click a card from {{target}} to draw.",
   "removedCard": "Removed Card: {{card}}",
+  "history": {
+    "title": "Draw History",
+    "entry": "{{from}} drew from {{target}}",
+    "discarded": "({{count}} pair(s) discarded)",
+    "finished": "[{{name}} finished]"
+  },
+  "suspect": {
+    "badge": "Suspect",
+    "pin": "Pin Suspect",
+    "unpin": "Unpin"
+  },
   "button": {
     "settings": "Settings",
     "drawRandom": "Draw Random",

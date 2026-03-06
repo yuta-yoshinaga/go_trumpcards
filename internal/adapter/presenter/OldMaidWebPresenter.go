@@ -86,6 +86,18 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
+	// ゲーム全体の引き履歴
+	resObj.DrawHistory = make([]*controller.OldMaidWebOutputDrawHistoryEntry, 0)
+	for _, entry := range om.GetDrawHistory() {
+		resObj.DrawHistory = append(resObj.DrawHistory, &controller.OldMaidWebOutputDrawHistoryEntry{
+			DrawPlayerIdx:  entry.DrawPlayerIdx,
+			DrawFromIdx:    entry.DrawFromIdx,
+			DiscardedPairs: entry.DiscardedPairs,
+			DrawerFinished: entry.DrawerFinished,
+			TargetFinished: entry.TargetFinished,
+		})
+	}
+
 	// CPU心理戦: 強調カードインデックスとモード
 	resObj.CpuHighlightedCardIdx = om.GetCpuHighlightedCardIdx()
 	resObj.Mode = int(om.GetConfig().Mode)

@@ -26,25 +26,35 @@ type OldMaidCpuAction struct {
 	DiscardedCards []*Card // 捨てたカード
 }
 
+// OldMaidDrawHistoryEntry ゲーム全体の引き履歴の1エントリ
+type OldMaidDrawHistoryEntry struct {
+	DrawPlayerIdx  int  // 引いたプレイヤーインデックス
+	DrawFromIdx    int  // 引かれた相手のインデックス
+	DiscardedPairs int  // 捨てたペア数
+	DrawerFinished bool // 引いた側が上がったか
+	TargetFinished bool // 引かれた側が上がったか
+}
+
 // OldMaid ババ抜きゲームクラス
 type OldMaid struct {
 	trumpCards            *TrumpCards
 	players               []*OldMaidPlayer
-	currentTurn           int                 // 現在の手番プレイヤーインデックス
-	gameEndFlag           bool                // ゲーム終了フラグ
-	loserIdx              int                 // 負けたプレイヤーインデックス
-	lastDrawPlayerIdx     int                 // 最後に引いたプレイヤーのインデックス (-1=まだなし)
-	lastDrawFromIdx       int                 // 最後に引いた相手のインデックス (-1=まだなし)
-	lastDrawCard          *Card               // 最後に引いたカード
-	lastDiscardedPairs    int                 // 最後に捨てたペア数
-	lastDiscardedCards    []*Card             // 最後に捨てたカード
-	hasDrawn              bool                // 引きが発生したか
-	cpuActions            []*OldMaidCpuAction // CPUターンの行動履歴 (人間のターン後にリセット)
-	humanAction           *OldMaidCpuAction   // 人間プレイヤーの最後の行動記録
-	config                OldMaidConfig       // ゲーム設定
-	removedCard           *Card               // ジジ抜き: 除外されたカード
-	cpuHighlightedCardIdx int                 // CPU心理戦: 奇数カードの位置 (-1=なし)
-	humanHandDirty        bool                // 人間がシャッフル/並び替えしたフラグ
+	currentTurn           int                        // 現在の手番プレイヤーインデックス
+	gameEndFlag           bool                       // ゲーム終了フラグ
+	loserIdx              int                        // 負けたプレイヤーインデックス
+	lastDrawPlayerIdx     int                        // 最後に引いたプレイヤーのインデックス (-1=まだなし)
+	lastDrawFromIdx       int                        // 最後に引いた相手のインデックス (-1=まだなし)
+	lastDrawCard          *Card                      // 最後に引いたカード
+	lastDiscardedPairs    int                        // 最後に捨てたペア数
+	lastDiscardedCards    []*Card                    // 最後に捨てたカード
+	hasDrawn              bool                       // 引きが発生したか
+	cpuActions            []*OldMaidCpuAction        // CPUターンの行動履歴 (人間のターン後にリセット)
+	humanAction           *OldMaidCpuAction          // 人間プレイヤーの最後の行動記録
+	drawHistory           []*OldMaidDrawHistoryEntry // ゲーム全体の引き履歴
+	config                OldMaidConfig              // ゲーム設定
+	removedCard           *Card                      // ジジ抜き: 除外されたカード
+	cpuHighlightedCardIdx int                        // CPU心理戦: 奇数カードの位置 (-1=なし)
+	humanHandDirty        bool                       // 人間がシャッフル/並び替えしたフラグ
 }
 
 // NewOldMaid コンストラクタ
@@ -97,6 +107,7 @@ func (o *OldMaid) Reset() {
 	o.hasDrawn = false
 	o.cpuActions = nil
 	o.humanAction = nil
+	o.drawHistory = nil
 	o.removedCard = nil
 	o.cpuHighlightedCardIdx = -1
 	o.humanHandDirty = false
@@ -214,6 +225,15 @@ func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 
 	// ゲーム終了チェック
 	o.checkGameEnd()
+
+	// 引き履歴に追加 (カード情報なし — プライバシー保護)
+	o.drawHistory = append(o.drawHistory, &OldMaidDrawHistoryEntry{
+		DrawPlayerIdx:  playerIdx,
+		DrawFromIdx:    targetIdx,
+		DiscardedPairs: discardedCount,
+		DrawerFinished: player.GetIsFinished(),
+		TargetFinished: target.GetIsFinished(),
+	})
 
 	return card
 }
@@ -574,4 +594,9 @@ func (o *OldMaid) GetCpuActions() []*OldMaidCpuAction {
 // GetHumanAction 人間プレイヤーの最後の行動記録取得
 func (o *OldMaid) GetHumanAction() *OldMaidCpuAction {
 	return o.humanAction
+}
+
+// GetDrawHistory ゲーム全体の引き履歴取得
+func (o *OldMaid) GetDrawHistory() []*OldMaidDrawHistoryEntry {
+	return o.drawHistory
 }

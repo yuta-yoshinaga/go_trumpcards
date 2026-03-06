@@ -22,6 +22,17 @@
   "discardedPairs": "。{{count}}組捨てました",
   "yourTurn": "あなたの番！ {{target}}のカードをクリックして引いてください。",
   "removedCard": "除外カード: {{card}}",
+  "history": {
+    "title": "引き履歴",
+    "entry": "{{from}}が{{target}}から引いた",
+    "discarded": "({{count}}組捨て)",
+    "finished": "[{{name}}上がり]"
+  },
+  "suspect": {
+    "badge": "容疑者",
+    "pin": "容疑者ピン",
+    "unpin": "ピン解除"
+  },
   "button": {
     "settings": "設定",
     "drawRandom": "ランダムに引く",

@@ -155,6 +155,14 @@ export interface CpuAction {
   discardedCards?: Card[];
 }
 
+export interface DrawHistoryEntry {
+  drawPlayerIdx: number;
+  drawFromIdx: number;
+  discardedPairs: number;
+  drawerFinished: boolean;
+  targetFinished: boolean;
+}
+
 export interface OldMaidResponse {
   players: OldMaidPlayerData[];
   currentTurn: number;
@@ -168,6 +176,7 @@ export interface OldMaidResponse {
   lastDiscardedCards?: Card[];
   cpuActions: CpuAction[];
   humanAction?: CpuAction | null;
+  drawHistory: DrawHistoryEntry[];
   cpuHighlightedCardIdx: number;
   removedCard: Card | null;
   mode: number;

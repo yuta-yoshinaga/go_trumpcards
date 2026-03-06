@@ -88,6 +88,27 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		}
 	}
 
+	// 引き履歴
+	drawHistory := om.GetDrawHistory()
+	if len(drawHistory) > 0 {
+		b.WriteString("[引き履歴]\n")
+		for i, entry := range drawHistory {
+			drawerName := cuiPlayerName(om.GetPlayer(entry.DrawPlayerIdx), entry.DrawPlayerIdx)
+			fromName := cuiPlayerName(om.GetPlayer(entry.DrawFromIdx), entry.DrawFromIdx)
+			fmt.Fprintf(&b, "%d. %sが%sから引いた", i+1, drawerName, fromName)
+			if entry.DiscardedPairs > 0 {
+				fmt.Fprintf(&b, " (%d組捨て)", entry.DiscardedPairs)
+			}
+			if entry.DrawerFinished {
+				fmt.Fprintf(&b, " [%s上がり]", drawerName)
+			}
+			if entry.TargetFinished {
+				fmt.Fprintf(&b, " [%s上がり]", fromName)
+			}
+			b.WriteString("\n")
+		}
+	}
+
 	// エラーメッセージ
 	if lastErr != nil {
 		fmt.Fprintf(&b, "%s\n", lastErr.Error())

@@ -9,7 +9,7 @@ import { StatusBadge } from '../components/StatusBadge';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { playerAreaBase } from '../styles/gameStyles';
-import type { Card, CpuAction, OldMaidPlayerData, OldMaidResponse } from '../types/card';
+import type { Card, CpuAction, DrawHistoryEntry, OldMaidPlayerData, OldMaidResponse } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
@@ -112,6 +112,8 @@ interface PlayerAreaProps {
   gameEndFlag: boolean;
   loading: boolean;
   highlightedCardIdx: number;
+  isSuspect?: boolean;
+  onToggleSuspect?: () => void;
   onDraw: (drawIdx: number) => void;
   onReorder?: (indices: number[]) => void;
 }
@@ -123,6 +125,8 @@ function PlayerArea({
   gameEndFlag,
   loading,
   highlightedCardIdx,
+  isSuspect,
+  onToggleSuspect,
   onDraw,
   onReorder,
 }: PlayerAreaProps) {
@@ -130,9 +134,11 @@ function PlayerArea({
   const { t: tc } = useTranslation('common');
   const conditionalStyle: React.CSSProperties = player.isFinished
     ? { opacity: 0.5 }
-    : isTarget && !gameEndFlag
-      ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
-      : {};
+    : isSuspect
+      ? { border: '2px solid #dc3545', boxShadow: '0 0 12px #dc3545' }
+      : isTarget && !gameEndFlag
+        ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
+        : {};
 
   const showSelectable = isHumanTurn && !loading && isTarget && !player.isFinished && !player.isHuman && !gameEndFlag;
   const showCount = Math.min(player.cardCount, 10);
@@ -144,6 +150,16 @@ function PlayerArea({
         {player.isFinished && <StatusBadge variant="success">{tc('status.finished')}</StatusBadge>}
         {isTarget && !player.isHuman && !player.isFinished && !gameEndFlag && (
           <StatusBadge variant="warning">{t('drawTarget')}</StatusBadge>
+        )}
+        {isSuspect && <StatusBadge variant="danger">{t('suspect.badge')}</StatusBadge>}
+        {onToggleSuspect && !player.isFinished && !gameEndFlag && (
+          <button
+            type="button"
+            className="ml-1 px-1.5 py-0.5 text-[0.65em] rounded bg-red-700/60 hover:bg-red-700 text-white"
+            onClick={onToggleSuspect}
+          >
+            {isSuspect ? t('suspect.unpin') : t('suspect.pin')}
+          </button>
         )}
       </div>
       {!player.isFinished && (
@@ -255,6 +271,37 @@ function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
   );
 }
 
+function DrawHistoryTimeline({ entries, players }: { entries: DrawHistoryEntry[]; players: OldMaidPlayerData[] }) {
+  const { t } = useTranslation('oldmaid');
+  const scrollRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      node.scrollTop = node.scrollHeight;
+    }
+  }, []);
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="bg-black/50 rounded-lg my-2 p-2" data-testid="draw-history-timeline">
+      <div className="text-white font-bold text-[0.8em] mb-1">{t('history.title')}</div>
+      <div ref={scrollRef} className="max-h-[120px] overflow-y-auto text-[0.75em] text-[#ccc]">
+        {entries.map((entry, i) => {
+          const from = findPlayerName(players, entry.drawPlayerIdx);
+          const target = findPlayerName(players, entry.drawFromIdx);
+          let line = `${i + 1}. ${t('history.entry', { from, target })}`;
+          if (entry.discardedPairs > 0) line += ` ${t('history.discarded', { count: entry.discardedPairs })}`;
+          if (entry.drawerFinished) line += ` ${t('history.finished', { name: from })}`;
+          if (entry.targetFinished) line += ` ${t('history.finished', { name: target })}`;
+          return (
+            // biome-ignore lint/suspicious/noArrayIndexKey: history entries are append-only with stable order
+            <div key={i}>{line}</div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 interface SetupScreenProps {
   mode: number;
   cpuPlacementStrategy: boolean;
@@ -331,6 +378,7 @@ export function OldMaidPage() {
     cpuPlacementStrategy: boolean;
     cpuMemoryAI: boolean;
   } | null>(null);
+  const [suspectPins, setSuspectPins] = useState<Set<number>>(new Set());
   const [shakeKey, setShakeKey] = useState(0);
   const [revealedCard, setRevealedCard] = useState<Card | null>(null);
   const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -381,10 +429,12 @@ export function OldMaidPage() {
   const handleStart = useCallback(() => {
     const settings = { mode: setupMode, cpuPlacementStrategy: setupStrategy, cpuMemoryAI: setupMemoryAI };
     setGameSettings(settings);
+    setSuspectPins(new Set());
     exec('reset', undefined, settings.mode, settings.cpuPlacementStrategy, undefined, settings.cpuMemoryAI);
   }, [exec, setupMode, setupStrategy, setupMemoryAI]);
 
   const handleReset = useCallback(() => {
+    setSuspectPins(new Set());
     if (gameSettings) {
       exec(
         'reset',
@@ -470,6 +520,18 @@ export function OldMaidPage() {
               gameEndFlag={state.gameEndFlag}
               loading={loading}
               highlightedCardIdx={state.nextDrawTargetIdx === player.id ? state.cpuHighlightedCardIdx : -1}
+              isSuspect={suspectPins.has(player.id)}
+              onToggleSuspect={() =>
+                setSuspectPins((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(player.id)) {
+                    next.delete(player.id);
+                  } else {
+                    next.add(player.id);
+                  }
+                  return next;
+                })
+              }
               onDraw={(drawIdx) => exec('draw', drawIdx)}
             />
           ))}
@@ -515,6 +577,9 @@ export function OldMaidPage() {
           </div>
         )}
 
+        {/* Draw History Timeline */}
+        <DrawHistoryTimeline entries={state.drawHistory ?? []} players={state.players} />
+
         {/* Result */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
@@ -552,7 +617,10 @@ export function OldMaidPage() {
             type="button"
             className={`${btnSecondary} min-w-[80px]`}
             disabled={loading}
-            onClick={() => setGameSettings(null)}
+            onClick={() => {
+              setGameSettings(null);
+              setSuspectPins(new Set());
+            }}
           >
             {t('button.settings')}
           </button>
