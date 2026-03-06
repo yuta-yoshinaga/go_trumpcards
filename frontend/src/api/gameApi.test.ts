@@ -527,7 +527,7 @@ describe('gameApi', () => {
           ante: 10,
         }),
       );
-      await pokerApi.exec('reset', undefined, undefined, undefined, undefined, 1);
+      await pokerApi.exec('reset', undefined, undefined, { bettingLimit: 1 });
       expect(mockFetch).toHaveBeenCalledWith(
         '/poker/exec',
         expect.objectContaining({
@@ -535,8 +535,6 @@ describe('gameApi', () => {
             command: 'reset',
             indices: undefined,
             amount: undefined,
-            cpuCount: undefined,
-            jokerCount: undefined,
             bettingLimit: 1,
             sessionId,
           }),

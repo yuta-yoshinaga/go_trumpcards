@@ -60,6 +60,22 @@ type BettingState struct {
 	ActedFlags []bool
 }
 
+// CalculateBettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
+func CalculateBettingLimits(limit BettingLimitType, pot, lastBet int) (maxRaises, maxBetAmount int) {
+	switch limit {
+	case BettingLimitPotLimit:
+		maxRaises = bettingMaxRaisesPerRound
+		maxBetAmount = pot + lastBet
+	case BettingLimitNoLimit:
+		maxRaises = 0
+		maxBetAmount = 0
+	default: // Fixed
+		maxRaises = bettingMaxRaisesPerRound
+		maxBetAmount = 0
+	}
+	return
+}
+
 // ExecuteBettingAction 共通ベッティングアクション実行
 // maxRaises: 最大レイズ回数 (0以下で無制限=NoLimit)
 // maxBetAmount: 最大ベット額 (0以下で無制限)

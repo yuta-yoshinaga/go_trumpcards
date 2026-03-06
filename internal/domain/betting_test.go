@@ -836,3 +836,25 @@ func TestCpuRaiseOrBet(t *testing.T) {
 		assert.Equal(t, 20, amount)
 	})
 }
+
+// --- CalculateBettingLimits tests ---
+
+func TestCalculateBettingLimits(t *testing.T) {
+	t.Run("Fixed limit", func(t *testing.T) {
+		maxRaises, maxBetAmount := CalculateBettingLimits(BettingLimitFixed, 100, 20)
+		assert.Equal(t, bettingMaxRaisesPerRound, maxRaises)
+		assert.Equal(t, 0, maxBetAmount)
+	})
+
+	t.Run("PotLimit", func(t *testing.T) {
+		maxRaises, maxBetAmount := CalculateBettingLimits(BettingLimitPotLimit, 100, 20)
+		assert.Equal(t, bettingMaxRaisesPerRound, maxRaises)
+		assert.Equal(t, 120, maxBetAmount) // pot + lastBet
+	})
+
+	t.Run("NoLimit", func(t *testing.T) {
+		maxRaises, maxBetAmount := CalculateBettingLimits(BettingLimitNoLimit, 100, 20)
+		assert.Equal(t, 0, maxRaises)
+		assert.Equal(t, 0, maxBetAmount)
+	})
+}

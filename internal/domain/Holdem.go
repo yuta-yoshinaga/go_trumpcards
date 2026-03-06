@@ -598,18 +598,7 @@ func (h *Holdem) handleCpuActionError(playerIdx, action int, err error) {
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
 func (h *Holdem) bettingLimits() (maxRaises, maxBetAmount int) {
-	switch h.config.BettingLimit {
-	case BettingLimitPotLimit:
-		maxRaises = holdemDefaultMaxRaises
-		maxBetAmount = h.pot + h.lastBet
-	case BettingLimitNoLimit:
-		maxRaises = 0
-		maxBetAmount = 0
-	default: // Fixed
-		maxRaises = holdemDefaultMaxRaises
-		maxBetAmount = 0
-	}
-	return
+	return CalculateBettingLimits(h.config.BettingLimit, h.pot, h.lastBet)
 }
 
 // cpuDecide CPUプレイヤーの意思決定

@@ -825,7 +825,20 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0 }));
+  });
+
+  it('sends updated bettingLimit when select is changed before reset', async () => {
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = screen.getByLabelText('リミット:');
+    fireEvent.change(select, { target: { value: '1' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1 }));
   });
 
   // ---- loading / disabled state ----

@@ -2098,6 +2098,45 @@ func TestHandleCpuActionError_FoldWhenCallAmtPositive(t *testing.T) {
 	assert.True(t, h.players[1].GetFolded())
 }
 
+func TestCpuDecide_PotLimitClamp(t *testing.T) {
+	// PotLimit 時、CPUのベット額がポット上限を超えた場合にクランプされることを確認
+	players := []*HoldemPlayer{
+		NewHoldemPlayer(true, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleLAP),
+		NewHoldemPlayer(false, HoldemStyleLAG), // postFlopRaisePotPct=100
+	}
+	cfg := DefaultHoldemConfig()
+	cfg.BettingLimit = BettingLimitPotLimit
+	tc := NewTrumpCards(0)
+	h := NewHoldem(tc, players, cfg)
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.startingChips = []int{1000, 1000, 1000, 1000}
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetCurrentTurn(0)
+	h.SetLastBet(0)
+	h.SetMinRaise(20) // cpuPotBet → max(pot*100/100, BB=10, minRaise=20) = 20
+	h.SetPot(10)      // maxBetAmount = pot + lastBet = 10
+	h.actedFlags = []bool{false, true, true, false}
+	// Give LAG (player 3) a strong hand → must raise
+	for _, p := range h.players {
+		p.Reset()
+		p.AddCard(NewCard(CardDesignSpade, 1, false))
+		p.AddCard(NewCard(CardDesignHeart, 1, false))
+	}
+	h.communityCards = []*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 10, false),
+		NewCard(CardDesignSpade, 5, false),
+	}
+	// LAG cpuPotBet(100)=max(10,10,20)=20 > maxBetAmount=10 → clamped to 10
+	action, amount := h.cpuDecide(3)
+	assert.Equal(t, HoldemActionBet, action)
+	assert.Equal(t, 10, amount)
+}
+
 func TestHandleCpuActionError_CheckWhenCallAmtZero(t *testing.T) {
 	h := newInternalTestHoldem()
 	h.SetPhase(HoldemPhaseFlop)

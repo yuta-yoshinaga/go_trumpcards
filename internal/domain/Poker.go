@@ -589,18 +589,7 @@ func (p *Poker) runCpuExchanges() {
 
 // bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
 func (p *Poker) bettingLimits() (maxRaises, maxBetAmount int) {
-	switch p.config.BettingLimit {
-	case BettingLimitPotLimit:
-		maxRaises = pokerDefaultMaxRaises
-		maxBetAmount = p.pot + p.lastBet
-	case BettingLimitNoLimit:
-		maxRaises = 0
-		maxBetAmount = 0
-	default: // Fixed
-		maxRaises = pokerDefaultMaxRaises
-		maxBetAmount = 0
-	}
-	return
+	return CalculateBettingLimits(p.config.BettingLimit, p.pot, p.lastBet)
 }
 
 // cpuDecide CPUプレイヤーの意思決定

@@ -2734,6 +2734,26 @@ func TestPoker_BettingLimits_PotLimit(t *testing.T) {
 	})
 }
 
+func TestPoker_cpuDecide_PotLimitClamp(t *testing.T) {
+	// PotLimit 時、CPUのベット額がポット上限を超えた場合にクランプされることを確認
+	pk, players := makePokerWithConfig(PokerPhaseDeal, BettingLimitPotLimit)
+	pk.SetPot(15)
+	pk.SetLastBet(0)
+	// maxBetAmount = pot + lastBet = 15
+	// Aggressive (player 2): firstBetMult=2 → bet = MinBet(10)*2 = 20 > 15
+	givePlayerHand(players[2], []*Card{
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignClover, 10, false),
+		NewCard(CardDesignHeart, 10, false),
+		NewCard(CardDesignDiamond, 10, false),
+		NewCard(CardDesignSpade, 3, false),
+	})
+	action, amount := pk.cpuDecide(2)
+	// Aggressive CPU with FourOfAKind → bet. Bet=20, clamped to maxBetAmount=15
+	assert.Equal(t, PokerActionBet, action)
+	assert.Equal(t, 15, amount)
+}
+
 func TestPoker_BettingLimits_NoLimit(t *testing.T) {
 	t.Run("bet succeeds even when raiseCount exceeds fixed limit cap", func(t *testing.T) {
 		pk, _ := makePokerWithConfig(PokerPhaseDeal, BettingLimitNoLimit)

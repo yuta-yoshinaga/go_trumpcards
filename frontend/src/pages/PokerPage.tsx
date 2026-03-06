@@ -306,7 +306,7 @@ export function PokerPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, undefined, undefined, undefined, bettingLimit)}
+            onClick={() => exec('reset', undefined, undefined, { bettingLimit })}
           >
             {tc('button.reset')}
           </button>
