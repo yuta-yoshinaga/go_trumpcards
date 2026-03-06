@@ -22,7 +22,8 @@ type BlackJackInteractorIF interface {
 	ToggleSoft17() string
 	ToggleCounting() string
 	ToggleDAS() string
-	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool) string
+	SetCountingSystem(system int) string
+	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int) string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -135,14 +136,23 @@ func (bi *BlackJackInteractor) ToggleDAS() string {
 	return bi.bjp.Output(bi.bj, err)
 }
 
+// SetCountingSystem カウンティングシステム変更
+func (bi *BlackJackInteractor) SetCountingSystem(system int) string {
+	config := bi.bj.GetConfig()
+	config.CountingSystem = system
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
 // ResetWithConfig 設定付きリセット
-func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool) string {
+func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int) string {
 	bi.bj.Reset()
 	err := bi.bj.SetConfig(domain.BlackJackConfig{
 		DealerHitsSoft17: dealerHitsSoft17,
 		CpuPlayerCount:   cpuPlayerCount,
 		CountingEnabled:  countingEnabled,
 		DoubleAfterSplit: doubleAfterSplit,
+		CountingSystem:   countingSystem,
 	})
 	if err != nil {
 		return bi.bjp.Output(bi.bj, err)

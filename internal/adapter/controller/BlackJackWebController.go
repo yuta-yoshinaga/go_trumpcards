@@ -14,6 +14,7 @@ type BlackJackWebInput struct {
 	CpuPlayerCount    *int  `json:"cpuPlayerCount,omitempty"`
 	CountingEnabled   *bool `json:"countingEnabled,omitempty"`
 	DoubleAfterSplit  *bool `json:"doubleAfterSplit,omitempty"`
+	CountingSystem    *int  `json:"countingSystem,omitempty"`
 	PerfectPairsBet   *int  `json:"perfectPairsBet,omitempty"`
 	TwentyOnePlus3Bet *int  `json:"twentyOnePlus3Bet,omitempty"`
 }
@@ -79,6 +80,7 @@ type BlackJackWebOutput struct {
 	TwentyOnePlus3Bet  int                                `json:"twentyOnePlus3Bet"`
 	SideBetResults     []*BlackJackWebOutputSideBetResult `json:"sideBetResults,omitempty"`
 	DoubleAfterSplit   bool                               `json:"doubleAfterSplit"`
+	CountingSystem     int                                `json:"countingSystem"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -104,7 +106,7 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 		func(w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil {
+				if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil {
 					h17 := false
 					if param.DealerHitsSoft17 != nil {
 						h17 = *param.DealerHitsSoft17
@@ -121,7 +123,11 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 					if param.DoubleAfterSplit != nil {
 						das = *param.DoubleAfterSplit
 					}
-					bwc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das))
+					cs := 0
+					if param.CountingSystem != nil {
+						cs = *param.CountingSystem
+					}
+					bwc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs))
 				} else {
 					bwc.writePresenterResponse(w, bji.Reset())
 				}
@@ -159,6 +165,8 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 				bwc.writePresenterResponse(w, bji.ToggleCounting())
 			case "toggledas":
 				bwc.writePresenterResponse(w, bji.ToggleDAS())
+			case "scs", "setcountingsystem":
+				bwc.writePresenterResponse(w, bji.SetCountingSystem(param.Amount))
 			default:
 				return false
 			}

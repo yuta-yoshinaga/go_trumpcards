@@ -327,6 +327,28 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with setcountingsystem command and amount', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          countingSystem: 2,
+        }),
+      );
+      await blackjackApi.exec('setcountingsystem', 2);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'setcountingsystem', amount: 2, sessionId }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(blackjackApi.exec('reset')).rejects.toThrow('HTTP error: 500');

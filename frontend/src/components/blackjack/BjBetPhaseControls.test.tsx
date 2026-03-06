@@ -18,6 +18,8 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
     onToggleCounting: vi.fn(),
     doubleAfterSplit: true,
     onToggleDAS: vi.fn(),
+    countingSystem: 0,
+    onCountingSystemChange: vi.fn(),
     loading: false,
     onBet: vi.fn(),
     perfectPairsBet: 0,
@@ -164,6 +166,33 @@ describe('BjBetPhaseControls', () => {
     expect(onTwentyOnePlus3BetChange).toHaveBeenCalledWith(50);
   });
 
+  it('renders counting system selector with provided value', () => {
+    render(<BjBetPhaseControls {...defaultProps({ countingSystem: 1 })} />);
+    expect(screen.getByLabelText('カウンティング方式')).toHaveValue('1');
+  });
+
+  it('calls onCountingSystemChange when counting system selector changes', () => {
+    const onCountingSystemChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onCountingSystemChange })} />);
+    fireEvent.change(screen.getByLabelText('カウンティング方式'), { target: { value: '2' } });
+    expect(onCountingSystemChange).toHaveBeenCalledWith(2);
+  });
+
+  it('disables counting system selector when counting is off', () => {
+    render(<BjBetPhaseControls {...defaultProps({ countingEnabled: false })} />);
+    expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
+  });
+
+  it('enables counting system selector when counting is on', () => {
+    render(<BjBetPhaseControls {...defaultProps({ countingEnabled: true })} />);
+    expect(screen.getByLabelText('カウンティング方式')).not.toBeDisabled();
+  });
+
+  it('disables counting system selector when loading', () => {
+    render(<BjBetPhaseControls {...defaultProps({ countingEnabled: true, loading: true })} />);
+    expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
+  });
+
   it('disables inputs and buttons when loading is true', () => {
     render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
     expect(screen.getByLabelText('ベット額:')).toBeDisabled();
@@ -173,6 +202,7 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'ヒント OFF' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'S17' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'カウント OFF' })).toBeDisabled();
+    expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
     expect(screen.getByRole('button', { name: 'DAS ON' })).toBeDisabled();
     expect(screen.getByLabelText('PP:')).toBeDisabled();
     expect(screen.getByLabelText('21+3:')).toBeDisabled();

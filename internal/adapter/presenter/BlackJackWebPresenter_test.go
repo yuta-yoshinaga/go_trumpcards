@@ -263,6 +263,22 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.True(t, result.CountingEnabled)
 		assert.Equal(t, 0, result.RunningCount)
 		assert.Equal(t, 0.0, result.TrueCount)
+		assert.Equal(t, domain.BJCountingHiLo, result.CountingSystem)
+	})
+	t.Run("success Output includes countingSystem KO", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingKO})
+		bj.Reset()
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, domain.BJCountingKO, result.CountingSystem)
 	})
 	t.Run("success Output includes cpuPlayerCount", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)

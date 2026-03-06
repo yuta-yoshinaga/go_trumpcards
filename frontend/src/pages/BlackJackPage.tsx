@@ -7,6 +7,7 @@ import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEndPhaseControls } from '../components/blackjack/BjEndPhaseControls';
 import { BjInsurancePhaseControls } from '../components/blackjack/BjInsurancePhaseControls';
 import {
+  BJ_COUNTING_KO,
   BJ_SIDE_BET_PERFECT_PAIRS,
   BJ_SUGGEST_DECLINE_INSURANCE,
   BJ_SUGGEST_DOUBLE,
@@ -50,6 +51,7 @@ export function BlackJackPage() {
   const [perfectPairsBet, setPerfectPairsBet] = useState(0);
   const [twentyOnePlus3Bet, setTwentyOnePlus3Bet] = useState(0);
   const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
+  const [countingSystem, setCountingSystem] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback((res: BlackJackResponse) => {
@@ -58,6 +60,7 @@ export function BlackJackPage() {
     setCountingEnabled(res.countingEnabled);
     setCpuPlayerCount(res.cpuPlayerCount);
     setDoubleAfterSplit(res.doubleAfterSplit);
+    setCountingSystem(res.countingSystem);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
@@ -89,9 +92,10 @@ export function BlackJackPage() {
       cpuPlayerCount,
       countingEnabled,
       doubleAfterSplit,
+      countingSystem,
     };
     exec('reset', undefined, config);
-  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit]);
+  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
@@ -108,7 +112,8 @@ export function BlackJackPage() {
           </span>
           {countingEnabled && (
             <span>
-              RC={state.runningCount} TC={state.trueCount.toFixed(1)}
+              {t(`countingSystemNames.${countingSystem}`)} RC={state.runningCount}{' '}
+              {countingSystem === BJ_COUNTING_KO ? t('trueCountNA') : `TC=${state.trueCount.toFixed(1)}`}
             </span>
           )}
           <span>
@@ -264,6 +269,8 @@ export function BlackJackPage() {
                 onToggleCounting={() => exec('togglecounting')}
                 doubleAfterSplit={doubleAfterSplit}
                 onToggleDAS={() => exec('toggledas')}
+                countingSystem={countingSystem}
+                onCountingSystemChange={(v) => exec('setcountingsystem', v)}
                 loading={loading}
                 onBet={() => {
                   const sideBets: BlackJackSideBetInput = {};

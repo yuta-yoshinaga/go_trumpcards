@@ -1618,6 +1618,14 @@ func TestDefaultBlackJackConfig(t *testing.T) {
 	assert.Equal(t, 0, cfg.CpuPlayerCount, "CpuPlayerCount default should be 0")
 	assert.False(t, cfg.CountingEnabled, "CountingEnabled default should be false")
 	assert.True(t, cfg.DoubleAfterSplit, "DoubleAfterSplit default should be true")
+	assert.Equal(t, domain.BJCountingHiLo, cfg.CountingSystem, "CountingSystem default should be Hi-Lo (0)")
+}
+
+func TestIsBalancedCountingSystem(t *testing.T) {
+	assert.True(t, domain.IsBalancedCountingSystem(domain.BJCountingHiLo), "Hi-Lo is balanced")
+	assert.False(t, domain.IsBalancedCountingSystem(domain.BJCountingKO), "KO is unbalanced")
+	assert.True(t, domain.IsBalancedCountingSystem(domain.BJCountingZen), "Zen Count is balanced")
+	assert.True(t, domain.IsBalancedCountingSystem(domain.BJCountingOmegaII), "Omega II is balanced")
 }
 
 func TestBlackJack_DAS_Enabled(t *testing.T) {
@@ -2008,6 +2016,31 @@ func TestBlackJackConfig_GetSetConfig(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
 		cfg := domain.BlackJackConfig{CpuPlayerCount: -1}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+	t.Run("counting system 0-3 ok", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		for sys := 0; sys <= domain.BJCountingMax; sys++ {
+			cfg := domain.BlackJackConfig{CountingSystem: sys}
+			err := bj.SetConfig(cfg)
+			assert.NoError(t, err, "counting system %d should be valid", sys)
+		}
+	})
+	t.Run("counting system out of range fails", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		cfg := domain.BlackJackConfig{CountingSystem: domain.BJCountingMax + 1}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+	t.Run("counting system negative fails", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		cfg := domain.BlackJackConfig{CountingSystem: -1}
 		err := bj.SetConfig(cfg)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
