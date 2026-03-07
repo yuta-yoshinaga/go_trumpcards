@@ -230,26 +230,23 @@ func (d *Doubt) CpuPlay() {
 	var played []*Card
 	var claimedValue int
 
-	if intentBluff {
-		// 意図的ブラフ: 先頭 numCards 枚を出してランダムな値を宣言
-		cardIndices := make([]int, numCards)
-		for i := range cardIndices {
-			cardIndices[i] = i
-		}
-		played = player.RemoveCards(cardIndices)
-		claimedValue = rand.Intn(13) + 1
-	} else if numCards > 1 && rand.Float64() < mixedBluffChance {
-		// 混合ブラフ: 一致+不一致カードを混ぜて出す
+	if !intentBluff && numCards > 1 && rand.Float64() < mixedBluffChance {
+		// 混合ブラフ: CPUが実際に持つ値を宣言しつつ不一致カードを混ぜて出す
 		claimedValue = player.GetCard(0).GetValue()
 		played = selectMixedCards(player, claimedValue, numCards)
 	} else {
-		// 正直プレイ: 先頭 numCards 枚を出して先頭カードの値を宣言
+		// 意図的ブラフまたは正直プレイ: 先頭 numCards 枚を出す
 		cardIndices := make([]int, numCards)
 		for i := range cardIndices {
 			cardIndices[i] = i
 		}
 		played = player.RemoveCards(cardIndices)
-		claimedValue = played[0].GetValue()
+
+		if intentBluff {
+			claimedValue = rand.Intn(13) + 1
+		} else {
+			claimedValue = played[0].GetValue()
+		}
 	}
 
 	d.tableCards = append(d.tableCards, played...)
@@ -530,8 +527,13 @@ func calcTellChance(level DoubtMemoryLevel) float64 {
 
 // selectMixedCards は手札から claimedValue に一致するカードと一致しないカードを
 // 混ぜて numCards 枚選択し、プレイヤーの手札から取り除いて返す。
-// 混合選択が不可能な場合（一致 or 不一致が0枚）は先頭 numCards 枚を返す。
+// 不一致カードが0枚の場合は先頭 numCards 枚を返す。
+// numCards >= 2 が前提 (呼び出し元で保証)。
 func selectMixedCards(player *DoubtPlayer, claimedValue int, numCards int) []*Card {
+	if numCards < 2 {
+		return player.RemoveCards([]int{0})
+	}
+
 	var matching, nonMatching []int
 	for i := 0; i < player.GetCardsSize(); i++ {
 		if player.GetCard(i).GetValue() == claimedValue {
@@ -541,8 +543,8 @@ func selectMixedCards(player *DoubtPlayer, claimedValue int, numCards int) []*Ca
 		}
 	}
 
-	// 両方のグループにカードがない場合はフォールバック
-	if len(matching) == 0 || len(nonMatching) == 0 {
+	// 不一致カードがない場合はフォールバック
+	if len(nonMatching) == 0 {
 		indices := make([]int, numCards)
 		for i := range indices {
 			indices[i] = i

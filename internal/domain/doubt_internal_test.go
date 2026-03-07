@@ -170,14 +170,64 @@ func TestSelectMixedCards(t *testing.T) {
 		}
 	})
 
-	t.Run("fallback - no matching cards", func(t *testing.T) {
+	t.Run("guard - numCards < 2 returns single card", func(t *testing.T) {
 		player := NewDoubtPlayer(false)
+		player.AddCard(NewCard(CardDesignSpade, 5, false))
+		player.AddCard(NewCard(CardDesignHeart, 3, false))
+
+		played := selectMixedCards(player, 5, 1)
+		assert.Len(t, played, 1)
+	})
+
+	t.Run("maxMatch capped to numCards-1", func(t *testing.T) {
+		// 4 matching + 1 non-matching, numCards=2 → maxMatch capped from 4 to 1
+		player := NewDoubtPlayer(false)
+		player.AddCard(NewCard(CardDesignSpade, 5, false))
+		player.AddCard(NewCard(CardDesignHeart, 5, false))
+		player.AddCard(NewCard(CardDesignClover, 5, false))
+		player.AddCard(NewCard(CardDesignDiamond, 5, false))
 		player.AddCard(NewCard(CardDesignSpade, 3, false))
-		player.AddCard(NewCard(CardDesignHeart, 7, false))
-		player.AddCard(NewCard(CardDesignClover, 9, false))
 
 		played := selectMixedCards(player, 5, 2)
 		assert.Len(t, played, 2)
+
+		hasMatch := false
+		hasNonMatch := false
+		for _, card := range played {
+			if card.GetValue() == 5 {
+				hasMatch = true
+			} else {
+				hasNonMatch = true
+			}
+		}
+		assert.True(t, hasMatch)
+		assert.True(t, hasNonMatch)
+	})
+
+	t.Run("nonMatchCount adjustment when insufficient non-matching cards", func(t *testing.T) {
+		// 3 matching + 1 non-matching, numCards=4 → nonMatchCount adjusted to 1
+		for attempt := 0; attempt < 1000; attempt++ {
+			player := NewDoubtPlayer(false)
+			player.AddCard(NewCard(CardDesignSpade, 5, false))
+			player.AddCard(NewCard(CardDesignHeart, 5, false))
+			player.AddCard(NewCard(CardDesignClover, 5, false))
+			player.AddCard(NewCard(CardDesignDiamond, 3, false))
+
+			played := selectMixedCards(player, 5, 4)
+			assert.Len(t, played, 4)
+
+			nonMatchCount := 0
+			for _, card := range played {
+				if card.GetValue() != 5 {
+					nonMatchCount++
+				}
+			}
+			// adjustment branch triggered when matchCount < 3
+			if nonMatchCount == 1 {
+				return
+			}
+		}
+		t.Fatal("nonMatchCount adjustment branch never hit after 1000 attempts")
 	})
 
 	t.Run("edge case - only 1 non-matching card", func(t *testing.T) {
