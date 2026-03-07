@@ -75,7 +75,7 @@ type OldMaidWebController = GameWebController[usecase.OldMaidInteractorIF, OldMa
 
 // NewOldMaidWebController コンストラクタ
 func NewOldMaidWebController(factory func() usecase.OldMaidInteractorIF) *OldMaidWebController {
-	return NewGameWebController(factory, newOldMaidDefaultOutput, nil, oldMaidDispatch)
+	return NewGameWebController(factory, newOldMaidDefaultOutput, oldMaidDispatch)
 }
 
 func newOldMaidDefaultOutput(msg string) *OldMaidWebOutput {

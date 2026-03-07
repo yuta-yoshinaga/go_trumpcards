@@ -78,7 +78,7 @@ type SevensWebController = GameWebController[usecase.SevensInteractorIF, SevensW
 
 // NewSevensWebController コンストラクタ
 func NewSevensWebController(factory func() usecase.SevensInteractorIF) *SevensWebController {
-	return NewGameWebController(factory, newSevensDefaultOutput, nil, sevensDispatch)
+	return NewGameWebController(factory, newSevensDefaultOutput, sevensDispatch)
 }
 
 func newSevensDefaultOutput(msg string) *SevensWebOutput {

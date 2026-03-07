@@ -90,7 +90,7 @@ type BlackJackWebController = GameWebController[usecase.BlackJackInteractorIF, B
 
 // NewBlackJackWebController コンストラクタ
 func NewBlackJackWebController(factory func() usecase.BlackJackInteractorIF) *BlackJackWebController {
-	return NewGameWebController(factory, newBlackJackDefaultOutput, nil, blackJackDispatch)
+	return NewGameWebController(factory, newBlackJackDefaultOutput, blackJackDispatch)
 }
 
 func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
