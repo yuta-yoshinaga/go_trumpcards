@@ -80,6 +80,7 @@ flowchart TD
 | `setcountingsystem N` | `scs N` | カウンティングシステムを設定（0=Hi-Lo / 1=KO / 2=Zen Count / 3=Omega II） |
 | `toggledas` | `das` | スプリット後のダブルダウン（DAS）許可のON/OFFを切り替える |
 | `setpenetration N` | `pen N` | デッキペネトレーション率を設定（有効値: 50 / 75）。BETフェーズのみ有効 |
+| `setcpucount N` | `scc N` | CPUプレイヤー数を設定（0〜3）。BETフェーズのみ有効 |
 | `quit` | `q` | ゲーム終了 |
 
 ## 特殊ルール
@@ -137,7 +138,7 @@ KOシステムはアンバランス型のため、トゥルーカウント（TC�
 
 ### マルチプレイヤーCPU席
 
-0〜3名のCPUプレイヤーを追加できます。CPUプレイヤーはベーシックストラテジーに基づいて自動的にプレイします。
+`setcpucount N`（短縮形: `scc N`）で0〜3名のCPUプレイヤーを追加できます。BETフェーズ中に設定を変更すると、次の `reset` 時に反映されます。CPUプレイヤーはベーシックストラテジーに基づいて自動的にプレイします。
 
 ### サイドベット
 
