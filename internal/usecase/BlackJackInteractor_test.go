@@ -237,6 +237,33 @@ func TestSetDeckPenetration_Error(t *testing.T) {
 	assert.Equal(t, "error output", result)
 }
 
+func TestSetCpuPlayerCount(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("cpu count changed")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 2, CountingEnabled: false, DoubleAfterSplit: true}).Return(nil)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.SetCpuPlayerCount(2)
+	assert.Equal(t, "cpu count changed", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 2, CountingEnabled: false, DoubleAfterSplit: true})
+}
+
+func TestSetCpuPlayerCount_Error(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("error output")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 5, CountingEnabled: false, DoubleAfterSplit: true}).Return(errors.New("invalid cpu count"))
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.SetCpuPlayerCount(5)
+	assert.Equal(t, "error output", result)
+}
+
 func TestResetWithConfig_WithPenetration(t *testing.T) {
 	bjpMock := new(presenter.MockBlackJackPresenter)
 	bjpMock.On("Output", mock.Anything, mock.Anything).Return("reset done")

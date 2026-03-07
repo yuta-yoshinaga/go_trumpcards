@@ -211,6 +211,36 @@ func TestBlackJackCuiController_Soft17AndCountingCommands(t *testing.T) {
 	})
 }
 
+func TestBlackJackCuiController_SetCpuPlayerCount(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetCpuPlayerCount", 2).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("scc with valid count", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("scc 2"))
+	})
+	t.Run("setcpucount with valid count", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("setcpucount 2"))
+	})
+	t.Run("scc without arg", func(t *testing.T) {
+		assert.Equal(t, "CPU player count is required.", tbc.Exec("scc"))
+	})
+	t.Run("scc with invalid arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc abc"))
+	})
+	t.Run("scc with negative arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc -1"))
+	})
+	t.Run("scc with out-of-range arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc 4"))
+	})
+	t.Run("scc with zero (valid)", func(t *testing.T) {
+		bjiMock.On("SetCpuPlayerCount", 0).Return(mockOutput)
+		assert.Equal(t, mockOutput, tbc.Exec("scc 0"))
+	})
+}
+
 func TestBlackJackCuiController_SetPenetration_Valid(t *testing.T) {
 	mockOutput := "----------\n"
 	bjiMock := new(usecase.MockBlackJackInteractor)

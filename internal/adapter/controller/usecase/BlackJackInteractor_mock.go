@@ -103,6 +103,12 @@ func (_m *MockBlackJackInteractor) SetDeckPenetration(penetration int) string {
 	return ret.Get(0).(string)
 }
 
+// SetCpuPlayerCount モック
+func (_m *MockBlackJackInteractor) SetCpuPlayerCount(count int) string {
+	ret := _m.Called(count)
+	return ret.Get(0).(string)
+}
+
 // ResetWithConfig モック
 func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
 	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration)

@@ -918,11 +918,13 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 50, undefined, {}));
   });
 
-  it('updates CPU count when selector value is changed', async () => {
+  it('calls setcpucount when CPU count selector value is changed', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByLabelText('CPU人数:')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, cpuPlayerCount: 2 });
     fireEvent.change(screen.getByLabelText('CPU人数:'), { target: { value: '2' } });
-    expect(screen.getByLabelText('CPU人数:')).toHaveValue('2');
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setcpucount', 2));
   });
 
   it('calls doubledown command when double down button is clicked', async () => {

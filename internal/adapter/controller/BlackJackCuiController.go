@@ -80,6 +80,15 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 					return "Invalid deck count. Please enter a number.", true
 				}
 				return bcc.bji.SetDeckCount(count), true
+			case "scc", "setcpucount":
+				if len(args) < 1 {
+					return "CPU player count is required.", true
+				}
+				count, err := strconv.Atoi(args[0])
+				if err != nil || count < 0 || count > domain.BJMaxCpuPlayers {
+					return "Invalid CPU player count. Please enter a number (0-3).", true
+				}
+				return bcc.bji.SetCpuPlayerCount(count), true
 			case "scs", "setcountingsystem":
 				if len(args) < 1 {
 					return "Counting system is required.", true

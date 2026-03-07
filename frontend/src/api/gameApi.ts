@@ -54,7 +54,8 @@ export const blackjackApi = {
       | 'togglecounting'
       | 'toggledas'
       | 'setcountingsystem'
-      | 'setpenetration',
+      | 'setpenetration'
+      | 'setcpucount',
     amount?: number,
     config?: BlackJackConfigInput,
     sideBets?: BlackJackSideBetInput,
