@@ -248,4 +248,43 @@ func TestDaifugoCuiController_SetRule_InvalidValue(t *testing.T) {
 	c := controller.NewDaifugoCuiController(mi)
 	assert.Contains(t, c.Exec("sr 8cut 2"), "Invalid value: 2")
 	assert.Contains(t, c.Exec("sr 8cut abc"), "Invalid value: abc")
+	assert.Contains(t, c.Exec("sr 8cut -1"), "Invalid value: -1")
+}
+
+func TestDaifugoCuiController_SetRule_AllKeys(t *testing.T) {
+	tests := []struct {
+		rule string
+		val  string
+		get  func(domain.DaifugoConfig) bool
+	}{
+		{"8cut", "0", func(c domain.DaifugoConfig) bool { return c.EightCutEnabled }},
+		{"suitlock", "0", func(c domain.DaifugoConfig) bool { return c.SuitLockEnabled }},
+		{"11back", "0", func(c domain.DaifugoConfig) bool { return c.ElevenBackEnabled }},
+		{"seq", "0", func(c domain.DaifugoConfig) bool { return c.SequenceEnabled }},
+		{"exchange", "0", func(c domain.DaifugoConfig) bool { return c.CardExchangeEnabled }},
+		{"5skip", "1", func(c domain.DaifugoConfig) bool { return c.FiveSkipEnabled }},
+		{"7pass", "1", func(c domain.DaifugoConfig) bool { return c.SevenPassEnabled }},
+		{"10discard", "1", func(c domain.DaifugoConfig) bool { return c.TenDiscardEnabled }},
+		{"spade3", "1", func(c domain.DaifugoConfig) bool { return c.SpadeThreeEnabled }},
+		{"capital", "1", func(c domain.DaifugoConfig) bool { return c.CapitalFallEnabled }},
+		{"9reverse", "1", func(c domain.DaifugoConfig) bool { return c.NineReverseEnabled }},
+		{"coupdetat", "1", func(c domain.DaifugoConfig) bool { return c.CoupDetatEnabled }},
+		{"intenselock", "1", func(c domain.DaifugoConfig) bool { return c.IntenseLockEnabled }},
+		{"sandstorm", "1", func(c domain.DaifugoConfig) bool { return c.SandstormEnabled }},
+		{"emperor", "1", func(c domain.DaifugoConfig) bool { return c.EmperorEnabled }},
+		{"seqrev", "1", func(c domain.DaifugoConfig) bool { return c.SequenceRevolutionEnabled }},
+		{"illegal", "1", func(c domain.DaifugoConfig) bool { return c.IllegalFinishEnabled }},
+	}
+	for _, tc := range tests {
+		t.Run(tc.rule, func(t *testing.T) {
+			mi := new(mockUsecases.MockDaifugoInteractor)
+			c := controller.NewDaifugoCuiController(mi)
+			mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+			expected := tc.val == "1"
+			mi.On("ResetWithConfig", mock.MatchedBy(func(cfg domain.DaifugoConfig) bool {
+				return tc.get(cfg) == expected
+			})).Return("ok")
+			assert.Equal(t, "ok", c.Exec("sr "+tc.rule+" "+tc.val))
+		})
+	}
 }
