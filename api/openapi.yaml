@@ -2276,7 +2276,7 @@ components:
             $ref: '#/components/schemas/Card'
         lastPlayedJoker:
           type: boolean
-          description: Whether this player played a joker on their last turn (only populated for the human player when jokerConsecutiveBanned is enabled)
+          description: Whether this player played a joker on their last turn (only meaningful for the human player when jokerConsecutiveBanned is enabled)
           example: false
 
     SevensAction:

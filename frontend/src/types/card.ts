@@ -264,7 +264,7 @@ export interface SevensPlayerData {
   passesUsed: number;
   maxPasses: number;
   cards: Card[];
-  lastPlayedJoker?: boolean;
+  lastPlayedJoker: boolean;
 }
 
 export interface SevensAction {

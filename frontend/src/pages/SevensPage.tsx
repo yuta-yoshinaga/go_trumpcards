@@ -80,8 +80,8 @@ function isCardPlayable(
   noJokerFinish: boolean,
   allCards: Card[],
   endStopEnabled: boolean,
-  jokerConsecutiveBanned?: boolean,
-  lastPlayedJoker?: boolean,
+  jokerConsecutiveBanned: boolean,
+  lastPlayedJoker: boolean,
 ): boolean {
   if (card.design === 'JOKER') {
     if (noJokerFinish && hasOnlyJokers(allCards)) return false;

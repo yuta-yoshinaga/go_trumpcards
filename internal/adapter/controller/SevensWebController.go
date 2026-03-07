@@ -33,7 +33,7 @@ type SevensWebOutputPlayer struct {
 	PassesUsed      int              `json:"passesUsed"`
 	MaxPasses       int              `json:"maxPasses"`
 	Cards           []*WebOutputCard `json:"cards"`
-	LastPlayedJoker bool             `json:"lastPlayedJoker,omitempty"`
+	LastPlayedJoker bool             `json:"lastPlayedJoker"`
 }
 
 // SevensWebOutputAction 7並べのプレイヤー行動記録
