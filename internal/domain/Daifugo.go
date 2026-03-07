@@ -1007,7 +1007,7 @@ func (d *Daifugo) shouldStrategicPass(player *DaifugoPlayer, indices []int) bool
 	return false
 }
 
-// calcTableStrength 場のカードの強さを計算する
+// calcTableStrength 場のカードの強さを計算する (d.tableCards が非nil前提)
 func (d *Daifugo) calcTableStrength() int {
 	tableBase := getBaseValue(d.tableCards)
 	if tableBase < 0 {
@@ -1023,6 +1023,8 @@ type cardSearchOpts struct {
 }
 
 // searchCardGroup 手札からカードグループを検索する共通ヘルパー
+// 手札は強さ順 (弱→強) でソート済みなので、selectStrongest=true の場合は
+// 後に見つかるグループほど強いため、上書きし続けて最後の結果を返す。
 func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStrength int, opts cardSearchOpts) []int {
 	jokerIndices := d.findJokerIndices(player)
 	var bestIndices []int
