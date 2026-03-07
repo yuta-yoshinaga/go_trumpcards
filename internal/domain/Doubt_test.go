@@ -339,6 +339,46 @@ func TestDoubt_CpuPlay(t *testing.T) {
 	})
 }
 
+func TestDoubt_CpuPlay_MixedBluff(t *testing.T) {
+	t.Run("mixed bluff branch hit", func(t *testing.T) {
+		for attempt := 0; attempt < 1000; attempt++ {
+			game, players := makeDoubtGame()
+			advanceToCpuTurn(game)
+			// Give CPU 1 five cards with different values to enable mixed bluff
+			for i := 1; i <= 5; i++ {
+				players[1].AddCard(domain.NewCard(domain.CardDesignSpade, i, false))
+			}
+
+			game.CpuPlay()
+
+			cpuActions := game.GetCpuActions()
+			lastAction := game.GetLastAction()
+			if len(cpuActions) == 0 || lastAction == nil {
+				continue
+			}
+			action := cpuActions[0]
+			if !action.IsBluff || action.CardCount < 2 {
+				continue
+			}
+			// Check if at least one played card matches claimed value AND
+			// at least one doesn't (signature of mixed bluff)
+			hasMatch := false
+			hasNonMatch := false
+			for _, card := range lastAction.PlayedCards {
+				if card.GetValue() == action.ClaimedValue {
+					hasMatch = true
+				} else {
+					hasNonMatch = true
+				}
+			}
+			if hasMatch && hasNonMatch {
+				return // mixed bluff detected
+			}
+		}
+		t.Fatal("mixed bluff branch never hit after 1000 attempts")
+	})
+}
+
 func TestDoubt_DecideCpuDoubters(t *testing.T) {
 	t.Run("after human plays, cpuDoubters only contains valid CPU indices", func(t *testing.T) {
 		_, players := makeDoubtGame()
