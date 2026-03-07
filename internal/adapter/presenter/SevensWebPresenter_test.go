@@ -275,6 +275,33 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 1, resObj.Config.JokerCount)
 	})
 
+	t.Run("success Output config endStopEnabled true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.EndStopEnabled)
+	})
+
+	t.Run("success Output config endStopEnabled false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.False(t, resObj.Config.EndStopEnabled)
+	})
+
 	t.Run("success Output tablePlaced updated after play", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()

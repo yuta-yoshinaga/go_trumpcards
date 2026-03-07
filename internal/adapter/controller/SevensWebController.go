@@ -19,6 +19,7 @@ type SevensWebInput struct {
 	MaxPasses        *int  `json:"maxPasses,omitempty"`     // 最大パス回数 (reset時のみ, 0=無制限)
 	NoJokerFinish    *bool `json:"noJokerFinish,omitempty"` // ジョーカー上がり禁止 (reset時のみ)
 	JokerReclaim     *bool `json:"jokerReclaim,omitempty"`  // ジョーカー回収 (reset時のみ)
+	EndStop          *bool `json:"endStop,omitempty"`       // 片側ストップ (reset時のみ)
 }
 
 // SevensWebOutputPlayer 7並べWebアウトプットプレイヤー
@@ -50,6 +51,7 @@ type SevensWebOutputConfig struct {
 	MaxPasses           int  `json:"maxPasses"`
 	NoJokerFinish       bool `json:"noJokerFinish"`
 	JokerReclaimEnabled bool `json:"jokerReclaimEnabled"`
+	EndStopEnabled      bool `json:"endStopEnabled"`
 }
 
 // SevensWebOutput 7並べWebアウトプット
@@ -91,7 +93,7 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 		func(w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput) bool {
 			switch param.Command {
 			case "r", "reset":
-				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil {
+				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil || param.EndStop != nil {
 					cfg := domain.SevensConfig{
 						TunnelEnabled:       derefBool(param.TunnelEnabled),
 						JokerCount:          derefInt(param.JokerCount),
@@ -99,6 +101,7 @@ func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 						MaxPasses:           derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
 						NoJokerFinish:       derefBool(param.NoJokerFinish),
 						JokerReclaimEnabled: derefBool(param.JokerReclaim),
+						EndStopEnabled:      derefBool(param.EndStop),
 					}
 					swc.writePresenterResponse(w, sgi.ResetWithConfig(cfg))
 				} else {

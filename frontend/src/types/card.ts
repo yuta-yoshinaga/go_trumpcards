@@ -281,6 +281,7 @@ export interface SevensConfig {
   maxPasses: number;
   noJokerFinish: boolean;
   jokerReclaimEnabled: boolean;
+  endStopEnabled: boolean;
 }
 
 export interface SevensResponse {

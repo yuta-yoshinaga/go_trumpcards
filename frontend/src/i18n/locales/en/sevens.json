@@ -24,7 +24,8 @@
     "passUnlimited": "[Unlimited Pass]",
     "passCount": "[Pass {{count}}×]",
     "noJokerFinish": "[No Joker Finish]",
-    "jokerReclaim": "[Joker Reclaim]"
+    "jokerReclaim": "[Joker Reclaim]",
+    "endStop": "[End Stop]"
   },
   "config": {
     "title": "Rule Settings (applied on reset)",
@@ -34,6 +35,7 @@
     "passCount": "Max Passes",
     "passUnlimited": "Unlimited",
     "noJokerFinish": "No Joker Finish",
-    "jokerReclaim": "Joker Reclaim"
+    "jokerReclaim": "Joker Reclaim",
+    "endStop": "End Stop"
   }
 }

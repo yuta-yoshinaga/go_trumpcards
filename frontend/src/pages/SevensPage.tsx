@@ -34,8 +34,23 @@ function isPositionPlaced(tablePlaced: number[], suit: number, value: number): b
   return (tablePlaced[suit] & (1 << value)) !== 0;
 }
 
-function isPositionPlayable(tablePlaced: number[], suit: number, value: number, tunnelEnabled: boolean): boolean {
+function isEndStopped(tablePlaced: number[], suit: number, value: number, endStopEnabled: boolean): boolean {
+  if (!endStopEnabled) return false;
+  if (value === 7) return false;
+  if (value > 7 && isPositionPlaced(tablePlaced, suit, 1)) return true;
+  if (value < 7 && isPositionPlaced(tablePlaced, suit, 13)) return true;
+  return false;
+}
+
+function isPositionPlayable(
+  tablePlaced: number[],
+  suit: number,
+  value: number,
+  tunnelEnabled: boolean,
+  endStopEnabled: boolean,
+): boolean {
   if (isPositionPlaced(tablePlaced, suit, value)) return false;
+  if (isEndStopped(tablePlaced, suit, value, endStopEnabled)) return false;
   if (isPositionPlaced(tablePlaced, suit, value + 1)) return true;
   if (isPositionPlaced(tablePlaced, suit, value - 1)) return true;
   if (tunnelEnabled) {
@@ -45,10 +60,10 @@ function isPositionPlayable(tablePlaced: number[], suit: number, value: number, 
   return false;
 }
 
-function hasAnyPlayablePosition(tablePlaced: number[], tunnelEnabled: boolean): boolean {
+function hasAnyPlayablePosition(tablePlaced: number[], tunnelEnabled: boolean, endStopEnabled: boolean): boolean {
   for (let suit = 1; suit <= 4; suit++) {
     for (let v = 1; v <= 13; v++) {
-      if (isPositionPlayable(tablePlaced, suit, v, tunnelEnabled)) return true;
+      if (isPositionPlayable(tablePlaced, suit, v, tunnelEnabled, endStopEnabled)) return true;
     }
   }
   return false;
@@ -64,13 +79,14 @@ function isCardPlayable(
   tunnelEnabled: boolean,
   noJokerFinish: boolean,
   allCards: Card[],
+  endStopEnabled: boolean,
 ): boolean {
   if (card.design === 'JOKER') {
     if (noJokerFinish && hasOnlyJokers(allCards)) return false;
-    return hasAnyPlayablePosition(tablePlaced, tunnelEnabled);
+    return hasAnyPlayablePosition(tablePlaced, tunnelEnabled, endStopEnabled);
   }
   const suit = designToSuit[card.design];
-  return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled);
+  return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled, endStopEnabled);
 }
 
 function actionDesc(
@@ -108,11 +124,12 @@ const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_180px] min-w-[150p
 interface BoardProps {
   tablePlaced: number[];
   tunnelEnabled: boolean;
+  endStopEnabled: boolean;
   jokerSelecting: boolean;
   onJokerPlace?: (suit: number, value: number) => void;
 }
 
-function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: BoardProps) {
+function Board({ tablePlaced, tunnelEnabled, endStopEnabled, jokerSelecting, onJokerPlace }: BoardProps) {
   const { t } = useTranslation('sevens');
   return (
     <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
@@ -129,7 +146,8 @@ function Board({ tablePlaced, tunnelEnabled, jokerSelecting, onJokerPlace }: Boa
               {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
                 const placed = isPositionPlaced(tablePlaced, idx, v);
                 const isCenter = v === 7;
-                const canPlace = jokerSelecting && isPositionPlayable(tablePlaced, idx, v, tunnelEnabled);
+                const canPlace =
+                  jokerSelecting && isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled);
                 const tunnelHighlight =
                   tunnelEnabled &&
                   !placed &&
@@ -222,6 +240,7 @@ interface HumanAreaProps {
   tablePlaced: number[];
   tunnelEnabled: boolean;
   noJokerFinish: boolean;
+  endStopEnabled: boolean;
   loading: boolean;
   onPlay: (idx: number) => void;
 }
@@ -232,6 +251,7 @@ function HumanArea({
   tablePlaced,
   tunnelEnabled,
   noJokerFinish,
+  endStopEnabled,
   loading,
   onPlay,
 }: HumanAreaProps) {
@@ -261,7 +281,9 @@ function HumanArea({
       <div className="flex flex-wrap gap-1">
         {player.cards?.map((card, i) => {
           const playable =
-            isCurrentTurn && !loading && isCardPlayable(card, tablePlaced, tunnelEnabled, noJokerFinish, player.cards);
+            isCurrentTurn &&
+            !loading &&
+            isCardPlayable(card, tablePlaced, tunnelEnabled, noJokerFinish, player.cards, endStopEnabled);
           return (
             <button
               key={`${card.design}-${card.value}`}
@@ -301,6 +323,7 @@ export function SevensPage() {
   const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
   const [cfgNoJokerFinish, setCfgNoJokerFinish] = useState(false);
   const [cfgJokerReclaim, setCfgJokerReclaim] = useState(false);
+  const [cfgEndStop, setCfgEndStop] = useState(false);
 
   const onSuccess = useCallback((res: SevensResponse) => {
     setJokerCardIdx(null);
@@ -310,6 +333,7 @@ export function SevensPage() {
     setCfgMaxPasses(res.config.maxPasses);
     setCfgNoJokerFinish(res.config.noJokerFinish);
     setCfgJokerReclaim(res.config.jokerReclaimEnabled);
+    setCfgEndStop(res.config.endStopEnabled);
   }, []);
   const { state, loading, error, exec } = useGameApi(sevensApi.exec, { onSuccess });
 
@@ -354,7 +378,8 @@ export function SevensPage() {
             state.config.cpuStrategy ||
             state.config.maxPasses !== 5 ||
             state.config.noJokerFinish ||
-            state.config.jokerReclaimEnabled) && (
+            state.config.jokerReclaimEnabled ||
+            state.config.endStopEnabled) && (
             <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-[0.85em]">
               {t('rules.title')}
               {state.config.tunnelEnabled && ` ${t('rules.tunnelTag')}`}
@@ -366,6 +391,7 @@ export function SevensPage() {
                 ` ${t('rules.passCount', { count: state.config.maxPasses })}`}
               {state.config.noJokerFinish && ` ${t('rules.noJokerFinish')}`}
               {state.config.jokerReclaimEnabled && ` ${t('rules.jokerReclaim')}`}
+              {state.config.endStopEnabled && ` ${t('rules.endStop')}`}
             </div>
           )}
 
@@ -380,6 +406,7 @@ export function SevensPage() {
         <Board
           tablePlaced={tablePlaced}
           tunnelEnabled={tunnelEnabled}
+          endStopEnabled={state.config.endStopEnabled}
           jokerSelecting={jokerCardIdx !== null}
           onJokerPlace={handleJokerPlace}
         />
@@ -439,6 +466,7 @@ export function SevensPage() {
               tablePlaced={tablePlaced}
               tunnelEnabled={tunnelEnabled}
               noJokerFinish={state.config.noJokerFinish}
+              endStopEnabled={state.config.endStopEnabled}
               loading={loading}
               onPlay={handleCardPlay}
             />
@@ -489,6 +517,10 @@ export function SevensPage() {
             <input type="checkbox" checked={cfgJokerReclaim} onChange={(e) => setCfgJokerReclaim(e.target.checked)} />
             {t('config.jokerReclaim')}
           </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" checked={cfgEndStop} onChange={(e) => setCfgEndStop(e.target.checked)} />
+            {t('config.endStop')}
+          </label>
         </div>
 
         <ErrorAlert message={error} />
@@ -507,6 +539,7 @@ export function SevensPage() {
                 maxPasses: cfgMaxPasses,
                 noJokerFinish: cfgNoJokerFinish,
                 jokerReclaim: cfgJokerReclaim,
+                endStop: cfgEndStop,
               })
             }
           >

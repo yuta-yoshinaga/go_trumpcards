@@ -39,6 +39,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		MaxPasses:           cfg.MaxPasses,
 		NoJokerFinish:       cfg.NoJokerFinish,
 		JokerReclaimEnabled: cfg.JokerReclaimEnabled,
+		EndStopEnabled:      cfg.EndStopEnabled,
 	}
 
 	// CPU行動履歴

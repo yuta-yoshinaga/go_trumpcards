@@ -127,6 +127,7 @@ export interface SevensConfigInput {
   maxPasses?: number;
   noJokerFinish?: boolean;
   jokerReclaim?: boolean;
+  endStop?: boolean;
 }
 
 export const sevensApi = {
