@@ -103,6 +103,19 @@ func TestHoldemInteractor_Action(t *testing.T) {
 	mg.AssertCalled(t, "PlayerAction", domain.HoldemActionCheck, 0)
 }
 
+func TestHoldemInteractor_GetConfig(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	cfg := domain.DefaultHoldemConfig()
+	mg.On("GetConfig").Return(cfg)
+
+	result := hi.GetConfig()
+	assert.Equal(t, cfg, result)
+	mg.AssertCalled(t, "GetConfig")
+}
+
 func TestHoldemInteractor_Action_Error(t *testing.T) {
 	mg := new(interfaces.MockHoldemGame)
 	mp := new(presenter.MockHoldemPresenter)
