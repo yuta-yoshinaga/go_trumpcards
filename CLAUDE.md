@@ -131,6 +131,49 @@ public/                        # Built frontend assets served by Go web server
 
 **Unit tests are mandatory. Every implementation must ship with tests in the same commit.**
 
+### TDD (Test-Driven Development)
+
+**All code changes must follow the TDD cycle (Red-Green-Refactor):**
+
+#### 1. Red — Write a failing test first
+
+Before writing any production code, create or modify a test file (`*_test.go`) that captures the expected behavior. Run the test and confirm it fails:
+
+```sh
+go test -tags test ./internal/domain/ -run TestNewFeature  # Confirm the test fails (Red)
+```
+
+Write tests in the corresponding location for each Clean Architecture layer:
+
+| Layer | Test location |
+|-------|--------------|
+| Domain | `internal/domain/*_test.go` |
+| Use cases | `internal/usecase/*Interactor_test.go` |
+| Presenters | `internal/adapter/presenter/*_test.go` |
+| Controllers | `internal/adapter/controller/*_test.go` |
+
+#### 2. Green — Write the minimum code to pass
+
+Implement only the code necessary to make the failing test pass. Do not add extra functionality beyond what the test requires:
+
+```sh
+go test -tags test ./internal/domain/ -run TestNewFeature  # Confirm the test passes (Green)
+```
+
+#### 3. Refactor — Clean up while keeping tests green
+
+Improve code quality (naming, structure, duplication removal) without changing behavior. Verify all tests still pass after refactoring:
+
+```sh
+go test -tags test ./...  # Confirm all tests still pass after refactoring
+```
+
+**Key rules:**
+- Never write production code without a corresponding failing test first
+- Each Red-Green-Refactor cycle should be small and focused
+- Run `go test` at every stage transition to verify the expected outcome
+- Apply this cycle at every layer of the Clean Architecture (Domain, Use cases, Presenters, Controllers)
+
 ### Coverage standard
 
 The `cmd/` and `internal/infrastructure/` directories are excluded from coverage requirements. For all other packages under `internal/`, **branch coverage (C1) must be 100%**.
