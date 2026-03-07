@@ -17,6 +17,12 @@ func (_m *MockOldMaidInteractor) Reset(config domain.OldMaidConfig) string {
 	return ret.Get(0).(string)
 }
 
+// GetConfig モック
+func (_m *MockOldMaidInteractor) GetConfig() domain.OldMaidConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.OldMaidConfig)
+}
+
 // Draw モック
 func (_m *MockOldMaidInteractor) Draw(cardIdx int) string {
 	ret := _m.Called(cardIdx)

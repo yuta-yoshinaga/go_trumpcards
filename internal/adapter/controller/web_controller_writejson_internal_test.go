@@ -150,9 +150,12 @@ func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 type mockOldMaidIF struct{ mock.Mock }
 
 func (m *mockOldMaidIF) Reset(cfg domain.OldMaidConfig) string { return m.Called(cfg).String(0) }
-func (m *mockOldMaidIF) Draw(idx int) string                   { return m.Called(idx).String(0) }
-func (m *mockOldMaidIF) Shuffle() string                       { return m.Called().String(0) }
-func (m *mockOldMaidIF) Reorder(indices []int) string          { return m.Called(indices).String(0) }
+func (m *mockOldMaidIF) GetConfig() domain.OldMaidConfig {
+	return m.Called().Get(0).(domain.OldMaidConfig)
+}
+func (m *mockOldMaidIF) Draw(idx int) string          { return m.Called(idx).String(0) }
+func (m *mockOldMaidIF) Shuffle() string              { return m.Called().String(0) }
+func (m *mockOldMaidIF) Reorder(indices []int) string { return m.Called(indices).String(0) }
 
 func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 	omMock := &mockOldMaidIF{}
