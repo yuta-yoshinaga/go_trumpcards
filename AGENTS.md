@@ -143,7 +143,7 @@ public/                        # Built frontend assets served by Go web server
 Before writing any production code, create or modify a test file (`*_test.go`) that captures the expected behavior. Run the test and confirm it fails:
 
 ```sh
-go test -tags test ./internal/domain/ -run TestNewFeature  # Confirm the test fails (Red)
+go test -tags test ./path/to/package -run TestNewFeature  # Confirm the test fails (Red)
 ```
 
 Write tests in the corresponding location for each Clean Architecture layer:
@@ -160,7 +160,7 @@ Write tests in the corresponding location for each Clean Architecture layer:
 Implement only the code necessary to make the failing test pass. Do not add extra functionality beyond what the test requires:
 
 ```sh
-go test -tags test ./internal/domain/ -run TestNewFeature  # Confirm the test passes (Green)
+go test -tags test ./path/to/package -run TestNewFeature  # Confirm the test passes (Green)
 ```
 
 #### 3. Refactor — Clean up while keeping tests green
