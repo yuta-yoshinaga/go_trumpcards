@@ -110,10 +110,7 @@ func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.Bl
 			h17 := derefBool(param.DealerHitsSoft17)
 			cpuCount := derefInt(param.CpuPlayerCount)
 			counting := derefBool(param.CountingEnabled)
-			das := true
-			if param.DoubleAfterSplit != nil {
-				das = *param.DoubleAfterSplit
-			}
+			das := derefBoolDefault(param.DoubleAfterSplit, true)
 			cs := derefInt(param.CountingSystem)
 			dp := derefInt(param.DeckPenetration)
 			bc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp))

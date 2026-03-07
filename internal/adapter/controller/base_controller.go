@@ -36,6 +36,13 @@ func derefBool(p *bool) bool {
 	return *p
 }
 
+func derefBoolDefault(p *bool, defaultVal bool) bool {
+	if p == nil {
+		return defaultVal
+	}
+	return *p
+}
+
 func derefInt(p *int) int {
 	if p == nil {
 		return 0

@@ -23,6 +23,19 @@ func TestDerefBool(t *testing.T) {
 	})
 }
 
+func TestDerefBoolDefault(t *testing.T) {
+	t.Run("nil returns default true", func(t *testing.T) {
+		assert.True(t, derefBoolDefault(nil, true))
+	})
+	t.Run("nil returns default false", func(t *testing.T) {
+		assert.False(t, derefBoolDefault(nil, false))
+	})
+	t.Run("non-nil returns value", func(t *testing.T) {
+		v := false
+		assert.False(t, derefBoolDefault(&v, true))
+	})
+}
+
 func TestDerefInt(t *testing.T) {
 	t.Run("nil returns 0", func(t *testing.T) {
 		assert.Equal(t, 0, derefInt(nil))
