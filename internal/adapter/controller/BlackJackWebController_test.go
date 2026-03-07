@@ -21,7 +21,7 @@ func TestBlackJackWebController_Method(t *testing.T) {
 	bjiMock.On("Reset").Return(mockOutput).Times(2)
 	bjiMock.On("Hit").Return(mockOutput)
 	bjiMock.On("Stand").Return(mockOutput)
-	bjiMock.On("Bet", 100, 0, 0).Return(mockOutput)
+	bjiMock.On("Bet", 100, 0, 0, 0).Return(mockOutput)
 	bjiMock.On("DoubleDown").Return(mockOutput)
 	bjiMock.On("Split").Return(mockOutput)
 	bjiMock.On("Insurance").Return(mockOutput)
@@ -455,7 +455,7 @@ func TestBlackJackWebController_SetCountingSystem(t *testing.T) {
 func TestBlackJackWebController_BetWithSideBets(t *testing.T) {
 	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","perfectPairsBet":10,"twentyOnePlus3Bet":20}`
 	bjiMock := new(usecase.MockBlackJackInteractor)
-	bjiMock.On("Bet", 100, 10, 20).Return(mockOutput)
+	bjiMock.On("Bet", 100, 10, 20, 0).Return(mockOutput)
 	factory := func() uc.BlackJackInteractorIF { return bjiMock }
 	tbc := controller.NewBlackJackWebController(factory)
 	defer tbc.Stop()
@@ -471,14 +471,14 @@ func TestBlackJackWebController_BetWithSideBets(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		bjiMock.AssertCalled(t, "Bet", 100, 10, 20)
+		bjiMock.AssertCalled(t, "Bet", 100, 10, 20, 0)
 	})
 }
 
 func TestBlackJackWebController_BetWithoutSideBets(t *testing.T) {
 	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":""}`
 	bjiMock := new(usecase.MockBlackJackInteractor)
-	bjiMock.On("Bet", 100, 0, 0).Return(mockOutput)
+	bjiMock.On("Bet", 100, 0, 0, 0).Return(mockOutput)
 	factory := func() uc.BlackJackInteractorIF { return bjiMock }
 	tbc := controller.NewBlackJackWebController(factory)
 	defer tbc.Stop()
@@ -494,7 +494,30 @@ func TestBlackJackWebController_BetWithoutSideBets(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		bjiMock.AssertCalled(t, "Bet", 100, 0, 0)
+		bjiMock.AssertCalled(t, "Bet", 100, 0, 0, 0)
+	})
+}
+
+func TestBlackJackWebController_BetWithHandCount(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","multiHandCount":2}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("Bet", 100, 0, 0, 2).Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	t.Run("bet with handCount", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"bet","amount":100,"handCount":2,"sessionId":"bj-hc-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		bjiMock.AssertCalled(t, "Bet", 100, 0, 0, 2)
 	})
 }
 

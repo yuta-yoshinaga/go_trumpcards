@@ -34,6 +34,7 @@ export interface BlackJackConfigInput {
 export interface BlackJackSideBetInput {
   perfectPairsBet?: number;
   twentyOnePlus3Bet?: number;
+  handCount?: number;
 }
 
 export const blackjackApi = {

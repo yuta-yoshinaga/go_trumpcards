@@ -65,6 +65,7 @@ export interface BlackJackResponse {
   doubleAfterSplit: boolean;
   countingSystem: number;
   deckPenetration: number;
+  multiHandCount: number;
 }
 
 export interface PokerPlayerData {

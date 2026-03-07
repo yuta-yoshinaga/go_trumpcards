@@ -42,6 +42,8 @@
   "trueCountNA": "TC=N/A",
   "das": "DAS",
   "penetration": "Penetration:",
+  "handCount": "Hands:",
+  "handCountUnit": "",
   "autoAdvance": "Auto Advance:",
   "autoAdvanceSec": "{{sec}}s",
   "sideBet": {

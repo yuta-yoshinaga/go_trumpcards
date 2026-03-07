@@ -18,6 +18,7 @@ type BlackJackWebInput struct {
 	DeckPenetration   *int  `json:"deckPenetration,omitempty"`
 	PerfectPairsBet   *int  `json:"perfectPairsBet,omitempty"`
 	TwentyOnePlus3Bet *int  `json:"twentyOnePlus3Bet,omitempty"`
+	HandCount         *int  `json:"handCount,omitempty"`
 }
 
 // BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
@@ -83,6 +84,7 @@ type BlackJackWebOutput struct {
 	DoubleAfterSplit   bool                               `json:"doubleAfterSplit"`
 	CountingSystem     int                                `json:"countingSystem"`
 	DeckPenetration    int                                `json:"deckPenetration"`
+	MultiHandCount     int                                `json:"multiHandCount"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -124,7 +126,8 @@ func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.Bl
 	case "b", "bet":
 		ppBet := derefInt(param.PerfectPairsBet)
 		t3Bet := derefInt(param.TwentyOnePlus3Bet)
-		bc.writePresenterResponse(w, bji.Bet(param.Amount, ppBet, t3Bet))
+		hc := derefInt(param.HandCount)
+		bc.writePresenterResponse(w, bji.Bet(param.Amount, ppBet, t3Bet, hc))
 	case "d", "doubledown":
 		bc.writePresenterResponse(w, bji.DoubleDown())
 	case "sp", "split":

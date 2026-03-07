@@ -19,3 +19,8 @@ func (b *BlackJack) SetPhase(phase int) {
 func (b *BlackJack) SetPlayerHands(hands []*BlackJackHand) {
 	b.playerHands = hands
 }
+
+// SetCurrentHandIdx 現在操作中のハンドインデックス設定（テスト用）
+func (b *BlackJack) SetCurrentHandIdx(idx int) {
+	b.currentHandIdx = idx
+}

@@ -42,6 +42,8 @@
   "trueCountNA": "TC=N/A",
   "das": "DAS",
   "penetration": "ペネトレーション:",
+  "handCount": "ハンド数:",
+  "handCountUnit": "ハンド",
   "autoAdvance": "自動進行:",
   "autoAdvanceSec": "{{sec}}秒",
   "sideBet": {

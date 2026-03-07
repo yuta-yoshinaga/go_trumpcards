@@ -49,6 +49,11 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		}
 	}
 
+	// マルチハンド情報
+	if bj.GetMultiHandCount() > 1 {
+		fmt.Fprintf(&b, "multi-hand: %d hands\n", bj.GetMultiHandCount())
+	}
+
 	// フェーズ情報
 	fmt.Fprintf(&b, "phase: %s\n", bjp.phaseStr(bj.GetPhase()))
 

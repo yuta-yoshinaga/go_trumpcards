@@ -33,6 +33,7 @@ const betPhaseState: BlackJackResponse = {
   doubleAfterSplit: true,
   countingSystem: 0,
   deckPenetration: 75,
+  multiHandCount: 0,
 };
 
 const baseHand: BlackJackHand = {
@@ -73,6 +74,7 @@ const actionPhaseState: BlackJackResponse = {
   doubleAfterSplit: true,
   countingSystem: 0,
   deckPenetration: 75,
+  multiHandCount: 0,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -97,6 +99,7 @@ const insurancePhaseState: BlackJackResponse = {
   doubleAfterSplit: true,
   countingSystem: 0,
   deckPenetration: 75,
+  multiHandCount: 0,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -144,6 +147,7 @@ const endPhaseState: BlackJackResponse = {
   doubleAfterSplit: true,
   countingSystem: 0,
   deckPenetration: 75,
+  multiHandCount: 0,
 };
 
 beforeEach(() => {
@@ -1155,6 +1159,41 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     expect(screen.queryByText(/Perfect Pairs:/)).not.toBeInTheDocument();
     expect(screen.queryByText(/21\+3:/)).not.toBeInTheDocument();
+  });
+
+  // --- Multi-hand tests ---
+
+  it('shows hand count selector in bet phase', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ハンド数:')).toBeInTheDocument());
+  });
+
+  it('hand count selector defaults to 1', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ハンド数:')).toHaveValue('1'));
+  });
+
+  it('sends handCount when hand count is greater than 1', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.change(screen.getByLabelText('ハンド数:'), { target: { value: '2' } });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('bet', 10, undefined, {
+        handCount: 2,
+      }),
+    );
+  });
+
+  it('does not include handCount when hand count is 1', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 10, undefined, {}));
   });
 
   // --- Auto-advance tests ---

@@ -26,8 +26,8 @@ func (_m *MockBlackJackInteractor) Stand() string {
 }
 
 // Bet モック
-func (_m *MockBlackJackInteractor) Bet(amount, ppBet, t3Bet int) string {
-	ret := _m.Called(amount, ppBet, t3Bet)
+func (_m *MockBlackJackInteractor) Bet(amount, ppBet, t3Bet, handCount int) string {
+	ret := _m.Called(amount, ppBet, t3Bet, handCount)
 	return ret.Get(0).(string)
 }
 

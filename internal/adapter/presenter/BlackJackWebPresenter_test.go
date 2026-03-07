@@ -474,3 +474,17 @@ func TestBlackJackWebPresenter_DeckPenetration50(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 50, result.DeckPenetration)
 }
+
+func TestBlackJackWebPresenter_MultiHandCount(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	bj := domain.NewDefaultBlackJack()
+	bj.Reset()
+	bj.GetPlayer().SetChips(2000)
+	err := bj.PlayerBet(100, 0, 0, 2)
+	assert.NoError(t, err)
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err = json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, result.MultiHandCount)
+}
