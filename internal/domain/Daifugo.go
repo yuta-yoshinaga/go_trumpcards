@@ -1007,6 +1007,96 @@ func (d *Daifugo) shouldStrategicPass(player *DaifugoPlayer, indices []int) bool
 	return false
 }
 
+// calcTableStrength 場のカードの強さを計算する (d.tableCards が非nil前提)
+func (d *Daifugo) calcTableStrength() int {
+	tableBase := getBaseValue(d.tableCards)
+	if tableBase < 0 {
+		return DaifugoJokerStrength
+	}
+	return d.cardStrength(tableBase)
+}
+
+// cardSearchOpts カード検索のオプション
+type cardSearchOpts struct {
+	skipRevolution  bool // 革命防止: 4枚以上のグループをスキップ (Normal用)
+	selectStrongest bool // 最強のグループを選択 (Hard urgent用)
+}
+
+// searchCardGroup 手札からカードグループを検索する共通ヘルパー
+// 手札は強さ順 (弱→強) でソート済みなので、selectStrongest=true の場合は
+// 後に見つかるグループほど強いため、上書きし続けて最後の結果を返す。
+func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStrength int, opts cardSearchOpts) []int {
+	jokerIndices := d.findJokerIndices(player)
+	var bestIndices []int
+	i := 0
+	for i < player.GetCardsSize() {
+		card := player.GetCard(i)
+		if IsJoker(card) {
+			i++
+			continue
+		}
+		v := card.GetValue()
+		j := i
+		for j < player.GetCardsSize() && !IsJoker(player.GetCard(j)) && player.GetCard(j).GetValue() == v {
+			j++
+		}
+		count := j - i
+		if count >= needed && d.cardStrength(v) > tableStrength {
+			// 革命防止: 4枚以上かつ革命未発動かつ出した後も手札が残る場合はスキップ
+			if opts.skipRevolution && count >= 4 && !d.revolutionActive && player.GetCardsSize() > count {
+				i = j
+				continue
+			}
+			// スート縛りチェック
+			if d.suitLocked && d.config.SuitLockEnabled {
+				suit := player.GetCard(i).GetDesign()
+				if suit != d.lockedSuit {
+					i = j
+					continue
+				}
+			}
+			indices := make([]int, needed)
+			for k := 0; k < needed; k++ {
+				indices[k] = i + k
+			}
+			if !opts.selectStrongest {
+				return indices
+			}
+			bestIndices = indices
+		}
+		// ジョーカーで補完してグループを作れるか
+		if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
+			if count+len(jokerIndices) >= needed {
+				// スート縛りチェック
+				if d.suitLocked && d.config.SuitLockEnabled {
+					suit := player.GetCard(i).GetDesign()
+					if suit != d.lockedSuit {
+						i = j
+						continue
+					}
+				}
+				indices := make([]int, 0, needed)
+				for k := 0; k < count && len(indices) < needed; k++ {
+					indices = append(indices, i+k)
+				}
+				for _, ji := range jokerIndices {
+					if len(indices) >= needed {
+						break
+					}
+					indices = append(indices, ji)
+				}
+				sort.Ints(indices)
+				if !opts.selectStrongest {
+					return indices
+				}
+				bestIndices = indices
+			}
+		}
+		i = j
+	}
+	return bestIndices
+}
+
 // findBestPlayNormal 通常難易度: 既存ロジック (最弱のカードを出す、8/ジョーカー温存)
 func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
 	if d.tableCards == nil {
@@ -1065,75 +1155,11 @@ func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
 	}
 
 	needed := len(d.tableCards)
-	tableBase := getBaseValue(d.tableCards)
-	var tableStrength int
-	if tableBase < 0 {
-		tableStrength = DaifugoJokerStrength
-	} else {
-		tableStrength = d.cardStrength(tableBase)
-	}
+	tableStrength := d.calcTableStrength()
 
-	// 手札は強さ順でソート済み。同じ値の連続するグループを探す。
-	jokerIndices := d.findJokerIndices(player)
-	i := 0
-	for i < player.GetCardsSize() {
-		card := player.GetCard(i)
-		if IsJoker(card) {
-			i++
-			continue
-		}
-		v := card.GetValue()
-		j := i
-		for j < player.GetCardsSize() && !IsJoker(player.GetCard(j)) && player.GetCard(j).GetValue() == v {
-			j++
-		}
-		count := j - i
-		if count >= needed && d.cardStrength(v) > tableStrength {
-			// 革命防止: 4枚以上かつ革命未発動かつ出した後も手札が残る場合はスキップ
-			if count >= 4 && !d.revolutionActive && player.GetCardsSize() > count {
-				i = j
-				continue
-			}
-			// スート縛りチェック
-			if d.suitLocked && d.config.SuitLockEnabled {
-				suit := player.GetCard(i).GetDesign()
-				if suit != d.lockedSuit {
-					i = j
-					continue
-				}
-			}
-			indices := make([]int, needed)
-			for k := 0; k < needed; k++ {
-				indices[k] = i + k
-			}
-			return indices
-		}
-		// ジョーカーで補完してグループを作れるか
-		if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
-			if count+len(jokerIndices) >= needed {
-				// スート縛りチェック
-				if d.suitLocked && d.config.SuitLockEnabled {
-					suit := player.GetCard(i).GetDesign()
-					if suit != d.lockedSuit {
-						i = j
-						continue
-					}
-				}
-				indices := make([]int, 0, needed)
-				for k := 0; k < count && len(indices) < needed; k++ {
-					indices = append(indices, i+k)
-				}
-				for _, ji := range jokerIndices {
-					if len(indices) >= needed {
-						break
-					}
-					indices = append(indices, ji)
-				}
-				sort.Ints(indices)
-				return indices
-			}
-		}
-		i = j
+	// 手札は強さ順でソート済み。最弱のグループを探す (革命防止あり)。
+	if indices := d.searchCardGroup(player, needed, tableStrength, cardSearchOpts{skipRevolution: true}); indices != nil {
+		return indices
 	}
 
 	// ジョーカー単体で出す (場が1枚で、ジョーカーの方が強い場合)
@@ -1168,69 +1194,11 @@ func (d *Daifugo) findBestPlayEasy(player *DaifugoPlayer) []int {
 	}
 
 	needed := len(d.tableCards)
-	tableBase := getBaseValue(d.tableCards)
-	var tableStrength int
-	if tableBase < 0 {
-		tableStrength = DaifugoJokerStrength
-	} else {
-		tableStrength = d.cardStrength(tableBase)
-	}
+	tableStrength := d.calcTableStrength()
 
 	// 最弱のグループを探す (革命防止なし、ジョーカー温存なし)
-	jokerIndices := d.findJokerIndices(player)
-	i := 0
-	for i < player.GetCardsSize() {
-		card := player.GetCard(i)
-		if IsJoker(card) {
-			i++
-			continue
-		}
-		v := card.GetValue()
-		j := i
-		for j < player.GetCardsSize() && !IsJoker(player.GetCard(j)) && player.GetCard(j).GetValue() == v {
-			j++
-		}
-		count := j - i
-		if count >= needed && d.cardStrength(v) > tableStrength {
-			// スート縛りチェック
-			if d.suitLocked && d.config.SuitLockEnabled {
-				suit := player.GetCard(i).GetDesign()
-				if suit != d.lockedSuit {
-					i = j
-					continue
-				}
-			}
-			indices := make([]int, needed)
-			for k := 0; k < needed; k++ {
-				indices[k] = i + k
-			}
-			return indices
-		}
-		// ジョーカー補完
-		if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
-			if count+len(jokerIndices) >= needed {
-				if d.suitLocked && d.config.SuitLockEnabled {
-					suit := player.GetCard(i).GetDesign()
-					if suit != d.lockedSuit {
-						i = j
-						continue
-					}
-				}
-				indices := make([]int, 0, needed)
-				for k := 0; k < count && len(indices) < needed; k++ {
-					indices = append(indices, i+k)
-				}
-				for _, ji := range jokerIndices {
-					if len(indices) >= needed {
-						break
-					}
-					indices = append(indices, ji)
-				}
-				sort.Ints(indices)
-				return indices
-			}
-		}
-		i = j
+	if indices := d.searchCardGroup(player, needed, tableStrength, cardSearchOpts{}); indices != nil {
+		return indices
 	}
 
 	// ジョーカー単体 (温存判定なし)
@@ -1298,72 +1266,12 @@ func (d *Daifugo) findBestPlayHard(player *DaifugoPlayer) []int {
 	}
 
 	needed := len(d.tableCards)
-	tableBase := getBaseValue(d.tableCards)
-	var tableStrength int
-	if tableBase < 0 {
-		tableStrength = DaifugoJokerStrength
-	} else {
-		tableStrength = d.cardStrength(tableBase)
-	}
+	tableStrength := d.calcTableStrength()
 
 	if urgent {
-		// 緊急時: 最強のグループを出す (末尾から探索)
-		jokerIndices := d.findJokerIndices(player)
-		var bestIndices []int
-		i := 0
-		for i < player.GetCardsSize() {
-			card := player.GetCard(i)
-			if IsJoker(card) {
-				i++
-				continue
-			}
-			v := card.GetValue()
-			j := i
-			for j < player.GetCardsSize() && !IsJoker(player.GetCard(j)) && player.GetCard(j).GetValue() == v {
-				j++
-			}
-			count := j - i
-			if count >= needed && d.cardStrength(v) > tableStrength {
-				if d.suitLocked && d.config.SuitLockEnabled {
-					suit := player.GetCard(i).GetDesign()
-					if suit != d.lockedSuit {
-						i = j
-						continue
-					}
-				}
-				indices := make([]int, needed)
-				for k := 0; k < needed; k++ {
-					indices[k] = i + k
-				}
-				bestIndices = indices // 後のグループほど強い → 上書きし続ける
-			}
-			if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
-				if count+len(jokerIndices) >= needed {
-					if d.suitLocked && d.config.SuitLockEnabled {
-						suit := player.GetCard(i).GetDesign()
-						if suit != d.lockedSuit {
-							i = j
-							continue
-						}
-					}
-					indices := make([]int, 0, needed)
-					for k := 0; k < count && len(indices) < needed; k++ {
-						indices = append(indices, i+k)
-					}
-					for _, ji := range jokerIndices {
-						if len(indices) >= needed {
-							break
-						}
-						indices = append(indices, ji)
-					}
-					sort.Ints(indices)
-					bestIndices = indices
-				}
-			}
-			i = j
-		}
-		if bestIndices != nil {
-			return bestIndices
+		// 緊急時: 最強のグループを出す
+		if indices := d.searchCardGroup(player, needed, tableStrength, cardSearchOpts{selectStrongest: true}); indices != nil {
+			return indices
 		}
 		// ジョーカー単体 (緊急時は温存しない)
 		if needed == 1 {
