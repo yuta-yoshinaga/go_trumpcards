@@ -1012,12 +1012,12 @@ func (b *BlackJack) cpuBetAndDeal() {
 			if cpu.GetPlayer().GetChips() < betAmount {
 				betAmount = cpu.GetPlayer().GetChips()
 			}
+			// ベット額をBJMinBetの倍数に丸める（GetCountingBetAmountは内部で丸め済み）
+			betAmount = (betAmount / BJMinBet) * BJMinBet
 		}
 		if betAmount < BJMinBet {
 			continue
 		}
-		// ベット額をBJMinBetの倍数に丸める
-		betAmount = (betAmount / BJMinBet) * BJMinBet
 		cpu.GetPlayer().SubtractChips(betAmount)
 		hand := cpu.GetHands()[0]
 		hand.SetBet(betAmount)
