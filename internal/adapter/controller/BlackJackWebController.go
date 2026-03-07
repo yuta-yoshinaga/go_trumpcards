@@ -107,30 +107,12 @@ func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.Bl
 	switch param.Command {
 	case "r", "reset":
 		if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil || param.DeckPenetration != nil {
-			h17 := false
-			if param.DealerHitsSoft17 != nil {
-				h17 = *param.DealerHitsSoft17
-			}
-			cpuCount := 0
-			if param.CpuPlayerCount != nil {
-				cpuCount = *param.CpuPlayerCount
-			}
-			counting := false
-			if param.CountingEnabled != nil {
-				counting = *param.CountingEnabled
-			}
-			das := true
-			if param.DoubleAfterSplit != nil {
-				das = *param.DoubleAfterSplit
-			}
-			cs := 0
-			if param.CountingSystem != nil {
-				cs = *param.CountingSystem
-			}
-			dp := 0
-			if param.DeckPenetration != nil {
-				dp = *param.DeckPenetration
-			}
+			h17 := derefBool(param.DealerHitsSoft17)
+			cpuCount := derefInt(param.CpuPlayerCount)
+			counting := derefBool(param.CountingEnabled)
+			das := derefBoolDefault(param.DoubleAfterSplit, true)
+			cs := derefInt(param.CountingSystem)
+			dp := derefInt(param.DeckPenetration)
 			bc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp))
 		} else {
 			bc.writePresenterResponse(w, bji.Reset())
@@ -140,14 +122,8 @@ func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.Bl
 	case "s", "stand":
 		bc.writePresenterResponse(w, bji.Stand())
 	case "b", "bet":
-		ppBet := 0
-		if param.PerfectPairsBet != nil {
-			ppBet = *param.PerfectPairsBet
-		}
-		t3Bet := 0
-		if param.TwentyOnePlus3Bet != nil {
-			t3Bet = *param.TwentyOnePlus3Bet
-		}
+		ppBet := derefInt(param.PerfectPairsBet)
+		t3Bet := derefInt(param.TwentyOnePlus3Bet)
 		bc.writePresenterResponse(w, bji.Bet(param.Amount, ppBet, t3Bet))
 	case "d", "doubledown":
 		bc.writePresenterResponse(w, bji.DoubleDown())
