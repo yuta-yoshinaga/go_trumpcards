@@ -95,97 +95,14 @@ type PokerWebOutput struct {
 }
 
 // PokerWebController ポーカーWebコントローラークラス
-type PokerWebController struct {
-	baseController
-	factory func() usecase.PokerInteractorIF
-	store   *SessionStore[usecase.PokerInteractorIF]
-}
+type PokerWebController = GameWebController[usecase.PokerInteractorIF, PokerWebInput, *PokerWebOutput]
 
 // NewPokerWebController コンストラクタ
 func NewPokerWebController(factory func() usecase.PokerInteractorIF) *PokerWebController {
-	return &PokerWebController{
-		factory: factory,
-		store:   NewSessionStore[usecase.PokerInteractorIF](),
-	}
+	return NewGameWebController(factory, newPokerDefaultOutput, nil, pokerDispatch)
 }
 
-// Exec ゲーム実行
-func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	execWithSession(&pwc.baseController, w, r, pwc.store, pwc.factory,
-		func(msg string) any { return pwc.newDefaultOutput(msg) },
-		nil,
-		func(w rest.ResponseWriter, pi usecase.PokerInteractorIF, param PokerWebInput) bool {
-			switch param.Command {
-			case "r", "reset":
-				cfg := domain.DefaultPokerConfig()
-				if param.CpuCount != nil {
-					cc := *param.CpuCount
-					if cc < 1 {
-						cc = 1
-					} else if cc > 3 {
-						cc = 3
-					}
-					cfg.CpuCount = cc
-				}
-				if param.JokerCount != nil {
-					jc := *param.JokerCount
-					if jc < 0 {
-						jc = 0
-					} else if jc > 2 {
-						jc = 2
-					}
-					cfg.JokerCount = jc
-				}
-				if param.BettingLimit != nil {
-					bl := *param.BettingLimit
-					if bl < 0 {
-						bl = 0
-					} else if bl > 2 {
-						bl = 2
-					}
-					cfg.BettingLimit = domain.BettingLimitType(bl)
-				}
-				pwc.writePresenterResponse(w, pi.ResetWithConfig(cfg))
-			case "e", "exchange":
-				indices := param.Indices
-				if indices == nil {
-					indices = []int{}
-				}
-				pwc.writePresenterResponse(w, pi.Exchange(indices))
-			case "s", "stand":
-				pwc.writePresenterResponse(w, pi.Stand())
-			case "f", "fold":
-				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionFold, 0))
-			case "ck", "check":
-				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionCheck, 0))
-			case "c", "call":
-				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionCall, 0))
-			case "b", "bet":
-				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionBet, param.Amount))
-			case "ra", "raise":
-				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionRaise, param.Amount))
-			case "a", "allin":
-				pwc.writePresenterResponse(w, pi.Action(domain.PokerActionAllIn, 0))
-			case "o", "odds":
-				indices := param.Indices
-				if indices == nil {
-					indices = []int{}
-				}
-				pwc.writePresenterResponse(w, pi.Odds(indices))
-			default:
-				return false
-			}
-			return true
-		})
-}
-
-// Stop stops the background cleanup goroutine of the session store.
-func (pwc *PokerWebController) Stop() {
-	pwc.store.Stop()
-}
-
-// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
-func (pwc *PokerWebController) newDefaultOutput(msg string) *PokerWebOutput {
+func newPokerDefaultOutput(msg string) *PokerWebOutput {
 	return &PokerWebOutput{
 		Players:      make([]*PokerWebOutputPlayer, 0),
 		SidePots:     make([]*PokerWebOutputSidePot, 0),
@@ -194,4 +111,68 @@ func (pwc *PokerWebController) newDefaultOutput(msg string) *PokerWebOutput {
 		CpuExchanges: make([]*PokerWebOutputCpuExchange, 0),
 		Message:      msg,
 	}
+}
+
+func pokerDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PokerInteractorIF, param PokerWebInput, _ func(string) *PokerWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		cfg := domain.DefaultPokerConfig()
+		if param.CpuCount != nil {
+			cc := *param.CpuCount
+			if cc < 1 {
+				cc = 1
+			} else if cc > 3 {
+				cc = 3
+			}
+			cfg.CpuCount = cc
+		}
+		if param.JokerCount != nil {
+			jc := *param.JokerCount
+			if jc < 0 {
+				jc = 0
+			} else if jc > 2 {
+				jc = 2
+			}
+			cfg.JokerCount = jc
+		}
+		if param.BettingLimit != nil {
+			bl := *param.BettingLimit
+			if bl < 0 {
+				bl = 0
+			} else if bl > 2 {
+				bl = 2
+			}
+			cfg.BettingLimit = domain.BettingLimitType(bl)
+		}
+		bc.writePresenterResponse(w, pi.ResetWithConfig(cfg))
+	case "e", "exchange":
+		indices := param.Indices
+		if indices == nil {
+			indices = []int{}
+		}
+		bc.writePresenterResponse(w, pi.Exchange(indices))
+	case "s", "stand":
+		bc.writePresenterResponse(w, pi.Stand())
+	case "f", "fold":
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionFold, 0))
+	case "ck", "check":
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionCheck, 0))
+	case "c", "call":
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionCall, 0))
+	case "b", "bet":
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionBet, param.Amount))
+	case "ra", "raise":
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionRaise, param.Amount))
+	case "a", "allin":
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionAllIn, 0))
+	case "o", "odds":
+		indices := param.Indices
+		if indices == nil {
+			indices = []int{}
+		}
+		bc.writePresenterResponse(w, pi.Odds(indices))
+	default:
+		return false
+	}
+	return true
 }

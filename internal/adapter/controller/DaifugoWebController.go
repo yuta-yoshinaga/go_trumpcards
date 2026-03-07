@@ -89,53 +89,52 @@ type DaifugoWebOutput struct {
 }
 
 // DaifugoWebController 大富豪Webコントローラークラス
-type DaifugoWebController struct {
-	baseController
-	factory func() usecase.DaifugoInteractorIF
-	store   *SessionStore[usecase.DaifugoInteractorIF]
-}
+type DaifugoWebController = GameWebController[usecase.DaifugoInteractorIF, DaifugoWebInput, *DaifugoWebOutput]
 
 // NewDaifugoWebController コンストラクタ
 func NewDaifugoWebController(factory func() usecase.DaifugoInteractorIF) *DaifugoWebController {
-	return &DaifugoWebController{
-		factory: factory,
-		store:   NewSessionStore[usecase.DaifugoInteractorIF](),
+	return NewGameWebController(factory, newDaifugoDefaultOutput, nil, daifugoDispatch)
+}
+
+func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {
+	return &DaifugoWebOutput{
+		Players:             make([]*DaifugoWebOutputPlayer, 0),
+		TableCards:          make([]*WebOutputCard, 0),
+		CpuActions:          make([]*DaifugoWebOutputAction, 0),
+		ExchangeActions:     make([]*DaifugoWebOutputExchangeAction, 0),
+		Message:             msg,
+		PendingAction:       "none",
+		PendingActionTarget: -1,
 	}
 }
 
-// Exec ゲーム実行
-func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	execWithSession(&dwc.baseController, w, r, dwc.store, dwc.factory,
-		func(msg string) any { return dwc.newDefaultOutput(msg) },
-		nil,
-		func(w rest.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput) bool {
-			switch param.Command {
-			case "r", "reset":
-				if param.Config != nil {
-					dgConfig := convertWebConfig(*param.Config)
-					dwc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig))
-				} else {
-					dwc.writePresenterResponse(w, dgi.Reset())
-				}
-			case "p", "play":
-				indices := param.Indices
-				if indices == nil {
-					indices = []int{}
-				}
-				dwc.writePresenterResponse(w, dgi.Play(indices))
-			case "sort":
-				mode := domain.DaifugoSortByStrength
-				if param.SortMode != nil {
-					if m := *param.SortMode; m >= int(domain.DaifugoSortByStrength) && m <= int(domain.DaifugoSortByNumber) {
-						mode = domain.DaifugoSortMode(m)
-					}
-				}
-				dwc.writePresenterResponse(w, dgi.Sort(mode))
-			default:
-				return false
+func daifugoDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput, _ func(string) *DaifugoWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		if param.Config != nil {
+			dgConfig := convertWebConfig(*param.Config)
+			bc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig))
+		} else {
+			bc.writePresenterResponse(w, dgi.Reset())
+		}
+	case "p", "play":
+		indices := param.Indices
+		if indices == nil {
+			indices = []int{}
+		}
+		bc.writePresenterResponse(w, dgi.Play(indices))
+	case "sort":
+		mode := domain.DaifugoSortByStrength
+		if param.SortMode != nil {
+			if m := *param.SortMode; m >= int(domain.DaifugoSortByStrength) && m <= int(domain.DaifugoSortByNumber) {
+				mode = domain.DaifugoSortMode(m)
 			}
-			return true
-		})
+		}
+		bc.writePresenterResponse(w, dgi.Sort(mode))
+	default:
+		return false
+	}
+	return true
 }
 
 // convertWebConfig DaifugoWebConfig を domain.DaifugoConfig に変換
@@ -160,23 +159,5 @@ func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
 		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
 		IllegalFinishEnabled:      c.IllegalFinishEnabled,
 		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
-	}
-}
-
-// Stop stops the background cleanup goroutine of the session store.
-func (dwc *DaifugoWebController) Stop() {
-	dwc.store.Stop()
-}
-
-// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
-func (dwc *DaifugoWebController) newDefaultOutput(msg string) *DaifugoWebOutput {
-	return &DaifugoWebOutput{
-		Players:             make([]*DaifugoWebOutputPlayer, 0),
-		TableCards:          make([]*WebOutputCard, 0),
-		CpuActions:          make([]*DaifugoWebOutputAction, 0),
-		ExchangeActions:     make([]*DaifugoWebOutputExchangeAction, 0),
-		Message:             msg,
-		PendingAction:       "none",
-		PendingActionTarget: -1,
 	}
 }
