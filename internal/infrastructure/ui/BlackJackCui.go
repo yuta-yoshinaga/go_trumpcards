@@ -35,5 +35,6 @@ func (cui *BlackJackCui) Exec() {
 		"sp・・・split",
 		"i・・・insurance",
 		"di・・・decline insurance",
+		"scc N・・・set CPU player count (0-3)",
 	})
 }
