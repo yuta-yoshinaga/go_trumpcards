@@ -599,13 +599,15 @@ func TestDoubt_GetSetConfig(t *testing.T) {
 	cfg := game.GetConfig()
 	assert.Equal(t, 10, cfg.DoubtWindowSec)
 	assert.Equal(t, domain.DoubtMemoryLevelNormal, cfg.CpuMemoryLevel)
+	assert.Equal(t, 0, cfg.PenaltyDrawLimit) // default = unlimited
 
 	// Custom config
-	custom := domain.DoubtConfig{DoubtWindowSec: 3, CpuMemoryLevel: domain.DoubtMemoryLevelHard}
+	custom := domain.DoubtConfig{DoubtWindowSec: 3, CpuMemoryLevel: domain.DoubtMemoryLevelHard, PenaltyDrawLimit: 5}
 	game.SetConfig(custom)
 	got := game.GetConfig()
 	assert.Equal(t, 3, got.DoubtWindowSec)
 	assert.Equal(t, domain.DoubtMemoryLevelHard, got.CpuMemoryLevel)
+	assert.Equal(t, 5, got.PenaltyDrawLimit)
 }
 
 func TestDoubt_Reset_ClearsMemory(t *testing.T) {
@@ -938,6 +940,49 @@ func TestDoubt_DynamicBluffChance(t *testing.T) {
 		bluffRate := float64(bluffCount) / float64(trials)
 		assert.Less(t, bluffRate, 0.25, "bluff rate with 1 card should be much lower than 40%%")
 	})
+}
+
+func TestDoubt_ResolveDoubt_PenaltyDrawLimit(t *testing.T) {
+	testCases := []struct {
+		name              string
+		limit             int
+		tableCardCount    int
+		expectedTakeCount int
+		expectedDiscard   int
+	}{
+		{"limit=0 (unlimited), table=5", 0, 5, 5, 0},
+		{"limit=3, table=5", 3, 5, 3, 2},
+		{"limit=5, table=3", 5, 3, 3, 0},
+		{"limit=5, table=5", 5, 5, 5, 0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard, PenaltyDrawLimit: tc.limit})
+
+			tableCards := make([]*domain.Card, tc.tableCardCount)
+			for i := 0; i < tc.tableCardCount; i++ {
+				tableCards[i] = domain.NewCard(domain.CardDesignHeart, i+1, false)
+			}
+			playedCard := tableCards[len(tableCards)-1]
+
+			game.SetLastAction(&domain.DoubtAction{
+				PlayerIdx: 0, ClaimedValue: 13, CardCount: 1,
+				PlayedCards: []*domain.Card{playedCard},
+			})
+			game.SetPhase(domain.DoubtPhaseDoubt)
+			game.SetTableCards(tableCards)
+
+			game.ResolveDoubt([]int{1})
+
+			result := game.GetLastDoubtResult()
+			assert.NotNil(t, result)
+			assert.Equal(t, tc.expectedTakeCount, result.CardCount, "CardCount")
+			assert.Equal(t, tc.expectedDiscard, result.DiscardedCount, "DiscardedCount")
+			assert.Equal(t, tc.expectedTakeCount, players[0].GetCardsSize(), "Loser hand size")
+		})
+	}
 }
 
 func TestDoubt_HasTell(t *testing.T) {

@@ -900,7 +900,11 @@ describe('gameApi', () => {
 
     it('sends config fields when config is provided', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
-      await doubtApi.exec('reset', undefined, undefined, undefined, { doubtWindowSec: 3, cpuMemoryLevel: 2 });
+      await doubtApi.exec('reset', undefined, undefined, undefined, {
+        doubtWindowSec: 3,
+        cpuMemoryLevel: 2,
+        penaltyDrawLimit: 5,
+      });
       expect(mockFetch).toHaveBeenCalledWith(
         '/doubt/exec',
         expect.objectContaining({
@@ -909,6 +913,7 @@ describe('gameApi', () => {
             sessionId,
             doubtWindowSec: 3,
             cpuMemoryLevel: 2,
+            penaltyDrawLimit: 5,
           }),
         }),
       );

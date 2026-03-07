@@ -74,6 +74,9 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 			fmt.Fprintf(&b, "[ダウト] %sが%sをダウト → 正直者！ %sが%d枚引き取りました\n",
 				doubterName, cardPlayerName, loserName, lastResult.CardCount)
 		}
+		if lastResult.DiscardedCount > 0 {
+			fmt.Fprintf(&b, "  (%d枚がゲームから除外されました)\n", lastResult.DiscardedCount)
+		}
 		// 公開されたカード
 		if len(lastResult.RevealedCards) > 0 {
 			b.WriteString("  公開カード: ")

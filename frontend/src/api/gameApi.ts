@@ -117,6 +117,7 @@ export const doubtApi = {
       sessionId,
       doubtWindowSec: config?.doubtWindowSec,
       cpuMemoryLevel: config?.cpuMemoryLevel,
+      penaltyDrawLimit: config?.penaltyDrawLimit,
     }),
 };
 
