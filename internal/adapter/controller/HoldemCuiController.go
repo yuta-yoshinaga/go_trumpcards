@@ -23,7 +23,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.hi.Reset() },
-		func(command string) string { return "コマンドが不明です: " + command },
+		unknownCommandMessage,
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "fold":

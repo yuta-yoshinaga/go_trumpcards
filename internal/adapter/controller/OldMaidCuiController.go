@@ -24,7 +24,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.omi.Reset(domain.DefaultOldMaidConfig()) },
-		func(command string) string { return "コマンドが不明です: " + command },
+		unknownCommandMessage,
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "draw":
