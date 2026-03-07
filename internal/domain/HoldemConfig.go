@@ -8,6 +8,7 @@ const (
 	HoldemStyleLAP                        // Loose-Passive
 	HoldemStyleTAP                        // Tight-Passive
 	HoldemStyleLAG                        // Loose-Aggressive
+	HoldemStyleGTO                        // Game Theory Optimal
 )
 
 // HoldemPlayStyleNames プレイスタイル名
@@ -16,6 +17,7 @@ var HoldemPlayStyleNames = []string{
 	"LAP",
 	"TAP",
 	"LAG",
+	"GTO",
 }
 
 // HoldemConfig テキサスホールデム設定

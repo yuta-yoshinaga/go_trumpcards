@@ -23,7 +23,7 @@ func NewHoldemCui() *HoldemCui {
 		domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
 		domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
 		domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+		domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
 	}
 	holdem := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
 	return &HoldemCui{

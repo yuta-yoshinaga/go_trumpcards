@@ -97,7 +97,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
 				domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
 				domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-				domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+				domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
 			}
 			holdem := domain.NewHoldem(domain.NewTrumpCards(0), players, domain.DefaultHoldemConfig())
 			return usecase.NewHoldemInteractor(holdem, presenter.NewHoldemWebPresenter())

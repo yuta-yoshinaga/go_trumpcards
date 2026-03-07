@@ -16,7 +16,7 @@ func makeHoldemForPresenter() (*domain.Holdem, []*domain.HoldemPlayer) {
 		domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
 		domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
 		domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+		domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
 	}
 	h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
 	return h, players

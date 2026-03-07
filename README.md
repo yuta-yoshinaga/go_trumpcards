@@ -15,7 +15,7 @@
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます — [CUI版マニュアル](docs/manual/cui/daifugo.md) / [Web版マニュアル](docs/manual/web/daifugo.md)
 - **7並べ (Sevens)**: CLI および Web GUIで遊べます（オプションルール: トンネル、ジョーカー、CPU戦略、片側ストップ、ジョーカー連続禁止） — [CUI版マニュアル](docs/manual/cui/sevens.md) / [Web版マニュアル](docs/manual/web/sevens.md)
 - **ダウト (Doubt)**: CLI および Web GUIで遊べます（1人 vs CPU×3、10秒ダウト判定ウィンドウ付き） — [CUI版マニュアル](docs/manual/cui/doubt.md) / [Web版マニュアル](docs/manual/web/doubt.md)
-- **テキサスホールデム (Texas Hold'em)**: CLI および Web GUIで遊べます（1人 vs CPU×3、4種のプレイスタイル、サイドポット対応、キッカー表示） — [CUI版マニュアル](docs/manual/cui/holdem.md) / [Web版マニュアル](docs/manual/web/holdem.md)
+- **テキサスホールデム (Texas Hold'em)**: CLI および Web GUIで遊べます（1人 vs CPU×3、5種のプレイスタイル、サイドポット対応、キッカー表示） — [CUI版マニュアル](docs/manual/cui/holdem.md) / [Web版マニュアル](docs/manual/web/holdem.md)
 
 ## Requirements
 

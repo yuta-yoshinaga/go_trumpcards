@@ -630,11 +630,244 @@ func (h *Holdem) bettingLimits() (maxRaises, maxBetAmount int) {
 	return CalculateBettingLimits(h.config.BettingLimit, h.pot, h.lastBet)
 }
 
+// --- GTO (Game Theory Optimal) AI ---
+
+// boardTexture ボードテクスチャ分析結果
+type boardTexture struct {
+	paired       bool // ペアボード (同じ数字が2枚以上)
+	flushDraw    bool // フラッシュドロー (同スート3枚以上)
+	straightDraw bool // ストレートドロー (5幅ウィンドウ内に3枚以上)
+	wet          bool // ウェットボード (flushDraw || straightDraw)
+	highCards    int  // ハイカード数 (10以上 or A)
+}
+
+// evalBoardTexture コミュニティカードからボードテクスチャを分析
+func evalBoardTexture(communityCards []*Card) boardTexture {
+	bt := boardTexture{}
+	if len(communityCards) == 0 {
+		return bt
+	}
+
+	// ペア判定
+	valCount := make(map[int]int)
+	suitCount := make(map[int]int)
+	for _, c := range communityCards {
+		valCount[c.GetValue()]++
+		suitCount[c.GetDesign()]++
+	}
+	for _, cnt := range valCount {
+		if cnt >= 2 {
+			bt.paired = true
+			break
+		}
+	}
+
+	// フラッシュドロー判定
+	for _, cnt := range suitCount {
+		if cnt >= 3 {
+			bt.flushDraw = true
+			break
+		}
+	}
+
+	// ストレートドロー判定: 5幅ウィンドウ内に3枚以上
+	vals := make(map[int]bool)
+	for _, c := range communityCards {
+		v := c.GetValue()
+		vals[v] = true
+		if v == 1 {
+			vals[14] = true // A=14としても扱う
+		}
+	}
+	for base := 1; base <= 10; base++ {
+		cnt := 0
+		for v := base; v < base+5; v++ {
+			if vals[v] {
+				cnt++
+			}
+		}
+		if cnt >= 3 {
+			bt.straightDraw = true
+			break
+		}
+	}
+
+	bt.wet = bt.flushDraw || bt.straightDraw
+
+	// ハイカード数 (10以上 or A)
+	for _, c := range communityCards {
+		v := c.GetValue()
+		if v >= 10 || v == 1 {
+			bt.highCards++
+		}
+	}
+
+	return bt
+}
+
+// gtoHandCategory GTOハンドカテゴリ
+type gtoHandCategory int
+
+const (
+	gtoHandTrash  gtoHandCategory = 0 // ゴミ
+	gtoHandWeak   gtoHandCategory = 1 // 弱い
+	gtoHandMedium gtoHandCategory = 2 // 中程度
+	gtoHandStrong gtoHandCategory = 3 // 強い
+	gtoHandNuts   gtoHandCategory = 4 // ナッツ級
+)
+
+// classifyGTOHand ハンドランクからGTOカテゴリに分類
+func classifyGTOHand(handRank int) gtoHandCategory {
+	switch {
+	case handRank >= PokerHandFourOfAKind: // FourOfAKind, StraightFlush, RoyalFlush, FiveOfAKind
+		return gtoHandNuts
+	case handRank >= PokerHandFlush: // Flush, FullHouse
+		return gtoHandStrong
+	case handRank >= PokerHandThreeOfAKind: // ThreeOfAKind, Straight
+		return gtoHandMedium
+	case handRank >= PokerHandOnePair: // OnePair, TwoPair
+		return gtoHandWeak
+	default: // HighCard
+		return gtoHandTrash
+	}
+}
+
+// gtoActionDist GTOアクション確率分布 (合計100)
+type gtoActionDist struct {
+	foldPct  int
+	checkPct int
+	betPct   int
+}
+
+// gtoPreFlopTable プリフロップGTOアクション分布テーブル
+// strength: 0-19=trash, 20-39=weak, 40-59=medium, 60-79=strong, 80-100=premium
+var gtoPreFlopTable = [5]gtoActionDist{
+	{foldPct: 70, checkPct: 20, betPct: 10}, // trash (0-19)
+	{foldPct: 40, checkPct: 35, betPct: 25}, // weak (20-39)
+	{foldPct: 15, checkPct: 35, betPct: 50}, // medium (40-59)
+	{foldPct: 5, checkPct: 20, betPct: 75},  // strong (60-79)
+	{foldPct: 0, checkPct: 10, betPct: 90},  // premium (80-100)
+}
+
+// gtoPostFlopTable ポストフロップGTOアクション分布テーブル [handCategory][0=dry,1=wet]
+var gtoPostFlopTable = [5][2]gtoActionDist{
+	// trash
+	{{foldPct: 60, checkPct: 30, betPct: 10}, {foldPct: 75, checkPct: 20, betPct: 5}},
+	// weak
+	{{foldPct: 25, checkPct: 45, betPct: 30}, {foldPct: 35, checkPct: 40, betPct: 25}},
+	// medium
+	{{foldPct: 5, checkPct: 30, betPct: 65}, {foldPct: 10, checkPct: 25, betPct: 65}},
+	// strong
+	{{foldPct: 0, checkPct: 20, betPct: 80}, {foldPct: 0, checkPct: 15, betPct: 85}},
+	// nuts
+	{{foldPct: 0, checkPct: 15, betPct: 85}, {foldPct: 0, checkPct: 10, betPct: 90}},
+}
+
+// gtoPreFlopIndex プリフロップ強度からテーブルインデックスを返す
+func gtoPreFlopIndex(strength int) int {
+	switch {
+	case strength >= 80:
+		return 4
+	case strength >= 60:
+		return 3
+	case strength >= 40:
+		return 2
+	case strength >= 20:
+		return 1
+	default:
+		return 0
+	}
+}
+
+// gtoRollAction 確率分布に基づいてアクションを決定
+func gtoRollAction(dist gtoActionDist) int {
+	roll := rand.Intn(100)
+	if roll < dist.foldPct {
+		return 0 // fold
+	}
+	if roll < dist.foldPct+dist.checkPct {
+		return 1 // check/call
+	}
+	return 2 // bet/raise
+}
+
+// cpuDecidePreFlopGTO GTOプリフロップ意思決定
+func (h *Holdem) cpuDecidePreFlopGTO(idx, callAmount int) (int, int) {
+	p := h.players[idx]
+	strength := h.evalPreFlopStrength(idx)
+	dist := gtoPreFlopTable[gtoPreFlopIndex(strength)]
+	decision := gtoRollAction(dist)
+
+	switch decision {
+	case 0: // fold
+		return h.cpuFoldOrCheck(callAmount)
+	case 2: // bet/raise
+		betAmt := h.cpuPotBet(66)
+		return h.cpuRaiseOrBet(p, callAmount, betAmt)
+	default: // check/call
+		return h.cpuCallOrCheck(callAmount)
+	}
+}
+
+// cpuDecidePostFlopGTO GTOポストフロップ意思決定
+func (h *Holdem) cpuDecidePostFlopGTO(idx, callAmount int) (int, int) {
+	p := h.players[idx]
+	handRank := p.EvalBestHand(h.communityCards)
+	category := classifyGTOHand(handRank)
+	bt := evalBoardTexture(h.communityCards)
+
+	wetIdx := 0
+	if bt.wet {
+		wetIdx = 1
+	}
+	dist := gtoPostFlopTable[category][wetIdx]
+	decision := gtoRollAction(dist)
+
+	// ベットサイズ: ドライ=2/3ポット, ウェット=3/4ポット
+	potPct := 66
+	if bt.wet {
+		potPct = 75
+	}
+
+	switch decision {
+	case 0: // fold
+		return h.cpuFoldOrCheck(callAmount)
+	case 2: // bet/raise
+		betAmt := h.cpuPotBet(potPct)
+		return h.cpuRaiseOrBet(p, callAmount, betAmt)
+	default: // check/call
+		return h.cpuCallOrCheck(callAmount)
+	}
+}
+
 // cpuDecide CPUプレイヤーの意思決定
 func (h *Holdem) cpuDecide(idx int) (int, int) {
 	p := h.players[idx]
 	style := p.GetPlayStyle()
 	callAmount := h.lastBet - p.GetCurrentBet()
+
+	// GTO: 独自の混合戦略ロジックを使用
+	if style == HoldemStyleGTO {
+		var action, amount int
+		if h.phase == HoldemPhasePreFlop {
+			action, amount = h.cpuDecidePreFlopGTO(idx, callAmount)
+		} else {
+			action, amount = h.cpuDecidePostFlopGTO(idx, callAmount)
+		}
+		maxRaises, maxBetAmount := h.bettingLimits()
+		if maxBetAmount > 0 && amount > maxBetAmount {
+			amount = maxBetAmount
+		}
+		if maxRaises > 0 && h.raiseCount >= maxRaises {
+			if action == HoldemActionRaise || action == HoldemActionBet {
+				if callAmount > 0 {
+					return HoldemActionCall, 0
+				}
+				return HoldemActionCheck, 0
+			}
+		}
+		return action, amount
+	}
 
 	params, ok := holdemStyleParamsMap[style]
 	if !ok {
