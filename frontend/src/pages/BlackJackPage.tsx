@@ -263,7 +263,7 @@ export function BlackJackPage() {
                 deckCount={state?.deckCount ?? 1}
                 onDeckCountChange={(v) => exec('setdeckcount', v)}
                 cpuPlayerCount={cpuPlayerCount}
-                onCpuPlayerCountChange={setCpuPlayerCount}
+                onCpuPlayerCountChange={(v) => exec('setcpucount', v)}
                 hintEnabled={hintEnabled}
                 onToggleHint={() => exec('togglehint')}
                 dealerHitsSoft17={dealerHitsSoft17}

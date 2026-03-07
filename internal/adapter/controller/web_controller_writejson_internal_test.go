@@ -44,6 +44,7 @@ func (m *mockBlackJackIF) ToggleCounting() string                    { return ""
 func (m *mockBlackJackIF) ToggleDAS() string                         { return "" }
 func (m *mockBlackJackIF) SetCountingSystem(system int) string       { return "" }
 func (m *mockBlackJackIF) SetDeckPenetration(penetration int) string { return "" }
+func (m *mockBlackJackIF) SetCpuPlayerCount(count int) string        { return "" }
 func (m *mockBlackJackIF) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
 	return ""
 }

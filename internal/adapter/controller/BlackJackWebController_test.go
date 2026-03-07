@@ -530,6 +530,38 @@ func TestBlackJackWebController_SetPenetration(t *testing.T) {
 	})
 }
 
+func TestBlackJackWebController_SetCpuPlayerCount(t *testing.T) {
+	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","cpuPlayerCount":2}`
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetCpuPlayerCount", 2).Return(mockOutput)
+	factory := func() uc.BlackJackInteractorIF { return bjiMock }
+	tbc := controller.NewBlackJackWebController(factory)
+	defer tbc.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/blackjack/exec", tbc.Exec))
+	api.SetApp(router)
+
+	t.Run("setcpucount with amount", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"setcpucount","amount":2,"sessionId":"bj-scc-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+	})
+
+	t.Run("scc shorthand", func(t *testing.T) {
+		var input controller.BlackJackWebInput
+		_ = json.Unmarshal([]byte(`{"command":"scc","amount":2,"sessionId":"bj-scc-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/blackjack/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+	})
+}
+
 func TestBlackJackWebController_ResetWithPenetration(t *testing.T) {
 	mockOutput := `{"dealer":{"score":0,"cards":null,"chips":1000},"player":{"score":0,"cards":null,"chips":1000},"message":"","deckPenetration":50}`
 	bjiMock := new(usecase.MockBlackJackInteractor)

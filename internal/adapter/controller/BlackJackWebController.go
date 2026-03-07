@@ -175,6 +175,8 @@ func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) 
 				bwc.writePresenterResponse(w, bji.SetCountingSystem(param.Amount))
 			case "pen", "setpenetration":
 				bwc.writePresenterResponse(w, bji.SetDeckPenetration(param.Amount))
+			case "scc", "setcpucount":
+				bwc.writePresenterResponse(w, bji.SetCpuPlayerCount(param.Amount))
 			default:
 				return false
 			}

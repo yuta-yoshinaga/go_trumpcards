@@ -24,6 +24,7 @@ type BlackJackInteractorIF interface {
 	ToggleDAS() string
 	SetCountingSystem(system int) string
 	SetDeckPenetration(penetration int) string
+	SetCpuPlayerCount(count int) string
 	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string
 }
 
@@ -149,6 +150,14 @@ func (bi *BlackJackInteractor) SetCountingSystem(system int) string {
 func (bi *BlackJackInteractor) SetDeckPenetration(penetration int) string {
 	config := bi.bj.GetConfig()
 	config.DeckPenetration = penetration
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// SetCpuPlayerCount CPUプレイヤー数変更
+func (bi *BlackJackInteractor) SetCpuPlayerCount(count int) string {
+	config := bi.bj.GetConfig()
+	config.CpuPlayerCount = count
 	err := bi.bj.SetConfig(config)
 	return bi.bjp.Output(bi.bj, err)
 }
