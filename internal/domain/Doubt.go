@@ -543,8 +543,8 @@ func selectMixedCards(player *DoubtPlayer, claimedValue int, numCards int) []*Ca
 		}
 	}
 
-	// 不一致カードがない場合はフォールバック
-	if len(nonMatching) == 0 {
+	// 一致または不一致カードがない場合はフォールバック
+	if len(matching) == 0 || len(nonMatching) == 0 {
 		indices := make([]int, numCards)
 		for i := range indices {
 			indices[i] = i

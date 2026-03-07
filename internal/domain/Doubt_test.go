@@ -344,7 +344,7 @@ func TestDoubt_CpuPlay_MixedBluff(t *testing.T) {
 		for attempt := 0; attempt < 1000; attempt++ {
 			game, players := makeDoubtGame()
 			advanceToCpuTurn(game)
-			// Give CPU 1 cards with different values to enable mixed bluff
+			// Give CPU 1 five cards with different values to enable mixed bluff
 			for i := 1; i <= 5; i++ {
 				players[1].AddCard(domain.NewCard(domain.CardDesignSpade, i, false))
 			}

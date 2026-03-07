@@ -170,6 +170,16 @@ func TestSelectMixedCards(t *testing.T) {
 		}
 	})
 
+	t.Run("fallback - no cards match claimed value", func(t *testing.T) {
+		player := NewDoubtPlayer(false)
+		player.AddCard(NewCard(CardDesignSpade, 3, false))
+		player.AddCard(NewCard(CardDesignHeart, 7, false))
+		player.AddCard(NewCard(CardDesignClover, 9, false))
+
+		played := selectMixedCards(player, 5, 2)
+		assert.Len(t, played, 2)
+	})
+
 	t.Run("guard - numCards < 2 returns single card", func(t *testing.T) {
 		player := NewDoubtPlayer(false)
 		player.AddCard(NewCard(CardDesignSpade, 5, false))
