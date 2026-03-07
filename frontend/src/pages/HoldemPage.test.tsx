@@ -838,7 +838,11 @@ describe('HoldemPage', () => {
   it('shows HUD stats for CPU when totalHands > 0', async () => {
     mockExec.mockResolvedValue({
       ...preFlopState,
-      players: [humanPlayer(), cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20, threeBet: 10, af: '2.5' }), cpuPlayer(2)],
+      players: [
+        humanPlayer(),
+        cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20, threeBet: 10, af: '2.5' }),
+        cpuPlayer(2),
+      ],
     });
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/VPIP:60% PFR:20% 3Bet:10% AF:2\.5/)).toBeInTheDocument());
