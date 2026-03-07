@@ -321,6 +321,9 @@ func (m *mockDoubtIF) GetCpuDoubters() []int {
 	}
 	return nil
 }
+func (m *mockDoubtIF) GetConfig() domain.DoubtConfig {
+	return m.Called().Get(0).(domain.DoubtConfig)
+}
 
 func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 	dwMock := &mockDoubtIF{}
