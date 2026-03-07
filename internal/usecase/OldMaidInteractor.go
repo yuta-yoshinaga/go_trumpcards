@@ -9,6 +9,7 @@ import (
 // OldMaidInteractorIF ババ抜きインタラクターインタフェース
 type OldMaidInteractorIF interface {
 	Reset(config domain.OldMaidConfig) string
+	GetConfig() domain.OldMaidConfig
 	Draw(cardIdx int) string
 	Shuffle() string
 	Reorder(indices []int) string
@@ -27,6 +28,11 @@ func NewOldMaidInteractor(om interfaces.OldMaidGame, omp presenter.OldMaidPresen
 		om:  om,
 		omp: omp,
 	}
+}
+
+// GetConfig 現在の設定を返す
+func (oi *OldMaidInteractor) GetConfig() domain.OldMaidConfig {
+	return oi.om.GetConfig()
 }
 
 // Reset ゲーム初期化

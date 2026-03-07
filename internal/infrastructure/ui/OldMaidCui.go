@@ -35,5 +35,10 @@ func (cui *OldMaidCui) Exec() {
 		"q・・・quit",
 		"r・・・reset",
 		"d・・・draw (カードを引く)",
+		"s・・・shuffle (手札をシャッフル)",
+		"ro [i0 i1 ...]・・・reorder (手札を並べ替え)",
+		"sm [0-1]・・・set mode (0=Normal, 1=JijiNuki)",
+		"sps [0-1]・・・set CPU placement strategy (0=OFF, 1=ON)",
+		"sma [0-1]・・・set CPU memory AI (0=OFF, 1=ON)",
 	})
 }
