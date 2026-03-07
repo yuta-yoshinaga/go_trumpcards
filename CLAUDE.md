@@ -49,20 +49,20 @@ docker run --rm -d -p 8080:8080 go_trumpcards
 
 ## Architecture
 
-Clean Architecture: `infrastructure` -> `adapter` -> `usecase` -> `domain`. See `docs/architecture.md` for full details.
+Clean Architecture: `infrastructure` -> `adapter` -> `usecase` -> `domain`. See [`docs/architecture.md`](docs/architecture.md) for full details.
 
 ## Testing
 
 TDD (Red-Green-Refactor) is mandatory. 100% branch coverage (C1) required. See:
-- `docs/testing.md` -- Full testing policy (Go + frontend + E2E + i18n)
-- `.ai/skills/tdd-flow.md` -- TDD cycle workflow
-- `.ai/hooks/README.md` -- Pre-commit verification commands
-- `internal/CLAUDE.md` -- Go-specific testing rules
-- `frontend/CLAUDE.md` -- Frontend-specific testing rules
+- [`docs/testing.md`](docs/testing.md) -- Full testing policy (Go + frontend + E2E + i18n)
+- [`.ai/skills/tdd-flow.md`](.ai/skills/tdd-flow.md) -- TDD cycle workflow
+- [`.ai/hooks/README.md`](.ai/hooks/README.md) -- Pre-commit verification commands
+- [`internal/CLAUDE.md`](internal/CLAUDE.md) -- Go-specific testing rules
+- [`frontend/CLAUDE.md`](frontend/CLAUDE.md) -- Frontend-specific testing rules
 
 ## Documentation Maintenance
 
-See `docs/documentation-maintenance.md` for the update matrix.
+See [`docs/documentation-maintenance.md`](docs/documentation-maintenance.md) for the update matrix.
 
 ## Git Workflow
 
@@ -87,18 +87,18 @@ All commit messages must follow [Conventional Commits](https://www.conventionalc
 
 ## Workflow & Principles
 
-See `docs/workflow.md` for workflow orchestration, task management, and core principles.
+See [`docs/workflow.md`](docs/workflow.md) for workflow orchestration, task management, and core principles.
 
 ## Detailed Context
 
 | Topic | File |
 |-------|------|
-| Architecture & key patterns | `docs/architecture.md` |
-| Testing policy (all layers) | `docs/testing.md` |
-| Game descriptions & entities | `docs/games.md` |
-| Documentation update matrix | `docs/documentation-maintenance.md` |
-| Workflow & principles | `docs/workflow.md` |
-| TDD skill | `.ai/skills/tdd-flow.md` |
-| Pre-commit hooks | `.ai/hooks/README.md` |
-| Go backend rules | `internal/CLAUDE.md` |
-| Frontend rules | `frontend/CLAUDE.md` |
+| Architecture & key patterns | [`docs/architecture.md`](docs/architecture.md) |
+| Testing policy (all layers) | [`docs/testing.md`](docs/testing.md) |
+| Game descriptions & entities | [`docs/games.md`](docs/games.md) |
+| Documentation update matrix | [`docs/documentation-maintenance.md`](docs/documentation-maintenance.md) |
+| Workflow & principles | [`docs/workflow.md`](docs/workflow.md) |
+| TDD skill | [`.ai/skills/tdd-flow.md`](.ai/skills/tdd-flow.md) |
+| Pre-commit hooks | [`.ai/hooks/README.md`](.ai/hooks/README.md) |
+| Go backend rules | [`internal/CLAUDE.md`](internal/CLAUDE.md) |
+| Frontend rules | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
