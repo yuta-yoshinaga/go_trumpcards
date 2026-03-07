@@ -7,6 +7,7 @@
   "passCount": "パス: {{used}}/{{max}}",
   "passUnlimited": "∞",
   "clickPlayable": "出せるカードをクリック",
+  "playTitle": "出す: {{design}} {{value}}",
   "rankLabel": "{{rank}}位",
   "placeAriaLabel": "{{suit}} {{value}} に配置",
   "tunnelConnection": "トンネル接続",

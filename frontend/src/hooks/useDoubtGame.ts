@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { doubtApi } from '../api/gameApi';
-import { useCardSelection } from '../hooks/useCardSelection';
-import { useGameApi } from '../hooks/useGameApi';
 import type { DoubtConfig, DoubtCpuAction, DoubtPlayerData } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
+import { useCardSelection } from './useCardSelection';
+import { useGameApi } from './useGameApi';
 
 export const DEFAULT_DOUBT_CONFIG: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 0 };
 
@@ -112,23 +112,23 @@ export function useDoubtGame() {
     }
   }, [state, startCountdown]);
 
-  const handlePlay = () => {
+  const handlePlay = useCallback(() => {
     exec('play', selectedCardIndices, claimedValue);
-  };
+  }, [exec, selectedCardIndices, claimedValue]);
 
-  const handleDoubt = () => {
+  const handleDoubt = useCallback(() => {
     stopCountdown();
     exec('doubt', undefined, undefined, [0, ...(state?.cpuDoubters ?? [])]);
-  };
+  }, [exec, stopCountdown, state?.cpuDoubters]);
 
-  const handleSkip = () => {
+  const handleSkip = useCallback(() => {
     stopCountdown();
     exec('skip', undefined, undefined, state?.cpuDoubters);
-  };
+  }, [exec, stopCountdown, state?.cpuDoubters]);
 
-  const handleCpuDoubtConfirm = () => {
+  const handleCpuDoubtConfirm = useCallback(() => {
     exec('doubt', undefined, undefined, state?.cpuDoubters);
-  };
+  }, [exec, state?.cpuDoubters]);
 
   return {
     state,

@@ -12,10 +12,10 @@ export const designToSuit: Record<CardDesign, number> = {
 };
 
 export const SUITS = [
-  { idx: 1, name: 'SPADE', label: '\u2660', color: '#e0e0e0' },
-  { idx: 2, name: 'CLOVER', label: '\u2663', color: '#e0e0e0' },
-  { idx: 3, name: 'HEART', label: '\u2665', color: '#f87171' },
-  { idx: 4, name: 'DIAMOND', label: '\u2666', color: '#f87171' },
+  { idx: 1, name: 'SPADE', label: '♠', color: '#e0e0e0' },
+  { idx: 2, name: 'CLOVER', label: '♣', color: '#e0e0e0' },
+  { idx: 3, name: 'HEART', label: '♥', color: '#f87171' },
+  { idx: 4, name: 'DIAMOND', label: '♦', color: '#f87171' },
 ];
 
 export function isPositionPlaced(tablePlaced: number[], suit: number, value: number): boolean {

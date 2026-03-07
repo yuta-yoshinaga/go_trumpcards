@@ -31,19 +31,25 @@ export function useSevensGame() {
     exec('reset');
   }, [exec]);
 
-  const handleCardPlay = (idx: number) => {
-    const humanPlayer = state?.players.find((p) => p.isHuman);
-    const card = humanPlayer?.cards?.[idx];
-    if (card?.design === 'JOKER') {
-      setJokerCardIdx(idx);
-    } else {
-      exec('play', idx);
-    }
-  };
+  const handleCardPlay = useCallback(
+    (idx: number) => {
+      const humanPlayer = state?.players.find((p) => p.isHuman);
+      const card = humanPlayer?.cards?.[idx];
+      if (card?.design === 'JOKER') {
+        setJokerCardIdx(idx);
+      } else {
+        exec('play', idx);
+      }
+    },
+    [state, exec],
+  );
 
-  const handleJokerPlace = (suit: number, value: number) => {
-    exec('joker', jokerCardIdx as number, suit, value);
-  };
+  const handleJokerPlace = useCallback(
+    (suit: number, value: number) => {
+      exec('joker', jokerCardIdx as number, suit, value);
+    },
+    [exec, jokerCardIdx],
+  );
 
   return {
     state,

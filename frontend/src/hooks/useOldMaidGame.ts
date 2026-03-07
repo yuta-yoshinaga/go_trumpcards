@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
-import { useGameApi } from '../hooks/useGameApi';
 import type { Card, OldMaidResponse } from '../types/card';
+import { useGameApi } from './useGameApi';
 
 const REPLAY_DELAY_MS = 800;
 

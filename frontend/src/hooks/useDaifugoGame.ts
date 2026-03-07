@@ -44,26 +44,32 @@ export function useDaifugoGame() {
     exec('reset');
   }, [exec]);
 
-  const handleDragCard = (idx: number) => {
-    setSelectedIndices((prev) => (prev.includes(idx) ? prev : [...prev, idx]));
-  };
+  const handleDragCard = useCallback(
+    (idx: number) => {
+      setSelectedIndices((prev) => (prev.includes(idx) ? prev : [...prev, idx]));
+    },
+    [setSelectedIndices],
+  );
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const draggedIdx = parseInt(e.dataTransfer.getData('cardIndex'), 10);
-    if (Number.isNaN(draggedIdx)) {
-      return;
-    }
-    const toPlay = selectedIndices.includes(draggedIdx) ? selectedIndices : [draggedIdx];
-    exec(
-      'play',
-      [...toPlay].sort((a, b) => a - b),
-    );
-  };
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const draggedIdx = parseInt(e.dataTransfer.getData('cardIndex'), 10);
+      if (Number.isNaN(draggedIdx)) {
+        return;
+      }
+      const toPlay = selectedIndices.includes(draggedIdx) ? selectedIndices : [draggedIdx];
+      exec(
+        'play',
+        [...toPlay].sort((a, b) => a - b),
+      );
+    },
+    [exec, selectedIndices],
+  );
 
-  const handleConfigChange = (key: keyof DaifugoConfigInput, value: boolean | number) => {
+  const handleConfigChange = useCallback((key: keyof DaifugoConfigInput, value: boolean | number) => {
     setConfigInput((prev) => ({ ...prev, [key]: value }));
-  };
+  }, []);
 
   return {
     state,
