@@ -92,10 +92,6 @@ func newDoubtDefaultOutput(msg string) *DoubtWebOutput {
 }
 
 func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtInteractorIF, param DoubtWebInput, newDefault func(string) *DoubtWebOutput) bool {
-	if len(param.CardIndices) > MaxCardIndices {
-		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
-		return true
-	}
 	switch param.Command {
 	case "r", "reset":
 		cfg := domain.DefaultDoubtConfig()
@@ -113,6 +109,10 @@ func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtI
 		}
 		bc.writePresenterResponse(w, dgi.ResetWithConfig(cfg))
 	case "p", "play":
+		if len(param.CardIndices) > MaxCardIndices {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
+			return true
+		}
 		if param.ClaimedValue < domain.MinClaimedValue || param.ClaimedValue > domain.MaxClaimedValue {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault(fmt.Sprintf("param error: claimedValue must be between %d and %d.", domain.MinClaimedValue, domain.MaxClaimedValue)))
 			return true
