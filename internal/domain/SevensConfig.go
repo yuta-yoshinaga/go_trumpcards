@@ -14,10 +14,12 @@ type SevensConfig struct {
 // DefaultSevensConfig デフォルト設定 (全機能無効)
 func DefaultSevensConfig() SevensConfig {
 	return SevensConfig{
-		TunnelEnabled: false,
-		JokerCount:    0,
-		CpuStrategy:   false,
-		MaxPasses:     SevensMaxPasses,
-		NoJokerFinish: false,
+		TunnelEnabled:       false,
+		JokerCount:          0,
+		CpuStrategy:         false,
+		MaxPasses:           SevensMaxPasses,
+		NoJokerFinish:       false,
+		JokerReclaimEnabled: false,
+		EndStopEnabled:      false,
 	}
 }

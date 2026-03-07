@@ -3296,6 +3296,28 @@ func TestSevens_EndStop(t *testing.T) {
 		assert.True(t, s.IsPlayable(card8), "8 should be playable on fresh board with EndStop")
 	})
 
+	t.Run("EndStop enabled but A not placed high side still playable", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Only 7 is placed (no A), so 8 should be playable
+		card8 := domain.NewCard(domain.CardDesignSpade, 8, false)
+		assert.True(t, s.IsPlayable(card8), "high side should be playable when A not placed")
+	})
+
+	t.Run("EndStop enabled but K not placed low side still playable", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Only 7 is placed (no K), so 6 should be playable
+		card6 := domain.NewCard(domain.CardDesignSpade, 6, false)
+		assert.True(t, s.IsPlayable(card6), "low side should be playable when K not placed")
+	})
+
 	t.Run("EndStop with CPU strategy", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()

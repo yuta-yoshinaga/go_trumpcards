@@ -1104,6 +1104,48 @@ describe('SevensPage', () => {
     expect(playableCards).toHaveLength(1);
   });
 
+  it('does not block high side when EndStop enabled but A not placed', async () => {
+    // SPADE: only 7 placed (bit 7 = 128), EndStop enabled → Spade 8 should be playable
+    const endStopNoBlockState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, endStopEnabled: true },
+      tablePlaced: [0, 128, 128, 128, 128],
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [{ design: 'SPADE', value: 8 }],
+          cardCount: 1,
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(endStopNoBlockState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    expect(screen.queryAllByTestId('playable-card')).toHaveLength(1);
+  });
+
+  it('does not block low side when EndStop enabled but K not placed', async () => {
+    // SPADE: only 7 placed (bit 7 = 128), EndStop enabled → Spade 6 should be playable
+    const endStopNoBlockLowState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, endStopEnabled: true },
+      tablePlaced: [0, 128, 128, 128, 128],
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [{ design: 'SPADE', value: 6 }],
+          cardCount: 1,
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(endStopNoBlockLowState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    expect(screen.queryAllByTestId('playable-card')).toHaveLength(1);
+  });
+
   it('does not block cards when EndStop is disabled even if A is placed', async () => {
     // SPADE: A + 2-6 + 7 placed, EndStop disabled → Spade 8 should be playable
     const noEndStopState: SevensResponse = {
