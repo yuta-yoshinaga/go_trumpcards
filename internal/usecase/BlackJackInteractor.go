@@ -36,12 +36,7 @@ type BlackJackInteractor struct {
 
 // NewBlackJackInteractor コンストラクタ
 func NewBlackJackInteractor(bj interfaces.BlackJackGame, bjp presenter.BlackJackPresenter) *BlackJackInteractor {
-	if bj == nil {
-		panic("BlackJackInteractor: bj must not be nil")
-	}
-	if bjp == nil {
-		panic("BlackJackInteractor: bjp must not be nil")
-	}
+	mustNotNil("BlackJackInteractor", map[string]any{"bj": bj, "bjp": bjp})
 	return &BlackJackInteractor{
 		bj:  bj,
 		bjp: bjp,

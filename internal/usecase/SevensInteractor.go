@@ -22,12 +22,7 @@ type SevensInteractor struct {
 
 // NewSevensInteractor コンストラクタ
 func NewSevensInteractor(s interfaces.SevensGame, sp presenter.SevensPresenter) *SevensInteractor {
-	if s == nil {
-		panic("SevensInteractor: s must not be nil")
-	}
-	if sp == nil {
-		panic("SevensInteractor: sp must not be nil")
-	}
+	mustNotNil("SevensInteractor", map[string]any{"s": s, "sp": sp})
 	return &SevensInteractor{
 		s:  s,
 		sp: sp,

@@ -21,12 +21,7 @@ type HoldemInteractor struct {
 
 // NewHoldemInteractor コンストラクタ
 func NewHoldemInteractor(h interfaces.HoldemGame, hp presenter.HoldemPresenter) *HoldemInteractor {
-	if h == nil {
-		panic("HoldemInteractor: h must not be nil")
-	}
-	if hp == nil {
-		panic("HoldemInteractor: hp must not be nil")
-	}
+	mustNotNil("HoldemInteractor", map[string]any{"h": h, "hp": hp})
 	return &HoldemInteractor{h: h, hp: hp}
 }
 

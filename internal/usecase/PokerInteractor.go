@@ -24,12 +24,7 @@ type PokerInteractor struct {
 
 // NewPokerInteractor コンストラクタ
 func NewPokerInteractor(p interfaces.PokerGame, pp presenter.PokerPresenter) *PokerInteractor {
-	if p == nil {
-		panic("PokerInteractor: p must not be nil")
-	}
-	if pp == nil {
-		panic("PokerInteractor: pp must not be nil")
-	}
+	mustNotNil("PokerInteractor", map[string]any{"p": p, "pp": pp})
 	return &PokerInteractor{
 		p:  p,
 		pp: pp,

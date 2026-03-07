@@ -22,12 +22,7 @@ type OldMaidInteractor struct {
 
 // NewOldMaidInteractor コンストラクタ
 func NewOldMaidInteractor(om interfaces.OldMaidGame, omp presenter.OldMaidPresenter) *OldMaidInteractor {
-	if om == nil {
-		panic("OldMaidInteractor: om must not be nil")
-	}
-	if omp == nil {
-		panic("OldMaidInteractor: omp must not be nil")
-	}
+	mustNotNil("OldMaidInteractor", map[string]any{"om": om, "omp": omp})
 	return &OldMaidInteractor{
 		om:  om,
 		omp: omp,
