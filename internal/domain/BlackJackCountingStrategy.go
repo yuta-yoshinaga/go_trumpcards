@@ -12,7 +12,7 @@ func countForDecision(trueCount float64, runningCount int, system int) float64 {
 // ベーススプレッド: count<=1→1x, 2→2x, 3→4x, 4→8x, >=5→16x (base=BJCpuBetAmount)
 func GetCountingBetAmount(trueCount float64, runningCount int, system int, availableChips int) int {
 	count := countForDecision(trueCount, runningCount, system)
-	multiplier := 1
+	var multiplier int
 	switch {
 	case count >= 5:
 		multiplier = 16
