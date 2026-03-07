@@ -632,6 +632,13 @@ func (h *Holdem) bettingLimits() (maxRaises, maxBetAmount int) {
 
 // --- GTO (Game Theory Optimal) AI ---
 
+// GTO ベットサイズ定数 (ポット比率 %)
+const (
+	gtoPreFlopBetPct  = 66 // プリフロップ: 2/3ポット
+	gtoDryBoardBetPct = 66 // ドライボード: 2/3ポット
+	gtoWetBoardBetPct = 75 // ウェットボード: 3/4ポット
+)
+
 // boardTexture ボードテクスチャ分析結果
 type boardTexture struct {
 	paired       bool // ペアボード (同じ数字が2枚以上)
@@ -802,7 +809,7 @@ func (h *Holdem) cpuDecidePreFlopGTO(idx, callAmount int) (int, int) {
 	case 0: // fold
 		return h.cpuFoldOrCheck(callAmount)
 	case 2: // bet/raise
-		betAmt := h.cpuPotBet(66)
+		betAmt := h.cpuPotBet(gtoPreFlopBetPct)
 		return h.cpuRaiseOrBet(p, callAmount, betAmt)
 	default: // check/call
 		return h.cpuCallOrCheck(callAmount)
@@ -824,9 +831,19 @@ func (h *Holdem) cpuDecidePostFlopGTO(idx, callAmount int) (int, int) {
 	decision := gtoRollAction(dist)
 
 	// ベットサイズ: ドライ=2/3ポット, ウェット=3/4ポット
-	potPct := 66
+	potPct := gtoDryBoardBetPct
 	if bt.wet {
-		potPct = 75
+		potPct = gtoWetBoardBetPct
+	}
+
+	// ペアボードではベット頻度を下げる (トラップ重視)
+	if bt.paired && decision == 2 && category <= gtoHandMedium && rand.Intn(100) < 30 {
+		return h.cpuCallOrCheck(callAmount)
+	}
+
+	// ハイカードが多いボードではブラフを抑制
+	if bt.highCards >= 3 && decision == 2 && category <= gtoHandWeak && rand.Intn(100) < 40 {
+		return h.cpuCallOrCheck(callAmount)
 	}
 
 	switch decision {

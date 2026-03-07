@@ -2826,3 +2826,84 @@ func TestCpuDecide_PostFlop_GTO_DryBoard_BetSizing(t *testing.T) {
 	}
 	assert.True(t, betFound)
 }
+
+// --- GTO Distribution Invariant Tests ---
+
+func TestGtoActionDist_PreFlopTableSumsTo100(t *testing.T) {
+	for i, dist := range gtoPreFlopTable {
+		sum := dist.foldPct + dist.checkPct + dist.betPct
+		assert.Equal(t, 100, sum, "gtoPreFlopTable[%d] sums to %d, expected 100", i, sum)
+	}
+}
+
+func TestGtoActionDist_PostFlopTableSumsTo100(t *testing.T) {
+	for cat := 0; cat < 5; cat++ {
+		for wetIdx := 0; wetIdx < 2; wetIdx++ {
+			dist := gtoPostFlopTable[cat][wetIdx]
+			sum := dist.foldPct + dist.checkPct + dist.betPct
+			assert.Equal(t, 100, sum, "gtoPostFlopTable[%d][%d] sums to %d, expected 100", cat, wetIdx, sum)
+		}
+	}
+}
+
+// --- GTO Paired/HighCards Board Adjustment Tests ---
+
+func TestCpuDecide_PostFlop_GTO_PairedBoard_ReducesBet(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+
+	// Medium hand on paired dry board → should sometimes check instead of bet
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 8, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 8, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 5, false),
+		NewCard(CardDesignDiamond, 5, false), // paired
+		NewCard(CardDesignSpade, 2, false),   // dry (no flush/straight draw)
+	})
+
+	checkFound := false
+	betFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCheck {
+			checkFound = true
+		}
+		if action == HoldemActionBet {
+			betFound = true
+		}
+		if checkFound && betFound {
+			break
+		}
+	}
+	// On a paired board, medium hand should sometimes check (trap adjustment)
+	assert.True(t, checkFound, "should check sometimes on paired board")
+	assert.True(t, betFound, "should still bet sometimes on paired board")
+}
+
+func TestCpuDecide_PostFlop_GTO_HighCardBoard_ReducesBluff(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+
+	// Weak hand on high-card board (A, K, Q) → should mostly check
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 3, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 4, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),   // A
+		NewCard(CardDesignDiamond, 13, false), // K
+		NewCard(CardDesignSpade, 12, false),   // Q → 3 high cards
+	})
+
+	checkFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCheck {
+			checkFound = true
+			break
+		}
+	}
+	assert.True(t, checkFound, "should check on high-card board with weak hand")
+}
