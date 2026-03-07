@@ -235,7 +235,7 @@ func TestHoldemCuiController_SmallBlind_InvalidValue(t *testing.T) {
 func TestHoldemCuiController_SmallBlind_NotLessThanBigBlind(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	mi.On("GetConfig").Return(domain.HoldemConfig{SmallBlind: 5, BigBlind: 10, InitChips: 1000, BlindLevelHands: 10, BlindMultiplier: 200})
 	assert.Contains(t, c.Exec("sb 10"), "Small blind must be less than big blind")
 	assert.Contains(t, c.Exec("sb 15"), "Small blind must be less than big blind")
 }
@@ -279,7 +279,7 @@ func TestHoldemCuiController_BigBlind_InvalidValue(t *testing.T) {
 func TestHoldemCuiController_BigBlind_NotGreaterThanSmallBlind(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	mi.On("GetConfig").Return(domain.HoldemConfig{SmallBlind: 5, BigBlind: 10, InitChips: 1000, BlindLevelHands: 10, BlindMultiplier: 200})
 	assert.Contains(t, c.Exec("bb 5"), "Big blind must be greater than small blind")
 	assert.Contains(t, c.Exec("bb 3"), "Big blind must be greater than small blind")
 }
