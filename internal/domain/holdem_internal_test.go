@@ -2153,3 +2153,757 @@ func TestHandleCpuActionError_CheckWhenCallAmtZero(t *testing.T) {
 	assert.False(t, h.players[1].GetFolded())
 	assert.True(t, h.actedFlags[1])
 }
+
+// --- Board Texture Tests ---
+
+func TestEvalBoardTexture_Empty(t *testing.T) {
+	bt := evalBoardTexture([]*Card{})
+	assert.False(t, bt.paired)
+	assert.False(t, bt.flushDraw)
+	assert.False(t, bt.straightDraw)
+	assert.False(t, bt.wet)
+	assert.Equal(t, 0, bt.highCards)
+}
+
+func TestEvalBoardTexture_DryBoard(t *testing.T) {
+	// 2♠ 7♥ Q♣ — no pair, no flush draw, no straight draw
+	cards := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignClover, 12, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.False(t, bt.paired)
+	assert.False(t, bt.flushDraw)
+	assert.False(t, bt.straightDraw)
+	assert.False(t, bt.wet)
+	assert.Equal(t, 1, bt.highCards) // Q=12 >= 10
+}
+
+func TestEvalBoardTexture_Paired(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignClover, 9, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.True(t, bt.paired)
+}
+
+func TestEvalBoardTexture_FlushDraw(t *testing.T) {
+	// 3 spades → flush draw
+	cards := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignSpade, 11, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.True(t, bt.flushDraw)
+	assert.True(t, bt.wet)
+}
+
+func TestEvalBoardTexture_StraightDraw(t *testing.T) {
+	// 5, 6, 8 → within 5-window (5-9): 5,6,8 = 3 cards
+	cards := []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignClover, 8, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.True(t, bt.straightDraw)
+	assert.True(t, bt.wet)
+}
+
+func TestEvalBoardTexture_StraightDraw_AceLow(t *testing.T) {
+	// A, 2, 3 → within window (1-5): A=1, 2, 3 = 3 cards
+	cards := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 2, false),
+		NewCard(CardDesignClover, 3, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.True(t, bt.straightDraw)
+}
+
+func TestEvalBoardTexture_StraightDraw_AceHigh(t *testing.T) {
+	// A, K, Q → A=14, within window (10-14): Q=12, K=13, A=14 = 3 cards
+	cards := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 13, false),
+		NewCard(CardDesignClover, 12, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.True(t, bt.straightDraw)
+}
+
+func TestEvalBoardTexture_HighCards(t *testing.T) {
+	// A, K, Q, 3, 2 → 3 high cards (A, K, Q)
+	cards := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 13, false),
+		NewCard(CardDesignClover, 12, false),
+		NewCard(CardDesignDiamond, 3, false),
+		NewCard(CardDesignSpade, 2, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.Equal(t, 3, bt.highCards)
+}
+
+func TestEvalBoardTexture_FourCards(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 9, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.True(t, bt.flushDraw) // 3 spades
+}
+
+func TestEvalBoardTexture_FiveCards_Wet(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 8, false),
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignHeart, 11, false),
+		NewCard(CardDesignClover, 2, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.True(t, bt.flushDraw)
+	assert.True(t, bt.straightDraw)
+	assert.True(t, bt.wet)
+}
+
+func TestEvalBoardTexture_NoStraightDraw_Scattered(t *testing.T) {
+	// 2, 7, 13 — spread out, only 2 cards in any 5-window
+	cards := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignClover, 13, false),
+	}
+	bt := evalBoardTexture(cards)
+	assert.False(t, bt.straightDraw)
+}
+
+// --- classifyGTOHand Tests ---
+
+func TestClassifyGTOHand_AllCategories(t *testing.T) {
+	tests := []struct {
+		handRank int
+		expected gtoHandCategory
+	}{
+		{PokerHandHighCard, gtoHandTrash},
+		{PokerHandOnePair, gtoHandWeak},
+		{PokerHandTwoPair, gtoHandWeak},
+		{PokerHandThreeOfAKind, gtoHandMedium},
+		{PokerHandStraight, gtoHandMedium},
+		{PokerHandFlush, gtoHandStrong},
+		{PokerHandFullHouse, gtoHandStrong},
+		{PokerHandFourOfAKind, gtoHandNuts},
+		{PokerHandStraightFlush, gtoHandNuts},
+		{PokerHandRoyalFlush, gtoHandNuts},
+		{PokerHandFiveOfAKind, gtoHandNuts},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.expected, classifyGTOHand(tt.handRank), "handRank=%d", tt.handRank)
+	}
+}
+
+// --- gtoPreFlopIndex Tests ---
+
+func TestGtoPreFlopIndex(t *testing.T) {
+	tests := []struct {
+		strength int
+		expected int
+	}{
+		{0, 0}, {10, 0}, {19, 0},
+		{20, 1}, {35, 1}, {39, 1},
+		{40, 2}, {50, 2}, {59, 2},
+		{60, 3}, {70, 3}, {79, 3},
+		{80, 4}, {90, 4}, {100, 4},
+	}
+	for _, tt := range tests {
+		assert.Equal(t, tt.expected, gtoPreFlopIndex(tt.strength), "strength=%d", tt.strength)
+	}
+}
+
+// --- gtoRollAction Tests ---
+
+func TestGtoRollAction_AllBranches(t *testing.T) {
+	// Test with dist that allows all three outcomes
+	dist := gtoActionDist{foldPct: 33, checkPct: 34, betPct: 33}
+	foldHit, checkHit, betHit := false, false, false
+	for attempt := 0; attempt < 1000; attempt++ {
+		result := gtoRollAction(dist)
+		switch result {
+		case 0:
+			foldHit = true
+		case 1:
+			checkHit = true
+		case 2:
+			betHit = true
+		}
+		if foldHit && checkHit && betHit {
+			break
+		}
+	}
+	assert.True(t, foldHit, "fold branch never hit")
+	assert.True(t, checkHit, "check branch never hit")
+	assert.True(t, betHit, "bet branch never hit")
+}
+
+func TestGtoRollAction_ZeroFold(t *testing.T) {
+	dist := gtoActionDist{foldPct: 0, checkPct: 50, betPct: 50}
+	for attempt := 0; attempt < 100; attempt++ {
+		result := gtoRollAction(dist)
+		assert.NotEqual(t, 0, result) // fold should never happen
+	}
+}
+
+// --- GTO PreFlop Decision Tests ---
+
+func newGTOTestHoldem() *Holdem {
+	players := []*HoldemPlayer{
+		NewHoldemPlayer(true, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleGTO),
+		NewHoldemPlayer(false, HoldemStyleLAP),
+		NewHoldemPlayer(false, HoldemStyleTAP),
+	}
+	cfg := DefaultHoldemConfig()
+	tc := NewTrumpCards(0)
+	h := NewHoldem(tc, players, cfg)
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.startingChips = []int{1000, 1000, 1000, 1000}
+	return h
+}
+
+func TestCpuDecide_PreFlop_GTO_StrongHand(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	h.SetLastBet(10)
+
+	// AA → very strong preflop
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+
+	raiseFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionRaise || action == HoldemActionBet {
+			raiseFound = true
+			break
+		}
+	}
+	assert.True(t, raiseFound)
+}
+
+func TestCpuDecide_PreFlop_GTO_WeakHand(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	h.SetLastBet(10)
+
+	// 2♠ 7♥ offsuit → weak
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 2, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 7, false))
+
+	foldFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionFold {
+			foldFound = true
+			break
+		}
+	}
+	assert.True(t, foldFound)
+}
+
+func TestCpuDecide_PreFlop_GTO_MediumHand_CallOrCheck(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	h.SetLastBet(10)
+
+	// K♠ 10♥ suited-ish → medium-strong
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 13, false))
+	h.players[1].AddCard(NewCard(CardDesignSpade, 10, false))
+
+	callFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCall {
+			callFound = true
+			break
+		}
+	}
+	assert.True(t, callFound)
+}
+
+func TestCpuDecide_PreFlop_GTO_NoBet_CheckOrBet(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	h.SetLastBet(0)
+
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 8, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 9, false))
+
+	checkFound, betFound := false, false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCheck {
+			checkFound = true
+		}
+		if action == HoldemActionBet {
+			betFound = true
+		}
+		if checkFound && betFound {
+			break
+		}
+	}
+	assert.True(t, checkFound)
+	assert.True(t, betFound)
+}
+
+func TestCpuDecide_PreFlop_GTO_AllIn(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	h.SetLastBet(10)
+	h.SetPot(30)
+	h.players[1].SetChips(15) // low chips → all-in possible
+
+	// Strong hand
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+
+	allinFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionAllIn {
+			allinFound = true
+			break
+		}
+	}
+	assert.True(t, allinFound)
+}
+
+// --- GTO PostFlop Decision Tests ---
+
+func TestCpuDecide_PostFlop_GTO_Nuts_DryBoard(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+
+	// Give player AA + community has A → trips/set (nuts category: FourOfAKind would be ideal)
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignSpade, 5, false),
+	})
+
+	// Four aces → nuts. Should bet often on dry board.
+	betFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionBet || action == HoldemActionRaise {
+			betFound = true
+			break
+		}
+	}
+	assert.True(t, betFound)
+}
+
+func TestCpuDecide_PostFlop_GTO_Trash_DryBoard(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(20)
+
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 2, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 4, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 7, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignSpade, 12, false),
+	})
+
+	// Trash hand with call amount → should fold often
+	foldFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionFold {
+			foldFound = true
+			break
+		}
+	}
+	assert.True(t, foldFound)
+}
+
+func TestCpuDecide_PostFlop_GTO_Weak_WetBoard(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(10)
+
+	// One pair on wet board
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 9, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 3, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 9, false),
+		NewCard(CardDesignClover, 10, false),
+		NewCard(CardDesignClover, 11, false), // flush draw + straight draw → wet
+	})
+
+	// Weak hand on wet board → should see calls
+	callFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCall {
+			callFound = true
+			break
+		}
+	}
+	assert.True(t, callFound)
+}
+
+func TestCpuDecide_PostFlop_GTO_Medium_DryBoard(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+
+	// Three of a kind → medium category
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 8, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 8, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 8, false),
+		NewCard(CardDesignDiamond, 2, false),
+		NewCard(CardDesignSpade, 13, false),
+	})
+
+	betFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionBet {
+			betFound = true
+			break
+		}
+	}
+	assert.True(t, betFound)
+}
+
+func TestCpuDecide_PostFlop_GTO_Strong_WetBoard(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(20)
+
+	// Flush → strong
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 3, false))
+	h.players[1].AddCard(NewCard(CardDesignSpade, 6, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignSpade, 13, false),
+	})
+
+	raiseFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionRaise || action == HoldemActionBet {
+			raiseFound = true
+			break
+		}
+	}
+	assert.True(t, raiseFound)
+}
+
+func TestCpuDecide_PostFlop_GTO_Trash_NoBet_Check(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 2, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 4, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 7, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignSpade, 12, false),
+	})
+
+	checkFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCheck {
+			checkFound = true
+			break
+		}
+	}
+	assert.True(t, checkFound)
+}
+
+func TestCpuDecide_PostFlop_GTO_AllIn_LowChips(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+	h.SetPot(50)
+	h.players[1].SetChips(20)
+
+	// Strong hand
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 10, false),
+		NewCard(CardDesignSpade, 5, false),
+	})
+
+	allinFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionAllIn {
+			allinFound = true
+			break
+		}
+	}
+	assert.True(t, allinFound)
+}
+
+func TestCpuDecide_GTO_PotLimitClamp(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.config.BettingLimit = BettingLimitPotLimit
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetCurrentTurn(0)
+	h.SetLastBet(0)
+	h.SetMinRaise(20)
+	h.SetPot(10) // maxBetAmount = pot + lastBet = 10
+
+	// Strong hand for GTO player
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 10, false),
+		NewCard(CardDesignSpade, 5, false),
+	})
+
+	// Should clamp bet to maxBetAmount
+	betClamped := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, amount := h.cpuDecide(1)
+		if action == HoldemActionBet && amount <= 10 {
+			betClamped = true
+			break
+		}
+		if action == HoldemActionAllIn {
+			betClamped = true
+			break
+		}
+	}
+	assert.True(t, betClamped)
+}
+
+func TestCpuDecide_GTO_RaiseCapFallback(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(20)
+	h.setRaiseCount(holdemDefaultMaxRaises) // at cap
+
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignSpade, 5, false),
+	})
+
+	// When at raise cap, bet/raise should fall back to call
+	callFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCall {
+			callFound = true
+			break
+		}
+	}
+	assert.True(t, callFound)
+}
+
+func TestCpuDecide_GTO_RaiseCapFallback_NoCallAmount(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+	h.setRaiseCount(holdemDefaultMaxRaises) // at cap
+
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignSpade, 5, false),
+	})
+
+	// When at raise cap with no call amount, bet should fall back to check
+	checkFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCheck {
+			checkFound = true
+			break
+		}
+	}
+	assert.True(t, checkFound)
+}
+
+func TestCpuDecide_PostFlop_GTO_WetBoard_BetSizing(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+	h.SetPot(100)
+	h.SetMinRaise(10)
+
+	// Strong hand on wet board → pot * 75%
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignClover, 10, false),
+		NewCard(CardDesignClover, 11, false), // flush draw → wet
+	})
+
+	betFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, amount := h.cpuDecide(1)
+		if action == HoldemActionBet {
+			// pot=100, 75% = 75, should be 75
+			assert.Equal(t, 75, amount)
+			betFound = true
+			break
+		}
+	}
+	assert.True(t, betFound)
+}
+
+func TestCpuDecide_PostFlop_GTO_DryBoard_BetSizing(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+	h.SetPot(100)
+	h.SetMinRaise(10)
+
+	// Nuts on dry board → pot * 66%
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignSpade, 5, false), // dry board
+	})
+
+	betFound := false
+	for attempt := 0; attempt < 100; attempt++ {
+		action, amount := h.cpuDecide(1)
+		if action == HoldemActionBet {
+			// pot=100, 66% = 66, should be 66
+			assert.Equal(t, 66, amount)
+			betFound = true
+			break
+		}
+	}
+	assert.True(t, betFound)
+}
+
+// --- GTO Distribution Invariant Tests ---
+
+func TestGtoActionDist_PreFlopTableSumsTo100(t *testing.T) {
+	for i, dist := range gtoPreFlopTable {
+		sum := dist.foldPct + dist.checkPct + dist.betPct
+		assert.Equal(t, 100, sum, "gtoPreFlopTable[%d] sums to %d, expected 100", i, sum)
+	}
+}
+
+func TestGtoActionDist_PostFlopTableSumsTo100(t *testing.T) {
+	for cat := 0; cat < 5; cat++ {
+		for wetIdx := 0; wetIdx < 2; wetIdx++ {
+			dist := gtoPostFlopTable[cat][wetIdx]
+			sum := dist.foldPct + dist.checkPct + dist.betPct
+			assert.Equal(t, 100, sum, "gtoPostFlopTable[%d][%d] sums to %d, expected 100", cat, wetIdx, sum)
+		}
+	}
+}
+
+// --- GTO Paired/HighCards Board Adjustment Tests ---
+
+func TestCpuDecide_PostFlop_GTO_PairedBoard_ReducesBet(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+
+	// Medium hand on paired dry board → should sometimes check instead of bet
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 8, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 8, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 5, false),
+		NewCard(CardDesignDiamond, 5, false), // paired
+		NewCard(CardDesignSpade, 2, false),   // dry (no flush/straight draw)
+	})
+
+	checkFound := false
+	betFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCheck {
+			checkFound = true
+		}
+		if action == HoldemActionBet {
+			betFound = true
+		}
+		if checkFound && betFound {
+			break
+		}
+	}
+	// On a paired board, medium hand should sometimes check (trap adjustment)
+	assert.True(t, checkFound, "should check sometimes on paired board")
+	assert.True(t, betFound, "should still bet sometimes on paired board")
+}
+
+func TestCpuDecide_PostFlop_GTO_HighCardBoard_ReducesBluff(t *testing.T) {
+	h := newGTOTestHoldem()
+	h.SetPhase(HoldemPhaseFlop)
+	h.SetLastBet(0)
+
+	// Weak hand on high-card board (A, K, Q) → should mostly check
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 3, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 4, false))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignClover, 1, false),   // A
+		NewCard(CardDesignDiamond, 13, false), // K
+		NewCard(CardDesignSpade, 12, false),   // Q → 3 high cards
+	})
+
+	checkFound := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		action, _ := h.cpuDecide(1)
+		if action == HoldemActionCheck {
+			checkFound = true
+			break
+		}
+	}
+	assert.True(t, checkFound, "should check on high-card board with weak hand")
+}

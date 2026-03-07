@@ -18,6 +18,7 @@ func TestHoldemPlayStyle_Constants(t *testing.T) {
 	assert.Equal(t, HoldemPlayStyle(1), HoldemStyleLAP)
 	assert.Equal(t, HoldemPlayStyle(2), HoldemStyleTAP)
 	assert.Equal(t, HoldemPlayStyle(3), HoldemStyleLAG)
+	assert.Equal(t, HoldemPlayStyle(4), HoldemStyleGTO)
 }
 
 func TestHoldemPlayStyleNames(t *testing.T) {
@@ -25,4 +26,5 @@ func TestHoldemPlayStyleNames(t *testing.T) {
 	assert.Equal(t, "LAP", HoldemPlayStyleNames[HoldemStyleLAP])
 	assert.Equal(t, "TAP", HoldemPlayStyleNames[HoldemStyleTAP])
 	assert.Equal(t, "LAG", HoldemPlayStyleNames[HoldemStyleLAG])
+	assert.Equal(t, "GTO", HoldemPlayStyleNames[HoldemStyleGTO])
 }

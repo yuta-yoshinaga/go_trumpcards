@@ -26,6 +26,7 @@ func TestHoldemPlayer_GetPlayStyleName(t *testing.T) {
 		{HoldemStyleLAP, "LAP"},
 		{HoldemStyleTAP, "TAP"},
 		{HoldemStyleLAG, "LAG"},
+		{HoldemStyleGTO, "GTO"},
 		{HoldemPlayStyle(99), "Unknown"},
 	}
 	for _, tt := range tests {

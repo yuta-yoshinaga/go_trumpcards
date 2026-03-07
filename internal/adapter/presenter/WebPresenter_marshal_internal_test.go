@@ -122,7 +122,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 					domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
 					domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
 					domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-					domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+					domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
 				}
 				h := domain.NewHoldem(domain.NewTrumpCards(0), players, domain.DefaultHoldemConfig())
 				return p.Output(h, nil)
