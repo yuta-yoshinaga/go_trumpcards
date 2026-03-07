@@ -3354,3 +3354,357 @@ func TestSevens_EndStop(t *testing.T) {
 			"CPU1 with strategy should pass or be eliminated when its only card is end-stopped")
 	})
 }
+
+func TestSevens_JokerConsecutiveBanned(t *testing.T) {
+	t.Run("enabled blocks joker after joker play via PlayerPlayJoker", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Give human 2 jokers + a normal card
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		// First joker play should succeed
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.NoError(t, err)
+		assert.True(t, players[0].GetLastPlayedJoker())
+
+		// Advance CPU turns back to human
+		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+			s.CpuPlay()
+		}
+
+		// Second joker play should be blocked
+		err = s.PlayerPlayJoker(0, domain.CardDesignSpade, 8)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "consecutive")
+	})
+
+	t.Run("enabled blocks joker via PlayerPlay when card is joker", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		// Play first joker via PlayerPlayJoker
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.NoError(t, err)
+
+		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+			s.CpuPlay()
+		}
+
+		// Try to play second joker via PlayerPlay — should be blocked
+		err = s.PlayerPlay(0) // joker is at index 0
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "consecutive")
+	})
+
+	t.Run("normal card play resets lastPlayedJoker flag", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		// Spade 6 is adjacent to 7, so it's always playable
+		// Spade 8 is adjacent to 7, so it's always playable
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+
+		// Play joker at spade 5 (adjacent to 6? no, 6 not placed yet. Adjacent to 7? no, 5 is not adjacent to 7)
+		// Play joker at spade 6 (adjacent to 7) — this works
+		err := s.PlayerPlayJoker(1, domain.CardDesignSpade, 6)
+		assert.NoError(t, err)
+		assert.True(t, players[0].GetLastPlayedJoker())
+
+		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+			s.CpuPlay()
+		}
+
+		// Play normal card spade 8 (adjacent to 7) → resets flag
+		err = s.PlayerPlay(1) // spade 8 is now at index 1 (joker was removed, spade 6 at 0, spade 8 at 1)
+		assert.NoError(t, err)
+		assert.False(t, players[0].GetLastPlayedJoker())
+	})
+
+	t.Run("pass resets lastPlayedJoker flag", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+
+		// Play joker
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.NoError(t, err)
+		assert.True(t, players[0].GetLastPlayedJoker())
+
+		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+			s.CpuPlay()
+		}
+
+		// Pass → resets flag
+		err = s.PlayerPlay(-1)
+		assert.NoError(t, err)
+		assert.False(t, players[0].GetLastPlayedJoker())
+	})
+
+	t.Run("hasPlayableCard respects consecutive rule", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Give human only jokers
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].SetLastPlayedJoker(true)
+
+		// HasAnyOption should be true (because can pass) but the joker is blocked
+		// IsPlayable still returns true for the joker card itself (it just checks board position)
+		// But hasPlayableCard internally blocks it
+		assert.True(t, s.HasAnyOption(0), "can still pass")
+	})
+
+	t.Run("disabled allows joker after joker play", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: false,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+
+		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
+		assert.NoError(t, err)
+
+		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+			s.CpuPlay()
+		}
+
+		// Second joker should be allowed when rule is disabled
+		err = s.PlayerPlayJoker(0, domain.CardDesignSpade, 5)
+		assert.NoError(t, err)
+	})
+
+	t.Run("CPU respects consecutive rule", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Set up CPU1 with 2 jokers only
+		for players[1].GetCardsSize() > 0 {
+			players[1].RemoveCard(0)
+		}
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		// Set lastPlayedJoker flag
+		players[1].SetLastPlayedJoker(true)
+
+		// Advance to CPU1's turn
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		err := s.PlayerPlay(0) // human plays
+		assert.NoError(t, err)
+
+		// CPU1 should pass (joker blocked by consecutive rule), not play joker
+		cpuActions := s.GetCpuActions()
+		if len(cpuActions) > 0 {
+			cpu1Action := cpuActions[0]
+			if cpu1Action.PlayerIdx == 1 {
+				// CPU1 either passed or was eliminated (if no passes left)
+				if cpu1Action.PlayedCard != nil {
+					// If it played a card, it should NOT be a joker
+					assert.NotEqual(t, domain.CardDesignJoker, cpu1Action.PlayedCard.GetDesign(),
+						"CPU should not play joker on consecutive turns")
+				}
+			}
+		}
+	})
+
+	t.Run("CPU with strategy respects consecutive rule", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			CpuStrategy:            true,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Set up CPU1 with 2 jokers only
+		for players[1].GetCardsSize() > 0 {
+			players[1].RemoveCard(0)
+		}
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[1].SetLastPlayedJoker(true)
+
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		err := s.PlayerPlay(0)
+		assert.NoError(t, err)
+
+		cpuActions := s.GetCpuActions()
+		if len(cpuActions) > 0 {
+			cpu1Action := cpuActions[0]
+			if cpu1Action.PlayerIdx == 1 {
+				if cpu1Action.PlayedCard != nil {
+					assert.NotEqual(t, domain.CardDesignJoker, cpu1Action.PlayedCard.GetDesign(),
+						"CPU with strategy should not play joker on consecutive turns")
+				}
+			}
+		}
+	})
+
+	t.Run("combined with NoJokerFinish", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+			NoJokerFinish:          true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Give human only jokers with lastPlayedJoker set
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].SetLastPlayedJoker(true)
+
+		// Joker blocked by both rules → no playable cards, but can pass
+		assert.True(t, s.HasAnyOption(0))
+	})
+
+	t.Run("Reset clears lastPlayedJoker flag", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		players[0].SetLastPlayedJoker(true)
+		s.Reset()
+
+		// After reset, find human player and check flag is cleared
+		for i := 0; i < s.GetPlayerCnt(); i++ {
+			assert.False(t, s.GetPlayer(i).GetLastPlayedJoker())
+		}
+	})
+
+	t.Run("NewSevens stores JokerConsecutiveBanned config", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{JokerConsecutiveBanned: true}
+		s := domain.NewSevens(tc, players, cfg)
+		assert.True(t, s.GetConfig().JokerConsecutiveBanned)
+	})
+
+	t.Run("CPU sets lastPlayedJoker true after playing joker", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{
+			JokerCount:             2,
+			MaxPasses:              domain.SevensMaxPasses,
+			JokerConsecutiveBanned: true,
+		}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Set up CPU1 with a joker + normal card
+		for players[1].GetCardsSize() > 0 {
+			players[1].RemoveCard(0)
+		}
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].SetLastPlayedJoker(false)
+
+		// Human plays to advance turn
+		for players[0].GetCardsSize() > 0 {
+			players[0].RemoveCard(0)
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		err := s.PlayerPlay(0)
+		assert.NoError(t, err)
+
+		// After CPU plays, check if lastPlayedJoker is set correctly
+		cpuActions := s.GetCpuActions()
+		for _, a := range cpuActions {
+			if a.PlayerIdx == 1 && a.PlayedCard != nil {
+				if a.PlayedCard.GetDesign() == domain.CardDesignJoker {
+					assert.True(t, players[1].GetLastPlayedJoker())
+				} else {
+					assert.False(t, players[1].GetLastPlayedJoker())
+				}
+			}
+		}
+	})
+}

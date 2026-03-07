@@ -102,6 +102,19 @@ func TestSevensPlayer_Method(t *testing.T) {
 		assert.Equal(t, 3, p.GetPassesUsed())
 	})
 
+	t.Run("success GetLastPlayedJoker default false", func(t *testing.T) {
+		p := domain.NewSevensPlayer(true)
+		assert.False(t, p.GetLastPlayedJoker())
+	})
+
+	t.Run("success SetLastPlayedJoker and GetLastPlayedJoker", func(t *testing.T) {
+		p := domain.NewSevensPlayer(true)
+		p.SetLastPlayedJoker(true)
+		assert.True(t, p.GetLastPlayedJoker())
+		p.SetLastPlayedJoker(false)
+		assert.False(t, p.GetLastPlayedJoker())
+	})
+
 	t.Run("success SortCards sorts by suit then value", func(t *testing.T) {
 		p := domain.NewSevensPlayer(true)
 		p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))

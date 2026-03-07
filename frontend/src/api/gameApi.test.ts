@@ -1113,6 +1113,44 @@ describe('gameApi', () => {
       });
     });
 
+    it('sends jokerConsecutiveBanned in config fields when config is provided', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableMinVals: [0, 7, 7, 7, 7],
+          tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 128, 128, 128, 128],
+          config: {
+            tunnelEnabled: false,
+            jokerCount: 1,
+            cpuStrategy: false,
+            maxPasses: 5,
+            noJokerFinish: false,
+            jokerConsecutiveBanned: true,
+          },
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await sevensApi.exec('reset', -1, 0, 0, { jokerCount: 1, jokerConsecutiveBanned: true });
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          index: -1,
+          jokerTargetSuit: 0,
+          jokerTargetValue: 0,
+          sessionId,
+          jokerCount: 1,
+          jokerConsecutiveBanned: true,
+        }),
+      });
+    });
+
     it('does not send config fields when config is omitted', async () => {
       mockFetch.mockReturnValue(
         makeResponse({

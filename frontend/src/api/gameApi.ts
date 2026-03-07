@@ -128,6 +128,7 @@ export interface SevensConfigInput {
   noJokerFinish?: boolean;
   jokerReclaim?: boolean;
   endStop?: boolean;
+  jokerConsecutiveBanned?: boolean;
 }
 
 export const sevensApi = {

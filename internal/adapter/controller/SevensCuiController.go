@@ -47,6 +47,8 @@ func (c *SevensCuiController) Exec(command string) string {
 						cfg.NoJokerFinish = true
 					case f == "endstop":
 						cfg.EndStopEnabled = true
+					case f == "jokerconsban":
+						cfg.JokerConsecutiveBanned = true
 					}
 				}
 				return c.sgi.ResetWithConfig(cfg)

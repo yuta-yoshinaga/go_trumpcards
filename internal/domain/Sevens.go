@@ -73,6 +73,7 @@ func (s *Sevens) Reset() {
 		p.SetRank(-1)
 		p.ResetPasses()
 		p.SetMaxPasses(s.config.MaxPasses)
+		p.SetLastPlayedJoker(false)
 	})
 
 	// プレイ順をランダムにする
@@ -252,9 +253,14 @@ func (s *Sevens) isJokerBlockedByFinishRule(player *SevensPlayer) bool {
 	return s.config.NoJokerFinish && s.hasOnlyJokers(player)
 }
 
+// isJokerBlockedByConsecutiveRule ジョーカー連続禁止ルールによりジョーカーが使用不可か判定
+func (s *Sevens) isJokerBlockedByConsecutiveRule(player *SevensPlayer) bool {
+	return s.config.JokerConsecutiveBanned && player.GetLastPlayedJoker()
+}
+
 // hasPlayableCard プレイヤーが出せるカードを持っているか確認
 func (s *Sevens) hasPlayableCard(player *SevensPlayer) bool {
-	jokerBlocked := s.isJokerBlockedByFinishRule(player)
+	jokerBlocked := s.isJokerBlockedByFinishRule(player) || s.isJokerBlockedByConsecutiveRule(player)
 	for i := 0; i < player.GetCardsSize(); i++ {
 		card := player.GetCard(i)
 		if jokerBlocked && card.GetDesign() == CardDesignJoker {
@@ -365,6 +371,7 @@ func (s *Sevens) PlayerPlay(idx int) error {
 			return ErrCannotPass
 		}
 		player.IncrPassesUsed()
+		player.SetLastPlayedJoker(false)
 		s.humanAction = &SevensCpuAction{
 			PlayerIdx:  s.currentTurn,
 			PlayedCard: nil,
@@ -382,6 +389,9 @@ func (s *Sevens) PlayerPlay(idx int) error {
 	if card.GetDesign() == CardDesignJoker && s.isJokerBlockedByFinishRule(player) {
 		return NewDomainError(ErrInvalidPlay, "cannot finish with a joker")
 	}
+	if card.GetDesign() == CardDesignJoker && s.isJokerBlockedByConsecutiveRule(player) {
+		return NewDomainError(ErrInvalidPlay, "cannot play joker on consecutive turns")
+	}
 	if !s.IsPlayable(card) {
 		return NewDomainError(ErrInvalidPlay, "card cannot be played on the board")
 	}
@@ -389,6 +399,7 @@ func (s *Sevens) PlayerPlay(idx int) error {
 	s.placeCard(card)
 	playedCard := player.RemoveCard(idx)
 	s.reclaimJokerIfNeeded(s.currentTurn, card.GetDesign(), card.GetValue())
+	player.SetLastPlayedJoker(false)
 	s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: playedCard}
 
 	if player.GetCardsSize() == 0 {
@@ -423,6 +434,9 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 	if s.isJokerBlockedByFinishRule(player) {
 		return NewDomainError(ErrInvalidPlay, "cannot finish with a joker")
 	}
+	if s.isJokerBlockedByConsecutiveRule(player) {
+		return NewDomainError(ErrInvalidPlay, "cannot play joker on consecutive turns")
+	}
 	if !s.isPositionPlayable(targetSuit, targetValue) {
 		return NewDomainError(ErrInvalidPlay, "target position is not playable")
 	}
@@ -430,6 +444,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 	s.placePosition(targetSuit, targetValue)
 	playedCard := player.RemoveCard(cardIdx)
 	s.recordJokerCard(playedCard, targetSuit, targetValue)
+	player.SetLastPlayedJoker(true)
 	s.humanAction = &SevensCpuAction{
 		PlayerIdx:   s.currentTurn,
 		PlayedCard:  playedCard,
@@ -465,7 +480,7 @@ func (s *Sevens) findBestPlay(player *SevensPlayer) (int, int, int) {
 
 // findPlayableSimple 最初に見つかった出せるカードを返す (戦略なし)
 func (s *Sevens) findPlayableSimple(player *SevensPlayer) (int, int, int) {
-	jokerBlocked := s.isJokerBlockedByFinishRule(player)
+	jokerBlocked := s.isJokerBlockedByFinishRule(player) || s.isJokerBlockedByConsecutiveRule(player)
 	for i := 0; i < player.GetCardsSize(); i++ {
 		card := player.GetCard(i)
 		if card.GetDesign() == CardDesignJoker {
@@ -489,7 +504,7 @@ func (s *Sevens) findPlayableSimple(player *SevensPlayer) (int, int, int) {
 // findPlayableStrategic 戦略的に最適な1手を探す
 func (s *Sevens) findPlayableStrategic(player *SevensPlayer) (int, int, int) {
 	var plays []sevensPlay
-	jokerBlocked := s.isJokerBlockedByFinishRule(player)
+	jokerBlocked := s.isJokerBlockedByFinishRule(player) || s.isJokerBlockedByConsecutiveRule(player)
 
 	for i := 0; i < player.GetCardsSize(); i++ {
 		card := player.GetCard(i)
@@ -698,8 +713,10 @@ func (s *Sevens) CpuPlay() {
 		playedCard := player.RemoveCard(playIdx)
 		if card.GetDesign() == CardDesignJoker {
 			s.recordJokerCard(playedCard, targetSuit, targetValue)
+			player.SetLastPlayedJoker(true)
 		} else {
 			s.reclaimJokerIfNeeded(playerIdx, card.GetDesign(), card.GetValue())
+			player.SetLastPlayedJoker(false)
 		}
 		action := &SevensCpuAction{
 			PlayerIdx:   playerIdx,
@@ -718,6 +735,7 @@ func (s *Sevens) CpuPlay() {
 	} else if player.CanPass() {
 		// パス
 		player.IncrPassesUsed()
+		player.SetLastPlayedJoker(false)
 		action := &SevensCpuAction{
 			PlayerIdx:  playerIdx,
 			PlayedCard: nil,

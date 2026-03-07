@@ -25,7 +25,8 @@
     "passCount": "[Pass {{count}}×]",
     "noJokerFinish": "[No Joker Finish]",
     "jokerReclaim": "[Joker Reclaim]",
-    "endStop": "[End Stop]"
+    "endStop": "[End Stop]",
+    "jokerConsecutiveBanned": "[No Consecutive Joker]"
   },
   "config": {
     "title": "Rule Settings (applied on reset)",
@@ -36,6 +37,7 @@
     "passUnlimited": "Unlimited",
     "noJokerFinish": "No Joker Finish",
     "jokerReclaim": "Joker Reclaim",
-    "endStop": "End Stop"
+    "endStop": "End Stop",
+    "jokerConsecutiveBanned": "No Consecutive Joker"
   }
 }

@@ -302,6 +302,70 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.False(t, resObj.Config.EndStopEnabled)
 	})
 
+	t.Run("success Output config jokerConsecutiveBanned true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{JokerConsecutiveBanned: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.JokerConsecutiveBanned)
+	})
+
+	t.Run("success Output config jokerConsecutiveBanned false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.False(t, resObj.Config.JokerConsecutiveBanned)
+	})
+
+	t.Run("success Output human player lastPlayedJoker true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{JokerConsecutiveBanned: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].SetLastPlayedJoker(true)
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		// Find human player
+		for _, p := range resObj.Players {
+			if p.IsHuman {
+				assert.True(t, p.LastPlayedJoker)
+			}
+		}
+	})
+
+	t.Run("success Output human player lastPlayedJoker false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		for _, p := range resObj.Players {
+			if p.IsHuman {
+				assert.False(t, p.LastPlayedJoker)
+			}
+		}
+	})
+
 	t.Run("success Output tablePlaced updated after play", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()

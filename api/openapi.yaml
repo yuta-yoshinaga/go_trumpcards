@@ -2217,6 +2217,11 @@ components:
           description: |
             Enable end stop rule (片側ストップ). When A is placed, the high side (8–K) is blocked; when K is placed, the low side (A–6) is blocked. Only used with `reset` command.
           example: false
+        jokerConsecutiveBanned:
+          type: boolean
+          description: |
+            Enable joker consecutive banned rule (ジョーカー連続禁止). When enabled, a player who played a joker on their last turn cannot play a joker on the current turn. Playing a normal card or passing resets the restriction. Only used with `reset` command.
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -2269,6 +2274,10 @@ components:
           description: Cards in hand (only populated for the human player)
           items:
             $ref: '#/components/schemas/Card'
+        lastPlayedJoker:
+          type: boolean
+          description: Whether this player played a joker on their last turn (only populated for the human player when jokerConsecutiveBanned is enabled)
+          example: false
 
     SevensAction:
       type: object
@@ -2342,6 +2351,10 @@ components:
         endStopEnabled:
           type: boolean
           description: Whether 片側ストップ (end stop — A placed blocks high side 8–K, K placed blocks low side A–6) is enabled (default false)
+          example: false
+        jokerConsecutiveBanned:
+          type: boolean
+          description: Whether ジョーカー連続禁止 (joker consecutive banned — a player who played a joker last turn cannot play a joker this turn) is enabled (default false)
           example: false
 
     SevensResponse:

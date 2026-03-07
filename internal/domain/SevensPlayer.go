@@ -11,9 +11,10 @@ const SevensMaxPasses = 5
 // SevensPlayer 7並べプレイヤークラス
 type SevensPlayer struct {
 	*RankedGamePlayer
-	isEliminated bool // パス切れによる失格フラグ
-	passesUsed   int  // 使用済みパス回数
-	maxPasses    int  // 最大パス回数
+	isEliminated    bool // パス切れによる失格フラグ
+	passesUsed      int  // 使用済みパス回数
+	maxPasses       int  // 最大パス回数
+	lastPlayedJoker bool // 前回ジョーカーを出したか (連続ジョーカー禁止ルール用)
 }
 
 // NewSevensPlayer コンストラクタ
@@ -69,6 +70,12 @@ func (p *SevensPlayer) RemoveSevens() []*Card {
 	p.cards = newCards
 	return removed
 }
+
+// GetLastPlayedJoker 前回ジョーカーを出したか取得
+func (p *SevensPlayer) GetLastPlayedJoker() bool { return p.lastPlayedJoker }
+
+// SetLastPlayedJoker 前回ジョーカーを出したかフラグ設定
+func (p *SevensPlayer) SetLastPlayedJoker(v bool) { p.lastPlayedJoker = v }
 
 // SortCards カードをスートごと・値の昇順でソート
 func (p *SevensPlayer) SortCards() {

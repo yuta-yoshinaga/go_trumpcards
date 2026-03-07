@@ -32,6 +32,7 @@ go run ./cmd/cli sevens
 | ジョーカー上がり禁止 | 最後のカードがジョーカーの場合、出せない（パスまたは失格） |
 | ジョーカー回収 | ジョーカーが配置された位置に本物のカードを出すと、ジョーカーが手札に戻る |
 | 片側ストップ | Aを置くと上側(8-K)がブロック、Kを置くと下側(A-6)がブロックされる |
+| ジョーカー連続禁止 | 前の手番でジョーカーを出したプレイヤーは、次の手番でジョーカーを出せない（通常カードを出すかパスするとリセット） |
 
 ## ゲームの流れ
 
@@ -65,7 +66,7 @@ flowchart TD
 | コマンド | 短縮形 | 説明 |
 |----------|--------|------|
 | `reset` | `r` | デフォルト設定で新しいゲームを開始 |
-| `reset tunnel joker=N strategy passes=N nojokerfinish jokerreclaim endstop` | `r tunnel joker=N strategy passes=N nojokerfinish jokerreclaim endstop` | オプション指定で開始（例: `r tunnel joker=1 strategy passes=0 nojokerfinish jokerreclaim endstop`） |
+| `reset tunnel joker=N strategy passes=N nojokerfinish jokerreclaim endstop jokerconsban` | `r tunnel joker=N strategy passes=N nojokerfinish jokerreclaim endstop jokerconsban` | オプション指定で開始（例: `r tunnel joker=1 strategy passes=0 nojokerfinish jokerreclaim endstop jokerconsban`） |
 | `play N` | `p N` | インデックスNのカードを場に出す（例: `p 3`） |
 | `play` | `p` | パス（パス回数を1消費） |
 | `j cardIdx suitInt valueInt` | - | ジョーカーを配置（例: `j 0 1 6`） |
@@ -88,7 +89,7 @@ flowchart TD
 ```
 ==========
 Sevens (7並べ)
-ルール: [トンネル] [ジョーカー×1] [CPU戦略] [ジョーカー上がり禁止] [片側ストップ]
+ルール: [トンネル] [ジョーカー×1] [CPU戦略] [ジョーカー上がり禁止] [片側ストップ] [ジョーカー連続禁止]
 ==========
 [You]: 12枚 (パス: 0/5)
 [0]SPADE 2  [1]SPADE 3  [2]HEART 10  ...

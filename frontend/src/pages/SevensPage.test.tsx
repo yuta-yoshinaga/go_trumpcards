@@ -23,6 +23,7 @@ const defaultConfig = {
   noJokerFinish: false,
   jokerReclaimEnabled: false,
   endStopEnabled: false,
+  jokerConsecutiveBanned: false,
 };
 const allSevensPlaced = [0, 128, 128, 128, 128]; // bit 7 set = 128
 
@@ -197,6 +198,7 @@ describe('SevensPage', () => {
         noJokerFinish: false,
         jokerReclaim: false,
         endStop: false,
+        jokerConsecutiveBanned: false,
       }),
     );
   });
@@ -384,6 +386,7 @@ describe('SevensPage', () => {
         noJokerFinish: false,
         jokerReclaim: false,
         endStop: false,
+        jokerConsecutiveBanned: false,
       }),
     );
   });
@@ -628,6 +631,7 @@ describe('SevensPage', () => {
         noJokerFinish: false,
         jokerReclaim: false,
         endStop: false,
+        jokerConsecutiveBanned: false,
       }),
     );
   });
@@ -812,6 +816,7 @@ describe('SevensPage', () => {
         noJokerFinish: true,
         jokerReclaim: false,
         endStop: false,
+        jokerConsecutiveBanned: false,
       }),
     );
   });
@@ -894,6 +899,7 @@ describe('SevensPage', () => {
         noJokerFinish: false,
         jokerReclaim: true,
         endStop: false,
+        jokerConsecutiveBanned: false,
       }),
     );
   });
@@ -1025,6 +1031,7 @@ describe('SevensPage', () => {
         noJokerFinish: false,
         jokerReclaim: false,
         endStop: true,
+        jokerConsecutiveBanned: false,
       }),
     );
   });
@@ -1166,5 +1173,134 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     const playableCards = screen.queryAllByTestId('playable-card');
     expect(playableCards).toHaveLength(1);
+  });
+
+  // ── JokerConsecutiveBanned ──
+
+  it('renders jokerConsecutiveBanned checkbox with default unchecked state', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    expect(screen.getByLabelText('ジョーカー連続禁止')).not.toBeChecked();
+  });
+
+  it('sends jokerConsecutiveBanned: true in config when checkbox is checked and reset is clicked', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('ジョーカー連続禁止'));
+    expect(screen.getByLabelText('ジョーカー連続禁止')).toBeChecked();
+
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerConsecutiveBanned: true },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        jokerCount: 0,
+        cpuStrategy: false,
+        maxPasses: 5,
+        noJokerFinish: false,
+        jokerReclaim: false,
+        endStop: false,
+        jokerConsecutiveBanned: true,
+      }),
+    );
+  });
+
+  it('syncs jokerConsecutiveBanned checkbox state from server response', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerConsecutiveBanned: true },
+    });
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByLabelText('ジョーカー連続禁止')).toBeChecked());
+  });
+
+  it('shows rule badge [ジョーカー連続禁止] when config has jokerConsecutiveBanned: true', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerConsecutiveBanned: true },
+    });
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText(/\[ジョーカー連続禁止\]/)).toBeInTheDocument());
+  });
+
+  it('joker card is not playable when jokerConsecutiveBanned is true and lastPlayedJoker is true', async () => {
+    const jcbState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: true },
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [
+            { design: 'JOKER', value: 0 },
+            { design: 'SPADE', value: 6 },
+          ],
+          cardCount: 2,
+          lastPlayedJoker: true,
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jcbState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    // SPADE 6 is playable (adjacent to 7), but JOKER is blocked
+    const playableCards = screen.queryAllByTestId('playable-card');
+    expect(playableCards).toHaveLength(1);
+  });
+
+  it('joker card is playable when jokerConsecutiveBanned is true but lastPlayedJoker is false', async () => {
+    const jcbState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: true },
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [
+            { design: 'JOKER', value: 0 },
+            { design: 'SPADE', value: 6 },
+          ],
+          cardCount: 2,
+          lastPlayedJoker: false,
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jcbState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    // Both JOKER and SPADE 6 are playable
+    const playableCards = screen.queryAllByTestId('playable-card');
+    expect(playableCards).toHaveLength(2);
+  });
+
+  it('joker card is playable when jokerConsecutiveBanned is false even if lastPlayedJoker is true', async () => {
+    const jcbState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, jokerCount: 1, jokerConsecutiveBanned: false },
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [
+            { design: 'JOKER', value: 0 },
+            { design: 'SPADE', value: 6 },
+          ],
+          cardCount: 2,
+          lastPlayedJoker: true,
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(jcbState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    // Both should be playable when rule is disabled
+    const playableCards = screen.queryAllByTestId('playable-card');
+    expect(playableCards).toHaveLength(2);
   });
 });
