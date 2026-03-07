@@ -207,6 +207,9 @@ func (m *mockDaifugoIF) Play(i []int) string {
 func (m *mockDaifugoIF) ResetWithConfig(config domain.DaifugoConfig) string {
 	return m.Called(config).String(0)
 }
+func (m *mockDaifugoIF) GetConfig() domain.DaifugoConfig {
+	return m.Called().Get(0).(domain.DaifugoConfig)
+}
 func (m *mockDaifugoIF) Sort(mode domain.DaifugoSortMode) string {
 	return m.Called(mode).String(0)
 }
