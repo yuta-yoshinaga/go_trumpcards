@@ -49,3 +49,9 @@ func (_m *MockDoubtInteractor) GetCpuDoubters() []int {
 	}
 	return nil
 }
+
+// GetConfig モック
+func (_m *MockDoubtInteractor) GetConfig() domain.DoubtConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.DoubtConfig)
+}

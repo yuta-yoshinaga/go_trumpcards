@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
 func TestDoubtCuiController_Exec(t *testing.T) {
@@ -15,7 +16,9 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 
 	newMock := func() *mockUsecases.MockDoubtInteractor {
 		m := new(mockUsecases.MockDoubtInteractor)
+		m.On("GetConfig").Return(domain.DefaultDoubtConfig())
 		m.On("Reset").Return(mockOutput)
+		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("Play", mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("ResolveDoubt", mock.Anything).Return(mockOutput)
 		m.On("SkipDoubt").Return(mockOutput)
@@ -32,20 +35,22 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, "bye.", c.Exec("quit"))
 	})
 
-	t.Run("reset command r", func(t *testing.T) {
+	t.Run("reset command r preserves config", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDoubtCuiController(m)
 		result := c.Exec("r")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "Reset")
+		m.AssertCalled(t, "GetConfig")
+		m.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig())
 	})
 
-	t.Run("reset command reset", func(t *testing.T) {
+	t.Run("reset command reset preserves config", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDoubtCuiController(m)
 		result := c.Exec("reset")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "Reset")
+		m.AssertCalled(t, "GetConfig")
+		m.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig())
 	})
 
 	t.Run("play command p with value and indices", func(t *testing.T) {
@@ -118,6 +123,135 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		result := c.Exec("skip")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "SkipDoubt")
+	})
+
+	// setwindow tests
+	t.Run("setwindow sw valid", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("sw 30")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultDoubtConfig()
+		expected.DoubtWindowSec = 30
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setwindow long form", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("setwindow 5")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultDoubtConfig()
+		expected.DoubtWindowSec = 5
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setwindow no args", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sw")
+		assert.Contains(t, result, "required")
+	})
+
+	t.Run("setwindow invalid value", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sw abc")
+		assert.Contains(t, result, "Invalid doubt window")
+	})
+
+	t.Run("setwindow zero", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sw 0")
+		assert.Contains(t, result, "Invalid doubt window")
+	})
+
+	t.Run("setwindow over 60", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sw 61")
+		assert.Contains(t, result, "Invalid doubt window")
+	})
+
+	// setmemory tests
+	t.Run("setmemory sm valid", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("sm 2")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultDoubtConfig()
+		expected.CpuMemoryLevel = domain.DoubtMemoryLevelHard
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setmemory long form", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("setmemory 0")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultDoubtConfig()
+		expected.CpuMemoryLevel = domain.DoubtMemoryLevelEasy
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setmemory no args", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sm")
+		assert.Contains(t, result, "required")
+	})
+
+	t.Run("setmemory invalid value", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sm abc")
+		assert.Contains(t, result, "Invalid CPU memory level")
+	})
+
+	t.Run("setmemory negative", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sm -1")
+		assert.Contains(t, result, "Invalid CPU memory level")
+	})
+
+	t.Run("setmemory over 2", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sm 3")
+		assert.Contains(t, result, "Invalid CPU memory level")
+	})
+
+	// setpenalty tests
+	t.Run("setpenalty sp valid", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("sp 5")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultDoubtConfig()
+		expected.PenaltyDrawLimit = 5
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setpenalty long form", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("setpenalty 0")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultDoubtConfig()
+		expected.PenaltyDrawLimit = 0
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("setpenalty no args", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sp")
+		assert.Contains(t, result, "required")
+	})
+
+	t.Run("setpenalty invalid value", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sp abc")
+		assert.Contains(t, result, "Invalid penalty draw limit")
+	})
+
+	t.Run("setpenalty negative", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("sp -1")
+		assert.Contains(t, result, "Invalid penalty draw limit")
 	})
 
 	t.Run("unknown command", func(t *testing.T) {

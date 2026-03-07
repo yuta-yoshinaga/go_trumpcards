@@ -14,6 +14,7 @@ type DoubtInteractorIF interface {
 	ResolveDoubt(doubterIndices []int) string
 	SkipDoubt() string
 	GetCpuDoubters() []int
+	GetConfig() domain.DoubtConfig
 }
 
 // DoubtInteractor ダウトインタラクタークラス
@@ -70,6 +71,11 @@ func (di *DoubtInteractor) SkipDoubt() string {
 // GetCpuDoubters CPUダウターインデックスリスト取得
 func (di *DoubtInteractor) GetCpuDoubters() []int {
 	return di.d.GetCpuDoubters()
+}
+
+// GetConfig 現在の設定を取得
+func (di *DoubtInteractor) GetConfig() domain.DoubtConfig {
+	return di.d.GetConfig()
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはダウトフェーズになるまでCPUターンを実行

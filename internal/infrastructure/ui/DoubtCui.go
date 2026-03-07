@@ -72,6 +72,9 @@ func (cui *DoubtCui) Exec() {
 			fmt.Println("q・・・quit")
 			fmt.Println("r・・・reset")
 			fmt.Println("p <値> <idx...>・・・カードを出す (値=宣言値, idx=手札インデックス)")
+			fmt.Println("sw <秒>・・・ダウト待機秒数設定 (1-60)")
+			fmt.Println("sm <レベル>・・・CPU記憶力設定 (0=Easy, 1=Normal, 2=Hard)")
+			fmt.Println("sp <上限>・・・ペナルティドロー上限設定 (0=無制限, >0=上限)")
 			input := <-cui.inputCh
 			res := cui.dc.Exec(input)
 			fmt.Println(res)

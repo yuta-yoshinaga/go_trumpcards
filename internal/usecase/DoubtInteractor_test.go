@@ -249,6 +249,30 @@ func TestDoubtInteractor_GetCpuDoubters(t *testing.T) {
 	})
 }
 
+func TestDoubtInteractor_GetConfig(t *testing.T) {
+	t.Run("returns config from domain game", func(t *testing.T) {
+		dpMock := new(presenter.MockDoubtPresenter)
+		gameMock := new(interfaces.MockDoubtGame)
+		expected := domain.DoubtConfig{DoubtWindowSec: 20, CpuMemoryLevel: domain.DoubtMemoryLevelHard, PenaltyDrawLimit: 3}
+		gameMock.On("GetConfig").Return(expected)
+
+		di := usecase.NewDoubtInteractor(gameMock, dpMock)
+		result := di.GetConfig()
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("returns default config", func(t *testing.T) {
+		dpMock := new(presenter.MockDoubtPresenter)
+		gameMock := new(interfaces.MockDoubtGame)
+		expected := domain.DefaultDoubtConfig()
+		gameMock.On("GetConfig").Return(expected)
+
+		di := usecase.NewDoubtInteractor(gameMock, dpMock)
+		result := di.GetConfig()
+		assert.Equal(t, expected, result)
+	})
+}
+
 func TestDoubtInteractor_WithRealGame(t *testing.T) {
 	t.Run("Reset initializes game and returns output", func(t *testing.T) {
 		mockOutput := `{"phase":0}`
