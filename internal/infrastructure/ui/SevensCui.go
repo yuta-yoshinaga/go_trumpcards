@@ -1,10 +1,6 @@
 package ui
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -35,21 +31,10 @@ func NewSevensCui() *SevensCui {
 
 // Exec ゲーム実行
 func (cui *SevensCui) Exec() {
-	fmt.Println(cui.sgc.Exec("r"))
-	scanner := bufio.NewScanner(os.Stdin)
-	for {
-		fmt.Println("コマンドを入力してください。")
-		fmt.Println("q・・・quit")
-		fmt.Println("r [tunnel] [joker=N] [strategy] [passes=N]・・・reset (オプションルール設定)")
-		fmt.Println("p [インデックス]・・・カードを出す (インデックスなしでパス)")
-		input, exit := readInput(scanner)
-		if exit {
-			break
-		}
-		res := cui.sgc.Exec(input)
-		fmt.Println(res)
-		if res == "bye." {
-			break
-		}
-	}
+	RunCuiLoop(cui.sgc, []string{
+		"コマンドを入力してください。",
+		"q・・・quit",
+		"r [tunnel] [joker=N] [strategy] [passes=N]・・・reset (オプションルール設定)",
+		"p [インデックス]・・・カードを出す (インデックスなしでパス)",
+	})
 }

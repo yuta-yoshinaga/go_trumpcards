@@ -1,10 +1,6 @@
 package ui
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -33,29 +29,18 @@ func NewPokerCui() *PokerCui {
 
 // Exec ゲーム実行
 func (cui *PokerCui) Exec() {
-	fmt.Println(cui.pc.Exec("r"))
-	scanner := bufio.NewScanner(os.Stdin)
-	for {
-		fmt.Println("Please enter a command.")
-		fmt.Println("q・・・quit")
-		fmt.Println("r・・・reset")
-		fmt.Println("b [amount]・・・bet (e.g. 'b 20')")
-		fmt.Println("c・・・call")
-		fmt.Println("ra [amount]・・・raise (e.g. 'ra 30')")
-		fmt.Println("ck・・・check")
-		fmt.Println("f・・・fold")
-		fmt.Println("a・・・all-in")
-		fmt.Println("e [0-4]・・・exchange (e.g. 'e 0 2 4' to exchange cards at index 0, 2, 4)")
-		fmt.Println("s・・・stand (no exchange)")
-		fmt.Println("bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)")
-		input, exit := readInput(scanner)
-		if exit {
-			break
-		}
-		res := cui.pc.Exec(input)
-		fmt.Println(res)
-		if res == "bye." {
-			break
-		}
-	}
+	RunCuiLoop(cui.pc, []string{
+		"Please enter a command.",
+		"q・・・quit",
+		"r・・・reset",
+		"b [amount]・・・bet (e.g. 'b 20')",
+		"c・・・call",
+		"ra [amount]・・・raise (e.g. 'ra 30')",
+		"ck・・・check",
+		"f・・・fold",
+		"a・・・all-in",
+		"e [0-4]・・・exchange (e.g. 'e 0 2 4' to exchange cards at index 0, 2, 4)",
+		"s・・・stand (no exchange)",
+		"bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
+	})
 }
