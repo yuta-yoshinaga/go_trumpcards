@@ -301,17 +301,8 @@ func (b *BlackJack) checkNaturalBlackJack() {
 		}
 	}
 
-	// 全ハンドがスタンド済み（BJ+他のfinished状態）なら次へ進む
-	allFinished := true
-	for _, hand := range b.playerHands {
-		if !hand.IsFinished() {
-			allFinished = false
-			break
-		}
-	}
-	if allFinished {
-		b.advanceHand()
-	}
+	// advanceHand で最初の未完了ハンドへ進む（全完了ならディーラーターン）
+	b.advanceHand()
 }
 
 // PlayerHit プレイヤーヒット

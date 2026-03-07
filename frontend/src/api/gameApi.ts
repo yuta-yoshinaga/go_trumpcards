@@ -31,7 +31,7 @@ export interface BlackJackConfigInput {
   deckPenetration?: number;
 }
 
-export interface BlackJackSideBetInput {
+export interface BlackJackBetOptions {
   perfectPairsBet?: number;
   twentyOnePlus3Bet?: number;
   handCount?: number;
@@ -59,8 +59,8 @@ export const blackjackApi = {
       | 'setcpucount',
     amount?: number,
     config?: BlackJackConfigInput,
-    sideBets?: BlackJackSideBetInput,
-  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config, ...sideBets }),
+    betOptions?: BlackJackBetOptions,
+  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config, ...betOptions }),
 };
 
 export interface PokerConfigInput {

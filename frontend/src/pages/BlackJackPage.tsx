@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BlackJackConfigInput, BlackJackSideBetInput } from '../api/gameApi';
+import type { BlackJackConfigInput, BlackJackBetOptions } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
@@ -281,11 +281,11 @@ export function BlackJackPage() {
                 onHandCountChange={setHandCount}
                 loading={loading}
                 onBet={() => {
-                  const sideBets: BlackJackSideBetInput = {};
-                  if (perfectPairsBet > 0) sideBets.perfectPairsBet = perfectPairsBet;
-                  if (twentyOnePlus3Bet > 0) sideBets.twentyOnePlus3Bet = twentyOnePlus3Bet;
-                  if (handCount > 1) sideBets.handCount = handCount;
-                  exec('bet', betAmount, undefined, sideBets);
+                  const betOptions: BlackJackBetOptions = {};
+                  if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
+                  if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
+                  if (handCount > 1) betOptions.handCount = handCount;
+                  exec('bet', betAmount, undefined, betOptions);
                 }}
                 perfectPairsBet={perfectPairsBet}
                 onPerfectPairsBetChange={setPerfectPairsBet}

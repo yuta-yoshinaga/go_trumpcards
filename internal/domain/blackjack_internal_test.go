@@ -1552,6 +1552,8 @@ func TestCheckNaturalBlackJack_PartialBJ_AutoStand(t *testing.T) {
 		assert.False(t, hand1.IsFinished())
 		// Game should not have ended
 		assert.False(t, bj.gameEndFlag)
+		// currentHandIdx should advance to the first unfinished hand
+		assert.Equal(t, 1, bj.currentHandIdx)
 	})
 
 	t.Run("all hands BJ ends game immediately", func(t *testing.T) {
