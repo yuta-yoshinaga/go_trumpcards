@@ -116,7 +116,7 @@ export function HoldemPage() {
               extraInfo={
                 p.totalHands > 0 ? (
                   <span className="ml-2 text-cyan-300 text-[0.8em]">
-                    VPIP:{p.vpip}% PFR:{p.pfr}%
+                    VPIP:{p.vpip}% PFR:{p.pfr}% 3Bet:{p.threeBet}% AF:{p.af}
                   </span>
                 ) : undefined
               }
@@ -142,7 +142,7 @@ export function HoldemPage() {
               </span>
               {humanPlayer.totalHands > 0 && (
                 <span className="ml-2 text-cyan-300 text-[0.8em]">
-                  VPIP:{humanPlayer.vpip}% PFR:{humanPlayer.pfr}%
+                  VPIP:{humanPlayer.vpip}% PFR:{humanPlayer.pfr}% 3Bet:{humanPlayer.threeBet}% AF:{humanPlayer.af}
                 </span>
               )}
               {humanPlayer.currentBet > 0 && (

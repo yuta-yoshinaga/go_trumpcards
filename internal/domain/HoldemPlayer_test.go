@@ -448,6 +448,85 @@ func TestHoldemPlayer_HUDStats(t *testing.T) {
 	})
 }
 
+func TestHoldemPlayer_ThreeBetStats(t *testing.T) {
+	t.Run("initial stats are zero", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		assert.Equal(t, 0, p.GetThreeBetOpportunity())
+		assert.Equal(t, 0, p.GetThreeBetCount())
+		assert.Equal(t, 0, p.GetThreeBet())
+	})
+
+	t.Run("3Bet percentage with opportunities", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		p.IncrementThreeBetOpportunity()
+		p.IncrementThreeBetOpportunity()
+		p.IncrementThreeBetOpportunity()
+		p.IncrementThreeBetOpportunity() // 4 opportunities
+		p.IncrementThreeBet()            // 1 3bet
+		assert.Equal(t, 4, p.GetThreeBetOpportunity())
+		assert.Equal(t, 1, p.GetThreeBetCount())
+		assert.Equal(t, 25, p.GetThreeBet()) // 1*100/4=25
+	})
+
+	t.Run("3Bet percentage zero when no opportunities", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		assert.Equal(t, 0, p.GetThreeBet())
+	})
+}
+
+func TestHoldemPlayer_AFStats(t *testing.T) {
+	t.Run("initial AF display is dash", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		assert.Equal(t, 0, p.GetPostFlopBetRaise())
+		assert.Equal(t, 0, p.GetPostFlopCall())
+		assert.Equal(t, "-", p.GetAFDisplay())
+	})
+
+	t.Run("AF infinity when bets but no calls", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		p.IncrementPostFlopBetRaise()
+		p.IncrementPostFlopBetRaise()
+		assert.Equal(t, 2, p.GetPostFlopBetRaise())
+		assert.Equal(t, 0, p.GetPostFlopCall())
+		assert.Equal(t, "∞", p.GetAFDisplay())
+	})
+
+	t.Run("AF normal ratio", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		p.IncrementPostFlopBetRaise()
+		p.IncrementPostFlopBetRaise()
+		p.IncrementPostFlopBetRaise()
+		p.IncrementPostFlopBetRaise()
+		p.IncrementPostFlopBetRaise() // 5
+		p.IncrementPostFlopCall()
+		p.IncrementPostFlopCall() // 2
+		assert.Equal(t, "2.5", p.GetAFDisplay())
+	})
+
+	t.Run("AF integer ratio", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		p.IncrementPostFlopBetRaise()
+		p.IncrementPostFlopBetRaise()
+		p.IncrementPostFlopBetRaise()
+		p.IncrementPostFlopBetRaise() // 4
+		p.IncrementPostFlopCall()
+		p.IncrementPostFlopCall() // 2
+		assert.Equal(t, "2.0", p.GetAFDisplay())
+	})
+
+	t.Run("AF dash when no postflop actions", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		assert.Equal(t, "-", p.GetAFDisplay())
+	})
+
+	t.Run("AF zero when only calls", func(t *testing.T) {
+		p := NewHoldemPlayer(false, HoldemStyleTAG)
+		p.IncrementPostFlopCall()
+		p.IncrementPostFlopCall()
+		assert.Equal(t, "0.0", p.GetAFDisplay())
+	})
+}
+
 func TestHoldemPlayer_SetBestHand(t *testing.T) {
 	p := NewHoldemPlayer(true, HoldemStyleTAG)
 	hand := []*Card{NewCard(CardDesignSpade, 1, false)}

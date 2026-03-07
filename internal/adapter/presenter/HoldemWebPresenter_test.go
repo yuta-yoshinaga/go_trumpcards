@@ -482,6 +482,8 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 2, out.Players[0].TotalHands)
 		assert.Equal(t, 50, out.Players[0].VPIP)
 		assert.Equal(t, 50, out.Players[0].PFR)
+		assert.Equal(t, 0, out.Players[0].ThreeBet)
+		assert.Equal(t, "-", out.Players[0].AF)
 	})
 
 	t.Run("HUD stats zero when no hands played", func(t *testing.T) {
@@ -495,6 +497,41 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, out.Players[0].TotalHands)
 		assert.Equal(t, 0, out.Players[0].VPIP)
 		assert.Equal(t, 0, out.Players[0].PFR)
+		assert.Equal(t, 0, out.Players[0].ThreeBet)
+		assert.Equal(t, "-", out.Players[0].AF)
+	})
+
+	t.Run("HUD 3Bet and AF normal values", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementThreeBetOpportunity()
+		players[0].IncrementThreeBetOpportunity()
+		players[0].IncrementThreeBet()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopCall()
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 50, out.Players[0].ThreeBet) // 1*100/2=50
+		assert.Equal(t, "3.0", out.Players[0].AF)    // 3/1=3.0
+	})
+
+	t.Run("HUD AF infinity", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementPostFlopBetRaise()
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "∞", out.Players[0].AF)
 	})
 
 	t.Run("tournament mode fields included in output", func(t *testing.T) {

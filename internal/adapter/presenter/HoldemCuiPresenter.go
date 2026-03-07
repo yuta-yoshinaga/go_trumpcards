@@ -70,7 +70,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
 
 		if player.GetTotalHands() > 0 {
-			fmt.Fprintf(&b, " VPIP:%d%% PFR:%d%%", player.GetVPIP(), player.GetPFR())
+			fmt.Fprintf(&b, " VPIP:%d%% PFR:%d%% 3Bet:%d%% AF:%s", player.GetVPIP(), player.GetPFR(), player.GetThreeBet(), player.GetAFDisplay())
 		}
 
 		if player.GetFolded() {

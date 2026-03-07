@@ -367,6 +367,8 @@ export interface HoldemPlayerData {
   totalHands: number;
   vpip: number;
   pfr: number;
+  threeBet: number;
+  af: string;
 }
 
 export interface HoldemCpuAction {
