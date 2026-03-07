@@ -101,6 +101,12 @@ func TestDaifugoInteractor_MockGame(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		cpuMock.AssertNotCalled(t, "PlayerPlay", mock.Anything)
 	})
+	t.Run("GetConfig delegates to game.GetConfig", func(t *testing.T) {
+		gameMock.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+		result := di.GetConfig()
+		assert.Equal(t, domain.DefaultDaifugoConfig(), result)
+		gameMock.AssertCalled(t, "GetConfig")
+	})
 	t.Run("ResetWithConfig calls game.SetConfig then game.Reset", func(t *testing.T) {
 		config := domain.DefaultDaifugoConfig()
 		result := di.ResetWithConfig(config)

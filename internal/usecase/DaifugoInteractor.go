@@ -11,6 +11,7 @@ type DaifugoInteractorIF interface {
 	Reset() string
 	Play(indices []int) string
 	ResetWithConfig(config domain.DaifugoConfig) string
+	GetConfig() domain.DaifugoConfig
 	Sort(mode domain.DaifugoSortMode) string
 }
 
@@ -50,6 +51,11 @@ func (di *DaifugoInteractor) Play(indices []int) string {
 		di.runCpuTurns()
 	}
 	return di.dgp.Output(di.dg, err)
+}
+
+// GetConfig 現在の設定を返す
+func (di *DaifugoInteractor) GetConfig() domain.DaifugoConfig {
+	return di.dg.GetConfig()
 }
 
 // ResetWithConfig 設定を変更してゲームを初期化
