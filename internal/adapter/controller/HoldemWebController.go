@@ -37,6 +37,8 @@ type HoldemWebOutputPlayer struct {
 	TotalHands    int              `json:"totalHands"`
 	VPIP          int              `json:"vpip"`
 	PFR           int              `json:"pfr"`
+	ThreeBet      int              `json:"threeBet"`
+	AF            string           `json:"af"`
 }
 
 // HoldemWebOutputCpuAction テキサスホールデムCPU行動記録

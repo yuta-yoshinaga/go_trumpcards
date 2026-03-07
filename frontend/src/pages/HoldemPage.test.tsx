@@ -31,6 +31,8 @@ const humanPlayer = (overrides: Partial<import('../types/card').HoldemPlayerData
   totalHands: 0,
   vpip: 0,
   pfr: 0,
+  threeBet: 0,
+  af: '-',
   ...overrides,
 });
 
@@ -53,6 +55,8 @@ const cpuPlayer = (id: number, overrides: Partial<import('../types/card').Holdem
   totalHands: 0,
   vpip: 0,
   pfr: 0,
+  threeBet: 0,
+  af: '-',
   ...overrides,
 });
 
@@ -834,10 +838,10 @@ describe('HoldemPage', () => {
   it('shows HUD stats for CPU when totalHands > 0', async () => {
     mockExec.mockResolvedValue({
       ...preFlopState,
-      players: [humanPlayer(), cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20 }), cpuPlayer(2)],
+      players: [humanPlayer(), cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20, threeBet: 10, af: '2.5' }), cpuPlayer(2)],
     });
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/VPIP:60% PFR:20%/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/VPIP:60% PFR:20% 3Bet:10% AF:2\.5/)).toBeInTheDocument());
   });
 
   it('does not show HUD stats for CPU when totalHands is 0', async () => {
@@ -850,10 +854,10 @@ describe('HoldemPage', () => {
   it('shows HUD stats for human when totalHands > 0', async () => {
     mockExec.mockResolvedValue({
       ...preFlopState,
-      players: [humanPlayer({ totalHands: 3, vpip: 33, pfr: 0 }), cpuPlayer(1), cpuPlayer(2)],
+      players: [humanPlayer({ totalHands: 3, vpip: 33, pfr: 0, threeBet: 0, af: '-' }), cpuPlayer(1), cpuPlayer(2)],
     });
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/VPIP:33% PFR:0%/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/VPIP:33% PFR:0% 3Bet:0% AF:-/)).toBeInTheDocument());
   });
 
   it('does not show HUD stats for human when totalHands is 0', async () => {

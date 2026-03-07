@@ -114,44 +114,46 @@ type HoldemCpuAction struct {
 
 // Holdem テキサスホールデムクラス
 type Holdem struct {
-	trumpCards     *TrumpCards
-	players        []*HoldemPlayer
-	communityCards []*Card
-	pot            int
-	sidePots       []HoldemSidePot
-	dealerIdx      int
-	currentTurn    int
-	phase          int
-	config         HoldemConfig
-	gameEndFlag    bool
-	lastBet        int
-	minRaise       int
-	raiseCount     int
-	actedFlags     []bool
-	roundResults   []HoldemResult
-	cpuActions     []HoldemCpuAction
-	startingChips  []int
-	vpipTracked    []bool // 当該ハンドでVPIP済みかどうか
-	pfrTracked     []bool // 当該ハンドでPFR済みかどうか
-	handCount      int    // ハンド数 (トーナメントモード用)
-	lastCpuError   error  // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
+	trumpCards      *TrumpCards
+	players         []*HoldemPlayer
+	communityCards  []*Card
+	pot             int
+	sidePots        []HoldemSidePot
+	dealerIdx       int
+	currentTurn     int
+	phase           int
+	config          HoldemConfig
+	gameEndFlag     bool
+	lastBet         int
+	minRaise        int
+	raiseCount      int
+	actedFlags      []bool
+	roundResults    []HoldemResult
+	cpuActions      []HoldemCpuAction
+	startingChips   []int
+	vpipTracked     []bool // 当該ハンドでVPIP済みかどうか
+	pfrTracked      []bool // 当該ハンドでPFR済みかどうか
+	threeBetTracked []bool // 当該ハンドで3Bet追跡済みかどうか
+	handCount       int    // ハンド数 (トーナメントモード用)
+	lastCpuError    error  // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 }
 
 // NewHoldem コンストラクタ
 func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemConfig) *Holdem {
 	return &Holdem{
-		trumpCards:     trumpCards,
-		players:        players,
-		communityCards: make([]*Card, 0),
-		sidePots:       make([]HoldemSidePot, 0),
-		actedFlags:     make([]bool, len(players)),
-		roundResults:   make([]HoldemResult, 0),
-		cpuActions:     make([]HoldemCpuAction, 0),
-		startingChips:  make([]int, len(players)),
-		vpipTracked:    make([]bool, len(players)),
-		pfrTracked:     make([]bool, len(players)),
-		config:         config,
-		phase:          HoldemPhaseInit,
+		trumpCards:      trumpCards,
+		players:         players,
+		communityCards:  make([]*Card, 0),
+		sidePots:        make([]HoldemSidePot, 0),
+		actedFlags:      make([]bool, len(players)),
+		roundResults:    make([]HoldemResult, 0),
+		cpuActions:      make([]HoldemCpuAction, 0),
+		startingChips:   make([]int, len(players)),
+		vpipTracked:     make([]bool, len(players)),
+		pfrTracked:      make([]bool, len(players)),
+		threeBetTracked: make([]bool, len(players)),
+		config:          config,
+		phase:           HoldemPhaseInit,
 	}
 }
 
@@ -186,6 +188,7 @@ func (h *Holdem) Reset() error {
 	// HUDスタッツ追跡フラグをリセット
 	h.vpipTracked = make([]bool, len(h.players))
 	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
 
 	// トーナメントモード: ブラインドエスカレーション
 	if h.config.TournamentMode && h.config.BlindLevelHands > 0 && h.handCount > 0 && h.handCount%h.config.BlindLevelHands == 0 {
@@ -312,6 +315,29 @@ func (h *Holdem) trackPreFlopStats(playerIdx, action int) {
 		h.players[playerIdx].IncrementPFR()
 		h.pfrTracked[playerIdx] = true
 	}
+
+	// 3Bet追跡: raiseCount >= 1 (既にレイズがある) かつ未追跡
+	if h.raiseCount >= 1 && !h.threeBetTracked[playerIdx] {
+		h.players[playerIdx].IncrementThreeBetOpportunity()
+		if action == HoldemActionRaise || action == HoldemActionAllIn {
+			h.players[playerIdx].IncrementThreeBet()
+		}
+		h.threeBetTracked[playerIdx] = true
+	}
+}
+
+// trackPostFlopStats ポストフロップのAFスタッツを追跡
+func (h *Holdem) trackPostFlopStats(playerIdx, action int) {
+	if h.phase < HoldemPhaseFlop || h.phase > HoldemPhaseRiver {
+		return
+	}
+
+	switch action {
+	case HoldemActionBet, HoldemActionRaise, HoldemActionAllIn:
+		h.players[playerIdx].IncrementPostFlopBetRaise()
+	case HoldemActionCall:
+		h.players[playerIdx].IncrementPostFlopCall()
+	}
 }
 
 // bettingPlayers BettingPlayerスライスを生成
@@ -325,8 +351,9 @@ func (h *Holdem) bettingPlayers() []BettingPlayer {
 
 // executeAction 指定プレイヤーのアクション実行
 func (h *Holdem) executeAction(playerIdx, action, amount int) error {
-	// プリフロップスタッツ追跡 (Holdem固有)
+	// HUDスタッツ追跡 (Holdem固有)
 	h.trackPreFlopStats(playerIdx, action)
+	h.trackPostFlopStats(playerIdx, action)
 
 	bp := h.bettingPlayers()
 	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が h.actedFlags に直接反映される

@@ -66,6 +66,8 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 			TotalHands:    player.GetTotalHands(),
 			VPIP:          player.GetVPIP(),
 			PFR:           player.GetPFR(),
+			ThreeBet:      player.GetThreeBet(),
+			AF:            player.GetAFDisplay(),
 			Cards:         make([]*controller.WebOutputCard, 0),
 			BestHand:      make([]*controller.WebOutputCard, 0),
 		}

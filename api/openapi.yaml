@@ -2868,6 +2868,16 @@ components:
           minimum: 0
           maximum: 100
           example: 25
+        threeBet:
+          type: integer
+          description: 3Bet percentage — preflop re-raise rate when facing a raise
+          minimum: 0
+          maximum: 100
+          example: 10
+        af:
+          type: string
+          description: "Aggression Factor (postflop bets+raises / calls). Values: decimal (e.g. \"2.5\"), \"∞\" (bets but no calls), \"-\" (no postflop actions)"
+          example: "2.5"
 
     HoldemCpuAction:
       type: object

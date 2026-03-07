@@ -349,8 +349,30 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		players[1].IncrementPFR()
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "VPIP:50% PFR:0%")
-		assert.Contains(t, result, "VPIP:66% PFR:33%")
+		assert.Contains(t, result, "VPIP:50% PFR:0% 3Bet:0% AF:-")
+		assert.Contains(t, result, "VPIP:66% PFR:33% 3Bet:0% AF:-")
+	})
+
+	t.Run("HUD stats with AF infinity", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementPostFlopBetRaise()
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "AF:∞")
+	})
+
+	t.Run("HUD stats with AF normal ratio", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopCall()
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "AF:2.0")
 	})
 
 	t.Run("HUD stats not shown when totalHands is 0", func(t *testing.T) {
