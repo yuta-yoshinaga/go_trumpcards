@@ -14,11 +14,12 @@ import (
 // DoubtWebInput ダウトWebインプット
 type DoubtWebInput struct {
 	BaseWebInput
-	CardIndices    []int `json:"cardIndices,omitempty"`
-	ClaimedValue   int   `json:"claimedValue,omitempty"`
-	DoubterIndices []int `json:"doubterIndices,omitempty"`
-	DoubtWindowSec *int  `json:"doubtWindowSec,omitempty"`
-	CpuMemoryLevel *int  `json:"cpuMemoryLevel,omitempty"`
+	CardIndices      []int `json:"cardIndices,omitempty"`
+	ClaimedValue     int   `json:"claimedValue,omitempty"`
+	DoubterIndices   []int `json:"doubterIndices,omitempty"`
+	DoubtWindowSec   *int  `json:"doubtWindowSec,omitempty"`
+	CpuMemoryLevel   *int  `json:"cpuMemoryLevel,omitempty"`
+	PenaltyDrawLimit *int  `json:"penaltyDrawLimit,omitempty"`
 }
 
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
@@ -41,31 +42,33 @@ type DoubtWebOutputAction struct {
 
 // DoubtWebOutputDoubtResult ダウト解決結果
 type DoubtWebOutputDoubtResult struct {
-	DoubterIdx    int              `json:"doubterIdx"`
-	CardPlayerIdx int              `json:"cardPlayerIdx"`
-	WasLying      bool             `json:"wasLying"`
-	LoserIdx      int              `json:"loserIdx"`
-	CardCount     int              `json:"cardCount"`
-	RevealedCards []*WebOutputCard `json:"revealedCards"`
+	DoubterIdx     int              `json:"doubterIdx"`
+	CardPlayerIdx  int              `json:"cardPlayerIdx"`
+	WasLying       bool             `json:"wasLying"`
+	LoserIdx       int              `json:"loserIdx"`
+	CardCount      int              `json:"cardCount"`
+	DiscardedCount int              `json:"discardedCount"`
+	RevealedCards  []*WebOutputCard `json:"revealedCards"`
 }
 
 // DoubtWebOutput ダウトWebアウトプット
 type DoubtWebOutput struct {
-	Players         []*DoubtWebOutputPlayer    `json:"players"`
-	CurrentTurn     int                        `json:"currentTurn"`
-	Phase           int                        `json:"phase"`
-	TableCardCount  int                        `json:"tableCardCount"`
-	LastAction      *DoubtWebOutputAction      `json:"lastAction"`
-	CpuDoubters     []int                      `json:"cpuDoubters"`
-	CpuActions      []*DoubtWebOutputAction    `json:"cpuActions"`
-	HumanAction     *DoubtWebOutputAction      `json:"humanAction"`
-	LastDoubtResult *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
-	GameEndFlag     bool                       `json:"gameEndFlag"`
-	WinnerIdx       int                        `json:"winnerIdx"`
-	Message         string                     `json:"message"`
-	MessageCode     string                     `json:"messageCode,omitempty"`
-	MessageParams   map[string]string          `json:"messageParams,omitempty"`
-	DoubtWindowSec  int                        `json:"doubtWindowSec"`
+	Players          []*DoubtWebOutputPlayer    `json:"players"`
+	CurrentTurn      int                        `json:"currentTurn"`
+	Phase            int                        `json:"phase"`
+	TableCardCount   int                        `json:"tableCardCount"`
+	LastAction       *DoubtWebOutputAction      `json:"lastAction"`
+	CpuDoubters      []int                      `json:"cpuDoubters"`
+	CpuActions       []*DoubtWebOutputAction    `json:"cpuActions"`
+	HumanAction      *DoubtWebOutputAction      `json:"humanAction"`
+	LastDoubtResult  *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
+	GameEndFlag      bool                       `json:"gameEndFlag"`
+	WinnerIdx        int                        `json:"winnerIdx"`
+	Message          string                     `json:"message"`
+	MessageCode      string                     `json:"messageCode,omitempty"`
+	MessageParams    map[string]string          `json:"messageParams,omitempty"`
+	DoubtWindowSec   int                        `json:"doubtWindowSec"`
+	PenaltyDrawLimit int                        `json:"penaltyDrawLimit"`
 }
 
 // DoubtWebController ダウトWebコントローラークラス
@@ -111,6 +114,9 @@ func (dwc *DoubtWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 					if level >= int(domain.DoubtMemoryLevelEasy) && level <= int(domain.DoubtMemoryLevelHard) {
 						cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
 					}
+				}
+				if param.PenaltyDrawLimit != nil && *param.PenaltyDrawLimit >= 0 {
+					cfg.PenaltyDrawLimit = *param.PenaltyDrawLimit
 				}
 				dwc.writePresenterResponse(w, dgi.ResetWithConfig(cfg))
 			case "p", "play":

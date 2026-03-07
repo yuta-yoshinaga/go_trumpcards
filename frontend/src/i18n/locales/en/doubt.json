@@ -15,7 +15,8 @@
     "title": "Doubt Result",
     "wasLying": "It was a lie!",
     "wasTruth": "It was the truth!",
-    "loserTook": "{{name}} took {{count}} cards"
+    "loserTook": "{{name}} took {{count}} cards",
+    "discarded": "{{count}} cards were discarded from the game"
   },
   "yourCards": "You ({{count}} cards)",
   "selectPrompt": "Select cards to play",
@@ -26,6 +27,9 @@
     "title": "Settings",
     "doubtTime": "Doubt Time:",
     "cpuMemory": "CPU Memory:",
+    "penaltyDrawLimit": "Penalty Limit:",
+    "unlimited": "Unlimited",
+    "cards": "{{count}} cards",
     "sec": "{{sec}}s"
   }
 }

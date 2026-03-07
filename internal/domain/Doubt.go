@@ -79,12 +79,13 @@ type DoubtCpuAction struct {
 
 // DoubtDoubtResult ダウト解決結果
 type DoubtDoubtResult struct {
-	DoubterIdx    int     // ダウトしたプレイヤーインデックス
-	CardPlayerIdx int     // カードを出したプレイヤーインデックス
-	WasLying      bool    // カードを出したプレイヤーが嘘をついていたか
-	LoserIdx      int     // 負けたプレイヤーインデックス (テーブルカードを引き取る)
-	CardCount     int     // 引き取ったカード枚数
-	RevealedCards []*Card // 公開されたカード
+	DoubterIdx     int     // ダウトしたプレイヤーインデックス
+	CardPlayerIdx  int     // カードを出したプレイヤーインデックス
+	WasLying       bool    // カードを出したプレイヤーが嘘をついていたか
+	LoserIdx       int     // 負けたプレイヤーインデックス (テーブルカードを引き取る)
+	CardCount      int     // 引き取ったカード枚数
+	DiscardedCount int     // ペナルティ上限超過で除外されたカード枚数
+	RevealedCards  []*Card // 公開されたカード
 }
 
 // cardsPerValue 標準52枚デッキにおける各値のカード枚数
@@ -395,20 +396,25 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 		loserIdx = doubter
 	}
 
-	cardCount := len(d.tableCards)
+	tableCount := len(d.tableCards)
+	takeCount := tableCount
+	if d.config.PenaltyDrawLimit > 0 && tableCount > d.config.PenaltyDrawLimit {
+		takeCount = d.config.PenaltyDrawLimit
+	}
 	revealedCards := d.lastAction.PlayedCards
 
-	for _, card := range d.tableCards {
-		d.players[loserIdx].AddCard(card)
+	for i := 0; i < takeCount; i++ {
+		d.players[loserIdx].AddCard(d.tableCards[i])
 	}
 
 	d.lastDoubtResult = &DoubtDoubtResult{
-		DoubterIdx:    doubter,
-		CardPlayerIdx: d.lastAction.PlayerIdx,
-		WasLying:      wasLying,
-		LoserIdx:      loserIdx,
-		CardCount:     cardCount,
-		RevealedCards: revealedCards,
+		DoubterIdx:     doubter,
+		CardPlayerIdx:  d.lastAction.PlayerIdx,
+		WasLying:       wasLying,
+		LoserIdx:       loserIdx,
+		CardCount:      takeCount,
+		DiscardedCount: tableCount - takeCount,
+		RevealedCards:  revealedCards,
 	}
 
 	// 非敗者のCPUがカードを記憶する

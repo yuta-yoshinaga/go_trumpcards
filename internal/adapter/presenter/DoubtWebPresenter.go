@@ -26,6 +26,7 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	resObj.GameEndFlag = d.GetGameEndFlag()
 	resObj.WinnerIdx = d.GetWinnerIdx()
 	resObj.DoubtWindowSec = d.GetConfig().DoubtWindowSec
+	resObj.PenaltyDrawLimit = d.GetConfig().PenaltyDrawLimit
 
 	// CPU行動履歴
 	resObj.CpuActions = make([]*controller.DoubtWebOutputAction, 0)
@@ -58,12 +59,13 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	// ダウト解決結果
 	if dr := d.GetLastDoubtResult(); dr != nil {
 		resObj.LastDoubtResult = &controller.DoubtWebOutputDoubtResult{
-			DoubterIdx:    dr.DoubterIdx,
-			CardPlayerIdx: dr.CardPlayerIdx,
-			WasLying:      dr.WasLying,
-			LoserIdx:      dr.LoserIdx,
-			CardCount:     dr.CardCount,
-			RevealedCards: cardsToOutput(dr.RevealedCards),
+			DoubterIdx:     dr.DoubterIdx,
+			CardPlayerIdx:  dr.CardPlayerIdx,
+			WasLying:       dr.WasLying,
+			LoserIdx:       dr.LoserIdx,
+			CardCount:      dr.CardCount,
+			DiscardedCount: dr.DiscardedCount,
+			RevealedCards:  cardsToOutput(dr.RevealedCards),
 		}
 	}
 

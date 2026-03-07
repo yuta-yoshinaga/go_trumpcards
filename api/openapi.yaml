@@ -2494,6 +2494,14 @@ components:
           minimum: 0
           maximum: 2
           example: 1
+        penaltyDrawLimit:
+          type: integer
+          description: |
+            Maximum number of cards the loser picks up after a doubt resolution
+            (used with the `reset` command). 0 = unlimited (loser takes all table cards).
+            Remaining cards are discarded from the game. Defaults to 0 when omitted.
+          minimum: 0
+          example: 5
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -2570,6 +2578,7 @@ components:
         - wasLying
         - loserIdx
         - cardCount
+        - discardedCount
         - revealedCards
       properties:
         doubterIdx:
@@ -2592,6 +2601,10 @@ components:
           type: integer
           description: Number of cards the loser picks up
           example: 4
+        discardedCount:
+          type: integer
+          description: Number of cards discarded from the game (when penaltyDrawLimit is active and table exceeds the limit)
+          example: 0
         revealedCards:
           type: array
           description: Cards that were revealed during the doubt resolution
@@ -2612,6 +2625,7 @@ components:
         - winnerIdx
         - message
         - doubtWindowSec
+        - penaltyDrawLimit
       properties:
         players:
           type: array
@@ -2682,6 +2696,10 @@ components:
           type: integer
           description: Duration of the doubt window in seconds (reflects current game config)
           example: 10
+        penaltyDrawLimit:
+          type: integer
+          description: Maximum number of cards the loser picks up after a doubt resolution (0 = unlimited)
+          example: 0
 
     # -------------------------------------------------------------------------
     # Texas Hold'em

@@ -323,12 +323,14 @@ export interface DoubtDoubtResult {
   wasLying: boolean;
   loserIdx: number;
   cardCount: number;
+  discardedCount: number;
   revealedCards: Card[];
 }
 
 export interface DoubtConfig {
   doubtWindowSec: number;
   cpuMemoryLevel: number; // 0=Easy, 1=Normal, 2=Hard
+  penaltyDrawLimit: number; // 0=unlimited, >0=max cards loser picks up
 }
 
 export interface DoubtResponse {
@@ -347,6 +349,7 @@ export interface DoubtResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   doubtWindowSec: number;
+  penaltyDrawLimit: number;
 }
 
 export interface HoldemPlayerData {

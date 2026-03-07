@@ -443,6 +443,84 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
+
+	t.Run("penaltyDrawLimit valid value is passed", func(t *testing.T) {
+		win := 10
+		limit := 5
+		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal, PenaltyDrawLimit: 5}
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput:     controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-pdl-1"},
+			DoubtWindowSec:   &win,
+			PenaltyDrawLimit: &limit,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("penaltyDrawLimit negative is ignored, uses default (0)", func(t *testing.T) {
+		win := 10
+		limit := -1
+		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal}
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput:     controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-pdl-2"},
+			DoubtWindowSec:   &win,
+			PenaltyDrawLimit: &limit,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("penaltyDrawLimit zero is valid (unlimited)", func(t *testing.T) {
+		win := 10
+		limit := 0
+		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal, PenaltyDrawLimit: 0}
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput:     controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-pdl-3"},
+			DoubtWindowSec:   &win,
+			PenaltyDrawLimit: &limit,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
 }
 
 func TestDoubtWebController_Stop(t *testing.T) {

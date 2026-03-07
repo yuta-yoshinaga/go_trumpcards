@@ -12,7 +12,7 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(doubtApi.exec);
 
-const defaultConfig: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1 };
+const defaultConfig: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 0 };
 
 const humanTurnState: DoubtResponse = {
   players: [
@@ -42,6 +42,7 @@ const humanTurnState: DoubtResponse = {
   winnerIdx: -1,
   message: '',
   doubtWindowSec: 10,
+  penaltyDrawLimit: 0,
 };
 
 const cpuTurnState: DoubtResponse = {
@@ -562,6 +563,7 @@ describe('DoubtPage', () => {
         wasLying: true,
         loserIdx: 1,
         cardCount: 3,
+        discardedCount: 0,
         revealedCards: [{ design: 'SPADE', value: 5 }],
       },
     };
@@ -583,6 +585,7 @@ describe('DoubtPage', () => {
         wasLying: false,
         loserIdx: 0,
         cardCount: 2,
+        discardedCount: 0,
         revealedCards: [],
       },
     };
@@ -600,6 +603,7 @@ describe('DoubtPage', () => {
         wasLying: true,
         loserIdx: 1,
         cardCount: 2,
+        discardedCount: 0,
         revealedCards: [],
       },
     };
@@ -617,12 +621,50 @@ describe('DoubtPage', () => {
         wasLying: true,
         loserIdx: 99,
         cardCount: 1,
+        discardedCount: 0,
         revealedCards: [],
       },
     };
     mockExec.mockResolvedValue(s);
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/99が1枚引き取りました/)).toBeInTheDocument());
+  });
+
+  it('shows discarded count when discardedCount > 0', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      lastDoubtResult: {
+        doubterIdx: 0,
+        cardPlayerIdx: 1,
+        wasLying: true,
+        loserIdx: 1,
+        cardCount: 3,
+        discardedCount: 2,
+        revealedCards: [],
+      },
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText(/2枚がゲームから除外されました/)).toBeInTheDocument());
+  });
+
+  it('does not show discarded message when discardedCount is 0', async () => {
+    const s: DoubtResponse = {
+      ...humanTurnState,
+      lastDoubtResult: {
+        doubterIdx: 0,
+        cardPlayerIdx: 1,
+        wasLying: true,
+        loserIdx: 1,
+        cardCount: 3,
+        discardedCount: 0,
+        revealedCards: [],
+      },
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('ダウト結果')).toBeInTheDocument());
+    expect(screen.queryByText(/ゲームから除外されました/)).not.toBeInTheDocument();
   });
 
   it('does not show ダウト結果 when lastDoubtResult is null', async () => {
@@ -799,10 +841,42 @@ describe('DoubtPage', () => {
   });
 
   it.each([
-    { label: 'doubtWindowSec to 3s', selectIdx: 0, value: '3', expected: { doubtWindowSec: 3, cpuMemoryLevel: 1 } },
-    { label: 'doubtWindowSec to 5s', selectIdx: 0, value: '5', expected: { doubtWindowSec: 5, cpuMemoryLevel: 1 } },
-    { label: 'cpuMemoryLevel to Hard', selectIdx: 1, value: '2', expected: { doubtWindowSec: 10, cpuMemoryLevel: 2 } },
-    { label: 'cpuMemoryLevel to Easy', selectIdx: 1, value: '0', expected: { doubtWindowSec: 10, cpuMemoryLevel: 0 } },
+    {
+      label: 'doubtWindowSec to 3s',
+      selectIdx: 0,
+      value: '3',
+      expected: { doubtWindowSec: 3, cpuMemoryLevel: 1, penaltyDrawLimit: 0 },
+    },
+    {
+      label: 'doubtWindowSec to 5s',
+      selectIdx: 0,
+      value: '5',
+      expected: { doubtWindowSec: 5, cpuMemoryLevel: 1, penaltyDrawLimit: 0 },
+    },
+    {
+      label: 'cpuMemoryLevel to Hard',
+      selectIdx: 1,
+      value: '2',
+      expected: { doubtWindowSec: 10, cpuMemoryLevel: 2, penaltyDrawLimit: 0 },
+    },
+    {
+      label: 'cpuMemoryLevel to Easy',
+      selectIdx: 1,
+      value: '0',
+      expected: { doubtWindowSec: 10, cpuMemoryLevel: 0, penaltyDrawLimit: 0 },
+    },
+    {
+      label: 'penaltyDrawLimit to 5',
+      selectIdx: 2,
+      value: '5',
+      expected: { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 5 },
+    },
+    {
+      label: 'penaltyDrawLimit to 3',
+      selectIdx: 2,
+      value: '3',
+      expected: { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 3 },
+    },
   ])('changing $label updates config passed to reset', async ({ selectIdx, value, expected }) => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());

@@ -324,6 +324,64 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 3, resObj.DoubtWindowSec)
 	})
 
+	t.Run("success Output penaltyDrawLimit reflects config", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal, PenaltyDrawLimit: 5})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resObj.PenaltyDrawLimit)
+	})
+
+	t.Run("success Output penaltyDrawLimit default 0", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, resObj.PenaltyDrawLimit)
+	})
+
+	t.Run("success Output lastDoubtResult discardedCount > 0", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetLastDoubtResult(&domain.DoubtDoubtResult{
+			DoubterIdx:     1,
+			CardPlayerIdx:  0,
+			WasLying:       true,
+			LoserIdx:       0,
+			CardCount:      3,
+			DiscardedCount: 2,
+			RevealedCards:  []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)},
+		})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.LastDoubtResult)
+		assert.Equal(t, 3, resObj.LastDoubtResult.CardCount)
+		assert.Equal(t, 2, resObj.LastDoubtResult.DiscardedCount)
+	})
+
+	t.Run("success Output lastDoubtResult discardedCount 0", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetLastDoubtResult(&domain.DoubtDoubtResult{
+			DoubterIdx:     1,
+			CardPlayerIdx:  0,
+			WasLying:       true,
+			LoserIdx:       0,
+			CardCount:      5,
+			DiscardedCount: 0,
+			RevealedCards:  []*domain.Card{},
+		})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.LastDoubtResult)
+		assert.Equal(t, 0, resObj.LastDoubtResult.DiscardedCount)
+	})
+
 	t.Run("success Output gameEndFlag nil player at winnerIdx", func(t *testing.T) {
 		gameMock := new(interfaces.MockDoubtGame)
 		gameMock.On("GetCurrentTurn").Return(0)

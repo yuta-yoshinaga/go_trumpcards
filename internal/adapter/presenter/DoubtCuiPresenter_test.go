@@ -241,6 +241,38 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, result, "のプレイにダウト")
 	})
 
+	t.Run("doubt result with discardedCount > 0 shows discard message", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetLastDoubtResult(&domain.DoubtDoubtResult{
+			DoubterIdx:     1,
+			CardPlayerIdx:  0,
+			WasLying:       true,
+			LoserIdx:       0,
+			CardCount:      3,
+			DiscardedCount: 2,
+			RevealedCards:  nil,
+		})
+
+		result := p.Output(game, nil)
+		assert.Contains(t, result, "2枚がゲームから除外されました")
+	})
+
+	t.Run("doubt result with discardedCount 0 does not show discard message", func(t *testing.T) {
+		game, _ := makeDoubtGameForPresenter()
+		game.SetLastDoubtResult(&domain.DoubtDoubtResult{
+			DoubterIdx:     1,
+			CardPlayerIdx:  0,
+			WasLying:       true,
+			LoserIdx:       0,
+			CardCount:      5,
+			DiscardedCount: 0,
+			RevealedCards:  nil,
+		})
+
+		result := p.Output(game, nil)
+		assert.NotContains(t, result, "ゲームから除外されました")
+	})
+
 	t.Run("getPlayerName for out-of-range index returns 不明", func(t *testing.T) {
 		game, _ := makeDoubtGameForPresenter()
 		game.SetLastDoubtResult(&domain.DoubtDoubtResult{

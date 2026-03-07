@@ -15,7 +15,8 @@
     "title": "ダウト結果",
     "wasLying": "ウソでした！",
     "wasTruth": "本当でした！",
-    "loserTook": "{{name}}が{{count}}枚引き取りました"
+    "loserTook": "{{name}}が{{count}}枚引き取りました",
+    "discarded": "{{count}}枚がゲームから除外されました"
   },
   "yourCards": "あなた ({{count}}枚)",
   "selectPrompt": "カードを選んで出してください",
@@ -26,6 +27,9 @@
     "title": "設定",
     "doubtTime": "ダウト時間:",
     "cpuMemory": "CPU記憶力:",
+    "penaltyDrawLimit": "ペナルティ上限:",
+    "unlimited": "無制限",
+    "cards": "{{count}}枚",
     "sec": "{{sec}}秒"
   }
 }

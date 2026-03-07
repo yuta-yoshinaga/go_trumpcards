@@ -99,7 +99,7 @@ function actionDesc(
 
 // ── Main page ────────────────────────────────────────────────────────────────
 
-const DEFAULT_DOUBT_CONFIG: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1 };
+const DEFAULT_DOUBT_CONFIG: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 0 };
 
 const DOUBT_WINDOW_OPTIONS = [3, 5, 10] as const;
 
@@ -108,6 +108,8 @@ const CPU_MEMORY_OPTIONS = [
   { value: 1, label: 'Normal' },
   { value: 2, label: 'Hard' },
 ] as const;
+
+const PENALTY_DRAW_LIMIT_OPTIONS = [0, 3, 5, 10] as const;
 
 export function DoubtPage() {
   const { t } = useTranslation('doubt');
@@ -265,6 +267,20 @@ export function DoubtPage() {
               ))}
             </select>
           </label>
+          <label className="flex items-center gap-2">
+            {t('settings.penaltyDrawLimit')}
+            <select
+              className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
+              value={doubtConfig.penaltyDrawLimit}
+              onChange={(e) => handleConfigChange('penaltyDrawLimit', e.target.value)}
+            >
+              {PENALTY_DRAW_LIMIT_OPTIONS.map((v) => (
+                <option key={v} value={v}>
+                  {v === 0 ? t('settings.unlimited') : t('settings.cards', { count: v })}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </details>
 
@@ -346,6 +362,11 @@ export function DoubtPage() {
                 count: state.lastDoubtResult.cardCount,
               })}
             </div>
+            {state.lastDoubtResult.discardedCount > 0 && (
+              <div className="text-yellow-300">
+                {t('doubtResult.discarded', { count: state.lastDoubtResult.discardedCount })}
+              </div>
+            )}
             {state.lastDoubtResult.revealedCards.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {state.lastDoubtResult.revealedCards.map((card, i) => (
