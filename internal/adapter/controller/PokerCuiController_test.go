@@ -260,3 +260,116 @@ func TestPokerCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	assert.Contains(t, c.Exec("bl abc"), "Invalid betting limit: abc")
 	assert.Contains(t, c.Exec("bl -1"), "Invalid betting limit: -1")
 }
+
+// --- set cpu count ---
+
+func TestPokerCuiController_SetCpuCount_Valid(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	cfg.CpuCount = 2
+	mi.On("ResetWithConfig", cfg).Return("scc ok")
+	assert.Equal(t, "scc ok", c.Exec("scc 2"))
+}
+
+func TestPokerCuiController_SetCpuCount_LongCommand(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	cfg.CpuCount = 1
+	mi.On("ResetWithConfig", cfg).Return("scc ok")
+	assert.Equal(t, "scc ok", c.Exec("setcpucount 1"))
+}
+
+func TestPokerCuiController_SetCpuCount_NoArgs(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	assert.Contains(t, c.Exec("scc"), "CPU player count is required")
+}
+
+func TestPokerCuiController_SetCpuCount_InvalidValue(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	assert.Contains(t, c.Exec("scc 0"), "Invalid CPU player count: 0")
+	assert.Contains(t, c.Exec("scc 4"), "Invalid CPU player count: 4")
+	assert.Contains(t, c.Exec("scc abc"), "Invalid CPU player count: abc")
+	assert.Contains(t, c.Exec("scc -1"), "Invalid CPU player count: -1")
+}
+
+// --- set joker count ---
+
+func TestPokerCuiController_SetJokerCount_Valid(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	cfg.JokerCount = 1
+	mi.On("ResetWithConfig", cfg).Return("sjc ok")
+	assert.Equal(t, "sjc ok", c.Exec("sjc 1"))
+}
+
+func TestPokerCuiController_SetJokerCount_LongCommand(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	cfg.JokerCount = 2
+	mi.On("ResetWithConfig", cfg).Return("sjc ok")
+	assert.Equal(t, "sjc ok", c.Exec("setjokercount 2"))
+}
+
+func TestPokerCuiController_SetJokerCount_NoArgs(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	assert.Contains(t, c.Exec("sjc"), "Joker count is required")
+}
+
+func TestPokerCuiController_SetJokerCount_InvalidValue(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	assert.Contains(t, c.Exec("sjc -1"), "Invalid joker count: -1")
+	assert.Contains(t, c.Exec("sjc 3"), "Invalid joker count: 3")
+	assert.Contains(t, c.Exec("sjc abc"), "Invalid joker count: abc")
+}
+
+// --- odds ---
+
+func TestPokerCuiController_Odds_WithValidIndices(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	mi.On("Odds", []int{0, 2, 4}).Return("odds ok")
+	assert.Equal(t, "odds ok", c.Exec("o 0 2 4"))
+}
+
+func TestPokerCuiController_Odds_LongCommand(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	mi.On("Odds", []int{1, 3}).Return("odds ok")
+	assert.Equal(t, "odds ok", c.Exec("odds 1 3"))
+}
+
+func TestPokerCuiController_Odds_NoIndices(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	mi.On("Odds", []int{}).Return("odds empty")
+	assert.Equal(t, "odds empty", c.Exec("o"))
+}
+
+func TestPokerCuiController_Odds_InvalidIndex_NonNumeric(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	mi.On("Odds", []int{2}).Return("odds ok")
+	assert.Equal(t, "odds ok", c.Exec("o abc 2"))
+}
+
+func TestPokerCuiController_Odds_InvalidIndex_OutOfRange(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	mi.On("Odds", []int{0}).Return("odds ok")
+	assert.Equal(t, "odds ok", c.Exec("o -1 0 5"))
+}
+
+func TestPokerCuiController_Odds_AllInvalid(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	mi.On("Odds", []int{}).Return("odds empty")
+	assert.Equal(t, "odds empty", c.Exec("o abc -1 5 99"))
+}

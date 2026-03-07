@@ -558,13 +558,14 @@ func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 
 	odds := []domain.PokerDrawOdds{
-		{HandRank: 0, HandName: "High Card", Probability: 1.0, Count: 1, Total: 1},
+		{HandRank: 0, HandName: "High Card", Probability: 0.5, Count: 50, Total: 100},
+		{HandRank: 1, HandName: "One Pair", Probability: 0.3, Count: 30, Total: 100},
 	}
 
-	// OutputWithOdds delegates to Output (CUI ignores odds)
-	resultWithOdds := pres.OutputWithOdds(p, nil, odds)
-	resultPlain := pres.Output(p, nil)
-	assert.Equal(t, resultPlain, resultWithOdds)
+	result := pres.OutputWithOdds(p, nil, odds)
+	assert.Contains(t, result, "[ドローオッズ]")
+	assert.Contains(t, result, "High Card: 50.00% (50/100)")
+	assert.Contains(t, result, "One Pair: 30.00% (30/100)")
 }
 
 func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
@@ -574,6 +575,17 @@ func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 
 	resultWithOdds := pres.OutputWithOdds(p, nil, nil)
+	resultPlain := pres.Output(p, nil)
+	assert.Equal(t, resultPlain, resultWithOdds)
+}
+
+func TestPokerCuiPresenter_OutputWithOdds_EmptyOdds(t *testing.T) {
+	pres := presenter.NewPokerCuiPresenter()
+	p, players := makePokerCuiForPresenter()
+	p.SetPhase(domain.PokerPhaseExchange)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+
+	resultWithOdds := pres.OutputWithOdds(p, nil, []domain.PokerDrawOdds{})
 	resultPlain := pres.Output(p, nil)
 	assert.Equal(t, resultPlain, resultWithOdds)
 }

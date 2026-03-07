@@ -160,7 +160,18 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	return b.String()
 }
 
-// OutputWithOdds ゲーム状態 + オッズ出力 (CUIではオッズ表示なし、Outputに委譲)
-func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr error, _ []domain.PokerDrawOdds) string {
-	return pcp.Output(p, lastErr)
+// OutputWithOdds ゲーム状態 + オッズ出力
+func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr error, odds []domain.PokerDrawOdds) string {
+	base := pcp.Output(p, lastErr)
+	if len(odds) == 0 {
+		return base
+	}
+	var b strings.Builder
+	b.WriteString(base)
+	b.WriteString("==========\n")
+	b.WriteString("[ドローオッズ]\n")
+	for _, o := range odds {
+		fmt.Fprintf(&b, "  %s: %.2f%% (%d/%d)\n", o.HandName, o.Probability*100, o.Count, o.Total)
+	}
+	return b.String()
 }
