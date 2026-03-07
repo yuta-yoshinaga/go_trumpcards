@@ -46,6 +46,10 @@ func (cui *HoldemCui) Exec() {
 	fmt.Println("ra [amount]・・・raise (e.g. 'ra 30')")
 	fmt.Println("a・・・allin")
 	fmt.Println("bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)")
+	fmt.Println("tm [0-1]・・・tournament mode (0=OFF, 1=ON)")
+	fmt.Println("sb [amount]・・・small blind (>=1)")
+	fmt.Println("bb [amount]・・・big blind (>=2)")
+	fmt.Println("lh [hands]・・・blind level-up hands (>=1)")
 	fmt.Println("----------------")
 
 	for {

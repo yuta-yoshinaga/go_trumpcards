@@ -375,6 +375,9 @@ func (m *mockHoldemIF) ResetWithConfig(cfg domain.HoldemConfig) string {
 func (m *mockHoldemIF) Action(action int, amount int) string {
 	return m.Called(action, amount).String(0)
 }
+func (m *mockHoldemIF) GetConfig() domain.HoldemConfig {
+	return m.Called().Get(0).(domain.HoldemConfig)
+}
 
 func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
 	hmMock := &mockHoldemIF{}

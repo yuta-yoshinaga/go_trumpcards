@@ -11,6 +11,7 @@ type HoldemInteractorIF interface {
 	Reset() string
 	ResetWithConfig(cfg domain.HoldemConfig) string
 	Action(action int, amount int) string
+	GetConfig() domain.HoldemConfig
 }
 
 // HoldemInteractor テキサスホールデムインタラクタークラス
@@ -42,4 +43,9 @@ func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
 func (hi *HoldemInteractor) Action(action int, amount int) string {
 	err := hi.h.PlayerAction(action, amount)
 	return hi.hp.Output(hi.h, err)
+}
+
+// GetConfig 現在の設定を取得
+func (hi *HoldemInteractor) GetConfig() domain.HoldemConfig {
+	return hi.h.GetConfig()
 }

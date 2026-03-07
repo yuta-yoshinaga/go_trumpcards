@@ -129,6 +129,7 @@ func TestHoldemCuiController_Unknown(t *testing.T) {
 func TestHoldemCuiController_BettingLimit_Valid(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
 	cfg := domain.DefaultHoldemConfig()
 	cfg.BettingLimit = domain.BettingLimitPotLimit
 	mi.On("ResetWithConfig", cfg).Return("bl ok")
@@ -138,6 +139,7 @@ func TestHoldemCuiController_BettingLimit_Valid(t *testing.T) {
 func TestHoldemCuiController_BettingLimit_LongCommand(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
 	cfg := domain.DefaultHoldemConfig()
 	cfg.BettingLimit = domain.BettingLimitNoLimit
 	mi.On("ResetWithConfig", cfg).Return("bl ok")
@@ -156,4 +158,164 @@ func TestHoldemCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	assert.Contains(t, c.Exec("bl 5"), "Invalid betting limit: 5")
 	assert.Contains(t, c.Exec("bl abc"), "Invalid betting limit: abc")
 	assert.Contains(t, c.Exec("bl -1"), "Invalid betting limit: -1")
+}
+
+// --- tournament mode ---
+
+func TestHoldemCuiController_TournamentMode_Valid(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TournamentMode = true
+	mi.On("ResetWithConfig", cfg).Return("tm ok")
+	assert.Equal(t, "tm ok", c.Exec("tm 1"))
+}
+
+func TestHoldemCuiController_TournamentMode_LongCommand(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TournamentMode = false
+	mi.On("ResetWithConfig", cfg).Return("tm ok")
+	assert.Equal(t, "tm ok", c.Exec("tournament 0"))
+}
+
+func TestHoldemCuiController_TournamentMode_NoArgs(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("tm"), "Tournament mode is required")
+}
+
+func TestHoldemCuiController_TournamentMode_InvalidValue(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("tm 5"), "Invalid tournament mode: 5")
+	assert.Contains(t, c.Exec("tm abc"), "Invalid tournament mode: abc")
+	assert.Contains(t, c.Exec("tm -1"), "Invalid tournament mode: -1")
+}
+
+// --- small blind ---
+
+func TestHoldemCuiController_SmallBlind_Valid(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.SmallBlind = 3
+	mi.On("ResetWithConfig", cfg).Return("sb ok")
+	assert.Equal(t, "sb ok", c.Exec("sb 3"))
+}
+
+func TestHoldemCuiController_SmallBlind_LongCommand(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.SmallBlind = 3
+	mi.On("ResetWithConfig", cfg).Return("sb ok")
+	assert.Equal(t, "sb ok", c.Exec("smallblind 3"))
+}
+
+func TestHoldemCuiController_SmallBlind_NoArgs(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("sb"), "Small blind amount is required")
+}
+
+func TestHoldemCuiController_SmallBlind_InvalidValue(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("sb 0"), "Invalid small blind: 0")
+	assert.Contains(t, c.Exec("sb abc"), "Invalid small blind: abc")
+	assert.Contains(t, c.Exec("sb -1"), "Invalid small blind: -1")
+}
+
+func TestHoldemCuiController_SmallBlind_NotLessThanBigBlind(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	assert.Contains(t, c.Exec("sb 10"), "Small blind must be less than big blind")
+	assert.Contains(t, c.Exec("sb 15"), "Small blind must be less than big blind")
+}
+
+// --- big blind ---
+
+func TestHoldemCuiController_BigBlind_Valid(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.BigBlind = 20
+	mi.On("ResetWithConfig", cfg).Return("bb ok")
+	assert.Equal(t, "bb ok", c.Exec("bb 20"))
+}
+
+func TestHoldemCuiController_BigBlind_LongCommand(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.BigBlind = 20
+	mi.On("ResetWithConfig", cfg).Return("bb ok")
+	assert.Equal(t, "bb ok", c.Exec("bigblind 20"))
+}
+
+func TestHoldemCuiController_BigBlind_NoArgs(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("bb"), "Big blind amount is required")
+}
+
+func TestHoldemCuiController_BigBlind_InvalidValue(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("bb 1"), "Invalid big blind: 1")
+	assert.Contains(t, c.Exec("bb abc"), "Invalid big blind: abc")
+	assert.Contains(t, c.Exec("bb -1"), "Invalid big blind: -1")
+}
+
+func TestHoldemCuiController_BigBlind_NotGreaterThanSmallBlind(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	assert.Contains(t, c.Exec("bb 5"), "Big blind must be greater than small blind")
+	assert.Contains(t, c.Exec("bb 3"), "Big blind must be greater than small blind")
+}
+
+// --- level-up hands ---
+
+func TestHoldemCuiController_LevelHand_Valid(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.BlindLevelHands = 5
+	mi.On("ResetWithConfig", cfg).Return("lh ok")
+	assert.Equal(t, "lh ok", c.Exec("lh 5"))
+}
+
+func TestHoldemCuiController_LevelHand_LongCommand(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.BlindLevelHands = 5
+	mi.On("ResetWithConfig", cfg).Return("lh ok")
+	assert.Equal(t, "lh ok", c.Exec("levelhand 5"))
+}
+
+func TestHoldemCuiController_LevelHand_NoArgs(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("lh"), "Level-up hands is required")
+}
+
+func TestHoldemCuiController_LevelHand_InvalidValue(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("lh 0"), "Invalid level-up hands: 0")
+	assert.Contains(t, c.Exec("lh abc"), "Invalid level-up hands: abc")
+	assert.Contains(t, c.Exec("lh -1"), "Invalid level-up hands: -1")
 }

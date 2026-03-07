@@ -28,3 +28,9 @@ func (_m *MockHoldemInteractor) Action(action int, amount int) string {
 	ret := _m.Called(action, amount)
 	return ret.Get(0).(string)
 }
+
+// GetConfig モック
+func (_m *MockHoldemInteractor) GetConfig() domain.HoldemConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.HoldemConfig)
+}
