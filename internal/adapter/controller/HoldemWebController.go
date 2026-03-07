@@ -97,7 +97,7 @@ type HoldemWebController = GameWebController[usecase.HoldemInteractorIF, HoldemW
 
 // NewHoldemWebController コンストラクタ
 func NewHoldemWebController(factory func() usecase.HoldemInteractorIF) *HoldemWebController {
-	return NewGameWebController(factory, newHoldemDefaultOutput, nil, holdemDispatch)
+	return NewGameWebController(factory, newHoldemDefaultOutput, holdemDispatch)
 }
 
 func newHoldemDefaultOutput(msg string) *HoldemWebOutput {

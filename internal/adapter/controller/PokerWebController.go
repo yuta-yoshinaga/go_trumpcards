@@ -99,7 +99,7 @@ type PokerWebController = GameWebController[usecase.PokerInteractorIF, PokerWebI
 
 // NewPokerWebController コンストラクタ
 func NewPokerWebController(factory func() usecase.PokerInteractorIF) *PokerWebController {
-	return NewGameWebController(factory, newPokerDefaultOutput, nil, pokerDispatch)
+	return NewGameWebController(factory, newPokerDefaultOutput, pokerDispatch)
 }
 
 func newPokerDefaultOutput(msg string) *PokerWebOutput {

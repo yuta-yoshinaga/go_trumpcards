@@ -141,7 +141,6 @@ func TestExecWithSession_DecodeError(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
 	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
@@ -158,7 +157,6 @@ func TestExecWithSession_EmptyCommand(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
 	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
@@ -175,48 +173,10 @@ func TestExecWithSession_EmptySessionId(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
 	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
 	assert.Equal(t, map[string]string{"message": "param error."}, sw.body)
-}
-
-func TestExecWithSession_ValidateReturnsError(t *testing.T) {
-	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{"command":"r","sessionId":"s1"}`)
-
-	execWithSession(bc, sw, req, store,
-		func() *testInteractor { return &testInteractor{} },
-		func(msg string) any { return map[string]string{"message": msg} },
-		func(_ testInput) error { return errors.New("invalid") },
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
-	)
-	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
-	assert.Equal(t, map[string]string{"message": "param error."}, sw.body)
-}
-
-func TestExecWithSession_ValidateNilSkipped(t *testing.T) {
-	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{"command":"r","sessionId":"s1"}`)
-	handlerCalled := false
-
-	execWithSession(bc, sw, req, store,
-		func() *testInteractor { return &testInteractor{} },
-		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool {
-			handlerCalled = true
-			return true
-		},
-	)
-	assert.True(t, handlerCalled)
 }
 
 func TestExecWithSession_QuitCommand(t *testing.T) {
@@ -231,7 +191,6 @@ func TestExecWithSession_QuitCommand(t *testing.T) {
 			execWithSession(bc, sw, req, store,
 				func() *testInteractor { return &testInteractor{} },
 				func(msg string) any { return map[string]string{"message": msg} },
-				nil,
 				func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 			)
 			assert.Equal(t, http.StatusOK, sw.headerCode)
@@ -252,7 +211,6 @@ func TestExecWithSession_SessionRetrievalFailure(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
 	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
@@ -269,7 +227,6 @@ func TestExecWithSession_HandlerReturnsTrue(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(w rest.ResponseWriter, _ *testInteractor, _ testInput) bool {
 			bc.writeJsonResponse(w, http.StatusOK, map[string]string{"message": "handled"})
 			return true
@@ -289,7 +246,6 @@ func TestExecWithSession_HandlerReturnsFalse(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool {
 			return false
 		},

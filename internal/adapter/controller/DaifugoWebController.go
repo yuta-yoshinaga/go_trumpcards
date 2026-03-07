@@ -93,7 +93,7 @@ type DaifugoWebController = GameWebController[usecase.DaifugoInteractorIF, Daifu
 
 // NewDaifugoWebController コンストラクタ
 func NewDaifugoWebController(factory func() usecase.DaifugoInteractorIF) *DaifugoWebController {
-	return NewGameWebController(factory, newDaifugoDefaultOutput, nil, daifugoDispatch)
+	return NewGameWebController(factory, newDaifugoDefaultOutput, daifugoDispatch)
 }
 
 func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {

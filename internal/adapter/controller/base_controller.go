@@ -82,19 +82,12 @@ func execWithSession[P WebInput, T any](
 	store *SessionStore[T],
 	factory func() T,
 	newDefault func(string) any,
-	validate func(P) error,
 	handler func(w rest.ResponseWriter, interactor T, param P) bool,
 ) {
 	var param P
 	if err := r.DecodeJsonPayload(&param); err != nil || param.GetCommand() == "" || param.GetSessionID() == "" {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
 		return
-	}
-	if validate != nil {
-		if err := validate(param); err != nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
-			return
-		}
 	}
 	if cmd := param.GetCommand(); cmd == "q" || cmd == "quit" {
 		bc.writeJsonResponse(w, http.StatusOK, newDefault("bye."))

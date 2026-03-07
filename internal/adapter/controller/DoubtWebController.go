@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -77,12 +76,9 @@ type DoubtWebController = GameWebController[usecase.DoubtInteractorIF, DoubtWebI
 // MaxCardIndices カードインデックスの最大数 (52枚デッキ)
 const MaxCardIndices = 52
 
-// errCardIndicesOverflow is returned by the Doubt validate callback when CardIndices exceeds the limit.
-var errCardIndicesOverflow = errors.New("card indices overflow")
-
 // NewDoubtWebController コンストラクタ
 func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebController {
-	return NewGameWebController(factory, newDoubtDefaultOutput, doubtValidate, doubtDispatch)
+	return NewGameWebController(factory, newDoubtDefaultOutput, doubtDispatch)
 }
 
 func newDoubtDefaultOutput(msg string) *DoubtWebOutput {
@@ -95,14 +91,11 @@ func newDoubtDefaultOutput(msg string) *DoubtWebOutput {
 	}
 }
 
-func doubtValidate(param DoubtWebInput) error {
-	if len(param.CardIndices) > MaxCardIndices {
-		return errCardIndicesOverflow
-	}
-	return nil
-}
-
 func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtInteractorIF, param DoubtWebInput, newDefault func(string) *DoubtWebOutput) bool {
+	if len(param.CardIndices) > MaxCardIndices {
+		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
+		return true
+	}
 	switch param.Command {
 	case "r", "reset":
 		cfg := domain.DefaultDoubtConfig()
