@@ -2,6 +2,11 @@ package controller
 
 import "strings"
 
+// unknownCommandMessage は不明なコマンドに対する統一エラーメッセージを返す。
+func unknownCommandMessage(command string) string {
+	return "コマンドが不明です: " + command
+}
+
 // execCuiCommand は全CUIコントローラーで共通のコマンド解析を行うヘルパー関数。
 // command を strings.Fields で分割し、空入力・q/quit・r/reset を共通処理する。
 // ゲーム固有コマンドは gameHandler で処理し、未知コマンドは unknownMsg で応答する。

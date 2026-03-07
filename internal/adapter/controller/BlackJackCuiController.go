@@ -25,7 +25,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return bcc.bji.Reset() },
-		func(_ string) string { return "Unsupported command." },
+		unknownCommandMessage,
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "h", "hit":

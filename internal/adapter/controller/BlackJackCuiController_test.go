@@ -88,10 +88,10 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("declineinsurance"))
 	})
 	t.Run("success Exec other", func(t *testing.T) {
-		assert.Equal(t, "Unsupported command.", tbc.Exec("other"))
+		assert.Equal(t, "コマンドが不明です: other", tbc.Exec("other"))
 	})
 	t.Run("success Exec empty", func(t *testing.T) {
-		assert.Equal(t, "Unsupported command.", tbc.Exec(""))
+		assert.Equal(t, "コマンドが不明です: ", tbc.Exec(""))
 	})
 }
 

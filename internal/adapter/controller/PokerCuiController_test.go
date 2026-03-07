@@ -218,13 +218,13 @@ func TestPokerCuiController_AllIn(t *testing.T) {
 func TestPokerCuiController_Empty(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Equal(t, "Unsupported command.", c.Exec(""))
+	assert.Equal(t, "コマンドが不明です: ", c.Exec(""))
 }
 
 func TestPokerCuiController_Unknown(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Equal(t, "Unsupported command.", c.Exec("xyz"))
+	assert.Equal(t, "コマンドが不明です: xyz", c.Exec("xyz"))
 }
 
 // --- betting limit ---
