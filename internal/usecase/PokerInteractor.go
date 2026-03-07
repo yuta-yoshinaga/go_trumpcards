@@ -10,6 +10,7 @@ import (
 type PokerInteractorIF interface {
 	Reset() string
 	ResetWithConfig(cfg domain.PokerConfig) string
+	GetConfig() domain.PokerConfig
 	Action(action int, amount int) string
 	Exchange(indices []int) string
 	Stand() string
@@ -35,6 +36,11 @@ func NewPokerInteractor(p interfaces.PokerGame, pp presenter.PokerPresenter) *Po
 func (pi *PokerInteractor) Reset() string {
 	err := pi.p.Reset()
 	return pi.pp.Output(pi.p, err)
+}
+
+// GetConfig 現在の設定を取得
+func (pi *PokerInteractor) GetConfig() domain.PokerConfig {
+	return pi.p.GetConfig()
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化

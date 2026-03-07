@@ -99,6 +99,9 @@ func (m *mockPokerIF) ResetWithConfig(cfg domain.PokerConfig) string {
 func (m *mockPokerIF) Action(action int, amount int) string {
 	return m.Called(action, amount).String(0)
 }
+func (m *mockPokerIF) GetConfig() domain.PokerConfig {
+	return m.Called().Get(0).(domain.PokerConfig)
+}
 func (m *mockPokerIF) Exchange(i []int) string { return m.Called(i).String(0) }
 func (m *mockPokerIF) Stand() string           { return m.Called().String(0) }
 func (m *mockPokerIF) Odds(i []int) string     { return m.Called(i).String(0) }

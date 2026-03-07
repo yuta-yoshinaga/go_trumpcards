@@ -60,6 +60,19 @@ func TestPokerInteractor_Reset_Error(t *testing.T) {
 	assert.Equal(t, "error output", result)
 }
 
+func TestPokerInteractor_GetConfig(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	expected := domain.PokerConfig{InitChips: 1000, Ante: 10, MinBet: 10, CpuCount: 2, JokerCount: 1}
+	mg.On("GetConfig").Return(expected)
+
+	result := pi.GetConfig()
+	assert.Equal(t, expected, result)
+	mg.AssertCalled(t, "GetConfig")
+}
+
 func TestPokerInteractor_ResetWithConfig(t *testing.T) {
 	mg := new(interfaces.MockPokerGame)
 	mp := new(presenter.MockPokerPresenter)

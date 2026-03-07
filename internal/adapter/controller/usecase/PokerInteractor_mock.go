@@ -17,6 +17,12 @@ func (_m *MockPokerInteractor) Reset() string {
 	return ret.Get(0).(string)
 }
 
+// GetConfig モック
+func (_m *MockPokerInteractor) GetConfig() domain.PokerConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.PokerConfig)
+}
+
 // ResetWithConfig モック
 func (_m *MockPokerInteractor) ResetWithConfig(cfg domain.PokerConfig) string {
 	ret := _m.Called(cfg)
