@@ -488,3 +488,34 @@ func TestBlackJackWebPresenter_MultiHandCount(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, result.MultiHandCount)
 }
+
+func TestBlackJackWebPresenter_CpuInsuranceBet(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+	bj.Reset()
+	cpuPlayers := bj.GetCpuPlayers()
+	cpuHand := cpuPlayers[0].GetHands()[0]
+	cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	cpuHand.SetBet(100)
+	cpuPlayers[0].SetInsuranceBet(50)
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(result.CpuPlayers))
+	assert.Equal(t, 50, result.CpuPlayers[0].InsuranceBet)
+}

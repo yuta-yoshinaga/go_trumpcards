@@ -115,7 +115,11 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	// CPUプレイヤー
 	cpuPlayers := bj.GetCpuPlayers()
 	for cpuIdx, cpu := range cpuPlayers {
-		fmt.Fprintf(&b, "--- CPU %d (chips: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips())
+		if cpu.GetInsuranceBet() > 0 {
+			fmt.Fprintf(&b, "--- CPU %d (chips: %d, insurance: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips(), cpu.GetInsuranceBet())
+		} else {
+			fmt.Fprintf(&b, "--- CPU %d (chips: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips())
+		}
 		for hi, hand := range cpu.GetHands() {
 			prefix := fmt.Sprintf("CPU %d", cpuIdx+1)
 			if len(cpu.GetHands()) > 1 {

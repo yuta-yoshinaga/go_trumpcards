@@ -1961,3 +1961,293 @@ func TestPlayerSplit_RunningCountRollbackOnPartialFailure(t *testing.T) {
 		assert.Equal(t, countBefore, bj.runningCount, "running count should be rolled back")
 	})
 }
+
+// --- cpuBetAndDeal with counting enabled ---
+
+func TestCpuBetAndDealWithCounting(t *testing.T) {
+	t.Run("counting enabled uses GetCountingBetAmount", func(t *testing.T) {
+		tc := NewTrumpCardsWithDecks(2, 0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingHiLo
+		// Set running count high so TC will be high
+		bj.runningCount = 10 // TC = 10/2 = 5 -> 16x = 800
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(1000)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuBetAndDeal()
+
+		cpuHand := cpu.GetHands()[0]
+		assert.Equal(t, 800, cpuHand.GetBet())
+		assert.Equal(t, 200, cpu.GetPlayer().GetChips())
+	})
+
+	t.Run("counting enabled with low count bets 1x", func(t *testing.T) {
+		tc := NewTrumpCardsWithDecks(2, 0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingHiLo
+		bj.runningCount = 0 // TC = 0 -> 1x = 50
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(1000)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuBetAndDeal()
+
+		cpuHand := cpu.GetHands()[0]
+		assert.Equal(t, 50, cpuHand.GetBet())
+	})
+
+	t.Run("counting disabled uses fixed BJCpuBetAmount", func(t *testing.T) {
+		tc := NewTrumpCardsWithDecks(2, 0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+		bj.config.CountingEnabled = false
+		bj.runningCount = 10 // should not affect bet
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(1000)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuBetAndDeal()
+
+		cpuHand := cpu.GetHands()[0]
+		assert.Equal(t, BJCpuBetAmount, cpuHand.GetBet())
+	})
+
+	t.Run("counting enabled with insufficient chips for counting bet", func(t *testing.T) {
+		tc := NewTrumpCardsWithDecks(2, 0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingHiLo
+		bj.runningCount = 10 // TC = 5 -> wants 800
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(150) // clamped to 150
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuBetAndDeal()
+
+		cpuHand := cpu.GetHands()[0]
+		assert.Equal(t, 150, cpuHand.GetBet())
+		assert.Equal(t, 0, cpu.GetPlayer().GetChips())
+	})
+
+	t.Run("counting enabled with chips below BJMinBet is skipped", func(t *testing.T) {
+		tc := NewTrumpCardsWithDecks(2, 0)
+		player := NewBlackJackPlayer()
+		dealer := NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := NewBlackJack(tc, player, dealer)
+		bj.config.CountingEnabled = true
+
+		cpu := NewBlackJackCpuSeat()
+		cpu.GetPlayer().SetChips(5)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuBetAndDeal()
+
+		cpuHand := cpu.GetHands()[0]
+		assert.Equal(t, 0, cpuHand.GetBet())
+		assert.Equal(t, 0, cpuHand.GetCardsSize())
+	})
+}
+
+// --- cpuInsurance tests ---
+
+func TestCpuInsurance(t *testing.T) {
+	t.Run("counting disabled skips insurance", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = false
+		bj.runningCount = 10
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignDiamond, 9, false))
+		cpuHand.SetBet(100)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuInsurance()
+
+		assert.Equal(t, 0, cpu.GetInsuranceBet())
+	})
+
+	t.Run("count >= 3 takes insurance", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingHiLo
+		bj.runningCount = 6 // TC = 6/1 = 6 (1-deck, ~52 remaining)
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignDiamond, 9, false))
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(950) // 1000 - 50 bet assumed
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuInsurance()
+
+		assert.Equal(t, 50, cpu.GetInsuranceBet()) // half of 100 bet
+		assert.Equal(t, 900, cpu.GetPlayer().GetChips())
+	})
+
+	t.Run("count < 3 declines insurance", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingHiLo
+		bj.runningCount = 1 // TC = 1/1 = 1
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignDiamond, 9, false))
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(950)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuInsurance()
+
+		assert.Equal(t, 0, cpu.GetInsuranceBet())
+		assert.Equal(t, 950, cpu.GetPlayer().GetChips())
+	})
+
+	t.Run("insufficient chips for insurance", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingHiLo
+		bj.runningCount = 6
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignDiamond, 9, false))
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(10) // not enough for 50 insurance
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuInsurance()
+
+		assert.Equal(t, 0, cpu.GetInsuranceBet())
+		assert.Equal(t, 10, cpu.GetPlayer().GetChips())
+	})
+
+	t.Run("CPU with no cards is skipped", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingHiLo
+		bj.runningCount = 6
+
+		cpu := NewBlackJackCpuSeat()
+		// No cards dealt (0 cards in hand)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuInsurance()
+
+		assert.Equal(t, 0, cpu.GetInsuranceBet())
+	})
+
+	t.Run("KO system uses running count for insurance", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.CountingEnabled = true
+		bj.config.CountingSystem = BJCountingKO
+		bj.runningCount = 3 // RC = 3 >= 3 -> take insurance
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignDiamond, 9, false))
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(950)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuInsurance()
+
+		assert.Equal(t, 50, cpu.GetInsuranceBet())
+	})
+}
+
+// --- resolvePayoutsCpu with insurance ---
+
+func TestResolvePayoutsCpuInsurance(t *testing.T) {
+	t.Run("CPU insurance wins when dealer has BJ", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignDiamond, 9, false)) // 19
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(850) // 1000 - 100 bet - 50 insurance
+		cpu.SetInsuranceBet(50)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.resolvePayoutsCpu()
+
+		// Insurance payout: 50 * 3 = 150
+		// Hand loses to dealer BJ: no payout
+		assert.Equal(t, 850+150, cpu.GetPlayer().GetChips())
+	})
+
+	t.Run("CPU insurance loses when dealer has no BJ", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 7, false)) // 18, not BJ
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignDiamond, 9, false)) // 19
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(850)
+		cpu.SetInsuranceBet(50)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.resolvePayoutsCpu()
+
+		// Insurance lost (no payout), hand wins: 100 * 2 = 200
+		assert.Equal(t, 850+200, cpu.GetPlayer().GetChips())
+	})
+
+	t.Run("no insurance bet skips insurance payout", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 13, false)) // BJ
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignClover, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignDiamond, 9, false))
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(900)
+		// No insurance bet
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.resolvePayoutsCpu()
+
+		// Loses to BJ, no insurance
+		assert.Equal(t, 900, cpu.GetPlayer().GetChips())
+	})
+}

@@ -44,8 +44,9 @@ type BlackJackWebOutputPlayer struct {
 
 // BlackJackWebOutputCpuSeat CPUプレイヤー席アウトプット
 type BlackJackWebOutputCpuSeat struct {
-	Chips int                       `json:"chips"`
-	Hands []*BlackJackWebOutputHand `json:"hands"`
+	Chips        int                       `json:"chips"`
+	Hands        []*BlackJackWebOutputHand `json:"hands"`
+	InsuranceBet int                       `json:"insuranceBet"`
 }
 
 // BlackJackWebOutputSideBetResult サイドベット結果アウトプット

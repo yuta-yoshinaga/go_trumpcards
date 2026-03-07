@@ -1288,6 +1288,7 @@ components:
       required:
         - chips
         - hands
+        - insuranceBet
       properties:
         chips:
           type: integer
@@ -1298,6 +1299,12 @@ components:
           description: Hands for this CPU player (one hand normally; multiple after split).
           items:
             $ref: '#/components/schemas/BlackJackHand'
+        insuranceBet:
+          type: integer
+          description: |
+            Amount of insurance bet placed by this CPU player (0 if none).
+            CPUs take insurance when card counting is enabled and the count >= 3.
+          example: 0
 
     # -------------------------------------------------------------------------
     # Poker

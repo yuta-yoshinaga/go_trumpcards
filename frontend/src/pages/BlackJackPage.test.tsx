@@ -752,6 +752,7 @@ describe('BlackJackPage', () => {
   it('shows CPU player hands in action phase when cpuPlayers exist', async () => {
     const cpuSeat: BlackJackCpuSeat = {
       chips: 800,
+      insuranceBet: 0,
       hands: [
         {
           score: 18,
@@ -784,6 +785,7 @@ describe('BlackJackPage', () => {
   it('shows CPU hand flags (busted, doubled, blackjack, surrendered)', async () => {
     const cpuSeat: BlackJackCpuSeat = {
       chips: 800,
+      insuranceBet: 0,
       hands: [
         {
           score: 25,
@@ -819,6 +821,7 @@ describe('BlackJackPage', () => {
   it('shows CPU BJ and SUR flags', async () => {
     const cpuSeat: BlackJackCpuSeat = {
       chips: 800,
+      insuranceBet: 0,
       hands: [
         {
           score: 21,
@@ -853,6 +856,7 @@ describe('BlackJackPage', () => {
   it('shows hand labels when CPU has multiple hands', async () => {
     const cpuSeat: BlackJackCpuSeat = {
       chips: 800,
+      insuranceBet: 0,
       hands: [
         {
           score: 15,
@@ -1212,5 +1216,71 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+  });
+
+  it('shows CPU insurance bet when insuranceBet > 0', async () => {
+    const cpuSeat: BlackJackCpuSeat = {
+      chips: 800,
+      insuranceBet: 50,
+      hands: [
+        {
+          score: 18,
+          cards: [
+            { design: 'HEART', value: 8 },
+            { design: 'DIAMOND', value: 10 },
+          ],
+          bet: 100,
+          stood: false,
+          doubled: false,
+          busted: false,
+          isBlackJack: false,
+          canSplit: false,
+          surrendered: false,
+          canSurrender: false,
+        },
+      ],
+    };
+    const stateWithCpu: BlackJackResponse = {
+      ...actionPhaseState,
+      cpuPlayerCount: 1,
+      cpuPlayers: [cpuSeat],
+    };
+    mockExec.mockResolvedValue(stateWithCpu);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    expect(screen.getByText('[インシュランス: 50]')).toBeInTheDocument();
+  });
+
+  it('does not show CPU insurance info when insuranceBet is 0', async () => {
+    const cpuSeat: BlackJackCpuSeat = {
+      chips: 800,
+      insuranceBet: 0,
+      hands: [
+        {
+          score: 18,
+          cards: [
+            { design: 'HEART', value: 8 },
+            { design: 'DIAMOND', value: 10 },
+          ],
+          bet: 100,
+          stood: false,
+          doubled: false,
+          busted: false,
+          isBlackJack: false,
+          canSplit: false,
+          surrendered: false,
+          canSurrender: false,
+        },
+      ],
+    };
+    const stateWithCpu: BlackJackResponse = {
+      ...actionPhaseState,
+      cpuPlayerCount: 1,
+      cpuPlayers: [cpuSeat],
+    };
+    mockExec.mockResolvedValue(stateWithCpu);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    expect(screen.queryByText(/インシュランス/)).not.toBeInTheDocument();
   });
 });

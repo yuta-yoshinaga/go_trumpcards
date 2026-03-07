@@ -29,6 +29,7 @@ export type BlackJackPhase = 1 | 2 | 3 | 4 | 5;
 export interface BlackJackCpuSeat {
   chips: number;
   hands: BlackJackHand[];
+  insuranceBet: number;
 }
 
 export interface BlackJackSideBetResult {
