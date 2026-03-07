@@ -22,6 +22,7 @@ const defaultConfig = {
   maxPasses: 5,
   noJokerFinish: false,
   jokerReclaimEnabled: false,
+  endStopEnabled: false,
 };
 const allSevensPlaced = [0, 128, 128, 128, 128]; // bit 7 set = 128
 
@@ -195,6 +196,7 @@ describe('SevensPage', () => {
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
+        endStop: false,
       }),
     );
   });
@@ -269,12 +271,10 @@ describe('SevensPage', () => {
     const stateWithConfig: SevensResponse = {
       ...humanTurnState,
       config: {
+        ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 2,
         cpuStrategy: true,
-        maxPasses: 5,
-        noJokerFinish: false,
-        jokerReclaimEnabled: false,
       },
     };
     mockExec.mockResolvedValue(stateWithConfig);
@@ -368,12 +368,10 @@ describe('SevensPage', () => {
     mockExec.mockResolvedValue({
       ...humanTurnState,
       config: {
+        ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 1,
         cpuStrategy: true,
-        maxPasses: 5,
-        noJokerFinish: false,
-        jokerReclaimEnabled: false,
       },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
@@ -385,6 +383,7 @@ describe('SevensPage', () => {
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
+        endStop: false,
       }),
     );
   });
@@ -393,12 +392,11 @@ describe('SevensPage', () => {
     const configState: SevensResponse = {
       ...humanTurnState,
       config: {
+        ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 2,
         cpuStrategy: true,
         maxPasses: 3,
-        noJokerFinish: false,
-        jokerReclaimEnabled: false,
       },
     };
     mockExec.mockResolvedValue(configState);
@@ -629,6 +627,7 @@ describe('SevensPage', () => {
         maxPasses: 3,
         noJokerFinish: false,
         jokerReclaim: false,
+        endStop: false,
       }),
     );
   });
@@ -812,6 +811,7 @@ describe('SevensPage', () => {
         maxPasses: 5,
         noJokerFinish: true,
         jokerReclaim: false,
+        endStop: false,
       }),
     );
   });
@@ -893,6 +893,7 @@ describe('SevensPage', () => {
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: true,
+        endStop: false,
       }),
     );
   });
@@ -993,5 +994,135 @@ describe('SevensPage', () => {
     // No A cell should have yellow border when tunnel is disabled
     const highlightedA = allACells.find((el) => el.style.borderColor !== '');
     expect(highlightedA).toBeUndefined();
+  });
+
+  // ── EndStop tests ──────────────────────────────────────────────
+
+  it('renders EndStop config checkbox unchecked by default', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+    expect(screen.getByLabelText('片側ストップ')).not.toBeChecked();
+  });
+
+  it('sends endStop: true in config when checkbox is checked and reset is clicked', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByLabelText('片側ストップ'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, endStopEnabled: true },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        jokerCount: 0,
+        cpuStrategy: false,
+        maxPasses: 5,
+        noJokerFinish: false,
+        jokerReclaim: false,
+        endStop: true,
+      }),
+    );
+  });
+
+  it('syncs endStop checkbox state from server response', async () => {
+    const configState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, endStopEnabled: true },
+    };
+    mockExec.mockResolvedValue(configState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByLabelText('片側ストップ')).toBeChecked());
+  });
+
+  it('shows rule badge [片側ストップ] when config has endStopEnabled: true', async () => {
+    const endStopState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, endStopEnabled: true },
+    };
+    mockExec.mockResolvedValue(endStopState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[片側ストップ\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('blocks high side card when A is placed and EndStop enabled', async () => {
+    // SPADE: bit 7 (128) + bit 1 (2) placed (A placed)
+    const endStopBlockState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, endStopEnabled: true },
+      tablePlaced: [0, 128 | 64 | 32 | 16 | 8 | 4 | 2, 128, 128, 128], // A through 6 + 7 placed
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [
+            { design: 'SPADE', value: 8 }, // should be blocked (high side, A placed)
+            { design: 'HEART', value: 6 }, // should be playable
+          ],
+          cardCount: 2,
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(endStopBlockState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const playableCards = screen.queryAllByTestId('playable-card');
+    // Only Heart 6 should be playable, not Spade 8
+    expect(playableCards).toHaveLength(1);
+  });
+
+  it('blocks low side card when K is placed and EndStop enabled', async () => {
+    // SPADE: bit 7 (128) + bit 13 (8192) + bit 8..12 placed (K placed)
+    const endStopBlockLowState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, endStopEnabled: true },
+      tablePlaced: [0, 128 | 256 | 512 | 1024 | 2048 | 4096 | 8192, 128, 128, 128], // 7 through K placed
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [
+            { design: 'SPADE', value: 6 }, // should be blocked (low side, K placed)
+            { design: 'HEART', value: 8 }, // should be playable
+          ],
+          cardCount: 2,
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(endStopBlockLowState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const playableCards = screen.queryAllByTestId('playable-card');
+    // Only Heart 8 should be playable, not Spade 6
+    expect(playableCards).toHaveLength(1);
+  });
+
+  it('does not block cards when EndStop is disabled even if A is placed', async () => {
+    // SPADE: A + 2-6 + 7 placed, EndStop disabled → Spade 8 should be playable
+    const noEndStopState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, endStopEnabled: false },
+      tablePlaced: [0, 128 | 64 | 32 | 16 | 8 | 4 | 2, 128, 128, 128],
+      players: [
+        {
+          ...humanTurnState.players[0],
+          cards: [{ design: 'SPADE', value: 8 }],
+          cardCount: 1,
+        },
+        ...humanTurnState.players.slice(1),
+      ],
+    };
+    mockExec.mockResolvedValue(noEndStopState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const playableCards = screen.queryAllByTestId('playable-card');
+    expect(playableCards).toHaveLength(1);
   });
 });

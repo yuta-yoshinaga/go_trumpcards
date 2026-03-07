@@ -168,6 +168,25 @@ func (s *Sevens) isPositionPlaced(suit, value int) bool {
 	return s.tablePlaced[suit]&(1<<uint(value)) != 0
 }
 
+// isEndStopped 片側ストップルールによりブロックされているか判定
+func (s *Sevens) isEndStopped(suit, value int) bool {
+	if !s.config.EndStopEnabled {
+		return false
+	}
+	if value == 7 {
+		return false
+	}
+	// 上側 (8-13): Aが配置済みならブロック
+	if value > 7 && s.isPositionPlaced(suit, 1) {
+		return true
+	}
+	// 下側 (1-6): Kが配置済みならブロック
+	if value < 7 && s.isPositionPlaced(suit, 13) {
+		return true
+	}
+	return false
+}
+
 // isPositionPlayable 指定スート・値がボード上に配置可能か判定
 func (s *Sevens) isPositionPlayable(suit, value int) bool {
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
@@ -179,6 +198,10 @@ func (s *Sevens) isPositionPlayable(suit, value int) bool {
 	if s.isPositionPlaced(suit, value) {
 		// ジョーカー回収が有効な場合、ジョーカーが置かれた場所はプレイ可能
 		return s.config.JokerReclaimEnabled && (s.jokerPlaced[suit]&(1<<uint(value)) != 0)
+	}
+	// 片側ストップ: EndStopが有効でブロックされたポジションはプレイ不可
+	if s.isEndStopped(suit, value) {
+		return false
 	}
 	// 隣接する値が配置済みか確認
 	if s.isPositionPlaced(suit, value+1) {

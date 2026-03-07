@@ -8,6 +8,7 @@ type SevensConfig struct {
 	MaxPasses           int  // 最大パス回数 (0 = 無制限)
 	NoJokerFinish       bool // ジョーカー上がり禁止
 	JokerReclaimEnabled bool // ジョーカー回収 (ジョーカー配置位置に本物のカードを出すとジョーカーが手札に戻る)
+	EndStopEnabled      bool // 片側ストップ (Aを置くと上側8-Kがブロック、Kを置くと下側A-6がブロック)
 }
 
 // DefaultSevensConfig デフォルト設定 (全機能無効)

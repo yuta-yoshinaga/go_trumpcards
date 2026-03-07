@@ -2207,6 +2207,16 @@ components:
           description: |
             Ban finishing the game by playing a joker as the last card. Only used with `reset` command.
           example: false
+        jokerReclaim:
+          type: boolean
+          description: |
+            Enable joker reclaim rule (playing a real card on a joker-occupied position returns the joker to the player's hand). Only used with `reset` command.
+          example: false
+        endStop:
+          type: boolean
+          description: |
+            Enable end stop rule (片側ストップ). When A is placed, the high side (8–K) is blocked; when K is placed, the low side (A–6) is blocked. Only used with `reset` command.
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -2328,6 +2338,10 @@ components:
         jokerReclaimEnabled:
           type: boolean
           description: Whether ジョーカー回収 (joker reclaim — playing a real card on a joker-occupied position returns the joker to the player's hand) is enabled (default false)
+          example: false
+        endStopEnabled:
+          type: boolean
+          description: Whether 片側ストップ (end stop — A placed blocks high side 8–K, K placed blocks low side A–6) is enabled (default false)
           example: false
 
     SevensResponse:

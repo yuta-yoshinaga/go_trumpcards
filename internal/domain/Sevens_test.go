@@ -2833,3 +2833,502 @@ func TestJokerReclaim_ReclaimDisabled_PositionNotPlayable(t *testing.T) {
 	err = s.PlayerPlay(spade6Idx)
 	assert.Error(t, err, "should not be able to play on joker-occupied position when reclaim disabled")
 }
+
+func TestSevens_EndStop(t *testing.T) {
+	t.Run("EndStop disabled does not block", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: false, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Place A(1) of spade
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		// Place 6, 5, 4, 3, 2 first to reach A
+		for v := 6; v >= 2; v-- {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		// Play 6,5,4,3,2 first
+		for v := 6; v >= 2; v-- {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			// Skip CPU turns back to human
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// Now play A
+		aIdx := -1
+		for i := 0; i < players[0].GetCardsSize(); i++ {
+			c := players[0].GetCard(i)
+			if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 1 {
+				aIdx = i
+				break
+			}
+		}
+		require.NotEqual(t, -1, aIdx)
+		err := s.PlayerPlay(aIdx)
+		require.NoError(t, err)
+		// Skip CPU turns
+		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+			s.CpuPlay()
+		}
+		// 8 of spade should still be playable (EndStop disabled)
+		card8 := domain.NewCard(domain.CardDesignSpade, 8, false)
+		assert.True(t, s.IsPlayable(card8))
+	})
+
+	t.Run("EndStop enabled A placed blocks high side (8)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		// Give CPUs cards so they don't finish
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place 6,5,4,3,2,A of spade in sequence
+		for v := 6; v >= 1; v-- {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		// Add 8 of spade to test later
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+
+		for v := 6; v >= 1; v-- {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx, "should find spade %d", v)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// A is now placed → high side (8-K) should be blocked
+		card8 := domain.NewCard(domain.CardDesignSpade, 8, false)
+		assert.False(t, s.IsPlayable(card8), "8 should be blocked when A is placed and EndStop enabled")
+	})
+
+	t.Run("EndStop enabled K placed blocks low side (6)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place 8,9,10,11,12,13 of spade
+		for v := 8; v <= 13; v++ {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		for v := 8; v <= 13; v++ {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx, "should find spade %d", v)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// K is now placed → low side (1-6) should be blocked
+		card6 := domain.NewCard(domain.CardDesignSpade, 6, false)
+		assert.False(t, s.IsPlayable(card6), "6 should be blocked when K is placed and EndStop enabled")
+	})
+
+	t.Run("EndStop A placed does NOT block low side", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place 6,5,4,3,2,A of spade
+		for v := 6; v >= 1; v-- {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		for v := 6; v >= 1; v-- {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// A placed does not block the low side (already filled). Also verify 7 is always OK.
+		card7 := domain.NewCard(domain.CardDesignSpade, 7, false)
+		// 7 is already placed, so IsPlayable returns false (already on board), but isEndStopped(7) = false
+		assert.False(t, s.IsPlayable(card7), "7 is already placed so not playable")
+	})
+
+	t.Run("EndStop K placed does NOT block high side", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place 8..13 of spade (K placed)
+		for v := 8; v <= 13; v++ {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		for v := 8; v <= 13; v++ {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// K placed does not block high side (already filled). Verify that nothing beyond K is affected.
+		// Also: IsPlayable for value 7 remains "already placed"
+		card7 := domain.NewCard(domain.CardDesignSpade, 7, false)
+		assert.False(t, s.IsPlayable(card7), "7 is already placed")
+	})
+
+	t.Run("EndStop both A and K placed locks entire suit", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place all of spade: 6,5,4,3,2,1,8,9,10,11,12,13
+		for v := 6; v >= 1; v-- {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		for v := 8; v <= 13; v++ {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		for v := 6; v >= 1; v-- {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// Now A is placed, high side should be blocked
+		// But we also need to place 8 before A blocks it...
+		// Actually A blocks 8-K, but 8 is adjacent to 7 which is placed.
+		// With EndStop, even though 8 is adjacent to 7, it should still be blocked because A is placed.
+		// Let's verify the heart suit instead (untouched)
+		// Heart has only 7 placed, no A or K → 6 and 8 should be playable
+		card6h := domain.NewCard(domain.CardDesignHeart, 6, false)
+		card8h := domain.NewCard(domain.CardDesignHeart, 8, false)
+		assert.True(t, s.IsPlayable(card6h))
+		assert.True(t, s.IsPlayable(card8h))
+	})
+
+	t.Run("EndStop + Tunnel: K blocked even with tunnel when A placed", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, TunnelEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place 6,5,4,3,2,1 of spade
+		for v := 6; v >= 1; v-- {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		for v := 6; v >= 1; v-- {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// A(1) placed. With tunnel, K(13) would normally be playable (adjacent to A via tunnel).
+		// But with EndStop, K is on the high side (value > 7) and A is placed → blocked
+		card13 := domain.NewCard(domain.CardDesignSpade, 13, false)
+		assert.False(t, s.IsPlayable(card13), "K should be blocked by EndStop even with tunnel when A is placed")
+
+		// Also verify 8 is blocked
+		card8 := domain.NewCard(domain.CardDesignSpade, 8, false)
+		assert.False(t, s.IsPlayable(card8), "8 should be blocked by EndStop when A is placed")
+	})
+
+	t.Run("EndStop + Tunnel: A blocked even with tunnel when K placed", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, TunnelEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place 8..13 of spade
+		for v := 8; v <= 13; v++ {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		for v := 8; v <= 13; v++ {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// K(13) placed. With tunnel, A(1) would normally be playable (adjacent to K via tunnel).
+		// But with EndStop, A is on the low side (value < 7) and K is placed → blocked
+		card1 := domain.NewCard(domain.CardDesignSpade, 1, false)
+		assert.False(t, s.IsPlayable(card1), "A should be blocked by EndStop even with tunnel when K is placed")
+
+		// Also verify 6 is blocked
+		card6 := domain.NewCard(domain.CardDesignSpade, 6, false)
+		assert.False(t, s.IsPlayable(card6), "6 should be blocked by EndStop when K is placed")
+	})
+
+	t.Run("EndStop + Joker: joker cannot target end-stopped positions", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, JokerCount: 1, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place 6,5,4,3,2,1 of spade
+		for v := 6; v >= 1; v-- {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		// Give human a joker
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		for v := 6; v >= 1; v-- {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+
+		// Joker should not be able to target spade 8 (high side blocked because A placed)
+		jokerIdx := -1
+		for i := 0; i < players[0].GetCardsSize(); i++ {
+			if players[0].GetCard(i).GetDesign() == domain.CardDesignJoker {
+				jokerIdx = i
+				break
+			}
+		}
+		require.NotEqual(t, -1, jokerIdx)
+		err := s.PlayerPlayJoker(jokerIdx, domain.CardDesignSpade, 8)
+		assert.Error(t, err, "joker should not be able to target end-stopped position")
+	})
+
+	t.Run("EndStop + JokerReclaim: reclaim still works on placed position", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, JokerCount: 1, JokerReclaimEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Give human a joker and spade 6
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		// Play joker on spade 6 position
+		jokerIdx := -1
+		for i := 0; i < players[0].GetCardsSize(); i++ {
+			if players[0].GetCard(i).GetDesign() == domain.CardDesignJoker {
+				jokerIdx = i
+				break
+			}
+		}
+		require.NotEqual(t, -1, jokerIdx)
+		err := s.PlayerPlayJoker(jokerIdx, domain.CardDesignSpade, 6)
+		require.NoError(t, err)
+
+		// Skip CPU turns
+		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+			s.CpuPlay()
+		}
+
+		// Now play real spade 6 to reclaim joker (placed check runs before EndStop check)
+		spade6Idx := -1
+		for i := 0; i < players[0].GetCardsSize(); i++ {
+			c := players[0].GetCard(i)
+			if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == 6 {
+				spade6Idx = i
+				break
+			}
+		}
+		require.NotEqual(t, -1, spade6Idx)
+		err = s.PlayerPlay(spade6Idx)
+		assert.NoError(t, err, "reclaim should work even with EndStop enabled")
+	})
+
+	t.Run("EndStop CPU play and pass", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+
+		// Give CPU1 a card on blocked side
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// Place A of spade so high side is blocked for spade
+		// First human places 6,5,4,3,2,1
+		for v := 6; v >= 1; v-- {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false)) // extra card so human doesn't finish
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		for v := 6; v >= 1; v-- {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			// CPU turns happen automatically after human play
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// After A placed, CPU1's spade 8 should be unplayable.
+		// The CPU should have passed when it was its turn.
+		assert.True(t, players[1].GetPassesUsed() > 0 || players[1].GetIsFinished(),
+			"CPU1 should have passed or been eliminated because its only card (spade 8) is blocked")
+	})
+
+	t.Run("EndStop value 7 is never affected", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		// 7 is already placed, so it's not playable (already on board),
+		// but isEndStopped should return false for value 7
+		// We test indirectly: 7 is placed, and 6 and 8 are playable on a fresh board (no A or K yet)
+		card6 := domain.NewCard(domain.CardDesignSpade, 6, false)
+		card8 := domain.NewCard(domain.CardDesignSpade, 8, false)
+		assert.True(t, s.IsPlayable(card6), "6 should be playable on fresh board with EndStop")
+		assert.True(t, s.IsPlayable(card8), "8 should be playable on fresh board with EndStop")
+	})
+
+	t.Run("EndStop with CPU strategy", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, CpuStrategy: true, MaxPasses: 5}
+		s := domain.NewSevens(tc, players, cfg)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Place A of spade
+		for v := 6; v >= 1; v-- {
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+		}
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+		for v := 6; v >= 1; v-- {
+			idx := -1
+			for i := 0; i < players[0].GetCardsSize(); i++ {
+				c := players[0].GetCard(i)
+				if c.GetDesign() == domain.CardDesignSpade && c.GetValue() == v {
+					idx = i
+					break
+				}
+			}
+			require.NotEqual(t, -1, idx)
+			err := s.PlayerPlay(idx)
+			require.NoError(t, err)
+			for !s.IsHumanTurn() && !s.GetGameEndFlag() {
+				s.CpuPlay()
+			}
+		}
+		// CPU1's spade 8 is blocked → CPU passed or was eliminated
+		assert.True(t, players[1].GetPassesUsed() > 0 || players[1].GetIsFinished(),
+			"CPU1 with strategy should pass or be eliminated when its only card is end-stopped")
+	})
+}

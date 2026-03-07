@@ -467,6 +467,28 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		assert.NotContains(t, result, "[ジョーカー回収]")
 	})
 
+	t.Run("success Output rule header with EndStop", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[片側ストップ]")
+	})
+
+	t.Run("success Output rule header without EndStop when disabled", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.NotContains(t, result, "[片側ストップ]")
+	})
+
 	t.Run("success Output non-forced pass does not show forced annotation", func(t *testing.T) {
 		s, _ := setupSevensCuiTest()
 		s.SetHumanAction(&domain.SevensCpuAction{

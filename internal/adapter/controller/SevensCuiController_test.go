@@ -165,6 +165,14 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, NoJokerFinish: true})
 	})
 
+	t.Run("reset with endstop flag", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSevensCuiController(m)
+		result := c.Exec("r endstop")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, EndStopEnabled: true})
+	})
+
 	t.Run("plain r still calls Reset", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewSevensCuiController(m)
