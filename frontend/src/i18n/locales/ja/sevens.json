@@ -25,7 +25,8 @@
     "passCount": "[パス{{count}}回]",
     "noJokerFinish": "[ジョーカー上がり禁止]",
     "jokerReclaim": "[ジョーカー回収]",
-    "endStop": "[片側ストップ]"
+    "endStop": "[片側ストップ]",
+    "jokerConsecutiveBanned": "[ジョーカー連続禁止]"
   },
   "config": {
     "title": "ルール設定 (リセット時に適用)",
@@ -36,6 +37,7 @@
     "passUnlimited": "無制限",
     "noJokerFinish": "ジョーカー上がり禁止",
     "jokerReclaim": "ジョーカー回収",
-    "endStop": "片側ストップ"
+    "endStop": "片側ストップ",
+    "jokerConsecutiveBanned": "ジョーカー連続禁止"
   }
 }

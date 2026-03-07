@@ -48,4 +48,14 @@ func TestSevensConfig_Method(t *testing.T) {
 		cfg := domain.SevensConfig{EndStopEnabled: true}
 		assert.True(t, cfg.EndStopEnabled)
 	})
+
+	t.Run("success DefaultSevensConfig JokerConsecutiveBanned is false", func(t *testing.T) {
+		cfg := domain.DefaultSevensConfig()
+		assert.False(t, cfg.JokerConsecutiveBanned)
+	})
+
+	t.Run("success SevensConfig JokerConsecutiveBanned can be set", func(t *testing.T) {
+		cfg := domain.SevensConfig{JokerConsecutiveBanned: true}
+		assert.True(t, cfg.JokerConsecutiveBanned)
+	})
 }

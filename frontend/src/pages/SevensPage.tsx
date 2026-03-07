@@ -80,9 +80,12 @@ function isCardPlayable(
   noJokerFinish: boolean,
   allCards: Card[],
   endStopEnabled: boolean,
+  jokerConsecutiveBanned: boolean,
+  lastPlayedJoker: boolean,
 ): boolean {
   if (card.design === 'JOKER') {
     if (noJokerFinish && hasOnlyJokers(allCards)) return false;
+    if (jokerConsecutiveBanned && lastPlayedJoker) return false;
     return hasAnyPlayablePosition(tablePlaced, tunnelEnabled, endStopEnabled);
   }
   const suit = designToSuit[card.design];
@@ -241,6 +244,7 @@ interface HumanAreaProps {
   tunnelEnabled: boolean;
   noJokerFinish: boolean;
   endStopEnabled: boolean;
+  jokerConsecutiveBanned: boolean;
   loading: boolean;
   onPlay: (idx: number) => void;
 }
@@ -252,6 +256,7 @@ function HumanArea({
   tunnelEnabled,
   noJokerFinish,
   endStopEnabled,
+  jokerConsecutiveBanned,
   loading,
   onPlay,
 }: HumanAreaProps) {
@@ -283,7 +288,16 @@ function HumanArea({
           const playable =
             isCurrentTurn &&
             !loading &&
-            isCardPlayable(card, tablePlaced, tunnelEnabled, noJokerFinish, player.cards, endStopEnabled);
+            isCardPlayable(
+              card,
+              tablePlaced,
+              tunnelEnabled,
+              noJokerFinish,
+              player.cards,
+              endStopEnabled,
+              jokerConsecutiveBanned,
+              player.lastPlayedJoker,
+            );
           return (
             <button
               key={`${card.design}-${card.value}`}
@@ -324,6 +338,7 @@ export function SevensPage() {
   const [cfgNoJokerFinish, setCfgNoJokerFinish] = useState(false);
   const [cfgJokerReclaim, setCfgJokerReclaim] = useState(false);
   const [cfgEndStop, setCfgEndStop] = useState(false);
+  const [cfgJokerConsBan, setCfgJokerConsBan] = useState(false);
 
   const onSuccess = useCallback((res: SevensResponse) => {
     setJokerCardIdx(null);
@@ -334,6 +349,7 @@ export function SevensPage() {
     setCfgNoJokerFinish(res.config.noJokerFinish);
     setCfgJokerReclaim(res.config.jokerReclaimEnabled);
     setCfgEndStop(res.config.endStopEnabled);
+    setCfgJokerConsBan(res.config.jokerConsecutiveBanned);
   }, []);
   const { state, loading, error, exec } = useGameApi(sevensApi.exec, { onSuccess });
 
@@ -379,7 +395,8 @@ export function SevensPage() {
             state.config.maxPasses !== 5 ||
             state.config.noJokerFinish ||
             state.config.jokerReclaimEnabled ||
-            state.config.endStopEnabled) && (
+            state.config.endStopEnabled ||
+            state.config.jokerConsecutiveBanned) && (
             <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-[0.85em]">
               {t('rules.title')}
               {state.config.tunnelEnabled && ` ${t('rules.tunnelTag')}`}
@@ -392,6 +409,7 @@ export function SevensPage() {
               {state.config.noJokerFinish && ` ${t('rules.noJokerFinish')}`}
               {state.config.jokerReclaimEnabled && ` ${t('rules.jokerReclaim')}`}
               {state.config.endStopEnabled && ` ${t('rules.endStop')}`}
+              {state.config.jokerConsecutiveBanned && ` ${t('rules.jokerConsecutiveBanned')}`}
             </div>
           )}
 
@@ -467,6 +485,7 @@ export function SevensPage() {
               tunnelEnabled={tunnelEnabled}
               noJokerFinish={state.config.noJokerFinish}
               endStopEnabled={state.config.endStopEnabled}
+              jokerConsecutiveBanned={state.config.jokerConsecutiveBanned}
               loading={loading}
               onPlay={handleCardPlay}
             />
@@ -521,6 +540,10 @@ export function SevensPage() {
             <input type="checkbox" checked={cfgEndStop} onChange={(e) => setCfgEndStop(e.target.checked)} />
             {t('config.endStop')}
           </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" checked={cfgJokerConsBan} onChange={(e) => setCfgJokerConsBan(e.target.checked)} />
+            {t('config.jokerConsecutiveBanned')}
+          </label>
         </div>
 
         <ErrorAlert message={error} />
@@ -540,6 +563,7 @@ export function SevensPage() {
                 noJokerFinish: cfgNoJokerFinish,
                 jokerReclaim: cfgJokerReclaim,
                 endStop: cfgEndStop,
+                jokerConsecutiveBanned: cfgJokerConsBan,
               })
             }
           >

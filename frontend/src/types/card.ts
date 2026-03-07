@@ -264,6 +264,7 @@ export interface SevensPlayerData {
   passesUsed: number;
   maxPasses: number;
   cards: Card[];
+  lastPlayedJoker: boolean;
 }
 
 export interface SevensAction {
@@ -282,6 +283,7 @@ export interface SevensConfig {
   noJokerFinish: boolean;
   jokerReclaimEnabled: boolean;
   endStopEnabled: boolean;
+  jokerConsecutiveBanned: boolean;
 }
 
 export interface SevensResponse {
