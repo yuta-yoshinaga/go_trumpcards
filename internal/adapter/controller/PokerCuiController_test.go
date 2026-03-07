@@ -232,6 +232,7 @@ func TestPokerCuiController_Unknown(t *testing.T) {
 func TestPokerCuiController_BettingLimit_Valid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitPotLimit
 	mi.On("ResetWithConfig", cfg).Return("bl ok")
@@ -241,6 +242,7 @@ func TestPokerCuiController_BettingLimit_Valid(t *testing.T) {
 func TestPokerCuiController_BettingLimit_LongCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitNoLimit
 	mi.On("ResetWithConfig", cfg).Return("bl ok")
@@ -266,6 +268,7 @@ func TestPokerCuiController_BettingLimit_InvalidValue(t *testing.T) {
 func TestPokerCuiController_SetCpuCount_Valid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 2
 	mi.On("ResetWithConfig", cfg).Return("scc ok")
@@ -275,10 +278,21 @@ func TestPokerCuiController_SetCpuCount_Valid(t *testing.T) {
 func TestPokerCuiController_SetCpuCount_LongCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 1
 	mi.On("ResetWithConfig", cfg).Return("scc ok")
 	assert.Equal(t, "scc ok", c.Exec("setcpucount 1"))
+}
+
+func TestPokerCuiController_SetCpuCount_MaxValue(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
+	cfg := domain.DefaultPokerConfig()
+	cfg.CpuCount = 3
+	mi.On("ResetWithConfig", cfg).Return("scc ok")
+	assert.Equal(t, "scc ok", c.Exec("scc 3"))
 }
 
 func TestPokerCuiController_SetCpuCount_NoArgs(t *testing.T) {
@@ -301,6 +315,7 @@ func TestPokerCuiController_SetCpuCount_InvalidValue(t *testing.T) {
 func TestPokerCuiController_SetJokerCount_Valid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.JokerCount = 1
 	mi.On("ResetWithConfig", cfg).Return("sjc ok")
@@ -310,10 +325,21 @@ func TestPokerCuiController_SetJokerCount_Valid(t *testing.T) {
 func TestPokerCuiController_SetJokerCount_LongCommand(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.JokerCount = 2
 	mi.On("ResetWithConfig", cfg).Return("sjc ok")
 	assert.Equal(t, "sjc ok", c.Exec("setjokercount 2"))
+}
+
+func TestPokerCuiController_SetJokerCount_MinValue(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
+	cfg := domain.DefaultPokerConfig()
+	cfg.JokerCount = 0
+	mi.On("ResetWithConfig", cfg).Return("sjc ok")
+	assert.Equal(t, "sjc ok", c.Exec("sjc 0"))
 }
 
 func TestPokerCuiController_SetJokerCount_NoArgs(t *testing.T) {

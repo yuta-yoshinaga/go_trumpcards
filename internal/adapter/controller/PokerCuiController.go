@@ -72,7 +72,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				if err != nil || bl < 0 || bl > 2 {
 					return fmt.Sprintf("Invalid betting limit: %s. Please enter 0-2.", args[0]), true
 				}
-				cfg := domain.DefaultPokerConfig()
+				cfg := pcc.pi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
 				return pcc.pi.ResetWithConfig(cfg), true
 			case "scc", "setcpucount":
@@ -83,7 +83,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				if err != nil || count < 1 || count > 3 {
 					return fmt.Sprintf("Invalid CPU player count: %s. Please enter 1-3.", args[0]), true
 				}
-				cfg := domain.DefaultPokerConfig()
+				cfg := pcc.pi.GetConfig()
 				cfg.CpuCount = count
 				return pcc.pi.ResetWithConfig(cfg), true
 			case "sjc", "setjokercount":
@@ -94,7 +94,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				if err != nil || count < 0 || count > 2 {
 					return fmt.Sprintf("Invalid joker count: %s. Please enter 0-2.", args[0]), true
 				}
-				cfg := domain.DefaultPokerConfig()
+				cfg := pcc.pi.GetConfig()
 				cfg.JokerCount = count
 				return pcc.pi.ResetWithConfig(cfg), true
 			case "o", "odds":
