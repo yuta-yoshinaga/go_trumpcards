@@ -24,12 +24,7 @@ type DoubtInteractor struct {
 
 // NewDoubtInteractor コンストラクタ
 func NewDoubtInteractor(d interfaces.DoubtGame, dp presenter.DoubtPresenter) *DoubtInteractor {
-	if d == nil {
-		panic("DoubtInteractor: d must not be nil")
-	}
-	if dp == nil {
-		panic("DoubtInteractor: dp must not be nil")
-	}
+	mustNotNil("DoubtInteractor", map[string]any{"d": d, "dp": dp})
 	return &DoubtInteractor{d: d, dp: dp}
 }
 

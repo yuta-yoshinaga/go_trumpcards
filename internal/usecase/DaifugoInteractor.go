@@ -22,12 +22,7 @@ type DaifugoInteractor struct {
 
 // NewDaifugoInteractor コンストラクタ
 func NewDaifugoInteractor(dg interfaces.DaifugoGame, dgp presenter.DaifugoPresenter) *DaifugoInteractor {
-	if dg == nil {
-		panic("DaifugoInteractor: dg must not be nil")
-	}
-	if dgp == nil {
-		panic("DaifugoInteractor: dgp must not be nil")
-	}
+	mustNotNil("DaifugoInteractor", map[string]any{"dg": dg, "dgp": dgp})
 	return &DaifugoInteractor{
 		dg:  dg,
 		dgp: dgp,
