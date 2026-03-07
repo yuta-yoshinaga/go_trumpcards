@@ -4,7 +4,7 @@
 
 ## TDD (Test-Driven Development)
 
-**All code changes must follow the TDD cycle (Red-Green-Refactor).** See `.ai/skills/tdd-flow.md` for the detailed workflow.
+**All code changes must follow the TDD cycle (Red-Green-Refactor).** See [`.ai/skills/tdd-flow.md`](../.ai/skills/tdd-flow.md) for the detailed workflow.
 
 ## Coverage standard
 

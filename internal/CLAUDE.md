@@ -15,7 +15,7 @@ This directory contains all Go backend code following Clean Architecture.
 
 ## Testing
 
-Follow TDD (Red-Green-Refactor). See `../.ai/skills/tdd-flow.md` for the full workflow.
+Follow TDD (Red-Green-Refactor). See [`../.ai/skills/tdd-flow.md`](../.ai/skills/tdd-flow.md) for the full workflow.
 
 **Branch coverage (C1) must be 100%** for all packages in this directory except `infrastructure/` (the top-level `cmd/` directory is also excluded project-wide).
 
