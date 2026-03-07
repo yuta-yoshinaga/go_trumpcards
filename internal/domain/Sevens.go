@@ -386,11 +386,8 @@ func (s *Sevens) PlayerPlay(idx int) error {
 	if card == nil {
 		return NewDomainError(ErrInvalidCard, fmt.Sprintf("card index %d out of range", idx))
 	}
-	if card.GetDesign() == CardDesignJoker && s.isJokerBlockedByFinishRule(player) {
-		return NewDomainError(ErrInvalidPlay, "cannot finish with a joker")
-	}
-	if card.GetDesign() == CardDesignJoker && s.isJokerBlockedByConsecutiveRule(player) {
-		return NewDomainError(ErrInvalidPlay, "cannot play joker on consecutive turns")
+	if card.GetDesign() == CardDesignJoker {
+		return NewDomainError(ErrInvalidPlay, "use PlayerPlayJoker to play a joker")
 	}
 	if !s.IsPlayable(card) {
 		return NewDomainError(ErrInvalidPlay, "card cannot be played on the board")

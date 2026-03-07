@@ -1968,7 +1968,7 @@ func TestSevens_UnlimitedPasses(t *testing.T) {
 }
 
 func TestSevens_NoJokerFinish(t *testing.T) {
-	t.Run("PlayerPlay rejects joker as last card when NoJokerFinish enabled", func(t *testing.T) {
+	t.Run("PlayerPlay rejects joker card (must use PlayerPlayJoker)", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makeSevensPlayers()
 		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: domain.SevensMaxPasses}
@@ -1983,10 +1983,10 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 
 		err := s.PlayerPlay(0)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "cannot finish with a joker")
+		assert.Contains(t, err.Error(), "use PlayerPlayJoker")
 	})
 
-	t.Run("PlayerPlay allows joker when player has other cards + NoJokerFinish", func(t *testing.T) {
+	t.Run("PlayerPlay rejects joker even when player has other cards", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makeSevensPlayers()
 		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, MaxPasses: domain.SevensMaxPasses}
@@ -1995,19 +1995,17 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 		for i := 1; i < 4; i++ {
 			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
 		}
-		// Human has joker + a normal card
+		// Human has joker + a normal card — joker at index 0
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		// Joker should be playable (player has other cards)
+		// PlayerPlay always rejects joker cards
 		err := s.PlayerPlay(0)
-		// The joker goes through IsPlayable check (which sees board positions) but
-		// PlayerPlay for normal card index 0 is a joker -> IsPlayable() still checks board
-		// Since board has 7 placed, 6 and 8 are playable, so joker has positions
-		assert.NoError(t, err)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "use PlayerPlayJoker")
 	})
 
-	t.Run("PlayerPlay allows joker when NoJokerFinish disabled", func(t *testing.T) {
+	t.Run("PlayerPlay rejects joker even when NoJokerFinish disabled", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makeSevensPlayers()
 		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: false, MaxPasses: domain.SevensMaxPasses}
@@ -2016,12 +2014,12 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 		for i := 1; i < 4; i++ {
 			players[i].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
 		}
-		// Human has ONLY a joker but rule is OFF
+		// Human has ONLY a joker but rule is OFF — still rejected
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 
-		// Joker should be playable (rule disabled)
 		err := s.PlayerPlay(0)
-		assert.NoError(t, err)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "use PlayerPlayJoker")
 	})
 
 	t.Run("PlayerPlayJoker rejects when only jokers left + NoJokerFinish", func(t *testing.T) {
@@ -3390,7 +3388,7 @@ func TestSevens_JokerConsecutiveBanned(t *testing.T) {
 		assert.Contains(t, err.Error(), "consecutive")
 	})
 
-	t.Run("enabled blocks joker via PlayerPlay when card is joker", func(t *testing.T) {
+	t.Run("PlayerPlay always rejects joker regardless of consecutive rule", func(t *testing.T) {
 		tc := domain.NewTrumpCards(2)
 		players := makeSevensPlayers()
 		cfg := domain.SevensConfig{
@@ -3404,21 +3402,12 @@ func TestSevens_JokerConsecutiveBanned(t *testing.T) {
 			players[0].RemoveCard(0)
 		}
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
-		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
-		// Play first joker via PlayerPlayJoker
-		err := s.PlayerPlayJoker(0, domain.CardDesignSpade, 6)
-		assert.NoError(t, err)
-
-		for !s.IsHumanTurn() && !s.GetGameEndFlag() {
-			s.CpuPlay()
-		}
-
-		// Try to play second joker via PlayerPlay — should be blocked
-		err = s.PlayerPlay(0) // joker is at index 0
+		// PlayerPlay rejects joker card — must use PlayerPlayJoker
+		err := s.PlayerPlay(0) // joker is at index 0
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "consecutive")
+		assert.Contains(t, err.Error(), "use PlayerPlayJoker")
 	})
 
 	t.Run("normal card play resets lastPlayedJoker flag", func(t *testing.T) {
@@ -3574,11 +3563,8 @@ func TestSevens_JokerConsecutiveBanned(t *testing.T) {
 		require.True(t, len(cpuActions) > 0, "expected at least one CPU action")
 		cpu1Action := cpuActions[0]
 		assert.Equal(t, 1, cpu1Action.PlayerIdx)
-		// CPU1 should pass (joker blocked by consecutive rule), not play joker
-		if cpu1Action.PlayedCard != nil {
-			assert.NotEqual(t, domain.CardDesignJoker, cpu1Action.PlayedCard.GetDesign(),
-				"CPU should not play joker on consecutive turns")
-		}
+		// CPU1 should pass (joker blocked by consecutive rule)
+		assert.Nil(t, cpu1Action.PlayedCard, "CPU1 should pass when joker is consecutively blocked")
 	})
 
 	t.Run("CPU with strategy respects consecutive rule", func(t *testing.T) {
@@ -3614,10 +3600,8 @@ func TestSevens_JokerConsecutiveBanned(t *testing.T) {
 		require.True(t, len(cpuActions) > 0, "expected at least one CPU action")
 		cpu1Action := cpuActions[0]
 		assert.Equal(t, 1, cpu1Action.PlayerIdx)
-		if cpu1Action.PlayedCard != nil {
-			assert.NotEqual(t, domain.CardDesignJoker, cpu1Action.PlayedCard.GetDesign(),
-				"CPU with strategy should not play joker on consecutive turns")
-		}
+		// CPU1 should pass (joker blocked by consecutive rule)
+		assert.Nil(t, cpu1Action.PlayedCard, "CPU1 should pass when joker is consecutively blocked")
 	})
 
 	t.Run("combined with NoJokerFinish", func(t *testing.T) {
