@@ -122,6 +122,14 @@ func TestDaifugoCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Sort", domain.DaifugoSortByStrength)
 	})
 
+	t.Run("sort command with out-of-range mode uses default", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDaifugoCuiController(m)
+		result := c.Exec("sort 99")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Sort", domain.DaifugoSortByStrength)
+	})
+
 	t.Run("play command ignores non-numeric index", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDaifugoCuiController(m)
