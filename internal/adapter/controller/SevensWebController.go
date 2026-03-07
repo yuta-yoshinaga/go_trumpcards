@@ -116,24 +116,3 @@ func sevensDispatch(bc *baseController, w rest.ResponseWriter, sgi usecase.Seven
 	}
 	return true
 }
-
-func derefBool(p *bool) bool {
-	if p == nil {
-		return false
-	}
-	return *p
-}
-
-func derefInt(p *int) int {
-	if p == nil {
-		return 0
-	}
-	return *p
-}
-
-func derefIntDefault(p *int, defaultVal int) int {
-	if p == nil {
-		return defaultVal
-	}
-	return *p
-}

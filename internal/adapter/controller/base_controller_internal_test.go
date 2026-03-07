@@ -11,6 +11,38 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// --- deref helper tests ---
+
+func TestDerefBool(t *testing.T) {
+	t.Run("nil returns false", func(t *testing.T) {
+		assert.False(t, derefBool(nil))
+	})
+	t.Run("non-nil returns value", func(t *testing.T) {
+		v := true
+		assert.True(t, derefBool(&v))
+	})
+}
+
+func TestDerefInt(t *testing.T) {
+	t.Run("nil returns 0", func(t *testing.T) {
+		assert.Equal(t, 0, derefInt(nil))
+	})
+	t.Run("non-nil returns value", func(t *testing.T) {
+		v := 42
+		assert.Equal(t, 42, derefInt(&v))
+	})
+}
+
+func TestDerefIntDefault(t *testing.T) {
+	t.Run("nil returns default", func(t *testing.T) {
+		assert.Equal(t, 99, derefIntDefault(nil, 99))
+	})
+	t.Run("non-nil returns value", func(t *testing.T) {
+		v := 7
+		assert.Equal(t, 7, derefIntDefault(&v, 99))
+	})
+}
+
 // failWriter is a minimal rest.ResponseWriter implementation where WriteJson always fails.
 type failWriter struct {
 	header     http.Header

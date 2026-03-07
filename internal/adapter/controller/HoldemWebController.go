@@ -140,9 +140,7 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 		cfg.SmallBlind = sb
 		cfg.BigBlind = bb
 		// トーナメントモード設定
-		if param.TournamentMode != nil {
-			cfg.TournamentMode = *param.TournamentMode
-		}
+		cfg.TournamentMode = derefBool(param.TournamentMode)
 		if param.BlindLevelHands != nil && *param.BlindLevelHands >= 1 {
 			cfg.BlindLevelHands = *param.BlindLevelHands
 		}

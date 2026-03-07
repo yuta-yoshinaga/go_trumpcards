@@ -102,10 +102,7 @@ func oldMaidDispatch(bc *baseController, w rest.ResponseWriter, omi usecase.OldM
 		}
 		bc.writePresenterResponse(w, omi.Reset(cfg))
 	case "d", "draw":
-		drawIdx := -1
-		if param.DrawIdx != nil {
-			drawIdx = *param.DrawIdx
-		}
+		drawIdx := derefIntDefault(param.DrawIdx, -1)
 		bc.writePresenterResponse(w, omi.Draw(drawIdx))
 	case "s", "shuffle":
 		bc.writePresenterResponse(w, omi.Shuffle())
