@@ -1132,14 +1132,12 @@ func tryBuildSequence(suitCards []suitCardEntry, si int, jokerIndices []int, nee
 	for len(indices) < needed {
 		targetStr := lastStr + 1
 		found := false
-		for sci < len(suitCards) {
-			if suitCards[sci].strength == targetStr {
-				indices = append(indices, suitCards[sci].idx)
-				lastStr = targetStr
-				sci++
-				found = true
-			}
-			break
+		// suitCards は強さ昇順なので、sci 位置が targetStr と一致するかだけ確認すればよい
+		if sci < len(suitCards) && suitCards[sci].strength == targetStr {
+			indices = append(indices, suitCards[sci].idx)
+			lastStr = targetStr
+			sci++
+			found = true
 		}
 		if !found {
 			if jokersUsed < len(jokerIndices) {

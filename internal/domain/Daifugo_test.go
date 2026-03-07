@@ -6336,3 +6336,68 @@ func TestDaifugo_CpuDifficulty(t *testing.T) {
 		assert.Equal(t, 6, players[1].GetCardsSize(), "Hard passes when no valid play available")
 	})
 }
+
+func TestDaifugoHardNonUrgentOpeningPlay(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	cfg := noRulesConfig()
+	cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+	dg := domain.NewDaifugo(tc, players, cfg)
+
+	// Human passes on empty table
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+	// CPU 1: normal cards, no emperor combo
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	// Not urgent: opponents have many cards
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+	dg.CpuPlay()
+
+	// Hard non-urgent should play weakest card (4) like Normal AI
+	assert.Equal(t, 2, players[1].GetCardsSize(), "Hard non-urgent should play opening card")
+}
+
+func TestIllegalFinish_OpeningSingleCardFallback(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		EightCutEnabled:      true,
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// CPU 1 has only an 8 → only filter match is illegal finish → fallback used
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+	dg.CpuPlay()
+
+	// CPU must play the 8 (only card) and accept penalty
+	assert.Equal(t, 0, players[1].GetCardsSize(), "CPU should play only card")
+	assert.True(t, players[1].GetIsFinished())
+	assert.True(t, players[1].GetIllegalFinishPenalty(), "CPU should accept illegal finish penalty")
+}
