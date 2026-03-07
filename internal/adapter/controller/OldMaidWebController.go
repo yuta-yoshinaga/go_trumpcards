@@ -71,66 +71,14 @@ type OldMaidWebOutput struct {
 }
 
 // OldMaidWebController ババ抜きWebコントローラークラス
-type OldMaidWebController struct {
-	baseController
-	factory func() usecase.OldMaidInteractorIF
-	store   *SessionStore[usecase.OldMaidInteractorIF]
-}
+type OldMaidWebController = GameWebController[usecase.OldMaidInteractorIF, OldMaidWebInput, *OldMaidWebOutput]
 
 // NewOldMaidWebController コンストラクタ
 func NewOldMaidWebController(factory func() usecase.OldMaidInteractorIF) *OldMaidWebController {
-	return &OldMaidWebController{
-		factory: factory,
-		store:   NewSessionStore[usecase.OldMaidInteractorIF](),
-	}
+	return NewGameWebController(factory, newOldMaidDefaultOutput, nil, oldMaidDispatch)
 }
 
-// Exec ゲーム実行
-func (owc *OldMaidWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	execWithSession(&owc.baseController, w, r, owc.store, owc.factory,
-		func(msg string) any { return owc.newDefaultOutput(msg) },
-		nil,
-		func(w rest.ResponseWriter, omi usecase.OldMaidInteractorIF, param OldMaidWebInput) bool {
-			switch param.Command {
-			case "r", "reset":
-				if param.Mode < 0 || param.Mode > int(domain.OldMaidModeJijiNuki) {
-					owc.writeJsonResponse(w, http.StatusBadRequest, owc.newDefaultOutput("param error: mode must be between 0 and 1."))
-					return true
-				}
-				cfg := domain.OldMaidConfig{
-					Mode:                 domain.OldMaidMode(param.Mode),
-					CpuPlacementStrategy: param.CpuPlacementStrategy,
-					CpuMemoryAI:          param.CpuMemoryAI,
-				}
-				owc.writePresenterResponse(w, omi.Reset(cfg))
-			case "d", "draw":
-				drawIdx := -1
-				if param.DrawIdx != nil {
-					drawIdx = *param.DrawIdx
-				}
-				owc.writePresenterResponse(w, omi.Draw(drawIdx))
-			case "s", "shuffle":
-				owc.writePresenterResponse(w, omi.Shuffle())
-			case "reorder":
-				if param.ReorderIndices == nil {
-					owc.writeJsonResponse(w, http.StatusBadRequest, owc.newDefaultOutput("param error: reorderIndices is required."))
-					return true
-				}
-				owc.writePresenterResponse(w, omi.Reorder(param.ReorderIndices))
-			default:
-				return false
-			}
-			return true
-		})
-}
-
-// Stop stops the background cleanup goroutine of the session store.
-func (owc *OldMaidWebController) Stop() {
-	owc.store.Stop()
-}
-
-// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
-func (owc *OldMaidWebController) newDefaultOutput(msg string) *OldMaidWebOutput {
+func newOldMaidDefaultOutput(msg string) *OldMaidWebOutput {
 	return &OldMaidWebOutput{
 		Players:               make([]*OldMaidWebOutputPlayer, 0),
 		CpuActions:            make([]*OldMaidWebOutputCpuAction, 0),
@@ -138,4 +86,37 @@ func (owc *OldMaidWebController) newDefaultOutput(msg string) *OldMaidWebOutput 
 		CpuHighlightedCardIdx: -1,
 		Message:               msg,
 	}
+}
+
+func oldMaidDispatch(bc *baseController, w rest.ResponseWriter, omi usecase.OldMaidInteractorIF, param OldMaidWebInput, newDefault func(string) *OldMaidWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		if param.Mode < 0 || param.Mode > int(domain.OldMaidModeJijiNuki) {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: mode must be between 0 and 1."))
+			return true
+		}
+		cfg := domain.OldMaidConfig{
+			Mode:                 domain.OldMaidMode(param.Mode),
+			CpuPlacementStrategy: param.CpuPlacementStrategy,
+			CpuMemoryAI:          param.CpuMemoryAI,
+		}
+		bc.writePresenterResponse(w, omi.Reset(cfg))
+	case "d", "draw":
+		drawIdx := -1
+		if param.DrawIdx != nil {
+			drawIdx = *param.DrawIdx
+		}
+		bc.writePresenterResponse(w, omi.Draw(drawIdx))
+	case "s", "shuffle":
+		bc.writePresenterResponse(w, omi.Shuffle())
+	case "reorder":
+		if param.ReorderIndices == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: reorderIndices is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, omi.Reorder(param.ReorderIndices))
+	default:
+		return false
+	}
+	return true
 }

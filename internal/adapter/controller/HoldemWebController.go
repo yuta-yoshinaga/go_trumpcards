@@ -93,99 +93,14 @@ type HoldemWebOutput struct {
 }
 
 // HoldemWebController テキサスホールデムWebコントローラークラス
-type HoldemWebController struct {
-	baseController
-	factory func() usecase.HoldemInteractorIF
-	store   *SessionStore[usecase.HoldemInteractorIF]
-}
+type HoldemWebController = GameWebController[usecase.HoldemInteractorIF, HoldemWebInput, *HoldemWebOutput]
 
 // NewHoldemWebController コンストラクタ
 func NewHoldemWebController(factory func() usecase.HoldemInteractorIF) *HoldemWebController {
-	return &HoldemWebController{
-		factory: factory,
-		store:   NewSessionStore[usecase.HoldemInteractorIF](),
-	}
+	return NewGameWebController(factory, newHoldemDefaultOutput, nil, holdemDispatch)
 }
 
-// Exec ゲーム実行
-func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	execWithSession(&hwc.baseController, w, r, hwc.store, hwc.factory,
-		func(msg string) any { return hwc.newDefaultOutput(msg) },
-		nil,
-		func(w rest.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput) bool {
-			switch param.Command {
-			case "r", "reset":
-				cfg := domain.DefaultHoldemConfig()
-				sb, bb := cfg.SmallBlind, cfg.BigBlind
-				sbProvided := param.SmallBlind != nil && *param.SmallBlind >= 1
-				bbProvided := param.BigBlind != nil && *param.BigBlind >= 1
-				if sbProvided {
-					sb = *param.SmallBlind
-				}
-				if bbProvided {
-					bb = *param.BigBlind
-				}
-				// 片方のみ指定された場合、もう片方を自動調整
-				if sbProvided && !bbProvided && sb >= cfg.BigBlind {
-					bb = sb * 2
-				} else if bbProvided && !sbProvided && bb > 1 {
-					sb = bb / 2
-					if sb < 1 {
-						sb = 1
-					}
-				}
-				if sb >= bb {
-					hwc.writeJsonResponse(w, http.StatusBadRequest, hwc.newDefaultOutput("param error: smallBlind must be less than bigBlind."))
-					return true
-				}
-				cfg.SmallBlind = sb
-				cfg.BigBlind = bb
-				// トーナメントモード設定
-				if param.TournamentMode != nil {
-					cfg.TournamentMode = *param.TournamentMode
-				}
-				if param.BlindLevelHands != nil && *param.BlindLevelHands >= 1 {
-					cfg.BlindLevelHands = *param.BlindLevelHands
-				}
-				if param.BlindMultiplier != nil && *param.BlindMultiplier >= 101 {
-					cfg.BlindMultiplier = *param.BlindMultiplier
-				}
-				if param.BettingLimit != nil {
-					bl := *param.BettingLimit
-					if bl < 0 {
-						bl = 0
-					} else if bl > 2 {
-						bl = 2
-					}
-					cfg.BettingLimit = domain.BettingLimitType(bl)
-				}
-				hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
-			case "f", "fold":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0))
-			case "ck", "check":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0))
-			case "c", "call":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0))
-			case "b", "bet":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount))
-			case "ra", "raise":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount))
-			case "a", "allin":
-				hwc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0))
-			default:
-				return false
-			}
-			return true
-		})
-}
-
-// Stop stops the background cleanup goroutine of the session store.
-func (hwc *HoldemWebController) Stop() {
-	hwc.store.Stop()
-}
-
-// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
-func (hwc *HoldemWebController) newDefaultOutput(msg string) *HoldemWebOutput {
+func newHoldemDefaultOutput(msg string) *HoldemWebOutput {
 	return &HoldemWebOutput{
 		Players:        make([]*HoldemWebOutputPlayer, 0),
 		CommunityCards: make([]*WebOutputCard, 0),
@@ -194,4 +109,70 @@ func (hwc *HoldemWebController) newDefaultOutput(msg string) *HoldemWebOutput {
 		CpuActions:     make([]*HoldemWebOutputCpuAction, 0),
 		Message:        msg,
 	}
+}
+
+func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput, newDefault func(string) *HoldemWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		cfg := domain.DefaultHoldemConfig()
+		sb, bb := cfg.SmallBlind, cfg.BigBlind
+		sbProvided := param.SmallBlind != nil && *param.SmallBlind >= 1
+		bbProvided := param.BigBlind != nil && *param.BigBlind >= 1
+		if sbProvided {
+			sb = *param.SmallBlind
+		}
+		if bbProvided {
+			bb = *param.BigBlind
+		}
+		// 片方のみ指定された場合、もう片方を自動調整
+		if sbProvided && !bbProvided && sb >= cfg.BigBlind {
+			bb = sb * 2
+		} else if bbProvided && !sbProvided && bb > 1 {
+			sb = bb / 2
+			if sb < 1 {
+				sb = 1
+			}
+		}
+		if sb >= bb {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: smallBlind must be less than bigBlind."))
+			return true
+		}
+		cfg.SmallBlind = sb
+		cfg.BigBlind = bb
+		// トーナメントモード設定
+		if param.TournamentMode != nil {
+			cfg.TournamentMode = *param.TournamentMode
+		}
+		if param.BlindLevelHands != nil && *param.BlindLevelHands >= 1 {
+			cfg.BlindLevelHands = *param.BlindLevelHands
+		}
+		if param.BlindMultiplier != nil && *param.BlindMultiplier >= 101 {
+			cfg.BlindMultiplier = *param.BlindMultiplier
+		}
+		if param.BettingLimit != nil {
+			bl := *param.BettingLimit
+			if bl < 0 {
+				bl = 0
+			} else if bl > 2 {
+				bl = 2
+			}
+			cfg.BettingLimit = domain.BettingLimitType(bl)
+		}
+		bc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
+	case "f", "fold":
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0))
+	case "ck", "check":
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0))
+	case "c", "call":
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0))
+	case "b", "bet":
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount))
+	case "ra", "raise":
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount))
+	case "a", "allin":
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0))
+	default:
+		return false
+	}
+	return true
 }

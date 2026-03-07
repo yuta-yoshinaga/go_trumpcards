@@ -74,52 +74,47 @@ type SevensWebOutput struct {
 }
 
 // SevensWebController 7並べWebコントローラークラス
-type SevensWebController struct {
-	baseController
-	factory func() usecase.SevensInteractorIF
-	store   *SessionStore[usecase.SevensInteractorIF]
-}
+type SevensWebController = GameWebController[usecase.SevensInteractorIF, SevensWebInput, *SevensWebOutput]
 
 // NewSevensWebController コンストラクタ
 func NewSevensWebController(factory func() usecase.SevensInteractorIF) *SevensWebController {
-	return &SevensWebController{
-		factory: factory,
-		store:   NewSessionStore[usecase.SevensInteractorIF](),
+	return NewGameWebController(factory, newSevensDefaultOutput, nil, sevensDispatch)
+}
+
+func newSevensDefaultOutput(msg string) *SevensWebOutput {
+	return &SevensWebOutput{
+		Players:    make([]*SevensWebOutputPlayer, 0),
+		CpuActions: make([]*SevensWebOutputAction, 0),
+		Message:    msg,
 	}
 }
 
-// Exec ゲーム実行
-func (swc *SevensWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	execWithSession(&swc.baseController, w, r, swc.store, swc.factory,
-		func(msg string) any { return swc.newDefaultOutput(msg) },
-		nil,
-		func(w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput) bool {
-			switch param.Command {
-			case "r", "reset":
-				if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil || param.EndStop != nil || param.JokerConsecutiveBanned != nil {
-					cfg := domain.SevensConfig{
-						TunnelEnabled:          derefBool(param.TunnelEnabled),
-						JokerCount:             derefInt(param.JokerCount),
-						CpuStrategy:            derefBool(param.CpuStrategy),
-						MaxPasses:              derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
-						NoJokerFinish:          derefBool(param.NoJokerFinish),
-						JokerReclaimEnabled:    derefBool(param.JokerReclaim),
-						EndStopEnabled:         derefBool(param.EndStop),
-						JokerConsecutiveBanned: derefBool(param.JokerConsecutiveBanned),
-					}
-					swc.writePresenterResponse(w, sgi.ResetWithConfig(cfg))
-				} else {
-					swc.writePresenterResponse(w, sgi.Reset())
-				}
-			case "p", "play":
-				swc.writePresenterResponse(w, sgi.Play(param.Index))
-			case "j", "joker":
-				swc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue))
-			default:
-				return false
+func sevensDispatch(bc *baseController, w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput, _ func(string) *SevensWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil || param.EndStop != nil || param.JokerConsecutiveBanned != nil {
+			cfg := domain.SevensConfig{
+				TunnelEnabled:          derefBool(param.TunnelEnabled),
+				JokerCount:             derefInt(param.JokerCount),
+				CpuStrategy:            derefBool(param.CpuStrategy),
+				MaxPasses:              derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
+				NoJokerFinish:          derefBool(param.NoJokerFinish),
+				JokerReclaimEnabled:    derefBool(param.JokerReclaim),
+				EndStopEnabled:         derefBool(param.EndStop),
+				JokerConsecutiveBanned: derefBool(param.JokerConsecutiveBanned),
 			}
-			return true
-		})
+			bc.writePresenterResponse(w, sgi.ResetWithConfig(cfg))
+		} else {
+			bc.writePresenterResponse(w, sgi.Reset())
+		}
+	case "p", "play":
+		bc.writePresenterResponse(w, sgi.Play(param.Index))
+	case "j", "joker":
+		bc.writePresenterResponse(w, sgi.PlayJoker(param.Index, param.JokerTargetSuit, param.JokerTargetValue))
+	default:
+		return false
+	}
+	return true
 }
 
 func derefBool(p *bool) bool {
@@ -141,18 +136,4 @@ func derefIntDefault(p *int, defaultVal int) int {
 		return defaultVal
 	}
 	return *p
-}
-
-// Stop stops the background cleanup goroutine of the session store.
-func (swc *SevensWebController) Stop() {
-	swc.store.Stop()
-}
-
-// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
-func (swc *SevensWebController) newDefaultOutput(msg string) *SevensWebOutput {
-	return &SevensWebOutput{
-		Players:    make([]*SevensWebOutputPlayer, 0),
-		CpuActions: make([]*SevensWebOutputAction, 0),
-		Message:    msg,
-	}
 }
