@@ -127,6 +127,78 @@ func TestCalcTellChance(t *testing.T) {
 	})
 }
 
+// TestMixedBluffChance 混合ブラフ確率の定数値テスト
+func TestMixedBluffChance(t *testing.T) {
+	assert.InDelta(t, 0.3, mixedBluffChance, 0.001)
+}
+
+// TestSelectMixedCards 混合カード選択ヘルパーのテスト
+func TestSelectMixedCards(t *testing.T) {
+	t.Run("normal case - has both matching and non-matching", func(t *testing.T) {
+		player := NewDoubtPlayer(false)
+		player.AddCard(NewCard(CardDesignSpade, 5, false))   // 0: matches
+		player.AddCard(NewCard(CardDesignHeart, 5, false))   // 1: matches
+		player.AddCard(NewCard(CardDesignClover, 3, false))  // 2: non-matching
+		player.AddCard(NewCard(CardDesignDiamond, 7, false)) // 3: non-matching
+
+		played := selectMixedCards(player, 5, 3)
+		assert.Len(t, played, 3)
+
+		hasMatch := false
+		hasNonMatch := false
+		for _, card := range played {
+			if card.GetValue() == 5 {
+				hasMatch = true
+			} else {
+				hasNonMatch = true
+			}
+		}
+		assert.True(t, hasMatch, "should contain at least one matching card")
+		assert.True(t, hasNonMatch, "should contain at least one non-matching card")
+	})
+
+	t.Run("fallback - all cards match claimed value", func(t *testing.T) {
+		player := NewDoubtPlayer(false)
+		player.AddCard(NewCard(CardDesignSpade, 5, false))
+		player.AddCard(NewCard(CardDesignHeart, 5, false))
+		player.AddCard(NewCard(CardDesignClover, 5, false))
+
+		played := selectMixedCards(player, 5, 2)
+		assert.Len(t, played, 2)
+		for _, card := range played {
+			assert.Equal(t, 5, card.GetValue())
+		}
+	})
+
+	t.Run("fallback - no matching cards", func(t *testing.T) {
+		player := NewDoubtPlayer(false)
+		player.AddCard(NewCard(CardDesignSpade, 3, false))
+		player.AddCard(NewCard(CardDesignHeart, 7, false))
+		player.AddCard(NewCard(CardDesignClover, 9, false))
+
+		played := selectMixedCards(player, 5, 2)
+		assert.Len(t, played, 2)
+	})
+
+	t.Run("edge case - only 1 non-matching card", func(t *testing.T) {
+		player := NewDoubtPlayer(false)
+		player.AddCard(NewCard(CardDesignSpade, 5, false))  // matches
+		player.AddCard(NewCard(CardDesignHeart, 5, false))  // matches
+		player.AddCard(NewCard(CardDesignClover, 3, false)) // non-matching (only 1)
+
+		played := selectMixedCards(player, 5, 3)
+		assert.Len(t, played, 3)
+
+		nonMatchCount := 0
+		for _, card := range played {
+			if card.GetValue() != 5 {
+				nonMatchCount++
+			}
+		}
+		assert.Equal(t, 1, nonMatchCount, "should have exactly 1 non-matching card")
+	})
+}
+
 // TestMemoryDecayRate 記憶減衰率のテスト
 func TestMemoryDecayRate(t *testing.T) {
 	t.Run("easy", func(t *testing.T) {
