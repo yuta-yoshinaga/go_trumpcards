@@ -8,6 +8,7 @@ const (
 	HoldemStyleLAP                        // Loose-Passive
 	HoldemStyleTAP                        // Tight-Passive
 	HoldemStyleLAG                        // Loose-Aggressive
+	HoldemStyleGTO                        // Game Theory Optimal
 )
 
 // HoldemPlayStyleNames プレイスタイル名
@@ -16,16 +17,18 @@ var HoldemPlayStyleNames = []string{
 	"LAP",
 	"TAP",
 	"LAG",
+	"GTO",
 }
 
 // HoldemConfig テキサスホールデム設定
 type HoldemConfig struct {
-	SmallBlind      int  // スモールブラインド
-	BigBlind        int  // ビッグブラインド
-	InitChips       int  // 初期チップ
-	TournamentMode  bool // トーナメントモード
-	BlindLevelHands int  // ブラインドレベルアップまでのハンド数
-	BlindMultiplier int  // ブラインド倍率 (百分率: 200=2倍)
+	SmallBlind      int              // スモールブラインド
+	BigBlind        int              // ビッグブラインド
+	InitChips       int              // 初期チップ
+	TournamentMode  bool             // トーナメントモード
+	BlindLevelHands int              // ブラインドレベルアップまでのハンド数
+	BlindMultiplier int              // ブラインド倍率 (百分率: 200=2倍)
+	BettingLimit    BettingLimitType // ベッティングリミット
 }
 
 // DefaultHoldemConfig デフォルト設定

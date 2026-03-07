@@ -125,6 +125,15 @@ func (_m *MockOldMaidGame) GetHumanAction() *domain.OldMaidCpuAction {
 	return nil
 }
 
+// GetDrawHistory モック
+func (_m *MockOldMaidGame) GetDrawHistory() []*domain.OldMaidDrawHistoryEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.OldMaidDrawHistoryEntry); ok {
+		return val
+	}
+	return nil
+}
+
 // GetLoserIdx モック
 func (_m *MockOldMaidGame) GetLoserIdx() int {
 	ret := _m.Called()

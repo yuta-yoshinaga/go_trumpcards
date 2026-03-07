@@ -266,7 +266,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		p.SetPhase(domain.PokerPhaseEnd)
 		p.SetRoundResults([]domain.PokerResult{
 			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 200},
-			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0},
+			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 12, 10}, WonAmount: 0},
 		})
 
 		result := pres.Output(p, nil)
@@ -277,8 +277,10 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, out.RoundResults[0].PlayerIdx)
 		assert.Equal(t, domain.PokerHandFlush, out.RoundResults[0].HandRank)
 		assert.Equal(t, "Flush", out.RoundResults[0].HandName)
+		assert.Equal(t, "", out.RoundResults[0].Kickers)
 		assert.Equal(t, 200, out.RoundResults[0].WonAmount)
 		assert.Equal(t, 1, out.RoundResults[1].PlayerIdx)
+		assert.Equal(t, "A, Q, 10", out.RoundResults[1].Kickers)
 		assert.Equal(t, 0, out.RoundResults[1].WonAmount)
 	})
 
@@ -317,6 +319,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You are the winner.", out.Message)
+		assert.Equal(t, "poker.result.win", out.MessageCode)
 	})
 
 	t.Run("game end message - human loses", func(t *testing.T) {
@@ -333,6 +336,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You lose.", out.Message)
+		assert.Equal(t, "poker.result.lose", out.MessageCode)
 	})
 
 	t.Run("game end message - human folded", func(t *testing.T) {
@@ -349,6 +353,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You folded.", out.Message)
+		assert.Equal(t, "poker.result.folded", out.MessageCode)
 	})
 
 	t.Run("game end message - no results", func(t *testing.T) {
@@ -361,6 +366,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "Game over.", out.Message)
+		assert.Equal(t, "poker.result.gameOver", out.MessageCode)
 	})
 
 	t.Run("game end - human in results with zero won (not winner)", func(t *testing.T) {
@@ -377,6 +383,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "You lose.", out.Message)
+		assert.Equal(t, "poker.result.lose", out.MessageCode)
 	})
 
 	t.Run("no message when not game end and no error", func(t *testing.T) {
@@ -508,5 +515,46 @@ func TestPokerWebPresenter_OutputWithOdds(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 		assert.Equal(t, "test error", out.Message)
 		assert.Len(t, out.Odds, 1)
+	})
+}
+
+func TestPokerWebPresenter_Output_BettingLimitFields(t *testing.T) {
+	pres := presenter.NewPokerWebPresenter()
+
+	t.Run("default Fixed limit", func(t *testing.T) {
+		p, players := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, out.BettingLimit)
+		assert.Equal(t, 0, out.RaiseCount)
+		assert.Equal(t, 0, out.MaxBetAmount)
+	})
+
+	t.Run("PotLimit returns maxBetAmount", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.PokerPlayer{
+			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		}
+		cfg := domain.DefaultPokerConfig()
+		cfg.BettingLimit = domain.BettingLimitPotLimit
+		cfg.CpuCount = 1
+		p := domain.NewPoker(tc, players, cfg)
+		p.SetPhase(domain.PokerPhaseDeal)
+		p.SetPot(100)
+		p.SetLastBet(20)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, out.BettingLimit)
+		assert.Equal(t, 120, out.MaxBetAmount) // pot(100) + lastBet(20)
 	})
 }

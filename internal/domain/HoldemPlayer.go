@@ -1,18 +1,25 @@
 package domain
 
-import "sort"
+import (
+	"fmt"
+	"sort"
+)
 
 // HoldemPlayer テキサスホールデムプレイヤークラス
 type HoldemPlayer struct {
-	Player                            // 親クラス
-	ChipHolder                        // チップ管理
-	bettingPlayerBase                 // ベッティング共通状態
-	isHuman           bool            // 人間フラグ
-	bestHand          []*Card         // ベスト5枚
-	playStyle         HoldemPlayStyle // CPUプレイスタイル
-	totalHands        int             // 総ハンド数 (セッション通算)
-	vpipCount         int             // VPIP対象ハンド数
-	pfrCount          int             // PFR対象ハンド数
+	Player                              // 親クラス
+	ChipHolder                          // チップ管理
+	bettingPlayerBase                   // ベッティング共通状態
+	isHuman             bool            // 人間フラグ
+	bestHand            []*Card         // ベスト5枚
+	playStyle           HoldemPlayStyle // CPUプレイスタイル
+	totalHands          int             // 総ハンド数 (セッション通算)
+	vpipCount           int             // VPIP対象ハンド数
+	pfrCount            int             // PFR対象ハンド数
+	threeBetOpportunity int             // 3Bet機会数
+	threeBetCount       int             // 3Bet実行数
+	postFlopBetRaise    int             // ポストフロップ ベット+レイズ回数
+	postFlopCall        int             // ポストフロップ コール回数
 }
 
 // NewHoldemPlayer コンストラクタ
@@ -35,10 +42,7 @@ func (hp *HoldemPlayer) GetPlayStyle() HoldemPlayStyle { return hp.playStyle }
 
 // GetPlayStyleName プレイスタイル名取得
 func (hp *HoldemPlayer) GetPlayStyleName() string {
-	if int(hp.playStyle) < len(HoldemPlayStyleNames) {
-		return HoldemPlayStyleNames[hp.playStyle]
-	}
-	return "Unknown"
+	return playStyleName(int(hp.playStyle), HoldemPlayStyleNames)
 }
 
 // GetTotalHands 総ハンド数取得
@@ -75,15 +79,55 @@ func (hp *HoldemPlayer) IncrementVPIP() { hp.vpipCount++ }
 // IncrementPFR PFR対象ハンド数をインクリメント
 func (hp *HoldemPlayer) IncrementPFR() { hp.pfrCount++ }
 
+// GetThreeBetOpportunity 3Bet機会数取得
+func (hp *HoldemPlayer) GetThreeBetOpportunity() int { return hp.threeBetOpportunity }
+
+// GetThreeBetCount 3Bet実行数取得
+func (hp *HoldemPlayer) GetThreeBetCount() int { return hp.threeBetCount }
+
+// GetThreeBet 3Bet%取得 (0 if threeBetOpportunity==0)
+func (hp *HoldemPlayer) GetThreeBet() int {
+	if hp.threeBetOpportunity == 0 {
+		return 0
+	}
+	return hp.threeBetCount * 100 / hp.threeBetOpportunity
+}
+
+// IncrementThreeBetOpportunity 3Bet機会数をインクリメント
+func (hp *HoldemPlayer) IncrementThreeBetOpportunity() { hp.threeBetOpportunity++ }
+
+// IncrementThreeBet 3Bet実行数をインクリメント
+func (hp *HoldemPlayer) IncrementThreeBet() { hp.threeBetCount++ }
+
+// GetPostFlopBetRaise ポストフロップ ベット+レイズ回数取得
+func (hp *HoldemPlayer) GetPostFlopBetRaise() int { return hp.postFlopBetRaise }
+
+// GetPostFlopCall ポストフロップ コール回数取得
+func (hp *HoldemPlayer) GetPostFlopCall() int { return hp.postFlopCall }
+
+// IncrementPostFlopBetRaise ポストフロップ ベット+レイズ回数をインクリメント
+func (hp *HoldemPlayer) IncrementPostFlopBetRaise() { hp.postFlopBetRaise++ }
+
+// IncrementPostFlopCall ポストフロップ コール回数をインクリメント
+func (hp *HoldemPlayer) IncrementPostFlopCall() { hp.postFlopCall++ }
+
+// GetAFDisplay AF表示文字列取得 ("-"=アクションなし, "∞"=コールなし, "X.X"=通常)
+func (hp *HoldemPlayer) GetAFDisplay() string {
+	if hp.postFlopBetRaise == 0 && hp.postFlopCall == 0 {
+		return "-"
+	}
+	if hp.postFlopCall == 0 {
+		return "∞"
+	}
+	return fmt.Sprintf("%.1f", float64(hp.postFlopBetRaise)/float64(hp.postFlopCall))
+}
+
 // GetComparisonCards ハンド比較用カード取得 (BettingPlayerインターフェース)
 func (hp *HoldemPlayer) GetComparisonCards() []*Card {
 	cards := make([]*Card, len(hp.bestHand))
 	copy(cards, hp.bestHand)
 	return cards
 }
-
-// SetBestHand ベストハンド設定（テスト用）
-func (hp *HoldemPlayer) SetBestHand(hand []*Card) { hp.bestHand = hand }
 
 // EvalBestHand コミュニティカードとホールカードからベスト5枚を評価
 func (hp *HoldemPlayer) EvalBestHand(communityCards []*Card) int {

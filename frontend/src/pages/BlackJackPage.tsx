@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { BlackJackConfigInput, BlackJackSideBetInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
@@ -6,6 +7,7 @@ import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEndPhaseControls } from '../components/blackjack/BjEndPhaseControls';
 import { BjInsurancePhaseControls } from '../components/blackjack/BjInsurancePhaseControls';
 import {
+  BJ_COUNTING_KO,
   BJ_SIDE_BET_PERFECT_PAIRS,
   BJ_SUGGEST_DECLINE_INSURANCE,
   BJ_SUGGEST_DOUBLE,
@@ -18,21 +20,29 @@ import {
 } from '../components/blackjack/bjConstants';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
 import { useGameApi } from '../hooks/useGameApi';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 
-const SUGGESTION_LABELS: Record<number, string> = {
-  [BJ_SUGGEST_HIT]: 'ヒット',
-  [BJ_SUGGEST_STAND]: 'スタンド',
-  [BJ_SUGGEST_DOUBLE]: 'ダブルダウン',
-  [BJ_SUGGEST_SPLIT]: 'スプリット',
-  [BJ_SUGGEST_SURRENDER]: 'サレンダー',
-  [BJ_SUGGEST_DECLINE_INSURANCE]: '辞退',
-  [BJ_SUGGEST_DOUBLE_STAND]: 'ダブルダウン',
-};
+function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
+  return {
+    [BJ_SUGGEST_HIT]: t('suggest.hit'),
+    [BJ_SUGGEST_STAND]: t('suggest.stand'),
+    [BJ_SUGGEST_DOUBLE]: t('suggest.double'),
+    [BJ_SUGGEST_SPLIT]: t('suggest.split'),
+    [BJ_SUGGEST_SURRENDER]: t('suggest.surrender'),
+    [BJ_SUGGEST_DECLINE_INSURANCE]: t('suggest.decline'),
+    [BJ_SUGGEST_DOUBLE_STAND]: t('suggest.double'),
+  };
+}
 
 export function BlackJackPage() {
+  const { t } = useTranslation('blackjack');
+  const { t: tc } = useTranslation('common');
+  const suggestionLabels = useSuggestionLabels(t);
+
   const [message, setMessage] = useState('');
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
@@ -40,6 +50,9 @@ export function BlackJackPage() {
   const [cpuPlayerCount, setCpuPlayerCount] = useState(0);
   const [perfectPairsBet, setPerfectPairsBet] = useState(0);
   const [twentyOnePlus3Bet, setTwentyOnePlus3Bet] = useState(0);
+  const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
+  const [countingSystem, setCountingSystem] = useState(0);
+  const [deckPenetration, setDeckPenetration] = useState(75);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback((res: BlackJackResponse) => {
@@ -47,6 +60,9 @@ export function BlackJackPage() {
     setDealerHitsSoft17(res.dealerHitsSoft17);
     setCountingEnabled(res.countingEnabled);
     setCpuPlayerCount(res.cpuPlayerCount);
+    setDoubleAfterSplit(res.doubleAfterSplit);
+    setCountingSystem(res.countingSystem);
+    setDeckPenetration(res.deckPenetration);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
@@ -64,7 +80,11 @@ export function BlackJackPage() {
   const cpuPlayers = state?.cpuPlayers ?? [];
   const sideBetResults = state?.sideBetResults ?? [];
 
-  const showDoubleDown = !!currentHand && currentHand.cards.length === 2 && playerChips >= currentHand.bet;
+  const showDoubleDown =
+    !!currentHand &&
+    currentHand.cards.length === 2 &&
+    playerChips >= currentHand.bet &&
+    ((hands?.length ?? 0) <= 1 || doubleAfterSplit);
   const showSplit = !!currentHand?.canSplit && playerChips >= currentHand.bet;
   const showSurrender = !!currentHand?.canSurrender;
 
@@ -73,24 +93,35 @@ export function BlackJackPage() {
       dealerHitsSoft17,
       cpuPlayerCount,
       countingEnabled,
+      doubleAfterSplit,
+      countingSystem,
+      deckPenetration,
     };
     exec('reset', undefined, config);
-  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled]);
+  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">処理中...</span>}
+      {loading && <span className="sr-only">{tc('status.loading')}</span>}
       {/* Chip info bar */}
       {state && (
         <div className="shrink-0 bg-black/40 text-white text-sm px-4 py-1.5 flex justify-between flex-wrap gap-1">
-          <span>プレイヤー: {state.player.chips} chips</span>
-          <span>デッキ: {state.deckCount}デッキ</span>
+          <span>
+            {t('player')} {state.player.chips} chips
+          </span>
+          <span>
+            {t('deck')} {state.deckCount}
+            {t('deckUnit')}
+          </span>
           {countingEnabled && (
             <span>
-              RC={state.runningCount} TC={state.trueCount.toFixed(1)}
+              {t(`countingSystemNames.${countingSystem}`)} RC={state.runningCount}{' '}
+              {countingSystem === BJ_COUNTING_KO ? t('trueCountNA') : `TC=${state.trueCount.toFixed(1)}`}
             </span>
           )}
-          <span>ディーラー: {state.dealer.chips} chips</span>
+          <span>
+            {tc('label.dealer')} {state.dealer.chips} chips
+          </span>
         </div>
       )}
 
@@ -98,8 +129,13 @@ export function BlackJackPage() {
       <div className="flex-1 overflow-y-auto p-4">
         {state && phase !== BjPhase.BET && (
           <div>
-            <h3 className="text-white">ディーラー手札{dealerHitsSoft17 ? ' (H17)' : ' (S17)'}</h3>
-            <h3 className="text-white">スコア {state.dealer.score ? state.dealer.score : ''}</h3>
+            <h3 className="text-white">
+              {t('dealerHand')}
+              {dealerHitsSoft17 ? ' (H17)' : ' (S17)'}
+            </h3>
+            <h3 className="text-white">
+              {t('score')} {state.dealer.score ? state.dealer.score : ''}
+            </h3>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card, idx) => (
                 <CardImage key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={60} />
@@ -122,8 +158,8 @@ export function BlackJackPage() {
                   // biome-ignore lint/suspicious/noArrayIndexKey: CPU hands have fixed order
                   <div key={handIdx} className="mb-1">
                     <div className="text-yellow-100 text-sm">
-                      {cpu.hands.length > 1 ? `ハンド ${handIdx + 1} ` : ''}
-                      スコア {hand.score} / ベット {hand.bet}
+                      {cpu.hands.length > 1 ? `${t('hand', { idx: handIdx + 1 })} ` : ''}
+                      {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
                       {hand.busted && ' [BUST]'}
                       {hand.doubled && ' [DD]'}
                       {hand.isBlackJack && ' [BJ]'}
@@ -147,10 +183,7 @@ export function BlackJackPage() {
       </div>
 
       {/* Sticky footer: player hand + result + buttons */}
-      <div
-        className="shrink-0 bg-[#005a00] border-t border-white/15 px-4 py-3"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
-      >
+      <GameFooter className="bg-[#005a00] border-white/15 px-4 py-3">
         {/* Player hands */}
         {state && phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
@@ -158,7 +191,7 @@ export function BlackJackPage() {
               // biome-ignore lint/suspicious/noArrayIndexKey: player hands have fixed order per round
               <div key={`hand-${handIndex}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
-                  {hands.length > 1 ? `ハンド ${handIndex + 1}` : 'プレイヤー手札'}
+                  {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
                   {handIndex === currentHandIdx && phase === BjPhase.ACTION && ' (*)'}
                   {hand.busted && ' [BUST]'}
                   {hand.doubled && ' [DD]'}
@@ -168,7 +201,7 @@ export function BlackJackPage() {
                   )}
                 </h3>
                 <h3 className="text-white mt-0 mb-0.5">
-                  スコア {hand.score} / ベット {hand.bet}
+                  {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {hand.cards.map((card, cardIdx) => (
@@ -186,7 +219,9 @@ export function BlackJackPage() {
 
         {/* Insurance info */}
         {state && state.insuranceBet > 0 && (
-          <div className="text-yellow-300 text-sm mb-1">インシュランス: {state.insuranceBet}</div>
+          <div className="text-yellow-300 text-sm mb-1">
+            {t('insurance')} {state.insuranceBet}
+          </div>
         )}
 
         {/* Side bet results */}
@@ -197,8 +232,10 @@ export function BlackJackPage() {
                 key={r.betType}
                 className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-yellow-400/90 text-gray-900 font-bold' : 'bg-gray-500/70 text-white'}`}
               >
-                {r.betType === BJ_SIDE_BET_PERFECT_PAIRS ? 'Perfect Pairs' : '21+3'}:{' '}
-                {r.payout > 0 ? `${r.resultName} WIN +${r.payout}` : `LOSE -${r.betAmount}`}
+                {r.betType === BJ_SIDE_BET_PERFECT_PAIRS ? t('sideBet.perfectPairs') : t('sideBet.twentyOnePlus3')}:{' '}
+                {r.payout > 0
+                  ? t('sideBet.win', { name: r.resultName, payout: r.payout })
+                  : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
               </div>
             ))}
           </div>
@@ -207,16 +244,12 @@ export function BlackJackPage() {
         {/* Hint banner */}
         {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
           <div className="bg-yellow-300/90 text-gray-900 text-center text-sm font-bold px-3 py-1 rounded mb-2">
-            推奨: {SUGGESTION_LABELS[suggestedAction]}
+            {t('suggestion')} {suggestionLabels[suggestedAction]}
           </div>
         )}
 
         {/* Result message */}
-        {message && (
-          <div className="bg-black/70 text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 rounded-lg">
-            {message}
-          </div>
-        )}
+        <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
 
         <ErrorAlert message={error} />
 
@@ -237,6 +270,12 @@ export function BlackJackPage() {
                 onToggleSoft17={() => exec('togglesoft17')}
                 countingEnabled={countingEnabled}
                 onToggleCounting={() => exec('togglecounting')}
+                doubleAfterSplit={doubleAfterSplit}
+                onToggleDAS={() => exec('toggledas')}
+                countingSystem={countingSystem}
+                onCountingSystemChange={(v) => exec('setcountingsystem', v)}
+                deckPenetration={deckPenetration}
+                onDeckPenetrationChange={(v) => exec('setpenetration', v)}
                 loading={loading}
                 onBet={() => {
                   const sideBets: BlackJackSideBetInput = {};
@@ -251,7 +290,7 @@ export function BlackJackPage() {
               />
               <div className="flex items-center justify-center gap-2 mt-2">
                 <label htmlFor="bj-auto-advance" className="text-white text-sm">
-                  自動進行:
+                  {t('autoAdvance')}
                 </label>
                 <select
                   id="bj-auto-advance"
@@ -260,9 +299,9 @@ export function BlackJackPage() {
                   className="px-2 py-1 rounded text-sm"
                 >
                   <option value={0}>OFF</option>
-                  <option value={3}>3秒</option>
-                  <option value={5}>5秒</option>
-                  <option value={10}>10秒</option>
+                  <option value={3}>{t('autoAdvanceSec', { sec: 3 })}</option>
+                  <option value={5}>{t('autoAdvanceSec', { sec: 5 })}</option>
+                  <option value={10}>{t('autoAdvanceSec', { sec: 10 })}</option>
                 </select>
               </div>
             </>
@@ -302,7 +341,7 @@ export function BlackJackPage() {
             />
           )}
         </div>
-      </div>
+      </GameFooter>
     </div>
   );
 }

@@ -50,7 +50,7 @@ type BlackJack struct {
 	deckCount          int                 // デッキ数
 	hintEnabled        bool                // ヒント有効フラグ
 	config             BlackJackConfig     // ゲーム設定
-	runningCount       int                 // ランニングカウント (Hi-Lo)
+	runningCount       int                 // ランニングカウント
 	holeCardCounted    bool                // ホールカードをカウント済みか
 	deckCountChanged   bool                // デッキ数変更フラグ（シュー再構築判定用）
 	cpuPlayers         []*BlackJackCpuSeat // CPUプレイヤー
@@ -107,9 +107,10 @@ func (b *BlackJack) Reset() {
 	if b.deckCount <= 0 {
 		b.deckCount = BJDefaultDecks
 	}
+	pen := b.GetDeckPenetration()
 	needReshuffle := b.trumpCards == nil ||
 		b.deckCountChanged ||
-		b.trumpCards.GetRemainingCount()*4 < b.trumpCards.GetTotalCount() // 残り25%未満
+		b.trumpCards.GetRemainingCount()*100 < b.trumpCards.GetTotalCount()*(100-pen) // ペネトレーション率に基づく
 	if needReshuffle {
 		b.trumpCards = NewTrumpCardsWithDecks(b.deckCount, 0)
 		// 山札シャッフル
@@ -299,6 +300,9 @@ func (b *BlackJack) PlayerDoubleDown() error {
 	if hand.GetCardsSize() != 2 {
 		return NewDomainError(ErrInvalidPlay, "Double down is only allowed with 2 cards.")
 	}
+	if len(b.playerHands) > 1 && !b.config.DoubleAfterSplit {
+		return NewDomainError(ErrInvalidPlay, "Double after split is not allowed.")
+	}
 	if hand.IsFinished() {
 		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
@@ -384,7 +388,7 @@ func (b *BlackJack) PlayerSplit() error {
 		hand.AddCard(secondCard)
 		b.player.AddChips(bet)
 		// card1のランニングカウント更新を元に戻す
-		b.runningCount -= hiLoValue(card1)
+		b.runningCount -= countingValue(card1, b.config.CountingSystem)
 		return ErrDeckExhausted
 	}
 	newHand.AddCard(card2)
@@ -640,25 +644,6 @@ func (b *BlackJack) IsInsuranceAvailable() bool {
 	return b.insuranceAvailable
 }
 
-// GetTrumpCards トランプカード取得（テスト用）
-func (b *BlackJack) GetTrumpCards() *TrumpCards {
-	return b.trumpCards
-}
-
-// SetPlayerHands プレイヤーハンド設定（テスト用）
-func (b *BlackJack) SetPlayerHands(hands []*BlackJackHand) {
-	b.playerHands = hands
-}
-
-// SetPhase フェーズ設定（テスト用）
-func (b *BlackJack) SetPhase(phase int) {
-	b.phase = phase
-	b.gameEndFlag = phase == BJPhaseEnd
-	if phase == BJPhaseInsurance {
-		b.insuranceAvailable = true
-	}
-}
-
 // PlayerSurrender プレイヤーサレンダー（ベット半額返却して降りる）
 func (b *BlackJack) PlayerSurrender() error {
 	if b.phase != BJPhaseAction {
@@ -706,6 +691,14 @@ func (b *BlackJack) GetDeckCount() int {
 	return b.deckCount
 }
 
+// GetDeckPenetration デッキペネトレーション率取得
+func (b *BlackJack) GetDeckPenetration() int {
+	if b.config.DeckPenetration <= 0 {
+		return BJDefaultPenetration
+	}
+	return b.config.DeckPenetration
+}
+
 // ToggleHint ヒント表示のON/OFF切り替え
 func (b *BlackJack) ToggleHint() {
 	b.hintEnabled = !b.hintEnabled
@@ -751,6 +744,25 @@ func (b *BlackJack) SetConfig(config BlackJackConfig) error {
 	if config.CpuPlayerCount < 0 || config.CpuPlayerCount > BJMaxCpuPlayers {
 		return NewDomainError(ErrInvalidAmount, "CPU player count must be 0-3.")
 	}
+	if config.CountingSystem < 0 || config.CountingSystem > BJCountingMax {
+		return NewDomainError(ErrInvalidAmount, "Invalid counting system.")
+	}
+	if config.DeckPenetration != 0 {
+		validPen := false
+		for _, v := range BJValidPenetrations {
+			if v == config.DeckPenetration {
+				validPen = true
+				break
+			}
+		}
+		if !validPen {
+			return NewDomainError(ErrInvalidAmount, "Invalid deck penetration. Use 50 or 75.")
+		}
+	}
+	// カウンティングシステム変更時はランニングカウントをリセット
+	if config.CountingSystem != b.config.CountingSystem {
+		b.runningCount = 0
+	}
 	b.config = config
 	return nil
 }
@@ -771,12 +783,90 @@ func hiLoValue(card *Card) int {
 	}
 }
 
+// koValue KOカウンティングのカード値 (2-7: +1, 8-9: 0, 10/J/Q/K/A: -1)
+func koValue(card *Card) int {
+	if card == nil {
+		return 0
+	}
+	v := card.GetValue()
+	switch {
+	case v >= 2 && v <= 7:
+		return 1
+	case v >= 8 && v <= 9:
+		return 0
+	default: // 1(A), 10, 11(J), 12(Q), 13(K)
+		return -1
+	}
+}
+
+// zenValue Zen Countカウンティングのカード値 (2-3: +1, 4-6: +2, 7: +1, 8: 0, 9: -1, 10/J/Q/K: -2, A: -1)
+func zenValue(card *Card) int {
+	if card == nil {
+		return 0
+	}
+	v := card.GetValue()
+	switch {
+	case v >= 2 && v <= 3:
+		return 1
+	case v >= 4 && v <= 6:
+		return 2
+	case v == 7:
+		return 1
+	case v == 8:
+		return 0
+	case v == 9:
+		return -1
+	case v == 1: // A
+		return -1
+	default: // 10, 11(J), 12(Q), 13(K)
+		return -2
+	}
+}
+
+// omegaIIValue Omega IIカウンティングのカード値 (2-3: +1, 4-6: +2, 7: +1, 8: 0, 9: -1, 10/J/Q/K: -2, A: 0)
+func omegaIIValue(card *Card) int {
+	if card == nil {
+		return 0
+	}
+	v := card.GetValue()
+	switch {
+	case v >= 2 && v <= 3:
+		return 1
+	case v >= 4 && v <= 6:
+		return 2
+	case v == 7:
+		return 1
+	case v == 8:
+		return 0
+	case v == 9:
+		return -1
+	case v == 1: // A
+		return 0
+	default: // 10, 11(J), 12(Q), 13(K)
+		return -2
+	}
+}
+
+// countingValue 指定カウンティングシステムでのカード値を返す
+func countingValue(card *Card, system int) int {
+	switch system {
+	case BJCountingKO:
+		return koValue(card)
+	case BJCountingZen:
+		return zenValue(card)
+	case BJCountingOmegaII:
+		return omegaIIValue(card)
+	default: // BJCountingHiLo
+		return hiLoValue(card)
+	}
+}
+
 // updateRunningCount ランニングカウントを更新（countingEnabled時のみ）
 func (b *BlackJack) updateRunningCount(card *Card) {
 	if !b.config.CountingEnabled {
 		return
 	}
-	b.runningCount += hiLoValue(card)
+	b.runningCount += countingValue(card, b.config.CountingSystem)
 }
 
 // GetRunningCount ランニングカウント取得
@@ -784,8 +874,11 @@ func (b *BlackJack) GetRunningCount() int {
 	return b.runningCount
 }
 
-// GetTrueCount トゥルーカウント取得
+// GetTrueCount トゥルーカウント取得 (アンバランスドシステム(KO)では0を返す)
 func (b *BlackJack) GetTrueCount() float64 {
+	if !IsBalancedCountingSystem(b.config.CountingSystem) {
+		return 0
+	}
 	if b.trumpCards == nil {
 		return 0
 	}
@@ -892,13 +985,15 @@ func (b *BlackJack) cpuPlaySeat(cpu *BlackJackCpuSeat, dealerUpcard *Card) {
 			case BJSuggestStand:
 				hand.SetStood(true)
 			case BJSuggestDouble:
-				if hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet() {
+				canDD := hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet()
+				if canDD && (len(cpu.GetHands()) <= 1 || b.config.DoubleAfterSplit) {
 					b.cpuDoubleDown(cpu, hand)
 				} else {
 					b.cpuHit(hand)
 				}
 			case BJSuggestDoubleStand:
-				if hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet() {
+				canDD := hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet()
+				if canDD && (len(cpu.GetHands()) <= 1 || b.config.DoubleAfterSplit) {
 					b.cpuDoubleDown(cpu, hand)
 				} else {
 					hand.SetStood(true)
@@ -994,7 +1089,7 @@ func (b *BlackJack) cpuSplit(cpu *BlackJackCpuSeat, hand *BlackJackHand, handIdx
 		cpu.GetPlayer().AddChips(bet)
 		if card1 != nil {
 			// card1のランニングカウント更新を元に戻す
-			b.runningCount -= hiLoValue(card1)
+			b.runningCount -= countingValue(card1, b.config.CountingSystem)
 		}
 		hand.SetStood(true)
 		return

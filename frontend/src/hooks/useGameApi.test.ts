@@ -65,7 +65,7 @@ describe('useGameApi', () => {
       await result.current.exec();
     });
 
-    expect(result.current.error).toBe(NETWORK_ERROR_MESSAGE);
+    expect(result.current.error).toBe(NETWORK_ERROR_MESSAGE());
     expect(result.current.state).toBeNull();
     expect(result.current.loading).toBe(false);
   });

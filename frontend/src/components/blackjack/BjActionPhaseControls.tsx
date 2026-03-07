@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../../styles/buttonStyles';
 import {
   BJ_SUGGEST_DOUBLE,
@@ -24,6 +25,7 @@ export interface BjActionPhaseControlsProps {
 }
 
 export function BjActionPhaseControls(props: BjActionPhaseControlsProps) {
+  const { t } = useTranslation('blackjack');
   return (
     <>
       <button
@@ -32,7 +34,7 @@ export function BjActionPhaseControls(props: BjActionPhaseControlsProps) {
         disabled={props.loading}
         onClick={props.onHit}
       >
-        ヒット
+        {t('button.hit')}
       </button>
       <button
         type="button"
@@ -40,7 +42,7 @@ export function BjActionPhaseControls(props: BjActionPhaseControlsProps) {
         disabled={props.loading}
         onClick={props.onStand}
       >
-        スタンド
+        {t('button.stand')}
       </button>
       {props.showDoubleDown && (
         <button
@@ -53,7 +55,7 @@ export function BjActionPhaseControls(props: BjActionPhaseControlsProps) {
           disabled={props.loading}
           onClick={props.onDoubleDown}
         >
-          ダブルダウン
+          {t('button.doubleDown')}
         </button>
       )}
       {props.showSplit && (
@@ -63,7 +65,7 @@ export function BjActionPhaseControls(props: BjActionPhaseControlsProps) {
           disabled={props.loading}
           onClick={props.onSplit}
         >
-          スプリット
+          {t('button.split')}
         </button>
       )}
       {props.showSurrender && (
@@ -73,7 +75,7 @@ export function BjActionPhaseControls(props: BjActionPhaseControlsProps) {
           disabled={props.loading}
           onClick={props.onSurrender}
         >
-          サレンダー
+          {t('button.surrender')}
         </button>
       )}
     </>

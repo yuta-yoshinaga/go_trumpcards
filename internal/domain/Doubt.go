@@ -38,6 +38,9 @@ const (
 	bluffTableMedThreshold   = 10
 )
 
+// mixedBluffChance 混合ブラフ確率 (intentBluff=false かつ numCards>1 のとき発動)
+const mixedBluffChance = 0.3
+
 // テル（緊張の兆候）表示確率の定数
 const (
 	tellChanceEasy   = 0.4
@@ -76,12 +79,13 @@ type DoubtCpuAction struct {
 
 // DoubtDoubtResult ダウト解決結果
 type DoubtDoubtResult struct {
-	DoubterIdx    int     // ダウトしたプレイヤーインデックス
-	CardPlayerIdx int     // カードを出したプレイヤーインデックス
-	WasLying      bool    // カードを出したプレイヤーが嘘をついていたか
-	LoserIdx      int     // 負けたプレイヤーインデックス (テーブルカードを引き取る)
-	CardCount     int     // 引き取ったカード枚数
-	RevealedCards []*Card // 公開されたカード
+	DoubterIdx     int     // ダウトしたプレイヤーインデックス
+	CardPlayerIdx  int     // カードを出したプレイヤーインデックス
+	WasLying       bool    // カードを出したプレイヤーが嘘をついていたか
+	LoserIdx       int     // 負けたプレイヤーインデックス (テーブルカードを引き取る)
+	CardCount      int     // 引き取ったカード枚数
+	DiscardedCount int     // ペナルティ上限超過で除外されたカード枚数
+	RevealedCards  []*Card // 公開されたカード
 }
 
 // cardsPerValue 標準52枚デッキにおける各値のカード枚数
@@ -132,11 +136,7 @@ func (d *Doubt) Reset() {
 	d.winnerIdx = -1
 	d.turnCounter = 0
 
-	for _, p := range d.players {
-		p.Reset()
-		p.SetIsFinished(false)
-		p.ResetMemory()
-	}
+	resetPlayers(d.players, func(p *DoubtPlayer) { p.ResetMemory() })
 
 	d.trumpCards.Shuffle()
 	dealAllCards(d.trumpCards, d.players)
@@ -223,22 +223,34 @@ func (d *Doubt) CpuPlay() {
 		numCards = rand.Intn(player.GetCardsSize()) + 1
 	}
 
-	// 先頭 numCards 枚を出す
-	cardIndices := make([]int, numCards)
-	for i := range cardIndices {
-		cardIndices[i] = i
-	}
-	played := player.RemoveCards(cardIndices)
-	d.tableCards = append(d.tableCards, played...)
+	// 状況に応じた動的ブラフ確率 (除去後の値で計算して既存の確率分布を維持)
+	postRemovalHandSize := player.GetCardsSize() - numCards
+	postRemovalTableCount := len(d.tableCards) + numCards
+	intentBluff := rand.Float64() < d.calcBluffChance(postRemovalHandSize, postRemovalTableCount)
 
-	// 状況に応じた動的ブラフ確率
-	intentBluff := rand.Float64() < d.calcBluffChance(player.GetCardsSize(), len(d.tableCards))
+	var played []*Card
 	var claimedValue int
-	if intentBluff {
-		claimedValue = rand.Intn(13) + 1
+
+	if !intentBluff && numCards > 1 && rand.Float64() < mixedBluffChance {
+		// 混合ブラフ: CPUが実際に持つ値を宣言しつつ不一致カードを混ぜて出す
+		claimedValue = player.GetCard(0).GetValue()
+		played = selectMixedCards(player, claimedValue, numCards)
 	} else {
-		claimedValue = played[0].GetValue()
+		// 意図的ブラフまたは正直プレイ: 先頭 numCards 枚を出す
+		cardIndices := make([]int, numCards)
+		for i := range cardIndices {
+			cardIndices[i] = i
+		}
+		played = player.RemoveCards(cardIndices)
+
+		if intentBluff {
+			claimedValue = rand.Intn(13) + 1
+		} else {
+			claimedValue = played[0].GetValue()
+		}
 	}
+
+	d.tableCards = append(d.tableCards, played...)
 
 	// IsBluff は宣言値と実際のカードが一致しないかで判定 (checkLying と一致させる)
 	isActuallyBluff := false
@@ -384,20 +396,25 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 		loserIdx = doubter
 	}
 
-	cardCount := len(d.tableCards)
+	tableCount := len(d.tableCards)
+	takeCount := tableCount
+	if d.config.PenaltyDrawLimit > 0 && tableCount > d.config.PenaltyDrawLimit {
+		takeCount = d.config.PenaltyDrawLimit
+	}
 	revealedCards := d.lastAction.PlayedCards
 
-	for _, card := range d.tableCards {
-		d.players[loserIdx].AddCard(card)
+	for i := 0; i < takeCount; i++ {
+		d.players[loserIdx].AddCard(d.tableCards[i])
 	}
 
 	d.lastDoubtResult = &DoubtDoubtResult{
-		DoubterIdx:    doubter,
-		CardPlayerIdx: d.lastAction.PlayerIdx,
-		WasLying:      wasLying,
-		LoserIdx:      loserIdx,
-		CardCount:     cardCount,
-		RevealedCards: revealedCards,
+		DoubterIdx:     doubter,
+		CardPlayerIdx:  d.lastAction.PlayerIdx,
+		WasLying:       wasLying,
+		LoserIdx:       loserIdx,
+		CardCount:      takeCount,
+		DiscardedCount: tableCount - takeCount,
+		RevealedCards:  revealedCards,
 	}
 
 	// 非敗者のCPUがカードを記憶する
@@ -477,35 +494,8 @@ func (d *Doubt) GetHumanAction() *DoubtCpuAction { return d.humanAction }
 // GetLastDoubtResult 最後のダウト結果取得
 func (d *Doubt) GetLastDoubtResult() *DoubtDoubtResult { return d.lastDoubtResult }
 
-// SetTableCards テーブルカード設定 (テスト用)
-func (d *Doubt) SetTableCards(cards []*Card) { d.tableCards = cards }
-
-// SetLastAction 最後のプレイアクション設定 (テスト用)
-func (d *Doubt) SetLastAction(action *DoubtAction) { d.lastAction = action }
-
-// SetPhase フェーズ設定 (テスト用)
-func (d *Doubt) SetPhase(phase DoubtPhase) { d.phase = phase }
-
-// SetCpuDoubters CPUダウターリスト設定 (テスト用)
-func (d *Doubt) SetCpuDoubters(doubters []int) { d.cpuDoubters = doubters }
-
-// SetCpuActions CPU行動設定 (テスト用)
-func (d *Doubt) SetCpuActions(actions []*DoubtCpuAction) { d.cpuActions = actions }
-
-// SetHumanAction 人間の行動設定 (テスト用)
-func (d *Doubt) SetHumanAction(action *DoubtCpuAction) { d.humanAction = action }
-
-// SetLastDoubtResult ダウト結果設定 (テスト用)
-func (d *Doubt) SetLastDoubtResult(result *DoubtDoubtResult) { d.lastDoubtResult = result }
-
-// SetWinnerIdx 勝者インデックス設定 (テスト用)
-func (d *Doubt) SetWinnerIdx(idx int) { d.winnerIdx = idx }
-
 // GetTurnCounter ターンカウンター取得
 func (d *Doubt) GetTurnCounter() int { return d.turnCounter }
-
-// SetTurnCounter ターンカウンター設定 (テスト用)
-func (d *Doubt) SetTurnCounter(v int) { d.turnCounter = v }
 
 // GetConfig ゲーム設定取得
 func (d *Doubt) GetConfig() DoubtConfig { return d.config }
@@ -539,6 +529,58 @@ func calcTellChance(level DoubtMemoryLevel) float64 {
 	default:
 		return tellChanceNormal
 	}
+}
+
+// selectMixedCards は手札から claimedValue に一致するカードと一致しないカードを
+// 混ぜて numCards 枚選択し、プレイヤーの手札から取り除いて返す。
+// 不一致カードが0枚の場合は先頭 numCards 枚を返す。
+// numCards >= 2 が前提 (呼び出し元で保証)。
+func selectMixedCards(player *DoubtPlayer, claimedValue int, numCards int) []*Card {
+	if numCards < 2 {
+		return player.RemoveCards([]int{0})
+	}
+
+	var matching, nonMatching []int
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if player.GetCard(i).GetValue() == claimedValue {
+			matching = append(matching, i)
+		} else {
+			nonMatching = append(nonMatching, i)
+		}
+	}
+
+	// 一致または不一致カードがない場合はフォールバック
+	if len(matching) == 0 || len(nonMatching) == 0 {
+		indices := make([]int, numCards)
+		for i := range indices {
+			indices[i] = i
+		}
+		return player.RemoveCards(indices)
+	}
+
+	// matchCount は [1, min(len(matching), numCards-1)]
+	maxMatch := len(matching)
+	if maxMatch > numCards-1 {
+		maxMatch = numCards - 1
+	}
+	matchCount := rand.Intn(maxMatch) + 1
+	nonMatchCount := numCards - matchCount
+
+	// 不一致カードが足りない場合は調整
+	if nonMatchCount > len(nonMatching) {
+		nonMatchCount = len(nonMatching)
+		matchCount = numCards - nonMatchCount
+	}
+
+	// ランダムに選択
+	rand.Shuffle(len(matching), func(i, j int) { matching[i], matching[j] = matching[j], matching[i] })
+	rand.Shuffle(len(nonMatching), func(i, j int) { nonMatching[i], nonMatching[j] = nonMatching[j], nonMatching[i] })
+
+	selected := make([]int, 0, numCards)
+	selected = append(selected, matching[:matchCount]...)
+	selected = append(selected, nonMatching[:nonMatchCount]...)
+
+	return player.RemoveCards(selected)
 }
 
 // calcBluffChance 手札枚数とテーブルカード枚数に応じた動的ブラフ確率を計算する

@@ -49,6 +49,9 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.DealerHitsSoft17 = config.DealerHitsSoft17
 	resObj.CountingEnabled = config.CountingEnabled
 	resObj.CpuPlayerCount = config.CpuPlayerCount
+	resObj.DoubleAfterSplit = config.DoubleAfterSplit
+	resObj.CountingSystem = config.CountingSystem
+	resObj.DeckPenetration = bj.GetDeckPenetration()
 	resObj.RunningCount = bj.GetRunningCount()
 	resObj.TrueCount = bj.GetTrueCount()
 
@@ -127,15 +130,14 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		switch bj.GameJudgment() {
 		case domain.GameResultDraw:
 			resObj.Message = "It is a draw."
+			resObj.MessageCode = "blackjack.result.draw"
 		case domain.GameResultWin:
 			resObj.Message = "You are the winner."
+			resObj.MessageCode = "blackjack.result.win"
 		case domain.GameResultLose:
 			resObj.Message = "It is your loss."
+			resObj.MessageCode = "blackjack.result.lose"
 		}
 	}
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }

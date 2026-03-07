@@ -4756,3 +4756,1583 @@ func TestEmperor_CpuNoEmperorInHand(t *testing.T) {
 	assert.False(t, dg.GetRevolutionActive(), "no revolution (no emperor found)")
 	assert.NotNil(t, dg.GetTableCards(), "CPU should have played something")
 }
+
+// --- Sequence Revolution Tests ---
+
+func TestSequenceRevolution_4CardSequence_Enabled(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		SequenceEnabled:           true,
+		SequenceRevolutionEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human: 4 card sequence (spade 3,4,5,6) + spare card
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	assert.False(t, dg.GetRevolutionActive())
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err)
+	assert.True(t, dg.GetRevolutionActive(), "4-card sequence should trigger revolution when enabled")
+}
+
+func TestSequenceRevolution_3CardSequence_NoRevolution(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		SequenceEnabled:           true,
+		SequenceRevolutionEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human: 3 card sequence
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2})
+	assert.NoError(t, err)
+	assert.False(t, dg.GetRevolutionActive(), "3-card sequence should not trigger revolution")
+}
+
+func TestSequenceRevolution_Disabled_NoEffect(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		SequenceEnabled:           true,
+		SequenceRevolutionEnabled: false,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human: 4 card sequence
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err)
+	assert.False(t, dg.GetRevolutionActive(), "4-card sequence should not trigger revolution when disabled")
+}
+
+func TestSequenceRevolution_GroupOf4_StillWorks(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		SequenceRevolutionEnabled: false, // sequence revolution disabled
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human: 4-of-a-kind (group of 4)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err)
+	assert.True(t, dg.GetRevolutionActive(), "4-of-a-kind revolution should always work regardless of SequenceRevolutionEnabled")
+}
+
+func TestSequenceRevolution_5CardSequence(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		SequenceEnabled:           true,
+		SequenceRevolutionEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human: 5 card sequence
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3, 4})
+	assert.NoError(t, err)
+	assert.True(t, dg.GetRevolutionActive(), "5-card sequence should trigger revolution")
+}
+
+// --- Illegal Finish Tests ---
+
+func TestIllegalFinish_EightCut_Penalty(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		EightCutEnabled:      true,
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human plays 8 as last card → finishes but gets penalty
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+	assert.True(t, players[0].GetIsFinished())
+	assert.True(t, players[0].GetIllegalFinishPenalty(), "8-cut finish should be penalized")
+}
+
+func TestIllegalFinish_Joker_Penalty(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human plays joker as last card
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+	assert.True(t, players[0].GetIllegalFinishPenalty(), "joker finish should be penalized")
+}
+
+func TestIllegalFinish_Revolution_Penalty(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human plays four 5s as last cards → revolution + finish
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err)
+	assert.True(t, players[0].GetIllegalFinishPenalty(), "revolution finish should be penalized")
+}
+
+func TestIllegalFinish_SequenceRevolution_Penalty(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		SequenceEnabled:           true,
+		SequenceRevolutionEnabled: true,
+		IllegalFinishEnabled:      true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human plays 4-card sequence as last cards
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err)
+	assert.True(t, players[0].GetIllegalFinishPenalty(), "sequence revolution finish should be penalized")
+}
+
+func TestIllegalFinish_SequenceRevDisabled_4CardSequence_NoPenalty(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		SequenceEnabled:           true,
+		SequenceRevolutionEnabled: false, // sequence revolution disabled
+		IllegalFinishEnabled:      true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human plays 4-card sequence as last cards (not a revolution since sequence revolution disabled)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+	err := dg.PlayerPlay([]int{0, 1, 2, 3})
+	assert.NoError(t, err)
+	assert.False(t, players[0].GetIllegalFinishPenalty(), "4-card sequence finish should not be penalized when sequence revolution disabled")
+}
+
+func TestIllegalFinish_NormalCard_NoPenalty(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+		EightCutEnabled:      true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human plays a normal card (not 8, not joker, not 4+) as last card
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+	assert.True(t, players[0].GetIsFinished())
+	assert.False(t, players[0].GetIllegalFinishPenalty(), "normal card finish should not be penalized")
+}
+
+func TestIllegalFinish_Disabled_NoPenalty(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		EightCutEnabled:      true,
+		IllegalFinishEnabled: false, // disabled
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human finishes with 8 → no penalty when disabled
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+	assert.False(t, players[0].GetIllegalFinishPenalty(), "should not be penalized when rule disabled")
+}
+
+func TestIllegalFinish_RankAdjustment(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Set up: human plays joker as last card to finish 1st → penalty → demoted to last
+	// CPUs finish in order after
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+	assert.True(t, players[0].GetIsFinished())
+	assert.True(t, players[0].GetIllegalFinishPenalty())
+
+	// Let CPUs finish
+	dg.CpuPlay() // CPU 1 plays 3
+	dg.CpuPlay() // CPU 2 plays 4
+	dg.CpuPlay() // CPU 3 plays 5 → game ends
+
+	assert.True(t, dg.GetGameEndFlag())
+	// Human should be demoted to last (rank 4)
+	assert.Equal(t, 4, players[0].GetRank(), "penalized player should be demoted to last rank")
+}
+
+func TestIllegalFinish_EightCutDisabled_EightFinish_NoPenalty(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		EightCutEnabled:      false, // 8-cut disabled
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Human finishes with 8 but 8-cut is disabled → 8 is just a normal card
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+	assert.False(t, players[0].GetIllegalFinishPenalty(), "8 finish without 8-cut enabled should not be penalized")
+}
+
+func TestIllegalFinish_WithCapitalFall(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+		CapitalFallEnabled:   true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Set previous ranks (CPU1 was daifugo)
+	players[1].SetPrevRank(domain.DaifugoRankDaifugo)
+	players[0].SetPrevRank(domain.DaifugoRankDaihinmin)
+
+	// Human finishes with joker (penalty) and CPU1 (prev daifugo) doesn't get 1st
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+
+	dg.CpuPlay()
+	dg.CpuPlay()
+	dg.CpuPlay()
+
+	assert.True(t, dg.GetGameEndFlag())
+	// Both capital fall and illegal finish should have been applied
+	assert.True(t, players[0].GetIllegalFinishPenalty())
+}
+
+func TestIllegalFinish_CpuAvoidsIllegalFinish(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// CPU 1 has: joker + normal card. On clear table, should play normal card (avoid joker finish)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+	// Human passes
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+
+	// CPU 1 plays on clear table (after all pass back around)
+	dg.CpuPlay()
+
+	// CPU 1 should have played the non-joker card (5) instead of joker
+	// So CPU1 should still have 1 card (the joker)
+	assert.Equal(t, 1, players[1].GetCardsSize(), "CPU should play non-joker to avoid illegal finish")
+}
+
+func TestIllegalFinish_CpuAcceptsPenaltyWhenNoAlternative(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// CPU 1 has only joker → must play it (no alternative)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+
+	// Human passes
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+
+	// CPU 1 has only joker → must play it
+	dg.CpuPlay()
+	assert.Equal(t, 0, players[1].GetCardsSize(), "CPU should play joker when it's the only card")
+	assert.True(t, players[1].GetIsFinished())
+	assert.True(t, players[1].GetIllegalFinishPenalty(), "CPU should accept penalty when no alternative")
+}
+
+func TestIllegalFinish_CpuAvoids8Finish(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		EightCutEnabled:      true,
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// CPU 1 has 8 + normal card. On clear table, should avoid playing 8 as last card
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	// CPU 1: 8 + 9 — sorted by strength: 8, 9 (8 is at index 0)
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+	// Human passes
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+
+	// CPU 1 should play 9 (non-8) to avoid illegal finish with 8
+	dg.CpuPlay()
+	// CPU 1 should have 1 card left (the 8)
+	assert.Equal(t, 1, players[1].GetCardsSize(), "CPU should play non-8 card to avoid illegal 8-cut finish")
+}
+
+func TestIllegalFinish_PenaltyAlreadyLastRank(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// Set up so penalized player is already last
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	// CPU3 has only joker → finishes last with penalty → already rank 4
+	players[3].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+
+	// Human plays
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+
+	// Run all CPUs until game ends
+	for !dg.GetGameEndFlag() {
+		if dg.IsHumanTurn() {
+			_ = dg.PlayerPlay([]int{0})
+		} else {
+			dg.CpuPlay()
+		}
+	}
+
+	assert.True(t, dg.GetGameEndFlag())
+	// CPU 3 had joker and finishes last — penalty should not break anything
+	assert.True(t, players[3].GetIllegalFinishPenalty())
+}
+
+func TestDaifugoPlayer_IllegalFinishPenalty_GetterSetter(t *testing.T) {
+	p := domain.NewDaifugoPlayer(true)
+	assert.False(t, p.GetIllegalFinishPenalty())
+	p.SetIllegalFinishPenalty(true)
+	assert.True(t, p.GetIllegalFinishPenalty())
+	p.SetIllegalFinishPenalty(false)
+	assert.False(t, p.GetIllegalFinishPenalty())
+}
+
+func TestDaifugo_DefaultConfig_SequenceRevolutionAndIllegalFinish(t *testing.T) {
+	cfg := domain.DefaultDaifugoConfig()
+	assert.False(t, cfg.SequenceRevolutionEnabled, "SequenceRevolutionEnabled should default to false")
+	assert.False(t, cfg.IllegalFinishEnabled, "IllegalFinishEnabled should default to false")
+}
+
+func TestIllegalFinish_MultiplePenalizedPlayers_RankOrder(t *testing.T) {
+	// Two players both finish with illegal plays. The one who finishes "earlier"
+	// (lower original rank) should get the better rank among the penalized players.
+	// Non-penalized players keep their relative order at the top.
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	config := domain.DaifugoConfig{
+		IllegalFinishEnabled: true,
+		EightCutEnabled:      true,
+	}
+	dg := domain.NewDaifugo(tc, players, config)
+
+	// P0 (human) will finish 1st with joker (illegal) → original rank 1
+	// P1 (CPU) will finish 2nd with joker (illegal) → original rank 2
+	// P2 (CPU) will finish 3rd normally → original rank 3
+	// P3 (CPU) will finish 4th normally → original rank 4
+	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+
+	// Human plays joker (1st finish, illegal)
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+	assert.True(t, players[0].GetIllegalFinishPenalty())
+
+	// CPU 1 (joker): finishes 2nd, illegal
+	// CPU 2 (3♥): finishes 3rd, legal
+	// CPU 3 (4♥): finishes 4th, legal
+	for !dg.GetGameEndFlag() {
+		dg.CpuPlay()
+	}
+
+	assert.True(t, dg.GetGameEndFlag())
+
+	// P2 and P3 (non-penalized) take ranks 1 and 2 in their original order
+	assert.Equal(t, 1, players[2].GetRank(), "first non-penalized finisher should be rank 1")
+	assert.Equal(t, 2, players[3].GetRank(), "second non-penalized finisher should be rank 2")
+	// P0 finished before P1 illegally, so P0 gets rank 3 and P1 gets rank 4
+	assert.Equal(t, 3, players[0].GetRank(), "first illegal finisher should be rank 3")
+	assert.Equal(t, 4, players[1].GetRank(), "second illegal finisher should be rank 4")
+}
+
+func TestDaifugo_CpuDifficulty(t *testing.T) {
+	t.Run("DaifugoDifficultyNames has all entries", func(t *testing.T) {
+		assert.Equal(t, "Normal", domain.DaifugoDifficultyNames[domain.DaifugoDifficultyNormal])
+		assert.Equal(t, "Easy", domain.DaifugoDifficultyNames[domain.DaifugoDifficultyEasy])
+		assert.Equal(t, "Hard", domain.DaifugoDifficultyNames[domain.DaifugoDifficultyHard])
+		assert.Equal(t, 3, len(domain.DaifugoDifficultyNames))
+	})
+
+	t.Run("default config has Normal difficulty", func(t *testing.T) {
+		cfg := domain.DaifugoConfig{}
+		assert.Equal(t, domain.DaifugoDifficultyNormal, cfg.CpuDifficulty)
+	})
+
+	t.Run("DefaultDaifugoConfig returns Normal difficulty", func(t *testing.T) {
+		cfg := domain.DefaultDaifugoConfig()
+		assert.Equal(t, domain.DaifugoDifficultyNormal, cfg.CpuDifficulty)
+	})
+
+	// --- Easy difficulty tests ---
+
+	t.Run("Easy: plays weakest card on clear table without 8/joker preservation", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays card to advance to CPU turn
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: has 8 and joker — Easy should play first card (8) without preserving it
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3
+		dg.CpuPlay()                // CPU 1 plays on clear table
+
+		// CPU 1 should have played its weakest card (first card = 8, no preservation)
+		assert.Equal(t, 1, players[1].GetCardsSize(), "CPU 1 should have played 1 card")
+	})
+
+	t.Run("Easy: no emperor search on clear table", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		cfg.EmperorEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Give CPU 1 an emperor hand (4 consecutive cards, all different suits)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0})
+		dg.CpuPlay() // CPU 1: Easy AI should just play first card, not emperor
+
+		// Easy should have played just 1 card (not 4 for emperor)
+		assert.Equal(t, 4, players[1].GetCardsSize(), "Easy AI should play 1 card, not emperor")
+	})
+
+	t.Run("Easy: no revolution prevention on single card follow", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays a weak card (4)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1: has 4 fives (group of 4) + spare → Normal would skip this group, Easy plays from it
+		// Cards must be in strength order
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0}) // play 4 (single card on table)
+		dg.CpuPlay()                // CPU 1 follows
+
+		// Easy AI should play one of the four 5s (no revolution prevention skip)
+		assert.Equal(t, 4, players[1].GetCardsSize(), "Easy AI plays from group of 4 without skipping")
+	})
+
+	t.Run("Easy: plays joker single without preservation", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays 2 (strength 15) → CPU 1 has only joker + other cards
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1: joker + 4 other cards → Normal would preserve joker, Easy uses it
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0}) // play 2
+		dg.CpuPlay()                // CPU 1 plays
+
+		// Easy AI should play joker (no preservation even with high table + many cards)
+		assert.Equal(t, 4, players[1].GetCardsSize(), "Easy AI should play joker without preservation")
+	})
+
+	t.Run("Easy: passes when no valid play", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1: only has weak cards, can't beat 2
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0}) // play 2
+		dg.CpuPlay()                // CPU 1 must pass
+
+		assert.Equal(t, 2, players[1].GetCardsSize(), "CPU 1 should still have 2 cards after passing")
+	})
+
+	t.Run("Easy: empty hand returns nil", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1 has no cards
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// players[1] has no cards
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0})
+		// CPU 1 has 0 cards but hasn't finished (artificial state for testing)
+		dg.CpuPlay() // should pass gracefully
+		assert.Equal(t, 0, players[1].GetCardsSize())
+	})
+
+	t.Run("Easy: joker complement works", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays 2 threes → table needs 2 cards
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: one 5 + joker → can complement to make a pair
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0, 1}) // play pair of 3s
+		dg.CpuPlay()                   // CPU 1 plays
+
+		assert.Equal(t, 0, players[1].GetCardsSize(), "Easy AI should use joker complement")
+	})
+
+	t.Run("Easy: suit lock skip works", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		cfg.SuitLockEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Set up suit lock on spade
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: has a heart card that's strong enough but wrong suit
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0}) // play spade 3
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.CpuPlay() // CPU 1 must play spade (7) not heart (5)
+
+		assert.Equal(t, 1, players[1].GetCardsSize(), "CPU 1 should play spade 7 due to suit lock")
+	})
+
+	t.Run("Easy: suit lock skip for joker complement", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		cfg.SuitLockEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays pair of spade 3s
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: heart 5 + joker → locked to spade, can't use heart complement
+		// No spade cards available for complement
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0, 1}) // play pair of 3s
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.CpuPlay()
+
+		// heart 5 + joker and heart 9 + joker both rejected due to suit lock, CPU passes
+		assert.Equal(t, 3, players[1].GetCardsSize(), "CPU should pass when suit locked and no matching suit")
+	})
+
+	t.Run("Easy: sequence play delegates to normal sequence logic", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		cfg.SequenceEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays sequence 3-4-5 of spades
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		// CPU 1: has a stronger sequence
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0, 1, 2})
+		dg.CpuPlay()
+
+		assert.Equal(t, 1, players[1].GetCardsSize(), "Easy AI should play sequence")
+	})
+
+	// --- Normal difficulty tests ---
+
+	t.Run("Normal: zero-value config uses Normal behavior", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig() // CpuDifficulty = 0 = Normal
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1: has 8 and other card — Normal should preserve 8
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3, then table clear after all pass
+		dg.CpuPlay()
+
+		// Normal AI preserves 8, so it should play Ace first on clear table
+		// (8 is idx 0, Ace is idx 1 in strength order: 8 < A)
+		// Wait — hand sorted by strength: 8 (str=8) < A (str=14), so 8 is at idx 0
+		// Normal skips 8, plays Ace (idx 1)
+		assert.Equal(t, 1, players[1].GetCardsSize(), "Normal plays non-8 card")
+	})
+
+	// --- Hard difficulty tests ---
+
+	t.Run("Hard: plays strongest card on clear table when urgent", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human has only 2 cards (opponent has ≤ 3 → urgent)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: has 5,6,7,K — cards in strength order (5<6<7<K)
+		// Should play K (strongest non-joker) when urgent on clear table
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		// CPU 2 and 3 have 1 card each (urgent!)
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3 → table cleared after passes
+		dg.CpuPlay()                // CPU 1 plays on clear table in urgent mode
+
+		// Hard AI should play strongest (K) on clear table when urgent
+		assert.Equal(t, 3, players[1].GetCardsSize(), "Hard AI should play 1 card")
+		// K (value 13) should be gone from CPU 1's hand
+		for i := 0; i < players[1].GetCardsSize(); i++ {
+			assert.NotEqual(t, 13, players[1].GetCard(i).GetValue(), "K should have been played")
+		}
+	})
+
+	t.Run("Hard: plays strongest group when following and urgent", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Set up: human plays 3, CPU 1 needs to follow
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: has 5, 6, 7, K — in strength order. When urgent, should play strongest (K)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		// Opponents have ≤ 3 cards → urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3 → on table
+		dg.CpuPlay()                // CPU 1 follows
+
+		// Hard AI should play strongest valid card (K) when following and urgent
+		assert.Equal(t, 3, players[1].GetCardsSize(), "Hard AI should play 1 card")
+		for i := 0; i < players[1].GetCardsSize(); i++ {
+			assert.NotEqual(t, 13, players[1].GetCard(i).GetValue(), "K should have been played")
+		}
+	})
+
+	t.Run("Hard: strategic pass when card too strong for weak table", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays a weak card (3)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		// CPU 1: only has A and 2 — both too strong for table 3, with 6+ cards, should pass
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		// Opponents have many cards → not urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3
+		dg.CpuPlay()                // CPU 1 should strategically pass
+
+		assert.Equal(t, 6, players[1].GetCardsSize(), "Hard AI should pass to save strong cards")
+	})
+
+	t.Run("Hard: no strategic pass when urgent", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays 3
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: only A cards, many in hand — but urgent because opponents have ≤ 3
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		// Opponents have ≤ 3 cards → urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3
+		dg.CpuPlay()                // CPU 1 should play (strongest)
+
+		// Should play even though card is A-level (urgent overrides strategic pass)
+		assert.Equal(t, 5, players[1].GetCardsSize(), "Hard AI should play when urgent")
+	})
+
+	t.Run("Hard: uses joker aggressively when urgent", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays 2 (strongest normal)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1: has joker + weak cards, opponents have ≤ 3 → urgent
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0}) // play 2
+		dg.CpuPlay()                // CPU 1 should play joker when urgent
+
+		assert.Equal(t, 4, players[1].GetCardsSize(), "Hard AI should use joker aggressively when urgent")
+	})
+
+	t.Run("Hard: non-urgent clear table delegates to Normal", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays weak card
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		// CPU 1: 8 and ace — Normal behavior preserves 8
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		// Opponents have many cards → not urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3
+		dg.CpuPlay()                // CPU 1 on clear table, not urgent
+
+		// Should delegate to Normal: play weakest non-8 card (5 at idx 0 in sorted hand)
+		assert.Equal(t, 2, players[1].GetCardsSize(), "Hard AI delegates to Normal when non-urgent on clear table")
+	})
+
+	t.Run("Hard: sequence play - strongest when urgent", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.SequenceEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays sequence 3-4-5 of spades
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		// CPU 1: has two sequences — one weak (6-7-8) and one strong (10-J-Q)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		// Urgent: opponents have ≤ 3 cards
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0, 1, 2})
+		dg.CpuPlay()
+
+		// Hard AI should play strongest sequence (10-J-Q) when urgent
+		assert.Equal(t, 3, players[1].GetCardsSize(), "Hard AI should play sequence")
+	})
+
+	t.Run("Hard: sequence play - weakest when not urgent", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.SequenceEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays sequence 3-4-5 of spades
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU 1: has two sequences
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		// Not urgent: opponents have many cards
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		_ = dg.PlayerPlay([]int{0, 1, 2})
+		dg.CpuPlay()
+
+		// Hard AI should play weakest sequence (6-7-8) when not urgent
+		assert.Equal(t, 3, players[1].GetCardsSize(), "Hard AI should play sequence")
+	})
+
+	t.Run("Hard: shouldStrategicPass with joker on table", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Set up table with a weak card
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		// CPU 1 has joker and a bunch of weak stuff
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		// Not urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3
+		dg.CpuPlay()
+
+		// Normal would play 4 (weakest valid), Hard checks shouldStrategicPass
+		// 4 has strength 4 which is < 14 (Ace), so no strategic pass → plays 4
+		assert.Equal(t, 5, players[1].GetCardsSize(), "Hard AI should play weak card without strategic pass")
+	})
+
+	t.Run("Hard: shouldStrategicPass not triggered with few cards in hand", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays 3
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		// CPU 1: only 3 cards including Ace → should play (≤5 cards)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		// Not urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3
+		dg.CpuPlay()
+
+		// Should play despite having only A-level cards (hand ≤ 5)
+		assert.Equal(t, 2, players[1].GetCardsSize(), "Hard AI should play with few cards")
+	})
+
+	t.Run("Hard: shouldStrategicPass not triggered with high table strength", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays J (strength 11) — above threshold of 10
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU 1: has A + other cards (6+ in hand)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		// Not urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		_ = dg.PlayerPlay([]int{0}) // play J (strength 11)
+		dg.CpuPlay()
+
+		// Table strength > 10, so strategic pass not triggered. CPU plays A
+		assert.Equal(t, 5, players[1].GetCardsSize(), "Hard AI should play when table is strong")
+	})
+
+	t.Run("Hard: urgent plays joker on clear table only when no non-joker available", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1 has only joker
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0})
+		dg.CpuPlay()
+
+		assert.Equal(t, 1, players[1].GetCardsSize(), "Hard AI should play joker when it's all that's left")
+	})
+
+	t.Run("Hard: illegal finish fallback in urgent clear table", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.IllegalFinishEnabled = true
+		cfg.EightCutEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1 has only an 8 (illegal finish if played as last card)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0})
+		dg.CpuPlay()
+
+		// Should play it anyway (fallback, accepts penalty)
+		assert.Equal(t, 0, players[1].GetCardsSize(), "Hard AI should use fallback when all options are illegal finish")
+	})
+
+	t.Run("Hard: suit lock skip in urgent follow mode", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.SuitLockEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: has heart K (wrong suit) and spade 7 (correct)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0}) // play spade 3
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.CpuPlay()
+
+		// Should skip heart K (wrong suit), play spade 7
+		assert.Equal(t, 1, players[1].GetCardsSize(), "Hard AI respects suit lock in urgent mode")
+	})
+
+	t.Run("Hard: joker complement in urgent follow mode", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays pair of 3s
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: one K + joker → complement to make pair
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0, 1}) // play pair of 3s
+		dg.CpuPlay()
+
+		// Hard urgent: iterates from end, finds K + joker complement
+		assert.Equal(t, 1, players[1].GetCardsSize(), "Hard AI uses joker complement in urgent follow")
+	})
+
+	t.Run("Hard: suit lock skip for joker complement in urgent mode", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.SuitLockEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays pair of spade 3s
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		// CPU 1: heart 9 + heart K + joker — all hearts, locked to spade, can't match
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0, 1})
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.CpuPlay()
+
+		// Heart K + joker and heart 9 + joker both rejected due to suit lock
+		assert.Equal(t, 3, players[1].GetCardsSize(), "Hard AI respects suit lock for joker complement")
+	})
+
+	t.Run("Hard: passes when no play available in urgent follow", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays 2
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1: only has weak cards, can't beat 2
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0})
+		dg.CpuPlay()
+
+		assert.Equal(t, 2, players[1].GetCardsSize(), "Hard AI passes when can't beat table")
+	})
+
+	t.Run("Hard: sequence returns nil when no valid sequence available urgent", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.SequenceEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays strong sequence K-A-2
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1: has weak cards, can't make a stronger sequence
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		_ = dg.PlayerPlay([]int{0, 1, 2})
+		dg.CpuPlay()
+
+		// Should pass since no sequence can beat K-A-2
+		assert.Equal(t, 4, players[1].GetCardsSize(), "Hard AI passes when no valid sequence available")
+	})
+
+	t.Run("Easy: clear table plays weakest card directly", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Set up: table is nil (clear), CPU 1's turn
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1 (idx 1): has 8 and Ace — Easy should just play first card
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetTableCards(nil) // clear table
+		dg.CpuPlay()
+
+		assert.Equal(t, 1, players[1].GetCardsSize(), "Easy plays 1 card on clear table")
+	})
+
+	t.Run("Easy: clear table with empty hand", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1 has no cards
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetTableCards(nil)
+		dg.CpuPlay()
+
+		assert.Equal(t, 0, players[1].GetCardsSize())
+	})
+
+	t.Run("Hard: clear table urgent with emperor", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.EmperorEnabled = true
+		cfg.SequenceEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1: has emperor hand + spare, urgent
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetTableCards(nil)
+		dg.CpuPlay()
+
+		// Emperor should be found even in Hard urgent mode
+		assert.Equal(t, 1, players[1].GetCardsSize(), "Hard should find emperor on clear table")
+	})
+
+	t.Run("Hard: clear table urgent no non-joker cards", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1: only jokers
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetTableCards(nil)
+		dg.CpuPlay()
+
+		assert.Equal(t, 0, players[1].GetCardsSize(), "Hard plays joker when only joker available on clear table")
+	})
+
+	t.Run("Hard: clear table urgent empty hand", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		// CPU 1: no cards
+		// Urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetTableCards(nil)
+		dg.CpuPlay()
+
+		assert.Equal(t, 0, players[1].GetCardsSize())
+	})
+
+	t.Run("Hard: sequence non-urgent delegates to normal", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.SequenceEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Set up table with sequence directly
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU 1: stronger sequence
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		// Not urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		// Play sequence and set up table manually
+		dg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+			domain.NewCard(domain.CardDesignSpade, 4, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+		})
+		dg.SetTableIsSequence(true)
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(0)
+		dg.CpuPlay()
+
+		assert.Equal(t, 1, players[1].GetCardsSize(), "Hard non-urgent sequence delegates to normal")
+	})
+
+	t.Run("Hard: non-urgent follow no strategic pass when normalIndices nil", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Table has 2 (strongest), CPU can't beat
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		// CPU 1: only weak cards
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		// Not urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		// Set table to 2 (very strong)
+		dg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+		})
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(0)
+		dg.CpuPlay()
+
+		assert.Equal(t, 6, players[1].GetCardsSize(), "Hard passes when no valid play available")
+	})
+}

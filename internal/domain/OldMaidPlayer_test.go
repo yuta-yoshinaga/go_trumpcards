@@ -21,19 +21,6 @@ func TestOldMaidPlayer_Method(t *testing.T) {
 		assert.False(t, p.GetIsFinished())
 	})
 
-	t.Run("success SetIsFinished true", func(t *testing.T) {
-		p := domain.NewOldMaidPlayer(false)
-		p.SetIsFinished(true)
-		assert.True(t, p.GetIsFinished())
-	})
-
-	t.Run("success SetIsFinished false", func(t *testing.T) {
-		p := domain.NewOldMaidPlayer(false)
-		p.SetIsFinished(true)
-		p.SetIsFinished(false)
-		assert.False(t, p.GetIsFinished())
-	})
-
 	t.Run("success DiscardPairs no pairs", func(t *testing.T) {
 		p := domain.NewOldMaidPlayer(false)
 		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
@@ -87,6 +74,33 @@ func TestOldMaidPlayer_Method(t *testing.T) {
 		assert.Equal(t, 0, discardedCount)
 		assert.Equal(t, 0, len(discardedCards))
 		assert.Equal(t, 0, p.GetCardsSize())
+	})
+
+	t.Run("success NewOldMaidPlayer initializes memory fields", func(t *testing.T) {
+		p := domain.NewOldMaidPlayer(false)
+		assert.Equal(t, -1, p.GetMemLastDrawPos())
+		assert.False(t, p.GetMemGotPair())
+	})
+
+	t.Run("success SetMemLastDrawPos and GetMemLastDrawPos", func(t *testing.T) {
+		p := domain.NewOldMaidPlayer(false)
+		p.SetMemLastDrawPos(3)
+		assert.Equal(t, 3, p.GetMemLastDrawPos())
+	})
+
+	t.Run("success SetMemGotPair and GetMemGotPair", func(t *testing.T) {
+		p := domain.NewOldMaidPlayer(false)
+		p.SetMemGotPair(true)
+		assert.True(t, p.GetMemGotPair())
+	})
+
+	t.Run("success ResetDrawMemory clears fields", func(t *testing.T) {
+		p := domain.NewOldMaidPlayer(false)
+		p.SetMemLastDrawPos(5)
+		p.SetMemGotPair(true)
+		p.ResetDrawMemory()
+		assert.Equal(t, -1, p.GetMemLastDrawPos())
+		assert.False(t, p.GetMemGotPair())
 	})
 
 }

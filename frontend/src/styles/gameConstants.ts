@@ -1,25 +1,30 @@
+import i18n from '../i18n';
 import { PokerAction } from '../types/phases';
 
 /**
  * Betting action display names shared by Poker and Holdem.
- * PokerAction and HoldemAction have the same numeric values (0-5),
+ * Both games use the same numeric action values (0-5),
  * so a single map is sufficient. Separate aliases are exported
  * for semantic clarity at call sites.
  */
-export const BETTING_ACTION_NAMES: Record<number, string> = {
-  [PokerAction.FOLD]: 'フォールド',
-  [PokerAction.CHECK]: 'チェック',
-  [PokerAction.CALL]: 'コール',
-  [PokerAction.BET]: 'ベット',
-  [PokerAction.RAISE]: 'レイズ',
-  [PokerAction.ALL_IN]: 'オールイン',
-};
-
-/** @see {@link BETTING_ACTION_NAMES} */
-export const POKER_ACTION_NAMES = BETTING_ACTION_NAMES;
-
-/** @see {@link BETTING_ACTION_NAMES} */
-export const HOLDEM_ACTION_NAMES = BETTING_ACTION_NAMES;
+export function bettingActionName(action: number): string {
+  switch (action) {
+    case PokerAction.FOLD:
+      return i18n.t('action.fold');
+    case PokerAction.CHECK:
+      return i18n.t('action.check');
+    case PokerAction.CALL:
+      return i18n.t('action.call');
+    case PokerAction.BET:
+      return i18n.t('action.bet');
+    case PokerAction.RAISE:
+      return i18n.t('action.raise');
+    case PokerAction.ALL_IN:
+      return i18n.t('action.allIn');
+    default:
+      return i18n.t('action.unknown');
+  }
+}
 
 /** Badge style for hand name display (e.g. "ツーペア"). */
 export const handNameBadgeStyle: React.CSSProperties = {

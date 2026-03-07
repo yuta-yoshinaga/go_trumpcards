@@ -52,6 +52,11 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	// ポット
 	fmt.Fprintf(&b, "ポット: %d\n", h.GetPot())
 
+	// ベッティングリミット
+	if int(cfg.BettingLimit) < len(domain.BettingLimitNames) {
+		fmt.Fprintf(&b, "リミット: %s\n", domain.BettingLimitNames[cfg.BettingLimit])
+	}
+
 	// プレイヤー情報
 	b.WriteString("----------\n")
 	for i := 0; i < h.GetPlayerCnt(); i++ {
@@ -65,7 +70,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
 
 		if player.GetTotalHands() > 0 {
-			fmt.Fprintf(&b, " VPIP:%d%% PFR:%d%%", player.GetVPIP(), player.GetPFR())
+			fmt.Fprintf(&b, " VPIP:%d%% PFR:%d%% 3Bet:%d%% AF:%s", player.GetVPIP(), player.GetPFR(), player.GetThreeBet(), player.GetAFDisplay())
 		}
 
 		if player.GetFolded() {
@@ -118,6 +123,9 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			}
 			if r.HandName != "" {
 				fmt.Fprintf(&b, "  %s: %s", name, r.HandName)
+				if ks := domain.FormatKickers(r.Kickers); ks != "" {
+					fmt.Fprintf(&b, " (キッカー: %s)", ks)
+				}
 			} else {
 				fmt.Fprintf(&b, "  %s", name)
 			}

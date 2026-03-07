@@ -20,6 +20,8 @@ jobs:
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v7
+        with:
+          args: --build-tags test
 
   test-backend:
     name: Backend Tests
@@ -36,7 +38,7 @@ jobs:
         run: go mod download
 
       - name: Run backend tests with coverage
-        run: go test -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -tags test -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Upload backend coverage to Codecov
         uses: codecov/codecov-action@v5

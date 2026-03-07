@@ -25,8 +25,8 @@ const (
 	PokerActionAllIn = bettingActionAllIn // オールイン
 )
 
-// CPU AI 閾値
-const pokerMaxRaisesPerRound = bettingMaxRaisesPerRound
+// pokerDefaultMaxRaises Fixed/PotLimit時のデフォルト最大レイズ回数
+const pokerDefaultMaxRaises = bettingMaxRaisesPerRound
 
 // PokerSidePot サイドポット (共通SidePot型のエイリアス)
 type PokerSidePot = SidePot
@@ -36,6 +36,7 @@ type PokerResult struct {
 	PlayerIdx int    // プレイヤーインデックス
 	HandRank  int    // ハンドランク
 	HandName  string // ハンド名
+	Kickers   []int  // キッカーカード値
 	WonAmount int    // 獲得チップ
 }
 
@@ -306,7 +307,8 @@ func (p *Poker) executeAction(playerIdx, action, amount int) error {
 		Pot: p.pot, LastBet: p.lastBet, MinRaise: p.minRaise,
 		RaiseCount: p.raiseCount, ActedFlags: p.actedFlags,
 	}
-	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, p.config.MinBet)
+	maxRaises, maxBetAmount := p.bettingLimits()
+	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, p.config.MinBet, maxRaises, maxBetAmount)
 	p.pot = state.Pot
 	p.lastBet = state.LastBet
 	p.minRaise = state.MinRaise
@@ -504,6 +506,7 @@ func (p *Poker) resolveShowdown() {
 			PlayerIdx: i,
 			HandRank:  pl.GetHandRank(),
 			HandName:  pl.GetHandName(),
+			Kickers:   ExtractKickers(pl.GetComparisonCards(), pl.GetHandRank()),
 			WonAmount: wonAmounts[i],
 		}
 		p.roundResults = append(p.roundResults, result)
@@ -586,6 +589,11 @@ func (p *Poker) runCpuExchanges() {
 	}
 }
 
+// bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
+func (p *Poker) bettingLimits() (maxRaises, maxBetAmount int) {
+	return CalculateBettingLimits(p.config.BettingLimit, p.pot, p.lastBet)
+}
+
 // cpuDecide CPUプレイヤーの意思決定
 func (p *Poker) cpuDecide(idx int) (int, int) {
 	pl := p.players[idx]
@@ -610,8 +618,15 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 		action, amount = p.cpuDecideSecondBet(idx, params, callAmount, handRank, exchangeWarning)
 	}
 
+	maxRaises, maxBetAmount := p.bettingLimits()
+
+	// PotLimit: CPUベット額をポットサイズに制限
+	if maxBetAmount > 0 && amount > maxBetAmount {
+		amount = maxBetAmount
+	}
+
 	// レイズ上限に達したら変更
-	if p.raiseCount >= pokerMaxRaisesPerRound {
+	if maxRaises > 0 && p.raiseCount >= maxRaises {
 		if action == PokerActionRaise || action == PokerActionBet {
 			if callAmount > 0 {
 				return PokerActionCall, 0
@@ -877,6 +892,9 @@ func (p *Poker) GetLastBet() int { return p.lastBet }
 // GetMinRaise 最小レイズ額取得
 func (p *Poker) GetMinRaise() int { return p.minRaise }
 
+// GetRaiseCount 現在のレイズ回数取得
+func (p *Poker) GetRaiseCount() int { return p.raiseCount }
+
 // GetAnte アンティ取得
 func (p *Poker) GetAnte() int { return p.config.Ante }
 
@@ -897,57 +915,3 @@ func (p *Poker) SetConfig(cfg PokerConfig) { p.config = cfg }
 
 // GetLastCpuError 最後のCPUアクションエラー取得 (テスト・デバッグ用)
 func (p *Poker) GetLastCpuError() error { return p.lastCpuError }
-
-// --- テスト用セッター ---
-
-// SetPhase フェーズ設定（テスト用）
-func (p *Poker) SetPhase(phase int) { p.phase = phase }
-
-// SetCurrentTurn 現在のターン設定（テスト用）
-func (p *Poker) SetCurrentTurn(turn int) { p.currentTurn = turn }
-
-// SetPot ポット設定（テスト用）
-func (p *Poker) SetPot(pot int) { p.pot = pot }
-
-// SetDealerIdx ディーラーインデックス設定（テスト用）
-func (p *Poker) SetDealerIdx(idx int) { p.dealerIdx = idx }
-
-// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
-func (p *Poker) SetGameEndFlag(flag bool) { p.gameEndFlag = flag }
-
-// SetActedFlags actedフラグ設定（テスト用）
-func (p *Poker) SetActedFlags(flags []bool) { p.actedFlags = flags }
-
-// SetLastBet 最後のベット設定（テスト用）
-func (p *Poker) SetLastBet(bet int) { p.lastBet = bet }
-
-// SetMinRaise 最小レイズ額設定（テスト用）
-func (p *Poker) SetMinRaise(raise int) { p.minRaise = raise }
-
-// SetRaiseCount レイズ回数設定（テスト用）
-func (p *Poker) SetRaiseCount(count int) { p.raiseCount = count }
-
-// SetRoundResults ラウンド結果設定（テスト用）
-func (p *Poker) SetRoundResults(results []PokerResult) { p.roundResults = results }
-
-// SetCpuActions CPU行動記録設定（テスト用）
-func (p *Poker) SetCpuActions(actions []PokerCpuAction) { p.cpuActions = actions }
-
-// SetCpuExchanges CPU交換記録設定（テスト用）
-func (p *Poker) SetCpuExchanges(exchanges []PokerCpuExchange) { p.cpuExchanges = exchanges }
-
-// SetSidePots サイドポット設定（テスト用）
-func (p *Poker) SetSidePots(pots []PokerSidePot) { p.sidePots = pots }
-
-// SetStartingChips ハンド開始時チップ設定（テスト用）
-func (p *Poker) SetStartingChips(chips []int) { p.startingChips = chips }
-
-// GetStartingChips ハンド開始時チップ取得（テスト用）
-func (p *Poker) GetStartingChips() []int { return p.startingChips }
-
-// GetActedFlags actedフラグ取得（テスト用）
-func (p *Poker) GetActedFlags() []bool {
-	result := make([]bool, len(p.actedFlags))
-	copy(result, p.actedFlags)
-	return result
-}

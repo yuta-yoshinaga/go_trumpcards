@@ -179,8 +179,7 @@ func TestDoubtWebController_Method(t *testing.T) {
 
 	t.Run("failed Exec sessionId too long", func(t *testing.T) {
 		input := controller.DoubtWebInput{
-			Command:   "reset",
-			SessionId: strings.Repeat("a", controller.SessionMaxIDLen+1),
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: strings.Repeat("a", controller.SessionMaxIDLen+1)},
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -222,10 +221,9 @@ func TestDoubtWebController_Method(t *testing.T) {
 	for _, tc := range claimedValueTests {
 		t.Run("Exec p play claimedValue "+tc.name, func(t *testing.T) {
 			input := controller.DoubtWebInput{
-				Command:      "p",
+				BaseWebInput: controller.BaseWebInput{Command: "p", SessionID: "test-session-1"},
 				CardIndices:  []int{0},
 				ClaimedValue: tc.claimedValue,
-				SessionId:    "test-session-1",
 			}
 			req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
 			req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -239,9 +237,8 @@ func TestDoubtWebController_Method(t *testing.T) {
 	t.Run("failed Exec cardIndices too large", func(t *testing.T) {
 		indices := make([]int, controller.MaxCardIndices+1)
 		input := controller.DoubtWebInput{
-			Command:     "p",
-			CardIndices: indices,
-			SessionId:   "test-session-1",
+			BaseWebInput: controller.BaseWebInput{Command: "p", SessionID: "test-session-1"},
+			CardIndices:  indices,
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -358,8 +355,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
-			Command:        "reset",
-			SessionId:      "cfg-session-1",
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-1"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
@@ -385,8 +381,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
-			Command:        "reset",
-			SessionId:      "cfg-session-2",
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-2"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
@@ -412,8 +407,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
-			Command:        "reset",
-			SessionId:      "cfg-session-3",
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-3"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
@@ -439,8 +433,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		api.SetApp(router)
 
 		input := controller.DoubtWebInput{
-			Command:        "reset",
-			SessionId:      "cfg-session-4",
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-4"},
 			DoubtWindowSec: &win,
 			CpuMemoryLevel: &mem,
 		}
@@ -449,6 +442,56 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("penaltyDrawLimit config values", func(t *testing.T) {
+		win := 10
+		testCases := []struct {
+			name        string
+			limit       *int
+			expectedCfg domain.DoubtConfig
+		}{
+			{
+				name:        "valid value is passed",
+				limit:       func() *int { l := 5; return &l }(),
+				expectedCfg: domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal, PenaltyDrawLimit: 5},
+			},
+			{
+				name:        "negative is ignored, uses default (0)",
+				limit:       func() *int { l := -1; return &l }(),
+				expectedCfg: domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal},
+			},
+			{
+				name:        "zero is valid (unlimited)",
+				limit:       func() *int { l := 0; return &l }(),
+				expectedCfg: domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal, PenaltyDrawLimit: 0},
+			},
+		}
+
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				dgiMock := new(usecase.MockDoubtInteractor)
+				dgiMock.On("ResetWithConfig", tc.expectedCfg).Return(mockOutput)
+
+				factory := func() uc.DoubtInteractorIF { return dgiMock }
+				ctrl := controller.NewDoubtWebController(factory)
+				defer ctrl.Stop()
+				api := rest.NewApi()
+				router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+				api.SetApp(router)
+
+				input := controller.DoubtWebInput{
+					BaseWebInput:     controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-pdl"},
+					DoubtWindowSec:   &win,
+					PenaltyDrawLimit: tc.limit,
+				}
+				req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+				req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+				recorded := test.RunRequest(t, api.MakeHandler(), req)
+				recorded.CodeIs(http.StatusOK)
+				dgiMock.AssertCalled(t, "ResetWithConfig", tc.expectedCfg)
+			})
+		}
 	})
 }
 

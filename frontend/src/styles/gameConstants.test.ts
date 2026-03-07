@@ -1,27 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { PokerAction } from '../types/phases';
-import {
-  activeTurnStyle,
-  BETTING_ACTION_NAMES,
-  finishedPlayerStyle,
-  HOLDEM_ACTION_NAMES,
-  handNameBadgeStyle,
-  POKER_ACTION_NAMES,
-} from './gameConstants';
+import { activeTurnStyle, bettingActionName, finishedPlayerStyle, handNameBadgeStyle } from './gameConstants';
 
-describe('BETTING_ACTION_NAMES', () => {
+describe('bettingActionName', () => {
   it('maps all action values', () => {
-    expect(BETTING_ACTION_NAMES[PokerAction.FOLD]).toBe('フォールド');
-    expect(BETTING_ACTION_NAMES[PokerAction.CHECK]).toBe('チェック');
-    expect(BETTING_ACTION_NAMES[PokerAction.CALL]).toBe('コール');
-    expect(BETTING_ACTION_NAMES[PokerAction.BET]).toBe('ベット');
-    expect(BETTING_ACTION_NAMES[PokerAction.RAISE]).toBe('レイズ');
-    expect(BETTING_ACTION_NAMES[PokerAction.ALL_IN]).toBe('オールイン');
+    expect(bettingActionName(PokerAction.FOLD)).toBe('フォールド');
+    expect(bettingActionName(PokerAction.CHECK)).toBe('チェック');
+    expect(bettingActionName(PokerAction.CALL)).toBe('コール');
+    expect(bettingActionName(PokerAction.BET)).toBe('ベット');
+    expect(bettingActionName(PokerAction.RAISE)).toBe('レイズ');
+    expect(bettingActionName(PokerAction.ALL_IN)).toBe('オールイン');
   });
 
-  it('POKER_ACTION_NAMES and HOLDEM_ACTION_NAMES are aliases', () => {
-    expect(POKER_ACTION_NAMES).toBe(BETTING_ACTION_NAMES);
-    expect(HOLDEM_ACTION_NAMES).toBe(BETTING_ACTION_NAMES);
+  it('returns 不明 for unknown action', () => {
+    expect(bettingActionName(99)).toBe('不明');
   });
 });
 

@@ -135,6 +135,32 @@ func TestBlackJackCuiController_NewCommands(t *testing.T) {
 	})
 }
 
+func TestBlackJackCuiController_SetCountingSystem(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetCountingSystem", 2).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("scs with valid system", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("scs 2"))
+	})
+	t.Run("setcountingsystem with valid system", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("setcountingsystem 2"))
+	})
+	t.Run("scs without arg", func(t *testing.T) {
+		assert.Equal(t, "Counting system is required.", tbc.Exec("scs"))
+	})
+	t.Run("scs with invalid arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs abc"))
+	})
+	t.Run("scs with negative arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs -1"))
+	})
+	t.Run("scs with out-of-range arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs 4"))
+	})
+}
+
 func TestBlackJackCuiController_BetWithSideBets(t *testing.T) {
 	mockOutput := "----------\n"
 	bjiMock := new(usecase.MockBlackJackInteractor)
@@ -162,6 +188,7 @@ func TestBlackJackCuiController_Soft17AndCountingCommands(t *testing.T) {
 	bjiMock := new(usecase.MockBlackJackInteractor)
 	bjiMock.On("ToggleSoft17").Return(mockOutput)
 	bjiMock.On("ToggleCounting").Return(mockOutput)
+	bjiMock.On("ToggleDAS").Return(mockOutput)
 	tbc := controller.NewBlackJackCuiController(bjiMock)
 
 	t.Run("soft17", func(t *testing.T) {
@@ -176,4 +203,54 @@ func TestBlackJackCuiController_Soft17AndCountingCommands(t *testing.T) {
 	t.Run("togglecounting", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("togglecounting"))
 	})
+	t.Run("das", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("das"))
+	})
+	t.Run("toggledas", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("toggledas"))
+	})
+}
+
+func TestBlackJackCuiController_SetPenetration_Valid(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 50).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, mockOutput, tbc.Exec("pen 50"))
+}
+
+func TestBlackJackCuiController_SetPenetration_75(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 75).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, mockOutput, tbc.Exec("pen 75"))
+}
+
+func TestBlackJackCuiController_SetPenetration_MissingArg(t *testing.T) {
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, "Penetration rate is required.", tbc.Exec("pen"))
+}
+
+func TestBlackJackCuiController_SetPenetration_NonNumeric(t *testing.T) {
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, "Invalid penetration rate. Please enter a number.", tbc.Exec("pen abc"))
+}
+
+func TestBlackJackCuiController_SetPenetration_InvalidValue(t *testing.T) {
+	mockOutput := "error from domain"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 60).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, mockOutput, tbc.Exec("pen 60"))
+}
+
+func TestBlackJackCuiController_SetPenetration_LongForm(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetDeckPenetration", 50).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+	assert.Equal(t, mockOutput, tbc.Exec("setpenetration 50"))
 }

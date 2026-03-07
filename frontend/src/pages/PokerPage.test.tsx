@@ -73,6 +73,9 @@ const initState: PokerResponse = {
   cpuActions: [],
   cpuExchanges: [],
   message: 'リセットしました',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** DEAL phase (phase 1): human's turn, no outstanding bet */
@@ -92,6 +95,9 @@ const dealState: PokerResponse = {
   cpuActions: [],
   cpuExchanges: [],
   message: 'あなたの番です',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** DEAL with outstanding bet: shows call/raise */
@@ -147,12 +153,15 @@ const endState: PokerResponse = {
   ante: 10,
   jokerCount: 0,
   roundResults: [
-    { playerIdx: 0, handRank: 0, handName: 'High Card', wonAmount: 0 },
-    { playerIdx: 1, handRank: 1, handName: 'One Pair', wonAmount: 200 },
+    { playerIdx: 0, handRank: 0, handName: 'High Card', kickers: '', wonAmount: 0 },
+    { playerIdx: 1, handRank: 1, handName: 'One Pair', kickers: 'A, Q, 10', wonAmount: 200 },
   ],
   cpuActions: [],
   cpuExchanges: [],
   message: 'あなたの負け',
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 beforeEach(() => {
@@ -448,8 +457,8 @@ describe('PokerPage', () => {
     mockExec.mockResolvedValue({
       ...endState,
       roundResults: [
-        { playerIdx: 0, handRank: 0, handName: '', wonAmount: 0 },
-        { playerIdx: 1, handRank: 2, handName: 'One Pair', wonAmount: 200 },
+        { playerIdx: 0, handRank: 0, handName: '', kickers: '', wonAmount: 0 },
+        { playerIdx: 1, handRank: 2, handName: 'One Pair', kickers: '', wonAmount: 200 },
       ],
     });
     renderWithProviders(<PokerPage />);
@@ -816,7 +825,20 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0 }));
+  });
+
+  it('sends updated bettingLimit when select is changed before reset', async () => {
+    renderWithProviders(<PokerPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = screen.getByLabelText('リミット:');
+    fireEvent.change(select, { target: { value: '1' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1 }));
   });
 
   // ---- loading / disabled state ----
@@ -849,7 +871,7 @@ describe('PokerPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
   it('clears error on successful call after failure', async () => {
@@ -858,11 +880,11 @@ describe('PokerPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
   // ---- message ----

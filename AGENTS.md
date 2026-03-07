@@ -6,13 +6,13 @@ This file provides guidance to AI coding agents when working with code in this r
 
 This repository contains a Go implementation of trump card game algorithms. The project is structured following the principles of Clean Architecture. The following games are implemented:
 
-- **BlackJack**: CLI and Web GUI (chip/betting system, split, double down, insurance, soft-17 toggle, card counting training, multi-player CPU seats)
-- **Poker (5-card Draw)**: CLI and Web GUI (1 human vs 1-3 CPUs, 4 play styles, joker wild cards, side pots, draw odds calculator)
+- **BlackJack**: CLI and Web GUI (chip/betting system, split, double down, insurance, soft-17 toggle, DAS toggle, configurable deck penetration, card counting training with selectable counting system, multi-player CPU seats)
+- **Poker (5-card Draw)**: CLI and Web GUI (1 human vs 1-3 CPUs, 4 play styles, joker wild cards, side pots, draw odds calculator, configurable betting limit, kicker display)
 - **Old Maid (Babanuki)**: CLI and Web GUI
-- **Daifugo**: CLI and Web GUI (sandstorm, emperor, and other optional rules)
-- **Sevens (7並べ)**: CLI and Web GUI (optional rules: tunnel, joker, CPU strategy, no-joker-finish, joker reclaim, pass-exhaustion AI)
+- **Daifugo**: CLI and Web GUI (sandstorm, emperor, sequence revolution, illegal finish, 3 CPU difficulty levels, and other optional rules)
+- **Sevens (7並べ)**: CLI and Web GUI (optional rules: tunnel, joker, CPU strategy, no-joker-finish, joker reclaim, end stop, pass-exhaustion AI)
 - **Doubt (ダウト)**: CLI and Web GUI (1 human vs 3 CPUs, 10-second async doubt window)
-- **Texas Hold'em**: CLI and Web GUI (1 human vs 3 CPUs, 4 play styles, side pots, HUD stats, pot-relative AI sizing, tournament mode)
+- **Texas Hold'em**: CLI and Web GUI (1 human vs 3 CPUs, 5 play styles, side pots, HUD stats, pot-relative AI sizing, tournament mode, configurable betting limit, kicker display)
 
 ## Requirements
 
@@ -39,12 +39,12 @@ go run ./cmd/server         # Start REST API + web GUI server (direct)
 
 **Run tests:**
 ```sh
-go test ./...                                              # Run all tests
-go test ./internal/domain/...                              # Run tests in a specific package
-go test ./internal/domain/ -run TestBlackJack              # Run a single test by name
-go test -coverprofile=coverage.out -covermode=atomic ./... # Run all tests with coverage report
-go tool cover -func=coverage.out                           # Show coverage summary by function
-go tool cover -html=coverage.out -o coverage.html          # Generate HTML coverage report
+go test -tags test ./...                                              # Run all tests
+go test -tags test ./internal/domain/...                              # Run tests in a specific package
+go test -tags test ./internal/domain/ -run TestBlackJack              # Run a single test by name
+go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Run all tests with coverage report
+go tool cover -func=coverage.out                                      # Show coverage summary by function
+go tool cover -html=coverage.out -o coverage.html                     # Generate HTML coverage report
 ```
 
 **Format Go source files:**
@@ -101,6 +101,7 @@ frontend/                      # React frontend source (Vite + React + TypeScrip
     api/                       # API client functions (fetch wrappers)
     components/                # Shared React components (NavBar, CardImage, CardBack)
     hooks/                     # Custom React hooks (useGameApi, backed by TanStack React Query)
+    i18n/                      # i18n config and translation files (ja/en)
     pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage, DaifugoPage)
     providers/                 # React context providers (QueryProvider for TanStack React Query)
     types/                     # TypeScript type definitions for card/game data
@@ -121,17 +122,60 @@ public/                        # Built frontend assets served by Go web server
 
 ### Games implemented
 
-- **BlackJack**: Entities in `internal/domain/BlackJack.go`, `internal/domain/BlackJackPlayer.go`, `internal/domain/BlackJackHand.go`, `internal/domain/BlackJackSideBet.go`; interactor in `internal/usecase/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, natural BJ 3:2 payout, soft-17 rule toggle (H17/S17), card counting training (Hi-Lo running count / true count display), multi-player CPU seats (0-3 CPU players using basic strategy), side bets (Perfect Pairs and 21+3), and auto-advance round timer
-- **Poker (5-card Draw)**: Entities in `internal/domain/Poker.go`, `internal/domain/PokerPlayer.go`, `internal/domain/PokerConfig.go`, `internal/domain/PokerOdds.go`; interactor in `internal/usecase/PokerInteractor.go`. CLI and Web GUI (1 human vs 1-3 CPU), 4 CPU play styles (Conservative/Balanced/Aggressive/Bluffer) with exchange-count reading and bluff AI, optional joker wild cards (0-2, Five of a Kind rank), full side pot support, draw odds calculator (brute-force enumeration of all combinations during exchange phase)
-- **Old Maid (Babanuki)**: Entities in `internal/domain/OldMaid.go`, `internal/domain/OldMaidPlayer.go`; interactor in `internal/usecase/OldMaidInteractor.go`
-- **Daifugo**: Entities in `internal/domain/Daifugo.go`, `internal/domain/DaifugoPlayer.go`; interactor in `internal/usecase/DaifugoInteractor.go`. Supports optional rules: sandstorm (3 non-joker 3s clear the table like 8-cut), emperor (4 consecutive cards of all different suits on clear table triggers revolution + table clear, CPU AI can find emperor plays)
-- **Sevens (7並べ)**: Entities in `internal/domain/Sevens.go`, `internal/domain/SevensPlayer.go`, `internal/domain/SevensConfig.go`; interactor in `internal/usecase/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, CPU strategy, configurable max passes (0 = unlimited), no-joker-finish (ban finishing with a joker), and joker reclaim (playing a real card on a joker-occupied position returns the joker to the player's hand). CPU AI uses pass-urgency weighting to block opponents near pass exhaustion
+- **BlackJack**: Entities in `internal/domain/BlackJack.go`, `internal/domain/BlackJackPlayer.go`, `internal/domain/BlackJackHand.go`, `internal/domain/BlackJackSideBet.go`; interactor in `internal/usecase/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, natural BJ 3:2 payout, soft-17 rule toggle (H17/S17), double-after-split toggle (DAS), configurable deck penetration (50%/75%), card counting training (Hi-Lo / KO / Zen Count / Omega II running count / true count display with selectable counting system), multi-player CPU seats (0-3 CPU players using basic strategy), side bets (Perfect Pairs and 21+3), and auto-advance round timer
+- **Poker (5-card Draw)**: Entities in `internal/domain/Poker.go`, `internal/domain/PokerPlayer.go`, `internal/domain/PokerConfig.go`, `internal/domain/PokerOdds.go`; interactor in `internal/usecase/PokerInteractor.go`. CLI and Web GUI (1 human vs 1-3 CPU), 4 CPU play styles (Conservative/Balanced/Aggressive/Bluffer) with exchange-count reading and bluff AI, optional joker wild cards (0-2, Five of a Kind rank), full side pot support, draw odds calculator (brute-force enumeration of all combinations during exchange phase), configurable betting limit (Fixed/Pot Limit/No Limit), kicker display at showdown
+- **Old Maid (Babanuki)**: Entities in `internal/domain/OldMaid.go`, `internal/domain/OldMaidPlayer.go`, `internal/domain/OldMaidConfig.go`; interactor in `internal/usecase/OldMaidInteractor.go`. Optional rules: CPU placement strategy (odd card at edges), CPU memory AI (remember draw positions and adjust selection strategy based on pair results and human hand changes). Features: draw history timeline (persistent log of all draws throughout the game), suspect pin (client-side toggle to mark CPU players suspected of holding the odd card)
+- **Daifugo**: Entities in `internal/domain/Daifugo.go`, `internal/domain/DaifugoPlayer.go`; interactor in `internal/usecase/DaifugoInteractor.go`. Supports optional rules: sandstorm (3 non-joker 3s clear the table like 8-cut), emperor (4 consecutive cards of all different suits on clear table triggers revolution + table clear, CPU AI can find emperor plays), sequence revolution (4+ card sequences trigger revolution), illegal finish (finishing with 8-cut/joker/revolution is penalized — player demoted to last rank, CPU AI avoids when safe alternative exists). Three CPU difficulty levels: Normal (default, balanced AI with card preservation), Easy (simple greedy play), Hard (strategic AI that adapts to opponent hand sizes)
+- **Sevens (7並べ)**: Entities in `internal/domain/Sevens.go`, `internal/domain/SevensPlayer.go`, `internal/domain/SevensConfig.go`; interactor in `internal/usecase/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, CPU strategy, configurable max passes (0 = unlimited), no-joker-finish (ban finishing with a joker), joker reclaim (playing a real card on a joker-occupied position returns the joker to the player's hand), end stop (A/K止め — placing A blocks high side 8-K, placing K blocks low side A-6), and joker consecutive banned (ジョーカー連続禁止 — prevents playing joker on consecutive turns). CPU AI uses pass-urgency weighting to block opponents near pass exhaustion
 - **Doubt (ダウト)**: Entities in `internal/domain/Doubt.go`, `internal/domain/DoubtPlayer.go`; interactor in `internal/usecase/DoubtInteractor.go`. CLI and Web GUI (1 human vs 3 CPUs), 10-second async doubt window (CLI) / frontend countdown timer (Web), random CPU bluff/doubt AI
-- **Texas Hold'em**: Entities in `internal/domain/Holdem.go`, `internal/domain/HoldemPlayer.go`, `internal/domain/HoldemConfig.go`; interactor in `internal/usecase/HoldemInteractor.go`. CLI and Web GUI (1 human vs 3 CPU), 4 CPU play styles (TAG/LAP/TAP/LAG) with bluff AI, full side pot support, HUD stats (VPIP%/PFR%), pot-relative AI bet sizing, tournament mode with blind escalation
+- **Texas Hold'em**: Entities in `internal/domain/Holdem.go`, `internal/domain/HoldemPlayer.go`, `internal/domain/HoldemConfig.go`; interactor in `internal/usecase/HoldemInteractor.go`. CLI and Web GUI (1 human vs 3 CPU), 5 CPU play styles (TAG/LAP/TAP/LAG/GTO) with bluff AI and GTO mixed strategy, full side pot support, HUD stats (VPIP%/PFR%/3Bet%/AF), pot-relative AI bet sizing, tournament mode with blind escalation, configurable betting limit (Fixed/Pot Limit/No Limit), kicker display at showdown
 
 ## Testing Policy
 
 **Unit tests are mandatory. Every implementation must ship with tests in the same commit.**
+
+### TDD (Test-Driven Development)
+
+**All code changes must follow the TDD cycle (Red-Green-Refactor):**
+
+#### 1. Red — Write a failing test first
+
+Before writing any production code, create or modify a test file (`*_test.go`) that captures the expected behavior. Run the test and confirm it fails:
+
+```sh
+go test -tags test ./path/to/package -run TestNewFeature  # Confirm the test fails (Red)
+```
+
+Write tests in the corresponding location for each Clean Architecture layer:
+
+| Layer | Test location |
+|-------|--------------|
+| Domain | `internal/domain/*_test.go` |
+| Use cases | `internal/usecase/*Interactor_test.go` |
+| Presenters | `internal/adapter/presenter/*_test.go` |
+| Controllers | `internal/adapter/controller/*_test.go` |
+
+#### 2. Green — Write the minimum code to pass
+
+Implement only the code necessary to make the failing test pass. Do not add extra functionality beyond what the test requires:
+
+```sh
+go test -tags test ./path/to/package -run TestNewFeature  # Confirm the test passes (Green)
+```
+
+#### 3. Refactor — Clean up while keeping tests green
+
+Improve code quality (naming, structure, duplication removal) without changing behavior. Verify all tests still pass after refactoring:
+
+```sh
+go test -tags test ./...  # Confirm all tests still pass after refactoring
+```
+
+**Key rules:**
+- Never write production code without a corresponding failing test first
+- Each Red-Green-Refactor cycle should be small and focused
+- Run `go test` at every stage transition to verify the expected outcome
+- Apply this cycle at every layer of the Clean Architecture (Domain, Use cases, Presenters, Controllers)
 
 ### Coverage standard
 
@@ -169,7 +213,7 @@ Card games involve shuffling, so tests must not depend on random outcomes:
 Always run the full test suite before committing and ensure it passes:
 
 ```sh
-go test ./...
+go test -tags test ./...
 ```
 
 ### Frontend testing
@@ -208,6 +252,17 @@ E2E tests use **Playwright** (Chromium only) and live in `frontend/e2e/`. They v
 cd frontend && npm run e2e          # Run E2E tests (auto-starts Go server on port 8080)
 cd frontend && npm run e2e:headed   # Run in headed browser
 ```
+
+### i18n (Internationalization)
+
+The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
+
+- **Config**: `frontend/src/i18n/index.ts`
+- **Translation files**: `frontend/src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem}.json`
+- **In components**: use the `useTranslation()` hook
+- **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
+- **Tests**: i18n is initialized in `frontend/src/test/setup.ts` with ja translations loaded
+- **Server responses**: Web presenters send `messageCode` and `messageParams` alongside `message` for i18n-ready frontend rendering
 
 ## Documentation Maintenance
 

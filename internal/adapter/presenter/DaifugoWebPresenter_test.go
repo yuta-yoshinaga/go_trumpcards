@@ -134,6 +134,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.GameEndFlag)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "daifugo.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 	})
 
 	t.Run("success Output human action after play", func(t *testing.T) {
@@ -409,6 +411,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "daifugo.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 		// CPU 1 with rank 0 should be skipped
 		assert.NotContains(t, resObj.Message, "CPU 1")
 	})
@@ -453,6 +457,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "daifugo.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 		assert.NotContains(t, resObj.Message, "CPU 1")
 	})
 
@@ -505,6 +511,8 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, resObj.Players, 0)           // nil player skipped in Output loop
 		assert.Equal(t, "ゲーム終了！ ", resObj.Message) // buildResultMessage called
+		assert.Equal(t, "daifugo.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 	})
 
 	t.Run("success Output pendingAction sevenPass", func(t *testing.T) {
@@ -534,5 +542,89 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Equal(t, "tenDiscard", resObj.PendingAction)
+	})
+
+	t.Run("success Output config sequenceRevolutionEnabled and illegalFinishEnabled mapped", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		cfg := domain.DefaultDaifugoConfig()
+		cfg.SequenceRevolutionEnabled = true
+		cfg.IllegalFinishEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.SequenceRevolutionEnabled)
+		assert.True(t, resObj.Config.IllegalFinishEnabled)
+	})
+
+	t.Run("success Output config sequenceRevolutionEnabled and illegalFinishEnabled false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.False(t, resObj.Config.SequenceRevolutionEnabled)
+		assert.False(t, resObj.Config.IllegalFinishEnabled)
+	})
+
+	t.Run("success Output config cpuDifficulty mapped", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		cfg := domain.DefaultDaifugoConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, resObj.Config.CpuDifficulty)
+	})
+
+	t.Run("success Output config cpuDifficulty default is 0", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := domain.NewDaifugo(tc, players, domain.DaifugoConfig{})
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, resObj.Config.CpuDifficulty)
+	})
+
+	t.Run("success Output illegalFinishPenalty flag in player output", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		dg := domain.NewDaifugo(tc, players, domain.DefaultDaifugoConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].SetIllegalFinishPenalty(true)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Players[0].IllegalFinishPenalty)
+		assert.False(t, resObj.Players[1].IllegalFinishPenalty)
 	})
 }

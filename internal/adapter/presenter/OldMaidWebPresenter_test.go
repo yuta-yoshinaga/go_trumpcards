@@ -47,7 +47,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[2].SetIsFinished(true)
 		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
-		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"SPADE","value":1},{"design":"CLOVER","value":2}]},{"id":1,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":[],"hasDrawn":false,"cpuActions":[],"humanAction":null,"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":""}`
+		expected := `{"players":[{"id":0,"isHuman":true,"isFinished":false,"cardCount":2,"cards":[{"design":"SPADE","value":1},{"design":"CLOVER","value":2}]},{"id":1,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]},{"id":2,"isHuman":false,"isFinished":true,"cardCount":0,"cards":[]},{"id":3,"isHuman":false,"isFinished":false,"cardCount":1,"cards":[]}],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":[],"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":""}`
 		assert.Equal(t, expected, towp.Output(om, nil))
 	})
 
@@ -81,6 +81,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, `"hasDrawn":true`)
 		assert.Contains(t, result, `"humanAction":{"drawPlayerIdx":0,"drawFromIdx":1,"drawnCard":{"design":"HEART","value":7},"discardedPairs":1`)
 		assert.Contains(t, result, `"message":"ゲーム終了！ あなたの負け！"`)
+		assert.Contains(t, result, `"messageCode":"oldmaid.result.humanLose"`)
 	})
 
 	t.Run("success Output game not ended with draw and no discard", func(t *testing.T) {
@@ -135,6 +136,8 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, `{"design":"CLOVER","value":3}`)
 		assert.Contains(t, result, `"hasDrawn":true`)
 		assert.Contains(t, result, `"message":"ゲーム終了！ CPU 2の負け！"`)
+		assert.Contains(t, result, `"messageCode":"oldmaid.result.cpuLose"`)
+		assert.Contains(t, result, `"messageParams":{"cpuId":"2"}`)
 	})
 
 	t.Run("success Output with CpuActions and discarded cards", func(t *testing.T) {
@@ -191,6 +194,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		_ = om.CpuDraw()
 		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"message":"ゲーム終了！ あなたの負け！"`)
+		assert.Contains(t, result, `"messageCode":"oldmaid.result.humanLose"`)
 	})
 
 	t.Run("success Output game ended cpu loses at index 0", func(t *testing.T) {
@@ -216,6 +220,8 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		_ = om.CpuDraw()
 		result := towp.Output(om, nil)
 		assert.Contains(t, result, `"message":"ゲーム終了！ CPU 0の負け！"`)
+		assert.Contains(t, result, `"messageCode":"oldmaid.result.cpuLose"`)
+		assert.Contains(t, result, `"messageParams":{"cpuId":"0"}`)
 	})
 
 	t.Run("success Output displays error message", func(t *testing.T) {
@@ -375,6 +381,74 @@ func TestOldMaidWebPresenter_JijiNuki_GameEnd_RevealsRemovedCard(t *testing.T) {
 	assert.Contains(t, result, `"mode":1`)
 	// removedCard should be revealed
 	assert.NotContains(t, result, `"removedCard":null`)
+}
+
+func TestOldMaidWebPresenter_DrawHistory(t *testing.T) {
+	towp := presenter.NewOldMaidWebPresenter()
+
+	t.Run("empty history in initial state", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		result := towp.Output(om, nil)
+		assert.Contains(t, result, `"drawHistory":[]`)
+	})
+
+	t.Run("populated after draws", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+		// player 0 (human): SPADE 5
+		// player 1 (CPU): CLOVER 7 — 1 card (deterministic)
+		// player 2 (CPU): HEART 9 — 1 card (active)
+		// player 3: finished
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].SetIsFinished(true)
+		_ = om.PlayerDraw(0)
+		result := towp.Output(om, nil)
+		// drawHistory should contain an entry
+		assert.Contains(t, result, `"drawHistory":[{"drawPlayerIdx":0,"drawFromIdx":1`)
+		assert.Contains(t, result, `"discardedPairs":0`)
+		assert.Contains(t, result, `"drawerFinished":false`)
+		assert.Contains(t, result, `"targetFinished":true`)
+	})
+
+	t.Run("drawerFinished true when drawer finishes", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+		// player 0 (human): SPADE 3 → draws CLOVER 3 from player 1 → discards pair → finishes
+		// player 1 (CPU): CLOVER 3 → 1 card → deterministic
+		// player 2: JOKER
+		// player 3: finished
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+		players[3].SetIsFinished(true)
+		_ = om.PlayerDraw(0)
+		result := towp.Output(om, nil)
+		assert.Contains(t, result, `"drawerFinished":true`)
+		assert.Contains(t, result, `"targetFinished":true`)
+	})
+
+	t.Run("history set via test helper", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		om.SetDrawHistory([]*domain.OldMaidDrawHistoryEntry{
+			{DrawPlayerIdx: 2, DrawFromIdx: 0, DiscardedPairs: 1, DrawerFinished: false, TargetFinished: false},
+		})
+		result := towp.Output(om, nil)
+		assert.Contains(t, result, `"drawHistory":[{"drawPlayerIdx":2,"drawFromIdx":0,"discardedPairs":1,"drawerFinished":false,"targetFinished":false}]`)
+	})
 }
 
 func TestOldMaidWebPresenter_JijiNuki_GameNotEnd_NoRemovedCard(t *testing.T) {

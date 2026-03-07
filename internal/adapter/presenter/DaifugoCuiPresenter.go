@@ -143,7 +143,11 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 		b.WriteString("ゲーム終了！\n")
 		for i := 0; i < dg.GetPlayerCnt(); i++ {
 			player := dg.GetPlayer(i)
-			fmt.Fprintf(&b, "  %s: %s\n", cuiPlayerName(dg.GetPlayer(i), i), p.rankName(player.GetRank()))
+			penalty := ""
+			if player.GetIllegalFinishPenalty() {
+				penalty = " [反則上がり]"
+			}
+			fmt.Fprintf(&b, "  %s: %s%s\n", cuiPlayerName(dg.GetPlayer(i), i), p.rankName(player.GetRank()), penalty)
 		}
 	} else {
 		currentTurn := dg.GetCurrentTurn()

@@ -25,13 +25,13 @@ func setupHoldemForHumanAction(phase int) *Holdem {
 	for _, p := range h.players {
 		p.SetChips(1000)
 	}
-	h.SetStartingChips([]int{1000, 1000, 1000, 1000})
+	h.setStartingChips([]int{1000, 1000, 1000, 1000})
 	h.SetPhase(phase)
 	h.SetCurrentTurn(0)
 	h.SetLastBet(0)
 	h.SetMinRaise(10)
 	h.SetPot(30)
-	h.SetActedFlags([]bool{false, true, true, true})
+	h.setActedFlags([]bool{false, true, true, true})
 	// Give players cards
 	for _, p := range h.players {
 		p.Reset()
@@ -326,7 +326,7 @@ func TestHoldem_PlayerAction_Raise_MaxRaisesReached(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseFlop)
 	h.SetLastBet(20)
 	h.SetMinRaise(10)
-	h.SetRaiseCount(4) // holdemMaxRaisesPerRound = 4
+	h.setRaiseCount(4) // holdemDefaultMaxRaises = 4
 	h.SetCommunityCards([]*Card{
 		NewCard(CardDesignSpade, 2, false),
 		NewCard(CardDesignHeart, 3, false),
@@ -342,7 +342,7 @@ func TestHoldem_PlayerAction_Bet_MaxRaisesReached(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseFlop)
 	h.SetLastBet(0)
 	h.SetMinRaise(10)
-	h.SetRaiseCount(4) // holdemMaxRaisesPerRound = 4
+	h.setRaiseCount(4) // holdemDefaultMaxRaises = 4
 	h.SetCommunityCards([]*Card{
 		NewCard(CardDesignSpade, 2, false),
 		NewCard(CardDesignHeart, 3, false),
@@ -489,7 +489,7 @@ func TestHoldem_GettersSetters(t *testing.T) {
 	assert.True(t, h.GetGameEndFlag())
 
 	flags := []bool{true, false, true, false}
-	h.SetActedFlags(flags)
+	h.setActedFlags(flags)
 	assert.Equal(t, flags, h.GetActedFlags())
 
 	h.SetLastBet(100)
@@ -524,7 +524,7 @@ func TestHoldem_Showdown(t *testing.T) {
 	h.SetPot(200)
 	h.SetCurrentTurn(0)
 	h.SetLastBet(0)
-	h.SetActedFlags([]bool{false, true, true, true})
+	h.setActedFlags([]bool{false, true, true, true})
 
 	// Give player 0 pocket aces
 	h.players[0].Reset()
@@ -552,6 +552,67 @@ func TestHoldem_Showdown(t *testing.T) {
 	// Game should be at showdown or end
 	assert.True(t, h.GetGameEndFlag())
 	assert.True(t, len(h.GetRoundResults()) > 0)
+	// Player 0 has pair of aces → kickers should be populated
+	for _, r := range h.GetRoundResults() {
+		if r.PlayerIdx == 0 && r.HandRank == PokerHandOnePair {
+			assert.NotNil(t, r.Kickers)
+			assert.Len(t, r.Kickers, 3)
+		}
+	}
+}
+
+func TestHoldem_Showdown_Kickers(t *testing.T) {
+	h := newTestHoldem()
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.SetPhase(HoldemPhaseRiver)
+	h.SetPot(200)
+	h.SetCurrentTurn(0)
+	h.SetLastBet(0)
+	h.setActedFlags([]bool{false, true, true, true})
+
+	// Player 0: pair of 5s with A, K, Q kickers
+	h.players[0].Reset()
+	h.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
+	h.players[0].AddCard(NewCard(CardDesignHeart, 5, false))
+
+	// Player 1: three of a kind (8s) with A, K kickers
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignClover, 8, false))
+	h.players[1].AddCard(NewCard(CardDesignDiamond, 8, false))
+
+	for i := 2; i < 4; i++ {
+		h.players[i].SetFolded(true)
+		h.players[i].Reset()
+		h.players[i].AddCard(NewCard(CardDesignSpade, 2, false))
+		h.players[i].AddCard(NewCard(CardDesignHeart, 3, false))
+	}
+
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 8, false),
+		NewCard(CardDesignDiamond, 1, false),
+		NewCard(CardDesignHeart, 13, false),
+		NewCard(CardDesignClover, 12, false),
+		NewCard(CardDesignSpade, 9, false),
+	})
+
+	err := h.PlayerAction(HoldemActionCheck, 0)
+	assert.NoError(t, err)
+	assert.True(t, h.GetGameEndFlag())
+
+	for _, r := range h.GetRoundResults() {
+		if r.PlayerIdx == 0 {
+			// One Pair (5s) → 3 kickers: A(14), K(13), Q(12)
+			assert.Equal(t, PokerHandOnePair, r.HandRank)
+			assert.Equal(t, []int{14, 13, 12}, r.Kickers)
+		}
+		if r.PlayerIdx == 1 {
+			// Three of a Kind (8s) → 2 kickers: A(14), K(13)
+			assert.Equal(t, PokerHandThreeOfAKind, r.HandRank)
+			assert.Equal(t, []int{14, 13}, r.Kickers)
+		}
+	}
 }
 
 func TestHoldem_BlindPosting(t *testing.T) {
@@ -637,7 +698,7 @@ func TestHoldem_SidePots_AllIn(t *testing.T) {
 	h.players[2].SetFolded(true)
 	h.players[3].SetFolded(true)
 
-	h.SetActedFlags([]bool{true, true, true, true})
+	h.setActedFlags([]bool{true, true, true, true})
 
 	// Give hands
 	h.players[0].Reset()
@@ -673,7 +734,7 @@ func TestHoldem_SplitPot(t *testing.T) {
 	h.SetPot(200)
 	h.SetCurrentTurn(0)
 	h.SetLastBet(0)
-	h.SetActedFlags([]bool{false, true, true, true})
+	h.setActedFlags([]bool{false, true, true, true})
 
 	// Give identical hands (same values, different suits)
 	h.players[0].Reset()
@@ -720,7 +781,7 @@ func TestHoldem_FullGame_AllFold(t *testing.T) {
 	h.players[1].SetFolded(true)
 	h.players[2].SetFolded(true)
 	// Player 3 is still active
-	h.SetActedFlags([]bool{false, true, true, false})
+	h.setActedFlags([]bool{false, true, true, false})
 
 	err := h.PlayerAction(HoldemActionFold, 0)
 	assert.NoError(t, err)
@@ -908,6 +969,273 @@ func TestHoldem_HUDStats_PostFlop_NoTrack(t *testing.T) {
 	assert.Equal(t, 0, h.players[0].GetPFRCount())
 }
 
+// --- 3Bet tracking tests ---
+
+func TestHoldem_HUDStats_ThreeBet_Opportunity_Call(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.raiseCount = 1 // prior raise exists
+	h.SetLastBet(20)
+
+	_ = h.executeAction(0, HoldemActionCall, 0)
+	assert.Equal(t, 1, h.players[0].GetThreeBetOpportunity())
+	assert.Equal(t, 0, h.players[0].GetThreeBetCount())
+}
+
+func TestHoldem_HUDStats_ThreeBet_Raise(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.raiseCount = 1 // prior raise exists
+	h.SetLastBet(20)
+	h.SetMinRaise(10)
+
+	_ = h.executeAction(0, HoldemActionRaise, 20)
+	assert.Equal(t, 1, h.players[0].GetThreeBetOpportunity())
+	assert.Equal(t, 1, h.players[0].GetThreeBetCount())
+}
+
+func TestHoldem_HUDStats_ThreeBet_AllIn(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.raiseCount = 1
+
+	_ = h.executeAction(0, HoldemActionAllIn, 0)
+	assert.Equal(t, 1, h.players[0].GetThreeBetOpportunity())
+	assert.Equal(t, 1, h.players[0].GetThreeBetCount())
+}
+
+func TestHoldem_HUDStats_ThreeBet_Fold(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.raiseCount = 1
+
+	_ = h.executeAction(0, HoldemActionFold, 0)
+	assert.Equal(t, 1, h.players[0].GetThreeBetOpportunity())
+	assert.Equal(t, 0, h.players[0].GetThreeBetCount())
+}
+
+func TestHoldem_HUDStats_ThreeBet_NoOpportunity(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.raiseCount = 0 // no prior raise
+
+	_ = h.executeAction(0, HoldemActionCall, 0)
+	assert.Equal(t, 0, h.players[0].GetThreeBetOpportunity())
+	assert.Equal(t, 0, h.players[0].GetThreeBetCount())
+}
+
+func TestHoldem_HUDStats_ThreeBet_OncePerHand(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+	h.raiseCount = 1
+	h.SetLastBet(20)
+
+	_ = h.executeAction(0, HoldemActionCall, 0)
+	assert.Equal(t, 1, h.players[0].GetThreeBetOpportunity())
+
+	// Reset acted flags to allow second action
+	h.actedFlags[0] = false
+	h.SetLastBet(40)
+	h.raiseCount = 2
+
+	_ = h.executeAction(0, HoldemActionCall, 0)
+	// Should NOT increment again
+	assert.Equal(t, 1, h.players[0].GetThreeBetOpportunity())
+}
+
+func TestHoldem_HUDStats_ThreeBet_ResetBetweenHands(t *testing.T) {
+	h := newTestHoldem()
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	_ = h.Reset()
+	// After Reset, threeBetTracked should be re-initialized
+	assert.Equal(t, len(h.players), len(h.threeBetTracked))
+	for _, tracked := range h.threeBetTracked {
+		assert.False(t, tracked)
+	}
+}
+
+// --- AF tracking tests ---
+
+func TestHoldem_HUDStats_AF_PostFlop_Bet(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionBet, 20)
+	assert.Equal(t, 1, h.players[0].GetPostFlopBetRaise())
+	assert.Equal(t, 0, h.players[0].GetPostFlopCall())
+}
+
+func TestHoldem_HUDStats_AF_PostFlop_Raise(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetLastBet(20)
+	h.SetMinRaise(10)
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionRaise, 20)
+	assert.Equal(t, 1, h.players[0].GetPostFlopBetRaise())
+}
+
+func TestHoldem_HUDStats_AF_PostFlop_Call(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetLastBet(20)
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionCall, 0)
+	assert.Equal(t, 0, h.players[0].GetPostFlopBetRaise())
+	assert.Equal(t, 1, h.players[0].GetPostFlopCall())
+}
+
+func TestHoldem_HUDStats_AF_PostFlop_AllIn(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionAllIn, 0)
+	assert.Equal(t, 1, h.players[0].GetPostFlopBetRaise())
+}
+
+func TestHoldem_HUDStats_AF_PostFlop_Check_NoTrack(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionCheck, 0)
+	assert.Equal(t, 0, h.players[0].GetPostFlopBetRaise())
+	assert.Equal(t, 0, h.players[0].GetPostFlopCall())
+}
+
+func TestHoldem_HUDStats_AF_PostFlop_Fold_NoTrack(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionFold, 0)
+	assert.Equal(t, 0, h.players[0].GetPostFlopBetRaise())
+	assert.Equal(t, 0, h.players[0].GetPostFlopCall())
+}
+
+func TestHoldem_HUDStats_AF_PreFlop_NoTrack(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.players[0].totalHands = 1
+
+	_ = h.executeAction(0, HoldemActionBet, 20)
+	assert.Equal(t, 0, h.players[0].GetPostFlopBetRaise())
+	assert.Equal(t, 0, h.players[0].GetPostFlopCall())
+}
+
+func TestHoldem_HUDStats_AF_Cumulative(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionBet, 20)
+	h.actedFlags[0] = false
+	h.SetLastBet(0)
+	_ = h.executeAction(0, HoldemActionBet, 20)
+	assert.Equal(t, 2, h.players[0].GetPostFlopBetRaise())
+}
+
+func TestHoldem_HUDStats_AF_Turn_Tracks(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseTurn)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionBet, 20)
+	assert.Equal(t, 1, h.players[0].GetPostFlopBetRaise())
+}
+
+func TestHoldem_HUDStats_AF_River_Tracks(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseRiver)
+	h.vpipTracked = make([]bool, len(h.players))
+	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 6, false),
+	})
+
+	_ = h.executeAction(0, HoldemActionBet, 20)
+	assert.Equal(t, 1, h.players[0].GetPostFlopBetRaise())
+}
+
 func TestHoldem_TournamentMode_BlindEscalation(t *testing.T) {
 	t.Run("blinds escalate after BlindLevelHands", func(t *testing.T) {
 		h := newTestHoldem()
@@ -1063,4 +1391,84 @@ func TestHoldem_AllIn_AboveLastBet(t *testing.T) {
 	err := h.PlayerAction(HoldemActionAllIn, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
+}
+
+func setupHoldemForHumanActionWithConfig(phase int, limit BettingLimitType) *Holdem {
+	players := []*HoldemPlayer{
+		NewHoldemPlayer(true, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleLAP),
+		NewHoldemPlayer(false, HoldemStyleLAG),
+	}
+	cfg := DefaultHoldemConfig()
+	cfg.BettingLimit = limit
+	tc := NewTrumpCards(0)
+	h := NewHoldem(tc, players, cfg)
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.setStartingChips([]int{1000, 1000, 1000, 1000})
+	h.SetPhase(phase)
+	h.SetCurrentTurn(0)
+	h.SetLastBet(0)
+	h.SetMinRaise(10)
+	h.SetPot(100)
+	h.setActedFlags([]bool{false, true, true, true})
+	for _, p := range h.players {
+		p.Reset()
+		p.AddCard(NewCard(CardDesignSpade, 1, false))
+		p.AddCard(NewCard(CardDesignHeart, 13, false))
+	}
+	return h
+}
+
+func TestHoldem_GetRaiseCount(t *testing.T) {
+	h := newTestHoldem()
+	assert.Equal(t, 0, h.GetRaiseCount())
+}
+
+func TestHoldem_BettingLimits_PotLimit(t *testing.T) {
+	t.Run("bet exceeding pot limit is rejected", func(t *testing.T) {
+		h := setupHoldemForHumanActionWithConfig(HoldemPhaseFlop, BettingLimitPotLimit)
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignHeart, 3, false),
+			NewCard(CardDesignClover, 4, false),
+		})
+		h.SetPot(100)
+		h.SetLastBet(0)
+		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 130 > 100
+		err := h.PlayerAction(HoldemActionBet, 130)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrInvalidAmount)
+	})
+
+	t.Run("bet within pot limit succeeds", func(t *testing.T) {
+		h := setupHoldemForHumanActionWithConfig(HoldemPhaseFlop, BettingLimitPotLimit)
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignHeart, 3, false),
+			NewCard(CardDesignClover, 4, false),
+		})
+		h.SetPot(100)
+		h.SetLastBet(0)
+		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 100 is within limit
+		err := h.PlayerAction(HoldemActionBet, 100)
+		assert.NoError(t, err)
+	})
+}
+
+func TestHoldem_BettingLimits_NoLimit(t *testing.T) {
+	t.Run("bet succeeds even when raiseCount exceeds fixed limit cap", func(t *testing.T) {
+		h := setupHoldemForHumanActionWithConfig(HoldemPhaseFlop, BettingLimitNoLimit)
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 2, false),
+			NewCard(CardDesignHeart, 3, false),
+			NewCard(CardDesignClover, 4, false),
+		})
+		h.setRaiseCount(10) // well past fixed limit of 4
+		// NoLimit has maxRaises=0, so no raise cap
+		err := h.PlayerAction(HoldemActionBet, 20)
+		assert.NoError(t, err)
+	})
 }

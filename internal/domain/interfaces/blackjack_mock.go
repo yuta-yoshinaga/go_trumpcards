@@ -221,3 +221,9 @@ func (_m *MockBlackJackGame) Get21Plus3Bet() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// GetDeckPenetration モック
+func (_m *MockBlackJackGame) GetDeckPenetration() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}

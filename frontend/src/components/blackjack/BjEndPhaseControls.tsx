@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { btnPrimary } from '../../styles/buttonStyles';
 
 export interface BjEndPhaseControlsProps {
@@ -8,6 +9,7 @@ export interface BjEndPhaseControlsProps {
 }
 
 export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
+  const { t } = useTranslation('common');
   const [countdown, setCountdown] = useState<number | null>(null);
   const onResetRef = useRef(props.onReset);
   onResetRef.current = props.onReset;
@@ -40,7 +42,8 @@ export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
       disabled={props.loading}
       onClick={props.onReset}
     >
-      リセット{countdown !== null ? ` (${countdown}s)` : ''}
+      {t('button.reset')}
+      {countdown !== null ? ` (${countdown}s)` : ''}
     </button>
   );
 }

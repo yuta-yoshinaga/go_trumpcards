@@ -76,7 +76,10 @@ flowchart TD
 | `togglehint` | `hint` | ベーシックストラテジーヒントのON/OFFを切り替える |
 | `setdeckcount N` | `sd N` | シューのデッキ数を設定（有効値: 1/2/4/6/8）。BETフェーズのみ有効 |
 | `togglesoft17` | `soft17` | ディーラーのソフト17ルールを切り替える（H17: ソフト17でヒット / S17: ソフト17でスタンド） |
-| `togglecounting` | `counting` | カードカウンティング表示のON/OFFを切り替える（Hi-Loシステム） |
+| `togglecounting` | `counting` | カードカウンティング表示のON/OFFを切り替える |
+| `setcountingsystem N` | `scs N` | カウンティングシステムを設定（0=Hi-Lo / 1=KO / 2=Zen Count / 3=Omega II） |
+| `toggledas` | `das` | スプリット後のダブルダウン（DAS）許可のON/OFFを切り替える |
+| `setpenetration N` | `pen N` | デッキペネトレーション率を設定（有効値: 50 / 75）。BETフェーズのみ有効 |
 | `quit` | `q` | ゲーム終了 |
 
 ## 特殊ルール
@@ -111,7 +114,26 @@ BETフェーズ中に `setdeckcount N`（短縮形: `sd N`）でシューのデ�
 
 ### カードカウンティング練習
 
-`togglecounting`（短縮形: `counting`）でカードカウンティング表示のON/OFFを切り替えます。ONにするとHi-Loカウンティングシステムに基づくランニングカウント（RC）とトゥルーカウント（TC）が表示されます。カウンティング練習モードとして、実際のカード配布に応じてカウントが更新されます。
+`togglecounting`（短縮形: `counting`）でカードカウンティング表示のON/OFFを切り替えます。ONにするとランニングカウント（RC）とトゥルーカウント（TC）が表示されます。カウンティング練習モードとして、実際のカード配布に応じてカウントが更新されます。
+
+`setcountingsystem N`（短縮形: `scs N`）でカウンティングシステムを変更できます。
+
+| 値 | システム | タイプ |
+|----|----------|--------|
+| 0 | Hi-Lo | バランス型（TC表示あり） |
+| 1 | KO | アンバランス型（TC=N/A） |
+| 2 | Zen Count | バランス型（TC表示あり） |
+| 3 | Omega II | バランス型（TC表示あり） |
+
+KOシステムはアンバランス型のため、トゥルーカウント（TC）は表示されず `TC=N/A` となります。
+
+### DAS（スプリット後のダブルダウン）
+
+`toggledas`（短縮形: `das`）でスプリット後のダブルダウン（Double After Split）の許可/禁止を切り替えます。デフォルトはON（DAS許可）です。OFFにすると、スプリットで分割されたハンドではダブルダウンが選択できなくなります。設定はセッション内で維持されます。
+
+### デッキペネトレーション設定
+
+`setpenetration N`（短縮形: `pen N`）でデッキペネトレーション率（%）を設定します。有効な値は 50 / 75 です。デフォルトは75%です。75%ではカードの75%が使用された時点でシューが再構築されます。50%ではカードの50%が使用された時点で再構築されます。設定はセッション内で維持されます。
 
 ### マルチプレイヤーCPU席
 
@@ -144,7 +166,7 @@ BETフェーズ中に `setdeckcount N`（短縮形: `sd N`）でシューのデ�
 ```
 ----------
 chips: player=950 dealer=1000 decks=1 soft17=S17
-RC: +3 TC: +1.5
+count (Hi-Lo): RC=+3 TC=+1.5
 phase: ACTION
 dealer score
 SPADE 10,
@@ -159,7 +181,7 @@ HEART 8,DIAMOND 7
 ```
 
 - `chips`: プレイヤーとディーラーの所持チップ、デッキ数、ソフト17ルール
-- `RC` / `TC`: ランニングカウント / トゥルーカウント（カウンティングON時のみ）
+- `count (システム名): RC=N TC=N`: ランニングカウント / トゥルーカウント（カウンティングON時のみ、KOシステムでは `TC=N/A`）
 - `phase`: 現在のフェーズ（BET / INSURANCE / ACTION / END）
 - `dealer score`: ディーラーの手札（ゲーム中は裏札が非表示）
 - `cpuN score N bet=M chips=C`: CPUプレイヤーの手札情報（CPUプレイヤーがいる場合のみ）

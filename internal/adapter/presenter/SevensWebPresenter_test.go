@@ -158,6 +158,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.GameEndFlag)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "sevens.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 	})
 
 	t.Run("success Output CPU actions after human play", func(t *testing.T) {
@@ -273,6 +275,97 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 1, resObj.Config.JokerCount)
 	})
 
+	t.Run("success Output config endStopEnabled true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{EndStopEnabled: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.EndStopEnabled)
+	})
+
+	t.Run("success Output config endStopEnabled false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.False(t, resObj.Config.EndStopEnabled)
+	})
+
+	t.Run("success Output config jokerConsecutiveBanned true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{JokerConsecutiveBanned: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.JokerConsecutiveBanned)
+	})
+
+	t.Run("success Output config jokerConsecutiveBanned false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.False(t, resObj.Config.JokerConsecutiveBanned)
+	})
+
+	t.Run("success Output human player lastPlayedJoker true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		cfg := domain.SevensConfig{JokerConsecutiveBanned: true, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].SetLastPlayedJoker(true)
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		// Find human player
+		for _, p := range resObj.Players {
+			if p.IsHuman {
+				assert.True(t, p.LastPlayedJoker)
+			}
+		}
+	})
+
+	t.Run("success Output human player lastPlayedJoker false by default", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tswp.Output(s, nil)
+		var resObj controller.SevensWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		for _, p := range resObj.Players {
+			if p.IsHuman {
+				assert.False(t, p.LastPlayedJoker)
+			}
+		}
+	})
+
 	t.Run("success Output tablePlaced updated after play", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()
@@ -343,6 +436,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Contains(t, resObj.Message, "ゲーム終了")
+		assert.Equal(t, "sevens.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 		assert.NotContains(t, resObj.Message, "CPU 1") // skipped due to rank 0
 	})
 
@@ -407,6 +502,8 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, resObj.Players, 0)           // nil player skipped in Output loop
 		assert.Equal(t, "ゲーム終了！ ", resObj.Message) // buildResultMessage called
+		assert.Equal(t, "sevens.result.rankings", resObj.MessageCode)
+		assert.Equal(t, resObj.Message, resObj.MessageParams["rankings"])
 	})
 
 	t.Run("success Output config includes MaxPasses", func(t *testing.T) {

@@ -327,6 +327,50 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with setcountingsystem command and amount', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          countingSystem: 2,
+        }),
+      );
+      await blackjackApi.exec('setcountingsystem', 2);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'setcountingsystem', amount: 2, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with setpenetration command and amount', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          deckPenetration: 50,
+        }),
+      );
+      await blackjackApi.exec('setpenetration', 50);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'setpenetration', amount: 50, sessionId }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(blackjackApi.exec('reset')).rejects.toThrow('HTTP error: 500');
@@ -472,6 +516,32 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with reset command and bettingLimit', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          phase: 0,
+          player: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+          dealer: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+          message: '',
+          pot: 0,
+          ante: 10,
+        }),
+      );
+      await pokerApi.exec('reset', undefined, undefined, { bettingLimit: 1 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/poker/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            indices: undefined,
+            amount: undefined,
+            bettingLimit: 1,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 503));
       await expect(pokerApi.exec('reset')).rejects.toThrow('HTTP error: 503');
@@ -551,6 +621,37 @@ describe('gameApi', () => {
         '/oldmaid/exec',
         expect.objectContaining({
           body: JSON.stringify({ command: 'reset', mode: 1, cpuPlacementStrategy: true, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reset command and cpuMemoryAI', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          nextDrawTargetIdx: 1,
+          gameEndFlag: false,
+          hasDrawn: false,
+          lastDrawPlayerIdx: 0,
+          lastDrawFromIdx: 0,
+          lastDrawCard: null,
+          lastDiscardedPairs: 0,
+          cpuActions: [],
+          message: '',
+        }),
+      );
+      await oldmaidApi.exec('reset', undefined, 1, true, undefined, true);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/oldmaid/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            mode: 1,
+            cpuPlacementStrategy: true,
+            cpuMemoryAI: true,
+            sessionId,
+          }),
         }),
       );
     });
@@ -799,7 +900,11 @@ describe('gameApi', () => {
 
     it('sends config fields when config is provided', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
-      await doubtApi.exec('reset', undefined, undefined, undefined, { doubtWindowSec: 3, cpuMemoryLevel: 2 });
+      await doubtApi.exec('reset', undefined, undefined, undefined, {
+        doubtWindowSec: 3,
+        cpuMemoryLevel: 2,
+        penaltyDrawLimit: 5,
+      });
       expect(mockFetch).toHaveBeenCalledWith(
         '/doubt/exec',
         expect.objectContaining({
@@ -808,6 +913,7 @@ describe('gameApi', () => {
             sessionId,
             doubtWindowSec: 3,
             cpuMemoryLevel: 2,
+            penaltyDrawLimit: 5,
           }),
         }),
       );
@@ -1012,6 +1118,44 @@ describe('gameApi', () => {
       });
     });
 
+    it('sends jokerConsecutiveBanned in config fields when config is provided', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          players: [],
+          currentTurn: 0,
+          tableMinVals: [0, 7, 7, 7, 7],
+          tableMaxVals: [0, 7, 7, 7, 7],
+          tablePlaced: [0, 128, 128, 128, 128],
+          config: {
+            tunnelEnabled: false,
+            jokerCount: 1,
+            cpuStrategy: false,
+            maxPasses: 5,
+            noJokerFinish: false,
+            jokerConsecutiveBanned: true,
+          },
+          gameEndFlag: false,
+          cpuActions: [],
+          humanAction: null,
+          message: '',
+        }),
+      );
+      await sevensApi.exec('reset', -1, 0, 0, { jokerCount: 1, jokerConsecutiveBanned: true });
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          index: -1,
+          jokerTargetSuit: 0,
+          jokerTargetValue: 0,
+          sessionId,
+          jokerCount: 1,
+          jokerConsecutiveBanned: true,
+        }),
+      });
+    });
+
     it('does not send config fields when config is omitted', async () => {
       mockFetch.mockReturnValue(
         makeResponse({
@@ -1138,6 +1282,22 @@ describe('gameApi', () => {
             tournamentMode: true,
             blindLevelHands: 5,
             blindMultiplier: 200,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and bettingLimit config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('reset', undefined, { bettingLimit: 2 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            bettingLimit: 2,
           }),
         }),
       );

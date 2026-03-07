@@ -26,14 +26,6 @@ func TestSevensPlayer_Method(t *testing.T) {
 		assert.False(t, p.GetIsHuman())
 	})
 
-	t.Run("success SetIsFinished and GetIsFinished", func(t *testing.T) {
-		p := domain.NewSevensPlayer(true)
-		p.SetIsFinished(true)
-		assert.True(t, p.GetIsFinished())
-		p.SetIsFinished(false)
-		assert.False(t, p.GetIsFinished())
-	})
-
 	t.Run("success SetIsEliminated and GetIsEliminated", func(t *testing.T) {
 		p := domain.NewSevensPlayer(true)
 		assert.False(t, p.GetIsEliminated()) // default false
@@ -41,12 +33,6 @@ func TestSevensPlayer_Method(t *testing.T) {
 		assert.True(t, p.GetIsEliminated())
 		p.SetIsEliminated(false)
 		assert.False(t, p.GetIsEliminated())
-	})
-
-	t.Run("success SetRank and GetRank", func(t *testing.T) {
-		p := domain.NewSevensPlayer(true)
-		p.SetRank(2)
-		assert.Equal(t, 2, p.GetRank())
 	})
 
 	t.Run("success IncrPassesUsed and CanPass", func(t *testing.T) {
@@ -114,6 +100,19 @@ func TestSevensPlayer_Method(t *testing.T) {
 		p.IncrPassesUsed()
 		assert.False(t, p.CanPass()) // 3 >= 3
 		assert.Equal(t, 3, p.GetPassesUsed())
+	})
+
+	t.Run("success GetLastPlayedJoker default false", func(t *testing.T) {
+		p := domain.NewSevensPlayer(true)
+		assert.False(t, p.GetLastPlayedJoker())
+	})
+
+	t.Run("success SetLastPlayedJoker and GetLastPlayedJoker", func(t *testing.T) {
+		p := domain.NewSevensPlayer(true)
+		p.SetLastPlayedJoker(true)
+		assert.True(t, p.GetLastPlayedJoker())
+		p.SetLastPlayedJoker(false)
+		assert.False(t, p.GetLastPlayedJoker())
 	})
 
 	t.Run("success SortCards sorts by suit then value", func(t *testing.T) {

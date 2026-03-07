@@ -21,7 +21,10 @@ type BlackJackInteractorIF interface {
 	ToggleHint() string
 	ToggleSoft17() string
 	ToggleCounting() string
-	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string
+	ToggleDAS() string
+	SetCountingSystem(system int) string
+	SetDeckPenetration(penetration int) string
+	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -126,12 +129,40 @@ func (bi *BlackJackInteractor) ToggleCounting() string {
 	return bi.bjp.Output(bi.bj, err)
 }
 
+// ToggleDAS スプリット後ダブルダウン許可切り替え
+func (bi *BlackJackInteractor) ToggleDAS() string {
+	config := bi.bj.GetConfig()
+	config.DoubleAfterSplit = !config.DoubleAfterSplit
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// SetCountingSystem カウンティングシステム変更
+func (bi *BlackJackInteractor) SetCountingSystem(system int) string {
+	config := bi.bj.GetConfig()
+	config.CountingSystem = system
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// SetDeckPenetration デッキペネトレーション率設定
+func (bi *BlackJackInteractor) SetDeckPenetration(penetration int) string {
+	config := bi.bj.GetConfig()
+	config.DeckPenetration = penetration
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
 // ResetWithConfig 設定付きリセット
-func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool) string {
+func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
+	bi.bj.Reset()
 	err := bi.bj.SetConfig(domain.BlackJackConfig{
 		DealerHitsSoft17: dealerHitsSoft17,
 		CpuPlayerCount:   cpuPlayerCount,
 		CountingEnabled:  countingEnabled,
+		DoubleAfterSplit: doubleAfterSplit,
+		CountingSystem:   countingSystem,
+		DeckPenetration:  deckPenetration,
 	})
 	if err != nil {
 		return bi.bjp.Output(bi.bj, err)

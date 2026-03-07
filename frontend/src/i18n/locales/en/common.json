@@ -1,0 +1,75 @@
+{
+  "nav": {
+    "blackjack": "Blackjack",
+    "poker": "Poker",
+    "oldmaid": "Old Maid",
+    "daifugo": "Daifugo",
+    "sevens": "Sevens",
+    "doubt": "Doubt",
+    "holdem": "Texas Hold'em"
+  },
+  "player": {
+    "you": "You",
+    "cpu": "CPU {{id}}",
+    "player": "Player {{idx}}"
+  },
+  "action": {
+    "fold": "Fold",
+    "check": "Check",
+    "call": "Call",
+    "bet": "Bet",
+    "raise": "Raise",
+    "allIn": "All-in",
+    "unknown": "Unknown"
+  },
+  "betting": {
+    "betAmount": "Bet Amount:",
+    "chips": "Chips:",
+    "currentBet": "Bet:",
+    "bettingLimit": "Limit:",
+    "fixed": "Fixed",
+    "potLimit": "Pot Limit",
+    "noLimit": "No Limit"
+  },
+  "button": {
+    "reset": "Reset",
+    "pass": "Pass",
+    "cancel": "Cancel"
+  },
+  "status": {
+    "loading": "Loading...",
+    "folded": "Folded",
+    "allIn": "All-in",
+    "finished": "Finished",
+    "thinking": "Thinking..."
+  },
+  "label": {
+    "result": "Result:",
+    "cpuAction": "CPU Actions:",
+    "cpuActions": "[CPU Actions]",
+    "pot": "Pot:",
+    "dealer": "Dealer:",
+    "networkError": "A network error occurred. Please try again.",
+    "chipsWon": "+{{amount}} chips",
+    "kicker": "Kicker: {{kickers}}"
+  },
+  "messageCode": {
+    "blackjack.result.draw": "It is a draw.",
+    "blackjack.result.win": "You are the winner.",
+    "blackjack.result.lose": "It is your loss.",
+    "poker.result.gameOver": "Game over.",
+    "poker.result.win": "You are the winner.",
+    "poker.result.folded": "You folded.",
+    "poker.result.lose": "You lose.",
+    "oldmaid.result.humanLose": "Game over — you lose!",
+    "oldmaid.result.cpuLose": "Game over — CPU {{cpuId}} loses!",
+    "daifugo.result.rankings": "{{rankings}}",
+    "sevens.result.rankings": "{{rankings}}",
+    "doubt.result.humanWin": "Game over! You win!",
+    "doubt.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "holdem.result.gameOver": "Game over.",
+    "holdem.result.win": "You are the winner.",
+    "holdem.result.folded": "You folded.",
+    "holdem.result.lose": "You lose."
+  }
+}

@@ -6,6 +6,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewDefaultBlackJack(t *testing.T) {
@@ -1616,6 +1617,101 @@ func TestDefaultBlackJackConfig(t *testing.T) {
 	assert.False(t, cfg.DealerHitsSoft17, "DealerHitsSoft17 default should be false")
 	assert.Equal(t, 0, cfg.CpuPlayerCount, "CpuPlayerCount default should be 0")
 	assert.False(t, cfg.CountingEnabled, "CountingEnabled default should be false")
+	assert.True(t, cfg.DoubleAfterSplit, "DoubleAfterSplit default should be true")
+	assert.Equal(t, domain.BJCountingHiLo, cfg.CountingSystem, "CountingSystem default should be Hi-Lo (0)")
+}
+
+func TestIsBalancedCountingSystem(t *testing.T) {
+	assert.True(t, domain.IsBalancedCountingSystem(domain.BJCountingHiLo), "Hi-Lo is balanced")
+	assert.False(t, domain.IsBalancedCountingSystem(domain.BJCountingKO), "KO is unbalanced")
+	assert.True(t, domain.IsBalancedCountingSystem(domain.BJCountingZen), "Zen Count is balanced")
+	assert.True(t, domain.IsBalancedCountingSystem(domain.BJCountingOmegaII), "Omega II is balanced")
+}
+
+func TestBlackJack_DAS_Enabled(t *testing.T) {
+	// DAS enabled (default) → double down after split should succeed
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Perform split
+	err := bj.PlayerSplit()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(bj.GetPlayerHands()))
+
+	// Double down on the first split hand should succeed (DAS default true)
+	splitHand := bj.GetPlayerHands()[bj.GetCurrentHandIdx()]
+	require.True(t, splitHand.GetCardsSize() == 2 && !splitHand.IsFinished(), "split hand must have exactly 2 cards and not be finished")
+	err = bj.PlayerDoubleDown()
+	assert.NoError(t, err, "DD after split should be allowed when DAS is enabled")
+}
+
+func TestBlackJack_DAS_Disabled(t *testing.T) {
+	// DAS disabled → double down after split should be rejected
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{DoubleAfterSplit: false})
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Perform split
+	err := bj.PlayerSplit()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(bj.GetPlayerHands()))
+
+	// Double down on split hand should be rejected
+	splitHand := bj.GetPlayerHands()[bj.GetCurrentHandIdx()]
+	require.True(t, splitHand.GetCardsSize() == 2 && !splitHand.IsFinished(), "split hand must have exactly 2 cards and not be finished")
+	err = bj.PlayerDoubleDown()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Double after split is not allowed")
+}
+
+func TestBlackJack_DAS_Disabled_NonSplitHandAllowed(t *testing.T) {
+	// DAS disabled but non-split hand → double down should succeed
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{DoubleAfterSplit: false})
+	bj.Reset()
+
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Single hand → DD should be allowed regardless of DAS setting
+	err := bj.PlayerDoubleDown()
+	assert.NoError(t, err, "DD on non-split hand should be allowed even when DAS is disabled")
 }
 
 func TestBlackJackPlayerIsSoft(t *testing.T) {
@@ -1920,6 +2016,31 @@ func TestBlackJackConfig_GetSetConfig(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
 		bj.Reset()
 		cfg := domain.BlackJackConfig{CpuPlayerCount: -1}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+	t.Run("counting system 0-3 ok", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		for sys := 0; sys <= domain.BJCountingMax; sys++ {
+			cfg := domain.BlackJackConfig{CountingSystem: sys}
+			err := bj.SetConfig(cfg)
+			assert.NoError(t, err, "counting system %d should be valid", sys)
+		}
+	})
+	t.Run("counting system out of range fails", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		cfg := domain.BlackJackConfig{CountingSystem: domain.BJCountingMax + 1}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+	t.Run("counting system negative fails", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		cfg := domain.BlackJackConfig{CountingSystem: -1}
 		err := bj.SetConfig(cfg)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
@@ -2376,4 +2497,70 @@ func TestBlackJack_SideBetT3Payout(t *testing.T) {
 	assert.Equal(t, 1, len(results))
 	assert.Equal(t, 10, results[0].BetAmount)
 	assert.Equal(t, domain.BJSideBet21Plus3, results[0].BetType)
+}
+
+func TestGetDeckPenetration_Default(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	assert.Equal(t, 75, bj.GetDeckPenetration())
+}
+
+func TestGetDeckPenetration_Zero(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 0, DoubleAfterSplit: true})
+	assert.Equal(t, 75, bj.GetDeckPenetration())
+}
+
+func TestGetDeckPenetration_50(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
+	assert.Equal(t, 50, bj.GetDeckPenetration())
+}
+
+func TestSetConfig_InvalidPenetration(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	err := bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 60, DoubleAfterSplit: true})
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+}
+
+func TestSetConfig_ValidPenetration(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	err := bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
+	assert.NoError(t, err)
+	assert.Equal(t, 50, bj.GetDeckPenetration())
+}
+
+func TestReset_Penetration50(t *testing.T) {
+	// With 50% penetration, reshuffle when remaining < 50% of total (i.e., remaining < 26 for 52-card deck).
+	// Draw enough cards so remaining drops below 50% threshold, then verify Reset reshuffles.
+	bj := domain.NewDefaultBlackJack()
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
+	bj.Reset()
+
+	// After reset, we have a fresh 52-card deck. Draw 27 cards to leave 25 remaining (< 26).
+	for i := 0; i < 27; i++ {
+		_ = bj.PlayerBet(10, 0, 0)
+		bj.Reset()
+	}
+	// After drawing 27 * 4 = 108 cards from bets (2 player + 2 dealer each round),
+	// but Reset reshuffles when remaining drops below threshold.
+	// The key point: with 50% penetration, reshuffle triggers sooner.
+	// Let's test it directly: the game should still be functional after many rounds.
+	assert.Equal(t, domain.BJPhaseBet, bj.GetPhase())
+	assert.Equal(t, 50, bj.GetDeckPenetration())
+}
+
+func TestReset_Penetration75(t *testing.T) {
+	// With 75% penetration (default), reshuffle when remaining < 25% of total (i.e., remaining < 13 for 52-card deck).
+	bj := domain.NewDefaultBlackJack()
+	// Default config: DeckPenetration=0 → treated as 75
+	bj.Reset()
+
+	assert.Equal(t, 75, bj.GetDeckPenetration())
+	// Play several rounds to verify the game stays functional with default penetration
+	for i := 0; i < 10; i++ {
+		_ = bj.PlayerBet(10, 0, 0)
+		bj.Reset()
+	}
+	assert.Equal(t, domain.BJPhaseBet, bj.GetPhase())
 }

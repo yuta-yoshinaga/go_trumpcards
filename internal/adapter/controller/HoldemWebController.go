@@ -11,21 +11,15 @@ import (
 
 // HoldemWebInput テキサスホールデムWebインプット
 type HoldemWebInput struct {
-	Command         string `json:"command"`
-	Amount          int    `json:"amount,omitempty"`
-	SessionId       string `json:"sessionId"`
-	SmallBlind      *int   `json:"smallBlind,omitempty"`
-	BigBlind        *int   `json:"bigBlind,omitempty"`
-	TournamentMode  *bool  `json:"tournamentMode,omitempty"`
-	BlindLevelHands *int   `json:"blindLevelHands,omitempty"`
-	BlindMultiplier *int   `json:"blindMultiplier,omitempty"`
+	BaseWebInput
+	Amount          int   `json:"amount,omitempty"`
+	SmallBlind      *int  `json:"smallBlind,omitempty"`
+	BigBlind        *int  `json:"bigBlind,omitempty"`
+	TournamentMode  *bool `json:"tournamentMode,omitempty"`
+	BlindLevelHands *int  `json:"blindLevelHands,omitempty"`
+	BlindMultiplier *int  `json:"blindMultiplier,omitempty"`
+	BettingLimit    *int  `json:"bettingLimit,omitempty"`
 }
-
-// GetCommand returns the command string.
-func (i HoldemWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i HoldemWebInput) GetSessionID() string { return i.SessionId }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
 type HoldemWebOutputPlayer struct {
@@ -43,6 +37,8 @@ type HoldemWebOutputPlayer struct {
 	TotalHands    int              `json:"totalHands"`
 	VPIP          int              `json:"vpip"`
 	PFR           int              `json:"pfr"`
+	ThreeBet      int              `json:"threeBet"`
+	AF            string           `json:"af"`
 }
 
 // HoldemWebOutputCpuAction テキサスホールデムCPU行動記録
@@ -57,6 +53,7 @@ type HoldemWebOutputResult struct {
 	PlayerIdx int              `json:"playerIdx"`
 	HandRank  int              `json:"handRank"`
 	HandName  string           `json:"handName"`
+	Kickers   string           `json:"kickers"`
 	BestHand  []*WebOutputCard `json:"bestHand"`
 	WonAmount int              `json:"wonAmount"`
 }
@@ -79,9 +76,14 @@ type HoldemWebOutput struct {
 	GameEndFlag     bool                        `json:"gameEndFlag"`
 	LastBet         int                         `json:"lastBet"`
 	MinRaise        int                         `json:"minRaise"`
+	BettingLimit    int                         `json:"bettingLimit"`
+	RaiseCount      int                         `json:"raiseCount"`
+	MaxBetAmount    int                         `json:"maxBetAmount"`
 	RoundResults    []*HoldemWebOutputResult    `json:"roundResults"`
 	CpuActions      []*HoldemWebOutputCpuAction `json:"cpuActions"`
 	Message         string                      `json:"message"`
+	MessageCode     string                      `json:"messageCode,omitempty"`
+	MessageParams   map[string]string           `json:"messageParams,omitempty"`
 	HandCount       int                         `json:"handCount"`
 	SmallBlind      int                         `json:"smallBlind"`
 	BigBlind        int                         `json:"bigBlind"`
@@ -147,6 +149,15 @@ func (hwc *HoldemWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 				}
 				if param.BlindMultiplier != nil && *param.BlindMultiplier >= 101 {
 					cfg.BlindMultiplier = *param.BlindMultiplier
+				}
+				if param.BettingLimit != nil {
+					bl := *param.BettingLimit
+					if bl < 0 {
+						bl = 0
+					} else if bl > 2 {
+						bl = 2
+					}
+					cfg.BettingLimit = domain.BettingLimitType(bl)
 				}
 				hwc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
 			case "f", "fold":

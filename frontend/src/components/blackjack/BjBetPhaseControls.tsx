@@ -1,7 +1,16 @@
+import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSuccess, btnWarning } from '../../styles/buttonStyles';
+import {
+  BJ_COUNTING_HILO,
+  BJ_COUNTING_KO,
+  BJ_COUNTING_OMEGA2,
+  BJ_COUNTING_ZEN,
+  BJ_VALID_PENETRATIONS,
+} from './bjConstants';
 
 const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
 const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
+const COUNTING_SYSTEMS = [BJ_COUNTING_HILO, BJ_COUNTING_KO, BJ_COUNTING_ZEN, BJ_COUNTING_OMEGA2] as const;
 
 export interface BjBetPhaseControlsProps {
   betAmount: number;
@@ -16,6 +25,12 @@ export interface BjBetPhaseControlsProps {
   onToggleSoft17: () => void;
   countingEnabled: boolean;
   onToggleCounting: () => void;
+  doubleAfterSplit: boolean;
+  onToggleDAS: () => void;
+  countingSystem: number;
+  onCountingSystemChange: (v: number) => void;
+  deckPenetration: number;
+  onDeckPenetrationChange: (v: number) => void;
   loading: boolean;
   onBet: () => void;
   perfectPairsBet: number;
@@ -25,11 +40,12 @@ export interface BjBetPhaseControlsProps {
 }
 
 export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
+  const { t } = useTranslation('blackjack');
   return (
     <>
       <div className="flex items-center justify-center gap-2 mb-2">
         <label htmlFor="bj-bet-amount" className="text-white text-sm">
-          ベット額:
+          {t('betAmount')}
         </label>
         <input
           id="bj-bet-amount"
@@ -74,7 +90,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
       </div>
       <div className="flex items-center justify-center gap-2 mb-2">
         <label htmlFor="bj-deck-count" className="text-white text-sm">
-          デッキ数:
+          {t('deckCount')}
         </label>
         <select
           id="bj-deck-count"
@@ -85,14 +101,15 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         >
           {VALID_DECK_COUNTS.map((d) => (
             <option key={d} value={d}>
-              {d}デッキ
+              {d}
+              {t('deckUnit')}
             </option>
           ))}
         </select>
       </div>
       <div className="flex items-center justify-center gap-2 mb-2">
         <label htmlFor="bj-cpu-count" className="text-white text-sm">
-          CPU人数:
+          {t('cpuCount')}
         </label>
         <select
           id="bj-cpu-count"
@@ -103,7 +120,8 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
         >
           {VALID_CPU_COUNTS.map((c) => (
             <option key={c} value={c}>
-              {c}人
+              {c}
+              {t('cpuUnit')}
             </option>
           ))}
         </select>
@@ -115,7 +133,7 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           disabled={props.loading}
           onClick={props.onToggleHint}
         >
-          ヒント {props.hintEnabled ? 'ON' : 'OFF'}
+          {t('hint')} {props.hintEnabled ? 'ON' : 'OFF'}
         </button>
         <button
           type="button"
@@ -131,11 +149,48 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           disabled={props.loading}
           onClick={props.onToggleCounting}
         >
-          カウント {props.countingEnabled ? 'ON' : 'OFF'}
+          {t('counting')} {props.countingEnabled ? 'ON' : 'OFF'}
         </button>
+        <select
+          aria-label={t('countingSystem')}
+          value={props.countingSystem}
+          onChange={(e) => props.onCountingSystemChange(Number(e.target.value))}
+          className="px-2 py-1 rounded text-sm"
+          disabled={props.loading || !props.countingEnabled}
+        >
+          {COUNTING_SYSTEMS.map((cs) => (
+            <option key={cs} value={cs}>
+              {t(`countingSystemNames.${cs}`)}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          className={props.doubleAfterSplit ? btnSuccess : btnWarning}
+          disabled={props.loading}
+          onClick={props.onToggleDAS}
+        >
+          {t('das')} {props.doubleAfterSplit ? 'ON' : 'OFF'}
+        </button>
+        <label htmlFor="bj-penetration" className="text-white text-sm">
+          {t('penetration')}
+        </label>
+        <select
+          id="bj-penetration"
+          value={props.deckPenetration}
+          onChange={(e) => props.onDeckPenetrationChange(Number(e.target.value))}
+          className="px-2 py-1 rounded text-sm"
+          disabled={props.loading}
+        >
+          {BJ_VALID_PENETRATIONS.map((p) => (
+            <option key={p} value={p}>
+              {p}%
+            </option>
+          ))}
+        </select>
       </div>
       <button type="button" className={btnPrimary} disabled={props.loading} onClick={props.onBet}>
-        ベット
+        {t('button.bet')}
       </button>
     </>
   );

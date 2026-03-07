@@ -16,7 +16,7 @@ func makeHoldemForPresenter() (*domain.Holdem, []*domain.HoldemPlayer) {
 		domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
 		domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
 		domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+		domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
 	}
 	h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
 	return h, players
@@ -197,15 +197,39 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
+	t.Run("showdown results with kickers", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 12, 10}, WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "You: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "100チップ獲得")
+	})
+
+	t.Run("showdown results without kickers", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", Kickers: nil, WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "You: Flush")
+		assert.NotContains(t, result, "キッカー")
+	})
+
 	t.Run("showdown results with CPU winner", func(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
 		h.SetPhase(domain.HoldemPhaseEnd)
 		h.SetRoundResults([]domain.HoldemResult{
-			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 50, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{13, 12, 11}, WonAmount: 50, BestHand: nil},
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "CPU 1: One Pair")
+		assert.Contains(t, result, "CPU 1: One Pair (キッカー: K, Q, J)")
 		assert.Contains(t, result, "50チップ獲得")
 	})
 
@@ -325,8 +349,30 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		players[1].IncrementPFR()
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "VPIP:50% PFR:0%")
-		assert.Contains(t, result, "VPIP:66% PFR:33%")
+		assert.Contains(t, result, "VPIP:50% PFR:0% 3Bet:0% AF:-")
+		assert.Contains(t, result, "VPIP:66% PFR:33% 3Bet:0% AF:-")
+	})
+
+	t.Run("HUD stats with AF infinity", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementPostFlopBetRaise()
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "AF:∞")
+	})
+
+	t.Run("HUD stats with AF normal ratio", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopCall()
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "AF:2.0")
 	})
 
 	t.Run("HUD stats not shown when totalHands is 0", func(t *testing.T) {
@@ -362,5 +408,16 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(h, nil)
 		assert.NotContains(t, result, "トーナメント")
+	})
+}
+
+func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("displays Fixed limit", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "Fixed")
 	})
 }

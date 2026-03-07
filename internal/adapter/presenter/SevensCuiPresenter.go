@@ -23,7 +23,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	b.WriteString("==========\n")
 	b.WriteString("Sevens (7並べ)\n")
 	config := s.GetConfig()
-	if config.TunnelEnabled || config.JokerCount > 0 || config.CpuStrategy || config.MaxPasses != domain.SevensMaxPasses || config.NoJokerFinish || config.JokerReclaimEnabled {
+	if config.TunnelEnabled || config.JokerCount > 0 || config.CpuStrategy || config.MaxPasses != domain.SevensMaxPasses || config.NoJokerFinish || config.JokerReclaimEnabled || config.EndStopEnabled || config.JokerConsecutiveBanned {
 		b.WriteString("ルール:")
 		if config.TunnelEnabled {
 			b.WriteString(" [トンネル]")
@@ -44,6 +44,12 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		}
 		if config.JokerReclaimEnabled {
 			b.WriteString(" [ジョーカー回収]")
+		}
+		if config.EndStopEnabled {
+			b.WriteString(" [片側ストップ]")
+		}
+		if config.JokerConsecutiveBanned {
+			b.WriteString(" [ジョーカー連続禁止]")
 		}
 		b.WriteString("\n")
 	}

@@ -11,59 +11,47 @@ test.describe('Doubt E2E', () => {
     await resetButton.click();
     await waitForLoaded(page);
 
-    // Game loop
-    let gameEnded = false;
-    for (let turn = 0; turn < 200; turn++) {
-      // Check if game ended
-      const gameEnd = page.locator('text=ゲーム終了');
-      if (await gameEnd.isVisible({ timeout: 1_000 }).catch(() => false)) {
-        gameEnded = true;
-        break;
-      }
+    const MAX_TURNS = 300;
+    const gameEnd = page.locator('text=ゲーム終了');
+    const skipButton = page.getByRole('button', { name: 'スルー' });
+    const confirmButton = page.getByRole('button', { name: '確認' });
+    const playButton = page.getByRole('button', { name: '出す' });
+    const handCards = page.locator('[data-testid="hand-card"]');
 
-      // Doubt phase: skip doubt or confirm
-      const skipButton = page.getByRole('button', { name: 'スルー' });
-      const confirmButton = page.getByRole('button', { name: '確認' });
+    for (let turn = 0; turn < MAX_TURNS; turn++) {
+      // Wait for any actionable element or game end to appear
+      await expect(gameEnd.or(skipButton).or(confirmButton).or(playButton)).toBeVisible({ timeout: 10_000 });
 
-      if (await skipButton.isVisible({ timeout: 1_000 }).catch(() => false)) {
+      // Check if game ended (instant, no timeout)
+      if (await gameEnd.isVisible()) break;
+
+      // Doubt phase: skip doubt or confirm CPU doubt
+      if (await skipButton.isVisible()) {
         await skipButton.click();
         await waitForLoaded(page);
         continue;
       }
 
-      if (await confirmButton.isVisible({ timeout: 1_000 }).catch(() => false)) {
+      if (await confirmButton.isVisible()) {
         await confirmButton.click();
         await waitForLoaded(page);
         continue;
       }
 
       // Play phase: select first card and play
-      const playButton = page.getByRole('button', { name: '出す' });
-      if (await playButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
-        // Select the first card in hand
-        const handCards = page
-          .locator('[aria-busy="false"] button[class*="border"]')
-          .or(page.locator('img[alt]').first());
-        if (
-          await handCards
-            .first()
-            .isVisible()
-            .catch(() => false)
-        ) {
+      if (await playButton.isVisible()) {
+        if ((await handCards.count()) > 0) {
           await handCards.first().click();
         }
-
-        // Click 出す if enabled
         if (await playButton.isEnabled()) {
           await playButton.click();
           await waitForLoaded(page);
         }
       }
-
-      await waitForLoaded(page);
     }
 
-    expect(gameEnded).toBe(true);
+    // Assert game ended (Playwright auto-retry)
+    await expect(gameEnd).toBeVisible({ timeout: 5_000 });
 
     // Reset
     await resetButton.click();

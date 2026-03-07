@@ -29,8 +29,8 @@ const (
 	HoldemActionAllIn = bettingActionAllIn // オールイン
 )
 
-// CPU AI 閾値
-const holdemMaxRaisesPerRound = bettingMaxRaisesPerRound // 1ラウンドの最大レイズ回数
+// holdemDefaultMaxRaises Fixed/PotLimit時のデフォルト最大レイズ回数
+const holdemDefaultMaxRaises = bettingMaxRaisesPerRound
 
 // cpuStyleParams CPU意思決定パラメータ
 type cpuStyleParams struct {
@@ -101,6 +101,7 @@ type HoldemResult struct {
 	HandRank  int     // ハンドランク
 	HandName  string  // ハンド名
 	BestHand  []*Card // ベスト5枚
+	Kickers   []int   // キッカーカード値
 	WonAmount int     // 獲得チップ
 }
 
@@ -113,44 +114,46 @@ type HoldemCpuAction struct {
 
 // Holdem テキサスホールデムクラス
 type Holdem struct {
-	trumpCards     *TrumpCards
-	players        []*HoldemPlayer
-	communityCards []*Card
-	pot            int
-	sidePots       []HoldemSidePot
-	dealerIdx      int
-	currentTurn    int
-	phase          int
-	config         HoldemConfig
-	gameEndFlag    bool
-	lastBet        int
-	minRaise       int
-	raiseCount     int
-	actedFlags     []bool
-	roundResults   []HoldemResult
-	cpuActions     []HoldemCpuAction
-	startingChips  []int
-	vpipTracked    []bool // 当該ハンドでVPIP済みかどうか
-	pfrTracked     []bool // 当該ハンドでPFR済みかどうか
-	handCount      int    // ハンド数 (トーナメントモード用)
-	lastCpuError   error  // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
+	trumpCards      *TrumpCards
+	players         []*HoldemPlayer
+	communityCards  []*Card
+	pot             int
+	sidePots        []HoldemSidePot
+	dealerIdx       int
+	currentTurn     int
+	phase           int
+	config          HoldemConfig
+	gameEndFlag     bool
+	lastBet         int
+	minRaise        int
+	raiseCount      int
+	actedFlags      []bool
+	roundResults    []HoldemResult
+	cpuActions      []HoldemCpuAction
+	startingChips   []int
+	vpipTracked     []bool // 当該ハンドでVPIP済みかどうか
+	pfrTracked      []bool // 当該ハンドでPFR済みかどうか
+	threeBetTracked []bool // 当該ハンドで3Bet追跡済みかどうか
+	handCount       int    // ハンド数 (トーナメントモード用)
+	lastCpuError    error  // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 }
 
 // NewHoldem コンストラクタ
 func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemConfig) *Holdem {
 	return &Holdem{
-		trumpCards:     trumpCards,
-		players:        players,
-		communityCards: make([]*Card, 0),
-		sidePots:       make([]HoldemSidePot, 0),
-		actedFlags:     make([]bool, len(players)),
-		roundResults:   make([]HoldemResult, 0),
-		cpuActions:     make([]HoldemCpuAction, 0),
-		startingChips:  make([]int, len(players)),
-		vpipTracked:    make([]bool, len(players)),
-		pfrTracked:     make([]bool, len(players)),
-		config:         config,
-		phase:          HoldemPhaseInit,
+		trumpCards:      trumpCards,
+		players:         players,
+		communityCards:  make([]*Card, 0),
+		sidePots:        make([]HoldemSidePot, 0),
+		actedFlags:      make([]bool, len(players)),
+		roundResults:    make([]HoldemResult, 0),
+		cpuActions:      make([]HoldemCpuAction, 0),
+		startingChips:   make([]int, len(players)),
+		vpipTracked:     make([]bool, len(players)),
+		pfrTracked:      make([]bool, len(players)),
+		threeBetTracked: make([]bool, len(players)),
+		config:          config,
+		phase:           HoldemPhaseInit,
 	}
 }
 
@@ -185,6 +188,7 @@ func (h *Holdem) Reset() error {
 	// HUDスタッツ追跡フラグをリセット
 	h.vpipTracked = make([]bool, len(h.players))
 	h.pfrTracked = make([]bool, len(h.players))
+	h.threeBetTracked = make([]bool, len(h.players))
 
 	// トーナメントモード: ブラインドエスカレーション
 	if h.config.TournamentMode && h.config.BlindLevelHands > 0 && h.handCount > 0 && h.handCount%h.config.BlindLevelHands == 0 {
@@ -311,6 +315,29 @@ func (h *Holdem) trackPreFlopStats(playerIdx, action int) {
 		h.players[playerIdx].IncrementPFR()
 		h.pfrTracked[playerIdx] = true
 	}
+
+	// 3Bet追跡: raiseCount >= 1 (既にレイズがある) かつ未追跡
+	if h.raiseCount >= 1 && !h.threeBetTracked[playerIdx] {
+		h.players[playerIdx].IncrementThreeBetOpportunity()
+		if action == HoldemActionRaise || action == HoldemActionAllIn {
+			h.players[playerIdx].IncrementThreeBet()
+		}
+		h.threeBetTracked[playerIdx] = true
+	}
+}
+
+// trackPostFlopStats ポストフロップのAFスタッツを追跡
+func (h *Holdem) trackPostFlopStats(playerIdx, action int) {
+	if h.phase < HoldemPhaseFlop || h.phase > HoldemPhaseRiver {
+		return
+	}
+
+	switch action {
+	case HoldemActionBet, HoldemActionRaise, HoldemActionAllIn:
+		h.players[playerIdx].IncrementPostFlopBetRaise()
+	case HoldemActionCall:
+		h.players[playerIdx].IncrementPostFlopCall()
+	}
 }
 
 // bettingPlayers BettingPlayerスライスを生成
@@ -324,8 +351,9 @@ func (h *Holdem) bettingPlayers() []BettingPlayer {
 
 // executeAction 指定プレイヤーのアクション実行
 func (h *Holdem) executeAction(playerIdx, action, amount int) error {
-	// プリフロップスタッツ追跡 (Holdem固有)
+	// HUDスタッツ追跡 (Holdem固有)
 	h.trackPreFlopStats(playerIdx, action)
+	h.trackPostFlopStats(playerIdx, action)
 
 	bp := h.bettingPlayers()
 	// ActedFlags はスライス参照を共有: ExecuteBettingAction 内の変更が h.actedFlags に直接反映される
@@ -333,7 +361,8 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 		Pot: h.pot, LastBet: h.lastBet, MinRaise: h.minRaise,
 		RaiseCount: h.raiseCount, ActedFlags: h.actedFlags,
 	}
-	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, h.config.BigBlind)
+	maxRaises, maxBetAmount := h.bettingLimits()
+	err := ExecuteBettingAction(bp, state, playerIdx, action, amount, h.config.BigBlind, maxRaises, maxBetAmount)
 	h.pot = state.Pot
 	h.lastBet = state.LastBet
 	h.minRaise = state.MinRaise
@@ -526,6 +555,7 @@ func (h *Holdem) resolveShowdown() {
 			HandRank:  p.GetHandRank(),
 			HandName:  h.getHandName(p.GetHandRank()),
 			BestHand:  p.GetBestHand(),
+			Kickers:   ExtractKickers(p.GetBestHand(), p.GetHandRank()),
 			WonAmount: wonAmounts[i],
 		}
 		h.roundResults = append(h.roundResults, result)
@@ -595,11 +625,266 @@ func (h *Holdem) handleCpuActionError(playerIdx, action int, err error) {
 	}
 }
 
+// bettingLimits ベッティングリミット設定からmaxRaisesとmaxBetAmountを計算
+func (h *Holdem) bettingLimits() (maxRaises, maxBetAmount int) {
+	return CalculateBettingLimits(h.config.BettingLimit, h.pot, h.lastBet)
+}
+
+// --- GTO (Game Theory Optimal) AI ---
+
+// GTO ベットサイズ定数 (ポット比率 %)
+const (
+	gtoPreFlopBetPct  = 66 // プリフロップ: 2/3ポット
+	gtoDryBoardBetPct = 66 // ドライボード: 2/3ポット
+	gtoWetBoardBetPct = 75 // ウェットボード: 3/4ポット
+)
+
+// boardTexture ボードテクスチャ分析結果
+type boardTexture struct {
+	paired       bool // ペアボード (同じ数字が2枚以上)
+	flushDraw    bool // フラッシュドロー (同スート3枚以上)
+	straightDraw bool // ストレートドロー (5幅ウィンドウ内に3枚以上)
+	wet          bool // ウェットボード (flushDraw || straightDraw)
+	highCards    int  // ハイカード数 (10以上 or A)
+}
+
+// evalBoardTexture コミュニティカードからボードテクスチャを分析
+func evalBoardTexture(communityCards []*Card) boardTexture {
+	bt := boardTexture{}
+	if len(communityCards) == 0 {
+		return bt
+	}
+
+	// ペア判定
+	valCount := make(map[int]int)
+	suitCount := make(map[int]int)
+	for _, c := range communityCards {
+		valCount[c.GetValue()]++
+		suitCount[c.GetDesign()]++
+	}
+	for _, cnt := range valCount {
+		if cnt >= 2 {
+			bt.paired = true
+			break
+		}
+	}
+
+	// フラッシュドロー判定
+	for _, cnt := range suitCount {
+		if cnt >= 3 {
+			bt.flushDraw = true
+			break
+		}
+	}
+
+	// ストレートドロー判定: 5幅ウィンドウ内に3枚以上
+	vals := make(map[int]bool)
+	for _, c := range communityCards {
+		v := c.GetValue()
+		vals[v] = true
+		if v == 1 {
+			vals[14] = true // A=14としても扱う
+		}
+	}
+	for base := 1; base <= 10; base++ {
+		cnt := 0
+		for v := base; v < base+5; v++ {
+			if vals[v] {
+				cnt++
+			}
+		}
+		if cnt >= 3 {
+			bt.straightDraw = true
+			break
+		}
+	}
+
+	bt.wet = bt.flushDraw || bt.straightDraw
+
+	// ハイカード数 (10以上 or A)
+	for _, c := range communityCards {
+		v := c.GetValue()
+		if v >= 10 || v == 1 {
+			bt.highCards++
+		}
+	}
+
+	return bt
+}
+
+// gtoHandCategory GTOハンドカテゴリ
+type gtoHandCategory int
+
+const (
+	gtoHandTrash  gtoHandCategory = 0 // ゴミ
+	gtoHandWeak   gtoHandCategory = 1 // 弱い
+	gtoHandMedium gtoHandCategory = 2 // 中程度
+	gtoHandStrong gtoHandCategory = 3 // 強い
+	gtoHandNuts   gtoHandCategory = 4 // ナッツ級
+)
+
+// classifyGTOHand ハンドランクからGTOカテゴリに分類
+func classifyGTOHand(handRank int) gtoHandCategory {
+	switch {
+	case handRank >= PokerHandFourOfAKind: // FourOfAKind, StraightFlush, RoyalFlush, FiveOfAKind
+		return gtoHandNuts
+	case handRank >= PokerHandFlush: // Flush, FullHouse
+		return gtoHandStrong
+	case handRank >= PokerHandThreeOfAKind: // ThreeOfAKind, Straight
+		return gtoHandMedium
+	case handRank >= PokerHandOnePair: // OnePair, TwoPair
+		return gtoHandWeak
+	default: // HighCard
+		return gtoHandTrash
+	}
+}
+
+// gtoActionDist GTOアクション確率分布 (合計100)
+type gtoActionDist struct {
+	foldPct  int
+	checkPct int
+	betPct   int
+}
+
+// gtoPreFlopTable プリフロップGTOアクション分布テーブル
+// strength: 0-19=trash, 20-39=weak, 40-59=medium, 60-79=strong, 80-100=premium
+var gtoPreFlopTable = [5]gtoActionDist{
+	{foldPct: 70, checkPct: 20, betPct: 10}, // trash (0-19)
+	{foldPct: 40, checkPct: 35, betPct: 25}, // weak (20-39)
+	{foldPct: 15, checkPct: 35, betPct: 50}, // medium (40-59)
+	{foldPct: 5, checkPct: 20, betPct: 75},  // strong (60-79)
+	{foldPct: 0, checkPct: 10, betPct: 90},  // premium (80-100)
+}
+
+// gtoPostFlopTable ポストフロップGTOアクション分布テーブル [handCategory][0=dry,1=wet]
+var gtoPostFlopTable = [5][2]gtoActionDist{
+	// trash
+	{{foldPct: 60, checkPct: 30, betPct: 10}, {foldPct: 75, checkPct: 20, betPct: 5}},
+	// weak
+	{{foldPct: 25, checkPct: 45, betPct: 30}, {foldPct: 35, checkPct: 40, betPct: 25}},
+	// medium
+	{{foldPct: 5, checkPct: 30, betPct: 65}, {foldPct: 10, checkPct: 25, betPct: 65}},
+	// strong
+	{{foldPct: 0, checkPct: 20, betPct: 80}, {foldPct: 0, checkPct: 15, betPct: 85}},
+	// nuts
+	{{foldPct: 0, checkPct: 15, betPct: 85}, {foldPct: 0, checkPct: 10, betPct: 90}},
+}
+
+// gtoPreFlopIndex プリフロップ強度からテーブルインデックスを返す
+func gtoPreFlopIndex(strength int) int {
+	switch {
+	case strength >= 80:
+		return 4
+	case strength >= 60:
+		return 3
+	case strength >= 40:
+		return 2
+	case strength >= 20:
+		return 1
+	default:
+		return 0
+	}
+}
+
+// gtoRollAction 確率分布に基づいてアクションを決定
+func gtoRollAction(dist gtoActionDist) int {
+	roll := rand.Intn(100)
+	if roll < dist.foldPct {
+		return 0 // fold
+	}
+	if roll < dist.foldPct+dist.checkPct {
+		return 1 // check/call
+	}
+	return 2 // bet/raise
+}
+
+// cpuDecidePreFlopGTO GTOプリフロップ意思決定
+func (h *Holdem) cpuDecidePreFlopGTO(idx, callAmount int) (int, int) {
+	p := h.players[idx]
+	strength := h.evalPreFlopStrength(idx)
+	dist := gtoPreFlopTable[gtoPreFlopIndex(strength)]
+	decision := gtoRollAction(dist)
+
+	switch decision {
+	case 0: // fold
+		return h.cpuFoldOrCheck(callAmount)
+	case 2: // bet/raise
+		betAmt := h.cpuPotBet(gtoPreFlopBetPct)
+		return h.cpuRaiseOrBet(p, callAmount, betAmt)
+	default: // check/call
+		return h.cpuCallOrCheck(callAmount)
+	}
+}
+
+// cpuDecidePostFlopGTO GTOポストフロップ意思決定
+func (h *Holdem) cpuDecidePostFlopGTO(idx, callAmount int) (int, int) {
+	p := h.players[idx]
+	handRank := p.EvalBestHand(h.communityCards)
+	category := classifyGTOHand(handRank)
+	bt := evalBoardTexture(h.communityCards)
+
+	wetIdx := 0
+	if bt.wet {
+		wetIdx = 1
+	}
+	dist := gtoPostFlopTable[category][wetIdx]
+	decision := gtoRollAction(dist)
+
+	// ベットサイズ: ドライ=2/3ポット, ウェット=3/4ポット
+	potPct := gtoDryBoardBetPct
+	if bt.wet {
+		potPct = gtoWetBoardBetPct
+	}
+
+	// ペアボードではベット頻度を下げる (トラップ重視)
+	if bt.paired && decision == 2 && category <= gtoHandMedium && rand.Intn(100) < 30 {
+		return h.cpuCallOrCheck(callAmount)
+	}
+
+	// ハイカードが多いボードではブラフを抑制
+	if bt.highCards >= 3 && decision == 2 && category <= gtoHandWeak && rand.Intn(100) < 40 {
+		return h.cpuCallOrCheck(callAmount)
+	}
+
+	switch decision {
+	case 0: // fold
+		return h.cpuFoldOrCheck(callAmount)
+	case 2: // bet/raise
+		betAmt := h.cpuPotBet(potPct)
+		return h.cpuRaiseOrBet(p, callAmount, betAmt)
+	default: // check/call
+		return h.cpuCallOrCheck(callAmount)
+	}
+}
+
 // cpuDecide CPUプレイヤーの意思決定
 func (h *Holdem) cpuDecide(idx int) (int, int) {
 	p := h.players[idx]
 	style := p.GetPlayStyle()
 	callAmount := h.lastBet - p.GetCurrentBet()
+
+	// GTO: 独自の混合戦略ロジックを使用
+	if style == HoldemStyleGTO {
+		var action, amount int
+		if h.phase == HoldemPhasePreFlop {
+			action, amount = h.cpuDecidePreFlopGTO(idx, callAmount)
+		} else {
+			action, amount = h.cpuDecidePostFlopGTO(idx, callAmount)
+		}
+		maxRaises, maxBetAmount := h.bettingLimits()
+		if maxBetAmount > 0 && amount > maxBetAmount {
+			amount = maxBetAmount
+		}
+		if maxRaises > 0 && h.raiseCount >= maxRaises {
+			if action == HoldemActionRaise || action == HoldemActionBet {
+				if callAmount > 0 {
+					return HoldemActionCall, 0
+				}
+				return HoldemActionCheck, 0
+			}
+		}
+		return action, amount
+	}
 
 	params, ok := holdemStyleParamsMap[style]
 	if !ok {
@@ -613,8 +898,15 @@ func (h *Holdem) cpuDecide(idx int) (int, int) {
 		action, amount = h.cpuDecidePostFlop(idx, params, callAmount)
 	}
 
+	maxRaises, maxBetAmount := h.bettingLimits()
+
+	// PotLimit: CPUベット額をポットサイズに制限
+	if maxBetAmount > 0 && amount > maxBetAmount {
+		amount = maxBetAmount
+	}
+
 	// レイズ上限に達したら、レイズ/ベットをコール/チェックに変更
-	if h.raiseCount >= holdemMaxRaisesPerRound {
+	if maxRaises > 0 && h.raiseCount >= maxRaises {
 		if action == HoldemActionRaise || action == HoldemActionBet {
 			if callAmount > 0 {
 				return HoldemActionCall, 0
@@ -851,6 +1143,9 @@ func (h *Holdem) GetLastBet() int { return h.lastBet }
 // GetMinRaise 最小レイズ額取得
 func (h *Holdem) GetMinRaise() int { return h.minRaise }
 
+// GetRaiseCount 現在のレイズ回数取得
+func (h *Holdem) GetRaiseCount() int { return h.raiseCount }
+
 // GetRoundResults ラウンド結果取得
 func (h *Holdem) GetRoundResults() []HoldemResult { return h.roundResults }
 
@@ -881,55 +1176,5 @@ func (h *Holdem) GetActedFlags() []bool {
 	return result
 }
 
-// --- テスト用セッター ---
-
-// SetPhase フェーズ設定（テスト用）
-func (h *Holdem) SetPhase(phase int) { h.phase = phase }
-
-// SetCurrentTurn 現在のターン設定（テスト用）
-func (h *Holdem) SetCurrentTurn(turn int) { h.currentTurn = turn }
-
-// SetCommunityCards コミュニティカード設定（テスト用）
-func (h *Holdem) SetCommunityCards(cards []*Card) { h.communityCards = cards }
-
-// SetPot ポット設定（テスト用）
-func (h *Holdem) SetPot(pot int) { h.pot = pot }
-
-// SetDealerIdx ディーラーインデックス設定（テスト用）
-func (h *Holdem) SetDealerIdx(idx int) { h.dealerIdx = idx }
-
-// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
-func (h *Holdem) SetGameEndFlag(flag bool) { h.gameEndFlag = flag }
-
-// SetActedFlags actedフラグ設定（テスト用）
-func (h *Holdem) SetActedFlags(flags []bool) { h.actedFlags = flags }
-
-// SetLastBet 最後のベット設定（テスト用）
-func (h *Holdem) SetLastBet(bet int) { h.lastBet = bet }
-
-// SetMinRaise 最小レイズ額設定（テスト用）
-func (h *Holdem) SetMinRaise(raise int) { h.minRaise = raise }
-
-// SetRaiseCount レイズ回数設定（テスト用）
-func (h *Holdem) SetRaiseCount(count int) { h.raiseCount = count }
-
-// SetRoundResults ラウンド結果設定（テスト用）
-func (h *Holdem) SetRoundResults(results []HoldemResult) { h.roundResults = results }
-
-// SetCpuActions CPU行動記録設定（テスト用）
-func (h *Holdem) SetCpuActions(actions []HoldemCpuAction) { h.cpuActions = actions }
-
-// SetSidePots サイドポット設定（テスト用）
-func (h *Holdem) SetSidePots(pots []HoldemSidePot) { h.sidePots = pots }
-
-// SetStartingChips ハンド開始時チップ設定（テスト用）
-func (h *Holdem) SetStartingChips(chips []int) { h.startingChips = chips }
-
-// GetStartingChips ハンド開始時チップ取得（テスト用）
-func (h *Holdem) GetStartingChips() []int { return h.startingChips }
-
 // GetHandCount ハンド数取得
 func (h *Holdem) GetHandCount() int { return h.handCount }
-
-// SetHandCount ハンド数設定（テスト用）
-func (h *Holdem) SetHandCount(count int) { h.handCount = count }

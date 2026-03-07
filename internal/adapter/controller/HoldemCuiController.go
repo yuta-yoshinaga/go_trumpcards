@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -21,48 +20,57 @@ func NewHoldemCuiController(hi usecase.HoldemInteractorIF) *HoldemCuiController 
 
 // Exec コマンド実行
 func (c *HoldemCuiController) Exec(command string) string {
-	fields := strings.Fields(command)
-	if len(fields) == 0 {
-		return "コマンドが不明です: " + command
-	}
-	switch fields[0] {
-	case "q", "quit":
-		return "bye."
-	case "r", "reset":
-		return c.hi.Reset()
-	case "f", "fold":
-		return c.hi.Action(domain.HoldemActionFold, 0)
-	case "ck", "check":
-		return c.hi.Action(domain.HoldemActionCheck, 0)
-	case "c", "call":
-		return c.hi.Action(domain.HoldemActionCall, 0)
-	case "b", "bet":
-		amount, err := parseAmount(fields)
-		if err != nil {
-			return err.Error()
-		}
-		return c.hi.Action(domain.HoldemActionBet, amount)
-	case "ra", "raise":
-		amount, err := parseAmount(fields)
-		if err != nil {
-			return err.Error()
-		}
-		return c.hi.Action(domain.HoldemActionRaise, amount)
-	case "a", "allin":
-		return c.hi.Action(domain.HoldemActionAllIn, 0)
-	default:
-		return "コマンドが不明です: " + command
-	}
+	return execCuiCommand(
+		command,
+		func(_ []string) string { return c.hi.Reset() },
+		func(command string) string { return "コマンドが不明です: " + command },
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "f", "fold":
+				return c.hi.Action(domain.HoldemActionFold, 0), true
+			case "ck", "check":
+				return c.hi.Action(domain.HoldemActionCheck, 0), true
+			case "c", "call":
+				return c.hi.Action(domain.HoldemActionCall, 0), true
+			case "b", "bet":
+				amount, err := parseAmount(args)
+				if err != nil {
+					return err.Error(), true
+				}
+				return c.hi.Action(domain.HoldemActionBet, amount), true
+			case "ra", "raise":
+				amount, err := parseAmount(args)
+				if err != nil {
+					return err.Error(), true
+				}
+				return c.hi.Action(domain.HoldemActionRaise, amount), true
+			case "a", "allin":
+				return c.hi.Action(domain.HoldemActionAllIn, 0), true
+			case "bl", "bettinglimit":
+				if len(args) < 1 {
+					return "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", true
+				}
+				bl, err := strconv.Atoi(args[0])
+				if err != nil || bl < 0 || bl > 2 {
+					return fmt.Sprintf("Invalid betting limit: %s. Please enter 0-2.", args[0]), true
+				}
+				cfg := domain.DefaultHoldemConfig()
+				cfg.BettingLimit = domain.BettingLimitType(bl)
+				return c.hi.ResetWithConfig(cfg), true
+			}
+			return "", false
+		},
+	)
 }
 
-// parseAmount コマンドのスライスからベット額を抽出する
-func parseAmount(fields []string) (int, error) {
-	if len(fields) < 2 {
+// parseAmount 引数スライスからベット額を抽出する
+func parseAmount(args []string) (int, error) {
+	if len(args) < 1 {
 		return 0, fmt.Errorf("ベット/レイズには金額の指定が必要です。")
 	}
-	amount, err := strconv.Atoi(fields[1])
+	amount, err := strconv.Atoi(args[0])
 	if err != nil || amount <= 0 {
-		return 0, fmt.Errorf("無効な金額です: %s", fields[1])
+		return 0, fmt.Errorf("無効な金額です: %s", args[0])
 	}
 	return amount, nil
 }

@@ -24,66 +24,70 @@ func NewSevensCuiController(sgi usecase.SevensInteractorIF) *SevensCuiController
 // joker コマンドは "j [カードインデックス] [スート] [値]" の形式。
 // 例: "p"  → パス / "p 2" → 2番のカードを出す / "j 0 1 6" → ジョーカー(手札0)をスート1値6に配置
 func (c *SevensCuiController) Exec(command string) string {
-	fields := strings.Fields(command)
-	if len(fields) == 0 {
-		return "コマンドが不明です: " + command
-	}
-	switch fields[0] {
-	case "q", "quit":
-		return "bye."
-	case "r", "reset":
-		if len(fields) > 1 {
-			cfg := domain.DefaultSevensConfig()
-			for _, f := range fields[1:] {
-				switch {
-				case f == "tunnel":
-					cfg.TunnelEnabled = true
-				case strings.HasPrefix(f, "joker="):
-					if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "joker=")); err == nil {
-						cfg.JokerCount = parsed
+	return execCuiCommand(
+		command,
+		func(args []string) string {
+			if len(args) > 0 {
+				cfg := domain.DefaultSevensConfig()
+				for _, f := range args {
+					switch {
+					case f == "tunnel":
+						cfg.TunnelEnabled = true
+					case strings.HasPrefix(f, "joker="):
+						if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "joker=")); err == nil {
+							cfg.JokerCount = parsed
+						}
+					case strings.HasPrefix(f, "passes="):
+						if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "passes=")); err == nil {
+							cfg.MaxPasses = parsed
+						}
+					case f == "strategy":
+						cfg.CpuStrategy = true
+					case f == "nojokerfinish":
+						cfg.NoJokerFinish = true
+					case f == "endstop":
+						cfg.EndStopEnabled = true
+					case f == "jokerconsban":
+						cfg.JokerConsecutiveBanned = true
 					}
-				case strings.HasPrefix(f, "passes="):
-					if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "passes=")); err == nil {
-						cfg.MaxPasses = parsed
-					}
-				case f == "strategy":
-					cfg.CpuStrategy = true
-				case f == "nojokerfinish":
-					cfg.NoJokerFinish = true
 				}
+				return c.sgi.ResetWithConfig(cfg)
 			}
-			return c.sgi.ResetWithConfig(cfg)
-		}
-		return c.sgi.Reset()
-	case "p", "play":
-		idx := -1 // デフォルトはパス
-		if len(fields) > 1 {
-			if parsed, err := strconv.Atoi(fields[1]); err == nil {
-				idx = parsed
+			return c.sgi.Reset()
+		},
+		func(command string) string { return "コマンドが不明です: " + command },
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "p", "play":
+				idx := -1 // デフォルトはパス
+				if len(args) > 0 {
+					if parsed, err := strconv.Atoi(args[0]); err == nil {
+						idx = parsed
+					}
+				}
+				return c.sgi.Play(idx), true
+			case "j", "joker":
+				cardIdx := 0
+				targetSuit := 0
+				targetValue := 0
+				if len(args) > 0 {
+					if parsed, err := strconv.Atoi(args[0]); err == nil {
+						cardIdx = parsed
+					}
+				}
+				if len(args) > 1 {
+					if parsed, err := strconv.Atoi(args[1]); err == nil {
+						targetSuit = parsed
+					}
+				}
+				if len(args) > 2 {
+					if parsed, err := strconv.Atoi(args[2]); err == nil {
+						targetValue = parsed
+					}
+				}
+				return c.sgi.PlayJoker(cardIdx, targetSuit, targetValue), true
 			}
-		}
-		return c.sgi.Play(idx)
-	case "j", "joker":
-		cardIdx := 0
-		targetSuit := 0
-		targetValue := 0
-		if len(fields) > 1 {
-			if parsed, err := strconv.Atoi(fields[1]); err == nil {
-				cardIdx = parsed
-			}
-		}
-		if len(fields) > 2 {
-			if parsed, err := strconv.Atoi(fields[2]); err == nil {
-				targetSuit = parsed
-			}
-		}
-		if len(fields) > 3 {
-			if parsed, err := strconv.Atoi(fields[3]); err == nil {
-				targetValue = parsed
-			}
-		}
-		return c.sgi.PlayJoker(cardIdx, targetSuit, targetValue)
-	default:
-		return "コマンドが不明です: " + command
-	}
+			return "", false
+		},
+	)
 }

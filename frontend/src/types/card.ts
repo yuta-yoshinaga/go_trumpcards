@@ -48,6 +48,8 @@ export interface BlackJackResponse {
   insuranceBet: number;
   insuranceAvailable: boolean;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
   hintEnabled: boolean;
   suggestedAction: number;
   deckCount: number;
@@ -60,6 +62,9 @@ export interface BlackJackResponse {
   perfectPairsBet: number;
   twentyOnePlus3Bet: number;
   sideBetResults?: BlackJackSideBetResult[];
+  doubleAfterSplit: boolean;
+  countingSystem: number;
+  deckPenetration: number;
 }
 
 export interface PokerPlayerData {
@@ -91,6 +96,7 @@ export interface PokerResult {
   playerIdx: number;
   handRank: number;
   handName: string;
+  kickers: string;
   wonAmount: number;
 }
 
@@ -121,11 +127,16 @@ export interface PokerResponse {
   minRaise: number;
   ante: number;
   jokerCount: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
   roundResults: PokerResult[];
   cpuActions: PokerCpuAction[];
   cpuExchanges: PokerCpuExchange[];
   odds?: PokerOdds[];
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }
 
 export interface OldMaidPlayerData {
@@ -144,6 +155,14 @@ export interface CpuAction {
   discardedCards?: Card[];
 }
 
+export interface DrawHistoryEntry {
+  drawPlayerIdx: number;
+  drawFromIdx: number;
+  discardedPairs: number;
+  drawerFinished: boolean;
+  targetFinished: boolean;
+}
+
 export interface OldMaidResponse {
   players: OldMaidPlayerData[];
   currentTurn: number;
@@ -157,10 +176,13 @@ export interface OldMaidResponse {
   lastDiscardedCards?: Card[];
   cpuActions: CpuAction[];
   humanAction?: CpuAction | null;
+  drawHistory: DrawHistoryEntry[];
   cpuHighlightedCardIdx: number;
   removedCard: Card | null;
   mode: number;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }
 
 export interface DaifugoPlayerData {
@@ -170,6 +192,7 @@ export interface DaifugoPlayerData {
   rank: number;
   cardCount: number;
   cards: Card[];
+  illegalFinishPenalty?: boolean;
 }
 
 export interface DaifugoAction {
@@ -194,6 +217,9 @@ export interface DaifugoConfig {
   intenseLockEnabled: boolean;
   sandstormEnabled: boolean;
   emperorEnabled: boolean;
+  sequenceRevolutionEnabled: boolean;
+  illegalFinishEnabled: boolean;
+  cpuDifficulty: number;
 }
 
 export type DaifugoConfigInput = DaifugoConfig;
@@ -220,6 +246,8 @@ export interface DaifugoResponse {
   cpuActions: DaifugoAction[];
   humanAction: DaifugoAction | null;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
   pendingAction: 'none' | 'sevenPass' | 'tenDiscard';
   pendingActionTarget: number;
   reverseDirection: boolean;
@@ -236,6 +264,7 @@ export interface SevensPlayerData {
   passesUsed: number;
   maxPasses: number;
   cards: Card[];
+  lastPlayedJoker: boolean;
 }
 
 export interface SevensAction {
@@ -253,6 +282,8 @@ export interface SevensConfig {
   maxPasses: number;
   noJokerFinish: boolean;
   jokerReclaimEnabled: boolean;
+  endStopEnabled: boolean;
+  jokerConsecutiveBanned: boolean;
 }
 
 export interface SevensResponse {
@@ -266,6 +297,8 @@ export interface SevensResponse {
   cpuActions: SevensAction[];
   humanAction: SevensAction | null;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
 }
 
 export interface DoubtPlayerData {
@@ -290,12 +323,14 @@ export interface DoubtDoubtResult {
   wasLying: boolean;
   loserIdx: number;
   cardCount: number;
+  discardedCount: number;
   revealedCards: Card[];
 }
 
 export interface DoubtConfig {
   doubtWindowSec: number;
   cpuMemoryLevel: number; // 0=Easy, 1=Normal, 2=Hard
+  penaltyDrawLimit: number; // 0=unlimited, >0=max cards loser picks up
 }
 
 export interface DoubtResponse {
@@ -311,7 +346,10 @@ export interface DoubtResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
   doubtWindowSec: number;
+  penaltyDrawLimit: number;
 }
 
 export interface HoldemPlayerData {
@@ -329,6 +367,8 @@ export interface HoldemPlayerData {
   totalHands: number;
   vpip: number;
   pfr: number;
+  threeBet: number;
+  af: string;
 }
 
 export interface HoldemCpuAction {
@@ -341,6 +381,7 @@ export interface HoldemResult {
   playerIdx: number;
   handRank: number;
   handName: string;
+  kickers: string;
   bestHand: Card[];
   wonAmount: number;
 }
@@ -361,9 +402,14 @@ export interface HoldemResponse {
   gameEndFlag: boolean;
   lastBet: number;
   minRaise: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
   roundResults: HoldemResult[];
   cpuActions: HoldemCpuAction[];
   message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
   handCount: number;
   smallBlind: number;
   bigBlind: number;

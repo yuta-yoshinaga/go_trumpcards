@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { btnDanger, btnSuccess, btnWarning } from '../styles/buttonStyles';
 
 interface BettingControlsProps {
@@ -5,6 +6,7 @@ interface BettingControlsProps {
   betAmount: number;
   onBetAmountChange: (v: number) => void;
   minRaise: number;
+  maxBetAmount?: number;
   hasOutstandingBet: boolean;
   loading: boolean;
   onCall: () => void;
@@ -20,6 +22,7 @@ export function BettingControls({
   betAmount,
   onBetAmountChange,
   minRaise,
+  maxBetAmount,
   hasOutstandingBet,
   loading,
   onCall,
@@ -29,46 +32,52 @@ export function BettingControls({
   onFold,
   onAllIn,
 }: BettingControlsProps) {
+  const { t } = useTranslation('common');
   return (
     <div className="text-center mb-2">
       <div className="flex items-center justify-center gap-2 mb-2">
         <label htmlFor={inputId} className="text-white text-sm">
-          ベット額:
+          {t('betting.betAmount')}
         </label>
         <input
           id={inputId}
           type="number"
           min={minRaise}
+          max={(maxBetAmount ?? 0) > 0 ? maxBetAmount : undefined}
           step={10}
           value={betAmount}
-          onChange={(e) => onBetAmountChange(Number(e.target.value))}
+          onChange={(e) => {
+            let v = Number(e.target.value);
+            if ((maxBetAmount ?? 0) > 0 && v > maxBetAmount!) v = maxBetAmount!;
+            onBetAmountChange(v);
+          }}
           className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
         />
       </div>
       {hasOutstandingBet ? (
         <>
           <button type="button" className={`${btnSuccess} min-w-[80px]`} disabled={loading} onClick={onCall}>
-            コール
+            {t('action.call')}
           </button>
           <button type="button" className={`${btnWarning} min-w-[80px]`} disabled={loading} onClick={onRaise}>
-            レイズ
+            {t('action.raise')}
           </button>
         </>
       ) : (
         <>
           <button type="button" className={`${btnWarning} min-w-[80px]`} disabled={loading} onClick={onBet}>
-            ベット
+            {t('action.bet')}
           </button>
           <button type="button" className={`${btnSuccess} min-w-[80px]`} disabled={loading} onClick={onCheck}>
-            チェック
+            {t('action.check')}
           </button>
         </>
       )}
       <button type="button" className={`${btnDanger} min-w-[80px]`} disabled={loading} onClick={onFold}>
-        フォールド
+        {t('action.fold')}
       </button>
       <button type="button" className={`${btnWarning} min-w-[80px]`} disabled={loading} onClick={onAllIn}>
-        オールイン
+        {t('action.allIn')}
       </button>
     </div>
   );

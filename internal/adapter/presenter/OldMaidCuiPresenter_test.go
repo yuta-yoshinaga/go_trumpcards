@@ -111,6 +111,8 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 			"CPU 3: 上がり\n" +
 			"----------\n" +
 			"あなたがCPU 1から1枚引きました (CLOVER 3)。1組捨てました\n" +
+			"[引き履歴]\n" +
+			"1. あなたがCPU 1から引いた (1組捨て) [あなた上がり] [CPU 1上がり]\n" +
 			"ゲーム終了！ CPU 2の負け！\n" +
 			"==========\n"
 		assert.Equal(t, expected, top.Output(om, nil))
@@ -256,6 +258,51 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		om.SetHasDrawn(true)
 		result := top.Output(om, nil)
 		assert.Contains(t, result, "UNKNOWN")
+	})
+}
+
+func TestOldMaidCuiPresenter_DrawHistory(t *testing.T) {
+	top := presenter.NewOldMaidCuiPresenter()
+
+	t.Run("no history section when empty", func(t *testing.T) {
+		om, _ := setupOldMaidCuiTest()
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		result := top.Output(om, nil)
+		assert.NotContains(t, result, "[引き履歴]")
+	})
+
+	t.Run("history section shown after draw", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].SetIsFinished(true)
+		_ = om.PlayerDraw(0)
+		result := top.Output(om, nil)
+		assert.Contains(t, result, "[引き履歴]")
+		assert.Contains(t, result, "1. あなたがCPU 1から引いた")
+		assert.Contains(t, result, "[CPU 1上がり]")
+	})
+
+	t.Run("history via test helper with discardedPairs and drawerFinished", func(t *testing.T) {
+		om, _ := setupOldMaidCuiTest()
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		om.SetDrawHistory([]*domain.OldMaidDrawHistoryEntry{
+			{DrawPlayerIdx: 0, DrawFromIdx: 1, DiscardedPairs: 2, DrawerFinished: true, TargetFinished: false},
+			{DrawPlayerIdx: 2, DrawFromIdx: 3, DiscardedPairs: 0, DrawerFinished: false, TargetFinished: false},
+		})
+		result := top.Output(om, nil)
+		assert.Contains(t, result, "[引き履歴]")
+		assert.Contains(t, result, "1. あなたがCPU 1から引いた (2組捨て) [あなた上がり]")
+		assert.Contains(t, result, "2. CPU 2がCPU 3から引いた")
+		assert.NotContains(t, result, "2. CPU 2がCPU 3から引いた (")
 	})
 }
 

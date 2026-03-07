@@ -89,6 +89,12 @@ func (_m *MockPokerGame) GetMinRaise() int {
 	return ret.Get(0).(int)
 }
 
+// GetRaiseCount モック
+func (_m *MockPokerGame) GetRaiseCount() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetAnte モック
 func (_m *MockPokerGame) GetAnte() int {
 	ret := _m.Called()

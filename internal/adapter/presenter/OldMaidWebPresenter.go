@@ -86,6 +86,18 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
+	// ゲーム全体の引き履歴
+	resObj.DrawHistory = make([]*controller.OldMaidWebOutputDrawHistoryEntry, 0)
+	for _, entry := range om.GetDrawHistory() {
+		resObj.DrawHistory = append(resObj.DrawHistory, &controller.OldMaidWebOutputDrawHistoryEntry{
+			DrawPlayerIdx:  entry.DrawPlayerIdx,
+			DrawFromIdx:    entry.DrawFromIdx,
+			DiscardedPairs: entry.DiscardedPairs,
+			DrawerFinished: entry.DrawerFinished,
+			TargetFinished: entry.TargetFinished,
+		})
+	}
+
 	// CPU心理戦: 強調カードインデックスとモード
 	resObj.CpuHighlightedCardIdx = om.GetCpuHighlightedCardIdx()
 	resObj.Mode = int(om.GetConfig().Mode)
@@ -104,15 +116,14 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			loser := om.GetPlayer(loserIdx)
 			if loser != nil && loser.GetIsHuman() {
 				resObj.Message = "ゲーム終了！ あなたの負け！"
+				resObj.MessageCode = "oldmaid.result.humanLose"
 			} else {
 				resObj.Message = fmt.Sprintf("ゲーム終了！ CPU %dの負け！", loserIdx)
+				resObj.MessageCode = "oldmaid.result.cpuLose"
+				resObj.MessageParams = map[string]string{"cpuId": fmt.Sprintf("%d", loserIdx)}
 			}
 		}
 	}
 
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }

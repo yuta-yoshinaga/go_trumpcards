@@ -17,11 +17,7 @@ func NewPokerWebPresenter() *PokerWebPresenter {
 // Output ゲーム状態をJSON出力
 func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	resObj := pwp.buildOutput(p, lastErr)
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // OutputWithOdds ゲーム状態 + ドローオッズをJSON出力
@@ -39,11 +35,7 @@ func (pwp *PokerWebPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 			}
 		}
 	}
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // buildOutput ゲーム状態をPokerWebOutputに変換
@@ -58,6 +50,9 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	resObj.MinRaise = p.GetMinRaise()
 	resObj.Ante = p.GetAnte()
 	resObj.JokerCount = p.GetConfig().JokerCount
+	resObj.BettingLimit = int(p.GetConfig().BettingLimit)
+	resObj.RaiseCount = p.GetRaiseCount()
+	resObj.MaxBetAmount = calcMaxBetAmount(p.GetConfig().BettingLimit, p.GetPot(), p.GetLastBet())
 
 	// サイドポット
 	resObj.SidePots = make([]*controller.PokerWebOutputSidePot, 0)
@@ -126,6 +121,7 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 			PlayerIdx: r.PlayerIdx,
 			HandRank:  r.HandRank,
 			HandName:  r.HandName,
+			Kickers:   domain.FormatKickers(r.Kickers),
 			WonAmount: r.WonAmount,
 		})
 	}
@@ -134,24 +130,26 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if p.GetGameEndFlag() {
-		resObj.Message = pwp.buildResultMessage(p)
+		msg, code := pwp.buildResultMessage(p)
+		resObj.Message = msg
+		resObj.MessageCode = code
 	}
 
 	return resObj
 }
 
-// buildResultMessage builds the end-of-round message
-func (pwp *PokerWebPresenter) buildResultMessage(p interfaces.PokerGame) string {
+// buildResultMessage builds the end-of-round message and its i18n code
+func (pwp *PokerWebPresenter) buildResultMessage(p interfaces.PokerGame) (string, string) {
 	results := p.GetRoundResults()
 	if len(results) == 0 {
-		return "Game over."
+		return "Game over.", "poker.result.gameOver"
 	}
 
 	players := p.GetPlayers()
 	for _, r := range results {
 		if players[r.PlayerIdx].GetIsHuman() {
 			if r.WonAmount > 0 {
-				return "You are the winner."
+				return "You are the winner.", "poker.result.win"
 			}
 		}
 	}
@@ -159,9 +157,9 @@ func (pwp *PokerWebPresenter) buildResultMessage(p interfaces.PokerGame) string 
 	// Human folded
 	for _, pl := range players {
 		if pl.GetIsHuman() && pl.GetFolded() {
-			return "You folded."
+			return "You folded.", "poker.result.folded"
 		}
 	}
 
-	return "You lose."
+	return "You lose.", "poker.result.lose"
 }

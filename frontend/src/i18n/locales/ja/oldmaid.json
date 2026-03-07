@@ -1,0 +1,41 @@
+{
+  "setup": {
+    "title": "Old Maid 設定",
+    "modeSelect": "モード選択",
+    "normal": "ババ抜き（ジョーカーが奇数カード）",
+    "jijiNuki": "ジジ抜き（ランダム1枚除外）",
+    "cpuStrategy": "CPU心理戦（奇数カードを端に配置）",
+    "cpuMemoryAI": "CPU記憶AI（引いた位置を記憶して戦略的に選択）",
+    "start": "ゲーム開始"
+  },
+  "badge": {
+    "jijiNuki": "ジジ抜き"
+  },
+  "cardCount": "{{count}}枚",
+  "draw": "引く",
+  "drawTarget": "← 引く相手",
+  "discardArea": "捨て札エリア",
+  "lastDiscarded": "直前に捨てられたカード",
+  "drawCardAriaLabel": "カード {{idx}} 枚目を引く",
+  "drewCard": "{{from}}が{{target}}から1枚引きました",
+  "drewCardWithLabel": "{{from}}が{{target}}から1枚引きました ({{card}})",
+  "discardedPairs": "。{{count}}組捨てました",
+  "yourTurn": "あなたの番！ {{target}}のカードをクリックして引いてください。",
+  "removedCard": "除外カード: {{card}}",
+  "history": {
+    "title": "引き履歴",
+    "entry": "{{from}}が{{target}}から引いた",
+    "discarded": "({{count}}組捨て)",
+    "finished": "[{{name}}上がり]"
+  },
+  "suspect": {
+    "badge": "容疑者",
+    "pin": "容疑者ピン",
+    "unpin": "ピン解除"
+  },
+  "button": {
+    "settings": "設定",
+    "drawRandom": "ランダムに引く",
+    "shuffle": "シャッフル"
+  }
+}

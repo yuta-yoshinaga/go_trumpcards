@@ -1,4 +1,4 @@
-export type StatusBadgeVariant = 'success' | 'warning';
+export type StatusBadgeVariant = 'success' | 'warning' | 'danger';
 
 const styles: Record<StatusBadgeVariant, React.CSSProperties> = {
   success: {
@@ -12,6 +12,15 @@ const styles: Record<StatusBadgeVariant, React.CSSProperties> = {
   warning: {
     background: '#f0ad4e',
     color: '#222',
+    borderRadius: 6,
+    padding: '1px 8px',
+    marginLeft: 6,
+    fontSize: '0.8em',
+    fontWeight: 'bold',
+  },
+  danger: {
+    background: '#dc3545',
+    color: '#fff',
     borderRadius: 6,
     padding: '1px 8px',
     marginLeft: 6,

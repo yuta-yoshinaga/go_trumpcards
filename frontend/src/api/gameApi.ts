@@ -26,6 +26,9 @@ export interface BlackJackConfigInput {
   dealerHitsSoft17?: boolean;
   cpuPlayerCount?: number;
   countingEnabled?: boolean;
+  doubleAfterSplit?: boolean;
+  countingSystem?: number;
+  deckPenetration?: number;
 }
 
 export interface BlackJackSideBetInput {
@@ -48,21 +51,29 @@ export const blackjackApi = {
       | 'togglehint'
       | 'setdeckcount'
       | 'togglesoft17'
-      | 'togglecounting',
+      | 'togglecounting'
+      | 'toggledas'
+      | 'setcountingsystem'
+      | 'setpenetration',
     amount?: number,
     config?: BlackJackConfigInput,
     sideBets?: BlackJackSideBetInput,
   ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config, ...sideBets }),
 };
 
+export interface PokerConfigInput {
+  cpuCount?: number;
+  jokerCount?: number;
+  bettingLimit?: number;
+}
+
 export const pokerApi = {
   exec: (
     command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin' | 'odds',
     indices?: number[],
     amount?: number,
-    cpuCount?: number,
-    jokerCount?: number,
-  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, cpuCount, jokerCount, sessionId }),
+    config?: PokerConfigInput,
+  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, ...config, sessionId }),
 };
 
 export const oldmaidApi = {
@@ -72,6 +83,7 @@ export const oldmaidApi = {
     mode?: number,
     cpuPlacementStrategy?: boolean,
     reorderIndices?: number[],
+    cpuMemoryAI?: boolean,
   ) =>
     postJson<OldMaidResponse>('/oldmaid/exec', {
       command,
@@ -79,6 +91,7 @@ export const oldmaidApi = {
       mode,
       cpuPlacementStrategy,
       reorderIndices,
+      cpuMemoryAI,
       sessionId,
     }),
 };
@@ -104,6 +117,7 @@ export const doubtApi = {
       sessionId,
       doubtWindowSec: config?.doubtWindowSec,
       cpuMemoryLevel: config?.cpuMemoryLevel,
+      penaltyDrawLimit: config?.penaltyDrawLimit,
     }),
 };
 
@@ -114,6 +128,8 @@ export interface SevensConfigInput {
   maxPasses?: number;
   noJokerFinish?: boolean;
   jokerReclaim?: boolean;
+  endStop?: boolean;
+  jokerConsecutiveBanned?: boolean;
 }
 
 export const sevensApi = {
@@ -140,6 +156,7 @@ export interface HoldemConfigInput {
   tournamentMode?: boolean;
   blindLevelHands?: number;
   blindMultiplier?: number;
+  bettingLimit?: number;
 }
 
 export const holdemApi = {

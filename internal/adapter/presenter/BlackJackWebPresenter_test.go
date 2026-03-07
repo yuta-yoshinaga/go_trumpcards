@@ -83,6 +83,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		assert.Equal(t, 22, result.Dealer.Score)
 		assert.Equal(t, 3, len(result.Dealer.Cards))
 		assert.Equal(t, "It is your loss.", result.Message)
+		assert.Equal(t, "blackjack.result.lose", result.MessageCode)
 		assert.Equal(t, domain.BJPhaseEnd, result.Phase)
 	})
 	t.Run("success Output end phase draw", func(t *testing.T) {
@@ -106,6 +107,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
 		assert.Equal(t, "It is a draw.", result.Message)
+		assert.Equal(t, "blackjack.result.draw", result.MessageCode)
 	})
 	t.Run("success Output end phase win", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -129,6 +131,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(output), &result)
 		assert.NoError(t, err)
 		assert.Equal(t, "You are the winner.", result.Message)
+		assert.Equal(t, "blackjack.result.win", result.MessageCode)
 	})
 	t.Run("success Output hands fields", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -260,6 +263,22 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.True(t, result.CountingEnabled)
 		assert.Equal(t, 0, result.RunningCount)
 		assert.Equal(t, 0.0, result.TrueCount)
+		assert.Equal(t, domain.BJCountingHiLo, result.CountingSystem)
+	})
+	t.Run("success Output includes countingSystem KO", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingKO})
+		bj.Reset()
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.Equal(t, domain.BJCountingKO, result.CountingSystem)
 	})
 	t.Run("success Output includes cpuPlayerCount", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -347,6 +366,22 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.Equal(t, 0, result.CpuPlayerCount)
 		assert.Equal(t, 0, result.RunningCount)
 		assert.Equal(t, 0.0, result.TrueCount)
+		assert.True(t, result.DoubleAfterSplit, "default DAS should be true")
+	})
+	t.Run("success Output includes doubleAfterSplit false", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DoubleAfterSplit: false})
+		bj.Reset()
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		err := json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.False(t, result.DoubleAfterSplit)
 	})
 	t.Run("success Output with no side bet results", func(t *testing.T) {
 		tc := domain.NewTrumpCardsWithDecks(1, 0)
@@ -410,4 +445,32 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.Equal(t, "SPADE", result.CpuPlayers[0].Hands[0].Cards[0].Design)
 		assert.Equal(t, 10, result.CpuPlayers[0].Hands[0].Cards[0].Value)
 	})
+}
+
+func TestBlackJackWebPresenter_DeckPenetration(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	bj := domain.NewDefaultBlackJack()
+	bj.Reset()
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 75, result.DeckPenetration)
+}
+
+func TestBlackJackWebPresenter_DeckPenetration50(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
+	bj.Reset()
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 50, result.DeckPenetration)
 }

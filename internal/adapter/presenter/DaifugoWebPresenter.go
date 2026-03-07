@@ -33,22 +33,25 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	// ローカルルール設定
 	config := dg.GetConfig()
 	resObj.Config = controller.DaifugoWebConfig{
-		JokerCount:          config.JokerCount,
-		EightCutEnabled:     config.EightCutEnabled,
-		SuitLockEnabled:     config.SuitLockEnabled,
-		ElevenBackEnabled:   config.ElevenBackEnabled,
-		SequenceEnabled:     config.SequenceEnabled,
-		CardExchangeEnabled: config.CardExchangeEnabled,
-		FiveSkipEnabled:     config.FiveSkipEnabled,
-		SevenPassEnabled:    config.SevenPassEnabled,
-		TenDiscardEnabled:   config.TenDiscardEnabled,
-		SpadeThreeEnabled:   config.SpadeThreeEnabled,
-		CapitalFallEnabled:  config.CapitalFallEnabled,
-		NineReverseEnabled:  config.NineReverseEnabled,
-		CoupDetatEnabled:    config.CoupDetatEnabled,
-		IntenseLockEnabled:  config.IntenseLockEnabled,
-		SandstormEnabled:    config.SandstormEnabled,
-		EmperorEnabled:      config.EmperorEnabled,
+		JokerCount:                config.JokerCount,
+		EightCutEnabled:           config.EightCutEnabled,
+		SuitLockEnabled:           config.SuitLockEnabled,
+		ElevenBackEnabled:         config.ElevenBackEnabled,
+		SequenceEnabled:           config.SequenceEnabled,
+		CardExchangeEnabled:       config.CardExchangeEnabled,
+		FiveSkipEnabled:           config.FiveSkipEnabled,
+		SevenPassEnabled:          config.SevenPassEnabled,
+		TenDiscardEnabled:         config.TenDiscardEnabled,
+		SpadeThreeEnabled:         config.SpadeThreeEnabled,
+		CapitalFallEnabled:        config.CapitalFallEnabled,
+		NineReverseEnabled:        config.NineReverseEnabled,
+		CoupDetatEnabled:          config.CoupDetatEnabled,
+		IntenseLockEnabled:        config.IntenseLockEnabled,
+		SandstormEnabled:          config.SandstormEnabled,
+		EmperorEnabled:            config.EmperorEnabled,
+		SequenceRevolutionEnabled: config.SequenceRevolutionEnabled,
+		IllegalFinishEnabled:      config.IllegalFinishEnabled,
+		CpuDifficulty:             int(config.CpuDifficulty),
 	}
 
 	resObj.ReverseDirection = dg.GetReverseDirection()
@@ -113,6 +116,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		pObj.IsFinished = player.GetIsFinished()
 		pObj.Rank = player.GetRank()
 		pObj.CardCount = player.GetCardsSize()
+		pObj.IllegalFinishPenalty = player.GetIllegalFinishPenalty()
 		pObj.Cards = make([]*controller.WebOutputCard, 0)
 		if player.GetIsHuman() {
 			for j := 0; j < player.GetCardsSize(); j++ {
@@ -127,13 +131,11 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		resObj.Message = lastErr.Error()
 	} else if dg.GetGameEndFlag() {
 		resObj.Message = dwp.buildResultMessage(dg)
+		resObj.MessageCode = "daifugo.result.rankings"
+		resObj.MessageParams = map[string]string{"rankings": resObj.Message}
 	}
 
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // buildResultMessage ゲーム終了メッセージを生成

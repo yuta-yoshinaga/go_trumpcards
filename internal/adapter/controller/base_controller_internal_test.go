@@ -80,12 +80,8 @@ func TestWriteJsonResponse_WriteJsonError(t *testing.T) {
 
 // testInput is a minimal WebInput implementation for testing.
 type testInput struct {
-	Command   string `json:"command"`
-	SessionId string `json:"sessionId"`
+	BaseWebInput
 }
-
-func (i testInput) GetCommand() string   { return i.Command }
-func (i testInput) GetSessionID() string { return i.SessionId }
 
 // testInteractor is a trivial interactor for testing.
 type testInteractor struct{}

@@ -9,47 +9,44 @@ import (
 
 // DaifugoWebConfig ローカルルール設定 (入力・出力共用)
 type DaifugoWebConfig struct {
-	JokerCount          int  `json:"jokerCount"`
-	EightCutEnabled     bool `json:"eightCutEnabled"`
-	SuitLockEnabled     bool `json:"suitLockEnabled"`
-	ElevenBackEnabled   bool `json:"elevenBackEnabled"`
-	SequenceEnabled     bool `json:"sequenceEnabled"`
-	CardExchangeEnabled bool `json:"cardExchangeEnabled"`
-	FiveSkipEnabled     bool `json:"fiveSkipEnabled"`
-	SevenPassEnabled    bool `json:"sevenPassEnabled"`
-	TenDiscardEnabled   bool `json:"tenDiscardEnabled"`
-	SpadeThreeEnabled   bool `json:"spadeThreeEnabled"`
-	CapitalFallEnabled  bool `json:"capitalFallEnabled"`
-	NineReverseEnabled  bool `json:"nineReverseEnabled"`
-	CoupDetatEnabled    bool `json:"coupDetatEnabled"`
-	IntenseLockEnabled  bool `json:"intenseLockEnabled"`
-	SandstormEnabled    bool `json:"sandstormEnabled"`
-	EmperorEnabled      bool `json:"emperorEnabled"`
+	JokerCount                int  `json:"jokerCount"`
+	EightCutEnabled           bool `json:"eightCutEnabled"`
+	SuitLockEnabled           bool `json:"suitLockEnabled"`
+	ElevenBackEnabled         bool `json:"elevenBackEnabled"`
+	SequenceEnabled           bool `json:"sequenceEnabled"`
+	CardExchangeEnabled       bool `json:"cardExchangeEnabled"`
+	FiveSkipEnabled           bool `json:"fiveSkipEnabled"`
+	SevenPassEnabled          bool `json:"sevenPassEnabled"`
+	TenDiscardEnabled         bool `json:"tenDiscardEnabled"`
+	SpadeThreeEnabled         bool `json:"spadeThreeEnabled"`
+	CapitalFallEnabled        bool `json:"capitalFallEnabled"`
+	NineReverseEnabled        bool `json:"nineReverseEnabled"`
+	CoupDetatEnabled          bool `json:"coupDetatEnabled"`
+	IntenseLockEnabled        bool `json:"intenseLockEnabled"`
+	SandstormEnabled          bool `json:"sandstormEnabled"`
+	EmperorEnabled            bool `json:"emperorEnabled"`
+	SequenceRevolutionEnabled bool `json:"sequenceRevolutionEnabled"`
+	IllegalFinishEnabled      bool `json:"illegalFinishEnabled"`
+	CpuDifficulty             int  `json:"cpuDifficulty"`
 }
 
 // DaifugoWebInput 大富豪Webインプット
 type DaifugoWebInput struct {
-	Command   string            `json:"command"`
-	Indices   []int             `json:"indices"` // 出すカードのインデックス。play コマンド用。空の場合はパス。
-	SessionId string            `json:"sessionId"`
-	Config    *DaifugoWebConfig `json:"config"`   // リセット時のローカルルール設定 (省略可)
-	SortMode  *int              `json:"sortMode"` // ソートモード (sort コマンド用、省略可)
+	BaseWebInput
+	Indices  []int             `json:"indices"`  // 出すカードのインデックス。play コマンド用。空の場合はパス。
+	Config   *DaifugoWebConfig `json:"config"`   // リセット時のローカルルール設定 (省略可)
+	SortMode *int              `json:"sortMode"` // ソートモード (sort コマンド用、省略可)
 }
-
-// GetCommand returns the command string.
-func (i DaifugoWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i DaifugoWebInput) GetSessionID() string { return i.SessionId }
 
 // DaifugoWebOutputPlayer 大富豪Webアウトプットプレイヤー
 type DaifugoWebOutputPlayer struct {
-	ID         int              `json:"id"`
-	IsHuman    bool             `json:"isHuman"`
-	IsFinished bool             `json:"isFinished"`
-	Rank       int              `json:"rank"`
-	CardCount  int              `json:"cardCount"`
-	Cards      []*WebOutputCard `json:"cards"`
+	ID                   int              `json:"id"`
+	IsHuman              bool             `json:"isHuman"`
+	IsFinished           bool             `json:"isFinished"`
+	Rank                 int              `json:"rank"`
+	CardCount            int              `json:"cardCount"`
+	Cards                []*WebOutputCard `json:"cards"`
+	IllegalFinishPenalty bool             `json:"illegalFinishPenalty"`
 }
 
 // DaifugoWebOutputAction 大富豪のプレイヤー行動記録
@@ -82,6 +79,8 @@ type DaifugoWebOutput struct {
 	CpuActions          []*DaifugoWebOutputAction         `json:"cpuActions"`
 	HumanAction         *DaifugoWebOutputAction           `json:"humanAction"`
 	Message             string                            `json:"message"`
+	MessageCode         string                            `json:"messageCode,omitempty"`
+	MessageParams       map[string]string                 `json:"messageParams,omitempty"`
 	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"
 	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
 	ReverseDirection    bool                              `json:"reverseDirection"`
@@ -142,22 +141,25 @@ func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 // convertWebConfig DaifugoWebConfig を domain.DaifugoConfig に変換
 func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
 	return domain.DaifugoConfig{
-		JokerCount:          c.JokerCount,
-		EightCutEnabled:     c.EightCutEnabled,
-		SuitLockEnabled:     c.SuitLockEnabled,
-		ElevenBackEnabled:   c.ElevenBackEnabled,
-		SequenceEnabled:     c.SequenceEnabled,
-		CardExchangeEnabled: c.CardExchangeEnabled,
-		FiveSkipEnabled:     c.FiveSkipEnabled,
-		SevenPassEnabled:    c.SevenPassEnabled,
-		TenDiscardEnabled:   c.TenDiscardEnabled,
-		SpadeThreeEnabled:   c.SpadeThreeEnabled,
-		CapitalFallEnabled:  c.CapitalFallEnabled,
-		NineReverseEnabled:  c.NineReverseEnabled,
-		CoupDetatEnabled:    c.CoupDetatEnabled,
-		IntenseLockEnabled:  c.IntenseLockEnabled,
-		SandstormEnabled:    c.SandstormEnabled,
-		EmperorEnabled:      c.EmperorEnabled,
+		JokerCount:                c.JokerCount,
+		EightCutEnabled:           c.EightCutEnabled,
+		SuitLockEnabled:           c.SuitLockEnabled,
+		ElevenBackEnabled:         c.ElevenBackEnabled,
+		SequenceEnabled:           c.SequenceEnabled,
+		CardExchangeEnabled:       c.CardExchangeEnabled,
+		FiveSkipEnabled:           c.FiveSkipEnabled,
+		SevenPassEnabled:          c.SevenPassEnabled,
+		TenDiscardEnabled:         c.TenDiscardEnabled,
+		SpadeThreeEnabled:         c.SpadeThreeEnabled,
+		CapitalFallEnabled:        c.CapitalFallEnabled,
+		NineReverseEnabled:        c.NineReverseEnabled,
+		CoupDetatEnabled:          c.CoupDetatEnabled,
+		IntenseLockEnabled:        c.IntenseLockEnabled,
+		SandstormEnabled:          c.SandstormEnabled,
+		EmperorEnabled:            c.EmperorEnabled,
+		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
+		IllegalFinishEnabled:      c.IllegalFinishEnabled,
+		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
 	}
 }
 

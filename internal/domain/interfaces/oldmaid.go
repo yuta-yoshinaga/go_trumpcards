@@ -26,6 +26,7 @@ type OldMaidGame interface {
 	GetLastDiscardedCards() []*domain.Card
 	GetCpuActions() []*domain.OldMaidCpuAction
 	GetHumanAction() *domain.OldMaidCpuAction
+	GetDrawHistory() []*domain.OldMaidDrawHistoryEntry
 	GetLoserIdx() int
 	GetCurrentTurn() int
 	GetNextDrawTargetIdx() int

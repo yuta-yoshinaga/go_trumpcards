@@ -2,7 +2,6 @@ package controller
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -28,42 +27,40 @@ func NewDoubtCuiController(di usecase.DoubtInteractorIF) *DoubtCuiController {
 //	doubt <idx...>   (同上)
 //	s / skip         → ダウトをスキップ
 func (c *DoubtCuiController) Exec(command string) string {
-	fields := strings.Fields(command)
-	if len(fields) == 0 {
-		return "コマンドが不明です: " + command
-	}
-	switch fields[0] {
-	case "q", "quit":
-		return "bye."
-	case "r", "reset":
-		return c.di.Reset()
-	case "p", "play":
-		claimedValue := 0
-		if len(fields) > 1 {
-			if parsed, err := strconv.Atoi(fields[1]); err == nil {
-				claimedValue = parsed
-			}
-		}
-		cardIndices := []int{}
-		if len(fields) > 2 {
-			for _, f := range fields[2:] {
-				if parsed, err := strconv.Atoi(f); err == nil {
-					cardIndices = append(cardIndices, parsed)
+	return execCuiCommand(
+		command,
+		func(_ []string) string { return c.di.Reset() },
+		func(command string) string { return "コマンドが不明です: " + command },
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "p", "play":
+				claimedValue := 0
+				if len(args) > 0 {
+					if parsed, err := strconv.Atoi(args[0]); err == nil {
+						claimedValue = parsed
+					}
 				}
+				cardIndices := []int{}
+				if len(args) > 1 {
+					for _, f := range args[1:] {
+						if parsed, err := strconv.Atoi(f); err == nil {
+							cardIndices = append(cardIndices, parsed)
+						}
+					}
+				}
+				return c.di.Play(cardIndices, claimedValue), true
+			case "d", "doubt":
+				doubterIndices := []int{}
+				for _, f := range args {
+					if parsed, err := strconv.Atoi(f); err == nil {
+						doubterIndices = append(doubterIndices, parsed)
+					}
+				}
+				return c.di.ResolveDoubt(doubterIndices), true
+			case "s", "skip":
+				return c.di.SkipDoubt(), true
 			}
-		}
-		return c.di.Play(cardIndices, claimedValue)
-	case "d", "doubt":
-		doubterIndices := []int{}
-		for _, f := range fields[1:] {
-			if parsed, err := strconv.Atoi(f); err == nil {
-				doubterIndices = append(doubterIndices, parsed)
-			}
-		}
-		return c.di.ResolveDoubt(doubterIndices)
-	case "s", "skip":
-		return c.di.SkipDoubt()
-	default:
-		return "コマンドが不明です: " + command
-	}
+			return "", false
+		},
+	)
 }

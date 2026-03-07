@@ -26,6 +26,7 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	resObj.GameEndFlag = d.GetGameEndFlag()
 	resObj.WinnerIdx = d.GetWinnerIdx()
 	resObj.DoubtWindowSec = d.GetConfig().DoubtWindowSec
+	resObj.PenaltyDrawLimit = d.GetConfig().PenaltyDrawLimit
 
 	// CPU行動履歴
 	resObj.CpuActions = make([]*controller.DoubtWebOutputAction, 0)
@@ -58,12 +59,13 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	// ダウト解決結果
 	if dr := d.GetLastDoubtResult(); dr != nil {
 		resObj.LastDoubtResult = &controller.DoubtWebOutputDoubtResult{
-			DoubterIdx:    dr.DoubterIdx,
-			CardPlayerIdx: dr.CardPlayerIdx,
-			WasLying:      dr.WasLying,
-			LoserIdx:      dr.LoserIdx,
-			CardCount:     dr.CardCount,
-			RevealedCards: cardsToOutput(dr.RevealedCards),
+			DoubterIdx:     dr.DoubterIdx,
+			CardPlayerIdx:  dr.CardPlayerIdx,
+			WasLying:       dr.WasLying,
+			LoserIdx:       dr.LoserIdx,
+			CardCount:      dr.CardCount,
+			DiscardedCount: dr.DiscardedCount,
+			RevealedCards:  cardsToOutput(dr.RevealedCards),
 		}
 	}
 
@@ -89,14 +91,18 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if d.GetGameEndFlag() {
+		winnerIdx := d.GetWinnerIdx()
 		resObj.Message = dwp.buildResultMessage(d)
+		player := d.GetPlayer(winnerIdx)
+		if player != nil && player.GetIsHuman() {
+			resObj.MessageCode = "doubt.result.humanWin"
+		} else {
+			resObj.MessageCode = "doubt.result.cpuWin"
+			resObj.MessageParams = map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
+		}
 	}
 
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // buildResultMessage ゲーム終了メッセージを生成

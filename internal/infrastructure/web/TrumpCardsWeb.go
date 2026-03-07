@@ -97,7 +97,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
 				domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
 				domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-				domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+				domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
 			}
 			holdem := domain.NewHoldem(domain.NewTrumpCards(0), players, domain.DefaultHoldemConfig())
 			return usecase.NewHoldemInteractor(holdem, presenter.NewHoldemWebPresenter())
@@ -135,15 +135,24 @@ func (web *TrumpCardsWeb) Exec() {
 		stack = rest.DefaultProdStack
 	}
 	api.Use(stack...)
-	router, err := rest.MakeRouter(
-		rest.Post("/blackjack/exec", web.bjc.Exec),
-		rest.Post("/poker/exec", web.pkc.Exec),
-		rest.Post("/oldmaid/exec", web.omc.Exec),
-		rest.Post("/daifugo/exec", web.dgc.Exec),
-		rest.Post("/sevens/exec", web.sgc.Exec),
-		rest.Post("/doubt/exec", web.dwc.Exec),
-		rest.Post("/holdem/exec", web.hmc.Exec),
-	)
+	type apiRoute struct {
+		path    string
+		handler rest.HandlerFunc
+	}
+	routes := []apiRoute{
+		{"/blackjack/exec", web.bjc.Exec},
+		{"/poker/exec", web.pkc.Exec},
+		{"/oldmaid/exec", web.omc.Exec},
+		{"/daifugo/exec", web.dgc.Exec},
+		{"/sevens/exec", web.sgc.Exec},
+		{"/doubt/exec", web.dwc.Exec},
+		{"/holdem/exec", web.hmc.Exec},
+	}
+	restRoutes := make([]*rest.Route, len(routes))
+	for i, r := range routes {
+		restRoutes[i] = rest.Post(r.path, r.handler)
+	}
+	router, err := rest.MakeRouter(restRoutes...)
 	if err != nil {
 		slog.Error("failed to create router", "error", err)
 		os.Exit(1)
@@ -151,17 +160,8 @@ func (web *TrumpCardsWeb) Exec() {
 	api.SetApp(router)
 	mux := http.NewServeMux()
 	apiHandler := api.MakeHandler()
-	apiPaths := []string{
-		"/blackjack/exec",
-		"/poker/exec",
-		"/oldmaid/exec",
-		"/daifugo/exec",
-		"/sevens/exec",
-		"/doubt/exec",
-		"/holdem/exec",
-	}
-	for _, path := range apiPaths {
-		mux.Handle(path, apiHandler)
+	for _, r := range routes {
+		mux.Handle(r.path, apiHandler)
 	}
 	mux.Handle("/", http.FileServer(http.Dir("public")))
 	const (

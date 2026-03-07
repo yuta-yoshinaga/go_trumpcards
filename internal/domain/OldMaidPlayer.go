@@ -2,33 +2,35 @@ package domain
 
 // OldMaidPlayer ババ抜きプレイヤークラス
 type OldMaidPlayer struct {
-	Player
-	isHuman    bool
-	isFinished bool
+	*GamePlayer
+	memLastDrawPos int  // 最後に引いたカードの位置 (-1=なし)
+	memGotPair     bool // 最後に引いたカードでペアができたか
 }
 
 // NewOldMaidPlayer コンストラクタ
 func NewOldMaidPlayer(isHuman bool) *OldMaidPlayer {
 	return &OldMaidPlayer{
-		Player:     Player{cards: make([]*Card, 0)},
-		isHuman:    isHuman,
-		isFinished: false,
+		GamePlayer:     NewGamePlayer(isHuman),
+		memLastDrawPos: -1,
 	}
 }
 
-// GetIsHuman 人間プレイヤーかどうか
-func (p *OldMaidPlayer) GetIsHuman() bool {
-	return p.isHuman
-}
+// GetMemLastDrawPos 最後に引いたカードの位置取得
+func (p *OldMaidPlayer) GetMemLastDrawPos() int { return p.memLastDrawPos }
 
-// GetIsFinished 上がっているかどうか
-func (p *OldMaidPlayer) GetIsFinished() bool {
-	return p.isFinished
-}
+// SetMemLastDrawPos 最後に引いたカードの位置設定
+func (p *OldMaidPlayer) SetMemLastDrawPos(pos int) { p.memLastDrawPos = pos }
 
-// SetIsFinished 上がり状態設定
-func (p *OldMaidPlayer) SetIsFinished(v bool) {
-	p.isFinished = v
+// GetMemGotPair 最後に引いたカードでペアができたか取得
+func (p *OldMaidPlayer) GetMemGotPair() bool { return p.memGotPair }
+
+// SetMemGotPair 最後に引いたカードでペアができたか設定
+func (p *OldMaidPlayer) SetMemGotPair(v bool) { p.memGotPair = v }
+
+// ResetDrawMemory 引きの記憶をリセット
+func (p *OldMaidPlayer) ResetDrawMemory() {
+	p.memLastDrawPos = -1
+	p.memGotPair = false
 }
 
 // DiscardPairs ペアのカードを捨てる (捨てたカードとペア数を返す)

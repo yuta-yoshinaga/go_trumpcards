@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { pokerApi } from '../api/gameApi';
 import { BettingControls } from '../components/BettingControls';
 import { CardImage } from '../components/CardImage';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
 import { RoundResults } from '../components/RoundResults';
+import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-
-import { handNameBadgeStyle, POKER_ACTION_NAMES } from '../styles/gameConstants';
+import { handNameBadgeStyle } from '../styles/gameConstants';
 import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
+import { toggleArrayItem } from '../utils/arrayUtils';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -23,17 +27,20 @@ const cardWrapBase: React.CSSProperties = {
 };
 
 export function PokerPage() {
-  const [selected, setSelected] = useState<number[]>([]);
+  const { t } = useTranslation('poker');
+  const { t: tc } = useTranslation('common');
+  const { selected, setSelected, clear: clearSelection } = useCardSelection();
   const [betAmount, setBetAmount] = useState(10);
+  const [bettingLimit, setBettingLimit] = useState(0);
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);
   const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const oddsGenRef = useRef(0);
 
   const onSuccess = useCallback(() => {
-    setSelected([]);
+    clearSelection();
     setOdds(null);
     oddsGenRef.current++;
-  }, []);
+  }, [clearSelection]);
   const { state, loading, error, exec } = useGameApi(pokerApi.exec, { onSuccess });
 
   useEffect(() => {
@@ -69,7 +76,7 @@ export function PokerPage() {
   const toggleSelect = (idx: number) => {
     if (!canExchange) return;
     setSelected((prev) => {
-      const next = prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx];
+      const next = toggleArrayItem(prev, idx);
       if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
       if (next.length === 0) {
         setOdds(null);
@@ -90,18 +97,18 @@ export function PokerPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">処理中...</span>}
+      {loading && <span className="sr-only">{tc('status.loading')}</span>}
       {/* Info bar */}
       <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
         <span>
-          ポット: <strong>{state?.pot ?? 0}</strong>
+          {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
         </span>
         <span>
-          ディーラー: <strong>Player {state?.dealerIdx ?? 0}</strong>
+          {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
         </span>
         {(state?.jokerCount ?? 0) > 0 && (
           <span>
-            ジョーカー: <strong>{state?.jokerCount}</strong>
+            {t('joker')} <strong>{state?.jokerCount}</strong>
           </span>
         )}
       </div>
@@ -120,22 +127,22 @@ export function PokerPage() {
               showHandName={isEnd}
               extraInfo={
                 (phase === PokerPhase.SECOND_BET || isEnd) && p.exchangeCount > 0 && !p.folded ? (
-                  <span className="ml-2 text-[0.85em]">交換: {p.exchangeCount}枚</span>
+                  <span className="ml-2 text-[0.85em]">{t('exchangeCount', { count: p.exchangeCount })}</span>
                 ) : undefined
               }
             />
           ))}
 
         {/* CPU actions log */}
-        <CpuActionLog actions={state?.cpuActions} actionNames={POKER_ACTION_NAMES} />
+        <CpuActionLog actions={state?.cpuActions} />
 
         {/* CPU exchanges log */}
         {state?.cpuExchanges && state.cpuExchanges.length > 0 && (
           <div className="bg-black/30 rounded p-2 mb-3 text-white text-[0.85em]">
-            <div className="font-bold mb-1">CPU交換:</div>
+            <div className="font-bold mb-1">{t('cpuExchange')}</div>
             {state.cpuExchanges.map((ex, i) => (
               <div key={`${i}-${ex.playerIdx}`}>
-                Player {ex.playerIdx}: {ex.exchangeCount}枚交換
+                {t('cpuExchangeEntry', { idx: ex.playerIdx, count: ex.exchangeCount })}
               </div>
             ))}
           </div>
@@ -146,21 +153,22 @@ export function PokerPage() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <div
-        className="shrink-0 bg-[#155715] border-t border-white/20 px-5 py-3"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
-      >
+      <GameFooter className="bg-[#155715] border-white/20 px-5 py-3">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
             <div className="text-white text-[1.1em] mb-1">
-              あなたの手札
-              <span className="ml-3 text-[0.85em]">チップ: {humanPlayer.chips}</span>
+              {t('yourHand')}
+              <span className="ml-3 text-[0.85em]">
+                {tc('betting.chips')} {humanPlayer.chips}
+              </span>
               {humanPlayer.currentBet > 0 && (
-                <span className="ml-2 text-[0.85em]">ベット: {humanPlayer.currentBet}</span>
+                <span className="ml-2 text-[0.85em]">
+                  {tc('betting.currentBet')} {humanPlayer.currentBet}
+                </span>
               )}
-              {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[フォールド]</span>}
-              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[オールイン]</span>}
+              {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{tc('status.folded')}]</span>}
+              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{tc('status.allIn')}]</span>}
               {isEnd && !humanPlayer.folded && humanPlayer.handName && (
                 <span
                   className="inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5"
@@ -170,11 +178,7 @@ export function PokerPage() {
                 </span>
               )}
             </div>
-            {canExchange && (
-              <div className="text-[#cfc] text-[0.85em] mb-1">
-                交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。
-              </div>
-            )}
+            {canExchange && <div className="text-[#cfc] text-[0.85em] mb-1">{t('exchangeInstruction')}</div>}
             <div className="flex flex-wrap gap-1.5 mb-2">
               {humanPlayer.cards?.map((card, i) => {
                 const isSelected = selected.includes(i);
@@ -209,7 +213,7 @@ export function PokerPage() {
                         visibility: isSelected ? 'visible' : 'hidden',
                       }}
                     >
-                      交換
+                      {t('exchangeLabel')}
                     </div>
                   </button>
                 );
@@ -219,9 +223,12 @@ export function PokerPage() {
         )}
 
         {/* Message */}
-        <div className="bg-black/55 rounded-lg text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 min-h-[36px]">
-          {state?.message ?? ''}
-        </div>
+        <GameMessageBox
+          message={state?.message}
+          messageCode={state?.messageCode}
+          messageParams={state?.messageParams}
+          alwaysVisible
+        />
 
         <ErrorAlert message={error} />
 
@@ -232,6 +239,7 @@ export function PokerPage() {
             betAmount={betAmount}
             onBetAmountChange={setBetAmount}
             minRaise={minRaise}
+            maxBetAmount={state?.maxBetAmount}
             hasOutstandingBet={hasOutstandingBet}
             loading={loading}
             onCall={() => exec('call')}
@@ -246,7 +254,7 @@ export function PokerPage() {
         {/* Draw odds panel */}
         {canExchange && odds && odds.some((o) => o.probability > 0) && (
           <div className="bg-black/40 rounded-lg px-4 py-2 mb-2 text-white text-[0.85em]" data-testid="odds-panel">
-            <div className="font-bold mb-1">ドローオッズ:</div>
+            <div className="font-bold mb-1">{t('drawOdds')}</div>
             {odds
               .filter((o) => o.probability > 0)
               .map((o) => (
@@ -267,7 +275,7 @@ export function PokerPage() {
               disabled={loading}
               onClick={() => exec('exchange', selected)}
             >
-              交換
+              {t('exchangeLabel')}
             </button>
             <button
               type="button"
@@ -275,23 +283,35 @@ export function PokerPage() {
               disabled={loading}
               onClick={() => exec('stand')}
             >
-              スタンド
+              {t('standLabel')}
             </button>
           </div>
         )}
 
-        {/* Reset button */}
-        <div className="text-center">
+        {/* Settings + Reset */}
+        <div className="text-center flex items-center justify-center gap-3">
+          <label className="text-white text-sm flex items-center gap-1">
+            {tc('betting.bettingLimit')}
+            <select
+              value={bettingLimit}
+              onChange={(e) => setBettingLimit(Number(e.target.value))}
+              className="px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
+            >
+              <option value={0}>{tc('betting.fixed')}</option>
+              <option value={1}>{tc('betting.potLimit')}</option>
+              <option value={2}>{tc('betting.noLimit')}</option>
+            </select>
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset')}
+            onClick={() => exec('reset', undefined, undefined, { bettingLimit })}
           >
-            リセット
+            {tc('button.reset')}
           </button>
         </div>
-      </div>
+      </GameFooter>
     </div>
   );
 }

@@ -61,6 +61,8 @@ paths:
         | `setdeckcount` | `sd` | Set shoe deck count (requires `amount`: 1/2/4/6/8) |
         | `togglesoft17` | `soft17` | Toggle dealer soft-17 rule (H17 ↔ S17) |
         | `togglecounting` | `counting` | Toggle card counting display on/off |
+        | `toggledas` | `das` | Toggle double-after-split (DAS) on/off |
+        | `setcountingsystem` | `scs` | Set counting system (requires `amount`: 0=Hi-Lo/1=KO/2=Zen Count/3=Omega II) |
         | `quit`  | `q`     | End the session |
       operationId: blackjackExec
       requestBody:
@@ -891,14 +893,17 @@ components:
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
             `hit` (`h`), `stand` (`s`), `doubledown` (`d`), `split` (`sp`),
             `insurance` (`i`), `declineinsurance` (`di`), `togglesoft17` (`soft17`),
-            `togglecounting` (`counting`), `quit` (`q`).
-          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, q, quit]
+            `togglecounting` (`counting`), `toggledas` (`das`),
+            `setcountingsystem` (`scs`), `setpenetration` (`pen`), `quit` (`q`).
+          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, scs, setcountingsystem, pen, setpenetration, q, quit]
           example: hit
         amount:
           type: integer
           description: |
             Bet amount.  Required for `bet` command (minimum 10).
             Deck count for `setdeckcount` command (valid values: 1, 2, 4, 6, 8).
+            Counting system for `setcountingsystem` command (0=Hi-Lo, 1=KO, 2=Zen Count, 3=Omega II).
+            Penetration rate for `setpenetration` command (valid values: 50, 75).
             Ignored for other commands.
           minimum: 1
           example: 100
@@ -923,6 +928,29 @@ components:
             Whether card counting display is enabled.  Only used with `reset` command.
             Defaults to false when omitted.
           example: false
+        doubleAfterSplit:
+          type: boolean
+          description: |
+            Whether double-after-split (DAS) is allowed.  Only used with `reset` command.
+            Defaults to true when omitted.
+          example: true
+        countingSystem:
+          type: integer
+          description: |
+            Card counting system (0=Hi-Lo, 1=KO, 2=Zen Count, 3=Omega II).
+            Only used with `reset` command.  Defaults to 0 (Hi-Lo) when omitted.
+          minimum: 0
+          maximum: 3
+          example: 0
+        deckPenetration:
+          type: integer
+          description: |
+            Deck penetration rate in percent (50 or 75).
+            Only used with `reset` command.  Defaults to 75 when omitted.
+            At 75%, the shoe is reshuffled when less than 25% of cards remain.
+            At 50%, the shoe is reshuffled when less than 50% of cards remain.
+          enum: [50, 75]
+          example: 75
         perfectPairsBet:
           type: integer
           description: |
@@ -1040,6 +1068,7 @@ components:
         - trueCount
         - perfectPairsBet
         - twentyOnePlus3Bet
+        - doubleAfterSplit
       properties:
         dealer:
           $ref: '#/components/schemas/BlackJackPlayer'
@@ -1088,6 +1117,14 @@ components:
             - `"param error."` — invalid request
             - `"error."` — internal error
           example: You are the winner.
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         hintEnabled:
           type: boolean
           description: Whether the basic strategy hint is currently enabled.
@@ -1126,17 +1163,35 @@ components:
           minimum: 0
           maximum: 3
           example: 0
+        doubleAfterSplit:
+          type: boolean
+          description: Whether double-after-split (DAS) is currently allowed.
+          example: true
+        countingSystem:
+          type: integer
+          description: |
+            Current card counting system (0=Hi-Lo, 1=KO, 2=Zen Count, 3=Omega II).
+          minimum: 0
+          maximum: 3
+          example: 0
+        deckPenetration:
+          type: integer
+          description: |
+            Current deck penetration rate in percent (50 or 75).
+            Controls when the shoe is reshuffled based on remaining cards.
+          enum: [50, 75]
+          example: 75
         runningCount:
           type: integer
           description: |
-            Hi-Lo running count.  Only meaningful when `countingEnabled` is true.
+            Running count based on the active counting system.  Only meaningful when `countingEnabled` is true.
             Positive values favor the player; negative values favor the dealer.
           example: 0
         trueCount:
           type: number
           description: |
             True count (running count divided by estimated remaining decks).
-            Only meaningful when `countingEnabled` is true.
+            Only meaningful when `countingEnabled` is true.  Returns 0 for unbalanced systems (KO).
           example: 0.0
         cpuPlayers:
           type: array
@@ -1273,6 +1328,14 @@ components:
           minimum: 0
           maximum: 2
           example: 1
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type (used with `reset` command).
+            0 = Fixed (default), 1 = Pot Limit, 2 = No Limit.
+          minimum: 0
+          maximum: 2
+          example: 0
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1356,6 +1419,9 @@ components:
           type: integer
         handName:
           type: string
+        kickers:
+          type: string
+          description: Kicker card values formatted as display string (e.g., "A, Q, 10"). Empty for hands without kickers.
         wonAmount:
           type: integer
 
@@ -1456,6 +1522,21 @@ components:
           type: integer
         jokerCount:
           type: integer
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type: 0 = Fixed, 1 = Pot Limit, 2 = No Limit.
+          enum: [0, 1, 2]
+        raiseCount:
+          type: integer
+          description: Number of raises in the current betting round.
+          minimum: 0
+        maxBetAmount:
+          type: integer
+          description: |
+            Maximum allowed bet/raise amount for Pot Limit mode.
+            0 means no limit (Fixed or No Limit mode).
+          minimum: 0
         roundResults:
           type: array
           items:
@@ -1477,6 +1558,14 @@ components:
             $ref: '#/components/schemas/PokerOdds'
         message:
           type: string
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
     # Old Maid
@@ -1521,6 +1610,11 @@ components:
         cpuPlacementStrategy:
           type: boolean
           description: When true, CPUs place the odd card at the edge of their hand
+          default: false
+          example: false
+        cpuMemoryAI:
+          type: boolean
+          description: When true, CPUs remember draw positions and adjust selection strategy
           default: false
           example: false
         sessionId:
@@ -1583,6 +1677,37 @@ components:
           type: integer
           description: Number of pairs discarded as a result of this draw
           example: 1
+
+    OldMaidDrawHistoryEntry:
+      type: object
+      description: A single draw event in the game-wide draw history (card info omitted for fairness)
+      required:
+        - drawPlayerIdx
+        - drawFromIdx
+        - discardedPairs
+        - drawerFinished
+        - targetFinished
+      properties:
+        drawPlayerIdx:
+          type: integer
+          description: Index of the player who drew a card
+          example: 0
+        drawFromIdx:
+          type: integer
+          description: Index of the player the card was drawn from
+          example: 1
+        discardedPairs:
+          type: integer
+          description: Number of pairs discarded as a result of this draw
+          example: 0
+        drawerFinished:
+          type: boolean
+          description: Whether the drawing player finished (0 cards) after this draw
+          example: false
+        targetFinished:
+          type: boolean
+          description: Whether the target player finished (0 cards) after this draw
+          example: true
 
     OldMaidResponse:
       type: object
@@ -1649,11 +1774,24 @@ components:
           description: List of CPU actions that occurred since the last human action
           items:
             $ref: '#/components/schemas/OldMaidCpuAction'
+        drawHistory:
+          type: array
+          description: Full draw history throughout the entire game (card info omitted for fairness)
+          items:
+            $ref: '#/components/schemas/OldMaidDrawHistoryEntry'
         message:
           type: string
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         cpuHighlightedCardIdx:
           type: integer
           description: Index of the highlighted card for the target CPU player (-1 if none)
@@ -1753,6 +1891,10 @@ components:
           description: Cards in hand (only populated for the human player)
           items:
             $ref: '#/components/schemas/Card'
+        illegalFinishPenalty:
+          type: boolean
+          description: Whether this player received an illegal finish penalty (反則上がり)
+          example: false
 
     DaifugoAction:
       type: object
@@ -1839,6 +1981,23 @@ components:
           type: boolean
           description: Whether エンペラー (emperor — 4 consecutive cards of all different suits on clear table triggers revolution + table clear) rule is enabled (default false)
           example: false
+        sequenceRevolutionEnabled:
+          type: boolean
+          description: Whether 階段革命 (sequence revolution — 4+ card sequences trigger revolution) rule is enabled (default false)
+          example: false
+        illegalFinishEnabled:
+          type: boolean
+          description: Whether 反則上がり (illegal finish — finishing with 8-cut, joker, or revolution is penalized) rule is enabled (default false)
+          example: false
+        cpuDifficulty:
+          type: integer
+          description: |
+            CPU difficulty level.
+            0 = Normal (default, balanced AI with card preservation),
+            1 = Easy (simple greedy play),
+            2 = Hard (strategic AI that adapts to opponent hand sizes)
+          enum: [0, 1, 2]
+          example: 0
 
     DaifugoExchangeAction:
       type: object
@@ -1945,6 +2104,14 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         pendingAction:
           type: string
           description: |
@@ -2040,6 +2207,21 @@ components:
           description: |
             Ban finishing the game by playing a joker as the last card. Only used with `reset` command.
           example: false
+        jokerReclaim:
+          type: boolean
+          description: |
+            Enable joker reclaim rule (playing a real card on a joker-occupied position returns the joker to the player's hand). Only used with `reset` command.
+          example: false
+        endStop:
+          type: boolean
+          description: |
+            Enable end stop rule (片側ストップ). When A is placed, the high side (8–K) is blocked; when K is placed, the low side (A–6) is blocked. Only used with `reset` command.
+          example: false
+        jokerConsecutiveBanned:
+          type: boolean
+          description: |
+            Enable joker consecutive banned rule (ジョーカー連続禁止). When enabled, a player who played a joker on their last turn cannot play a joker on the current turn. Playing a normal card or passing resets the restriction. Only used with `reset` command.
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -2092,6 +2274,10 @@ components:
           description: Cards in hand (only populated for the human player)
           items:
             $ref: '#/components/schemas/Card'
+        lastPlayedJoker:
+          type: boolean
+          description: Whether this player played a joker on their last turn (only meaningful for the human player when jokerConsecutiveBanned is enabled)
+          example: false
 
     SevensAction:
       type: object
@@ -2161,6 +2347,14 @@ components:
         jokerReclaimEnabled:
           type: boolean
           description: Whether ジョーカー回収 (joker reclaim — playing a real card on a joker-occupied position returns the joker to the player's hand) is enabled (default false)
+          example: false
+        endStopEnabled:
+          type: boolean
+          description: Whether 片側ストップ (end stop — A placed blocks high side 8–K, K placed blocks low side A–6) is enabled (default false)
+          example: false
+        jokerConsecutiveBanned:
+          type: boolean
+          description: Whether ジョーカー連続禁止 (joker consecutive banned — a player who played a joker last turn cannot play a joker this turn) is enabled (default false)
           example: false
 
     SevensResponse:
@@ -2241,6 +2435,14 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
 
 
     # Doubt
@@ -2292,6 +2494,14 @@ components:
           minimum: 0
           maximum: 2
           example: 1
+        penaltyDrawLimit:
+          type: integer
+          description: |
+            Maximum number of cards the loser picks up after a doubt resolution
+            (used with the `reset` command). 0 = unlimited (loser takes all table cards).
+            Remaining cards are discarded from the game. Defaults to 0 when omitted.
+          minimum: 0
+          example: 5
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -2368,6 +2578,7 @@ components:
         - wasLying
         - loserIdx
         - cardCount
+        - discardedCount
         - revealedCards
       properties:
         doubterIdx:
@@ -2390,6 +2601,10 @@ components:
           type: integer
           description: Number of cards the loser picks up
           example: 4
+        discardedCount:
+          type: integer
+          description: Number of cards discarded from the game (when penaltyDrawLimit is active and table exceeds the limit)
+          example: 0
         revealedCards:
           type: array
           description: Cards that were revealed during the doubt resolution
@@ -2410,6 +2625,7 @@ components:
         - winnerIdx
         - message
         - doubtWindowSec
+        - penaltyDrawLimit
       properties:
         players:
           type: array
@@ -2468,10 +2684,22 @@ components:
           description: |
             Game result or status message.  Empty while the game is in progress.
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         doubtWindowSec:
           type: integer
           description: Duration of the doubt window in seconds (reflects current game config)
           example: 10
+        penaltyDrawLimit:
+          type: integer
+          description: Maximum number of cards the loser picks up after a doubt resolution (0 = unlimited)
+          example: 0
 
     # -------------------------------------------------------------------------
     # Texas Hold'em
@@ -2535,6 +2763,14 @@ components:
             Defaults to 200 (= 2x). Must be >= 101.
           minimum: 101
           example: 200
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type (used with `reset` command).
+            0 = Fixed (default), 1 = Pot Limit, 2 = No Limit.
+          minimum: 0
+          maximum: 2
+          example: 0
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -2632,6 +2868,16 @@ components:
           minimum: 0
           maximum: 100
           example: 25
+        threeBet:
+          type: integer
+          description: 3Bet percentage — preflop re-raise rate when facing a raise
+          minimum: 0
+          maximum: 100
+          example: 10
+        af:
+          type: string
+          description: "Aggression Factor (postflop bets+raises / calls). Values: decimal (e.g. \"2.5\"), \"∞\" (bets but no calls), \"-\" (no postflop actions)"
+          example: "2.5"
 
     HoldemCpuAction:
       type: object
@@ -2679,6 +2925,9 @@ components:
           type: string
           description: Hand name (e.g., "One Pair")
           example: One Pair
+        kickers:
+          type: string
+          description: Kicker card values formatted as display string (e.g., "A, Q, 10"). Empty for hands without kickers.
         bestHand:
           type: array
           description: Best 5-card hand
@@ -2779,6 +3028,21 @@ components:
           description: Minimum raise amount
           minimum: 0
           example: 20
+        bettingLimit:
+          type: integer
+          description: |
+            Betting limit type: 0 = Fixed, 1 = Pot Limit, 2 = No Limit.
+          enum: [0, 1, 2]
+        raiseCount:
+          type: integer
+          description: Number of raises in the current betting round.
+          minimum: 0
+        maxBetAmount:
+          type: integer
+          description: |
+            Maximum allowed bet/raise amount for Pot Limit mode.
+            0 means no limit (Fixed or No Limit mode).
+          minimum: 0
         roundResults:
           type: array
           description: Results for each non-folded player at showdown
@@ -2803,6 +3067,14 @@ components:
             - `"param error."` — invalid request
             - `"error."` — internal error
           example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
         handCount:
           type: integer
           description: Number of hands played (for tournament mode display)

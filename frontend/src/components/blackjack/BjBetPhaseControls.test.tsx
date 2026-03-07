@@ -16,6 +16,12 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
     onToggleSoft17: vi.fn(),
     countingEnabled: false,
     onToggleCounting: vi.fn(),
+    doubleAfterSplit: true,
+    onToggleDAS: vi.fn(),
+    countingSystem: 0,
+    onCountingSystemChange: vi.fn(),
+    deckPenetration: 75,
+    onDeckPenetrationChange: vi.fn(),
     loading: false,
     onBet: vi.fn(),
     perfectPairsBet: 0,
@@ -114,6 +120,23 @@ describe('BjBetPhaseControls', () => {
     expect(onToggleCounting).toHaveBeenCalled();
   });
 
+  it('shows DAS ON when doubleAfterSplit is true', () => {
+    render(<BjBetPhaseControls {...defaultProps({ doubleAfterSplit: true })} />);
+    expect(screen.getByRole('button', { name: 'DAS ON' })).toBeInTheDocument();
+  });
+
+  it('shows DAS OFF when doubleAfterSplit is false', () => {
+    render(<BjBetPhaseControls {...defaultProps({ doubleAfterSplit: false })} />);
+    expect(screen.getByRole('button', { name: 'DAS OFF' })).toBeInTheDocument();
+  });
+
+  it('calls onToggleDAS when DAS button is clicked', () => {
+    const onToggleDAS = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onToggleDAS })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'DAS ON' }));
+    expect(onToggleDAS).toHaveBeenCalled();
+  });
+
   it('calls onBet when bet button is clicked', () => {
     const onBet = vi.fn();
     render(<BjBetPhaseControls {...defaultProps({ onBet })} />);
@@ -145,6 +168,55 @@ describe('BjBetPhaseControls', () => {
     expect(onTwentyOnePlus3BetChange).toHaveBeenCalledWith(50);
   });
 
+  it('renders counting system selector with provided value', () => {
+    render(<BjBetPhaseControls {...defaultProps({ countingSystem: 1 })} />);
+    expect(screen.getByLabelText('カウンティング方式')).toHaveValue('1');
+  });
+
+  it('calls onCountingSystemChange when counting system selector changes', () => {
+    const onCountingSystemChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onCountingSystemChange })} />);
+    fireEvent.change(screen.getByLabelText('カウンティング方式'), { target: { value: '2' } });
+    expect(onCountingSystemChange).toHaveBeenCalledWith(2);
+  });
+
+  it('disables counting system selector when counting is off', () => {
+    render(<BjBetPhaseControls {...defaultProps({ countingEnabled: false })} />);
+    expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
+  });
+
+  it('enables counting system selector when counting is on', () => {
+    render(<BjBetPhaseControls {...defaultProps({ countingEnabled: true })} />);
+    expect(screen.getByLabelText('カウンティング方式')).not.toBeDisabled();
+  });
+
+  it('disables counting system selector when loading', () => {
+    render(<BjBetPhaseControls {...defaultProps({ countingEnabled: true, loading: true })} />);
+    expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
+  });
+
+  it('renders penetration selector with provided value', () => {
+    render(<BjBetPhaseControls {...defaultProps({ deckPenetration: 50 })} />);
+    expect(screen.getByLabelText('ペネトレーション:')).toHaveValue('50');
+  });
+
+  it('calls onDeckPenetrationChange when penetration selector changes', () => {
+    const onDeckPenetrationChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onDeckPenetrationChange })} />);
+    fireEvent.change(screen.getByLabelText('ペネトレーション:'), { target: { value: '50' } });
+    expect(onDeckPenetrationChange).toHaveBeenCalledWith(50);
+  });
+
+  it('disables penetration selector when loading', () => {
+    render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
+    expect(screen.getByLabelText('ペネトレーション:')).toBeDisabled();
+  });
+
+  it('enables penetration selector when not loading', () => {
+    render(<BjBetPhaseControls {...defaultProps({ loading: false })} />);
+    expect(screen.getByLabelText('ペネトレーション:')).not.toBeDisabled();
+  });
+
   it('disables inputs and buttons when loading is true', () => {
     render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
     expect(screen.getByLabelText('ベット額:')).toBeDisabled();
@@ -154,6 +226,8 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'ヒント OFF' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'S17' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'カウント OFF' })).toBeDisabled();
+    expect(screen.getByLabelText('カウンティング方式')).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'DAS ON' })).toBeDisabled();
     expect(screen.getByLabelText('PP:')).toBeDisabled();
     expect(screen.getByLabelText('21+3:')).toBeDisabled();
   });

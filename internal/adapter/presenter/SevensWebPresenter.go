@@ -33,12 +33,14 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	// ゲーム設定
 	cfg := s.GetConfig()
 	resObj.Config = controller.SevensWebOutputConfig{
-		TunnelEnabled:       cfg.TunnelEnabled,
-		JokerCount:          cfg.JokerCount,
-		CpuStrategy:         cfg.CpuStrategy,
-		MaxPasses:           cfg.MaxPasses,
-		NoJokerFinish:       cfg.NoJokerFinish,
-		JokerReclaimEnabled: cfg.JokerReclaimEnabled,
+		TunnelEnabled:          cfg.TunnelEnabled,
+		JokerCount:             cfg.JokerCount,
+		CpuStrategy:            cfg.CpuStrategy,
+		MaxPasses:              cfg.MaxPasses,
+		NoJokerFinish:          cfg.NoJokerFinish,
+		JokerReclaimEnabled:    cfg.JokerReclaimEnabled,
+		EndStopEnabled:         cfg.EndStopEnabled,
+		JokerConsecutiveBanned: cfg.JokerConsecutiveBanned,
 	}
 
 	// CPU行動履歴
@@ -82,6 +84,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		pObj.MaxPasses = player.GetMaxPasses()
 		pObj.Cards = make([]*controller.WebOutputCard, 0)
 		if player.GetIsHuman() {
+			pObj.LastPlayedJoker = player.GetLastPlayedJoker()
 			for j := 0; j < player.GetCardsSize(); j++ {
 				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
 			}
@@ -94,13 +97,11 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		resObj.Message = lastErr.Error()
 	} else if s.GetGameEndFlag() {
 		resObj.Message = swp.buildResultMessage(s)
+		resObj.MessageCode = "sevens.result.rankings"
+		resObj.MessageParams = map[string]string{"rankings": resObj.Message}
 	}
 
-	res, err := jsonMarshal(resObj)
-	if err != nil {
-		return internalServerErrorJSON()
-	}
-	return string(res)
+	return marshalOrError(resObj)
 }
 
 // buildResultMessage ゲーム終了メッセージを生成

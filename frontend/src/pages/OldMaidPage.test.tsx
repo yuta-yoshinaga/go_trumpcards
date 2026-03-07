@@ -38,6 +38,7 @@ const humanTurnState: OldMaidResponse = {
   lastDiscardedPairs: 0,
   cpuActions: [],
   humanAction: null,
+  drawHistory: [],
   cpuHighlightedCardIdx: -1,
   removedCard: null,
   mode: 0,
@@ -101,12 +102,24 @@ describe('OldMaidPage', () => {
 
   it('CPU心理戦 checkbox is unchecked by default', () => {
     renderWithProviders(<OldMaidPage />);
-    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByLabelText('CPU心理戦（奇数カードを端に配置）')).not.toBeChecked();
   });
 
   it('CPU心理戦 checkbox can be toggled', () => {
     renderWithProviders(<OldMaidPage />);
-    const checkbox = screen.getByRole('checkbox');
+    const checkbox = screen.getByLabelText('CPU心理戦（奇数カードを端に配置）');
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+  });
+
+  it('CPU記憶AI checkbox is unchecked by default', () => {
+    renderWithProviders(<OldMaidPage />);
+    expect(screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）')).not.toBeChecked();
+  });
+
+  it('CPU記憶AI checkbox can be toggled', () => {
+    renderWithProviders(<OldMaidPage />);
+    const checkbox = screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）');
     fireEvent.click(checkbox);
     expect(checkbox).toBeChecked();
   });
@@ -115,9 +128,16 @@ describe('OldMaidPage', () => {
     renderWithProviders(<OldMaidPage />);
     const radios = screen.getAllByRole('radio');
     fireEvent.click(radios[1]);
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByLabelText('CPU心理戦（奇数カードを端に配置）'));
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true, undefined, false));
+  });
+
+  it('ゲーム開始 calls reset with cpuMemoryAI=true when checkbox enabled', async () => {
+    renderWithProviders(<OldMaidPage />);
+    fireEvent.click(screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）'));
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, true));
   });
 
   it('hides setup screen after ゲーム開始', async () => {
@@ -240,7 +260,7 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false));
   });
 
   it('calls draw when random draw button is clicked', async () => {
@@ -474,7 +494,7 @@ describe('OldMaidPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   }, 10000);
 
   it('clears error message on successful API call after failure', async () => {
@@ -484,12 +504,12 @@ describe('OldMaidPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   }, 10000);
 
   it('shows JOKER label in status when lastDrawCard is JOKER', async () => {
@@ -784,7 +804,7 @@ describe('OldMaidPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'シャッフル' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
   it('human cards are draggable when game is active', async () => {
@@ -876,7 +896,7 @@ describe('OldMaidPage', () => {
       dataTransfer: { getData: () => '0' },
     });
 
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
   // ── Card reveal suspense & Joker shake ─────────────────────────────────
@@ -956,6 +976,107 @@ describe('OldMaidPage', () => {
     mockExec.mockResolvedValue(endWithDraw);
     await startGame();
     expect(screen.queryByTestId('card-reveal-area')).not.toBeInTheDocument();
+  });
+
+  // ── Draw History Timeline ──────────────────────────────────────────────
+
+  it('shows draw history timeline when drawHistory is non-empty', async () => {
+    const stateWithHistory: OldMaidResponse = {
+      ...humanTurnState,
+      drawHistory: [
+        { drawPlayerIdx: 0, drawFromIdx: 1, discardedPairs: 0, drawerFinished: false, targetFinished: true },
+        { drawPlayerIdx: 2, drawFromIdx: 0, discardedPairs: 1, drawerFinished: true, targetFinished: false },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithHistory);
+    await startGame();
+    expect(screen.getByTestId('draw-history-timeline')).toBeInTheDocument();
+    expect(screen.getByText('引き履歴')).toBeInTheDocument();
+    expect(screen.getByText(/1\. あなたがCPU 1から引いた/)).toBeInTheDocument();
+    expect(screen.getByText(/\[CPU 1上がり\]/)).toBeInTheDocument();
+    expect(screen.getByText(/2\. CPU 2があなたから引いた/)).toBeInTheDocument();
+    expect(screen.getByText(/\(1組捨て\)/)).toBeInTheDocument();
+    expect(screen.getByText(/\[CPU 2上がり\]/)).toBeInTheDocument();
+  });
+
+  it('does not show draw history timeline when drawHistory is empty', async () => {
+    await startGame();
+    expect(screen.queryByTestId('draw-history-timeline')).not.toBeInTheDocument();
+  });
+
+  it('shows draw history timeline when drawHistory is undefined (backward compat)', async () => {
+    const stateNoHistory: OldMaidResponse = {
+      ...humanTurnState,
+      drawHistory: undefined as unknown as OldMaidResponse['drawHistory'],
+    };
+    mockExec.mockResolvedValue(stateNoHistory);
+    await startGame();
+    expect(screen.queryByTestId('draw-history-timeline')).not.toBeInTheDocument();
+  });
+
+  // ── Suspect Pin ──────────────────────────────────────────────────────
+
+  it('shows suspect pin button for CPU players', async () => {
+    await startGame();
+    const pinButtons = screen.getAllByRole('button', { name: '容疑者ピン' });
+    expect(pinButtons.length).toBeGreaterThan(0);
+  });
+
+  it('toggles suspect pin on click', async () => {
+    await startGame();
+    const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
+    fireEvent.click(pinButton);
+    expect(screen.getByText('容疑者')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ピン解除' })).toBeInTheDocument();
+  });
+
+  it('unpins suspect on second click', async () => {
+    await startGame();
+    const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
+    fireEvent.click(pinButton);
+    expect(screen.getByText('容疑者')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'ピン解除' }));
+    expect(screen.queryByText('容疑者')).not.toBeInTheDocument();
+  });
+
+  it('clears suspect pins on reset', async () => {
+    await startGame();
+    const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
+    fireEvent.click(pinButton);
+    expect(screen.getByText('容疑者')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(screen.queryByText('容疑者')).not.toBeInTheDocument());
+  });
+
+  it('clears suspect pins when going to settings', async () => {
+    await startGame();
+    const pinButton = screen.getAllByRole('button', { name: '容疑者ピン' })[0];
+    fireEvent.click(pinButton);
+    expect(screen.getByText('容疑者')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '設定' }));
+    expect(screen.queryByText('容疑者')).not.toBeInTheDocument();
+  });
+
+  it('does not show suspect pin button for finished CPU players', async () => {
+    const stateWithFinished: OldMaidResponse = {
+      ...humanTurnState,
+      players: [
+        { ...humanTurnState.players[0] },
+        { id: 1, isHuman: false, isFinished: true, cardCount: 0, cards: [] },
+        { ...humanTurnState.players[2] },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithFinished);
+    await startGame();
+    // Only CPU 2 (not finished) should have pin button
+    const pinButtons = screen.getAllByRole('button', { name: '容疑者ピン' });
+    expect(pinButtons).toHaveLength(1);
+  });
+
+  it('does not show suspect pin button when game has ended', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    await startGame();
+    expect(screen.queryByRole('button', { name: '容疑者ピン' })).not.toBeInTheDocument();
   });
 
   it('goes directly to CPU replay when humanAction is null', async () => {

@@ -22,7 +22,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 			domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
 			domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
 			domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-			domain.NewHoldemPlayer(false, domain.HoldemStyleLAG),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
 		}
 		h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
 		return h, players
@@ -232,9 +232,32 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, out.RoundResults[0].PlayerIdx)
 		assert.Equal(t, domain.PokerHandFlush, out.RoundResults[0].HandRank)
 		assert.Equal(t, "Flush", out.RoundResults[0].HandName)
+		assert.Equal(t, "", out.RoundResults[0].Kickers)
 		assert.Equal(t, 200, out.RoundResults[0].WonAmount)
 		assert.Len(t, out.RoundResults[0].BestHand, 2)
 		assert.Equal(t, "SPADE", out.RoundResults[0].BestHand[0].Design)
+	})
+
+	t.Run("round results with kickers", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{
+				PlayerIdx: 0,
+				HandRank:  domain.PokerHandOnePair,
+				HandName:  "One Pair",
+				Kickers:   []int{14, 13, 12},
+				WonAmount: 200,
+				BestHand:  nil,
+			},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Len(t, out.RoundResults, 1)
+		assert.Equal(t, "A, K, Q", out.RoundResults[0].Kickers)
 	})
 
 	t.Run("best hand cards at showdown", func(t *testing.T) {
@@ -305,6 +328,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Contains(t, out.Message, "You are the winner.")
+		assert.Equal(t, "holdem.result.win", out.MessageCode)
 	})
 
 	t.Run("game end message - human loses", func(t *testing.T) {
@@ -321,6 +345,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Contains(t, out.Message, "You lose.")
+		assert.Equal(t, "holdem.result.lose", out.MessageCode)
 	})
 
 	t.Run("game end message - human folded", func(t *testing.T) {
@@ -337,6 +362,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Contains(t, out.Message, "You folded.")
+		assert.Equal(t, "holdem.result.folded", out.MessageCode)
 	})
 
 	t.Run("game end message - no results", func(t *testing.T) {
@@ -349,6 +375,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &out)
 
 		assert.Equal(t, "Game over.", out.Message)
+		assert.Equal(t, "holdem.result.gameOver", out.MessageCode)
 	})
 
 	t.Run("pot and dealer fields", func(t *testing.T) {
@@ -380,6 +407,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("GetLastBet").Return(0)
 		gameMock.On("GetMinRaise").Return(0)
+		gameMock.On("GetRaiseCount").Return(0)
 		gameMock.On("GetCommunityCards").Return([]*domain.Card{})
 		gameMock.On("GetSidePots").Return([]domain.HoldemSidePot{})
 		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
@@ -408,6 +436,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("GetLastBet").Return(0)
 		gameMock.On("GetMinRaise").Return(0)
+		gameMock.On("GetRaiseCount").Return(0)
 		gameMock.On("GetCommunityCards").Return([]*domain.Card{})
 		gameMock.On("GetSidePots").Return([]domain.HoldemSidePot{})
 		gameMock.On("GetCpuActions").Return([]domain.HoldemCpuAction{})
@@ -453,6 +482,8 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 2, out.Players[0].TotalHands)
 		assert.Equal(t, 50, out.Players[0].VPIP)
 		assert.Equal(t, 50, out.Players[0].PFR)
+		assert.Equal(t, 0, out.Players[0].ThreeBet)
+		assert.Equal(t, "-", out.Players[0].AF)
 	})
 
 	t.Run("HUD stats zero when no hands played", func(t *testing.T) {
@@ -466,6 +497,41 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, out.Players[0].TotalHands)
 		assert.Equal(t, 0, out.Players[0].VPIP)
 		assert.Equal(t, 0, out.Players[0].PFR)
+		assert.Equal(t, 0, out.Players[0].ThreeBet)
+		assert.Equal(t, "-", out.Players[0].AF)
+	})
+
+	t.Run("HUD 3Bet and AF normal values", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementThreeBetOpportunity()
+		players[0].IncrementThreeBetOpportunity()
+		players[0].IncrementThreeBet()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopBetRaise()
+		players[0].IncrementPostFlopCall()
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 50, out.Players[0].ThreeBet) // 1*100/2=50
+		assert.Equal(t, "3.0", out.Players[0].AF)    // 3/1=3.0
+	})
+
+	t.Run("HUD AF infinity", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].IncrementTotalHands()
+		players[0].IncrementPostFlopBetRaise()
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "∞", out.Players[0].AF)
 	})
 
 	t.Run("tournament mode fields included in output", func(t *testing.T) {
@@ -508,5 +574,36 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.False(t, out.TournamentMode)
 		assert.Equal(t, 10, out.BlindLevelHands)
 		assert.Equal(t, 200, out.BlindMultiplier)
+	})
+}
+
+func TestHoldemWebPresenter_Output_BettingLimitFields(t *testing.T) {
+	p := presenter.NewHoldemWebPresenter()
+
+	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.HoldemPlayer{
+			domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
+		}
+		h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+		return h, players
+	}
+
+	t.Run("default Fixed limit", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, out.BettingLimit)
+		assert.Equal(t, 0, out.RaiseCount)
+		assert.Equal(t, 0, out.MaxBetAmount)
 	})
 }

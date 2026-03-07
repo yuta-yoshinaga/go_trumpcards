@@ -31,6 +31,8 @@ const humanPlayer = (overrides: Partial<import('../types/card').HoldemPlayerData
   totalHands: 0,
   vpip: 0,
   pfr: 0,
+  threeBet: 0,
+  af: '-',
   ...overrides,
 });
 
@@ -53,6 +55,8 @@ const cpuPlayer = (id: number, overrides: Partial<import('../types/card').Holdem
   totalHands: 0,
   vpip: 0,
   pfr: 0,
+  threeBet: 0,
+  af: '-',
   ...overrides,
 });
 
@@ -77,6 +81,9 @@ const initState: HoldemResponse = {
   tournamentMode: false,
   blindLevelHands: 10,
   blindMultiplier: 200,
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -100,6 +107,9 @@ const preFlopState: HoldemResponse = {
   tournamentMode: false,
   blindLevelHands: 10,
   blindMultiplier: 200,
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** PRE_FLOP with outstanding bet: shows call/raise instead of bet/check */
@@ -150,8 +160,8 @@ const showdownState: HoldemResponse = {
   lastBet: 0,
   minRaise: 0,
   roundResults: [
-    { playerIdx: 0, handRank: 1, handName: 'ワンペア', bestHand: [], wonAmount: 0 },
-    { playerIdx: 1, handRank: 2, handName: 'ツーペア', bestHand: [], wonAmount: 200 },
+    { playerIdx: 0, handRank: 1, handName: 'ワンペア', kickers: 'A, Q, 10', bestHand: [], wonAmount: 0 },
+    { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '8', bestHand: [], wonAmount: 200 },
   ],
   cpuActions: [],
   message: 'CPU 1 の勝ち',
@@ -161,6 +171,9 @@ const showdownState: HoldemResponse = {
   tournamentMode: false,
   blindLevelHands: 10,
   blindMultiplier: 200,
+  bettingLimit: 0,
+  raiseCount: 0,
+  maxBetAmount: 0,
 };
 
 /** END (phase 6) — also isShowdown */
@@ -414,8 +427,8 @@ describe('HoldemPage', () => {
     mockExec.mockResolvedValue({
       ...showdownState,
       roundResults: [
-        { playerIdx: 0, handRank: 0, handName: '', bestHand: [], wonAmount: 0 },
-        { playerIdx: 1, handRank: 2, handName: 'ツーペア', bestHand: [], wonAmount: 200 },
+        { playerIdx: 0, handRank: 0, handName: '', kickers: '', bestHand: [], wonAmount: 0 },
+        { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '', bestHand: [], wonAmount: 200 },
       ],
     });
     renderWithProviders(<HoldemPage />);
@@ -679,7 +692,20 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0 }));
+  });
+
+  it('sends updated bettingLimit when select is changed before reset', async () => {
+    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = screen.getByLabelText('リミット:');
+    fireEvent.change(select, { target: { value: '1' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 1 }));
   });
 
   // ---- loading / disabled state ----
@@ -712,7 +738,7 @@ describe('HoldemPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
   it('clears error on successful call after failure', async () => {
@@ -721,11 +747,11 @@ describe('HoldemPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
   // ---- END phase (also isShowdown) ----
@@ -812,10 +838,14 @@ describe('HoldemPage', () => {
   it('shows HUD stats for CPU when totalHands > 0', async () => {
     mockExec.mockResolvedValue({
       ...preFlopState,
-      players: [humanPlayer(), cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20 }), cpuPlayer(2)],
+      players: [
+        humanPlayer(),
+        cpuPlayer(1, { totalHands: 5, vpip: 60, pfr: 20, threeBet: 10, af: '2.5' }),
+        cpuPlayer(2),
+      ],
     });
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/VPIP:60% PFR:20%/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/VPIP:60% PFR:20% 3Bet:10% AF:2\.5/)).toBeInTheDocument());
   });
 
   it('does not show HUD stats for CPU when totalHands is 0', async () => {
@@ -828,10 +858,10 @@ describe('HoldemPage', () => {
   it('shows HUD stats for human when totalHands > 0', async () => {
     mockExec.mockResolvedValue({
       ...preFlopState,
-      players: [humanPlayer({ totalHands: 3, vpip: 33, pfr: 0 }), cpuPlayer(1), cpuPlayer(2)],
+      players: [humanPlayer({ totalHands: 3, vpip: 33, pfr: 0, threeBet: 0, af: '-' }), cpuPlayer(1), cpuPlayer(2)],
     });
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/VPIP:33% PFR:0%/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/VPIP:33% PFR:0% 3Bet:0% AF:-/)).toBeInTheDocument());
   });
 
   it('does not show HUD stats for human when totalHands is 0', async () => {

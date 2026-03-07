@@ -12,30 +12,17 @@ type cardMemoryEntry struct {
 
 // DoubtPlayer ダウトプレイヤークラス
 type DoubtPlayer struct {
-	Player
-	isHuman      bool
-	isFinished   bool
+	*GamePlayer
 	cardMemories []cardMemoryEntry // 記憶したカードのリスト
 }
 
 // NewDoubtPlayer コンストラクタ
 func NewDoubtPlayer(isHuman bool) *DoubtPlayer {
 	return &DoubtPlayer{
-		Player:       Player{cards: make([]*Card, 0)},
-		isHuman:      isHuman,
-		isFinished:   false,
+		GamePlayer:   NewGamePlayer(isHuman),
 		cardMemories: nil,
 	}
 }
-
-// GetIsHuman 人間プレイヤーかどうか
-func (p *DoubtPlayer) GetIsHuman() bool { return p.isHuman }
-
-// GetIsFinished 上がり済みかどうか
-func (p *DoubtPlayer) GetIsFinished() bool { return p.isFinished }
-
-// SetIsFinished 上がり状態設定
-func (p *DoubtPlayer) SetIsFinished(v bool) { p.isFinished = v }
 
 // ResetMemory カード記憶をリセットする
 func (p *DoubtPlayer) ResetMemory() {

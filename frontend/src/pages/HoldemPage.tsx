@@ -1,29 +1,38 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { holdemApi } from '../api/gameApi';
 import { BettingControls } from '../components/BettingControls';
 import { CardBack, CardImage } from '../components/CardImage';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
 import { RoundResults } from '../components/RoundResults';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary } from '../styles/buttonStyles';
 
-import { HOLDEM_ACTION_NAMES, handNameBadgeStyle } from '../styles/gameConstants';
+import { handNameBadgeStyle } from '../styles/gameConstants';
 import { HoldemPhase } from '../types/phases';
 
-const PHASE_NAMES: Record<number, string> = {
-  [HoldemPhase.PRE_FLOP]: 'プリフロップ',
-  [HoldemPhase.FLOP]: 'フロップ',
-  [HoldemPhase.TURN]: 'ターン',
-  [HoldemPhase.RIVER]: 'リバー',
-  [HoldemPhase.SHOWDOWN]: 'ショーダウン',
-  [HoldemPhase.END]: '結果',
-};
+function usePhaseNames(t: (key: string) => string): Record<number, string> {
+  return {
+    [HoldemPhase.PRE_FLOP]: t('phase.preFlop'),
+    [HoldemPhase.FLOP]: t('phase.flop'),
+    [HoldemPhase.TURN]: t('phase.turn'),
+    [HoldemPhase.RIVER]: t('phase.river'),
+    [HoldemPhase.SHOWDOWN]: t('phase.showdown'),
+    [HoldemPhase.END]: t('phase.end'),
+  };
+}
 
 export function HoldemPage() {
+  const { t } = useTranslation('holdem');
+  const { t: tc } = useTranslation('common');
+  const phaseNames = usePhaseNames(t);
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const [betAmount, setBetAmount] = useState(20);
+  const [bettingLimit, setBettingLimit] = useState(0);
 
   useEffect(() => {
     exec('reset');
@@ -49,14 +58,14 @@ export function HoldemPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">処理中...</span>}
+      {loading && <span className="sr-only">{tc('status.loading')}</span>}
       {/* Info bar */}
       <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
         <span>
-          フェーズ: <strong>{PHASE_NAMES[phase] ?? '初期化中'}</strong>
+          <strong>{phaseNames[phase] ?? t('phase.init')}</strong>
         </span>
         <span>
-          ポット: <strong>{state?.pot ?? 0}</strong>
+          {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
         </span>
         <span>
           SB/BB:{' '}
@@ -65,12 +74,10 @@ export function HoldemPage() {
           </strong>
         </span>
         <span>
-          ディーラー: <strong>Player {state?.dealerIdx ?? 0}</strong>
+          {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
         </span>
         {state?.tournamentMode && (
-          <span>
-            ハンド#<strong>{state.handCount}</strong> (レベルアップ:{state.blindLevelHands}ハンド毎)
-          </span>
+          <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
         )}
       </div>
 
@@ -78,7 +85,7 @@ export function HoldemPage() {
       <div className="flex-1 overflow-y-auto pt-4 px-5">
         {/* Community cards */}
         <div className="mb-4">
-          <div className="text-white text-[1.1em] mb-1.5">コミュニティカード</div>
+          <div className="text-white text-[1.1em] mb-1.5">{t('communityCards')}</div>
           <div className="flex flex-wrap gap-2">
             {state?.communityCards?.length
               ? state.communityCards.map((card) => (
@@ -109,7 +116,7 @@ export function HoldemPage() {
               extraInfo={
                 p.totalHands > 0 ? (
                   <span className="ml-2 text-cyan-300 text-[0.8em]">
-                    VPIP:{p.vpip}% PFR:{p.pfr}%
+                    VPIP:{p.vpip}% PFR:{p.pfr}% 3Bet:{p.threeBet}% AF:{p.af}
                   </span>
                 ) : undefined
               }
@@ -117,33 +124,34 @@ export function HoldemPage() {
           ))}
 
         {/* CPU actions log */}
-        <CpuActionLog actions={state?.cpuActions} actionNames={HOLDEM_ACTION_NAMES} />
+        <CpuActionLog actions={state?.cpuActions} />
 
         {/* Round results */}
         {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <div
-        className="shrink-0 bg-[#155715] border-t border-white/20 px-5 py-3"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
-      >
+      <GameFooter className="bg-[#155715] border-white/20 px-5 py-3">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
             <div className="text-white text-[1.1em] mb-1">
-              あなたの手札
-              <span className="ml-3 text-[0.85em]">チップ: {humanPlayer.chips}</span>
+              {t('yourHand')}
+              <span className="ml-3 text-[0.85em]">
+                {tc('betting.chips')} {humanPlayer.chips}
+              </span>
               {humanPlayer.totalHands > 0 && (
                 <span className="ml-2 text-cyan-300 text-[0.8em]">
-                  VPIP:{humanPlayer.vpip}% PFR:{humanPlayer.pfr}%
+                  VPIP:{humanPlayer.vpip}% PFR:{humanPlayer.pfr}% 3Bet:{humanPlayer.threeBet}% AF:{humanPlayer.af}
                 </span>
               )}
               {humanPlayer.currentBet > 0 && (
-                <span className="ml-2 text-[0.85em]">ベット: {humanPlayer.currentBet}</span>
+                <span className="ml-2 text-[0.85em]">
+                  {tc('betting.currentBet')} {humanPlayer.currentBet}
+                </span>
               )}
-              {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[フォールド]</span>}
-              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[オールイン]</span>}
+              {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{tc('status.folded')}]</span>}
+              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{tc('status.allIn')}]</span>}
               {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                 <span
                   className="inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5"
@@ -173,9 +181,12 @@ export function HoldemPage() {
         )}
 
         {/* Message */}
-        <div className="bg-black/55 rounded-lg text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2 min-h-[36px]">
-          {state?.message ?? ''}
-        </div>
+        <GameMessageBox
+          message={state?.message}
+          messageCode={state?.messageCode}
+          messageParams={state?.messageParams}
+          alwaysVisible
+        />
 
         <ErrorAlert message={error} />
 
@@ -186,6 +197,7 @@ export function HoldemPage() {
             betAmount={betAmount}
             onBetAmountChange={setBetAmount}
             minRaise={minRaise}
+            maxBetAmount={state?.maxBetAmount}
             hasOutstandingBet={hasOutstandingBet}
             loading={loading}
             onCall={() => exec('call')}
@@ -197,18 +209,30 @@ export function HoldemPage() {
           />
         )}
 
-        {/* Reset button */}
-        <div className="text-center">
+        {/* Settings + Reset */}
+        <div className="text-center flex items-center justify-center gap-3">
+          <label className="text-white text-sm flex items-center gap-1">
+            {tc('betting.bettingLimit')}
+            <select
+              value={bettingLimit}
+              onChange={(e) => setBettingLimit(Number(e.target.value))}
+              className="px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
+            >
+              <option value={0}>{tc('betting.fixed')}</option>
+              <option value={1}>{tc('betting.potLimit')}</option>
+              <option value={2}>{tc('betting.noLimit')}</option>
+            </select>
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset')}
+            onClick={() => exec('reset', undefined, { bettingLimit })}
           >
-            リセット
+            {tc('button.reset')}
           </button>
         </div>
-      </div>
+      </GameFooter>
     </div>
   );
 }

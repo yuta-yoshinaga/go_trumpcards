@@ -29,6 +29,9 @@ const defaultConfig = {
   intenseLockEnabled: false,
   sandstormEnabled: false,
   emperorEnabled: false,
+  sequenceRevolutionEnabled: false,
+  illegalFinishEnabled: false,
+  cpuDifficulty: 0,
 };
 
 const humanTurnState: DaifugoResponse = {
@@ -90,7 +93,13 @@ const cpuTurnState: DaifugoResponse = {
 const gameEndState: DaifugoResponse = {
   ...humanTurnState,
   gameEndFlag: true,
-  message: '大富豪: あなた',
+  message: 'ゲーム終了！ あなた:大富豪 CPU 1:富豪 CPU 2:平民 CPU 3:大貧民',
+  players: [
+    { id: 0, isHuman: true, isFinished: true, rank: 1, cardCount: 0, cards: [] },
+    { id: 1, isHuman: false, isFinished: true, rank: 2, cardCount: 0, cards: [] },
+    { id: 2, isHuman: false, isFinished: true, rank: 3, cardCount: 0, cards: [] },
+    { id: 3, isHuman: false, isFinished: true, rank: 4, cardCount: 0, cards: [] },
+  ],
 };
 
 beforeEach(() => {
@@ -235,7 +244,7 @@ describe('DaifugoPage', () => {
   it('shows game result message when game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText('大富豪: あなた')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/ゲーム終了！ あなた:大富豪/)).toBeInTheDocument());
   });
 
   it('shows rank badge for finished CPU players', async () => {
@@ -345,7 +354,7 @@ describe('DaifugoPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   }, 10000);
 
   it('clears error message on successful API call after failure', async () => {
@@ -355,12 +364,12 @@ describe('DaifugoPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   }, 10000);
 
   it('shows pass message for empty playedCards array', async () => {
@@ -742,6 +751,119 @@ describe('DaifugoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ emperorEnabled: true })),
+    );
+  });
+
+  it('settings panel renders 階段革命 checkbox', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('階段革命')).toBeInTheDocument();
+    expect(screen.getByLabelText('階段革命')).not.toBeChecked();
+  });
+
+  it('settings panel renders 反則上がり checkbox', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('反則上がり')).toBeInTheDocument();
+    expect(screen.getByLabelText('反則上がり')).not.toBeChecked();
+  });
+
+  it('階段革命 checkbox toggle updates config on reset', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('階段革命')).toBeInTheDocument());
+    fireEvent.click(screen.getByLabelText('階段革命'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ sequenceRevolutionEnabled: true })),
+    );
+  });
+
+  it('反則上がり checkbox toggle updates config on reset', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('反則上がり')).toBeInTheDocument());
+    fireEvent.click(screen.getByLabelText('反則上がり'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ illegalFinishEnabled: true })),
+    );
+  });
+
+  it('shows 反則上がり penalty badge for CPU player', async () => {
+    const penaltyState: DaifugoResponse = {
+      ...gameEndState,
+      players: [
+        { id: 0, isHuman: true, isFinished: true, rank: 1, cardCount: 0, cards: [] },
+        {
+          id: 1,
+          isHuman: false,
+          isFinished: true,
+          rank: 4,
+          cardCount: 0,
+          cards: [],
+          illegalFinishPenalty: true,
+        },
+        { id: 2, isHuman: false, isFinished: true, rank: 2, cardCount: 0, cards: [] },
+        { id: 3, isHuman: false, isFinished: true, rank: 3, cardCount: 0, cards: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('反則上がり', { selector: 'span' })).toBeInTheDocument());
+  });
+
+  it('shows 反則上がり penalty badge for human player', async () => {
+    const penaltyState: DaifugoResponse = {
+      ...gameEndState,
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: true,
+          rank: 4,
+          cardCount: 0,
+          cards: [],
+          illegalFinishPenalty: true,
+        },
+        { id: 1, isHuman: false, isFinished: true, rank: 1, cardCount: 0, cards: [] },
+        { id: 2, isHuman: false, isFinished: true, rank: 2, cardCount: 0, cards: [] },
+        { id: 3, isHuman: false, isFinished: true, rank: 3, cardCount: 0, cards: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(penaltyState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('反則上がり', { selector: 'span' })).toBeInTheDocument());
+  });
+
+  it('does not show 反則上がり badge when no penalty', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/ゲーム終了！/)).toBeInTheDocument());
+    expect(screen.queryByText('反則上がり', { selector: 'span' })).not.toBeInTheDocument();
+  });
+
+  it('settings panel renders CPU difficulty dropdown', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('CPU難易度:')).toBeInTheDocument());
+    const select = screen.getByLabelText('CPU難易度:') as HTMLSelectElement;
+    expect(select.value).toBe('0');
+    expect(screen.getByText('ふつう')).toBeInTheDocument();
+    expect(screen.getByText('よわい')).toBeInTheDocument();
+    expect(screen.getByText('つよい')).toBeInTheDocument();
+  });
+
+  it('CPU difficulty dropdown change updates config on reset', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByLabelText('CPU難易度:')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('CPU難易度:'), { target: { value: '2' } });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ cpuDifficulty: 2 })),
     );
   });
 });

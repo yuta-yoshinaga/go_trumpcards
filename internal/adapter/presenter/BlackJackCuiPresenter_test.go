@@ -432,13 +432,43 @@ func TestBlackJackCuiPresenter_H17Display(t *testing.T) {
 func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 	bjp := presenter.NewBlackJackCuiPresenter()
 
-	t.Run("counting display shown when CountingEnabled is true", func(t *testing.T) {
+	t.Run("Hi-Lo counting display with TC", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(1000, 1000)
-		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true})
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingHiLo})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "count: RC=")
+		assert.Contains(t, output, "count (Hi-Lo): RC=")
 		assert.Contains(t, output, "TC=")
+		assert.NotContains(t, output, "TC=N/A")
+	})
+
+	t.Run("KO counting display with TC=N/A", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingKO})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "count (KO): RC=")
+		assert.Contains(t, output, "TC=N/A")
+	})
+
+	t.Run("Zen Count display with TC", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingZen})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "count (Zen Count): RC=")
+		assert.Contains(t, output, "TC=")
+		assert.NotContains(t, output, "TC=N/A")
+	})
+
+	t.Run("Omega II display with TC", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingOmegaII})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "count (Omega II): RC=")
+		assert.Contains(t, output, "TC=")
+		assert.NotContains(t, output, "TC=N/A")
 	})
 
 	t.Run("counting display not shown when CountingEnabled is false", func(t *testing.T) {
@@ -446,7 +476,27 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.NotContains(t, output, "count: RC=")
+		assert.NotContains(t, output, "count (")
+	})
+}
+
+func TestBlackJackCuiPresenter_DASDisplay(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("No DAS rule displayed when DoubleAfterSplit is false", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: false})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "rule: No DAS (No double after split)")
+	})
+
+	t.Run("No DAS rule not displayed when DoubleAfterSplit is true", func(t *testing.T) {
+		bj, _ := setupBJCuiTest(1000, 1000)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+		bj.Reset()
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "rule: No DAS")
 	})
 }
 
@@ -738,4 +788,31 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 			assert.Contains(t, output, "LOSE")
 		}
 	})
+}
+
+func TestBlackJackCuiPresenter_Penetration50(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	bj, _ := setupBJCuiTest(1000, 1000)
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
+	bj.Reset()
+	output := bjp.Output(bj, nil)
+	assert.Contains(t, output, "rule: Penetration 50%")
+}
+
+func TestBlackJackCuiPresenter_Penetration75(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	bj, _ := setupBJCuiTest(1000, 1000)
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 75, DoubleAfterSplit: true})
+	bj.Reset()
+	output := bjp.Output(bj, nil)
+	assert.NotContains(t, output, "Penetration")
+}
+
+func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	bj, _ := setupBJCuiTest(1000, 1000)
+	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 0, DoubleAfterSplit: true})
+	bj.Reset()
+	output := bjp.Output(bj, nil)
+	assert.NotContains(t, output, "Penetration")
 }

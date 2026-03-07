@@ -9,19 +9,13 @@ import (
 
 // PokerWebInput ポーカーWebインプット
 type PokerWebInput struct {
-	Command    string `json:"command"`
-	Indices    []int  `json:"indices,omitempty"`
-	Amount     int    `json:"amount,omitempty"`
-	SessionId  string `json:"sessionId"`
-	CpuCount   *int   `json:"cpuCount,omitempty"`
-	JokerCount *int   `json:"jokerCount,omitempty"`
+	BaseWebInput
+	Indices      []int `json:"indices,omitempty"`
+	Amount       int   `json:"amount,omitempty"`
+	CpuCount     *int  `json:"cpuCount,omitempty"`
+	JokerCount   *int  `json:"jokerCount,omitempty"`
+	BettingLimit *int  `json:"bettingLimit,omitempty"`
 }
-
-// GetCommand returns the command string.
-func (i PokerWebInput) GetCommand() string { return i.Command }
-
-// GetSessionID returns the session ID string.
-func (i PokerWebInput) GetSessionID() string { return i.SessionId }
 
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
 type PokerWebOutputPlayer struct {
@@ -56,6 +50,7 @@ type PokerWebOutputResult struct {
 	PlayerIdx int    `json:"playerIdx"`
 	HandRank  int    `json:"handRank"`
 	HandName  string `json:"handName"`
+	Kickers   string `json:"kickers"`
 	WonAmount int    `json:"wonAmount"`
 }
 
@@ -76,22 +71,27 @@ type PokerWebOutputOdds struct {
 
 // PokerWebOutput ポーカーWebアウトプット
 type PokerWebOutput struct {
-	Players      []*PokerWebOutputPlayer      `json:"players"`
-	Pot          int                          `json:"pot"`
-	SidePots     []*PokerWebOutputSidePot     `json:"sidePots"`
-	DealerIdx    int                          `json:"dealerIdx"`
-	CurrentTurn  int                          `json:"currentTurn"`
-	Phase        int                          `json:"phase"`
-	GameEndFlag  bool                         `json:"gameEndFlag"`
-	LastBet      int                          `json:"lastBet"`
-	MinRaise     int                          `json:"minRaise"`
-	Ante         int                          `json:"ante"`
-	JokerCount   int                          `json:"jokerCount"`
-	RoundResults []*PokerWebOutputResult      `json:"roundResults"`
-	CpuActions   []*PokerWebOutputCpuAction   `json:"cpuActions"`
-	CpuExchanges []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
-	Odds         []*PokerWebOutputOdds        `json:"odds,omitempty"`
-	Message      string                       `json:"message"`
+	Players       []*PokerWebOutputPlayer      `json:"players"`
+	Pot           int                          `json:"pot"`
+	SidePots      []*PokerWebOutputSidePot     `json:"sidePots"`
+	DealerIdx     int                          `json:"dealerIdx"`
+	CurrentTurn   int                          `json:"currentTurn"`
+	Phase         int                          `json:"phase"`
+	GameEndFlag   bool                         `json:"gameEndFlag"`
+	LastBet       int                          `json:"lastBet"`
+	MinRaise      int                          `json:"minRaise"`
+	Ante          int                          `json:"ante"`
+	JokerCount    int                          `json:"jokerCount"`
+	BettingLimit  int                          `json:"bettingLimit"`
+	RaiseCount    int                          `json:"raiseCount"`
+	MaxBetAmount  int                          `json:"maxBetAmount"`
+	RoundResults  []*PokerWebOutputResult      `json:"roundResults"`
+	CpuActions    []*PokerWebOutputCpuAction   `json:"cpuActions"`
+	CpuExchanges  []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
+	Odds          []*PokerWebOutputOdds        `json:"odds,omitempty"`
+	Message       string                       `json:"message"`
+	MessageCode   string                       `json:"messageCode,omitempty"`
+	MessageParams map[string]string            `json:"messageParams,omitempty"`
 }
 
 // PokerWebController ポーカーWebコントローラークラス
@@ -135,6 +135,15 @@ func (pwc *PokerWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
 						jc = 2
 					}
 					cfg.JokerCount = jc
+				}
+				if param.BettingLimit != nil {
+					bl := *param.BettingLimit
+					if bl < 0 {
+						bl = 0
+					} else if bl > 2 {
+						bl = 2
+					}
+					cfg.BettingLimit = domain.BettingLimitType(bl)
 				}
 				pwc.writePresenterResponse(w, pi.ResetWithConfig(cfg))
 			case "e", "exchange":

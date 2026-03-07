@@ -5,17 +5,17 @@
 [![Frontend Coverage](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards/graph/badge.svg?flag=frontend)](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards)
 
 ## Description
-トランプカードのアルゴリズムをGo+Clean Architectureで実装したプロジェクトです。
+トランプカードのアルゴリズムをGo+Clean Architectureで実装したプロジェクトです。Web GUIは日本語/英語の多言語対応（react-i18next）をサポートしています。
 
 以下のゲームを実装しています：
 
 - **ブラックジャック (BlackJack)**: CLI および Web GUIで遊べます（チップ/ベッティングシステム、スプリット、ダブルダウン、インシュランス、ソフト17トグル、カードカウンティング練習、マルチプレイヤーCPU席付き） — [CUI版マニュアル](docs/manual/cui/blackjack.md) / [Web版マニュアル](docs/manual/web/blackjack.md)
-- **ポーカー (5-card Draw Poker)**: CLI および Web GUIで遊べます（1人 vs CPU×1〜3、4種のプレイスタイル、ジョーカーワイルド、サイドポット対応） — [CUI版マニュアル](docs/manual/cui/poker.md) / [Web版マニュアル](docs/manual/web/poker.md)
+- **ポーカー (5-card Draw Poker)**: CLI および Web GUIで遊べます（1人 vs CPU×1〜3、4種のプレイスタイル、ジョーカーワイルド、サイドポット対応、キッカー表示） — [CUI版マニュアル](docs/manual/cui/poker.md) / [Web版マニュアル](docs/manual/web/poker.md)
 - **ババ抜き (Old Maid)**: CLI および Web GUIで遊べます — [CUI版マニュアル](docs/manual/cui/oldmaid.md) / [Web版マニュアル](docs/manual/web/oldmaid.md)
 - **大富豪 (Daifugo)**: CLI および Web GUIで遊べます — [CUI版マニュアル](docs/manual/cui/daifugo.md) / [Web版マニュアル](docs/manual/web/daifugo.md)
-- **7並べ (Sevens)**: CLI および Web GUIで遊べます（オプションルール: トンネル、ジョーカー、CPU戦略） — [CUI版マニュアル](docs/manual/cui/sevens.md) / [Web版マニュアル](docs/manual/web/sevens.md)
+- **7並べ (Sevens)**: CLI および Web GUIで遊べます（オプションルール: トンネル、ジョーカー、CPU戦略、片側ストップ、ジョーカー連続禁止） — [CUI版マニュアル](docs/manual/cui/sevens.md) / [Web版マニュアル](docs/manual/web/sevens.md)
 - **ダウト (Doubt)**: CLI および Web GUIで遊べます（1人 vs CPU×3、10秒ダウト判定ウィンドウ付き） — [CUI版マニュアル](docs/manual/cui/doubt.md) / [Web版マニュアル](docs/manual/web/doubt.md)
-- **テキサスホールデム (Texas Hold'em)**: CLI および Web GUIで遊べます（1人 vs CPU×3、4種のプレイスタイル、サイドポット対応） — [CUI版マニュアル](docs/manual/cui/holdem.md) / [Web版マニュアル](docs/manual/web/holdem.md)
+- **テキサスホールデム (Texas Hold'em)**: CLI および Web GUIで遊べます（1人 vs CPU×3、5種のプレイスタイル、サイドポット対応、キッカー表示） — [CUI版マニュアル](docs/manual/cui/holdem.md) / [Web版マニュアル](docs/manual/web/holdem.md)
 
 ## Requirements
 

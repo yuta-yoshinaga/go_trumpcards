@@ -30,6 +30,9 @@ const betPhaseState: BlackJackResponse = {
   trueCount: 0,
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
+  doubleAfterSplit: true,
+  countingSystem: 0,
+  deckPenetration: 75,
 };
 
 const baseHand: BlackJackHand = {
@@ -67,6 +70,9 @@ const actionPhaseState: BlackJackResponse = {
   trueCount: 0,
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
+  doubleAfterSplit: true,
+  countingSystem: 0,
+  deckPenetration: 75,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -88,6 +94,9 @@ const insurancePhaseState: BlackJackResponse = {
   trueCount: 0,
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
+  doubleAfterSplit: true,
+  countingSystem: 0,
+  deckPenetration: 75,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -132,6 +141,9 @@ const endPhaseState: BlackJackResponse = {
   trueCount: 0,
   perfectPairsBet: 0,
   twentyOnePlus3Bet: 0,
+  doubleAfterSplit: true,
+  countingSystem: 0,
+  deckPenetration: 75,
 };
 
 beforeEach(() => {
@@ -269,7 +281,7 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText(/スコア 15/)).toBeInTheDocument());
-    expect(screen.getByText(/ベット 100/)).toBeInTheDocument();
+    expect(screen.getByText(/ベット:? ?100/)).toBeInTheDocument();
   });
 
   it('displays dealer score when non-zero in end phase', async () => {
@@ -342,7 +354,7 @@ describe('BlackJackPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
   it('clears error message on successful API call after failure', async () => {
@@ -351,11 +363,11 @@ describe('BlackJackPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce(actionPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
   it('shows [BUST] flag for busted hand', async () => {
@@ -697,10 +709,28 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('togglecounting'));
   });
 
-  it('shows RC and TC when countingEnabled is true', async () => {
-    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true, runningCount: 5, trueCount: 2.3 });
+  it('shows RC and TC with system name when countingEnabled is true (Hi-Lo)', async () => {
+    mockExec.mockResolvedValue({
+      ...betPhaseState,
+      countingEnabled: true,
+      runningCount: 5,
+      trueCount: 2.3,
+      countingSystem: 0,
+    });
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText('RC=5 TC=2.3')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Hi-Lo RC=5 TC=2\.3/)).toBeInTheDocument());
+  });
+
+  it('shows TC=N/A for KO system', async () => {
+    mockExec.mockResolvedValue({
+      ...betPhaseState,
+      countingEnabled: true,
+      runningCount: 3,
+      trueCount: 0,
+      countingSystem: 1,
+    });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/KO RC=3 TC=N\/A/)).toBeInTheDocument());
   });
 
   it('does not show RC and TC when countingEnabled is false', async () => {
@@ -931,8 +961,137 @@ describe('BlackJackPage', () => {
         dealerHitsSoft17: false,
         cpuPlayerCount: 0,
         countingEnabled: false,
+        doubleAfterSplit: true,
+        countingSystem: 0,
+        deckPenetration: 75,
       }),
     );
+  });
+
+  // --- DAS toggle tests ---
+
+  it('shows DAS ON button in bet phase by default', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'DAS ON' })).toBeInTheDocument());
+  });
+
+  it('shows DAS OFF button when doubleAfterSplit is false', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, doubleAfterSplit: false });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'DAS OFF' })).toBeInTheDocument());
+  });
+
+  it('calls toggledas when DAS button is clicked', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, doubleAfterSplit: false });
+    fireEvent.click(screen.getByRole('button', { name: 'DAS ON' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('toggledas'));
+  });
+
+  it('hides double down button after split when DAS is disabled', async () => {
+    const splitHands: BlackJackHand[] = [
+      {
+        ...baseHand,
+        score: 10,
+        cards: [
+          { design: 'SPADE', value: 8 },
+          { design: 'HEART', value: 2 },
+        ],
+      },
+      {
+        ...baseHand,
+        score: 12,
+        cards: [
+          { design: 'DIAMOND', value: 8 },
+          { design: 'CLOVER', value: 4 },
+        ],
+      },
+    ];
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: splitHands,
+      doubleAfterSplit: false,
+      player: { chips: 900 },
+    });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'ダブルダウン' })).not.toBeInTheDocument();
+  });
+
+  it('shows double down button after split when DAS is enabled', async () => {
+    const splitHands: BlackJackHand[] = [
+      {
+        ...baseHand,
+        score: 10,
+        cards: [
+          { design: 'SPADE', value: 8 },
+          { design: 'HEART', value: 2 },
+        ],
+      },
+      {
+        ...baseHand,
+        score: 12,
+        cards: [
+          { design: 'DIAMOND', value: 8 },
+          { design: 'CLOVER', value: 4 },
+        ],
+      },
+    ];
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: splitHands,
+      doubleAfterSplit: true,
+      player: { chips: 900 },
+    });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ダブルダウン' })).toBeInTheDocument());
+  });
+
+  // --- Counting system tests ---
+
+  it('shows counting system selector in bet phase', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('カウンティング方式')).toBeInTheDocument());
+  });
+
+  it('counting system selector is disabled when counting is off', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('カウンティング方式')).toBeDisabled());
+  });
+
+  it('calls setcountingsystem when counting system is changed', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, countingEnabled: true, countingSystem: 1 });
+    fireEvent.change(screen.getByLabelText('カウンティング方式'), { target: { value: '1' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setcountingsystem', 1));
+  });
+
+  // --- Deck penetration tests ---
+
+  it('shows penetration selector in bet phase', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ペネトレーション:')).toBeInTheDocument());
+  });
+
+  it('syncs deckPenetration from response', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, deckPenetration: 50 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ペネトレーション:')).toHaveValue('50'));
+  });
+
+  it('calls setpenetration when penetration selector is changed', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, deckPenetration: 50 });
+    fireEvent.change(screen.getByLabelText('ペネトレーション:'), { target: { value: '50' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setpenetration', 50));
   });
 
   // --- Side bet tests ---

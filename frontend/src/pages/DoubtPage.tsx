@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { doubtApi } from '../api/gameApi';
 import { CardImage } from '../components/CardImage';
 import { CpuTurnArea } from '../components/CpuTurnArea';
 import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { playerAreaBase } from '../styles/gameStyles';
@@ -23,6 +27,8 @@ function DoubtCpuArea({
   isCurrentTurn: boolean;
   hasTell: boolean;
 }) {
+  const { t } = useTranslation('doubt');
+  const { t: tc } = useTranslation('common');
   return (
     <CpuTurnArea
       playerId={player.id}
@@ -30,13 +36,13 @@ function DoubtCpuArea({
       isCurrentTurn={isCurrentTurn}
       isFinished={player.isFinished}
       dimFinished={false}
-      finishedLabel={player.isFinished ? '上がり' : undefined}
+      finishedLabel={player.isFinished ? tc('status.finished') : undefined}
       className={playerAreaClass}
       nameClassName="text-sm"
     >
-      <div className="text-[#ccc] text-[0.85em]">{player.cardCount}枚</div>
+      <div className="text-[#ccc] text-[0.85em]">{t('cardCount', { count: player.cardCount })}</div>
       {hasTell && (
-        <span className="animate-sweat-drop text-lg" role="img" aria-label="テル">
+        <span className="animate-sweat-drop text-lg" role="img" aria-label={t('tell')}>
           💧
         </span>
       )}
@@ -58,6 +64,7 @@ function HandCard({ card, index, selected, selectable, onToggle }: HandCardProps
   return (
     <button
       type="button"
+      data-testid="hand-card"
       aria-pressed={selected}
       disabled={!selectable}
       onClick={() => onToggle(index)}
@@ -80,21 +87,21 @@ function HandCard({ card, index, selected, selectable, onToggle }: HandCardProps
 
 // ── Action info ───────────────────────────────────────────────────────────────
 
-function actionDesc(action: DoubtCpuAction, players: DoubtPlayerData[]): string {
+function actionDesc(
+  action: DoubtCpuAction,
+  players: DoubtPlayerData[],
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
   const p = players[action.playerIdx];
   const name = p ? playerName(p.id, p.isHuman) : `Player ${action.playerIdx}`;
-  return `${name}が${action.cardCount}枚出しました (宣言: ${valueName(action.claimedValue)})`;
+  return t('actionDesc', { name, count: action.cardCount, value: valueName(action.claimedValue) });
 }
 
 // ── Main page ────────────────────────────────────────────────────────────────
 
-const DEFAULT_DOUBT_CONFIG: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1 };
+const DEFAULT_DOUBT_CONFIG: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 0 };
 
-const DOUBT_WINDOW_OPTIONS = [
-  { value: 3, label: '3秒' },
-  { value: 5, label: '5秒' },
-  { value: 10, label: '10秒' },
-] as const;
+const DOUBT_WINDOW_OPTIONS = [3, 5, 10] as const;
 
 const CPU_MEMORY_OPTIONS = [
   { value: 0, label: 'Easy' },
@@ -102,8 +109,12 @@ const CPU_MEMORY_OPTIONS = [
   { value: 2, label: 'Hard' },
 ] as const;
 
+const PENALTY_DRAW_LIMIT_OPTIONS = [0, 3, 5, 10] as const;
+
 export function DoubtPage() {
-  const [selectedCardIndices, setSelectedCardIndices] = useState<number[]>([]);
+  const { t } = useTranslation('doubt');
+  const { t: tc } = useTranslation('common');
+  const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const [claimedValue, setClaimedValue] = useState(1);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [doubtConfig, setDoubtConfig] = useState<DoubtConfig>(DEFAULT_DOUBT_CONFIG);
@@ -112,9 +123,9 @@ export function DoubtPage() {
   const cpuDoubtersRef = useRef<number[]>([]);
 
   const onSuccess = useCallback(() => {
-    setSelectedCardIndices([]);
+    clearSelection();
     setClaimedValue(1);
-  }, []);
+  }, [clearSelection]);
   const { state, loading, error, exec: rawExec } = useGameApi(doubtApi.exec, { onSuccess });
 
   // Keep cpuDoubters ref current so the auto-skip effect avoids stale state
@@ -203,10 +214,6 @@ export function DoubtPage() {
       .map((a) => a.playerIdx),
   );
 
-  const toggleCard = (idx: number) => {
-    setSelectedCardIndices((prev) => (prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]));
-  };
-
   const handlePlay = () => {
     exec('play', selectedCardIndices, claimedValue);
   };
@@ -227,27 +234,27 @@ export function DoubtPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">処理中...</span>}
+      {loading && <span className="sr-only">{tc('status.loading')}</span>}
       {/* Settings panel */}
       <details className="px-4 pt-2">
-        <summary className="text-white/70 text-xs cursor-pointer select-none">設定</summary>
+        <summary className="text-white/70 text-xs cursor-pointer select-none">{t('settings.title')}</summary>
         <div className="bg-black/30 rounded-lg p-3 mt-1 flex flex-wrap gap-4 text-sm text-white">
           <label className="flex items-center gap-2">
-            ダウト時間:
+            {t('settings.doubtTime')}
             <select
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.doubtWindowSec}
               onChange={(e) => handleConfigChange('doubtWindowSec', e.target.value)}
             >
-              {DOUBT_WINDOW_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
+              {DOUBT_WINDOW_OPTIONS.map((sec) => (
+                <option key={sec} value={sec}>
+                  {t('settings.sec', { sec })}
                 </option>
               ))}
             </select>
           </label>
           <label className="flex items-center gap-2">
-            CPU記憶力:
+            {t('settings.cpuMemory')}
             <select
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.cpuMemoryLevel}
@@ -256,6 +263,20 @@ export function DoubtPage() {
               {CPU_MEMORY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2">
+            {t('settings.penaltyDrawLimit')}
+            <select
+              className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
+              value={doubtConfig.penaltyDrawLimit}
+              onChange={(e) => handleConfigChange('penaltyDrawLimit', e.target.value)}
+            >
+              {PENALTY_DRAW_LIMIT_OPTIONS.map((v) => (
+                <option key={v} value={v}>
+                  {v === 0 ? t('settings.unlimited') : t('settings.cards', { count: v })}
                 </option>
               ))}
             </select>
@@ -279,10 +300,10 @@ export function DoubtPage() {
 
         {/* Table area */}
         <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
-          <div className="text-white font-bold mb-1">テーブル</div>
-          <div className="text-[#ccc] text-[0.9em]">場のカード: {state.tableCardCount}枚</div>
+          <div className="text-white font-bold mb-1">{t('table')}</div>
+          <div className="text-[#ccc] text-[0.9em]">{t('tableCards', { count: state.tableCardCount })}</div>
           {state.lastAction && (
-            <div className="text-yellow-300 text-[0.85em] mt-1">{actionDesc(state.lastAction, state.players)}</div>
+            <div className="text-yellow-300 text-[0.85em] mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
           )}
         </div>
 
@@ -291,34 +312,34 @@ export function DoubtPage() {
           <div className="bg-black/40 rounded-[10px] py-3 px-4 my-2">
             {cpuPlayed ? (
               <>
-                <div className="text-white font-bold mb-2">ダウトしますか？</div>
+                <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
                 {countdown !== null && (
-                  <div className="text-yellow-300 text-lg font-bold mb-2">残り {countdown} 秒</div>
+                  <div className="text-yellow-300 text-lg font-bold mb-2">{t('countdown', { sec: countdown })}</div>
                 )}
                 {state.cpuDoubters.length > 0 && (
                   <div className="text-[#ccc] text-[0.85em] mb-2">
-                    ダウト宣言CPU: {state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ')}
+                    {t('cpuDoubters', { names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ') })}
                   </div>
                 )}
                 <div className="flex gap-2">
                   <button type="button" className={btnDanger} disabled={loading} onClick={handleDoubt}>
-                    ダウト！
+                    {t('doubtButton')}
                   </button>
                   <button type="button" className={btnWarning} disabled={loading} onClick={handleSkip}>
-                    スルー
+                    {t('skipButton')}
                   </button>
                 </div>
               </>
             ) : (
               <>
-                <div className="text-white font-bold mb-2">CPUがダウトを判定中...</div>
+                <div className="text-white font-bold mb-2">{t('cpuJudging')}</div>
                 {state.cpuDoubters.length > 0 && (
                   <div className="text-red-300 text-[0.9em] mb-2">
-                    ダウト！ {state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ')}
+                    {t('cpuDoubtExclaim', { names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ') })}
                   </div>
                 )}
                 <button type="button" className={btnPrimary} disabled={loading} onClick={handleCpuDoubtConfirm}>
-                  確認
+                  {t('confirmButton')}
                 </button>
               </>
             )}
@@ -328,17 +349,24 @@ export function DoubtPage() {
         {/* Last doubt result */}
         {state.lastDoubtResult && (
           <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-[0.85em]">
-            <div className="text-white font-bold mb-1">ダウト結果</div>
+            <div className="text-white font-bold mb-1">{t('doubtResult.title')}</div>
             <div className={state.lastDoubtResult.wasLying ? 'text-red-300' : 'text-green-300'}>
-              {state.lastDoubtResult.wasLying ? 'ウソでした！' : '本当でした！'}
+              {state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth')}
             </div>
             <div className="text-[#ccc]">
-              {playerName(
-                state.players[state.lastDoubtResult.loserIdx]?.id ?? state.lastDoubtResult.loserIdx,
-                state.players[state.lastDoubtResult.loserIdx]?.isHuman ?? false,
-              )}
-              が{state.lastDoubtResult.cardCount}枚引き取りました
+              {t('doubtResult.loserTook', {
+                name: playerName(
+                  state.players[state.lastDoubtResult.loserIdx]?.id ?? state.lastDoubtResult.loserIdx,
+                  state.players[state.lastDoubtResult.loserIdx]?.isHuman ?? false,
+                ),
+                count: state.lastDoubtResult.cardCount,
+              })}
             </div>
+            {state.lastDoubtResult.discardedCount > 0 && (
+              <div className="text-yellow-300">
+                {t('doubtResult.discarded', { count: state.lastDoubtResult.discardedCount })}
+              </div>
+            )}
             {state.lastDoubtResult.revealedCards.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {state.lastDoubtResult.revealedCards.map((card, i) => (
@@ -352,35 +380,28 @@ export function DoubtPage() {
         {/* Human/CPU action logs */}
         {state.humanAction && !isDoubtPhase && (
           <div className="bg-black/40 rounded-lg text-[#cfc] py-2 px-3.5 my-2 text-[0.85em]">
-            {actionDesc(state.humanAction, state.players)}
+            {actionDesc(state.humanAction, state.players, t)}
           </div>
         )}
         {state.cpuActions && state.cpuActions.length > 0 && (
           <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
-            {['[CPUの行動]', ...state.cpuActions.map((a) => actionDesc(a, state.players))].join('\n')}
+            {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDesc(a, state.players, t))].join('\n')}
           </div>
         )}
 
         {/* Result message */}
-        {state.message && (
-          <div className="bg-black/55 rounded-[10px] text-white text-center py-2.5 px-4 text-[1.2em] font-bold my-2">
-            {state.message}
-          </div>
-        )}
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
-      <div
-        className="shrink-0 bg-[#101c3a] border-t border-white/20 px-4 py-2.5"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
-      >
+      <GameFooter className="bg-[#101c3a] border-white/20 px-4 py-2.5">
         {/* Human player info */}
         {humanPlayer && (
           <div className="mb-2">
             <div className="text-white font-bold text-sm mb-1">
-              あなた ({humanPlayer.cardCount}枚)
+              {t('yourCards', { count: humanPlayer.cardCount })}
               {isHumanTurn && state.phase === 0 && (
-                <span className="text-green-400 text-xs ml-2">カードを選んで出してください</span>
+                <span className="text-green-400 text-xs ml-2">{t('selectPrompt')}</span>
               )}
             </div>
             {/* Human cards */}
@@ -400,7 +421,7 @@ export function DoubtPage() {
             {/* Claimed value input (shown when cards are selected) */}
             {selectedCardIndices.length > 0 && isHumanTurn && state.phase === 0 && (
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-white text-sm">宣言する値:</span>
+                <span className="text-white text-sm">{t('claimedValue')}</span>
                 <input
                   type="number"
                   min={1}
@@ -428,7 +449,7 @@ export function DoubtPage() {
             disabled={loading}
             onClick={() => exec('reset', undefined, undefined, undefined, doubtConfig)}
           >
-            リセット
+            {tc('button.reset')}
           </button>
           {isHumanTurn && state.phase === 0 && (
             <button
@@ -437,11 +458,11 @@ export function DoubtPage() {
               disabled={loading || selectedCardIndices.length === 0}
               onClick={handlePlay}
             >
-              出す
+              {t('playButton')}
             </button>
           )}
         </div>
-      </div>
+      </GameFooter>
     </div>
   );
 }

@@ -12,6 +12,7 @@ func TestDefaultOldMaidConfig(t *testing.T) {
 	cfg := domain.DefaultOldMaidConfig()
 	assert.Equal(t, domain.OldMaidModeNormal, cfg.Mode)
 	assert.False(t, cfg.CpuPlacementStrategy)
+	assert.False(t, cfg.CpuMemoryAI)
 }
 
 func TestOldMaidMode_Values(t *testing.T) {
