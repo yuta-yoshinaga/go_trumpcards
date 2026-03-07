@@ -943,111 +943,46 @@ func TestDoubt_DynamicBluffChance(t *testing.T) {
 }
 
 func TestDoubt_ResolveDoubt_PenaltyDrawLimit(t *testing.T) {
-	t.Run("limit=0 (unlimited) - loser gets all cards, DiscardedCount=0", func(t *testing.T) {
-		game, players := makeDoubtGame()
-		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard, PenaltyDrawLimit: 0})
-		playedCard := domain.NewCard(domain.CardDesignSpade, 5, false)
-		tableCards := []*domain.Card{
-			domain.NewCard(domain.CardDesignHeart, 1, false),
-			domain.NewCard(domain.CardDesignHeart, 2, false),
-			domain.NewCard(domain.CardDesignHeart, 3, false),
-			domain.NewCard(domain.CardDesignHeart, 4, false),
-			playedCard,
-		}
-		game.SetLastAction(&domain.DoubtAction{
-			PlayerIdx: 0, ClaimedValue: 3, CardCount: 1,
-			PlayedCards: []*domain.Card{playedCard},
+	testCases := []struct {
+		name              string
+		limit             int
+		tableCardCount    int
+		expectedTakeCount int
+		expectedDiscard   int
+	}{
+		{"limit=0 (unlimited), table=5", 0, 5, 5, 0},
+		{"limit=3, table=5", 3, 5, 3, 2},
+		{"limit=5, table=3", 5, 3, 3, 0},
+		{"limit=5, table=5", 5, 5, 5, 0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard, PenaltyDrawLimit: tc.limit})
+
+			tableCards := make([]*domain.Card, tc.tableCardCount)
+			for i := 0; i < tc.tableCardCount; i++ {
+				tableCards[i] = domain.NewCard(domain.CardDesignHeart, i+1, false)
+			}
+			playedCard := tableCards[len(tableCards)-1]
+
+			game.SetLastAction(&domain.DoubtAction{
+				PlayerIdx: 0, ClaimedValue: 13, CardCount: 1,
+				PlayedCards: []*domain.Card{playedCard},
+			})
+			game.SetPhase(domain.DoubtPhaseDoubt)
+			game.SetTableCards(tableCards)
+
+			game.ResolveDoubt([]int{1})
+
+			result := game.GetLastDoubtResult()
+			assert.NotNil(t, result)
+			assert.Equal(t, tc.expectedTakeCount, result.CardCount, "CardCount")
+			assert.Equal(t, tc.expectedDiscard, result.DiscardedCount, "DiscardedCount")
+			assert.Equal(t, tc.expectedTakeCount, players[0].GetCardsSize(), "Loser hand size")
 		})
-		game.SetPhase(domain.DoubtPhaseDoubt)
-		game.SetTableCards(tableCards)
-
-		game.ResolveDoubt([]int{1})
-
-		result := game.GetLastDoubtResult()
-		assert.NotNil(t, result)
-		assert.Equal(t, 5, result.CardCount)
-		assert.Equal(t, 0, result.DiscardedCount)
-		assert.Equal(t, 5, players[0].GetCardsSize()) // loser got all 5
-	})
-
-	t.Run("limit=3, table=5 - loser gets 3, DiscardedCount=2", func(t *testing.T) {
-		game, players := makeDoubtGame()
-		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard, PenaltyDrawLimit: 3})
-		playedCard := domain.NewCard(domain.CardDesignSpade, 5, false)
-		tableCards := []*domain.Card{
-			domain.NewCard(domain.CardDesignHeart, 1, false),
-			domain.NewCard(domain.CardDesignHeart, 2, false),
-			domain.NewCard(domain.CardDesignHeart, 3, false),
-			domain.NewCard(domain.CardDesignHeart, 4, false),
-			playedCard,
-		}
-		game.SetLastAction(&domain.DoubtAction{
-			PlayerIdx: 0, ClaimedValue: 3, CardCount: 1,
-			PlayedCards: []*domain.Card{playedCard},
-		})
-		game.SetPhase(domain.DoubtPhaseDoubt)
-		game.SetTableCards(tableCards)
-
-		game.ResolveDoubt([]int{1})
-
-		result := game.GetLastDoubtResult()
-		assert.NotNil(t, result)
-		assert.Equal(t, 3, result.CardCount)
-		assert.Equal(t, 2, result.DiscardedCount)
-		assert.Equal(t, 3, players[0].GetCardsSize()) // loser got only 3
-	})
-
-	t.Run("limit=5, table=3 - loser gets 3, DiscardedCount=0", func(t *testing.T) {
-		game, players := makeDoubtGame()
-		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard, PenaltyDrawLimit: 5})
-		playedCard := domain.NewCard(domain.CardDesignSpade, 5, false)
-		tableCards := []*domain.Card{
-			domain.NewCard(domain.CardDesignHeart, 1, false),
-			domain.NewCard(domain.CardDesignHeart, 2, false),
-			playedCard,
-		}
-		game.SetLastAction(&domain.DoubtAction{
-			PlayerIdx: 0, ClaimedValue: 3, CardCount: 1,
-			PlayedCards: []*domain.Card{playedCard},
-		})
-		game.SetPhase(domain.DoubtPhaseDoubt)
-		game.SetTableCards(tableCards)
-
-		game.ResolveDoubt([]int{1})
-
-		result := game.GetLastDoubtResult()
-		assert.NotNil(t, result)
-		assert.Equal(t, 3, result.CardCount)
-		assert.Equal(t, 0, result.DiscardedCount)
-		assert.Equal(t, 3, players[0].GetCardsSize())
-	})
-
-	t.Run("limit=5, table=5 - loser gets 5, DiscardedCount=0", func(t *testing.T) {
-		game, players := makeDoubtGame()
-		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelHard, PenaltyDrawLimit: 5})
-		playedCard := domain.NewCard(domain.CardDesignSpade, 5, false)
-		tableCards := []*domain.Card{
-			domain.NewCard(domain.CardDesignHeart, 1, false),
-			domain.NewCard(domain.CardDesignHeart, 2, false),
-			domain.NewCard(domain.CardDesignHeart, 3, false),
-			domain.NewCard(domain.CardDesignHeart, 4, false),
-			playedCard,
-		}
-		game.SetLastAction(&domain.DoubtAction{
-			PlayerIdx: 0, ClaimedValue: 3, CardCount: 1,
-			PlayedCards: []*domain.Card{playedCard},
-		})
-		game.SetPhase(domain.DoubtPhaseDoubt)
-		game.SetTableCards(tableCards)
-
-		game.ResolveDoubt([]int{1})
-
-		result := game.GetLastDoubtResult()
-		assert.NotNil(t, result)
-		assert.Equal(t, 5, result.CardCount)
-		assert.Equal(t, 0, result.DiscardedCount)
-		assert.Equal(t, 5, players[0].GetCardsSize())
-	})
+	}
 }
 
 func TestDoubt_HasTell(t *testing.T) {
