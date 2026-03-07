@@ -20,11 +20,13 @@ const (
 
 // ブラックジャックデフォルト値
 const (
-	BJDefaultChips = 1000  // デフォルトチップ
-	BJMinBet       = 10    // 最低ベット額
-	BJMaxBet       = 10000 // 最大ベット額（オーバーフロー防止）
-	BJMaxHands     = 4     // スプリットによる最大ハンド数
-	BJDefaultDecks = 1     // デフォルトデッキ数
+	BJDefaultChips      = 1000  // デフォルトチップ
+	BJMinBet            = 10    // 最低ベット額
+	BJMaxBet            = 10000 // 最大ベット額（オーバーフロー防止）
+	BJMaxHands          = 4     // スプリットによる最大ハンド数（単一初期ハンド時）
+	BJMaxInitialHands   = 3     // マルチハンド最大初期ハンド数
+	BJMaxMultiHandTotal = 8     // マルチハンド時の総ハンド数上限
+	BJDefaultDecks      = 1     // デフォルトデッキ数
 )
 
 // BJValidDeckCounts 有効なデッキ数
@@ -57,6 +59,7 @@ type BlackJack struct {
 	perfectPairsBet    int                 // Perfect Pairsサイドベット額
 	twentyOnePlus3Bet  int                 // 21+3サイドベット額
 	sideBetResults     []*BJSideBetResult  // サイドベット結果
+	multiHandCount     int                 // マルチハンド数（0=デフォルト1）
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -96,6 +99,7 @@ func (b *BlackJack) Reset() {
 	b.perfectPairsBet = 0
 	b.twentyOnePlus3Bet = 0
 	b.sideBetResults = nil
+	b.multiHandCount = 0
 	// チップが最低ベット額未満ならデフォルト値にリセット
 	if b.player.GetChips() < BJMinBet {
 		b.player.SetChips(BJDefaultChips)
@@ -134,12 +138,19 @@ func (b *BlackJack) drawCard() *Card {
 }
 
 // PlayerBet プレイヤーベット
-func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet int) error {
+func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
 	if b.phase != BJPhaseBet {
 		return NewDomainError(ErrWrongPhase, "Bet is only allowed during the bet phase.")
 	}
 	if amount < BJMinBet || amount%BJMinBet != 0 || amount > BJMaxBet {
 		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
+	}
+	// ハンド数バリデーション
+	if handCount == 0 {
+		handCount = 1
+	}
+	if handCount < 1 || handCount > BJMaxInitialHands {
+		return NewDomainError(ErrInvalidAmount, "Invalid hand count. Must be 1-3.")
 	}
 	// サイドベットのバリデーション: 0 または (BJMinBet以上かつBJMinBetの倍数かつBJMaxBet以下)
 	if ppBet != 0 && (ppBet < BJMinBet || ppBet%BJMinBet != 0 || ppBet > BJMaxBet) {
@@ -148,21 +159,30 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet int) error {
 	if t3Bet != 0 && (t3Bet < BJMinBet || t3Bet%BJMinBet != 0 || t3Bet > BJMaxBet) {
 		return NewDomainError(ErrInvalidAmount, "Invalid 21+3 bet amount.")
 	}
-	totalCost := amount + ppBet + t3Bet
+	totalCost := amount*handCount + ppBet + t3Bet
 	if !b.player.SubtractChips(totalCost) {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
-	b.playerHands[0].SetBet(amount)
+
+	// マルチハンド用にハンドを作成
+	b.playerHands = make([]*BlackJackHand, handCount)
+	for i := 0; i < handCount; i++ {
+		b.playerHands[i] = NewBlackJackHand()
+		b.playerHands[i].SetBet(amount)
+	}
+	b.multiHandCount = handCount
 	b.perfectPairsBet = ppBet
 	b.twentyOnePlus3Bet = t3Bet
 
-	// カードを2枚ずつ配る
+	// カードをインターリーブで配る: hand0-card1, hand1-card1, ..., dealer-card1, hand0-card2, ...
 	dealFailed := false
-	for i := 0; i < 2; i++ {
-		if card := b.drawCard(); card != nil {
-			b.playerHands[0].AddCard(card)
-		} else {
-			dealFailed = true
+	for round := 0; round < 2; round++ {
+		for i := 0; i < handCount; i++ {
+			if card := b.drawCard(); card != nil {
+				b.playerHands[i].AddCard(card)
+			} else {
+				dealFailed = true
+			}
 		}
 		if card := b.drawCard(); card != nil {
 			b.dealer.AddCard(card)
@@ -174,24 +194,30 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet int) error {
 	// 山札枯渇で必要な枚数を配れなかった場合、ベットを返却してリセット
 	if dealFailed {
 		b.player.AddChips(totalCost)
-		b.playerHands[0].Reset()
+		for i := range b.playerHands {
+			b.playerHands[i].Reset()
+		}
+		b.playerHands = []*BlackJackHand{NewBlackJackHand()}
 		b.dealer.Reset()
 		b.perfectPairsBet = 0
 		b.twentyOnePlus3Bet = 0
+		b.multiHandCount = 0
 		return ErrDeckExhausted
 	}
 	b.phase = BJPhaseDeal
 
-	// サイドベット判定
+	// サイドベット判定（ハンド0のみ）
 	b.evaluateSideBets()
 
 	// CPUプレイヤーの自動ベットとカード配布
 	b.cpuBetAndDeal()
 
-	// カウンティング: プレイヤーの2枚 + ディーラーのアップカード + CPU表向きカードをカウント
+	// カウンティング: 全プレイヤーハンドの2枚 + ディーラーのアップカード + CPU表向きカードをカウント
 	if b.config.CountingEnabled {
-		for i := 0; i < b.playerHands[0].GetCardsSize(); i++ {
-			b.updateRunningCount(b.playerHands[0].GetCard(i))
+		for _, hand := range b.playerHands {
+			for i := 0; i < hand.GetCardsSize(); i++ {
+				b.updateRunningCount(hand.GetCard(i))
+			}
 		}
 		if b.dealer.GetCardsSize() > 0 {
 			b.updateRunningCount(b.dealer.GetCard(0)) // アップカードのみ
@@ -246,12 +272,37 @@ func (b *BlackJack) PlayerDeclineInsurance() error {
 // checkNaturalBlackJack ナチュラルBJチェック（ディール直後）
 func (b *BlackJack) checkNaturalBlackJack() {
 	dealerBJ := b.dealer.GetCardsSize() == 2 && b.dealer.GetScore() == 21
-	playerBJ := b.playerHands[0].IsBlackJack()
 
-	if dealerBJ || playerBJ {
-		// ナチュラルBJがあればすぐに終了
+	// ディーラーBJなら即終了
+	if dealerBJ {
 		b.endGame()
+		return
 	}
+
+	// 全プレイヤーハンドがBJか確認
+	allPlayerBJ := true
+	for _, hand := range b.playerHands {
+		if !hand.IsBlackJack() {
+			allPlayerBJ = false
+			break
+		}
+	}
+
+	if allPlayerBJ {
+		// 全ハンドBJなら即終了
+		b.endGame()
+		return
+	}
+
+	// 一部ハンドがBJの場合、そのハンドを自動スタンドして続行
+	for _, hand := range b.playerHands {
+		if hand.IsBlackJack() {
+			hand.SetStood(true)
+		}
+	}
+
+	// advanceHand で最初の未完了ハンドへ進む（全完了ならディーラーターン）
+	b.advanceHand()
 }
 
 // PlayerHit プレイヤーヒット
@@ -300,7 +351,7 @@ func (b *BlackJack) PlayerDoubleDown() error {
 	if hand.GetCardsSize() != 2 {
 		return NewDomainError(ErrInvalidPlay, "Double down is only allowed with 2 cards.")
 	}
-	if len(b.playerHands) > 1 && !b.config.DoubleAfterSplit {
+	if hand.IsFromSplit() && !b.config.DoubleAfterSplit {
 		return NewDomainError(ErrInvalidPlay, "Double after split is not allowed.")
 	}
 	if hand.IsFinished() {
@@ -337,7 +388,11 @@ func (b *BlackJack) PlayerSplit() error {
 	if b.phase != BJPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Split is not allowed now.")
 	}
-	if len(b.playerHands) >= BJMaxHands {
+	maxHands := BJMaxHands
+	if b.multiHandCount > 1 {
+		maxHands = BJMaxMultiHandTotal
+	}
+	if len(b.playerHands) >= maxHands {
 		return NewDomainError(ErrInvalidPlay, "Maximum number of hands reached.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
@@ -358,11 +413,13 @@ func (b *BlackJack) PlayerSplit() error {
 	firstCard := hand.GetCard(0)
 	hand.Reset()
 	hand.SetBet(bet)
+	hand.SetFromSplit(true)
 	hand.AddCard(firstCard)
 
 	// 新しいハンドを作成
 	newHand := NewBlackJackHand()
 	newHand.SetBet(bet)
+	newHand.SetFromSplit(true)
 	newHand.AddCard(secondCard)
 
 	// 各ハンドに1枚ずつ配る
@@ -472,8 +529,8 @@ func (b *BlackJack) endGame() {
 }
 
 // judgeHandCore 共通ハンド勝敗判定ロジック
-// handCount はスプリットBJ抑制用: handCount==1 の場合のみプレイヤーBJとして判定
-func (b *BlackJack) judgeHandCore(hand *BlackJackHand, handCount int /* 1=single hand, >1=split */) GameResult {
+// fromSplit=true の場合はスプリット由来のためBJとして判定しない
+func (b *BlackJack) judgeHandCore(hand *BlackJackHand, fromSplit bool) GameResult {
 	playerScore := hand.GetScore()
 	dealerScore := b.dealer.GetScore()
 
@@ -492,7 +549,7 @@ func (b *BlackJack) judgeHandCore(hand *BlackJackHand, handCount int /* 1=single
 
 	// スコアが同じ場合、ナチュラルブラックジャックを確認
 	dealerBJ := b.dealer.GetCardsSize() == 2 && dealerScore == 21
-	playerBJ := hand.GetCardsSize() == 2 && playerScore == 21 && handCount == 1
+	playerBJ := hand.GetCardsSize() == 2 && playerScore == 21 && !fromSplit
 
 	if playerBJ && !dealerBJ {
 		return GameResultWin
@@ -505,12 +562,12 @@ func (b *BlackJack) judgeHandCore(hand *BlackJackHand, handCount int /* 1=single
 }
 
 // payoutHand 共通ハンド精算ロジック
-// handCount はBJ 3:2配当判定用: handCount==1 かつ BJ の場合のみ 3:2 配当
-func payoutHand(player *BlackJackPlayer, hand *BlackJackHand, handCount int /* 1=single hand, >1=split */, result GameResult) {
+// fromSplit=true の場合はスプリット由来のためBJ 3:2配当なし
+func payoutHand(player *BlackJackPlayer, hand *BlackJackHand, fromSplit bool, result GameResult) {
 	bet := hand.GetBet()
 	switch result {
 	case GameResultWin:
-		if hand.IsBlackJack() && handCount == 1 {
+		if hand.IsBlackJack() && !fromSplit {
 			player.AddChips(bet + bet*3/2)
 		} else {
 			player.AddChips(bet * 2)
@@ -582,13 +639,13 @@ func (b *BlackJack) resolvePayouts() {
 			continue
 		}
 		result := b.judgeHand(hand)
-		payoutHand(b.player, hand, len(b.playerHands), result)
+		payoutHand(b.player, hand, hand.IsFromSplit(), result)
 	}
 }
 
-// judgeHand 個別ハンドの勝敗判定（人間プレイヤー用: スプリット時はBJ抑制）
+// judgeHand 個別ハンドの勝敗判定（人間プレイヤー用: スプリット由来ならBJ抑制）
 func (b *BlackJack) judgeHand(hand *BlackJackHand) GameResult {
-	return b.judgeHandCore(hand, len(b.playerHands))
+	return b.judgeHandCore(hand, hand.IsFromSplit())
 }
 
 // GameJudgment ゲーム勝敗判定（後方互換: ハンド0の結果を返す）
@@ -986,14 +1043,14 @@ func (b *BlackJack) cpuPlaySeat(cpu *BlackJackCpuSeat, dealerUpcard *Card) {
 				hand.SetStood(true)
 			case BJSuggestDouble:
 				canDD := hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet()
-				if canDD && (len(cpu.GetHands()) <= 1 || b.config.DoubleAfterSplit) {
+				if canDD && (!hand.IsFromSplit() || b.config.DoubleAfterSplit) {
 					b.cpuDoubleDown(cpu, hand)
 				} else {
 					b.cpuHit(hand)
 				}
 			case BJSuggestDoubleStand:
 				canDD := hand.GetCardsSize() == 2 && cpu.GetPlayer().GetChips() >= hand.GetBet()
-				if canDD && (len(cpu.GetHands()) <= 1 || b.config.DoubleAfterSplit) {
+				if canDD && (!hand.IsFromSplit() || b.config.DoubleAfterSplit) {
 					b.cpuDoubleDown(cpu, hand)
 				} else {
 					hand.SetStood(true)
@@ -1065,10 +1122,12 @@ func (b *BlackJack) cpuSplit(cpu *BlackJackCpuSeat, hand *BlackJackHand, handIdx
 	secondCard := hand.GetCard(1)
 	hand.Reset()
 	hand.SetBet(bet)
+	hand.SetFromSplit(true)
 	hand.AddCard(firstCard)
 
 	newHand := NewBlackJackHand()
 	newHand.SetBet(bet)
+	newHand.SetFromSplit(true)
 	newHand.AddCard(secondCard)
 
 	// 各ハンドに1枚ずつ配る
@@ -1123,14 +1182,14 @@ func (b *BlackJack) resolvePayoutsCpu() {
 				continue
 			}
 			result := b.judgeCpuHand(hand)
-			payoutHand(cpu.GetPlayer(), hand, len(cpu.GetHands()), result)
+			payoutHand(cpu.GetPlayer(), hand, hand.IsFromSplit(), result)
 		}
 	}
 }
 
-// judgeCpuHand CPU個別ハンドの勝敗判定（CPUはスプリット有無に関わらずBJ判定）
+// judgeCpuHand CPU個別ハンドの勝敗判定（fromSplit追跡による正確なBJ判定）
 func (b *BlackJack) judgeCpuHand(hand *BlackJackHand) GameResult {
-	return b.judgeHandCore(hand, 1)
+	return b.judgeHandCore(hand, hand.IsFromSplit())
 }
 
 // evaluateSideBets サイドベットの判定と精算
@@ -1178,6 +1237,19 @@ func (b *BlackJack) evaluateSideBets() {
 // GetSideBetResults サイドベット結果取得
 func (b *BlackJack) GetSideBetResults() []*BJSideBetResult {
 	return b.sideBetResults
+}
+
+// GetMultiHandCount マルチハンド数取得
+func (b *BlackJack) GetMultiHandCount() int {
+	if b.multiHandCount <= 0 {
+		return 1
+	}
+	return b.multiHandCount
+}
+
+// SetMultiHandCount マルチハンド数設定（テスト用）
+func (b *BlackJack) SetMultiHandCount(count int) {
+	b.multiHandCount = count
 }
 
 // GetPerfectPairsBet Perfect Pairsベット額取得

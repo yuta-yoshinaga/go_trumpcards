@@ -11,7 +11,7 @@ type BlackJackInteractorIF interface {
 	Reset() string
 	Hit() string
 	Stand() string
-	Bet(amount, ppBet, t3Bet int) string
+	Bet(amount, ppBet, t3Bet, handCount int) string
 	DoubleDown() string
 	Split() string
 	Insurance() string
@@ -62,8 +62,8 @@ func (bi *BlackJackInteractor) Stand() string {
 }
 
 // Bet ベット
-func (bi *BlackJackInteractor) Bet(amount, ppBet, t3Bet int) string {
-	err := bi.bj.PlayerBet(amount, ppBet, t3Bet)
+func (bi *BlackJackInteractor) Bet(amount, ppBet, t3Bet, handCount int) string {
+	err := bi.bj.PlayerBet(amount, ppBet, t3Bet, handCount)
 	return bi.bjp.Output(bi.bj, err)
 }
 

@@ -748,7 +748,7 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 		bj := domain.NewBlackJack(tc, player, dealer)
 		bj.Reset()
 		// Place a bet with PP side bet
-		err := bj.PlayerBet(100, 10, 0)
+		err := bj.PlayerBet(100, 10, 0, 0)
 		if err != nil {
 			t.Skip("cannot test side bet (deck exhausted)")
 		}
@@ -774,7 +774,7 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 		dealer.SetChips(1000)
 		bj := domain.NewBlackJack(tc, player, dealer)
 		bj.Reset()
-		err := bj.PlayerBet(100, 0, 10)
+		err := bj.PlayerBet(100, 0, 10, 0)
 		if err != nil {
 			t.Skip("cannot test side bet (deck exhausted)")
 		}
@@ -815,4 +815,27 @@ func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
 	bj.Reset()
 	output := bjp.Output(bj, nil)
 	assert.NotContains(t, output, "Penetration")
+}
+
+func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("multi-hand count shown when > 1", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		bj.GetPlayer().SetChips(2000)
+		err := bj.PlayerBet(100, 0, 0, 2)
+		assert.NoError(t, err)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "multi-hand: 2 hands")
+	})
+
+	t.Run("multi-hand count not shown when 1", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		err := bj.PlayerBet(100, 0, 0, 1)
+		assert.NoError(t, err)
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "multi-hand:")
+	})
 }

@@ -8,6 +8,7 @@ type BlackJackHand struct {
 	doubled     bool
 	busted      bool
 	surrendered bool
+	fromSplit   bool
 }
 
 // NewBlackJackHand コンストラクタ
@@ -151,6 +152,16 @@ func (h *BlackJackHand) SetSurrendered(surrendered bool) {
 	h.surrendered = surrendered
 }
 
+// IsFromSplit スプリットから生じたハンドか
+func (h *BlackJackHand) IsFromSplit() bool {
+	return h.fromSplit
+}
+
+// SetFromSplit スプリット由来フラグ設定
+func (h *BlackJackHand) SetFromSplit(fromSplit bool) {
+	h.fromSplit = fromSplit
+}
+
 // CanSurrender サレンダー可能か（2枚でスタンド/バースト/サレンダー前）
 func (h *BlackJackHand) CanSurrender() bool {
 	return len(h.cards) == 2 && !h.stood && !h.busted && !h.surrendered
@@ -169,4 +180,5 @@ func (h *BlackJackHand) Reset() {
 	h.doubled = false
 	h.busted = false
 	h.surrendered = false
+	h.fromSplit = false
 }

@@ -54,6 +54,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.DeckPenetration = bj.GetDeckPenetration()
 	resObj.RunningCount = bj.GetRunningCount()
 	resObj.TrueCount = bj.GetTrueCount()
+	resObj.MultiHandCount = bj.GetMultiHandCount()
 
 	// hands
 	resObj.Hands = make([]*controller.BlackJackWebOutputHand, len(hands))

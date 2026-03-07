@@ -22,6 +22,8 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
     onCountingSystemChange: vi.fn(),
     deckPenetration: 75,
     onDeckPenetrationChange: vi.fn(),
+    handCount: 1,
+    onHandCountChange: vi.fn(),
     loading: false,
     onBet: vi.fn(),
     perfectPairsBet: 0,
@@ -217,6 +219,23 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByLabelText('ペネトレーション:')).not.toBeDisabled();
   });
 
+  it('renders hand count selector with provided value', () => {
+    render(<BjBetPhaseControls {...defaultProps({ handCount: 2 })} />);
+    expect(screen.getByLabelText('ハンド数:')).toHaveValue('2');
+  });
+
+  it('calls onHandCountChange when hand count selector changes', () => {
+    const onHandCountChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onHandCountChange })} />);
+    fireEvent.change(screen.getByLabelText('ハンド数:'), { target: { value: '3' } });
+    expect(onHandCountChange).toHaveBeenCalledWith(3);
+  });
+
+  it('disables hand count selector when loading', () => {
+    render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
+    expect(screen.getByLabelText('ハンド数:')).toBeDisabled();
+  });
+
   it('disables inputs and buttons when loading is true', () => {
     render(<BjBetPhaseControls {...defaultProps({ loading: true })} />);
     expect(screen.getByLabelText('ベット額:')).toBeDisabled();
@@ -230,6 +249,7 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'DAS ON' })).toBeDisabled();
     expect(screen.getByLabelText('PP:')).toBeDisabled();
     expect(screen.getByLabelText('21+3:')).toBeDisabled();
+    expect(screen.getByLabelText('ハンド数:')).toBeDisabled();
   });
 
   it('enables inputs and buttons when loading is false', () => {
@@ -240,5 +260,6 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByLabelText('CPU人数:')).not.toBeDisabled();
     expect(screen.getByLabelText('PP:')).not.toBeDisabled();
     expect(screen.getByLabelText('21+3:')).not.toBeDisabled();
+    expect(screen.getByLabelText('ハンド数:')).not.toBeDisabled();
   });
 });

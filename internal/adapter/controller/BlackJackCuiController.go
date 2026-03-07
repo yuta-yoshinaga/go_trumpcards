@@ -42,6 +42,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				}
 				ppBet := 0
 				t3Bet := 0
+				handCount := 0
 				if len(args) >= 2 {
 					if v, e := strconv.Atoi(args[1]); e == nil {
 						ppBet = v
@@ -52,7 +53,12 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 						t3Bet = v
 					}
 				}
-				return bcc.bji.Bet(amount, ppBet, t3Bet), true
+				if len(args) >= 4 {
+					if v, e := strconv.Atoi(args[3]); e == nil {
+						handCount = v
+					}
+				}
+				return bcc.bji.Bet(amount, ppBet, t3Bet, handCount), true
 			case "d", "doubledown":
 				return bcc.bji.DoubleDown(), true
 			case "sp", "split":

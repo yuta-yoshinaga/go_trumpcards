@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BlackJackConfigInput, BlackJackSideBetInput } from '../api/gameApi';
+import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
@@ -50,6 +50,7 @@ export function BlackJackPage() {
   const [cpuPlayerCount, setCpuPlayerCount] = useState(0);
   const [perfectPairsBet, setPerfectPairsBet] = useState(0);
   const [twentyOnePlus3Bet, setTwentyOnePlus3Bet] = useState(0);
+  const [handCount, setHandCount] = useState(1);
   const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
   const [countingSystem, setCountingSystem] = useState(0);
   const [deckPenetration, setDeckPenetration] = useState(75);
@@ -276,12 +277,15 @@ export function BlackJackPage() {
                 onCountingSystemChange={(v) => exec('setcountingsystem', v)}
                 deckPenetration={deckPenetration}
                 onDeckPenetrationChange={(v) => exec('setpenetration', v)}
+                handCount={handCount}
+                onHandCountChange={setHandCount}
                 loading={loading}
                 onBet={() => {
-                  const sideBets: BlackJackSideBetInput = {};
-                  if (perfectPairsBet > 0) sideBets.perfectPairsBet = perfectPairsBet;
-                  if (twentyOnePlus3Bet > 0) sideBets.twentyOnePlus3Bet = twentyOnePlus3Bet;
-                  exec('bet', betAmount, undefined, sideBets);
+                  const betOptions: BlackJackBetOptions = {};
+                  if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
+                  if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
+                  if (handCount > 1) betOptions.handCount = handCount;
+                  exec('bet', betAmount, undefined, betOptions);
                 }}
                 perfectPairsBet={perfectPairsBet}
                 onPerfectPairsBetChange={setPerfectPairsBet}

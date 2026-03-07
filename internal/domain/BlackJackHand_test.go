@@ -160,12 +160,23 @@ func TestBlackJackHand_Reset(t *testing.T) {
 	h.SetStood(true)
 	h.SetDoubled(true)
 	h.SetBusted(true)
+	h.SetFromSplit(true)
 	h.Reset()
 	assert.Equal(t, 0, h.GetCardsSize())
 	assert.Equal(t, 0, h.GetBet())
 	assert.False(t, h.IsStood())
 	assert.False(t, h.IsDoubled())
 	assert.False(t, h.IsBusted())
+	assert.False(t, h.IsFromSplit())
+}
+
+func TestBlackJackHand_FromSplit(t *testing.T) {
+	h := domain.NewBlackJackHand()
+	assert.False(t, h.IsFromSplit())
+	h.SetFromSplit(true)
+	assert.True(t, h.IsFromSplit())
+	h.SetFromSplit(false)
+	assert.False(t, h.IsFromSplit())
 }
 
 func TestBlackJackHand_IsFinished(t *testing.T) {

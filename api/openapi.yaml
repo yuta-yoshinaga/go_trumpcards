@@ -967,6 +967,15 @@ components:
             Defaults to 0 when omitted.
           minimum: 0
           example: 0
+        handCount:
+          type: integer
+          description: |
+            Number of initial hands to deal (1–3).  Only used with `bet` command.
+            Each hand receives the same bet amount.  Side bets apply only to hand 0.
+            Defaults to 1 when omitted.  0 is treated as 1.
+          minimum: 0
+          maximum: 3
+          example: 1
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1077,7 +1086,8 @@ components:
         hands:
           type: array
           description: |
-            Player hands.  Normally contains one hand; contains two after a split.
+            Player hands.  Contains 1–3 initial hands (based on `handCount` in bet);
+            may grow further after splits (up to 4 per initial hand, 8 total).
             Not present in bet phase.
           items:
             $ref: '#/components/schemas/BlackJackHand'
@@ -1215,6 +1225,14 @@ components:
             Each entry describes one side bet outcome (win or loss).
           items:
             $ref: '#/components/schemas/BlackJackSideBetResult'
+        multiHandCount:
+          type: integer
+          description: |
+            Number of initial hands dealt this round (1–3).
+            0 means the default single hand.  Only meaningful after a bet has been placed.
+          minimum: 0
+          maximum: 3
+          example: 1
 
     BlackJackSideBetResult:
       type: object

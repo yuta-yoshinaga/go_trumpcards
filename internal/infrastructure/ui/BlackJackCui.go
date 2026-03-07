@@ -28,7 +28,7 @@ func (cui *BlackJackCui) Exec() {
 		"Please enter a command.",
 		"q・・・quit",
 		"r・・・reset",
-		"b N・・・bet (e.g. b 100)",
+		"b N [ppBet] [t3Bet] [handCount]・・・bet (e.g. b 100 0 0 2)",
 		"h・・・hit",
 		"s・・・stand",
 		"d・・・doubledown",
