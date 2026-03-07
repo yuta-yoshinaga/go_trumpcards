@@ -17,7 +17,6 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	newMock := func() *mockUsecases.MockDoubtInteractor {
 		m := new(mockUsecases.MockDoubtInteractor)
 		m.On("GetConfig").Return(domain.DefaultDoubtConfig())
-		m.On("Reset").Return(mockOutput)
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("Play", mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("ResolveDoubt", mock.Anything).Return(mockOutput)
