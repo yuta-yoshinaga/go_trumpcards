@@ -45,6 +45,8 @@ func (c *SevensCuiController) Exec(command string) string {
 						cfg.CpuStrategy = true
 					case f == "nojokerfinish":
 						cfg.NoJokerFinish = true
+					case f == "jokerreclaim":
+						cfg.JokerReclaimEnabled = true
 					case f == "endstop":
 						cfg.EndStopEnabled = true
 					case f == "jokerconsban":
