@@ -12,14 +12,21 @@ import (
 // HoldemWebInput テキサスホールデムWebインプット
 type HoldemWebInput struct {
 	BaseWebInput
-	Amount          int   `json:"amount,omitempty"`
-	SmallBlind      *int  `json:"smallBlind,omitempty"`
-	BigBlind        *int  `json:"bigBlind,omitempty"`
-	TournamentMode  *bool `json:"tournamentMode,omitempty"`
-	BlindLevelHands *int  `json:"blindLevelHands,omitempty"`
-	BlindMultiplier *int  `json:"blindMultiplier,omitempty"`
-	BettingLimit    *int  `json:"bettingLimit,omitempty"`
-	TableSize       *int  `json:"tableSize,omitempty"`
+	Amount           int   `json:"amount,omitempty"`
+	SmallBlind       *int  `json:"smallBlind,omitempty"`
+	BigBlind         *int  `json:"bigBlind,omitempty"`
+	TournamentMode   *bool `json:"tournamentMode,omitempty"`
+	BlindLevelHands  *int  `json:"blindLevelHands,omitempty"`
+	BlindMultiplier  *int  `json:"blindMultiplier,omitempty"`
+	BettingLimit     *int  `json:"bettingLimit,omitempty"`
+	TableSize        *int  `json:"tableSize,omitempty"`
+	RebuyEnabled     *bool `json:"rebuyEnabled,omitempty"`
+	RebuyMaxCount    *int  `json:"rebuyMaxCount,omitempty"`
+	RebuyChips       *int  `json:"rebuyChips,omitempty"`
+	RebuyPeriodHands *int  `json:"rebuyPeriodHands,omitempty"`
+	AddonEnabled     *bool `json:"addonEnabled,omitempty"`
+	AddonChips       *int  `json:"addonChips,omitempty"`
+	AddonAfterHand   *int  `json:"addonAfterHand,omitempty"`
 }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
@@ -67,31 +74,43 @@ type HoldemWebOutputSidePot struct {
 
 // HoldemWebOutput テキサスホールデムWebアウトプット
 type HoldemWebOutput struct {
-	Players         []*HoldemWebOutputPlayer    `json:"players"`
-	CommunityCards  []*WebOutputCard            `json:"communityCards"`
-	Pot             int                         `json:"pot"`
-	SidePots        []*HoldemWebOutputSidePot   `json:"sidePots"`
-	DealerIdx       int                         `json:"dealerIdx"`
-	CurrentTurn     int                         `json:"currentTurn"`
-	Phase           int                         `json:"phase"`
-	GameEndFlag     bool                        `json:"gameEndFlag"`
-	LastBet         int                         `json:"lastBet"`
-	MinRaise        int                         `json:"minRaise"`
-	BettingLimit    int                         `json:"bettingLimit"`
-	RaiseCount      int                         `json:"raiseCount"`
-	MaxBetAmount    int                         `json:"maxBetAmount"`
-	RoundResults    []*HoldemWebOutputResult    `json:"roundResults"`
-	CpuActions      []*HoldemWebOutputCpuAction `json:"cpuActions"`
-	Message         string                      `json:"message"`
-	MessageCode     string                      `json:"messageCode,omitempty"`
-	MessageParams   map[string]string           `json:"messageParams,omitempty"`
-	HandCount       int                         `json:"handCount"`
-	SmallBlind      int                         `json:"smallBlind"`
-	BigBlind        int                         `json:"bigBlind"`
-	TournamentMode  bool                        `json:"tournamentMode"`
-	BlindLevelHands int                         `json:"blindLevelHands"`
-	BlindMultiplier int                         `json:"blindMultiplier"`
-	TableSize       int                         `json:"tableSize"`
+	Players          []*HoldemWebOutputPlayer    `json:"players"`
+	CommunityCards   []*WebOutputCard            `json:"communityCards"`
+	Pot              int                         `json:"pot"`
+	SidePots         []*HoldemWebOutputSidePot   `json:"sidePots"`
+	DealerIdx        int                         `json:"dealerIdx"`
+	CurrentTurn      int                         `json:"currentTurn"`
+	Phase            int                         `json:"phase"`
+	GameEndFlag      bool                        `json:"gameEndFlag"`
+	LastBet          int                         `json:"lastBet"`
+	MinRaise         int                         `json:"minRaise"`
+	BettingLimit     int                         `json:"bettingLimit"`
+	RaiseCount       int                         `json:"raiseCount"`
+	MaxBetAmount     int                         `json:"maxBetAmount"`
+	RoundResults     []*HoldemWebOutputResult    `json:"roundResults"`
+	CpuActions       []*HoldemWebOutputCpuAction `json:"cpuActions"`
+	Message          string                      `json:"message"`
+	MessageCode      string                      `json:"messageCode,omitempty"`
+	MessageParams    map[string]string           `json:"messageParams,omitempty"`
+	HandCount        int                         `json:"handCount"`
+	SmallBlind       int                         `json:"smallBlind"`
+	BigBlind         int                         `json:"bigBlind"`
+	TournamentMode   bool                        `json:"tournamentMode"`
+	BlindLevelHands  int                         `json:"blindLevelHands"`
+	BlindMultiplier  int                         `json:"blindMultiplier"`
+	TableSize        int                         `json:"tableSize"`
+	RebuyAvailable   bool                        `json:"rebuyAvailable"`
+	AddonAvailable   bool                        `json:"addonAvailable"`
+	RebuyCounts      []int                       `json:"rebuyCounts"`
+	AddonUsed        []bool                      `json:"addonUsed"`
+	RebuyEnabled     bool                        `json:"rebuyEnabled"`
+	AddonEnabled     bool                        `json:"addonEnabled"`
+	RebuyMaxCount    int                         `json:"rebuyMaxCount"`
+	RebuyChips       int                         `json:"rebuyChips"`
+	AddonChips       int                         `json:"addonChips"`
+	RebuyPeriodHands int                         `json:"rebuyPeriodHands"`
+	AddonAfterHand   int                         `json:"addonAfterHand"`
+	RebuyPhaseType   int                         `json:"rebuyPhaseType"`
 }
 
 // HoldemWebController テキサスホールデムWebコントローラークラス
@@ -168,6 +187,27 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 			}
 			cfg.TableSize = ts
 		}
+		if param.RebuyEnabled != nil {
+			cfg.RebuyEnabled = *param.RebuyEnabled
+		}
+		if param.RebuyMaxCount != nil && *param.RebuyMaxCount >= 1 {
+			cfg.RebuyMaxCount = *param.RebuyMaxCount
+		}
+		if param.RebuyChips != nil && *param.RebuyChips >= 1 {
+			cfg.RebuyChips = *param.RebuyChips
+		}
+		if param.RebuyPeriodHands != nil && *param.RebuyPeriodHands >= 1 {
+			cfg.RebuyPeriodHands = *param.RebuyPeriodHands
+		}
+		if param.AddonEnabled != nil {
+			cfg.AddonEnabled = *param.AddonEnabled
+		}
+		if param.AddonChips != nil && *param.AddonChips >= 1 {
+			cfg.AddonChips = *param.AddonChips
+		}
+		if param.AddonAfterHand != nil && *param.AddonAfterHand >= 1 {
+			cfg.AddonAfterHand = *param.AddonAfterHand
+		}
 		bc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
 	case "f", "fold":
 		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0))
@@ -181,6 +221,14 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount))
 	case "a", "allin":
 		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0))
+	case "rb", "rebuy":
+		bc.writePresenterResponse(w, hgi.Rebuy())
+	case "sr", "skiprebuy":
+		bc.writePresenterResponse(w, hgi.SkipRebuy())
+	case "ad", "addon":
+		bc.writePresenterResponse(w, hgi.Addon())
+	case "sa", "skipaddon":
+		bc.writePresenterResponse(w, hgi.SkipAddon())
 	default:
 		return false
 	}

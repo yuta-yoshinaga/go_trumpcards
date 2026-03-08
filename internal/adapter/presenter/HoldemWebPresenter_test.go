@@ -415,6 +415,11 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetPlayerCnt").Return(1)
 		gameMock.On("GetConfig").Return(domain.DefaultHoldemConfig())
 		gameMock.On("GetHandCount").Return(0)
+		gameMock.On("IsRebuyAvailable").Return(false)
+		gameMock.On("IsAddonAvailable").Return(false)
+		gameMock.On("GetRebuyCounts").Return([]int{0})
+		gameMock.On("GetAddonUsed").Return([]bool{false})
+		gameMock.On("GetRebuyPhaseType").Return(0)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(99) // out of range
@@ -444,6 +449,11 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetPlayerCnt").Return(1)
 		gameMock.On("GetConfig").Return(domain.DefaultHoldemConfig())
 		gameMock.On("GetHandCount").Return(0)
+		gameMock.On("IsRebuyAvailable").Return(false)
+		gameMock.On("IsAddonAvailable").Return(false)
+		gameMock.On("GetRebuyCounts").Return([]int{0})
+		gameMock.On("GetAddonUsed").Return([]bool{false})
+		gameMock.On("GetRebuyPhaseType").Return(0)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(-1) // negative
@@ -574,6 +584,83 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		assert.False(t, out.TournamentMode)
 		assert.Equal(t, 10, out.BlindLevelHands)
 		assert.Equal(t, 200, out.BlindMultiplier)
+	})
+}
+
+func TestHoldemWebPresenter_Output_RebuyAddonFields(t *testing.T) {
+	p := presenter.NewHoldemWebPresenter()
+
+	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.HoldemPlayer{
+			domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
+		}
+		h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+		return h, players
+	}
+
+	t.Run("default values when rebuy/addon disabled", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.False(t, out.RebuyAvailable)
+		assert.False(t, out.AddonAvailable)
+		assert.Equal(t, []int{0, 0, 0, 0}, out.RebuyCounts)
+		assert.Equal(t, []bool{false, false, false, false}, out.AddonUsed)
+		assert.False(t, out.RebuyEnabled)
+		assert.False(t, out.AddonEnabled)
+		assert.Equal(t, 3, out.RebuyMaxCount)
+		assert.Equal(t, 1000, out.RebuyChips)
+		assert.Equal(t, 1500, out.AddonChips)
+		assert.Equal(t, 20, out.RebuyPeriodHands)
+		assert.Equal(t, 20, out.AddonAfterHand)
+		assert.Equal(t, 0, out.RebuyPhaseType)
+	})
+
+	t.Run("values when rebuy/addon enabled with config", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseRebuy)
+		cfg := domain.HoldemConfig{
+			SmallBlind:       10,
+			BigBlind:         20,
+			InitChips:        1000,
+			TournamentMode:   true,
+			BlindLevelHands:  5,
+			BlindMultiplier:  200,
+			RebuyEnabled:     true,
+			RebuyMaxCount:    5,
+			RebuyChips:       2000,
+			RebuyPeriodHands: 30,
+			AddonEnabled:     true,
+			AddonChips:       3000,
+			AddonAfterHand:   25,
+		}
+		h.SetConfig(cfg)
+		h.SetRebuyCounts([]int{2, 1, 0, 3})
+		h.SetAddonUsed([]bool{true, false, false, true})
+		h.SetRebuyPhaseType(1)
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.True(t, out.RebuyEnabled)
+		assert.True(t, out.AddonEnabled)
+		assert.Equal(t, 5, out.RebuyMaxCount)
+		assert.Equal(t, 2000, out.RebuyChips)
+		assert.Equal(t, 3000, out.AddonChips)
+		assert.Equal(t, 30, out.RebuyPeriodHands)
+		assert.Equal(t, 25, out.AddonAfterHand)
+		assert.Equal(t, []int{2, 1, 0, 3}, out.RebuyCounts)
+		assert.Equal(t, []bool{true, false, false, true}, out.AddonUsed)
+		assert.Equal(t, 1, out.RebuyPhaseType)
 	})
 }
 

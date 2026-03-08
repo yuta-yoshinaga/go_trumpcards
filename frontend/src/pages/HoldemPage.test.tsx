@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { holdemApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -85,6 +85,18 @@ const initState: HoldemResponse = {
   raiseCount: 0,
   maxBetAmount: 0,
   tableSize: 4,
+  rebuyPhaseType: 0,
+  rebuyChips: 0,
+  rebuyMaxCount: 0,
+  rebuyCounts: [],
+  addonChips: 0,
+  rebuyAvailable: false,
+  addonAvailable: false,
+  rebuyEnabled: false,
+  addonEnabled: false,
+  rebuyPeriodHands: 0,
+  addonAfterHand: 0,
+  addonUsed: [],
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -112,6 +124,18 @@ const preFlopState: HoldemResponse = {
   raiseCount: 0,
   maxBetAmount: 0,
   tableSize: 4,
+  rebuyPhaseType: 0,
+  rebuyChips: 0,
+  rebuyMaxCount: 0,
+  rebuyCounts: [],
+  addonChips: 0,
+  rebuyAvailable: false,
+  addonAvailable: false,
+  rebuyEnabled: false,
+  addonEnabled: false,
+  rebuyPeriodHands: 0,
+  addonAfterHand: 0,
+  addonUsed: [],
 };
 
 /** PRE_FLOP with outstanding bet: shows call/raise instead of bet/check */
@@ -177,6 +201,18 @@ const showdownState: HoldemResponse = {
   raiseCount: 0,
   maxBetAmount: 0,
   tableSize: 4,
+  rebuyPhaseType: 0,
+  rebuyChips: 0,
+  rebuyMaxCount: 0,
+  rebuyCounts: [],
+  addonChips: 0,
+  rebuyAvailable: false,
+  addonAvailable: false,
+  rebuyEnabled: false,
+  addonEnabled: false,
+  rebuyPeriodHands: 0,
+  addonAfterHand: 0,
+  addonUsed: [],
 };
 
 /** END (phase 6) — also isShowdown */
@@ -695,7 +731,14 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0, tableSize: 4 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        bettingLimit: 0,
+        tableSize: 4,
+        rebuyEnabled: false,
+        addonEnabled: false,
+      }),
+    );
   });
 
   it('sends updated bettingLimit when select is changed before reset', async () => {
@@ -708,7 +751,14 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 1, tableSize: 4 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        bettingLimit: 1,
+        tableSize: 4,
+        rebuyEnabled: false,
+        addonEnabled: false,
+      }),
+    );
   });
 
   // ---- loading / disabled state ----
@@ -925,7 +975,14 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0, tableSize: 6 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        bettingLimit: 0,
+        tableSize: 6,
+        rebuyEnabled: false,
+        addonEnabled: false,
+      }),
+    );
   });
 
   it('sends tableSize 9 when 9-max is selected', async () => {
@@ -938,6 +995,184 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0, tableSize: 9 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        bettingLimit: 0,
+        tableSize: 9,
+        rebuyEnabled: false,
+        addonEnabled: false,
+      }),
+    );
+  });
+
+  it('sends rebuyEnabled true when rebuy checkbox is checked', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const checkbox = screen.getByLabelText('リバイ有効');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        bettingLimit: 0,
+        tableSize: 4,
+        rebuyEnabled: true,
+        addonEnabled: false,
+      }),
+    );
+  });
+
+  it('sends addonEnabled true when addon checkbox is checked', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const checkbox = screen.getByLabelText('アドオン有効');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
+        bettingLimit: 0,
+        tableSize: 4,
+        rebuyEnabled: false,
+        addonEnabled: true,
+      }),
+    );
+  });
+
+  // ---- rebuy phase ----
+  it('shows rebuy prompt and buttons in rebuy phase', async () => {
+    const rebuyState: HoldemResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+      addonChips: 1500,
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/リバイしますか/)).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'リバイ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
+  });
+
+  it('calls rebuy command when rebuy accept button is clicked', async () => {
+    const rebuyState: HoldemResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リバイ' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(preFlopState);
+    fireEvent.click(screen.getByRole('button', { name: 'リバイ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('rebuy'));
+  });
+
+  it('calls skiprebuy command when rebuy skip button is clicked', async () => {
+    const rebuyState: HoldemResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(preFlopState);
+    const rebuyControls = screen.getByTestId('rebuy-controls');
+    fireEvent.click(within(rebuyControls).getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skiprebuy'));
+  });
+
+  // ---- addon phase ----
+  it('shows addon prompt and buttons in addon phase', async () => {
+    const addonState: HoldemResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 2,
+      addonChips: 1500,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(addonState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/アドオンしますか/)).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'アドオン' })).toBeInTheDocument();
+  });
+
+  it('calls addon command when addon accept button is clicked', async () => {
+    const addonState: HoldemResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 2,
+      addonChips: 1500,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(addonState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アドオン' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(preFlopState);
+    fireEvent.click(screen.getByRole('button', { name: 'アドオン' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('addon'));
+  });
+
+  it('calls skipaddon command when addon skip button is clicked', async () => {
+    const addonState: HoldemResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 2,
+      addonChips: 1500,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(addonState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText(/アドオンしますか/)).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(preFlopState);
+    const addonControls = screen.getByTestId('addon-controls');
+    fireEvent.click(within(addonControls).getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skipaddon'));
+  });
+
+  it('shows REBUY phase name in info bar', async () => {
+    const rebuyState: HoldemResponse = {
+      ...preFlopState,
+      phase: 7,
+      rebuyPhaseType: 1,
+      rebuyChips: 1000,
+      rebuyMaxCount: 3,
+      rebuyCounts: [0, 0, 0, 0],
+    };
+    mockExec.mockResolvedValue(rebuyState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText('リバイ/アドオン')).toBeInTheDocument());
+  });
+
+  it('does not show rebuy controls when not in rebuy phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText('プリフロップ')).toBeInTheDocument());
+    expect(screen.queryByText(/リバイしますか/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/アドオンしますか/)).not.toBeInTheDocument();
   });
 });

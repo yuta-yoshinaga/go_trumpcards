@@ -422,4 +422,16 @@ export interface HoldemResponse {
   blindLevelHands: number;
   blindMultiplier: number;
   tableSize: number;
+  rebuyPhaseType: number;
+  rebuyChips: number;
+  rebuyMaxCount: number;
+  rebuyCounts: number[];
+  addonChips: number;
+  rebuyAvailable: boolean;
+  addonAvailable: boolean;
+  rebuyEnabled: boolean;
+  addonEnabled: boolean;
+  rebuyPeriodHands: number;
+  addonAfterHand: number;
+  addonUsed: boolean[];
 }

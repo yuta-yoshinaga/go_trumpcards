@@ -34,26 +34,40 @@ func IsValidHoldemTableSize(n int) bool {
 
 // HoldemConfig テキサスホールデム設定
 type HoldemConfig struct {
-	SmallBlind      int              // スモールブラインド
-	BigBlind        int              // ビッグブラインド
-	InitChips       int              // 初期チップ
-	TournamentMode  bool             // トーナメントモード
-	BlindLevelHands int              // ブラインドレベルアップまでのハンド数
-	BlindMultiplier int              // ブラインド倍率 (百分率: 200=2倍)
-	BettingLimit    BettingLimitType // ベッティングリミット
-	TableSize       int              // テーブルサイズ (4/6/9)
+	SmallBlind       int              // スモールブラインド
+	BigBlind         int              // ビッグブラインド
+	InitChips        int              // 初期チップ
+	TournamentMode   bool             // トーナメントモード
+	BlindLevelHands  int              // ブラインドレベルアップまでのハンド数
+	BlindMultiplier  int              // ブラインド倍率 (百分率: 200=2倍)
+	BettingLimit     BettingLimitType // ベッティングリミット
+	TableSize        int              // テーブルサイズ (4/6/9)
+	RebuyEnabled     bool             // リバイ有効
+	RebuyMaxCount    int              // リバイ最大回数
+	RebuyChips       int              // リバイ時の補充チップ
+	RebuyPeriodHands int              // リバイ可能期間 (ハンド数)
+	AddonEnabled     bool             // アドオン有効
+	AddonChips       int              // アドオン時の補充チップ
+	AddonAfterHand   int              // アドオン提供ハンド番号
 }
 
 // DefaultHoldemConfig デフォルト設定
 func DefaultHoldemConfig() HoldemConfig {
 	return HoldemConfig{
-		SmallBlind:      5,
-		BigBlind:        10,
-		InitChips:       1000,
-		TournamentMode:  false,
-		BlindLevelHands: 10,
-		BlindMultiplier: 200,
-		TableSize:       HoldemTableSize4,
+		SmallBlind:       5,
+		BigBlind:         10,
+		InitChips:        1000,
+		TournamentMode:   false,
+		BlindLevelHands:  10,
+		BlindMultiplier:  200,
+		TableSize:        HoldemTableSize4,
+		RebuyEnabled:     false,
+		RebuyMaxCount:    3,
+		RebuyChips:       1000,
+		RebuyPeriodHands: 20,
+		AddonEnabled:     false,
+		AddonChips:       1500,
+		AddonAfterHand:   20,
 	}
 }
 

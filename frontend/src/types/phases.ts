@@ -44,4 +44,12 @@ export const HoldemPhase = {
   RIVER: 4,
   SHOWDOWN: 5,
   END: 6,
+  REBUY: 7,
+} as const;
+
+// Texas Hold'em rebuy phase type constants (sync: internal/domain/Holdem.go)
+export const HoldemRebuyPhaseType = {
+  NONE: 0,
+  REBUY: 1,
+  ADDON: 2,
 } as const;

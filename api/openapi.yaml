@@ -756,7 +756,7 @@ paths:
         (default, 1 human + 3 CPU), 6-max (1 human + 5 CPU), or 9-max
         (1 human + 8 CPU).  Each CPU has a distinct play style.
 
-        The game proceeds through seven phases:
+        The game proceeds through eight phases:
 
         | Phase      | Value | Description |
         |------------|-------|-------------|
@@ -767,6 +767,7 @@ paths:
         | River      | `4`   | Fifth community card revealed |
         | Showdown   | `5`   | Hands evaluated; winners determined |
         | End        | `6`   | Round complete; results displayed |
+        | Rebuy      | `7`   | Rebuy/addon decision phase |
 
         | Command | Aliases | Description |
         |---------|---------|-------------|
@@ -777,6 +778,10 @@ paths:
         | `bet`   | `b`     | Place a bet (use `amount`) |
         | `raise` | `ra`    | Raise by a specified amount on top of calling (use `amount`) |
         | `allin` | `a`     | Go all-in with all remaining chips |
+        | `rebuy` | `rb`    | Buy back chips during rebuy period |
+        | `skiprebuy` | `sr` | Skip rebuy opportunity |
+        | `addon` | `ad`    | Add chips (one-time addon purchase) |
+        | `skipaddon` | `sa` | Skip addon opportunity |
         | `quit`  | `q`     | End the session |
       operationId: holdemExec
       requestBody:
@@ -824,6 +829,23 @@ paths:
                 summary: Go all-in
                 value:
                   command: allin
+                  sessionId: my-session-001
+              rebuy:
+                summary: Accept rebuy
+                value:
+                  command: rebuy
+                  sessionId: my-session-001
+              skipaddon:
+                summary: Skip addon
+                value:
+                  command: skipaddon
+                  sessionId: my-session-001
+              resetWithRebuy:
+                summary: Start with rebuy/addon enabled
+                value:
+                  command: reset
+                  rebuyEnabled: true
+                  addonEnabled: true
                   sessionId: my-session-001
       responses:
         '200':
@@ -2779,8 +2801,9 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `fold` (`f`),
             `check` (`ck`), `call` (`c`), `bet` (`b`), `raise` (`ra`),
-            `allin` (`a`), `quit` (`q`).
-          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, q, quit]
+            `allin` (`a`), `rebuy` (`rb`), `skiprebuy` (`sr`),
+            `addon` (`ad`), `skipaddon` (`sa`), `quit` (`q`).
+          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, q, quit]
           example: bet
         amount:
           type: integer
@@ -2842,6 +2865,53 @@ components:
             4 = 4-max (default), 6 = 6-max, 9 = 9-max.
           enum: [4, 6, 9]
           example: 4
+        rebuyEnabled:
+          type: boolean
+          description: |
+            Enable rebuy (used with `reset` command).
+            Defaults to false when omitted.
+          example: false
+        rebuyMaxCount:
+          type: integer
+          description: |
+            Maximum number of rebuys per player (used with `reset` command).
+            Defaults to 3 when omitted.
+          minimum: 1
+          example: 3
+        rebuyChips:
+          type: integer
+          description: |
+            Chips granted per rebuy (used with `reset` command).
+            Defaults to 1000 when omitted.
+          minimum: 1
+          example: 1000
+        rebuyPeriodHands:
+          type: integer
+          description: |
+            Number of hands during which rebuy is available (used with `reset` command).
+            Defaults to 10 when omitted.
+          minimum: 1
+          example: 10
+        addonEnabled:
+          type: boolean
+          description: |
+            Enable addon (used with `reset` command).
+            Defaults to false when omitted.
+          example: false
+        addonChips:
+          type: integer
+          description: |
+            Chips granted by addon (used with `reset` command).
+            Defaults to 1500 when omitted.
+          minimum: 1
+          example: 1500
+        addonAfterHand:
+          type: integer
+          description: |
+            Hand number after which addon becomes available (used with `reset` command).
+            Defaults to 10 when omitted.
+          minimum: 1
+          example: 10
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -3083,7 +3153,8 @@ components:
             - `4` — River
             - `5` — Showdown
             - `6` — End
-          enum: [0, 1, 2, 3, 4, 5, 6]
+            - `7` — Rebuy/Addon
+          enum: [0, 1, 2, 3, 4, 5, 6, 7]
           example: 1
         gameEndFlag:
           type: boolean
@@ -3180,3 +3251,27 @@ components:
           description: Current table size (4/6/9)
           enum: [4, 6, 9]
           example: 4
+        rebuyPhaseType:
+          type: integer
+          description: |
+            Type of rebuy phase: 1 = rebuy, 2 = addon.
+            Only present when phase is 7 (Rebuy/Addon).
+          enum: [1, 2]
+        rebuyChips:
+          type: integer
+          description: Chips available for current rebuy
+          minimum: 0
+        rebuyMaxCount:
+          type: integer
+          description: Maximum rebuy count setting
+          minimum: 0
+        rebuyCounts:
+          type: array
+          description: Rebuy count per player (same order as players array)
+          items:
+            type: integer
+            minimum: 0
+        addonChips:
+          type: integer
+          description: Chips available for addon
+          minimum: 0

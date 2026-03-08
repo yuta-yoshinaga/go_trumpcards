@@ -45,6 +45,10 @@ func (cui *HoldemCui) Exec() {
 	fmt.Println("bb [amount]・・・big blind (>=2)")
 	fmt.Println("lh [hands]・・・blind level-up hands (>=1)")
 	fmt.Println("ts [4|6|9]・・・table size (4-max, 6-max, 9-max)")
+	fmt.Println("rb・・・rebuy (accept rebuy)")
+	fmt.Println("sr・・・skip rebuy (decline rebuy)")
+	fmt.Println("ad・・・addon (accept addon)")
+	fmt.Println("sa・・・skip addon (decline addon)")
 	fmt.Println("----------------")
 
 	for {
