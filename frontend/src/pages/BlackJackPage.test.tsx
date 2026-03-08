@@ -1345,4 +1345,12 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByLabelText('サレンダー:')).toHaveValue('1'));
   });
+
+  it('calls setsurrenderrule when surrender rule selector changes', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('サレンダー:')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('サレンダー:'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setsurrenderrule', 2));
+  });
 });
