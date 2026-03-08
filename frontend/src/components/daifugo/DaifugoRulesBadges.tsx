@@ -21,7 +21,8 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
     badges.push({ label: t('badge.elevenBack'), bg: '#f0ad4e', color: '#222' });
   }
   if (state.suitLocked) {
-    badges.push({ label: t('badge.suitLock', { suit: state.lockedSuit }), bg: '#5bc0de', color: '#222' });
+    const modeSuffix = state.config.suitLockMode === 1 ? ` (${t('badge.suitLockPartial')})` : '';
+    badges.push({ label: t('badge.suitLock', { suit: state.lockedSuit }) + modeSuffix, bg: '#5bc0de', color: '#222' });
   }
   if (state.tableIsSequence) {
     badges.push({ label: t('badge.sequence'), bg: '#9b59b6', color: '#fff' });

@@ -385,6 +385,22 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "ゲーム終了")
 	})
 
+	t.Run("success Output shows 12ボンバー pending action prompt", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		config := domain.DaifugoConfig{QueenBomberEnabled: true}
+		dg := domain.NewDaifugo(tc, players, config)
+		// Human plays a 12; has spare card → QueenBomber pending set
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false)) // spare
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		_ = dg.PlayerPlay([]int{0})
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "【12ボンバー】")
+	})
+
 	t.Run("success Output does not show 反則上がり for non-penalized player", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()

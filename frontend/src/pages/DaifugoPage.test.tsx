@@ -15,22 +15,24 @@ const mockExec = vi.mocked(daifugoApi.exec);
 const defaultConfig = {
   jokerCount: 2,
   eightCutEnabled: true,
-  suitLockEnabled: true,
+  suitLockMode: 2,
   elevenBackEnabled: true,
   sequenceEnabled: true,
   cardExchangeEnabled: true,
   fiveSkipEnabled: false,
+  fiveSkipCount: 1,
   sevenPassEnabled: false,
   tenDiscardEnabled: false,
   spadeThreeEnabled: false,
   capitalFallEnabled: false,
   nineReverseEnabled: false,
   coupDetatEnabled: false,
-  intenseLockEnabled: false,
+  numberLockEnabled: false,
   sandstormEnabled: false,
   emperorEnabled: false,
   sequenceRevolutionEnabled: false,
   illegalFinishEnabled: false,
+  queenBomberEnabled: false,
   cpuDifficulty: 0,
 };
 
@@ -697,7 +699,7 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
     expect(screen.getByLabelText('9リバース')).toBeInTheDocument();
     expect(screen.getByLabelText('クーデター')).toBeInTheDocument();
-    expect(screen.getByLabelText('激シバ')).toBeInTheDocument();
+    expect(screen.getByLabelText('数縛り')).toBeInTheDocument();
   });
 
   it('drop with invalid dataTransfer data is ignored (NaN guard)', async () => {

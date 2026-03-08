@@ -52,9 +52,19 @@ const (
 type DaifugoPendingAction int
 
 const (
-	DaifugoPendingNone       DaifugoPendingAction = 0 // ペンディングなし
-	DaifugoPendingSevenPass  DaifugoPendingAction = 1 // 7渡し待ち
-	DaifugoPendingTenDiscard DaifugoPendingAction = 2 // 10捨て待ち
+	DaifugoPendingNone        DaifugoPendingAction = 0 // ペンディングなし
+	DaifugoPendingSevenPass   DaifugoPendingAction = 1 // 7渡し待ち
+	DaifugoPendingTenDiscard  DaifugoPendingAction = 2 // 10捨て待ち
+	DaifugoPendingQueenBomber DaifugoPendingAction = 3 // 12ボンバー待ち
+)
+
+// DaifugoSuitLockMode スート縛りモード
+type DaifugoSuitLockMode int
+
+const (
+	DaifugoSuitLockNone    DaifugoSuitLockMode = 0 // なし
+	DaifugoSuitLockPartial DaifugoSuitLockMode = 1 // 片縛り (少なくとも1枚がスート一致)
+	DaifugoSuitLockFull    DaifugoSuitLockMode = 2 // 両縛り (全てスート一致)
 )
 
 // DaifugoSortMode 手札ソートモード
@@ -89,22 +99,24 @@ var DaifugoDifficultyNames = map[DaifugoCpuDifficulty]string{
 type DaifugoConfig struct {
 	JokerCount                int                  // ジョーカー枚数 (default: 2)
 	EightCutEnabled           bool                 // 8切り
-	SuitLockEnabled           bool                 // スート縛り
+	SuitLockMode              DaifugoSuitLockMode  // スート縛りモード (0=なし, 1=片縛り, 2=両縛り)
 	ElevenBackEnabled         bool                 // 11バック
 	SequenceEnabled           bool                 // 階段
 	CardExchangeEnabled       bool                 // カード交換
 	FiveSkipEnabled           bool                 // 5飛び
+	FiveSkipCount             int                  // 5飛びスキップ数 (default: 1, FiveSkipEnabled時のみ有効)
 	SevenPassEnabled          bool                 // 7渡し
 	TenDiscardEnabled         bool                 // 10捨て
 	SpadeThreeEnabled         bool                 // スペ3返し
 	CapitalFallEnabled        bool                 // 都落ち
 	NineReverseEnabled        bool                 // 9リバース
 	CoupDetatEnabled          bool                 // クーデター (3枚の9で革命)
-	IntenseLockEnabled        bool                 // 激シバ (連番縛り)
+	NumberLockEnabled         bool                 // 数縛り (連番縛り)
 	SandstormEnabled          bool                 // 砂嵐 (3枚の3で場をクリア)
 	EmperorEnabled            bool                 // エンペラー (4枚連番・全スート異なる→革命+場クリア)
 	SequenceRevolutionEnabled bool                 // 階段革命 (4枚以上の階段で革命)
 	IllegalFinishEnabled      bool                 // 反則上がり (8切り/ジョーカー/革命で上がりはペナルティ)
+	QueenBomberEnabled        bool                 // 12ボンバー (Qを出したら数字を選んで全員からその数字を除去)
 	CpuDifficulty             DaifugoCpuDifficulty // CPU難易度 (0=Normal, 1=Easy, 2=Hard)
 }
 
@@ -113,18 +125,19 @@ func DefaultDaifugoConfig() DaifugoConfig {
 	return DaifugoConfig{
 		JokerCount:          DaifugoJokerCount,
 		EightCutEnabled:     true,
-		SuitLockEnabled:     true,
+		SuitLockMode:        DaifugoSuitLockFull,
 		ElevenBackEnabled:   true,
 		SequenceEnabled:     true,
 		CardExchangeEnabled: true,
 		FiveSkipEnabled:     false,
+		FiveSkipCount:       1,
 		SevenPassEnabled:    false,
 		TenDiscardEnabled:   false,
 		SpadeThreeEnabled:   false,
 		CapitalFallEnabled:  false,
 		NineReverseEnabled:  false,
 		CoupDetatEnabled:    false,
-		IntenseLockEnabled:  false,
+		NumberLockEnabled:   false,
 		SandstormEnabled:    false,
 		EmperorEnabled:      false,
 	}
@@ -475,7 +488,9 @@ func (d *Daifugo) triggerElevenBack(cards []*Card) {
 
 // updateSuitLock スート縛りの更新
 func (d *Daifugo) updateSuitLock(cards []*Card) {
-	if !d.config.SuitLockEnabled {
+	if d.config.SuitLockMode == DaifugoSuitLockNone {
+		// スート縛りなしでも数縛りは独立して発動可能
+		d.updateNumberLock(cards)
 		return
 	}
 	if len(d.tableCards) == 0 {
@@ -491,18 +506,26 @@ func (d *Daifugo) updateSuitLock(cards []*Card) {
 		if !d.suitLocked {
 			d.suitLocked = true
 			d.lockedSuit = prevSuit
-			// 激シバ: スート縛り発動時に連番かチェック
-			if d.config.IntenseLockEnabled {
-				prevBase := getBaseValue(d.tableCards)
-				newBase := getBaseValue(cards)
-				if prevBase > 0 && newBase > 0 {
-					prevStr := d.cardStrength(prevBase)
-					newStr := d.cardStrength(newBase)
-					if newStr-prevStr == 1 {
-						d.numberLocked = true
-					}
-				}
-			}
+			d.updateNumberLock(cards)
+		}
+	}
+}
+
+// updateNumberLock 数縛り (連番縛り) の更新
+func (d *Daifugo) updateNumberLock(cards []*Card) {
+	if !d.config.NumberLockEnabled {
+		return
+	}
+	if len(d.tableCards) == 0 {
+		return
+	}
+	prevBase := getBaseValue(d.tableCards)
+	newBase := getBaseValue(cards)
+	if prevBase > 0 && newBase > 0 {
+		prevStr := d.cardStrength(prevBase)
+		newStr := d.cardStrength(newBase)
+		if newStr-prevStr == 1 {
+			d.numberLocked = true
 		}
 	}
 }
@@ -521,6 +544,16 @@ func (d *Daifugo) getNonJokerSuit(cards []*Card) int {
 		}
 	}
 	return suit
+}
+
+// hasMatchingSuit カード配列に指定スートのカードが少なくとも1枚含まれるか判定 (片縛り用)
+func (d *Daifugo) hasMatchingSuit(cards []*Card, suit int) bool {
+	for _, c := range cards {
+		if !IsJoker(c) && c.GetDesign() == suit {
+			return true
+		}
+	}
+	return false
 }
 
 // countFinished 既に上がっているプレイヤー数を返す
@@ -734,10 +767,18 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 	}
 
 	// スート縛りチェック
-	if d.suitLocked && d.config.SuitLockEnabled {
-		newSuit := d.getNonJokerSuit(cards)
-		if newSuit > 0 && newSuit != d.lockedSuit {
-			return false
+	if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
+		if d.config.SuitLockMode == DaifugoSuitLockFull {
+			// 両縛り: 全てのカードがロックされたスートに一致する必要がある
+			newSuit := d.getNonJokerSuit(cards)
+			if newSuit > 0 && newSuit != d.lockedSuit {
+				return false
+			}
+		} else {
+			// 片縛り: 少なくとも1枚がロックされたスートに一致する必要がある
+			if !d.hasMatchingSuit(cards, d.lockedSuit) {
+				return false
+			}
 		}
 	}
 
@@ -757,9 +798,9 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 		playStrength = d.cardStrength(playBase)
 	}
 
-	// 激シバ: 連番縛り発動中は強さの差が1でなければ出せない
+	// 数縛り: 連番縛り発動中は強さの差が1でなければ出せない
 	// ジョーカーは連番縛りをバイパスし、通常の強さ比較のみ適用
-	if d.numberLocked && d.config.IntenseLockEnabled && d.config.SuitLockEnabled {
+	if d.numberLocked && d.config.NumberLockEnabled {
 		if playBase > 0 && tableBase > 0 {
 			return playStrength-tableStrength == 1
 		}
@@ -864,9 +905,10 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	eightCut := d.triggerEightCut(cards)
 	sandstorm := d.triggerSandstorm(cards)
 
-	fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
+	fiveSkipCount := d.triggerFiveSkipIfNeeded(cards, isSeq)
 	d.triggerSevenPassIfNeeded(cards, isSeq)
 	d.triggerTenDiscardIfNeeded(cards, isSeq)
+	d.triggerQueenBomberIfNeeded(cards, isSeq)
 
 	if d.pendingActionType != DaifugoPendingNone {
 		return
@@ -875,7 +917,7 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	if !d.checkGameEnd() {
 		if (!eightCut && !sandstorm && !emperor && !spadeThree) || d.players[playerIdx].GetIsFinished() {
 			d.advanceTurn()
-			if fiveSkip && !d.gameEndFlag {
+			for i := 0; i < fiveSkipCount && !d.gameEndFlag; i++ {
 				d.advanceTurn()
 			}
 			d.checkPassClear()
@@ -1048,7 +1090,7 @@ func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStreng
 				continue
 			}
 			// スート縛りチェック
-			if d.suitLocked && d.config.SuitLockEnabled {
+			if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
 				suit := player.GetCard(i).GetDesign()
 				if suit != d.lockedSuit {
 					i = j
@@ -1068,7 +1110,7 @@ func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStreng
 		if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
 			if count+len(jokerIndices) >= needed {
 				// スート縛りチェック
-				if d.suitLocked && d.config.SuitLockEnabled {
+				if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
 					suit := player.GetCard(i).GetDesign()
 					if suit != d.lockedSuit {
 						i = j
@@ -1414,17 +1456,35 @@ func (d *Daifugo) findEmperorPlay(player *DaifugoPlayer) []int {
 	return nil
 }
 
-// triggerFiveSkipIfNeeded 5飛びチェック: 非ジョーカーの5が出されたら次のプレイヤーをスキップ（階段時は無効）
-func (d *Daifugo) triggerFiveSkipIfNeeded(cards []*Card, isSeq bool) bool {
+// triggerFiveSkipIfNeeded 5飛びチェック: 非ジョーカーの5が出されたらプレイヤーをスキップ（階段時は無効）
+// 戻り値はスキップ回数 (0 = スキップなし)
+func (d *Daifugo) triggerFiveSkipIfNeeded(cards []*Card, isSeq bool) int {
 	if !d.config.FiveSkipEnabled || isSeq {
-		return false
+		return 0
 	}
+	fiveCount := 0
 	for _, c := range cards {
 		if !IsJoker(c) && c.GetValue() == 5 {
-			return true
+			fiveCount++
 		}
 	}
-	return false
+	if fiveCount == 0 {
+		return 0
+	}
+	skipCount := d.config.FiveSkipCount
+	if skipCount < 1 {
+		skipCount = 1
+	}
+	totalSkips := skipCount * fiveCount
+	// アクティブプレイヤー数 - 1 でキャップ (無限ループ防止)
+	maxSkips := d.getActivePlayerCnt() - 1
+	if maxSkips < 0 {
+		maxSkips = 0
+	}
+	if totalSkips > maxSkips {
+		totalSkips = maxSkips
+	}
+	return totalSkips
 }
 
 // triggerSevenPassIfNeeded 7渡しチェック: 非ジョーカーの7が出されたらペンディングアクションをセット
@@ -1469,6 +1529,25 @@ func (d *Daifugo) triggerTenDiscardIfNeeded(cards []*Card, isSeq bool) {
 	}
 }
 
+// triggerQueenBomberIfNeeded 12ボンバーチェック: 非ジョーカーのQ(12)がグループプレイで出されたらペンディングアクションをセット
+func (d *Daifugo) triggerQueenBomberIfNeeded(cards []*Card, isSeq bool) {
+	if !d.config.QueenBomberEnabled || isSeq {
+		return
+	}
+	player := d.players[d.currentTurn]
+	// 出した後に手札が残っている場合のみ
+	if player.GetCardsSize() == 0 {
+		return
+	}
+	for _, c := range cards {
+		if !IsJoker(c) && c.GetValue() == 12 {
+			d.pendingActionType = DaifugoPendingQueenBomber
+			d.pendingActionTarget = -1
+			return
+		}
+	}
+}
+
 // isSpadeThreeCounter スペ3返し判定: 場がジョーカー1枚でスペードの3を1枚出す場合
 func (d *Daifugo) isSpadeThreeCounter(cards []*Card) bool {
 	if !d.config.SpadeThreeEnabled {
@@ -1488,6 +1567,28 @@ func (d *Daifugo) isSpadeThreeCounter(cards []*Card) bool {
 
 // resolvePendingAction ペンディングアクションを解決する
 func (d *Daifugo) resolvePendingAction(indices []int) error {
+	// 12ボンバーは indices[0] をカード値 (1-13) として解釈する
+	if d.pendingActionType == DaifugoPendingQueenBomber {
+		if len(indices) != 1 {
+			return NewDomainError(ErrInvalidPlay, "queen bomber requires exactly 1 card value")
+		}
+		v := indices[0]
+		if v < 1 || v > 13 {
+			return NewDomainError(ErrInvalidCard, fmt.Sprintf("card value %d out of range (1-13)", v))
+		}
+		d.resolveQueenBomber(v)
+		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
+
+		d.pendingActionType = DaifugoPendingNone
+		d.pendingActionTarget = -1
+
+		if !d.checkGameEnd() {
+			d.advanceTurn()
+			d.checkPassClear()
+		}
+		return nil
+	}
+
 	if len(indices) != 1 {
 		return NewDomainError(ErrInvalidPlay, "pending action requires exactly 1 card index")
 	}
@@ -1517,6 +1618,16 @@ func (d *Daifugo) resolvePendingAction(indices []int) error {
 	d.advanceTurn()
 	d.checkPassClear()
 	return nil
+}
+
+// resolveQueenBomber 12ボンバー解決: 全プレイヤーから指定値のカードを除去する
+func (d *Daifugo) resolveQueenBomber(value int) {
+	for _, p := range d.players {
+		if p.GetIsFinished() {
+			continue
+		}
+		p.RemoveCardsByValue(value)
+	}
 }
 
 // findStrongestNonJokerIndex プレイヤーの手札中の最強の非ジョーカーカードのインデックスを返す (末尾から探索)
@@ -1560,13 +1671,43 @@ func (d *Daifugo) cpuResolvePendingAction() {
 		removed := player.RemoveCards([]int{idx})
 		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
 		d.cpuActions = append(d.cpuActions, action)
+	case DaifugoPendingQueenBomber:
+		// 12ボンバー: 対戦相手から最も多くカードを除去できる値を選ぶ
+		bestValue := d.cpuChooseQueenBomberValue(player)
+		d.resolveQueenBomber(bestValue)
+		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
+		d.cpuActions = append(d.cpuActions, action)
 	}
 
 	d.pendingActionType = DaifugoPendingNone
 	d.pendingActionTarget = -1
 
+	if d.checkGameEnd() {
+		return
+	}
+
 	d.advanceTurn()
 	d.checkPassClear()
+}
+
+// cpuChooseQueenBomberValue CPUが12ボンバーで選ぶ値を決定する (対戦相手から最も多くカードを除去できる値)
+func (d *Daifugo) cpuChooseQueenBomberValue(self *DaifugoPlayer) int {
+	bestValue := 1
+	bestCount := 0
+	for v := 1; v <= 13; v++ {
+		count := 0
+		for _, p := range d.players {
+			if p == self || p.GetIsFinished() {
+				continue
+			}
+			count += p.CountCardsByValue(v)
+		}
+		if count > bestCount {
+			bestCount = count
+			bestValue = v
+		}
+	}
+	return bestValue
 }
 
 // applyCapitalFall 都落ちを適用する

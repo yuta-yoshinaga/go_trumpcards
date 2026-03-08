@@ -206,22 +206,24 @@ export interface DaifugoAction {
 export interface DaifugoConfig {
   jokerCount: number;
   eightCutEnabled: boolean;
-  suitLockEnabled: boolean;
+  suitLockMode: number;
   elevenBackEnabled: boolean;
   sequenceEnabled: boolean;
   cardExchangeEnabled: boolean;
   fiveSkipEnabled: boolean;
+  fiveSkipCount: number;
   sevenPassEnabled: boolean;
   tenDiscardEnabled: boolean;
   spadeThreeEnabled: boolean;
   capitalFallEnabled: boolean;
   nineReverseEnabled: boolean;
   coupDetatEnabled: boolean;
-  intenseLockEnabled: boolean;
+  numberLockEnabled: boolean;
   sandstormEnabled: boolean;
   emperorEnabled: boolean;
   sequenceRevolutionEnabled: boolean;
   illegalFinishEnabled: boolean;
+  queenBomberEnabled: boolean;
   cpuDifficulty: number;
 }
 
@@ -251,7 +253,7 @@ export interface DaifugoResponse {
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
-  pendingAction: 'none' | 'sevenPass' | 'tenDiscard';
+  pendingAction: 'none' | 'sevenPass' | 'tenDiscard' | 'queenBomber';
   pendingActionTarget: number;
   reverseDirection: boolean;
   numberLocked: boolean;

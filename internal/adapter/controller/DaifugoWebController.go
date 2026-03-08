@@ -11,22 +11,24 @@ import (
 type DaifugoWebConfig struct {
 	JokerCount                int  `json:"jokerCount"`
 	EightCutEnabled           bool `json:"eightCutEnabled"`
-	SuitLockEnabled           bool `json:"suitLockEnabled"`
+	SuitLockMode              int  `json:"suitLockMode"`
 	ElevenBackEnabled         bool `json:"elevenBackEnabled"`
 	SequenceEnabled           bool `json:"sequenceEnabled"`
 	CardExchangeEnabled       bool `json:"cardExchangeEnabled"`
 	FiveSkipEnabled           bool `json:"fiveSkipEnabled"`
+	FiveSkipCount             int  `json:"fiveSkipCount"`
 	SevenPassEnabled          bool `json:"sevenPassEnabled"`
 	TenDiscardEnabled         bool `json:"tenDiscardEnabled"`
 	SpadeThreeEnabled         bool `json:"spadeThreeEnabled"`
 	CapitalFallEnabled        bool `json:"capitalFallEnabled"`
 	NineReverseEnabled        bool `json:"nineReverseEnabled"`
 	CoupDetatEnabled          bool `json:"coupDetatEnabled"`
-	IntenseLockEnabled        bool `json:"intenseLockEnabled"`
+	NumberLockEnabled         bool `json:"numberLockEnabled"`
 	SandstormEnabled          bool `json:"sandstormEnabled"`
 	EmperorEnabled            bool `json:"emperorEnabled"`
 	SequenceRevolutionEnabled bool `json:"sequenceRevolutionEnabled"`
 	IllegalFinishEnabled      bool `json:"illegalFinishEnabled"`
+	QueenBomberEnabled        bool `json:"queenBomberEnabled"`
 	CpuDifficulty             int  `json:"cpuDifficulty"`
 }
 
@@ -81,7 +83,7 @@ type DaifugoWebOutput struct {
 	Message             string                            `json:"message"`
 	MessageCode         string                            `json:"messageCode,omitempty"`
 	MessageParams       map[string]string                 `json:"messageParams,omitempty"`
-	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"
+	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"|"queenBomber"
 	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
 	ReverseDirection    bool                              `json:"reverseDirection"`
 	NumberLocked        bool                              `json:"numberLocked"`
@@ -142,22 +144,24 @@ func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
 	return domain.DaifugoConfig{
 		JokerCount:                c.JokerCount,
 		EightCutEnabled:           c.EightCutEnabled,
-		SuitLockEnabled:           c.SuitLockEnabled,
+		SuitLockMode:              domain.DaifugoSuitLockMode(c.SuitLockMode),
 		ElevenBackEnabled:         c.ElevenBackEnabled,
 		SequenceEnabled:           c.SequenceEnabled,
 		CardExchangeEnabled:       c.CardExchangeEnabled,
 		FiveSkipEnabled:           c.FiveSkipEnabled,
+		FiveSkipCount:             c.FiveSkipCount,
 		SevenPassEnabled:          c.SevenPassEnabled,
 		TenDiscardEnabled:         c.TenDiscardEnabled,
 		SpadeThreeEnabled:         c.SpadeThreeEnabled,
 		CapitalFallEnabled:        c.CapitalFallEnabled,
 		NineReverseEnabled:        c.NineReverseEnabled,
 		CoupDetatEnabled:          c.CoupDetatEnabled,
-		IntenseLockEnabled:        c.IntenseLockEnabled,
+		NumberLockEnabled:         c.NumberLockEnabled,
 		SandstormEnabled:          c.SandstormEnabled,
 		EmperorEnabled:            c.EmperorEnabled,
 		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
 		IllegalFinishEnabled:      c.IllegalFinishEnabled,
+		QueenBomberEnabled:        c.QueenBomberEnabled,
 		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
 	}
 }

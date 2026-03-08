@@ -10,7 +10,6 @@ export function DaifugoSettingsPanel({ config, onChange }: SettingsPanelProps) {
   const { t } = useTranslation('daifugo');
   const boolRules: { key: keyof DaifugoConfigInput; label: string }[] = [
     { key: 'eightCutEnabled', label: t('settings.eightCut') },
-    { key: 'suitLockEnabled', label: t('settings.suitLock') },
     { key: 'elevenBackEnabled', label: t('settings.elevenBack') },
     { key: 'sequenceEnabled', label: t('settings.sequence') },
     { key: 'cardExchangeEnabled', label: t('settings.cardExchange') },
@@ -21,11 +20,12 @@ export function DaifugoSettingsPanel({ config, onChange }: SettingsPanelProps) {
     { key: 'capitalFallEnabled', label: t('settings.capitalFall') },
     { key: 'nineReverseEnabled', label: t('settings.nineReverse') },
     { key: 'coupDetatEnabled', label: t('settings.coupDetat') },
-    { key: 'intenseLockEnabled', label: t('settings.intenseLock') },
+    { key: 'numberLockEnabled', label: t('settings.numberLock') },
     { key: 'sandstormEnabled', label: t('settings.sandstorm') },
     { key: 'emperorEnabled', label: t('settings.emperor') },
     { key: 'sequenceRevolutionEnabled', label: t('settings.sequenceRevolution') },
     { key: 'illegalFinishEnabled', label: t('settings.illegalFinish') },
+    { key: 'queenBomberEnabled', label: t('settings.queenBomber') },
   ];
   return (
     <details className="mb-2">
@@ -60,6 +60,38 @@ export function DaifugoSettingsPanel({ config, onChange }: SettingsPanelProps) {
               <option value={1}>{t('settings.difficultyEasy')}</option>
               <option value={0}>{t('settings.difficultyNormal')}</option>
               <option value={2}>{t('settings.difficultyHard')}</option>
+            </select>
+          </span>
+          <span>
+            <label htmlFor="suit-lock-mode" className="mr-2">
+              {t('settings.suitLockMode')}
+            </label>
+            <select
+              id="suit-lock-mode"
+              value={config.suitLockMode}
+              onChange={(e) => onChange('suitLockMode', Number(e.target.value))}
+              className="bg-black/50 text-white rounded px-1"
+            >
+              <option value={0}>{t('settings.suitLockNone')}</option>
+              <option value={1}>{t('settings.suitLockPartial')}</option>
+              <option value={2}>{t('settings.suitLockFull')}</option>
+            </select>
+          </span>
+          <span>
+            <label htmlFor="five-skip-count" className="mr-2">
+              {t('settings.fiveSkipCount')}
+            </label>
+            <select
+              id="five-skip-count"
+              value={config.fiveSkipCount}
+              onChange={(e) => onChange('fiveSkipCount', Number(e.target.value))}
+              className="bg-black/50 text-white rounded px-1"
+            >
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
             </select>
           </span>
         </div>

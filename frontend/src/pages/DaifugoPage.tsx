@@ -46,6 +46,8 @@ export function DaifugoPage() {
   } else if (pendingAction === 'tenDiscard') {
     playButtonLabel = t('discardButton');
     pendingBanner = t('tenDiscardBanner');
+  } else if (pendingAction === 'queenBomber') {
+    pendingBanner = t('queenBomberBanner');
   }
 
   const actionDescription = (players: { id: number; isHuman: boolean }[], action: DaifugoAction): string => {
@@ -91,6 +93,21 @@ export function DaifugoPage() {
         {pendingBanner && (
           <div className="bg-yellow-700/80 rounded-[10px] text-white text-center py-2 px-4 text-[0.95em] font-bold my-2">
             {pendingBanner}
+            {pendingAction === 'queenBomber' && isHumanTurn && (
+              <div className="flex flex-wrap justify-center gap-1 mt-2">
+                {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    className={`${btnPrimary} min-w-[36px] text-sm`}
+                    disabled={loading}
+                    onClick={() => exec('play', [v])}
+                  >
+                    {v === 1 ? 'A' : v === 11 ? 'J' : v === 12 ? 'Q' : v === 13 ? 'K' : String(v)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -178,7 +195,13 @@ export function DaifugoPage() {
           <button
             type="button"
             className={`${btnSuccess} min-w-[120px]`}
-            disabled={loading || !isHumanTurn || state.gameEndFlag || selectedIndices.length === 0}
+            disabled={
+              loading ||
+              !isHumanTurn ||
+              state.gameEndFlag ||
+              selectedIndices.length === 0 ||
+              pendingAction === 'queenBomber'
+            }
             onClick={() =>
               exec(
                 'play',

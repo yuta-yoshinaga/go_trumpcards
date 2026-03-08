@@ -664,3 +664,24 @@ func TestDaifugo_findBestSequencePlayHard_UrgentNoJokerFill(t *testing.T) {
 	result := d.findBestSequencePlayHard(players[1])
 	assert.Nil(t, result) // Can't make a valid sequence
 }
+
+func TestDaifugo_triggerFiveSkipIfNeeded_maxSkipsNegative(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{FiveSkipEnabled: true, FiveSkipCount: 1}
+	d := NewDaifugo(tc, players, cfg)
+
+	// All players finished → getActivePlayerCnt() == 0 → maxSkips = -1
+	for _, p := range players {
+		p.SetIsFinished(true)
+	}
+
+	cards := []*Card{NewCard(CardDesignSpade, 5, false)}
+	skipCount := d.triggerFiveSkipIfNeeded(cards, false)
+	assert.Equal(t, 0, skipCount) // capped to 0
+}
