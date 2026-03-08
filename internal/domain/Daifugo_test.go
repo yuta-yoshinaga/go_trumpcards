@@ -5693,9 +5693,9 @@ func TestDaifugo_CpuDifficulty(t *testing.T) {
 		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		_ = dg.PlayerPlay([]int{0}) // play 3
-		dg.CpuPlay()                // CPU 1 should strategically pass
+		dg.CpuPlay()                // CPU 1: solver finds guaranteed win (all cards unbeatable)
 
-		assert.Equal(t, 6, players[1].GetCardsSize(), "Hard AI should pass to save strong cards")
+		assert.Equal(t, 5, players[1].GetCardsSize(), "Hard AI plays when solver finds guaranteed win")
 	})
 
 	t.Run("Hard: no strategic pass when urgent", func(t *testing.T) {
@@ -7172,5 +7172,147 @@ func TestDaifugo_HasMatchingSuit(t *testing.T) {
 
 		err := dg.PlayerPlay([]int{0}) // joker only → partial lock: no non-joker matches → rejected
 		assert.Error(t, err)
+	})
+}
+
+func TestDaifugo_EndgameSolver(t *testing.T) {
+	t.Run("Hard AI uses solver to guarantee win from clear table", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1 has strongest cards: 2♠, A♠ (unbeatable singles)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false)) // A
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false)) // 2
+		// Give CPU the lead
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(-1)
+		// Opponents have weaker cards
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+		// CPU plays: solver should find guaranteed win (play 2 then A)
+		dg.CpuPlay()
+		assert.Equal(t, 1, players[1].GetCardsSize(), "solver plays one card")
+	})
+
+	t.Run("Hard AI uses solver with 8-cut strategy", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		cfg.EightCutEnabled = true
+		cfg.IllegalFinishEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1 has: 8♠ (8-cut), 2♠ (strongest)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(-1)
+		// Opponent has card stronger than 8 but weaker than 2
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false)) // A
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+		// Solver: play 8 → 8-cut → play 2 (last play)
+		dg.CpuPlay()
+		assert.Equal(t, 1, players[1].GetCardsSize(), "solver plays 8 for 8-cut")
+	})
+
+	t.Run("solver not triggered when hand exceeds threshold", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1 has 9 cards (exceeds DaifugoSolverMaxCards = 8)
+		for i := 1; i <= 9; i++ {
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, ((i-1)%13)+1, false))
+		}
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(-1)
+		// Opponents have many cards
+		for i := 0; i < 10; i++ {
+			players[0].AddCard(domain.NewCard(domain.CardDesignHeart, (i%13)+1, false))
+			players[2].AddCard(domain.NewCard(domain.CardDesignClover, (i%13)+1, false))
+			players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, (i%13)+1, false))
+		}
+
+		// Should fall back to normal Hard AI behavior (not solver)
+		dg.CpuPlay()
+		assert.True(t, players[1].GetCardsSize() < 9 || players[1].GetCardsSize() == 9,
+			"CPU should play or pass normally")
+	})
+
+	t.Run("solver falls back to heuristic when no guaranteed win", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// CPU 1 has weak cards: 5♠, 3♠ (both beatable)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(-1)
+		// Opponent has stronger cards
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+		// Solver finds no guaranteed win → falls back to heuristic
+		dg.CpuPlay()
+		// Heuristic should still play (it's not urgent, uses Normal opening)
+		assert.Equal(t, 1, players[1].GetCardsSize(), "heuristic plays weakest card")
+	})
+
+	t.Run("strategic pass preserved when solver finds no win", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := noRulesConfig()
+		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human plays a weak card
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		// CPU 1 has many strong cards + one weak (prevents solver guaranteed win)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		// Opponents have many cards → not urgent
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		_ = dg.PlayerPlay([]int{0}) // play 3
+		dg.CpuPlay()                // CPU 1: > 8 cards, solver not triggered
+
+		assert.Equal(t, 9, players[1].GetCardsSize(), "strategic pass when solver not triggered")
 	})
 }

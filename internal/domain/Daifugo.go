@@ -1334,7 +1334,12 @@ func (d *Daifugo) findBestPlayEasy(player *DaifugoPlayer) []int {
 }
 
 // findBestPlayHard 難しい難易度: 対戦相手の手札状況を考慮したヒューリスティックAI
+// 終盤では「完全読み」ソルバーを使用して確実に上がれる手順を計算する
 func (d *Daifugo) findBestPlayHard(player *DaifugoPlayer) []int {
+	// 完全読み: 終盤で確実に上がれる手順があればそれを使う
+	if indices := d.trySolveEndgame(player); indices != nil {
+		return indices
+	}
 	if d.tableCards == nil {
 		return d.findHardOpeningPlay(player)
 	}
