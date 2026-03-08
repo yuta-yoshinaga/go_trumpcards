@@ -307,11 +307,7 @@ export function PokerPage() {
             </select>
           </label>
           <label className="text-white text-sm flex items-center gap-1">
-            <input
-              type="checkbox"
-              checked={isLowball}
-              onChange={(e) => setIsLowball(e.target.checked)}
-            />
+            <input type="checkbox" checked={isLowball} onChange={(e) => setIsLowball(e.target.checked)} />
             {t('lowball')}
           </label>
           <button
