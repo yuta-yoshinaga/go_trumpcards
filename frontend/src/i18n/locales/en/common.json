@@ -51,7 +51,8 @@
     "dealer": "Dealer:",
     "networkError": "A network error occurred. Please try again.",
     "chipsWon": "+{{amount}} chips",
-    "kicker": "Kicker: {{kickers}}"
+    "kicker": "Kicker: {{kickers}}",
+    "mucked": "Mucked"
   },
   "messageCode": {
     "blackjack.result.draw": "It is a draw.",
@@ -70,6 +71,8 @@
     "holdem.result.gameOver": "Game over.",
     "holdem.result.win": "You are the winner.",
     "holdem.result.folded": "You folded.",
-    "holdem.result.lose": "You lose."
+    "holdem.result.lose": "You lose.",
+    "holdem.result.mucked": "You mucked.",
+    "holdem.muck.prompt": "Muck or show your hand."
   }
 }

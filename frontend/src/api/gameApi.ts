@@ -186,7 +186,9 @@ export const holdemApi = {
       | 'rebuy'
       | 'skiprebuy'
       | 'addon'
-      | 'skipaddon',
+      | 'skipaddon'
+      | 'muck'
+      | 'show',
     amount?: number,
     config?: HoldemConfigInput,
   ) =>

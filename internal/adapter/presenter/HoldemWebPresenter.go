@@ -47,6 +47,7 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	resObj.RebuyPeriodHands = cfg.RebuyPeriodHands
 	resObj.AddonAfterHand = cfg.AddonAfterHand
 	resObj.RebuyPhaseType = h.GetRebuyPhaseType()
+	resObj.MuckAvailable = h.IsMuckAvailable()
 
 	// コミュニティカード
 	resObj.CommunityCards = make([]*controller.WebOutputCard, 0)
@@ -123,10 +124,17 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 			HandName:  r.HandName,
 			Kickers:   domain.FormatKickers(r.Kickers),
 			WonAmount: r.WonAmount,
+			Mucked:    r.Mucked,
 			BestHand:  make([]*controller.WebOutputCard, 0),
 		}
-		for _, card := range r.BestHand {
-			result.BestHand = append(result.BestHand, cardToOutput(card))
+		if r.Mucked {
+			result.HandRank = 0
+			result.HandName = ""
+			result.Kickers = ""
+		} else {
+			for _, card := range r.BestHand {
+				result.BestHand = append(result.BestHand, cardToOutput(card))
+			}
 		}
 		resObj.RoundResults = append(resObj.RoundResults, result)
 	}
@@ -134,6 +142,9 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	// メッセージ
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
+	} else if h.IsMuckAvailable() {
+		resObj.Message = "Muck or show your hand."
+		resObj.MessageCode = "holdem.muck.prompt"
 	} else if h.GetGameEndFlag() {
 		msg, code := hwp.buildResultMessage(h)
 		resObj.Message = msg
@@ -162,6 +173,13 @@ func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) (stri
 	for i := 0; i < h.GetPlayerCnt(); i++ {
 		if h.GetPlayer(i).GetIsHuman() && h.GetPlayer(i).GetFolded() {
 			return "You folded.", "holdem.result.folded"
+		}
+	}
+
+	// Human mucked
+	for _, r := range results {
+		if h.GetPlayer(r.PlayerIdx).GetIsHuman() && r.Mucked {
+			return "You mucked.", "holdem.result.mucked"
 		}
 	}
 

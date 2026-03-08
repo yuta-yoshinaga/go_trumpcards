@@ -420,6 +420,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetRebuyCounts").Return([]int{0})
 		gameMock.On("GetAddonUsed").Return([]bool{false})
 		gameMock.On("GetRebuyPhaseType").Return(0)
+		gameMock.On("IsMuckAvailable").Return(false)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(99) // out of range
@@ -454,6 +455,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetRebuyCounts").Return([]int{0})
 		gameMock.On("GetAddonUsed").Return([]bool{false})
 		gameMock.On("GetRebuyPhaseType").Return(0)
+		gameMock.On("IsMuckAvailable").Return(false)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(-1) // negative
@@ -725,5 +727,122 @@ func TestHoldemWebPresenter_Output_BettingLimitFields(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 6, out.TableSize)
 		assert.Equal(t, 6, len(out.Players))
+	})
+}
+
+func TestHoldemWebPresenter_Output_MuckFields(t *testing.T) {
+	p := presenter.NewHoldemWebPresenter()
+
+	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.HoldemPlayer{
+			domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
+		}
+		h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+		return h, players
+	}
+
+	t.Run("muckAvailable true when showdown and human lost", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.True(t, out.MuckAvailable)
+	})
+
+	t.Run("muckAvailable false when not showdown", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.False(t, out.MuckAvailable)
+	})
+
+	t.Run("mucked result: handRank=0 handName empty bestHand empty mucked=true", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 13}, WonAmount: 0, Mucked: true, BestHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+			}},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 0, out.RoundResults[0].HandRank)
+		assert.Equal(t, "", out.RoundResults[0].HandName)
+		assert.Equal(t, "", out.RoundResults[0].Kickers)
+		assert.Len(t, out.RoundResults[0].BestHand, 0)
+		assert.True(t, out.RoundResults[0].Mucked)
+		// non-mucked result is normal
+		assert.Equal(t, domain.PokerHandFlush, out.RoundResults[1].HandRank)
+		assert.False(t, out.RoundResults[1].Mucked)
+	})
+
+	t.Run("muck prompt message when IsMuckAvailable", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "Muck or show your hand.", out.Message)
+		assert.Equal(t, "holdem.muck.prompt", out.MessageCode)
+	})
+
+	t.Run("error takes priority over muck prompt", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+		})
+
+		result := p.Output(h, errors.New("some error"))
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "some error", out.Message)
+		assert.Equal(t, "", out.MessageCode)
+	})
+
+	t.Run("You mucked message in buildResultMessage", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetGameEndFlag(true)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "You mucked.", out.Message)
+		assert.Equal(t, "holdem.result.mucked", out.MessageCode)
 	})
 }

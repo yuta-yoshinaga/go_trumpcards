@@ -551,3 +551,56 @@ func TestHoldemCuiPresenter_Output_TableSize(t *testing.T) {
 		assert.Contains(t, result, "テーブル: 6-max")
 	})
 }
+
+func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("muck prompt displayed during showdown when IsMuckAvailable", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		// IsMuckAvailable returns true when phase=SHOWDOWN and human has wonAmount=0
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "マックしますか? (m=マック / sh=ショー)")
+	})
+
+	t.Run("muck prompt not displayed when not available", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "マックしますか?")
+	})
+
+	t.Run("mucked result displayed as マック", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "You: マック")
+		assert.NotContains(t, result, "You: One Pair")
+	})
+
+	t.Run("results shown in showdown phase", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "[結果]")
+		assert.Contains(t, result, "You: Flush")
+	})
+}

@@ -590,7 +590,11 @@ func TestHoldem_Showdown(t *testing.T) {
 	err := h.PlayerAction(HoldemActionCheck, 0)
 	assert.NoError(t, err)
 
-	// Game should be at showdown or end
+	// Human lost (player 3 has straight) → muck choice available
+	if h.IsMuckAvailable() {
+		err = h.ShowHand()
+		assert.NoError(t, err)
+	}
 	assert.True(t, h.GetGameEndFlag())
 	assert.True(t, len(h.GetRoundResults()) > 0)
 	// Player 0 has pair of aces → kickers should be populated
@@ -639,6 +643,12 @@ func TestHoldem_Showdown_Kickers(t *testing.T) {
 	})
 
 	err := h.PlayerAction(HoldemActionCheck, 0)
+	assert.NoError(t, err)
+	// Human lost → stays at SHOWDOWN for muck choice
+	assert.False(t, h.GetGameEndFlag())
+	assert.True(t, h.IsMuckAvailable())
+	// Muck and verify game ends
+	err = h.Muck()
 	assert.NoError(t, err)
 	assert.True(t, h.GetGameEndFlag())
 
@@ -2165,4 +2175,99 @@ func TestHoldem_Reset_RebuyEnabled_OnlyCpuBusted_NoHumanPrompt(t *testing.T) {
 
 func TestHoldem_HoldemPhaseRebuy_Constant(t *testing.T) {
 	assert.Equal(t, 7, HoldemPhaseRebuy)
+}
+
+// --- Muck / ShowHand / IsMuckAvailable tests ---
+
+func setupHoldemForMuck() *Holdem {
+	h := newTestHoldem()
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.setStartingChips([]int{1000, 1000, 1000, 1000})
+	h.SetPhase(HoldemPhaseShowdown)
+	h.SetDealerIdx(0)
+	// Human lost (wonAmount == 0)
+	h.SetRoundResults([]HoldemResult{
+		{PlayerIdx: 0, HandRank: 0, HandName: "High Card", WonAmount: 0},
+		{PlayerIdx: 1, HandRank: 1, HandName: "One Pair", WonAmount: 200},
+	})
+	return h
+}
+
+func TestHoldem_Muck_WrongPhase(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	err := h.Muck()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_ShowHand_WrongPhase(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	err := h.ShowHand()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_Muck_SetsMuckedAndFinalizes(t *testing.T) {
+	h := setupHoldemForMuck()
+	dealerBefore := h.GetDealerIdx()
+
+	err := h.Muck()
+	assert.NoError(t, err)
+
+	// Phase should transition to END
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+	// Dealer should rotate
+	assert.Equal(t, (dealerBefore+1)%h.GetPlayerCnt(), h.GetDealerIdx())
+	// Human result should be mucked
+	for _, r := range h.GetRoundResults() {
+		if h.GetPlayer(r.PlayerIdx).GetIsHuman() {
+			assert.True(t, r.Mucked)
+		}
+	}
+}
+
+func TestHoldem_ShowHand_FinalizesWithoutMuck(t *testing.T) {
+	h := setupHoldemForMuck()
+	dealerBefore := h.GetDealerIdx()
+
+	err := h.ShowHand()
+	assert.NoError(t, err)
+
+	// Phase should transition to END
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+	// Dealer should rotate
+	assert.Equal(t, (dealerBefore+1)%h.GetPlayerCnt(), h.GetDealerIdx())
+	// Human result should NOT be mucked
+	for _, r := range h.GetRoundResults() {
+		if h.GetPlayer(r.PlayerIdx).GetIsHuman() {
+			assert.False(t, r.Mucked)
+		}
+	}
+}
+
+func TestHoldem_IsMuckAvailable_NotShowdown(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	assert.False(t, h.IsMuckAvailable())
+}
+
+func TestHoldem_IsMuckAvailable_ShowdownHumanLost(t *testing.T) {
+	h := setupHoldemForMuck()
+	assert.True(t, h.IsMuckAvailable())
+}
+
+func TestHoldem_IsMuckAvailable_ShowdownHumanWon(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhaseShowdown)
+	h.SetRoundResults([]HoldemResult{
+		{PlayerIdx: 0, HandRank: 1, HandName: "One Pair", WonAmount: 200},
+		{PlayerIdx: 1, HandRank: 0, HandName: "High Card", WonAmount: 0},
+	})
+	assert.False(t, h.IsMuckAvailable())
 }

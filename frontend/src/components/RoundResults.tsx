@@ -5,6 +5,7 @@ interface RoundResultEntry {
   handName: string;
   kickers?: string;
   wonAmount: number;
+  mucked?: boolean;
 }
 
 interface RoundResultsProps {
@@ -21,8 +22,8 @@ export function RoundResults({ results, players }: RoundResultsProps) {
       {results.map((r) => (
         <div key={r.playerIdx}>
           {players[r.playerIdx]?.isHuman ? t('player.you') : `CPU ${r.playerIdx}`}
-          {r.handName && `: ${r.handName}`}
-          {r.kickers && ` (${t('label.kicker', { kickers: r.kickers })})`}
+          {r.mucked ? `: ${t('label.mucked')}` : r.handName && `: ${r.handName}`}
+          {!r.mucked && r.kickers && ` (${t('label.kicker', { kickers: r.kickers })})`}
           {r.wonAmount > 0 && (
             <span className="text-yellow-300 ml-1"> {t('label.chipsWon', { amount: r.wonAmount })}</span>
           )}

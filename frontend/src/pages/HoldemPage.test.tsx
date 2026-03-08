@@ -97,6 +97,7 @@ const initState: HoldemResponse = {
   rebuyPeriodHands: 0,
   addonAfterHand: 0,
   addonUsed: [],
+  muckAvailable: false,
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -136,6 +137,7 @@ const preFlopState: HoldemResponse = {
   rebuyPeriodHands: 0,
   addonAfterHand: 0,
   addonUsed: [],
+  muckAvailable: false,
 };
 
 /** PRE_FLOP with outstanding bet: shows call/raise instead of bet/check */
@@ -186,8 +188,8 @@ const showdownState: HoldemResponse = {
   lastBet: 0,
   minRaise: 0,
   roundResults: [
-    { playerIdx: 0, handRank: 1, handName: 'ワンペア', kickers: 'A, Q, 10', bestHand: [], wonAmount: 0 },
-    { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '8', bestHand: [], wonAmount: 200 },
+    { playerIdx: 0, handRank: 1, handName: 'ワンペア', kickers: 'A, Q, 10', bestHand: [], wonAmount: 0, mucked: false },
+    { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '8', bestHand: [], wonAmount: 200, mucked: false },
   ],
   cpuActions: [],
   message: 'CPU 1 の勝ち',
@@ -213,6 +215,7 @@ const showdownState: HoldemResponse = {
   rebuyPeriodHands: 0,
   addonAfterHand: 0,
   addonUsed: [],
+  muckAvailable: false,
 };
 
 /** END (phase 6) — also isShowdown */
@@ -466,8 +469,8 @@ describe('HoldemPage', () => {
     mockExec.mockResolvedValue({
       ...showdownState,
       roundResults: [
-        { playerIdx: 0, handRank: 0, handName: '', kickers: '', bestHand: [], wonAmount: 0 },
-        { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '', bestHand: [], wonAmount: 200 },
+        { playerIdx: 0, handRank: 0, handName: '', kickers: '', bestHand: [], wonAmount: 0, mucked: false },
+        { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '', bestHand: [], wonAmount: 200, mucked: false },
       ],
     });
     renderWithProviders(<HoldemPage />);
@@ -1174,5 +1177,66 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(screen.getByText('プリフロップ')).toBeInTheDocument());
     expect(screen.queryByText(/リバイしますか/)).not.toBeInTheDocument();
     expect(screen.queryByText(/アドオンしますか/)).not.toBeInTheDocument();
+  });
+
+  // ---- muck phase ----
+  it('shows muck controls when phase=SHOWDOWN and muckAvailable=true', async () => {
+    const muckState: HoldemResponse = {
+      ...showdownState,
+      muckAvailable: true,
+    };
+    mockExec.mockResolvedValue(muckState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'マック' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ショー' })).toBeInTheDocument();
+  });
+
+  it('calls muck command when muck button is clicked', async () => {
+    const muckState: HoldemResponse = {
+      ...showdownState,
+      muckAvailable: true,
+    };
+    mockExec.mockResolvedValue(muckState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'マック' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(showdownState);
+    fireEvent.click(screen.getByRole('button', { name: 'マック' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('muck'));
+  });
+
+  it('calls show command when show button is clicked', async () => {
+    const muckState: HoldemResponse = {
+      ...showdownState,
+      muckAvailable: true,
+    };
+    mockExec.mockResolvedValue(muckState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ショー' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(showdownState);
+    fireEvent.click(screen.getByRole('button', { name: 'ショー' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('show'));
+  });
+
+  it('does not show muck controls when muckAvailable is false', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
+    expect(screen.queryByTestId('muck-controls')).not.toBeInTheDocument();
+  });
+
+  it('does not show muck controls in END phase even if muckAvailable is true', async () => {
+    const endMuckState: HoldemResponse = {
+      ...endState,
+      muckAvailable: true,
+    };
+    mockExec.mockResolvedValue(endMuckState);
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText('結果')).toBeInTheDocument());
+    expect(screen.queryByTestId('muck-controls')).not.toBeInTheDocument();
   });
 });

@@ -722,6 +722,52 @@ func TestHoldemWebController_Reset_WithRebuyAddonConfig_InvalidValues(t *testing
 	recorded.CodeIs(200)
 }
 
+// --- muck / show commands ---
+
+func TestHoldemWebController_Muck(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("Muck").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "muck", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_MuckShort(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("Muck").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "m", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_ShowHand(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("ShowHand").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "show", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_ShowHandShort(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("ShowHand").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "sh", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
 func TestHoldemWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)

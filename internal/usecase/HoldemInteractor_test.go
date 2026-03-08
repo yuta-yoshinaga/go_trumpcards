@@ -285,3 +285,55 @@ func TestHoldemInteractor_SkipAddon_Error(t *testing.T) {
 	result := hi.SkipAddon()
 	assert.Equal(t, "skip addon error output", result)
 }
+
+func TestHoldemInteractor_Muck(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	mg.On("Muck").Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("muck output")
+
+	result := hi.Muck()
+	assert.Equal(t, "muck output", result)
+	mg.AssertCalled(t, "Muck")
+}
+
+func TestHoldemInteractor_Muck_Error(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	err := errors.New("muck failed")
+	mg.On("Muck").Return(err)
+	mp.On("Output", mg, err).Return("muck error output")
+
+	result := hi.Muck()
+	assert.Equal(t, "muck error output", result)
+}
+
+func TestHoldemInteractor_ShowHand(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	mg.On("ShowHand").Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("show hand output")
+
+	result := hi.ShowHand()
+	assert.Equal(t, "show hand output", result)
+	mg.AssertCalled(t, "ShowHand")
+}
+
+func TestHoldemInteractor_ShowHand_Error(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	err := errors.New("show hand failed")
+	mg.On("ShowHand").Return(err)
+	mp.On("Output", mg, err).Return("show hand error output")
+
+	result := hi.ShowHand()
+	assert.Equal(t, "show hand error output", result)
+}

@@ -61,4 +61,30 @@ describe('RoundResults', () => {
     render(<RoundResults results={results} players={players} />);
     expect(screen.queryByText(/キッカー/)).not.toBeInTheDocument();
   });
+
+  it('renders "マック" when mucked is true', () => {
+    const results = [{ playerIdx: 0, handName: 'ワンペア', kickers: 'A, Q', wonAmount: 0, mucked: true }];
+    render(<RoundResults results={results} players={players} />);
+    expect(screen.getByText(/マック/)).toBeInTheDocument();
+  });
+
+  it('does not render handName when mucked is true', () => {
+    const results = [{ playerIdx: 0, handName: 'ワンペア', kickers: 'A, Q', wonAmount: 0, mucked: true }];
+    render(<RoundResults results={results} players={players} />);
+    expect(screen.queryByText(/ワンペア/)).not.toBeInTheDocument();
+  });
+
+  it('does not render kickers when mucked is true', () => {
+    const results = [{ playerIdx: 0, handName: 'ワンペア', kickers: 'A, Q', wonAmount: 0, mucked: true }];
+    render(<RoundResults results={results} players={players} />);
+    expect(screen.queryByText(/キッカー/)).not.toBeInTheDocument();
+  });
+
+  it('renders handName and kickers when mucked is false', () => {
+    const results = [{ playerIdx: 0, handName: 'ワンペア', kickers: 'A, Q', wonAmount: 100, mucked: false }];
+    render(<RoundResults results={results} players={players} />);
+    expect(screen.getByText(/ワンペア/)).toBeInTheDocument();
+    expect(screen.getByText(/キッカー: A, Q/)).toBeInTheDocument();
+    expect(screen.queryByText(/マック/)).not.toBeInTheDocument();
+  });
 });

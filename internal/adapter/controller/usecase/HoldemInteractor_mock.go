@@ -58,3 +58,15 @@ func (_m *MockHoldemInteractor) SkipAddon() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// Muck モック
+func (_m *MockHoldemInteractor) Muck() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// ShowHand モック
+func (_m *MockHoldemInteractor) ShowHand() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

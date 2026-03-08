@@ -389,6 +389,7 @@ export interface HoldemResult {
   kickers: string;
   bestHand: Card[];
   wonAmount: number;
+  mucked: boolean;
 }
 
 export interface HoldemSidePot {
@@ -434,4 +435,5 @@ export interface HoldemResponse {
   rebuyPeriodHands: number;
   addonAfterHand: number;
   addonUsed: boolean[];
+  muckAvailable: boolean;
 }

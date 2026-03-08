@@ -124,7 +124,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 
 	// ショーダウン結果
 	results := h.GetRoundResults()
-	if len(results) > 0 && h.GetPhase() == domain.HoldemPhaseEnd {
+	if len(results) > 0 && (h.GetPhase() == domain.HoldemPhaseEnd || h.GetPhase() == domain.HoldemPhaseShowdown) {
 		b.WriteString("==========\n")
 		b.WriteString("[結果]\n")
 		for _, r := range results {
@@ -132,7 +132,9 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			if !h.GetPlayer(r.PlayerIdx).GetIsHuman() {
 				name = fmt.Sprintf("CPU %d", r.PlayerIdx)
 			}
-			if r.HandName != "" {
+			if r.Mucked {
+				fmt.Fprintf(&b, "  %s: マック", name)
+			} else if r.HandName != "" {
 				fmt.Fprintf(&b, "  %s: %s", name, r.HandName)
 				if ks := domain.FormatKickers(r.Kickers); ks != "" {
 					fmt.Fprintf(&b, " (キッカー: %s)", ks)
@@ -145,6 +147,12 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			}
 			b.WriteString("\n")
 		}
+	}
+
+	// マックプロンプト
+	if h.IsMuckAvailable() {
+		b.WriteString("----------\n")
+		b.WriteString("マックしますか? (m=マック / sh=ショー)\n")
 	}
 
 	// リバイ/アドオンプロンプト

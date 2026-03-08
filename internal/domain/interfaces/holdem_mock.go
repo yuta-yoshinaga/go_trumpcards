@@ -227,3 +227,21 @@ func (_m *MockHoldemGame) GetRebuyPhaseType() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// Muck モック
+func (_m *MockHoldemGame) Muck() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// ShowHand モック
+func (_m *MockHoldemGame) ShowHand() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// IsMuckAvailable モック
+func (_m *MockHoldemGame) IsMuckAvailable() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}

@@ -126,6 +126,10 @@ func (c *HoldemCuiController) Exec(command string) string {
 				return c.hi.Addon(), true
 			case "sa", "skipaddon":
 				return c.hi.SkipAddon(), true
+			case "m", "muck":
+				return c.hi.Muck(), true
+			case "sh", "show":
+				return c.hi.ShowHand(), true
 			}
 			return "", false
 		},
