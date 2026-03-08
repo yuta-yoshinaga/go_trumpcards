@@ -29,6 +29,14 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	if cfg.TournamentMode {
 		fmt.Fprintf(&b, "トーナメント ハンド#%d SB:%d BB:%d (レベルアップ:%dハンド毎)\n",
 			h.GetHandCount(), cfg.SmallBlind, cfg.BigBlind, cfg.BlindLevelHands)
+		if cfg.RebuyEnabled {
+			fmt.Fprintf(&b, "リバイ: %dチップ (最大%d回, %dハンド目まで)\n",
+				cfg.RebuyChips, cfg.RebuyMaxCount, cfg.RebuyPeriodHands)
+		}
+		if cfg.AddonEnabled {
+			fmt.Fprintf(&b, "アドオン: %dチップ (%dハンド目に提供)\n",
+				cfg.AddonChips, cfg.AddonAfterHand)
+		}
 	}
 
 	// テーブルサイズ
@@ -136,6 +144,29 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 				fmt.Fprintf(&b, " → %dチップ獲得", r.WonAmount)
 			}
 			b.WriteString("\n")
+		}
+	}
+
+	// リバイ/アドオンプロンプト
+	if h.GetPhase() == domain.HoldemPhaseRebuy {
+		b.WriteString("----------\n")
+		rebuyPhaseType := h.GetRebuyPhaseType()
+		if rebuyPhaseType == 1 {
+			rebuyCounts := h.GetRebuyCounts()
+			humanIdx := -1
+			for i := 0; i < h.GetPlayerCnt(); i++ {
+				if h.GetPlayer(i).GetIsHuman() {
+					humanIdx = i
+					break
+				}
+			}
+			if humanIdx >= 0 {
+				fmt.Fprintf(&b, "リバイしますか? (%dチップ, %d/%d回使用済) (rb=リバイ / sr=スキップ)\n",
+					cfg.RebuyChips, rebuyCounts[humanIdx], cfg.RebuyMaxCount)
+			}
+		} else if rebuyPhaseType == 2 {
+			fmt.Fprintf(&b, "アドオンしますか? (%dチップ) (ad=アドオン / sa=スキップ)\n",
+				cfg.AddonChips)
 		}
 	}
 

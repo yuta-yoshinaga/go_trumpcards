@@ -355,3 +355,39 @@ func TestHoldemCuiController_TableSize_InvalidValue(t *testing.T) {
 	assert.Contains(t, c.Exec("ts abc"), "Invalid table size: abc")
 	assert.Contains(t, c.Exec("ts -1"), "Invalid table size: -1")
 }
+
+// --- rebuy ---
+
+func TestHoldemCuiController_Rebuy(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("Rebuy").Return("rebuy ok")
+	assert.Equal(t, "rebuy ok", c.Exec("rb"))
+	assert.Equal(t, "rebuy ok", c.Exec("rebuy"))
+}
+
+func TestHoldemCuiController_SkipRebuy(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("SkipRebuy").Return("skiprebuy ok")
+	assert.Equal(t, "skiprebuy ok", c.Exec("sr"))
+	assert.Equal(t, "skiprebuy ok", c.Exec("skiprebuy"))
+}
+
+// --- addon ---
+
+func TestHoldemCuiController_Addon(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("Addon").Return("addon ok")
+	assert.Equal(t, "addon ok", c.Exec("ad"))
+	assert.Equal(t, "addon ok", c.Exec("addon"))
+}
+
+func TestHoldemCuiController_SkipAddon(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("SkipAddon").Return("skipaddon ok")
+	assert.Equal(t, "skipaddon ok", c.Exec("sa"))
+	assert.Equal(t, "skipaddon ok", c.Exec("skipaddon"))
+}

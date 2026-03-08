@@ -422,6 +422,112 @@ func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 	})
 }
 
+func TestHoldemCuiPresenter_Output_RebuyAddon(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("tournament mode with rebuy enabled shows rebuy info", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		cfg := domain.HoldemConfig{
+			SmallBlind:       10,
+			BigBlind:         20,
+			InitChips:        1000,
+			TournamentMode:   true,
+			BlindLevelHands:  5,
+			BlindMultiplier:  200,
+			RebuyEnabled:     true,
+			RebuyChips:       1000,
+			RebuyMaxCount:    3,
+			RebuyPeriodHands: 20,
+		}
+		h.SetConfig(cfg)
+		h.SetHandCount(2)
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "リバイ: 1000チップ (最大3回, 20ハンド目まで)")
+	})
+
+	t.Run("tournament mode with addon enabled shows addon info", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		cfg := domain.HoldemConfig{
+			SmallBlind:      10,
+			BigBlind:        20,
+			InitChips:       1000,
+			TournamentMode:  true,
+			BlindLevelHands: 5,
+			BlindMultiplier: 200,
+			AddonEnabled:    true,
+			AddonChips:      1500,
+			AddonAfterHand:  20,
+		}
+		h.SetConfig(cfg)
+		h.SetHandCount(2)
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "アドオン: 1500チップ (20ハンド目に提供)")
+	})
+
+	t.Run("rebuy phase type 1 shows rebuy prompt", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		cfg := domain.HoldemConfig{
+			SmallBlind:       10,
+			BigBlind:         20,
+			InitChips:        1000,
+			TournamentMode:   true,
+			BlindLevelHands:  5,
+			BlindMultiplier:  200,
+			RebuyEnabled:     true,
+			RebuyChips:       1000,
+			RebuyMaxCount:    3,
+			RebuyPeriodHands: 20,
+		}
+		h.SetConfig(cfg)
+		h.SetPhase(domain.HoldemPhaseRebuy)
+		h.SetRebuyPhaseType(1)
+		h.SetRebuyCounts([]int{1, 0, 0, 0})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "リバイしますか?")
+		assert.Contains(t, result, "1000チップ")
+		assert.Contains(t, result, "1/3回使用済")
+		assert.Contains(t, result, "rb=リバイ / sr=スキップ")
+	})
+
+	t.Run("rebuy phase type 2 shows addon prompt", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		cfg := domain.HoldemConfig{
+			SmallBlind:      10,
+			BigBlind:        20,
+			InitChips:       1000,
+			TournamentMode:  true,
+			BlindLevelHands: 5,
+			BlindMultiplier: 200,
+			AddonEnabled:    true,
+			AddonChips:      1500,
+			AddonAfterHand:  20,
+		}
+		h.SetConfig(cfg)
+		h.SetPhase(domain.HoldemPhaseRebuy)
+		h.SetRebuyPhaseType(2)
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "アドオンしますか?")
+		assert.Contains(t, result, "1500チップ")
+		assert.Contains(t, result, "ad=アドオン / sa=スキップ")
+	})
+
+	t.Run("rebuy phase type 0 does not show prompt", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseRebuy)
+		h.SetRebuyPhaseType(0)
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "リバイしますか?")
+		assert.NotContains(t, result, "アドオンしますか?")
+	})
+}
+
 func TestHoldemCuiPresenter_Output_TableSize(t *testing.T) {
 	p := presenter.NewHoldemCuiPresenter()
 

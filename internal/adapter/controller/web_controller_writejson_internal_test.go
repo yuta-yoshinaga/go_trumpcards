@@ -381,6 +381,10 @@ func (m *mockHoldemIF) Action(action int, amount int) string {
 func (m *mockHoldemIF) GetConfig() domain.HoldemConfig {
 	return m.Called().Get(0).(domain.HoldemConfig)
 }
+func (m *mockHoldemIF) Rebuy() string     { return m.Called().String(0) }
+func (m *mockHoldemIF) SkipRebuy() string { return m.Called().String(0) }
+func (m *mockHoldemIF) Addon() string     { return m.Called().String(0) }
+func (m *mockHoldemIF) SkipAddon() string { return m.Called().String(0) }
 
 func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
 	hmMock := &mockHoldemIF{}

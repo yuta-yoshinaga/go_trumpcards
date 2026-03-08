@@ -1411,6 +1411,54 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with rebuy command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('rebuy');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'rebuy',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with skipaddon command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('skipaddon');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'skipaddon',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and rebuy/addon config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('reset', undefined, { rebuyEnabled: true, addonEnabled: true, rebuyMaxCount: 5 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            rebuyEnabled: true,
+            addonEnabled: true,
+            rebuyMaxCount: 5,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(holdemApi.exec('reset')).rejects.toThrow('HTTP error: 500');

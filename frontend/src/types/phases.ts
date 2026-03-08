@@ -44,4 +44,5 @@ export const HoldemPhase = {
   RIVER: 4,
   SHOWDOWN: 5,
   END: 6,
+  REBUY: 7,
 } as const;

@@ -23,6 +23,7 @@ function usePhaseNames(t: (key: string) => string): Record<number, string> {
     [HoldemPhase.RIVER]: t('phase.river'),
     [HoldemPhase.SHOWDOWN]: t('phase.showdown'),
     [HoldemPhase.END]: t('phase.end'),
+    [HoldemPhase.REBUY]: t('phase.rebuy'),
   };
 }
 
@@ -34,6 +35,8 @@ export function HoldemPage() {
   const [betAmount, setBetAmount] = useState(20);
   const [bettingLimit, setBettingLimit] = useState(0);
   const [tableSize, setTableSize] = useState(4);
+  const [rebuyEnabled, setRebuyEnabled] = useState(false);
+  const [addonEnabled, setAddonEnabled] = useState(false);
 
   useEffect(() => {
     exec('reset');
@@ -56,6 +59,10 @@ export function HoldemPage() {
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 0;
+  const isRebuyPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === 1;
+  const isAddonPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === 2;
+  const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
+  const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
@@ -191,6 +198,56 @@ export function HoldemPage() {
 
         <ErrorAlert message={error} />
 
+        {/* Rebuy/Addon controls */}
+        {isRebuyPhase && (
+          <div className="mb-2 text-center">
+            <p className="text-white mb-2">
+              {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
+            </p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                className={`${btnPrimary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('rebuy')}
+              >
+                {t('rebuy.accept')}
+              </button>
+              <button
+                type="button"
+                className="min-w-[90px] rounded bg-gray-500 px-4 py-2 text-sm text-white hover:bg-gray-600 disabled:opacity-50"
+                disabled={loading}
+                onClick={() => exec('skiprebuy')}
+              >
+                {t('rebuy.skip')}
+              </button>
+            </div>
+          </div>
+        )}
+        {isAddonPhase && (
+          <div className="mb-2 text-center">
+            <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                className={`${btnPrimary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('addon')}
+              >
+                {t('addon.accept')}
+              </button>
+              <button
+                type="button"
+                className="min-w-[90px] rounded bg-gray-500 px-4 py-2 text-sm text-white hover:bg-gray-600 disabled:opacity-50"
+                disabled={loading}
+                onClick={() => exec('skipaddon')}
+              >
+                {t('addon.skip')}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Betting controls */}
         {canAct && (
           <BettingControls
@@ -236,11 +293,19 @@ export function HoldemPage() {
               <option value={9}>{t('tableSize.9max')}</option>
             </select>
           </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={rebuyEnabled} onChange={(e) => setRebuyEnabled(e.target.checked)} />
+            {t('rebuy.enabled')}
+          </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={addonEnabled} onChange={(e) => setAddonEnabled(e.target.checked)} />
+            {t('addon.enabled')}
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, { bettingLimit, tableSize })}
+            onClick={() => exec('reset', undefined, { bettingLimit, tableSize, rebuyEnabled, addonEnabled })}
           >
             {tc('button.reset')}
           </button>

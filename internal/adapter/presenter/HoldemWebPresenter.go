@@ -35,6 +35,18 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	resObj.TableSize = h.GetPlayerCnt()
 	resObj.RaiseCount = h.GetRaiseCount()
 	resObj.MaxBetAmount = calcMaxBetAmount(cfg.BettingLimit, h.GetPot(), h.GetLastBet())
+	resObj.RebuyAvailable = h.IsRebuyAvailable()
+	resObj.AddonAvailable = h.IsAddonAvailable()
+	resObj.RebuyCounts = h.GetRebuyCounts()
+	resObj.AddonUsed = h.GetAddonUsed()
+	resObj.RebuyEnabled = cfg.RebuyEnabled
+	resObj.AddonEnabled = cfg.AddonEnabled
+	resObj.RebuyMaxCount = cfg.RebuyMaxCount
+	resObj.RebuyChips = cfg.RebuyChips
+	resObj.AddonChips = cfg.AddonChips
+	resObj.RebuyPeriodHands = cfg.RebuyPeriodHands
+	resObj.AddonAfterHand = cfg.AddonAfterHand
+	resObj.RebuyPhaseType = h.GetRebuyPhaseType()
 
 	// コミュニティカード
 	resObj.CommunityCards = make([]*controller.WebOutputCard, 0)

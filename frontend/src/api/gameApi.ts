@@ -164,11 +164,29 @@ export interface HoldemConfigInput {
   blindMultiplier?: number;
   bettingLimit?: number;
   tableSize?: number;
+  rebuyEnabled?: boolean;
+  rebuyMaxCount?: number;
+  rebuyChips?: number;
+  rebuyPeriodHands?: number;
+  addonEnabled?: boolean;
+  addonChips?: number;
+  addonAfterHand?: number;
 }
 
 export const holdemApi = {
   exec: (
-    command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon',
     amount?: number,
     config?: HoldemConfigInput,
   ) =>

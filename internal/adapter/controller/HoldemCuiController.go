@@ -118,6 +118,14 @@ func (c *HoldemCuiController) Exec(command string) string {
 				cfg := c.hi.GetConfig()
 				cfg.TableSize = v
 				return c.hi.ResetWithConfig(cfg), true
+			case "rb", "rebuy":
+				return c.hi.Rebuy(), true
+			case "sr", "skiprebuy":
+				return c.hi.SkipRebuy(), true
+			case "ad", "addon":
+				return c.hi.Addon(), true
+			case "sa", "skipaddon":
+				return c.hi.SkipAddon(), true
 			}
 			return "", false
 		},
