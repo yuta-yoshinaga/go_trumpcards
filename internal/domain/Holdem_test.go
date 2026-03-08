@@ -2084,6 +2084,38 @@ func TestHoldem_SkipRebuy_AddonDisabled(t *testing.T) {
 	assert.True(t, h.GetGameEndFlag())
 }
 
+func TestHoldem_SkipRebuy_HumanHasChips_ContinuesGame(t *testing.T) {
+	// Safety path: human has chips > 0 in rebuy phase → game continues (continueReset)
+	h := newTestHoldemWithRebuy()
+	h.SetPhase(HoldemPhaseRebuy)
+	h.SetRebuyPhaseType(HoldemRebuyPhaseRebuy)
+	// Human still has chips (unusual but possible via test helper)
+	h.GetPlayer(0).SetChips(500)
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhasePreFlop, h.GetPhase())
+	assert.False(t, h.GetGameEndFlag())
+}
+
+func TestHoldem_SkipRebuy_HumanHasChips_TransitionsToAddon(t *testing.T) {
+	// Safety path: human has chips > 0 + addon is due → transitions to addon phase
+	h := newTestHoldemWithRebuy()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	h.SetHandCount(1) // match AddonAfterHand
+	h.SetPhase(HoldemPhaseRebuy)
+	h.SetRebuyPhaseType(HoldemRebuyPhaseRebuy)
+	h.GetPlayer(0).SetChips(500)
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, HoldemRebuyPhaseAddon, h.GetRebuyPhaseType())
+}
+
 func TestHoldem_Reset_AddonEnabled_NoCpuNeedAddon_HumanOnly(t *testing.T) {
 	// All CPUs already used addon, only human needs it
 	h := newTestHoldem()
