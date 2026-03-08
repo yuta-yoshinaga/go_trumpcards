@@ -226,7 +226,7 @@ func TestDaifugoSolver_solve(t *testing.T) {
 		assert.NotNil(t, result)
 	})
 
-	t.Run("spade-3 counter makes joker play beatable but 2 wins", func(t *testing.T) {
+	t.Run("spade-3 counter and illegal finish rule prevent win", func(t *testing.T) {
 		// CPU has: Joker, 2♠. SpadeThreeEnabled.
 		// Joker as intermediate: beatable by spade-3 → skip
 		// 2♠ as intermediate: unbeatable (strength 15 > 3) → play 2♠ first
@@ -433,6 +433,27 @@ func TestDaifugoSolver_solve(t *testing.T) {
 		cfg.NumberLockEnabled = true
 		solver := &daifugoSolver{oppHands: oppHands, config: cfg}
 		result := solver.solve(cpuHand, tableCards, false, false, 0, true)
+		assert.Nil(t, result)
+	})
+
+	t.Run("spade-3 counter fails to guarantee win continues to next move", func(t *testing.T) {
+		// Revolution active: 3♠ has strength 15 (strongest), 5♠ has strength 13.
+		// Table: Joker. CPU has: 3♠, 5♠. SpadeThreeEnabled.
+		// Spade-3 counter: table becomes [3♠] (str 15 in revolution).
+		// CPU remaining: 5♠ (str 13) can't beat 3♠ (str 15) → no response → fail.
+		// No other move beats Joker → result nil.
+		tableCards := []*Card{NewCard(CardDesignJoker, 0, false)}
+		cpuHand := []*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignSpade, 5, false),
+		}
+		oppHands := [][]*Card{
+			{NewCard(CardDesignSpade, 2, false)},
+		}
+		cfg := solverConfig()
+		cfg.SpadeThreeEnabled = true
+		solver := &daifugoSolver{oppHands: oppHands, revolution: true, config: cfg}
+		result := solver.solve(cpuHand, tableCards, false, false, 0, false)
 		assert.Nil(t, result)
 	})
 
@@ -717,6 +738,24 @@ func TestDaifugoSolver_generateResponseMoves(t *testing.T) {
 		assert.Equal(t, 1, len(moves))
 		assert.True(t, IsJoker(moves[0].cards[0]))
 	})
+
+	t.Run("pure joker group response to pair on table", func(t *testing.T) {
+		// Table has pair of A (strength 14)
+		// CPU has only 2 jokers → pure joker pair (strength 16 > 14) responds
+		tableCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 1, false),
+		}
+		hand := []*Card{
+			NewCard(CardDesignJoker, 0, false),
+			NewCard(CardDesignJoker, 0, false),
+		}
+		solver := &daifugoSolver{config: DaifugoConfig{}}
+		moves := solver.generateResponseMoves(hand, tableCards, false, false, 0, false)
+		assert.Equal(t, 1, len(moves))
+		assert.True(t, IsJoker(moves[0].cards[0]))
+		assert.True(t, IsJoker(moves[0].cards[1]))
+	})
 }
 
 func TestDaifugoSolver_selectCardsForSuitLock(t *testing.T) {
@@ -879,6 +918,33 @@ func TestDaifugoSolver_helpers(t *testing.T) {
 		assert.False(t, solver.revolution)
 	})
 
+	t.Run("trySolveWithClearTable succeeds", func(t *testing.T) {
+		remaining := []*Card{NewCard(CardDesignSpade, 3, false)} // last play
+		moveCards := []*Card{NewCard(CardDesignSpade, 2, false)} // single card, no revolution
+		solver := &daifugoSolver{oppHands: nil, config: DaifugoConfig{}}
+		result := solver.trySolveWithClearTable(remaining, moveCards, false, false)
+		assert.True(t, result)
+	})
+
+	t.Run("trySolveWithClearTable fails and restores state", func(t *testing.T) {
+		// CPU remaining: 5♠, 3♠. Opponent has 2♠ (strongest normal).
+		// After quad revolution: 5→str 13, 3→str 15, 2→str 3
+		// But 3♠ as intermediate (str 15) unbeatable → 5♠ last play → would win.
+		// So use non-quad move (no revolution): 5♠ beatable (str 5 < 15), 3♠ beatable.
+		remaining := []*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignSpade, 3, false),
+		}
+		moveCards := []*Card{NewCard(CardDesignSpade, 10, false)} // single, no revolution
+		oppHands := [][]*Card{{NewCard(CardDesignSpade, 2, false)}}
+		solver := &daifugoSolver{oppHands: oppHands, revolution: false, elevenBack: true, config: DaifugoConfig{}}
+		result := solver.trySolveWithClearTable(remaining, moveCards, false, true)
+		assert.False(t, result)
+		// State should be restored
+		assert.False(t, solver.revolution)
+		assert.True(t, solver.elevenBack)
+	})
+
 	t.Run("applyRevolution no-op for fewer than 4 cards", func(t *testing.T) {
 		solver := &daifugoSolver{config: DaifugoConfig{}}
 		cards := []*Card{
@@ -969,6 +1035,25 @@ func TestDaifugo_trySolveEndgame(t *testing.T) {
 		players[3].AddCard(NewCard(CardDesignDiamond, 3, false))
 		result := d.trySolveEndgame(players[1])
 		assert.NotNil(t, result)
+	})
+
+	t.Run("returns nil when table is sequence", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*DaifugoPlayer{
+			NewDaifugoPlayer(true),
+			NewDaifugoPlayer(false),
+			NewDaifugoPlayer(false),
+			NewDaifugoPlayer(false),
+		}
+		cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
+		d := NewDaifugo(tc, players, cfg)
+		players[1].AddCard(NewCard(CardDesignSpade, 2, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+		players[2].AddCard(NewCard(CardDesignHeart, 3, false))
+		players[3].AddCard(NewCard(CardDesignDiamond, 3, false))
+		d.SetTableIsSequence(true)
+		result := d.trySolveEndgame(players[1])
+		assert.Nil(t, result)
 	})
 
 	t.Run("maps cards back to correct indices", func(t *testing.T) {

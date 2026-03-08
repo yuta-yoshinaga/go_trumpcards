@@ -74,13 +74,9 @@ func (s *daifugoSolver) solve(hand []*Card, tableCards []*Card, tableIsSeq bool,
 
 		// 8-cut: table clears regardless of opponents
 		if move.is8Cut {
-			s.applyRevolution(move.cards)
-			s.elevenBack = false // table clear resets eleven back
-			if s.solve(remaining, nil, false, false, 0, false) != nil {
-				s.revolution, s.elevenBack = savedRev, savedEB
+			if s.trySolveWithClearTable(remaining, move.cards, savedRev, savedEB) {
 				return move.cards
 			}
-			s.revolution, s.elevenBack = savedRev, savedEB
 			continue
 		}
 
@@ -95,17 +91,27 @@ func (s *daifugoSolver) solve(hand []*Card, tableCards []*Card, tableIsSeq bool,
 
 		// Non-8-cut: check if unbeatable by all opponents
 		if s.isUnbeatable(move.cards) {
-			s.applyRevolution(move.cards)
-			s.elevenBack = false // table clear resets eleven back
-			if s.solve(remaining, nil, false, false, 0, false) != nil {
-				s.revolution, s.elevenBack = savedRev, savedEB
+			if s.trySolveWithClearTable(remaining, move.cards, savedRev, savedEB) {
 				return move.cards
 			}
-			s.revolution, s.elevenBack = savedRev, savedEB
 		}
 	}
 
 	return nil
+}
+
+// trySolveWithClearTable attempts to solve after a table-clearing play (8-cut or unbeatable).
+// It applies revolution, resets eleven back, and handles state restore for backtracking.
+func (s *daifugoSolver) trySolveWithClearTable(remaining []*Card, moveCards []*Card,
+	savedRev, savedEB bool) bool {
+	s.applyRevolution(moveCards)
+	s.elevenBack = false // table clear resets eleven back
+	if s.solve(remaining, nil, false, false, 0, false) != nil {
+		s.revolution, s.elevenBack = savedRev, savedEB
+		return true
+	}
+	s.revolution, s.elevenBack = savedRev, savedEB
+	return false
 }
 
 // generateOpeningMoves generates all valid plays from a clear table
@@ -272,6 +278,7 @@ func (s *daifugoSolver) selectCardsForSuitLock(group []*Card, needed int,
 		if matchIdx < 0 {
 			return nil
 		}
+		// guaranteed: len(group) >= needed from all callers
 		play := make([]*Card, needed)
 		play[0] = group[matchIdx]
 		j := 1
@@ -280,9 +287,6 @@ func (s *daifugoSolver) selectCardsForSuitLock(group []*Card, needed int,
 				play[j] = group[i]
 				j++
 			}
-		}
-		if j < needed {
-			return nil
 		}
 		return play
 	}
@@ -313,7 +317,10 @@ func (s *daifugoSolver) isUnbeatable(play []*Card) bool {
 	return true
 }
 
-// canBeat checks if an opponent's hand contains a play that can beat the given play
+// canBeat checks if an opponent's hand contains a play that can beat the given play.
+// Note: number lock and suit lock constraints on opponents are not checked here.
+// This makes isUnbeatable conservative: it may return false even when opponents
+// cannot legally play a beating card. Safe but may miss some winning sequences.
 func (s *daifugoSolver) canBeat(oppHand []*Card, play []*Card) bool {
 	count := len(play)
 	playStr := s.playStrength(play)
@@ -460,6 +467,11 @@ func (s *daifugoSolver) removeCards(hand []*Card, toRemove []*Card) []*Card {
 // Returns the first play as hand indices, or nil if no guaranteed win exists.
 func (d *Daifugo) trySolveEndgame(player *DaifugoPlayer) []int {
 	if player.GetCardsSize() > DaifugoSolverMaxCards || player.GetCardsSize() == 0 {
+		return nil
+	}
+
+	// Solver doesn't support sequence plays; fall back to heuristic
+	if d.tableIsSequence {
 		return nil
 	}
 
