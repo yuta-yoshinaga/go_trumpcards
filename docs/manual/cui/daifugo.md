@@ -109,7 +109,7 @@ flowchart TD
 | `sort N` | - | 手札のソート方法を変更（0=強さ順、1=スート順、2=数字順） |
 | `setrule <rule> <0\|1>` | `sr <rule> <0\|1>` | ローカルルールの有効/無効を切り替え（リセットして反映） |
 | `suitlockmode N` | - | スート縛りモードを設定（0=なし、1=片縛り、2=両縛り） |
-| `5skipcount N` | - | 5飛びスキップ人数を設定（1〜10） |
+| `5skipcount N` | - | 5飛びスキップ人数を設定（1〜5） |
 | `setdifficulty N` | `sd N` | CPU難易度を設定（0=Normal、1=Easy、2=Hard） |
 | `setjoker N` | `sj N` | ジョーカー枚数を設定（0〜2） |
 | `quit` | `q` | ゲーム終了 |

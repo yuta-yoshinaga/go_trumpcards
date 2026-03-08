@@ -357,6 +357,6 @@ func TestDaifugoCuiController_FiveSkipCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
 	assert.Contains(t, c.Exec("5skipcount 0"), "Invalid five skip count: 0")
-	assert.Contains(t, c.Exec("5skipcount 11"), "Invalid five skip count: 11")
+	assert.Contains(t, c.Exec("5skipcount 6"), "Invalid five skip count: 6")
 	assert.Contains(t, c.Exec("5skipcount abc"), "Invalid five skip count: abc")
 }

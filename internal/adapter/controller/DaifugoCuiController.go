@@ -118,11 +118,11 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				return c.dgi.ResetWithConfig(cfg), true
 			case "5skipcount":
 				if len(args) < 1 {
-					return "Five skip count is required (1-10).", true
+					return "Five skip count is required (1-5).", true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 1 || v > 10 {
-					return fmt.Sprintf("Invalid five skip count: %s. Please enter 1-10.", args[0]), true
+				if err != nil || v < 1 || v > 5 {
+					return fmt.Sprintf("Invalid five skip count: %s. Please enter 1-5.", args[0]), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.FiveSkipCount = v

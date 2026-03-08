@@ -712,14 +712,19 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByText('9リバース', { selector: 'span' })).toBeInTheDocument());
   });
 
-  it('shows 連番縛り badge when numberLocked is true', async () => {
+  it('shows 数縛り badge when numberLocked is true', async () => {
     const numberLockedState: DaifugoResponse = {
       ...humanTurnState,
       numberLocked: true,
     };
     mockExec.mockResolvedValue(numberLockedState);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText('連番縛り')).toBeInTheDocument());
+    await waitFor(() => {
+      const badges = screen.getAllByText('数縛り');
+      // Badge span + settings checkbox label
+      expect(badges.length).toBeGreaterThanOrEqual(1);
+      expect(badges[0].tagName).toBe('SPAN');
+    });
   });
 
   it('renders sort buttons and active button is highlighted', async () => {

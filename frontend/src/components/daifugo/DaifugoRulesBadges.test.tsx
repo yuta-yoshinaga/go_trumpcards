@@ -99,7 +99,7 @@ describe('DaifugoRulesBadges', () => {
 
   it('shows numberLock badge when numberLocked is true', () => {
     render(<DaifugoRulesBadges state={makeState({ numberLocked: true })} />);
-    expect(screen.getByText('連番縛り')).toBeInTheDocument();
+    expect(screen.getByText('数縛り')).toBeInTheDocument();
   });
 
   it('shows multiple badges simultaneously', () => {
