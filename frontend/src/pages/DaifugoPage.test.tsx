@@ -543,6 +543,53 @@ describe('DaifugoPage', () => {
     expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument();
   });
 
+  it('shows queenBomber pending banner with number buttons and disables play button', async () => {
+    const queenBomberState: DaifugoResponse = {
+      ...humanTurnState,
+      pendingAction: 'queenBomber',
+      pendingActionTarget: -1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(queenBomberState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/【12ボンバー】/)).toBeInTheDocument());
+    // Number buttons A,2-10,J,Q,K should be visible
+    expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'K' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Q' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'J' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '5' })).toBeInTheDocument();
+    // Play button label stays default but is disabled
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
+  });
+
+  it('queenBomber number button calls exec with play and value', async () => {
+    const queenBomberState: DaifugoResponse = {
+      ...humanTurnState,
+      pendingAction: 'queenBomber',
+      pendingActionTarget: -1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(queenBomberState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'A' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [1]));
+  });
+
+  it('queenBomber number buttons not shown when not human turn', async () => {
+    const queenBomberCpuTurn: DaifugoResponse = {
+      ...humanTurnState,
+      currentTurn: 1,
+      pendingAction: 'queenBomber',
+      pendingActionTarget: -1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(queenBomberCpuTurn);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/【12ボンバー】/)).toBeInTheDocument());
+    // Number buttons should NOT be visible (CPU turn)
+    expect(screen.queryByRole('button', { name: 'A' })).not.toBeInTheDocument();
+  });
+
   it('UI is disabled when currentTurn is CPU even if pendingAction is set', async () => {
     // Pending actions always belong to currentTurn's player; if CPU has a
     // pending action, the human UI must stay disabled.

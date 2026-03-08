@@ -86,6 +86,7 @@ export function DaifugoSettingsPanel({ config, onChange }: SettingsPanelProps) {
               value={config.fiveSkipCount}
               onChange={(e) => onChange('fiveSkipCount', Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1"
+              disabled={!config.fiveSkipEnabled}
             >
               {[1, 2, 3, 4, 5].map((n) => (
                 <option key={n} value={n}>

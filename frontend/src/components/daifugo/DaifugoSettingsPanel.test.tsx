@@ -159,4 +159,14 @@ describe('DaifugoSettingsPanel', () => {
     expect(checkbox).toBeInTheDocument();
     expect(checkbox.checked).toBe(false);
   });
+
+  it('disables fiveSkipCount select when fiveSkipEnabled is false', () => {
+    render(<DaifugoSettingsPanel config={defaultConfig} onChange={vi.fn()} />);
+    expect(screen.getByLabelText('5飛びスキップ数:')).toBeDisabled();
+  });
+
+  it('enables fiveSkipCount select when fiveSkipEnabled is true', () => {
+    render(<DaifugoSettingsPanel config={{ ...defaultConfig, fiveSkipEnabled: true }} onChange={vi.fn()} />);
+    expect(screen.getByLabelText('5飛びスキップ数:')).not.toBeDisabled();
+  });
 });

@@ -6677,6 +6677,51 @@ func TestDaifugo_QueenBomber(t *testing.T) {
 		dg.CpuPlay()
 		assert.True(t, dg.GetGameEndFlag())
 	})
+
+	t.Run("12ボンバー: player with only targeted value finishes after bomber (human resolve)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Human has Q + extra card; CPU1 has only 5s
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})    // play Q → pending
+		err := dg.PlayerPlay([]int{5}) // resolve: remove value 5
+		assert.NoError(t, err)
+
+		// CPU1 had only 5s → should be finished now
+		assert.True(t, players[1].GetIsFinished())
+		assert.Equal(t, 0, players[1].GetCardsSize())
+	})
+
+	t.Run("12ボンバー: CPU bomber empties opponent hand → opponent finishes", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Human plays first, then CPU1 plays Q targeting value 2
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		// CPU2 and CPU3 have only 2s
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		_ = dg.PlayerPlay([]int{0}) // human plays 3
+		dg.CpuPlay()                // CPU1 plays Q → bomber pending
+		dg.CpuPlay()                // CPU1 resolves bomber → picks value 2 (most opponent cards)
+
+		// CPU2 and CPU3 had only 2s → should be finished
+		assert.True(t, players[2].GetIsFinished())
+		assert.True(t, players[3].GetIsFinished())
+	})
 }
 
 // ===========================================
@@ -6980,6 +7025,72 @@ func TestDaifugo_SuitLockMode(t *testing.T) {
 		// 7 (diff=1) should work
 		err = dg.PlayerPlay([]int{0})
 		assert.NoError(t, err)
+	})
+}
+
+// ===========================================
+// CPU searchCardGroup スート縛りテスト
+// ===========================================
+
+func TestDaifugo_CpuPartialSuitLockSearchCardGroup(t *testing.T) {
+	t.Run("CPU finds group where non-first card matches locked suit under partial lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockPartial}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Table has a pair of 5s (spade locked)
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+		})
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetCurrentTurn(1)
+
+		// CPU1 has pair of 6s: heart + spade (first card is heart, second is spade)
+		// Under partial lock, this should be accepted because spade matches
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		dg.CpuPlay()
+		// CPU should have played the pair of 6s (partial lock allows it)
+		table := dg.GetTableCards()
+		assert.NotNil(t, table)
+		assert.Equal(t, 2, len(table))
+		assert.Equal(t, 6, table[0].GetValue())
+	})
+
+	t.Run("CPU skips group where no card matches locked suit under partial lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockPartial}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+		})
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetCurrentTurn(1)
+
+		// CPU1 has only heart 6 → doesn't match spade → should pass
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		dg.CpuPlay()
+		// CPU should have passed (no playable card under partial lock)
+		// Table remains the same
+		table := dg.GetTableCards()
+		assert.Equal(t, 1, len(table))
+		assert.Equal(t, 5, table[0].GetValue())
 	})
 }
 

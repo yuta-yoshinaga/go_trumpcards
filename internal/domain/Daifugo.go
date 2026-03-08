@@ -1064,6 +1064,22 @@ type cardSearchOpts struct {
 	selectStrongest bool // 最強のグループを選択 (Hard urgent用)
 }
 
+// searchCardGroupSuitCheck searchCardGroup内のスート縛りチェック
+// 両縛り: 先頭カードのスートがロックスートと一致する必要がある
+// 片縛り: グループ内に少なくとも1枚ロックスートと一致するカードがあればOK
+func (d *Daifugo) searchCardGroupSuitCheck(player *DaifugoPlayer, start, end int) bool {
+	if d.config.SuitLockMode == DaifugoSuitLockFull {
+		return player.GetCard(start).GetDesign() == d.lockedSuit
+	}
+	// 片縛り
+	for k := start; k < end; k++ {
+		if player.GetCard(k).GetDesign() == d.lockedSuit {
+			return true
+		}
+	}
+	return false
+}
+
 // searchCardGroup 手札からカードグループを検索する共通ヘルパー
 // 手札は強さ順 (弱→強) でソート済みなので、selectStrongest=true の場合は
 // 後に見つかるグループほど強いため、上書きし続けて最後の結果を返す。
@@ -1091,8 +1107,7 @@ func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStreng
 			}
 			// スート縛りチェック
 			if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
-				suit := player.GetCard(i).GetDesign()
-				if suit != d.lockedSuit {
+				if !d.searchCardGroupSuitCheck(player, i, j) {
 					i = j
 					continue
 				}
@@ -1111,8 +1126,7 @@ func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStreng
 			if count+len(jokerIndices) >= needed {
 				// スート縛りチェック
 				if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
-					suit := player.GetCard(i).GetDesign()
-					if suit != d.lockedSuit {
+					if !d.searchCardGroupSuitCheck(player, i, j) {
 						i = j
 						continue
 					}
@@ -1577,6 +1591,7 @@ func (d *Daifugo) resolvePendingAction(indices []int) error {
 			return NewDomainError(ErrInvalidCard, fmt.Sprintf("card value %d out of range (1-13)", v))
 		}
 		d.resolveQueenBomber(v)
+		d.finishEmptyPlayers()
 		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
 
 		d.pendingActionType = DaifugoPendingNone
@@ -1630,6 +1645,15 @@ func (d *Daifugo) resolveQueenBomber(value int) {
 	}
 }
 
+// finishEmptyPlayers 手札が0枚になった非finished プレイヤーを上がりにする (12ボンバー後の処理)
+func (d *Daifugo) finishEmptyPlayers() {
+	for i, p := range d.players {
+		if !p.GetIsFinished() && p.GetCardsSize() == 0 {
+			d.finishPlayer(i)
+		}
+	}
+}
+
 // findStrongestNonJokerIndex プレイヤーの手札中の最強の非ジョーカーカードのインデックスを返す (末尾から探索)
 func (d *Daifugo) findStrongestNonJokerIndex(player *DaifugoPlayer) int {
 	for i := player.GetCardsSize() - 1; i >= 0; i-- {
@@ -1675,6 +1699,7 @@ func (d *Daifugo) cpuResolvePendingAction() {
 		// 12ボンバー: 対戦相手から最も多くカードを除去できる値を選ぶ
 		bestValue := d.cpuChooseQueenBomberValue(player)
 		d.resolveQueenBomber(bestValue)
+		d.finishEmptyPlayers()
 		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
 		d.cpuActions = append(d.cpuActions, action)
 	}
