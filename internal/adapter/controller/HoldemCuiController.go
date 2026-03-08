@@ -112,7 +112,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 					return "Table size is required (4, 6, or 9).", true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || !domain.ValidHoldemTableSizes[v] {
+				if err != nil || !domain.IsValidHoldemTableSize(v) {
 					return fmt.Sprintf("Invalid table size: %s. Please enter 4, 6, or 9.", args[0]), true
 				}
 				cfg := c.hi.GetConfig()

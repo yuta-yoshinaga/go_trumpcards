@@ -27,11 +27,9 @@ const (
 	HoldemTableSize9 = 9 // 9-max (1 human + 8 CPU)
 )
 
-// ValidHoldemTableSizes 有効なテーブルサイズ
-var ValidHoldemTableSizes = map[int]bool{
-	HoldemTableSize4: true,
-	HoldemTableSize6: true,
-	HoldemTableSize9: true,
+// IsValidHoldemTableSize テーブルサイズが有効か判定する
+func IsValidHoldemTableSize(n int) bool {
+	return n == HoldemTableSize4 || n == HoldemTableSize6 || n == HoldemTableSize9
 }
 
 // HoldemConfig テキサスホールデム設定
@@ -59,14 +57,35 @@ func DefaultHoldemConfig() HoldemConfig {
 	}
 }
 
+// テーブルサイズ別CPUスタイル
+var (
+	cpuStyles4Max = []HoldemPlayStyle{HoldemStyleLAP, HoldemStyleTAP, HoldemStyleGTO}
+	cpuStyles6Max = []HoldemPlayStyle{HoldemStyleTAG, HoldemStyleLAP, HoldemStyleTAP, HoldemStyleLAG, HoldemStyleGTO}
+	cpuStyles9Max = []HoldemPlayStyle{HoldemStyleTAG, HoldemStyleLAP, HoldemStyleTAP, HoldemStyleLAG, HoldemStyleGTO, HoldemStyleTAG, HoldemStyleLAP, HoldemStyleLAG}
+)
+
 // DefaultCpuStyles テーブルサイズに応じたCPUスタイルを返す
 func DefaultCpuStyles(tableSize int) []HoldemPlayStyle {
 	switch tableSize {
 	case HoldemTableSize6:
-		return []HoldemPlayStyle{HoldemStyleTAG, HoldemStyleLAP, HoldemStyleTAP, HoldemStyleLAG, HoldemStyleGTO}
+		return cpuStyles6Max
 	case HoldemTableSize9:
-		return []HoldemPlayStyle{HoldemStyleTAG, HoldemStyleLAP, HoldemStyleTAP, HoldemStyleLAG, HoldemStyleGTO, HoldemStyleTAG, HoldemStyleLAP, HoldemStyleLAG}
+		return cpuStyles9Max
 	default:
-		return []HoldemPlayStyle{HoldemStyleLAP, HoldemStyleTAP, HoldemStyleGTO}
+		return cpuStyles4Max
 	}
+}
+
+// NewPlayersForTable 指定されたテーブルサイズに応じたプレイヤースライスを生成する
+func NewPlayersForTable(tableSize int) []*HoldemPlayer {
+	if !IsValidHoldemTableSize(tableSize) {
+		tableSize = HoldemTableSize4
+	}
+	styles := DefaultCpuStyles(tableSize)
+	players := make([]*HoldemPlayer, 0, tableSize)
+	players = append(players, NewHoldemPlayer(true, HoldemStyleTAG))
+	for _, s := range styles {
+		players = append(players, NewHoldemPlayer(false, s))
+	}
+	return players
 }

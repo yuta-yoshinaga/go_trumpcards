@@ -578,7 +578,7 @@ func (h *Holdem) runCpuActions() error {
 	}
 	// maxIterationsはCPUアクションの無限ループを防ぐための安全策。
 	// 1ラウンドのアクションは最大でも「ベット→レイズ→リレイズ→キャップ」の4レイズ + 各プレイヤーのコールとなり、
-	// 4人プレイでは20アクションを超えることは稀。4ベッティングラウンドでも80アクション程度のため、200は十分な安全マージン。
+	// 9人プレイでは1ラウンド最大約45アクション、4ベッティングラウンドで約360アクション程度のため、500は十分な安全マージン。
 	const maxIterations = 500
 	iterations := 0
 	for !h.gameEndFlag && h.phase >= HoldemPhasePreFlop && h.phase <= HoldemPhaseRiver {

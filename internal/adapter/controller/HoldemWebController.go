@@ -162,7 +162,7 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 		}
 		if param.TableSize != nil {
 			ts := *param.TableSize
-			if !domain.ValidHoldemTableSizes[ts] {
+			if !domain.IsValidHoldemTableSize(ts) {
 				bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: tableSize must be 4, 6, or 9."))
 				return true
 			}

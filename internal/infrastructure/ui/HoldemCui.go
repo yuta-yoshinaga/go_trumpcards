@@ -18,14 +18,8 @@ type HoldemCui struct {
 
 // NewHoldemCui コンストラクタ
 func NewHoldemCui() *HoldemCui {
-	tc := domain.NewTrumpCards(0)
-	players := []*domain.HoldemPlayer{
-		domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
-	}
-	holdem := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
 	return &HoldemCui{
 		hc: controller.NewHoldemCuiController(usecase.NewHoldemInteractor(holdem, presenter.NewHoldemCuiPresenter())),
 	}

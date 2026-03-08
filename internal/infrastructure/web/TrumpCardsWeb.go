@@ -93,13 +93,8 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			return usecase.NewDoubtInteractor(doubt, presenter.NewDoubtWebPresenter())
 		}),
 		hmc: controller.NewHoldemWebController(func() usecase.HoldemInteractorIF {
-			players := []*domain.HoldemPlayer{
-				domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
-				domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
-				domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-				domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
-			}
-			holdem := domain.NewHoldem(domain.NewTrumpCards(0), players, domain.DefaultHoldemConfig())
+			cfg := domain.DefaultHoldemConfig()
+			holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
 			return usecase.NewHoldemInteractor(holdem, presenter.NewHoldemWebPresenter())
 		}),
 	}
