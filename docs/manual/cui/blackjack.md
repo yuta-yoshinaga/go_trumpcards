@@ -43,8 +43,7 @@ flowchart TD
     ES -->|はい| ESF[アーリーサレンダーフェーズ]
     ESF -->|earlysurrender| O
     ESF -->|declineearlysurrender| D
-    ES -->|いいえ| D
-    C --> D{ディーラーの表札がA?}
+    ES -->|いいえ| D{ディーラーの表札がA?}
     D -->|はい| E[インシュランスフェーズ]
     D -->|いいえ| F[アクションフェーズ]
     E -->|insurance / declineinsurance| F
