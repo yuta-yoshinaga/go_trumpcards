@@ -14,6 +14,8 @@ type BlackJackGame interface {
 	PlayerDoubleDown() error
 	PlayerSplit() error
 	PlayerSurrender() error
+	PlayerEarlySurrender() error
+	PlayerDeclineEarlySurrender() error
 	SetDeckCount(count int) error
 	ToggleHint()
 	SetConfig(config domain.BlackJackConfig) error
@@ -42,4 +44,6 @@ type BlackJackGame interface {
 	Get21Plus3Bet() int
 	GetDeckPenetration() int
 	GetMultiHandCount() int
+	CanSurrenderHand(handIdx int) bool
+	CanSurrenderCpuHand(cpuIdx, handIdx int) bool
 }

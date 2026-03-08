@@ -231,6 +231,8 @@ func (bjp *BlackJackCuiPresenter) phaseStr(phase int) string {
 		return "ACTION"
 	case domain.BJPhaseEnd:
 		return "END"
+	case domain.BJPhaseEarlySurrender:
+		return "EARLY SURRENDER"
 	default:
 		return "UNKNOWN"
 	}

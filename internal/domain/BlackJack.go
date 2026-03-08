@@ -11,11 +11,12 @@ const (
 
 // ブラックジャックフェーズ定数
 const (
-	BJPhaseBet       = 1 // ベットフェーズ
-	BJPhaseDeal      = 2 // ディールフェーズ
-	BJPhaseInsurance = 3 // インシュランスフェーズ
-	BJPhaseAction    = 4 // アクションフェーズ
-	BJPhaseEnd       = 5 // 終了フェーズ
+	BJPhaseBet            = 1 // ベットフェーズ
+	BJPhaseDeal           = 2 // ディールフェーズ
+	BJPhaseInsurance      = 3 // インシュランスフェーズ
+	BJPhaseAction         = 4 // アクションフェーズ
+	BJPhaseEnd            = 5 // 終了フェーズ
+	BJPhaseEarlySurrender = 6 // アーリーサレンダーフェーズ
 )
 
 // ブラックジャックデフォルト値
@@ -236,6 +237,9 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
 		b.insuranceAvailable = true
 		b.phase = BJPhaseInsurance
 		b.cpuInsurance()
+	} else if b.config.SurrenderRule == BJSurrenderEarly {
+		b.phase = BJPhaseEarlySurrender
+		b.cpuEarlySurrender()
 	} else {
 		b.phase = BJPhaseAction
 		// ナチュラルBJチェック
@@ -255,8 +259,7 @@ func (b *BlackJack) PlayerInsurance() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for insurance.")
 	}
 	b.insuranceBet = cost
-	b.phase = BJPhaseAction
-	b.checkNaturalBlackJack()
+	b.afterInsurance()
 	return nil
 }
 
@@ -265,9 +268,19 @@ func (b *BlackJack) PlayerDeclineInsurance() error {
 	if b.phase != BJPhaseInsurance {
 		return NewDomainError(ErrWrongPhase, "Insurance decline is not available now.")
 	}
-	b.phase = BJPhaseAction
-	b.checkNaturalBlackJack()
+	b.afterInsurance()
 	return nil
+}
+
+// afterInsurance インシュランス後の分岐処理
+func (b *BlackJack) afterInsurance() {
+	if b.config.SurrenderRule == BJSurrenderEarly {
+		b.phase = BJPhaseEarlySurrender
+		b.cpuEarlySurrender()
+	} else {
+		b.phase = BJPhaseAction
+		b.checkNaturalBlackJack()
+	}
 }
 
 // checkNaturalBlackJack ナチュラルBJチェック（ディール直後）
@@ -707,6 +720,9 @@ func (b *BlackJack) PlayerSurrender() error {
 	if b.phase != BJPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Surrender is not allowed now.")
 	}
+	if b.config.SurrenderRule == BJSurrenderNone {
+		return NewDomainError(ErrInvalidPlay, "Surrender is disabled.")
+	}
 	hand := b.playerHands[b.currentHandIdx]
 	if !hand.CanSurrender() {
 		return NewDomainError(ErrInvalidPlay, "Surrender is not allowed for this hand.")
@@ -772,7 +788,7 @@ func (b *BlackJack) GetBasicStrategySuggestion() BJSuggestedAction {
 	if !b.hintEnabled {
 		return BJSuggestNone
 	}
-	if b.phase != BJPhaseAction && b.phase != BJPhaseInsurance {
+	if b.phase != BJPhaseAction && b.phase != BJPhaseInsurance && b.phase != BJPhaseEarlySurrender {
 		return BJSuggestNone
 	}
 	if b.phase == BJPhaseInsurance {
@@ -785,6 +801,13 @@ func (b *BlackJack) GetBasicStrategySuggestion() BJSuggestedAction {
 	dealerUpcard := b.dealer.GetCard(0)
 	if dealerUpcard == nil {
 		return BJSuggestNone
+	}
+	if b.phase == BJPhaseEarlySurrender {
+		action := GetBasicStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17)
+		if action == BJSuggestSurrender {
+			return BJSuggestSurrender
+		}
+		return BJSuggestStand // "continue" = decline early surrender
 	}
 	return GetBasicStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17)
 }
@@ -804,6 +827,9 @@ func (b *BlackJack) SetConfig(config BlackJackConfig) error {
 	}
 	if config.CountingSystem < 0 || config.CountingSystem > BJCountingMax {
 		return NewDomainError(ErrInvalidAmount, "Invalid counting system.")
+	}
+	if config.SurrenderRule < 0 || config.SurrenderRule > BJSurrenderMax {
+		return NewDomainError(ErrInvalidAmount, "Invalid surrender rule.")
 	}
 	if config.DeckPenetration != 0 {
 		validPen := false
@@ -1088,7 +1114,7 @@ func (b *BlackJack) cpuPlaySeat(cpu *BlackJackCpuSeat, dealerUpcard *Card) {
 				}
 				b.cpuHit(hand)
 			case BJSuggestSurrender:
-				if hand.CanSurrender() {
+				if hand.CanSurrender() && b.config.SurrenderRule != BJSurrenderNone {
 					halfBet := hand.GetBet() / 2
 					cpu.GetPlayer().AddChips(halfBet)
 					hand.SetSurrendered(true)
@@ -1295,4 +1321,92 @@ func (b *BlackJack) GetPerfectPairsBet() int {
 // Get21Plus3Bet 21+3ベット額取得
 func (b *BlackJack) Get21Plus3Bet() int {
 	return b.twentyOnePlus3Bet
+}
+
+// CanSurrenderHand プレイヤーハンドのサレンダー可否判定
+func (b *BlackJack) CanSurrenderHand(handIdx int) bool {
+	if b.config.SurrenderRule == BJSurrenderNone {
+		return false
+	}
+	if handIdx < 0 || handIdx >= len(b.playerHands) {
+		return false
+	}
+	return b.playerHands[handIdx].CanSurrender()
+}
+
+// CanSurrenderCpuHand CPUハンドのサレンダー可否判定
+func (b *BlackJack) CanSurrenderCpuHand(cpuIdx, handIdx int) bool {
+	if b.config.SurrenderRule == BJSurrenderNone {
+		return false
+	}
+	if cpuIdx < 0 || cpuIdx >= len(b.cpuPlayers) {
+		return false
+	}
+	hands := b.cpuPlayers[cpuIdx].GetHands()
+	if handIdx < 0 || handIdx >= len(hands) {
+		return false
+	}
+	return hands[handIdx].CanSurrender()
+}
+
+// PlayerEarlySurrender プレイヤーアーリーサレンダー
+func (b *BlackJack) PlayerEarlySurrender() error {
+	if b.phase != BJPhaseEarlySurrender {
+		return NewDomainError(ErrWrongPhase, "Early surrender is not available now.")
+	}
+	hand := b.playerHands[b.currentHandIdx]
+	if !hand.CanSurrender() {
+		return NewDomainError(ErrInvalidPlay, "Early surrender is not allowed for this hand.")
+	}
+	// 半額返却
+	halfBet := hand.GetBet() / 2
+	b.player.AddChips(halfBet)
+	hand.SetSurrendered(true)
+	b.advanceEarlySurrender()
+	return nil
+}
+
+// PlayerDeclineEarlySurrender プレイヤーアーリーサレンダー辞退
+func (b *BlackJack) PlayerDeclineEarlySurrender() error {
+	if b.phase != BJPhaseEarlySurrender {
+		return NewDomainError(ErrWrongPhase, "Decline early surrender is not available now.")
+	}
+	b.advanceEarlySurrender()
+	return nil
+}
+
+// advanceEarlySurrender アーリーサレンダーフェーズの次ハンドへ進む
+func (b *BlackJack) advanceEarlySurrender() {
+	// 次の未完了ハンドを探す
+	for i := b.currentHandIdx + 1; i < len(b.playerHands); i++ {
+		if !b.playerHands[i].IsFinished() {
+			b.currentHandIdx = i
+			return
+		}
+	}
+	// 全ハンド処理完了 → アクションフェーズへ
+	b.currentHandIdx = 0
+	b.phase = BJPhaseAction
+	b.checkNaturalBlackJack()
+}
+
+// cpuEarlySurrender CPUプレイヤーのアーリーサレンダー判定
+func (b *BlackJack) cpuEarlySurrender() {
+	dealerUpcard := b.dealer.GetCard(0)
+	if dealerUpcard == nil {
+		return
+	}
+	for _, cpu := range b.cpuPlayers {
+		for _, hand := range cpu.GetHands() {
+			if hand.GetCardsSize() == 0 || hand.IsFinished() {
+				continue
+			}
+			action := GetBasicStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17)
+			if action == BJSuggestSurrender {
+				halfBet := hand.GetBet() / 2
+				cpu.GetPlayer().AddChips(halfBet)
+				hand.SetSurrendered(true)
+			}
+		}
+	}
 }

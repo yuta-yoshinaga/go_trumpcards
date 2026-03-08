@@ -69,6 +69,19 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return bcc.bji.DeclineInsurance(), true
 			case "sur", "surrender":
 				return bcc.bji.Surrender(), true
+			case "es", "earlysurrender":
+				return bcc.bji.EarlySurrender(), true
+			case "des", "declineearlysurrender":
+				return bcc.bji.DeclineEarlySurrender(), true
+			case "ssr", "setsurrenderrule":
+				if len(args) < 1 {
+					return "Surrender rule is required.", true
+				}
+				rule, err := strconv.Atoi(args[0])
+				if err != nil || rule < 0 || rule > domain.BJSurrenderMax {
+					return "Invalid surrender rule. Please enter a number (0-2).", true
+				}
+				return bcc.bji.SetSurrenderRule(rule), true
 			case "hint", "togglehint":
 				return bcc.bji.ToggleHint(), true
 			case "soft17", "togglesoft17":

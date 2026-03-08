@@ -39,6 +39,11 @@ go run ./cmd/cli blackjack
 flowchart TD
     A[ゲーム開始 - reset] --> B[ベットフェーズ]
     B -->|bet N| C[カード配布]
+    C --> ES{アーリーサレンダー有効?}
+    ES -->|はい| ESF[アーリーサレンダーフェーズ]
+    ESF -->|earlysurrender| O
+    ESF -->|declineearlysurrender| D
+    ES -->|いいえ| D
     C --> D{ディーラーの表札がA?}
     D -->|はい| E[インシュランスフェーズ]
     D -->|いいえ| F[アクションフェーズ]
@@ -81,6 +86,9 @@ flowchart TD
 | `toggledas` | `das` | スプリット後のダブルダウン（DAS）許可のON/OFFを切り替える |
 | `setpenetration N` | `pen N` | デッキペネトレーション率を設定（有効値: 50 / 75）。BETフェーズのみ有効 |
 | `setcpucount N` | `scc N` | CPUプレイヤー数を設定（0〜3）。BETフェーズのみ有効 |
+| `earlysurrender` | `es` | アーリーサレンダー（ディーラーのBJ確認前にサレンダー） |
+| `declineearlysurrender` | `des` | アーリーサレンダーを辞退して通常プレイを続行 |
+| `setsurrenderrule N` | `ssr N` | サレンダールールを設定（0=レイトサレンダー / 1=アーリーサレンダー / 2=サレンダー禁止） |
 | `quit` | `q` | ゲーム終了 |
 
 ## 特殊ルール
@@ -100,6 +108,18 @@ flowchart TD
 ### サレンダー
 
 アクションフェーズの最初の2枚の状態でのみ選択可能です。`surrender`（短縮形: `sur`）を入力するとベットの半額が返却され、そのハンドは終了します。
+
+### サレンダールール設定
+
+`setsurrenderrule N`（短縮形: `ssr N`）でサレンダールールを変更できます。
+
+| 値 | ルール | 説明 |
+|----|--------|------|
+| 0 | レイトサレンダー（デフォルト） | ディーラーのBJ確認後にサレンダー可能 |
+| 1 | アーリーサレンダー | ディーラーのBJ確認前にサレンダー可能（アーリーサレンダーフェーズが追加） |
+| 2 | サレンダー禁止 | サレンダー不可 |
+
+アーリーサレンダーが有効な場合、カード配布後にアーリーサレンダーフェーズ（`EARLY_SURRENDER`）が追加されます。このフェーズで `earlysurrender`（短縮形: `es`）を入力するとベットの半額が返却されゲームを降りることができます。`declineearlysurrender`（短縮形: `des`）を入力すると通常のプレイを続行します。設定はセッション内で維持されます。
 
 ### ベーシックストラテジーヒント
 
@@ -211,7 +231,7 @@ HEART 8,DIAMOND 7
 
 - `chips`: プレイヤーとディーラーの所持チップ、デッキ数、ソフト17ルール
 - `count (システム名): RC=N TC=N`: ランニングカウント / トゥルーカウント（カウンティングON時のみ、KOシステムでは `TC=N/A`）
-- `phase`: 現在のフェーズ（BET / INSURANCE / ACTION / END）
+- `phase`: 現在のフェーズ（BET / INSURANCE / ACTION / END / EARLY_SURRENDER）
 - `dealer score`: ディーラーの手札（ゲーム中は裏札が非表示）
 - `cpuN score N bet=M chips=C`: CPUプレイヤーの手札情報（CPUプレイヤーがいる場合のみ）
 - `player (*) score N bet=M`: プレイヤーの手札情報（`(*)` はアクティブなハンド）

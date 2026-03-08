@@ -882,3 +882,17 @@ func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
 		assert.NotContains(t, output, "insurance:")
 	})
 }
+
+func TestBlackJackCuiPresenter_EarlySurrenderPhase(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	bj, dealer := setupBJCuiTest(900, 1000)
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	bj.SetPhase(domain.BJPhaseEarlySurrender)
+	output := bjp.Output(bj, nil)
+	assert.Contains(t, output, "phase: EARLY SURRENDER")
+}

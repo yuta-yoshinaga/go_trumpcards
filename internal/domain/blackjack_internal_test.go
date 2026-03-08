@@ -2251,3 +2251,257 @@ func TestResolvePayoutsCpuInsurance(t *testing.T) {
 		assert.Equal(t, 900, cpu.GetPlayer().GetChips())
 	})
 }
+
+func TestCpuSurrender_NoSurrenderMode(t *testing.T) {
+	bj, _, dealer := setupInternalTestBJ(1000, 1000)
+
+	// Set SurrenderRule to None
+	bj.config.SurrenderRule = BJSurrenderNone
+
+	// Set up CPU with hand that basic strategy says surrender: hard 16 vs dealer 10
+	cpu := NewBlackJackCpuSeat()
+	cpuHand := cpu.GetHands()[0]
+	cpuHand.AddCard(NewCard(CardDesignSpade, 10, false))
+	cpuHand.AddCard(NewCard(CardDesignHeart, 6, false)) // hard 16
+	cpuHand.SetBet(100)
+	cpu.GetPlayer().SetChips(900)
+	bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+	// Dealer upcard is 10 → basic strategy suggests surrender for hard 16
+	dealer.AddCard(NewCard(CardDesignClover, 10, false))
+	dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+	// Stack deck so CPU can draw cards (hit instead of surrender)
+	bj.trumpCards.deck[0] = NewCard(CardDesignSpade, 5, false)
+	bj.trumpCards.deck[1] = NewCard(CardDesignHeart, 5, false)
+	bj.trumpCards.deck[2] = NewCard(CardDesignClover, 5, false)
+	bj.trumpCards.deckDrawCnt = 0
+
+	dealerUpcard := dealer.GetCard(0)
+	bj.cpuPlaySeat(cpu, dealerUpcard)
+
+	// CPU should NOT have surrendered (SurrenderRule is None)
+	assert.False(t, cpuHand.IsSurrendered(), "CPU should not surrender when SurrenderRule is None")
+	// Hand should be finished via hit/bust or stand
+	assert.True(t, cpuHand.IsFinished(), "CPU hand should be finished")
+}
+
+func TestCpuEarlySurrender(t *testing.T) {
+	t.Run("CPU surrenders when basic strategy suggests it", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+
+		// Dealer upcard is 10
+		dealer.AddCard(NewCard(CardDesignClover, 10, false))
+		dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+		// CPU hand: hard 16 vs 10 → surrender
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignSpade, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignHeart, 6, false))
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(900)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuEarlySurrender()
+
+		assert.True(t, cpuHand.IsSurrendered(), "CPU should early surrender hard 16 vs 10")
+		// Half bet returned: 900 + 50 = 950
+		assert.Equal(t, 950, cpu.GetPlayer().GetChips())
+	})
+	t.Run("CPU does not surrender when strategy says no", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+
+		// Dealer upcard is 6
+		dealer.AddCard(NewCard(CardDesignClover, 6, false))
+		dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+		// CPU hand: hard 12 vs 6 → stand (not surrender)
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignSpade, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignHeart, 2, false))
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(900)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuEarlySurrender()
+
+		assert.False(t, cpuHand.IsSurrendered(), "CPU should not surrender hard 12 vs 6")
+		assert.Equal(t, 900, cpu.GetPlayer().GetChips())
+	})
+	t.Run("skips finished hands", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+
+		dealer.AddCard(NewCard(CardDesignClover, 10, false))
+		dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignSpade, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignHeart, 6, false))
+		cpuHand.SetBet(100)
+		cpuHand.SetStood(true) // already finished
+		cpu.GetPlayer().SetChips(900)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuEarlySurrender()
+
+		assert.False(t, cpuHand.IsSurrendered(), "finished hand should not be surrendered")
+	})
+	t.Run("skips empty hands", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+
+		dealer.AddCard(NewCard(CardDesignClover, 10, false))
+		dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+		cpu := NewBlackJackCpuSeat()
+		// Hand has 0 cards
+		cpu.GetPlayer().SetChips(900)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuEarlySurrender()
+
+		assert.False(t, cpu.GetHands()[0].IsSurrendered(), "empty hand should not be surrendered")
+	})
+	t.Run("nil dealer upcard does nothing", func(t *testing.T) {
+		bj, _, _ := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+		// No dealer cards → dealerUpcard is nil
+
+		cpu := NewBlackJackCpuSeat()
+		cpuHand := cpu.GetHands()[0]
+		cpuHand.AddCard(NewCard(CardDesignSpade, 10, false))
+		cpuHand.AddCard(NewCard(CardDesignHeart, 6, false))
+		cpuHand.SetBet(100)
+		cpu.GetPlayer().SetChips(900)
+		bj.cpuPlayers = []*BlackJackCpuSeat{cpu}
+
+		bj.cpuEarlySurrender()
+
+		assert.False(t, cpuHand.IsSurrendered(), "no dealer upcard → no surrender")
+	})
+}
+
+func TestAdvanceEarlySurrender(t *testing.T) {
+	t.Run("advances to next unfinished hand", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+		bj.phase = BJPhaseEarlySurrender
+
+		dealer.AddCard(NewCard(CardDesignClover, 10, false))
+		dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+		// Two hands: hand0 will be surrendered, hand1 still active
+		hand0 := bj.playerHands[0]
+		hand0.AddCard(NewCard(CardDesignSpade, 10, false))
+		hand0.AddCard(NewCard(CardDesignHeart, 6, false))
+		hand0.SetBet(100)
+
+		hand1 := NewBlackJackHand()
+		hand1.AddCard(NewCard(CardDesignSpade, 9, false))
+		hand1.AddCard(NewCard(CardDesignHeart, 8, false))
+		hand1.SetBet(100)
+		bj.playerHands = append(bj.playerHands, hand1)
+
+		bj.currentHandIdx = 0
+		bj.advanceEarlySurrender()
+
+		// Should advance to hand1 (index 1)
+		assert.Equal(t, 1, bj.currentHandIdx)
+		assert.Equal(t, BJPhaseEarlySurrender, bj.phase)
+	})
+	t.Run("moves to action phase when all hands processed", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+		bj.phase = BJPhaseEarlySurrender
+
+		dealer.AddCard(NewCard(CardDesignClover, 10, false))
+		dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+		hand := bj.playerHands[0]
+		hand.AddCard(NewCard(CardDesignSpade, 10, false))
+		hand.AddCard(NewCard(CardDesignHeart, 6, false))
+		hand.SetBet(100)
+
+		bj.currentHandIdx = 0
+		bj.advanceEarlySurrender()
+
+		// Only one hand, so should move to action phase
+		assert.Equal(t, 0, bj.currentHandIdx)
+		assert.Equal(t, BJPhaseAction, bj.phase)
+	})
+	t.Run("skips already finished hands", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+		bj.phase = BJPhaseEarlySurrender
+
+		dealer.AddCard(NewCard(CardDesignClover, 10, false))
+		dealer.AddCard(NewCard(CardDesignDiamond, 7, false))
+
+		hand0 := bj.playerHands[0]
+		hand0.AddCard(NewCard(CardDesignSpade, 10, false))
+		hand0.AddCard(NewCard(CardDesignHeart, 6, false))
+		hand0.SetBet(100)
+
+		// hand1 is already finished (surrendered)
+		hand1 := NewBlackJackHand()
+		hand1.AddCard(NewCard(CardDesignSpade, 9, false))
+		hand1.AddCard(NewCard(CardDesignHeart, 8, false))
+		hand1.SetBet(100)
+		hand1.SetSurrendered(true)
+
+		// hand2 is still active
+		hand2 := NewBlackJackHand()
+		hand2.AddCard(NewCard(CardDesignSpade, 7, false))
+		hand2.AddCard(NewCard(CardDesignHeart, 5, false))
+		hand2.SetBet(100)
+
+		bj.playerHands = append(bj.playerHands, hand1, hand2)
+		bj.currentHandIdx = 0
+		bj.advanceEarlySurrender()
+
+		// Should skip hand1 (finished) and go to hand2 (index 2)
+		assert.Equal(t, 2, bj.currentHandIdx)
+		assert.Equal(t, BJPhaseEarlySurrender, bj.phase)
+	})
+}
+
+func TestAfterInsurance_EarlySurrender(t *testing.T) {
+	t.Run("routes to early surrender phase when SurrenderRule is Early", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderEarly
+
+		dealer.AddCard(NewCard(CardDesignSpade, 1, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
+
+		hand := bj.playerHands[0]
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 6, false))
+		hand.SetBet(100)
+
+		bj.afterInsurance()
+
+		assert.Equal(t, BJPhaseEarlySurrender, bj.phase)
+	})
+	t.Run("routes to action phase when SurrenderRule is Late", func(t *testing.T) {
+		bj, _, dealer := setupInternalTestBJ(1000, 1000)
+		bj.config.SurrenderRule = BJSurrenderLate
+
+		dealer.AddCard(NewCard(CardDesignSpade, 10, false))
+		dealer.AddCard(NewCard(CardDesignHeart, 7, false))
+
+		hand := bj.playerHands[0]
+		hand.AddCard(NewCard(CardDesignClover, 10, false))
+		hand.AddCard(NewCard(CardDesignDiamond, 8, false))
+		hand.SetBet(100)
+
+		bj.afterInsurance()
+
+		assert.Equal(t, BJPhaseAction, bj.phase)
+	})
+}

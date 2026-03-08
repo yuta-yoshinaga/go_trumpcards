@@ -13,6 +13,7 @@ export const BjPhase = {
   INSURANCE: 3,
   ACTION: 4,
   END: 5,
+  EARLY_SURRENDER: 6,
 } as const;
 
 // Poker phase constants (sync: internal/domain/Poker.go)

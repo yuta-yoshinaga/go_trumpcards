@@ -34,6 +34,8 @@ export interface BjBetPhaseControlsProps {
   onDeckPenetrationChange: (v: number) => void;
   handCount: number;
   onHandCountChange: (v: number) => void;
+  surrenderRule: number;
+  onSurrenderRuleChange: (v: number) => void;
   loading: boolean;
   onBet: () => void;
   perfectPairsBet: number;
@@ -207,6 +209,22 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           {BJ_VALID_PENETRATIONS.map((p) => (
             <option key={p} value={p}>
               {p}%
+            </option>
+          ))}
+        </select>
+        <label htmlFor="bj-surrender-rule" className="text-white text-sm">
+          {t('surrenderRule')}
+        </label>
+        <select
+          id="bj-surrender-rule"
+          value={props.surrenderRule}
+          onChange={(e) => props.onSurrenderRuleChange(Number(e.target.value))}
+          className="px-2 py-1 rounded text-sm"
+          disabled={props.loading}
+        >
+          {[0, 1, 2].map((r) => (
+            <option key={r} value={r}>
+              {t(`surrenderRuleNames.${r}`)}
             </option>
           ))}
         </select>

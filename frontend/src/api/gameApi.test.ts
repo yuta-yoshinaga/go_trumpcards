@@ -371,6 +371,97 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with earlysurrender command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 15, cards: [], chips: 900 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+        }),
+      );
+      await blackjackApi.exec('earlysurrender');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'earlysurrender', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with declineearlysurrender command', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 15, cards: [], chips: 900 },
+          phase: 4,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+        }),
+      );
+      await blackjackApi.exec('declineearlysurrender');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'declineearlysurrender', amount: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with setsurrenderrule command and amount', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          surrenderRule: 1,
+        }),
+      );
+      await blackjackApi.exec('setsurrenderrule', 1);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'setsurrenderrule', amount: 1, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reset command and surrenderRule in config', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          dealer: { score: 0, cards: [], chips: 1000 },
+          player: { score: 0, cards: [], chips: 1000 },
+          phase: 1,
+          currentHandIdx: 0,
+          insuranceBet: 0,
+          insuranceAvailable: false,
+          message: '',
+          surrenderRule: 1,
+        }),
+      );
+      await blackjackApi.exec('reset', undefined, { surrenderRule: 1 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/blackjack/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            surrenderRule: 1,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(blackjackApi.exec('reset')).rejects.toThrow('HTTP error: 500');

@@ -29,6 +29,7 @@ export interface BlackJackConfigInput {
   doubleAfterSplit?: boolean;
   countingSystem?: number;
   deckPenetration?: number;
+  surrenderRule?: number;
 }
 
 export interface BlackJackBetOptions {
@@ -56,7 +57,10 @@ export const blackjackApi = {
       | 'toggledas'
       | 'setcountingsystem'
       | 'setpenetration'
-      | 'setcpucount',
+      | 'setcpucount'
+      | 'earlysurrender'
+      | 'declineearlysurrender'
+      | 'setsurrenderrule',
     amount?: number,
     config?: BlackJackConfigInput,
     betOptions?: BlackJackBetOptions,
