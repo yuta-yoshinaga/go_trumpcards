@@ -519,3 +519,69 @@ func TestBlackJackWebPresenter_CpuInsuranceBet(t *testing.T) {
 	assert.Equal(t, 1, len(result.CpuPlayers))
 	assert.Equal(t, 50, result.CpuPlayers[0].InsuranceBet)
 }
+
+func TestBlackJackWebPresenter_SurrenderRule(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly, DoubleAfterSplit: true})
+	bj.Reset()
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, domain.BJSurrenderEarly, result.SurrenderRule)
+}
+
+func TestBlackJackWebPresenter_CanSurrenderHand(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderLate, DoubleAfterSplit: true})
+	bj.Reset()
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	bj.SetPhase(domain.BJPhaseAction)
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	// CanSurrender should reflect bj.CanSurrenderHand(0) which checks game-level rules
+	assert.Equal(t, bj.CanSurrenderHand(0), result.Hands[0].CanSurrender)
+}
+
+func TestBlackJackWebPresenter_EarlySurrenderPhase(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly, DoubleAfterSplit: true})
+	bj.Reset()
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	bj.SetPhase(domain.BJPhaseEarlySurrender)
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, domain.BJPhaseEarlySurrender, result.Phase)
+}

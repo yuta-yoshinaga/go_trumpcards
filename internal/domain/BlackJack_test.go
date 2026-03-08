@@ -2827,3 +2827,337 @@ func TestBlackJack_MultiHand_DeckExhausted(t *testing.T) {
 		assert.Equal(t, 1, len(bj.GetPlayerHands()))
 	})
 }
+
+func TestSetConfig_InvalidSurrenderRule(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	bj.Reset()
+
+	t.Run("surrender rule -1 fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{SurrenderRule: -1}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+	t.Run("surrender rule 3 fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{SurrenderRule: 3}
+		err := bj.SetConfig(cfg)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
+	})
+	t.Run("valid surrender rules succeed", func(t *testing.T) {
+		for _, rule := range []int{domain.BJSurrenderLate, domain.BJSurrenderEarly, domain.BJSurrenderNone} {
+			cfg := domain.BlackJackConfig{SurrenderRule: rule}
+			err := bj.SetConfig(cfg)
+			assert.NoError(t, err, "surrender rule %d should be valid", rule)
+		}
+	})
+}
+
+func TestPlayerSurrender_NoSurrenderMode(t *testing.T) {
+	playerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	}
+	dealerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 10, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+	}
+	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+
+	// Set SurrenderRule to None
+	bj.SetPhase(domain.BJPhaseBet)
+	err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderNone})
+	require.NoError(t, err)
+	bj.SetPhase(domain.BJPhaseAction)
+
+	err = bj.PlayerSurrender()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestCanSurrenderHand(t *testing.T) {
+	t.Run("returns true with late surrender when hand is eligible", func(t *testing.T) {
+		playerCards := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 10, false),
+			domain.NewCard(domain.CardDesignHeart, 6, false),
+		}
+		dealerCards := []*domain.Card{
+			domain.NewCard(domain.CardDesignClover, 10, false),
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		// Default SurrenderRule is Late (0)
+		assert.True(t, bj.CanSurrenderHand(0))
+	})
+	t.Run("returns false when SurrenderRule is None", func(t *testing.T) {
+		playerCards := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 10, false),
+			domain.NewCard(domain.CardDesignHeart, 6, false),
+		}
+		dealerCards := []*domain.Card{
+			domain.NewCard(domain.CardDesignClover, 10, false),
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+		}
+		bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+		bj.SetPhase(domain.BJPhaseBet)
+		err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderNone})
+		require.NoError(t, err)
+		bj.SetPhase(domain.BJPhaseAction)
+		assert.False(t, bj.CanSurrenderHand(0))
+	})
+	t.Run("returns false for out of bounds index", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		assert.False(t, bj.CanSurrenderHand(-1))
+		assert.False(t, bj.CanSurrenderHand(99))
+	})
+}
+
+func TestCanSurrenderCpuHand(t *testing.T) {
+	t.Run("returns false when no CPU players", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		assert.False(t, bj.CanSurrenderCpuHand(0, 0))
+	})
+	t.Run("returns false with SurrenderRule None", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1, SurrenderRule: domain.BJSurrenderNone}
+		err := bj.SetConfig(cfg)
+		require.NoError(t, err)
+		bj.Reset()
+		_ = bj.PlayerBet(domain.BJMinBet, 0, 0, 0)
+		assert.False(t, bj.CanSurrenderCpuHand(0, 0))
+	})
+	t.Run("returns false for out of bounds cpuIdx", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+		err := bj.SetConfig(cfg)
+		require.NoError(t, err)
+		bj.Reset()
+		_ = bj.PlayerBet(domain.BJMinBet, 0, 0, 0)
+		assert.False(t, bj.CanSurrenderCpuHand(-1, 0))
+		assert.False(t, bj.CanSurrenderCpuHand(5, 0))
+	})
+	t.Run("returns false for out of bounds handIdx", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+		err := bj.SetConfig(cfg)
+		require.NoError(t, err)
+		bj.Reset()
+		_ = bj.PlayerBet(domain.BJMinBet, 0, 0, 0)
+		assert.False(t, bj.CanSurrenderCpuHand(0, -1))
+		assert.False(t, bj.CanSurrenderCpuHand(0, 99))
+	})
+	t.Run("returns true for eligible CPU hand", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		_ = bj.SetDeckCount(2)
+		cfg := domain.BlackJackConfig{CpuPlayerCount: 1}
+		err := bj.SetConfig(cfg)
+		require.NoError(t, err)
+		bj.Reset()
+		_ = bj.PlayerBet(domain.BJMinBet, 0, 0, 0)
+		// CPU hand might already be finished (stood/busted/surrendered) after cpuPlay
+		// If not finished and has 2 cards, CanSurrender should be true
+		cpus := bj.GetCpuPlayers()
+		if len(cpus) > 0 {
+			hand := cpus[0].GetHands()[0]
+			if hand.GetCardsSize() == 2 && !hand.IsFinished() {
+				assert.True(t, bj.CanSurrenderCpuHand(0, 0))
+			}
+		}
+	})
+}
+
+func TestPlayerEarlySurrender(t *testing.T) {
+	playerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	}
+	dealerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 10, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+	}
+	bj, player, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+
+	// Set early surrender config
+	bj.SetPhase(domain.BJPhaseBet)
+	err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly})
+	require.NoError(t, err)
+	bj.SetPhase(domain.BJPhaseEarlySurrender)
+
+	startChips := player.GetChips()
+	err = bj.PlayerEarlySurrender()
+	assert.NoError(t, err)
+	// Half bet (50) returned
+	assert.Equal(t, startChips+50, player.GetChips())
+	// Hand should be surrendered
+	assert.True(t, bj.GetPlayerHands()[0].IsSurrendered())
+}
+
+func TestPlayerEarlySurrender_CannotSurrender(t *testing.T) {
+	playerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	}
+	dealerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 10, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+	}
+	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+
+	bj.SetPhase(domain.BJPhaseBet)
+	err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly})
+	require.NoError(t, err)
+	bj.SetPhase(domain.BJPhaseEarlySurrender)
+
+	// Add a 3rd card to make CanSurrender() return false
+	bj.GetPlayerHands()[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+
+	err = bj.PlayerEarlySurrender()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+}
+
+func TestPlayerEarlySurrender_WrongPhase(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	bj.Reset()
+	err := bj.PlayerEarlySurrender()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrWrongPhase)
+}
+
+func TestPlayerDeclineEarlySurrender(t *testing.T) {
+	playerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	}
+	dealerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 10, false),
+		domain.NewCard(domain.CardDesignDiamond, 7, false),
+	}
+	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+
+	bj.SetPhase(domain.BJPhaseBet)
+	err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly})
+	require.NoError(t, err)
+	bj.SetPhase(domain.BJPhaseEarlySurrender)
+
+	err = bj.PlayerDeclineEarlySurrender()
+	assert.NoError(t, err)
+	// Phase should advance to action (single hand, all done -> action phase)
+	assert.Equal(t, domain.BJPhaseAction, bj.GetPhase())
+}
+
+func TestPlayerDeclineEarlySurrender_WrongPhase(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	bj.Reset()
+	err := bj.PlayerDeclineEarlySurrender()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrWrongPhase)
+}
+
+func TestEarlySurrenderFlow_NonAceUpcard(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	// Configure early surrender
+	cfg := domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly}
+	err := bj.SetConfig(cfg)
+	require.NoError(t, err)
+	bj.Reset()
+
+	err = bj.PlayerBet(100, 0, 0, 0)
+	require.NoError(t, err)
+
+	// If dealer upcard is not ace, phase should be early surrender (6)
+	dealerUpcard := bj.GetDealer().GetCard(0)
+	if dealerUpcard != nil && dealerUpcard.GetValue() != 1 {
+		assert.Equal(t, domain.BJPhaseEarlySurrender, bj.GetPhase())
+	} else {
+		// Dealer has ace -> insurance first
+		assert.Equal(t, domain.BJPhaseInsurance, bj.GetPhase())
+	}
+}
+
+func TestEarlySurrenderFlow_AceUpcard(t *testing.T) {
+	// We need to test that when dealer has ace upcard with early surrender,
+	// insurance comes first, then early surrender after insurance
+	bj := domain.NewDefaultBlackJack()
+	cfg := domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly}
+	err := bj.SetConfig(cfg)
+	require.NoError(t, err)
+
+	// Try multiple times to get a dealer ace upcard
+	for attempt := 0; attempt < 100; attempt++ {
+		bj.Reset()
+		err = bj.PlayerBet(100, 0, 0, 0)
+		if err != nil {
+			bj.Reset()
+			continue
+		}
+		dealerUpcard := bj.GetDealer().GetCard(0)
+		if dealerUpcard != nil && dealerUpcard.GetValue() == 1 {
+			// Dealer has ace -> insurance phase first
+			assert.Equal(t, domain.BJPhaseInsurance, bj.GetPhase())
+			// Decline insurance -> should go to early surrender phase
+			err = bj.PlayerDeclineInsurance()
+			assert.NoError(t, err)
+			// After insurance, with early surrender config, should be early surrender phase
+			// (unless dealer has BJ and game ended)
+			if !bj.GetGameEndFlag() {
+				assert.Equal(t, domain.BJPhaseEarlySurrender, bj.GetPhase())
+			}
+			return
+		}
+		bj.Reset()
+	}
+	t.Skip("could not get dealer ace upcard after 100 attempts")
+}
+
+func TestEarlySurrender_DealerBJAfterDecline(t *testing.T) {
+	// Setup: dealer has BJ (A + 10), player declines early surrender -> game ends
+	playerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 10, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	}
+	dealerCards := []*domain.Card{
+		domain.NewCard(domain.CardDesignClover, 1, false),   // Ace
+		domain.NewCard(domain.CardDesignDiamond, 10, false), // 10 -> BJ
+	}
+	bj, _, _ := setupDeterministicBJ(1000, playerCards, dealerCards, 100)
+
+	bj.SetPhase(domain.BJPhaseBet)
+	err := bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly})
+	require.NoError(t, err)
+	bj.SetPhase(domain.BJPhaseEarlySurrender)
+
+	err = bj.PlayerDeclineEarlySurrender()
+	assert.NoError(t, err)
+	// After advancing, checkNaturalBlackJack should detect dealer BJ and end game
+	assert.True(t, bj.GetGameEndFlag())
+	assert.Equal(t, domain.BJPhaseEnd, bj.GetPhase())
+}
+
+func TestGetBasicStrategySuggestion_EarlySurrenderPhase(t *testing.T) {
+	t.Run("returns surrender for hard 16 vs 10", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.ToggleHint()
+		hand := bj.GetPlayerHands()[0]
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false)) // hard 16
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseEarlySurrender)
+		assert.Equal(t, domain.BJSuggestSurrender, bj.GetBasicStrategySuggestion())
+	})
+	t.Run("returns stand (continue) for hard 12 vs 6", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.ToggleHint()
+		hand := bj.GetPlayerHands()[0]
+		hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		hand.AddCard(domain.NewCard(domain.CardDesignHeart, 2, false)) // hard 12
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+		bj.SetPhase(domain.BJPhaseEarlySurrender)
+		// Basic strategy for hard 12 vs 6 is Stand, not Surrender -> returns Stand (continue)
+		assert.Equal(t, domain.BJSuggestStand, bj.GetBasicStrategySuggestion())
+	})
+}

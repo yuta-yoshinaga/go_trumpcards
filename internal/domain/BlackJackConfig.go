@@ -9,6 +9,14 @@ const (
 	BJCountingMax     = 3 // 最大値
 )
 
+// サレンダールール定数
+const (
+	BJSurrenderLate  = 0 // レイトサレンダー（デフォルト）
+	BJSurrenderEarly = 1 // アーリーサレンダー
+	BJSurrenderNone  = 2 // サレンダー無効
+	BJSurrenderMax   = 2 // 最大値
+)
+
 // デッキペネトレーション定数
 const (
 	BJDefaultPenetration = 75 // デフォルトペネトレーション率(%)
@@ -27,6 +35,7 @@ type BlackJackConfig struct {
 	DoubleAfterSplit bool // スプリット後のダブルダウン許可 (DAS)
 	CountingSystem   int  // カウンティングシステム (0=Hi-Lo, 1=KO, 2=Zen, 3=Omega II)
 	DeckPenetration  int  // デッキペネトレーション率(%) (50 or 75, 0=デフォルト75)
+	SurrenderRule    int  // サレンダールール (0=Late, 1=Early, 2=None)
 }
 
 // DefaultBlackJackConfig デフォルト設定 (全機能無効)

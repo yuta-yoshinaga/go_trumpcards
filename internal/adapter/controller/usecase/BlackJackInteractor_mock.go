@@ -61,6 +61,18 @@ func (_m *MockBlackJackInteractor) Surrender() string {
 	return ret.Get(0).(string)
 }
 
+// EarlySurrender モック
+func (_m *MockBlackJackInteractor) EarlySurrender() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// DeclineEarlySurrender モック
+func (_m *MockBlackJackInteractor) DeclineEarlySurrender() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // SetDeckCount モック
 func (_m *MockBlackJackInteractor) SetDeckCount(count int) string {
 	ret := _m.Called(count)
@@ -109,8 +121,14 @@ func (_m *MockBlackJackInteractor) SetCpuPlayerCount(count int) string {
 	return ret.Get(0).(string)
 }
 
+// SetSurrenderRule モック
+func (_m *MockBlackJackInteractor) SetSurrenderRule(rule int) string {
+	ret := _m.Called(rule)
+	return ret.Get(0).(string)
+}
+
 // ResetWithConfig モック
-func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
-	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration)
+func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string {
+	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration, surrenderRule)
 	return ret.Get(0).(string)
 }

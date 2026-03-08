@@ -19,6 +19,7 @@ type BlackJackWebInput struct {
 	PerfectPairsBet   *int  `json:"perfectPairsBet,omitempty"`
 	TwentyOnePlus3Bet *int  `json:"twentyOnePlus3Bet,omitempty"`
 	HandCount         *int  `json:"handCount,omitempty"`
+	SurrenderRule     *int  `json:"surrenderRule,omitempty"`
 }
 
 // BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
@@ -86,6 +87,7 @@ type BlackJackWebOutput struct {
 	CountingSystem     int                                `json:"countingSystem"`
 	DeckPenetration    int                                `json:"deckPenetration"`
 	MultiHandCount     int                                `json:"multiHandCount"`
+	SurrenderRule      int                                `json:"surrenderRule"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -109,14 +111,15 @@ func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
 func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput, _ func(string) *BlackJackWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil || param.DeckPenetration != nil {
+		if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil || param.DeckPenetration != nil || param.SurrenderRule != nil {
 			h17 := derefBool(param.DealerHitsSoft17)
 			cpuCount := derefInt(param.CpuPlayerCount)
 			counting := derefBool(param.CountingEnabled)
 			das := derefBoolDefault(param.DoubleAfterSplit, true)
 			cs := derefInt(param.CountingSystem)
 			dp := derefInt(param.DeckPenetration)
-			bc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp))
+			sr := derefInt(param.SurrenderRule)
+			bc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp, sr))
 		} else {
 			bc.writePresenterResponse(w, bji.Reset())
 		}
@@ -139,6 +142,12 @@ func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.Bl
 		bc.writePresenterResponse(w, bji.DeclineInsurance())
 	case "sur", "surrender":
 		bc.writePresenterResponse(w, bji.Surrender())
+	case "es", "earlysurrender":
+		bc.writePresenterResponse(w, bji.EarlySurrender())
+	case "des", "declineearlysurrender":
+		bc.writePresenterResponse(w, bji.DeclineEarlySurrender())
+	case "ssr", "setsurrenderrule":
+		bc.writePresenterResponse(w, bji.SetSurrenderRule(param.Amount))
 	case "togglehint":
 		bc.writePresenterResponse(w, bji.ToggleHint())
 	case "sd", "setdeckcount":

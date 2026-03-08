@@ -30,6 +30,8 @@ function defaultProps(overrides?: Partial<BjBetPhaseControlsProps>): BjBetPhaseC
     onPerfectPairsBetChange: vi.fn(),
     twentyOnePlus3Bet: 0,
     onTwentyOnePlus3BetChange: vi.fn(),
+    surrenderRule: 0,
+    onSurrenderRuleChange: vi.fn(),
     ...overrides,
   };
 }
@@ -250,6 +252,7 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByLabelText('PP:')).toBeDisabled();
     expect(screen.getByLabelText('21+3:')).toBeDisabled();
     expect(screen.getByLabelText('ハンド数:')).toBeDisabled();
+    expect(screen.getByLabelText('サレンダー:')).toBeDisabled();
   });
 
   it('enables inputs and buttons when loading is false', () => {
@@ -261,5 +264,18 @@ describe('BjBetPhaseControls', () => {
     expect(screen.getByLabelText('PP:')).not.toBeDisabled();
     expect(screen.getByLabelText('21+3:')).not.toBeDisabled();
     expect(screen.getByLabelText('ハンド数:')).not.toBeDisabled();
+    expect(screen.getByLabelText('サレンダー:')).not.toBeDisabled();
+  });
+
+  it('renders surrender rule selector with provided value', () => {
+    render(<BjBetPhaseControls {...defaultProps({ surrenderRule: 1 })} />);
+    expect(screen.getByLabelText('サレンダー:')).toHaveValue('1');
+  });
+
+  it('calls onSurrenderRuleChange when value changes', () => {
+    const onSurrenderRuleChange = vi.fn();
+    render(<BjBetPhaseControls {...defaultProps({ onSurrenderRuleChange })} />);
+    fireEvent.change(screen.getByLabelText('サレンダー:'), { target: { value: '2' } });
+    expect(onSurrenderRuleChange).toHaveBeenCalledWith(2);
   });
 });

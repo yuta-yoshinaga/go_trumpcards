@@ -303,3 +303,57 @@ func TestBlackJackCuiController_SetPenetration_LongForm(t *testing.T) {
 	tbc := controller.NewBlackJackCuiController(bjiMock)
 	assert.Equal(t, mockOutput, tbc.Exec("setpenetration 50"))
 }
+
+func TestBlackJackCuiController_EarlySurrender(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("EarlySurrender").Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("es", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("es"))
+	})
+	t.Run("earlysurrender", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("earlysurrender"))
+	})
+}
+
+func TestBlackJackCuiController_DeclineEarlySurrender(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("DeclineEarlySurrender").Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("des", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("des"))
+	})
+	t.Run("declineearlysurrender", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("declineearlysurrender"))
+	})
+}
+
+func TestBlackJackCuiController_SetSurrenderRule(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetSurrenderRule", 1).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("ssr with valid rule", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("ssr 1"))
+	})
+	t.Run("setsurrenderrule with valid rule", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("setsurrenderrule 1"))
+	})
+	t.Run("ssr without arg", func(t *testing.T) {
+		assert.Equal(t, "Surrender rule is required.", tbc.Exec("ssr"))
+	})
+	t.Run("ssr with invalid arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr abc"))
+	})
+	t.Run("ssr with negative arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr -1"))
+	})
+	t.Run("ssr with out-of-range arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr 3"))
+	})
+}

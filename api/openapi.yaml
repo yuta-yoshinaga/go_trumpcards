@@ -45,6 +45,7 @@ paths:
         3. **Insurance** (`phase=3`) — Player accepts/declines insurance (only if dealer shows Ace)
         4. **Action** (`phase=4`) — Hit / Stand / Double Down / Split / Surrender
         5. **End** (`phase=5`) — Dealer plays, judgment, payout
+        6. **Early Surrender** (`phase=6`) — Player decides whether to surrender before dealer BJ check (only when surrender rule = Early)
 
         | Command | Aliases | Description |
         |---------|---------|-------------|
@@ -59,6 +60,9 @@ paths:
         | `surrender` | `sur` | Surrender first 2 cards and receive half bet back |
         | `togglehint` | — | Toggle basic strategy hint on/off |
         | `setdeckcount` | `sd` | Set shoe deck count (requires `amount`: 1/2/4/6/8) |
+        | `earlysurrender` | `es` | Surrender before dealer BJ check (early surrender phase only) |
+        | `declineearlysurrender` | `des` | Decline early surrender and continue normal play |
+        | `setsurrenderrule` | `ssr` | Set surrender rule (requires `amount`: 0=Late/1=Early/2=No surrender) |
         | `togglesoft17` | `soft17` | Toggle dealer soft-17 rule (H17 ↔ S17) |
         | `togglecounting` | `counting` | Toggle card counting display on/off |
         | `toggledas` | `das` | Toggle double-after-split (DAS) on/off |
@@ -894,8 +898,10 @@ components:
             `hit` (`h`), `stand` (`s`), `doubledown` (`d`), `split` (`sp`),
             `insurance` (`i`), `declineinsurance` (`di`), `togglesoft17` (`soft17`),
             `togglecounting` (`counting`), `toggledas` (`das`),
-            `setcountingsystem` (`scs`), `setpenetration` (`pen`), `quit` (`q`).
-          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, scs, setcountingsystem, pen, setpenetration, q, quit]
+            `setcountingsystem` (`scs`), `setpenetration` (`pen`),
+            `earlysurrender` (`es`), `declineearlysurrender` (`des`),
+            `setsurrenderrule` (`ssr`), `quit` (`q`).
+          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, scs, setcountingsystem, pen, setpenetration, es, earlysurrender, des, declineearlysurrender, ssr, setsurrenderrule, q, quit]
           example: hit
         amount:
           type: integer
@@ -904,6 +910,7 @@ components:
             Deck count for `setdeckcount` command (valid values: 1, 2, 4, 6, 8).
             Counting system for `setcountingsystem` command (0=Hi-Lo, 1=KO, 2=Zen Count, 3=Omega II).
             Penetration rate for `setpenetration` command (valid values: 50, 75).
+            Surrender rule for `setsurrenderrule` command (0=Late, 1=Early, 2=No surrender).
             Ignored for other commands.
           minimum: 1
           example: 100
@@ -976,6 +983,14 @@ components:
           minimum: 0
           maximum: 3
           example: 1
+        surrenderRule:
+          type: integer
+          description: |
+            Surrender rule (0=Late surrender, 1=Early surrender, 2=No surrender).
+            Only used with `reset` command.  Defaults to 0 (Late surrender) when omitted.
+          minimum: 0
+          maximum: 2
+          example: 0
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1100,7 +1115,8 @@ components:
             - `3` — Insurance phase
             - `4` — Action phase
             - `5` — End phase
-          enum: [1, 2, 3, 4, 5]
+            - `6` — Early Surrender phase (only when surrender rule = Early)
+          enum: [1, 2, 3, 4, 5, 6]
           example: 4
         currentHandIdx:
           type: integer
@@ -1233,6 +1249,16 @@ components:
           minimum: 0
           maximum: 3
           example: 1
+        surrenderRule:
+          type: integer
+          description: |
+            Current surrender rule:
+            - `0` — Late surrender (default; surrender allowed after dealer BJ check)
+            - `1` — Early surrender (surrender allowed before dealer BJ check)
+            - `2` — No surrender (surrender disabled)
+          minimum: 0
+          maximum: 2
+          example: 0
 
     BlackJackSideBetResult:
       type: object

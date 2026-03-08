@@ -4,6 +4,11 @@ export const BJ_COUNTING_KO = 1;
 export const BJ_COUNTING_ZEN = 2;
 export const BJ_COUNTING_OMEGA2 = 3;
 
+// Surrender rule constants (must match domain BJSurrender constants)
+export const BJ_SURRENDER_LATE = 0;
+export const BJ_SURRENDER_EARLY = 1;
+export const BJ_SURRENDER_NONE = 2;
+
 // Deck penetration constants (must match domain BJPenetration constants)
 export const BJ_VALID_PENETRATIONS = [50, 75] as const;
 

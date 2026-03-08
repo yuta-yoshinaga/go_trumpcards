@@ -4,6 +4,7 @@ import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
+import { BjEarlySurrenderPhaseControls } from '../components/blackjack/BjEarlySurrenderPhaseControls';
 import { BjEndPhaseControls } from '../components/blackjack/BjEndPhaseControls';
 import { BjInsurancePhaseControls } from '../components/blackjack/BjInsurancePhaseControls';
 import {
@@ -54,6 +55,7 @@ export function BlackJackPage() {
   const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
   const [countingSystem, setCountingSystem] = useState(0);
   const [deckPenetration, setDeckPenetration] = useState(75);
+  const [surrenderRule, setSurrenderRule] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback((res: BlackJackResponse) => {
@@ -64,6 +66,7 @@ export function BlackJackPage() {
     setDoubleAfterSplit(res.doubleAfterSplit);
     setCountingSystem(res.countingSystem);
     setDeckPenetration(res.deckPenetration);
+    setSurrenderRule(res.surrenderRule);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
@@ -97,9 +100,19 @@ export function BlackJackPage() {
       doubleAfterSplit,
       countingSystem,
       deckPenetration,
+      surrenderRule,
     };
     exec('reset', undefined, config);
-  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration]);
+  }, [
+    exec,
+    dealerHitsSoft17,
+    cpuPlayerCount,
+    countingEnabled,
+    doubleAfterSplit,
+    countingSystem,
+    deckPenetration,
+    surrenderRule,
+  ]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
@@ -198,7 +211,9 @@ export function BlackJackPage() {
               <div key={`hand-${handIndex}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
                   {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
-                  {handIndex === currentHandIdx && phase === BjPhase.ACTION && ' (*)'}
+                  {handIndex === currentHandIdx &&
+                    (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
+                    ' (*)'}
                   {hand.busted && ' [BUST]'}
                   {hand.doubled && ' [DD]'}
                   {hand.isBlackJack && ' [BJ]'}
@@ -282,6 +297,8 @@ export function BlackJackPage() {
                 onCountingSystemChange={(v) => exec('setcountingsystem', v)}
                 deckPenetration={deckPenetration}
                 onDeckPenetrationChange={(v) => exec('setpenetration', v)}
+                surrenderRule={surrenderRule}
+                onSurrenderRuleChange={(v) => exec('setsurrenderrule', v)}
                 handCount={handCount}
                 onHandCountChange={setHandCount}
                 loading={loading}
@@ -339,6 +356,16 @@ export function BlackJackPage() {
               onDoubleDown={() => exec('doubledown')}
               onSplit={() => exec('split')}
               onSurrender={() => exec('surrender')}
+            />
+          )}
+
+          {phase === BjPhase.EARLY_SURRENDER && (
+            <BjEarlySurrenderPhaseControls
+              loading={loading}
+              hintEnabled={hintEnabled}
+              suggestedAction={suggestedAction}
+              onSurrender={() => exec('earlysurrender')}
+              onContinue={() => exec('declineearlysurrender')}
             />
           )}
 

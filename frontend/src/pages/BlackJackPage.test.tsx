@@ -34,6 +34,7 @@ const betPhaseState: BlackJackResponse = {
   countingSystem: 0,
   deckPenetration: 75,
   multiHandCount: 0,
+  surrenderRule: 0,
 };
 
 const baseHand: BlackJackHand = {
@@ -75,6 +76,7 @@ const actionPhaseState: BlackJackResponse = {
   countingSystem: 0,
   deckPenetration: 75,
   multiHandCount: 0,
+  surrenderRule: 0,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -100,6 +102,7 @@ const insurancePhaseState: BlackJackResponse = {
   countingSystem: 0,
   deckPenetration: 75,
   multiHandCount: 0,
+  surrenderRule: 0,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -148,6 +151,7 @@ const endPhaseState: BlackJackResponse = {
   countingSystem: 0,
   deckPenetration: 75,
   multiHandCount: 0,
+  surrenderRule: 0,
 };
 
 beforeEach(() => {
@@ -974,6 +978,7 @@ describe('BlackJackPage', () => {
         doubleAfterSplit: true,
         countingSystem: 0,
         deckPenetration: 75,
+        surrenderRule: 0,
       }),
     );
   });
@@ -1282,5 +1287,70 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
     expect(screen.queryByText(/インシュランス/)).not.toBeInTheDocument();
+  });
+
+  // --- Early surrender tests ---
+
+  it('renders early surrender phase controls when phase is 6', async () => {
+    const earlySurrenderState: BlackJackResponse = {
+      ...actionPhaseState,
+      phase: 6,
+    };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アーリーサレンダー' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '続行' })).toBeInTheDocument();
+  });
+
+  it('calls earlysurrender when surrender button clicked in early surrender phase', async () => {
+    const earlySurrenderState: BlackJackResponse = {
+      ...actionPhaseState,
+      phase: 6,
+    };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'アーリーサレンダー' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('earlysurrender'));
+  });
+
+  it('calls declineearlysurrender when continue button clicked', async () => {
+    const earlySurrenderState: BlackJackResponse = {
+      ...actionPhaseState,
+      phase: 6,
+    };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '続行' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineearlysurrender'));
+  });
+
+  it('shows active hand marker (*) during early surrender phase', async () => {
+    const earlySurrenderState: BlackJackResponse = {
+      ...actionPhaseState,
+      phase: 6,
+    };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー手札 \(\*\)/)).toBeInTheDocument());
+  });
+
+  it('syncs surrenderRule from response', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, surrenderRule: 1 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('サレンダー:')).toHaveValue('1'));
+  });
+
+  it('calls setsurrenderrule when surrender rule selector changes', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('サレンダー:')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('サレンダー:'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setsurrenderrule', 2));
   });
 });

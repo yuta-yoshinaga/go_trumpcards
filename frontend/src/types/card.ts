@@ -24,7 +24,7 @@ export interface BlackJackPlayer {
   chips: number;
 }
 
-export type BlackJackPhase = 1 | 2 | 3 | 4 | 5;
+export type BlackJackPhase = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface BlackJackCpuSeat {
   chips: number;
@@ -67,6 +67,7 @@ export interface BlackJackResponse {
   countingSystem: number;
   deckPenetration: number;
   multiHandCount: number;
+  surrenderRule: number;
 }
 
 export interface PokerPlayerData {

@@ -55,6 +55,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.RunningCount = bj.GetRunningCount()
 	resObj.TrueCount = bj.GetTrueCount()
 	resObj.MultiHandCount = bj.GetMultiHandCount()
+	resObj.SurrenderRule = config.SurrenderRule
 
 	// hands
 	resObj.Hands = make([]*controller.BlackJackWebOutputHand, len(hands))
@@ -72,7 +73,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		h.IsBlackJack = hand.IsBlackJack()
 		h.CanSplit = hand.CanSplit()
 		h.Surrendered = hand.IsSurrendered()
-		h.CanSurrender = hand.CanSurrender()
+		h.CanSurrender = bj.CanSurrenderHand(i)
 		resObj.Hands[i] = h
 	}
 
@@ -101,7 +102,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 				h.IsBlackJack = hand.IsBlackJack()
 				h.CanSplit = hand.CanSplit()
 				h.Surrendered = hand.IsSurrendered()
-				h.CanSurrender = hand.CanSurrender()
+				h.CanSurrender = bj.CanSurrenderCpuHand(i, j)
 				seat.Hands[j] = h
 			}
 			resObj.CpuPlayers[i] = seat
