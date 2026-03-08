@@ -68,11 +68,7 @@ describe('DaifugoRulesBadges', () => {
   });
 
   it('shows suitLock badge without partial suffix when suitLockMode is 2', () => {
-    render(
-      <DaifugoRulesBadges
-        state={makeState({ suitLocked: true, lockedSuit: 'SPADE' })}
-      />,
-    );
+    render(<DaifugoRulesBadges state={makeState({ suitLocked: true, lockedSuit: 'SPADE' })} />);
     const badge = screen.getByText('スート縛り: SPADE');
     expect(badge).toBeInTheDocument();
     expect(badge.textContent).not.toContain('片縛り');
@@ -88,9 +84,7 @@ describe('DaifugoRulesBadges', () => {
         })}
       />,
     );
-    expect(
-      screen.getByText('スート縛り: HEART (片縛り)'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('スート縛り: HEART (片縛り)')).toBeInTheDocument();
   });
 
   it('shows sequence badge when tableIsSequence is true', () => {
@@ -99,9 +93,7 @@ describe('DaifugoRulesBadges', () => {
   });
 
   it('shows nineReverse badge when reverseDirection is true', () => {
-    render(
-      <DaifugoRulesBadges state={makeState({ reverseDirection: true })} />,
-    );
+    render(<DaifugoRulesBadges state={makeState({ reverseDirection: true })} />);
     expect(screen.getByText('9リバース')).toBeInTheDocument();
   });
 

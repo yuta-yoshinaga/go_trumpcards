@@ -21,14 +21,26 @@ function makePlayer(overrides: Partial<DaifugoPlayerData> = {}): DaifugoPlayerDa
 describe('DaifugoHumanArea', () => {
   it('renders player name "あなた" for human player', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={false} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={false}
+        onDragCard={vi.fn()}
+      />,
     );
     expect(screen.getByText('あなた')).toBeInTheDocument();
   });
 
   it('shows card count and select prompt when current turn and not finished', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={true} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+      />,
     );
     expect(screen.getByText('2枚')).toBeInTheDocument();
     expect(screen.getByText('カードをクリックして選択')).toBeInTheDocument();
@@ -36,7 +48,13 @@ describe('DaifugoHumanArea', () => {
 
   it('shows card count without select prompt when not current turn and not finished', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={false} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={false}
+        onDragCard={vi.fn()}
+      />,
     );
     expect(screen.getByText('2枚')).toBeInTheDocument();
     expect(screen.queryByText('カードをクリックして選択')).not.toBeInTheDocument();
@@ -70,7 +88,13 @@ describe('DaifugoHumanArea', () => {
 
   it('does not show finished badge when not finished', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={false} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={false}
+        onDragCard={vi.fn()}
+      />,
     );
     expect(screen.queryByText(/上がり/)).not.toBeInTheDocument();
   });
@@ -90,14 +114,26 @@ describe('DaifugoHumanArea', () => {
 
   it('does not show illegalFinishPenalty badge when penalty falsy', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={false} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={false}
+        onDragCard={vi.fn()}
+      />,
     );
     expect(screen.queryByText('反則上がり')).not.toBeInTheDocument();
   });
 
   it('cards are disabled when not current turn', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={false} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={false}
+        onDragCard={vi.fn()}
+      />,
     );
     const buttons = screen.getAllByRole('button');
     for (const btn of buttons) {
@@ -107,7 +143,13 @@ describe('DaifugoHumanArea', () => {
 
   it('cards are enabled when current turn', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={true} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+      />,
     );
     const buttons = screen.getAllByRole('button');
     for (const btn of buttons) {
@@ -117,7 +159,13 @@ describe('DaifugoHumanArea', () => {
 
   it('selected card has highlighted border (3px solid #f0ad4e)', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[0]} onToggle={vi.fn()} isCurrentTurn={true} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[0]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+      />,
     );
     const buttons = screen.getAllByRole('button');
     expect(buttons[0].style.border).toBe('3px solid rgb(240, 173, 78)');
@@ -125,7 +173,13 @@ describe('DaifugoHumanArea', () => {
 
   it('unselected card has transparent border', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[0]} onToggle={vi.fn()} isCurrentTurn={true} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[0]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+      />,
     );
     const buttons = screen.getAllByRole('button');
     expect(buttons[1].style.border).toBe('3px solid transparent');
@@ -134,7 +188,13 @@ describe('DaifugoHumanArea', () => {
   it('calls onToggle when card clicked', () => {
     const onToggle = vi.fn();
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={onToggle} isCurrentTurn={true} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={onToggle}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+      />,
     );
     fireEvent.click(screen.getAllByRole('button')[0]);
     expect(onToggle).toHaveBeenCalledWith(0);
@@ -143,7 +203,13 @@ describe('DaifugoHumanArea', () => {
   it('calls onDragCard on dragStart', () => {
     const onDragCard = vi.fn();
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={true} onDragCard={onDragCard} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={onDragCard}
+      />,
     );
     fireEvent.dragStart(screen.getAllByRole('button')[1], {
       dataTransfer: { setData: vi.fn() },
@@ -153,7 +219,13 @@ describe('DaifugoHumanArea', () => {
 
   it('applies active turn style (border + boxShadow) when current turn', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={true} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+      />,
     );
     const area = document.getElementById('player-area-0');
     expect(area?.style.border).toBe('2px solid rgb(92, 184, 92)');
@@ -176,7 +248,13 @@ describe('DaifugoHumanArea', () => {
 
   it('applies no conditional style when not current turn and not finished', () => {
     render(
-      <DaifugoHumanArea player={makePlayer()} selectedIndices={[]} onToggle={vi.fn()} isCurrentTurn={false} onDragCard={vi.fn()} />,
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={vi.fn()}
+        isCurrentTurn={false}
+        onDragCard={vi.fn()}
+      />,
     );
     const area = document.getElementById('player-area-0');
     expect(area).not.toHaveStyle({ opacity: 0.5 });

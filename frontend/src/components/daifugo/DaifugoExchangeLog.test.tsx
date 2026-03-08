@@ -42,8 +42,6 @@ describe('DaifugoExchangeLog', () => {
     ];
     render(<DaifugoExchangeLog players={players} actions={actions} />);
     expect(screen.getByText(/あなた → CPU 0: SPADE 1/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/CPU 2 → CPU 3: HEART 13, DIAMOND 10/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/CPU 2 → CPU 3: HEART 13, DIAMOND 10/)).toBeInTheDocument();
   });
 });
