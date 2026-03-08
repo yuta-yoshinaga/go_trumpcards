@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { holdemApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -85,6 +85,18 @@ const initState: HoldemResponse = {
   raiseCount: 0,
   maxBetAmount: 0,
   tableSize: 4,
+  rebuyPhaseType: 0,
+  rebuyChips: 0,
+  rebuyMaxCount: 0,
+  rebuyCounts: [],
+  addonChips: 0,
+  rebuyAvailable: false,
+  addonAvailable: false,
+  rebuyEnabled: false,
+  addonEnabled: false,
+  rebuyPeriodHands: 0,
+  addonAfterHand: 0,
+  addonUsed: [],
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -112,6 +124,18 @@ const preFlopState: HoldemResponse = {
   raiseCount: 0,
   maxBetAmount: 0,
   tableSize: 4,
+  rebuyPhaseType: 0,
+  rebuyChips: 0,
+  rebuyMaxCount: 0,
+  rebuyCounts: [],
+  addonChips: 0,
+  rebuyAvailable: false,
+  addonAvailable: false,
+  rebuyEnabled: false,
+  addonEnabled: false,
+  rebuyPeriodHands: 0,
+  addonAfterHand: 0,
+  addonUsed: [],
 };
 
 /** PRE_FLOP with outstanding bet: shows call/raise instead of bet/check */
@@ -177,6 +201,18 @@ const showdownState: HoldemResponse = {
   raiseCount: 0,
   maxBetAmount: 0,
   tableSize: 4,
+  rebuyPhaseType: 0,
+  rebuyChips: 0,
+  rebuyMaxCount: 0,
+  rebuyCounts: [],
+  addonChips: 0,
+  rebuyAvailable: false,
+  addonAvailable: false,
+  rebuyEnabled: false,
+  addonEnabled: false,
+  rebuyPeriodHands: 0,
+  addonAfterHand: 0,
+  addonUsed: [],
 };
 
 /** END (phase 6) — also isShowdown */
@@ -1112,10 +1148,8 @@ describe('HoldemPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    // There are two "スキップ" buttons (rebuy skip rendered from previous rebuy phase test
-    // could share name); use getAllByRole to find the one in addon section
-    const skipButtons = screen.getAllByRole('button', { name: 'スキップ' });
-    fireEvent.click(skipButtons[0]);
+    const addonControls = screen.getByTestId('addon-controls');
+    fireEvent.click(within(addonControls).getByRole('button', { name: 'スキップ' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skipaddon'));
   });
 

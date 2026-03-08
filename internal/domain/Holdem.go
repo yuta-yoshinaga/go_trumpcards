@@ -112,9 +112,9 @@ type HoldemCpuAction struct {
 
 // リバイフェーズ種別定数
 const (
-	rebuyPhaseNone  = 0 // なし
-	rebuyPhaseRebuy = 1 // リバイ待ち
-	rebuyPhaseAddon = 2 // アドオン待ち
+	HoldemRebuyPhaseNone  = 0 // なし
+	HoldemRebuyPhaseRebuy = 1 // リバイ待ち
+	HoldemRebuyPhaseAddon = 2 // アドオン待ち
 )
 
 // Holdem テキサスホールデムクラス
@@ -180,7 +180,7 @@ func (h *Holdem) Reset() error {
 	h.actedFlags = make([]bool, len(h.players))
 	h.roundResults = make([]HoldemResult, 0)
 	h.cpuActions = make([]HoldemCpuAction, 0)
-	h.rebuyPhaseType = rebuyPhaseNone
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
 
 	h.trumpCards.Shuffle()
 	for _, p := range h.players {
@@ -230,7 +230,7 @@ func (h *Holdem) Reset() error {
 		}
 		if needHumanRebuy {
 			h.phase = HoldemPhaseRebuy
-			h.rebuyPhaseType = rebuyPhaseRebuy
+			h.rebuyPhaseType = HoldemRebuyPhaseRebuy
 			return nil
 		}
 	}
@@ -251,7 +251,7 @@ func (h *Holdem) Reset() error {
 		}
 		if needHumanAddon {
 			h.phase = HoldemPhaseRebuy
-			h.rebuyPhaseType = rebuyPhaseAddon
+			h.rebuyPhaseType = HoldemRebuyPhaseAddon
 			return nil
 		}
 	}
@@ -1160,9 +1160,32 @@ func clamp(val, min, max int) int {
 
 // --- リバイ/アドオン ---
 
+// checkAndTransitionAddon はアドオン判定を行い、人間にアドオン決定を促す場合は true を返す。
+// CPU は自動でアドオンを実行する。
+func (h *Holdem) checkAndTransitionAddon() bool {
+	if h.config.AddonEnabled && h.handCount == h.config.AddonAfterHand {
+		needHumanAddon := false
+		for i, p := range h.players {
+			if !h.addonUsed[i] {
+				if p.GetIsHuman() {
+					needHumanAddon = true
+				} else {
+					p.AddChips(h.config.AddonChips)
+					h.addonUsed[i] = true
+				}
+			}
+		}
+		if needHumanAddon {
+			h.rebuyPhaseType = HoldemRebuyPhaseAddon
+			return true
+		}
+	}
+	return false
+}
+
 // Rebuy 人間プレイヤーがリバイを実行する
 func (h *Holdem) Rebuy() error {
-	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != rebuyPhaseRebuy {
+	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != HoldemRebuyPhaseRebuy {
 		return NewDomainError(ErrWrongPhase, "Rebuy is not available now.")
 	}
 	for i, p := range h.players {
@@ -1172,64 +1195,37 @@ func (h *Holdem) Rebuy() error {
 			break
 		}
 	}
-	h.rebuyPhaseType = rebuyPhaseNone
-	// アドオンも同時に該当する場合をチェック
-	if h.config.AddonEnabled && h.handCount == h.config.AddonAfterHand {
-		needHumanAddon := false
-		for i, p := range h.players {
-			if !h.addonUsed[i] {
-				if p.GetIsHuman() {
-					needHumanAddon = true
-				} else {
-					p.AddChips(h.config.AddonChips)
-					h.addonUsed[i] = true
-				}
-			}
-		}
-		if needHumanAddon {
-			h.rebuyPhaseType = rebuyPhaseAddon
-			return nil
-		}
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
+	if h.checkAndTransitionAddon() {
+		return nil
 	}
 	return h.continueReset()
 }
 
 // SkipRebuy 人間プレイヤーがリバイを辞退する
 func (h *Holdem) SkipRebuy() error {
-	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != rebuyPhaseRebuy {
+	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != HoldemRebuyPhaseRebuy {
 		return NewDomainError(ErrWrongPhase, "Rebuy is not available now.")
 	}
-	h.rebuyPhaseType = rebuyPhaseNone
-	// バスト中の人間にはInitChipsを付与 (ゲーム続行のため)
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
+	// バスト中の人間がリバイを辞退 → ゲーム終了
 	for _, p := range h.players {
 		if p.GetIsHuman() && p.GetChips() <= 0 {
-			p.SetChips(h.config.InitChips)
-		}
-	}
-	// アドオンも同時に該当する場合をチェック
-	if h.config.AddonEnabled && h.handCount == h.config.AddonAfterHand {
-		needHumanAddon := false
-		for i, p := range h.players {
-			if !h.addonUsed[i] {
-				if p.GetIsHuman() {
-					needHumanAddon = true
-				} else {
-					p.AddChips(h.config.AddonChips)
-					h.addonUsed[i] = true
-				}
-			}
-		}
-		if needHumanAddon {
-			h.rebuyPhaseType = rebuyPhaseAddon
+			h.phase = HoldemPhaseEnd
+			h.gameEndFlag = true
 			return nil
 		}
+	}
+	// 人間にチップが残っている場合 (通常ありえないが安全策)
+	if h.checkAndTransitionAddon() {
+		return nil
 	}
 	return h.continueReset()
 }
 
 // Addon 人間プレイヤーがアドオンを実行する
 func (h *Holdem) Addon() error {
-	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != rebuyPhaseAddon {
+	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != HoldemRebuyPhaseAddon {
 		return NewDomainError(ErrWrongPhase, "Addon is not available now.")
 	}
 	for i, p := range h.players {
@@ -1239,16 +1235,16 @@ func (h *Holdem) Addon() error {
 			break
 		}
 	}
-	h.rebuyPhaseType = rebuyPhaseNone
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
 	return h.continueReset()
 }
 
 // SkipAddon 人間プレイヤーがアドオンを辞退する
 func (h *Holdem) SkipAddon() error {
-	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != rebuyPhaseAddon {
+	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != HoldemRebuyPhaseAddon {
 		return NewDomainError(ErrWrongPhase, "Addon is not available now.")
 	}
-	h.rebuyPhaseType = rebuyPhaseNone
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
 	return h.continueReset()
 }
 

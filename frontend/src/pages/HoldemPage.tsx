@@ -13,7 +13,7 @@ import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary } from '../styles/buttonStyles';
 
 import { handNameBadgeStyle } from '../styles/gameConstants';
-import { HoldemPhase } from '../types/phases';
+import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 
 function usePhaseNames(t: (key: string) => string): Record<number, string> {
   return {
@@ -59,8 +59,8 @@ export function HoldemPage() {
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 0;
-  const isRebuyPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === 1;
-  const isAddonPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === 2;
+  const isRebuyPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.REBUY;
+  const isAddonPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.ADDON;
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
 
@@ -225,7 +225,7 @@ export function HoldemPage() {
           </div>
         )}
         {isAddonPhase && (
-          <div className="mb-2 text-center">
+          <div className="mb-2 text-center" data-testid="addon-controls">
             <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
             <div className="flex justify-center gap-2">
               <button

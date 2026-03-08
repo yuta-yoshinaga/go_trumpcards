@@ -151,7 +151,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	if h.GetPhase() == domain.HoldemPhaseRebuy {
 		b.WriteString("----------\n")
 		rebuyPhaseType := h.GetRebuyPhaseType()
-		if rebuyPhaseType == 1 {
+		if rebuyPhaseType == domain.HoldemRebuyPhaseRebuy {
 			rebuyCounts := h.GetRebuyCounts()
 			humanIdx := -1
 			for i := 0; i < h.GetPlayerCnt(); i++ {
@@ -164,7 +164,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 				fmt.Fprintf(&b, "リバイしますか? (%dチップ, %d/%d回使用済) (rb=リバイ / sr=スキップ)\n",
 					cfg.RebuyChips, rebuyCounts[humanIdx], cfg.RebuyMaxCount)
 			}
-		} else if rebuyPhaseType == 2 {
+		} else if rebuyPhaseType == domain.HoldemRebuyPhaseAddon {
 			fmt.Fprintf(&b, "アドオンしますか? (%dチップ) (ad=アドオン / sa=スキップ)\n",
 				cfg.AddonChips)
 		}
