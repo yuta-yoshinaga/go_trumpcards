@@ -158,6 +158,8 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 			b.WriteString("【7渡し】渡すカードを選択してください (p [インデックス])\n")
 		case domain.DaifugoPendingTenDiscard:
 			b.WriteString("【10捨て】捨てるカードを選択してください (p [インデックス])\n")
+		case domain.DaifugoPendingQueenBomber:
+			b.WriteString("【12ボンバー】除去するカードの数字を入力してください (p [1-13])\n")
 		default:
 			b.WriteString("p [インデックス...] でカードを出す / p でパス\n")
 		}

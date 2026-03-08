@@ -664,3 +664,113 @@ func TestDaifugo_findBestSequencePlayHard_UrgentNoJokerFill(t *testing.T) {
 	result := d.findBestSequencePlayHard(players[1])
 	assert.Nil(t, result) // Can't make a valid sequence
 }
+
+func TestDaifugo_finishEmptyPlayers(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{}
+	d := NewDaifugo(tc, players, cfg)
+
+	// Player 1 has no cards, player 2 has cards, player 3 already finished
+	players[1].AddCard(NewCard(CardDesignSpade, 3, false))
+	players[1].Reset() // empty hand
+	players[2].AddCard(NewCard(CardDesignHeart, 5, false))
+	players[3].SetIsFinished(true)
+	players[3].SetRank(1)
+
+	d.finishEmptyPlayers()
+
+	// Player 0 (no cards, not finished) → should be finished
+	assert.True(t, players[0].GetIsFinished())
+	// Player 1 (no cards, not finished) → should be finished
+	assert.True(t, players[1].GetIsFinished())
+	// Player 2 (has cards) → should NOT be finished
+	assert.False(t, players[2].GetIsFinished())
+	// Player 3 (already finished) → unchanged
+	assert.True(t, players[3].GetIsFinished())
+	assert.Equal(t, 1, players[3].GetRank()) // rank unchanged
+}
+
+func TestDaifugo_searchCardGroupSuitCheck(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+
+	t.Run("full lock: first card matches → true", func(t *testing.T) {
+		cfg := DaifugoConfig{SuitLockMode: DaifugoSuitLockFull}
+		d := NewDaifugo(tc, players, cfg)
+		d.lockedSuit = CardDesignSpade
+
+		players[0].Reset()
+		players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+
+		assert.True(t, d.searchCardGroupSuitCheck(players[0], 0, 2))
+	})
+
+	t.Run("full lock: first card doesn't match → false", func(t *testing.T) {
+		cfg := DaifugoConfig{SuitLockMode: DaifugoSuitLockFull}
+		d := NewDaifugo(tc, players, cfg)
+		d.lockedSuit = CardDesignSpade
+
+		players[0].Reset()
+		players[0].AddCard(NewCard(CardDesignHeart, 6, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+
+		assert.False(t, d.searchCardGroupSuitCheck(players[0], 0, 2))
+	})
+
+	t.Run("partial lock: second card matches → true", func(t *testing.T) {
+		cfg := DaifugoConfig{SuitLockMode: DaifugoSuitLockPartial}
+		d := NewDaifugo(tc, players, cfg)
+		d.lockedSuit = CardDesignSpade
+
+		players[0].Reset()
+		players[0].AddCard(NewCard(CardDesignHeart, 6, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 6, false))
+
+		assert.True(t, d.searchCardGroupSuitCheck(players[0], 0, 2))
+	})
+
+	t.Run("partial lock: no card matches → false", func(t *testing.T) {
+		cfg := DaifugoConfig{SuitLockMode: DaifugoSuitLockPartial}
+		d := NewDaifugo(tc, players, cfg)
+		d.lockedSuit = CardDesignSpade
+
+		players[0].Reset()
+		players[0].AddCard(NewCard(CardDesignHeart, 6, false))
+		players[0].AddCard(NewCard(CardDesignDiamond, 6, false))
+
+		assert.False(t, d.searchCardGroupSuitCheck(players[0], 0, 2))
+	})
+}
+
+func TestDaifugo_triggerFiveSkipIfNeeded_maxSkipsNegative(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*DaifugoPlayer{
+		NewDaifugoPlayer(true),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+		NewDaifugoPlayer(false),
+	}
+	cfg := DaifugoConfig{FiveSkipEnabled: true, FiveSkipCount: 1}
+	d := NewDaifugo(tc, players, cfg)
+
+	// All players finished → getActivePlayerCnt() == 0 → maxSkips = -1
+	for _, p := range players {
+		p.SetIsFinished(true)
+	}
+
+	cards := []*Card{NewCard(CardDesignSpade, 5, false)}
+	skipCount := d.triggerFiveSkipIfNeeded(cards, false)
+	assert.Equal(t, 0, skipCount) // capped to 0
+}

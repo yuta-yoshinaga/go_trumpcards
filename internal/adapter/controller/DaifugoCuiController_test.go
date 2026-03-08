@@ -266,7 +266,6 @@ func TestDaifugoCuiController_SetRule_AllKeys(t *testing.T) {
 		get  func(domain.DaifugoConfig) bool
 	}{
 		{"8cut", "0", func(c domain.DaifugoConfig) bool { return c.EightCutEnabled }},
-		{"suitlock", "0", func(c domain.DaifugoConfig) bool { return c.SuitLockEnabled }},
 		{"11back", "0", func(c domain.DaifugoConfig) bool { return c.ElevenBackEnabled }},
 		{"seq", "0", func(c domain.DaifugoConfig) bool { return c.SequenceEnabled }},
 		{"exchange", "0", func(c domain.DaifugoConfig) bool { return c.CardExchangeEnabled }},
@@ -277,11 +276,12 @@ func TestDaifugoCuiController_SetRule_AllKeys(t *testing.T) {
 		{"capital", "1", func(c domain.DaifugoConfig) bool { return c.CapitalFallEnabled }},
 		{"9reverse", "1", func(c domain.DaifugoConfig) bool { return c.NineReverseEnabled }},
 		{"coupdetat", "1", func(c domain.DaifugoConfig) bool { return c.CoupDetatEnabled }},
-		{"intenselock", "1", func(c domain.DaifugoConfig) bool { return c.IntenseLockEnabled }},
+		{"numberlock", "1", func(c domain.DaifugoConfig) bool { return c.NumberLockEnabled }},
 		{"sandstorm", "1", func(c domain.DaifugoConfig) bool { return c.SandstormEnabled }},
 		{"emperor", "1", func(c domain.DaifugoConfig) bool { return c.EmperorEnabled }},
 		{"seqrev", "1", func(c domain.DaifugoConfig) bool { return c.SequenceRevolutionEnabled }},
 		{"illegal", "1", func(c domain.DaifugoConfig) bool { return c.IllegalFinishEnabled }},
+		{"12bomber", "1", func(c domain.DaifugoConfig) bool { return c.QueenBomberEnabled }},
 	}
 	for _, tc := range tests {
 		t.Run(tc.rule, func(t *testing.T) {
@@ -295,4 +295,68 @@ func TestDaifugoCuiController_SetRule_AllKeys(t *testing.T) {
 			assert.Equal(t, "ok", c.Exec("sr "+tc.rule+" "+tc.val))
 		})
 	}
+}
+
+// --- suitlockmode ---
+
+func TestDaifugoCuiController_SuitLockMode_Valid(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected domain.DaifugoSuitLockMode
+	}{
+		{"0", domain.DaifugoSuitLockNone},
+		{"1", domain.DaifugoSuitLockPartial},
+		{"2", domain.DaifugoSuitLockFull},
+	}
+	for _, tc := range tests {
+		t.Run("suitlockmode "+tc.input, func(t *testing.T) {
+			mi := new(mockUsecases.MockDaifugoInteractor)
+			c := controller.NewDaifugoCuiController(mi)
+			mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+			cfg := domain.DefaultDaifugoConfig()
+			cfg.SuitLockMode = tc.expected
+			mi.On("ResetWithConfig", cfg).Return("slm ok")
+			assert.Equal(t, "slm ok", c.Exec("suitlockmode "+tc.input))
+		})
+	}
+}
+
+func TestDaifugoCuiController_SuitLockMode_NoArgs(t *testing.T) {
+	mi := new(mockUsecases.MockDaifugoInteractor)
+	c := controller.NewDaifugoCuiController(mi)
+	assert.Contains(t, c.Exec("suitlockmode"), "Suit lock mode is required")
+}
+
+func TestDaifugoCuiController_SuitLockMode_InvalidValue(t *testing.T) {
+	mi := new(mockUsecases.MockDaifugoInteractor)
+	c := controller.NewDaifugoCuiController(mi)
+	assert.Contains(t, c.Exec("suitlockmode 3"), "Invalid suit lock mode: 3")
+	assert.Contains(t, c.Exec("suitlockmode abc"), "Invalid suit lock mode: abc")
+	assert.Contains(t, c.Exec("suitlockmode -1"), "Invalid suit lock mode: -1")
+}
+
+// --- 5skipcount ---
+
+func TestDaifugoCuiController_FiveSkipCount_Valid(t *testing.T) {
+	mi := new(mockUsecases.MockDaifugoInteractor)
+	c := controller.NewDaifugoCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+	cfg := domain.DefaultDaifugoConfig()
+	cfg.FiveSkipCount = 3
+	mi.On("ResetWithConfig", cfg).Return("5sc ok")
+	assert.Equal(t, "5sc ok", c.Exec("5skipcount 3"))
+}
+
+func TestDaifugoCuiController_FiveSkipCount_NoArgs(t *testing.T) {
+	mi := new(mockUsecases.MockDaifugoInteractor)
+	c := controller.NewDaifugoCuiController(mi)
+	assert.Contains(t, c.Exec("5skipcount"), "Five skip count is required")
+}
+
+func TestDaifugoCuiController_FiveSkipCount_InvalidValue(t *testing.T) {
+	mi := new(mockUsecases.MockDaifugoInteractor)
+	c := controller.NewDaifugoCuiController(mi)
+	assert.Contains(t, c.Exec("5skipcount 0"), "Invalid five skip count: 0")
+	assert.Contains(t, c.Exec("5skipcount 6"), "Invalid five skip count: 6")
+	assert.Contains(t, c.Exec("5skipcount abc"), "Invalid five skip count: abc")
 }

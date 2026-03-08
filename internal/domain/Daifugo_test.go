@@ -699,7 +699,7 @@ func TestDaifugo_ElevenBack(t *testing.T) {
 }
 
 func TestDaifugo_SuitLock(t *testing.T) {
-	suitLockConfig := domain.DaifugoConfig{SuitLockEnabled: true}
+	suitLockConfig := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull}
 
 	t.Run("success GetSuitLocked is false initially", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -794,7 +794,7 @@ func TestDaifugo_CardExchange(t *testing.T) {
 		config := domain.DefaultDaifugoConfig()
 		dg := domain.NewDaifugo(tc, players, config)
 		assert.True(t, dg.GetConfig().EightCutEnabled)
-		assert.True(t, dg.GetConfig().SuitLockEnabled)
+		assert.Equal(t, domain.DaifugoSuitLockFull, dg.GetConfig().SuitLockMode)
 		assert.True(t, dg.GetConfig().ElevenBackEnabled)
 		assert.True(t, dg.GetConfig().SequenceEnabled)
 		assert.True(t, dg.GetConfig().CardExchangeEnabled)
@@ -804,7 +804,7 @@ func TestDaifugo_CardExchange(t *testing.T) {
 		config := domain.DefaultDaifugoConfig()
 		assert.Equal(t, domain.DaifugoJokerCount, config.JokerCount)
 		assert.True(t, config.EightCutEnabled)
-		assert.True(t, config.SuitLockEnabled)
+		assert.Equal(t, domain.DaifugoSuitLockFull, config.SuitLockMode)
 		assert.True(t, config.ElevenBackEnabled)
 		assert.True(t, config.SequenceEnabled)
 		assert.True(t, config.CardExchangeEnabled)
@@ -950,7 +950,7 @@ func TestDaifugo_TriggerEightCut_Disabled(t *testing.T) {
 func TestDaifugo_GetNonJokerSuit_AllJokers(t *testing.T) {
 	tc := domain.NewTrumpCards(2)
 	players := makeDaifugoPlayers()
-	config := domain.DaifugoConfig{SuitLockEnabled: true}
+	config := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull}
 	dg := domain.NewDaifugo(tc, players, config)
 
 	// Play 2 jokers as a pair on a clear table
@@ -972,7 +972,7 @@ func TestDaifugo_GetNonJokerSuit_AllJokers(t *testing.T) {
 func TestDaifugo_GetNonJokerSuit_MixedSuits(t *testing.T) {
 	tc := domain.NewTrumpCards(2)
 	players := makeDaifugoPlayers()
-	config := domain.DaifugoConfig{SuitLockEnabled: true, JokerCount: 2}
+	config := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull, JokerCount: 2}
 	dg := domain.NewDaifugo(tc, players, config)
 
 	// First play a spade 5 on clear table
@@ -1371,7 +1371,7 @@ func TestDaifugo_IsPlayable_SequenceOnSequenceTable(t *testing.T) {
 func TestDaifugo_IsPlayable_SuitLock_Rejected(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeDaifugoPlayers()
-	config := domain.DaifugoConfig{SuitLockEnabled: true}
+	config := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull}
 	dg := domain.NewDaifugo(tc, players, config)
 
 	// Human plays SPADE 5, CPU1 plays SPADE 7 → suit locked to SPADE
@@ -1676,7 +1676,7 @@ func TestDaifugo_IsPlayable_TableBaseAllJokers(t *testing.T) {
 func TestDaifugo_FindBestPlay_SuitLockSkip(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeDaifugoPlayers()
-	config := domain.DaifugoConfig{SuitLockEnabled: true}
+	config := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull}
 	dg := domain.NewDaifugo(tc, players, config)
 
 	// Set up suit lock to SPADE. CPU has heart cards stronger than table → skipped.
@@ -1729,7 +1729,7 @@ func TestDaifugo_TriggerEightCut_NoEightCard(t *testing.T) {
 func TestDaifugo_GetNonJokerSuit_JokerSkip(t *testing.T) {
 	tc := domain.NewTrumpCards(2)
 	players := makeDaifugoPlayers()
-	config := domain.DaifugoConfig{SuitLockEnabled: true, JokerCount: 2}
+	config := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull, JokerCount: 2}
 	dg := domain.NewDaifugo(tc, players, config)
 
 	// Human plays SPADE 5 on clear table.
@@ -1793,7 +1793,7 @@ func TestDaifugo_GetNonJokerSuit_JokerSkip(t *testing.T) {
 func TestDaifugo_GetNonJokerSuit_MixedSuits_SuitLockPath(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeDaifugoPlayers()
-	config := domain.DaifugoConfig{SuitLockEnabled: true}
+	config := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull}
 	dg := domain.NewDaifugo(tc, players, config)
 
 	// Human plays pair of 5s with mixed suits (SPADE 5 + HEART 5).
@@ -2042,7 +2042,7 @@ func TestDaifugo_IsPlayable_SequenceOnGroupTable(t *testing.T) {
 
 // Cover lines 585-589: isPlayable suit lock rejects different suit
 func TestDaifugo_IsPlayable_SuitLockRejectsDifferentSuit(t *testing.T) {
-	config := domain.DaifugoConfig{SuitLockEnabled: true}
+	config := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull}
 	tc := domain.NewTrumpCards(0)
 	players := makeDaifugoPlayers()
 	dg := domain.NewDaifugo(tc, players, config)
@@ -2186,7 +2186,7 @@ func TestDaifugo_FindBestPlay_EmptyHand(t *testing.T) {
 
 // Cover lines 820-824: findBestPlay joker complement rejected by suit lock
 func TestDaifugo_FindBestPlay_JokerComplementSuitLockReject(t *testing.T) {
-	config := domain.DaifugoConfig{SuitLockEnabled: true, JokerCount: 2}
+	config := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull, JokerCount: 2}
 
 	tc2 := domain.NewTrumpCards(2)
 	players2 := makeDaifugoPlayers()
@@ -3337,7 +3337,7 @@ func coupDetatConfig() domain.DaifugoConfig {
 }
 
 func intenseLockConfig() domain.DaifugoConfig {
-	return domain.DaifugoConfig{SuitLockEnabled: true, IntenseLockEnabled: true}
+	return domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull, NumberLockEnabled: true}
 }
 
 func TestDaifugo_NineReverse(t *testing.T) {
@@ -3675,7 +3675,7 @@ func TestDaifugo_IntenseLock(t *testing.T) {
 	t.Run("激シバ: disabled does not activate numberLocked", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
-		cfg := domain.DaifugoConfig{SuitLockEnabled: true, IntenseLockEnabled: false}
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull, NumberLockEnabled: false}
 		dg := domain.NewDaifugo(tc, players, cfg)
 
 		// Set up table: spade 5 on table, human plays spade 6 (consecutive, but IntenseLock disabled)
@@ -4155,7 +4155,7 @@ func TestDaifugo_DefaultConfig_NewFields(t *testing.T) {
 		cfg := domain.DefaultDaifugoConfig()
 		assert.False(t, cfg.NineReverseEnabled)
 		assert.False(t, cfg.CoupDetatEnabled)
-		assert.False(t, cfg.IntenseLockEnabled)
+		assert.False(t, cfg.NumberLockEnabled)
 		assert.False(t, cfg.SandstormEnabled)
 		assert.False(t, cfg.EmperorEnabled)
 	})
@@ -5503,7 +5503,7 @@ func TestDaifugo_CpuDifficulty(t *testing.T) {
 		players := makeDaifugoPlayers()
 		cfg := noRulesConfig()
 		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
-		cfg.SuitLockEnabled = true
+		cfg.SuitLockMode = domain.DaifugoSuitLockFull
 		dg := domain.NewDaifugo(tc, players, cfg)
 
 		// Set up suit lock on spade
@@ -5526,7 +5526,7 @@ func TestDaifugo_CpuDifficulty(t *testing.T) {
 		players := makeDaifugoPlayers()
 		cfg := noRulesConfig()
 		cfg.CpuDifficulty = domain.DaifugoDifficultyEasy
-		cfg.SuitLockEnabled = true
+		cfg.SuitLockMode = domain.DaifugoSuitLockFull
 		dg := domain.NewDaifugo(tc, players, cfg)
 
 		// Human plays pair of spade 3s
@@ -6018,7 +6018,7 @@ func TestDaifugo_CpuDifficulty(t *testing.T) {
 		players := makeDaifugoPlayers()
 		cfg := noRulesConfig()
 		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
-		cfg.SuitLockEnabled = true
+		cfg.SuitLockMode = domain.DaifugoSuitLockFull
 		dg := domain.NewDaifugo(tc, players, cfg)
 
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
@@ -6067,7 +6067,7 @@ func TestDaifugo_CpuDifficulty(t *testing.T) {
 		players := makeDaifugoPlayers()
 		cfg := noRulesConfig()
 		cfg.CpuDifficulty = domain.DaifugoDifficultyHard
-		cfg.SuitLockEnabled = true
+		cfg.SuitLockMode = domain.DaifugoSuitLockFull
 		dg := domain.NewDaifugo(tc, players, cfg)
 
 		// Human plays pair of spade 3s
@@ -6400,4 +6400,777 @@ func TestIllegalFinish_OpeningSingleCardFallback(t *testing.T) {
 	assert.Equal(t, 0, players[1].GetCardsSize(), "CPU should play only card")
 	assert.True(t, players[1].GetIsFinished())
 	assert.True(t, players[1].GetIllegalFinishPenalty(), "CPU should accept illegal finish penalty")
+}
+
+// ===========================================
+// 12ボンバー (Queen Bomber) テスト
+// ===========================================
+
+func queenBomberConfig() domain.DaifugoConfig {
+	return domain.DaifugoConfig{QueenBomberEnabled: true, FiveSkipCount: 1}
+}
+
+func TestDaifugo_QueenBomber(t *testing.T) {
+	t.Run("12ボンバー: playing Q sets pending queenBomber action", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0}) // play Q
+		assert.NoError(t, err)
+		assert.True(t, dg.HasPendingAction())
+		assert.Equal(t, domain.DaifugoPendingQueenBomber, dg.GetPendingActionType())
+	})
+
+	t.Run("12ボンバー: resolving removes target value cards from all players", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0}) // play Q → pending
+		assert.True(t, dg.HasPendingAction())
+
+		// Resolve: choose value 5 → removes all 5s from all players
+		err := dg.PlayerPlay([]int{5})
+		assert.NoError(t, err)
+		assert.False(t, dg.HasPendingAction())
+
+		// Verify 5s are removed
+		assert.Equal(t, 0, players[0].CountCardsByValue(5))
+		assert.Equal(t, 0, players[1].CountCardsByValue(5))
+		assert.Equal(t, 0, players[2].CountCardsByValue(5))
+	})
+
+	t.Run("12ボンバー: invalid value out of range 0", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})
+		err := dg.PlayerPlay([]int{0}) // 0 is out of range
+		assert.Error(t, err)
+	})
+
+	t.Run("12ボンバー: invalid value out of range 14", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})
+		err := dg.PlayerPlay([]int{14}) // 14 is out of range
+		assert.Error(t, err)
+	})
+
+	t.Run("12ボンバー: requires exactly 1 index", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})
+		err := dg.PlayerPlay([]int{1, 2}) // too many indices
+		assert.Error(t, err)
+	})
+
+	t.Run("12ボンバー: disabled does not trigger", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, noRulesConfig())
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0})
+		assert.NoError(t, err)
+		assert.False(t, dg.HasPendingAction())
+	})
+
+	t.Run("12ボンバー: sequence with Q does not trigger", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := queenBomberConfig()
+		cfg.SequenceEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Sequence: J-Q-K of spades
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0, 1, 2}) // sequence J-Q-K
+		assert.NoError(t, err)
+		assert.False(t, dg.HasPendingAction()) // isSeq → no bomber
+	})
+
+	t.Run("12ボンバー: joker Q does not trigger", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Joker played solo on empty table won't trigger (isJoker check)
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0}) // play joker
+		assert.NoError(t, err)
+		assert.False(t, dg.HasPendingAction())
+	})
+
+	t.Run("12ボンバー: does not trigger if player finishes with Q", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Human has only the Q → plays it and finishes → no bomber
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0})
+		assert.NoError(t, err)
+		assert.False(t, dg.HasPendingAction())
+		assert.True(t, players[0].GetIsFinished())
+	})
+
+	t.Run("12ボンバー: CPU auto-resolves bomber choosing max opponent value", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Human: pass, CPU1: [Q, 3], Human: [5], CPU2: [5, 5, 5], CPU3: [2]
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		// Human plays 3
+		_ = dg.PlayerPlay([]int{0})
+		// CPU1 plays Q → bomber pending
+		dg.CpuPlay()
+		assert.True(t, dg.HasPendingAction())
+		// Second CpuPlay resolves the pending: opponent values: 5 appears 3 times (CPU2), 1 once, 2 once
+		dg.CpuPlay()
+		assert.False(t, dg.HasPendingAction())
+		// CPU should choose value 5 (most opponent cards)
+		assert.Equal(t, 0, players[2].CountCardsByValue(5))
+	})
+
+	t.Run("12ボンバー: CPU finishes after bomber removes cards from others", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Setup: CPU1 plays Q and opponent has only the target value
+		// → after bomber, opponent becomes empty → game check
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0}) // human plays 3
+		dg.CpuPlay()                // CPU1 plays Q → resolves bomber
+		// Game should still be running (bomber itself doesn't trigger finish for empty-hand opponents)
+		assert.False(t, dg.GetGameEndFlag())
+	})
+
+	t.Run("12ボンバー: resolveQueenBomber skips finished players", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Player 2 is already finished
+		players[2].SetIsFinished(true)
+		players[2].SetRank(1)
+
+		// Human has Q + 3, CPU1 has 5, CPU2 (finished) has 5, CPU3 has 5
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})    // play Q → pending
+		err := dg.PlayerPlay([]int{5}) // resolve: remove value 5
+		assert.NoError(t, err)
+
+		// CPU1 and CPU3 lost their 5s, but CPU2 (finished) still has it
+		assert.Equal(t, 0, players[1].CountCardsByValue(5))
+		assert.Equal(t, 1, players[2].CountCardsByValue(5)) // finished player not touched
+		assert.Equal(t, 0, players[3].CountCardsByValue(5))
+	})
+
+	t.Run("12ボンバー: cpuResolvePendingAction triggers gameEnd when only 1 active remains", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Players 0, 2, 3 already finished → only CPU1 (player 1) active
+		players[0].SetIsFinished(true)
+		players[0].SetRank(1)
+		players[2].SetIsFinished(true)
+		players[2].SetRank(2)
+		players[3].SetIsFinished(true)
+		players[3].SetRank(3)
+
+		// CPU1 (player 1) has Q + another card
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+
+		// Set turn to CPU1
+		dg.SetCurrentTurn(1)
+		dg.SetLastPlayPlayerIdx(-1)
+
+		// CPU1 plays Q → bomber pending (only active player)
+		dg.CpuPlay()
+		// CPU1 resolves bomber → checkGameEnd sees active=1 → game ends
+		dg.CpuPlay()
+		assert.True(t, dg.GetGameEndFlag())
+	})
+
+	t.Run("12ボンバー: player with only targeted value finishes after bomber (human resolve)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Human has Q + extra card; CPU1 has only 5s
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})    // play Q → pending
+		err := dg.PlayerPlay([]int{5}) // resolve: remove value 5
+		assert.NoError(t, err)
+
+		// CPU1 had only 5s → should be finished now
+		assert.True(t, players[1].GetIsFinished())
+		assert.Equal(t, 0, players[1].GetCardsSize())
+	})
+
+	t.Run("12ボンバー: CPU bomber empties opponent hand → opponent finishes", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(tc, players, queenBomberConfig())
+
+		// Human plays first, then CPU1 plays Q targeting value 2
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		// CPU2 and CPU3 have only 2s
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		_ = dg.PlayerPlay([]int{0}) // human plays 3
+		dg.CpuPlay()                // CPU1 plays Q → bomber pending
+		dg.CpuPlay()                // CPU1 resolves bomber → picks value 2 (most opponent cards)
+
+		// CPU2 and CPU3 had only 2s → should be finished
+		assert.True(t, players[2].GetIsFinished())
+		assert.True(t, players[3].GetIsFinished())
+	})
+}
+
+// ===========================================
+// 5飛びの拡張 (Extended Five Skip) テスト
+// ===========================================
+
+func TestDaifugo_FiveSkipExtended(t *testing.T) {
+	t.Run("5飛び: FiveSkipCount=2 skips 2 players per 5", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{FiveSkipEnabled: true, FiveSkipCount: 2}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Human=0, CPU1=1, CPU2=2, CPU3=3
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0}) // play single 5
+		assert.NoError(t, err)
+		// Skip 2: from 0, skip 1+2, land at 3
+		assert.Equal(t, 3, dg.GetCurrentTurn())
+	})
+
+	t.Run("5飛び: FiveSkipCount=1 with two 5s skips 2", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{FiveSkipEnabled: true, FiveSkipCount: 1}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Play two 5s at once
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		err := dg.PlayerPlay([]int{0, 1}) // play two 5s
+		assert.NoError(t, err)
+		// 1 * 2 fives = 2 skips: from 0, skip 1+2, land at 3
+		assert.Equal(t, 3, dg.GetCurrentTurn())
+	})
+
+	t.Run("5飛び: total skips capped at activePlayerCount - 1", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{FiveSkipEnabled: true, FiveSkipCount: 10}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// 4 active players, FiveSkipCount=10, 1 five → total=10, cap=3
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0})
+		assert.NoError(t, err)
+		// Cap at 3 (activeCount=4, cap=3), turn wraps back to 0 (self)
+		// but since 0 played, passCount check → table clear: lastPlayPlayerIdx=0, advance wraps to 0
+		// Actually: advanceTurn from 0 → 1, then skip 3 more (1→2, 2→3, 3→0)
+		// currentTurn should land at 0 and checkPassClear triggers
+		assert.Nil(t, dg.GetTableCards(), "table should be cleared after all pass")
+	})
+
+	t.Run("5飛び: FiveSkipCount=0 defaults to 1", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{FiveSkipEnabled: true, FiveSkipCount: 0}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0})
+		assert.NoError(t, err)
+		// Defaults to 1: skip 1 player: from 0, advance to 1, skip to 2
+		assert.Equal(t, 2, dg.GetCurrentTurn())
+	})
+
+	t.Run("5飛び: non-5 card does not skip", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{FiveSkipEnabled: true, FiveSkipCount: 2}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0}) // play 3, no skip
+		assert.NoError(t, err)
+		assert.Equal(t, 1, dg.GetCurrentTurn())
+	})
+}
+
+// ===========================================
+// スート縛りの厳密化 (Suit Lock Subdivision) テスト
+// ===========================================
+
+func TestDaifugo_SuitLockMode(t *testing.T) {
+	t.Run("片縛り: at least one card matches locked suit is accepted", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockPartial}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Setup: suit locked to spade, table has two 5s
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+		})
+		dg.SetLastPlayPlayerIdx(1)
+
+		// Human plays 6♠ + 6♥ → one matches spade → accepted under partial lock
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0, 1})
+		assert.NoError(t, err)
+	})
+
+	t.Run("片縛り: no card matches locked suit is rejected", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockPartial}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+		})
+		dg.SetLastPlayPlayerIdx(1)
+
+		// Human plays 6♥ + 6♦ → neither matches spade → rejected
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0, 1})
+		assert.Error(t, err)
+	})
+
+	t.Run("両縛り: mixed suit is rejected (existing behavior)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockFull}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		dg.SetLastPlayPlayerIdx(1)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0}) // heart 6, suit locked to spade → rejected
+		assert.Error(t, err)
+	})
+
+	t.Run("SuitLockNone: suit lock does not activate", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockNone}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Table has spade 5, human plays spade 6 → suit lock should NOT activate
+		dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		dg.SetLastPlayPlayerIdx(1)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})
+		assert.False(t, dg.GetSuitLocked())
+	})
+
+	t.Run("数縛り: activates independently without suit lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockNone, NumberLockEnabled: true}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Table has spade 5, human plays heart 6 → different suit but consecutive number
+		dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		dg.SetLastPlayPlayerIdx(1)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})
+		assert.False(t, dg.GetSuitLocked())  // no suit lock
+		assert.True(t, dg.GetNumberLocked()) // but number lock activates
+	})
+
+	t.Run("数縛り: non-consecutive does not activate number lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockNone, NumberLockEnabled: true}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Table has spade 5, human plays heart 8 → not consecutive
+		dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		dg.SetLastPlayPlayerIdx(1)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})
+		assert.False(t, dg.GetNumberLocked())
+	})
+
+	t.Run("数縛り: disabled does not activate even on consecutive", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockNone, NumberLockEnabled: false}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		dg.SetLastPlayPlayerIdx(1)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		_ = dg.PlayerPlay([]int{0})
+		assert.False(t, dg.GetNumberLocked())
+	})
+
+	t.Run("数縛り: number lock on empty table does not crash", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockNone, NumberLockEnabled: true}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0}) // play on empty table
+		assert.NoError(t, err)
+		assert.False(t, dg.GetNumberLocked())
+	})
+
+	t.Run("数縛り enforces consecutive in isPlayable without suit lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockNone, NumberLockEnabled: true}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		dg.SetNumberLocked(true)
+		dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 6, false)})
+		dg.SetLastPlayPlayerIdx(1)
+
+		// spade 8 (diff=2) should fail
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{1}) // try 8 (diff=2)
+		assert.Error(t, err)
+
+		// 7 (diff=1) should work
+		err = dg.PlayerPlay([]int{0})
+		assert.NoError(t, err)
+	})
+}
+
+// ===========================================
+// CPU searchCardGroup スート縛りテスト
+// ===========================================
+
+func TestDaifugo_CpuPartialSuitLockSearchCardGroup(t *testing.T) {
+	t.Run("CPU finds group where non-first card matches locked suit under partial lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockPartial}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		// Table has a pair of 5s (spade locked)
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+		})
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetCurrentTurn(1)
+
+		// CPU1 has pair of 6s: heart + spade (first card is heart, second is spade)
+		// Under partial lock, this should be accepted because spade matches
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		dg.CpuPlay()
+		// CPU should have played the pair of 6s (partial lock allows it)
+		table := dg.GetTableCards()
+		assert.NotNil(t, table)
+		assert.Equal(t, 2, len(table))
+		assert.Equal(t, 6, table[0].GetValue())
+	})
+
+	t.Run("CPU skips group where no card matches locked suit under partial lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockPartial}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetTableCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 5, false),
+		})
+		dg.SetLastPlayPlayerIdx(0)
+		dg.SetCurrentTurn(1)
+
+		// CPU1 has only heart 6 → doesn't match spade → should pass
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		dg.CpuPlay()
+		// CPU should have passed (no playable card under partial lock)
+		// Table remains the same
+		table := dg.GetTableCards()
+		assert.Equal(t, 1, len(table))
+		assert.Equal(t, 5, table[0].GetValue())
+	})
+}
+
+// ===========================================
+// DaifugoPlayer テスト
+// ===========================================
+
+func TestDaifugoPlayer_RemoveCardsByValue(t *testing.T) {
+	t.Run("removes all cards with specified value", func(t *testing.T) {
+		p := domain.NewDaifugoPlayer(true)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		p.AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		removed := p.RemoveCardsByValue(5)
+		assert.Equal(t, 2, len(removed))
+		assert.Equal(t, 2, p.GetCardsSize()) // 3♠ and joker remain
+	})
+
+	t.Run("returns empty if no matching value", func(t *testing.T) {
+		p := domain.NewDaifugoPlayer(true)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+
+		removed := p.RemoveCardsByValue(5)
+		assert.Equal(t, 0, len(removed))
+		assert.Equal(t, 1, p.GetCardsSize())
+	})
+
+	t.Run("does not remove jokers", func(t *testing.T) {
+		p := domain.NewDaifugoPlayer(true)
+		p.AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		removed := p.RemoveCardsByValue(0)
+		assert.Equal(t, 0, len(removed))
+		assert.Equal(t, 1, p.GetCardsSize())
+	})
+}
+
+func TestDaifugoPlayer_CountCardsByValue(t *testing.T) {
+	t.Run("counts cards with specified value", func(t *testing.T) {
+		p := domain.NewDaifugoPlayer(true)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+
+		assert.Equal(t, 2, p.CountCardsByValue(5))
+		assert.Equal(t, 1, p.CountCardsByValue(3))
+		assert.Equal(t, 0, p.CountCardsByValue(7))
+	})
+
+	t.Run("does not count jokers", func(t *testing.T) {
+		p := domain.NewDaifugoPlayer(true)
+		p.AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+
+		assert.Equal(t, 0, p.CountCardsByValue(0))
+	})
+}
+
+func TestDaifugo_HasMatchingSuit(t *testing.T) {
+	t.Run("片縛り: joker-only cards return false for hasMatchingSuit", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		cfg := domain.DaifugoConfig{SuitLockMode: domain.DaifugoSuitLockPartial}
+		dg := domain.NewDaifugo(tc, players, cfg)
+
+		dg.SetSuitLocked(true, domain.CardDesignSpade)
+		dg.SetTableCards([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
+		dg.SetLastPlayPlayerIdx(1)
+
+		// Only joker → no matching suit → should still be playable (joker bypasses)
+		// Actually, in isPlayable, joker-only has getNonJokerSuit return 0, so suit check passes for Full mode
+		// For Partial mode, hasMatchingSuit with all jokers returns false → rejected
+		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+
+		err := dg.PlayerPlay([]int{0}) // joker only → partial lock: no non-joker matches → rejected
+		assert.Error(t, err)
+	})
 }

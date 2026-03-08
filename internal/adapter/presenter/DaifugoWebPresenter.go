@@ -35,22 +35,24 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	resObj.Config = controller.DaifugoWebConfig{
 		JokerCount:                config.JokerCount,
 		EightCutEnabled:           config.EightCutEnabled,
-		SuitLockEnabled:           config.SuitLockEnabled,
+		SuitLockMode:              int(config.SuitLockMode),
 		ElevenBackEnabled:         config.ElevenBackEnabled,
 		SequenceEnabled:           config.SequenceEnabled,
 		CardExchangeEnabled:       config.CardExchangeEnabled,
 		FiveSkipEnabled:           config.FiveSkipEnabled,
+		FiveSkipCount:             config.FiveSkipCount,
 		SevenPassEnabled:          config.SevenPassEnabled,
 		TenDiscardEnabled:         config.TenDiscardEnabled,
 		SpadeThreeEnabled:         config.SpadeThreeEnabled,
 		CapitalFallEnabled:        config.CapitalFallEnabled,
 		NineReverseEnabled:        config.NineReverseEnabled,
 		CoupDetatEnabled:          config.CoupDetatEnabled,
-		IntenseLockEnabled:        config.IntenseLockEnabled,
+		NumberLockEnabled:         config.NumberLockEnabled,
 		SandstormEnabled:          config.SandstormEnabled,
 		EmperorEnabled:            config.EmperorEnabled,
 		SequenceRevolutionEnabled: config.SequenceRevolutionEnabled,
 		IllegalFinishEnabled:      config.IllegalFinishEnabled,
+		QueenBomberEnabled:        config.QueenBomberEnabled,
 		CpuDifficulty:             int(config.CpuDifficulty),
 	}
 
@@ -64,6 +66,8 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		resObj.PendingAction = "sevenPass"
 	case domain.DaifugoPendingTenDiscard:
 		resObj.PendingAction = "tenDiscard"
+	case domain.DaifugoPendingQueenBomber:
+		resObj.PendingAction = "queenBomber"
 	default:
 		resObj.PendingAction = "none"
 	}

@@ -1976,10 +1976,11 @@ components:
           type: boolean
           description: Whether 8切り (eight-cut) rule is enabled
           example: true
-        suitLockEnabled:
-          type: boolean
-          description: Whether スート縛り (suit lock) rule is enabled
-          example: true
+        suitLockMode:
+          type: integer
+          description: "Suit lock mode: 0=none, 1=partial, 2=full"
+          enum: [0, 1, 2]
+          example: 1
         elevenBackEnabled:
           type: boolean
           description: Whether 11バック (eleven-back) rule is enabled
@@ -1996,6 +1997,12 @@ components:
           type: boolean
           description: Whether 5飛び (five-skip) rule is enabled (default false)
           example: false
+        fiveSkipCount:
+          type: integer
+          description: Number of players to skip per 5 card
+          minimum: 1
+          maximum: 5
+          example: 1
         sevenPassEnabled:
           type: boolean
           description: Whether 7渡し (seven-pass) rule is enabled (default false)
@@ -2020,9 +2027,13 @@ components:
           type: boolean
           description: Whether クーデター (coup d'état — 3 nines = revolution) rule is enabled (default false)
           example: false
-        intenseLockEnabled:
+        numberLockEnabled:
           type: boolean
-          description: Whether 激シバ (intense lock / number lock) rule is enabled (default false)
+          description: Whether 激シバ (number lock) rule is enabled (default false)
+          example: false
+        queenBomberEnabled:
+          type: boolean
+          description: Whether Qボンバー (queen bomber) rule is enabled (default false)
           example: false
         sandstormEnabled:
           type: boolean
@@ -2168,8 +2179,9 @@ components:
           description: |
             Pending action that the current player must resolve before turn advances.
             `none` = no pending action; `sevenPass` = must give a card (7渡し);
-            `tenDiscard` = must discard a card (10捨て).
-          enum: [none, sevenPass, tenDiscard]
+            `tenDiscard` = must discard a card (10捨て);
+            `queenBomber` = must discard a card from target player (Qボンバー).
+          enum: [none, sevenPass, tenDiscard, queenBomber]
           example: none
         pendingActionTarget:
           type: integer

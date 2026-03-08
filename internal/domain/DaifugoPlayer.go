@@ -46,3 +46,29 @@ func (p *DaifugoPlayer) SortCards() {
 		return DaifugoCardStrength(c.GetValue())
 	})
 }
+
+// RemoveCardsByValue 指定した値のカードを全て除去して返す
+func (p *DaifugoPlayer) RemoveCardsByValue(value int) []*Card {
+	removed := make([]*Card, 0)
+	remaining := make([]*Card, 0)
+	for _, c := range p.cards {
+		if !IsJoker(c) && c.GetValue() == value {
+			removed = append(removed, c)
+		} else {
+			remaining = append(remaining, c)
+		}
+	}
+	p.cards = remaining
+	return removed
+}
+
+// CountCardsByValue 指定した値のカードの枚数を返す
+func (p *DaifugoPlayer) CountCardsByValue(value int) int {
+	count := 0
+	for _, c := range p.cards {
+		if !IsJoker(c) && c.GetValue() == value {
+			count++
+		}
+	}
+	return count
+}
