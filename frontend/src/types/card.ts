@@ -137,6 +137,7 @@ export interface PokerResponse {
   cpuActions: PokerCpuAction[];
   cpuExchanges: PokerCpuExchange[];
   odds?: PokerOdds[];
+  isLowball: boolean;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

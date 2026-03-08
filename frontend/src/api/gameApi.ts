@@ -71,6 +71,7 @@ export interface PokerConfigInput {
   cpuCount?: number;
   jokerCount?: number;
   bettingLimit?: number;
+  isLowball?: boolean;
 }
 
 export const pokerApi = {

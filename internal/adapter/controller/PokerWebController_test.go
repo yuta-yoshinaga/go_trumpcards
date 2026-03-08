@@ -839,6 +839,26 @@ func TestPokerWebController_AllShortCommands(t *testing.T) {
 
 // --- betting limit ---
 
+func TestPokerWebController_Reset_IsLowball(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	cfg := domain.DefaultPokerConfig()
+	cfg.IsLowball = true
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"isLowball": true,
+			}))
+	recorded.CodeIs(200)
+	mi.AssertCalled(t, "ResetWithConfig", cfg)
+}
+
 func TestPokerWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	api, pwc := newPokerTestHandler(mi)

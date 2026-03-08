@@ -32,6 +32,7 @@ export function PokerPage() {
   const { selected, setSelected, clear: clearSelection } = useCardSelection();
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
+  const [isLowball, setIsLowball] = useState(false);
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);
   const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const oddsGenRef = useRef(0);
@@ -110,6 +111,9 @@ export function PokerPage() {
           <span>
             {t('joker')} <strong>{state?.jokerCount}</strong>
           </span>
+        )}
+        {state?.isLowball && (
+          <span className="bg-yellow-600 text-white px-2 py-0.5 rounded text-xs font-bold">[{t('lowballMode')}]</span>
         )}
       </div>
 
@@ -302,11 +306,19 @@ export function PokerPage() {
               <option value={2}>{tc('betting.noLimit')}</option>
             </select>
           </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input
+              type="checkbox"
+              checked={isLowball}
+              onChange={(e) => setIsLowball(e.target.checked)}
+            />
+            {t('lowball')}
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, undefined, { bettingLimit })}
+            onClick={() => exec('reset', undefined, undefined, { bettingLimit, isLowball })}
           >
             {tc('button.reset')}
           </button>

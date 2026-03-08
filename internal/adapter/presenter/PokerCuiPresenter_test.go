@@ -590,6 +590,34 @@ func TestPokerCuiPresenter_OutputWithOdds_EmptyOdds(t *testing.T) {
 	assert.Equal(t, resultPlain, resultWithOdds)
 }
 
+func TestPokerCuiPresenter_Output_LowballMode(t *testing.T) {
+	pres := presenter.NewPokerCuiPresenter()
+
+	t.Run("lowball mode shows 2-7 Lowball", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.PokerPlayer{
+			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		}
+		cfg := domain.DefaultPokerConfig()
+		cfg.IsLowball = true
+		cfg.CpuCount = 1
+		p := domain.NewPoker(tc, players, cfg)
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		assert.Contains(t, result, "2-7 Lowball")
+	})
+
+	t.Run("normal mode does not show 2-7 Lowball", func(t *testing.T) {
+		p, _ := makePokerCuiForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		assert.NotContains(t, result, "2-7 Lowball")
+	})
+}
+
 func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 	pres := presenter.NewPokerCuiPresenter()
 

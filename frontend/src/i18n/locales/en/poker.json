@@ -7,5 +7,7 @@
   "drawOdds": "Draw Odds:",
   "cpuExchange": "CPU Exchange:",
   "cpuExchangeEntry": "Player {{idx}}: exchanged {{count}} card(s)",
-  "exchangeCount": "Exchanged: {{count}}"
+  "exchangeCount": "Exchanged: {{count}}",
+  "lowball": "2-7 Lowball",
+  "lowballMode": "2-7 Lowball Mode"
 }

@@ -518,6 +518,40 @@ func TestPokerWebPresenter_OutputWithOdds(t *testing.T) {
 	})
 }
 
+func TestPokerWebPresenter_Output_IsLowball(t *testing.T) {
+	pres := presenter.NewPokerWebPresenter()
+
+	t.Run("isLowball true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.PokerPlayer{
+			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		}
+		cfg := domain.DefaultPokerConfig()
+		cfg.IsLowball = true
+		cfg.CpuCount = 1
+		p := domain.NewPoker(tc, players, cfg)
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.True(t, out.IsLowball)
+	})
+
+	t.Run("isLowball false", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.False(t, out.IsLowball)
+	})
+}
+
 func TestPokerWebPresenter_Output_BettingLimitFields(t *testing.T) {
 	pres := presenter.NewPokerWebPresenter()
 

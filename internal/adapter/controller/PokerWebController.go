@@ -15,6 +15,7 @@ type PokerWebInput struct {
 	CpuCount     *int  `json:"cpuCount,omitempty"`
 	JokerCount   *int  `json:"jokerCount,omitempty"`
 	BettingLimit *int  `json:"bettingLimit,omitempty"`
+	IsLowball    *bool `json:"isLowball,omitempty"`
 }
 
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
@@ -89,6 +90,7 @@ type PokerWebOutput struct {
 	CpuActions    []*PokerWebOutputCpuAction   `json:"cpuActions"`
 	CpuExchanges  []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
 	Odds          []*PokerWebOutputOdds        `json:"odds,omitempty"`
+	IsLowball     bool                         `json:"isLowball"`
 	Message       string                       `json:"message"`
 	MessageCode   string                       `json:"messageCode,omitempty"`
 	MessageParams map[string]string            `json:"messageParams,omitempty"`
@@ -143,6 +145,9 @@ func pokerDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PokerIn
 				bl = 2
 			}
 			cfg.BettingLimit = domain.BettingLimitType(bl)
+		}
+		if param.IsLowball != nil {
+			cfg.IsLowball = *param.IsLowball
 		}
 		bc.writePresenterResponse(w, pi.ResetWithConfig(cfg))
 	case "e", "exchange":

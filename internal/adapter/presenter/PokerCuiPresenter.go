@@ -22,7 +22,11 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	players := p.GetPlayers()
 
 	b.WriteString("==========\n")
-	b.WriteString("5-Card Draw Poker\n")
+	if p.GetConfig().IsLowball {
+		b.WriteString("5-Card Draw Poker [2-7 Lowball]\n")
+	} else {
+		b.WriteString("5-Card Draw Poker\n")
+	}
 	b.WriteString("==========\n")
 
 	// ディーラー位置

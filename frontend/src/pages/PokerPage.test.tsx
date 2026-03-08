@@ -76,6 +76,7 @@ const initState: PokerResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  isLowball: false,
 };
 
 /** DEAL phase (phase 1): human's turn, no outstanding bet */
@@ -98,6 +99,7 @@ const dealState: PokerResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  isLowball: false,
 };
 
 /** DEAL with outstanding bet: shows call/raise */
@@ -162,6 +164,7 @@ const endState: PokerResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  isLowball: false,
 };
 
 beforeEach(() => {
@@ -825,7 +828,9 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0, isLowball: false }),
+    );
   });
 
   it('sends updated bettingLimit when select is changed before reset', async () => {
@@ -838,7 +843,38 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1, isLowball: false }),
+    );
+  });
+
+  it('sends isLowball true when checkbox is checked before reset', async () => {
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const checkbox = screen.getByLabelText('2-7 ローボール');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0, isLowball: true }),
+    );
+  });
+
+  it('shows lowball mode indicator when isLowball is true', async () => {
+    const lowballState = { ...dealState, isLowball: true };
+    mockExec.mockResolvedValue(lowballState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('[2-7 ローボール モード]')).toBeInTheDocument());
+  });
+
+  it('does not show lowball mode indicator when isLowball is false', async () => {
+    mockExec.mockResolvedValue(dealState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/ポット/)).toBeInTheDocument());
+    expect(screen.queryByText('[2-7 ローボール モード]')).not.toBeInTheDocument();
   });
 
   // ---- loading / disabled state ----

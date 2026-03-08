@@ -53,6 +53,7 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	resObj.BettingLimit = int(p.GetConfig().BettingLimit)
 	resObj.RaiseCount = p.GetRaiseCount()
 	resObj.MaxBetAmount = calcMaxBetAmount(p.GetConfig().BettingLimit, p.GetPot(), p.GetLastBet())
+	resObj.IsLowball = p.GetConfig().IsLowball
 
 	// サイドポット
 	resObj.SidePots = make([]*controller.PokerWebOutputSidePot, 0)

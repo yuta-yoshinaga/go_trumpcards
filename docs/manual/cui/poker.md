@@ -107,6 +107,7 @@ flowchart TD
 | `bettinglimit [0-2]` | `bl [0-2]` | ベッティングリミット変更（0=Fixed, 1=PotLimit, 2=NoLimit） |
 | `setcpucount [1-3]` | `scc [1-3]` | CPU人数を変更してリセット |
 | `setjokercount [0-2]` | `sjc [0-2]` | ジョーカー枚数を変更してリセット |
+| `lowball` | `lw` | 2-7 ローボールモードの切り替え（最弱の手が勝利） |
 | `odds [0-4...]` | `o [0-4...]` | 交換候補のドローオッズを表示（例: `o 0 2 4`） |
 | `quit` | `q` | ゲーム終了 |
 
