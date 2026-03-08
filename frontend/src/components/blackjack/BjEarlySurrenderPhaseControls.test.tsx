@@ -46,18 +46,14 @@ describe('BjEarlySurrenderPhaseControls', () => {
 
   it('highlights surrender button when hint suggests surrender', () => {
     render(
-      <BjEarlySurrenderPhaseControls
-        {...defaultProps({ hintEnabled: true, suggestedAction: BJ_SUGGEST_SURRENDER })}
-      />,
+      <BjEarlySurrenderPhaseControls {...defaultProps({ hintEnabled: true, suggestedAction: BJ_SUGGEST_SURRENDER })} />,
     );
     expect(screen.getByRole('button', { name: 'アーリーサレンダー' })).toHaveClass('ring-2');
   });
 
   it('highlights continue button when hint suggests stand', () => {
     render(
-      <BjEarlySurrenderPhaseControls
-        {...defaultProps({ hintEnabled: true, suggestedAction: BJ_SUGGEST_STAND })}
-      />,
+      <BjEarlySurrenderPhaseControls {...defaultProps({ hintEnabled: true, suggestedAction: BJ_SUGGEST_STAND })} />,
     );
     expect(screen.getByRole('button', { name: '続行' })).toHaveClass('ring-2');
   });
