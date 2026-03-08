@@ -391,3 +391,21 @@ func TestHoldemCuiController_SkipAddon(t *testing.T) {
 	assert.Equal(t, "skipaddon ok", c.Exec("sa"))
 	assert.Equal(t, "skipaddon ok", c.Exec("skipaddon"))
 }
+
+// --- muck / show ---
+
+func TestHoldemCuiController_Muck(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("Muck").Return("muck ok")
+	assert.Equal(t, "muck ok", c.Exec("m"))
+	assert.Equal(t, "muck ok", c.Exec("muck"))
+}
+
+func TestHoldemCuiController_ShowHand(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("ShowHand").Return("show ok")
+	assert.Equal(t, "show ok", c.Exec("sh"))
+	assert.Equal(t, "show ok", c.Exec("show"))
+}

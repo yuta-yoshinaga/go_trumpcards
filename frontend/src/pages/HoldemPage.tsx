@@ -59,6 +59,7 @@ export function HoldemPage() {
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 0;
+  const isMuckPhase = phase === HoldemPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.REBUY;
   const isAddonPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.ADDON;
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
@@ -197,6 +198,30 @@ export function HoldemPage() {
         />
 
         <ErrorAlert message={error} />
+
+        {/* Muck/Show controls */}
+        {isMuckPhase && (
+          <div className="mb-2 text-center" data-testid="muck-controls">
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                className={`${btnPrimary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('muck')}
+              >
+                {t('muck.muck')}
+              </button>
+              <button
+                type="button"
+                className="min-w-[90px] rounded bg-gray-500 px-4 py-2 text-sm text-white hover:bg-gray-600 disabled:opacity-50"
+                disabled={loading}
+                onClick={() => exec('show')}
+              >
+                {t('muck.show')}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Rebuy/Addon controls */}
         {isRebuyPhase && (

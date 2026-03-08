@@ -64,6 +64,7 @@ type HoldemWebOutputResult struct {
 	Kickers   string           `json:"kickers"`
 	BestHand  []*WebOutputCard `json:"bestHand"`
 	WonAmount int              `json:"wonAmount"`
+	Mucked    bool             `json:"mucked"`
 }
 
 // HoldemWebOutputSidePot テキサスホールデムサイドポット
@@ -111,6 +112,7 @@ type HoldemWebOutput struct {
 	RebuyPeriodHands int                         `json:"rebuyPeriodHands"`
 	AddonAfterHand   int                         `json:"addonAfterHand"`
 	RebuyPhaseType   int                         `json:"rebuyPhaseType"`
+	MuckAvailable    bool                        `json:"muckAvailable"`
 }
 
 // HoldemWebController テキサスホールデムWebコントローラークラス
@@ -229,6 +231,10 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 		bc.writePresenterResponse(w, hgi.Addon())
 	case "sa", "skipaddon":
 		bc.writePresenterResponse(w, hgi.SkipAddon())
+	case "m", "muck":
+		bc.writePresenterResponse(w, hgi.Muck())
+	case "sh", "show":
+		bc.writePresenterResponse(w, hgi.ShowHand())
 	default:
 		return false
 	}

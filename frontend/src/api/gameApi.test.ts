@@ -1459,6 +1459,36 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with muck command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('muck');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'muck',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with show command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('show');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'show',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(holdemApi.exec('reset')).rejects.toThrow('HTTP error: 500');

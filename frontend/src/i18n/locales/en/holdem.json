@@ -31,5 +31,10 @@
     "skip": "Skip",
     "label": "Addon",
     "enabled": "Addon Enabled"
+  },
+  "muck": {
+    "prompt": "Muck or show your hand.",
+    "muck": "Muck",
+    "show": "Show"
   }
 }

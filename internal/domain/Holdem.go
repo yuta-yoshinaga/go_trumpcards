@@ -101,6 +101,7 @@ type HoldemResult struct {
 	BestHand  []*Card // ベスト5枚
 	Kickers   []int   // キッカーカード値
 	WonAmount int     // 獲得チップ
+	Mucked    bool    // マックしたかどうか
 }
 
 // HoldemCpuAction CPU行動記録
@@ -588,6 +589,7 @@ func (h *Holdem) resolveShowdown() {
 
 	// 結果を構築
 	h.roundResults = make([]HoldemResult, 0)
+	humanLost := false
 	for i, p := range h.players {
 		if p.GetFolded() {
 			continue
@@ -601,11 +603,61 @@ func (h *Holdem) resolveShowdown() {
 			WonAmount: wonAmounts[i],
 		}
 		h.roundResults = append(h.roundResults, result)
+		if p.GetIsHuman() && wonAmounts[i] == 0 {
+			humanLost = true
+		}
 	}
 
+	// 人間が負けた場合、マック選択のためSHOWDOWNフェーズに留まる
+	if humanLost {
+		return
+	}
+
+	h.finalizeShowdown()
+}
+
+// finalizeShowdown ショーダウンを完了し、END フェーズに遷移する
+func (h *Holdem) finalizeShowdown() {
 	h.phase = HoldemPhaseEnd
 	h.gameEndFlag = true
 	h.dealerIdx = (h.dealerIdx + 1) % len(h.players)
+}
+
+// Muck 人間プレイヤーがハンドをマックする (公開せずに伏せる)
+func (h *Holdem) Muck() error {
+	if h.phase != HoldemPhaseShowdown {
+		return NewDomainError(ErrWrongPhase, "Muck is not available now.")
+	}
+	for i := range h.roundResults {
+		if h.players[h.roundResults[i].PlayerIdx].GetIsHuman() {
+			h.roundResults[i].Mucked = true
+			break
+		}
+	}
+	h.finalizeShowdown()
+	return nil
+}
+
+// ShowHand 人間プレイヤーがハンドを公開する
+func (h *Holdem) ShowHand() error {
+	if h.phase != HoldemPhaseShowdown {
+		return NewDomainError(ErrWrongPhase, "Show hand is not available now.")
+	}
+	h.finalizeShowdown()
+	return nil
+}
+
+// IsMuckAvailable 人間プレイヤーがマック可能かどうか
+func (h *Holdem) IsMuckAvailable() bool {
+	if h.phase != HoldemPhaseShowdown {
+		return false
+	}
+	for _, r := range h.roundResults {
+		if h.players[r.PlayerIdx].GetIsHuman() && r.WonAmount == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // getHandName ハンドランクから名前を返す

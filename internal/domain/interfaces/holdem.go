@@ -36,4 +36,7 @@ type HoldemGame interface {
 	GetRebuyCounts() []int
 	GetAddonUsed() []bool
 	GetRebuyPhaseType() int
+	Muck() error
+	ShowHand() error
+	IsMuckAvailable() bool
 }

@@ -2802,8 +2802,9 @@ components:
             Game command.  Accepted values: `reset` (`r`), `fold` (`f`),
             `check` (`ck`), `call` (`c`), `bet` (`b`), `raise` (`ra`),
             `allin` (`a`), `rebuy` (`rb`), `skiprebuy` (`sr`),
-            `addon` (`ad`), `skipaddon` (`sa`), `quit` (`q`).
-          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, q, quit]
+            `addon` (`ad`), `skipaddon` (`sa`), `muck` (`m`),
+            `show` (`sh`), `quit` (`q`).
+          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, q, quit]
           example: bet
         amount:
           type: integer
@@ -3078,6 +3079,10 @@ components:
           type: integer
           description: Chips won from the pot
           example: 40
+        mucked:
+          type: boolean
+          description: Whether the player mucked (hid) their hand at showdown
+          example: false
 
     HoldemSidePot:
       type: object
@@ -3275,3 +3280,7 @@ components:
           type: integer
           description: Chips available for addon
           minimum: 0
+        muckAvailable:
+          type: boolean
+          description: Whether the human player can muck (hide) their hand at showdown (available when human lost)
+          example: false

@@ -16,6 +16,8 @@ type HoldemInteractorIF interface {
 	SkipRebuy() string
 	Addon() string
 	SkipAddon() string
+	Muck() string
+	ShowHand() string
 }
 
 // HoldemInteractor テキサスホールデムインタラクタークラス
@@ -79,5 +81,17 @@ func (hi *HoldemInteractor) Addon() string {
 // SkipAddon アドオン辞退
 func (hi *HoldemInteractor) SkipAddon() string {
 	err := hi.h.SkipAddon()
+	return hi.hp.Output(hi.h, err)
+}
+
+// Muck マック (ハンドを伏せる)
+func (hi *HoldemInteractor) Muck() string {
+	err := hi.h.Muck()
+	return hi.hp.Output(hi.h, err)
+}
+
+// ShowHand ハンドを公開する
+func (hi *HoldemInteractor) ShowHand() string {
+	err := hi.h.ShowHand()
 	return hi.hp.Output(hi.h, err)
 }
