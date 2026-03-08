@@ -32,6 +32,7 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	resObj.BlindLevelHands = cfg.BlindLevelHands
 	resObj.BlindMultiplier = cfg.BlindMultiplier
 	resObj.BettingLimit = int(cfg.BettingLimit)
+	resObj.TableSize = h.GetPlayerCnt()
 	resObj.RaiseCount = h.GetRaiseCount()
 	resObj.MaxBetAmount = calcMaxBetAmount(cfg.BettingLimit, h.GetPot(), h.GetLastBet())
 

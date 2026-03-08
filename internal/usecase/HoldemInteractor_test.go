@@ -116,6 +116,59 @@ func TestHoldemInteractor_GetConfig(t *testing.T) {
 	mg.AssertCalled(t, "GetConfig")
 }
 
+func TestHoldemInteractor_ResetWithConfig_TableSizeChange(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = domain.HoldemTableSize6
+	mg.On("GetPlayerCnt").Return(4)
+	mg.On("Resize", mock.MatchedBy(func(players []*domain.HoldemPlayer) bool {
+		return len(players) == 6 && players[0].GetIsHuman()
+	})).Return()
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("resize output")
+
+	result := hi.ResetWithConfig(cfg)
+	assert.Equal(t, "resize output", result)
+	mg.AssertCalled(t, "Resize", mock.Anything)
+}
+
+func TestHoldemInteractor_ResetWithConfig_SameTableSize(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = domain.HoldemTableSize4
+	mg.On("GetPlayerCnt").Return(4)
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("no resize output")
+
+	result := hi.ResetWithConfig(cfg)
+	assert.Equal(t, "no resize output", result)
+	mg.AssertNotCalled(t, "Resize", mock.Anything)
+}
+
+func TestHoldemInteractor_ResetWithConfig_TableSizeZero(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = 0 // not set, should skip resize
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("zero output")
+
+	result := hi.ResetWithConfig(cfg)
+	assert.Equal(t, "zero output", result)
+	mg.AssertNotCalled(t, "Resize", mock.Anything)
+}
+
 func TestHoldemInteractor_Action_Error(t *testing.T) {
 	mg := new(interfaces.MockHoldemGame)
 	mp := new(presenter.MockHoldemPresenter)

@@ -33,6 +33,7 @@ export function HoldemPage() {
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [bettingLimit, setBettingLimit] = useState(0);
+  const [tableSize, setTableSize] = useState(4);
 
   useEffect(() => {
     exec('reset');
@@ -223,11 +224,23 @@ export function HoldemPage() {
               <option value={2}>{tc('betting.noLimit')}</option>
             </select>
           </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            {t('tableSize.label')}
+            <select
+              value={tableSize}
+              onChange={(e) => setTableSize(Number(e.target.value))}
+              className="px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
+            >
+              <option value={4}>{t('tableSize.4max')}</option>
+              <option value={6}>{t('tableSize.6max')}</option>
+              <option value={9}>{t('tableSize.9max')}</option>
+            </select>
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, { bettingLimit })}
+            onClick={() => exec('reset', undefined, { bettingLimit, tableSize })}
           >
             {tc('button.reset')}
           </button>

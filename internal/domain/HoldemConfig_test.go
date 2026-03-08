@@ -11,6 +11,75 @@ func TestDefaultHoldemConfig(t *testing.T) {
 	assert.Equal(t, 5, cfg.SmallBlind)
 	assert.Equal(t, 10, cfg.BigBlind)
 	assert.Equal(t, 1000, cfg.InitChips)
+	assert.Equal(t, HoldemTableSize4, cfg.TableSize)
+}
+
+func TestHoldemTableSizeConstants(t *testing.T) {
+	assert.Equal(t, 4, HoldemTableSize4)
+	assert.Equal(t, 6, HoldemTableSize6)
+	assert.Equal(t, 9, HoldemTableSize9)
+}
+
+func TestIsValidHoldemTableSize(t *testing.T) {
+	assert.True(t, IsValidHoldemTableSize(4))
+	assert.True(t, IsValidHoldemTableSize(6))
+	assert.True(t, IsValidHoldemTableSize(9))
+	assert.False(t, IsValidHoldemTableSize(2))
+	assert.False(t, IsValidHoldemTableSize(5))
+	assert.False(t, IsValidHoldemTableSize(10))
+}
+
+func TestDefaultCpuStyles(t *testing.T) {
+	t.Run("4-max", func(t *testing.T) {
+		styles := DefaultCpuStyles(HoldemTableSize4)
+		assert.Equal(t, 3, len(styles))
+		assert.Equal(t, HoldemStyleLAP, styles[0])
+		assert.Equal(t, HoldemStyleTAP, styles[1])
+		assert.Equal(t, HoldemStyleGTO, styles[2])
+	})
+	t.Run("6-max", func(t *testing.T) {
+		styles := DefaultCpuStyles(HoldemTableSize6)
+		assert.Equal(t, 5, len(styles))
+		assert.Equal(t, HoldemStyleTAG, styles[0])
+		assert.Equal(t, HoldemStyleLAP, styles[1])
+		assert.Equal(t, HoldemStyleTAP, styles[2])
+		assert.Equal(t, HoldemStyleLAG, styles[3])
+		assert.Equal(t, HoldemStyleGTO, styles[4])
+	})
+	t.Run("9-max", func(t *testing.T) {
+		styles := DefaultCpuStyles(HoldemTableSize9)
+		assert.Equal(t, 8, len(styles))
+	})
+	t.Run("unknown defaults to 4-max", func(t *testing.T) {
+		styles := DefaultCpuStyles(3)
+		assert.Equal(t, 3, len(styles))
+	})
+}
+
+func TestNewPlayersForTable(t *testing.T) {
+	t.Run("4-max", func(t *testing.T) {
+		players := NewPlayersForTable(HoldemTableSize4)
+		assert.Equal(t, 4, len(players))
+		assert.True(t, players[0].GetIsHuman())
+		for i := 1; i < 4; i++ {
+			assert.False(t, players[i].GetIsHuman())
+		}
+	})
+	t.Run("6-max", func(t *testing.T) {
+		players := NewPlayersForTable(HoldemTableSize6)
+		assert.Equal(t, 6, len(players))
+		assert.True(t, players[0].GetIsHuman())
+	})
+	t.Run("9-max", func(t *testing.T) {
+		players := NewPlayersForTable(HoldemTableSize9)
+		assert.Equal(t, 9, len(players))
+		assert.True(t, players[0].GetIsHuman())
+	})
+	t.Run("invalid falls back to 4-max", func(t *testing.T) {
+		players := NewPlayersForTable(5)
+		assert.Equal(t, 4, len(players))
+		assert.True(t, players[0].GetIsHuman())
+	})
 }
 
 func TestHoldemPlayStyle_Constants(t *testing.T) {

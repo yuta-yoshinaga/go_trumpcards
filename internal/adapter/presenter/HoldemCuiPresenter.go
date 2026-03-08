@@ -31,6 +31,9 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			h.GetHandCount(), cfg.SmallBlind, cfg.BigBlind, cfg.BlindLevelHands)
 	}
 
+	// テーブルサイズ
+	fmt.Fprintf(&b, "テーブル: %d-max\n", h.GetPlayerCnt())
+
 	// ディーラー位置
 	fmt.Fprintf(&b, "ディーラー: Player %d\n", h.GetDealerIdx())
 

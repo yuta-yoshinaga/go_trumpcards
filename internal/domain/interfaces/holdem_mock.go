@@ -162,3 +162,8 @@ func (_m *MockHoldemGame) GetHandCount() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// Resize モック
+func (_m *MockHoldemGame) Resize(players []*domain.HoldemPlayer) {
+	_m.Called(players)
+}
