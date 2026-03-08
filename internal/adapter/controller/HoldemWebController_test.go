@@ -485,6 +485,76 @@ func TestHoldemWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) {
 	recorded.CodeIs(200)
 }
 
+// --- table size ---
+
+func TestHoldemWebController_Reset_WithTableSize_Valid(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = domain.HoldemTableSize6
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"tableSize": 6,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_WithTableSize_9max(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = domain.HoldemTableSize9
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"tableSize": 9,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_WithTableSize_Invalid(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"tableSize": 5,
+			}))
+	recorded.CodeIs(400)
+}
+
+func TestHoldemWebController_Reset_WithTableSize_Invalid_3(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"tableSize": 3,
+			}))
+	recorded.CodeIs(400)
+}
+
 func TestHoldemWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)

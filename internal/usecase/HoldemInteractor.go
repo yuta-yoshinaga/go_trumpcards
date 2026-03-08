@@ -34,6 +34,16 @@ func (hi *HoldemInteractor) Reset() string {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
+	// テーブルサイズ変更時はプレイヤーを再構築
+	if cfg.TableSize > 0 && cfg.TableSize != hi.h.GetPlayerCnt() {
+		styles := domain.DefaultCpuStyles(cfg.TableSize)
+		players := make([]*domain.HoldemPlayer, 0, cfg.TableSize)
+		players = append(players, domain.NewHoldemPlayer(true, domain.HoldemStyleTAG))
+		for _, s := range styles {
+			players = append(players, domain.NewHoldemPlayer(false, s))
+		}
+		hi.h.Resize(players)
+	}
 	hi.h.SetConfig(cfg)
 	err := hi.h.Reset()
 	return hi.hp.Output(hi.h, err)

@@ -50,6 +50,47 @@ func TestNewHoldem(t *testing.T) {
 	assert.False(t, h.GetGameEndFlag())
 }
 
+func TestHoldem_Resize(t *testing.T) {
+	h := newTestHoldem()
+	assert.Equal(t, 4, h.GetPlayerCnt())
+
+	// Resize to 6 players
+	newPlayers := make([]*HoldemPlayer, 6)
+	newPlayers[0] = NewHoldemPlayer(true, HoldemStyleTAG)
+	for i := 1; i < 6; i++ {
+		newPlayers[i] = NewHoldemPlayer(false, HoldemStyleLAP)
+	}
+	h.Resize(newPlayers)
+	assert.Equal(t, 6, h.GetPlayerCnt())
+	assert.Equal(t, 0, h.GetHandCount())
+	assert.Equal(t, 6, len(h.GetActedFlags()))
+
+	// Should be able to reset and play with 6 players
+	err := h.Reset()
+	assert.NoError(t, err)
+	assert.Equal(t, 6, h.GetPlayerCnt())
+	for i := 0; i < 6; i++ {
+		assert.Equal(t, 2, h.GetPlayer(i).GetCardsSize())
+	}
+}
+
+func TestHoldem_Resize_To9(t *testing.T) {
+	h := newTestHoldem()
+
+	newPlayers := make([]*HoldemPlayer, 9)
+	newPlayers[0] = NewHoldemPlayer(true, HoldemStyleTAG)
+	for i := 1; i < 9; i++ {
+		newPlayers[i] = NewHoldemPlayer(false, HoldemStyleGTO)
+	}
+	h.Resize(newPlayers)
+	assert.Equal(t, 9, h.GetPlayerCnt())
+
+	err := h.Reset()
+	assert.NoError(t, err)
+	assert.Equal(t, 9, h.GetPlayerCnt())
+	assert.True(t, h.GetPot() > 0)
+}
+
 func TestHoldem_Reset(t *testing.T) {
 	h := newTestHoldem()
 	_ = h.Reset()

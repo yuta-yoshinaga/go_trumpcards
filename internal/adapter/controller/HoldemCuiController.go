@@ -107,6 +107,17 @@ func (c *HoldemCuiController) Exec(command string) string {
 				cfg := c.hi.GetConfig()
 				cfg.BlindLevelHands = v
 				return c.hi.ResetWithConfig(cfg), true
+			case "ts", "tablesize":
+				if len(args) < 1 {
+					return "Table size is required (4, 6, or 9).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || !domain.ValidHoldemTableSizes[v] {
+					return fmt.Sprintf("Invalid table size: %s. Please enter 4, 6, or 9.", args[0]), true
+				}
+				cfg := c.hi.GetConfig()
+				cfg.TableSize = v
+				return c.hi.ResetWithConfig(cfg), true
 			}
 			return "", false
 		},

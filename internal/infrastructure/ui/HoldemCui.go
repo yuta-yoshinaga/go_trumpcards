@@ -50,6 +50,7 @@ func (cui *HoldemCui) Exec() {
 	fmt.Println("sb [amount]・・・small blind (>=1)")
 	fmt.Println("bb [amount]・・・big blind (>=2)")
 	fmt.Println("lh [hands]・・・blind level-up hands (>=1)")
+	fmt.Println("ts [4|6|9]・・・table size (4-max, 6-max, 9-max)")
 	fmt.Println("----------------")
 
 	for {

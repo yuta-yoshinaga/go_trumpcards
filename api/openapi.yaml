@@ -752,8 +752,9 @@ paths:
       summary: Execute a Texas Hold'em game command
       description: |
         Send a command to advance the Texas Hold'em game session identified by
-        `sessionId`.  The game has 4 players (player 0 = human, players 1–3 =
-        CPU with distinct play styles).
+        `sessionId`.  The game supports configurable table sizes: 4-max
+        (default, 1 human + 3 CPU), 6-max (1 human + 5 CPU), or 9-max
+        (1 human + 8 CPU).  Each CPU has a distinct play style.
 
         The game proceeds through seven phases:
 
@@ -2834,6 +2835,13 @@ components:
           minimum: 0
           maximum: 2
           example: 0
+        tableSize:
+          type: integer
+          description: |
+            Table size (used with `reset` command).
+            4 = 4-max (default), 6 = 6-max, 9 = 9-max.
+          enum: [4, 6, 9]
+          example: 4
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -2857,7 +2865,7 @@ components:
       properties:
         id:
           type: integer
-          description: Player index (0 = human, 1–3 = CPU)
+          description: Player index (0 = human, 1+ = CPU)
           example: 0
         isHuman:
           type: boolean
@@ -3038,7 +3046,7 @@ components:
       properties:
         players:
           type: array
-          description: State of all 4 players
+          description: State of all players (4/6/9 depending on table size)
           items:
             $ref: '#/components/schemas/HoldemPlayer'
         communityCards:
@@ -3167,3 +3175,8 @@ components:
           description: Blind multiplier percentage (e.g. 200 = 2x)
           minimum: 101
           example: 200
+        tableSize:
+          type: integer
+          description: Current table size (4/6/9)
+          enum: [4, 6, 9]
+          example: 4

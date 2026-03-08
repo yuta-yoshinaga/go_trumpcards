@@ -606,4 +606,37 @@ func TestHoldemWebPresenter_Output_BettingLimitFields(t *testing.T) {
 		assert.Equal(t, 0, out.RaiseCount)
 		assert.Equal(t, 0, out.MaxBetAmount)
 	})
+
+	t.Run("tableSize reflects player count", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 4, out.TableSize)
+	})
+
+	t.Run("tableSize 6-max", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players6 := make([]*domain.HoldemPlayer, 6)
+		players6[0] = domain.NewHoldemPlayer(true, domain.HoldemStyleTAG)
+		for i := 1; i < 6; i++ {
+			players6[i] = domain.NewHoldemPlayer(false, domain.HoldemStyleLAP)
+		}
+		h6 := domain.NewHoldem(tc, players6, domain.DefaultHoldemConfig())
+		h6.SetPhase(domain.HoldemPhasePreFlop)
+		players6[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players6[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		result := p.Output(h6, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 6, out.TableSize)
+		assert.Equal(t, 6, len(out.Players))
+	})
 }

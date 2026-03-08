@@ -421,3 +421,27 @@ func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 		assert.Contains(t, result, "Fixed")
 	})
 }
+
+func TestHoldemCuiPresenter_Output_TableSize(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("displays 4-max", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "テーブル: 4-max")
+	})
+
+	t.Run("displays 6-max", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players6 := make([]*domain.HoldemPlayer, 6)
+		players6[0] = domain.NewHoldemPlayer(true, domain.HoldemStyleTAG)
+		for i := 1; i < 6; i++ {
+			players6[i] = domain.NewHoldemPlayer(false, domain.HoldemStyleLAP)
+		}
+		h := domain.NewHoldem(tc, players6, domain.DefaultHoldemConfig())
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "テーブル: 6-max")
+	})
+}

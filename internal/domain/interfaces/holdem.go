@@ -26,4 +26,5 @@ type HoldemGame interface {
 	IsHumanTurn() bool
 	GetActedFlags() []bool
 	GetHandCount() int
+	Resize(players []*domain.HoldemPlayer)
 }

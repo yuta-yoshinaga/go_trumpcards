@@ -5,9 +5,6 @@ import (
 	"math/rand"
 )
 
-// テキサスホールデムプレイヤー数
-const HoldemPlayerCnt = 4
-
 // フェーズ定数
 const (
 	HoldemPhaseInit     = 0 // 初期状態
@@ -582,7 +579,7 @@ func (h *Holdem) runCpuActions() error {
 	// maxIterationsはCPUアクションの無限ループを防ぐための安全策。
 	// 1ラウンドのアクションは最大でも「ベット→レイズ→リレイズ→キャップ」の4レイズ + 各プレイヤーのコールとなり、
 	// 4人プレイでは20アクションを超えることは稀。4ベッティングラウンドでも80アクション程度のため、200は十分な安全マージン。
-	const maxIterations = 200
+	const maxIterations = 500
 	iterations := 0
 	for !h.gameEndFlag && h.phase >= HoldemPhasePreFlop && h.phase <= HoldemPhaseRiver {
 		iterations++
@@ -1178,3 +1175,15 @@ func (h *Holdem) GetActedFlags() []bool {
 
 // GetHandCount ハンド数取得
 func (h *Holdem) GetHandCount() int { return h.handCount }
+
+// Resize プレイヤースライスを差し替え、プレイヤー数依存スライスを再初期化する
+func (h *Holdem) Resize(players []*HoldemPlayer) {
+	h.players = players
+	n := len(players)
+	h.actedFlags = make([]bool, n)
+	h.startingChips = make([]int, n)
+	h.vpipTracked = make([]bool, n)
+	h.pfrTracked = make([]bool, n)
+	h.threeBetTracked = make([]bool, n)
+	h.handCount = 0
+}

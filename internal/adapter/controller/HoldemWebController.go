@@ -19,6 +19,7 @@ type HoldemWebInput struct {
 	BlindLevelHands *int  `json:"blindLevelHands,omitempty"`
 	BlindMultiplier *int  `json:"blindMultiplier,omitempty"`
 	BettingLimit    *int  `json:"bettingLimit,omitempty"`
+	TableSize       *int  `json:"tableSize,omitempty"`
 }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
@@ -90,6 +91,7 @@ type HoldemWebOutput struct {
 	TournamentMode  bool                        `json:"tournamentMode"`
 	BlindLevelHands int                         `json:"blindLevelHands"`
 	BlindMultiplier int                         `json:"blindMultiplier"`
+	TableSize       int                         `json:"tableSize"`
 }
 
 // HoldemWebController テキサスホールデムWebコントローラークラス
@@ -157,6 +159,14 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 				bl = 2
 			}
 			cfg.BettingLimit = domain.BettingLimitType(bl)
+		}
+		if param.TableSize != nil {
+			ts := *param.TableSize
+			if !domain.ValidHoldemTableSizes[ts] {
+				bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: tableSize must be 4, 6, or 9."))
+				return true
+			}
+			cfg.TableSize = ts
 		}
 		bc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
 	case "f", "fold":

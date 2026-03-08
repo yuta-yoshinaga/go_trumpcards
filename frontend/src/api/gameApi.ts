@@ -163,6 +163,7 @@ export interface HoldemConfigInput {
   blindLevelHands?: number;
   blindMultiplier?: number;
   bettingLimit?: number;
+  tableSize?: number;
 }
 
 export const holdemApi = {

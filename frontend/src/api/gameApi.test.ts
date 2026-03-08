@@ -1292,6 +1292,7 @@ describe('gameApi', () => {
       tournamentMode: false,
       blindLevelHands: 10,
       blindMultiplier: 200,
+      tableSize: 4,
     };
 
     it('calls the correct URL with reset command', async () => {
@@ -1389,6 +1390,22 @@ describe('gameApi', () => {
             amount: undefined,
             sessionId,
             bettingLimit: 2,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and tableSize config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('reset', undefined, { tableSize: 6 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            sessionId,
+            tableSize: 6,
           }),
         }),
       );

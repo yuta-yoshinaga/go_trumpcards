@@ -319,3 +319,39 @@ func TestHoldemCuiController_LevelHand_InvalidValue(t *testing.T) {
 	assert.Contains(t, c.Exec("lh abc"), "Invalid level-up hands: abc")
 	assert.Contains(t, c.Exec("lh -1"), "Invalid level-up hands: -1")
 }
+
+// --- table size ---
+
+func TestHoldemCuiController_TableSize_Valid(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = domain.HoldemTableSize6
+	mi.On("ResetWithConfig", cfg).Return("ts ok")
+	assert.Equal(t, "ts ok", c.Exec("ts 6"))
+}
+
+func TestHoldemCuiController_TableSize_LongCommand(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = domain.HoldemTableSize9
+	mi.On("ResetWithConfig", cfg).Return("ts ok")
+	assert.Equal(t, "ts ok", c.Exec("tablesize 9"))
+}
+
+func TestHoldemCuiController_TableSize_NoArgs(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("ts"), "Table size is required")
+}
+
+func TestHoldemCuiController_TableSize_InvalidValue(t *testing.T) {
+	mi := new(usecase.MockHoldemInteractor)
+	c := NewHoldemCuiController(mi)
+	assert.Contains(t, c.Exec("ts 5"), "Invalid table size: 5")
+	assert.Contains(t, c.Exec("ts abc"), "Invalid table size: abc")
+	assert.Contains(t, c.Exec("ts -1"), "Invalid table size: -1")
+}

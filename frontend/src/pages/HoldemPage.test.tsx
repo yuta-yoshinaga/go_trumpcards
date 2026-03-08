@@ -84,6 +84,7 @@ const initState: HoldemResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  tableSize: 4,
 };
 
 /** PRE_FLOP (phase 1): human's turn, no outstanding bet */
@@ -110,6 +111,7 @@ const preFlopState: HoldemResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  tableSize: 4,
 };
 
 /** PRE_FLOP with outstanding bet: shows call/raise instead of bet/check */
@@ -174,6 +176,7 @@ const showdownState: HoldemResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  tableSize: 4,
 };
 
 /** END (phase 6) — also isShowdown */
@@ -692,7 +695,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0, tableSize: 4 }));
   });
 
   it('sends updated bettingLimit when select is changed before reset', async () => {
@@ -705,7 +708,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 1, tableSize: 4 }));
   });
 
   // ---- loading / disabled state ----
@@ -901,5 +904,40 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(screen.getByText(/SB\/BB:/)).toBeInTheDocument());
     expect(screen.queryByText(/ハンド#/)).not.toBeInTheDocument();
     expect(screen.queryByText(/レベルアップ:/)).not.toBeInTheDocument();
+  });
+
+  // ---- table size selector ----
+  it('shows table size selector with default 4-max', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const select = screen.getByLabelText('テーブルサイズ');
+    expect(select).toBeInTheDocument();
+    expect((select as HTMLSelectElement).value).toBe('4');
+  });
+
+  it('sends tableSize when reset is clicked after changing table size', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = screen.getByLabelText('テーブルサイズ');
+    fireEvent.change(select, { target: { value: '6' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0, tableSize: 6 }));
+  });
+
+  it('sends tableSize 9 when 9-max is selected', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = screen.getByLabelText('テーブルサイズ');
+    fireEvent.change(select, { target: { value: '9' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { bettingLimit: 0, tableSize: 9 }));
   });
 });
