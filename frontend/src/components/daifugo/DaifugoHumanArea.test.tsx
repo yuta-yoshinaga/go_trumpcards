@@ -11,8 +11,8 @@ function makePlayer(overrides: Partial<DaifugoPlayerData> = {}): DaifugoPlayerDa
     rank: 0,
     cardCount: 2,
     cards: [
-      { design: 0, value: 1 },
-      { design: 1, value: 13 },
+      { design: 'SPADE', value: 1 },
+      { design: 'CLOVER', value: 13 },
     ],
     ...overrides,
   };
