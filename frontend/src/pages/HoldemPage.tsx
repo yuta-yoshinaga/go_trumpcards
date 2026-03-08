@@ -200,7 +200,7 @@ export function HoldemPage() {
 
         {/* Rebuy/Addon controls */}
         {isRebuyPhase && (
-          <div className="mb-2 text-center">
+          <div className="mb-2 text-center" data-testid="rebuy-controls">
             <p className="text-white mb-2">
               {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
             </p>

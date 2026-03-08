@@ -1093,11 +1093,12 @@ describe('HoldemPage', () => {
     };
     mockExec.mockResolvedValue(rebuyState);
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('rebuy-controls')).toBeInTheDocument());
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
-    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    const rebuyControls = screen.getByTestId('rebuy-controls');
+    fireEvent.click(within(rebuyControls).getByRole('button', { name: 'スキップ' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('skiprebuy'));
   });
 

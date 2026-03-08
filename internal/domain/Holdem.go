@@ -236,24 +236,8 @@ func (h *Holdem) Reset() error {
 	}
 
 	// アドオンチェック: アドオン有効 & アドオンハンド番号に到達
-	if h.config.AddonEnabled && h.handCount == h.config.AddonAfterHand {
-		needHumanAddon := false
-		for i, p := range h.players {
-			if !h.addonUsed[i] {
-				if p.GetIsHuman() {
-					needHumanAddon = true
-				} else {
-					// CPU自動アドオン
-					p.AddChips(h.config.AddonChips)
-					h.addonUsed[i] = true
-				}
-			}
-		}
-		if needHumanAddon {
-			h.phase = HoldemPhaseRebuy
-			h.rebuyPhaseType = HoldemRebuyPhaseAddon
-			return nil
-		}
+	if h.checkAndTransitionAddon() {
+		return nil
 	}
 
 	return h.continueReset()
@@ -1176,6 +1160,7 @@ func (h *Holdem) checkAndTransitionAddon() bool {
 			}
 		}
 		if needHumanAddon {
+			h.phase = HoldemPhaseRebuy
 			h.rebuyPhaseType = HoldemRebuyPhaseAddon
 			return true
 		}
