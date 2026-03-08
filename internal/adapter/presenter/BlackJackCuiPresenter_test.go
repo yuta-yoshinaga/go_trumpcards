@@ -839,3 +839,46 @@ func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
 		assert.NotContains(t, output, "multi-hand:")
 	})
 }
+
+func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("CPU with insurance bet shows insurance info", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		cpuHand.SetBet(100)
+		cpuPlayers[0].SetInsuranceBet(50)
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "insurance: 50")
+	})
+
+	t.Run("CPU without insurance bet does not show insurance info", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		cpuHand.SetBet(100)
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "insurance:")
+	})
+}

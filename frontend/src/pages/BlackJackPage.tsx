@@ -154,6 +154,11 @@ export function BlackJackPage() {
               <div key={cpuIdx} className="mb-3">
                 <h3 className="text-yellow-200 mt-0 mb-1">
                   CPU {cpuIdx + 1} ({cpu.chips} chips)
+                  {cpu.insuranceBet > 0 && (
+                    <span className="text-yellow-400 text-sm ml-2">
+                      [{t('insurance')} {cpu.insuranceBet}]
+                    </span>
+                  )}
                 </h3>
                 {cpu.hands.map((hand, handIdx) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: CPU hands have fixed order

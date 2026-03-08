@@ -60,6 +60,21 @@ func TestBlackJackCpuSeat_SetHands(t *testing.T) {
 	assert.Equal(t, 13, cpu.GetHands()[1].GetScore())
 }
 
+func TestBlackJackCpuSeat_InsuranceBet(t *testing.T) {
+	cpu := domain.NewBlackJackCpuSeat()
+
+	// Default is 0
+	assert.Equal(t, 0, cpu.GetInsuranceBet())
+
+	// Set and get
+	cpu.SetInsuranceBet(25)
+	assert.Equal(t, 25, cpu.GetInsuranceBet())
+
+	// Update
+	cpu.SetInsuranceBet(50)
+	assert.Equal(t, 50, cpu.GetInsuranceBet())
+}
+
 func TestBlackJackCpuSeat_Reset(t *testing.T) {
 	cpu := domain.NewBlackJackCpuSeat()
 
@@ -69,6 +84,7 @@ func TestBlackJackCpuSeat_Reset(t *testing.T) {
 	cpu.GetHands()[0].SetBet(100)
 	cpu.GetHands()[0].SetStood(true)
 	cpu.GetPlayer().SetChips(500)
+	cpu.SetInsuranceBet(25)
 
 	// Add a second hand (split scenario)
 	hand2 := domain.NewBlackJackHand()
@@ -87,4 +103,7 @@ func TestBlackJackCpuSeat_Reset(t *testing.T) {
 
 	// Chips should be preserved
 	assert.Equal(t, 500, cpu.GetPlayer().GetChips())
+
+	// Insurance bet should be cleared
+	assert.Equal(t, 0, cpu.GetInsuranceBet())
 }

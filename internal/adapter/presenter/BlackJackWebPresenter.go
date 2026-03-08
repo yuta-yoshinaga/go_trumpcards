@@ -83,6 +83,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		for i, cpu := range cpuPlayers {
 			seat := new(controller.BlackJackWebOutputCpuSeat)
 			seat.Chips = cpu.GetPlayer().GetChips()
+			seat.InsuranceBet = cpu.GetInsuranceBet()
 			seat.Hands = make([]*controller.BlackJackWebOutputHand, len(cpu.GetHands()))
 			for j, hand := range cpu.GetHands() {
 				h := new(controller.BlackJackWebOutputHand)

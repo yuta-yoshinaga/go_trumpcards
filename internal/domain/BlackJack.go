@@ -235,6 +235,7 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
 	if b.dealer.GetCard(0) != nil && b.dealer.GetCard(0).GetValue() == 1 {
 		b.insuranceAvailable = true
 		b.phase = BJPhaseInsurance
+		b.cpuInsurance()
 	} else {
 		b.phase = BJPhaseAction
 		// ナチュラルBJチェック
@@ -980,18 +981,43 @@ func (b *BlackJack) initCpuPlayers() {
 	}
 }
 
+// cpuInsurance CPUプレイヤーのインシュランス判定
+func (b *BlackJack) cpuInsurance() {
+	if !b.config.CountingEnabled {
+		return
+	}
+	for _, cpu := range b.cpuPlayers {
+		if cpu.GetHands()[0].GetCardsSize() == 0 {
+			continue
+		}
+		if !ShouldTakeInsurance(b.GetTrueCount(), b.GetRunningCount(), b.config.CountingSystem) {
+			continue
+		}
+		cost := cpu.GetHands()[0].GetBet() / 2
+		if !cpu.GetPlayer().SubtractChips(cost) {
+			continue
+		}
+		cpu.SetInsuranceBet(cost)
+	}
+}
+
 // cpuBetAndDeal CPUプレイヤーの自動ベットとカード配布
 func (b *BlackJack) cpuBetAndDeal() {
 	for _, cpu := range b.cpuPlayers {
-		betAmount := BJCpuBetAmount
-		if cpu.GetPlayer().GetChips() < betAmount {
-			betAmount = cpu.GetPlayer().GetChips()
+		var betAmount int
+		if b.config.CountingEnabled {
+			betAmount = GetCountingBetAmount(b.GetTrueCount(), b.GetRunningCount(), b.config.CountingSystem, cpu.GetPlayer().GetChips())
+		} else {
+			betAmount = BJCpuBetAmount
+			if cpu.GetPlayer().GetChips() < betAmount {
+				betAmount = cpu.GetPlayer().GetChips()
+			}
+			// ベット額をBJMinBetの倍数に丸める（GetCountingBetAmountは内部で丸め済み）
+			betAmount = (betAmount / BJMinBet) * BJMinBet
 		}
 		if betAmount < BJMinBet {
 			continue
 		}
-		// ベット額をBJMinBetの倍数に丸める
-		betAmount = (betAmount / BJMinBet) * BJMinBet
 		cpu.GetPlayer().SubtractChips(betAmount)
 		hand := cpu.GetHands()[0]
 		hand.SetBet(betAmount)
@@ -1173,7 +1199,16 @@ func (b *BlackJack) cpuSplit(cpu *BlackJackCpuSeat, hand *BlackJackHand, handIdx
 
 // resolvePayoutsCpu CPUプレイヤーの精算
 func (b *BlackJack) resolvePayoutsCpu() {
+	dealerScore := b.dealer.GetScore()
+	dealerBJ := b.dealer.GetCardsSize() == 2 && dealerScore == 21
+
 	for _, cpu := range b.cpuPlayers {
+		// CPUインシュランスの精算
+		if cpu.GetInsuranceBet() > 0 {
+			if dealerBJ {
+				cpu.GetPlayer().AddChips(cpu.GetInsuranceBet() * 3)
+			}
+		}
 		for _, hand := range cpu.GetHands() {
 			if hand.GetCardsSize() == 0 {
 				continue
