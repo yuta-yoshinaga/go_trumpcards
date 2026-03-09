@@ -17,6 +17,7 @@ const mockExec = vi.mocked(sevensApi.exec);
 // With all 7s placed: value 6 or 8 of any suit is playable
 const defaultConfig = {
   tunnelEnabled: false,
+  tunnelSkipWidth: 0,
   jokerCount: 0,
   cpuStrategy: false,
   maxPasses: 5,
@@ -253,6 +254,7 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
         cpuStrategy: false,
         maxPasses: 5,
@@ -451,6 +453,7 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: true,
+        tunnelSkipWidth: 0,
         jokerCount: 1,
         cpuStrategy: true,
         maxPasses: 5,
@@ -696,6 +699,7 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
         cpuStrategy: false,
         maxPasses: 3,
@@ -881,6 +885,7 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
         cpuStrategy: false,
         maxPasses: 5,
@@ -964,6 +969,7 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
         cpuStrategy: false,
         maxPasses: 5,
@@ -1073,6 +1079,69 @@ describe('SevensPage', () => {
     expect(highlightedA).toBeUndefined();
   });
 
+  // ── TunnelSkipWidth tests ──────────────────────────────────────
+
+  it('renders tunnelSkipWidth config select with default value 0 (off)', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const select = screen.getByRole('combobox', { name: /トンネルスキップ幅/ });
+    expect(select).toHaveValue('0');
+  });
+
+  it('shows rule badge [トンネルスキップ3] when config has tunnelSkipWidth >= 2', async () => {
+    const skipState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelSkipWidth: 3 },
+    };
+    mockExec.mockResolvedValue(skipState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[トンネルスキップ3\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('syncs tunnelSkipWidth select state from server response', async () => {
+    const skipState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelSkipWidth: 4 },
+    };
+    mockExec.mockResolvedValue(skipState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => {
+      const select = screen.getByRole('combobox', { name: /トンネルスキップ幅/ });
+      expect(select).toHaveValue('4');
+    });
+  });
+
+  it('sends tunnelSkipWidth in config when select is changed and reset is clicked', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+
+    const select = screen.getByRole('combobox', { name: /トンネルスキップ幅/ });
+    fireEvent.change(select, { target: { value: '3' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelSkipWidth: 3 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        tunnelSkipWidth: 3,
+        jokerCount: 0,
+        cpuStrategy: false,
+        maxPasses: 5,
+        noJokerFinish: false,
+        jokerReclaim: false,
+        endStop: false,
+        jokerConsecutiveBanned: false,
+      }),
+    );
+  });
+
   // ── EndStop tests ──────────────────────────────────────────────
 
   it('renders EndStop config checkbox unchecked by default', async () => {
@@ -1096,6 +1165,7 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
         cpuStrategy: false,
         maxPasses: 5,
@@ -1271,6 +1341,7 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
         cpuStrategy: false,
         maxPasses: 5,

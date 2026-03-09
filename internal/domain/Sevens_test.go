@@ -595,6 +595,95 @@ func TestSevens_Tunnel(t *testing.T) {
 	})
 }
 
+func TestSevens_TunnelSkipWidth(t *testing.T) {
+	skipConfig := domain.SevensConfig{TunnelSkipWidth: 3}
+
+	t.Run("skip=3: value 4 playable when 7 is placed", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skipConfig)
+		// Fresh board has only 7s placed; skip=3 means 7-3=4 and 7+3=10 are playable
+		card4 := domain.NewCard(domain.CardDesignSpade, 4, false)
+		assert.True(t, s.IsPlayable(card4))
+	})
+
+	t.Run("skip=3: value 10 playable when 7 is placed", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skipConfig)
+		card10 := domain.NewCard(domain.CardDesignSpade, 10, false)
+		assert.True(t, s.IsPlayable(card10))
+	})
+
+	t.Run("skip=3: value 5 not playable (not adjacent or skip-distance from placed)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skipConfig)
+		card5 := domain.NewCard(domain.CardDesignSpade, 5, false)
+		// 5 is not adjacent to 7 (not 6 or 8), and not skip-distance from 7 (not 4 or 10)
+		assert.False(t, s.IsPlayable(card5))
+	})
+
+	t.Run("skip=3: normal adjacency still works", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skipConfig)
+		card6 := domain.NewCard(domain.CardDesignSpade, 6, false)
+		assert.True(t, s.IsPlayable(card6))
+	})
+
+	t.Run("skip=3 without tunnel: no wrap for value 1 (skip from 1-3=-2 out of range)", func(t *testing.T) {
+		// Place 1 on the board, then check if -2 (out of range) is handled
+		s := setupSpadeBoard(skipConfig, []int{6, 5, 4, 3, 2, 1})
+		// 1 is placed. Without tunnel, skip from 1: low=1-3=-2 (invalid), high=1+3=4 (already placed)
+		// So 11 (= 1-3 wrapped) should NOT be playable without TunnelEnabled
+		card11 := domain.NewCard(domain.CardDesignSpade, 11, false)
+		assert.False(t, s.IsPlayable(card11))
+	})
+
+	t.Run("skip=3 with tunnel: wrap enables distant connections", func(t *testing.T) {
+		wrapConfig := domain.SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 3}
+		s := setupSpadeBoard(wrapConfig, []int{6, 5, 4, 3, 2, 1})
+		// 1 is placed. With tunnel wrap: 1-3 → wrapValue(-2) = 11
+		card11 := domain.NewCard(domain.CardDesignSpade, 11, false)
+		assert.True(t, s.IsPlayable(card11))
+	})
+
+	t.Run("skip=3 with tunnel: high wrap from 13", func(t *testing.T) {
+		wrapConfig := domain.SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 3}
+		s := setupSpadeBoard(wrapConfig, []int{8, 9, 10, 11, 12, 13})
+		// 13 is placed. With tunnel wrap: 13+3 → wrapValue(16) = 3
+		card3 := domain.NewCard(domain.CardDesignSpade, 3, false)
+		assert.True(t, s.IsPlayable(card3))
+	})
+
+	t.Run("skip=1: treated as skip < 2 so disabled", func(t *testing.T) {
+		skip1Config := domain.SevensConfig{TunnelSkipWidth: 1}
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skip1Config)
+		// With skip=1 (< 2), only normal adjacency applies
+		card5 := domain.NewCard(domain.CardDesignSpade, 5, false)
+		assert.False(t, s.IsPlayable(card5))
+	})
+
+	t.Run("SetConfig clamps negative tunnelSkipWidth to 0", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		s.SetConfig(domain.SevensConfig{TunnelSkipWidth: -1, MaxPasses: 5})
+		assert.Equal(t, 0, s.GetConfig().TunnelSkipWidth)
+	})
+
+	t.Run("SetConfig clamps tunnelSkipWidth > 12 to 12", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		s.SetConfig(domain.SevensConfig{TunnelSkipWidth: 15, MaxPasses: 5})
+		assert.Equal(t, 12, s.GetConfig().TunnelSkipWidth)
+	})
+}
+
 func TestSevens_Joker(t *testing.T) {
 	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
 

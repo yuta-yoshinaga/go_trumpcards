@@ -22,6 +22,8 @@ export function SevensPage() {
     setJokerCardIdx,
     cfgTunnel,
     setCfgTunnel,
+    cfgTunnelSkipWidth,
+    setCfgTunnelSkipWidth,
     cfgJokerCount,
     setCfgJokerCount,
     cfgCpuStrategy,
@@ -58,6 +60,7 @@ export function SevensPage() {
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {state.config &&
           (state.config.tunnelEnabled ||
+            state.config.tunnelSkipWidth >= 2 ||
             state.config.jokerCount > 0 ||
             state.config.cpuStrategy ||
             state.config.maxPasses !== 5 ||
@@ -68,6 +71,8 @@ export function SevensPage() {
             <div className="bg-black/30 rounded-lg text-yellow-300 py-1.5 px-3 mb-2 text-[0.85em]">
               {t('rules.title')}
               {state.config.tunnelEnabled && ` ${t('rules.tunnelTag')}`}
+              {state.config.tunnelSkipWidth >= 2 &&
+                ` ${t('rules.tunnelSkipTag', { width: state.config.tunnelSkipWidth })}`}
               {state.config.jokerCount > 0 && ` ${t('rules.jokerTag', { count: state.config.jokerCount })}`}
               {state.config.cpuStrategy && ` ${t('rules.cpuStrategy')}`}
               {state.config.maxPasses === 0 && ` ${t('rules.passUnlimited')}`}
@@ -90,6 +95,7 @@ export function SevensPage() {
         <SevensBoard
           tablePlaced={tablePlaced}
           tunnelEnabled={tunnelEnabled}
+          tunnelSkipWidth={state.config.tunnelSkipWidth}
           endStopEnabled={state.config.endStopEnabled}
           jokerSelecting={jokerCardIdx !== null}
           onJokerPlace={handleJokerPlace}
@@ -144,6 +150,7 @@ export function SevensPage() {
               isCurrentTurn={isHumanTurn}
               tablePlaced={tablePlaced}
               tunnelEnabled={tunnelEnabled}
+              tunnelSkipWidth={state.config.tunnelSkipWidth}
               noJokerFinish={state.config.noJokerFinish}
               endStopEnabled={state.config.endStopEnabled}
               jokerConsecutiveBanned={state.config.jokerConsecutiveBanned}
@@ -158,6 +165,21 @@ export function SevensPage() {
           <label className="flex items-center gap-1 cursor-pointer">
             <input type="checkbox" checked={cfgTunnel} onChange={(e) => setCfgTunnel(e.target.checked)} />
             {t('config.tunnel')}
+          </label>
+          <label className="flex items-center gap-1 cursor-pointer">
+            {t('config.tunnelSkip')}
+            <select
+              value={cfgTunnelSkipWidth}
+              onChange={(e) => setCfgTunnelSkipWidth(Number(e.target.value))}
+              className="bg-black/50 text-white rounded px-1 py-0.5"
+            >
+              <option value={0}>{t('config.tunnelSkipOff')}</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={4}>4</option>
+              <option value={5}>5</option>
+              <option value={6}>6</option>
+            </select>
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
             {t('config.joker')}
@@ -216,6 +238,7 @@ export function SevensPage() {
             onClick={() =>
               exec('reset', -1, 0, 0, {
                 tunnelEnabled: cfgTunnel,
+                tunnelSkipWidth: cfgTunnelSkipWidth,
                 jokerCount: cfgJokerCount,
                 cpuStrategy: cfgCpuStrategy,
                 maxPasses: cfgMaxPasses,

@@ -34,6 +34,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	cfg := s.GetConfig()
 	resObj.Config = controller.SevensWebOutputConfig{
 		TunnelEnabled:          cfg.TunnelEnabled,
+		TunnelSkipWidth:        cfg.TunnelSkipWidth,
 		JokerCount:             cfg.JokerCount,
 		CpuStrategy:            cfg.CpuStrategy,
 		MaxPasses:              cfg.MaxPasses,

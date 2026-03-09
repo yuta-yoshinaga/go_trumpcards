@@ -6,6 +6,7 @@ import { useGameApi } from './useGameApi';
 export function useSevensGame() {
   const [jokerCardIdx, setJokerCardIdx] = useState<number | null>(null);
   const [cfgTunnel, setCfgTunnel] = useState(false);
+  const [cfgTunnelSkipWidth, setCfgTunnelSkipWidth] = useState(0);
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
   const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
   const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
@@ -17,6 +18,7 @@ export function useSevensGame() {
   const onSuccess = useCallback((res: SevensResponse) => {
     setJokerCardIdx(null);
     setCfgTunnel(res.config.tunnelEnabled);
+    setCfgTunnelSkipWidth(res.config.tunnelSkipWidth);
     setCfgJokerCount(res.config.jokerCount);
     setCfgCpuStrategy(res.config.cpuStrategy);
     setCfgMaxPasses(res.config.maxPasses);
@@ -60,6 +62,8 @@ export function useSevensGame() {
     setJokerCardIdx,
     cfgTunnel,
     setCfgTunnel,
+    cfgTunnelSkipWidth,
+    setCfgTunnelSkipWidth,
     cfgJokerCount,
     setCfgJokerCount,
     cfgCpuStrategy,

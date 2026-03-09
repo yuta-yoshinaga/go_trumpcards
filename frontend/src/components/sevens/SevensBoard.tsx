@@ -5,12 +5,20 @@ import { isPositionPlaced, isPositionPlayable, SUITS } from '../../utils/sevensU
 interface BoardProps {
   tablePlaced: number[];
   tunnelEnabled: boolean;
+  tunnelSkipWidth: number;
   endStopEnabled: boolean;
   jokerSelecting: boolean;
   onJokerPlace?: (suit: number, value: number) => void;
 }
 
-function Board({ tablePlaced, tunnelEnabled, endStopEnabled, jokerSelecting, onJokerPlace }: BoardProps) {
+function Board({
+  tablePlaced,
+  tunnelEnabled,
+  tunnelSkipWidth,
+  endStopEnabled,
+  jokerSelecting,
+  onJokerPlace,
+}: BoardProps) {
   const { t } = useTranslation('sevens');
   return (
     <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
@@ -28,7 +36,8 @@ function Board({ tablePlaced, tunnelEnabled, endStopEnabled, jokerSelecting, onJ
                 const placed = isPositionPlaced(tablePlaced, idx, v);
                 const isCenter = v === 7;
                 const canPlace =
-                  jokerSelecting && isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled);
+                  jokerSelecting &&
+                  isPositionPlayable(tablePlaced, idx, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
                 const tunnelHighlight =
                   tunnelEnabled &&
                   !placed &&

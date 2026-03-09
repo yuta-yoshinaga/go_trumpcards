@@ -11,6 +11,7 @@ interface HumanAreaProps {
   isCurrentTurn: boolean;
   tablePlaced: number[];
   tunnelEnabled: boolean;
+  tunnelSkipWidth: number;
   noJokerFinish: boolean;
   endStopEnabled: boolean;
   jokerConsecutiveBanned: boolean;
@@ -23,6 +24,7 @@ function HumanArea({
   isCurrentTurn,
   tablePlaced,
   tunnelEnabled,
+  tunnelSkipWidth,
   noJokerFinish,
   endStopEnabled,
   jokerConsecutiveBanned,
@@ -66,6 +68,7 @@ function HumanArea({
               endStopEnabled,
               jokerConsecutiveBanned,
               player.lastPlayedJoker,
+              tunnelSkipWidth,
             );
           return (
             <button

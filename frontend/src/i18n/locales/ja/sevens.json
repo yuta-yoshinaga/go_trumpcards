@@ -20,6 +20,7 @@
   "rules": {
     "title": "ルール:",
     "tunnelTag": "[トンネル]",
+    "tunnelSkipTag": "[トンネルスキップ{{width}}]",
     "jokerTag": "[ジョーカー×{{count}}]",
     "cpuStrategy": "[CPU戦略]",
     "passUnlimited": "[パス無制限]",
@@ -32,6 +33,8 @@
   "config": {
     "title": "ルール設定 (リセット時に適用)",
     "tunnel": "トンネル",
+    "tunnelSkip": "トンネルスキップ幅",
+    "tunnelSkipOff": "なし",
     "joker": "ジョーカー",
     "cpuStrategy": "CPU戦略",
     "passCount": "パス回数",

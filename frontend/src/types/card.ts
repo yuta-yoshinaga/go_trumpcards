@@ -283,6 +283,7 @@ export interface SevensAction {
 
 export interface SevensConfig {
   tunnelEnabled: boolean;
+  tunnelSkipWidth: number;
   jokerCount: number;
   cpuStrategy: boolean;
   maxPasses: number;

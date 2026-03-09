@@ -220,7 +220,31 @@ func (s *Sevens) isPositionPlayable(suit, value int) bool {
 			return true
 		}
 	}
+	// カスタムトンネル: ±TunnelSkipWidth の接続
+	if s.config.TunnelSkipWidth >= 2 {
+		low := value - s.config.TunnelSkipWidth
+		high := value + s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			low = wrapValue(low)
+			high = wrapValue(high)
+		}
+		if low >= 1 && low <= 13 && s.isPositionPlaced(suit, low) {
+			return true
+		}
+		if high >= 1 && high <= 13 && s.isPositionPlaced(suit, high) {
+			return true
+		}
+	}
 	return false
+}
+
+// wrapValue 値を1-13の循環範囲に収める
+func wrapValue(v int) int {
+	v = ((v - 1) % 13) + 1
+	if v <= 0 {
+		v += 13
+	}
+	return v
 }
 
 // hasAnyPlayablePosition ボード上に配置可能なポジションがあるか判定
@@ -637,6 +661,32 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 		}
 	}
 
+	// カスタムトンネル: ±TunnelSkipWidth 方向の評価
+	if s.config.TunnelSkipWidth >= 2 {
+		skipLow := value - s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			skipLow = wrapValue(skipLow)
+		}
+		if skipLow >= 1 && skipLow <= 13 && !s.isPositionPlaced(suit, skipLow) {
+			if s.playerHasCard(player, suit, skipLow) {
+				score += 2
+			} else {
+				score -= 1 + s.countWeightedOpponentsBlocked(player, suit, value, -s.config.TunnelSkipWidth)
+			}
+		}
+		skipHigh := value + s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			skipHigh = wrapValue(skipHigh)
+		}
+		if skipHigh >= 1 && skipHigh <= 13 && !s.isPositionPlaced(suit, skipHigh) {
+			if s.playerHasCard(player, suit, skipHigh) {
+				score += 2
+			} else {
+				score -= 1 + s.countWeightedOpponentsBlocked(player, suit, value, +s.config.TunnelSkipWidth)
+			}
+		}
+	}
+
 	return score
 }
 
@@ -864,6 +914,12 @@ func (s *Sevens) SetConfig(config SevensConfig) {
 	}
 	if config.MaxPasses < 0 {
 		config.MaxPasses = 0
+	}
+	if config.TunnelSkipWidth < 0 {
+		config.TunnelSkipWidth = 0
+	}
+	if config.TunnelSkipWidth > 12 {
+		config.TunnelSkipWidth = 12
 	}
 	s.config = config
 }

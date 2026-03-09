@@ -30,12 +30,19 @@ export function isEndStopped(tablePlaced: number[], suit: number, value: number,
   return false;
 }
 
+export function wrapValue(v: number): number {
+  v = ((v - 1) % 13) + 1;
+  if (v <= 0) v += 13;
+  return v;
+}
+
 export function isPositionPlayable(
   tablePlaced: number[],
   suit: number,
   value: number,
   tunnelEnabled: boolean,
   endStopEnabled: boolean,
+  tunnelSkipWidth = 0,
 ): boolean {
   if (isPositionPlaced(tablePlaced, suit, value)) return false;
   if (isEndStopped(tablePlaced, suit, value, endStopEnabled)) return false;
@@ -45,6 +52,16 @@ export function isPositionPlayable(
     if (value === 1 && isPositionPlaced(tablePlaced, suit, 13)) return true;
     if (value === 13 && isPositionPlaced(tablePlaced, suit, 1)) return true;
   }
+  if (tunnelSkipWidth >= 2) {
+    let low = value - tunnelSkipWidth;
+    let high = value + tunnelSkipWidth;
+    if (tunnelEnabled) {
+      low = wrapValue(low);
+      high = wrapValue(high);
+    }
+    if (low >= 1 && low <= 13 && isPositionPlaced(tablePlaced, suit, low)) return true;
+    if (high >= 1 && high <= 13 && isPositionPlaced(tablePlaced, suit, high)) return true;
+  }
   return false;
 }
 
@@ -52,10 +69,11 @@ export function hasAnyPlayablePosition(
   tablePlaced: number[],
   tunnelEnabled: boolean,
   endStopEnabled: boolean,
+  tunnelSkipWidth = 0,
 ): boolean {
   for (let suit = 1; suit <= 4; suit++) {
     for (let v = 1; v <= 13; v++) {
-      if (isPositionPlayable(tablePlaced, suit, v, tunnelEnabled, endStopEnabled)) return true;
+      if (isPositionPlayable(tablePlaced, suit, v, tunnelEnabled, endStopEnabled, tunnelSkipWidth)) return true;
     }
   }
   return false;
@@ -74,14 +92,15 @@ export function isCardPlayable(
   endStopEnabled: boolean,
   jokerConsecutiveBanned: boolean,
   lastPlayedJoker: boolean,
+  tunnelSkipWidth = 0,
 ): boolean {
   if (card.design === 'JOKER') {
     if (noJokerFinish && hasOnlyJokers(allCards)) return false;
     if (jokerConsecutiveBanned && lastPlayedJoker) return false;
-    return hasAnyPlayablePosition(tablePlaced, tunnelEnabled, endStopEnabled);
+    return hasAnyPlayablePosition(tablePlaced, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
   }
   const suit = designToSuit[card.design];
-  return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled, endStopEnabled);
+  return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
 }
 
 export function actionDesc(
