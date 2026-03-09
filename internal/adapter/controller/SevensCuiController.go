@@ -46,7 +46,9 @@ func (c *SevensCuiController) Exec(command string) string {
 							cfg.MaxPasses = parsed
 						}
 					case f == "strategy":
-						cfg.CpuStrategy = true
+						cfg.CpuStrategy = domain.SevensCpuStrategic
+					case f == "harassment":
+						cfg.CpuStrategy = domain.SevensCpuHarassment
 					case f == "nojokerfinish":
 						cfg.NoJokerFinish = true
 					case f == "jokerreclaim":

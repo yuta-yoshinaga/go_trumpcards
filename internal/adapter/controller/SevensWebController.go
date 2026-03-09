@@ -16,7 +16,7 @@ type SevensWebInput struct {
 	TunnelEnabled          *bool `json:"tunnelEnabled,omitempty"`          // トンネルルール (reset時のみ)
 	TunnelSkipWidth        *int  `json:"tunnelSkipWidth,omitempty"`        // カスタムトンネルスキップ幅 (reset時のみ)
 	JokerCount             *int  `json:"jokerCount,omitempty"`             // ジョーカー枚数 (reset時のみ)
-	CpuStrategy            *bool `json:"cpuStrategy,omitempty"`            // CPU戦略 (reset時のみ)
+	CpuStrategy            *int  `json:"cpuStrategy,omitempty"`            // CPU戦略モード (reset時のみ, 0=シンプル, 1=戦略的, 2=嫌がらせ特化)
 	MaxPasses              *int  `json:"maxPasses,omitempty"`              // 最大パス回数 (reset時のみ, 0=無制限)
 	NoJokerFinish          *bool `json:"noJokerFinish,omitempty"`          // ジョーカー上がり禁止 (reset時のみ)
 	JokerReclaim           *bool `json:"jokerReclaim,omitempty"`           // ジョーカー回収 (reset時のみ)
@@ -51,7 +51,7 @@ type SevensWebOutputConfig struct {
 	TunnelEnabled          bool `json:"tunnelEnabled"`
 	TunnelSkipWidth        int  `json:"tunnelSkipWidth"`
 	JokerCount             int  `json:"jokerCount"`
-	CpuStrategy            bool `json:"cpuStrategy"`
+	CpuStrategy            int  `json:"cpuStrategy"`
 	MaxPasses              int  `json:"maxPasses"`
 	NoJokerFinish          bool `json:"noJokerFinish"`
 	JokerReclaimEnabled    bool `json:"jokerReclaimEnabled"`
@@ -99,7 +99,7 @@ func sevensDispatch(bc *baseController, w rest.ResponseWriter, sgi usecase.Seven
 				TunnelEnabled:          derefBool(param.TunnelEnabled),
 				TunnelSkipWidth:        derefInt(param.TunnelSkipWidth),
 				JokerCount:             derefInt(param.JokerCount),
-				CpuStrategy:            derefBool(param.CpuStrategy),
+				CpuStrategy:            derefInt(param.CpuStrategy),
 				MaxPasses:              derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
 				NoJokerFinish:          derefBool(param.NoJokerFinish),
 				JokerReclaimEnabled:    derefBool(param.JokerReclaim),

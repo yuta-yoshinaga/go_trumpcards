@@ -19,7 +19,7 @@ const defaultConfig = {
   tunnelEnabled: false,
   tunnelSkipWidth: 0,
   jokerCount: 0,
-  cpuStrategy: false,
+  cpuStrategy: 0,
   maxPasses: 5,
   noJokerFinish: false,
   jokerReclaimEnabled: false,
@@ -256,7 +256,7 @@ describe('SevensPage', () => {
         tunnelEnabled: false,
         tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -349,7 +349,7 @@ describe('SevensPage', () => {
         ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 2,
-        cpuStrategy: true,
+        cpuStrategy: 1,
       },
     };
     mockExec.mockResolvedValue(stateWithConfig);
@@ -360,6 +360,23 @@ describe('SevensPage', () => {
       expect(screen.getByText(/\[ジョーカー×2\]/)).toBeInTheDocument();
       expect(screen.getByText(/\[CPU戦略\]/)).toBeInTheDocument();
     });
+  });
+
+  it('shows harassment rule tag when cpuStrategy is 2', async () => {
+    const stateWithHarassment: SevensResponse = {
+      ...humanTurnState,
+      config: {
+        ...defaultConfig,
+        cpuStrategy: 2,
+      },
+    };
+    mockExec.mockResolvedValue(stateWithHarassment);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[嫌がらせ特化\]/)).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/\[CPU戦略\]/)).not.toBeInTheDocument();
   });
 
   it('does not show rule header with default config', async () => {
@@ -426,7 +443,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
     expect(screen.getByLabelText('トンネル')).not.toBeChecked();
-    expect(screen.getByLabelText('CPU戦略')).not.toBeChecked();
+    expect(screen.getByRole('combobox', { name: 'CPU戦略' })).toHaveValue('0');
     expect(screen.getByRole('combobox', { name: 'ジョーカー' })).toHaveValue('0');
     expect(screen.getByRole('combobox', { name: 'パス回数' })).toHaveValue('5');
   });
@@ -437,7 +454,7 @@ describe('SevensPage', () => {
 
     fireEvent.click(screen.getByLabelText('トンネル'));
     fireEvent.change(screen.getByRole('combobox', { name: 'ジョーカー' }), { target: { value: '1' } });
-    fireEvent.click(screen.getByLabelText('CPU戦略'));
+    fireEvent.change(screen.getByRole('combobox', { name: 'CPU戦略' }), { target: { value: '1' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue({
@@ -446,7 +463,7 @@ describe('SevensPage', () => {
         ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 1,
-        cpuStrategy: true,
+        cpuStrategy: 1,
       },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
@@ -455,7 +472,7 @@ describe('SevensPage', () => {
         tunnelEnabled: true,
         tunnelSkipWidth: 0,
         jokerCount: 1,
-        cpuStrategy: true,
+        cpuStrategy: 1,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -472,7 +489,7 @@ describe('SevensPage', () => {
         ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 2,
-        cpuStrategy: true,
+        cpuStrategy: 1,
         maxPasses: 3,
       },
     };
@@ -480,7 +497,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByLabelText('トンネル')).toBeChecked();
-      expect(screen.getByLabelText('CPU戦略')).toBeChecked();
+      expect(screen.getByRole('combobox', { name: 'CPU戦略' })).toHaveValue('1');
       expect(screen.getByRole('combobox', { name: 'ジョーカー' })).toHaveValue('2');
       expect(screen.getByRole('combobox', { name: 'パス回数' })).toHaveValue('3');
     });
@@ -701,7 +718,7 @@ describe('SevensPage', () => {
         tunnelEnabled: false,
         tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 3,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -887,7 +904,7 @@ describe('SevensPage', () => {
         tunnelEnabled: false,
         tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: true,
         jokerReclaim: false,
@@ -971,7 +988,7 @@ describe('SevensPage', () => {
         tunnelEnabled: false,
         tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: true,
@@ -1132,7 +1149,7 @@ describe('SevensPage', () => {
         tunnelEnabled: false,
         tunnelSkipWidth: 3,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -1167,7 +1184,7 @@ describe('SevensPage', () => {
         tunnelEnabled: false,
         tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -1343,7 +1360,7 @@ describe('SevensPage', () => {
         tunnelEnabled: false,
         tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,

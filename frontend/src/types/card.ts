@@ -285,7 +285,7 @@ export interface SevensConfig {
   tunnelEnabled: boolean;
   tunnelSkipWidth: number;
   jokerCount: number;
-  cpuStrategy: boolean;
+  cpuStrategy: number;
   maxPasses: number;
   noJokerFinish: boolean;
   jokerReclaimEnabled: boolean;

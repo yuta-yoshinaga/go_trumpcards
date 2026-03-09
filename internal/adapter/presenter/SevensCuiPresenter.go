@@ -23,7 +23,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	b.WriteString("==========\n")
 	b.WriteString("Sevens (7並べ)\n")
 	config := s.GetConfig()
-	if config.TunnelEnabled || config.TunnelSkipWidth >= 2 || config.JokerCount > 0 || config.CpuStrategy || config.MaxPasses != domain.SevensMaxPasses || config.NoJokerFinish || config.JokerReclaimEnabled || config.EndStopEnabled || config.JokerConsecutiveBanned {
+	if config.TunnelEnabled || config.TunnelSkipWidth >= 2 || config.JokerCount > 0 || config.CpuStrategy != domain.SevensCpuSimple || config.MaxPasses != domain.SevensMaxPasses || config.NoJokerFinish || config.JokerReclaimEnabled || config.EndStopEnabled || config.JokerConsecutiveBanned {
 		b.WriteString("ルール:")
 		if config.TunnelEnabled {
 			b.WriteString(" [トンネル]")
@@ -34,8 +34,11 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 		if config.JokerCount > 0 {
 			fmt.Fprintf(&b, " [ジョーカー×%d]", config.JokerCount)
 		}
-		if config.CpuStrategy {
+		switch config.CpuStrategy {
+		case domain.SevensCpuStrategic:
 			b.WriteString(" [CPU戦略]")
+		case domain.SevensCpuHarassment:
+			b.WriteString(" [嫌がらせ特化]")
 		}
 		if config.MaxPasses == 0 {
 			b.WriteString(" [パス無制限]")
