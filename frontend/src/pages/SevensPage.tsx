@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { actionLogApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -8,9 +6,9 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
+import { useActionLog } from '../hooks/useActionLog';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
-import type { ActionLogEntry } from '../types/card';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
 
@@ -46,7 +44,7 @@ export function SevensPage() {
     handleJokerPlace,
   } = useSevensGame();
 
-  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('sevens');
 
   if (!state) return null;
 
@@ -150,20 +148,12 @@ export function SevensPage() {
 
         {state.gameEndFlag && !actionLog && (
           <div className="text-center my-2">
-            <button
-              type="button"
-              className={btnSecondary}
-              /* v8 ignore next 4 */
-              onClick={async () => {
-                const res = await actionLogApi.sevens();
-                setActionLog(res.entries);
-              }}
-            >
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
               {tc('actionLog.view')}
             </button>
           </div>
         )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
@@ -268,7 +258,7 @@ export function SevensPage() {
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
             onClick={() => {
-              setActionLog(null);
+              hideActionLog();
               exec('reset', -1, 0, 0, {
                 tunnelEnabled: cfgTunnel,
                 tunnelSkipWidth: cfgTunnelSkipWidth,

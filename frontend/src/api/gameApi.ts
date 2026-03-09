@@ -213,12 +213,13 @@ function fetchLog(url: string): Promise<ActionLogResponse> {
   return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
 }
 
-export const actionLogApi = {
-  blackjack: () => fetchLog('/blackjack/exec'),
-  poker: () => fetchLog('/poker/exec'),
-  oldmaid: () => fetchLog('/oldmaid/exec'),
-  daifugo: () => fetchLog('/daifugo/exec'),
-  sevens: () => fetchLog('/sevens/exec'),
-  doubt: () => fetchLog('/doubt/exec'),
-  holdem: () => fetchLog('/holdem/exec'),
-};
+const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem'] as const;
+type Game = (typeof games)[number];
+
+export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(
+  (acc, game) => {
+    acc[game] = () => fetchLog(`/${game}/exec`);
+    return acc;
+  },
+  {} as { [K in Game]: () => Promise<ActionLogResponse> },
+);

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
-import { actionLogApi, blackjackApi } from '../api/gameApi';
+import { blackjackApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
@@ -24,9 +24,10 @@ import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { useActionLog } from '../hooks/useActionLog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnSecondary } from '../styles/buttonStyles';
-import type { ActionLogEntry, BlackJackResponse } from '../types/card';
+import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 
 function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
@@ -47,7 +48,7 @@ export function BlackJackPage() {
   const suggestionLabels = useSuggestionLabels(t);
 
   const [message, setMessage] = useState('');
-  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('blackjack');
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
@@ -96,7 +97,7 @@ export function BlackJackPage() {
   const showSurrender = !!currentHand?.canSurrender;
 
   const handleReset = useCallback(() => {
-    setActionLog(null);
+    hideActionLog();
     const config: BlackJackConfigInput = {
       dealerHitsSoft17,
       cpuPlayerCount,
@@ -116,6 +117,7 @@ export function BlackJackPage() {
     countingSystem,
     deckPenetration,
     surrenderRule,
+    hideActionLog,
   ]);
 
   return (
@@ -279,20 +281,12 @@ export function BlackJackPage() {
         {/* Action log */}
         {phase === BjPhase.END && !actionLog && (
           <div className="text-center my-2">
-            <button
-              type="button"
-              className={btnSecondary}
-              /* v8 ignore next 4 */
-              onClick={async () => {
-                const res = await actionLogApi.blackjack();
-                setActionLog(res.entries);
-              }}
-            >
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
               {tc('actionLog.view')}
             </button>
           </div>
         )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
 
         <ErrorAlert message={error} />
 

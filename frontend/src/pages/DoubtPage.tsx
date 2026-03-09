@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { actionLogApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
@@ -8,6 +6,7 @@ import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { useActionLog } from '../hooks/useActionLog';
 import {
   actionDesc,
   CPU_MEMORY_OPTIONS,
@@ -16,7 +15,7 @@ import {
   useDoubtGame,
 } from '../hooks/useDoubtGame';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { ActionLogEntry, DoubtCpuAction } from '../types/card';
+import type { DoubtCpuAction } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 
@@ -42,7 +41,7 @@ export function DoubtPage() {
     handleCpuDoubtConfirm,
   } = useDoubtGame();
 
-  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('doubt');
 
   if (!state) return null;
 
@@ -237,20 +236,12 @@ export function DoubtPage() {
         {/* Action log */}
         {state.gameEndFlag && !actionLog && (
           <div className="text-center my-2">
-            <button
-              type="button"
-              className={btnSecondary}
-              /* v8 ignore next 4 */
-              onClick={async () => {
-                const res = await actionLogApi.doubt();
-                setActionLog(res.entries);
-              }}
-            >
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
               {tc('actionLog.view')}
             </button>
           </div>
         )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
@@ -308,7 +299,7 @@ export function DoubtPage() {
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
             onClick={() => {
-              setActionLog(null);
+              hideActionLog();
               exec('reset', undefined, undefined, undefined, doubtConfig);
             }}
           >

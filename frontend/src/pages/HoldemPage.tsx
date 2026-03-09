@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { actionLogApi, holdemApi } from '../api/gameApi';
+import { holdemApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CardBack, CardImage } from '../components/CardImage';
@@ -10,10 +10,10 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { RoundResults } from '../components/RoundResults';
+import { useActionLog } from '../hooks/useActionLog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeStyle } from '../styles/gameConstants';
-import type { ActionLogEntry } from '../types/card';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 
 function usePhaseNames(t: (key: string) => string): Record<number, string> {
@@ -38,7 +38,7 @@ export function HoldemPage() {
   const [tableSize, setTableSize] = useState(4);
   const [rebuyEnabled, setRebuyEnabled] = useState(false);
   const [addonEnabled, setAddonEnabled] = useState(false);
-  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('holdem');
 
   useEffect(() => {
     exec('reset');
@@ -143,20 +143,12 @@ export function HoldemPage() {
         {/* Action log */}
         {state?.gameEndFlag && !actionLog && (
           <div className="text-center my-2">
-            <button
-              type="button"
-              className={btnSecondary}
-              /* v8 ignore next 4 */
-              onClick={async () => {
-                const res = await actionLogApi.holdem();
-                setActionLog(res.entries);
-              }}
-            >
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
               {tc('actionLog.view')}
             </button>
           </div>
         )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       {/* Sticky footer: player hand + buttons */}
@@ -351,7 +343,7 @@ export function HoldemPage() {
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
             onClick={() => {
-              setActionLog(null);
+              hideActionLog();
               exec('reset', undefined, { bettingLimit, tableSize, rebuyEnabled, addonEnabled });
             }}
           >

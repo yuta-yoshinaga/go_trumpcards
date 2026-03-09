@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { actionLogApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
@@ -11,9 +9,10 @@ import { DaifugoSettingsPanel } from '../components/daifugo/DaifugoSettingsPanel
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { useActionLog } from '../hooks/useActionLog';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { ActionLogEntry, DaifugoAction } from '../types/card';
+import type { DaifugoAction } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
@@ -33,7 +32,7 @@ export function DaifugoPage() {
     handleConfigChange,
   } = useDaifugoGame();
 
-  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('daifugo');
 
   if (!state) return null;
 
@@ -151,20 +150,12 @@ export function DaifugoPage() {
         {/* Action log */}
         {state.gameEndFlag && !actionLog && (
           <div className="text-center my-2">
-            <button
-              type="button"
-              className={btnSecondary}
-              /* v8 ignore next 4 */
-              onClick={async () => {
-                const res = await actionLogApi.daifugo();
-                setActionLog(res.entries);
-              }}
-            >
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
               {tc('actionLog.view')}
             </button>
           </div>
         )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
@@ -204,7 +195,7 @@ export function DaifugoPage() {
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
             onClick={() => {
-              setActionLog(null);
+              hideActionLog();
               exec('reset', [], configInput);
             }}
           >

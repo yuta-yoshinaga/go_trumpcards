@@ -1,6 +1,4 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { actionLogApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -10,9 +8,10 @@ import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
+import { useActionLog } from '../hooks/useActionLog';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
-import type { ActionLogEntry, CpuAction } from '../types/card';
+import type { CpuAction } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName } from '../utils/playerUtils';
 
@@ -45,7 +44,7 @@ export function OldMaidPage() {
     setGameSettings,
   } = useOldMaidGame();
 
-  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('oldmaid');
 
   if (!gameSettings) {
     return (
@@ -190,20 +189,12 @@ export function OldMaidPage() {
         {/* Action log */}
         {state.gameEndFlag && !actionLog && (
           <div className="text-center my-2">
-            <button
-              type="button"
-              className={btnSecondary}
-              /* v8 ignore next 4 */
-              onClick={async () => {
-                const res = await actionLogApi.oldmaid();
-                setActionLog(res.entries);
-              }}
-            >
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
               {tc('actionLog.view')}
             </button>
           </div>
         )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
@@ -244,7 +235,7 @@ export function OldMaidPage() {
             className={`${btnPrimary} min-w-[80px]`}
             disabled={loading}
             onClick={() => {
-              setActionLog(null);
+              hideActionLog();
               handleReset();
             }}
           >
