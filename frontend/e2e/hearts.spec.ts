@@ -11,17 +11,17 @@ test.describe('Hearts E2E', () => {
     await resetButton.click();
     await waitForLoaded(page);
 
-    // Verify round/trick info is visible
-    await expect(page.locator('text=ラウンド')).toBeVisible();
-    await expect(page.locator('text=トリック')).toBeVisible();
+    // Verify round/trick info is visible (use regex to match "ラウンド 1" header, not score rows)
+    await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
+    await expect(page.getByText(/^トリック \d+$/).first()).toBeVisible();
 
     // Verify hearts status is shown
-    const heartsBroken = page.locator('text=ハートブレイク済');
-    const heartsNotBroken = page.locator('text=ハート未ブレイク');
+    const heartsBroken = page.getByText('ハートブレイク済');
+    const heartsNotBroken = page.getByText('ハート未ブレイク');
     await expect(heartsBroken.or(heartsNotBroken)).toBeVisible();
 
     // Verify score table is visible
-    await expect(page.locator('text=スコア')).toBeVisible();
+    await expect(page.getByText('スコア')).toBeVisible();
 
     // Game loop: handle pass phase, play phase, trick end, round end
     const MAX_TURNS = 500;
@@ -99,9 +99,9 @@ test.describe('Hearts E2E', () => {
     await resetButton.click();
     await waitForLoaded(page);
 
-    // Verify game restarted: round/trick info visible again
-    await expect(page.locator('text=ラウンド')).toBeVisible();
-    await expect(page.locator('text=トリック')).toBeVisible();
+    // Verify game restarted
+    await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
+    await expect(page.getByText(/^トリック \d+$/).first()).toBeVisible();
   });
 
   test('settings: change CPU difficulty and point limit', async ({ page }) => {
@@ -115,7 +115,7 @@ test.describe('Hearts E2E', () => {
     // Change CPU difficulty
     const cpuSelect = page.locator('select').first();
     await expect(cpuSelect).toBeVisible();
-    await cpuSelect.selectOption('hard');
+    await cpuSelect.selectOption('2');
 
     // Change point limit
     const limitSelect = page.locator('select').nth(1);
@@ -128,6 +128,6 @@ test.describe('Hearts E2E', () => {
     await waitForLoaded(page);
 
     // Verify game started with new settings
-    await expect(page.locator('text=ラウンド')).toBeVisible();
+    await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
   });
 });

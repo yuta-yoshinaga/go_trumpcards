@@ -1046,7 +1046,8 @@ func TestHearts_GetActionLog(t *testing.T) {
 
 	// Do an action to generate log
 	h.Reset()
-	h.PlayerPass([]int{0, 1, 2})
+	err := h.PlayerPass([]int{0, 1, 2})
+	assert.NoError(t, err)
 	h.CpuPass()
 	h.ExecutePass()
 	log := h.GetActionLog()
