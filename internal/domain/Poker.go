@@ -780,6 +780,13 @@ func (p *Poker) cpuDecideExchange(idx int) []int {
 		}
 	}
 
+	// スタンドパットブラフ: 弱い手でも交換しないことで強い手を装う
+	// ドローハンドより後に配置し、有望なドローを無駄にしない
+	params := pokerStyleParamsMap[pl.GetPlayStyle()]
+	if params.standPatBluffRate > 0 && rand.Intn(100) < params.standPatBluffRate {
+		return []int{}
+	}
+
 	if rank == PokerHandOnePair {
 		// ワンペアならペア以外の3枚を交換
 		valueCounts := make(map[int][]int)
