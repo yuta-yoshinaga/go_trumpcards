@@ -4,6 +4,7 @@ import {
   blackjackApi,
   daifugoApi,
   doubtApi,
+  heartsApi,
   holdemApi,
   oldmaidApi,
   pokerApi,
@@ -1535,6 +1536,97 @@ describe('gameApi', () => {
     });
   });
 
+  describe('heartsApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      trickNumber: 1,
+      currentPlayerIdx: 0,
+      currentTrick: [],
+      heartsBroken: false,
+      passDirection: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      leadPlayerIdx: 0,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 100 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await heartsApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/hearts/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndices: undefined,
+          cardIndex: undefined,
+          sessionId,
+          config: undefined,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await heartsApi.exec('play', undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/hearts/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            cardIndices: undefined,
+            cardIndex: 3,
+            sessionId,
+            config: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('calls with pass command and cardIndices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await heartsApi.exec('pass', [0, 1, 2]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/hearts/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'pass',
+            cardIndices: [0, 1, 2],
+            cardIndex: undefined,
+            sessionId,
+            config: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await heartsApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 50 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/hearts/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            cardIndices: undefined,
+            cardIndex: undefined,
+            sessionId,
+            config: { cpuDifficulty: 2, pointLimit: 50 },
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(heartsApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('actionLogApi', () => {
     const logPayload = { entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'hit card', cards: [] }] };
 
@@ -1546,6 +1638,7 @@ describe('gameApi', () => {
       ['sevens', actionLogApi.sevens],
       ['doubt', actionLogApi.doubt],
       ['holdem', actionLogApi.holdem],
+      ['hearts', actionLogApi.hearts],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));
