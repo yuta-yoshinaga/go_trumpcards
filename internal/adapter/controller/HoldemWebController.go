@@ -235,6 +235,8 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 		bc.writePresenterResponse(w, hgi.Muck())
 	case "sh", "show":
 		bc.writePresenterResponse(w, hgi.ShowHand())
+	case "log", "l":
+		bc.writePresenterResponse(w, hgi.ActionLog())
 	default:
 		return false
 	}

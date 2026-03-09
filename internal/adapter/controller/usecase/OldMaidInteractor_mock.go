@@ -46,3 +46,9 @@ func (_m *MockOldMaidInteractor) ResetProfile() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// ActionLog モック
+func (_m *MockOldMaidInteractor) ActionLog() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

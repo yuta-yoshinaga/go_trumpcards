@@ -16,3 +16,9 @@ func (_m *MockOldMaidPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 	ret := _m.Called(om, lastErr)
 	return ret.Get(0).(string)
 }
+
+// ActionLogOutput モック
+func (_m *MockOldMaidPresenter) ActionLogOutput(om interfaces.OldMaidGame) string {
+	ret := _m.Called(om)
+	return ret.Get(0).(string)
+}

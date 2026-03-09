@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -7,6 +8,7 @@ import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
+import { useActionLog } from '../hooks/useActionLog';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import type { CpuAction } from '../types/card';
@@ -41,6 +43,8 @@ export function OldMaidPage() {
     setSetupMetaAI,
     setGameSettings,
   } = useOldMaidGame();
+
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('oldmaid');
 
   if (!gameSettings) {
     return (
@@ -181,6 +185,16 @@ export function OldMaidPage() {
             {t('removedCard', { card: cardLabel(state.removedCard) })}
           </div>
         )}
+
+        {/* Action log */}
+        {state.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
@@ -216,7 +230,15 @@ export function OldMaidPage() {
           >
             {t('button.settings')}
           </button>
-          <button type="button" className={`${btnPrimary} min-w-[80px]`} disabled={loading} onClick={handleReset}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[80px]`}
+            disabled={loading}
+            onClick={() => {
+              hideActionLog();
+              handleReset();
+            }}
+          >
             {tc('button.reset')}
           </button>
           <button

@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doubtApi } from '../api/gameApi';
+import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
@@ -8,6 +8,7 @@ import { DoubtPage } from './DoubtPage';
 
 vi.mock('../api/gameApi', () => ({
   doubtApi: { exec: vi.fn() },
+  actionLogApi: { doubt: vi.fn() },
 }));
 
 const mockExec = vi.mocked(doubtApi.exec);
@@ -1030,5 +1031,31 @@ describe('DoubtPage', () => {
       renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 5 秒/)).toBeInTheDocument());
     });
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+      playCards: [],
+      cpuDoubters: [],
+      cpuActions: [],
+      lastAction: null,
+    } as unknown as DoubtResponse);
+
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.doubt).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.doubt).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

@@ -46,4 +46,5 @@ type BlackJackGame interface {
 	GetMultiHandCount() int
 	CanSurrenderHand(handIdx int) bool
 	CanSurrenderCpuHand(cpuIdx, handIdx int) bool
+	GetActionLog() []*domain.ActionLogEntry
 }

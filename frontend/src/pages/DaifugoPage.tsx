@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
@@ -8,6 +9,7 @@ import { DaifugoSettingsPanel } from '../components/daifugo/DaifugoSettingsPanel
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { useActionLog } from '../hooks/useActionLog';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { DaifugoAction } from '../types/card';
@@ -29,6 +31,8 @@ export function DaifugoPage() {
     handleDrop,
     handleConfigChange,
   } = useDaifugoGame();
+
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('daifugo');
 
   if (!state) return null;
 
@@ -142,6 +146,16 @@ export function DaifugoPage() {
           messageCode={state.gameEndFlag ? undefined : state.messageCode}
           messageParams={state.gameEndFlag ? undefined : state.messageParams}
         />
+
+        {/* Action log */}
+        {state.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
@@ -180,7 +194,10 @@ export function DaifugoPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', [], configInput)}
+            onClick={() => {
+              hideActionLog();
+              exec('reset', [], configInput);
+            }}
           >
             {tc('button.reset')}
           </button>

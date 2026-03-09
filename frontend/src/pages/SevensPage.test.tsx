@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sevensApi } from '../api/gameApi';
+import { actionLogApi, sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevensResponse } from '../types/card';
@@ -8,6 +8,7 @@ import { SevensPage } from './SevensPage';
 
 vi.mock('../api/gameApi', () => ({
   sevensApi: { exec: vi.fn() },
+  actionLogApi: { sevens: vi.fn() },
 }));
 
 const mockExec = vi.mocked(sevensApi.exec);
@@ -1461,5 +1462,29 @@ describe('SevensPage', () => {
     // Both should be playable when rule is disabled
     const playableCards = screen.queryAllByTestId('playable-card');
     expect(playableCards).toHaveLength(2);
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+      tablePlaced: {},
+      config: {},
+    } as unknown as SevensResponse);
+
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.sevens).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.sevens).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

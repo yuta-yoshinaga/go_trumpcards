@@ -169,6 +169,14 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 	return b.String()
 }
 
+// ActionLogOutput 棋譜をテキスト出力
+func (p *DaifugoCuiPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
+	if !dg.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(dg.GetActionLog())
+}
+
 // rankName ランク名取得
 func (p *DaifugoCuiPresenter) rankName(rank int) string {
 	switch rank {

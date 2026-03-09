@@ -3152,3 +3152,82 @@ func TestPoker_RunCpuExchanges_LowballBranch(t *testing.T) {
 	assert.Equal(t, 1, exchanges[0].PlayerIdx)
 	assert.Equal(t, 1, exchanges[0].ExchangeCount)
 }
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestPoker_ActionLog_Actions(t *testing.T) {
+	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+	// Give players enough chips
+	for _, pl := range players {
+		pl.SetChips(1000)
+		pl.SetCurrentBet(0)
+		pl.SetFolded(false)
+		pl.SetAllIn(false)
+	}
+	pk.SetLastBet(0)
+	pk.SetPot(40)
+
+	// Human checks
+	err := pk.PlayerAction(PokerActionCheck, 0)
+	assert.NoError(t, err)
+
+	log := pk.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "check" && e.PlayerIdx == 0 {
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "expected check action log entry")
+}
+
+func TestPoker_ActionLog_Exchange(t *testing.T) {
+	pk, players := setupPokerForHumanAction(PokerPhaseExchange)
+	// Give player 5 cards
+	for _, pl := range players {
+		pl.Reset()
+		for i := 0; i < 5; i++ {
+			pl.AddCard(NewCard(CardDesignSpade, i+2, false))
+		}
+	}
+	pk.SetCurrentTurn(0)
+
+	// Exchange 1 card
+	err := pk.PlayerExchange([]int{0})
+	assert.NoError(t, err)
+
+	log := pk.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "exchange" && e.PlayerIdx == 0 {
+			found = true
+			assert.Contains(t, e.Detail, "1 card(s)")
+			break
+		}
+	}
+	assert.True(t, found, "expected exchange action log entry")
+}
+
+func TestPoker_ActionLog_Reset(t *testing.T) {
+	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+	for _, pl := range players {
+		pl.SetChips(1000)
+		pl.SetCurrentBet(0)
+	}
+	pk.SetLastBet(0)
+	_ = pk.PlayerAction(PokerActionCheck, 0)
+
+	beforeLen := len(pk.GetActionLog())
+	assert.Greater(t, beforeLen, 0, "expected log entries before reset")
+
+	err := pk.Reset()
+	assert.NoError(t, err)
+	// After Reset, the old log is cleared. New ante entries are created.
+	// Verify the first entry has TurnNumber 0 (log was reset, not accumulated).
+	log := pk.GetActionLog()
+	assert.NotEmpty(t, log)
+	assert.Equal(t, 1, log[0].TurnNumber, "first entry after reset should have TurnNumber 1")
+}

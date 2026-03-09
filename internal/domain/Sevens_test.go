@@ -3971,3 +3971,101 @@ func TestSevens_JokerConsecutiveBanned(t *testing.T) {
 		}
 	})
 }
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestSevens_ActionLog_Play(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeSevensPlayers()
+	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	// Give human a card adjacent to 7 (6 of spades)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	// Give other players cards so game doesn't end
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+
+	err := s.PlayerPlay(0) // play 6♠
+	assert.NoError(t, err)
+
+	log := s.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "play" && e.PlayerIdx == 0 {
+			found = true
+			assert.Contains(t, e.Detail, "played")
+			assert.Len(t, e.Cards, 1)
+			break
+		}
+	}
+	assert.True(t, found, "expected play action log entry")
+}
+
+func TestSevens_ActionLog_Pass(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeSevensPlayers()
+	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	// Give human a card that can't be played (far from 7)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	// Give other players cards
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+
+	// Pass (idx < 0)
+	err := s.PlayerPlay(-1)
+	assert.NoError(t, err)
+
+	log := s.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "pass" && e.PlayerIdx == 0 {
+			found = true
+			assert.Equal(t, "pass", e.Detail)
+			break
+		}
+	}
+	assert.True(t, found, "expected pass action log entry")
+}
+
+func TestSevens_ActionLog_Reset(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeSevensPlayers()
+	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+
+	_ = s.PlayerPlay(0)
+	assert.NotEmpty(t, s.GetActionLog())
+
+	s.Reset()
+	assert.Nil(t, s.GetActionLog())
+}

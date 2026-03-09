@@ -34,6 +34,7 @@ type Sevens struct {
 	humanAction *SevensCpuAction   // 人間の最後の行動
 	jokerPlaced [5]uint16          // jokerPlaced[suit] = ジョーカーが配置されたポジションのビットマスク
 	jokerCards  []*Card            // ボード上のジョーカーカードオブジェクト (回収用)
+	actionLog   []*ActionLogEntry  // 棋譜
 }
 
 // NewSevens コンストラクタ
@@ -66,6 +67,7 @@ func (s *Sevens) Reset() {
 	s.tablePlaced[0] = 0
 	s.jokerPlaced = [5]uint16{}
 	s.jokerCards = nil
+	s.actionLog = nil
 
 	// 全プレイヤーのリセット
 	resetPlayers(s.players, func(p *SevensPlayer) {
@@ -396,6 +398,7 @@ func (s *Sevens) PlayerPlay(idx int) error {
 		}
 		player.IncrPassesUsed()
 		player.SetLastPlayedJoker(false)
+		s.appendLog(s.currentTurn, "pass", "pass", nil)
 		s.humanAction = &SevensCpuAction{
 			PlayerIdx:  s.currentTurn,
 			PlayedCard: nil,
@@ -421,10 +424,12 @@ func (s *Sevens) PlayerPlay(idx int) error {
 	playedCard := player.RemoveCard(idx)
 	s.reclaimJokerIfNeeded(s.currentTurn, card.GetDesign(), card.GetValue())
 	player.SetLastPlayedJoker(false)
+	s.appendLog(s.currentTurn, "play", fmt.Sprintf("played %s", cardLogStr(playedCard)), []*Card{playedCard})
 	s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: playedCard}
 
 	if player.GetCardsSize() == 0 {
 		s.assignRank(s.currentTurn)
+		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", s.currentTurn, player.GetRank()), nil)
 	}
 	if !s.checkGameEnd() {
 		s.advanceTurn()
@@ -466,6 +471,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 	playedCard := player.RemoveCard(cardIdx)
 	s.recordJokerCard(playedCard, targetSuit, targetValue)
 	player.SetLastPlayedJoker(true)
+	s.appendLog(s.currentTurn, "joker", fmt.Sprintf("played joker as %s %d", suitLogStr(targetSuit), targetValue), []*Card{playedCard})
 	s.humanAction = &SevensCpuAction{
 		PlayerIdx:   s.currentTurn,
 		PlayedCard:  playedCard,
@@ -475,6 +481,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 
 	if player.GetCardsSize() == 0 {
 		s.assignRank(s.currentTurn)
+		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", s.currentTurn, player.GetRank()), nil)
 	}
 	if !s.checkGameEnd() {
 		s.advanceTurn()
@@ -943,9 +950,11 @@ func (s *Sevens) CpuPlay() {
 		if card.GetDesign() == CardDesignJoker {
 			s.recordJokerCard(playedCard, targetSuit, targetValue)
 			player.SetLastPlayedJoker(true)
+			s.appendLog(playerIdx, "joker", fmt.Sprintf("played joker as %s %d", suitLogStr(targetSuit), targetValue), []*Card{playedCard})
 		} else {
 			s.reclaimJokerIfNeeded(playerIdx, card.GetDesign(), card.GetValue())
 			player.SetLastPlayedJoker(false)
+			s.appendLog(playerIdx, "play", fmt.Sprintf("played %s", cardLogStr(playedCard)), []*Card{playedCard})
 		}
 		action := &SevensCpuAction{
 			PlayerIdx:   playerIdx,
@@ -957,6 +966,7 @@ func (s *Sevens) CpuPlay() {
 
 		if player.GetCardsSize() == 0 {
 			s.assignRank(playerIdx)
+			s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, player.GetRank()), nil)
 		}
 		if !s.checkGameEnd() {
 			s.advanceTurn()
@@ -965,6 +975,7 @@ func (s *Sevens) CpuPlay() {
 		// パス
 		player.IncrPassesUsed()
 		player.SetLastPlayedJoker(false)
+		s.appendLog(playerIdx, "pass", "pass", nil)
 		action := &SevensCpuAction{
 			PlayerIdx:  playerIdx,
 			PlayedCard: nil,
@@ -975,6 +986,7 @@ func (s *Sevens) CpuPlay() {
 	} else {
 		// パスも不可 → 失格
 		s.eliminatePlayer(playerIdx)
+		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, player.GetRank()), nil)
 		if !s.checkGameEnd() {
 			s.advanceTurn()
 		}
@@ -1017,6 +1029,7 @@ func (s *Sevens) AutoHandleNoOption() {
 		s.cpuActions = append(s.cpuActions, action)
 	}
 	s.eliminatePlayer(playerIdx)
+	s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, s.players[playerIdx].GetRank()), nil)
 	if !s.checkGameEnd() {
 		s.advanceTurn()
 	}
@@ -1107,4 +1120,42 @@ func (s *Sevens) SetConfig(config SevensConfig) {
 		config.CpuStrategy = SevensCpuSimple
 	}
 	s.config = config
+}
+
+// suitLogStr スートを棋譜用文字列に変換
+func suitLogStr(suit int) string {
+	switch suit {
+	case CardDesignSpade:
+		return "spade"
+	case CardDesignClover:
+		return "clover"
+	case CardDesignHeart:
+		return "heart"
+	case CardDesignDiamond:
+		return "diamond"
+	default:
+		return "joker"
+	}
+}
+
+// cardLogStr カードを棋譜用文字列に変換
+func cardLogStr(card *Card) string {
+	if card.GetDesign() == CardDesignJoker {
+		return "joker"
+	}
+	return fmt.Sprintf("%s %d", suitLogStr(card.GetDesign()), card.GetValue())
+}
+
+// GetActionLog 棋譜を取得する
+func (s *Sevens) GetActionLog() []*ActionLogEntry { return s.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (s *Sevens) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	s.actionLog = append(s.actionLog, &ActionLogEntry{
+		TurnNumber: len(s.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
 }

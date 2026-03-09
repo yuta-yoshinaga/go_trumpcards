@@ -786,3 +786,36 @@ func TestHoldemWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 			}))
 	recorded.CodeIs(200)
 }
+
+func TestHoldemWebController_Log(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	mockLogOutput := `{"entries":[]}`
+	mi.On("ActionLog").Return(mockLogOutput)
+
+	t.Run("log command", func(t *testing.T) {
+		recorded := test.RunRequest(t, api.MakeHandler(),
+			test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+				map[string]interface{}{
+					"command":   "log",
+					"sessionId": "hd-log-1",
+				}))
+		recorded.CodeIs(200)
+		recorded.ContentTypeIsJson()
+		mi.AssertCalled(t, "ActionLog")
+	})
+
+	t.Run("l shorthand", func(t *testing.T) {
+		recorded := test.RunRequest(t, api.MakeHandler(),
+			test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+				map[string]interface{}{
+					"command":   "l",
+					"sessionId": "hd-log-1",
+				}))
+		recorded.CodeIs(200)
+		recorded.ContentTypeIsJson()
+		mi.AssertCalled(t, "ActionLog")
+	})
+}

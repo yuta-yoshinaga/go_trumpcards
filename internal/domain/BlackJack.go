@@ -1,5 +1,7 @@
 package domain
 
+import "fmt"
+
 // GameResult ゲーム勝敗結果
 type GameResult int
 
@@ -61,6 +63,7 @@ type BlackJack struct {
 	twentyOnePlus3Bet  int                 // 21+3サイドベット額
 	sideBetResults     []*BJSideBetResult  // サイドベット結果
 	multiHandCount     int                 // マルチハンド数（0=デフォルト1）
+	actionLog          []*ActionLogEntry   // 棋譜
 }
 
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
@@ -101,6 +104,7 @@ func (b *BlackJack) Reset() {
 	b.twentyOnePlus3Bet = 0
 	b.sideBetResults = nil
 	b.multiHandCount = 0
+	b.actionLog = nil
 	// チップが最低ベット額未満ならデフォルト値にリセット
 	if b.player.GetChips() < BJMinBet {
 		b.player.SetChips(BJDefaultChips)
@@ -206,6 +210,7 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
 		return ErrDeckExhausted
 	}
 	b.phase = BJPhaseDeal
+	b.appendLog(0, "bet", fmt.Sprintf("bet %d chips", amount), nil)
 
 	// サイドベット判定（ハンド0のみ）
 	b.evaluateSideBets()
@@ -259,6 +264,7 @@ func (b *BlackJack) PlayerInsurance() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for insurance.")
 	}
 	b.insuranceBet = cost
+	b.appendLog(0, "insurance", "insurance", nil)
 	b.afterInsurance()
 	return nil
 }
@@ -268,6 +274,7 @@ func (b *BlackJack) PlayerDeclineInsurance() error {
 	if b.phase != BJPhaseInsurance {
 		return NewDomainError(ErrWrongPhase, "Insurance decline is not available now.")
 	}
+	b.appendLog(0, "insurance", "decline insurance", nil)
 	b.afterInsurance()
 	return nil
 }
@@ -334,6 +341,7 @@ func (b *BlackJack) PlayerHit() error {
 	}
 	hand.AddCard(card)
 	b.updateRunningCount(card)
+	b.appendLog(0, "hit", "hit", []*Card{card})
 	if hand.GetScore() >= 22 {
 		// バースト
 		hand.SetBusted(true)
@@ -352,6 +360,7 @@ func (b *BlackJack) PlayerStand() error {
 		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
 	hand.SetStood(true)
+	b.appendLog(0, "stand", "stand", nil)
 	b.advanceHand()
 	return nil
 }
@@ -388,6 +397,7 @@ func (b *BlackJack) PlayerDoubleDown() error {
 	}
 	hand.AddCard(card)
 	b.updateRunningCount(card)
+	b.appendLog(0, "doubledown", "double down", []*Card{card})
 	if hand.GetScore() >= 22 {
 		hand.SetBusted(true)
 	} else {
@@ -467,6 +477,7 @@ func (b *BlackJack) PlayerSplit() error {
 
 	// 新しいハンドを挿入
 	b.playerHands = append(b.playerHands[:b.currentHandIdx+1], append([]*BlackJackHand{newHand}, b.playerHands[b.currentHandIdx+1:]...)...)
+	b.appendLog(0, "split", "split", nil)
 
 	// エースのスプリットの場合、両ハンドを自動スタンド
 	if firstCard.GetValue() == 1 {
@@ -540,6 +551,18 @@ func (b *BlackJack) endGame() {
 	b.resolvePayoutsCpu()
 	b.gameEndFlag = true
 	b.phase = BJPhaseEnd
+	// 棋譜に結果を記録
+	result := b.GameJudgment()
+	var detail string
+	switch result {
+	case GameResultWin:
+		detail = "player wins"
+	case GameResultDraw:
+		detail = "draw"
+	case GameResultLose:
+		detail = "player loses"
+	}
+	b.appendLog(-1, "result", detail, nil)
 }
 
 // judgeHandCore 共通ハンド勝敗判定ロジック
@@ -616,12 +639,15 @@ func (b *BlackJack) DealerHit() {
 		if b.dealerShouldHit() {
 			card := b.drawCard()
 			if card == nil {
+				b.appendLog(-1, "dealerstand", "dealer stand", nil)
 				b.DealerStand()
 				break
 			}
 			b.dealer.AddCard(card)
 			b.updateRunningCount(card)
+			b.appendLog(-1, "dealerhit", "dealer hit", []*Card{card})
 		} else {
+			b.appendLog(-1, "dealerstand", "dealer stand", nil)
 			b.DealerStand()
 			break
 		}
@@ -731,6 +757,7 @@ func (b *BlackJack) PlayerSurrender() error {
 	halfBet := hand.GetBet() / 2
 	b.player.AddChips(halfBet)
 	hand.SetSurrendered(true)
+	b.appendLog(0, "surrender", "surrender", nil)
 	b.advanceHand()
 	return nil
 }
@@ -1362,6 +1389,7 @@ func (b *BlackJack) PlayerEarlySurrender() error {
 	halfBet := hand.GetBet() / 2
 	b.player.AddChips(halfBet)
 	hand.SetSurrendered(true)
+	b.appendLog(0, "surrender", "early surrender", nil)
 	b.advanceEarlySurrender()
 	return nil
 }
@@ -1388,6 +1416,20 @@ func (b *BlackJack) advanceEarlySurrender() {
 	b.currentHandIdx = 0
 	b.phase = BJPhaseAction
 	b.checkNaturalBlackJack()
+}
+
+// GetActionLog 棋譜を取得する
+func (b *BlackJack) GetActionLog() []*ActionLogEntry { return b.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (b *BlackJack) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	b.actionLog = append(b.actionLog, &ActionLogEntry{
+		TurnNumber: len(b.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
 }
 
 // cpuEarlySurrender CPUプレイヤーのアーリーサレンダー判定

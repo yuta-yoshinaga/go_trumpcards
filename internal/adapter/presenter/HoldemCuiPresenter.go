@@ -16,6 +16,14 @@ func NewHoldemCuiPresenter() *HoldemCuiPresenter {
 	return &HoldemCuiPresenter{}
 }
 
+// ActionLogOutput 棋譜をテキスト出力
+func (p *HoldemCuiPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
+	if !h.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(h.GetActionLog())
+}
+
 // Output ゲーム状態を文字列出力
 func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) string {
 	var b strings.Builder

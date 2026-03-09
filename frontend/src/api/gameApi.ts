@@ -1,4 +1,5 @@
 import type {
+  ActionLogResponse,
   BlackJackResponse,
   DaifugoConfigInput,
   DaifugoResponse,
@@ -207,3 +208,18 @@ export const holdemApi = {
       ...config,
     }),
 };
+
+function fetchLog(url: string): Promise<ActionLogResponse> {
+  return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
+}
+
+const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem'] as const;
+type Game = (typeof games)[number];
+
+export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(
+  (acc, game) => {
+    acc[game] = () => fetchLog(`/${game}/exec`);
+    return acc;
+  },
+  {} as { [K in Game]: () => Promise<ActionLogResponse> },
+);

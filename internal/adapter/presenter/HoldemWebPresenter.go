@@ -186,6 +186,14 @@ func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) (stri
 	return "You lose.", "holdem.result.lose"
 }
 
+// ActionLogOutput 棋譜をJSON出力
+func (hwp *HoldemWebPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
+	if !h.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(h.GetActionLog())
+}
+
 // getHandName ハンドランクから名前を返す
 func (hwp *HoldemWebPresenter) getHandName(rank int) string {
 	if rank >= 0 && rank < len(domain.PokerHandNames) {

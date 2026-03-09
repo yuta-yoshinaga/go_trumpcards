@@ -15,6 +15,7 @@ type PokerInteractorIF interface {
 	Exchange(indices []int) string
 	Stand() string
 	Odds(indices []int) string
+	ActionLog() string
 }
 
 // PokerInteractor ポーカーインタラクタークラス
@@ -66,6 +67,11 @@ func (pi *PokerInteractor) Exchange(indices []int) string {
 func (pi *PokerInteractor) Stand() string {
 	err := pi.p.PlayerStand()
 	return pi.pp.Output(pi.p, err)
+}
+
+// ActionLog 棋譜を出力する
+func (pi *PokerInteractor) ActionLog() string {
+	return pi.pp.ActionLogOutput(pi.p)
 }
 
 // Odds ドローオッズ計算

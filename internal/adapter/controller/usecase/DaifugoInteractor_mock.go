@@ -40,3 +40,9 @@ func (_m *MockDaifugoInteractor) Sort(mode domain.DaifugoSortMode) string {
 	ret := _m.Called(mode)
 	return ret.Get(0).(string)
 }
+
+// ActionLog モック
+func (_m *MockDaifugoInteractor) ActionLog() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

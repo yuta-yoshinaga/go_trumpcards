@@ -665,3 +665,43 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.False(t, resObj.Players[1].IllegalFinishPenalty)
 	})
 }
+
+func TestDaifugoWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewDaifugoWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 3 of spades", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, true)}},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"play"`)
+		assert.Contains(t, result, `"detail":"played 3 of spades"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+}

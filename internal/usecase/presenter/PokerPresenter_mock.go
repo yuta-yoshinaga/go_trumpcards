@@ -23,3 +23,9 @@ func (_m *MockPokerPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 	ret := _m.Called(p, lastErr, odds)
 	return ret.Get(0).(string)
 }
+
+// ActionLogOutput モック
+func (_m *MockPokerPresenter) ActionLogOutput(p interfaces.PokerGame) string {
+	ret := _m.Called(p)
+	return ret.Get(0).(string)
+}

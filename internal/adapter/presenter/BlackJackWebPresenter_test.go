@@ -8,6 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -584,4 +585,44 @@ func TestBlackJackWebPresenter_EarlySurrenderPhase(t *testing.T) {
 	err := json.Unmarshal([]byte(output), &result)
 	assert.NoError(t, err)
 	assert.Equal(t, domain.BJPhaseEarlySurrender, result.Phase)
+}
+
+func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewBlackJackWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "hit", Detail: "drew a card", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, true)}},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"hit"`)
+		assert.Contains(t, result, `"detail":"drew a card"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
 }

@@ -846,3 +846,43 @@ func TestHoldemWebPresenter_Output_MuckFields(t *testing.T) {
 		assert.Equal(t, "holdem.result.mucked", out.MessageCode)
 	})
 }
+
+func TestHoldemWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewHoldemWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", Detail: "raised to 100", Cards: []*domain.Card{domain.NewCard(domain.CardDesignDiamond, 10, true)}},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"raise"`)
+		assert.Contains(t, result, `"detail":"raised to 100"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+}

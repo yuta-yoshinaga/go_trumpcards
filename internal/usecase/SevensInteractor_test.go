@@ -85,6 +85,17 @@ func TestSevensInteractor_Method(t *testing.T) {
 	})
 }
 
+func TestSevensInteractor_ActionLog(t *testing.T) {
+	spMock := new(presenter.MockSevensPresenter)
+	gameMock := new(interfaces.MockSevensGame)
+	spMock.On("ActionLogOutput", gameMock).Return(`{"entries":[]}`)
+
+	si := usecase.NewSevensInteractor(gameMock, spMock)
+	result := si.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	spMock.AssertExpectations(t)
+}
+
 func TestSevensInteractor_MockGame(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	spMock := new(presenter.MockSevensPresenter)

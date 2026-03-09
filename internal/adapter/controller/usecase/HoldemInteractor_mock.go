@@ -70,3 +70,9 @@ func (_m *MockHoldemInteractor) ShowHand() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// ActionLog モック
+func (_m *MockHoldemInteractor) ActionLog() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

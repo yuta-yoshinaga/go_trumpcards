@@ -7316,3 +7316,140 @@ func TestDaifugo_EndgameSolver(t *testing.T) {
 		assert.Equal(t, 9, players[1].GetCardsSize(), "strategic pass when solver not triggered")
 	})
 }
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestDaifugo_ActionLog_Play(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, noRulesConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	// Ensure human is at current turn
+	dg.SetCurrentTurn(0)
+	// Find the human player and give them cards
+	humanIdx := -1
+	for i, p := range players {
+		if p.GetIsHuman() {
+			humanIdx = i
+			break
+		}
+	}
+	// After shuffle in Reset, player order changes. Set turn to human.
+	dg.SetCurrentTurn(humanIdx)
+	players[humanIdx].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[humanIdx].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	// Give other players cards so game doesn't end
+	for i, p := range players {
+		if i != humanIdx {
+			p.AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+			p.AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+		}
+	}
+	dg.SetTableCards(nil)
+	dg.SetLastPlayPlayerIdx(-1)
+
+	err := dg.PlayerPlay([]int{0})
+	assert.NoError(t, err)
+
+	log := dg.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "play" && e.PlayerIdx == humanIdx {
+			found = true
+			assert.Contains(t, e.Detail, "played 1 card(s)")
+			assert.Len(t, e.Cards, 1)
+			break
+		}
+	}
+	assert.True(t, found, "expected play action log entry")
+}
+
+func TestDaifugo_ActionLog_Pass(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, noRulesConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	humanIdx := -1
+	for i, p := range players {
+		if p.GetIsHuman() {
+			humanIdx = i
+			break
+		}
+	}
+	dg.SetCurrentTurn(humanIdx)
+	players[humanIdx].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	// Give other players cards
+	for i, p := range players {
+		if i != humanIdx {
+			p.AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		}
+	}
+
+	// Pass (empty indices)
+	err := dg.PlayerPlay([]int{})
+	assert.NoError(t, err)
+
+	log := dg.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "pass" && e.PlayerIdx == humanIdx {
+			found = true
+			assert.Equal(t, "pass", e.Detail)
+			break
+		}
+	}
+	assert.True(t, found, "expected pass action log entry")
+}
+
+func TestDaifugo_ActionLog_Reset(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, noRulesConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	humanIdx := -1
+	for i, p := range players {
+		if p.GetIsHuman() {
+			humanIdx = i
+			break
+		}
+	}
+	dg.SetCurrentTurn(humanIdx)
+	players[humanIdx].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[humanIdx].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	for i, p := range players {
+		if i != humanIdx {
+			p.AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+		}
+	}
+	dg.SetTableCards(nil)
+	dg.SetLastPlayPlayerIdx(-1)
+
+	_ = dg.PlayerPlay([]int{})
+	assert.NotEmpty(t, dg.GetActionLog())
+
+	dg.Reset()
+	assert.Nil(t, dg.GetActionLog())
+}

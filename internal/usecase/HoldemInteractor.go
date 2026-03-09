@@ -18,6 +18,7 @@ type HoldemInteractorIF interface {
 	SkipAddon() string
 	Muck() string
 	ShowHand() string
+	ActionLog() string
 }
 
 // HoldemInteractor テキサスホールデムインタラクタークラス
@@ -94,4 +95,9 @@ func (hi *HoldemInteractor) Muck() string {
 func (hi *HoldemInteractor) ShowHand() string {
 	err := hi.h.ShowHand()
 	return hi.hp.Output(hi.h, err)
+}
+
+// ActionLog 棋譜を出力する
+func (hi *HoldemInteractor) ActionLog() string {
+	return hi.hp.ActionLogOutput(hi.h)
 }

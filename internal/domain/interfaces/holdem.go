@@ -39,4 +39,5 @@ type HoldemGame interface {
 	Muck() error
 	ShowHand() error
 	IsMuckAvailable() bool
+	GetActionLog() []*domain.ActionLogEntry
 }

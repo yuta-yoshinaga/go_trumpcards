@@ -684,3 +684,39 @@ func TestDoubtWebOutputAction_HasTell_JSON(t *testing.T) {
 		t.Error("expected HasTell to be false after JSON round-trip")
 	}
 }
+
+func TestDoubtWebController_Log(t *testing.T) {
+	mockLogOutput := `{"entries":[]}`
+	dgiMock := new(usecase.MockDoubtInteractor)
+	dgiMock.On("ActionLog").Return(mockLogOutput)
+
+	factory := func() uc.DoubtInteractorIF { return dgiMock }
+	ctrl := controller.NewDoubtWebController(factory)
+	defer ctrl.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+	api.SetApp(router)
+
+	t.Run("log command", func(t *testing.T) {
+		var input controller.DoubtWebInput
+		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"doubt-log-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockLogOutput)
+	})
+
+	t.Run("l shorthand", func(t *testing.T) {
+		var input controller.DoubtWebInput
+		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"doubt-log-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockLogOutput)
+	})
+}

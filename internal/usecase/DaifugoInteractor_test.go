@@ -65,6 +65,17 @@ func TestDaifugoInteractor_Method(t *testing.T) {
 	})
 }
 
+func TestDaifugoInteractor_ActionLog(t *testing.T) {
+	dgpMock := new(presenter.MockDaifugoPresenter)
+	gameMock := new(interfaces.MockDaifugoGame)
+	dgpMock.On("ActionLogOutput", gameMock).Return(`{"entries":[]}`)
+
+	di := usecase.NewDaifugoInteractor(gameMock, dgpMock)
+	result := di.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	dgpMock.AssertExpectations(t)
+}
+
 func TestDaifugoInteractor_MockGame(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	dgpMock := new(presenter.MockDaifugoPresenter)

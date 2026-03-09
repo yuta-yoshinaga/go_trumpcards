@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makeDoubtGameForPresenter() (*domain.Doubt, []*domain.DoubtPlayer) {
@@ -311,5 +312,46 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(game, nil)
 		assert.Contains(t, result, "UNKNOWN")
+	})
+}
+
+func TestDoubtCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewDoubtCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDoubtGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)"},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "declared 5, played 1 card(s)")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDoubtGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockDoubtGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

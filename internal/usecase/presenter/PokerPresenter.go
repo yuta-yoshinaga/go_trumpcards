@@ -9,4 +9,5 @@ import (
 type PokerPresenter interface {
 	Output(p interfaces.PokerGame, lastErr error) string
 	OutputWithOdds(p interfaces.PokerGame, lastErr error, odds []domain.PokerDrawOdds) string
+	ActionLogOutput(p interfaces.PokerGame) string
 }

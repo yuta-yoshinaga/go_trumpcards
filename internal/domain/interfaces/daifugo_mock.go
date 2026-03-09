@@ -193,3 +193,12 @@ func (_m *MockDaifugoGame) GetSortMode() domain.DaifugoSortMode {
 	ret := _m.Called()
 	return ret.Get(0).(domain.DaifugoSortMode)
 }
+
+// GetActionLog モック
+func (_m *MockDaifugoGame) GetActionLog() []*domain.ActionLogEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {
+		return val
+	}
+	return nil
+}

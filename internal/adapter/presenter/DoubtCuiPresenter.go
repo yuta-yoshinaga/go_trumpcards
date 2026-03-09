@@ -149,3 +149,11 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 	b.WriteString("==========\n")
 	return b.String()
 }
+
+// ActionLogOutput 棋譜をテキスト出力
+func (p *DoubtCuiPresenter) ActionLogOutput(d interfaces.DoubtGame) string {
+	if !d.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(d.GetActionLog())
+}

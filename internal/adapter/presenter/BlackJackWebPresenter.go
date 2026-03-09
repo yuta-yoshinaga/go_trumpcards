@@ -144,3 +144,11 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	}
 	return marshalOrError(resObj)
 }
+
+// ActionLogOutput 棋譜をJSON出力
+func (bjp *BlackJackWebPresenter) ActionLogOutput(bj interfaces.BlackJackGame) string {
+	if !bj.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(bj.GetActionLog())
+}

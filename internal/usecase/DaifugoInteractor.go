@@ -13,6 +13,7 @@ type DaifugoInteractorIF interface {
 	ResetWithConfig(config domain.DaifugoConfig) string
 	GetConfig() domain.DaifugoConfig
 	Sort(mode domain.DaifugoSortMode) string
+	ActionLog() string
 }
 
 // DaifugoInteractor 大富豪インタラクタークラス
@@ -70,6 +71,11 @@ func (di *DaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) string
 func (di *DaifugoInteractor) Sort(mode domain.DaifugoSortMode) string {
 	err := di.dg.SortHumanHand(mode)
 	return di.dgp.Output(di.dg, err)
+}
+
+// ActionLog 棋譜を出力する
+func (di *DaifugoInteractor) ActionLog() string {
+	return di.dgp.ActionLogOutput(di.dg)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEarlySurrenderPhaseControls } from '../components/blackjack/BjEarlySurrenderPhaseControls';
@@ -23,7 +24,9 @@ import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { useActionLog } from '../hooks/useActionLog';
 import { useGameApi } from '../hooks/useGameApi';
+import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 
@@ -45,6 +48,7 @@ export function BlackJackPage() {
   const suggestionLabels = useSuggestionLabels(t);
 
   const [message, setMessage] = useState('');
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('blackjack');
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
@@ -93,6 +97,7 @@ export function BlackJackPage() {
   const showSurrender = !!currentHand?.canSurrender;
 
   const handleReset = useCallback(() => {
+    hideActionLog();
     const config: BlackJackConfigInput = {
       dealerHitsSoft17,
       cpuPlayerCount,
@@ -112,6 +117,7 @@ export function BlackJackPage() {
     countingSystem,
     deckPenetration,
     surrenderRule,
+    hideActionLog,
   ]);
 
   return (
@@ -271,6 +277,16 @@ export function BlackJackPage() {
 
         {/* Result message */}
         <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+
+        {/* Action log */}
+        {phase === BjPhase.END && !actionLog && (
+          <div className="text-center my-2">
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
 
         <ErrorAlert message={error} />
 

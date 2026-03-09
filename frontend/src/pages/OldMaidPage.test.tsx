@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { oldmaidApi } from '../api/gameApi';
+import { actionLogApi, oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OldMaidResponse } from '../types/card';
@@ -8,6 +8,7 @@ import { OldMaidPage } from './OldMaidPage';
 
 vi.mock('../api/gameApi', () => ({
   oldmaidApi: { exec: vi.fn() },
+  actionLogApi: { oldmaid: vi.fn() },
 }));
 
 const mockExec = vi.mocked(oldmaidApi.exec);
@@ -1144,4 +1145,26 @@ describe('OldMaidPage', () => {
       timeout: 4000,
     });
   }, 10000);
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      gameEndFlag: true,
+    });
+
+    renderWithProviders(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByText('ゲーム開始')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('ゲーム開始'));
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.oldmaid).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.oldmaid).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+  });
 });

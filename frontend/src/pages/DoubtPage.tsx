@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
 import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { useActionLog } from '../hooks/useActionLog';
 import {
   actionDesc,
   CPU_MEMORY_OPTIONS,
@@ -12,7 +14,7 @@ import {
   PENALTY_DRAW_LIMIT_OPTIONS,
   useDoubtGame,
 } from '../hooks/useDoubtGame';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { DoubtCpuAction } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
@@ -38,6 +40,8 @@ export function DoubtPage() {
     handleSkip,
     handleCpuDoubtConfirm,
   } = useDoubtGame();
+
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('doubt');
 
   if (!state) return null;
 
@@ -228,6 +232,16 @@ export function DoubtPage() {
 
         {/* Result message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+        {/* Action log */}
+        {state.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
@@ -284,7 +298,10 @@ export function DoubtPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, undefined, undefined, doubtConfig)}
+            onClick={() => {
+              hideActionLog();
+              exec('reset', undefined, undefined, undefined, doubtConfig);
+            }}
           >
             {tc('button.reset')}
           </button>

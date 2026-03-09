@@ -1,5 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { blackjackApi, daifugoApi, doubtApi, holdemApi, oldmaidApi, pokerApi, sessionId, sevensApi } from './gameApi';
+import {
+  actionLogApi,
+  blackjackApi,
+  daifugoApi,
+  doubtApi,
+  holdemApi,
+  oldmaidApi,
+  pokerApi,
+  sessionId,
+  sevensApi,
+} from './gameApi';
 
 describe('gameApi', () => {
   const mockFetch = vi.fn();
@@ -1522,6 +1532,31 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(holdemApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('actionLogApi', () => {
+    const logPayload = { entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'hit card', cards: [] }] };
+
+    describe.each([
+      ['blackjack', actionLogApi.blackjack],
+      ['poker', actionLogApi.poker],
+      ['oldmaid', actionLogApi.oldmaid],
+      ['daifugo', actionLogApi.daifugo],
+      ['sevens', actionLogApi.sevens],
+      ['doubt', actionLogApi.doubt],
+      ['holdem', actionLogApi.holdem],
+    ])('actionLogApi.%s', (gameName, apiFn) => {
+      it(`calls /${gameName}/exec with log command`, async () => {
+        mockFetch.mockReturnValue(makeResponse(logPayload));
+        const result = await apiFn();
+        expect(mockFetch).toHaveBeenCalledWith(`/${gameName}/exec`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: 'log', sessionId }),
+        });
+        expect(result).toEqual(logPayload);
+      });
     });
   });
 });

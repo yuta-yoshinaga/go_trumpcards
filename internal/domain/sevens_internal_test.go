@@ -1156,3 +1156,8 @@ func TestSevens_findPlayableHarassment_unlimitedPasses(t *testing.T) {
 	cardIdx, _, _ := s.findPlayableHarassment(players[0])
 	assert.Equal(t, -1, cardIdx) // passes because score <= 0 with unlimited passes
 }
+
+func TestSevens_ActionLog_JokerStrings(t *testing.T) {
+	assert.Equal(t, "joker", suitLogStr(CardDesignJoker))
+	assert.Equal(t, "joker", cardLogStr(NewCard(CardDesignJoker, 0, false)))
+}

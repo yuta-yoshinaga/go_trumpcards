@@ -52,3 +52,9 @@ func (_m *MockPokerInteractor) Odds(indices []int) string {
 	ret := _m.Called(indices)
 	return ret.Get(0).(string)
 }
+
+// ActionLog モック
+func (_m *MockPokerInteractor) ActionLog() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

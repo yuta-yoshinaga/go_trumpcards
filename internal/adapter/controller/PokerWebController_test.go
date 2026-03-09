@@ -915,3 +915,36 @@ func TestPokerWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 			}))
 	recorded.CodeIs(200)
 }
+
+func TestPokerWebController_Log(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	mockLogOutput := `{"entries":[]}`
+	mi.On("ActionLog").Return(mockLogOutput)
+
+	t.Run("log command", func(t *testing.T) {
+		recorded := test.RunRequest(t, api.MakeHandler(),
+			test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+				map[string]interface{}{
+					"command":   "log",
+					"sessionId": "pk-log-1",
+				}))
+		recorded.CodeIs(200)
+		recorded.ContentTypeIsJson()
+		mi.AssertCalled(t, "ActionLog")
+	})
+
+	t.Run("l shorthand", func(t *testing.T) {
+		recorded := test.RunRequest(t, api.MakeHandler(),
+			test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+				map[string]interface{}{
+					"command":   "l",
+					"sessionId": "pk-log-1",
+				}))
+		recorded.CodeIs(200)
+		recorded.ContentTypeIsJson()
+		mi.AssertCalled(t, "ActionLog")
+	})
+}

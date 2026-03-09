@@ -3161,3 +3161,84 @@ func TestGetBasicStrategySuggestion_EarlySurrenderPhase(t *testing.T) {
 		assert.Equal(t, domain.BJSuggestStand, bj.GetBasicStrategySuggestion())
 	})
 }
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestBlackJack_ActionLog_Bet(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	err := bj.PlayerBet(100, 0, 0, 0)
+	assert.NoError(t, err)
+
+	log := bj.GetActionLog()
+	assert.GreaterOrEqual(t, len(log), 1)
+	entry := log[0]
+	assert.Equal(t, 0, entry.PlayerIdx)
+	assert.Equal(t, "bet", entry.ActionType)
+	assert.Contains(t, entry.Detail, "bet 100 chips")
+	assert.Nil(t, entry.Cards)
+}
+
+func TestBlackJack_ActionLog_HitStand(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	// Set up: bet, then manually set phase to action with low-value hand
+	err := bj.PlayerBet(100, 0, 0, 0)
+	require.NoError(t, err)
+
+	// Give dealer score >= 17 to prevent auto-draw issues
+	bj.GetDealer().Reset()
+	bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+
+	// Set up player hand with low score
+	hand := bj.GetPlayerHands()[0]
+	hand.Reset()
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	bj.SetPhase(domain.BJPhaseAction)
+
+	// Hit
+	err = bj.PlayerHit()
+	assert.NoError(t, err)
+
+	log := bj.GetActionLog()
+	hitFound := false
+	for _, e := range log {
+		if e.ActionType == "hit" {
+			hitFound = true
+			assert.Equal(t, 0, e.PlayerIdx)
+			assert.Len(t, e.Cards, 1)
+			break
+		}
+	}
+	assert.True(t, hitFound, "expected hit action log entry")
+
+	// Stand (if not busted)
+	if !hand.IsBusted() {
+		bj.SetPhase(domain.BJPhaseAction)
+		err = bj.PlayerStand()
+		assert.NoError(t, err)
+
+		log = bj.GetActionLog()
+		standFound := false
+		for _, e := range log {
+			if e.ActionType == "stand" {
+				standFound = true
+				assert.Equal(t, 0, e.PlayerIdx)
+				assert.Nil(t, e.Cards)
+				break
+			}
+		}
+		assert.True(t, standFound, "expected stand action log entry")
+	}
+}
+
+func TestBlackJack_ActionLog_Reset(t *testing.T) {
+	bj := domain.NewDefaultBlackJack()
+	_ = bj.PlayerBet(100, 0, 0, 0)
+	assert.NotEmpty(t, bj.GetActionLog())
+
+	bj.Reset()
+	assert.Nil(t, bj.GetActionLog())
+}

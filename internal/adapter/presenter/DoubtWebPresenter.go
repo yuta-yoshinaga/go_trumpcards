@@ -131,6 +131,14 @@ func (dwp *DoubtWebPresenter) buildResultMessage(d interfaces.DoubtGame) string 
 	return fmt.Sprintf("ゲーム終了！ %sの勝ち！", name)
 }
 
+// ActionLogOutput 棋譜をJSON出力
+func (dwp *DoubtWebPresenter) ActionLogOutput(d interfaces.DoubtGame) string {
+	if !d.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(d.GetActionLog())
+}
+
 // actionToOutput DoubtCpuAction を DoubtWebOutputAction に変換
 // IsBluff は意図的に除外する（ダウト解決前に隠されたゲーム状態をクライアントに漏洩しないため）
 // HasTell はゲームの「リーク」メカニクスとして意図的に公開する

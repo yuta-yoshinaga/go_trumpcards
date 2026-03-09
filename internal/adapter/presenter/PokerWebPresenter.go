@@ -38,6 +38,14 @@ func (pwp *PokerWebPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 	return marshalOrError(resObj)
 }
 
+// ActionLogOutput 棋譜をJSON出力
+func (pwp *PokerWebPresenter) ActionLogOutput(p interfaces.PokerGame) string {
+	if !p.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(p.GetActionLog())
+}
+
 // buildOutput ゲーム状態をPokerWebOutputに変換
 func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error) *controller.PokerWebOutput {
 	resObj := new(controller.PokerWebOutput)

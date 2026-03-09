@@ -1,6 +1,9 @@
 package domain
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 // OldMaidPlayerCnt ババ抜きプレイヤー数
 const OldMaidPlayerCnt = 4
@@ -63,6 +66,7 @@ type OldMaid struct {
 	cpuHighlightedCardIdx int                        // CPU心理戦: 奇数カードの位置 (-1=なし)
 	humanHandDirty        bool                       // 人間がシャッフル/並び替えしたフラグ
 	humanProfile          *OldMaidHumanProfile       // メタAIプロファイル
+	actionLog             []*ActionLogEntry          // 棋譜
 }
 
 // NewOldMaid コンストラクタ
@@ -125,6 +129,7 @@ func (o *OldMaid) Reset() {
 	o.removedCard = nil
 	o.cpuHighlightedCardIdx = -1
 	o.humanHandDirty = false
+	o.actionLog = nil
 
 	// メタAIプロファイルの管理
 	if o.config.CpuMetaAI {
@@ -233,17 +238,27 @@ func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 	o.lastDrawCard = card
 	o.hasDrawn = true
 
+	// 棋譜: ドロー
+	o.appendLog(playerIdx, "draw", fmt.Sprintf("drew from player %d", targetIdx), []*Card{card})
+
 	// ペアを捨てる
 	discardedCards, discardedCount := player.DiscardPairs()
 	o.lastDiscardedPairs = discardedCount
 	o.lastDiscardedCards = discardedCards
 
+	// 棋譜: ペア捨て
+	if discardedCount > 0 {
+		o.appendLog(playerIdx, "discard", fmt.Sprintf("discarded %d pair(s)", discardedCount), discardedCards)
+	}
+
 	// 手が空になったプレイヤーを上がりにする
 	if target.GetCardsSize() == 0 {
 		target.SetIsFinished(true)
+		o.appendLog(targetIdx, "finish", fmt.Sprintf("player %d finished", targetIdx), nil)
 	}
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
+		o.appendLog(playerIdx, "finish", fmt.Sprintf("player %d finished", playerIdx), nil)
 	}
 
 	// ゲーム終了チェック
@@ -662,4 +677,18 @@ func (o *OldMaid) GetHumanAction() *OldMaidCpuAction {
 // GetDrawHistory ゲーム全体の引き履歴取得
 func (o *OldMaid) GetDrawHistory() []*OldMaidDrawHistoryEntry {
 	return o.drawHistory
+}
+
+// GetActionLog 棋譜を取得する
+func (o *OldMaid) GetActionLog() []*ActionLogEntry { return o.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (o *OldMaid) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	o.actionLog = append(o.actionLog, &ActionLogEntry{
+		TurnNumber: len(o.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
 }

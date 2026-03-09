@@ -294,6 +294,42 @@ func TestDaifugoWebController_SessionIsolation(t *testing.T) {
 	})
 }
 
+func TestDaifugoWebController_Log(t *testing.T) {
+	mockLogOutput := `{"entries":[]}`
+	dgiMock := new(usecase.MockDaifugoInteractor)
+	dgiMock.On("ActionLog").Return(mockLogOutput)
+
+	factory := func() uc.DaifugoInteractorIF { return dgiMock }
+	ctrl := controller.NewDaifugoWebController(factory)
+	defer ctrl.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/daifugo/exec", ctrl.Exec))
+	api.SetApp(router)
+
+	t.Run("log command", func(t *testing.T) {
+		var input controller.DaifugoWebInput
+		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"dg-log-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockLogOutput)
+	})
+
+	t.Run("l shorthand", func(t *testing.T) {
+		var input controller.DaifugoWebInput
+		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"dg-log-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/daifugo/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockLogOutput)
+	})
+}
+
 func TestDaifugoWebController_Stop(t *testing.T) {
 	dgiMock := new(usecase.MockDaifugoInteractor)
 	factory := func() uc.DaifugoInteractorIF { return dgiMock }

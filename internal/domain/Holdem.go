@@ -145,6 +145,7 @@ type Holdem struct {
 	rebuyCounts     []int  // プレイヤーごとのリバイ回数
 	addonUsed       []bool // プレイヤーごとのアドオン使用フラグ
 	rebuyPhaseType  int    // 0=none, 1=rebuy pending, 2=addon pending
+	actionLog       []*ActionLogEntry
 }
 
 // NewHoldem コンストラクタ
@@ -182,6 +183,7 @@ func (h *Holdem) Reset() error {
 	h.roundResults = make([]HoldemResult, 0)
 	h.cpuActions = make([]HoldemCpuAction, 0)
 	h.rebuyPhaseType = HoldemRebuyPhaseNone
+	h.actionLog = nil
 
 	h.trumpCards.Shuffle()
 	for _, p := range h.players {
@@ -289,6 +291,7 @@ func (h *Holdem) postBlinds() {
 	h.players[sbIdx].SubtractChips(sbAmount)
 	h.players[sbIdx].SetCurrentBet(sbAmount)
 	h.pot += sbAmount
+	h.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
 
 	bbAmount := h.config.BigBlind
 	if h.players[bbIdx].GetChips() < bbAmount {
@@ -297,6 +300,7 @@ func (h *Holdem) postBlinds() {
 	h.players[bbIdx].SubtractChips(bbAmount)
 	h.players[bbIdx].SetCurrentBet(bbAmount)
 	h.pot += bbAmount
+	h.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
 
 	h.lastBet = bbAmount
 
@@ -414,6 +418,9 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 		return err
 	}
 
+	// 棋譜記録
+	h.logAction(playerIdx, action, amount)
+
 	// フォールドでアクティブプレイヤーが1人になったらチェック
 	if h.countActivePlayers() == 1 {
 		h.resolveLastPlayer()
@@ -485,20 +492,24 @@ func (h *Holdem) advancePhase() {
 				h.communityCards = append(h.communityCards, card)
 			}
 		}
+		h.appendLog(-1, "deal", "dealt flop", h.communityCards)
 	case HoldemPhaseFlop:
 		h.phase = HoldemPhaseTurn
 		card := h.trumpCards.DrawCard()
 		if card != nil {
 			h.communityCards = append(h.communityCards, card)
 		}
+		h.appendLog(-1, "deal", "dealt turn", h.communityCards[3:])
 	case HoldemPhaseTurn:
 		h.phase = HoldemPhaseRiver
 		card := h.trumpCards.DrawCard()
 		if card != nil {
 			h.communityCards = append(h.communityCards, card)
 		}
+		h.appendLog(-1, "deal", "dealt river", h.communityCards[4:])
 	case HoldemPhaseRiver:
 		h.phase = HoldemPhaseShowdown
+		h.appendLog(-1, "showdown", "showdown", nil)
 		h.resolveShowdown()
 		return
 	}
@@ -1229,6 +1240,7 @@ func (h *Holdem) Rebuy() error {
 		if p.GetIsHuman() && p.GetChips() <= 0 && h.rebuyCounts[i] < h.config.RebuyMaxCount {
 			p.AddChips(h.config.RebuyChips)
 			h.rebuyCounts[i]++
+			h.appendLog(i, "rebuy", "rebuy", nil)
 			break
 		}
 	}
@@ -1406,6 +1418,38 @@ func (h *Holdem) GetActedFlags() []bool {
 
 // GetHandCount ハンド数取得
 func (h *Holdem) GetHandCount() int { return h.handCount }
+
+// GetActionLog 棋譜を取得する
+func (h *Holdem) GetActionLog() []*ActionLogEntry { return h.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (h *Holdem) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	h.actionLog = append(h.actionLog, &ActionLogEntry{
+		TurnNumber: len(h.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
+}
+
+// logAction ベッティングアクションを棋譜に記録する
+func (h *Holdem) logAction(playerIdx, action, amount int) {
+	switch action {
+	case HoldemActionFold:
+		h.appendLog(playerIdx, "fold", "fold", nil)
+	case HoldemActionCheck:
+		h.appendLog(playerIdx, "check", "check", nil)
+	case HoldemActionCall:
+		h.appendLog(playerIdx, "call", fmt.Sprintf("call %d", h.players[playerIdx].GetCurrentBet()), nil)
+	case HoldemActionBet:
+		h.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+	case HoldemActionRaise:
+		h.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+	case HoldemActionAllIn:
+		h.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", h.players[playerIdx].GetCurrentBet()), nil)
+	}
+}
 
 // Resize プレイヤースライスを差し替え、プレイヤー数依存スライスを再初期化する
 func (h *Holdem) Resize(players []*HoldemPlayer) {
