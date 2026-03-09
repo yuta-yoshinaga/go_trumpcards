@@ -824,7 +824,6 @@ func (p *Poker) cpuDecideExchange(idx int) []int {
 // ペアがあれば片方を捨てる。8以上の高いカード(Ace=14)を捨てる。最大3枚交換。
 func (p *Poker) cpuDecideExchangeLowball(idx int) []int {
 	pl := p.players[idx]
-	indices := []int{}
 
 	// カード値を収集 (Ace=14)
 	type cardInfo struct {
@@ -866,7 +865,7 @@ func (p *Poker) cpuDecideExchangeLowball(idx int) []int {
 
 	// ペア解消を優先し、残り枠を高いカードで埋める (最大3枚)
 	// 5枚ハンドではペア交換候補は最大3枚 (4-of-a-kind)
-	indices = pairDiscards
+	indices := pairDiscards
 	if len(indices) < 3 {
 		sort.Slice(highCardDiscards, func(i, j int) bool {
 			return cards[highCardDiscards[i]].value > cards[highCardDiscards[j]].value
