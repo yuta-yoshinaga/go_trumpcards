@@ -1057,3 +1057,39 @@ func TestDoubt_HasTell(t *testing.T) {
 		assert.False(t, ha.HasTell)
 	})
 }
+
+func TestDoubt_HesitationMs(t *testing.T) {
+	t.Run("HesitationMs is 0 when disabled", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuHesitationEnabled: false})
+		advanceToCpuTurn(game)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+		game.CpuPlay()
+
+		cpuActions := game.GetCpuActions()
+		assert.NotEmpty(t, cpuActions)
+		assert.Equal(t, 0, cpuActions[0].HesitationMs)
+	})
+
+	t.Run("HesitationMs is set when enabled", func(t *testing.T) {
+		hesitationSeen := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuHesitationEnabled: true})
+			advanceToCpuTurn(game)
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+			game.CpuPlay()
+
+			cpuActions := game.GetCpuActions()
+			if len(cpuActions) > 0 && cpuActions[0].HesitationMs > 0 {
+				hesitationSeen = true
+				break
+			}
+		}
+		assert.True(t, hesitationSeen, "HesitationMs should be set when enabled")
+	})
+}

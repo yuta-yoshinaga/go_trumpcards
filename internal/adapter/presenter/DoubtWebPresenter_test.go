@@ -185,6 +185,32 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.False(t, resObj.HumanAction.HasTell)
 	})
 
+	t.Run("success Output cpuActions HesitationMs is passed through", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetCpuActions([]*domain.DoubtCpuAction{
+			{PlayerIdx: 1, ClaimedValue: 3, CardCount: 1, HesitationMs: 750},
+		})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Len(t, resObj.CpuActions, 1)
+		assert.Equal(t, 750, resObj.CpuActions[0].HesitationMs)
+	})
+
+	t.Run("success Output cpuActions HesitationMs zero by default", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetCpuActions([]*domain.DoubtCpuAction{
+			{PlayerIdx: 1, ClaimedValue: 3, CardCount: 1},
+		})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Len(t, resObj.CpuActions, 1)
+		assert.Equal(t, 0, resObj.CpuActions[0].HesitationMs)
+	})
+
 	t.Run("success Output cpuDoubters non-empty", func(t *testing.T) {
 		d, _ := setupDoubtWebTest()
 		d.SetCpuDoubters([]int{1, 2})

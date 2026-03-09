@@ -157,6 +157,7 @@ export interface CpuAction {
   drawnCard: Card | null;
   discardedPairs: number;
   discardedCards?: Card[];
+  hesitationMs?: number;
 }
 
 export interface DrawHistoryEntry {
@@ -322,6 +323,7 @@ export interface DoubtCpuAction {
   cardCount: number;
   isBluff: boolean;
   hasTell?: boolean;
+  hesitationMs?: number;
 }
 
 export interface DoubtDoubtResult {
@@ -338,6 +340,7 @@ export interface DoubtConfig {
   doubtWindowSec: number;
   cpuMemoryLevel: number; // 0=Easy, 1=Normal, 2=Hard
   penaltyDrawLimit: number; // 0=unlimited, >0=max cards loser picks up
+  cpuHesitationEnabled: boolean;
 }
 
 export interface DoubtResponse {

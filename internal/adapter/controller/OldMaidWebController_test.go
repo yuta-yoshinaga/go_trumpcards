@@ -18,7 +18,7 @@ import (
 func TestOldMaidWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
 	omiMock := new(usecase.MockOldMaidInteractor)
-	omiMock.On("Reset", mock.Anything).Return(mockOutput).Times(4)
+	omiMock.On("Reset", mock.Anything).Return(mockOutput).Times(5)
 	omiMock.On("Draw", -1).Return(mockOutput)
 	omiMock.On("Draw", 2).Return(mockOutput)
 	omiMock.On("Shuffle").Return(mockOutput)
@@ -121,6 +121,17 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		input := controller.OldMaidWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "test-session-1"},
 			CpuMemoryAI:  true,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+	})
+	t.Run("success Exec reset with cpuHesitationEnabled", func(t *testing.T) {
+		input := controller.OldMaidWebInput{
+			BaseWebInput:         controller.BaseWebInput{Command: "reset", SessionID: "test-session-1"},
+			CpuHesitationEnabled: true,
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")

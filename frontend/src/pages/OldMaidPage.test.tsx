@@ -130,14 +130,21 @@ describe('OldMaidPage', () => {
     fireEvent.click(radios[1]);
     fireEvent.click(screen.getByLabelText('CPU心理戦（奇数カードを端に配置）'));
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true, undefined, false));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true, undefined, false, false));
   });
 
   it('ゲーム開始 calls reset with cpuMemoryAI=true when checkbox enabled', async () => {
     renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）'));
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, true));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, true, false));
+  });
+
+  it('ゲーム開始 calls reset with cpuHesitationEnabled=true when checkbox enabled', async () => {
+    renderWithProviders(<OldMaidPage />);
+    fireEvent.click(screen.getByLabelText('CPU迷い時間ディレイ（カード内容により反応速度が変化）'));
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, true));
   });
 
   it('hides setup screen after ゲーム開始', async () => {
@@ -260,7 +267,7 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, false));
   });
 
   it('calls draw when random draw button is clicked', async () => {

@@ -1792,3 +1792,123 @@ func TestOldMaid_DrawHistory(t *testing.T) {
 		assert.True(t, history[0].TargetFinished)
 	})
 }
+
+func TestOldMaid_CpuDraw_HesitationMs(t *testing.T) {
+	t.Run("HesitationMs is 0 when disabled", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false), // CPU 0
+			domain.NewOldMaidPlayer(true),  // Human 1
+			domain.NewOldMaidPlayer(false), // CPU 2
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.SetConfig(domain.OldMaidConfig{CpuHesitationEnabled: false})
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+		err := om.CpuDraw()
+		assert.NoError(t, err)
+
+		actions := om.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		assert.Equal(t, 0, actions[0].HesitationMs)
+	})
+
+	t.Run("HesitationMs is set when enabled", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false), // CPU 0
+			domain.NewOldMaidPlayer(true),  // Human 1
+			domain.NewOldMaidPlayer(false), // CPU 2
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.SetConfig(domain.OldMaidConfig{CpuHesitationEnabled: true})
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+		err := om.CpuDraw()
+		assert.NoError(t, err)
+
+		actions := om.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		assert.Greater(t, actions[0].HesitationMs, 0)
+	})
+
+	t.Run("HesitationMs pair branch - fast delay", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false), // CPU 0
+			domain.NewOldMaidPlayer(true),  // Human 1
+			domain.NewOldMaidPlayer(false), // CPU 2
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.SetConfig(domain.OldMaidConfig{CpuHesitationEnabled: true})
+
+		// Give CPU0 a spade-2 so drawing heart-2 from Human1 makes a pair
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false)) // only 1 card → deterministic draw
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+		err := om.CpuDraw()
+		assert.NoError(t, err)
+
+		actions := om.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		assert.Equal(t, 1, actions[0].DiscardedPairs)
+		assert.GreaterOrEqual(t, actions[0].HesitationMs, 300)
+		assert.LessOrEqual(t, actions[0].HesitationMs, 500)
+	})
+
+	t.Run("HesitationMs joker branch - slow delay", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false), // CPU 0
+			domain.NewOldMaidPlayer(true),  // Human 1
+			domain.NewOldMaidPlayer(false), // CPU 2
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.SetConfig(domain.OldMaidConfig{CpuHesitationEnabled: true})
+
+		// CPU0 has no matching card; Human1 has only a joker
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false)) // only 1 card → deterministic draw
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+		err := om.CpuDraw()
+		assert.NoError(t, err)
+
+		actions := om.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		assert.GreaterOrEqual(t, actions[0].HesitationMs, 1000)
+		assert.LessOrEqual(t, actions[0].HesitationMs, 1500)
+	})
+
+	t.Run("HesitationMs normal branch - medium delay", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false), // CPU 0
+			domain.NewOldMaidPlayer(true),  // Human 1
+			domain.NewOldMaidPlayer(false), // CPU 2
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.SetConfig(domain.OldMaidConfig{CpuHesitationEnabled: true})
+
+		// CPU0 has no matching card; Human1 has a non-joker non-matching card
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false)) // only 1 card → deterministic draw
+		players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+		err := om.CpuDraw()
+		assert.NoError(t, err)
+
+		actions := om.GetCpuActions()
+		assert.NotEmpty(t, actions)
+		assert.Equal(t, 0, actions[0].DiscardedPairs)
+		assert.GreaterOrEqual(t, actions[0].HesitationMs, 600)
+		assert.LessOrEqual(t, actions[0].HesitationMs, 1000)
+	})
+}

@@ -17,6 +17,12 @@ func newShuffledDeck(jokerCount int) *TrumpCards {
 	return tc
 }
 
+// OldMaid固有の迷い時間ディレイ定数 (共通定数は hesitation.go)
+const (
+	oldMaidHesitationJokerMin = 1000
+	oldMaidHesitationJokerMax = 1500
+)
+
 // OldMaidCpuAction CPUの1ターン分の行動記録
 type OldMaidCpuAction struct {
 	DrawPlayerIdx  int     // 引いたプレイヤーインデックス
@@ -24,6 +30,7 @@ type OldMaidCpuAction struct {
 	DrawnCard      *Card   // 引いたカード
 	DiscardedPairs int     // 捨てたペア数
 	DiscardedCards []*Card // 捨てたカード
+	HesitationMs   int     // 迷い時間ディレイ (ミリ秒; 0=無効)
 }
 
 // OldMaidDrawHistoryEntry ゲーム全体の引き履歴の1エントリ
@@ -406,11 +413,29 @@ func (o *OldMaid) CpuDraw() error {
 		DiscardedPairs: o.lastDiscardedPairs,
 		DiscardedCards: o.lastDiscardedCards,
 	}
+	if o.config.CpuHesitationEnabled {
+		drewJoker := card != nil && card.GetDesign() == CardDesignJoker
+		gotPair := o.lastDiscardedPairs > 0
+		action.HesitationMs = calcOldMaidHesitationMs(gotPair, drewJoker)
+	}
 	o.cpuActions = append(o.cpuActions, action)
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
 	return nil
+}
+
+// calcOldMaidHesitationMs 引いたカードの結果に応じた迷い時間(ミリ秒)を算出する
+// Note: ジジ抜きモードではジョーカーがデッキに含まれないため drewJoker は常に false となり、
+// pair/normal の2分岐のみが使われる。
+func calcOldMaidHesitationMs(gotPair bool, drewJoker bool) int {
+	if drewJoker {
+		return oldMaidHesitationJokerMin + rand.Intn(oldMaidHesitationJokerMax-oldMaidHesitationJokerMin+1)
+	}
+	if gotPair {
+		return hesitationFastMin + rand.Intn(hesitationFastMax-hesitationFastMin+1)
+	}
+	return hesitationMediumMin + rand.Intn(hesitationMediumMax-hesitationMediumMin+1)
 }
 
 // detectOddCardIdx プレイヤーの手札から奇数カードのインデックスを検出する (内部処理)

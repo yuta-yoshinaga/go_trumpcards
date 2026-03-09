@@ -13,12 +13,13 @@ import (
 // DoubtWebInput ダウトWebインプット
 type DoubtWebInput struct {
 	BaseWebInput
-	CardIndices      []int `json:"cardIndices,omitempty"`
-	ClaimedValue     int   `json:"claimedValue,omitempty"`
-	DoubterIndices   []int `json:"doubterIndices,omitempty"`
-	DoubtWindowSec   *int  `json:"doubtWindowSec,omitempty"`
-	CpuMemoryLevel   *int  `json:"cpuMemoryLevel,omitempty"`
-	PenaltyDrawLimit *int  `json:"penaltyDrawLimit,omitempty"`
+	CardIndices          []int `json:"cardIndices,omitempty"`
+	ClaimedValue         int   `json:"claimedValue,omitempty"`
+	DoubterIndices       []int `json:"doubterIndices,omitempty"`
+	DoubtWindowSec       *int  `json:"doubtWindowSec,omitempty"`
+	CpuMemoryLevel       *int  `json:"cpuMemoryLevel,omitempty"`
+	PenaltyDrawLimit     *int  `json:"penaltyDrawLimit,omitempty"`
+	CpuHesitationEnabled bool  `json:"cpuHesitationEnabled,omitempty"`
 }
 
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
@@ -37,6 +38,7 @@ type DoubtWebOutputAction struct {
 	CardCount    int  `json:"cardCount"`
 	IsBluff      bool `json:"isBluff"`
 	HasTell      bool `json:"hasTell"`
+	HesitationMs int  `json:"hesitationMs,omitempty"`
 }
 
 // DoubtWebOutputDoubtResult ダウト解決結果
@@ -107,6 +109,7 @@ func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtI
 		if param.PenaltyDrawLimit != nil && *param.PenaltyDrawLimit >= 0 {
 			cfg.PenaltyDrawLimit = *param.PenaltyDrawLimit
 		}
+		cfg.CpuHesitationEnabled = param.CpuHesitationEnabled
 		bc.writePresenterResponse(w, dgi.ResetWithConfig(cfg))
 	case "p", "play":
 		if len(param.CardIndices) > MaxCardIndices {
