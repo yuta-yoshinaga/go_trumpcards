@@ -438,10 +438,20 @@ func TestDaifugoCuiPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 
-	t.Run("nil entries", func(t *testing.T) {
+	t.Run("nil_entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDaifugoGame)
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		mockGame.On("GetGameEndFlag").Return(false)
 
 		result := p.ActionLogOutput(mockGame)
 

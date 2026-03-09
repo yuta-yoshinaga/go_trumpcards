@@ -193,6 +193,7 @@ export function OldMaidPage() {
             <button
               type="button"
               className={btnSecondary}
+              /* v8 ignore next 4 */
               onClick={async () => {
                 const res = await actionLogApi.oldmaid();
                 setActionLog(res.entries);

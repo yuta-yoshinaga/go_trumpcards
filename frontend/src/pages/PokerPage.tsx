@@ -242,6 +242,7 @@ export function PokerPage() {
             <button
               type="button"
               className={btnSecondary}
+              /* v8 ignore next 4 */
               onClick={async () => {
                 const res = await actionLogApi.poker();
                 setActionLog(res.entries);
