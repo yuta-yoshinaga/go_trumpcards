@@ -87,6 +87,16 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
+	// メタAI情報
+	if profile := d.GetHumanProfile(); profile != nil {
+		resObj.MetaAI = &controller.DoubtWebOutputMetaAI{
+			Enabled:       true,
+			GamesPlayed:   profile.GamesPlayed,
+			BluffRate:     profile.BluffRate(1), // medium bracket as representative
+			DoubtAccuracy: profile.DoubtAccuracy(),
+		}
+	}
+
 	// メッセージ
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

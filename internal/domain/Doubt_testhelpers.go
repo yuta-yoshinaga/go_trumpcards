@@ -26,3 +26,6 @@ func (d *Doubt) SetLastDoubtResult(result *DoubtDoubtResult) { d.lastDoubtResult
 
 // SetWinnerIdx 勝者インデックス設定（テスト用）
 func (d *Doubt) SetWinnerIdx(idx int) { d.winnerIdx = idx }
+
+// SetHumanProfile メタAIプロファイル設定（テスト用）
+func (d *Doubt) SetHumanProfile(p *DoubtHumanProfile) { d.humanProfile = p }

@@ -68,6 +68,8 @@ flowchart TD
 | `setmode N` | `sm N` | ゲームモード変更（0=ノーマル, 1=ジジ抜き） |
 | `setplacementstrategy N` | `sps N` | CPU心理戦の切替（0=OFF, 1=ON） |
 | `setmemoryai N` | `sma N` | CPU記憶AIの切替（0=OFF, 1=ON） |
+| `setmetaai N` | `smai N` | Meta-AI の切替（0=OFF, 1=ON） |
+| `resetprofile` | `rp` | Meta-AI のプロファイル（学習データ）をリセット |
 
 > **Note**: 設定コマンドを実行するとゲームがリセットされます。`r`（reset）コマンドは現在の設定を維持してリセットします。
 

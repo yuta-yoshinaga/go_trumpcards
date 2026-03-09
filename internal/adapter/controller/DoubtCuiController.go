@@ -89,6 +89,19 @@ func (c *DoubtCuiController) Exec(command string) string {
 				cfg := c.di.GetConfig()
 				cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(v)
 				return c.di.ResetWithConfig(cfg), true
+			case "smetaai", "smai":
+				if len(args) < 1 {
+					return "Meta-AI flag is required (0=OFF, 1=ON).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return fmt.Sprintf("Invalid meta-AI flag: %s. Please enter 0-1.", args[0]), true
+				}
+				cfg := c.di.GetConfig()
+				cfg.CpuMetaAI = v == 1
+				return c.di.ResetWithConfig(cfg), true
+			case "rp", "resetprofile":
+				return c.di.ResetProfile(), true
 			case "sp", "setpenalty":
 				if len(args) < 1 {
 					return "Penalty draw limit is required (0=unlimited, >0=limit).", true

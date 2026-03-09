@@ -18,6 +18,7 @@ type OldMaidWebInput struct {
 	CpuPlacementStrategy bool  `json:"cpuPlacementStrategy"`
 	CpuMemoryAI          bool  `json:"cpuMemoryAI"`
 	CpuHesitationEnabled bool  `json:"cpuHesitationEnabled"`
+	CpuMetaAI            bool  `json:"cpuMetaAI"`
 }
 
 // OldMaidWebOutputPlayer ババ抜きWebアウトプットプレイヤー
@@ -70,6 +71,14 @@ type OldMaidWebOutput struct {
 	Message               string                              `json:"message"`
 	MessageCode           string                              `json:"messageCode,omitempty"`
 	MessageParams         map[string]string                   `json:"messageParams,omitempty"`
+	MetaAI                *OldMaidWebOutputMetaAI             `json:"metaAI,omitempty"`
+}
+
+// OldMaidWebOutputMetaAI メタAI情報
+type OldMaidWebOutputMetaAI struct {
+	Enabled      bool    `json:"enabled"`
+	GamesPlayed  int     `json:"gamesPlayed"`
+	EdgePickRate float64 `json:"edgePickRate"`
 }
 
 // OldMaidWebController ババ抜きWebコントローラークラス
@@ -102,8 +111,11 @@ func oldMaidDispatch(bc *baseController, w rest.ResponseWriter, omi usecase.OldM
 			CpuPlacementStrategy: param.CpuPlacementStrategy,
 			CpuMemoryAI:          param.CpuMemoryAI,
 			CpuHesitationEnabled: param.CpuHesitationEnabled,
+			CpuMetaAI:            param.CpuMetaAI,
 		}
 		bc.writePresenterResponse(w, omi.Reset(cfg))
+	case "rp", "reset-profile":
+		bc.writePresenterResponse(w, omi.ResetProfile())
 	case "d", "draw":
 		drawIdx := derefIntDefault(param.DrawIdx, -1)
 		bc.writePresenterResponse(w, omi.Draw(drawIdx))

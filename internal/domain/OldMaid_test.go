@@ -1912,3 +1912,206 @@ func TestOldMaid_CpuDraw_HesitationMs(t *testing.T) {
 		assert.LessOrEqual(t, actions[0].HesitationMs, 1000)
 	})
 }
+
+func TestOldMaid_MetaAI_ProfileSurvivesReset(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{CpuMetaAI: true})
+
+	// First Reset creates a new profile
+	om.Reset()
+	profile := om.GetHumanProfile()
+	assert.NotNil(t, profile, "profile should be created on first Reset")
+	assert.Equal(t, 0, profile.GamesPlayed, "GamesPlayed should be 0 on first Reset")
+
+	// Record some data on the profile
+	profile.RecordPick(0, 5)
+	profile.RecordDraw()
+	assert.Equal(t, 1, profile.TotalPicks)
+	assert.Equal(t, 1, profile.DrawCount)
+
+	// Second Reset should increment GamesPlayed but keep the profile
+	om.Reset()
+	profile2 := om.GetHumanProfile()
+	assert.NotNil(t, profile2, "profile should survive Reset")
+	assert.Equal(t, 1, profile2.GamesPlayed, "GamesPlayed should be incremented on second Reset")
+}
+
+func TestOldMaid_MetaAI_ProfileNotCreatedWhenDisabled(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{CpuMetaAI: false})
+
+	om.Reset()
+	assert.Nil(t, om.GetHumanProfile(), "profile should be nil when CpuMetaAI is false")
+}
+
+func TestOldMaid_MetaAI_ResetProfileClearsProfile(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+		domain.NewOldMaidPlayer(false),
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{CpuMetaAI: true})
+
+	om.Reset()
+	assert.NotNil(t, om.GetHumanProfile(), "profile should exist after Reset with CpuMetaAI=true")
+
+	om.ResetProfile()
+	assert.Nil(t, om.GetHumanProfile(), "profile should be nil after ResetProfile")
+}
+
+func TestOldMaid_MetaAI_PlayerDrawRecordsPickAndDraw(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Human 0
+		domain.NewOldMaidPlayer(false), // CPU 1
+		domain.NewOldMaidPlayer(false), // CPU 2
+		domain.NewOldMaidPlayer(false), // CPU 3
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{CpuMetaAI: true})
+	om.SetHumanProfile(&domain.OldMaidHumanProfile{})
+
+	// Set up: Human at turn 0, CPU 1 has exactly 1 card (deterministic draw)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+
+	err := om.PlayerDraw(0)
+	assert.NoError(t, err)
+
+	profile := om.GetHumanProfile()
+	assert.NotNil(t, profile)
+	assert.Equal(t, 1, profile.TotalPicks, "TotalPicks should be incremented after PlayerDraw")
+	assert.Equal(t, 1, profile.DrawCount, "DrawCount should be incremented after PlayerDraw")
+}
+
+func TestOldMaid_MetaAI_PlayerDrawRandomSkipsRecordPick(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Human 0
+		domain.NewOldMaidPlayer(false), // CPU 1
+		domain.NewOldMaidPlayer(false), // CPU 2
+		domain.NewOldMaidPlayer(false), // CPU 3
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{CpuMetaAI: true})
+	om.SetHumanProfile(&domain.OldMaidHumanProfile{})
+
+	// Set up: Human at turn 0, CPU 1 has exactly 1 card (deterministic draw)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+
+	// cardIdx=-1 means random selection → should NOT call RecordPick
+	err := om.PlayerDraw(-1)
+	assert.NoError(t, err)
+
+	profile := om.GetHumanProfile()
+	assert.NotNil(t, profile)
+	assert.Equal(t, 0, profile.TotalPicks, "TotalPicks should NOT be incremented for random selection")
+	assert.Equal(t, 1, profile.DrawCount, "DrawCount should still be incremented")
+}
+
+func TestOldMaid_MetaAI_ShuffleHumanHandRecordsShuffle(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Human 0
+		domain.NewOldMaidPlayer(false), // CPU 1
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{CpuMetaAI: true})
+	om.SetHumanProfile(&domain.OldMaidHumanProfile{})
+
+	// Give human some cards so ShuffleHumanHand doesn't fail
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
+
+	err := om.ShuffleHumanHand()
+	assert.NoError(t, err)
+
+	profile := om.GetHumanProfile()
+	assert.NotNil(t, profile)
+	assert.Equal(t, 1, profile.ShuffleCount, "ShuffleCount should be incremented after ShuffleHumanHand")
+}
+
+func TestOldMaid_MetaAI_ArrangeTargetStrategicPlacement(t *testing.T) {
+	// When AdaptStrength >= 0.08 (GamesPlayed >= 2) and CpuPlacementStrategy=true,
+	// ArrangeTargetForHumanDraw should use strategic placement.
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Human 0
+		domain.NewOldMaidPlayer(false), // CPU 1
+		domain.NewOldMaidPlayer(false), // CPU 2
+		domain.NewOldMaidPlayer(false), // CPU 3
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{
+		CpuMetaAI:            true,
+		CpuPlacementStrategy: true,
+	})
+
+	// Profile with GamesPlayed=2 gives AdaptStrength = 2*0.04 = 0.08
+	// Bias PositionBuckets toward edges (buckets 0 and 2) so strategic placement picks middle (bucket 1)
+	om.SetHumanProfile(&domain.OldMaidHumanProfile{
+		GamesPlayed:     2,
+		PositionBuckets: [3]int{10, 1, 10},
+		TotalPicks:      21,
+	})
+
+	// Human is at turn 0, target is CPU 1
+	// CPU 1 needs >= 2 cards and must contain a joker (odd card in normal mode)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignClover, 6, false))
+
+	// Run multiple times to confirm strategic placement uses the middle zone
+	middlePlaced := false
+	for attempt := 0; attempt < 1000; attempt++ {
+		// Re-add cards for CPU 1 each iteration
+		for players[1].GetCardsSize() > 0 {
+			players[1].RemoveCard(0)
+		}
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		om.ArrangeTargetForHumanDraw()
+		pos := om.GetCpuHighlightedCardIdx()
+		// With 7 cards, third=2. Middle bucket maps to positions [2, 3].
+		// Edge positions are 0 and size-1(=6).
+		if pos >= 1 && pos <= 5 {
+			middlePlaced = true
+			break
+		}
+	}
+	assert.True(t, middlePlaced, "strategic placement should place odd card in middle zone (least picked bucket)")
+}

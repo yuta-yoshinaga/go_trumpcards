@@ -7,10 +7,12 @@ interface SetupScreenProps {
   cpuPlacementStrategy: boolean;
   cpuMemoryAI: boolean;
   cpuHesitationEnabled: boolean;
+  cpuMetaAI: boolean;
   onModeChange: (m: number) => void;
   onStrategyChange: (v: boolean) => void;
   onMemoryAIChange: (v: boolean) => void;
   onHesitationChange: (v: boolean) => void;
+  onMetaAIChange: (v: boolean) => void;
   onStart: () => void;
   loading: boolean;
 }
@@ -20,10 +22,12 @@ export function OldMaidSetupScreen({
   cpuPlacementStrategy,
   cpuMemoryAI,
   cpuHesitationEnabled,
+  cpuMetaAI,
   onModeChange,
   onStrategyChange,
   onMemoryAIChange,
   onHesitationChange,
+  onMetaAIChange,
   onStart,
   loading,
 }: SetupScreenProps) {
@@ -69,6 +73,10 @@ export function OldMaidSetupScreen({
             onChange={(e) => onHesitationChange(e.target.checked)}
           />
           {t('setup.cpuHesitation')}
+        </label>
+        <label className="flex items-center gap-2 text-white cursor-pointer">
+          <input type="checkbox" checked={cpuMetaAI} onChange={(e) => onMetaAIChange(e.target.checked)} />
+          {t('setup.cpuMetaAI')}
         </label>
       </div>
       <button type="button" className={`${btnPrimary} min-w-[120px] mt-2`} disabled={loading} onClick={onStart}>

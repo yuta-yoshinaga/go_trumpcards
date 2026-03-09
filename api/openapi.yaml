@@ -1707,6 +1707,11 @@ components:
           description: When true, CPU actions include a hesitation delay (ms) that varies based on draw outcome
           default: false
           example: false
+        cpuMetaAI:
+          type: boolean
+          description: When true, CPUs adaptively adjust their strategy based on session-scoped game history (Meta-AI)
+          default: false
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1899,6 +1904,24 @@ components:
           type: integer
           description: Current game mode (0=Normal/ババ抜き, 1=JijiNuki/ジジ抜き)
           example: 0
+        metaAI:
+          type: object
+          nullable: true
+          description: Meta-AI state for the current session (null when Meta-AI is disabled)
+          properties:
+            enabled:
+              type: boolean
+              description: Whether Meta-AI is enabled
+              example: true
+            gamesPlayed:
+              type: integer
+              description: Number of games played in the current session
+              example: 3
+            edgePickRate:
+              type: number
+              format: float
+              description: Rate at which the human player picks edge cards (0.0–1.0)
+              example: 0.45
 
     # -------------------------------------------------------------------------
     # Daifugo
@@ -2633,6 +2656,13 @@ components:
             honest → medium (600-1000ms). Defaults to false.
           default: false
           example: false
+        cpuMetaAI:
+          type: boolean
+          description: |
+            When true, CPUs adaptively adjust bluff and doubt behavior based on
+            session-scoped game history (Meta-AI). Defaults to false.
+          default: false
+          example: false
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -2835,6 +2865,29 @@ components:
           type: integer
           description: Maximum number of cards the loser picks up after a doubt resolution (0 = unlimited)
           example: 0
+        metaAI:
+          type: object
+          nullable: true
+          description: Meta-AI state for the current session (null when Meta-AI is disabled)
+          properties:
+            enabled:
+              type: boolean
+              description: Whether Meta-AI is enabled
+              example: true
+            gamesPlayed:
+              type: integer
+              description: Number of games played in the current session
+              example: 5
+            bluffRate:
+              type: number
+              format: float
+              description: Rate at which the human player bluffs (0.0–1.0)
+              example: 0.35
+            doubtAccuracy:
+              type: number
+              format: float
+              description: Accuracy of the human player's doubt calls (0.0–1.0)
+              example: 0.60
 
     # -------------------------------------------------------------------------
     # Texas Hold'em

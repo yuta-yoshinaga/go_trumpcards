@@ -253,6 +253,59 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Contains(t, result, "Invalid penalty draw limit")
 	})
 
+	// smetaai / smai tests
+	t.Run("smetaai valid ON", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("smetaai 1")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultDoubtConfig()
+		expected.CpuMetaAI = true
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("smai valid OFF", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("smai 0")
+		assert.Equal(t, mockOutput, result)
+		expected := domain.DefaultDoubtConfig()
+		expected.CpuMetaAI = false
+		m.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("smetaai no args", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		result := c.Exec("smetaai")
+		assert.Contains(t, result, "Meta-AI flag is required")
+	})
+
+	t.Run("smetaai invalid value", func(t *testing.T) {
+		c := controller.NewDoubtCuiController(newMock())
+		assert.Contains(t, c.Exec("smetaai 2"), "Invalid meta-AI flag")
+		assert.Contains(t, c.Exec("smai abc"), "Invalid meta-AI flag")
+		assert.Contains(t, c.Exec("smai -1"), "Invalid meta-AI flag")
+	})
+
+	// rp / resetprofile tests
+	t.Run("rp command", func(t *testing.T) {
+		m := new(mockUsecases.MockDoubtInteractor)
+		m.On("ResetProfile").Return(mockOutput)
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("rp")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetProfile")
+	})
+
+	t.Run("resetprofile command", func(t *testing.T) {
+		m := new(mockUsecases.MockDoubtInteractor)
+		m.On("ResetProfile").Return(mockOutput)
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("resetprofile")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetProfile")
+	})
+
 	t.Run("unknown command", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("unknown")

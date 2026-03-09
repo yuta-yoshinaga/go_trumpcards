@@ -202,3 +202,55 @@ func TestOldMaidCuiController_SetMemoryAI_InvalidValue(t *testing.T) {
 	assert.Contains(t, c.Exec("sma abc"), "Invalid CPU memory AI flag: abc")
 	assert.Contains(t, c.Exec("sma -1"), "Invalid CPU memory AI flag: -1")
 }
+
+// --- set meta-AI ---
+
+func TestOldMaidCuiController_SetMetaAI_Valid(t *testing.T) {
+	mi := new(usecase.MockOldMaidInteractor)
+	c := controller.NewOldMaidCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
+	cfg := domain.DefaultOldMaidConfig()
+	cfg.CpuMetaAI = true
+	mi.On("Reset", cfg).Return("smai ok")
+	assert.Equal(t, "smai ok", c.Exec("smai 1"))
+}
+
+func TestOldMaidCuiController_SetMetaAI_LongCommand(t *testing.T) {
+	mi := new(usecase.MockOldMaidInteractor)
+	c := controller.NewOldMaidCuiController(mi)
+	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
+	cfg := domain.DefaultOldMaidConfig()
+	cfg.CpuMetaAI = false
+	mi.On("Reset", cfg).Return("smai ok")
+	assert.Equal(t, "smai ok", c.Exec("smetaai 0"))
+}
+
+func TestOldMaidCuiController_SetMetaAI_NoArgs(t *testing.T) {
+	mi := new(usecase.MockOldMaidInteractor)
+	c := controller.NewOldMaidCuiController(mi)
+	assert.Contains(t, c.Exec("smai"), "Meta-AI flag is required")
+}
+
+func TestOldMaidCuiController_SetMetaAI_InvalidValue(t *testing.T) {
+	mi := new(usecase.MockOldMaidInteractor)
+	c := controller.NewOldMaidCuiController(mi)
+	assert.Contains(t, c.Exec("smai 2"), "Invalid meta-AI flag: 2")
+	assert.Contains(t, c.Exec("smetaai abc"), "Invalid meta-AI flag: abc")
+	assert.Contains(t, c.Exec("smai -1"), "Invalid meta-AI flag: -1")
+}
+
+// --- reset profile ---
+
+func TestOldMaidCuiController_ResetProfile(t *testing.T) {
+	mi := new(usecase.MockOldMaidInteractor)
+	c := controller.NewOldMaidCuiController(mi)
+	mi.On("ResetProfile").Return("profile reset ok")
+	assert.Equal(t, "profile reset ok", c.Exec("rp"))
+}
+
+func TestOldMaidCuiController_ResetProfile_LongCommand(t *testing.T) {
+	mi := new(usecase.MockOldMaidInteractor)
+	c := controller.NewOldMaidCuiController(mi)
+	mi.On("ResetProfile").Return("profile reset ok")
+	assert.Equal(t, "profile reset ok", c.Exec("resetprofile"))
+}

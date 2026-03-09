@@ -273,6 +273,31 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, result, "ゲームから除外されました")
 	})
 
+	t.Run("metaAI status line shown when profile exists", func(t *testing.T) {
+		game, players := makeDoubtGameForPresenter()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		game.SetHumanProfile(&domain.DoubtHumanProfile{
+			GamesPlayed:     2,
+			BluffsByBracket: [3]struct{ Bluffs, Total int }{{1, 2}, {3, 6}, {0, 1}},
+			DoubtCorrect:    1,
+			DoubtTotal:      2,
+		})
+		result := p.Output(game, nil)
+		assert.Contains(t, result, "[メタAI]")
+		assert.Contains(t, result, "適応中")
+		assert.Contains(t, result, "ゲーム数: 2")
+		assert.Contains(t, result, "ブラフ率: 50%")   // 3/6 = 50%
+		assert.Contains(t, result, "ダウト正解率: 50%") // 1/2 = 50%
+	})
+
+	t.Run("no metaAI line when profile is nil", func(t *testing.T) {
+		game, players := makeDoubtGameForPresenter()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		// No SetHumanProfile → profile is nil
+		result := p.Output(game, nil)
+		assert.NotContains(t, result, "[メタAI]")
+	})
+
 	t.Run("getPlayerName for out-of-range index returns 不明", func(t *testing.T) {
 		game, _ := makeDoubtGameForPresenter()
 		game.SetLastDoubtResult(&domain.DoubtDoubtResult{

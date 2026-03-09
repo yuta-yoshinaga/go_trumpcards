@@ -338,6 +338,43 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 	})
 }
 
+func TestOldMaidWebPresenter_MetaAI(t *testing.T) {
+	towp := presenter.NewOldMaidWebPresenter()
+
+	t.Run("metaAI populated when profile exists", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		om.SetHumanProfile(&domain.OldMaidHumanProfile{
+			GamesPlayed:     4,
+			PositionBuckets: [3]int{5, 3, 7},
+			TotalPicks:      15,
+		})
+		result := towp.Output(om, nil)
+		var resObj controller.OldMaidWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.MetaAI)
+		assert.True(t, resObj.MetaAI.Enabled)
+		assert.Equal(t, 4, resObj.MetaAI.GamesPlayed)
+		// EdgePickRate = PickRate(0) + PickRate(2) = 5/15 + 7/15 = 12/15 = 0.8
+		assert.InDelta(t, 0.8, resObj.MetaAI.EdgePickRate, 0.001)
+	})
+
+	t.Run("metaAI omitted when profile is nil", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		// No SetHumanProfile → profile is nil
+		result := towp.Output(om, nil)
+		var resObj controller.OldMaidWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Nil(t, resObj.MetaAI)
+		// Also verify no metaAI key in raw JSON (omitempty)
+		var raw map[string]interface{}
+		_ = json.Unmarshal([]byte(result), &raw)
+		_, hasMetaAI := raw["metaAI"]
+		assert.False(t, hasMetaAI)
+	})
+}
+
 func TestOldMaidWebPresenter_CpuHighlightedCardIdx(t *testing.T) {
 	towp := presenter.NewOldMaidWebPresenter()
 	tc := domain.NewTrumpCards(1)

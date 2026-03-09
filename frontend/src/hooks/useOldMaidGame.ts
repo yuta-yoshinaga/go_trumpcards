@@ -101,11 +101,13 @@ export function useOldMaidGame() {
   const [setupStrategy, setSetupStrategy] = useState(false);
   const [setupMemoryAI, setSetupMemoryAI] = useState(false);
   const [setupHesitation, setSetupHesitation] = useState(false);
+  const [setupMetaAI, setSetupMetaAI] = useState(false);
   const [gameSettings, setGameSettings] = useState<{
     mode: number;
     cpuPlacementStrategy: boolean;
     cpuMemoryAI: boolean;
     cpuHesitationEnabled: boolean;
+    cpuMetaAI: boolean;
   } | null>(null);
   const [suspectPins, setSuspectPins] = useState<Set<number>>(new Set());
   const [shakeKey, setShakeKey] = useState(0);
@@ -163,6 +165,7 @@ export function useOldMaidGame() {
       cpuPlacementStrategy: setupStrategy,
       cpuMemoryAI: setupMemoryAI,
       cpuHesitationEnabled: setupHesitation,
+      cpuMetaAI: setupMetaAI,
     };
     setGameSettings(settings);
     setSuspectPins(new Set());
@@ -174,8 +177,9 @@ export function useOldMaidGame() {
       undefined,
       settings.cpuMemoryAI,
       settings.cpuHesitationEnabled,
+      settings.cpuMetaAI,
     );
-  }, [exec, setupMode, setupStrategy, setupMemoryAI, setupHesitation]);
+  }, [exec, setupMode, setupStrategy, setupMemoryAI, setupHesitation, setupMetaAI]);
 
   const handleReset = useCallback(() => {
     setSuspectPins(new Set());
@@ -188,6 +192,7 @@ export function useOldMaidGame() {
         undefined,
         gameSettings.cpuMemoryAI,
         gameSettings.cpuHesitationEnabled,
+        gameSettings.cpuMetaAI,
       );
     }
   }, [exec, gameSettings]);
@@ -205,6 +210,7 @@ export function useOldMaidGame() {
     setupStrategy,
     setupMemoryAI,
     setupHesitation,
+    setupMetaAI,
     gameSettings,
     suspectPins,
     setSuspectPins,
@@ -220,6 +226,7 @@ export function useOldMaidGame() {
     setSetupStrategy,
     setSetupMemoryAI,
     setSetupHesitation,
+    setSetupMetaAI,
     setGameSettings,
   };
 }
