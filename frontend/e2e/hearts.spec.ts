@@ -35,9 +35,9 @@ test.describe('Hearts E2E', () => {
 
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       // Wait for any actionable element to appear
-      await expect(passButton.or(playButton).or(nextTrickButton).or(nextRoundButton).or(resetButton)).toBeVisible({
-        timeout: 10_000,
-      });
+      await expect(
+        passButton.or(playButton).or(nextTrickButton).or(nextRoundButton).or(resetButton).first(),
+      ).toBeVisible({ timeout: 10_000 });
 
       // Check game end: phase 4 shows no action buttons except reset
       const passVisible = await passButton.isVisible().catch(() => false);
