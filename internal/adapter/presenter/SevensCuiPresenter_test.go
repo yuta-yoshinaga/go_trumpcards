@@ -154,6 +154,18 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "[トンネル]")
 	})
 
+	t.Run("success Output rule header with tunnel skip width", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{TunnelSkipWidth: 3}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[トンネルスキップ3]")
+	})
+
 	t.Run("success Output rule header with joker", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()

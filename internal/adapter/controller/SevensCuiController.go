@@ -33,6 +33,10 @@ func (c *SevensCuiController) Exec(command string) string {
 					switch {
 					case f == "tunnel":
 						cfg.TunnelEnabled = true
+					case strings.HasPrefix(f, "tunnelskip="):
+						if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "tunnelskip=")); err == nil {
+							cfg.TunnelSkipWidth = parsed
+						}
 					case strings.HasPrefix(f, "joker="):
 						if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "joker=")); err == nil {
 							cfg.JokerCount = parsed

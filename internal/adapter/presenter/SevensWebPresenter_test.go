@@ -57,6 +57,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 7, resObj.TableMaxVals[domain.CardDesignSpade])
 		// Config defaults
 		assert.False(t, resObj.Config.TunnelEnabled)
+		assert.Equal(t, 0, resObj.Config.TunnelSkipWidth)
 		assert.Equal(t, 0, resObj.Config.JokerCount)
 		assert.False(t, resObj.Config.CpuStrategy)
 		assert.False(t, resObj.Config.NoJokerFinish)
@@ -220,13 +221,14 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 	t.Run("success Output config with features enabled", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true, MaxPasses: 3, NoJokerFinish: true}
+		cfg := domain.SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 3, JokerCount: 2, CpuStrategy: true, MaxPasses: 3, NoJokerFinish: true}
 		s := domain.NewSevens(tc, players, cfg)
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.Config.TunnelEnabled)
+		assert.Equal(t, 3, resObj.Config.TunnelSkipWidth)
 		assert.Equal(t, 2, resObj.Config.JokerCount)
 		assert.True(t, resObj.Config.CpuStrategy)
 		assert.Equal(t, 3, resObj.Config.MaxPasses)

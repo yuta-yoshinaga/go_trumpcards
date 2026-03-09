@@ -2280,6 +2280,16 @@ components:
           description: |
             Enable tunnel rule (A↔K circular). Only used with `reset` command.
           example: false
+        tunnelSkipWidth:
+          type: integer
+          description: |
+            Tunnel skip width (0 = disabled, 2–12 = add ±N skip connections).
+            When tunnelEnabled is true, skip connections wrap around (A↔K circular).
+            Only used with `reset` command.
+          minimum: 0
+          maximum: 12
+          default: 0
+          example: 0
         jokerCount:
           type: integer
           description: |
@@ -2416,6 +2426,7 @@ components:
       description: Game configuration for optional rules
       required:
         - tunnelEnabled
+        - tunnelSkipWidth
         - jokerCount
         - cpuStrategy
         - maxPasses
@@ -2425,6 +2436,10 @@ components:
           type: boolean
           description: Whether the tunnel rule (A↔K circular) is enabled
           example: false
+        tunnelSkipWidth:
+          type: integer
+          description: Tunnel skip width (0 = disabled, 2–12 = ±N skip connections added)
+          example: 0
         jokerCount:
           type: integer
           description: Number of joker cards in the deck

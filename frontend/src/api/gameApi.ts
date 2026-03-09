@@ -130,6 +130,7 @@ export const doubtApi = {
 
 export interface SevensConfigInput {
   tunnelEnabled?: boolean;
+  tunnelSkipWidth?: number;
   jokerCount?: number;
   cpuStrategy?: boolean;
   maxPasses?: number;

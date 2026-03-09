@@ -189,6 +189,22 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, JokerConsecutiveBanned: true})
 	})
 
+	t.Run("reset with tunnelskip=3 flag", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSevensCuiController(m)
+		result := c.Exec("r tunnelskip=3")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelSkipWidth: 3, MaxPasses: 5})
+	})
+
+	t.Run("reset with tunnel and tunnelskip=4 flags", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSevensCuiController(m)
+		result := c.Exec("r tunnel tunnelskip=4")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 4, MaxPasses: 5})
+	})
+
 	t.Run("plain r still calls Reset", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewSevensCuiController(m)

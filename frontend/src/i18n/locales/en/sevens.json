@@ -20,6 +20,7 @@
   "rules": {
     "title": "Rules:",
     "tunnelTag": "[Tunnel]",
+    "tunnelSkipTag": "[Tunnel Skip {{width}}]",
     "jokerTag": "[Joker ×{{count}}]",
     "cpuStrategy": "[CPU Strategy]",
     "passUnlimited": "[Unlimited Pass]",
@@ -32,6 +33,8 @@
   "config": {
     "title": "Rule Settings (applied on reset)",
     "tunnel": "Tunnel",
+    "tunnelSkip": "Tunnel Skip Width",
+    "tunnelSkipOff": "Off",
     "joker": "Joker",
     "cpuStrategy": "CPU Strategy",
     "passCount": "Max Passes",

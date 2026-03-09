@@ -3,6 +3,7 @@ package domain
 // SevensConfig 7並べゲーム設定
 type SevensConfig struct {
 	TunnelEnabled          bool // トンネルルール (A↔K循環)
+	TunnelSkipWidth        int  // カスタムトンネル: スキップ幅 (0=無効, 2以上で±N接続を追加。TunnelEnabled時は循環ラップあり)
 	JokerCount             int  // ジョーカー枚数
 	CpuStrategy            bool // CPU戦略思考
 	MaxPasses              int  // 最大パス回数 (0 = 無制限)
@@ -16,6 +17,7 @@ type SevensConfig struct {
 func DefaultSevensConfig() SevensConfig {
 	return SevensConfig{
 		TunnelEnabled:          false,
+		TunnelSkipWidth:        0,
 		JokerCount:             0,
 		CpuStrategy:            false,
 		MaxPasses:              SevensMaxPasses,

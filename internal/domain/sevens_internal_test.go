@@ -539,3 +539,272 @@ func TestJokerReclaim_RecordJokerCard_InvalidBounds_Internal(t *testing.T) {
 	assert.Equal(t, uint16(0), s.jokerPlaced[CardDesignSpade],
 		"no jokerPlaced bits set for value 14")
 }
+
+func TestWrapValue(t *testing.T) {
+	tests := []struct {
+		input    int
+		expected int
+	}{
+		{1, 1},
+		{13, 13},
+		{14, 1},
+		{15, 2},
+		{0, 13},
+		{-1, 12},
+		{-2, 11},
+		{26, 13},
+		{27, 1},
+		{-12, 1},
+		{-13, 13},
+		{-25, 1},
+		{-26, 13},
+	}
+	for _, tc := range tests {
+		assert.Equal(t, tc.expected, wrapValue(tc.input), "wrapValue(%d)", tc.input)
+	}
+}
+
+func TestSevens_countOpponentsHoldingCard(t *testing.T) {
+	tc := NewTrumpCards(0)
+	players := []*SevensPlayer{
+		NewSevensPlayer(true),
+		NewSevensPlayer(false),
+		NewSevensPlayer(false),
+		NewSevensPlayer(false),
+	}
+	cfg := DefaultSevensConfig()
+	s := NewSevens(tc, players, cfg)
+	// CPU1 has spade 3
+	players[1].AddCard(NewCard(CardDesignSpade, 3, false))
+	// CPU2 has spade 3 too
+	players[2].AddCard(NewCard(CardDesignSpade, 3, false))
+	// CPU3 is finished
+	players[3].SetIsFinished(true)
+
+	count := s.countOpponentsHoldingCard(players[0], CardDesignSpade, 3)
+	assert.Greater(t, count, 0, "should count opponents holding the card")
+
+	// No one has spade 10
+	count2 := s.countOpponentsHoldingCard(players[0], CardDesignSpade, 10)
+	assert.Equal(t, 0, count2, "no opponents hold spade 10")
+}
+
+func TestSevens_evaluatePlay_TunnelSkipWidth(t *testing.T) {
+	t.Run("skip=3: positive score when player has card at skip distance", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{TunnelSkipWidth: 3, CpuStrategy: true, MaxPasses: 5}
+		s := NewSevens(tc, players, cfg)
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 10; d++ {
+				players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+			}
+		}
+		// Player has spade 1 (=4-3) AND spade 3 (=4-1) AND spade 10 (=4+3+3)
+		// so all directions yield +2
+		players[0].AddCard(NewCard(CardDesignSpade, 1, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 5, false))
+		card := NewCard(CardDesignSpade, 4, false)
+		// Without skip, evaluatePlay checks ±1: has 3 (+2), has 5 (+2) = 4
+		scoreNoSkip := func() int {
+			noSkipCfg := SevensConfig{CpuStrategy: true, MaxPasses: 5}
+			s2 := NewSevens(NewTrumpCards(0), []*SevensPlayer{
+				NewSevensPlayer(true), NewSevensPlayer(false),
+				NewSevensPlayer(false), NewSevensPlayer(false),
+			}, noSkipCfg)
+			for i := 0; i < 4; i++ {
+				for d := 0; d < 10; d++ {
+					s2.players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+				}
+			}
+			s2.players[0].AddCard(NewCard(CardDesignSpade, 1, false))
+			s2.players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+			s2.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
+			return s2.evaluatePlay(s2.players[0], NewCard(CardDesignSpade, 4, false))
+		}()
+		score := s.evaluatePlay(players[0], card)
+		// With skip=3, player has spade 1 at skip distance → extra +2
+		assert.Greater(t, score, scoreNoSkip)
+	})
+
+	t.Run("skip=3: negative score when opponent has card at skip distance", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{TunnelSkipWidth: 3, CpuStrategy: true, MaxPasses: 5}
+		s := NewSevens(tc, players, cfg)
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 10; d++ {
+				players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+			}
+		}
+		// Player does NOT have spade 1 (=4-3), but CPU1 does → penalty
+		players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+		// Player has spade 3 and 5 for ±1 adjacency
+		players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 5, false))
+		card := NewCard(CardDesignSpade, 4, false)
+		scoreWithSkip := s.evaluatePlay(players[0], card)
+		// Without skip, no penalty for position 1
+		noSkipCfg := SevensConfig{CpuStrategy: true, MaxPasses: 5}
+		s2 := NewSevens(NewTrumpCards(0), []*SevensPlayer{
+			NewSevensPlayer(true), NewSevensPlayer(false),
+			NewSevensPlayer(false), NewSevensPlayer(false),
+		}, noSkipCfg)
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 10; d++ {
+				s2.players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+			}
+		}
+		s2.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+		s2.players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+		s2.players[0].AddCard(NewCard(CardDesignSpade, 5, false))
+		scoreNoSkip := s2.evaluatePlay(s2.players[0], NewCard(CardDesignSpade, 4, false))
+		// Skip=3 adds penalty because opponent holds card at skip distance
+		assert.Less(t, scoreWithSkip, scoreNoSkip)
+	})
+
+	t.Run("skip=3: skipHigh player has card at skip distance", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{TunnelSkipWidth: 3, CpuStrategy: true, MaxPasses: 5}
+		s := NewSevens(tc, players, cfg)
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 10; d++ {
+				players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+			}
+		}
+		// value=10, skip=3: skipLow=7 (placed), skipHigh=13 (not placed)
+		// Player has spade 13 → skipHigh yields +2
+		players[0].AddCard(NewCard(CardDesignSpade, 13, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 9, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 11, false))
+		card := NewCard(CardDesignSpade, 10, false)
+		score := s.evaluatePlay(players[0], card)
+		// Should get bonus from having card at skipHigh (13) and ±1 (9, 11)
+		assert.Greater(t, score, 0)
+	})
+
+	t.Run("skip=3: skipHigh opponent has card at skip distance", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{TunnelSkipWidth: 3, CpuStrategy: true, MaxPasses: 5}
+		s := NewSevens(tc, players, cfg)
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 10; d++ {
+				players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+			}
+		}
+		// value=10, skip=3: skipHigh=13 (not placed), player does NOT have it, CPU1 does
+		players[1].AddCard(NewCard(CardDesignSpade, 13, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 9, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 11, false))
+		card := NewCard(CardDesignSpade, 10, false)
+		score := s.evaluatePlay(players[0], card)
+		// Penalty from opponent holding card at skipHigh
+		assert.Less(t, score, 4) // less than ideal (+2 for each ±1)
+	})
+
+	t.Run("skip=3 without tunnel: out-of-range skipHigh ignored", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+		}
+		// TunnelEnabled=false, skip=3: value=12 → skipHigh=15 (out of range, ignored)
+		cfg := SevensConfig{TunnelSkipWidth: 3, CpuStrategy: true, MaxPasses: 5}
+		s := NewSevens(tc, players, cfg)
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 10; d++ {
+				players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+			}
+		}
+		// Place 8-11 so value 12 is playable
+		for v := 8; v <= 11; v++ {
+			s.placePosition(CardDesignSpade, v)
+		}
+		players[0].AddCard(NewCard(CardDesignSpade, 11, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 13, false))
+		card := NewCard(CardDesignSpade, 12, false)
+		score := s.evaluatePlay(players[0], card)
+		// skipLow=9 is placed, skipHigh=15 out of range → no skip effect
+		assert.GreaterOrEqual(t, score, 0)
+	})
+
+	t.Run("skip=3 without tunnel: out-of-range skipLow ignored", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+		}
+		// TunnelEnabled=false, skip=3: value=2 → skipLow=-1 (out of range, ignored)
+		cfg := SevensConfig{TunnelSkipWidth: 3, CpuStrategy: true, MaxPasses: 5}
+		s := NewSevens(tc, players, cfg)
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 10; d++ {
+				players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+			}
+		}
+		// Place 3-6 so value 2 is playable
+		for v := 3; v <= 6; v++ {
+			s.placePosition(CardDesignSpade, v)
+		}
+		players[0].AddCard(NewCard(CardDesignSpade, 1, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 3, false))
+		card := NewCard(CardDesignSpade, 2, false)
+		score := s.evaluatePlay(players[0], card)
+		// skipLow=-1 out of range, skipHigh=5 is placed → no skip effect
+		assert.GreaterOrEqual(t, score, 0)
+	})
+
+	t.Run("skip=3 with tunnel: evaluates wrap direction", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 3, CpuStrategy: true, MaxPasses: 5}
+		s := NewSevens(tc, players, cfg)
+		for i := 0; i < 4; i++ {
+			for d := 0; d < 10; d++ {
+				players[i].AddCard(NewCard(CardDesignDiamond, 2, false))
+			}
+		}
+		// Place 1-7 on spade board
+		for v := 1; v <= 6; v++ {
+			s.placePosition(CardDesignSpade, v)
+		}
+		// Player has spade 11 (wrapValue(1-3) = 11 when tunnel enabled)
+		players[0].AddCard(NewCard(CardDesignSpade, 11, false))
+		card := NewCard(CardDesignSpade, 1, false)
+		score := s.evaluatePlay(players[0], card)
+		// Should include consideration of skip distance (11 = wrap from 1-3)
+		assert.GreaterOrEqual(t, score, 0)
+	})
+}

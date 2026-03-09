@@ -14,6 +14,7 @@ type SevensWebInput struct {
 	JokerTargetSuit        int   `json:"jokerTargetSuit"`                  // ジョーカー配置先スート
 	JokerTargetValue       int   `json:"jokerTargetValue"`                 // ジョーカー配置先値
 	TunnelEnabled          *bool `json:"tunnelEnabled,omitempty"`          // トンネルルール (reset時のみ)
+	TunnelSkipWidth        *int  `json:"tunnelSkipWidth,omitempty"`        // カスタムトンネルスキップ幅 (reset時のみ)
 	JokerCount             *int  `json:"jokerCount,omitempty"`             // ジョーカー枚数 (reset時のみ)
 	CpuStrategy            *bool `json:"cpuStrategy,omitempty"`            // CPU戦略 (reset時のみ)
 	MaxPasses              *int  `json:"maxPasses,omitempty"`              // 最大パス回数 (reset時のみ, 0=無制限)
@@ -48,6 +49,7 @@ type SevensWebOutputAction struct {
 // SevensWebOutputConfig 7並べゲーム設定出力
 type SevensWebOutputConfig struct {
 	TunnelEnabled          bool `json:"tunnelEnabled"`
+	TunnelSkipWidth        int  `json:"tunnelSkipWidth"`
 	JokerCount             int  `json:"jokerCount"`
 	CpuStrategy            bool `json:"cpuStrategy"`
 	MaxPasses              int  `json:"maxPasses"`
@@ -92,9 +94,10 @@ func newSevensDefaultOutput(msg string) *SevensWebOutput {
 func sevensDispatch(bc *baseController, w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput, _ func(string) *SevensWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		if param.TunnelEnabled != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil || param.EndStop != nil || param.JokerConsecutiveBanned != nil {
+		if param.TunnelEnabled != nil || param.TunnelSkipWidth != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil || param.EndStop != nil || param.JokerConsecutiveBanned != nil {
 			cfg := domain.SevensConfig{
 				TunnelEnabled:          derefBool(param.TunnelEnabled),
+				TunnelSkipWidth:        derefInt(param.TunnelSkipWidth),
 				JokerCount:             derefInt(param.JokerCount),
 				CpuStrategy:            derefBool(param.CpuStrategy),
 				MaxPasses:              derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
