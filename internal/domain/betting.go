@@ -391,7 +391,7 @@ func compareLowballCards(a, b []*Card) int {
 	bVals := lowballCardValues(b)
 	sort.Sort(sort.Reverse(sort.IntSlice(aVals)))
 	sort.Sort(sort.Reverse(sort.IntSlice(bVals)))
-	for i := 0; i < len(aVals) && i < len(bVals); i++ {
+	for i := 0; i < len(aVals); i++ {
 		if aVals[i] < bVals[i] {
 			return -1
 		}
