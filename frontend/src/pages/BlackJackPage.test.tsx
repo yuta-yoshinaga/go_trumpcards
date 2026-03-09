@@ -1,13 +1,13 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { blackjackApi } from '../api/gameApi';
+import { blackjackApi, actionLogApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BlackJackCpuSeat, BlackJackHand, BlackJackResponse } from '../types/card';
 import { BlackJackPage } from './BlackJackPage';
 
 vi.mock('../api/gameApi', () => ({
-  blackjackApi: { exec: vi.fn() },
+  blackjackApi: { exec: vi.fn() }, actionLogApi: { blackjack: vi.fn() }
 }));
 
 const mockExec = vi.mocked(blackjackApi.exec);
@@ -1352,5 +1352,30 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByLabelText('サレンダー:')).toBeInTheDocument());
     fireEvent.change(screen.getByLabelText('サレンダー:'), { target: { value: '2' } });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setsurrenderrule', 2));
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      phase: 5, // BjPhase.END
+      players: [],
+      playerIdx: 0,
+      player: { chips: 100 },
+      dealer: { chips: 100 },
+      currentHandIdx: 0,
+    } as unknown as Record<string, never>);
+
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.blackjack).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.blackjack).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

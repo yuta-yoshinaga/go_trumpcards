@@ -1,13 +1,13 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pokerApi } from '../api/gameApi';
+import { pokerApi, actionLogApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PokerResponse } from '../types/card';
 import { PokerPage } from './PokerPage';
 
 vi.mock('../api/gameApi', () => ({
-  pokerApi: { exec: vi.fn() },
+  pokerApi: { exec: vi.fn() }, actionLogApi: { poker: vi.fn() }
 }));
 
 const mockExec = vi.mocked(pokerApi.exec);
@@ -1151,5 +1151,28 @@ describe('PokerPage', () => {
 
     // Wait for state update then check panel is not shown
     await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      phase: 3, // PokerPhase.END
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+    } as unknown as Record<string, never>);
+
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.poker).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.poker).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

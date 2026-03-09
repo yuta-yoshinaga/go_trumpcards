@@ -1,13 +1,13 @@
 import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { daifugoApi } from '../api/gameApi';
+import { daifugoApi, actionLogApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DaifugoResponse } from '../types/card';
 import { DaifugoPage } from './DaifugoPage';
 
 vi.mock('../api/gameApi', () => ({
-  daifugoApi: { exec: vi.fn() },
+  daifugoApi: { exec: vi.fn() }, actionLogApi: { daifugo: vi.fn() }
 }));
 
 const mockExec = vi.mocked(daifugoApi.exec);
@@ -919,5 +919,28 @@ describe('DaifugoPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ cpuDifficulty: 2 })),
     );
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+      lastDiscardedCards: [],
+    } as unknown as Record<string, never>);
+
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.daifugo).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.daifugo).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

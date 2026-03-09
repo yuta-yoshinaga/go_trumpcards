@@ -1,13 +1,13 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { holdemApi } from '../api/gameApi';
+import { holdemApi, actionLogApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { HoldemResponse } from '../types/card';
 import { HoldemPage } from './HoldemPage';
 
 vi.mock('../api/gameApi', () => ({
-  holdemApi: { exec: vi.fn() },
+  holdemApi: { exec: vi.fn() }, actionLogApi: { holdem: vi.fn() }
 }));
 
 const mockExec = vi.mocked(holdemApi.exec);
@@ -1238,5 +1238,29 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果')).toBeInTheDocument());
     expect(screen.queryByTestId('muck-controls')).not.toBeInTheDocument();
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      phase: 4, // HoldemPhase.END
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+      communityCards: [],
+    } as unknown as Record<string, never>);
+
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.holdem).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.holdem).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });
