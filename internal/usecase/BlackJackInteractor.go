@@ -29,6 +29,7 @@ type BlackJackInteractorIF interface {
 	SetCpuPlayerCount(count int) string
 	SetSurrenderRule(rule int) string
 	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string
+	ActionLog() string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -197,4 +198,9 @@ func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerC
 	}
 	bi.bj.Reset()
 	return bi.bjp.Output(bi.bj, nil)
+}
+
+// ActionLog 棋譜を出力する
+func (bi *BlackJackInteractor) ActionLog() string {
+	return bi.bjp.ActionLogOutput(bi.bj)
 }

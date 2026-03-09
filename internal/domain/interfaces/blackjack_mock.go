@@ -257,3 +257,12 @@ func (_m *MockBlackJackGame) CanSurrenderCpuHand(cpuIdx, handIdx int) bool {
 	ret := _m.Called(cpuIdx, handIdx)
 	return ret.Bool(0)
 }
+
+// GetActionLog モック
+func (_m *MockBlackJackGame) GetActionLog() []*domain.ActionLogEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {
+		return val
+	}
+	return nil
+}

@@ -184,6 +184,17 @@ func TestPokerInteractor_Stand_Error(t *testing.T) {
 	assert.Equal(t, "error output", result)
 }
 
+func TestPokerInteractor_ActionLog(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	mp.On("ActionLogOutput", mg).Return(`{"entries":[]}`)
+
+	pi := usecase.NewPokerInteractor(mg, mp)
+	result := pi.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	mp.AssertExpectations(t)
+}
+
 func TestPokerInteractor_Odds(t *testing.T) {
 	mg := new(interfaces.MockPokerGame)
 	mp := new(presenter.MockPokerPresenter)

@@ -176,6 +176,8 @@ func pokerDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PokerIn
 			indices = []int{}
 		}
 		bc.writePresenterResponse(w, pi.Odds(indices))
+	case "log", "l":
+		bc.writePresenterResponse(w, pi.ActionLog())
 	default:
 		return false
 	}

@@ -166,3 +166,12 @@ func (_m *MockDoubtGame) GetHumanProfile() *domain.DoubtHumanProfile {
 func (_m *MockDoubtGame) ResetProfile() {
 	_m.Called()
 }
+
+// GetActionLog モック
+func (_m *MockDoubtGame) GetActionLog() []*domain.ActionLogEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {
+		return val
+	}
+	return nil
+}

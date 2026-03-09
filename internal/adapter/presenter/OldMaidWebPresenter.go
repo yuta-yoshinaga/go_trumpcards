@@ -137,3 +137,8 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 
 	return marshalOrError(resObj)
 }
+
+// ActionLogOutput 棋譜をJSON出力
+func (owp *OldMaidWebPresenter) ActionLogOutput(om interfaces.OldMaidGame) string {
+	return actionLogToJSON(om.GetActionLog())
+}

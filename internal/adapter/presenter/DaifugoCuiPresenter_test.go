@@ -6,6 +6,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -415,5 +416,34 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[3].SetRank(4)
 		result := tdp.Output(dg, nil)
 		assert.NotContains(t, result, "[反則上がり]")
+	})
+}
+
+func TestDaifugoCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewDaifugoCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 0, PlayerIdx: 0, ActionType: "play", Detail: "played 3 of spades"},
+		}
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "played 3 of spades")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

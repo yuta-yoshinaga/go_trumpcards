@@ -132,3 +132,9 @@ func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPla
 	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration, surrenderRule)
 	return ret.Get(0).(string)
 }
+
+// ActionLog モック
+func (_m *MockBlackJackInteractor) ActionLog() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

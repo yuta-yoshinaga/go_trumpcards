@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makePokerForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
@@ -590,5 +591,33 @@ func TestPokerWebPresenter_Output_BettingLimitFields(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, out.BettingLimit)
 		assert.Equal(t, 120, out.MaxBetAmount) // pot(100) + lastBet(20)
+	})
+}
+
+func TestPokerWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewPokerWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "exchange", Detail: "exchanged 2 cards", Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, true)}},
+		}
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"exchange"`)
+		assert.Contains(t, result, `"detail":"exchanged 2 cards"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
 	})
 }

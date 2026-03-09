@@ -16,3 +16,9 @@ func (_m *MockDoubtPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	ret := _m.Called(d, lastErr)
 	return ret.Get(0).(string)
 }
+
+// ActionLogOutput モック
+func (_m *MockDoubtPresenter) ActionLogOutput(d interfaces.DoubtGame) string {
+	ret := _m.Called(d)
+	return ret.Get(0).(string)
+}

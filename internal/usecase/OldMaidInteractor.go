@@ -14,6 +14,7 @@ type OldMaidInteractorIF interface {
 	Shuffle() string
 	Reorder(indices []int) string
 	ResetProfile() string
+	ActionLog() string
 }
 
 // OldMaidInteractor ババ抜きインタラクタークラス
@@ -78,6 +79,11 @@ func (oi *OldMaidInteractor) Reorder(indices []int) string {
 func (oi *OldMaidInteractor) ResetProfile() string {
 	oi.om.ResetProfile()
 	return oi.omp.Output(oi.om, nil)
+}
+
+// ActionLog 棋譜を出力する
+func (oi *OldMaidInteractor) ActionLog() string {
+	return oi.omp.ActionLogOutput(oi.om)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makeHoldemForPresenter() (*domain.Holdem, []*domain.HoldemPlayer) {
@@ -602,5 +603,34 @@ func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "[結果]")
 		assert.Contains(t, result, "You: Flush")
+	})
+}
+
+func TestHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 0, PlayerIdx: 0, ActionType: "raise", Detail: "raised to 100"},
+		}
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "raise")
+		assert.Contains(t, result, "raised to 100")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

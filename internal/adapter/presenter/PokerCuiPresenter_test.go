@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makePokerCuiForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
@@ -626,5 +627,34 @@ func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 		p.SetPhase(domain.PokerPhaseDeal)
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "Fixed")
+	})
+}
+
+func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewPokerCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "exchange", Detail: "exchanged 2 cards"},
+		}
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "exchange")
+		assert.Contains(t, result, "exchanged 2 cards")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

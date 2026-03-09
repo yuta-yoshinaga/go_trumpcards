@@ -16,3 +16,9 @@ func (_m *MockHoldemPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	ret := _m.Called(h, lastErr)
 	return ret.Get(0).(string)
 }
+
+// ActionLogOutput モック
+func (_m *MockHoldemPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
+	ret := _m.Called(h)
+	return ret.Get(0).(string)
+}

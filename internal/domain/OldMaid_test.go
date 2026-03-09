@@ -2115,3 +2115,85 @@ func TestOldMaid_MetaAI_ArrangeTargetStrategicPlacement(t *testing.T) {
 	}
 	assert.True(t, middlePlaced, "strategic placement should place odd card in middle zone (least picked bucket)")
 }
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestOldMaid_ActionLog_Draw(t *testing.T) {
+	makePlayers := func() []*domain.OldMaidPlayer {
+		return []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+	}
+
+	tc := domain.NewTrumpCards(1)
+	players := makePlayers()
+	om := domain.NewOldMaid(tc, players)
+
+	// Clear all cards, set up deterministic state
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	// Human draws from player 1 (give player 1 exactly 1 card for determinism)
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	// Give human a card with different value so no pair discard
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	// Give other players cards so game doesn't end
+	players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+
+	err := om.PlayerDraw(0) // draw the only card from player 1
+	assert.NoError(t, err)
+
+	log := om.GetActionLog()
+	drawFound := false
+	for _, e := range log {
+		if e.ActionType == "draw" && e.PlayerIdx == 0 {
+			drawFound = true
+			assert.Contains(t, e.Detail, "drew from player")
+			assert.Len(t, e.Cards, 1)
+			break
+		}
+	}
+	assert.True(t, drawFound, "expected draw action log entry")
+}
+
+func TestOldMaid_ActionLog_Reset(t *testing.T) {
+	makePlayers := func() []*domain.OldMaidPlayer {
+		return []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(true),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+	}
+
+	tc := domain.NewTrumpCards(1)
+	players := makePlayers()
+	om := domain.NewOldMaid(tc, players)
+
+	// Clear all cards, set up deterministic draw
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 8, false))
+
+	_ = om.PlayerDraw(0)
+	assert.NotEmpty(t, om.GetActionLog())
+
+	om.Reset()
+	assert.Nil(t, om.GetActionLog())
+}

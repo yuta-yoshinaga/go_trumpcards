@@ -470,3 +470,33 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, map[string]string{"cpuId": "99"}, resObj.MessageParams)
 	})
 }
+
+func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewDoubtWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDoubtGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 0, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+		}
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"play"`)
+		assert.Contains(t, result, `"detail":"declared 5, played 1 card(s)"`)
+		assert.Contains(t, result, `"turnNumber":0`)
+		assert.Contains(t, result, `"playerIdx":0`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDoubtGame)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+}

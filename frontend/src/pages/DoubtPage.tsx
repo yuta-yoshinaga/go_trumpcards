@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { actionLogApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
 import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
@@ -12,8 +15,8 @@ import {
   PENALTY_DRAW_LIMIT_OPTIONS,
   useDoubtGame,
 } from '../hooks/useDoubtGame';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { DoubtCpuAction } from '../types/card';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import type { ActionLogEntry, DoubtCpuAction } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 
@@ -38,6 +41,8 @@ export function DoubtPage() {
     handleSkip,
     handleCpuDoubtConfirm,
   } = useDoubtGame();
+
+  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
 
   if (!state) return null;
 
@@ -228,6 +233,23 @@ export function DoubtPage() {
 
         {/* Result message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+        {/* Action log */}
+        {state.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={async () => {
+                const res = await actionLogApi.doubt();
+                setActionLog(res.entries);
+              }}
+            >
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
@@ -284,7 +306,10 @@ export function DoubtPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, undefined, undefined, doubtConfig)}
+            onClick={() => {
+              setActionLog(null);
+              exec('reset', undefined, undefined, undefined, doubtConfig);
+            }}
           >
             {tc('button.reset')}
           </button>

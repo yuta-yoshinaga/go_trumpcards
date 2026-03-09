@@ -103,6 +103,7 @@ type Poker struct {
 	roundResults  []PokerResult
 	cpuActions    []PokerCpuAction
 	cpuExchanges  []PokerCpuExchange
+	actionLog     []*ActionLogEntry
 	gameEndFlag   bool
 	lastCpuError  error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 }
@@ -136,6 +137,7 @@ func (p *Poker) Reset() error {
 	p.roundResults = make([]PokerResult, 0)
 	p.cpuActions = make([]PokerCpuAction, 0)
 	p.cpuExchanges = make([]PokerCpuExchange, 0)
+	p.actionLog = nil
 
 	// Lowballモードではジョーカーを強制的に0にする
 	if p.config.IsLowball {
@@ -205,7 +207,7 @@ func (p *Poker) Reset() error {
 
 // collectAntes アンティ徴収
 func (p *Poker) collectAntes() {
-	for _, pl := range p.players {
+	for i, pl := range p.players {
 		if pl.GetFolded() {
 			continue
 		}
@@ -215,6 +217,7 @@ func (p *Poker) collectAntes() {
 		}
 		pl.SubtractChips(ante)
 		p.pot += ante
+		p.appendLog(i, "ante", fmt.Sprintf("ante %d chips", ante), nil)
 	}
 }
 
@@ -257,6 +260,7 @@ func (p *Poker) PlayerExchange(indices []int) error {
 		}
 	}
 	p.players[p.currentTurn].SetExchangeCount(len(indices))
+	p.appendLog(p.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
 	p.actedFlags[p.currentTurn] = true
 
 	// 残りのCPU交換を実行
@@ -281,6 +285,7 @@ func (p *Poker) PlayerStand() error {
 	}
 
 	p.players[p.currentTurn].SetExchangeCount(0)
+	p.appendLog(p.currentTurn, "exchange", "exchange 0 card(s)", nil)
 	p.actedFlags[p.currentTurn] = true
 
 	// 残りのCPU交換を実行
@@ -321,6 +326,9 @@ func (p *Poker) executeAction(playerIdx, action, amount int) error {
 	if err != nil {
 		return err
 	}
+
+	// アクションログ記録
+	p.logBettingAction(playerIdx, action, amount)
 
 	// フォールドでアクティブプレイヤーが1人になったらチェック
 	if p.countActivePlayers() == 1 {
@@ -490,9 +498,14 @@ func (p *Poker) resolveLastPlayer() {
 // resolveShowdown ショーダウン: ハンド評価・ポット配分
 func (p *Poker) resolveShowdown() {
 	// ハンド評価
-	for _, pl := range p.players {
+	for i, pl := range p.players {
 		if !pl.GetFolded() {
 			pl.EvalHand()
+			cards := make([]*Card, pl.GetCardsSize())
+			for j := 0; j < pl.GetCardsSize(); j++ {
+				cards[j] = pl.GetCard(j)
+			}
+			p.appendLog(i, "showdown", fmt.Sprintf("showdown: %s", pl.GetHandName()), cards)
 		}
 	}
 
@@ -595,6 +608,7 @@ func (p *Poker) runCpuExchanges() {
 			}
 		}
 		p.players[p.currentTurn].SetExchangeCount(len(indices))
+		p.appendLog(p.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
 		p.cpuExchanges = append(p.cpuExchanges, PokerCpuExchange{
 			PlayerIdx:     p.currentTurn,
 			ExchangeCount: len(indices),
@@ -1002,3 +1016,35 @@ func (p *Poker) SetConfig(cfg PokerConfig) { p.config = cfg }
 
 // GetLastCpuError 最後のCPUアクションエラー取得 (テスト・デバッグ用)
 func (p *Poker) GetLastCpuError() error { return p.lastCpuError }
+
+// GetActionLog 棋譜を取得する
+func (p *Poker) GetActionLog() []*ActionLogEntry { return p.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (p *Poker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	p.actionLog = append(p.actionLog, &ActionLogEntry{
+		TurnNumber: len(p.actionLog),
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
+}
+
+// logBettingAction ベッティングアクションをログに記録する
+func (p *Poker) logBettingAction(playerIdx, action, amount int) {
+	switch action {
+	case PokerActionFold:
+		p.appendLog(playerIdx, "fold", "fold", nil)
+	case PokerActionCheck:
+		p.appendLog(playerIdx, "check", "check", nil)
+	case PokerActionCall:
+		p.appendLog(playerIdx, "call", fmt.Sprintf("call %d", p.players[playerIdx].GetCurrentBet()), nil)
+	case PokerActionBet:
+		p.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", p.players[playerIdx].GetCurrentBet()), nil)
+	case PokerActionRaise:
+		p.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", p.players[playerIdx].GetCurrentBet()), nil)
+	case PokerActionAllIn:
+		p.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", p.players[playerIdx].GetCurrentBet()), nil)
+	}
+}

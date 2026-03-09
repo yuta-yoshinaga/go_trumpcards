@@ -395,6 +395,42 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 	})
 }
 
+func TestOldMaidWebController_Log(t *testing.T) {
+	mockLogOutput := `{"entries":[]}`
+	omiMock := new(usecase.MockOldMaidInteractor)
+	omiMock.On("ActionLog").Return(mockLogOutput)
+
+	factory := func() uc.OldMaidInteractorIF { return omiMock }
+	ctrl := controller.NewOldMaidWebController(factory)
+	defer ctrl.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
+	api.SetApp(router)
+
+	t.Run("log command", func(t *testing.T) {
+		var input controller.OldMaidWebInput
+		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"om-log-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockLogOutput)
+	})
+
+	t.Run("l shorthand", func(t *testing.T) {
+		var input controller.OldMaidWebInput
+		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"om-log-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockLogOutput)
+	})
+}
+
 func TestOldMaidWebController_Stop(t *testing.T) {
 	omiMock := new(usecase.MockOldMaidInteractor)
 	factory := func() uc.OldMaidInteractorIF { return omiMock }

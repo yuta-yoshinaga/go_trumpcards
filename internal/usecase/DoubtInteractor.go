@@ -16,6 +16,7 @@ type DoubtInteractorIF interface {
 	GetCpuDoubters() []int
 	GetConfig() domain.DoubtConfig
 	ResetProfile() string
+	ActionLog() string
 }
 
 // DoubtInteractor ダウトインタラクタークラス
@@ -83,6 +84,11 @@ func (di *DoubtInteractor) GetConfig() domain.DoubtConfig {
 func (di *DoubtInteractor) ResetProfile() string {
 	di.d.ResetProfile()
 	return di.dp.Output(di.d, nil)
+}
+
+// ActionLog 棋譜を出力する
+func (di *DoubtInteractor) ActionLog() string {
+	return di.dp.ActionLogOutput(di.d)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはダウトフェーズになるまでCPUターンを実行

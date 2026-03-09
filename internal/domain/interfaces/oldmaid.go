@@ -37,4 +37,5 @@ type OldMaidGame interface {
 	GetConfig() domain.OldMaidConfig
 	GetRemovedCard() *domain.Card
 	GetCpuHighlightedCardIdx() int
+	GetActionLog() []*domain.ActionLogEntry
 }

@@ -2271,3 +2271,63 @@ func TestHoldem_IsMuckAvailable_ShowdownHumanWon(t *testing.T) {
 	})
 	assert.False(t, h.IsMuckAvailable())
 }
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestHoldem_ActionLog_Actions(t *testing.T) {
+	h := newTestHoldem()
+	// Reset creates blinds which log entries
+	err := h.Reset()
+	assert.NoError(t, err)
+
+	log := h.GetActionLog()
+	// After Reset, blinds should be logged
+	blindCount := 0
+	for _, e := range log {
+		if e.ActionType == "blind" {
+			blindCount++
+			assert.Contains(t, e.Detail, "blind")
+		}
+	}
+	assert.Equal(t, 2, blindCount, "expected 2 blind log entries (small + big)")
+
+	// If game hasn't ended and it's human's turn in preflop, try a fold
+	if !h.GetGameEndFlag() && h.GetPhase() >= HoldemPhasePreFlop && h.GetPhase() <= HoldemPhaseRiver {
+		if h.players[h.currentTurn].GetIsHuman() {
+			beforeLen := len(h.GetActionLog())
+			err = h.PlayerAction(HoldemActionFold, 0)
+			assert.NoError(t, err)
+			log = h.GetActionLog()
+			assert.Greater(t, len(log), beforeLen, "expected new log entries after fold")
+
+			foldFound := false
+			for _, e := range log {
+				if e.ActionType == "fold" && e.PlayerIdx == 0 {
+					foldFound = true
+					break
+				}
+			}
+			assert.True(t, foldFound, "expected fold action log entry")
+		}
+	}
+}
+
+func TestHoldem_ActionLog_Reset(t *testing.T) {
+	h := newTestHoldem()
+	_ = h.Reset()
+	firstLog := h.GetActionLog()
+	assert.NotEmpty(t, firstLog)
+	firstLogLen := len(firstLog)
+
+	// Reset again should clear the old log and create new entries
+	_ = h.Reset()
+	log := h.GetActionLog()
+	// The log should not accumulate entries from the previous round.
+	// After reset, TurnNumber starts from 0 (sequential index within the new round).
+	assert.NotEmpty(t, log)
+	assert.Equal(t, 0, log[0].TurnNumber, "first entry after reset should have TurnNumber 0")
+	// Verify that entries are not accumulated across resets
+	assert.LessOrEqual(t, len(log), firstLogLen+4, "log should not grow unboundedly across resets")
+}

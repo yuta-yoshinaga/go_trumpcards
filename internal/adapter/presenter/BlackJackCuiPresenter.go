@@ -218,6 +218,11 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	return b.String()
 }
 
+// ActionLogOutput 棋譜をテキスト出力
+func (bjp *BlackJackCuiPresenter) ActionLogOutput(bj interfaces.BlackJackGame) string {
+	return actionLogToText(bj.GetActionLog())
+}
+
 // phaseStr フェーズ文字列
 func (bjp *BlackJackCuiPresenter) phaseStr(phase int) string {
 	switch phase {

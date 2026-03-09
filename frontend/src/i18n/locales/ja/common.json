@@ -43,6 +43,17 @@
     "finished": "上がり",
     "thinking": "考え中..."
   },
+  "actionLog": {
+    "title": "棋譜",
+    "view": "棋譜を見る",
+    "copy": "コピー",
+    "download": "ダウンロード",
+    "close": "閉じる",
+    "copied": "コピーしました",
+    "empty": "棋譜はありません。",
+    "system": "SYSTEM",
+    "player": "Player {{idx}}"
+  },
   "label": {
     "result": "結果:",
     "cpuAction": "CPU行動:",

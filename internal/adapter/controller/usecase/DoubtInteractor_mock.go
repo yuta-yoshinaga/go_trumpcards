@@ -61,3 +61,9 @@ func (_m *MockDoubtInteractor) ResetProfile() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
+
+// ActionLog モック
+func (_m *MockDoubtInteractor) ActionLog() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

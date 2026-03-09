@@ -16,6 +16,11 @@ func NewSevensCuiPresenter() *SevensCuiPresenter {
 	return &SevensCuiPresenter{}
 }
 
+// ActionLogOutput 棋譜をテキスト出力
+func (p *SevensCuiPresenter) ActionLogOutput(s interfaces.SevensGame) string {
+	return actionLogToText(s.GetActionLog())
+}
+
 // Output ゲーム状態を文字列出力
 func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) string {
 	var b strings.Builder

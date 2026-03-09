@@ -34,4 +34,5 @@ type DoubtGame interface {
 	GetCpuActions() []*domain.DoubtCpuAction
 	GetHumanAction() *domain.DoubtCpuAction
 	GetLastDoubtResult() *domain.DoubtDoubtResult
+	GetActionLog() []*domain.ActionLogEntry
 }

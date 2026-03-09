@@ -1,5 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { blackjackApi, daifugoApi, doubtApi, holdemApi, oldmaidApi, pokerApi, sessionId, sevensApi } from './gameApi';
+import {
+  actionLogApi,
+  blackjackApi,
+  daifugoApi,
+  doubtApi,
+  holdemApi,
+  oldmaidApi,
+  pokerApi,
+  sessionId,
+  sevensApi,
+} from './gameApi';
 
 describe('gameApi', () => {
   const mockFetch = vi.fn();
@@ -1522,6 +1532,87 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(holdemApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('actionLogApi', () => {
+    const logPayload = { entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'hit card', cards: [] }] };
+
+    it('blackjack calls /blackjack/exec with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(logPayload));
+      const result = await actionLogApi.blackjack();
+      expect(mockFetch).toHaveBeenCalledWith('/blackjack/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', sessionId }),
+      });
+      expect(result).toEqual(logPayload);
+    });
+
+    it('poker calls /poker/exec with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(logPayload));
+      const result = await actionLogApi.poker();
+      expect(mockFetch).toHaveBeenCalledWith('/poker/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', sessionId }),
+      });
+      expect(result).toEqual(logPayload);
+    });
+
+    it('oldmaid calls /oldmaid/exec with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(logPayload));
+      const result = await actionLogApi.oldmaid();
+      expect(mockFetch).toHaveBeenCalledWith('/oldmaid/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', sessionId }),
+      });
+      expect(result).toEqual(logPayload);
+    });
+
+    it('daifugo calls /daifugo/exec with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(logPayload));
+      const result = await actionLogApi.daifugo();
+      expect(mockFetch).toHaveBeenCalledWith('/daifugo/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', sessionId }),
+      });
+      expect(result).toEqual(logPayload);
+    });
+
+    it('sevens calls /sevens/exec with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(logPayload));
+      const result = await actionLogApi.sevens();
+      expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', sessionId }),
+      });
+      expect(result).toEqual(logPayload);
+    });
+
+    it('doubt calls /doubt/exec with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(logPayload));
+      const result = await actionLogApi.doubt();
+      expect(mockFetch).toHaveBeenCalledWith('/doubt/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', sessionId }),
+      });
+      expect(result).toEqual(logPayload);
+    });
+
+    it('holdem calls /holdem/exec with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(logPayload));
+      const result = await actionLogApi.holdem();
+      expect(mockFetch).toHaveBeenCalledWith('/holdem/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', sessionId }),
+      });
+      expect(result).toEqual(logPayload);
     });
   });
 });

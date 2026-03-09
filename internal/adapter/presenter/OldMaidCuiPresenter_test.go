@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -423,4 +424,33 @@ func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {
 	result := top.Output(om, nil)
 	assert.NotContains(t, result, "（除外カード:")
 	assert.Contains(t, result, "ゲーム終了！")
+}
+
+func TestOldMaidCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewOldMaidCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockOldMaidGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 0, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card"},
+		}
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "draw")
+		assert.Contains(t, result, "drew a card")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockOldMaidGame)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
 }

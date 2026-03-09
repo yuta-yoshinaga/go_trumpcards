@@ -179,6 +179,7 @@ type Daifugo struct {
 	reverseDirection    bool                     // 9リバース: ターン方向が逆か
 	numberLocked        bool                     // 激シバ: 連番縛り発動中
 	sortMode            DaifugoSortMode          // 手札ソートモード
+	actionLog           []*ActionLogEntry        // 棋譜
 }
 
 // NewDaifugo コンストラクタ
@@ -236,6 +237,7 @@ func (d *Daifugo) Reset() {
 	d.pendingActionTarget = -1
 	d.reverseDirection = false
 	d.numberLocked = false
+	d.actionLog = nil
 	// sortMode は意図的にリセットしない: ユーザーの好みをラウンド間で維持する
 
 	// シャッフル
@@ -288,6 +290,11 @@ func (d *Daifugo) performCardExchange() {
 		if idx3, ok3 := rankToPlayer[DaifugoRankHeimin]; ok3 {
 			d.exchangeCardsBetween(idx2, idx3, DaifugoExchangeCountFugo)
 		}
+	}
+
+	// 交換記録を棋譜に追加
+	for _, ex := range d.exchangeActions {
+		d.appendLog(ex.FromPlayerIdx, "exchange", fmt.Sprintf("exchanged %d card(s) with player %d", len(ex.Cards), ex.ToPlayerIdx), ex.Cards)
 	}
 
 	// 交換後に再ソート
@@ -373,6 +380,7 @@ func (d *Daifugo) triggerRevolutionIfNeeded(cards []*Card, isSeq bool) {
 		return
 	}
 	d.revolutionActive = !d.revolutionActive
+	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 }
 
@@ -467,6 +475,7 @@ func (d *Daifugo) triggerEmperor(cards []*Card) bool {
 		return false
 	}
 	d.revolutionActive = !d.revolutionActive
+	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 	d.clearTableState()
 	return true
@@ -599,6 +608,7 @@ func (d *Daifugo) finishPlayer(idx int) {
 	rank := d.countFinished() + 1
 	d.players[idx].SetIsFinished(true)
 	d.players[idx].SetRank(rank)
+	d.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
 	// 上がったプレイヤーが最後に出したプレイヤーなら場をクリア
 	if d.lastPlayPlayerIdx == idx {
 		d.clearTableState()
@@ -831,6 +841,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 		// パス
 		d.passCount++
 		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
+		d.appendLog(d.currentTurn, "pass", "pass", nil)
 		d.advanceTurn()
 		d.checkPassClear()
 		return nil
@@ -876,6 +887,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	// カードを出す
 	cards := player.RemoveCards(indices)
 	d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: cards}
+	d.appendLog(d.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
 	d.playCards(d.currentTurn, cards, isSeq, spadeThree)
 	return nil
 }
@@ -948,6 +960,7 @@ func (d *Daifugo) CpuPlay() {
 		d.passCount++
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: nil}
 		d.cpuActions = append(d.cpuActions, action)
+		d.appendLog(playerIdx, "pass", "pass", nil)
 		d.advanceTurn()
 		d.checkPassClear()
 	} else {
@@ -969,6 +982,7 @@ func (d *Daifugo) CpuPlay() {
 		cards := player.RemoveCards(playIndices)
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		d.cpuActions = append(d.cpuActions, action)
+		d.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
 		d.playCards(playerIdx, cards, isSeq, spadeThree)
 	}
 }
@@ -1947,6 +1961,7 @@ func (d *Daifugo) triggerCoupDetatIfNeeded(cards []*Card) {
 		}
 	}
 	d.revolutionActive = !d.revolutionActive
+	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 }
 
@@ -2009,5 +2024,19 @@ func (d *Daifugo) sortByNumber(p *DaifugoPlayer) {
 			return jokerSortWeight // ジョーカーは末尾
 		}
 		return c.GetValue()*100 + c.GetDesign()
+	})
+}
+
+// GetActionLog 棋譜を取得する
+func (d *Daifugo) GetActionLog() []*ActionLogEntry { return d.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (d *Daifugo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	d.actionLog = append(d.actionLog, &ActionLogEntry{
+		TurnNumber: len(d.actionLog),
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
 	})
 }

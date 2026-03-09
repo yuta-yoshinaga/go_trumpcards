@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { actionLogApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
@@ -10,7 +13,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import type { DaifugoAction } from '../types/card';
+import type { ActionLogEntry, DaifugoAction } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
@@ -29,6 +32,8 @@ export function DaifugoPage() {
     handleDrop,
     handleConfigChange,
   } = useDaifugoGame();
+
+  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
 
   if (!state) return null;
 
@@ -142,6 +147,23 @@ export function DaifugoPage() {
           messageCode={state.gameEndFlag ? undefined : state.messageCode}
           messageParams={state.gameEndFlag ? undefined : state.messageParams}
         />
+
+        {/* Action log */}
+        {state.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={async () => {
+                const res = await actionLogApi.daifugo();
+                setActionLog(res.entries);
+              }}
+            >
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
       </div>
 
       <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
@@ -180,7 +202,10 @@ export function DaifugoPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', [], configInput)}
+            onClick={() => {
+              setActionLog(null);
+              exec('reset', [], configInput);
+            }}
           >
             {tc('button.reset')}
           </button>

@@ -147,3 +147,8 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 	b.WriteString("==========\n")
 	return b.String()
 }
+
+// ActionLogOutput 棋譜をテキスト出力
+func (p *OldMaidCuiPresenter) ActionLogOutput(om interfaces.OldMaidGame) string {
+	return actionLogToText(om.GetActionLog())
+}

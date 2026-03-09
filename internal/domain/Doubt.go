@@ -1,6 +1,9 @@
 package domain
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 // DoubtPlayerCnt ダウトプレイヤー数
 const DoubtPlayerCnt = 4
@@ -116,6 +119,7 @@ type Doubt struct {
 	config          DoubtConfig
 	turnCounter     int
 	humanProfile    *DoubtHumanProfile
+	actionLog       []*ActionLogEntry
 }
 
 // NewDoubt コンストラクタ
@@ -144,6 +148,7 @@ func (d *Doubt) Reset() {
 	d.humanAction = nil
 	d.winnerIdx = -1
 	d.turnCounter = 0
+	d.actionLog = nil
 
 	resetPlayers(d.players, func(p *DoubtPlayer) { p.ResetMemory() })
 
@@ -223,10 +228,13 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 	}
 	d.cpuActions = nil
 
+	d.appendLog(d.currentTurn, "play", fmt.Sprintf("declared %d, played %d card(s)", claimedValue, len(played)), played)
+
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
 		d.winnerIdx = d.currentTurn
 		d.gameEndFlag = true
+		d.appendLog(-1, "finish", fmt.Sprintf("player %d wins", d.currentTurn), nil)
 		return nil
 	}
 
@@ -315,10 +323,13 @@ func (d *Doubt) CpuPlay() {
 	}
 	d.cpuActions = append(d.cpuActions, cpuAction)
 
+	d.appendLog(playerIdx, "play", fmt.Sprintf("declared %d, played %d card(s)", claimedValue, numCards), played)
+
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
 		d.winnerIdx = playerIdx
 		d.gameEndFlag = true
+		d.appendLog(-1, "finish", fmt.Sprintf("player %d wins", playerIdx), nil)
 		return
 	}
 
@@ -473,6 +484,13 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 		RevealedCards:  revealedCards,
 	}
 
+	lyingStr := "honest"
+	if wasLying {
+		lyingStr = "lying"
+	}
+	d.appendLog(doubter, "doubt", fmt.Sprintf("doubted player %d (%s)", d.lastAction.PlayerIdx, lyingStr), revealedCards)
+	d.appendLog(loserIdx, "penalty", fmt.Sprintf("takes %d card(s)", takeCount), nil)
+
 	// 非敗者のCPUがカードを記憶する
 	retentionChance := memoryRetentionChance(d.config.CpuMemoryLevel)
 	for i, p := range d.players {
@@ -495,6 +513,7 @@ func (d *Doubt) SkipDoubt() {
 	if d.phase != DoubtPhaseDoubt || d.lastAction == nil {
 		return
 	}
+	d.appendLog(-1, "nodoubt", "no one doubted", nil)
 	d.turnCounter++
 	d.lastDoubtResult = nil
 	d.currentTurn = (d.lastAction.PlayerIdx + 1) % DoubtPlayerCnt
@@ -564,6 +583,20 @@ func (d *Doubt) GetHumanProfile() *DoubtHumanProfile { return d.humanProfile }
 
 // ResetProfile メタAIプロファイルをリセットする
 func (d *Doubt) ResetProfile() { d.humanProfile = nil }
+
+// GetActionLog 棋譜を取得する
+func (d *Doubt) GetActionLog() []*ActionLogEntry { return d.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (d *Doubt) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	d.actionLog = append(d.actionLog, &ActionLogEntry{
+		TurnNumber: d.turnCounter,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
+}
 
 // findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
 func (d *Doubt) findHumanIdx() int {

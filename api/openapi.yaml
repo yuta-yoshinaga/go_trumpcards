@@ -924,7 +924,7 @@ components:
             `setcountingsystem` (`scs`), `setpenetration` (`pen`),
             `earlysurrender` (`es`), `declineearlysurrender` (`des`),
             `setsurrenderrule` (`ssr`), `quit` (`q`).
-          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, scs, setcountingsystem, pen, setpenetration, es, earlysurrender, des, declineearlysurrender, ssr, setsurrenderrule, q, quit]
+          enum: [r, reset, b, bet, h, hit, s, stand, d, doubledown, sp, split, i, insurance, di, declineinsurance, sur, surrender, togglehint, sd, setdeckcount, togglesoft17, soft17, togglecounting, counting, toggledas, das, scs, setcountingsystem, pen, setpenetration, es, earlysurrender, des, declineearlysurrender, ssr, setsurrenderrule, log, q, quit]
           example: hit
         amount:
           type: integer
@@ -1370,7 +1370,7 @@ components:
             Game command.  Accepted values: `reset` (`r`), `exchange` (`e`),
             `stand` (`s`), `bet` (`b`), `call` (`c`), `raise` (`ra`),
             `check` (`ck`), `fold` (`f`), `allin` (`a`), `odds` (`o`), `quit` (`q`).
-          enum: [r, reset, e, exchange, s, stand, b, bet, c, call, ra, raise, ck, check, f, fold, a, allin, o, odds, q, quit]
+          enum: [r, reset, e, exchange, s, stand, b, bet, c, call, ra, raise, ck, check, f, fold, a, allin, o, odds, log, q, quit]
           example: bet
         indices:
           type: array
@@ -1666,7 +1666,7 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
             `shuffle` (`s`), `reorder`, `quit` (`q`).
-          enum: [r, reset, d, draw, s, shuffle, reorder, q, quit]
+          enum: [r, reset, d, draw, s, shuffle, reorder, log, q, quit]
           example: draw
         drawIdx:
           type: integer
@@ -1937,7 +1937,7 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `play` (`p`),
             `sort`, `quit` (`q`).
-          enum: [r, reset, p, play, sort, q, quit]
+          enum: [r, reset, p, play, sort, log, q, quit]
           example: play
         indices:
           type: array
@@ -2284,7 +2284,7 @@ components:
           description: |
             Game command.  Accepted values: `reset` (`r`), `play` (`p`),
             `joker` (`j`), `quit` (`q`).
-          enum: [r, reset, p, play, j, joker, q, quit]
+          enum: [r, reset, p, play, j, joker, log, q, quit]
           example: play
         index:
           type: integer
@@ -2601,7 +2601,7 @@ components:
         command:
           type: string
           description: Game command
-          enum: [reset, r, play, p, doubt, d, skip, s, quit, q]
+          enum: [reset, r, play, p, doubt, d, skip, s, log, quit, q]
           example: play
         cardIndices:
           type: array
@@ -2906,7 +2906,7 @@ components:
             `allin` (`a`), `rebuy` (`rb`), `skiprebuy` (`sr`),
             `addon` (`ad`), `skipaddon` (`sa`), `muck` (`m`),
             `show` (`sh`), `quit` (`q`).
-          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, q, quit]
+          enum: [r, reset, f, fold, ck, check, c, call, b, bet, ra, raise, a, allin, rb, rebuy, sr, skiprebuy, ad, addon, sa, skipaddon, m, muck, sh, show, log, q, quit]
           example: bet
         amount:
           type: integer
@@ -3386,3 +3386,50 @@ components:
           type: boolean
           description: Whether the human player can muck (hide) their hand at showdown (available when human lost)
           example: false
+
+    # -------------------------------------------------------------------------
+    # Action Log (common across all games)
+    # -------------------------------------------------------------------------
+    ActionLogEntry:
+      type: object
+      required:
+        - turnNumber
+        - playerIdx
+        - actionType
+        - detail
+      properties:
+        turnNumber:
+          type: integer
+          description: Sequential turn number starting from 1
+          minimum: 1
+          example: 1
+        playerIdx:
+          type: integer
+          description: Index of the player who performed the action (0 = human, 1+ = CPU)
+          example: 0
+        actionType:
+          type: string
+          description: Type of action (e.g., "hit", "stand", "bet", "play", "draw", "doubt", "fold")
+          example: hit
+        detail:
+          type: string
+          description: Human-readable description of the action
+          example: "Player 0 hit and drew ♠A"
+        cards:
+          type: array
+          description: Cards involved in the action (optional; revealed even if originally hidden)
+          items:
+            $ref: '#/components/schemas/Card'
+
+    ActionLogResponse:
+      type: object
+      required:
+        - entries
+      properties:
+        entries:
+          type: array
+          description: |
+            Cumulative action log (棋譜) for the current game session.
+            All hidden cards are revealed in the log entries.
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'

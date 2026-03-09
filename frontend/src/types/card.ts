@@ -5,6 +5,18 @@ export interface Card {
   value: number;
 }
 
+export interface ActionLogEntry {
+  turnNumber: number;
+  playerIdx: number;
+  actionType: string;
+  detail: string;
+  cards?: Card[];
+}
+
+export interface ActionLogResponse {
+  entries: ActionLogEntry[];
+}
+
 export interface BlackJackHand {
   score: number;
   cards: Card[];

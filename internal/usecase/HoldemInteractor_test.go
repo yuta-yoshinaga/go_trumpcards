@@ -169,6 +169,17 @@ func TestHoldemInteractor_ResetWithConfig_TableSizeZero(t *testing.T) {
 	mg.AssertNotCalled(t, "Resize", mock.Anything)
 }
 
+func TestHoldemInteractor_ActionLog(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	mp.On("ActionLogOutput", mg).Return(`{"entries":[]}`)
+
+	hi := NewHoldemInteractor(mg, mp)
+	result := hi.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	mp.AssertExpectations(t)
+}
+
 func TestHoldemInteractor_Action_Error(t *testing.T) {
 	mg := new(interfaces.MockHoldemGame)
 	mp := new(presenter.MockHoldemPresenter)

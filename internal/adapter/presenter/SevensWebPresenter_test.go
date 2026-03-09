@@ -569,3 +569,31 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.False(t, resObj.HumanAction.ForcedPass)
 	})
 }
+
+func TestSevensWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewSevensWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 0, PlayerIdx: 0, ActionType: "play", Detail: "played 7 of hearts", Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, true)}},
+		}
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"play"`)
+		assert.Contains(t, result, `"detail":"played 7 of hearts"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+}

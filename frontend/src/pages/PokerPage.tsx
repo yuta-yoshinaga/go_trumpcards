@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { pokerApi } from '../api/gameApi';
+import { actionLogApi, pokerApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CardImage } from '../components/CardImage';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -11,9 +12,9 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { RoundResults } from '../components/RoundResults';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { handNameBadgeStyle } from '../styles/gameConstants';
-import type { PokerOdds } from '../types/card';
+import type { ActionLogEntry, PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
 import { toggleArrayItem } from '../utils/arrayUtils';
 
@@ -30,6 +31,7 @@ export function PokerPage() {
   const { t } = useTranslation('poker');
   const { t: tc } = useTranslation('common');
   const { selected, setSelected, clear: clearSelection } = useCardSelection();
+  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
   const [isLowball, setIsLowball] = useState(false);
@@ -234,6 +236,23 @@ export function PokerPage() {
           alwaysVisible
         />
 
+        {/* Action log */}
+        {state?.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={async () => {
+                const res = await actionLogApi.poker();
+                setActionLog(res.entries);
+              }}
+            >
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
+
         <ErrorAlert message={error} />
 
         {/* Betting controls */}
@@ -314,7 +333,10 @@ export function PokerPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, undefined, { bettingLimit, isLowball })}
+            onClick={() => {
+              setActionLog(null);
+              exec('reset', undefined, undefined, { bettingLimit, isLowball });
+            }}
           >
             {tc('button.reset')}
           </button>

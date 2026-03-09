@@ -245,3 +245,12 @@ func (_m *MockHoldemGame) IsMuckAvailable() bool {
 	ret := _m.Called()
 	return ret.Bool(0)
 }
+
+// GetActionLog モック
+func (_m *MockHoldemGame) GetActionLog() []*domain.ActionLogEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {
+		return val
+	}
+	return nil
+}

@@ -72,6 +72,17 @@ func TestBlackJackInteractor_NewMethods(t *testing.T) {
 	})
 }
 
+func TestBlackJackInteractor_ActionLog(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjpMock.On("ActionLogOutput", bjMock).Return(`{"entries":[]}`)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	bjpMock.AssertExpectations(t)
+}
+
 func TestToggleSoft17(t *testing.T) {
 	bjpMock := new(presenter.MockBlackJackPresenter)
 	bjpMock.On("Output", mock.Anything, mock.Anything).Return("toggled")

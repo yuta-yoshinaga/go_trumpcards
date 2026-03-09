@@ -1,4 +1,5 @@
 import type {
+  ActionLogResponse,
   BlackJackResponse,
   DaifugoConfigInput,
   DaifugoResponse,
@@ -206,4 +207,18 @@ export const holdemApi = {
       sessionId,
       ...config,
     }),
+};
+
+function fetchLog(url: string): Promise<ActionLogResponse> {
+  return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
+}
+
+export const actionLogApi = {
+  blackjack: () => fetchLog('/blackjack/exec'),
+  poker: () => fetchLog('/poker/exec'),
+  oldmaid: () => fetchLog('/oldmaid/exec'),
+  daifugo: () => fetchLog('/daifugo/exec'),
+  sevens: () => fetchLog('/sevens/exec'),
+  doubt: () => fetchLog('/doubt/exec'),
+  holdem: () => fetchLog('/holdem/exec'),
 };

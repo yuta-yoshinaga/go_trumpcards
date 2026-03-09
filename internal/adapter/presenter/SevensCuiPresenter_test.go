@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -546,5 +547,34 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "パスしました")
 		assert.NotContains(t, result, "(出せるカードなし)")
+	})
+}
+
+func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewSevensCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 0, PlayerIdx: 0, ActionType: "play", Detail: "played 7 of hearts"},
+		}
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "played 7 of hearts")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

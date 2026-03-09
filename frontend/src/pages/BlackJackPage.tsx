@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
-import { blackjackApi } from '../api/gameApi';
+import { actionLogApi, blackjackApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEarlySurrenderPhaseControls } from '../components/blackjack/BjEarlySurrenderPhaseControls';
@@ -24,7 +25,8 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { useGameApi } from '../hooks/useGameApi';
-import type { BlackJackResponse } from '../types/card';
+import { btnSecondary } from '../styles/buttonStyles';
+import type { ActionLogEntry, BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 
 function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
@@ -45,6 +47,7 @@ export function BlackJackPage() {
   const suggestionLabels = useSuggestionLabels(t);
 
   const [message, setMessage] = useState('');
+  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
@@ -93,6 +96,7 @@ export function BlackJackPage() {
   const showSurrender = !!currentHand?.canSurrender;
 
   const handleReset = useCallback(() => {
+    setActionLog(null);
     const config: BlackJackConfigInput = {
       dealerHitsSoft17,
       cpuPlayerCount,
@@ -271,6 +275,23 @@ export function BlackJackPage() {
 
         {/* Result message */}
         <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+
+        {/* Action log */}
+        {phase === BjPhase.END && !actionLog && (
+          <div className="text-center my-2">
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={async () => {
+                const res = await actionLogApi.blackjack();
+                setActionLog(res.entries);
+              }}
+            >
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
 
         <ErrorAlert message={error} />
 

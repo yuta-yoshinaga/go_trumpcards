@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { actionLogApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -6,7 +9,8 @@ import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { useSevensGame } from '../hooks/useSevensGame';
-import { btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import type { ActionLogEntry } from '../types/card';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
 
@@ -41,6 +45,8 @@ export function SevensPage() {
     handleCardPlay,
     handleJokerPlace,
   } = useSevensGame();
+
+  const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
 
   if (!state) return null;
 
@@ -141,6 +147,22 @@ export function SevensPage() {
           messageCode={state.gameEndFlag ? undefined : state.messageCode}
           messageParams={state.gameEndFlag ? undefined : state.messageParams}
         />
+
+        {state.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button
+              type="button"
+              className={btnSecondary}
+              onClick={async () => {
+                const res = await actionLogApi.sevens();
+                setActionLog(res.entries);
+              }}
+            >
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={() => setActionLog(null)} />}
       </div>
 
       <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
@@ -244,7 +266,8 @@ export function SevensPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() =>
+            onClick={() => {
+              setActionLog(null);
               exec('reset', -1, 0, 0, {
                 tunnelEnabled: cfgTunnel,
                 tunnelSkipWidth: cfgTunnelSkipWidth,
@@ -255,8 +278,8 @@ export function SevensPage() {
                 jokerReclaim: cfgJokerReclaim,
                 endStop: cfgEndStop,
                 jokerConsecutiveBanned: cfgJokerConsBan,
-              })
-            }
+              });
+            }}
           >
             {tc('button.reset')}
           </button>

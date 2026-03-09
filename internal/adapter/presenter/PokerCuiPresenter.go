@@ -164,6 +164,11 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	return b.String()
 }
 
+// ActionLogOutput 棋譜をテキスト出力
+func (pcp *PokerCuiPresenter) ActionLogOutput(p interfaces.PokerGame) string {
+	return actionLogToText(p.GetActionLog())
+}
+
 // OutputWithOdds ゲーム状態 + オッズ出力
 func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr error, odds []domain.PokerDrawOdds) string {
 	base := pcp.Output(p, lastErr)
