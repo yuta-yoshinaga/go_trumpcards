@@ -273,6 +273,19 @@ func TestDoubtInteractor_GetConfig(t *testing.T) {
 	})
 }
 
+func TestDoubtInteractor_ResetProfile(t *testing.T) {
+	mockOutput := `{"phase":0}`
+	dpMock := new(presenter.MockDoubtPresenter)
+	dpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+	gameMock := new(interfaces.MockDoubtGame)
+	gameMock.On("ResetProfile").Return()
+
+	di := usecase.NewDoubtInteractor(gameMock, dpMock)
+	result := di.ResetProfile()
+	assert.Equal(t, mockOutput, result)
+	gameMock.AssertCalled(t, "ResetProfile")
+}
+
 func TestDoubtInteractor_WithRealGame(t *testing.T) {
 	t.Run("Reset initializes game and returns output", func(t *testing.T) {
 		mockOutput := `{"phase":0}`

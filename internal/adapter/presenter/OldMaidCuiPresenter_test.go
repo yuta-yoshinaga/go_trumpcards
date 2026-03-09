@@ -261,6 +261,34 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 	})
 }
 
+func TestOldMaidCuiPresenter_MetaAI(t *testing.T) {
+	top := presenter.NewOldMaidCuiPresenter()
+
+	t.Run("metaAI status line shown when profile exists", func(t *testing.T) {
+		om, _ := setupOldMaidCuiTest()
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		om.SetHumanProfile(&domain.OldMaidHumanProfile{
+			GamesPlayed:     3,
+			PositionBuckets: [3]int{4, 2, 6},
+			TotalPicks:      12,
+		})
+		result := top.Output(om, nil)
+		assert.Contains(t, result, "[メタAI]")
+		assert.Contains(t, result, "適応中")
+		assert.Contains(t, result, "ゲーム数: 3")
+		// EdgePickRate = (4/12 + 6/12)*100 ≈ 83%
+		assert.Contains(t, result, "端ピック率: 83%")
+	})
+
+	t.Run("no metaAI line when profile is nil", func(t *testing.T) {
+		om, _ := setupOldMaidCuiTest()
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		// No SetHumanProfile → profile is nil
+		result := top.Output(om, nil)
+		assert.NotContains(t, result, "[メタAI]")
+	})
+}
+
 func TestOldMaidCuiPresenter_DrawHistory(t *testing.T) {
 	top := presenter.NewOldMaidCuiPresenter()
 

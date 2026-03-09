@@ -408,6 +408,40 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 0, resObj.LastDoubtResult.DiscardedCount)
 	})
 
+	t.Run("success Output metaAI populated when profile exists", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		d.SetHumanProfile(&domain.DoubtHumanProfile{
+			GamesPlayed:     3,
+			BluffsByBracket: [3]struct{ Bluffs, Total int }{{1, 4}, {2, 5}, {0, 3}},
+			DoubtCorrect:    3,
+			DoubtTotal:      4,
+		})
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.MetaAI)
+		assert.True(t, resObj.MetaAI.Enabled)
+		assert.Equal(t, 3, resObj.MetaAI.GamesPlayed)
+		assert.InDelta(t, 0.4, resObj.MetaAI.BluffRate, 0.001)      // 2/5
+		assert.InDelta(t, 0.75, resObj.MetaAI.DoubtAccuracy, 0.001) // 3/4
+	})
+
+	t.Run("success Output metaAI omitted when profile is nil", func(t *testing.T) {
+		d, _ := setupDoubtWebTest()
+		// No SetHumanProfile → profile is nil
+		result := tdwp.Output(d, nil)
+		var resObj controller.DoubtWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Nil(t, resObj.MetaAI)
+		// Also verify no metaAI key in raw JSON (omitempty)
+		var raw map[string]interface{}
+		_ = json.Unmarshal([]byte(result), &raw)
+		_, hasMetaAI := raw["metaAI"]
+		assert.False(t, hasMetaAI)
+	})
+
 	t.Run("success Output gameEndFlag nil player at winnerIdx", func(t *testing.T) {
 		gameMock := new(interfaces.MockDoubtGame)
 		gameMock.On("GetCurrentTurn").Return(0)
@@ -423,6 +457,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		gameMock.On("GetPlayerCnt").Return(0)
 		gameMock.On("GetPlayer", 99).Return((*domain.DoubtPlayer)(nil))
 		gameMock.On("GetConfig").Return(domain.DefaultDoubtConfig())
+		gameMock.On("GetHumanProfile").Return((*domain.DoubtHumanProfile)(nil))
 
 		result := tdwp.Output(gameMock, nil)
 		var resObj controller.DoubtWebOutput

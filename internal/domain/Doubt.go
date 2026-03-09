@@ -115,6 +115,7 @@ type Doubt struct {
 	lastDoubtResult *DoubtDoubtResult
 	config          DoubtConfig
 	turnCounter     int
+	humanProfile    *DoubtHumanProfile
 }
 
 // NewDoubt コンストラクタ
@@ -145,6 +146,15 @@ func (d *Doubt) Reset() {
 	d.turnCounter = 0
 
 	resetPlayers(d.players, func(p *DoubtPlayer) { p.ResetMemory() })
+
+	// メタAIプロファイルの管理
+	if d.config.CpuMetaAI {
+		if d.humanProfile != nil {
+			d.humanProfile.GamesPlayed++
+		} else {
+			d.humanProfile = &DoubtHumanProfile{}
+		}
+	}
 
 	d.trumpCards.Shuffle()
 	dealAllCards(d.trumpCards, d.players)
@@ -186,6 +196,18 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 
 	played := player.RemoveCards(cardIndices)
 	d.tableCards = append(d.tableCards, played...)
+
+	// メタAI: ブラフを記録
+	if d.config.CpuMetaAI && d.humanProfile != nil {
+		isBluff := false
+		for _, card := range played {
+			if card.GetValue() != claimedValue {
+				isBluff = true
+				break
+			}
+		}
+		d.humanProfile.RecordPlay(player.GetCardsSize()+len(played), isBluff)
+	}
 
 	d.lastAction = &DoubtAction{
 		PlayerIdx:    d.currentTurn,
@@ -234,7 +256,11 @@ func (d *Doubt) CpuPlay() {
 	// 状況に応じた動的ブラフ確率 (除去後の値で計算して既存の確率分布を維持)
 	postRemovalHandSize := player.GetCardsSize() - numCards
 	postRemovalTableCount := len(d.tableCards) + numCards
-	intentBluff := rand.Float64() < d.calcBluffChance(postRemovalHandSize, postRemovalTableCount)
+	bluffChance := d.calcBluffChance(postRemovalHandSize, postRemovalTableCount)
+	if d.config.CpuMetaAI && d.humanProfile != nil {
+		bluffChance = d.humanProfile.AdjustedBluffChance(bluffChance)
+	}
+	intentBluff := rand.Float64() < bluffChance
 
 	var played []*Card
 	var claimedValue int
@@ -348,8 +374,15 @@ func (d *Doubt) decideCpuDoubters() {
 		if known+claimedCount > cardsPerValue {
 			// 物理的に不可能な宣言 → 100%ダウト
 			d.cpuDoubters = append(d.cpuDoubters, i)
-		} else if rand.Float64() < randomDoubtChance {
-			d.cpuDoubters = append(d.cpuDoubters, i)
+		} else {
+			effectiveChance := randomDoubtChance
+			if d.config.CpuMetaAI && d.humanProfile != nil && cardPlayerIdx == d.findHumanIdx() {
+				bracket := doubtHandSizeBracket(d.players[cardPlayerIdx].GetCardsSize())
+				effectiveChance = d.humanProfile.AdjustedDoubtChance(randomDoubtChance, bracket)
+			}
+			if rand.Float64() < effectiveChance {
+				d.cpuDoubters = append(d.cpuDoubters, i)
+			}
 		}
 	}
 }
@@ -400,6 +433,18 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 	}
 
 	wasLying := d.checkLying()
+
+	// メタAI: 人間がダウターの場合に結果を記録
+	if d.config.CpuMetaAI && d.humanProfile != nil {
+		humanIdx := d.findHumanIdx()
+		for _, di := range doubterIndices {
+			if di == humanIdx {
+				d.humanProfile.RecordDoubt(wasLying)
+				break
+			}
+		}
+	}
+
 	var loserIdx int
 	if wasLying {
 		loserIdx = d.lastAction.PlayerIdx
@@ -513,6 +558,22 @@ func (d *Doubt) GetConfig() DoubtConfig { return d.config }
 
 // SetConfig ゲーム設定変更
 func (d *Doubt) SetConfig(cfg DoubtConfig) { d.config = cfg }
+
+// GetHumanProfile メタAIプロファイル取得
+func (d *Doubt) GetHumanProfile() *DoubtHumanProfile { return d.humanProfile }
+
+// ResetProfile メタAIプロファイルをリセットする
+func (d *Doubt) ResetProfile() { d.humanProfile = nil }
+
+// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
+func (d *Doubt) findHumanIdx() int {
+	for i, p := range d.players {
+		if p.GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
 
 // memoryDecayRate 記憶力レベルに対応する記憶減衰率を返す
 func memoryDecayRate(level DoubtMemoryLevel) float64 {

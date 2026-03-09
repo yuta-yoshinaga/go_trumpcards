@@ -110,6 +110,14 @@ export function DoubtPage() {
             />
             {t('settings.cpuHesitation')}
           </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={doubtConfig.cpuMetaAI}
+              onChange={(e) => handleConfigToggle('cpuMetaAI', e.target.checked)}
+            />
+            {t('settings.cpuMetaAI')}
+          </label>
         </div>
       </details>
 

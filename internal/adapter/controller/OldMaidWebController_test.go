@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -239,6 +240,101 @@ func TestOldMaidWebController_Method(t *testing.T) {
 		recorded.CodeIs(http.StatusBadRequest)
 		recorded.ContentTypeIsJson()
 		recorded.BodyIs(`{"players":[],"currentTurn":0,"nextDrawTargetIdx":0,"gameEndFlag":false,"loserIdx":0,"lastDrawPlayerIdx":0,"lastDrawFromIdx":0,"lastDrawCard":null,"lastDiscardedPairs":0,"lastDiscardedCards":null,"hasDrawn":false,"cpuActions":[],"humanAction":null,"drawHistory":[],"cpuHighlightedCardIdx":-1,"removedCard":null,"mode":0,"message":"param error."}`)
+	})
+}
+
+func TestOldMaidWebController_ResetProfile(t *testing.T) {
+	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
+
+	t.Run("reset-profile command dispatches ResetProfile", func(t *testing.T) {
+		omiMock := new(usecase.MockOldMaidInteractor)
+		omiMock.On("ResetProfile").Return(mockOutput)
+
+		factory := func() uc.OldMaidInteractorIF { return omiMock }
+		ctrl := controller.NewOldMaidWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.OldMaidWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "reset-profile", SessionID: "rp-session-1"},
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		omiMock.AssertCalled(t, "ResetProfile")
+	})
+
+	t.Run("rp command dispatches ResetProfile", func(t *testing.T) {
+		omiMock := new(usecase.MockOldMaidInteractor)
+		omiMock.On("ResetProfile").Return(mockOutput)
+
+		factory := func() uc.OldMaidInteractorIF { return omiMock }
+		ctrl := controller.NewOldMaidWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.OldMaidWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "rp", SessionID: "rp-session-2"},
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		omiMock.AssertCalled(t, "ResetProfile")
+	})
+}
+
+func TestOldMaidWebController_ResetWithCpuMetaAI(t *testing.T) {
+	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
+
+	t.Run("cpuMetaAI true is passed", func(t *testing.T) {
+		omiMock := new(usecase.MockOldMaidInteractor)
+		expectedCfg := domain.OldMaidConfig{CpuMetaAI: true}
+		omiMock.On("Reset", expectedCfg).Return(mockOutput)
+
+		factory := func() uc.OldMaidInteractorIF { return omiMock }
+		ctrl := controller.NewOldMaidWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.OldMaidWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-metaai-1"},
+			CpuMetaAI:    true,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		omiMock.AssertCalled(t, "Reset", expectedCfg)
+	})
+
+	t.Run("cpuMetaAI omitted uses default (false)", func(t *testing.T) {
+		omiMock := new(usecase.MockOldMaidInteractor)
+		expectedCfg := domain.OldMaidConfig{}
+		omiMock.On("Reset", expectedCfg).Return(mockOutput)
+
+		factory := func() uc.OldMaidInteractorIF { return omiMock }
+		ctrl := controller.NewOldMaidWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/oldmaid/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.OldMaidWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-metaai-2"},
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/oldmaid/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		omiMock.AssertCalled(t, "Reset", expectedCfg)
 	})
 }
 

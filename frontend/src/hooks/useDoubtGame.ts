@@ -11,6 +11,7 @@ export const DEFAULT_DOUBT_CONFIG: DoubtConfig = {
   cpuMemoryLevel: 1,
   penaltyDrawLimit: 0,
   cpuHesitationEnabled: false,
+  cpuMetaAI: false,
 };
 
 export const DOUBT_WINDOW_OPTIONS = [3, 5, 10] as const;

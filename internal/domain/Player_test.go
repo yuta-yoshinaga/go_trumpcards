@@ -288,3 +288,45 @@ func TestPlayer_PrependCard(t *testing.T) {
 	assert.Equal(t, domain.CardDesignSpade, p.GetCard(1).GetDesign())
 	assert.Equal(t, domain.CardDesignClover, p.GetCard(2).GetDesign())
 }
+
+func TestPlayer_InsertCard(t *testing.T) {
+	makePlayer := func() *domain.Player {
+		p := new(domain.Player)
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		p.AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		return p
+	}
+
+	t.Run("insert at beginning (pos=0)", func(t *testing.T) {
+		p := makePlayer()
+		p.InsertCard(domain.NewCard(domain.CardDesignHeart, 10, false), 0)
+		assert.Equal(t, 4, p.GetCardsSize())
+		assert.Equal(t, 10, p.GetCard(0).GetValue())
+		assert.Equal(t, 1, p.GetCard(1).GetValue())
+	})
+
+	t.Run("insert at negative pos → prepend", func(t *testing.T) {
+		p := makePlayer()
+		p.InsertCard(domain.NewCard(domain.CardDesignHeart, 10, false), -1)
+		assert.Equal(t, 4, p.GetCardsSize())
+		assert.Equal(t, 10, p.GetCard(0).GetValue())
+	})
+
+	t.Run("insert at end (pos >= size)", func(t *testing.T) {
+		p := makePlayer()
+		p.InsertCard(domain.NewCard(domain.CardDesignHeart, 10, false), 5)
+		assert.Equal(t, 4, p.GetCardsSize())
+		assert.Equal(t, 10, p.GetCard(3).GetValue())
+	})
+
+	t.Run("insert in middle", func(t *testing.T) {
+		p := makePlayer()
+		p.InsertCard(domain.NewCard(domain.CardDesignHeart, 10, false), 1)
+		assert.Equal(t, 4, p.GetCardsSize())
+		assert.Equal(t, 1, p.GetCard(0).GetValue())
+		assert.Equal(t, 10, p.GetCard(1).GetValue())
+		assert.Equal(t, 2, p.GetCard(2).GetValue())
+		assert.Equal(t, 3, p.GetCard(3).GetValue())
+	})
+}

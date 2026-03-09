@@ -186,6 +186,19 @@ func TestOldMaidInteractor_GetConfig(t *testing.T) {
 	assert.Equal(t, expectedCfg, oi.GetConfig())
 }
 
+func TestOldMaidInteractor_ResetProfile(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	ompMock := new(presenter.MockOldMaidPresenter)
+	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+	gameMock := new(interfaces.MockOldMaidGame)
+	gameMock.On("ResetProfile").Return()
+
+	oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+	result := oi.ResetProfile()
+	assert.Equal(t, mockOutput, result)
+	gameMock.AssertCalled(t, "ResetProfile")
+}
+
 func TestOldMaidInteractor_Draw_GameEndsAfterCpuTurns(t *testing.T) {
 	// Game ends during runCpuTurns → ArrangeTargetForHumanDraw called but game ended
 	mockOutput := `{"players":[]}`

@@ -17,6 +17,7 @@ const defaultConfig: DoubtConfig = {
   cpuMemoryLevel: 1,
   penaltyDrawLimit: 0,
   cpuHesitationEnabled: false,
+  cpuMetaAI: false,
 };
 
 const humanTurnState: DoubtResponse = {
@@ -867,37 +868,73 @@ describe('DoubtPage', () => {
       label: 'doubtWindowSec to 3s',
       selectIdx: 0,
       value: '3',
-      expected: { doubtWindowSec: 3, cpuMemoryLevel: 1, penaltyDrawLimit: 0, cpuHesitationEnabled: false },
+      expected: {
+        doubtWindowSec: 3,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'doubtWindowSec to 5s',
       selectIdx: 0,
       value: '5',
-      expected: { doubtWindowSec: 5, cpuMemoryLevel: 1, penaltyDrawLimit: 0, cpuHesitationEnabled: false },
+      expected: {
+        doubtWindowSec: 5,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'cpuMemoryLevel to Hard',
       selectIdx: 1,
       value: '2',
-      expected: { doubtWindowSec: 10, cpuMemoryLevel: 2, penaltyDrawLimit: 0, cpuHesitationEnabled: false },
+      expected: {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 2,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'cpuMemoryLevel to Easy',
       selectIdx: 1,
       value: '0',
-      expected: { doubtWindowSec: 10, cpuMemoryLevel: 0, penaltyDrawLimit: 0, cpuHesitationEnabled: false },
+      expected: {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 0,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'penaltyDrawLimit to 5',
       selectIdx: 2,
       value: '5',
-      expected: { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 5, cpuHesitationEnabled: false },
+      expected: {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 5,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'penaltyDrawLimit to 3',
       selectIdx: 2,
       value: '3',
-      expected: { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 3, cpuHesitationEnabled: false },
+      expected: {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 3,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
   ])('changing $label updates config passed to reset', async ({ selectIdx, value, expected }) => {
     renderWithProviders(<DoubtPage />);
@@ -934,6 +971,31 @@ describe('DoubtPage', () => {
         cpuMemoryLevel: 1,
         penaltyDrawLimit: 0,
         cpuHesitationEnabled: true,
+        cpuMetaAI: false,
+      }),
+    );
+  });
+
+  it('toggling cpuMetaAI checkbox updates config passed to reset', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+
+    const checkbox = screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: true,
       }),
     );
   });

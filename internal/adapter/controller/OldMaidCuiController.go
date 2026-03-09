@@ -69,6 +69,19 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				cfg := c.omi.GetConfig()
 				cfg.CpuPlacementStrategy = v == 1
 				return c.omi.Reset(cfg), true
+			case "smetaai", "smai":
+				if len(args) < 1 {
+					return "Meta-AI flag is required (0=OFF, 1=ON).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return fmt.Sprintf("Invalid meta-AI flag: %s. Please enter 0-1.", args[0]), true
+				}
+				cfg := c.omi.GetConfig()
+				cfg.CpuMetaAI = v == 1
+				return c.omi.Reset(cfg), true
+			case "rp", "resetprofile":
+				return c.omi.ResetProfile(), true
 			case "sma", "setmemoryai":
 				if len(args) < 1 {
 					return "CPU memory AI flag is required (0=OFF, 1=ON).", true

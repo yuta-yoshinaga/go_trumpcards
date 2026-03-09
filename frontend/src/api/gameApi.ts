@@ -92,6 +92,7 @@ export const oldmaidApi = {
     reorderIndices?: number[],
     cpuMemoryAI?: boolean,
     cpuHesitationEnabled?: boolean,
+    cpuMetaAI?: boolean,
   ) =>
     postJson<OldMaidResponse>('/oldmaid/exec', {
       command,
@@ -101,6 +102,7 @@ export const oldmaidApi = {
       reorderIndices,
       cpuMemoryAI,
       cpuHesitationEnabled,
+      cpuMetaAI,
       sessionId,
     }),
 };
@@ -128,6 +130,7 @@ export const doubtApi = {
       cpuMemoryLevel: config?.cpuMemoryLevel,
       penaltyDrawLimit: config?.penaltyDrawLimit,
       cpuHesitationEnabled: config?.cpuHesitationEnabled,
+      cpuMetaAI: config?.cpuMetaAI,
     }),
 };
 

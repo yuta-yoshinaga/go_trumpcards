@@ -159,6 +159,7 @@ func (m *mockOldMaidIF) GetConfig() domain.OldMaidConfig {
 func (m *mockOldMaidIF) Draw(idx int) string          { return m.Called(idx).String(0) }
 func (m *mockOldMaidIF) Shuffle() string              { return m.Called().String(0) }
 func (m *mockOldMaidIF) Reorder(indices []int) string { return m.Called(indices).String(0) }
+func (m *mockOldMaidIF) ResetProfile() string         { return m.Called().String(0) }
 
 func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 	omMock := &mockOldMaidIF{}
@@ -327,6 +328,7 @@ func (m *mockDoubtIF) GetCpuDoubters() []int {
 func (m *mockDoubtIF) GetConfig() domain.DoubtConfig {
 	return m.Called().Get(0).(domain.DoubtConfig)
 }
+func (m *mockDoubtIF) ResetProfile() string { return m.Called().String(0) }
 
 func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 	dwMock := &mockDoubtIF{}

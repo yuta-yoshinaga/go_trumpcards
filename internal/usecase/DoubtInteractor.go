@@ -15,6 +15,7 @@ type DoubtInteractorIF interface {
 	SkipDoubt() string
 	GetCpuDoubters() []int
 	GetConfig() domain.DoubtConfig
+	ResetProfile() string
 }
 
 // DoubtInteractor ダウトインタラクタークラス
@@ -76,6 +77,12 @@ func (di *DoubtInteractor) GetCpuDoubters() []int {
 // GetConfig 現在の設定を取得
 func (di *DoubtInteractor) GetConfig() domain.DoubtConfig {
 	return di.d.GetConfig()
+}
+
+// ResetProfile メタAIプロファイルをリセット
+func (di *DoubtInteractor) ResetProfile() string {
+	di.d.ResetProfile()
+	return di.dp.Output(di.d, nil)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはダウトフェーズになるまでCPUターンを実行

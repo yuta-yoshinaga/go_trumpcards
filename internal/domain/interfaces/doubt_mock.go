@@ -152,3 +152,17 @@ func (_m *MockDoubtGame) GetConfig() domain.DoubtConfig {
 func (_m *MockDoubtGame) SetConfig(cfg domain.DoubtConfig) {
 	_m.Called(cfg)
 }
+
+// GetHumanProfile モック
+func (_m *MockDoubtGame) GetHumanProfile() *domain.DoubtHumanProfile {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.DoubtHumanProfile); ok {
+		return val
+	}
+	return nil
+}
+
+// ResetProfile モック
+func (_m *MockDoubtGame) ResetProfile() {
+	_m.Called()
+}

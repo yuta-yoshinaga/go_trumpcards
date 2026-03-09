@@ -15,6 +15,10 @@ type DoubtGame interface {
 	GetConfig() domain.DoubtConfig
 	SetConfig(cfg domain.DoubtConfig)
 
+	// meta-AI
+	GetHumanProfile() *domain.DoubtHumanProfile
+	ResetProfile()
+
 	// state readers
 	GetGameEndFlag() bool
 	GetPhase() domain.DoubtPhase

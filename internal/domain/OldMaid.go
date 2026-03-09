@@ -62,6 +62,7 @@ type OldMaid struct {
 	removedCard           *Card                      // ジジ抜き: 除外されたカード
 	cpuHighlightedCardIdx int                        // CPU心理戦: 奇数カードの位置 (-1=なし)
 	humanHandDirty        bool                       // 人間がシャッフル/並び替えしたフラグ
+	humanProfile          *OldMaidHumanProfile       // メタAIプロファイル
 }
 
 // NewOldMaid コンストラクタ
@@ -101,6 +102,12 @@ func (o *OldMaid) GetCpuHighlightedCardIdx() int { return o.cpuHighlightedCardId
 // GetHumanHandDirty 人間がシャッフル/並び替えしたか
 func (o *OldMaid) GetHumanHandDirty() bool { return o.humanHandDirty }
 
+// GetHumanProfile メタAIプロファイル取得
+func (o *OldMaid) GetHumanProfile() *OldMaidHumanProfile { return o.humanProfile }
+
+// ResetProfile メタAIプロファイルをリセットする
+func (o *OldMaid) ResetProfile() { o.humanProfile = nil }
+
 // Reset ゲーム初期化
 func (o *OldMaid) Reset() {
 	o.gameEndFlag = false
@@ -118,6 +125,15 @@ func (o *OldMaid) Reset() {
 	o.removedCard = nil
 	o.cpuHighlightedCardIdx = -1
 	o.humanHandDirty = false
+
+	// メタAIプロファイルの管理
+	if o.config.CpuMetaAI {
+		if o.humanProfile != nil {
+			o.humanProfile.GamesPlayed++
+		} else {
+			o.humanProfile = &OldMaidHumanProfile{}
+		}
+	}
 
 	// 全プレイヤーのカードリセット (記憶もクリア)
 	resetPlayers(o.players, func(p *OldMaidPlayer) {
@@ -277,6 +293,19 @@ func (o *OldMaid) PlayerDraw(cardIdx int) error {
 	}
 	if !o.players[o.currentTurn].GetIsHuman() {
 		return ErrNotHumanTurn
+	}
+	// メタAI: ピックと引きを記録
+	if o.config.CpuMetaAI && o.humanProfile != nil {
+		targetIdx := o.getNextActivePlayer(o.currentTurn)
+		if targetIdx >= 0 {
+			targetSize := o.players[targetIdx].GetCardsSize()
+			pickIdx := cardIdx
+			if pickIdx < 0 || pickIdx >= targetSize {
+				pickIdx = 0 // ランダム選択の場合は実際のインデックスが不明なので0とする
+			}
+			o.humanProfile.RecordPick(pickIdx, targetSize)
+		}
+		o.humanProfile.RecordDraw()
 	}
 	// 人間のターン開始時にCPU行動履歴をリセット
 	o.cpuActions = nil
@@ -492,15 +521,16 @@ func (o *OldMaid) ArrangeTargetForHumanDraw() {
 		return
 	}
 	size := target.GetCardsSize()
-	position := rand.Intn(2) // 0=先頭, 1=末尾
-	card := target.RemoveCard(oddIdx)
-	if position == 0 {
-		target.PrependCard(card)
-		o.cpuHighlightedCardIdx = 0
+	var position int
+	// メタAI: 人間が最もピックしにくい位置に配置
+	if o.config.CpuMetaAI && o.humanProfile != nil && o.humanProfile.AdaptStrength() >= 0.08 {
+		position = o.humanProfile.StrategicPlacement(size)
 	} else {
-		target.AddCard(card)
-		o.cpuHighlightedCardIdx = size - 1
+		position = rand.Intn(2) // 0=先頭, 1=末尾
 	}
+	card := target.RemoveCard(oddIdx)
+	target.InsertCard(card, position)
+	o.cpuHighlightedCardIdx = position
 }
 
 // findHumanPlayer 人間プレイヤーを検索する
@@ -524,6 +554,10 @@ func (o *OldMaid) ShuffleHumanHand() error {
 	}
 	human.ShuffleCards()
 	o.humanHandDirty = true
+	// メタAI: シャッフルを記録
+	if o.config.CpuMetaAI && o.humanProfile != nil {
+		o.humanProfile.RecordShuffle()
+	}
 	return nil
 }
 

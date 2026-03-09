@@ -40,3 +40,9 @@ func (_m *MockOldMaidInteractor) Reorder(indices []int) string {
 	ret := _m.Called(indices)
 	return ret.Get(0).(string)
 }
+
+// ResetProfile モック
+func (_m *MockOldMaidInteractor) ResetProfile() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

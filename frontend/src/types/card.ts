@@ -168,6 +168,12 @@ export interface DrawHistoryEntry {
   targetFinished: boolean;
 }
 
+export interface OldMaidMetaAI {
+  enabled: boolean;
+  gamesPlayed: number;
+  edgePickRate: number;
+}
+
 export interface OldMaidResponse {
   players: OldMaidPlayerData[];
   currentTurn: number;
@@ -188,6 +194,7 @@ export interface OldMaidResponse {
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
+  metaAI?: OldMaidMetaAI;
 }
 
 export interface DaifugoPlayerData {
@@ -341,6 +348,7 @@ export interface DoubtConfig {
   cpuMemoryLevel: number; // 0=Easy, 1=Normal, 2=Hard
   penaltyDrawLimit: number; // 0=unlimited, >0=max cards loser picks up
   cpuHesitationEnabled: boolean;
+  cpuMetaAI: boolean;
 }
 
 export interface DoubtResponse {
@@ -360,6 +368,14 @@ export interface DoubtResponse {
   messageParams?: Record<string, string>;
   doubtWindowSec: number;
   penaltyDrawLimit: number;
+  metaAI?: DoubtMetaAI;
+}
+
+export interface DoubtMetaAI {
+  enabled: boolean;
+  gamesPlayed: number;
+  bluffRate: number;
+  doubtAccuracy: number;
 }
 
 export interface HoldemPlayerData {

@@ -108,6 +108,15 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		resObj.RemovedCard = cardToOutput(om.GetRemovedCard())
 	}
 
+	// メタAI情報
+	if profile := om.GetHumanProfile(); profile != nil {
+		resObj.MetaAI = &controller.OldMaidWebOutputMetaAI{
+			Enabled:      true,
+			GamesPlayed:  profile.GamesPlayed,
+			EdgePickRate: profile.PickRate(0) + profile.PickRate(2),
+		}
+	}
+
 	// エラーメッセージ
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

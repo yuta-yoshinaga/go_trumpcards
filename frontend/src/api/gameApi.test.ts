@@ -1022,6 +1022,7 @@ describe('gameApi', () => {
         cpuMemoryLevel: 2,
         penaltyDrawLimit: 5,
         cpuHesitationEnabled: true,
+        cpuMetaAI: false,
       });
       expect(mockFetch).toHaveBeenCalledWith(
         '/doubt/exec',
@@ -1033,6 +1034,7 @@ describe('gameApi', () => {
             cpuMemoryLevel: 2,
             penaltyDrawLimit: 5,
             cpuHesitationEnabled: true,
+            cpuMetaAI: false,
           }),
         }),
       );

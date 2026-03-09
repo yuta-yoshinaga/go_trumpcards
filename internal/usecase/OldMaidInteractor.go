@@ -13,6 +13,7 @@ type OldMaidInteractorIF interface {
 	Draw(cardIdx int) string
 	Shuffle() string
 	Reorder(indices []int) string
+	ResetProfile() string
 }
 
 // OldMaidInteractor ババ抜きインタラクタークラス
@@ -71,6 +72,12 @@ func (oi *OldMaidInteractor) Shuffle() string {
 func (oi *OldMaidInteractor) Reorder(indices []int) string {
 	err := oi.om.ReorderHumanHand(indices)
 	return oi.omp.Output(oi.om, err)
+}
+
+// ResetProfile メタAIプロファイルをリセット
+func (oi *OldMaidInteractor) ResetProfile() string {
+	oi.om.ResetProfile()
+	return oi.omp.Output(oi.om, nil)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

@@ -20,6 +20,7 @@ type DoubtWebInput struct {
 	CpuMemoryLevel       *int  `json:"cpuMemoryLevel,omitempty"`
 	PenaltyDrawLimit     *int  `json:"penaltyDrawLimit,omitempty"`
 	CpuHesitationEnabled bool  `json:"cpuHesitationEnabled,omitempty"`
+	CpuMetaAI            bool  `json:"cpuMetaAI,omitempty"`
 }
 
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
@@ -70,6 +71,15 @@ type DoubtWebOutput struct {
 	MessageParams    map[string]string          `json:"messageParams,omitempty"`
 	DoubtWindowSec   int                        `json:"doubtWindowSec"`
 	PenaltyDrawLimit int                        `json:"penaltyDrawLimit"`
+	MetaAI           *DoubtWebOutputMetaAI      `json:"metaAI,omitempty"`
+}
+
+// DoubtWebOutputMetaAI メタAI情報
+type DoubtWebOutputMetaAI struct {
+	Enabled       bool    `json:"enabled"`
+	GamesPlayed   int     `json:"gamesPlayed"`
+	BluffRate     float64 `json:"bluffRate"`
+	DoubtAccuracy float64 `json:"doubtAccuracy"`
 }
 
 // DoubtWebController ダウトWebコントローラークラス
@@ -110,6 +120,7 @@ func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtI
 			cfg.PenaltyDrawLimit = *param.PenaltyDrawLimit
 		}
 		cfg.CpuHesitationEnabled = param.CpuHesitationEnabled
+		cfg.CpuMetaAI = param.CpuMetaAI
 		bc.writePresenterResponse(w, dgi.ResetWithConfig(cfg))
 	case "p", "play":
 		if len(param.CardIndices) > MaxCardIndices {
@@ -137,6 +148,8 @@ func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtI
 			doubters = cpuDoubters
 		}
 		bc.writePresenterResponse(w, dgi.ResolveDoubt(doubters))
+	case "rp", "reset-profile":
+		bc.writePresenterResponse(w, dgi.ResetProfile())
 	case "s", "skip":
 		cpuDoubters := dgi.GetCpuDoubters()
 		if len(cpuDoubters) > 0 {
