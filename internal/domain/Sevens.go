@@ -1103,5 +1103,8 @@ func (s *Sevens) SetConfig(config SevensConfig) {
 	if config.TunnelSkipWidth > 12 {
 		config.TunnelSkipWidth = 12
 	}
+	if config.CpuStrategy < SevensCpuSimple || config.CpuStrategy > SevensCpuHarassment {
+		config.CpuStrategy = SevensCpuSimple
+	}
 	s.config = config
 }

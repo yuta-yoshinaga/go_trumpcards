@@ -1847,6 +1847,24 @@ func TestSevens_SetConfig(t *testing.T) {
 		assert.Equal(t, 0, s.GetConfig().MaxPasses)
 	})
 
+	t.Run("success SetConfig clamps out-of-range cpuStrategy below min to simple", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{CpuStrategy: -1, MaxPasses: domain.SevensMaxPasses}
+		s.SetConfig(cfg)
+		assert.Equal(t, domain.SevensCpuSimple, s.GetConfig().CpuStrategy)
+	})
+
+	t.Run("success SetConfig clamps out-of-range cpuStrategy above max to simple", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{CpuStrategy: 99, MaxPasses: domain.SevensMaxPasses}
+		s.SetConfig(cfg)
+		assert.Equal(t, domain.SevensCpuSimple, s.GetConfig().CpuStrategy)
+	})
+
 	t.Run("success SetConfig then Reset recreates deck with joker", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
