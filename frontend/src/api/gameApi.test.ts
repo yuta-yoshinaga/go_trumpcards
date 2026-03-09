@@ -633,6 +633,32 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with reset command and isLowball', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          phase: 0,
+          player: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+          dealer: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+          message: '',
+          pot: 0,
+          ante: 10,
+        }),
+      );
+      await pokerApi.exec('reset', undefined, undefined, { isLowball: true });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/poker/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            indices: undefined,
+            amount: undefined,
+            isLowball: true,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 503));
       await expect(pokerApi.exec('reset')).rejects.toThrow('HTTP error: 503');

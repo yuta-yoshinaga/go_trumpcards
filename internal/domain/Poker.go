@@ -137,6 +137,11 @@ func (p *Poker) Reset() error {
 	p.cpuActions = make([]PokerCpuAction, 0)
 	p.cpuExchanges = make([]PokerCpuExchange, 0)
 
+	// Lowballモードではジョーカーを強制的に0にする
+	if p.config.IsLowball {
+		p.config.JokerCount = 0
+	}
+
 	// デッキをジョーカー枚数に合わせて再生成しシャッフル
 	p.trumpCards = NewTrumpCards(p.config.JokerCount)
 	p.trumpCards.Shuffle()
@@ -494,7 +499,12 @@ func (p *Poker) resolveShowdown() {
 	// サイドポット計算・配分
 	bp := p.bettingPlayers()
 	p.sidePots = CalculateSidePots(bp, p.pot, p.startingChips)
-	wonAmounts := DistributePots(bp, p.sidePots)
+	var wonAmounts map[int]int
+	if p.config.IsLowball {
+		wonAmounts = DistributePotsWithWinnerFunc(bp, p.sidePots, FindPotWinnersLowball)
+	} else {
+		wonAmounts = DistributePots(bp, p.sidePots)
+	}
 
 	// 結果を構築
 	p.roundResults = make([]PokerResult, 0)
@@ -572,7 +582,12 @@ func (p *Poker) runCpuExchanges() {
 		}
 
 		// CPU交換AI
-		indices := p.cpuDecideExchange(p.currentTurn)
+		var indices []int
+		if p.config.IsLowball {
+			indices = p.cpuDecideExchangeLowball(p.currentTurn)
+		} else {
+			indices = p.cpuDecideExchange(p.currentTurn)
+		}
 		for _, idx := range indices {
 			newCard := p.trumpCards.DrawCard()
 			if newCard != nil {
@@ -607,6 +622,11 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 
 	pl.EvalHand()
 	handRank := pl.GetHandRank()
+
+	// Lowballモードではハンドランクを反転 (弱いハンドほど高く評価)
+	if p.config.IsLowball {
+		handRank = PokerHandFiveOfAKind - handRank
+	}
 
 	// 交換枚数読み: 他プレイヤーの交換枚数が少ない場合に警戒
 	exchangeWarning := p.calcExchangeWarning(idx, params.exchangeReadWeight)
@@ -798,6 +818,66 @@ func (p *Poker) cpuDecideExchange(idx int) []int {
 		result = append(result, cards[i].idx)
 	}
 	return result
+}
+
+// cpuDecideExchangeLowball Lowball用CPUカード交換AI
+// ペアがあれば片方を捨てる。8以上の高いカード(Ace=14)を捨てる。最大3枚交換。
+func (p *Poker) cpuDecideExchangeLowball(idx int) []int {
+	pl := p.players[idx]
+
+	// カード値を収集 (Ace=14)
+	type cardInfo struct {
+		idx   int
+		value int
+	}
+	cards := make([]cardInfo, pl.GetCardsSize())
+	for i := 0; i < pl.GetCardsSize(); i++ {
+		v := pl.GetCard(i).GetValue()
+		if v == 1 {
+			v = 14
+		}
+		cards[i] = cardInfo{i, v}
+	}
+
+	// ペアを見つけて余分なカードを交換候補にする (優先度高)
+	valueCounts := make(map[int][]int)
+	for _, c := range cards {
+		valueCounts[c.value] = append(valueCounts[c.value], c.idx)
+	}
+	pairDiscards := []int{}
+	isPairCard := make(map[int]bool)
+	for _, idxList := range valueCounts {
+		if len(idxList) >= 2 {
+			for _, ci := range idxList {
+				isPairCard[ci] = true
+			}
+			pairDiscards = append(pairDiscards, idxList[1:]...)
+		}
+	}
+
+	// 8以上の高いカードでペアの一部でないものを候補に追加 (優先度低)
+	highCardDiscards := []int{}
+	for _, c := range cards {
+		if c.value >= 8 && !isPairCard[c.idx] {
+			highCardDiscards = append(highCardDiscards, c.idx)
+		}
+	}
+
+	// ペア解消を優先し、残り枠を高いカードで埋める (最大3枚)
+	// 5枚ハンドではペア交換候補は最大3枚 (4-of-a-kind)
+	indices := pairDiscards
+	if len(indices) < 3 {
+		sort.Slice(highCardDiscards, func(i, j int) bool {
+			return cards[highCardDiscards[i]].value > cards[highCardDiscards[j]].value
+		})
+		needed := 3 - len(indices)
+		if len(highCardDiscards) > needed {
+			highCardDiscards = highCardDiscards[:needed]
+		}
+		indices = append(indices, highCardDiscards...)
+	}
+
+	return indices
 }
 
 // findFlushDrawDiscard 4枚フラッシュドローの外れカード位置を返す

@@ -106,6 +106,10 @@ func (pcc *PokerCuiController) Exec(command string) string {
 					}
 				}
 				return pcc.pi.Odds(indices), true
+			case "lw", "lowball":
+				cfg := pcc.pi.GetConfig()
+				cfg.IsLowball = !cfg.IsLowball
+				return pcc.pi.ResetWithConfig(cfg), true
 			}
 			return "", false
 		},

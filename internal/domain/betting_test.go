@@ -858,3 +858,250 @@ func TestCalculateBettingLimits(t *testing.T) {
 		assert.Equal(t, 0, maxBetAmount)
 	})
 }
+
+// --- FindPotWinnersLowball tests ---
+
+func TestFindPotWinnersLowball_HighCardBeatsOnePair(t *testing.T) {
+	// In lowball, lower rank wins. HighCard (rank 0) beats OnePair (rank 1).
+	p0 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: 1, cards: []*Card{
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignClover, 6, false),
+		NewCard(CardDesignDiamond, 8, false),
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignHeart, 10, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersLowball(players, []int{0, 1})
+	assert.Equal(t, []int{0}, winners)
+}
+
+func TestFindPotWinnersLowball_SameRankTiebreakByLowestCards(t *testing.T) {
+	// Same rank, p1 has lower cards (Ace=14 always in lowball, so Ace is bad)
+	p0 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 1, false), // Ace = 14 in lowball
+	}}
+	p1 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignHeart, 7, false), // 7 < 14 (Ace)
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersLowball(players, []int{0, 1})
+	assert.Equal(t, []int{1}, winners)
+}
+
+func TestFindPotWinnersLowball_SplitPotIdenticalCards(t *testing.T) {
+	cards := []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}
+	p0 := &mockBettingPlayer{handRank: 0, cards: cards}
+	p1 := &mockBettingPlayer{handRank: 0, cards: cards}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersLowball(players, []int{0, 1})
+	assert.Equal(t, []int{0, 1}, winners)
+}
+
+func TestFindPotWinnersLowball_FoldedPlayerExcluded(t *testing.T) {
+	p0 := &mockBettingPlayer{handRank: 0, folded: true, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: 1, cards: []*Card{
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignClover, 6, false),
+		NewCard(CardDesignDiamond, 8, false),
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignHeart, 10, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersLowball(players, []int{0, 1})
+	assert.Equal(t, []int{1}, winners)
+}
+
+func TestFindPotWinnersLowball_SingleEligiblePlayer(t *testing.T) {
+	p0 := &mockBettingPlayer{handRank: 3, cards: []*Card{
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignHeart, 11, false),
+		NewCard(CardDesignClover, 12, false),
+		NewCard(CardDesignDiamond, 13, false),
+		NewCard(CardDesignSpade, 1, false),
+	}}
+	players := []BettingPlayer{p0}
+
+	winners := FindPotWinnersLowball(players, []int{0})
+	assert.Equal(t, []int{0}, winners)
+}
+
+func TestFindPotWinnersLowball_SameRankHigherCardsLose(t *testing.T) {
+	// Tests the cmp > 0 branch (current player has higher/worse cards)
+	p0 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignHeart, 9, false), // 9 > 7, p1 loses
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	winners := FindPotWinnersLowball(players, []int{0, 1})
+	assert.Equal(t, []int{0}, winners)
+}
+
+func TestFindPotWinnersLowball_ThirdPlayerBeatsFirst(t *testing.T) {
+	// p0 has OnePair (rank 1), p1 has TwoPair (rank 2), p2 has HighCard (rank 0)
+	// p2 should win (lowest rank)
+	p0 := &mockBettingPlayer{handRank: 1, cards: []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignClover, 8, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignSpade, 10, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: 2, cards: []*Card{
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 7, false),
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 9, false),
+	}}
+	p2 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	players := []BettingPlayer{p0, p1, p2}
+
+	winners := FindPotWinnersLowball(players, []int{0, 1, 2})
+	assert.Equal(t, []int{2}, winners)
+}
+
+func TestFindPotWinnersLowball_JokerCardValue(t *testing.T) {
+	// Test that Joker cards get value 0 in lowball comparison
+	p0 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignJoker, 0, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	// p0 has Joker (value 0) which is lower than p1's 2, so p0 wins
+	winners := FindPotWinnersLowball(players, []int{0, 1})
+	assert.Equal(t, []int{0}, winners)
+}
+
+// --- DistributePotsWithWinnerFunc tests ---
+
+func TestDistributePotsWithWinnerFunc_Lowball(t *testing.T) {
+	// Use FindPotWinnersLowball: lower rank wins
+	p0 := &mockBettingPlayer{handRank: 0, chips: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: 1, chips: 0, cards: []*Card{
+		NewCard(CardDesignHeart, 6, false),
+		NewCard(CardDesignClover, 6, false),
+		NewCard(CardDesignDiamond, 8, false),
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignHeart, 10, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+	sidePots := []SidePot{{Amount: 100, EligiblePlayers: []int{0, 1}}}
+
+	won := DistributePotsWithWinnerFunc(players, sidePots, FindPotWinnersLowball)
+	assert.Equal(t, 100, won[0])
+	assert.Equal(t, 0, won[1])
+	assert.Equal(t, 100, players[0].GetChips())
+}
+
+func TestDistributePotsWithWinnerFunc_LowballEmptyWinners(t *testing.T) {
+	// All eligible players are folded → FindPotWinnersLowball returns [] → skip distribution
+	p0 := &mockBettingPlayer{folded: true, chips: 0}
+	players := []BettingPlayer{p0}
+	sidePots := []SidePot{{Amount: 100, EligiblePlayers: []int{0}}}
+
+	won := DistributePotsWithWinnerFunc(players, sidePots, FindPotWinnersLowball)
+	assert.Equal(t, 0, won[0])
+	assert.Equal(t, 0, players[0].GetChips())
+}
+
+func TestDistributePotsWithWinnerFunc_MatchesDistributePots(t *testing.T) {
+	// Verify DistributePotsWithWinnerFunc(FindPotWinners) == DistributePots
+	makePlayer := func(rank int, cards []*Card) *mockBettingPlayer {
+		return &mockBettingPlayer{handRank: rank, chips: 0, cards: cards}
+	}
+	cards0 := []*Card{
+		NewCard(CardDesignSpade, 10, false),
+		NewCard(CardDesignSpade, 11, false),
+		NewCard(CardDesignSpade, 12, false),
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignSpade, 1, false),
+	}
+	cards1 := []*Card{
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 7, false),
+	}
+	sidePots := []SidePot{
+		{Amount: 60, EligiblePlayers: []int{0, 1}},
+		{Amount: 40, EligiblePlayers: []int{1}},
+	}
+
+	// Run DistributePotsWithWinnerFunc(FindPotWinners)
+	playersA := []BettingPlayer{makePlayer(5, cards0), makePlayer(2, cards1)}
+	wonA := DistributePotsWithWinnerFunc(playersA, sidePots, FindPotWinners)
+
+	// Run DistributePots
+	playersB := []BettingPlayer{makePlayer(5, cards0), makePlayer(2, cards1)}
+	wonB := DistributePots(playersB, sidePots)
+
+	assert.Equal(t, wonA, wonB)
+	assert.Equal(t, playersA[0].GetChips(), playersB[0].GetChips())
+	assert.Equal(t, playersA[1].GetChips(), playersB[1].GetChips())
+}

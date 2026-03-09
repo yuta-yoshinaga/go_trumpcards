@@ -42,5 +42,6 @@ func (cui *PokerCui) Exec() {
 		"e [0-4]・・・exchange (e.g. 'e 0 2 4' to exchange cards at index 0, 2, 4)",
 		"s・・・stand (no exchange)",
 		"bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
+		"lw・・・toggle 2-7 Lowball mode",
 	})
 }

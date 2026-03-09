@@ -263,6 +263,21 @@ func TestPokerCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	assert.Contains(t, c.Exec("bl -1"), "Invalid betting limit: -1")
 }
 
+// --- lowball ---
+
+func TestPokerCuiController_Lowball(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	mi.On("GetConfig").Return(cfg)
+	expectedCfg := domain.DefaultPokerConfig()
+	expectedCfg.IsLowball = true
+	mi.On("ResetWithConfig", expectedCfg).Return("lw ok")
+	assert.Equal(t, "lw ok", c.Exec("lw"))
+	mi.AssertCalled(t, "GetConfig")
+	mi.AssertCalled(t, "ResetWithConfig", expectedCfg)
+}
+
 // --- set cpu count ---
 
 func TestPokerCuiController_SetCpuCount_Valid(t *testing.T) {

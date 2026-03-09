@@ -26,6 +26,7 @@ type PokerConfig struct {
 	CpuCount     int              // CPU数 (1-3)
 	JokerCount   int              // ジョーカー枚数 (0-2)
 	BettingLimit BettingLimitType // ベッティングリミット
+	IsLowball    bool             // 2-7 Lowball モード
 }
 
 // DefaultPokerConfig デフォルト設定

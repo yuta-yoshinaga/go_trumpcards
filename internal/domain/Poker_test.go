@@ -2805,3 +2805,257 @@ func TestPoker_BettingLimits_NoLimit(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+// ---------------------------------------------------------------------------
+// Lowball tests
+// ---------------------------------------------------------------------------
+
+// newLowballPoker creates a Poker instance with IsLowball=true.
+func newLowballPoker() (*Poker, []*PokerPlayer) {
+	tc := NewTrumpCards(0)
+	p0 := NewPokerPlayer(true, PokerStyleBalanced)
+	p1 := NewPokerPlayer(false, PokerStyleConservative)
+	p2 := NewPokerPlayer(false, PokerStyleAggressive)
+	p3 := NewPokerPlayer(false, PokerStyleBluffer)
+	players := []*PokerPlayer{p0, p1, p2, p3}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
+	cfg := DefaultPokerConfig()
+	cfg.IsLowball = true
+	pk := NewPoker(tc, players, cfg)
+	return pk, players
+}
+
+func TestPoker_Reset_LowballForcesJokerZero(t *testing.T) {
+	tc := NewTrumpCards(2)
+	p0 := NewPokerPlayer(true, PokerStyleBalanced)
+	p1 := NewPokerPlayer(false, PokerStyleConservative)
+	players := []*PokerPlayer{p0, p1}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
+	cfg := DefaultPokerConfig()
+	cfg.IsLowball = true
+	cfg.JokerCount = 2
+	cfg.CpuCount = 1
+	pk := NewPoker(tc, players, cfg)
+
+	err := pk.Reset()
+	assert.NoError(t, err)
+	assert.Equal(t, 0, pk.GetConfig().JokerCount)
+}
+
+func TestPoker_Showdown_LowballWinner(t *testing.T) {
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseSecondBet)
+	pk.SetCurrentTurn(0)
+	pk.SetPot(100)
+	pk.SetLastBet(0)
+	pk.SetMinRaise(10)
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
+	pk.setActedFlags([]bool{false, true, true, true})
+
+	// Player 0: HighCard (2,4,6,8,10 different suits) - weak hand, should win in lowball
+	givePlayerHand(players[0], []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 4, false),
+		NewCard(CardDesignDiamond, 6, false),
+		NewCard(CardDesignClover, 8, false),
+		NewCard(CardDesignSpade, 10, false),
+	})
+	// Player 1: OnePair (3,3,5,7,9) - stronger hand, should lose in lowball
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignClover, 7, false),
+		NewCard(CardDesignSpade, 9, false),
+	})
+	// Fold players 2 and 3
+	players[2].SetFolded(true)
+	players[3].SetFolded(true)
+
+	// Player 0 checks → advances; all CPUs already acted → showdown
+	err := pk.PlayerAction(PokerActionCheck, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, PokerPhaseEnd, pk.GetPhase())
+
+	// In lowball, player 0 (HighCard) should win
+	results := pk.GetRoundResults()
+	assert.Equal(t, 2, len(results))
+	var p0Won, p1Won int
+	for _, r := range results {
+		if r.PlayerIdx == 0 {
+			p0Won = r.WonAmount
+		}
+		if r.PlayerIdx == 1 {
+			p1Won = r.WonAmount
+		}
+	}
+	assert.Greater(t, p0Won, 0)
+	assert.Equal(t, 0, p1Won)
+}
+
+func TestPoker_CpuDecide_LowballInvertsRank(t *testing.T) {
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseDeal)
+	pk.SetCurrentTurn(1) // CPU conservative
+	pk.SetPot(40)
+	pk.SetLastBet(0)
+	pk.SetMinRaise(10)
+	pk.setStartingChips([]int{1000, 1000, 1000, 1000})
+	pk.setActedFlags([]bool{true, false, true, true})
+
+	for _, pl := range players {
+		pl.SetChips(990)
+		pl.SetFolded(false)
+		pl.SetAllIn(false)
+		pl.SetCurrentBet(0)
+	}
+
+	// Give CPU player 1 a HighCard hand (weak normally, strong in lowball)
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignClover, 7, false),
+		NewCard(CardDesignSpade, 9, false),
+	})
+
+	action, _ := pk.cpuDecide(1)
+	// Lowball inverts rank: HighCard (0) → FiveOfAKind(10)-0=10 (very strong)
+	// Conservative with a strong hand should bet or check, not fold
+	assert.NotEqual(t, PokerActionFold, action)
+}
+
+func TestPoker_CpuDecideExchangeLowball_BreaksPairs(t *testing.T) {
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseExchange)
+
+	// CPU player 1 has a pair of 5s → should discard one 5
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignSpade, 4, false),
+	})
+
+	indices := pk.cpuDecideExchangeLowball(1)
+	assert.Equal(t, 1, len(indices))
+	// Should discard the second 5 (index 2, the duplicate)
+	assert.Equal(t, 2, indices[0])
+}
+
+func TestPoker_CpuDecideExchangeLowball_DiscardsHighCards(t *testing.T) {
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseExchange)
+
+	// CPU player 1 has high cards (8, 10, King=13) mixed with low cards
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignDiamond, 8, false),
+		NewCard(CardDesignClover, 10, false),
+		NewCard(CardDesignSpade, 13, false),
+	})
+
+	indices := pk.cpuDecideExchangeLowball(1)
+	assert.Equal(t, 3, len(indices))
+	assert.Contains(t, indices, 2) // 8
+	assert.Contains(t, indices, 3) // 10
+	assert.Contains(t, indices, 4) // King
+}
+
+func TestPoker_CpuDecideExchangeLowball_KeepsLowCards(t *testing.T) {
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseExchange)
+
+	// CPU player 1 has all low cards (2,3,4,5,7) - no pairs, no high cards
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignClover, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	})
+
+	indices := pk.cpuDecideExchangeLowball(1)
+	assert.Equal(t, 0, len(indices))
+}
+
+func TestPoker_CpuDecideExchangeLowball_MaxThreeCards(t *testing.T) {
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseExchange)
+
+	// CPU player 1 has all high cards plus a pair → 5 discard candidates, but max 3
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 1, false),    // Ace=14
+		NewCard(CardDesignHeart, 13, false),   // King
+		NewCard(CardDesignDiamond, 12, false), // Queen
+		NewCard(CardDesignClover, 11, false),  // Jack
+		NewCard(CardDesignSpade, 10, false),   // 10
+	})
+
+	indices := pk.cpuDecideExchangeLowball(1)
+	assert.Equal(t, 3, len(indices))
+	// Should pick the 3 highest values: Ace(14), King(13), Queen(12)
+	assert.Contains(t, indices, 0) // Ace
+	assert.Contains(t, indices, 1) // King
+	assert.Contains(t, indices, 2) // Queen
+}
+
+func TestPoker_CpuDecideExchangeLowball_PairPrioritizedOverHighCards(t *testing.T) {
+	// 7,7,8,9,10 → pair discard (one 7) + high card discards (8,9,10)
+	// Should discard pair duplicate first, then fill with highest non-pair cards
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseExchange)
+
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignClover, 8, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignSpade, 10, false),
+	})
+
+	indices := pk.cpuDecideExchangeLowball(1)
+	assert.Equal(t, 3, len(indices))
+	// Pair discard (idx 1) must be included
+	assert.Contains(t, indices, 1)
+	// High cards: 10 (idx 4) and 9 (idx 3) fill remaining 2 slots
+	assert.Contains(t, indices, 4)
+	assert.Contains(t, indices, 3)
+}
+
+func TestPoker_RunCpuExchanges_LowballBranch(t *testing.T) {
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseExchange)
+	pk.SetCurrentTurn(1) // Start from CPU 1
+	pk.setActedFlags([]bool{true, false, true, true})
+
+	for _, pl := range players {
+		pl.SetChips(990)
+		pl.SetFolded(false)
+		pl.SetAllIn(false)
+	}
+
+	// Give CPU player 1 a hand with a high card to trigger exchange
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignDiamond, 4, false),
+		NewCard(CardDesignClover, 5, false),
+		NewCard(CardDesignSpade, 13, false), // King - should be exchanged
+	})
+
+	// Ensure the deck has cards to draw
+	pk.runCpuExchanges()
+
+	// CPU 1 should have exchanged 1 card (the King)
+	exchanges := pk.GetCpuExchanges()
+	assert.Equal(t, 1, len(exchanges))
+	assert.Equal(t, 1, exchanges[0].PlayerIdx)
+	assert.Equal(t, 1, exchanges[0].ExchangeCount)
+}

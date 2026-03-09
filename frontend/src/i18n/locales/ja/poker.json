@@ -7,5 +7,7 @@
   "drawOdds": "ドローオッズ:",
   "cpuExchange": "CPU交換:",
   "cpuExchangeEntry": "Player {{idx}}: {{count}}枚交換",
-  "exchangeCount": "交換: {{count}}枚"
+  "exchangeCount": "交換: {{count}}枚",
+  "lowball": "2-7 ローボール",
+  "lowballMode": "2-7 ローボール モード"
 }

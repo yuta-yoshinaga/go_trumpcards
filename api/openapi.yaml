@@ -1410,6 +1410,14 @@ components:
           minimum: 0
           maximum: 2
           example: 0
+        isLowball:
+          type: boolean
+          description: |
+            Enable 2-7 Lowball mode (used with `reset` command).
+            When true, the lowest hand wins. Ace always counts as 14,
+            straights and flushes count against the player, and jokers
+            are forced to rank 0. Best hand is 2-3-4-5-7 off-suit.
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1611,6 +1619,9 @@ components:
             Maximum allowed bet/raise amount for Pot Limit mode.
             0 means no limit (Fixed or No Limit mode).
           minimum: 0
+        isLowball:
+          type: boolean
+          description: Whether 2-7 Lowball mode is active.
         roundResults:
           type: array
           items:
