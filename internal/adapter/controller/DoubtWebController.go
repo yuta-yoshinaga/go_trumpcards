@@ -19,7 +19,7 @@ type DoubtWebInput struct {
 	DoubtWindowSec       *int  `json:"doubtWindowSec,omitempty"`
 	CpuMemoryLevel       *int  `json:"cpuMemoryLevel,omitempty"`
 	PenaltyDrawLimit     *int  `json:"penaltyDrawLimit,omitempty"`
-	CpuHesitationEnabled *bool `json:"cpuHesitationEnabled,omitempty"`
+	CpuHesitationEnabled bool  `json:"cpuHesitationEnabled,omitempty"`
 }
 
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
@@ -109,9 +109,7 @@ func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtI
 		if param.PenaltyDrawLimit != nil && *param.PenaltyDrawLimit >= 0 {
 			cfg.PenaltyDrawLimit = *param.PenaltyDrawLimit
 		}
-		if param.CpuHesitationEnabled != nil {
-			cfg.CpuHesitationEnabled = *param.CpuHesitationEnabled
-		}
+		cfg.CpuHesitationEnabled = param.CpuHesitationEnabled
 		bc.writePresenterResponse(w, dgi.ResetWithConfig(cfg))
 	case "p", "play":
 		if len(param.CardIndices) > MaxCardIndices {

@@ -500,7 +500,6 @@ func TestDoubtWebController_ResetWithCpuHesitation(t *testing.T) {
 	win := 10
 
 	t.Run("cpuHesitationEnabled true is passed", func(t *testing.T) {
-		hesitation := true
 		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal, CpuHesitationEnabled: true}
 		dgiMock := new(usecase.MockDoubtInteractor)
 		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
@@ -515,7 +514,7 @@ func TestDoubtWebController_ResetWithCpuHesitation(t *testing.T) {
 		input := controller.DoubtWebInput{
 			BaseWebInput:         controller.BaseWebInput{Command: "reset", SessionID: "cfg-hes"},
 			DoubtWindowSec:       &win,
-			CpuHesitationEnabled: &hesitation,
+			CpuHesitationEnabled: true,
 		}
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -524,7 +523,7 @@ func TestDoubtWebController_ResetWithCpuHesitation(t *testing.T) {
 		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
 
-	t.Run("cpuHesitationEnabled nil uses default (false)", func(t *testing.T) {
+	t.Run("cpuHesitationEnabled omitted uses default (false)", func(t *testing.T) {
 		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal}
 		dgiMock := new(usecase.MockDoubtInteractor)
 		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
