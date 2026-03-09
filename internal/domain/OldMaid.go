@@ -296,14 +296,14 @@ func (o *OldMaid) PlayerDraw(cardIdx int) error {
 	}
 	// メタAI: ピックと引きを記録
 	if o.config.CpuMetaAI && o.humanProfile != nil {
-		targetIdx := o.getNextActivePlayer(o.currentTurn)
-		if targetIdx >= 0 {
-			targetSize := o.players[targetIdx].GetCardsSize()
-			pickIdx := cardIdx
-			if pickIdx < 0 || pickIdx >= targetSize {
-				pickIdx = 0 // ランダム選択の場合は実際のインデックスが不明なので0とする
+		if cardIdx >= 0 {
+			targetIdx := o.getNextActivePlayer(o.currentTurn)
+			if targetIdx >= 0 {
+				targetSize := o.players[targetIdx].GetCardsSize()
+				if cardIdx < targetSize {
+					o.humanProfile.RecordPick(cardIdx, targetSize)
+				}
 			}
-			o.humanProfile.RecordPick(pickIdx, targetSize)
 		}
 		o.humanProfile.RecordDraw()
 	}
@@ -523,10 +523,14 @@ func (o *OldMaid) ArrangeTargetForHumanDraw() {
 	size := target.GetCardsSize()
 	var position int
 	// メタAI: 人間が最もピックしにくい位置に配置
-	if o.config.CpuMetaAI && o.humanProfile != nil && o.humanProfile.AdaptStrength() >= 0.08 {
+	if o.config.CpuMetaAI && o.humanProfile != nil && o.humanProfile.AdaptStrength() >= metaAIMinAdaptForPlacement {
 		position = o.humanProfile.StrategicPlacement(size)
 	} else {
-		position = rand.Intn(2) // 0=先頭, 1=末尾
+		if rand.Intn(2) == 0 {
+			position = 0
+		} else {
+			position = size - 1
+		}
 	}
 	card := target.RemoveCard(oddIdx)
 	target.InsertCard(card, position)

@@ -2003,6 +2003,34 @@ func TestOldMaid_MetaAI_PlayerDrawRecordsPickAndDraw(t *testing.T) {
 	assert.Equal(t, 1, profile.DrawCount, "DrawCount should be incremented after PlayerDraw")
 }
 
+func TestOldMaid_MetaAI_PlayerDrawRandomSkipsRecordPick(t *testing.T) {
+	tc := domain.NewTrumpCards(1)
+	players := []*domain.OldMaidPlayer{
+		domain.NewOldMaidPlayer(true),  // Human 0
+		domain.NewOldMaidPlayer(false), // CPU 1
+		domain.NewOldMaidPlayer(false), // CPU 2
+		domain.NewOldMaidPlayer(false), // CPU 3
+	}
+	om := domain.NewOldMaid(tc, players)
+	om.SetConfig(domain.OldMaidConfig{CpuMetaAI: true})
+	om.SetHumanProfile(&domain.OldMaidHumanProfile{})
+
+	// Set up: Human at turn 0, CPU 1 has exactly 1 card (deterministic draw)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+
+	// cardIdx=-1 means random selection → should NOT call RecordPick
+	err := om.PlayerDraw(-1)
+	assert.NoError(t, err)
+
+	profile := om.GetHumanProfile()
+	assert.NotNil(t, profile)
+	assert.Equal(t, 0, profile.TotalPicks, "TotalPicks should NOT be incremented for random selection")
+	assert.Equal(t, 1, profile.DrawCount, "DrawCount should still be incremented")
+}
+
 func TestOldMaid_MetaAI_ShuffleHumanHandRecordsShuffle(t *testing.T) {
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{

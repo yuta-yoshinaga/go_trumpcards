@@ -1152,7 +1152,7 @@ func TestDoubt_MetaAI_PlayerPlayRecordsBluff(t *testing.T) {
 
 		profile := game.GetHumanProfile()
 		assert.NotNil(t, profile)
-		// Hand size before play was 2 → bracket 0 (small: 1-4)
+		// Hand size after play is 1 → bracket 0 (small: 1-4)
 		assert.Equal(t, 1, profile.BluffsByBracket[0].Bluffs, "bluff should be recorded")
 		assert.Equal(t, 1, profile.BluffsByBracket[0].Total, "total should be recorded")
 	})

@@ -206,7 +206,7 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 				break
 			}
 		}
-		d.humanProfile.RecordPlay(player.GetCardsSize()+len(played), isBluff)
+		d.humanProfile.RecordPlay(player.GetCardsSize(), isBluff)
 	}
 
 	d.lastAction = &DoubtAction{

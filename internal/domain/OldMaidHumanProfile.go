@@ -2,6 +2,9 @@ package domain
 
 import "math/rand"
 
+// metaAIMinAdaptForPlacement はメタAIの適応強度がこの閾値以上のとき戦略的配置を使用する
+const metaAIMinAdaptForPlacement = 0.08
+
 // OldMaidHumanProfile セッション内で人間プレイヤーの行動を学習するプロファイル
 type OldMaidHumanProfile struct {
 	// PositionBuckets 位置別のピック追跡: [0]=先頭1/3, [1]=中央1/3, [2]=末尾1/3
