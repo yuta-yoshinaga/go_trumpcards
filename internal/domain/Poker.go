@@ -764,6 +764,12 @@ func (p *Poker) cpuDecideExchange(idx int) []int {
 		return []int{}
 	}
 
+	// スタンドパットブラフ: 弱い手でも交換しないことで強い手を装う
+	params := pokerStyleParamsMap[pl.GetPlayStyle()]
+	if params.standPatBluffRate > 0 && rand.Intn(100) < params.standPatBluffRate {
+		return []int{}
+	}
+
 	// フラッシュドロー判定
 	if rank < PokerHandOnePair {
 		discardIdx := p.findFlushDrawDiscard(idx)

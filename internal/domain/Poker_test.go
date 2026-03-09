@@ -2399,6 +2399,81 @@ func TestPoker_cpuDecideExchange_HighCard_WithAce(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// Stand-pat bluff in cpuDecideExchange
+// ---------------------------------------------------------------------------
+
+func TestPoker_cpuDecideExchange_StandPatBluff(t *testing.T) {
+	pk, pl := setupPokerForHumanAction(PokerPhaseExchange)
+	// Player 3 = Bluffer (standPatBluffRate=20)
+	// Give a HighCard hand (weak)
+	givePlayerHand(pl[3], []*Card{
+		NewCard(CardDesignClover, 2, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignDiamond, 7, false),
+		NewCard(CardDesignClover, 9, false),
+		NewCard(CardDesignHeart, 11, false),
+	})
+	gotBluff := false
+	gotNormal := false
+	for i := 0; i < 1000; i++ {
+		indices := pk.cpuDecideExchange(3)
+		if len(indices) == 0 {
+			gotBluff = true
+		} else {
+			gotNormal = true
+		}
+		if gotBluff && gotNormal {
+			break
+		}
+	}
+	assert.True(t, gotBluff, "stand-pat bluff never triggered")
+	assert.True(t, gotNormal, "normal exchange never triggered")
+}
+
+func TestPoker_cpuDecideExchange_StandPatBluff_Conservative(t *testing.T) {
+	pk, pl := setupPokerForHumanAction(PokerPhaseExchange)
+	// Player 1 = Conservative (standPatBluffRate=0)
+	givePlayerHand(pl[1], []*Card{
+		NewCard(CardDesignClover, 2, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignDiamond, 7, false),
+		NewCard(CardDesignClover, 9, false),
+		NewCard(CardDesignHeart, 11, false),
+	})
+	for i := 0; i < 1000; i++ {
+		indices := pk.cpuDecideExchange(1)
+		assert.Greater(t, len(indices), 0, "conservative should never stand-pat bluff")
+	}
+}
+
+func TestPoker_cpuDecideExchange_StandPatBluff_NormalPath(t *testing.T) {
+	pk, pl := setupPokerForHumanAction(PokerPhaseExchange)
+	// Player 3 = Bluffer; give OnePair hand (still below TwoPair threshold)
+	givePlayerHand(pl[3], []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignClover, 5, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignSpade, 11, false),
+	})
+	gotBluff := false
+	gotNormal := false
+	for i := 0; i < 1000; i++ {
+		indices := pk.cpuDecideExchange(3)
+		if len(indices) == 0 {
+			gotBluff = true
+		} else {
+			gotNormal = true
+		}
+		if gotBluff && gotNormal {
+			break
+		}
+	}
+	assert.True(t, gotBluff, "stand-pat bluff never triggered with OnePair")
+	assert.True(t, gotNormal, "normal exchange never triggered with OnePair")
+}
+
+// ---------------------------------------------------------------------------
 // UNCOVERED: CPU fallback to Check in runCpuActions
 // ---------------------------------------------------------------------------
 
