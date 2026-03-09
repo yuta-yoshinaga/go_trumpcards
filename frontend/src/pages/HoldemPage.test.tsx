@@ -1,13 +1,14 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { holdemApi, actionLogApi } from '../api/gameApi';
+import { actionLogApi, holdemApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { HoldemResponse } from '../types/card';
 import { HoldemPage } from './HoldemPage';
 
 vi.mock('../api/gameApi', () => ({
-  holdemApi: { exec: vi.fn() }, actionLogApi: { holdem: vi.fn() }
+  holdemApi: { exec: vi.fn() },
+  actionLogApi: { holdem: vi.fn() },
 }));
 
 const mockExec = vi.mocked(holdemApi.exec);

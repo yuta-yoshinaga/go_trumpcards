@@ -1,13 +1,14 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { oldmaidApi, actionLogApi } from '../api/gameApi';
+import { actionLogApi, oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OldMaidResponse } from '../types/card';
 import { OldMaidPage } from './OldMaidPage';
 
 vi.mock('../api/gameApi', () => ({
-  oldmaidApi: { exec: vi.fn() }, actionLogApi: { oldmaid: vi.fn() }
+  oldmaidApi: { exec: vi.fn() },
+  actionLogApi: { oldmaid: vi.fn() },
 }));
 
 const mockExec = vi.mocked(oldmaidApi.exec);
@@ -29,7 +30,13 @@ const humanTurnState: OldMaidResponse = {
     { id: 2, isHuman: false, isFinished: false, cardCount: 2, cards: [] },
   ],
   currentTurn: 0,
-      gameSettings: { mode: 0, cpuPlacementStrategy: false, cpuMemoryAI: false, cpuHesitationEnabled: false, cpuMetaAI: false },
+  gameSettings: {
+    mode: 0,
+    cpuPlacementStrategy: false,
+    cpuMemoryAI: false,
+    cpuHesitationEnabled: false,
+    cpuMetaAI: false,
+  },
   nextDrawTargetIdx: 1,
   gameEndFlag: false,
   hasDrawn: false,
@@ -187,7 +194,13 @@ describe('OldMaidPage', () => {
       cpuHighlightedCardIdx: 0,
       nextDrawTargetIdx: 1,
       currentTurn: 0,
-      gameSettings: { mode: 0, cpuPlacementStrategy: false, cpuMemoryAI: false, cpuHesitationEnabled: false, cpuMetaAI: false },
+      gameSettings: {
+        mode: 0,
+        cpuPlacementStrategy: false,
+        cpuMemoryAI: false,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     };
     mockExec.mockResolvedValue(highlightedState);
     await startGame();
@@ -412,7 +425,13 @@ describe('OldMaidPage', () => {
         { id: 2, isHuman: false, isFinished: false, cardCount: 1, cards: [] },
       ],
       currentTurn: 0,
-      gameSettings: { mode: 0, cpuPlacementStrategy: false, cpuMemoryAI: false, cpuHesitationEnabled: false, cpuMetaAI: false },
+      gameSettings: {
+        mode: 0,
+        cpuPlacementStrategy: false,
+        cpuMemoryAI: false,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
       nextDrawTargetIdx: 1,
       hasDrawn: true,
       lastDrawPlayerIdx: 1,
@@ -483,7 +502,13 @@ describe('OldMaidPage', () => {
         { id: 2, isHuman: false, isFinished: false, cardCount: 1, cards: [] },
       ],
       currentTurn: 0,
-      gameSettings: { mode: 0, cpuPlacementStrategy: false, cpuMemoryAI: false, cpuHesitationEnabled: false, cpuMetaAI: false },
+      gameSettings: {
+        mode: 0,
+        cpuPlacementStrategy: false,
+        cpuMemoryAI: false,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
       nextDrawTargetIdx: 1,
       hasDrawn: true,
       lastDrawPlayerIdx: 1,
@@ -624,7 +649,13 @@ describe('OldMaidPage', () => {
         { drawPlayerIdx: 2, drawFromIdx: 0, drawnCard: null, discardedPairs: 0, discardedCards: [] },
       ],
       currentTurn: 0,
-      gameSettings: { mode: 0, cpuPlacementStrategy: false, cpuMemoryAI: false, cpuHesitationEnabled: false, cpuMetaAI: false },
+      gameSettings: {
+        mode: 0,
+        cpuPlacementStrategy: false,
+        cpuMemoryAI: false,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
       hasDrawn: true,
       lastDrawPlayerIdx: 1,
       lastDrawFromIdx: 2,
@@ -665,7 +696,13 @@ describe('OldMaidPage', () => {
         { id: 2, isHuman: false, isFinished: false, cardCount: 1, cards: [] },
       ],
       currentTurn: 0,
-      gameSettings: { mode: 0, cpuPlacementStrategy: false, cpuMemoryAI: false, cpuHesitationEnabled: false, cpuMetaAI: false },
+      gameSettings: {
+        mode: 0,
+        cpuPlacementStrategy: false,
+        cpuMemoryAI: false,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
       nextDrawTargetIdx: 1,
       hasDrawn: true,
       lastDrawPlayerIdx: 1,
@@ -712,7 +749,13 @@ describe('OldMaidPage', () => {
         { id: 2, isHuman: false, isFinished: true, cardCount: 0, cards: [] },
       ],
       currentTurn: 0,
-      gameSettings: { mode: 0, cpuPlacementStrategy: false, cpuMemoryAI: false, cpuHesitationEnabled: false, cpuMetaAI: false },
+      gameSettings: {
+        mode: 0,
+        cpuPlacementStrategy: false,
+        cpuMemoryAI: false,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
       nextDrawTargetIdx: 0,
       hasDrawn: true,
       lastDrawPlayerIdx: 0,
@@ -1131,7 +1174,13 @@ describe('OldMaidPage', () => {
       humanAction: null,
       cpuActions: [{ drawPlayerIdx: 1, drawFromIdx: 2, drawnCard: null, discardedPairs: 0, discardedCards: [] }],
       currentTurn: 0,
-      gameSettings: { mode: 0, cpuPlacementStrategy: false, cpuMemoryAI: false, cpuHesitationEnabled: false, cpuMetaAI: false },
+      gameSettings: {
+        mode: 0,
+        cpuPlacementStrategy: false,
+        cpuMemoryAI: false,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
       hasDrawn: true,
       lastDrawPlayerIdx: 1,
       lastDrawFromIdx: 2,

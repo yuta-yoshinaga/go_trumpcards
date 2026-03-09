@@ -1,13 +1,14 @@
 import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { daifugoApi, actionLogApi } from '../api/gameApi';
+import { actionLogApi, daifugoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DaifugoResponse } from '../types/card';
 import { DaifugoPage } from './DaifugoPage';
 
 vi.mock('../api/gameApi', () => ({
-  daifugoApi: { exec: vi.fn() }, actionLogApi: { daifugo: vi.fn() }
+  daifugoApi: { exec: vi.fn() },
+  actionLogApi: { daifugo: vi.fn() },
 }));
 
 const mockExec = vi.mocked(daifugoApi.exec);

@@ -48,7 +48,8 @@ export function BettingControls({
           value={betAmount}
           onChange={(e) => {
             let v = Number(e.target.value);
-            if ((maxBetAmount ?? 0) > 0 && v > maxBetAmount!) v = maxBetAmount!;
+            const max = maxBetAmount ?? 0;
+            if (max > 0 && v > max) v = max;
             onBetAmountChange(v);
           }}
           className="w-20 px-2 py-1 text-sm rounded bg-white/90 text-gray-900"

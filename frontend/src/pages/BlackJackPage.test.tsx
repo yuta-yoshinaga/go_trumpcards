@@ -1,13 +1,14 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { blackjackApi, actionLogApi } from '../api/gameApi';
+import { actionLogApi, blackjackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BlackJackCpuSeat, BlackJackHand, BlackJackResponse } from '../types/card';
 import { BlackJackPage } from './BlackJackPage';
 
 vi.mock('../api/gameApi', () => ({
-  blackjackApi: { exec: vi.fn() }, actionLogApi: { blackjack: vi.fn() }
+  blackjackApi: { exec: vi.fn() },
+  actionLogApi: { blackjack: vi.fn() },
 }));
 
 const mockExec = vi.mocked(blackjackApi.exec);

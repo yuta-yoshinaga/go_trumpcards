@@ -1,13 +1,14 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doubtApi, actionLogApi } from '../api/gameApi';
+import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
 
 vi.mock('../api/gameApi', () => ({
-  doubtApi: { exec: vi.fn() }, actionLogApi: { doubt: vi.fn() }
+  doubtApi: { exec: vi.fn() },
+  actionLogApi: { doubt: vi.fn() },
 }));
 
 const mockExec = vi.mocked(doubtApi.exec);
@@ -42,7 +43,6 @@ const humanTurnState: DoubtResponse = {
   lastAction: null,
   cpuDoubters: [],
   cpuActions: [],
-      lastAction: null,
   humanAction: null,
   lastDoubtResult: null,
   gameEndFlag: false,

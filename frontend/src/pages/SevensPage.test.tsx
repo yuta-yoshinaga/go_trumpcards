@@ -1,13 +1,14 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sevensApi, actionLogApi } from '../api/gameApi';
+import { actionLogApi, sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevensResponse } from '../types/card';
 import { SevensPage } from './SevensPage';
 
 vi.mock('../api/gameApi', () => ({
-  sevensApi: { exec: vi.fn() }, actionLogApi: { sevens: vi.fn() }
+  sevensApi: { exec: vi.fn() },
+  actionLogApi: { sevens: vi.fn() },
 }));
 
 const mockExec = vi.mocked(sevensApi.exec);
