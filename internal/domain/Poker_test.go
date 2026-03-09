@@ -2446,7 +2446,7 @@ func TestPoker_cpuDecideExchange_StandPatBluff_Conservative(t *testing.T) {
 	}
 }
 
-func TestPoker_cpuDecideExchange_StandPatBluff_NormalPath(t *testing.T) {
+func TestPoker_cpuDecideExchange_StandPatBluff_OnePair(t *testing.T) {
 	pk, pl := setupPokerForHumanAction(PokerPhaseExchange)
 	// Player 3 = Bluffer; give OnePair hand (still below TwoPair threshold)
 	givePlayerHand(pl[3], []*Card{
@@ -2471,6 +2471,24 @@ func TestPoker_cpuDecideExchange_StandPatBluff_NormalPath(t *testing.T) {
 	}
 	assert.True(t, gotBluff, "stand-pat bluff never triggered with OnePair")
 	assert.True(t, gotNormal, "normal exchange never triggered with OnePair")
+}
+
+func TestPoker_cpuDecideExchange_StandPatBluff_DrawHandPrioritized(t *testing.T) {
+	pk, pl := setupPokerForHumanAction(PokerPhaseExchange)
+	// Player 3 = Bluffer (standPatBluffRate=20)
+	// Give a flush draw (4 spades + 1 off-suit) — draw should always win over bluff
+	givePlayerHand(pl[3], []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignSpade, 9, false),
+		NewCard(CardDesignSpade, 11, false),
+		NewCard(CardDesignHeart, 3, false),
+	})
+	for i := 0; i < 1000; i++ {
+		indices := pk.cpuDecideExchange(3)
+		assert.Equal(t, 1, len(indices), "flush draw hand should always exchange 1 card, never stand-pat bluff")
+		assert.Equal(t, 4, indices[0], "should discard the off-suit card")
+	}
 }
 
 // ---------------------------------------------------------------------------
