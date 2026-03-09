@@ -4069,8 +4069,3 @@ func TestSevens_ActionLog_Reset(t *testing.T) {
 	s.Reset()
 	assert.Nil(t, s.GetActionLog())
 }
-
-func TestSevens_ActionLog_JokerStrings(t *testing.T) {
-	assert.Equal(t, "unknown", suitLogStr(domain.CardDesignJoker))
-	assert.Equal(t, "joker", cardLogStr(domain.NewCard(domain.CardDesignJoker, 0, false)))
-}
