@@ -37,13 +37,13 @@ func actionLogToText(entries []*domain.ActionLogEntry) string {
 		if e.PlayerIdx >= 0 {
 			player = fmt.Sprintf("Player %d", e.PlayerIdx)
 		}
-		sb.WriteString(fmt.Sprintf("T%d [%s] %s: %s", e.TurnNumber, player, e.ActionType, e.Detail))
+		fmt.Fprintf(&sb, "T%d [%s] %s: %s", e.TurnNumber, player, e.ActionType, e.Detail)
 		if len(e.Cards) > 0 {
 			cardStrs := make([]string, len(e.Cards))
 			for i, c := range e.Cards {
 				cardStrs[i] = cuiCardStr(c)
 			}
-			sb.WriteString(fmt.Sprintf(" [%s]", strings.Join(cardStrs, ", ")))
+			fmt.Fprintf(&sb, " [%s]", strings.Join(cardStrs, ", "))
 		}
 		sb.WriteString("\n")
 	}
