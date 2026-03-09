@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { ActionLogEntry } from '../types/card';
@@ -24,10 +24,15 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
 
   const textContent = entries.length === 0 ? t('actionLog.empty') : entries.map((e) => formatEntry(e, t)).join('\n');
 
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
   const handleCopy = async () => {
     await navigator.clipboard.writeText(textContent);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
@@ -36,7 +41,9 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'action_log.txt';
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 

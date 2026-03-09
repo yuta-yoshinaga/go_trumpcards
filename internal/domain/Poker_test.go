@@ -3229,5 +3229,5 @@ func TestPoker_ActionLog_Reset(t *testing.T) {
 	// Verify the first entry has TurnNumber 0 (log was reset, not accumulated).
 	log := pk.GetActionLog()
 	assert.NotEmpty(t, log)
-	assert.Equal(t, 0, log[0].TurnNumber, "first entry after reset should have TurnNumber 0")
+	assert.Equal(t, 1, log[0].TurnNumber, "first entry after reset should have TurnNumber 1")
 }

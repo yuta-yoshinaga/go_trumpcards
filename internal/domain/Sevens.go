@@ -1152,7 +1152,7 @@ func (s *Sevens) GetActionLog() []*ActionLogEntry { return s.actionLog }
 // appendLog 棋譜にエントリを追加する
 func (s *Sevens) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
 	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog),
+		TurnNumber: len(s.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,

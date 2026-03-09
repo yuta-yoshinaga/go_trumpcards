@@ -685,7 +685,7 @@ func (o *OldMaid) GetActionLog() []*ActionLogEntry { return o.actionLog }
 // appendLog 棋譜にエントリを追加する
 func (o *OldMaid) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
 	o.actionLog = append(o.actionLog, &ActionLogEntry{
-		TurnNumber: len(o.actionLog),
+		TurnNumber: len(o.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,

@@ -2033,7 +2033,7 @@ func (d *Daifugo) GetActionLog() []*ActionLogEntry { return d.actionLog }
 // appendLog 棋譜にエントリを追加する
 func (d *Daifugo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
 	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: len(d.actionLog),
+		TurnNumber: len(d.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,

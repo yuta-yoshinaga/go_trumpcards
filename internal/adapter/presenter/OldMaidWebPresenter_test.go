@@ -545,6 +545,7 @@ func TestOldMaidWebPresenter_ActionLogOutput(t *testing.T) {
 		entries := []*domain.ActionLogEntry{
 			{TurnNumber: 0, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card", Cards: []*domain.Card{domain.NewCard(domain.CardDesignClover, 7, true)}},
 		}
+		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(mockGame)
@@ -556,6 +557,7 @@ func TestOldMaidWebPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("nil entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockOldMaidGame)
+		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 
 		result := p.ActionLogOutput(mockGame)

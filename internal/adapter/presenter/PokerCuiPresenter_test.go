@@ -638,6 +638,7 @@ func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 		entries := []*domain.ActionLogEntry{
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "exchange", Detail: "exchanged 2 cards"},
 		}
+		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(mockGame)
@@ -650,6 +651,7 @@ func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("nil entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockPokerGame)
+		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 
 		result := p.ActionLogOutput(mockGame)

@@ -2327,7 +2327,7 @@ func TestHoldem_ActionLog_Reset(t *testing.T) {
 	// The log should not accumulate entries from the previous round.
 	// After reset, TurnNumber starts from 0 (sequential index within the new round).
 	assert.NotEmpty(t, log)
-	assert.Equal(t, 0, log[0].TurnNumber, "first entry after reset should have TurnNumber 0")
+	assert.Equal(t, 1, log[0].TurnNumber, "first entry after reset should have TurnNumber 1")
 	// Verify that entries are not accumulated across resets
 	assert.LessOrEqual(t, len(log), firstLogLen+4, "log should not grow unboundedly across resets")
 }

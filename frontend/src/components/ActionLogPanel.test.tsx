@@ -68,7 +68,9 @@ describe('ActionLogPanel', () => {
       .spyOn(document, 'createElement')
       .mockImplementation((tag: string, options?: ElementCreationOptions) => {
         if (tag === 'a') {
-          return { href: '', download: '', click: clickSpy } as unknown as HTMLAnchorElement;
+          const el = originalCreateElement(tag, options) as HTMLAnchorElement;
+          el.click = clickSpy;
+          return el;
         }
         return originalCreateElement(tag, options);
       });

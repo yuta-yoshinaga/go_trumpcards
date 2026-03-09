@@ -40,6 +40,9 @@ func (pwp *PokerWebPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 
 // ActionLogOutput 棋譜をJSON出力
 func (pwp *PokerWebPresenter) ActionLogOutput(p interfaces.PokerGame) string {
+	if !p.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
 	return actionLogToJSON(p.GetActionLog())
 }
 

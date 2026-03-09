@@ -1425,7 +1425,7 @@ func (h *Holdem) GetActionLog() []*ActionLogEntry { return h.actionLog }
 // appendLog 棋譜にエントリを追加する
 func (h *Holdem) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
 	h.actionLog = append(h.actionLog, &ActionLogEntry{
-		TurnNumber: len(h.actionLog),
+		TurnNumber: len(h.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,

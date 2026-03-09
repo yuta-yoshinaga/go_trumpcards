@@ -479,6 +479,7 @@ func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {
 		entries := []*domain.ActionLogEntry{
 			{TurnNumber: 0, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
+		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(mockGame)
@@ -492,6 +493,7 @@ func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("nil entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDoubtGame)
+		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 
 		result := p.ActionLogOutput(mockGame)

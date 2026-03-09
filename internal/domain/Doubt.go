@@ -590,7 +590,7 @@ func (d *Doubt) GetActionLog() []*ActionLogEntry { return d.actionLog }
 // appendLog 棋譜にエントリを追加する
 func (d *Doubt) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
 	d.actionLog = append(d.actionLog, &ActionLogEntry{
-		TurnNumber: d.turnCounter,
+		TurnNumber: len(d.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,

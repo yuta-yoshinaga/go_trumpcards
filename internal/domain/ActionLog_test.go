@@ -29,7 +29,7 @@ func TestActionLogEntry(t *testing.T) {
 
 func TestActionLogEntrySystemEvent(t *testing.T) {
 	entry := &ActionLogEntry{
-		TurnNumber: 0,
+		TurnNumber: 1,
 		PlayerIdx:  -1,
 		ActionType: "result",
 		Detail:     "game ended",

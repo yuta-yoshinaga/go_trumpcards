@@ -168,6 +168,9 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 
 // ActionLogOutput 棋譜をJSON出力
 func (dwp *DaifugoWebPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
+	if !dg.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
 	return actionLogToJSON(dg.GetActionLog())
 }
 

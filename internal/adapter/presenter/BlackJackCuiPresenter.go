@@ -220,6 +220,9 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 
 // ActionLogOutput 棋譜をテキスト出力
 func (bjp *BlackJackCuiPresenter) ActionLogOutput(bj interfaces.BlackJackGame) string {
+	if !bj.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
 	return actionLogToText(bj.GetActionLog())
 }
 

@@ -188,6 +188,9 @@ func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) (stri
 
 // ActionLogOutput 棋譜をJSON出力
 func (hwp *HoldemWebPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
+	if !h.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
 	return actionLogToJSON(h.GetActionLog())
 }
 

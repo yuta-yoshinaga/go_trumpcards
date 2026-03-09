@@ -1023,7 +1023,7 @@ func (p *Poker) GetActionLog() []*ActionLogEntry { return p.actionLog }
 // appendLog 棋譜にエントリを追加する
 func (p *Poker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
 	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog),
+		TurnNumber: len(p.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,

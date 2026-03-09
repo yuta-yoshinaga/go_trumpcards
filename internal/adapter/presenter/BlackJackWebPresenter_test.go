@@ -595,6 +595,7 @@ func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
 		entries := []*domain.ActionLogEntry{
 			{TurnNumber: 0, PlayerIdx: 0, ActionType: "hit", Detail: "drew a card", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, true)}},
 		}
+		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(mockGame)
@@ -606,6 +607,7 @@ func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
 
 	t.Run("nil entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockBlackJackGame)
+		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 
 		result := p.ActionLogOutput(mockGame)

@@ -1424,7 +1424,7 @@ func (b *BlackJack) GetActionLog() []*ActionLogEntry { return b.actionLog }
 // appendLog 棋譜にエントリを追加する
 func (b *BlackJack) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
 	b.actionLog = append(b.actionLog, &ActionLogEntry{
-		TurnNumber: len(b.actionLog),
+		TurnNumber: len(b.actionLog) + 1,
 		PlayerIdx:  playerIdx,
 		ActionType: actionType,
 		Detail:     detail,
