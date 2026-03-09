@@ -13,7 +13,7 @@ func TestSevensConfig_Method(t *testing.T) {
 		cfg := domain.DefaultSevensConfig()
 		assert.False(t, cfg.TunnelEnabled)
 		assert.Equal(t, 0, cfg.JokerCount)
-		assert.False(t, cfg.CpuStrategy)
+		assert.Equal(t, domain.SevensCpuSimple, cfg.CpuStrategy)
 		assert.False(t, cfg.EndStopEnabled)
 	})
 
@@ -21,11 +21,11 @@ func TestSevensConfig_Method(t *testing.T) {
 		cfg := domain.SevensConfig{
 			TunnelEnabled: true,
 			JokerCount:    2,
-			CpuStrategy:   true,
+			CpuStrategy:   domain.SevensCpuStrategic,
 		}
 		assert.True(t, cfg.TunnelEnabled)
 		assert.Equal(t, 2, cfg.JokerCount)
-		assert.True(t, cfg.CpuStrategy)
+		assert.Equal(t, domain.SevensCpuStrategic, cfg.CpuStrategy)
 	})
 
 	t.Run("success DefaultSevensConfig returns MaxPasses 5", func(t *testing.T) {
@@ -42,6 +42,17 @@ func TestSevensConfig_Method(t *testing.T) {
 	t.Run("success SevensConfig MaxPasses can be set to custom value", func(t *testing.T) {
 		cfg := domain.SevensConfig{MaxPasses: 3}
 		assert.Equal(t, 3, cfg.MaxPasses)
+	})
+
+	t.Run("success SevensConfig harassment mode can be set", func(t *testing.T) {
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment}
+		assert.Equal(t, domain.SevensCpuHarassment, cfg.CpuStrategy)
+	})
+
+	t.Run("success CPU strategy constants have expected values", func(t *testing.T) {
+		assert.Equal(t, 0, domain.SevensCpuSimple)
+		assert.Equal(t, 1, domain.SevensCpuStrategic)
+		assert.Equal(t, 2, domain.SevensCpuHarassment)
 	})
 
 	t.Run("success SevensConfig EndStopEnabled can be set", func(t *testing.T) {

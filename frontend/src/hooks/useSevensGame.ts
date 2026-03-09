@@ -8,7 +8,7 @@ export function useSevensGame() {
   const [cfgTunnel, setCfgTunnel] = useState(false);
   const [cfgTunnelSkipWidth, setCfgTunnelSkipWidth] = useState(0);
   const [cfgJokerCount, setCfgJokerCount] = useState(0);
-  const [cfgCpuStrategy, setCfgCpuStrategy] = useState(false);
+  const [cfgCpuStrategy, setCfgCpuStrategy] = useState(0);
   const [cfgMaxPasses, setCfgMaxPasses] = useState(5);
   const [cfgNoJokerFinish, setCfgNoJokerFinish] = useState(false);
   const [cfgJokerReclaim, setCfgJokerReclaim] = useState(false);

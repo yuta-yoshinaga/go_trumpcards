@@ -132,7 +132,7 @@ export interface SevensConfigInput {
   tunnelEnabled?: boolean;
   tunnelSkipWidth?: number;
   jokerCount?: number;
-  cpuStrategy?: boolean;
+  cpuStrategy?: number;
   maxPasses?: number;
   noJokerFinish?: boolean;
   jokerReclaim?: boolean;

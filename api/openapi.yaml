@@ -2298,10 +2298,11 @@ components:
           maximum: 2
           example: 0
         cpuStrategy:
-          type: boolean
+          type: integer
           description: |
-            Enable CPU strategic card selection. Only used with `reset` command.
-          example: false
+            CPU strategy mode (0 = simple, 1 = strategic, 2 = harassment). Only used with `reset` command.
+          enum: [0, 1, 2]
+          example: 0
         maxPasses:
           type: integer
           description: |
@@ -2445,9 +2446,10 @@ components:
           description: Number of joker cards in the deck
           example: 0
         cpuStrategy:
-          type: boolean
-          description: Whether CPU uses strategic card selection
-          example: false
+          type: integer
+          description: CPU strategy mode (0 = simple, 1 = strategic, 2 = harassment)
+          enum: [0, 1, 2]
+          example: 0
         maxPasses:
           type: integer
           description: Maximum number of passes per player (0 = unlimited)

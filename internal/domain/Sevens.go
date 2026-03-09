@@ -493,10 +493,14 @@ type sevensPlay struct {
 // findBestPlay CPUにとって最適な1手を探す
 // 戻り値: cardIdx, targetSuit, targetValue (-1 = 出せるカードなし)
 func (s *Sevens) findBestPlay(player *SevensPlayer) (int, int, int) {
-	if s.config.CpuStrategy {
+	switch s.config.CpuStrategy {
+	case SevensCpuStrategic:
 		return s.findPlayableStrategic(player)
+	case SevensCpuHarassment:
+		return s.findPlayableHarassment(player)
+	default:
+		return s.findPlayableSimple(player)
 	}
-	return s.findPlayableSimple(player)
 }
 
 // findPlayableSimple 最初に見つかった出せるカードを返す (戦略なし)
@@ -728,6 +732,182 @@ func (s *Sevens) evaluateJokerPlays(player *SevensPlayer) (int, int, int) {
 	}
 
 	return bestSuit, bestValue, bestScore
+}
+
+// findPlayableHarassment 嫌がらせ特化で最適な1手を探す
+func (s *Sevens) findPlayableHarassment(player *SevensPlayer) (int, int, int) {
+	var plays []sevensPlay
+	jokerBlocked := s.isJokerBlockedByFinishRule(player) || s.isJokerBlockedByConsecutiveRule(player)
+
+	for i := 0; i < player.GetCardsSize(); i++ {
+		card := player.GetCard(i)
+		if card.GetDesign() == CardDesignJoker {
+			if jokerBlocked {
+				continue
+			}
+			bestSuit, bestValue, bestScore := s.evaluateJokerPlaysHarassment(player)
+			if bestSuit > 0 {
+				plays = append(plays, sevensPlay{
+					cardIdx:     i,
+					targetSuit:  bestSuit,
+					targetValue: bestValue,
+					score:       bestScore,
+				})
+			}
+			continue
+		}
+		if s.IsPlayable(card) {
+			score := s.evaluatePlayHarassment(player, card)
+			plays = append(plays, sevensPlay{
+				cardIdx: i,
+				score:   score,
+			})
+		}
+	}
+
+	if len(plays) == 0 {
+		return -1, 0, 0
+	}
+
+	best := plays[0]
+	for _, p := range plays[1:] {
+		if p.score > best.score {
+			best = p
+		}
+	}
+
+	// パス閾値: <= 0 (戦略モードの < 0 より攻撃的)
+	if best.score <= 0 && (player.GetMaxPasses() == 0 || player.GetPassesUsed() < player.GetMaxPasses()-1) {
+		return -1, 0, 0
+	}
+
+	return best.cardIdx, best.targetSuit, best.targetValue
+}
+
+// evaluatePlayHarassment 嫌がらせ特化の通常カード評価
+// 相手の進行をブロックすることを重視し、相手を助けるプレイを避ける
+func (s *Sevens) evaluatePlayHarassment(player *SevensPlayer, card *Card) int {
+	score := 0
+	suit := card.GetDesign()
+	value := card.GetValue()
+
+	// 下方向の次のカード
+	nextLow := value - 1
+	if s.config.TunnelEnabled && value == 1 {
+		nextLow = 13
+	}
+	if nextLow >= 1 && nextLow <= 13 && !s.isPositionPlaced(suit, nextLow) {
+		score += s.evaluateHarassmentDirection(player, suit, nextLow, -1)
+	}
+
+	// 上方向の次のカード
+	nextHigh := value + 1
+	if s.config.TunnelEnabled && value == 13 {
+		nextHigh = 1
+	}
+	if nextHigh >= 1 && nextHigh <= 13 && !s.isPositionPlaced(suit, nextHigh) {
+		score += s.evaluateHarassmentDirection(player, suit, nextHigh, +1)
+	}
+
+	// カスタムトンネル: ±TunnelSkipWidth 方向の評価
+	if s.config.TunnelSkipWidth >= 2 {
+		skipLow := value - s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			skipLow = wrapValue(skipLow)
+		}
+		if skipLow >= 1 && skipLow <= 13 && !s.isPositionPlaced(suit, skipLow) {
+			score += s.evaluateHarassmentSkipDirection(player, suit, skipLow)
+		}
+		skipHigh := value + s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			skipHigh = wrapValue(skipHigh)
+		}
+		if skipHigh >= 1 && skipHigh <= 13 && !s.isPositionPlaced(suit, skipHigh) {
+			score += s.evaluateHarassmentSkipDirection(player, suit, skipHigh)
+		}
+	}
+
+	return score
+}
+
+// evaluateHarassmentDirection 嫌がらせ特化: ±1方向の評価
+func (s *Sevens) evaluateHarassmentDirection(player *SevensPlayer, suit, nextValue, direction int) int {
+	opponentHoldsNext := s.anyOpponentHasCard(player, suit, nextValue)
+	selfHoldsNext := s.playerHasCard(player, suit, nextValue)
+
+	if opponentHoldsNext {
+		// 相手が次のカードを持っている → 出すと相手を助けてしまう
+		urgency := s.passUrgencyWeight(player)
+		return -3 * urgency
+	}
+	if selfHoldsNext {
+		// 自分が次のカードを持っている
+		blockedCount := s.countWeightedOpponentsBlocked(player, suit, nextValue, direction)
+		if blockedCount > 0 {
+			return 1
+		}
+		return 2
+	}
+	// 誰も持っていない → 相手がブロックされるので良い
+	blockedCount := s.countWeightedOpponentsBlocked(player, suit, nextValue, direction)
+	return 2 * blockedCount
+}
+
+// evaluateHarassmentSkipDirection 嫌がらせ特化: スキップ接続方向の評価
+func (s *Sevens) evaluateHarassmentSkipDirection(player *SevensPlayer, suit, skipValue int) int {
+	opponentHoldsNext := s.anyOpponentHasCard(player, suit, skipValue)
+	selfHoldsNext := s.playerHasCard(player, suit, skipValue)
+
+	if opponentHoldsNext {
+		urgency := s.passUrgencyWeight(player)
+		return -3 * urgency
+	}
+	if selfHoldsNext {
+		blockedCount := s.countOpponentsHoldingCard(player, suit, skipValue)
+		if blockedCount > 0 {
+			return 1
+		}
+		return 2
+	}
+	blockedCount := s.countOpponentsHoldingCard(player, suit, skipValue)
+	return 2 * blockedCount
+}
+
+// evaluateJokerPlaysHarassment ジョーカーの最適な配置先を嫌がらせ特化で評価
+func (s *Sevens) evaluateJokerPlaysHarassment(player *SevensPlayer) (int, int, int) {
+	bestSuit := 0
+	bestValue := 0
+	bestScore := sevensNoScore
+
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		for value := 1; value <= 13; value++ {
+			if !s.isPositionPlayable(suit, value) {
+				continue
+			}
+			tmpCard := NewCard(suit, value, false)
+			score := s.evaluatePlayHarassment(player, tmpCard)
+			if score > bestScore {
+				bestScore = score
+				bestSuit = suit
+				bestValue = value
+			}
+		}
+	}
+
+	return bestSuit, bestValue, bestScore
+}
+
+// anyOpponentHasCard いずれかの対戦相手が指定カードを持っているか
+func (s *Sevens) anyOpponentHasCard(self *SevensPlayer, suit, value int) bool {
+	for _, p := range s.players {
+		if p == self || p.GetIsFinished() {
+			continue
+		}
+		if s.playerHasCard(p, suit, value) {
+			return true
+		}
+	}
+	return false
 }
 
 // playerHasCard プレイヤーが指定スート・値のカードを持っているか

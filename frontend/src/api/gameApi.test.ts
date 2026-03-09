@@ -1064,7 +1064,7 @@ describe('gameApi', () => {
         tableMinVals: [0, 7, 7, 7, 7],
         tableMaxVals: [0, 7, 7, 7, 7],
         tablePlaced: [0, 128, 128, 128, 128],
-        config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
+        config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: 0, maxPasses: 5, noJokerFinish: false },
         gameEndFlag: false,
         cpuActions: [],
         humanAction: null,
@@ -1090,7 +1090,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 6, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 192, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: 0, maxPasses: 5, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: { playerIdx: 0, playedCard: { design: 'SPADE', value: 6 }, targetSuit: 0, targetValue: 0 },
@@ -1114,7 +1114,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: 0, maxPasses: 5, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: { playerIdx: 0, playedCard: null, targetSuit: 0, targetValue: 0 },
@@ -1138,7 +1138,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 6, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 192, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 1, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
+          config: { tunnelEnabled: false, jokerCount: 1, cpuStrategy: 0, maxPasses: 5, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: {
@@ -1172,7 +1172,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 5, noJokerFinish: true },
+          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: 1, maxPasses: 5, noJokerFinish: true },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: null,
@@ -1182,7 +1182,7 @@ describe('gameApi', () => {
       await sevensApi.exec('reset', -1, 0, 0, {
         tunnelEnabled: true,
         jokerCount: 2,
-        cpuStrategy: true,
+        cpuStrategy: 1,
         noJokerFinish: true,
       });
       expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
@@ -1196,7 +1196,7 @@ describe('gameApi', () => {
           sessionId,
           tunnelEnabled: true,
           jokerCount: 2,
-          cpuStrategy: true,
+          cpuStrategy: 1,
           noJokerFinish: true,
         }),
       });
@@ -1210,14 +1210,14 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3, noJokerFinish: false },
+          config: { tunnelEnabled: true, jokerCount: 2, cpuStrategy: 1, maxPasses: 3, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: null,
           message: '',
         }),
       );
-      await sevensApi.exec('reset', -1, 0, 0, { tunnelEnabled: true, jokerCount: 2, cpuStrategy: true, maxPasses: 3 });
+      await sevensApi.exec('reset', -1, 0, 0, { tunnelEnabled: true, jokerCount: 2, cpuStrategy: 1, maxPasses: 3 });
       expect(mockFetch).toHaveBeenCalledWith('/sevens/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1229,7 +1229,7 @@ describe('gameApi', () => {
           sessionId,
           tunnelEnabled: true,
           jokerCount: 2,
-          cpuStrategy: true,
+          cpuStrategy: 1,
           maxPasses: 3,
         }),
       });
@@ -1246,7 +1246,7 @@ describe('gameApi', () => {
           config: {
             tunnelEnabled: false,
             jokerCount: 1,
-            cpuStrategy: false,
+            cpuStrategy: 0,
             maxPasses: 5,
             noJokerFinish: false,
             jokerConsecutiveBanned: true,
@@ -1281,7 +1281,7 @@ describe('gameApi', () => {
           tableMinVals: [0, 7, 7, 7, 7],
           tableMaxVals: [0, 7, 7, 7, 7],
           tablePlaced: [0, 128, 128, 128, 128],
-          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: false, maxPasses: 5, noJokerFinish: false },
+          config: { tunnelEnabled: false, jokerCount: 0, cpuStrategy: 0, maxPasses: 5, noJokerFinish: false },
           gameEndFlag: false,
           cpuActions: [],
           humanAction: null,

@@ -145,7 +145,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output rule header with tunnel", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: false}
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: domain.SevensCpuSimple}
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
@@ -169,7 +169,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output rule header with joker", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
@@ -182,13 +182,26 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output rule header with CPU strategy", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "ルール:")
 		assert.Contains(t, result, "[CPU戦略]")
+	})
+
+	t.Run("success Output rule header with CPU harassment", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[嫌がらせ特化]")
+		assert.NotContains(t, result, "[CPU戦略]")
 	})
 
 	t.Run("success Output no rule header with default config", func(t *testing.T) {

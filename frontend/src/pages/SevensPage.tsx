@@ -62,7 +62,7 @@ export function SevensPage() {
           (state.config.tunnelEnabled ||
             state.config.tunnelSkipWidth >= 2 ||
             state.config.jokerCount > 0 ||
-            state.config.cpuStrategy ||
+            state.config.cpuStrategy !== 0 ||
             state.config.maxPasses !== 5 ||
             state.config.noJokerFinish ||
             state.config.jokerReclaimEnabled ||
@@ -74,7 +74,8 @@ export function SevensPage() {
               {state.config.tunnelSkipWidth >= 2 &&
                 ` ${t('rules.tunnelSkipTag', { width: state.config.tunnelSkipWidth })}`}
               {state.config.jokerCount > 0 && ` ${t('rules.jokerTag', { count: state.config.jokerCount })}`}
-              {state.config.cpuStrategy && ` ${t('rules.cpuStrategy')}`}
+              {state.config.cpuStrategy === 1 && ` ${t('rules.cpuStrategy')}`}
+              {state.config.cpuStrategy === 2 && ` ${t('rules.cpuHarassment')}`}
               {state.config.maxPasses === 0 && ` ${t('rules.passUnlimited')}`}
               {state.config.maxPasses !== 5 &&
                 state.config.maxPasses !== 0 &&
@@ -194,8 +195,16 @@ export function SevensPage() {
             </select>
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgCpuStrategy} onChange={(e) => setCfgCpuStrategy(e.target.checked)} />
             {t('config.cpuStrategy')}
+            <select
+              value={cfgCpuStrategy}
+              onChange={(e) => setCfgCpuStrategy(Number(e.target.value))}
+              className="bg-black/50 text-white rounded px-1 py-0.5"
+            >
+              <option value={0}>{t('config.cpuStrategyOff')}</option>
+              <option value={1}>{t('config.cpuStrategyStrategic')}</option>
+              <option value={2}>{t('config.cpuStrategyHarassment')}</option>
+            </select>
           </label>
           <label className="flex items-center gap-1 cursor-pointer">
             {t('config.passCount')}
