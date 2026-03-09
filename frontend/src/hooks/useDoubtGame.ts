@@ -6,7 +6,12 @@ import { playerName } from '../utils/playerUtils';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 
-export const DEFAULT_DOUBT_CONFIG: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 0 };
+export const DEFAULT_DOUBT_CONFIG: DoubtConfig = {
+  doubtWindowSec: 10,
+  cpuMemoryLevel: 1,
+  penaltyDrawLimit: 0,
+  cpuHesitationEnabled: false,
+};
 
 export const DOUBT_WINDOW_OPTIONS = [3, 5, 10] as const;
 
@@ -91,6 +96,10 @@ export function useDoubtGame() {
     }
   }, []);
 
+  const handleConfigToggle = useCallback((key: keyof DoubtConfig, checked: boolean) => {
+    setDoubtConfig((prev) => ({ ...prev, [key]: checked }));
+  }, []);
+
   useEffect(() => {
     exec('reset', undefined, undefined, undefined, DEFAULT_DOUBT_CONFIG);
   }, [exec]);
@@ -143,6 +152,7 @@ export function useDoubtGame() {
     setClaimedValue,
     stopCountdown,
     handleConfigChange,
+    handleConfigToggle,
     handlePlay,
     handleDoubt,
     handleSkip,

@@ -32,6 +32,7 @@ export function DoubtPage() {
     claimedValue,
     setClaimedValue,
     handleConfigChange,
+    handleConfigToggle,
     handlePlay,
     handleDoubt,
     handleSkip,
@@ -100,6 +101,14 @@ export function DoubtPage() {
                 </option>
               ))}
             </select>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={doubtConfig.cpuHesitationEnabled}
+              onChange={(e) => handleConfigToggle('cpuHesitationEnabled', e.target.checked)}
+            />
+            {t('settings.cpuHesitation')}
           </label>
         </div>
       </details>

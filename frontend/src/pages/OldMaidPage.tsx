@@ -21,6 +21,7 @@ export function OldMaidPage() {
     setupMode,
     setupStrategy,
     setupMemoryAI,
+    setupHesitation,
     gameSettings,
     suspectPins,
     setSuspectPins,
@@ -35,6 +36,7 @@ export function OldMaidPage() {
     setSetupMode,
     setSetupStrategy,
     setSetupMemoryAI,
+    setSetupHesitation,
     setGameSettings,
   } = useOldMaidGame();
 
@@ -44,9 +46,11 @@ export function OldMaidPage() {
         mode={setupMode}
         cpuPlacementStrategy={setupStrategy}
         cpuMemoryAI={setupMemoryAI}
+        cpuHesitationEnabled={setupHesitation}
         onModeChange={setSetupMode}
         onStrategyChange={setSetupStrategy}
         onMemoryAIChange={setSetupMemoryAI}
+        onHesitationChange={setSetupHesitation}
         onStart={handleStart}
         loading={loading}
       />

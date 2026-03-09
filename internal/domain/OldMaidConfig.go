@@ -13,6 +13,7 @@ type OldMaidConfig struct {
 	Mode                 OldMaidMode
 	CpuPlacementStrategy bool // CPU心理戦: 奇数カードを端に配置
 	CpuMemoryAI          bool // CPU記憶AI: 引いた位置を記憶して戦略的に選択
+	CpuHesitationEnabled bool // CPU迷い時間ディレイ
 }
 
 // DefaultOldMaidConfig デフォルト設定を返す

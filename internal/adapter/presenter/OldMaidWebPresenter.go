@@ -48,6 +48,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			DrawnCard:      nil, // CPU drawn card is hidden to preserve game fairness
 			DiscardedPairs: action.DiscardedPairs,
 			DiscardedCards: make([]*controller.WebOutputCard, 0),
+			HesitationMs:   action.HesitationMs,
 		}
 		for _, card := range action.DiscardedCards {
 			a.DiscardedCards = append(a.DiscardedCards, cardToOutput(card))

@@ -1,8 +1,10 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
@@ -262,6 +264,31 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, `"drawnCard":null`)
 		assert.NotContains(t, result, `"drawnCard":{"design`)
 		assert.Contains(t, result, `"discardedPairs":0`)
+	})
+
+	t.Run("success Output cpuActions HesitationMs is passed through", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.SetConfig(domain.OldMaidConfig{CpuHesitationEnabled: true})
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		om.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		om.GetPlayer(2).SetIsFinished(true)
+		om.GetPlayer(3).SetIsFinished(true)
+
+		_ = om.CpuDraw()
+
+		result := towp.Output(om, nil)
+		assert.Contains(t, result, `"hesitationMs":`)
+		var resObj controller.OldMaidWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.NotEmpty(t, resObj.CpuActions)
+		assert.Greater(t, resObj.CpuActions[0].HesitationMs, 0)
 	})
 
 	t.Run("success Output lastDrawPlayer nil hides draw card", func(t *testing.T) {

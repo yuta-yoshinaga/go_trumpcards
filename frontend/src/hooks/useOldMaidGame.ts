@@ -100,10 +100,12 @@ export function useOldMaidGame() {
   const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
   const [setupStrategy, setSetupStrategy] = useState(false);
   const [setupMemoryAI, setSetupMemoryAI] = useState(false);
+  const [setupHesitation, setSetupHesitation] = useState(false);
   const [gameSettings, setGameSettings] = useState<{
     mode: number;
     cpuPlacementStrategy: boolean;
     cpuMemoryAI: boolean;
+    cpuHesitationEnabled: boolean;
   } | null>(null);
   const [suspectPins, setSuspectPins] = useState<Set<number>>(new Set());
   const [shakeKey, setShakeKey] = useState(0);
@@ -144,9 +146,10 @@ export function useOldMaidGame() {
       setDisplayState(res);
       return;
     }
-    for (const step of replayStates) {
-      setDisplayState(step);
-      await delay(REPLAY_DELAY_MS);
+    for (let i = 0; i < replayStates.length; i++) {
+      setDisplayState(replayStates[i]);
+      const actionDelay = res.cpuActions[i]?.hesitationMs || REPLAY_DELAY_MS;
+      await delay(actionDelay);
     }
     setDisplayState(res);
   }, []);
@@ -154,11 +157,24 @@ export function useOldMaidGame() {
   const { loading, error, exec } = useGameApi(oldmaidApi.exec, { onSuccess });
 
   const handleStart = useCallback(() => {
-    const settings = { mode: setupMode, cpuPlacementStrategy: setupStrategy, cpuMemoryAI: setupMemoryAI };
+    const settings = {
+      mode: setupMode,
+      cpuPlacementStrategy: setupStrategy,
+      cpuMemoryAI: setupMemoryAI,
+      cpuHesitationEnabled: setupHesitation,
+    };
     setGameSettings(settings);
     setSuspectPins(new Set());
-    exec('reset', undefined, settings.mode, settings.cpuPlacementStrategy, undefined, settings.cpuMemoryAI);
-  }, [exec, setupMode, setupStrategy, setupMemoryAI]);
+    exec(
+      'reset',
+      undefined,
+      settings.mode,
+      settings.cpuPlacementStrategy,
+      undefined,
+      settings.cpuMemoryAI,
+      settings.cpuHesitationEnabled,
+    );
+  }, [exec, setupMode, setupStrategy, setupMemoryAI, setupHesitation]);
 
   const handleReset = useCallback(() => {
     setSuspectPins(new Set());
@@ -170,6 +186,7 @@ export function useOldMaidGame() {
         gameSettings.cpuPlacementStrategy,
         undefined,
         gameSettings.cpuMemoryAI,
+        gameSettings.cpuHesitationEnabled,
       );
     }
   }, [exec, gameSettings]);
@@ -186,6 +203,7 @@ export function useOldMaidGame() {
     setupMode,
     setupStrategy,
     setupMemoryAI,
+    setupHesitation,
     gameSettings,
     suspectPins,
     setSuspectPins,
@@ -200,6 +218,7 @@ export function useOldMaidGame() {
     setSetupMode,
     setSetupStrategy,
     setSetupMemoryAI,
+    setSetupHesitation,
     setGameSettings,
   };
 }

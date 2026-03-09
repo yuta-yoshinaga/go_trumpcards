@@ -48,6 +48,17 @@ const (
 	tellChanceHard   = 0.05
 )
 
+// 迷い時間ディレイ (ミリ秒) の範囲定数
+const (
+	hesitationBluffFastMin = 300
+	hesitationBluffFastMax = 500
+	hesitationBluffSlowMin = 1200
+	hesitationBluffSlowMax = 1800
+	hesitationHonestMin    = 600
+	hesitationHonestMax    = 1000
+	hesitationBluffFastPct = 0.6 // ブラフ時に速い反応を示す確率
+)
+
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
@@ -75,6 +86,7 @@ type DoubtCpuAction struct {
 	CardCount    int  // 出した枚数
 	IsBluff      bool // ブラフかどうか (CPU のみ追跡)
 	HasTell      bool // テル（緊張の兆候）を見せているか
+	HesitationMs int  // 迷い時間ディレイ (ミリ秒; 0=無効)
 }
 
 // DoubtDoubtResult ダウト解決結果
@@ -275,6 +287,9 @@ func (d *Doubt) CpuPlay() {
 	}
 	if isActuallyBluff {
 		cpuAction.HasTell = rand.Float64() < calcTellChance(d.config.CpuMemoryLevel)
+	}
+	if d.config.CpuHesitationEnabled {
+		cpuAction.HesitationMs = calcDoubtHesitationMs(isActuallyBluff)
 	}
 	d.cpuActions = append(d.cpuActions, cpuAction)
 
@@ -529,6 +544,17 @@ func calcTellChance(level DoubtMemoryLevel) float64 {
 	default:
 		return tellChanceNormal
 	}
+}
+
+// calcDoubtHesitationMs ブラフ状態に応じた迷い時間(ミリ秒)を算出する
+func calcDoubtHesitationMs(isBluff bool) int {
+	if isBluff {
+		if rand.Float64() < hesitationBluffFastPct {
+			return hesitationBluffFastMin + rand.Intn(hesitationBluffFastMax-hesitationBluffFastMin+1)
+		}
+		return hesitationBluffSlowMin + rand.Intn(hesitationBluffSlowMax-hesitationBluffSlowMin+1)
+	}
+	return hesitationHonestMin + rand.Intn(hesitationHonestMax-hesitationHonestMin+1)
 }
 
 // selectMixedCards は手札から claimedValue に一致するカードと一致しないカードを

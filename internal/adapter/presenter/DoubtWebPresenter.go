@@ -130,5 +130,6 @@ func (dwp *DoubtWebPresenter) actionToOutput(a *domain.DoubtCpuAction) *controll
 		ClaimedValue: a.ClaimedValue,
 		CardCount:    a.CardCount,
 		HasTell:      a.HasTell,
+		HesitationMs: a.HesitationMs,
 	}
 }

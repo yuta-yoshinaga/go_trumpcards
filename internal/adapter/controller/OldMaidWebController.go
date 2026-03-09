@@ -17,6 +17,7 @@ type OldMaidWebInput struct {
 	Mode                 int   `json:"mode"`
 	CpuPlacementStrategy bool  `json:"cpuPlacementStrategy"`
 	CpuMemoryAI          bool  `json:"cpuMemoryAI"`
+	CpuHesitationEnabled bool  `json:"cpuHesitationEnabled"`
 }
 
 // OldMaidWebOutputPlayer ババ抜きWebアウトプットプレイヤー
@@ -35,6 +36,7 @@ type OldMaidWebOutputCpuAction struct {
 	DrawnCard      *WebOutputCard   `json:"drawnCard"`
 	DiscardedPairs int              `json:"discardedPairs"`
 	DiscardedCards []*WebOutputCard `json:"discardedCards"`
+	HesitationMs   int              `json:"hesitationMs"`
 }
 
 // OldMaidWebOutputDrawHistoryEntry ゲーム全体の引き履歴エントリ
@@ -99,6 +101,7 @@ func oldMaidDispatch(bc *baseController, w rest.ResponseWriter, omi usecase.OldM
 			Mode:                 domain.OldMaidMode(param.Mode),
 			CpuPlacementStrategy: param.CpuPlacementStrategy,
 			CpuMemoryAI:          param.CpuMemoryAI,
+			CpuHesitationEnabled: param.CpuHesitationEnabled,
 		}
 		bc.writePresenterResponse(w, omi.Reset(cfg))
 	case "d", "draw":

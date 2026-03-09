@@ -17,6 +17,16 @@ func newShuffledDeck(jokerCount int) *TrumpCards {
 	return tc
 }
 
+// 迷い時間ディレイ (ミリ秒) の範囲定数 (OldMaid)
+const (
+	oldMaidHesitationJokerMin  = 1000
+	oldMaidHesitationJokerMax  = 1500
+	oldMaidHesitationPairMin   = 300
+	oldMaidHesitationPairMax   = 500
+	oldMaidHesitationNormalMin = 600
+	oldMaidHesitationNormalMax = 1000
+)
+
 // OldMaidCpuAction CPUの1ターン分の行動記録
 type OldMaidCpuAction struct {
 	DrawPlayerIdx  int     // 引いたプレイヤーインデックス
@@ -24,6 +34,7 @@ type OldMaidCpuAction struct {
 	DrawnCard      *Card   // 引いたカード
 	DiscardedPairs int     // 捨てたペア数
 	DiscardedCards []*Card // 捨てたカード
+	HesitationMs   int     // 迷い時間ディレイ (ミリ秒; 0=無効)
 }
 
 // OldMaidDrawHistoryEntry ゲーム全体の引き履歴の1エントリ
@@ -406,11 +417,27 @@ func (o *OldMaid) CpuDraw() error {
 		DiscardedPairs: o.lastDiscardedPairs,
 		DiscardedCards: o.lastDiscardedCards,
 	}
+	if o.config.CpuHesitationEnabled {
+		drewJoker := card != nil && card.GetDesign() == CardDesignJoker
+		gotPair := o.lastDiscardedPairs > 0
+		action.HesitationMs = calcOldMaidHesitationMs(gotPair, drewJoker)
+	}
 	o.cpuActions = append(o.cpuActions, action)
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
 	return nil
+}
+
+// calcOldMaidHesitationMs 引いたカードの結果に応じた迷い時間(ミリ秒)を算出する
+func calcOldMaidHesitationMs(gotPair bool, drewJoker bool) int {
+	if drewJoker {
+		return oldMaidHesitationJokerMin + rand.Intn(oldMaidHesitationJokerMax-oldMaidHesitationJokerMin+1)
+	}
+	if gotPair {
+		return oldMaidHesitationPairMin + rand.Intn(oldMaidHesitationPairMax-oldMaidHesitationPairMin+1)
+	}
+	return oldMaidHesitationNormalMin + rand.Intn(oldMaidHesitationNormalMax-oldMaidHesitationNormalMin+1)
 }
 
 // detectOddCardIdx プレイヤーの手札から奇数カードのインデックスを検出する (内部処理)

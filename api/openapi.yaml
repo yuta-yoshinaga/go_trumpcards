@@ -1702,6 +1702,11 @@ components:
           description: When true, CPUs remember draw positions and adjust selection strategy
           default: false
           example: false
+        cpuHesitationEnabled:
+          type: boolean
+          description: When true, CPU actions include a hesitation delay (ms) that varies based on draw outcome
+          default: false
+          example: false
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -1762,6 +1767,10 @@ components:
           type: integer
           description: Number of pairs discarded as a result of this draw
           example: 1
+        hesitationMs:
+          type: integer
+          description: CPU hesitation delay in milliseconds (0 when feature is disabled)
+          example: 750
 
     OldMaidDrawHistoryEntry:
       type: object
@@ -2616,6 +2625,14 @@ components:
             Remaining cards are discarded from the game. Defaults to 0 when omitted.
           minimum: 0
           example: 5
+        cpuHesitationEnabled:
+          type: boolean
+          description: |
+            When true, CPU actions include a hesitation delay (ms) that varies based on
+            whether the CPU is bluffing. Bluff → 60% fast (300-500ms), 40% slow (1200-1800ms);
+            honest → medium (600-1000ms). Defaults to false.
+          default: false
+          example: false
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -2682,6 +2699,10 @@ components:
           type: boolean
           description: Whether the CPU showed a visible "tell" (nervousness indicator) during this play
           example: false
+        hesitationMs:
+          type: integer
+          description: CPU hesitation delay in milliseconds (0 when feature is disabled)
+          example: 750
 
     DoubtDoubtResult:
       type: object

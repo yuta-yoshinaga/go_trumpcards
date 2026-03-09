@@ -6,6 +6,7 @@
     "jijiNuki": "Jiji-Nuki (Random card removed)",
     "cpuStrategy": "CPU Psychology (place odd card at edges)",
     "cpuMemoryAI": "CPU Memory AI (remember draw positions for strategic selection)",
+    "cpuHesitation": "CPU Hesitation Delay (reaction speed varies by card drawn)",
     "start": "Start Game"
   },
   "badge": {
