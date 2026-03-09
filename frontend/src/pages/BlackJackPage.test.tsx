@@ -1364,7 +1364,7 @@ describe('BlackJackPage', () => {
       player: { chips: 100 },
       dealer: { chips: 100 },
       currentHandIdx: 0,
-    } as unknown as Record<string, never>);
+    } as unknown as BlackJackResponse);
 
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());

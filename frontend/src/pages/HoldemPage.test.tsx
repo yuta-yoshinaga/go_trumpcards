@@ -1249,7 +1249,7 @@ describe('HoldemPage', () => {
       players: [],
       playerIdx: 0,
       communityCards: [],
-    } as unknown as Record<string, never>);
+    } as unknown as HoldemResponse);
 
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());

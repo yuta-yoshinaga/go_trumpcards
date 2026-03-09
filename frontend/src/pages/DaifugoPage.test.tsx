@@ -929,7 +929,7 @@ describe('DaifugoPage', () => {
       players: [],
       playerIdx: 0,
       lastDiscardedCards: [],
-    } as unknown as Record<string, never>);
+    } as unknown as DaifugoResponse);
 
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());

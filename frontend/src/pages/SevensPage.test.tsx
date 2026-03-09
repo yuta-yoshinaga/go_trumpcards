@@ -1472,7 +1472,7 @@ describe('SevensPage', () => {
       playerIdx: 0,
       tablePlaced: {},
       config: {},
-    } as unknown as Record<string, never>);
+    } as unknown as SevensResponse);
 
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());

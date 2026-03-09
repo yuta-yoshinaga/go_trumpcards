@@ -1276,7 +1276,7 @@ func TestDoubt_MetaAI_CpuUsesAdjustedDoubtChance(t *testing.T) {
 func TestDoubt_MetaAI_CpuUsesAdjustedBluffChance(t *testing.T) {
 	// When human has high doubt accuracy, CPU should bluff less
 	t.Run("CPU bluffs less when human has high doubt accuracy", func(t *testing.T) {
-		trials := 5000
+		trials := 20000
 
 		// Count bluffs WITHOUT meta-AI
 		baselineBluffs := 0

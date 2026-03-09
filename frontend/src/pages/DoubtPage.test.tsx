@@ -1043,7 +1043,7 @@ describe('DoubtPage', () => {
       cpuDoubters: [],
       cpuActions: [],
       lastAction: null,
-    } as unknown as Record<string, never>);
+    } as unknown as DoubtResponse);
 
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());

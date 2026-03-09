@@ -1161,7 +1161,7 @@ describe('PokerPage', () => {
       currentTurn: 0,
       players: [],
       playerIdx: 0,
-    } as unknown as Record<string, never>);
+    } as unknown as PokerResponse);
 
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
