@@ -840,41 +840,42 @@ func (p *Poker) cpuDecideExchangeLowball(idx int) []int {
 		cards[i] = cardInfo{i, v}
 	}
 
-	// ペアを見つけて片方を交換対象にする
+	// ペアを見つけて余分なカードを交換候補にする (優先度高)
 	valueCounts := make(map[int][]int)
 	for _, c := range cards {
 		valueCounts[c.value] = append(valueCounts[c.value], c.idx)
 	}
-	discarded := make(map[int]bool)
+	pairDiscards := []int{}
+	isPairCard := make(map[int]bool)
 	for _, idxList := range valueCounts {
 		if len(idxList) >= 2 {
-			// ペアの余分なカードを捨てる
-			for j := 1; j < len(idxList); j++ {
-				discarded[idxList[j]] = true
+			for _, ci := range idxList {
+				isPairCard[ci] = true
 			}
+			pairDiscards = append(pairDiscards, idxList[1:]...)
 		}
 	}
 
-	// 8以上のカード (Ace=14含む) を交換対象に追加
+	// 8以上の高いカードでペアの一部でないものを候補に追加 (優先度低)
+	highCardDiscards := []int{}
 	for _, c := range cards {
-		if c.value >= 8 && !discarded[c.idx] {
-			discarded[c.idx] = true
+		if c.value >= 8 && !isPairCard[c.idx] {
+			highCardDiscards = append(highCardDiscards, c.idx)
 		}
 	}
 
-	// 交換対象を収集 (最大3枚)
-	for _, c := range cards {
-		if discarded[c.idx] {
-			indices = append(indices, c.idx)
-		}
-	}
-
-	if len(indices) > 3 {
-		// 高い値順にソートして上位3枚を選択
-		sort.Slice(indices, func(i, j int) bool {
-			return cards[indices[i]].value > cards[indices[j]].value
+	// ペア解消を優先し、残り枠を高いカードで埋める (最大3枚)
+	// 5枚ハンドではペア交換候補は最大3枚 (4-of-a-kind)
+	indices = pairDiscards
+	if len(indices) < 3 {
+		sort.Slice(highCardDiscards, func(i, j int) bool {
+			return cards[highCardDiscards[i]].value > cards[highCardDiscards[j]].value
 		})
-		indices = indices[:3]
+		needed := 3 - len(indices)
+		if len(highCardDiscards) > needed {
+			highCardDiscards = highCardDiscards[:needed]
+		}
+		indices = append(indices, highCardDiscards...)
 	}
 
 	return indices

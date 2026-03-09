@@ -978,6 +978,59 @@ func TestFindPotWinnersLowball_SameRankHigherCardsLose(t *testing.T) {
 	assert.Equal(t, []int{0}, winners)
 }
 
+func TestFindPotWinnersLowball_ThirdPlayerBeatsFirst(t *testing.T) {
+	// p0 has OnePair (rank 1), p1 has TwoPair (rank 2), p2 has HighCard (rank 0)
+	// p2 should win (lowest rank)
+	p0 := &mockBettingPlayer{handRank: 1, cards: []*Card{
+		NewCard(CardDesignSpade, 5, false),
+		NewCard(CardDesignHeart, 5, false),
+		NewCard(CardDesignClover, 8, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignSpade, 10, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: 2, cards: []*Card{
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 3, false),
+		NewCard(CardDesignDiamond, 7, false),
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 9, false),
+	}}
+	p2 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	players := []BettingPlayer{p0, p1, p2}
+
+	winners := FindPotWinnersLowball(players, []int{0, 1, 2})
+	assert.Equal(t, []int{2}, winners)
+}
+
+func TestFindPotWinnersLowball_JokerCardValue(t *testing.T) {
+	// Test that Joker cards get value 0 in lowball comparison
+	p0 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignJoker, 0, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	p1 := &mockBettingPlayer{handRank: 0, cards: []*Card{
+		NewCard(CardDesignSpade, 2, false),
+		NewCard(CardDesignHeart, 3, false),
+		NewCard(CardDesignClover, 4, false),
+		NewCard(CardDesignDiamond, 5, false),
+		NewCard(CardDesignSpade, 7, false),
+	}}
+	players := []BettingPlayer{p0, p1}
+
+	// p0 has Joker (value 0) which is lower than p1's 2, so p0 wins
+	winners := FindPotWinnersLowball(players, []int{0, 1})
+	assert.Equal(t, []int{0}, winners)
+}
+
 // --- DistributePotsWithWinnerFunc tests ---
 
 func TestDistributePotsWithWinnerFunc_Lowball(t *testing.T) {

@@ -3006,6 +3006,29 @@ func TestPoker_CpuDecideExchangeLowball_MaxThreeCards(t *testing.T) {
 	assert.Contains(t, indices, 2) // Queen
 }
 
+func TestPoker_CpuDecideExchangeLowball_PairPrioritizedOverHighCards(t *testing.T) {
+	// 7,7,8,9,10 → pair discard (one 7) + high card discards (8,9,10)
+	// Should discard pair duplicate first, then fill with highest non-pair cards
+	pk, players := newLowballPoker()
+	pk.SetPhase(PokerPhaseExchange)
+
+	givePlayerHand(players[1], []*Card{
+		NewCard(CardDesignSpade, 7, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignClover, 8, false),
+		NewCard(CardDesignDiamond, 9, false),
+		NewCard(CardDesignSpade, 10, false),
+	})
+
+	indices := pk.cpuDecideExchangeLowball(1)
+	assert.Equal(t, 3, len(indices))
+	// Pair discard (idx 1) must be included
+	assert.Contains(t, indices, 1)
+	// High cards: 10 (idx 4) and 9 (idx 3) fill remaining 2 slots
+	assert.Contains(t, indices, 4)
+	assert.Contains(t, indices, 3)
+}
+
 func TestPoker_RunCpuExchanges_LowballBranch(t *testing.T) {
 	pk, players := newLowballPoker()
 	pk.SetPhase(PokerPhaseExchange)
