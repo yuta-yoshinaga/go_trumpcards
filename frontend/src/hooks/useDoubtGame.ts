@@ -116,6 +116,13 @@ export function useDoubtGame() {
     if (state.phase === 1 && state.lastAction !== null) {
       const lastActionPlayer = state.players[state.lastAction.playerIdx];
       if (lastActionPlayer && !lastActionPlayer.isHuman) {
+        // CPU hesitation: delay before showing the result and starting countdown
+        const lastCpuAction = state.cpuActions[state.cpuActions.length - 1];
+        const hesMs = lastCpuAction?.hesitationMs ?? 0;
+        if (hesMs > 0) {
+          const timer = setTimeout(() => startCountdown(state.doubtWindowSec), hesMs);
+          return () => clearTimeout(timer);
+        }
         startCountdown(state.doubtWindowSec);
       }
     }

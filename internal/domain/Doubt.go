@@ -48,14 +48,10 @@ const (
 	tellChanceHard   = 0.05
 )
 
-// 迷い時間ディレイ (ミリ秒) の範囲定数
+// ダウト固有の迷い時間ディレイ定数 (共通定数は hesitation.go)
 const (
-	hesitationBluffFastMin = 300
-	hesitationBluffFastMax = 500
 	hesitationBluffSlowMin = 1200
 	hesitationBluffSlowMax = 1800
-	hesitationHonestMin    = 600
-	hesitationHonestMax    = 1000
 	hesitationBluffFastPct = 0.6 // ブラフ時に速い反応を示す確率
 )
 
@@ -550,11 +546,11 @@ func calcTellChance(level DoubtMemoryLevel) float64 {
 func calcDoubtHesitationMs(isBluff bool) int {
 	if isBluff {
 		if rand.Float64() < hesitationBluffFastPct {
-			return hesitationBluffFastMin + rand.Intn(hesitationBluffFastMax-hesitationBluffFastMin+1)
+			return hesitationFastMin + rand.Intn(hesitationFastMax-hesitationFastMin+1)
 		}
 		return hesitationBluffSlowMin + rand.Intn(hesitationBluffSlowMax-hesitationBluffSlowMin+1)
 	}
-	return hesitationHonestMin + rand.Intn(hesitationHonestMax-hesitationHonestMin+1)
+	return hesitationMediumMin + rand.Intn(hesitationMediumMax-hesitationMediumMin+1)
 }
 
 // selectMixedCards は手札から claimedValue に一致するカードと一致しないカードを

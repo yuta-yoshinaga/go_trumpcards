@@ -38,7 +38,7 @@ type DoubtWebOutputAction struct {
 	CardCount    int  `json:"cardCount"`
 	IsBluff      bool `json:"isBluff"`
 	HasTell      bool `json:"hasTell"`
-	HesitationMs int  `json:"hesitationMs"`
+	HesitationMs int  `json:"hesitationMs,omitempty"`
 }
 
 // DoubtWebOutputDoubtResult ダウト解決結果

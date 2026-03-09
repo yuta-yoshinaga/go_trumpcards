@@ -148,6 +148,7 @@ export function useOldMaidGame() {
     }
     for (let i = 0; i < replayStates.length; i++) {
       setDisplayState(replayStates[i]);
+      // hesitationMs is 0 when disabled; || falls back to REPLAY_DELAY_MS (min enabled value is 300ms)
       const actionDelay = res.cpuActions[i]?.hesitationMs || REPLAY_DELAY_MS;
       await delay(actionDelay);
     }

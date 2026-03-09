@@ -228,16 +228,16 @@ func TestCalcOldMaidHesitationMs(t *testing.T) {
 	t.Run("got pair gives fast range", func(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			ms := calcOldMaidHesitationMs(true, false)
-			assert.GreaterOrEqual(t, ms, oldMaidHesitationPairMin)
-			assert.LessOrEqual(t, ms, oldMaidHesitationPairMax)
+			assert.GreaterOrEqual(t, ms, hesitationFastMin)
+			assert.LessOrEqual(t, ms, hesitationFastMax)
 		}
 	})
 
 	t.Run("normal gives medium range", func(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			ms := calcOldMaidHesitationMs(false, false)
-			assert.GreaterOrEqual(t, ms, oldMaidHesitationNormalMin)
-			assert.LessOrEqual(t, ms, oldMaidHesitationNormalMax)
+			assert.GreaterOrEqual(t, ms, hesitationMediumMin)
+			assert.LessOrEqual(t, ms, hesitationMediumMax)
 		}
 	})
 

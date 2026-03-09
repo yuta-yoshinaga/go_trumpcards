@@ -132,8 +132,8 @@ func TestCalcDoubtHesitationMs(t *testing.T) {
 	t.Run("honest gives medium range", func(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			ms := calcDoubtHesitationMs(false)
-			assert.GreaterOrEqual(t, ms, hesitationHonestMin)
-			assert.LessOrEqual(t, ms, hesitationHonestMax)
+			assert.GreaterOrEqual(t, ms, hesitationMediumMin)
+			assert.LessOrEqual(t, ms, hesitationMediumMax)
 		}
 	})
 
@@ -141,7 +141,7 @@ func TestCalcDoubtHesitationMs(t *testing.T) {
 		fastSeen := false
 		for attempt := 0; attempt < 1000; attempt++ {
 			ms := calcDoubtHesitationMs(true)
-			if ms >= hesitationBluffFastMin && ms <= hesitationBluffFastMax {
+			if ms >= hesitationFastMin && ms <= hesitationFastMax {
 				fastSeen = true
 				break
 			}
@@ -164,7 +164,7 @@ func TestCalcDoubtHesitationMs(t *testing.T) {
 	t.Run("bluff values always in valid range", func(t *testing.T) {
 		for i := 0; i < 100; i++ {
 			ms := calcDoubtHesitationMs(true)
-			inFast := ms >= hesitationBluffFastMin && ms <= hesitationBluffFastMax
+			inFast := ms >= hesitationFastMin && ms <= hesitationFastMax
 			inSlow := ms >= hesitationBluffSlowMin && ms <= hesitationBluffSlowMax
 			assert.True(t, inFast || inSlow, "bluff ms=%d out of range", ms)
 		}

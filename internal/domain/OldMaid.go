@@ -17,14 +17,10 @@ func newShuffledDeck(jokerCount int) *TrumpCards {
 	return tc
 }
 
-// 迷い時間ディレイ (ミリ秒) の範囲定数 (OldMaid)
+// OldMaid固有の迷い時間ディレイ定数 (共通定数は hesitation.go)
 const (
-	oldMaidHesitationJokerMin  = 1000
-	oldMaidHesitationJokerMax  = 1500
-	oldMaidHesitationPairMin   = 300
-	oldMaidHesitationPairMax   = 500
-	oldMaidHesitationNormalMin = 600
-	oldMaidHesitationNormalMax = 1000
+	oldMaidHesitationJokerMin = 1000
+	oldMaidHesitationJokerMax = 1500
 )
 
 // OldMaidCpuAction CPUの1ターン分の行動記録
@@ -430,14 +426,16 @@ func (o *OldMaid) CpuDraw() error {
 }
 
 // calcOldMaidHesitationMs 引いたカードの結果に応じた迷い時間(ミリ秒)を算出する
+// Note: ジジ抜きモードではジョーカーがデッキに含まれないため drewJoker は常に false となり、
+// pair/normal の2分岐のみが使われる。
 func calcOldMaidHesitationMs(gotPair bool, drewJoker bool) int {
 	if drewJoker {
 		return oldMaidHesitationJokerMin + rand.Intn(oldMaidHesitationJokerMax-oldMaidHesitationJokerMin+1)
 	}
 	if gotPair {
-		return oldMaidHesitationPairMin + rand.Intn(oldMaidHesitationPairMax-oldMaidHesitationPairMin+1)
+		return hesitationFastMin + rand.Intn(hesitationFastMax-hesitationFastMin+1)
 	}
-	return oldMaidHesitationNormalMin + rand.Intn(oldMaidHesitationNormalMax-oldMaidHesitationNormalMin+1)
+	return hesitationMediumMin + rand.Intn(hesitationMediumMax-hesitationMediumMin+1)
 }
 
 // detectOddCardIdx プレイヤーの手札から奇数カードのインデックスを検出する (内部処理)

@@ -534,6 +534,23 @@ describe('DoubtPage', () => {
     });
   });
 
+  // ── Hesitation delay before countdown ───────────────────────────────────
+
+  it('delays countdown start by hesitationMs when CPU action has hesitation', async () => {
+    const stateWithHesitation: DoubtResponse = {
+      ...doubtPhaseCpuPlayedState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 2, cardCount: 2, isBluff: true, hesitationMs: 500 }],
+    };
+    mockExec.mockResolvedValue(stateWithHesitation);
+    renderWithProviders(<DoubtPage />);
+    // Wait for state to be rendered
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+    // Countdown should NOT appear immediately (hesitation delay of 500ms pending)
+    expect(screen.queryByText(/残り/)).not.toBeInTheDocument();
+    // After hesitation delay passes, countdown starts
+    await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+  });
+
   // ── No countdown in other phases ─────────────────────────────────────────
 
   it('does not show countdown in play phase', async () => {

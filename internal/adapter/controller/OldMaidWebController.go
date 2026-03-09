@@ -36,7 +36,7 @@ type OldMaidWebOutputCpuAction struct {
 	DrawnCard      *WebOutputCard   `json:"drawnCard"`
 	DiscardedPairs int              `json:"discardedPairs"`
 	DiscardedCards []*WebOutputCard `json:"discardedCards"`
-	HesitationMs   int              `json:"hesitationMs"`
+	HesitationMs   int              `json:"hesitationMs,omitempty"`
 }
 
 // OldMaidWebOutputDrawHistoryEntry ゲーム全体の引き履歴エントリ
