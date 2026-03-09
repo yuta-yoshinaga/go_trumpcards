@@ -823,12 +823,40 @@ func TestHearts_NextTrick(t *testing.T) {
 	h := newTestHearts()
 	h.SetPhase(domain.HeartsPhaseTrickEnd)
 	h.SetLeadPlayerIdx(2)
+	h.SetTrickNumber(3)
 
 	h.NextTrick()
 
 	assert.Equal(t, domain.HeartsPhasePlay, h.GetPhase())
 	assert.Equal(t, 2, h.GetCurrentPlayerIdx())
 	assert.Nil(t, h.GetCurrentTrick())
+	assert.Equal(t, 4, h.GetTrickNumber()) // trickNumber incremented
+}
+
+func TestHearts_NextTrick_IncrementsThroughMultipleTricks(t *testing.T) {
+	// Integration test: verify trickNumber increments naturally through
+	// ResolveTrick → NextTrick cycles without manually calling SetTrickNumber
+	h := newTestHearts()
+	h.SetPhase(domain.HeartsPhasePlay)
+	h.SetTrickNumber(1)
+
+	for trick := 1; trick <= 3; trick++ {
+		// Set up a complete trick
+		h.SetPhase(domain.HeartsPhaseTrickEnd)
+		h.SetCurrentTrick([]*domain.HeartsTrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 5, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
+			{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 8, false)},
+		})
+
+		h.ResolveTrick()
+		assert.Equal(t, domain.HeartsPhaseTrickEnd, h.GetPhase())
+
+		h.NextTrick()
+		assert.Equal(t, trick+1, h.GetTrickNumber())
+		assert.Equal(t, domain.HeartsPhasePlay, h.GetPhase())
+	}
 }
 
 func TestHearts_NextTrick_WrongPhase(t *testing.T) {
@@ -2357,49 +2385,15 @@ func TestHearts_GetPlayerCnt(t *testing.T) {
 	assert.Equal(t, 4, h.GetPlayerCnt())
 }
 
-func TestHearts_Reset_PassNone(t *testing.T) {
-	// Need Reset to trigger PassNone path (line 116-119)
-	// This requires roundNumber to be set such that GetPassDirection returns None.
-	// But Reset always sets roundNumber = 1, which is Left.
-	// The only way is if we override the round somehow... but Reset hard-codes to 1.
-	// This branch in Reset is for when GetPassDirection returns None.
-	// Since Reset sets roundNumber=1, this is (1-1)%4=0=Left, never None.
-	// The Reset branch for PassNone is actually dead code in Reset (since roundNumber is always 1).
-	// BUT it's covered in NextRound (which also has same code).
-	// We already cover NextRound_PassNone. The Reset version at line 116 is unreachable.
-	// Let's verify we can at least indirectly test it via NextRound.
+func TestHearts_Reset_AlwaysStartsPassPhase(t *testing.T) {
+	// Reset always sets roundNumber=1, so passDirection is always Left (pass phase)
+	h := newTestHearts()
+	h.Reset()
+	assert.Equal(t, domain.HeartsPhasePass, h.GetPhase())
+	assert.Equal(t, 1, h.GetRoundNumber())
 }
 
-func TestHearts_StartPlayPhase_ElseBranch(t *testing.T) {
-	// Line 500: startPlayPhase when trickNumber != 0 (else branch)
-	// This is called from NextTrick -> sets phase to play, then calls startPlayPhase indirectly?
-	// Actually NextTrick doesn't call startPlayPhase. It's called from ExecutePass.
-	// Let me trace: ExecutePass calls startPlayPhase, which checks trickNumber == 0.
-	// After tricks, NextTrick just sets phase/currentPlayer directly.
-	// startPlayPhase else branch: when trickNumber != 0, sets currentPlayerIdx = leadPlayerIdx.
-	// This is called from NextRound/Reset when PassNone and trickNumber is already set?
-	// Actually in NextRound, trickNumber is set to 0, then startPlayPhase checks if 0.
-	// So the else branch at line 500 is only reached if startPlayPhase is called with trickNumber > 0.
-	// This could happen if... hmm, the code path seems to always reset trickNumber to 0 before calling.
-	// Actually looking at Reset line 92: h.trickNumber = 0, then line 116-121 might call startPlayPhase.
-	// And NextRound line 131: h.trickNumber = 0, then line 148-154 might call startPlayPhase.
-	// So the else branch of startPlayPhase (line 500-502) would only be reached if startPlayPhase
-	// is called outside of Reset/NextRound. It's a private method. Possibly unreachable.
-}
-
-func TestHearts_TrickWinner_EmptyTrick_Direct(t *testing.T) {
-	// trickWinner with empty trick returns 0. But ResolveTrick guards with len check.
-	// This branch is only reachable if trickWinner is called with empty currentTrick.
-	// Since trickWinner is private, it's only called from ResolveTrick which guards.
-	// This is effectively dead code.
-}
-
-func TestHearts_PassTarget_Default(t *testing.T) {
-	// passTarget default case: when dir is HeartsPassNone, returns from.
-	// This is called from ExecutePass, but ExecutePass only runs when phase is pass,
-	// and pass phase is skipped when direction is None.
-	// So this default branch in passTarget is never reached through ExecutePass.
-}
+// Defensive guard tests for private methods are in Hearts_internal_test.go
 
 func TestHearts_PassDirectionStr_Default(t *testing.T) {
 	// passDirectionStr default: only used in ExecutePass log.

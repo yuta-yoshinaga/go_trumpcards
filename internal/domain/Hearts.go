@@ -112,13 +112,8 @@ func (h *Hearts) Reset() {
 	dealAllCards(h.trumpCards, h.players)
 	h.sortAllHands()
 
-	dir := h.GetPassDirection()
-	if dir == HeartsPassNone {
-		h.phase = HeartsPhasePlay
-		h.startPlayPhase()
-	} else {
-		h.phase = HeartsPhasePass
-	}
+	// Reset always sets roundNumber=1, so passDirection is always Left (pass phase)
+	h.phase = HeartsPhasePass
 }
 
 // NextRound 次のラウンドを開始する
@@ -318,6 +313,7 @@ func (h *Hearts) NextTrick() {
 	}
 	h.currentTrick = nil
 	h.currentPlayerIdx = h.leadPlayerIdx
+	h.trickNumber++
 	h.phase = HeartsPhasePlay
 }
 
@@ -889,30 +885,54 @@ func (h *Hearts) cpuPlayNormal(playerIdx int, validIndices []int) int {
 		}
 	}
 
-	// リードスートを持っている場合、勝たないように低いカードを出す
+	// リードスートを持っているか判定
+	hasLeadSuit := false
+	for _, idx := range validIndices {
+		if player.GetCard(idx).GetDesign() == leadSuit {
+			hasLeadSuit = true
+			break
+		}
+	}
+
+	if hasLeadSuit {
+		// フォロースート: トリックに勝たないカード(アンダーカード)を探す
+		underCards := []int{}
+		for _, idx := range validIndices {
+			card := player.GetCard(idx)
+			if card.GetDesign() == leadSuit && card.GetValue() < highestInTrick {
+				underCards = append(underCards, idx)
+			}
+		}
+		if len(underCards) > 0 {
+			// アンダーカードのうち最も高いカードを出す(ポイントを避けつつ高いカードを消費)
+			bestIdx := underCards[0]
+			for _, idx := range underCards[1:] {
+				if player.GetCard(idx).GetValue() > player.GetCard(bestIdx).GetValue() {
+					bestIdx = idx
+				}
+			}
+			return bestIdx
+		}
+		// アンダーカードがない場合、最も低いリードスートカードを出す
+		bestIdx := validIndices[0]
+		for _, idx := range validIndices {
+			card := player.GetCard(idx)
+			if card.GetDesign() == leadSuit && (player.GetCard(bestIdx).GetDesign() != leadSuit || card.GetValue() < player.GetCard(bestIdx).GetValue()) {
+				bestIdx = idx
+			}
+		}
+		return bestIdx
+	}
+
+	// ボイドの場合: ポイントカードを最優先で捨てる、次に高いカード
 	bestIdx := validIndices[0]
-	bestVal := player.GetCard(validIndices[0]).GetValue()
-	isFollowing := player.GetCard(validIndices[0]).GetDesign() == leadSuit
 	for _, idx := range validIndices[1:] {
 		card := player.GetCard(idx)
-		if isFollowing && card.GetDesign() == leadSuit {
-			// トリックに勝たないカードのうち最も高いカード
-			if card.GetValue() < highestInTrick && card.GetValue() > bestVal && bestVal < highestInTrick {
-				bestVal = card.GetValue()
-				bestIdx = idx
-			} else if card.GetValue() < bestVal {
-				bestVal = card.GetValue()
-				bestIdx = idx
-			}
-		} else if !isFollowing {
-			// ボイドの場合: ポイントカードを最優先で捨てる
-			if isPointCard(card) && !isPointCard(player.GetCard(bestIdx)) {
-				bestIdx = idx
-				bestVal = card.GetValue()
-			} else if card.GetValue() > bestVal {
-				bestVal = card.GetValue()
-				bestIdx = idx
-			}
+		bestCard := player.GetCard(bestIdx)
+		if isPointCard(card) && !isPointCard(bestCard) {
+			bestIdx = idx
+		} else if isPointCard(card) == isPointCard(bestCard) && card.GetValue() > bestCard.GetValue() {
+			bestIdx = idx
 		}
 	}
 	return bestIdx
@@ -962,24 +982,35 @@ func (h *Hearts) cpuPlayHard(playerIdx int, validIndices []int) int {
 	}
 
 	if hasLeadSuit {
-		// フォロースート: ポイントが高いトリックを避ける
-		// 安全に勝てない場合は最も低いカードを出す
-		bestIdx := validIndices[0]
-		bestVal := 999
+		// フォロースート: トリックに勝たないカード(アンダーカード)を探す
+		underCards := []int{}
+		overCards := []int{}
 		for _, idx := range validIndices {
 			card := player.GetCard(idx)
 			if card.GetDesign() != leadSuit {
 				continue
 			}
-			// トリックに勝たないカードのうち最も高いカード
 			if card.GetValue() < highestInTrick {
-				if card.GetValue() > player.GetCard(bestIdx).GetValue() || player.GetCard(bestIdx).GetDesign() != leadSuit || player.GetCard(bestIdx).GetValue() >= highestInTrick {
+				underCards = append(underCards, idx)
+			} else {
+				overCards = append(overCards, idx)
+			}
+		}
+		if len(underCards) > 0 {
+			// アンダーカードのうち最も高いカードを出す
+			bestIdx := underCards[0]
+			for _, idx := range underCards[1:] {
+				if player.GetCard(idx).GetValue() > player.GetCard(bestIdx).GetValue() {
 					bestIdx = idx
-					bestVal = card.GetValue()
 				}
-			} else if bestVal == 999 || card.GetValue() < bestVal {
+			}
+			return bestIdx
+		}
+		// アンダーカードがない場合、最も低いオーバーカードを出す
+		bestIdx := overCards[0]
+		for _, idx := range overCards[1:] {
+			if player.GetCard(idx).GetValue() < player.GetCard(bestIdx).GetValue() {
 				bestIdx = idx
-				bestVal = card.GetValue()
 			}
 		}
 		return bestIdx

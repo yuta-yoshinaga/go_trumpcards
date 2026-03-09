@@ -493,6 +493,14 @@ export interface HeartsConfig {
   pointLimit: number;
 }
 
+export const HEARTS_PHASE = {
+  PASS: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
 export interface HeartsResponse {
   players: HeartsPlayerData[];
   phase: number;

@@ -93,7 +93,7 @@ func heartsDispatch(bc *baseController, w rest.ResponseWriter, hi usecase.Hearts
 					cfg.CpuDifficulty = domain.HeartsCpuDifficulty(d)
 				}
 			}
-			if param.Config.PointLimit != nil && *param.Config.PointLimit >= 1 {
+			if param.Config.PointLimit != nil && *param.Config.PointLimit >= 1 && *param.Config.PointLimit <= 1000 {
 				cfg.PointLimit = *param.Config.PointLimit
 			}
 		}

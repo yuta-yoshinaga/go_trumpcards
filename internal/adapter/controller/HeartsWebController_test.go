@@ -370,6 +370,30 @@ func TestHeartsWebController_ResetWithConfig(t *testing.T) {
 		hiMock.AssertCalled(t, "ResetWithConfig", expected)
 	})
 
+	t.Run("point limit exceeding 1000 is ignored", func(t *testing.T) {
+		limit := 1001
+		expected := domain.DefaultHeartsConfig()
+		hiMock := new(usecase.MockHeartsInteractor)
+		hiMock.On("ResetWithConfig", expected).Return(mockOutput)
+
+		factory := func() uc.HeartsInteractorIF { return hiMock }
+		ctrl := controller.NewHeartsWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/hearts/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.HeartsWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "cfg-session-limit-max"},
+			Config:       &controller.HeartsWebConfig{PointLimit: &limit},
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/hearts/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		hiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
 	t.Run("nil config uses defaults", func(t *testing.T) {
 		expected := domain.DefaultHeartsConfig()
 		hiMock := new(usecase.MockHeartsInteractor)

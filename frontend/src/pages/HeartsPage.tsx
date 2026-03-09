@@ -7,6 +7,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { useActionLog } from '../hooks/useActionLog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { HEARTS_PHASE } from '../types/card';
 import { playerName } from '../utils/playerUtils';
 
 const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
@@ -33,11 +34,11 @@ export function HeartsPage() {
   if (!state) return null;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
-  const isPassPhase = state.phase === 0;
-  const isPlayPhase = state.phase === 1;
-  const isTrickEnd = state.phase === 2;
-  const isRoundEnd = state.phase === 3;
-  const isGameEnd = state.phase === 4 || state.gameEndFlag;
+  const isPassPhase = state.phase === HEARTS_PHASE.PASS;
+  const isPlayPhase = state.phase === HEARTS_PHASE.PLAY;
+  const isTrickEnd = state.phase === HEARTS_PHASE.TRICK_END;
+  const isRoundEnd = state.phase === HEARTS_PHASE.ROUND_END;
+  const isGameEnd = state.phase === HEARTS_PHASE.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   return (
@@ -133,10 +134,10 @@ export function HeartsPage() {
           <table className="w-full text-sm text-white/70">
             <thead>
               <tr>
-                <th className="text-left">Player</th>
-                <th>Round</th>
-                <th>Total</th>
-                <th>Tricks</th>
+                <th className="text-left">{t('scoresPlayer')}</th>
+                <th>{t('scoresRound')}</th>
+                <th>{t('scoresTotal')}</th>
+                <th>{t('scoresTricks')}</th>
               </tr>
             </thead>
             <tbody>
