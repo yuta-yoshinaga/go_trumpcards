@@ -228,10 +228,10 @@ func (s *Sevens) isPositionPlayable(suit, value int) bool {
 			low = wrapValue(low)
 			high = wrapValue(high)
 		}
-		if low >= 1 && low <= 13 && s.isPositionPlaced(suit, low) {
+		if low >= 1 && low <= 13 && s.isPositionPlaced(suit, low) { // range check needed when TunnelEnabled=false
 			return true
 		}
-		if high >= 1 && high <= 13 && s.isPositionPlaced(suit, high) {
+		if high >= 1 && high <= 13 && s.isPositionPlaced(suit, high) { // range check needed when TunnelEnabled=false
 			return true
 		}
 	}
@@ -592,7 +592,21 @@ func (s *Sevens) passUrgencyWeight(player *SevensPlayer) int {
 	}
 }
 
-// countWeightedOpponentsBlocked パス残数で重み付けしたブロック相手数をカウント
+// countOpponentsHoldingCard 指定位置のカードを持っている相手の重み付きカウント (スキップ接続の評価用)
+func (s *Sevens) countOpponentsHoldingCard(self *SevensPlayer, suit, value int) int {
+	count := 0
+	for _, p := range s.players {
+		if p == self || p.GetIsFinished() {
+			continue
+		}
+		if s.playerHasCard(p, suit, value) {
+			count += s.passUrgencyWeight(p)
+		}
+	}
+	return count
+}
+
+// countWeightedOpponentsBlocked パス残数で重み付けしたブロック相手数をカウント (±1方向の逐次スキャン用)
 func (s *Sevens) countWeightedOpponentsBlocked(self *SevensPlayer, suit, fromValue, direction int) int {
 	count := 0
 	for _, p := range s.players {
@@ -662,27 +676,28 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 	}
 
 	// カスタムトンネル: ±TunnelSkipWidth 方向の評価
+	// スキップ接続は単一位置のみ評価 (±1のような逐次スキャンではなく、距離Nの1点のみチェック)
 	if s.config.TunnelSkipWidth >= 2 {
 		skipLow := value - s.config.TunnelSkipWidth
 		if s.config.TunnelEnabled {
 			skipLow = wrapValue(skipLow)
 		}
-		if skipLow >= 1 && skipLow <= 13 && !s.isPositionPlaced(suit, skipLow) {
+		if skipLow >= 1 && skipLow <= 13 && !s.isPositionPlaced(suit, skipLow) { // range check needed when TunnelEnabled=false
 			if s.playerHasCard(player, suit, skipLow) {
 				score += 2
 			} else {
-				score -= 1 + s.countWeightedOpponentsBlocked(player, suit, value, -s.config.TunnelSkipWidth)
+				score -= 1 + s.countOpponentsHoldingCard(player, suit, skipLow)
 			}
 		}
 		skipHigh := value + s.config.TunnelSkipWidth
 		if s.config.TunnelEnabled {
 			skipHigh = wrapValue(skipHigh)
 		}
-		if skipHigh >= 1 && skipHigh <= 13 && !s.isPositionPlaced(suit, skipHigh) {
+		if skipHigh >= 1 && skipHigh <= 13 && !s.isPositionPlaced(suit, skipHigh) { // range check needed when TunnelEnabled=false
 			if s.playerHasCard(player, suit, skipHigh) {
 				score += 2
 			} else {
-				score -= 1 + s.countWeightedOpponentsBlocked(player, suit, value, +s.config.TunnelSkipWidth)
+				score -= 1 + s.countOpponentsHoldingCard(player, suit, skipHigh)
 			}
 		}
 	}

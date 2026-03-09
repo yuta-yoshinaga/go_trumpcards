@@ -17,6 +17,7 @@ type SevensConfig struct {
 func DefaultSevensConfig() SevensConfig {
 	return SevensConfig{
 		TunnelEnabled:          false,
+		TunnelSkipWidth:        0,
 		JokerCount:             0,
 		CpuStrategy:            false,
 		MaxPasses:              SevensMaxPasses,
