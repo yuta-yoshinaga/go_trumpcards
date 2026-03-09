@@ -830,47 +830,34 @@ func (s *Sevens) evaluatePlayHarassment(player *SevensPlayer, card *Card) int {
 	return score
 }
 
-// evaluateHarassmentDirection 嫌がらせ特化: ±1方向の評価
-func (s *Sevens) evaluateHarassmentDirection(player *SevensPlayer, suit, nextValue, direction int) int {
-	opponentHoldsNext := s.anyOpponentHasCard(player, suit, nextValue)
-	selfHoldsNext := s.playerHasCard(player, suit, nextValue)
-
-	if opponentHoldsNext {
+// evaluateHarassmentPosition 嫌がらせ特化: プレイ候補先の評価
+func (s *Sevens) evaluateHarassmentPosition(player *SevensPlayer, suit, value, blockedCount int) int {
+	if s.anyOpponentHasCard(player, suit, value) {
 		// 相手が次のカードを持っている → 出すと相手を助けてしまう
 		urgency := s.passUrgencyWeight(player)
 		return -3 * urgency
 	}
-	if selfHoldsNext {
+	if s.playerHasCard(player, suit, value) {
 		// 自分が次のカードを持っている
-		blockedCount := s.countWeightedOpponentsBlocked(player, suit, nextValue, direction)
 		if blockedCount > 0 {
 			return 1
 		}
 		return 2
 	}
 	// 誰も持っていない → 相手がブロックされるので良い
-	blockedCount := s.countWeightedOpponentsBlocked(player, suit, nextValue, direction)
 	return 2 * blockedCount
+}
+
+// evaluateHarassmentDirection 嫌がらせ特化: ±1方向の評価
+func (s *Sevens) evaluateHarassmentDirection(player *SevensPlayer, suit, nextValue, direction int) int {
+	blockedCount := s.countWeightedOpponentsBlocked(player, suit, nextValue, direction)
+	return s.evaluateHarassmentPosition(player, suit, nextValue, blockedCount)
 }
 
 // evaluateHarassmentSkipDirection 嫌がらせ特化: スキップ接続方向の評価
 func (s *Sevens) evaluateHarassmentSkipDirection(player *SevensPlayer, suit, skipValue int) int {
-	opponentHoldsNext := s.anyOpponentHasCard(player, suit, skipValue)
-	selfHoldsNext := s.playerHasCard(player, suit, skipValue)
-
-	if opponentHoldsNext {
-		urgency := s.passUrgencyWeight(player)
-		return -3 * urgency
-	}
-	if selfHoldsNext {
-		blockedCount := s.countOpponentsHoldingCard(player, suit, skipValue)
-		if blockedCount > 0 {
-			return 1
-		}
-		return 2
-	}
 	blockedCount := s.countOpponentsHoldingCard(player, suit, skipValue)
-	return 2 * blockedCount
+	return s.evaluateHarassmentPosition(player, suit, skipValue, blockedCount)
 }
 
 // evaluateJokerPlaysHarassment ジョーカーの最適な配置先を嫌がらせ特化で評価

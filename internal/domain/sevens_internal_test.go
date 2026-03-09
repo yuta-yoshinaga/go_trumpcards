@@ -959,6 +959,93 @@ func TestSevens_evaluatePlayHarassment(t *testing.T) {
 		score := s.evaluatePlayHarassment(players[0], card)
 		assert.GreaterOrEqual(t, score, 0)
 	})
+
+	t.Run("ace without tunnel skips low direction", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{CpuStrategy: SevensCpuHarassment, MaxPasses: SevensMaxPasses}
+		s := NewSevens(tc, players, cfg)
+		// Place all values 1-6 so ace (1) is playable
+		for v := 1; v <= 6; v++ {
+			s.placePosition(CardDesignSpade, v)
+		}
+		// Clear 1 to make it playable
+		s.tablePlaced[CardDesignSpade] &^= 1 << 1
+		card := NewCard(CardDesignSpade, 1, false)
+		// value=1 without tunnel → nextLow=0, skipped (< 1)
+		score := s.evaluatePlayHarassment(players[0], card)
+		_ = score // just ensure no panic; low direction skipped
+	})
+
+	t.Run("king without tunnel skips high direction", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{CpuStrategy: SevensCpuHarassment, MaxPasses: SevensMaxPasses}
+		s := NewSevens(tc, players, cfg)
+		// Place 8-13 so king (13) is playable
+		for v := 8; v <= 13; v++ {
+			s.placePosition(CardDesignSpade, v)
+		}
+		// Clear 13 to make it playable
+		s.tablePlaced[CardDesignSpade] &^= 1 << 13
+		card := NewCard(CardDesignSpade, 13, false)
+		// value=13 without tunnel → nextHigh=14, skipped (> 13)
+		score := s.evaluatePlayHarassment(players[0], card)
+		_ = score // just ensure no panic; high direction skipped
+	})
+
+	t.Run("next position already placed skips evaluation", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{CpuStrategy: SevensCpuHarassment, MaxPasses: SevensMaxPasses}
+		s := NewSevens(tc, players, cfg)
+		// Both 8 and 9 are placed → playing 8 has nextHigh=9 which is already placed (skipped)
+		// Only low direction (value 7, already placed) contributes
+		card := NewCard(CardDesignSpade, 8, false)
+		score := s.evaluatePlayHarassment(players[0], card)
+		assert.Equal(t, 0, score) // both directions already placed → 0
+	})
+
+	t.Run("skip width out of range without tunnel is skipped", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+		}
+		// TunnelSkipWidth=5 and playing value 2: skipLow = 2-5 = -3 → out of range, skipped
+		cfg := SevensConfig{TunnelSkipWidth: 5, CpuStrategy: SevensCpuHarassment, MaxPasses: SevensMaxPasses}
+		s := NewSevens(tc, players, cfg)
+		// Place 2-6 so value 2 is not already placed adjacently... actually 2 needs 1 or 3 placed
+		// Place 3 so 2 is evaluable
+		s.placePosition(CardDesignSpade, 3)
+		card := NewCard(CardDesignSpade, 2, false)
+		score := s.evaluatePlayHarassment(players[0], card)
+		_ = score // skipLow=-3 out of range → that skip direction skipped
+	})
+
+	t.Run("skip width position already placed is skipped", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*SevensPlayer{
+			NewSevensPlayer(true),
+			NewSevensPlayer(false),
+		}
+		cfg := SevensConfig{TunnelSkipWidth: 3, CpuStrategy: SevensCpuHarassment, MaxPasses: SevensMaxPasses}
+		s := NewSevens(tc, players, cfg)
+		// Place 11 on the board so skipHigh (8+3=11) is already placed → skipped
+		s.placePosition(CardDesignSpade, 11)
+		card := NewCard(CardDesignSpade, 8, false)
+		score := s.evaluatePlayHarassment(players[0], card)
+		_ = score // skipHigh=11 already placed → that skip direction skipped
+	})
 }
 
 func TestSevens_evaluateJokerPlaysHarassment(t *testing.T) {

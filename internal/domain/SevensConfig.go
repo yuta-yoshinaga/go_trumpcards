@@ -2,9 +2,9 @@ package domain
 
 // CPU戦略モード定数
 const (
-	SevensCpuSimple     = 0 // シンプル (最初の出せるカード)
-	SevensCpuStrategic  = 1 // 戦略的 (自己利益重視)
-	SevensCpuHarassment = 2 // 嫌がらせ特化 (相手妨害重視)
+	SevensCpuSimple     int = iota // シンプル (最初の出せるカード)
+	SevensCpuStrategic             // 戦略的 (自己利益重視)
+	SevensCpuHarassment            // 嫌がらせ特化 (相手妨害重視)
 )
 
 // SevensConfig 7並べゲーム設定
