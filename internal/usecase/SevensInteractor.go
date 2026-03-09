@@ -12,6 +12,7 @@ type SevensInteractorIF interface {
 	ResetWithConfig(cfg domain.SevensConfig) string
 	Play(idx int) string
 	PlayJoker(cardIdx, targetSuit, targetValue int) string
+	ActionLog() string
 }
 
 // SevensInteractor 7並べインタラクタークラス
@@ -22,12 +23,7 @@ type SevensInteractor struct {
 
 // NewSevensInteractor コンストラクタ
 func NewSevensInteractor(s interfaces.SevensGame, sp presenter.SevensPresenter) *SevensInteractor {
-	if s == nil {
-		panic("SevensInteractor: s must not be nil")
-	}
-	if sp == nil {
-		panic("SevensInteractor: sp must not be nil")
-	}
+	mustNotNil("SevensInteractor", map[string]any{"s": s, "sp": sp})
 	return &SevensInteractor{
 		s:  s,
 		sp: sp,
@@ -78,6 +74,11 @@ func (si *SevensInteractor) PlayJoker(cardIdx, targetSuit, targetValue int) stri
 		si.runCpuTurns()
 	}
 	return si.sp.Output(si.s, err)
+}
+
+// ActionLog 棋譜を出力する
+func (si *SevensInteractor) ActionLog() string {
+	return si.sp.ActionLogOutput(si.s)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

@@ -70,6 +70,19 @@ func (p *Player) PrependCard(card *Card) {
 	p.cards = append([]*Card{card}, p.cards...)
 }
 
+// InsertCard 指定位置にカードを挿入する。位置が範囲外の場合は末尾に追加。
+func (p *Player) InsertCard(card *Card, pos int) {
+	if pos <= 0 {
+		p.cards = append([]*Card{card}, p.cards...)
+		return
+	}
+	if pos >= len(p.cards) {
+		p.cards = append(p.cards, card)
+		return
+	}
+	p.cards = append(p.cards[:pos], append([]*Card{card}, p.cards[pos:]...)...)
+}
+
 // RemoveCard 指定インデックスのカードを手札から取り除いて返す。
 // 範囲外なら nil を返す。
 func (p *Player) RemoveCard(idx int) *Card {

@@ -30,6 +30,8 @@
     "penaltyDrawLimit": "Penalty Limit:",
     "unlimited": "Unlimited",
     "cards": "{{count}} cards",
-    "sec": "{{sec}}s"
+    "sec": "{{sec}}s",
+    "cpuHesitation": "CPU Hesitation Delay",
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
   }
 }

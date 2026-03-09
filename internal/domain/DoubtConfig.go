@@ -14,9 +14,11 @@ const (
 
 // DoubtConfig ダウトゲーム設定
 type DoubtConfig struct {
-	DoubtWindowSec   int
-	CpuMemoryLevel   DoubtMemoryLevel
-	PenaltyDrawLimit int // 0 = unlimited; >0 = loser draws at most N cards
+	DoubtWindowSec       int
+	CpuMemoryLevel       DoubtMemoryLevel
+	PenaltyDrawLimit     int  // 0 = unlimited; >0 = loser draws at most N cards
+	CpuHesitationEnabled bool // CPU迷い時間ディレイ
+	CpuMetaAI            bool // メタAI: セッション内学習
 }
 
 // DefaultDoubtConfig デフォルト設定を返す

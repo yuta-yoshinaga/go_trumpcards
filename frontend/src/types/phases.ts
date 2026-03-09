@@ -13,6 +13,7 @@ export const BjPhase = {
   INSURANCE: 3,
   ACTION: 4,
   END: 5,
+  EARLY_SURRENDER: 6,
 } as const;
 
 // Poker phase constants (sync: internal/domain/Poker.go)
@@ -43,4 +44,12 @@ export const HoldemPhase = {
   RIVER: 4,
   SHOWDOWN: 5,
   END: 6,
+  REBUY: 7,
+} as const;
+
+// Texas Hold'em rebuy phase type constants (sync: internal/domain/Holdem.go)
+export const HoldemRebuyPhaseType = {
+  NONE: 0,
+  REBUY: 1,
+  ADDON: 2,
 } as const;

@@ -11,6 +11,14 @@ type HoldemInteractorIF interface {
 	Reset() string
 	ResetWithConfig(cfg domain.HoldemConfig) string
 	Action(action int, amount int) string
+	GetConfig() domain.HoldemConfig
+	Rebuy() string
+	SkipRebuy() string
+	Addon() string
+	SkipAddon() string
+	Muck() string
+	ShowHand() string
+	ActionLog() string
 }
 
 // HoldemInteractor テキサスホールデムインタラクタークラス
@@ -21,12 +29,7 @@ type HoldemInteractor struct {
 
 // NewHoldemInteractor コンストラクタ
 func NewHoldemInteractor(h interfaces.HoldemGame, hp presenter.HoldemPresenter) *HoldemInteractor {
-	if h == nil {
-		panic("HoldemInteractor: h must not be nil")
-	}
-	if hp == nil {
-		panic("HoldemInteractor: hp must not be nil")
-	}
+	mustNotNil("HoldemInteractor", map[string]any{"h": h, "hp": hp})
 	return &HoldemInteractor{h: h, hp: hp}
 }
 
@@ -38,6 +41,10 @@ func (hi *HoldemInteractor) Reset() string {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
+	// テーブルサイズ変更時はプレイヤーを再構築
+	if cfg.TableSize > 0 && cfg.TableSize != hi.h.GetPlayerCnt() {
+		hi.h.Resize(domain.NewPlayersForTable(cfg.TableSize))
+	}
 	hi.h.SetConfig(cfg)
 	err := hi.h.Reset()
 	return hi.hp.Output(hi.h, err)
@@ -47,4 +54,50 @@ func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
 func (hi *HoldemInteractor) Action(action int, amount int) string {
 	err := hi.h.PlayerAction(action, amount)
 	return hi.hp.Output(hi.h, err)
+}
+
+// GetConfig 現在の設定を取得
+func (hi *HoldemInteractor) GetConfig() domain.HoldemConfig {
+	return hi.h.GetConfig()
+}
+
+// Rebuy リバイ実行
+func (hi *HoldemInteractor) Rebuy() string {
+	err := hi.h.Rebuy()
+	return hi.hp.Output(hi.h, err)
+}
+
+// SkipRebuy リバイ辞退
+func (hi *HoldemInteractor) SkipRebuy() string {
+	err := hi.h.SkipRebuy()
+	return hi.hp.Output(hi.h, err)
+}
+
+// Addon アドオン実行
+func (hi *HoldemInteractor) Addon() string {
+	err := hi.h.Addon()
+	return hi.hp.Output(hi.h, err)
+}
+
+// SkipAddon アドオン辞退
+func (hi *HoldemInteractor) SkipAddon() string {
+	err := hi.h.SkipAddon()
+	return hi.hp.Output(hi.h, err)
+}
+
+// Muck マック (ハンドを伏せる)
+func (hi *HoldemInteractor) Muck() string {
+	err := hi.h.Muck()
+	return hi.hp.Output(hi.h, err)
+}
+
+// ShowHand ハンドを公開する
+func (hi *HoldemInteractor) ShowHand() string {
+	err := hi.h.ShowHand()
+	return hi.hp.Output(hi.h, err)
+}
+
+// ActionLog 棋譜を出力する
+func (hi *HoldemInteractor) ActionLog() string {
+	return hi.hp.ActionLogOutput(hi.h)
 }

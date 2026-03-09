@@ -23,6 +23,12 @@ func (_m *MockDaifugoInteractor) Play(indices []int) string {
 	return ret.Get(0).(string)
 }
 
+// GetConfig モック
+func (_m *MockDaifugoInteractor) GetConfig() domain.DaifugoConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.DaifugoConfig)
+}
+
 // ResetWithConfig モック
 func (_m *MockDaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) string {
 	ret := _m.Called(config)
@@ -32,5 +38,11 @@ func (_m *MockDaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) st
 // Sort モック
 func (_m *MockDaifugoInteractor) Sort(mode domain.DaifugoSortMode) string {
 	ret := _m.Called(mode)
+	return ret.Get(0).(string)
+}
+
+// ActionLog モック
+func (_m *MockDaifugoInteractor) ActionLog() string {
+	ret := _m.Called()
 	return ret.Get(0).(string)
 }

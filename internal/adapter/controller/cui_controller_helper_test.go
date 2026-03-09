@@ -8,6 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestUnknownCommandMessage(t *testing.T) {
+	assert.Equal(t, "コマンドが不明です: foo", unknownCommandMessage("foo"))
+	assert.Equal(t, "コマンドが不明です: ", unknownCommandMessage(""))
+}
+
 func TestExecCuiCommand(t *testing.T) {
 	resetFn := func(args []string) string {
 		if len(args) > 0 {

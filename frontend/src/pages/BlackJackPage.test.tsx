@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { blackjackApi } from '../api/gameApi';
+import { actionLogApi, blackjackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BlackJackCpuSeat, BlackJackHand, BlackJackResponse } from '../types/card';
@@ -8,6 +8,7 @@ import { BlackJackPage } from './BlackJackPage';
 
 vi.mock('../api/gameApi', () => ({
   blackjackApi: { exec: vi.fn() },
+  actionLogApi: { blackjack: vi.fn() },
 }));
 
 const mockExec = vi.mocked(blackjackApi.exec);
@@ -33,6 +34,8 @@ const betPhaseState: BlackJackResponse = {
   doubleAfterSplit: true,
   countingSystem: 0,
   deckPenetration: 75,
+  multiHandCount: 0,
+  surrenderRule: 0,
 };
 
 const baseHand: BlackJackHand = {
@@ -73,6 +76,8 @@ const actionPhaseState: BlackJackResponse = {
   doubleAfterSplit: true,
   countingSystem: 0,
   deckPenetration: 75,
+  multiHandCount: 0,
+  surrenderRule: 0,
 };
 
 const insurancePhaseState: BlackJackResponse = {
@@ -97,6 +102,8 @@ const insurancePhaseState: BlackJackResponse = {
   doubleAfterSplit: true,
   countingSystem: 0,
   deckPenetration: 75,
+  multiHandCount: 0,
+  surrenderRule: 0,
 };
 
 const endPhaseState: BlackJackResponse = {
@@ -144,6 +151,8 @@ const endPhaseState: BlackJackResponse = {
   doubleAfterSplit: true,
   countingSystem: 0,
   deckPenetration: 75,
+  multiHandCount: 0,
+  surrenderRule: 0,
 };
 
 beforeEach(() => {
@@ -748,6 +757,7 @@ describe('BlackJackPage', () => {
   it('shows CPU player hands in action phase when cpuPlayers exist', async () => {
     const cpuSeat: BlackJackCpuSeat = {
       chips: 800,
+      insuranceBet: 0,
       hands: [
         {
           score: 18,
@@ -780,6 +790,7 @@ describe('BlackJackPage', () => {
   it('shows CPU hand flags (busted, doubled, blackjack, surrendered)', async () => {
     const cpuSeat: BlackJackCpuSeat = {
       chips: 800,
+      insuranceBet: 0,
       hands: [
         {
           score: 25,
@@ -815,6 +826,7 @@ describe('BlackJackPage', () => {
   it('shows CPU BJ and SUR flags', async () => {
     const cpuSeat: BlackJackCpuSeat = {
       chips: 800,
+      insuranceBet: 0,
       hands: [
         {
           score: 21,
@@ -849,6 +861,7 @@ describe('BlackJackPage', () => {
   it('shows hand labels when CPU has multiple hands', async () => {
     const cpuSeat: BlackJackCpuSeat = {
       chips: 800,
+      insuranceBet: 0,
       hands: [
         {
           score: 15,
@@ -918,11 +931,13 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 50, undefined, {}));
   });
 
-  it('updates CPU count when selector value is changed', async () => {
+  it('calls setcpucount when CPU count selector value is changed', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByLabelText('CPU人数:')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...betPhaseState, cpuPlayerCount: 2 });
     fireEvent.change(screen.getByLabelText('CPU人数:'), { target: { value: '2' } });
-    expect(screen.getByLabelText('CPU人数:')).toHaveValue('2');
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setcpucount', 2));
   });
 
   it('calls doubledown command when double down button is clicked', async () => {
@@ -964,6 +979,7 @@ describe('BlackJackPage', () => {
         doubleAfterSplit: true,
         countingSystem: 0,
         deckPenetration: 75,
+        surrenderRule: 0,
       }),
     );
   });
@@ -1155,6 +1171,41 @@ describe('BlackJackPage', () => {
     expect(screen.queryByText(/21\+3:/)).not.toBeInTheDocument();
   });
 
+  // --- Multi-hand tests ---
+
+  it('shows hand count selector in bet phase', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ハンド数:')).toBeInTheDocument());
+  });
+
+  it('hand count selector defaults to 1', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('ハンド数:')).toHaveValue('1'));
+  });
+
+  it('sends handCount when hand count is greater than 1', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.change(screen.getByLabelText('ハンド数:'), { target: { value: '2' } });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('bet', 10, undefined, {
+        handCount: 2,
+      }),
+    );
+  });
+
+  it('does not include handCount when hand count is 1', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 10, undefined, {}));
+  });
+
   // --- Auto-advance tests ---
 
   it('shows auto-advance selector in bet phase', async () => {
@@ -1171,5 +1222,161 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+  });
+
+  it('shows CPU insurance bet when insuranceBet > 0', async () => {
+    const cpuSeat: BlackJackCpuSeat = {
+      chips: 800,
+      insuranceBet: 50,
+      hands: [
+        {
+          score: 18,
+          cards: [
+            { design: 'HEART', value: 8 },
+            { design: 'DIAMOND', value: 10 },
+          ],
+          bet: 100,
+          stood: false,
+          doubled: false,
+          busted: false,
+          isBlackJack: false,
+          canSplit: false,
+          surrendered: false,
+          canSurrender: false,
+        },
+      ],
+    };
+    const stateWithCpu: BlackJackResponse = {
+      ...actionPhaseState,
+      cpuPlayerCount: 1,
+      cpuPlayers: [cpuSeat],
+    };
+    mockExec.mockResolvedValue(stateWithCpu);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    expect(screen.getByText('[インシュランス: 50]')).toBeInTheDocument();
+  });
+
+  it('does not show CPU insurance info when insuranceBet is 0', async () => {
+    const cpuSeat: BlackJackCpuSeat = {
+      chips: 800,
+      insuranceBet: 0,
+      hands: [
+        {
+          score: 18,
+          cards: [
+            { design: 'HEART', value: 8 },
+            { design: 'DIAMOND', value: 10 },
+          ],
+          bet: 100,
+          stood: false,
+          doubled: false,
+          busted: false,
+          isBlackJack: false,
+          canSplit: false,
+          surrendered: false,
+          canSurrender: false,
+        },
+      ],
+    };
+    const stateWithCpu: BlackJackResponse = {
+      ...actionPhaseState,
+      cpuPlayerCount: 1,
+      cpuPlayers: [cpuSeat],
+    };
+    mockExec.mockResolvedValue(stateWithCpu);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1 \(800 chips\)/)).toBeInTheDocument());
+    expect(screen.queryByText(/インシュランス/)).not.toBeInTheDocument();
+  });
+
+  // --- Early surrender tests ---
+
+  it('renders early surrender phase controls when phase is 6', async () => {
+    const earlySurrenderState: BlackJackResponse = {
+      ...actionPhaseState,
+      phase: 6,
+    };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'アーリーサレンダー' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '続行' })).toBeInTheDocument();
+  });
+
+  it('calls earlysurrender when surrender button clicked in early surrender phase', async () => {
+    const earlySurrenderState: BlackJackResponse = {
+      ...actionPhaseState,
+      phase: 6,
+    };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'アーリーサレンダー' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('earlysurrender'));
+  });
+
+  it('calls declineearlysurrender when continue button clicked', async () => {
+    const earlySurrenderState: BlackJackResponse = {
+      ...actionPhaseState,
+      phase: 6,
+    };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '続行' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineearlysurrender'));
+  });
+
+  it('shows active hand marker (*) during early surrender phase', async () => {
+    const earlySurrenderState: BlackJackResponse = {
+      ...actionPhaseState,
+      phase: 6,
+    };
+    mockExec.mockResolvedValue(earlySurrenderState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤー手札 \(\*\)/)).toBeInTheDocument());
+  });
+
+  it('syncs surrenderRule from response', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, surrenderRule: 1 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('サレンダー:')).toHaveValue('1'));
+  });
+
+  it('calls setsurrenderrule when surrender rule selector changes', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByLabelText('サレンダー:')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('サレンダー:'), { target: { value: '2' } });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('setsurrenderrule', 2));
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      phase: 5, // BjPhase.END
+      players: [],
+      playerIdx: 0,
+      player: { chips: 100 },
+      dealer: { chips: 100 },
+      currentHandIdx: 0,
+    } as unknown as BlackJackResponse);
+
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.blackjack).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.blackjack).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

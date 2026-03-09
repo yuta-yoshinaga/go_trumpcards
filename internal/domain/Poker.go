@@ -103,6 +103,7 @@ type Poker struct {
 	roundResults  []PokerResult
 	cpuActions    []PokerCpuAction
 	cpuExchanges  []PokerCpuExchange
+	actionLog     []*ActionLogEntry
 	gameEndFlag   bool
 	lastCpuError  error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
 }
@@ -136,6 +137,12 @@ func (p *Poker) Reset() error {
 	p.roundResults = make([]PokerResult, 0)
 	p.cpuActions = make([]PokerCpuAction, 0)
 	p.cpuExchanges = make([]PokerCpuExchange, 0)
+	p.actionLog = nil
+
+	// Lowballモードではジョーカーを強制的に0にする
+	if p.config.IsLowball {
+		p.config.JokerCount = 0
+	}
 
 	// デッキをジョーカー枚数に合わせて再生成しシャッフル
 	p.trumpCards = NewTrumpCards(p.config.JokerCount)
@@ -200,7 +207,7 @@ func (p *Poker) Reset() error {
 
 // collectAntes アンティ徴収
 func (p *Poker) collectAntes() {
-	for _, pl := range p.players {
+	for i, pl := range p.players {
 		if pl.GetFolded() {
 			continue
 		}
@@ -210,6 +217,7 @@ func (p *Poker) collectAntes() {
 		}
 		pl.SubtractChips(ante)
 		p.pot += ante
+		p.appendLog(i, "ante", fmt.Sprintf("ante %d chips", ante), nil)
 	}
 }
 
@@ -252,6 +260,7 @@ func (p *Poker) PlayerExchange(indices []int) error {
 		}
 	}
 	p.players[p.currentTurn].SetExchangeCount(len(indices))
+	p.appendLog(p.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
 	p.actedFlags[p.currentTurn] = true
 
 	// 残りのCPU交換を実行
@@ -276,6 +285,7 @@ func (p *Poker) PlayerStand() error {
 	}
 
 	p.players[p.currentTurn].SetExchangeCount(0)
+	p.appendLog(p.currentTurn, "exchange", "exchange 0 card(s)", nil)
 	p.actedFlags[p.currentTurn] = true
 
 	// 残りのCPU交換を実行
@@ -316,6 +326,9 @@ func (p *Poker) executeAction(playerIdx, action, amount int) error {
 	if err != nil {
 		return err
 	}
+
+	// アクションログ記録
+	p.logBettingAction(playerIdx, action, amount)
 
 	// フォールドでアクティブプレイヤーが1人になったらチェック
 	if p.countActivePlayers() == 1 {
@@ -485,16 +498,26 @@ func (p *Poker) resolveLastPlayer() {
 // resolveShowdown ショーダウン: ハンド評価・ポット配分
 func (p *Poker) resolveShowdown() {
 	// ハンド評価
-	for _, pl := range p.players {
+	for i, pl := range p.players {
 		if !pl.GetFolded() {
 			pl.EvalHand()
+			cards := make([]*Card, pl.GetCardsSize())
+			for j := 0; j < pl.GetCardsSize(); j++ {
+				cards[j] = pl.GetCard(j)
+			}
+			p.appendLog(i, "showdown", fmt.Sprintf("showdown: %s", pl.GetHandName()), cards)
 		}
 	}
 
 	// サイドポット計算・配分
 	bp := p.bettingPlayers()
 	p.sidePots = CalculateSidePots(bp, p.pot, p.startingChips)
-	wonAmounts := DistributePots(bp, p.sidePots)
+	var wonAmounts map[int]int
+	if p.config.IsLowball {
+		wonAmounts = DistributePotsWithWinnerFunc(bp, p.sidePots, FindPotWinnersLowball)
+	} else {
+		wonAmounts = DistributePots(bp, p.sidePots)
+	}
 
 	// 結果を構築
 	p.roundResults = make([]PokerResult, 0)
@@ -572,7 +595,12 @@ func (p *Poker) runCpuExchanges() {
 		}
 
 		// CPU交換AI
-		indices := p.cpuDecideExchange(p.currentTurn)
+		var indices []int
+		if p.config.IsLowball {
+			indices = p.cpuDecideExchangeLowball(p.currentTurn)
+		} else {
+			indices = p.cpuDecideExchange(p.currentTurn)
+		}
 		for _, idx := range indices {
 			newCard := p.trumpCards.DrawCard()
 			if newCard != nil {
@@ -580,6 +608,7 @@ func (p *Poker) runCpuExchanges() {
 			}
 		}
 		p.players[p.currentTurn].SetExchangeCount(len(indices))
+		p.appendLog(p.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
 		p.cpuExchanges = append(p.cpuExchanges, PokerCpuExchange{
 			PlayerIdx:     p.currentTurn,
 			ExchangeCount: len(indices),
@@ -607,6 +636,11 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 
 	pl.EvalHand()
 	handRank := pl.GetHandRank()
+
+	// Lowballモードではハンドランクを反転 (弱いハンドほど高く評価)
+	if p.config.IsLowball {
+		handRank = PokerHandFiveOfAKind - handRank
+	}
 
 	// 交換枚数読み: 他プレイヤーの交換枚数が少ない場合に警戒
 	exchangeWarning := p.calcExchangeWarning(idx, params.exchangeReadWeight)
@@ -760,6 +794,13 @@ func (p *Poker) cpuDecideExchange(idx int) []int {
 		}
 	}
 
+	// スタンドパットブラフ: 弱い手でも交換しないことで強い手を装う
+	// ドローハンドより後に配置し、有望なドローを無駄にしない
+	params := pokerStyleParamsMap[pl.GetPlayStyle()]
+	if params.standPatBluffRate > 0 && rand.Intn(100) < params.standPatBluffRate {
+		return []int{}
+	}
+
 	if rank == PokerHandOnePair {
 		// ワンペアならペア以外の3枚を交換
 		valueCounts := make(map[int][]int)
@@ -798,6 +839,66 @@ func (p *Poker) cpuDecideExchange(idx int) []int {
 		result = append(result, cards[i].idx)
 	}
 	return result
+}
+
+// cpuDecideExchangeLowball Lowball用CPUカード交換AI
+// ペアがあれば片方を捨てる。8以上の高いカード(Ace=14)を捨てる。最大3枚交換。
+func (p *Poker) cpuDecideExchangeLowball(idx int) []int {
+	pl := p.players[idx]
+
+	// カード値を収集 (Ace=14)
+	type cardInfo struct {
+		idx   int
+		value int
+	}
+	cards := make([]cardInfo, pl.GetCardsSize())
+	for i := 0; i < pl.GetCardsSize(); i++ {
+		v := pl.GetCard(i).GetValue()
+		if v == 1 {
+			v = 14
+		}
+		cards[i] = cardInfo{i, v}
+	}
+
+	// ペアを見つけて余分なカードを交換候補にする (優先度高)
+	valueCounts := make(map[int][]int)
+	for _, c := range cards {
+		valueCounts[c.value] = append(valueCounts[c.value], c.idx)
+	}
+	pairDiscards := []int{}
+	isPairCard := make(map[int]bool)
+	for _, idxList := range valueCounts {
+		if len(idxList) >= 2 {
+			for _, ci := range idxList {
+				isPairCard[ci] = true
+			}
+			pairDiscards = append(pairDiscards, idxList[1:]...)
+		}
+	}
+
+	// 8以上の高いカードでペアの一部でないものを候補に追加 (優先度低)
+	highCardDiscards := []int{}
+	for _, c := range cards {
+		if c.value >= 8 && !isPairCard[c.idx] {
+			highCardDiscards = append(highCardDiscards, c.idx)
+		}
+	}
+
+	// ペア解消を優先し、残り枠を高いカードで埋める (最大3枚)
+	// 5枚ハンドではペア交換候補は最大3枚 (4-of-a-kind)
+	indices := pairDiscards
+	if len(indices) < 3 {
+		sort.Slice(highCardDiscards, func(i, j int) bool {
+			return cards[highCardDiscards[i]].value > cards[highCardDiscards[j]].value
+		})
+		needed := 3 - len(indices)
+		if len(highCardDiscards) > needed {
+			highCardDiscards = highCardDiscards[:needed]
+		}
+		indices = append(indices, highCardDiscards...)
+	}
+
+	return indices
 }
 
 // findFlushDrawDiscard 4枚フラッシュドローの外れカード位置を返す
@@ -915,3 +1016,35 @@ func (p *Poker) SetConfig(cfg PokerConfig) { p.config = cfg }
 
 // GetLastCpuError 最後のCPUアクションエラー取得 (テスト・デバッグ用)
 func (p *Poker) GetLastCpuError() error { return p.lastCpuError }
+
+// GetActionLog 棋譜を取得する
+func (p *Poker) GetActionLog() []*ActionLogEntry { return p.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (p *Poker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	p.actionLog = append(p.actionLog, &ActionLogEntry{
+		TurnNumber: len(p.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
+}
+
+// logBettingAction ベッティングアクションをログに記録する
+func (p *Poker) logBettingAction(playerIdx, action, amount int) {
+	switch action {
+	case PokerActionFold:
+		p.appendLog(playerIdx, "fold", "fold", nil)
+	case PokerActionCheck:
+		p.appendLog(playerIdx, "check", "check", nil)
+	case PokerActionCall:
+		p.appendLog(playerIdx, "call", fmt.Sprintf("call %d", p.players[playerIdx].GetCurrentBet()), nil)
+	case PokerActionBet:
+		p.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", p.players[playerIdx].GetCurrentBet()), nil)
+	case PokerActionRaise:
+		p.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", p.players[playerIdx].GetCurrentBet()), nil)
+	case PokerActionAllIn:
+		p.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", p.players[playerIdx].GetCurrentBet()), nil)
+	}
+}

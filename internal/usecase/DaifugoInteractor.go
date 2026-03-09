@@ -11,7 +11,9 @@ type DaifugoInteractorIF interface {
 	Reset() string
 	Play(indices []int) string
 	ResetWithConfig(config domain.DaifugoConfig) string
+	GetConfig() domain.DaifugoConfig
 	Sort(mode domain.DaifugoSortMode) string
+	ActionLog() string
 }
 
 // DaifugoInteractor 大富豪インタラクタークラス
@@ -22,12 +24,7 @@ type DaifugoInteractor struct {
 
 // NewDaifugoInteractor コンストラクタ
 func NewDaifugoInteractor(dg interfaces.DaifugoGame, dgp presenter.DaifugoPresenter) *DaifugoInteractor {
-	if dg == nil {
-		panic("DaifugoInteractor: dg must not be nil")
-	}
-	if dgp == nil {
-		panic("DaifugoInteractor: dgp must not be nil")
-	}
+	mustNotNil("DaifugoInteractor", map[string]any{"dg": dg, "dgp": dgp})
 	return &DaifugoInteractor{
 		dg:  dg,
 		dgp: dgp,
@@ -57,6 +54,11 @@ func (di *DaifugoInteractor) Play(indices []int) string {
 	return di.dgp.Output(di.dg, err)
 }
 
+// GetConfig 現在の設定を返す
+func (di *DaifugoInteractor) GetConfig() domain.DaifugoConfig {
+	return di.dg.GetConfig()
+}
+
 // ResetWithConfig 設定を変更してゲームを初期化
 func (di *DaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) string {
 	di.dg.SetConfig(config)
@@ -69,6 +71,11 @@ func (di *DaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) string
 func (di *DaifugoInteractor) Sort(mode domain.DaifugoSortMode) string {
 	err := di.dg.SortHumanHand(mode)
 	return di.dgp.Output(di.dg, err)
+}
+
+// ActionLog 棋譜を出力する
+func (di *DaifugoInteractor) ActionLog() string {
+	return di.dgp.ActionLogOutput(di.dg)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行

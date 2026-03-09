@@ -24,7 +24,9 @@
     "surrender": "サレンダー",
     "insurance": "インシュランス",
     "decline": "辞退",
-    "bet": "ベット"
+    "bet": "ベット",
+    "earlySurrender": "アーリーサレンダー",
+    "continue": "続行"
   },
   "betAmount": "ベット額:",
   "deckCount": "デッキ数:",
@@ -41,7 +43,15 @@
   },
   "trueCountNA": "TC=N/A",
   "das": "DAS",
+  "surrenderRule": "サレンダー:",
+  "surrenderRuleNames": {
+    "0": "レイト",
+    "1": "アーリー",
+    "2": "無効"
+  },
   "penetration": "ペネトレーション:",
+  "handCount": "ハンド数:",
+  "handCountUnit": "ハンド",
   "autoAdvance": "自動進行:",
   "autoAdvanceSec": "{{sec}}秒",
   "sideBet": {

@@ -29,6 +29,34 @@ func (b BaseWebInput) GetSessionID() string { return b.SessionID }
 // baseController 各WebController共通のレスポンス書き込みロジック
 type baseController struct{}
 
+func derefBool(p *bool) bool {
+	if p == nil {
+		return false
+	}
+	return *p
+}
+
+func derefBoolDefault(p *bool, defaultVal bool) bool {
+	if p == nil {
+		return defaultVal
+	}
+	return *p
+}
+
+func derefInt(p *int) int {
+	if p == nil {
+		return 0
+	}
+	return *p
+}
+
+func derefIntDefault(p *int, defaultVal int) int {
+	if p == nil {
+		return defaultVal
+	}
+	return *p
+}
+
 // writePresenterResponse プレゼンターの出力を再エンコードせず直接書き込む
 func (bc *baseController) writePresenterResponse(w rest.ResponseWriter, responseStr string) {
 	w.WriteHeader(http.StatusOK)
@@ -54,19 +82,12 @@ func execWithSession[P WebInput, T any](
 	store *SessionStore[T],
 	factory func() T,
 	newDefault func(string) any,
-	validate func(P) error,
 	handler func(w rest.ResponseWriter, interactor T, param P) bool,
 ) {
 	var param P
 	if err := r.DecodeJsonPayload(&param); err != nil || param.GetCommand() == "" || param.GetSessionID() == "" {
 		bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
 		return
-	}
-	if validate != nil {
-		if err := validate(param); err != nil {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))
-			return
-		}
 	}
 	if cmd := param.GetCommand(); cmd == "q" || cmd == "quit" {
 		bc.writeJsonResponse(w, http.StatusOK, newDefault("bye."))

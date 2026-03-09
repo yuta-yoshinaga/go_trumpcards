@@ -344,11 +344,87 @@ func FindPotWinners(players []BettingPlayer, eligible []int) []int {
 	return winners
 }
 
-// DistributePots サイドポットの勝者配分を計算しチップを付与
-func DistributePots(players []BettingPlayer, sidePots []SidePot) map[int]int {
+// FindPotWinnersLowball 対象プレイヤーから最弱ハンドのプレイヤーを返す (2-7 Lowball: 低い手が勝ち)
+// ランクが低いほど強い。同ランク時はカード値が低い方が勝つ (Ace=14 always)
+func FindPotWinnersLowball(players []BettingPlayer, eligible []int) []int {
+	bestRank := -1
+	var bestCards []*Card
+	var winners []int
+
+	for _, idx := range eligible {
+		pl := players[idx]
+		if pl.GetFolded() {
+			continue
+		}
+		rank := pl.GetHandRank()
+		cards := pl.GetComparisonCards()
+
+		if bestRank == -1 {
+			bestRank = rank
+			bestCards = cards
+			winners = []int{idx}
+			continue
+		}
+
+		if rank < bestRank {
+			bestRank = rank
+			bestCards = cards
+			winners = []int{idx}
+		} else if rank == bestRank {
+			cmp := compareLowballCards(cards, bestCards)
+			if cmp < 0 {
+				bestCards = cards
+				winners = []int{idx}
+			} else if cmp == 0 {
+				winners = append(winners, idx)
+			}
+		}
+	}
+
+	return winners
+}
+
+// compareLowballCards Lowball用カード比較 (Ace=14常時, 低い方が勝ち)
+// a < b: -1 (aが強い), a > b: 1, a == b: 0
+func compareLowballCards(a, b []*Card) int {
+	aVals := lowballCardValues(a)
+	bVals := lowballCardValues(b)
+	sort.Sort(sort.Reverse(sort.IntSlice(aVals)))
+	sort.Sort(sort.Reverse(sort.IntSlice(bVals)))
+	for i := 0; i < len(aVals); i++ {
+		if aVals[i] < bVals[i] {
+			return -1
+		}
+		if aVals[i] > bVals[i] {
+			return 1
+		}
+	}
+	return 0
+}
+
+// lowballCardValues Lowball用カード値取得 (Ace=14, Joker=0)
+func lowballCardValues(cards []*Card) []int {
+	vals := make([]int, len(cards))
+	for i, c := range cards {
+		if c.GetDesign() == CardDesignJoker {
+			vals[i] = 0
+		} else if c.GetValue() == 1 {
+			vals[i] = 14
+		} else {
+			vals[i] = c.GetValue()
+		}
+	}
+	return vals
+}
+
+// WinnerFunc ポット勝者判定関数型
+type WinnerFunc func(players []BettingPlayer, eligible []int) []int
+
+// DistributePotsWithWinnerFunc サイドポットの勝者配分を計算しチップを付与 (勝者判定関数を指定)
+func DistributePotsWithWinnerFunc(players []BettingPlayer, sidePots []SidePot, winnerFunc WinnerFunc) map[int]int {
 	wonAmounts := make(map[int]int)
 	for _, sp := range sidePots {
-		winners := FindPotWinners(players, sp.EligiblePlayers)
+		winners := winnerFunc(players, sp.EligiblePlayers)
 		if len(winners) == 0 {
 			continue
 		}
@@ -364,6 +440,11 @@ func DistributePots(players []BettingPlayer, sidePots []SidePot) map[int]int {
 		}
 	}
 	return wonAmounts
+}
+
+// DistributePots サイドポットの勝者配分を計算しチップを付与
+func DistributePots(players []BettingPlayer, sidePots []SidePot) map[int]int {
+	return DistributePotsWithWinnerFunc(players, sidePots, FindPotWinners)
 }
 
 // CpuFoldOrCheck コール額がある場合はフォールド、なければチェック

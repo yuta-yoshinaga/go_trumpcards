@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makeDoubtGameForPresenter() (*domain.Doubt, []*domain.DoubtPlayer) {
@@ -273,6 +274,31 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, result, "ゲームから除外されました")
 	})
 
+	t.Run("metaAI status line shown when profile exists", func(t *testing.T) {
+		game, players := makeDoubtGameForPresenter()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		game.SetHumanProfile(&domain.DoubtHumanProfile{
+			GamesPlayed:     2,
+			BluffsByBracket: [3]struct{ Bluffs, Total int }{{1, 2}, {3, 6}, {0, 1}},
+			DoubtCorrect:    1,
+			DoubtTotal:      2,
+		})
+		result := p.Output(game, nil)
+		assert.Contains(t, result, "[メタAI]")
+		assert.Contains(t, result, "適応中")
+		assert.Contains(t, result, "ゲーム数: 2")
+		assert.Contains(t, result, "ブラフ率: 50%")   // 3/6 = 50%
+		assert.Contains(t, result, "ダウト正解率: 50%") // 1/2 = 50%
+	})
+
+	t.Run("no metaAI line when profile is nil", func(t *testing.T) {
+		game, players := makeDoubtGameForPresenter()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		// No SetHumanProfile → profile is nil
+		result := p.Output(game, nil)
+		assert.NotContains(t, result, "[メタAI]")
+	})
+
 	t.Run("getPlayerName for out-of-range index returns 不明", func(t *testing.T) {
 		game, _ := makeDoubtGameForPresenter()
 		game.SetLastDoubtResult(&domain.DoubtDoubtResult{
@@ -286,5 +312,46 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(game, nil)
 		assert.Contains(t, result, "UNKNOWN")
+	})
+}
+
+func TestDoubtCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewDoubtCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDoubtGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)"},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "declared 5, played 1 card(s)")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDoubtGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockDoubtGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

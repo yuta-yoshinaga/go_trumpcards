@@ -1,10 +1,13 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"testing"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -264,6 +267,31 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, `"discardedPairs":0`)
 	})
 
+	t.Run("success Output cpuActions HesitationMs is passed through", func(t *testing.T) {
+		tc := domain.NewTrumpCards(1)
+		players := []*domain.OldMaidPlayer{
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+			domain.NewOldMaidPlayer(false),
+		}
+		om := domain.NewOldMaid(tc, players)
+		om.SetConfig(domain.OldMaidConfig{CpuHesitationEnabled: true})
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		om.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		om.GetPlayer(2).SetIsFinished(true)
+		om.GetPlayer(3).SetIsFinished(true)
+
+		_ = om.CpuDraw()
+
+		result := towp.Output(om, nil)
+		assert.Contains(t, result, `"hesitationMs":`)
+		var resObj controller.OldMaidWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.NotEmpty(t, resObj.CpuActions)
+		assert.Greater(t, resObj.CpuActions[0].HesitationMs, 0)
+	})
+
 	t.Run("success Output lastDrawPlayer nil hides draw card", func(t *testing.T) {
 		om, _ := setupOldMaidWebTest()
 		// Simulate draw having happened with invalid player idx → GetPlayer returns nil
@@ -308,6 +336,43 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 		result := towp.Output(om, nil)
 		// lastDrawPlayer is CPU → lastDrawCard should be null
 		assert.Contains(t, result, `"lastDrawCard":null`)
+	})
+}
+
+func TestOldMaidWebPresenter_MetaAI(t *testing.T) {
+	towp := presenter.NewOldMaidWebPresenter()
+
+	t.Run("metaAI populated when profile exists", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		om.SetHumanProfile(&domain.OldMaidHumanProfile{
+			GamesPlayed:     4,
+			PositionBuckets: [3]int{5, 3, 7},
+			TotalPicks:      15,
+		})
+		result := towp.Output(om, nil)
+		var resObj controller.OldMaidWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.MetaAI)
+		assert.True(t, resObj.MetaAI.Enabled)
+		assert.Equal(t, 4, resObj.MetaAI.GamesPlayed)
+		// EdgePickRate = PickRate(0) + PickRate(2) = 5/15 + 7/15 = 12/15 = 0.8
+		assert.InDelta(t, 0.8, resObj.MetaAI.EdgePickRate, 0.001)
+	})
+
+	t.Run("metaAI omitted when profile is nil", func(t *testing.T) {
+		om, _ := setupOldMaidWebTest()
+		// No SetHumanProfile → profile is nil
+		result := towp.Output(om, nil)
+		var resObj controller.OldMaidWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Nil(t, resObj.MetaAI)
+		// Also verify no metaAI key in raw JSON (omitempty)
+		var raw map[string]interface{}
+		_ = json.Unmarshal([]byte(result), &raw)
+		_, hasMetaAI := raw["metaAI"]
+		assert.False(t, hasMetaAI)
 	})
 }
 
@@ -470,4 +535,44 @@ func TestOldMaidWebPresenter_JijiNuki_GameNotEnd_NoRemovedCard(t *testing.T) {
 	assert.Contains(t, result, `"mode":1`)
 	// Game not ended → removedCard not revealed
 	assert.Contains(t, result, `"removedCard":null`)
+}
+
+func TestOldMaidWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewOldMaidWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockOldMaidGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card", Cards: []*domain.Card{domain.NewCard(domain.CardDesignClover, 7, true)}},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"draw"`)
+		assert.Contains(t, result, `"detail":"drew a card"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockOldMaidGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockOldMaidGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
 }

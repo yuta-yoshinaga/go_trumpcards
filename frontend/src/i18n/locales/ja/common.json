@@ -43,6 +43,17 @@
     "finished": "上がり",
     "thinking": "考え中..."
   },
+  "actionLog": {
+    "title": "棋譜",
+    "view": "棋譜を見る",
+    "copy": "コピー",
+    "download": "ダウンロード",
+    "close": "閉じる",
+    "copied": "コピーしました",
+    "empty": "棋譜はありません。",
+    "system": "SYSTEM",
+    "player": "Player {{idx}}"
+  },
   "label": {
     "result": "結果:",
     "cpuAction": "CPU行動:",
@@ -51,7 +62,8 @@
     "dealer": "ディーラー:",
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
     "chipsWon": "+{{amount}}チップ",
-    "kicker": "キッカー: {{kickers}}"
+    "kicker": "キッカー: {{kickers}}",
+    "mucked": "マック"
   },
   "messageCode": {
     "blackjack.result.draw": "引き分けです。",
@@ -70,6 +82,8 @@
     "holdem.result.gameOver": "ゲーム終了。",
     "holdem.result.win": "あなたの勝ちです。",
     "holdem.result.folded": "フォールドしました。",
-    "holdem.result.lose": "あなたの負けです。"
+    "holdem.result.lose": "あなたの負けです。",
+    "holdem.result.mucked": "マックしました。",
+    "holdem.muck.prompt": "マックしますか?"
   }
 }

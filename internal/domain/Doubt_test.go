@@ -1057,3 +1057,399 @@ func TestDoubt_HasTell(t *testing.T) {
 		assert.False(t, ha.HasTell)
 	})
 }
+
+func TestDoubt_HesitationMs(t *testing.T) {
+	t.Run("HesitationMs is 0 when disabled", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuHesitationEnabled: false})
+		advanceToCpuTurn(game)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+		game.CpuPlay()
+
+		cpuActions := game.GetCpuActions()
+		assert.NotEmpty(t, cpuActions)
+		assert.Equal(t, 0, cpuActions[0].HesitationMs)
+	})
+
+	t.Run("HesitationMs is set when enabled", func(t *testing.T) {
+		hesitationSeen := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuHesitationEnabled: true})
+			advanceToCpuTurn(game)
+			players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+			players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+
+			game.CpuPlay()
+
+			cpuActions := game.GetCpuActions()
+			if len(cpuActions) > 0 && cpuActions[0].HesitationMs > 0 {
+				hesitationSeen = true
+				break
+			}
+		}
+		assert.True(t, hesitationSeen, "HesitationMs should be set when enabled")
+	})
+}
+
+func TestDoubt_MetaAI_ProfileSurvivesReset(t *testing.T) {
+	game, _ := makeDoubtGame()
+	game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+
+	// First Reset creates a new profile
+	game.Reset()
+	profile := game.GetHumanProfile()
+	assert.NotNil(t, profile, "profile should be created on first Reset with CpuMetaAI=true")
+	assert.Equal(t, 0, profile.GamesPlayed, "GamesPlayed should be 0 on first Reset")
+
+	// Record some data on the profile
+	profile.RecordPlay(5, true)
+	profile.RecordDoubt(true)
+	assert.Equal(t, 1, profile.BluffsByBracket[1].Total)
+	assert.Equal(t, 1, profile.DoubtTotal)
+
+	// Second Reset should preserve profile data and increment GamesPlayed
+	game.Reset()
+	profile2 := game.GetHumanProfile()
+	assert.NotNil(t, profile2, "profile should survive Reset")
+	assert.Equal(t, 1, profile2.GamesPlayed, "GamesPlayed should be incremented on second Reset")
+	assert.Equal(t, 1, profile2.BluffsByBracket[1].Total, "recorded data should survive Reset")
+	assert.Equal(t, 1, profile2.DoubtTotal, "doubt data should survive Reset")
+}
+
+func TestDoubt_MetaAI_ProfileNotCreatedWhenDisabled(t *testing.T) {
+	game, _ := makeDoubtGame()
+	// CpuMetaAI defaults to false
+	game.Reset()
+	assert.Nil(t, game.GetHumanProfile(), "profile should be nil when CpuMetaAI is disabled")
+}
+
+func TestDoubt_MetaAI_ResetProfileClearsProfile(t *testing.T) {
+	game, _ := makeDoubtGame()
+	game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+	game.Reset()
+	assert.NotNil(t, game.GetHumanProfile(), "profile should exist after Reset with CpuMetaAI=true")
+
+	game.ResetProfile()
+	assert.Nil(t, game.GetHumanProfile(), "profile should be nil after ResetProfile")
+}
+
+func TestDoubt_MetaAI_PlayerPlayRecordsBluff(t *testing.T) {
+	t.Run("bluff is recorded when card value does not match claimed value", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+		game.SetHumanProfile(&domain.DoubtHumanProfile{})
+
+		// Give human cards: spade 5 and spade 6
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		// Play card index 0 (value=5) but claim value=3 → bluff
+		err := game.PlayerPlay([]int{0}, 3)
+		assert.NoError(t, err)
+
+		profile := game.GetHumanProfile()
+		assert.NotNil(t, profile)
+		// Hand size after play is 1 → bracket 0 (small: 1-4)
+		assert.Equal(t, 1, profile.BluffsByBracket[0].Bluffs, "bluff should be recorded")
+		assert.Equal(t, 1, profile.BluffsByBracket[0].Total, "total should be recorded")
+	})
+
+	t.Run("honest play is recorded when card value matches claimed value", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+		game.SetHumanProfile(&domain.DoubtHumanProfile{})
+
+		// Give human cards: spade 5 and spade 6
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		// Play card index 0 (value=5) and claim value=5 → honest
+		err := game.PlayerPlay([]int{0}, 5)
+		assert.NoError(t, err)
+
+		profile := game.GetHumanProfile()
+		assert.NotNil(t, profile)
+		assert.Equal(t, 0, profile.BluffsByBracket[0].Bluffs, "bluff count should be 0 for honest play")
+		assert.Equal(t, 1, profile.BluffsByBracket[0].Total, "total should be recorded")
+	})
+}
+
+func TestDoubt_MetaAI_ResolveDoubtRecordsHumanDoubtAccuracy(t *testing.T) {
+	t.Run("human doubts a lying CPU - wasCorrect=true recorded", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+		game.SetHumanProfile(&domain.DoubtHumanProfile{})
+
+		// CPU (player 1) played card value=5 but claimed value=3 → lying
+		playedCard := domain.NewCard(domain.CardDesignSpade, 5, false)
+		game.SetLastAction(&domain.DoubtAction{
+			PlayerIdx:    1,
+			ClaimedValue: 3,
+			CardCount:    1,
+			PlayedCards:  []*domain.Card{playedCard},
+		})
+		game.SetPhase(domain.DoubtPhaseDoubt)
+		game.SetTableCards([]*domain.Card{playedCard})
+		// Give CPU 1 a card so it can receive table cards if it loses
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+
+		// Human (player 0) doubts
+		game.ResolveDoubt([]int{0})
+
+		profile := game.GetHumanProfile()
+		assert.NotNil(t, profile)
+		assert.Equal(t, 1, profile.DoubtCorrect, "correct doubt should be recorded")
+		assert.Equal(t, 1, profile.DoubtTotal, "total doubt should be recorded")
+	})
+
+	t.Run("human doubts an honest CPU - wasCorrect=false recorded", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+		game.SetHumanProfile(&domain.DoubtHumanProfile{})
+
+		// CPU (player 1) played card value=3 and claimed value=3 → honest
+		playedCard := domain.NewCard(domain.CardDesignSpade, 3, false)
+		game.SetLastAction(&domain.DoubtAction{
+			PlayerIdx:    1,
+			ClaimedValue: 3,
+			CardCount:    1,
+			PlayedCards:  []*domain.Card{playedCard},
+		})
+		game.SetPhase(domain.DoubtPhaseDoubt)
+		game.SetTableCards([]*domain.Card{playedCard})
+		// Human (player 0) will be the loser, needs cards to receive table
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+
+		// Human (player 0) doubts
+		game.ResolveDoubt([]int{0})
+
+		profile := game.GetHumanProfile()
+		assert.NotNil(t, profile)
+		assert.Equal(t, 0, profile.DoubtCorrect, "incorrect doubt should not increment DoubtCorrect")
+		assert.Equal(t, 1, profile.DoubtTotal, "total doubt should be recorded")
+	})
+}
+
+func TestDoubt_MetaAI_CpuUsesAdjustedDoubtChance(t *testing.T) {
+	// When meta-AI is enabled with a high bluff rate profile, CPU should doubt more
+	// than baseline. Compare doubt frequency with and without meta-AI.
+	t.Run("CPU doubts more when human has high bluff rate", func(t *testing.T) {
+		trials := 5000
+
+		// Count doubts WITHOUT meta-AI
+		baselineDoubts := 0
+		for i := 0; i < trials; i++ {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: false})
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+			_ = game.PlayerPlay([]int{0}, 1)
+			baselineDoubts += len(game.GetCpuDoubters())
+		}
+
+		// Count doubts WITH meta-AI and high bluff rate profile
+		metaDoubts := 0
+		for i := 0; i < trials; i++ {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+			// High bluff rate in all brackets: 90% bluff rate, max adapt
+			profile := &domain.DoubtHumanProfile{GamesPlayed: 5}
+			profile.BluffsByBracket[0] = struct{ Bluffs, Total int }{9, 10}
+			profile.BluffsByBracket[1] = struct{ Bluffs, Total int }{9, 10}
+			profile.BluffsByBracket[2] = struct{ Bluffs, Total int }{9, 10}
+			game.SetHumanProfile(profile)
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+			_ = game.PlayerPlay([]int{0}, 1)
+			metaDoubts += len(game.GetCpuDoubters())
+		}
+
+		// Meta-AI with high bluff rate should produce more doubts than baseline
+		assert.Greater(t, metaDoubts, baselineDoubts,
+			"meta-AI with high bluff rate should cause CPU to doubt more (meta=%d, baseline=%d)", metaDoubts, baselineDoubts)
+	})
+}
+
+func TestDoubt_MetaAI_CpuUsesAdjustedBluffChance(t *testing.T) {
+	// When human has high doubt accuracy, CPU should bluff less
+	t.Run("CPU bluffs less when human has high doubt accuracy", func(t *testing.T) {
+		trials := 20000
+
+		// Count bluffs WITHOUT meta-AI
+		baselineBluffs := 0
+		for i := 0; i < trials; i++ {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: false})
+			advanceToCpuTurn(game)
+			for v := 1; v <= 13; v++ {
+				players[1].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+			}
+			game.CpuPlay()
+			cpuActions := game.GetCpuActions()
+			if len(cpuActions) > 0 && cpuActions[0].IsBluff {
+				baselineBluffs++
+			}
+		}
+
+		// Count bluffs WITH meta-AI and high doubt accuracy profile
+		metaBluffs := 0
+		for i := 0; i < trials; i++ {
+			game, players := makeDoubtGame()
+			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+			// High doubt accuracy: 95%, max adapt
+			profile := &domain.DoubtHumanProfile{GamesPlayed: 5, DoubtCorrect: 19, DoubtTotal: 20}
+			game.SetHumanProfile(profile)
+			advanceToCpuTurn(game)
+			for v := 1; v <= 13; v++ {
+				players[1].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+			}
+			game.CpuPlay()
+			cpuActions := game.GetCpuActions()
+			if len(cpuActions) > 0 && cpuActions[0].IsBluff {
+				metaBluffs++
+			}
+		}
+
+		// Meta-AI with high doubt accuracy should produce fewer bluffs than baseline
+		assert.Less(t, metaBluffs, baselineBluffs,
+			"meta-AI with high doubt accuracy should cause CPU to bluff less (meta=%d, baseline=%d)", metaBluffs, baselineBluffs)
+	})
+}
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestDoubt_ActionLog_PlayerPlay(t *testing.T) {
+	game, players := makeDoubtGame()
+	// Give human 2 cards so game doesn't end
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	game.SetPhase(domain.DoubtPhasePlay)
+
+	err := game.PlayerPlay([]int{0}, 1)
+	assert.NoError(t, err)
+
+	log := game.GetActionLog()
+	assert.GreaterOrEqual(t, len(log), 1)
+	entry := log[0]
+	assert.Equal(t, 0, entry.PlayerIdx)
+	assert.Equal(t, "play", entry.ActionType)
+	assert.Contains(t, entry.Detail, "declared 1")
+	assert.Contains(t, entry.Detail, "1 card(s)")
+	assert.Len(t, entry.Cards, 1)
+}
+
+func TestDoubt_ActionLog_CpuPlay(t *testing.T) {
+	game, players := makeDoubtGame()
+	advanceToCpuTurn(game)
+	// Give CPU 1 enough cards
+	for v := 1; v <= 13; v++ {
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, v, false))
+	}
+	game.CpuPlay()
+
+	log := game.GetActionLog()
+	// Should contain play entries from CPU actions (excluding the nodoubt from advanceToCpuTurn)
+	found := false
+	for _, e := range log {
+		if e.ActionType == "play" && e.PlayerIdx != 0 {
+			found = true
+			assert.NotEmpty(t, e.Detail)
+			assert.NotEmpty(t, e.Cards)
+			break
+		}
+	}
+	assert.True(t, found, "expected CPU play action log entry")
+}
+
+func TestDoubt_ActionLog_ResolveDoubt(t *testing.T) {
+	game, players := makeDoubtGame()
+	// Human plays a card that is a bluff (claims 5 but card is 1)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	game.SetPhase(domain.DoubtPhasePlay)
+	err := game.PlayerPlay([]int{0}, 5) // bluff: card is 1, claims 5
+	assert.NoError(t, err)
+
+	// Set phase to doubt and resolve
+	game.SetPhase(domain.DoubtPhaseDoubt)
+	game.ResolveDoubt([]int{1})
+
+	log := game.GetActionLog()
+	var doubtEntry, penaltyEntry *domain.ActionLogEntry
+	for _, e := range log {
+		if e.ActionType == "doubt" {
+			doubtEntry = e
+		}
+		if e.ActionType == "penalty" {
+			penaltyEntry = e
+		}
+	}
+	assert.NotNil(t, doubtEntry, "expected doubt action log entry")
+	assert.Equal(t, 1, doubtEntry.PlayerIdx)
+	assert.Contains(t, doubtEntry.Detail, "lying")
+	assert.NotNil(t, penaltyEntry, "expected penalty action log entry")
+	assert.Contains(t, penaltyEntry.Detail, "card(s)")
+}
+
+func TestDoubt_ActionLog_SkipDoubt(t *testing.T) {
+	game, players := makeDoubtGame()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	game.SetPhase(domain.DoubtPhasePlay)
+	err := game.PlayerPlay([]int{0}, 1)
+	assert.NoError(t, err)
+
+	game.SetPhase(domain.DoubtPhaseDoubt)
+	game.SkipDoubt()
+
+	log := game.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "nodoubt" {
+			found = true
+			assert.Equal(t, -1, e.PlayerIdx)
+			assert.Equal(t, "no one doubted", e.Detail)
+			break
+		}
+	}
+	assert.True(t, found, "expected nodoubt action log entry")
+}
+
+func TestDoubt_ActionLog_Finish(t *testing.T) {
+	game, players := makeDoubtGame()
+	// Give human exactly 1 card so game ends on play
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	game.SetPhase(domain.DoubtPhasePlay)
+	err := game.PlayerPlay([]int{0}, 1)
+	assert.NoError(t, err)
+	assert.True(t, game.GetGameEndFlag())
+
+	log := game.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "finish" {
+			found = true
+			assert.Equal(t, -1, e.PlayerIdx)
+			assert.Contains(t, e.Detail, "wins")
+			break
+		}
+	}
+	assert.True(t, found, "expected finish action log entry")
+}
+
+func TestDoubt_ActionLog_Reset(t *testing.T) {
+	game, players := makeDoubtGame()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+	game.SetPhase(domain.DoubtPhasePlay)
+	_ = game.PlayerPlay([]int{0}, 1)
+	assert.NotEmpty(t, game.GetActionLog())
+
+	game.Reset()
+	assert.Nil(t, game.GetActionLog())
+}

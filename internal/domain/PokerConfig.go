@@ -26,6 +26,7 @@ type PokerConfig struct {
 	CpuCount     int              // CPU数 (1-3)
 	JokerCount   int              // ジョーカー枚数 (0-2)
 	BettingLimit BettingLimitType // ベッティングリミット
+	IsLowball    bool             // 2-7 Lowball モード
 }
 
 // DefaultPokerConfig デフォルト設定
@@ -58,6 +59,9 @@ type pokerCpuStyleParams struct {
 
 	// 交換枚数読み補正
 	exchangeReadWeight int // 相手の交換枚数少ない → 強い手警戒 (0-100)
+
+	// スタンドパットブラフ
+	standPatBluffRate int // 弱い手でも交換しない確率(%)
 }
 
 // pokerStyleParamsMap スタイルごとのパラメータ
@@ -74,6 +78,7 @@ var pokerStyleParamsMap = map[PokerPlayStyle]pokerCpuStyleParams{
 		secondFoldThreshold: PokerHandHighCard,
 		secondCallMaxMult:   2,
 		exchangeReadWeight:  80,
+		standPatBluffRate:   0,
 	},
 	PokerStyleBalanced: {
 		aggressive:          false,
@@ -87,6 +92,7 @@ var pokerStyleParamsMap = map[PokerPlayStyle]pokerCpuStyleParams{
 		secondFoldThreshold: PokerHandHighCard,
 		secondCallMaxMult:   3,
 		exchangeReadWeight:  50,
+		standPatBluffRate:   5,
 	},
 	PokerStyleAggressive: {
 		aggressive:          true,
@@ -100,6 +106,7 @@ var pokerStyleParamsMap = map[PokerPlayStyle]pokerCpuStyleParams{
 		secondFoldThreshold: PokerHandHighCard,
 		secondCallMaxMult:   5,
 		exchangeReadWeight:  30,
+		standPatBluffRate:   10,
 	},
 	PokerStyleBluffer: {
 		aggressive:          true,
@@ -113,5 +120,6 @@ var pokerStyleParamsMap = map[PokerPlayStyle]pokerCpuStyleParams{
 		secondFoldThreshold: PokerHandHighCard,
 		secondCallMaxMult:   4,
 		exchangeReadWeight:  20,
+		standPatBluffRate:   20,
 	},
 }

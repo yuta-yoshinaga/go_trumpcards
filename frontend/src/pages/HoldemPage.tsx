@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { holdemApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CardBack, CardImage } from '../components/CardImage';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -9,11 +10,11 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { RoundResults } from '../components/RoundResults';
+import { useActionLog } from '../hooks/useActionLog';
 import { useGameApi } from '../hooks/useGameApi';
-import { btnPrimary } from '../styles/buttonStyles';
-
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeStyle } from '../styles/gameConstants';
-import { HoldemPhase } from '../types/phases';
+import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 
 function usePhaseNames(t: (key: string) => string): Record<number, string> {
   return {
@@ -23,6 +24,7 @@ function usePhaseNames(t: (key: string) => string): Record<number, string> {
     [HoldemPhase.RIVER]: t('phase.river'),
     [HoldemPhase.SHOWDOWN]: t('phase.showdown'),
     [HoldemPhase.END]: t('phase.end'),
+    [HoldemPhase.REBUY]: t('phase.rebuy'),
   };
 }
 
@@ -33,6 +35,10 @@ export function HoldemPage() {
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [bettingLimit, setBettingLimit] = useState(0);
+  const [tableSize, setTableSize] = useState(4);
+  const [rebuyEnabled, setRebuyEnabled] = useState(false);
+  const [addonEnabled, setAddonEnabled] = useState(false);
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('holdem');
 
   useEffect(() => {
     exec('reset');
@@ -55,6 +61,11 @@ export function HoldemPage() {
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 0;
+  const isMuckPhase = phase === HoldemPhase.SHOWDOWN && state?.muckAvailable === true;
+  const isRebuyPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.REBUY;
+  const isAddonPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.ADDON;
+  const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
+  const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
@@ -128,6 +139,16 @@ export function HoldemPage() {
 
         {/* Round results */}
         {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
+
+        {/* Action log */}
+        {state?.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       {/* Sticky footer: player hand + buttons */}
@@ -190,6 +211,80 @@ export function HoldemPage() {
 
         <ErrorAlert message={error} />
 
+        {/* Muck/Show controls */}
+        {isMuckPhase && (
+          <div className="mb-2 text-center" data-testid="muck-controls">
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                className={`${btnPrimary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('muck')}
+              >
+                {t('muck.muck')}
+              </button>
+              <button
+                type="button"
+                className="min-w-[90px] rounded bg-gray-500 px-4 py-2 text-sm text-white hover:bg-gray-600 disabled:opacity-50"
+                disabled={loading}
+                onClick={() => exec('show')}
+              >
+                {t('muck.show')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Rebuy/Addon controls */}
+        {isRebuyPhase && (
+          <div className="mb-2 text-center" data-testid="rebuy-controls">
+            <p className="text-white mb-2">
+              {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
+            </p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                className={`${btnPrimary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('rebuy')}
+              >
+                {t('rebuy.accept')}
+              </button>
+              <button
+                type="button"
+                className="min-w-[90px] rounded bg-gray-500 px-4 py-2 text-sm text-white hover:bg-gray-600 disabled:opacity-50"
+                disabled={loading}
+                onClick={() => exec('skiprebuy')}
+              >
+                {t('rebuy.skip')}
+              </button>
+            </div>
+          </div>
+        )}
+        {isAddonPhase && (
+          <div className="mb-2 text-center" data-testid="addon-controls">
+            <p className="text-white mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+            <div className="flex justify-center gap-2">
+              <button
+                type="button"
+                className={`${btnPrimary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('addon')}
+              >
+                {t('addon.accept')}
+              </button>
+              <button
+                type="button"
+                className="min-w-[90px] rounded bg-gray-500 px-4 py-2 text-sm text-white hover:bg-gray-600 disabled:opacity-50"
+                disabled={loading}
+                onClick={() => exec('skipaddon')}
+              >
+                {t('addon.skip')}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Betting controls */}
         {canAct && (
           <BettingControls
@@ -223,11 +318,34 @@ export function HoldemPage() {
               <option value={2}>{tc('betting.noLimit')}</option>
             </select>
           </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            {t('tableSize.label')}
+            <select
+              value={tableSize}
+              onChange={(e) => setTableSize(Number(e.target.value))}
+              className="px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
+            >
+              <option value={4}>{t('tableSize.4max')}</option>
+              <option value={6}>{t('tableSize.6max')}</option>
+              <option value={9}>{t('tableSize.9max')}</option>
+            </select>
+          </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={rebuyEnabled} onChange={(e) => setRebuyEnabled(e.target.checked)} />
+            {t('rebuy.enabled')}
+          </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={addonEnabled} onChange={(e) => setAddonEnabled(e.target.checked)} />
+            {t('addon.enabled')}
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, { bettingLimit })}
+            onClick={() => {
+              hideActionLog();
+              exec('reset', undefined, { bettingLimit, tableSize, rebuyEnabled, addonEnabled });
+            }}
           >
             {tc('button.reset')}
           </button>

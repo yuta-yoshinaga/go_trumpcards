@@ -127,6 +127,50 @@ func TestCalcTellChance(t *testing.T) {
 	})
 }
 
+// TestCalcDoubtHesitationMs 迷い時間計算のテスト
+func TestCalcDoubtHesitationMs(t *testing.T) {
+	t.Run("honest gives medium range", func(t *testing.T) {
+		for i := 0; i < 100; i++ {
+			ms := calcDoubtHesitationMs(false)
+			assert.GreaterOrEqual(t, ms, hesitationMediumMin)
+			assert.LessOrEqual(t, ms, hesitationMediumMax)
+		}
+	})
+
+	t.Run("bluff fast branch", func(t *testing.T) {
+		fastSeen := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			ms := calcDoubtHesitationMs(true)
+			if ms >= hesitationFastMin && ms <= hesitationFastMax {
+				fastSeen = true
+				break
+			}
+		}
+		assert.True(t, fastSeen, "bluff fast branch should be hit")
+	})
+
+	t.Run("bluff slow branch", func(t *testing.T) {
+		slowSeen := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			ms := calcDoubtHesitationMs(true)
+			if ms >= hesitationBluffSlowMin && ms <= hesitationBluffSlowMax {
+				slowSeen = true
+				break
+			}
+		}
+		assert.True(t, slowSeen, "bluff slow branch should be hit")
+	})
+
+	t.Run("bluff values always in valid range", func(t *testing.T) {
+		for i := 0; i < 100; i++ {
+			ms := calcDoubtHesitationMs(true)
+			inFast := ms >= hesitationFastMin && ms <= hesitationFastMax
+			inSlow := ms >= hesitationBluffSlowMin && ms <= hesitationBluffSlowMax
+			assert.True(t, inFast || inSlow, "bluff ms=%d out of range", ms)
+		}
+	})
+}
+
 // TestMixedBluffChance 混合ブラフ確率の定数値テスト
 func TestMixedBluffChance(t *testing.T) {
 	assert.InDelta(t, 0.3, mixedBluffChance, 0.001)

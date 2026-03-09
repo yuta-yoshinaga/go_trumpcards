@@ -11,6 +11,51 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// --- deref helper tests ---
+
+func TestDerefBool(t *testing.T) {
+	t.Run("nil returns false", func(t *testing.T) {
+		assert.False(t, derefBool(nil))
+	})
+	t.Run("non-nil returns value", func(t *testing.T) {
+		v := true
+		assert.True(t, derefBool(&v))
+	})
+}
+
+func TestDerefBoolDefault(t *testing.T) {
+	t.Run("nil returns default true", func(t *testing.T) {
+		assert.True(t, derefBoolDefault(nil, true))
+	})
+	t.Run("nil returns default false", func(t *testing.T) {
+		assert.False(t, derefBoolDefault(nil, false))
+	})
+	t.Run("non-nil returns value", func(t *testing.T) {
+		v := false
+		assert.False(t, derefBoolDefault(&v, true))
+	})
+}
+
+func TestDerefInt(t *testing.T) {
+	t.Run("nil returns 0", func(t *testing.T) {
+		assert.Equal(t, 0, derefInt(nil))
+	})
+	t.Run("non-nil returns value", func(t *testing.T) {
+		v := 42
+		assert.Equal(t, 42, derefInt(&v))
+	})
+}
+
+func TestDerefIntDefault(t *testing.T) {
+	t.Run("nil returns default", func(t *testing.T) {
+		assert.Equal(t, 99, derefIntDefault(nil, 99))
+	})
+	t.Run("non-nil returns value", func(t *testing.T) {
+		v := 7
+		assert.Equal(t, 7, derefIntDefault(&v, 99))
+	})
+}
+
 // failWriter is a minimal rest.ResponseWriter implementation where WriteJson always fails.
 type failWriter struct {
 	header     http.Header
@@ -96,7 +141,6 @@ func TestExecWithSession_DecodeError(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
 	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
@@ -113,7 +157,6 @@ func TestExecWithSession_EmptyCommand(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
 	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
@@ -130,48 +173,10 @@ func TestExecWithSession_EmptySessionId(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
 	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
 	assert.Equal(t, map[string]string{"message": "param error."}, sw.body)
-}
-
-func TestExecWithSession_ValidateReturnsError(t *testing.T) {
-	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{"command":"r","sessionId":"s1"}`)
-
-	execWithSession(bc, sw, req, store,
-		func() *testInteractor { return &testInteractor{} },
-		func(msg string) any { return map[string]string{"message": msg} },
-		func(_ testInput) error { return errors.New("invalid") },
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
-	)
-	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
-	assert.Equal(t, map[string]string{"message": "param error."}, sw.body)
-}
-
-func TestExecWithSession_ValidateNilSkipped(t *testing.T) {
-	bc := &baseController{}
-	store := NewSessionStore[*testInteractor]()
-	defer store.Stop()
-	sw := newSuccessWriter()
-	req := makeRestRequest(`{"command":"r","sessionId":"s1"}`)
-	handlerCalled := false
-
-	execWithSession(bc, sw, req, store,
-		func() *testInteractor { return &testInteractor{} },
-		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
-		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool {
-			handlerCalled = true
-			return true
-		},
-	)
-	assert.True(t, handlerCalled)
 }
 
 func TestExecWithSession_QuitCommand(t *testing.T) {
@@ -186,7 +191,6 @@ func TestExecWithSession_QuitCommand(t *testing.T) {
 			execWithSession(bc, sw, req, store,
 				func() *testInteractor { return &testInteractor{} },
 				func(msg string) any { return map[string]string{"message": msg} },
-				nil,
 				func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 			)
 			assert.Equal(t, http.StatusOK, sw.headerCode)
@@ -207,7 +211,6 @@ func TestExecWithSession_SessionRetrievalFailure(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool { return true },
 	)
 	assert.Equal(t, http.StatusBadRequest, sw.headerCode)
@@ -224,7 +227,6 @@ func TestExecWithSession_HandlerReturnsTrue(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(w rest.ResponseWriter, _ *testInteractor, _ testInput) bool {
 			bc.writeJsonResponse(w, http.StatusOK, map[string]string{"message": "handled"})
 			return true
@@ -244,7 +246,6 @@ func TestExecWithSession_HandlerReturnsFalse(t *testing.T) {
 	execWithSession(bc, sw, req, store,
 		func() *testInteractor { return &testInteractor{} },
 		func(msg string) any { return map[string]string{"message": msg} },
-		nil,
 		func(_ rest.ResponseWriter, _ *testInteractor, _ testInput) bool {
 			return false
 		},

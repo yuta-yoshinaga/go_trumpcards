@@ -38,6 +38,14 @@ func (pwp *PokerWebPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 	return marshalOrError(resObj)
 }
 
+// ActionLogOutput 棋譜をJSON出力
+func (pwp *PokerWebPresenter) ActionLogOutput(p interfaces.PokerGame) string {
+	if !p.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(p.GetActionLog())
+}
+
 // buildOutput ゲーム状態をPokerWebOutputに変換
 func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error) *controller.PokerWebOutput {
 	resObj := new(controller.PokerWebOutput)
@@ -53,6 +61,7 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	resObj.BettingLimit = int(p.GetConfig().BettingLimit)
 	resObj.RaiseCount = p.GetRaiseCount()
 	resObj.MaxBetAmount = calcMaxBetAmount(p.GetConfig().BettingLimit, p.GetPot(), p.GetLastBet())
+	resObj.IsLowball = p.GetConfig().IsLowball
 
 	// サイドポット
 	resObj.SidePots = make([]*controller.PokerWebOutputSidePot, 0)

@@ -162,3 +162,95 @@ func (_m *MockHoldemGame) GetHandCount() int {
 	ret := _m.Called()
 	return ret.Int(0)
 }
+
+// Resize モック
+func (_m *MockHoldemGame) Resize(players []*domain.HoldemPlayer) {
+	_m.Called(players)
+}
+
+// Rebuy モック
+func (_m *MockHoldemGame) Rebuy() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// SkipRebuy モック
+func (_m *MockHoldemGame) SkipRebuy() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// Addon モック
+func (_m *MockHoldemGame) Addon() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// SkipAddon モック
+func (_m *MockHoldemGame) SkipAddon() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// IsRebuyAvailable モック
+func (_m *MockHoldemGame) IsRebuyAvailable() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// IsAddonAvailable モック
+func (_m *MockHoldemGame) IsAddonAvailable() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// GetRebuyCounts モック
+func (_m *MockHoldemGame) GetRebuyCounts() []int {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]int); ok {
+		return val
+	}
+	return nil
+}
+
+// GetAddonUsed モック
+func (_m *MockHoldemGame) GetAddonUsed() []bool {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]bool); ok {
+		return val
+	}
+	return nil
+}
+
+// GetRebuyPhaseType モック
+func (_m *MockHoldemGame) GetRebuyPhaseType() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+// Muck モック
+func (_m *MockHoldemGame) Muck() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// ShowHand モック
+func (_m *MockHoldemGame) ShowHand() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// IsMuckAvailable モック
+func (_m *MockHoldemGame) IsMuckAvailable() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
+// GetActionLog モック
+func (_m *MockHoldemGame) GetActionLog() []*domain.ActionLogEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {
+		return val
+	}
+	return nil
+}

@@ -1,6 +1,6 @@
 import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { daifugoApi } from '../api/gameApi';
+import { actionLogApi, daifugoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DaifugoResponse } from '../types/card';
@@ -8,6 +8,7 @@ import { DaifugoPage } from './DaifugoPage';
 
 vi.mock('../api/gameApi', () => ({
   daifugoApi: { exec: vi.fn() },
+  actionLogApi: { daifugo: vi.fn() },
 }));
 
 const mockExec = vi.mocked(daifugoApi.exec);
@@ -15,22 +16,24 @@ const mockExec = vi.mocked(daifugoApi.exec);
 const defaultConfig = {
   jokerCount: 2,
   eightCutEnabled: true,
-  suitLockEnabled: true,
+  suitLockMode: 2,
   elevenBackEnabled: true,
   sequenceEnabled: true,
   cardExchangeEnabled: true,
   fiveSkipEnabled: false,
+  fiveSkipCount: 1,
   sevenPassEnabled: false,
   tenDiscardEnabled: false,
   spadeThreeEnabled: false,
   capitalFallEnabled: false,
   nineReverseEnabled: false,
   coupDetatEnabled: false,
-  intenseLockEnabled: false,
+  numberLockEnabled: false,
   sandstormEnabled: false,
   emperorEnabled: false,
   sequenceRevolutionEnabled: false,
   illegalFinishEnabled: false,
+  queenBomberEnabled: false,
   cpuDifficulty: 0,
 };
 
@@ -541,6 +544,53 @@ describe('DaifugoPage', () => {
     expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument();
   });
 
+  it('shows queenBomber pending banner with number buttons and disables play button', async () => {
+    const queenBomberState: DaifugoResponse = {
+      ...humanTurnState,
+      pendingAction: 'queenBomber',
+      pendingActionTarget: -1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(queenBomberState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/【12ボンバー】/)).toBeInTheDocument());
+    // Number buttons A,2-10,J,Q,K should be visible
+    expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'K' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Q' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'J' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '5' })).toBeInTheDocument();
+    // Play button label stays default but is disabled
+    expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled();
+  });
+
+  it('queenBomber number button calls exec with play and value', async () => {
+    const queenBomberState: DaifugoResponse = {
+      ...humanTurnState,
+      pendingAction: 'queenBomber',
+      pendingActionTarget: -1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(queenBomberState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'A' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.click(screen.getByRole('button', { name: 'A' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [1]));
+  });
+
+  it('queenBomber number buttons not shown when not human turn', async () => {
+    const queenBomberCpuTurn: DaifugoResponse = {
+      ...humanTurnState,
+      currentTurn: 1,
+      pendingAction: 'queenBomber',
+      pendingActionTarget: -1,
+    } as DaifugoResponse;
+    mockExec.mockResolvedValue(queenBomberCpuTurn);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/【12ボンバー】/)).toBeInTheDocument());
+    // Number buttons should NOT be visible (CPU turn)
+    expect(screen.queryByRole('button', { name: 'A' })).not.toBeInTheDocument();
+  });
+
   it('UI is disabled when currentTurn is CPU even if pendingAction is set', async () => {
     // Pending actions always belong to currentTurn's player; if CPU has a
     // pending action, the human UI must stay disabled.
@@ -663,14 +713,19 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByText('9リバース', { selector: 'span' })).toBeInTheDocument());
   });
 
-  it('shows 連番縛り badge when numberLocked is true', async () => {
+  it('shows 数縛り badge when numberLocked is true', async () => {
     const numberLockedState: DaifugoResponse = {
       ...humanTurnState,
       numberLocked: true,
     };
     mockExec.mockResolvedValue(numberLockedState);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText('連番縛り')).toBeInTheDocument());
+    await waitFor(() => {
+      const badges = screen.getAllByText('数縛り');
+      // Badge span + settings checkbox label
+      expect(badges.length).toBeGreaterThanOrEqual(1);
+      expect(badges[0].tagName).toBe('SPAN');
+    });
   });
 
   it('renders sort buttons and active button is highlighted', async () => {
@@ -697,7 +752,7 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
     expect(screen.getByLabelText('9リバース')).toBeInTheDocument();
     expect(screen.getByLabelText('クーデター')).toBeInTheDocument();
-    expect(screen.getByLabelText('激シバ')).toBeInTheDocument();
+    expect(screen.getByLabelText('数縛り')).toBeInTheDocument();
   });
 
   it('drop with invalid dataTransfer data is ignored (NaN guard)', async () => {
@@ -865,5 +920,28 @@ describe('DaifugoPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ cpuDifficulty: 2 })),
     );
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+      lastDiscardedCards: [],
+    } as unknown as DaifugoResponse);
+
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.daifugo).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.daifugo).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

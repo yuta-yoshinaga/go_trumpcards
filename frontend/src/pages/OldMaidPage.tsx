@@ -1,472 +1,64 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { oldmaidApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { StatusBadge } from '../components/StatusBadge';
-import { useGameApi } from '../hooks/useGameApi';
+import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
+import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
+import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
+import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
+import { useActionLog } from '../hooks/useActionLog';
+import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
-import { playerAreaBase } from '../styles/gameStyles';
-import type { Card, CpuAction, DrawHistoryEntry, OldMaidPlayerData, OldMaidResponse } from '../types/card';
+import type { CpuAction } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
-import { findPlayerName, playerName } from '../utils/playerUtils';
-
-const REPLAY_DELAY_MS = 800;
-
-const OldMaidMode = {
-  Normal: 0,
-  JijiNuki: 1,
-} as const;
-
-const playerAreaClass = `${playerAreaBase} p-2 flex-[1_1_140px] min-w-[120px]`;
-
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-
-/** Compute intermediate player card counts by reversing all CPU actions from the final state,
- *  then replay forward. Returns one OldMaidResponse per CPU action (state after each action). */
-function buildReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
-  const actions = finalState.cpuActions;
-
-  // Work backwards to get counts before all CPU actions
-  const counts = finalState.players.map((p) => p.cardCount);
-  for (let i = actions.length - 1; i >= 0; i--) {
-    const a = actions[i];
-    counts[a.drawPlayerIdx] = counts[a.drawPlayerIdx] + 2 * a.discardedPairs - 1;
-    counts[a.drawFromIdx] = counts[a.drawFromIdx] + 1;
-  }
-
-  // Play forward, building a display state after each CPU action
-  const states: OldMaidResponse[] = [];
-  for (let i = 0; i < actions.length; i++) {
-    const a = actions[i];
-    counts[a.drawFromIdx] -= 1;
-    counts[a.drawPlayerIdx] += 1 - 2 * a.discardedPairs;
-
-    const isLastAction = i === actions.length - 1;
-    // Intermediate replay states carry the full final drawHistory intentionally:
-    // history entries don't reveal card contents, so showing all entries is safe.
-    states.push({
-      ...finalState,
-      players: finalState.players.map((p, idx) => ({
-        ...p,
-        cardCount: Math.max(0, counts[idx]),
-        isFinished: counts[idx] <= 0,
-      })),
-      currentTurn: a.drawPlayerIdx,
-      hasDrawn: true,
-      lastDrawPlayerIdx: a.drawPlayerIdx,
-      lastDrawFromIdx: a.drawFromIdx,
-      lastDrawCard: a.drawnCard,
-      lastDiscardedPairs: a.discardedPairs,
-      lastDiscardedCards: a.discardedCards ?? [],
-      cpuActions: actions.slice(0, i + 1),
-      gameEndFlag: isLastAction ? finalState.gameEndFlag : false,
-      message: isLastAction ? finalState.message : '',
-      nextDrawTargetIdx: isLastAction ? finalState.nextDrawTargetIdx : actions[i + 1].drawFromIdx,
-    });
-  }
-  return states;
-}
-
-/** Build the display state right after human's draw, before any CPU actions. */
-function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | null {
-  const ha = finalState.humanAction;
-  if (!ha) return null;
-
-  const counts = finalState.players.map((p) => p.cardCount);
-  for (let i = finalState.cpuActions.length - 1; i >= 0; i--) {
-    const a = finalState.cpuActions[i];
-    counts[a.drawPlayerIdx] = counts[a.drawPlayerIdx] + 2 * a.discardedPairs - 1;
-    counts[a.drawFromIdx] = counts[a.drawFromIdx] + 1;
-  }
-
-  const [firstCpuAction] = finalState.cpuActions;
-
-  return {
-    ...finalState,
-    players: finalState.players.map((p, idx) => ({
-      ...p,
-      cardCount: Math.max(0, counts[idx]),
-      isFinished: counts[idx] <= 0,
-    })),
-    hasDrawn: true,
-    lastDrawPlayerIdx: ha.drawPlayerIdx,
-    lastDrawFromIdx: ha.drawFromIdx,
-    lastDrawCard: ha.drawnCard,
-    lastDiscardedPairs: ha.discardedPairs,
-    lastDiscardedCards: ha.discardedCards ?? [],
-    cpuActions: [],
-    ...(firstCpuAction && {
-      currentTurn: firstCpuAction.drawPlayerIdx,
-      gameEndFlag: false,
-      message: '',
-      nextDrawTargetIdx: firstCpuAction.drawFromIdx,
-    }),
-  };
-}
-
-interface PlayerAreaProps {
-  player: OldMaidPlayerData;
-  isTarget: boolean;
-  isHumanTurn: boolean;
-  gameEndFlag: boolean;
-  loading: boolean;
-  highlightedCardIdx: number;
-  isSuspect?: boolean;
-  onToggleSuspect?: () => void;
-  onDraw: (drawIdx: number) => void;
-  onReorder?: (indices: number[]) => void;
-}
-
-function PlayerArea({
-  player,
-  isTarget,
-  isHumanTurn,
-  gameEndFlag,
-  loading,
-  highlightedCardIdx,
-  isSuspect,
-  onToggleSuspect,
-  onDraw,
-  onReorder,
-}: PlayerAreaProps) {
-  const { t } = useTranslation('oldmaid');
-  const { t: tc } = useTranslation('common');
-  const conditionalStyle: React.CSSProperties = player.isFinished
-    ? { opacity: 0.5 }
-    : isSuspect
-      ? { border: '2px solid #dc3545', boxShadow: '0 0 12px #dc3545' }
-      : isTarget && !gameEndFlag
-        ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
-        : {};
-
-  const showSelectable = isHumanTurn && !loading && isTarget && !player.isFinished && !player.isHuman && !gameEndFlag;
-  const showCount = Math.min(player.cardCount, 10);
-
-  return (
-    <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
-      <div className="text-white font-bold mb-1 text-[0.9em]">
-        {playerName(player.id, player.isHuman)}
-        {player.isFinished && <StatusBadge variant="success">{tc('status.finished')}</StatusBadge>}
-        {isTarget && !player.isHuman && !player.isFinished && !gameEndFlag && (
-          <StatusBadge variant="warning">{t('drawTarget')}</StatusBadge>
-        )}
-        {isSuspect && <StatusBadge variant="danger">{t('suspect.badge')}</StatusBadge>}
-        {onToggleSuspect && !player.isFinished && !gameEndFlag && (
-          <button
-            type="button"
-            className="ml-1 px-1.5 py-0.5 text-[0.65em] rounded bg-red-700/60 hover:bg-red-700 text-white"
-            onClick={onToggleSuspect}
-          >
-            {isSuspect ? t('suspect.unpin') : t('suspect.pin')}
-          </button>
-        )}
-      </div>
-      {!player.isFinished && (
-        <div className="text-[#ccc] text-[0.8em] mb-1">{t('cardCount', { count: player.cardCount })}</div>
-      )}
-      {showSelectable && !player.isFinished && <div className="text-[#cfc] text-[0.75em] mb-1">{t('draw')}</div>}
-      <div className="flex flex-wrap gap-0.5 justify-center">
-        {player.isFinished ? null : player.isHuman ? (
-          player.cards?.map((card, i) => (
-            <CardImage
-              key={`${card.design}-${card.value}`}
-              card={card}
-              width={50}
-              draggable={!gameEndFlag && !!onReorder}
-              onDragStart={(e: React.DragEvent) => {
-                e.dataTransfer.setData('oldmaidCardIndex', String(i));
-              }}
-              onDragOver={(e: React.DragEvent) => e.preventDefault()}
-              onDrop={(e: React.DragEvent) => {
-                e.preventDefault();
-                const fromStr = e.dataTransfer.getData('oldmaidCardIndex');
-                if (!fromStr || !onReorder || !player.cards) return;
-                const from = Number(fromStr);
-                if (from === i) return;
-                const indices = player.cards.map((_, idx) => idx);
-                indices.splice(from, 1);
-                indices.splice(i, 0, from);
-                onReorder(indices);
-              }}
-            />
-          ))
-        ) : showSelectable ? (
-          <>
-            {Array.from({ length: showCount }, (_, i) => {
-              const isHighlighted = isTarget && !player.isHuman && i === highlightedCardIdx;
-              const cardStyle: React.CSSProperties = {
-                border: '2px solid transparent',
-                borderRadius: 4,
-                cursor: 'pointer',
-                ...(isHighlighted ? { transform: 'translateY(-8px)', transition: 'transform 0.2s' } : {}),
-              };
-              return (
-                <CardBack
-                  // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-                  key={i}
-                  width={40}
-                  style={cardStyle}
-                  onClick={() => onDraw(i)}
-                  ariaLabel={t('drawCardAriaLabel', { idx: i + 1 })}
-                />
-              );
-            })}
-            {player.cardCount > 10 && (
-              <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
-                +{player.cardCount - 10}
-              </span>
-            )}
-          </>
-        ) : (
-          <>
-            {Array.from({ length: showCount }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              <CardBack key={i} width={40} />
-            ))}
-            {player.cardCount > 10 && (
-              <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
-                +{player.cardCount - 10}
-              </span>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** Show discarded card pairs stacked (overlapping) to represent a pair being set aside. */
-function DiscardedArea({ cards }: { cards: Card[] | undefined }) {
-  const { t } = useTranslation('oldmaid');
-  if (!cards || cards.length === 0) {
-    return (
-      <div className="h-[90px] flex items-center justify-center border-2 border-dashed border-white/15 rounded-[10px] my-2 text-white/30 text-[0.9em]">
-        {t('discardArea')}
-      </div>
-    );
-  }
-
-  // Group cards into pairs (every 2 cards is one discarded pair)
-  const pairs: [Card, Card][] = [];
-  for (let i = 0; i + 1 < cards.length; i += 2) {
-    pairs.push([cards[i], cards[i + 1]]);
-  }
-  // If odd number of cards, show the last one alone
-  const remainder = cards.length % 2 === 1 ? cards[cards.length - 1] : null;
-
-  return (
-    <div className="my-2 p-2 bg-black/20 rounded-[10px] text-center min-h-[90px]">
-      <div className="text-[#ccc] text-[0.8em] mb-1.5">{t('lastDiscarded')}</div>
-      <div className="flex justify-center gap-5 items-end">
-        {pairs.map(([c1, c2]) => (
-          <div key={`${c1.design}-${c1.value}`} style={{ position: 'relative', width: 65, height: 82 }}>
-            <CardImage card={c1} width={55} style={{ position: 'absolute', left: 0, top: 0 }} />
-            <CardImage card={c2} width={55} style={{ position: 'absolute', left: 10, top: 6 }} />
-          </div>
-        ))}
-        {remainder && <CardImage card={remainder} width={55} />}
-      </div>
-    </div>
-  );
-}
-
-function DrawHistoryTimeline({ entries, players }: { entries: DrawHistoryEntry[]; players: OldMaidPlayerData[] }) {
-  const { t } = useTranslation('oldmaid');
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: entries triggers scroll on new history entries
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [entries]);
-
-  if (entries.length === 0) return null;
-
-  return (
-    <div className="bg-black/50 rounded-lg my-2 p-2" data-testid="draw-history-timeline">
-      <div className="text-white font-bold text-[0.8em] mb-1">{t('history.title')}</div>
-      <div ref={scrollRef} className="max-h-[120px] overflow-y-auto text-[0.75em] text-[#ccc]">
-        {entries.map((entry, i) => {
-          const from = findPlayerName(players, entry.drawPlayerIdx);
-          const target = findPlayerName(players, entry.drawFromIdx);
-          let line = `${i + 1}. ${t('history.entry', { from, target })}`;
-          if (entry.discardedPairs > 0) line += ` ${t('history.discarded', { count: entry.discardedPairs })}`;
-          if (entry.drawerFinished) line += ` ${t('history.finished', { name: from })}`;
-          if (entry.targetFinished) line += ` ${t('history.finished', { name: target })}`;
-          return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: history entries are append-only with stable order
-            <div key={i}>{line}</div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-interface SetupScreenProps {
-  mode: number;
-  cpuPlacementStrategy: boolean;
-  cpuMemoryAI: boolean;
-  onModeChange: (m: number) => void;
-  onStrategyChange: (v: boolean) => void;
-  onMemoryAIChange: (v: boolean) => void;
-  onStart: () => void;
-  loading: boolean;
-}
-
-function SetupScreen({
-  mode,
-  cpuPlacementStrategy,
-  cpuMemoryAI,
-  onModeChange,
-  onStrategyChange,
-  onMemoryAIChange,
-  onStart,
-  loading,
-}: SetupScreenProps) {
-  const { t } = useTranslation('oldmaid');
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-[#1a5c1a] p-6 gap-4" aria-busy={loading}>
-      <div className="text-white text-2xl font-bold mb-2">{t('setup.title')}</div>
-      <div className="bg-black/40 rounded-xl p-4 w-full max-w-sm flex flex-col gap-3">
-        <div className="text-white font-bold mb-1">{t('setup.modeSelect')}</div>
-        <label className="flex items-center gap-2 text-white cursor-pointer">
-          <input
-            type="radio"
-            name="oldmaid-mode"
-            value={OldMaidMode.Normal}
-            checked={mode === OldMaidMode.Normal}
-            onChange={() => onModeChange(OldMaidMode.Normal)}
-          />
-          {t('setup.normal')}
-        </label>
-        <label className="flex items-center gap-2 text-white cursor-pointer">
-          <input
-            type="radio"
-            name="oldmaid-mode"
-            value={OldMaidMode.JijiNuki}
-            checked={mode === OldMaidMode.JijiNuki}
-            onChange={() => onModeChange(OldMaidMode.JijiNuki)}
-          />
-          {t('setup.jijiNuki')}
-        </label>
-        <div className="border-t border-white/20 my-1" />
-        <label className="flex items-center gap-2 text-white cursor-pointer">
-          <input type="checkbox" checked={cpuPlacementStrategy} onChange={(e) => onStrategyChange(e.target.checked)} />
-          {t('setup.cpuStrategy')}
-        </label>
-        <label className="flex items-center gap-2 text-white cursor-pointer">
-          <input type="checkbox" checked={cpuMemoryAI} onChange={(e) => onMemoryAIChange(e.target.checked)} />
-          {t('setup.cpuMemoryAI')}
-        </label>
-      </div>
-      <button type="button" className={`${btnPrimary} min-w-[120px] mt-2`} disabled={loading} onClick={onStart}>
-        {t('setup.start')}
-      </button>
-    </div>
-  );
-}
+import { findPlayerName } from '../utils/playerUtils';
 
 export function OldMaidPage() {
   const { t } = useTranslation('oldmaid');
   const { t: tc } = useTranslation('common');
-  const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
-  const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);
-  const [setupStrategy, setSetupStrategy] = useState(false);
-  const [setupMemoryAI, setSetupMemoryAI] = useState(false);
-  const [gameSettings, setGameSettings] = useState<{
-    mode: number;
-    cpuPlacementStrategy: boolean;
-    cpuMemoryAI: boolean;
-  } | null>(null);
-  const [suspectPins, setSuspectPins] = useState<Set<number>>(new Set());
-  const [shakeKey, setShakeKey] = useState(0);
-  const [revealedCard, setRevealedCard] = useState<Card | null>(null);
-  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const {
+    displayState,
+    setupMode,
+    setupStrategy,
+    setupMemoryAI,
+    setupHesitation,
+    setupMetaAI,
+    gameSettings,
+    suspectPins,
+    setSuspectPins,
+    shakeKey,
+    revealedCard,
+    loading,
+    error,
+    exec,
+    handleStart,
+    handleReset,
+    handleReorder,
+    setSetupMode,
+    setSetupStrategy,
+    setSetupMemoryAI,
+    setSetupHesitation,
+    setSetupMetaAI,
+    setGameSettings,
+  } = useOldMaidGame();
 
-  // Card reveal suspense: show card-back for 600ms, then flip to actual card
-  useEffect(() => {
-    const card = displayState?.lastDrawCard;
-    if (!card) {
-      setRevealedCard(null);
-      return;
-    }
-    setRevealedCard(null);
-    revealTimerRef.current = setTimeout(() => {
-      setRevealedCard(card);
-      revealTimerRef.current = null;
-      if (card.design === 'JOKER') {
-        setShakeKey((k) => k + 1);
-      }
-    }, 600);
-    return () => {
-      if (revealTimerRef.current !== null) {
-        clearTimeout(revealTimerRef.current);
-        revealTimerRef.current = null;
-      }
-    };
-  }, [displayState?.lastDrawCard]);
-
-  const onSuccess = useCallback(async (res: OldMaidResponse) => {
-    const humanDrawState = buildHumanDrawState(res);
-    if (humanDrawState) {
-      setDisplayState(humanDrawState);
-      await delay(REPLAY_DELAY_MS);
-    }
-    const replayStates = buildReplayStates(res);
-    if (replayStates.length === 0) {
-      setDisplayState(res);
-      return;
-    }
-    for (const step of replayStates) {
-      setDisplayState(step);
-      await delay(REPLAY_DELAY_MS);
-    }
-    setDisplayState(res);
-  }, []);
-
-  const { loading, error, exec } = useGameApi(oldmaidApi.exec, { onSuccess });
-
-  const handleStart = useCallback(() => {
-    const settings = { mode: setupMode, cpuPlacementStrategy: setupStrategy, cpuMemoryAI: setupMemoryAI };
-    setGameSettings(settings);
-    setSuspectPins(new Set());
-    exec('reset', undefined, settings.mode, settings.cpuPlacementStrategy, undefined, settings.cpuMemoryAI);
-  }, [exec, setupMode, setupStrategy, setupMemoryAI]);
-
-  const handleReset = useCallback(() => {
-    setSuspectPins(new Set());
-    if (gameSettings) {
-      exec(
-        'reset',
-        undefined,
-        gameSettings.mode,
-        gameSettings.cpuPlacementStrategy,
-        undefined,
-        gameSettings.cpuMemoryAI,
-      );
-    }
-  }, [exec, gameSettings]);
-
-  const handleReorder = useCallback(
-    (indices: number[]) => {
-      exec('reorder', undefined, undefined, undefined, indices);
-    },
-    [exec],
-  );
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('oldmaid');
 
   if (!gameSettings) {
     return (
-      <SetupScreen
+      <OldMaidSetupScreen
         mode={setupMode}
         cpuPlacementStrategy={setupStrategy}
         cpuMemoryAI={setupMemoryAI}
+        cpuHesitationEnabled={setupHesitation}
+        cpuMetaAI={setupMetaAI}
         onModeChange={setSetupMode}
         onStrategyChange={setSetupStrategy}
         onMemoryAIChange={setSetupMemoryAI}
+        onHesitationChange={setSetupHesitation}
+        onMetaAIChange={setSetupMetaAI}
         onStart={handleStart}
         loading={loading}
       />
@@ -516,7 +108,7 @@ export function OldMaidPage() {
         {/* CPU row */}
         <div className="flex gap-2 flex-wrap mb-2 justify-center">
           {cpuPlayers.map((player) => (
-            <PlayerArea
+            <OldMaidPlayerArea
               key={player.id}
               player={player}
               isTarget={state.nextDrawTargetIdx === player.id}
@@ -542,7 +134,7 @@ export function OldMaidPage() {
         </div>
 
         {/* Discarded Area */}
-        <DiscardedArea cards={state.lastDiscardedCards} />
+        <OldMaidDiscardedArea cards={state.lastDiscardedCards} />
 
         {/* Card reveal area */}
         {state.lastDrawCard && !state.gameEndFlag && (
@@ -582,7 +174,7 @@ export function OldMaidPage() {
         )}
 
         {/* Draw History Timeline */}
-        <DrawHistoryTimeline entries={state.drawHistory ?? []} players={state.players} />
+        <OldMaidDrawHistory entries={state.drawHistory ?? []} players={state.players} />
 
         {/* Result */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
@@ -593,6 +185,16 @@ export function OldMaidPage() {
             {t('removedCard', { card: cardLabel(state.removedCard) })}
           </div>
         )}
+
+        {/* Action log */}
+        {state.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
@@ -600,7 +202,7 @@ export function OldMaidPage() {
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
-            <PlayerArea
+            <OldMaidPlayerArea
               player={humanPlayer}
               isTarget={false}
               isHumanTurn={isHumanTurn}
@@ -628,7 +230,15 @@ export function OldMaidPage() {
           >
             {t('button.settings')}
           </button>
-          <button type="button" className={`${btnPrimary} min-w-[80px]`} disabled={loading} onClick={handleReset}>
+          <button
+            type="button"
+            className={`${btnPrimary} min-w-[80px]`}
+            disabled={loading}
+            onClick={() => {
+              hideActionLog();
+              handleReset();
+            }}
+          >
             {tc('button.reset')}
           </button>
           <button

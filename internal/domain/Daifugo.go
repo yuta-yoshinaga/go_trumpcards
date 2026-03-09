@@ -52,9 +52,19 @@ const (
 type DaifugoPendingAction int
 
 const (
-	DaifugoPendingNone       DaifugoPendingAction = 0 // ペンディングなし
-	DaifugoPendingSevenPass  DaifugoPendingAction = 1 // 7渡し待ち
-	DaifugoPendingTenDiscard DaifugoPendingAction = 2 // 10捨て待ち
+	DaifugoPendingNone        DaifugoPendingAction = 0 // ペンディングなし
+	DaifugoPendingSevenPass   DaifugoPendingAction = 1 // 7渡し待ち
+	DaifugoPendingTenDiscard  DaifugoPendingAction = 2 // 10捨て待ち
+	DaifugoPendingQueenBomber DaifugoPendingAction = 3 // 12ボンバー待ち
+)
+
+// DaifugoSuitLockMode スート縛りモード
+type DaifugoSuitLockMode int
+
+const (
+	DaifugoSuitLockNone    DaifugoSuitLockMode = 0 // なし
+	DaifugoSuitLockPartial DaifugoSuitLockMode = 1 // 片縛り (少なくとも1枚がスート一致)
+	DaifugoSuitLockFull    DaifugoSuitLockMode = 2 // 両縛り (全てスート一致)
 )
 
 // DaifugoSortMode 手札ソートモード
@@ -89,22 +99,24 @@ var DaifugoDifficultyNames = map[DaifugoCpuDifficulty]string{
 type DaifugoConfig struct {
 	JokerCount                int                  // ジョーカー枚数 (default: 2)
 	EightCutEnabled           bool                 // 8切り
-	SuitLockEnabled           bool                 // スート縛り
+	SuitLockMode              DaifugoSuitLockMode  // スート縛りモード (0=なし, 1=片縛り, 2=両縛り)
 	ElevenBackEnabled         bool                 // 11バック
 	SequenceEnabled           bool                 // 階段
 	CardExchangeEnabled       bool                 // カード交換
 	FiveSkipEnabled           bool                 // 5飛び
+	FiveSkipCount             int                  // 5飛びスキップ数 (default: 1, FiveSkipEnabled時のみ有効)
 	SevenPassEnabled          bool                 // 7渡し
 	TenDiscardEnabled         bool                 // 10捨て
 	SpadeThreeEnabled         bool                 // スペ3返し
 	CapitalFallEnabled        bool                 // 都落ち
 	NineReverseEnabled        bool                 // 9リバース
 	CoupDetatEnabled          bool                 // クーデター (3枚の9で革命)
-	IntenseLockEnabled        bool                 // 激シバ (連番縛り)
+	NumberLockEnabled         bool                 // 数縛り (連番縛り)
 	SandstormEnabled          bool                 // 砂嵐 (3枚の3で場をクリア)
 	EmperorEnabled            bool                 // エンペラー (4枚連番・全スート異なる→革命+場クリア)
 	SequenceRevolutionEnabled bool                 // 階段革命 (4枚以上の階段で革命)
 	IllegalFinishEnabled      bool                 // 反則上がり (8切り/ジョーカー/革命で上がりはペナルティ)
+	QueenBomberEnabled        bool                 // 12ボンバー (Qを出したら数字を選んで全員からその数字を除去)
 	CpuDifficulty             DaifugoCpuDifficulty // CPU難易度 (0=Normal, 1=Easy, 2=Hard)
 }
 
@@ -113,18 +125,19 @@ func DefaultDaifugoConfig() DaifugoConfig {
 	return DaifugoConfig{
 		JokerCount:          DaifugoJokerCount,
 		EightCutEnabled:     true,
-		SuitLockEnabled:     true,
+		SuitLockMode:        DaifugoSuitLockFull,
 		ElevenBackEnabled:   true,
 		SequenceEnabled:     true,
 		CardExchangeEnabled: true,
 		FiveSkipEnabled:     false,
+		FiveSkipCount:       1,
 		SevenPassEnabled:    false,
 		TenDiscardEnabled:   false,
 		SpadeThreeEnabled:   false,
 		CapitalFallEnabled:  false,
 		NineReverseEnabled:  false,
 		CoupDetatEnabled:    false,
-		IntenseLockEnabled:  false,
+		NumberLockEnabled:   false,
 		SandstormEnabled:    false,
 		EmperorEnabled:      false,
 	}
@@ -166,6 +179,7 @@ type Daifugo struct {
 	reverseDirection    bool                     // 9リバース: ターン方向が逆か
 	numberLocked        bool                     // 激シバ: 連番縛り発動中
 	sortMode            DaifugoSortMode          // 手札ソートモード
+	actionLog           []*ActionLogEntry        // 棋譜
 }
 
 // NewDaifugo コンストラクタ
@@ -223,6 +237,7 @@ func (d *Daifugo) Reset() {
 	d.pendingActionTarget = -1
 	d.reverseDirection = false
 	d.numberLocked = false
+	d.actionLog = nil
 	// sortMode は意図的にリセットしない: ユーザーの好みをラウンド間で維持する
 
 	// シャッフル
@@ -275,6 +290,11 @@ func (d *Daifugo) performCardExchange() {
 		if idx3, ok3 := rankToPlayer[DaifugoRankHeimin]; ok3 {
 			d.exchangeCardsBetween(idx2, idx3, DaifugoExchangeCountFugo)
 		}
+	}
+
+	// 交換記録を棋譜に追加
+	for _, ex := range d.exchangeActions {
+		d.appendLog(ex.FromPlayerIdx, "exchange", fmt.Sprintf("exchanged %d card(s) with player %d", len(ex.Cards), ex.ToPlayerIdx), ex.Cards)
 	}
 
 	// 交換後に再ソート
@@ -360,6 +380,7 @@ func (d *Daifugo) triggerRevolutionIfNeeded(cards []*Card, isSeq bool) {
 		return
 	}
 	d.revolutionActive = !d.revolutionActive
+	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 }
 
@@ -454,6 +475,7 @@ func (d *Daifugo) triggerEmperor(cards []*Card) bool {
 		return false
 	}
 	d.revolutionActive = !d.revolutionActive
+	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 	d.clearTableState()
 	return true
@@ -475,7 +497,9 @@ func (d *Daifugo) triggerElevenBack(cards []*Card) {
 
 // updateSuitLock スート縛りの更新
 func (d *Daifugo) updateSuitLock(cards []*Card) {
-	if !d.config.SuitLockEnabled {
+	if d.config.SuitLockMode == DaifugoSuitLockNone {
+		// スート縛りなしでも数縛りは独立して発動可能
+		d.updateNumberLock(cards)
 		return
 	}
 	if len(d.tableCards) == 0 {
@@ -491,18 +515,26 @@ func (d *Daifugo) updateSuitLock(cards []*Card) {
 		if !d.suitLocked {
 			d.suitLocked = true
 			d.lockedSuit = prevSuit
-			// 激シバ: スート縛り発動時に連番かチェック
-			if d.config.IntenseLockEnabled {
-				prevBase := getBaseValue(d.tableCards)
-				newBase := getBaseValue(cards)
-				if prevBase > 0 && newBase > 0 {
-					prevStr := d.cardStrength(prevBase)
-					newStr := d.cardStrength(newBase)
-					if newStr-prevStr == 1 {
-						d.numberLocked = true
-					}
-				}
-			}
+			d.updateNumberLock(cards)
+		}
+	}
+}
+
+// updateNumberLock 数縛り (連番縛り) の更新
+func (d *Daifugo) updateNumberLock(cards []*Card) {
+	if !d.config.NumberLockEnabled {
+		return
+	}
+	if len(d.tableCards) == 0 {
+		return
+	}
+	prevBase := getBaseValue(d.tableCards)
+	newBase := getBaseValue(cards)
+	if prevBase > 0 && newBase > 0 {
+		prevStr := d.cardStrength(prevBase)
+		newStr := d.cardStrength(newBase)
+		if newStr-prevStr == 1 {
+			d.numberLocked = true
 		}
 	}
 }
@@ -521,6 +553,16 @@ func (d *Daifugo) getNonJokerSuit(cards []*Card) int {
 		}
 	}
 	return suit
+}
+
+// hasMatchingSuit カード配列に指定スートのカードが少なくとも1枚含まれるか判定 (片縛り用)
+func (d *Daifugo) hasMatchingSuit(cards []*Card, suit int) bool {
+	for _, c := range cards {
+		if !IsJoker(c) && c.GetDesign() == suit {
+			return true
+		}
+	}
+	return false
 }
 
 // countFinished 既に上がっているプレイヤー数を返す
@@ -566,6 +608,7 @@ func (d *Daifugo) finishPlayer(idx int) {
 	rank := d.countFinished() + 1
 	d.players[idx].SetIsFinished(true)
 	d.players[idx].SetRank(rank)
+	d.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
 	// 上がったプレイヤーが最後に出したプレイヤーなら場をクリア
 	if d.lastPlayPlayerIdx == idx {
 		d.clearTableState()
@@ -734,10 +777,18 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 	}
 
 	// スート縛りチェック
-	if d.suitLocked && d.config.SuitLockEnabled {
-		newSuit := d.getNonJokerSuit(cards)
-		if newSuit > 0 && newSuit != d.lockedSuit {
-			return false
+	if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
+		if d.config.SuitLockMode == DaifugoSuitLockFull {
+			// 両縛り: 全てのカードがロックされたスートに一致する必要がある
+			newSuit := d.getNonJokerSuit(cards)
+			if newSuit > 0 && newSuit != d.lockedSuit {
+				return false
+			}
+		} else {
+			// 片縛り: 少なくとも1枚がロックされたスートに一致する必要がある
+			if !d.hasMatchingSuit(cards, d.lockedSuit) {
+				return false
+			}
 		}
 	}
 
@@ -757,9 +808,9 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 		playStrength = d.cardStrength(playBase)
 	}
 
-	// 激シバ: 連番縛り発動中は強さの差が1でなければ出せない
+	// 数縛り: 連番縛り発動中は強さの差が1でなければ出せない
 	// ジョーカーは連番縛りをバイパスし、通常の強さ比較のみ適用
-	if d.numberLocked && d.config.IntenseLockEnabled && d.config.SuitLockEnabled {
+	if d.numberLocked && d.config.NumberLockEnabled {
 		if playBase > 0 && tableBase > 0 {
 			return playStrength-tableStrength == 1
 		}
@@ -790,6 +841,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 		// パス
 		d.passCount++
 		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
+		d.appendLog(d.currentTurn, "pass", "pass", nil)
 		d.advanceTurn()
 		d.checkPassClear()
 		return nil
@@ -835,6 +887,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	// カードを出す
 	cards := player.RemoveCards(indices)
 	d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: cards}
+	d.appendLog(d.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
 	d.playCards(d.currentTurn, cards, isSeq, spadeThree)
 	return nil
 }
@@ -864,9 +917,10 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	eightCut := d.triggerEightCut(cards)
 	sandstorm := d.triggerSandstorm(cards)
 
-	fiveSkip := d.triggerFiveSkipIfNeeded(cards, isSeq)
+	fiveSkipCount := d.triggerFiveSkipIfNeeded(cards, isSeq)
 	d.triggerSevenPassIfNeeded(cards, isSeq)
 	d.triggerTenDiscardIfNeeded(cards, isSeq)
+	d.triggerQueenBomberIfNeeded(cards, isSeq)
 
 	if d.pendingActionType != DaifugoPendingNone {
 		return
@@ -875,7 +929,7 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 	if !d.checkGameEnd() {
 		if (!eightCut && !sandstorm && !emperor && !spadeThree) || d.players[playerIdx].GetIsFinished() {
 			d.advanceTurn()
-			if fiveSkip && !d.gameEndFlag {
+			for i := 0; i < fiveSkipCount && !d.gameEndFlag; i++ {
 				d.advanceTurn()
 			}
 			d.checkPassClear()
@@ -906,6 +960,7 @@ func (d *Daifugo) CpuPlay() {
 		d.passCount++
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: nil}
 		d.cpuActions = append(d.cpuActions, action)
+		d.appendLog(playerIdx, "pass", "pass", nil)
 		d.advanceTurn()
 		d.checkPassClear()
 	} else {
@@ -927,6 +982,7 @@ func (d *Daifugo) CpuPlay() {
 		cards := player.RemoveCards(playIndices)
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		d.cpuActions = append(d.cpuActions, action)
+		d.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
 		d.playCards(playerIdx, cards, isSeq, spadeThree)
 	}
 }
@@ -1007,74 +1063,43 @@ func (d *Daifugo) shouldStrategicPass(player *DaifugoPlayer, indices []int) bool
 	return false
 }
 
-// findBestPlayNormal 通常難易度: 既存ロジック (最弱のカードを出す、8/ジョーカー温存)
-func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
-	if d.tableCards == nil {
-		// エンペラーを探す (場がクリアの時のみ)
-		if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
-			if !d.wouldCauseIllegalFinish(player, emperorIndices) {
-				return emperorIndices
-			}
-		}
-		// 場がクリアなら最弱の1枚を出す (ジョーカーと8は温存)
-		var fallbackIdx *int
-		for i := 0; i < player.GetCardsSize(); i++ {
-			card := player.GetCard(i)
-			if !IsJoker(card) && card.GetValue() != 8 {
-				if !d.wouldCauseIllegalFinish(player, []int{i}) {
-					return []int{i}
-				}
-				if fallbackIdx == nil {
-					v := i
-					fallbackIdx = &v
-				}
-			}
-		}
-		// 8以外の非ジョーカーがない: 8を使う (ジョーカーより優先)
-		for i := 0; i < player.GetCardsSize(); i++ {
-			if !IsJoker(player.GetCard(i)) && player.GetCard(i).GetValue() == 8 {
-				if !d.wouldCauseIllegalFinish(player, []int{i}) {
-					return []int{i}
-				}
-				if fallbackIdx == nil {
-					v := i
-					fallbackIdx = &v
-				}
-			}
-		}
-		// ジョーカーしかない場合
-		if player.GetCardsSize() > 0 {
-			if !d.wouldCauseIllegalFinish(player, []int{0}) {
-				return []int{0}
-			}
-			if fallbackIdx == nil {
-				v := 0
-				fallbackIdx = &v
-			}
-		}
-		// 全ての選択肢が反則上がりの場合はfallbackを使用 (ペナルティ受け入れ)
-		if fallbackIdx != nil {
-			return []int{*fallbackIdx}
-		}
-		return nil
-	}
-
-	// 場が階段の場合
-	if d.tableIsSequence && d.config.SequenceEnabled {
-		return d.findBestSequencePlay(player)
-	}
-
-	needed := len(d.tableCards)
+// calcTableStrength 場のカードの強さを計算する (d.tableCards が非nil前提)
+func (d *Daifugo) calcTableStrength() int {
 	tableBase := getBaseValue(d.tableCards)
-	var tableStrength int
 	if tableBase < 0 {
-		tableStrength = DaifugoJokerStrength
-	} else {
-		tableStrength = d.cardStrength(tableBase)
+		return DaifugoJokerStrength
 	}
+	return d.cardStrength(tableBase)
+}
 
-	// 手札は強さ順でソート済み。同じ値の連続するグループを探す。
+// cardSearchOpts カード検索のオプション
+type cardSearchOpts struct {
+	skipRevolution  bool // 革命防止: 4枚以上のグループをスキップ (Normal用)
+	selectStrongest bool // 最強のグループを選択 (Hard urgent用)
+}
+
+// searchCardGroupSuitCheck searchCardGroup内のスート縛りチェック
+// 両縛り: 先頭カードのスートがロックスートと一致する必要がある
+// 片縛り: グループ内に少なくとも1枚ロックスートと一致するカードがあればOK
+func (d *Daifugo) searchCardGroupSuitCheck(player *DaifugoPlayer, start, end int) bool {
+	if d.config.SuitLockMode == DaifugoSuitLockFull {
+		return player.GetCard(start).GetDesign() == d.lockedSuit
+	}
+	// 片縛り
+	for k := start; k < end; k++ {
+		if player.GetCard(k).GetDesign() == d.lockedSuit {
+			return true
+		}
+	}
+	return false
+}
+
+// searchCardGroup 手札からカードグループを検索する共通ヘルパー
+// 手札は強さ順 (弱→強) でソート済みなので、selectStrongest=true の場合は
+// 後に見つかるグループほど強いため、上書きし続けて最後の結果を返す。
+func (d *Daifugo) searchCardGroup(player *DaifugoPlayer, needed int, tableStrength int, opts cardSearchOpts) []int {
 	jokerIndices := d.findJokerIndices(player)
+	var bestIndices []int
 	i := 0
 	for i < player.GetCardsSize() {
 		card := player.GetCard(i)
@@ -1090,14 +1115,13 @@ func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
 		count := j - i
 		if count >= needed && d.cardStrength(v) > tableStrength {
 			// 革命防止: 4枚以上かつ革命未発動かつ出した後も手札が残る場合はスキップ
-			if count >= 4 && !d.revolutionActive && player.GetCardsSize() > count {
+			if opts.skipRevolution && count >= 4 && !d.revolutionActive && player.GetCardsSize() > count {
 				i = j
 				continue
 			}
 			// スート縛りチェック
-			if d.suitLocked && d.config.SuitLockEnabled {
-				suit := player.GetCard(i).GetDesign()
-				if suit != d.lockedSuit {
+			if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
+				if !d.searchCardGroupSuitCheck(player, i, j) {
 					i = j
 					continue
 				}
@@ -1106,15 +1130,17 @@ func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
 			for k := 0; k < needed; k++ {
 				indices[k] = i + k
 			}
-			return indices
+			if !opts.selectStrongest {
+				return indices
+			}
+			bestIndices = indices
 		}
 		// ジョーカーで補完してグループを作れるか
 		if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
 			if count+len(jokerIndices) >= needed {
 				// スート縛りチェック
-				if d.suitLocked && d.config.SuitLockEnabled {
-					suit := player.GetCard(i).GetDesign()
-					if suit != d.lockedSuit {
+				if d.suitLocked && d.config.SuitLockMode != DaifugoSuitLockNone {
+					if !d.searchCardGroupSuitCheck(player, i, j) {
 						i = j
 						continue
 					}
@@ -1130,23 +1156,161 @@ func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
 					indices = append(indices, ji)
 				}
 				sort.Ints(indices)
-				return indices
+				if !opts.selectStrongest {
+					return indices
+				}
+				bestIndices = indices
 			}
 		}
 		i = j
 	}
+	return bestIndices
+}
 
-	// ジョーカー単体で出す (場が1枚で、ジョーカーの方が強い場合)
+// suitCardEntry 同スートカードのインデックスと強さ
+type suitCardEntry struct {
+	idx      int
+	strength int
+}
+
+// collectSuitCards startIdx のカードと同スートで、より強いカードを強さ昇順で収集する
+func (d *Daifugo) collectSuitCards(player *DaifugoPlayer, startIdx int) []suitCardEntry {
+	card := player.GetCard(startIdx)
+	suit := card.GetDesign()
+	startStrength := d.cardStrengthForCard(card)
+	suitCards := []suitCardEntry{{startIdx, startStrength}}
+	for nextIdx := startIdx + 1; nextIdx < player.GetCardsSize(); nextIdx++ {
+		nextCard := player.GetCard(nextIdx)
+		if IsJoker(nextCard) || nextCard.GetDesign() != suit {
+			continue
+		}
+		nextStr := d.cardStrengthForCard(nextCard)
+		if nextStr <= startStrength {
+			continue
+		}
+		suitCards = append(suitCards, suitCardEntry{nextIdx, nextStr})
+	}
+	return suitCards
+}
+
+// tryBuildSequence suitCards の si 番目から始めて jokers で穴を埋めながら needed 枚の階段を構築する
+func tryBuildSequence(suitCards []suitCardEntry, si int, jokerIndices []int, needed int) []int {
+	indices := []int{suitCards[si].idx}
+	lastStr := suitCards[si].strength
+	jokersUsed := 0
+	sci := si + 1
+	for len(indices) < needed {
+		targetStr := lastStr + 1
+		found := false
+		// suitCards は強さ昇順なので、sci 位置が targetStr と一致するかだけ確認すればよい
+		if sci < len(suitCards) && suitCards[sci].strength == targetStr {
+			indices = append(indices, suitCards[sci].idx)
+			lastStr = targetStr
+			sci++
+			found = true
+		}
+		if !found {
+			if jokersUsed < len(jokerIndices) {
+				indices = append(indices, jokerIndices[jokersUsed])
+				jokersUsed++
+				lastStr = targetStr
+			} else {
+				break
+			}
+		}
+	}
+	if len(indices) != needed {
+		return nil
+	}
+	return indices
+}
+
+// findOpeningSingleCard 場がクリアの時に、フィルタ条件に合うカードを探す (反則上がりチェック付き)
+// filters は優先度順に適用され、reverse=true で手札末尾から探索する
+func (d *Daifugo) findOpeningSingleCard(player *DaifugoPlayer, filters []func(*Card) bool, reverse bool) []int {
+	var fallbackIdx *int
+	n := player.GetCardsSize()
+	for _, filter := range filters {
+		for step := 0; step < n; step++ {
+			i := step
+			if reverse {
+				i = n - 1 - step
+			}
+			if filter(player.GetCard(i)) {
+				if !d.wouldCauseIllegalFinish(player, []int{i}) {
+					return []int{i}
+				}
+				if fallbackIdx == nil {
+					v := i
+					fallbackIdx = &v
+				}
+			}
+		}
+	}
+	if player.GetCardsSize() > 0 {
+		if !d.wouldCauseIllegalFinish(player, []int{0}) {
+			return []int{0}
+		}
+		if fallbackIdx == nil {
+			v := 0
+			fallbackIdx = &v
+		}
+	}
+	if fallbackIdx != nil {
+		return []int{*fallbackIdx}
+	}
+	return nil
+}
+
+// findJokerSinglePlay ジョーカーを単体で出せる場合にそのインデックスを返す
+func (d *Daifugo) findJokerSinglePlay(player *DaifugoPlayer, tableStrength int) []int {
+	for i := 0; i < player.GetCardsSize(); i++ {
+		if IsJoker(player.GetCard(i)) && DaifugoJokerStrength > tableStrength {
+			return []int{i}
+		}
+	}
+	return nil
+}
+
+// findBestPlayNormal 通常難易度: 既存ロジック (最弱のカードを出す、8/ジョーカー温存)
+func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
+	if d.tableCards == nil {
+		return d.findNormalOpeningPlay(player)
+	}
+	return d.findNormalResponsePlay(player)
+}
+
+// findNormalOpeningPlay Normal AIの先手プレイ: エンペラー → 最弱非8非ジョーカー → 8 → ジョーカー
+func (d *Daifugo) findNormalOpeningPlay(player *DaifugoPlayer) []int {
+	if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
+		if !d.wouldCauseIllegalFinish(player, emperorIndices) {
+			return emperorIndices
+		}
+	}
+	return d.findOpeningSingleCard(player, []func(*Card) bool{
+		func(c *Card) bool { return !IsJoker(c) && c.GetValue() != 8 },
+		func(c *Card) bool { return !IsJoker(c) && c.GetValue() == 8 },
+	}, false)
+}
+
+// findNormalResponsePlay Normal AIの応手プレイ: 階段 → 最弱グループ → ジョーカー単体
+func (d *Daifugo) findNormalResponsePlay(player *DaifugoPlayer) []int {
+	if d.tableIsSequence && d.config.SequenceEnabled {
+		return d.findBestSequencePlay(player)
+	}
+
+	needed := len(d.tableCards)
+	tableStrength := d.calcTableStrength()
+
+	if indices := d.searchCardGroup(player, needed, tableStrength, cardSearchOpts{skipRevolution: true}); indices != nil {
+		return indices
+	}
+
 	if needed == 1 {
-		// 戦略的パス: 場が2またはジョーカーで手札が4枚以上の場合はジョーカーを温存
 		if tableStrength >= DaifugoCardStrength(2) && player.GetCardsSize() > 3 {
 			return nil
 		}
-		for i := 0; i < player.GetCardsSize(); i++ {
-			if IsJoker(player.GetCard(i)) && DaifugoJokerStrength > tableStrength {
-				return []int{i}
-			}
-		}
+		return d.findJokerSinglePlay(player, tableStrength)
 	}
 
 	return nil
@@ -1168,216 +1332,69 @@ func (d *Daifugo) findBestPlayEasy(player *DaifugoPlayer) []int {
 	}
 
 	needed := len(d.tableCards)
-	tableBase := getBaseValue(d.tableCards)
-	var tableStrength int
-	if tableBase < 0 {
-		tableStrength = DaifugoJokerStrength
-	} else {
-		tableStrength = d.cardStrength(tableBase)
-	}
+	tableStrength := d.calcTableStrength()
 
 	// 最弱のグループを探す (革命防止なし、ジョーカー温存なし)
-	jokerIndices := d.findJokerIndices(player)
-	i := 0
-	for i < player.GetCardsSize() {
-		card := player.GetCard(i)
-		if IsJoker(card) {
-			i++
-			continue
-		}
-		v := card.GetValue()
-		j := i
-		for j < player.GetCardsSize() && !IsJoker(player.GetCard(j)) && player.GetCard(j).GetValue() == v {
-			j++
-		}
-		count := j - i
-		if count >= needed && d.cardStrength(v) > tableStrength {
-			// スート縛りチェック
-			if d.suitLocked && d.config.SuitLockEnabled {
-				suit := player.GetCard(i).GetDesign()
-				if suit != d.lockedSuit {
-					i = j
-					continue
-				}
-			}
-			indices := make([]int, needed)
-			for k := 0; k < needed; k++ {
-				indices[k] = i + k
-			}
-			return indices
-		}
-		// ジョーカー補完
-		if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
-			if count+len(jokerIndices) >= needed {
-				if d.suitLocked && d.config.SuitLockEnabled {
-					suit := player.GetCard(i).GetDesign()
-					if suit != d.lockedSuit {
-						i = j
-						continue
-					}
-				}
-				indices := make([]int, 0, needed)
-				for k := 0; k < count && len(indices) < needed; k++ {
-					indices = append(indices, i+k)
-				}
-				for _, ji := range jokerIndices {
-					if len(indices) >= needed {
-						break
-					}
-					indices = append(indices, ji)
-				}
-				sort.Ints(indices)
-				return indices
-			}
-		}
-		i = j
+	if indices := d.searchCardGroup(player, needed, tableStrength, cardSearchOpts{}); indices != nil {
+		return indices
 	}
 
 	// ジョーカー単体 (温存判定なし)
 	if needed == 1 {
-		for i := 0; i < player.GetCardsSize(); i++ {
-			if IsJoker(player.GetCard(i)) && DaifugoJokerStrength > tableStrength {
-				return []int{i}
-			}
-		}
+		return d.findJokerSinglePlay(player, tableStrength)
 	}
 
 	return nil
 }
 
 // findBestPlayHard 難しい難易度: 対戦相手の手札状況を考慮したヒューリスティックAI
+// 終盤では「完全読み」ソルバーを使用して確実に上がれる手順を計算する
 func (d *Daifugo) findBestPlayHard(player *DaifugoPlayer) []int {
-	urgent := d.isUrgent(player)
-
-	if d.tableCards == nil {
-		// エンペラーを探す
-		if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
-			if !d.wouldCauseIllegalFinish(player, emperorIndices) {
-				return emperorIndices
-			}
-		}
-
-		if urgent {
-			// 緊急時: 最強の非ジョーカーカードを出す (手札末尾から探索)
-			var fallbackIdx *int
-			for i := player.GetCardsSize() - 1; i >= 0; i-- {
-				card := player.GetCard(i)
-				if !IsJoker(card) {
-					if !d.wouldCauseIllegalFinish(player, []int{i}) {
-						return []int{i}
-					}
-					if fallbackIdx == nil {
-						v := i
-						fallbackIdx = &v
-					}
-				}
-			}
-			// ジョーカーしかない場合
-			if player.GetCardsSize() > 0 {
-				if !d.wouldCauseIllegalFinish(player, []int{0}) {
-					return []int{0}
-				}
-				if fallbackIdx == nil {
-					v := 0
-					fallbackIdx = &v
-				}
-			}
-			if fallbackIdx != nil {
-				return []int{*fallbackIdx}
-			}
-			return nil
-		}
-
-		// 非緊急時: Normalと同じ (最弱の1枚、8/ジョーカー温存)
-		return d.findBestPlayNormal(player)
+	// 完全読み: 終盤で確実に上がれる手順があればそれを使う
+	if indices := d.trySolveEndgame(player); indices != nil {
+		return indices
 	}
+	if d.tableCards == nil {
+		return d.findHardOpeningPlay(player)
+	}
+	return d.findHardResponsePlay(player)
+}
 
-	// 場が階段の場合
+// findHardOpeningPlay Hard AIの先手プレイ: エンペラー → 緊急時は最強 / 非緊急時はNormal委譲
+func (d *Daifugo) findHardOpeningPlay(player *DaifugoPlayer) []int {
+	if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
+		if !d.wouldCauseIllegalFinish(player, emperorIndices) {
+			return emperorIndices
+		}
+	}
+	if d.isUrgent(player) {
+		return d.findOpeningSingleCard(player, []func(*Card) bool{
+			func(c *Card) bool { return !IsJoker(c) },
+		}, true)
+	}
+	return d.findNormalOpeningPlay(player)
+}
+
+// findHardResponsePlay Hard AIの応手プレイ: 緊急時は最強グループ / 非緊急時はNormal+戦略的パス
+func (d *Daifugo) findHardResponsePlay(player *DaifugoPlayer) []int {
 	if d.tableIsSequence && d.config.SequenceEnabled {
 		return d.findBestSequencePlayHard(player)
 	}
 
 	needed := len(d.tableCards)
-	tableBase := getBaseValue(d.tableCards)
-	var tableStrength int
-	if tableBase < 0 {
-		tableStrength = DaifugoJokerStrength
-	} else {
-		tableStrength = d.cardStrength(tableBase)
-	}
+	tableStrength := d.calcTableStrength()
 
-	if urgent {
-		// 緊急時: 最強のグループを出す (末尾から探索)
-		jokerIndices := d.findJokerIndices(player)
-		var bestIndices []int
-		i := 0
-		for i < player.GetCardsSize() {
-			card := player.GetCard(i)
-			if IsJoker(card) {
-				i++
-				continue
-			}
-			v := card.GetValue()
-			j := i
-			for j < player.GetCardsSize() && !IsJoker(player.GetCard(j)) && player.GetCard(j).GetValue() == v {
-				j++
-			}
-			count := j - i
-			if count >= needed && d.cardStrength(v) > tableStrength {
-				if d.suitLocked && d.config.SuitLockEnabled {
-					suit := player.GetCard(i).GetDesign()
-					if suit != d.lockedSuit {
-						i = j
-						continue
-					}
-				}
-				indices := make([]int, needed)
-				for k := 0; k < needed; k++ {
-					indices[k] = i + k
-				}
-				bestIndices = indices // 後のグループほど強い → 上書きし続ける
-			}
-			if count < needed && count > 0 && d.cardStrength(v) > tableStrength {
-				if count+len(jokerIndices) >= needed {
-					if d.suitLocked && d.config.SuitLockEnabled {
-						suit := player.GetCard(i).GetDesign()
-						if suit != d.lockedSuit {
-							i = j
-							continue
-						}
-					}
-					indices := make([]int, 0, needed)
-					for k := 0; k < count && len(indices) < needed; k++ {
-						indices = append(indices, i+k)
-					}
-					for _, ji := range jokerIndices {
-						if len(indices) >= needed {
-							break
-						}
-						indices = append(indices, ji)
-					}
-					sort.Ints(indices)
-					bestIndices = indices
-				}
-			}
-			i = j
+	if d.isUrgent(player) {
+		if indices := d.searchCardGroup(player, needed, tableStrength, cardSearchOpts{selectStrongest: true}); indices != nil {
+			return indices
 		}
-		if bestIndices != nil {
-			return bestIndices
-		}
-		// ジョーカー単体 (緊急時は温存しない)
 		if needed == 1 {
-			for i := 0; i < player.GetCardsSize(); i++ {
-				if IsJoker(player.GetCard(i)) && DaifugoJokerStrength > tableStrength {
-					return []int{i}
-				}
-			}
+			return d.findJokerSinglePlay(player, tableStrength)
 		}
 		return nil
 	}
 
-	// 非緊急時: 最弱のグループを探し、戦略的パスを検討
-	normalIndices := d.findBestPlayNormal(player)
+	normalIndices := d.findNormalResponsePlay(player)
 	if normalIndices != nil && d.shouldStrategicPass(player, normalIndices) {
 		return nil
 	}
@@ -1387,90 +1404,9 @@ func (d *Daifugo) findBestPlayHard(player *DaifugoPlayer) []int {
 // findBestSequencePlayHard Hard AIの階段モード
 func (d *Daifugo) findBestSequencePlayHard(player *DaifugoPlayer) []int {
 	if !d.isUrgent(player) {
-		// 非緊急時: 通常の最弱階段
 		return d.findBestSequencePlay(player)
 	}
-	// 緊急時: 最強の階段を出す
-	needed := len(d.tableCards)
-	tableMinStr := d.getSequenceMinStrength(d.tableCards)
-	jokerIndices := d.findJokerIndices(player)
-
-	var bestIndices []int
-	for startIdx := 0; startIdx < player.GetCardsSize(); startIdx++ {
-		card := player.GetCard(startIdx)
-		if IsJoker(card) {
-			continue
-		}
-		suit := card.GetDesign()
-		startStrength := d.cardStrengthForCard(card)
-
-		suitCards := []struct {
-			idx      int
-			strength int
-		}{{startIdx, startStrength}}
-
-		for nextIdx := startIdx + 1; nextIdx < player.GetCardsSize(); nextIdx++ {
-			nextCard := player.GetCard(nextIdx)
-			if IsJoker(nextCard) {
-				continue
-			}
-			if nextCard.GetDesign() != suit {
-				continue
-			}
-			nextStr := d.cardStrengthForCard(nextCard)
-			if nextStr <= startStrength {
-				continue
-			}
-			suitCards = append(suitCards, struct {
-				idx      int
-				strength int
-			}{nextIdx, nextStr})
-		}
-
-		for si := 0; si < len(suitCards); si++ {
-			indices := []int{suitCards[si].idx}
-			lastStr := suitCards[si].strength
-			jokersUsed := 0
-			sci := si + 1
-
-			for len(indices) < needed {
-				targetStr := lastStr + 1
-				found := false
-				for sci < len(suitCards) {
-					if suitCards[sci].strength == targetStr {
-						indices = append(indices, suitCards[sci].idx)
-						lastStr = targetStr
-						sci++
-						found = true
-					}
-					// suitCards are in ascending strength order, so once strength >= targetStr, stop
-					break
-				}
-				if !found {
-					if jokersUsed < len(jokerIndices) {
-						indices = append(indices, jokerIndices[jokersUsed])
-						jokersUsed++
-						lastStr = targetStr
-					} else {
-						break
-					}
-				}
-			}
-
-			if len(indices) == needed {
-				testCards := make([]*Card, len(indices))
-				for i, idx := range indices {
-					testCards[i] = player.GetCard(idx)
-				}
-				minStr := d.getSequenceMinStrength(testCards)
-				if minStr > tableMinStr {
-					sort.Ints(indices)
-					bestIndices = indices // 後の方が強い → 上書き
-				}
-			}
-		}
-	}
-	return bestIndices
+	return d.findSequencePlay(player, true)
 }
 
 // findJokerIndices プレイヤーの手札中のジョーカーのインデックスを返す
@@ -1486,92 +1422,41 @@ func (d *Daifugo) findJokerIndices(player *DaifugoPlayer) []int {
 
 // findBestSequencePlay 階段モードで出せる最弱の階段を探す (ジョーカーで穴を埋められる)
 func (d *Daifugo) findBestSequencePlay(player *DaifugoPlayer) []int {
+	return d.findSequencePlay(player, false)
+}
+
+// findSequencePlay 階段モードで出せる階段を探す (selectStrongest=true で最強、false で最弱)
+func (d *Daifugo) findSequencePlay(player *DaifugoPlayer, selectStrongest bool) []int {
 	needed := len(d.tableCards)
 	tableMinStr := d.getSequenceMinStrength(d.tableCards)
 	jokerIndices := d.findJokerIndices(player)
 
-	// 同スートの連続カードを探す
+	var bestIndices []int
 	for startIdx := 0; startIdx < player.GetCardsSize(); startIdx++ {
-		card := player.GetCard(startIdx)
-		if IsJoker(card) {
+		if IsJoker(player.GetCard(startIdx)) {
 			continue
 		}
-		suit := card.GetDesign()
-		startStrength := d.cardStrengthForCard(card)
-
-		// startIdx から始まる同スートカードを強さ順に収集
-		suitCards := []struct {
-			idx      int
-			strength int
-		}{{startIdx, startStrength}}
-
-		for nextIdx := startIdx + 1; nextIdx < player.GetCardsSize(); nextIdx++ {
-			nextCard := player.GetCard(nextIdx)
-			if IsJoker(nextCard) {
-				continue
-			}
-			if nextCard.GetDesign() != suit {
-				continue
-			}
-			nextStr := d.cardStrengthForCard(nextCard)
-			if nextStr <= startStrength {
-				continue
-			}
-			suitCards = append(suitCards, struct {
-				idx      int
-				strength int
-			}{nextIdx, nextStr})
-		}
-
-		// suitCards + jokers で needed 枚の階段を構築できるか試みる
-		// suitCards のサブセットを起点に、ジョーカーで穴を埋める
+		suitCards := d.collectSuitCards(player, startIdx)
 		for si := 0; si < len(suitCards); si++ {
-			indices := []int{suitCards[si].idx}
-			lastStr := suitCards[si].strength
-			jokersUsed := 0
-			sci := si + 1
-
-			for len(indices) < needed {
-				targetStr := lastStr + 1
-				// 次の同スートカードがtargetStrを持つか探す
-				found := false
-				for sci < len(suitCards) {
-					if suitCards[sci].strength == targetStr {
-						indices = append(indices, suitCards[sci].idx)
-						lastStr = targetStr
-						sci++
-						found = true
-					}
-					// suitCards are in ascending strength order, so once strength >= targetStr, stop
-					break
-				}
-				if !found {
-					// ジョーカーで埋める
-					if jokersUsed < len(jokerIndices) {
-						indices = append(indices, jokerIndices[jokersUsed])
-						jokersUsed++
-						lastStr = targetStr
-					} else {
-						break // ジョーカーが足りない
-					}
-				}
+			indices := tryBuildSequence(suitCards, si, jokerIndices, needed)
+			if indices == nil {
+				continue
 			}
-
-			if len(indices) == needed {
-				// この階段が場より強いかチェック
-				testCards := make([]*Card, len(indices))
-				for i, idx := range indices {
-					testCards[i] = player.GetCard(idx)
-				}
-				minStr := d.getSequenceMinStrength(testCards)
-				if minStr > tableMinStr {
-					sort.Ints(indices)
+			testCards := make([]*Card, len(indices))
+			for i, idx := range indices {
+				testCards[i] = player.GetCard(idx)
+			}
+			minStr := d.getSequenceMinStrength(testCards)
+			if minStr > tableMinStr {
+				sort.Ints(indices)
+				if !selectStrongest {
 					return indices
 				}
+				bestIndices = indices
 			}
 		}
 	}
-	return nil
+	return bestIndices
 }
 
 // findEmperorPlay エンペラーの組み合わせを探す (場がクリアの時のみ)
@@ -1604,17 +1489,35 @@ func (d *Daifugo) findEmperorPlay(player *DaifugoPlayer) []int {
 	return nil
 }
 
-// triggerFiveSkipIfNeeded 5飛びチェック: 非ジョーカーの5が出されたら次のプレイヤーをスキップ（階段時は無効）
-func (d *Daifugo) triggerFiveSkipIfNeeded(cards []*Card, isSeq bool) bool {
+// triggerFiveSkipIfNeeded 5飛びチェック: 非ジョーカーの5が出されたらプレイヤーをスキップ（階段時は無効）
+// 戻り値はスキップ回数 (0 = スキップなし)
+func (d *Daifugo) triggerFiveSkipIfNeeded(cards []*Card, isSeq bool) int {
 	if !d.config.FiveSkipEnabled || isSeq {
-		return false
+		return 0
 	}
+	fiveCount := 0
 	for _, c := range cards {
 		if !IsJoker(c) && c.GetValue() == 5 {
-			return true
+			fiveCount++
 		}
 	}
-	return false
+	if fiveCount == 0 {
+		return 0
+	}
+	skipCount := d.config.FiveSkipCount
+	if skipCount < 1 {
+		skipCount = 1
+	}
+	totalSkips := skipCount * fiveCount
+	// アクティブプレイヤー数 - 1 でキャップ (無限ループ防止)
+	maxSkips := d.getActivePlayerCnt() - 1
+	if maxSkips < 0 {
+		maxSkips = 0
+	}
+	if totalSkips > maxSkips {
+		totalSkips = maxSkips
+	}
+	return totalSkips
 }
 
 // triggerSevenPassIfNeeded 7渡しチェック: 非ジョーカーの7が出されたらペンディングアクションをセット
@@ -1659,6 +1562,25 @@ func (d *Daifugo) triggerTenDiscardIfNeeded(cards []*Card, isSeq bool) {
 	}
 }
 
+// triggerQueenBomberIfNeeded 12ボンバーチェック: 非ジョーカーのQ(12)がグループプレイで出されたらペンディングアクションをセット
+func (d *Daifugo) triggerQueenBomberIfNeeded(cards []*Card, isSeq bool) {
+	if !d.config.QueenBomberEnabled || isSeq {
+		return
+	}
+	player := d.players[d.currentTurn]
+	// 出した後に手札が残っている場合のみ
+	if player.GetCardsSize() == 0 {
+		return
+	}
+	for _, c := range cards {
+		if !IsJoker(c) && c.GetValue() == 12 {
+			d.pendingActionType = DaifugoPendingQueenBomber
+			d.pendingActionTarget = -1
+			return
+		}
+	}
+}
+
 // isSpadeThreeCounter スペ3返し判定: 場がジョーカー1枚でスペードの3を1枚出す場合
 func (d *Daifugo) isSpadeThreeCounter(cards []*Card) bool {
 	if !d.config.SpadeThreeEnabled {
@@ -1678,6 +1600,29 @@ func (d *Daifugo) isSpadeThreeCounter(cards []*Card) bool {
 
 // resolvePendingAction ペンディングアクションを解決する
 func (d *Daifugo) resolvePendingAction(indices []int) error {
+	// 12ボンバーは indices[0] をカード値 (1-13) として解釈する
+	if d.pendingActionType == DaifugoPendingQueenBomber {
+		if len(indices) != 1 {
+			return NewDomainError(ErrInvalidPlay, "queen bomber requires exactly 1 card value")
+		}
+		v := indices[0]
+		if v < 1 || v > 13 {
+			return NewDomainError(ErrInvalidCard, fmt.Sprintf("card value %d out of range (1-13)", v))
+		}
+		d.resolveQueenBomber(v)
+		d.finishEmptyPlayers()
+		d.humanAction = &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
+
+		d.pendingActionType = DaifugoPendingNone
+		d.pendingActionTarget = -1
+
+		if !d.checkGameEnd() {
+			d.advanceTurn()
+			d.checkPassClear()
+		}
+		return nil
+	}
+
 	if len(indices) != 1 {
 		return NewDomainError(ErrInvalidPlay, "pending action requires exactly 1 card index")
 	}
@@ -1707,6 +1652,25 @@ func (d *Daifugo) resolvePendingAction(indices []int) error {
 	d.advanceTurn()
 	d.checkPassClear()
 	return nil
+}
+
+// resolveQueenBomber 12ボンバー解決: 全プレイヤーから指定値のカードを除去する
+func (d *Daifugo) resolveQueenBomber(value int) {
+	for _, p := range d.players {
+		if p.GetIsFinished() {
+			continue
+		}
+		p.RemoveCardsByValue(value)
+	}
+}
+
+// finishEmptyPlayers 手札が0枚になった非finished プレイヤーを上がりにする (12ボンバー後の処理)
+func (d *Daifugo) finishEmptyPlayers() {
+	for i, p := range d.players {
+		if !p.GetIsFinished() && p.GetCardsSize() == 0 {
+			d.finishPlayer(i)
+		}
+	}
 }
 
 // findStrongestNonJokerIndex プレイヤーの手札中の最強の非ジョーカーカードのインデックスを返す (末尾から探索)
@@ -1750,13 +1714,44 @@ func (d *Daifugo) cpuResolvePendingAction() {
 		removed := player.RemoveCards([]int{idx})
 		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: removed}
 		d.cpuActions = append(d.cpuActions, action)
+	case DaifugoPendingQueenBomber:
+		// 12ボンバー: 対戦相手から最も多くカードを除去できる値を選ぶ
+		bestValue := d.cpuChooseQueenBomberValue(player)
+		d.resolveQueenBomber(bestValue)
+		d.finishEmptyPlayers()
+		action := &DaifugoCpuAction{PlayerIdx: d.currentTurn, PlayedCards: nil}
+		d.cpuActions = append(d.cpuActions, action)
 	}
 
 	d.pendingActionType = DaifugoPendingNone
 	d.pendingActionTarget = -1
 
+	if d.checkGameEnd() {
+		return
+	}
+
 	d.advanceTurn()
 	d.checkPassClear()
+}
+
+// cpuChooseQueenBomberValue CPUが12ボンバーで選ぶ値を決定する (対戦相手から最も多くカードを除去できる値)
+func (d *Daifugo) cpuChooseQueenBomberValue(self *DaifugoPlayer) int {
+	bestValue := 1
+	bestCount := 0
+	for v := 1; v <= 13; v++ {
+		count := 0
+		for _, p := range d.players {
+			if p == self || p.GetIsFinished() {
+				continue
+			}
+			count += p.CountCardsByValue(v)
+		}
+		if count > bestCount {
+			bestCount = count
+			bestValue = v
+		}
+	}
+	return bestValue
 }
 
 // applyCapitalFall 都落ちを適用する
@@ -1966,6 +1961,7 @@ func (d *Daifugo) triggerCoupDetatIfNeeded(cards []*Card) {
 		}
 	}
 	d.revolutionActive = !d.revolutionActive
+	d.appendLog(-1, "revolution", "revolution!", nil)
 	d.sortAllActiveHands()
 }
 
@@ -2028,5 +2024,19 @@ func (d *Daifugo) sortByNumber(p *DaifugoPlayer) {
 			return jokerSortWeight // ジョーカーは末尾
 		}
 		return c.GetValue()*100 + c.GetDesign()
+	})
+}
+
+// GetActionLog 棋譜を取得する
+func (d *Daifugo) GetActionLog() []*ActionLogEntry { return d.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (d *Daifugo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	d.actionLog = append(d.actionLog, &ActionLogEntry{
+		TurnNumber: len(d.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
 	})
 }

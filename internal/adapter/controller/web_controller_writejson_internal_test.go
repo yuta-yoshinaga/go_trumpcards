@@ -29,14 +29,16 @@ type mockBlackJackIF struct{ mock.Mock }
 func (m *mockBlackJackIF) Reset() string { return m.Called().String(0) }
 func (m *mockBlackJackIF) Hit() string   { return m.Called().String(0) }
 func (m *mockBlackJackIF) Stand() string { return m.Called().String(0) }
-func (m *mockBlackJackIF) Bet(a, ppBet, t3Bet int) string {
-	return m.Called(a, ppBet, t3Bet).String(0)
+func (m *mockBlackJackIF) Bet(a, ppBet, t3Bet, handCount int) string {
+	return m.Called(a, ppBet, t3Bet, handCount).String(0)
 }
 func (m *mockBlackJackIF) DoubleDown() string                        { return m.Called().String(0) }
 func (m *mockBlackJackIF) Split() string                             { return m.Called().String(0) }
 func (m *mockBlackJackIF) Insurance() string                         { return m.Called().String(0) }
 func (m *mockBlackJackIF) DeclineInsurance() string                  { return m.Called().String(0) }
 func (m *mockBlackJackIF) Surrender() string                         { return m.Called().String(0) }
+func (m *mockBlackJackIF) EarlySurrender() string                    { return m.Called().String(0) }
+func (m *mockBlackJackIF) DeclineEarlySurrender() string             { return m.Called().String(0) }
 func (m *mockBlackJackIF) SetDeckCount(c int) string                 { return m.Called(c).String(0) }
 func (m *mockBlackJackIF) ToggleHint() string                        { return m.Called().String(0) }
 func (m *mockBlackJackIF) ToggleSoft17() string                      { return "" }
@@ -44,9 +46,12 @@ func (m *mockBlackJackIF) ToggleCounting() string                    { return ""
 func (m *mockBlackJackIF) ToggleDAS() string                         { return "" }
 func (m *mockBlackJackIF) SetCountingSystem(system int) string       { return "" }
 func (m *mockBlackJackIF) SetDeckPenetration(penetration int) string { return "" }
-func (m *mockBlackJackIF) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
+func (m *mockBlackJackIF) SetCpuPlayerCount(count int) string        { return "" }
+func (m *mockBlackJackIF) SetSurrenderRule(rule int) string          { return "" }
+func (m *mockBlackJackIF) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string {
 	return ""
 }
+func (m *mockBlackJackIF) ActionLog() string { return "" }
 
 func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 	bjMock := &mockBlackJackIF{}
@@ -98,9 +103,13 @@ func (m *mockPokerIF) ResetWithConfig(cfg domain.PokerConfig) string {
 func (m *mockPokerIF) Action(action int, amount int) string {
 	return m.Called(action, amount).String(0)
 }
+func (m *mockPokerIF) GetConfig() domain.PokerConfig {
+	return m.Called().Get(0).(domain.PokerConfig)
+}
 func (m *mockPokerIF) Exchange(i []int) string { return m.Called(i).String(0) }
 func (m *mockPokerIF) Stand() string           { return m.Called().String(0) }
 func (m *mockPokerIF) Odds(i []int) string     { return m.Called(i).String(0) }
+func (m *mockPokerIF) ActionLog() string       { return "" }
 
 func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 	pkMock := &mockPokerIF{}
@@ -146,9 +155,14 @@ func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 type mockOldMaidIF struct{ mock.Mock }
 
 func (m *mockOldMaidIF) Reset(cfg domain.OldMaidConfig) string { return m.Called(cfg).String(0) }
-func (m *mockOldMaidIF) Draw(idx int) string                   { return m.Called(idx).String(0) }
-func (m *mockOldMaidIF) Shuffle() string                       { return m.Called().String(0) }
-func (m *mockOldMaidIF) Reorder(indices []int) string          { return m.Called(indices).String(0) }
+func (m *mockOldMaidIF) GetConfig() domain.OldMaidConfig {
+	return m.Called().Get(0).(domain.OldMaidConfig)
+}
+func (m *mockOldMaidIF) Draw(idx int) string          { return m.Called(idx).String(0) }
+func (m *mockOldMaidIF) Shuffle() string              { return m.Called().String(0) }
+func (m *mockOldMaidIF) Reorder(indices []int) string { return m.Called(indices).String(0) }
+func (m *mockOldMaidIF) ResetProfile() string         { return m.Called().String(0) }
+func (m *mockOldMaidIF) ActionLog() string            { return "" }
 
 func TestOldMaidWebController_WriteJsonErrors(t *testing.T) {
 	omMock := &mockOldMaidIF{}
@@ -200,9 +214,13 @@ func (m *mockDaifugoIF) Play(i []int) string {
 func (m *mockDaifugoIF) ResetWithConfig(config domain.DaifugoConfig) string {
 	return m.Called(config).String(0)
 }
+func (m *mockDaifugoIF) GetConfig() domain.DaifugoConfig {
+	return m.Called().Get(0).(domain.DaifugoConfig)
+}
 func (m *mockDaifugoIF) Sort(mode domain.DaifugoSortMode) string {
 	return m.Called(mode).String(0)
 }
+func (m *mockDaifugoIF) ActionLog() string { return "" }
 
 func TestDaifugoWebController_WriteJsonErrors(t *testing.T) {
 	dgMock := &mockDaifugoIF{}
@@ -255,6 +273,7 @@ func (m *mockSevensIF) Play(idx int) string { return m.Called(idx).String(0) }
 func (m *mockSevensIF) PlayJoker(idx, suit, val int) string {
 	return m.Called(idx, suit, val).String(0)
 }
+func (m *mockSevensIF) ActionLog() string { return "" }
 
 func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 	svMock := &mockSevensIF{}
@@ -311,6 +330,11 @@ func (m *mockDoubtIF) GetCpuDoubters() []int {
 	}
 	return nil
 }
+func (m *mockDoubtIF) GetConfig() domain.DoubtConfig {
+	return m.Called().Get(0).(domain.DoubtConfig)
+}
+func (m *mockDoubtIF) ResetProfile() string { return m.Called().String(0) }
+func (m *mockDoubtIF) ActionLog() string    { return "" }
 
 func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 	dwMock := &mockDoubtIF{}
@@ -362,6 +386,16 @@ func (m *mockHoldemIF) ResetWithConfig(cfg domain.HoldemConfig) string {
 func (m *mockHoldemIF) Action(action int, amount int) string {
 	return m.Called(action, amount).String(0)
 }
+func (m *mockHoldemIF) GetConfig() domain.HoldemConfig {
+	return m.Called().Get(0).(domain.HoldemConfig)
+}
+func (m *mockHoldemIF) Rebuy() string     { return m.Called().String(0) }
+func (m *mockHoldemIF) SkipRebuy() string { return m.Called().String(0) }
+func (m *mockHoldemIF) Addon() string     { return m.Called().String(0) }
+func (m *mockHoldemIF) SkipAddon() string { return m.Called().String(0) }
+func (m *mockHoldemIF) Muck() string      { return m.Called().String(0) }
+func (m *mockHoldemIF) ShowHand() string  { return m.Called().String(0) }
+func (m *mockHoldemIF) ActionLog() string { return "" }
 
 func TestHoldemWebController_WriteJsonErrors(t *testing.T) {
 	hmMock := &mockHoldemIF{}

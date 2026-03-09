@@ -123,3 +123,12 @@ func (_m *MockSevensGame) GetTablePlaced() [5]uint16 {
 	ret := _m.Called()
 	return ret.Get(0).([5]uint16)
 }
+
+// GetActionLog モック
+func (_m *MockSevensGame) GetActionLog() []*domain.ActionLogEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {
+		return val
+	}
+	return nil
+}

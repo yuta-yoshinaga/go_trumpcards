@@ -130,7 +130,7 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r tunnel joker=1 strategy")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: true, MaxPasses: 5})
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 5})
 	})
 
 	t.Run("reset with passes=3 flag", func(t *testing.T) {
@@ -154,7 +154,15 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		c := controller.NewSevensCuiController(m)
 		result := c.Exec("r tunnel passes=10 strategy")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, CpuStrategy: true, MaxPasses: 10})
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 10})
+	})
+
+	t.Run("reset with harassment flag", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSevensCuiController(m)
+		result := c.Exec("r harassment")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment, MaxPasses: 5})
 	})
 
 	t.Run("reset with nojokerfinish flag", func(t *testing.T) {
@@ -163,6 +171,14 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		result := c.Exec("r nojokerfinish")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, NoJokerFinish: true})
+	})
+
+	t.Run("reset with jokerreclaim flag", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSevensCuiController(m)
+		result := c.Exec("r jokerreclaim")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, JokerReclaimEnabled: true})
 	})
 
 	t.Run("reset with endstop flag", func(t *testing.T) {
@@ -179,6 +195,22 @@ func TestSevensCuiController_Exec(t *testing.T) {
 		result := c.Exec("r jokerconsban")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{MaxPasses: 5, JokerConsecutiveBanned: true})
+	})
+
+	t.Run("reset with tunnelskip=3 flag", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSevensCuiController(m)
+		result := c.Exec("r tunnelskip=3")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelSkipWidth: 3, MaxPasses: 5})
+	})
+
+	t.Run("reset with tunnel and tunnelskip=4 flags", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSevensCuiController(m)
+		result := c.Exec("r tunnel tunnelskip=4")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "ResetWithConfig", domain.SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 4, MaxPasses: 5})
 	})
 
 	t.Run("plain r still calls Reset", func(t *testing.T) {

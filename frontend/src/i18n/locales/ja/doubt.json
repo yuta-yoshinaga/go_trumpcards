@@ -30,6 +30,8 @@
     "penaltyDrawLimit": "ペナルティ上限:",
     "unlimited": "無制限",
     "cards": "{{count}}枚",
-    "sec": "{{sec}}秒"
+    "sec": "{{sec}}秒",
+    "cpuHesitation": "CPU迷い時間ディレイ",
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
   }
 }

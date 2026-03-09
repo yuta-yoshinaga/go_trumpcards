@@ -41,7 +41,7 @@ func TestSevens_Method(t *testing.T) {
 	t.Run("success NewSevens stores config", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true}
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: domain.SevensCpuStrategic}
 		s := domain.NewSevens(tc, players, cfg)
 		assert.Equal(t, cfg, s.GetConfig())
 	})
@@ -567,7 +567,7 @@ func setupSpadeBoard(config domain.SevensConfig, spadesToPlace []int) *domain.Se
 }
 
 func TestSevens_Tunnel(t *testing.T) {
-	tunnelConfig := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: false}
+	tunnelConfig := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: domain.SevensCpuSimple}
 
 	t.Run("success tunnel: Ace playable when 2 is placed", func(t *testing.T) {
 		s := setupSpadeBoard(tunnelConfig, []int{6, 5, 4, 3, 2})
@@ -595,8 +595,97 @@ func TestSevens_Tunnel(t *testing.T) {
 	})
 }
 
+func TestSevens_TunnelSkipWidth(t *testing.T) {
+	skipConfig := domain.SevensConfig{TunnelSkipWidth: 3}
+
+	t.Run("skip=3: value 4 playable when 7 is placed", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skipConfig)
+		// Fresh board has only 7s placed; skip=3 means 7-3=4 and 7+3=10 are playable
+		card4 := domain.NewCard(domain.CardDesignSpade, 4, false)
+		assert.True(t, s.IsPlayable(card4))
+	})
+
+	t.Run("skip=3: value 10 playable when 7 is placed", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skipConfig)
+		card10 := domain.NewCard(domain.CardDesignSpade, 10, false)
+		assert.True(t, s.IsPlayable(card10))
+	})
+
+	t.Run("skip=3: value 5 not playable (not adjacent or skip-distance from placed)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skipConfig)
+		card5 := domain.NewCard(domain.CardDesignSpade, 5, false)
+		// 5 is not adjacent to 7 (not 6 or 8), and not skip-distance from 7 (not 4 or 10)
+		assert.False(t, s.IsPlayable(card5))
+	})
+
+	t.Run("skip=3: normal adjacency still works", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skipConfig)
+		card6 := domain.NewCard(domain.CardDesignSpade, 6, false)
+		assert.True(t, s.IsPlayable(card6))
+	})
+
+	t.Run("skip=3 without tunnel: no wrap for value 1 (skip from 1-3=-2 out of range)", func(t *testing.T) {
+		// Place 1 on the board, then check if -2 (out of range) is handled
+		s := setupSpadeBoard(skipConfig, []int{6, 5, 4, 3, 2, 1})
+		// 1 is placed. Without tunnel, skip from 1: low=1-3=-2 (invalid), high=1+3=4 (already placed)
+		// So 11 (= 1-3 wrapped) should NOT be playable without TunnelEnabled
+		card11 := domain.NewCard(domain.CardDesignSpade, 11, false)
+		assert.False(t, s.IsPlayable(card11))
+	})
+
+	t.Run("skip=3 with tunnel: wrap enables distant connections", func(t *testing.T) {
+		wrapConfig := domain.SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 3}
+		s := setupSpadeBoard(wrapConfig, []int{6, 5, 4, 3, 2, 1})
+		// 1 is placed. With tunnel wrap: 1-3 → wrapValue(-2) = 11
+		card11 := domain.NewCard(domain.CardDesignSpade, 11, false)
+		assert.True(t, s.IsPlayable(card11))
+	})
+
+	t.Run("skip=3 with tunnel: high wrap from 13", func(t *testing.T) {
+		wrapConfig := domain.SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 3}
+		s := setupSpadeBoard(wrapConfig, []int{8, 9, 10, 11, 12, 13})
+		// 13 is placed. With tunnel wrap: 13+3 → wrapValue(16) = 3
+		card3 := domain.NewCard(domain.CardDesignSpade, 3, false)
+		assert.True(t, s.IsPlayable(card3))
+	})
+
+	t.Run("skip=1: treated as skip < 2 so disabled", func(t *testing.T) {
+		skip1Config := domain.SevensConfig{TunnelSkipWidth: 1}
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, skip1Config)
+		// With skip=1 (< 2), only normal adjacency applies
+		card5 := domain.NewCard(domain.CardDesignSpade, 5, false)
+		assert.False(t, s.IsPlayable(card5))
+	})
+
+	t.Run("SetConfig clamps negative tunnelSkipWidth to 0", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		s.SetConfig(domain.SevensConfig{TunnelSkipWidth: -1, MaxPasses: 5})
+		assert.Equal(t, 0, s.GetConfig().TunnelSkipWidth)
+	})
+
+	t.Run("SetConfig clamps tunnelSkipWidth > 12 to 12", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		s.SetConfig(domain.SevensConfig{TunnelSkipWidth: 15, MaxPasses: 5})
+		assert.Equal(t, 12, s.GetConfig().TunnelSkipWidth)
+	})
+}
+
 func TestSevens_Joker(t *testing.T) {
-	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 
 	t.Run("success joker is playable when there are open board positions", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -827,7 +916,7 @@ func TestSevens_Joker(t *testing.T) {
 }
 
 func TestSevens_CpuStrategy(t *testing.T) {
-	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 
 	t.Run("success strategic CPU passes when holding blocker", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -916,6 +1005,140 @@ func TestSevens_CpuStrategy(t *testing.T) {
 		assert.Len(t, actions, 1)
 		assert.NotNil(t, actions[0].PlayedCard) // plays the card instead of passing
 		assert.Equal(t, 6, actions[0].PlayedCard.GetValue())
+	})
+}
+
+func TestSevens_CpuHarassment(t *testing.T) {
+	t.Run("success harassment CPU passes when play helps opponent", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		// Human plays spade 8 first to advance turn to CPU
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU(player1) has spade 6, opponent(player2) has spade 5
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		_ = s.PlayerPlay(0) // human plays
+		s.CpuPlay()         // CPU 1: harassment evaluation
+
+		actions := s.GetCpuActions()
+		assert.Len(t, actions, 1)
+		assert.Nil(t, actions[0].PlayedCard) // passed
+	})
+
+	t.Run("success harassment CPU plays when blocking opponents", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU(player1) has spade 6, no one has spade 5
+		// Playing 6 with opponents having cards beyond 5 → they are blocked
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		_ = s.PlayerPlay(0)
+		s.CpuPlay()
+
+		actions := s.GetCpuActions()
+		assert.Len(t, actions, 1)
+		assert.NotNil(t, actions[0].PlayedCard)
+		assert.Equal(t, 6, actions[0].PlayedCard.GetValue())
+	})
+
+	t.Run("success harassment CPU plays when self holds next and no opponents blocked", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU has spade 6 and spade 5 (self holds next card, safe to play)
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		_ = s.PlayerPlay(0)
+		s.CpuPlay()
+
+		actions := s.GetCpuActions()
+		assert.Len(t, actions, 1)
+		assert.NotNil(t, actions[0].PlayedCard)
+	})
+
+	t.Run("success harassment CPU forced to play when no passes left", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment, MaxPasses: 1}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU has spade 6, opponent has spade 5
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		// Use up passes so only 1 remains
+		players[1].IncrPassesUsed()
+		_ = s.PlayerPlay(0)
+		s.CpuPlay()
+
+		actions := s.GetCpuActions()
+		assert.Len(t, actions, 1)
+		// All passes used up minus reserve → should be forced to play
+	})
+
+	t.Run("success findBestPlay dispatches to harassment mode", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		_ = s.PlayerPlay(0)
+		s.CpuPlay()
+
+		actions := s.GetCpuActions()
+		assert.Len(t, actions, 1)
+	})
+}
+
+func TestSevens_CpuHarassment_Joker(t *testing.T) {
+	t.Run("success harassment CPU evaluates joker plays", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment, JokerCount: 2, MaxPasses: domain.SevensMaxPasses}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU has a joker
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignClover, 9, false))
+		_ = s.PlayerPlay(0)
+		s.CpuPlay()
+
+		actions := s.GetCpuActions()
+		assert.Len(t, actions, 1)
+	})
+
+	t.Run("success harassment CPU joker blocked by finish rule", func(t *testing.T) {
+		tc := domain.NewTrumpCards(2)
+		players := makeSevensPlayers()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment, JokerCount: 2, MaxPasses: domain.SevensMaxPasses, NoJokerFinish: true}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
+		// CPU has only jokers (can't finish with joker)
+		players[1].AddCard(domain.NewCard(domain.CardDesignJoker, 0, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		_ = s.PlayerPlay(0)
+		s.CpuPlay()
+
+		actions := s.GetCpuActions()
+		assert.Len(t, actions, 1)
+		assert.Nil(t, actions[0].PlayedCard) // forced pass because joker blocked
 	})
 }
 
@@ -1011,7 +1234,7 @@ func TestSevens_IsPositionPlaced_InvalidBounds(t *testing.T) {
 func TestSevens_IsPositionPlayable_InvalidBounds(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 	s := domain.NewSevens(tc, players, jokerConfig)
 
 	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
@@ -1038,7 +1261,7 @@ func TestSevens_IsPositionPlayable_InvalidBounds(t *testing.T) {
 func TestSevens_PlayerPlayJoker_NotHumanTurn(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 	s := domain.NewSevens(tc, players, jokerConfig)
 
 	// Human plays a card to advance turn to CPU
@@ -1061,7 +1284,7 @@ func TestSevens_PlayerPlayJoker_NotHumanTurn(t *testing.T) {
 func TestSevens_FindPlayableSimple_JokerNoPosition(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 	s := domain.NewSevens(tc, players, jokerConfig)
 
 	// Fill the entire board for all 4 suits
@@ -1139,7 +1362,7 @@ func TestSevens_FindPlayableSimple_JokerNoPosition(t *testing.T) {
 func TestSevens_FindPlayableStrategic_JokerEval(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: true}
+	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuStrategic}
 	s := domain.NewSevens(tc, players, strategyConfig)
 
 	// CPU 1 has a joker + 5♠. Strategic evaluation should place joker at 6♠
@@ -1166,7 +1389,7 @@ func TestSevens_FindPlayableStrategic_JokerEval(t *testing.T) {
 func TestSevens_FindPlayableStrategic_Pass(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 	s := domain.NewSevens(tc, players, strategyConfig)
 
 	// CPU 1 has 6♠ (playable) but does NOT have 5♠.
@@ -1192,7 +1415,7 @@ func TestSevens_FindPlayableStrategic_Pass(t *testing.T) {
 func TestSevens_EvaluatePlay_LowDirection(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 	s := domain.NewSevens(tc, players, strategyConfig)
 
 	// Setup: place 6♠ on board (via human play) so min=6, max=7
@@ -1218,7 +1441,7 @@ func TestSevens_EvaluatePlay_LowDirection(t *testing.T) {
 func TestSevens_EvaluatePlay_LowDirection_NegativeScore(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 	s := domain.NewSevens(tc, players, strategyConfig)
 
 	// Setup: place 6♠ on board (via human play) so min=6, max=7
@@ -1240,8 +1463,8 @@ func TestSevens_EvaluatePlay_LowDirection_NegativeScore(t *testing.T) {
 }
 
 func TestSevens_EvaluatePlay_TunnelWrap(t *testing.T) {
-	tunnelConfig := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: false}
-	tunnelStrategyConfig := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: true}
+	tunnelConfig := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: domain.SevensCpuSimple}
+	tunnelStrategyConfig := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 
 	t.Run("value 1 with tunnel wraps nextLow to 13", func(t *testing.T) {
 		// Use non-strategy config so setupSpadeBoard plays cards deterministically.
@@ -1325,7 +1548,7 @@ func TestSevens_EvaluatePlay_TunnelWrap(t *testing.T) {
 func TestSevens_EvaluateJokerPlays(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: true}
+	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuStrategic}
 	s := domain.NewSevens(tc, players, strategyConfig)
 
 	// CPU 1 has a joker and also 5♠.
@@ -1355,7 +1578,7 @@ func TestSevens_EvaluateJokerPlays(t *testing.T) {
 func TestSevens_FindFirstPlayablePosition_BoardFull(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 	s := domain.NewSevens(tc, players, jokerConfig)
 
 	// Fill the entire board for all 4 suits
@@ -1453,7 +1676,7 @@ func TestSevens_AutoHandleNoOption_CpuEliminated(t *testing.T) {
 func TestSevens_PlayerPlayJoker_InvalidCardIdx(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 	s := domain.NewSevens(tc, players, jokerConfig)
 
 	players[0].AddCard(domain.NewCard(domain.CardDesignJoker, 1, false))
@@ -1472,7 +1695,7 @@ func TestSevens_PlayerPlayJoker_InvalidCardIdx(t *testing.T) {
 func TestSevens_PlayerPlayJoker_PlayerFinishesAfterJoker(t *testing.T) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+	jokerConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 	s := domain.NewSevens(tc, players, jokerConfig)
 
 	// Set 3 CPUs as finished
@@ -1555,7 +1778,7 @@ func TestSevens_FindPlayableStrategic_BestScoreUpdated(t *testing.T) {
 	// has a higher score.
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 	s := domain.NewSevens(tc, players, strategyConfig)
 
 	// Give human playable cards to advance turn
@@ -1592,7 +1815,7 @@ func TestSevens_SetConfig(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
 		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: true, MaxPasses: 3, NoJokerFinish: true}
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 3, NoJokerFinish: true}
 		s.SetConfig(cfg)
 		assert.Equal(t, cfg, s.GetConfig())
 	})
@@ -1624,6 +1847,24 @@ func TestSevens_SetConfig(t *testing.T) {
 		assert.Equal(t, 0, s.GetConfig().MaxPasses)
 	})
 
+	t.Run("success SetConfig clamps out-of-range cpuStrategy below min to simple", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{CpuStrategy: -1, MaxPasses: domain.SevensMaxPasses}
+		s.SetConfig(cfg)
+		assert.Equal(t, domain.SevensCpuSimple, s.GetConfig().CpuStrategy)
+	})
+
+	t.Run("success SetConfig clamps out-of-range cpuStrategy above max to simple", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayers()
+		s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+		cfg := domain.SevensConfig{CpuStrategy: 99, MaxPasses: domain.SevensMaxPasses}
+		s.SetConfig(cfg)
+		assert.Equal(t, domain.SevensCpuSimple, s.GetConfig().CpuStrategy)
+	})
+
 	t.Run("success SetConfig then Reset recreates deck with joker", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
@@ -1644,7 +1885,7 @@ func TestSevens_ResetAppliesMaxPasses(t *testing.T) {
 	t.Run("success Reset applies config.MaxPasses to all players", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: false, MaxPasses: 3}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuSimple, MaxPasses: 3}
 		s := domain.NewSevens(tc, players, cfg)
 		s.Reset()
 		for i := 0; i < s.GetPlayerCnt(); i++ {
@@ -1655,7 +1896,7 @@ func TestSevens_ResetAppliesMaxPasses(t *testing.T) {
 	t.Run("success Reset applies MaxPasses 0 (unlimited) to all players", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: false, MaxPasses: 0}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuSimple, MaxPasses: 0}
 		s := domain.NewSevens(tc, players, cfg)
 		s.Reset()
 		for i := 0; i < s.GetPlayerCnt(); i++ {
@@ -1697,7 +1938,7 @@ func TestSevens_ForcedPass(t *testing.T) {
 	t.Run("success CpuPlay voluntary strategic pass when has playable cards", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true, MaxPasses: domain.SevensMaxPasses}
+		strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: domain.SevensMaxPasses}
 		s := domain.NewSevens(tc, players, strategyConfig)
 		// CPU 1 has 6♠ (playable) but does NOT have 5♠ → negative score → voluntary pass
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
@@ -1784,7 +2025,7 @@ func TestSevens_CountOpponentsBlocked(t *testing.T) {
 		// Case 1: 0 opponents hold blocked card (5♠)
 		tc0 := domain.NewTrumpCards(0)
 		p0 := makeSevensPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true, MaxPasses: domain.SevensMaxPasses}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: domain.SevensMaxPasses}
 		s0 := domain.NewSevens(tc0, p0, cfg)
 		p0[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
 		p0[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
@@ -1853,7 +2094,7 @@ func TestSevens_CountOpponentsBlocked(t *testing.T) {
 	t.Run("success evaluatePlay with opponent blocked in high direction", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true, MaxPasses: domain.SevensMaxPasses}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: domain.SevensMaxPasses}
 		s := domain.NewSevens(tc, players, cfg)
 
 		// CPU 1 has 8♠ (playable, adjacent to 7) but NOT 9♠
@@ -1879,7 +2120,7 @@ func TestSevens_UnlimitedPasses(t *testing.T) {
 	t.Run("success findPlayableStrategic with unlimited passes", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true, MaxPasses: 0}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 0}
 		s := domain.NewSevens(tc, players, cfg)
 		// Set unlimited passes on all players
 		for i := 0; i < 4; i++ {
@@ -1906,7 +2147,7 @@ func TestSevens_UnlimitedPasses(t *testing.T) {
 	t.Run("success unlimited passes player never eliminated from pass exhaustion", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: false, MaxPasses: 0}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuSimple, MaxPasses: 0}
 		s := domain.NewSevens(tc, players, cfg)
 		// Set unlimited passes on all players
 		for i := 0; i < 4; i++ {
@@ -1942,7 +2183,7 @@ func TestSevens_UnlimitedPasses(t *testing.T) {
 	t.Run("success unlimited passes strategic CPU still passes with low-reserve guard", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true, MaxPasses: 0}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 0}
 		s := domain.NewSevens(tc, players, cfg)
 		for i := 0; i < 4; i++ {
 			players[i].SetMaxPasses(0)
@@ -2137,7 +2378,7 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 	t.Run("findPlayableSimple skips blocked jokers only-joker case", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, CpuStrategy: false, MaxPasses: 5}
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, CpuStrategy: domain.SevensCpuSimple, MaxPasses: 5}
 		s := domain.NewSevens(tc, players, cfg)
 
 		for i := 0; i < 4; i++ {
@@ -2164,7 +2405,7 @@ func TestSevens_NoJokerFinish(t *testing.T) {
 	t.Run("findPlayableStrategic skips blocked jokers", func(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, CpuStrategy: true, MaxPasses: 5}
+		cfg := domain.SevensConfig{JokerCount: 1, NoJokerFinish: true, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 5}
 		s := domain.NewSevens(tc, players, cfg)
 
 		for i := 0; i < 4; i++ {
@@ -2201,7 +2442,7 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 	t.Run("opponent with 1 pass left gets weight 3", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{CpuStrategy: true, MaxPasses: 3}
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 3}
 		s := domain.NewSevens(tc, players, cfg)
 
 		for i := 0; i < 4; i++ {
@@ -2239,7 +2480,7 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 	t.Run("opponent with plenty of passes gets weight 1", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{CpuStrategy: true, MaxPasses: 10}
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 10}
 		s := domain.NewSevens(tc, players, cfg)
 
 		for i := 0; i < 4; i++ {
@@ -2273,7 +2514,7 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 	t.Run("opponent with unlimited passes gets weight 1", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{CpuStrategy: true, MaxPasses: 0} // unlimited
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 0} // unlimited
 		s := domain.NewSevens(tc, players, cfg)
 
 		for i := 0; i < 4; i++ {
@@ -2301,7 +2542,7 @@ func TestSevens_WeightedOpponentsBlocked(t *testing.T) {
 	t.Run("opponent with 2 passes left gets weight 2", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{CpuStrategy: true, MaxPasses: 3}
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 3}
 		s := domain.NewSevens(tc, players, cfg)
 
 		for i := 0; i < 4; i++ {
@@ -2336,7 +2577,7 @@ func TestSevens_EvaluatePlay_PlayerHasNextHighCard(t *testing.T) {
 	// nextLow = 7 (placed on board) -> skip. Total score = +2.
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayers()
-	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+	strategyConfig := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 	s := domain.NewSevens(tc, players, strategyConfig)
 
 	// Give players dummy cards so game doesn't end
@@ -3319,7 +3560,7 @@ func TestSevens_EndStop(t *testing.T) {
 	t.Run("EndStop with CPU strategy", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayers()
-		cfg := domain.SevensConfig{EndStopEnabled: true, CpuStrategy: true, MaxPasses: 5}
+		cfg := domain.SevensConfig{EndStopEnabled: true, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 5}
 		s := domain.NewSevens(tc, players, cfg)
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
@@ -3573,7 +3814,7 @@ func TestSevens_JokerConsecutiveBanned(t *testing.T) {
 		cfg := domain.SevensConfig{
 			JokerCount:             2,
 			MaxPasses:              domain.SevensMaxPasses,
-			CpuStrategy:            true,
+			CpuStrategy:            domain.SevensCpuStrategic,
 			JokerConsecutiveBanned: true,
 		}
 		s := domain.NewSevens(tc, players, cfg)
@@ -3729,4 +3970,102 @@ func TestSevens_JokerConsecutiveBanned(t *testing.T) {
 			}
 		}
 	})
+}
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestSevens_ActionLog_Play(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeSevensPlayers()
+	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	// Give human a card adjacent to 7 (6 of spades)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	// Give other players cards so game doesn't end
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+
+	err := s.PlayerPlay(0) // play 6♠
+	assert.NoError(t, err)
+
+	log := s.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "play" && e.PlayerIdx == 0 {
+			found = true
+			assert.Contains(t, e.Detail, "played")
+			assert.Len(t, e.Cards, 1)
+			break
+		}
+	}
+	assert.True(t, found, "expected play action log entry")
+}
+
+func TestSevens_ActionLog_Pass(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeSevensPlayers()
+	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	// Give human a card that can't be played (far from 7)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	// Give other players cards
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+
+	// Pass (idx < 0)
+	err := s.PlayerPlay(-1)
+	assert.NoError(t, err)
+
+	log := s.GetActionLog()
+	found := false
+	for _, e := range log {
+		if e.ActionType == "pass" && e.PlayerIdx == 0 {
+			found = true
+			assert.Equal(t, "pass", e.Detail)
+			break
+		}
+	}
+	assert.True(t, found, "expected pass action log entry")
+}
+
+func TestSevens_ActionLog_Reset(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeSevensPlayers()
+	s := domain.NewSevens(tc, players, domain.DefaultSevensConfig())
+
+	// Clear all cards
+	for _, p := range players {
+		for p.GetCardsSize() > 0 {
+			p.RemoveCard(0)
+		}
+	}
+
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	players[2].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+
+	_ = s.PlayerPlay(0)
+	assert.NotEmpty(t, s.GetActionLog())
+
+	s.Reset()
+	assert.Nil(t, s.GetActionLog())
 }

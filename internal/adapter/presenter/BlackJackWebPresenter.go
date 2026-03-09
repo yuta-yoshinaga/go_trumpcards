@@ -54,6 +54,8 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.DeckPenetration = bj.GetDeckPenetration()
 	resObj.RunningCount = bj.GetRunningCount()
 	resObj.TrueCount = bj.GetTrueCount()
+	resObj.MultiHandCount = bj.GetMultiHandCount()
+	resObj.SurrenderRule = config.SurrenderRule
 
 	// hands
 	resObj.Hands = make([]*controller.BlackJackWebOutputHand, len(hands))
@@ -71,7 +73,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		h.IsBlackJack = hand.IsBlackJack()
 		h.CanSplit = hand.CanSplit()
 		h.Surrendered = hand.IsSurrendered()
-		h.CanSurrender = hand.CanSurrender()
+		h.CanSurrender = bj.CanSurrenderHand(i)
 		resObj.Hands[i] = h
 	}
 
@@ -82,6 +84,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		for i, cpu := range cpuPlayers {
 			seat := new(controller.BlackJackWebOutputCpuSeat)
 			seat.Chips = cpu.GetPlayer().GetChips()
+			seat.InsuranceBet = cpu.GetInsuranceBet()
 			seat.Hands = make([]*controller.BlackJackWebOutputHand, len(cpu.GetHands()))
 			for j, hand := range cpu.GetHands() {
 				h := new(controller.BlackJackWebOutputHand)
@@ -99,7 +102,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 				h.IsBlackJack = hand.IsBlackJack()
 				h.CanSplit = hand.CanSplit()
 				h.Surrendered = hand.IsSurrendered()
-				h.CanSurrender = hand.CanSurrender()
+				h.CanSurrender = bj.CanSurrenderCpuHand(i, j)
 				seat.Hands[j] = h
 			}
 			resObj.CpuPlayers[i] = seat
@@ -140,4 +143,12 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		}
 	}
 	return marshalOrError(resObj)
+}
+
+// ActionLogOutput 棋譜をJSON出力
+func (bjp *BlackJackWebPresenter) ActionLogOutput(bj interfaces.BlackJackGame) string {
+	if !bj.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(bj.GetActionLog())
 }

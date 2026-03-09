@@ -109,6 +109,14 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		}
 	}
 
+	// メタAI状態
+	if profile := om.GetHumanProfile(); profile != nil {
+		fmt.Fprintf(&b, "[メタAI] 適応中 (ゲーム数: %d, 端ピック率: %.0f%%)\n",
+			profile.GamesPlayed,
+			(profile.PickRate(0)+profile.PickRate(2))*100,
+		)
+	}
+
 	// エラーメッセージ
 	if lastErr != nil {
 		fmt.Fprintf(&b, "%s\n", lastErr.Error())
@@ -138,4 +146,12 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 
 	b.WriteString("==========\n")
 	return b.String()
+}
+
+// ActionLogOutput 棋譜をテキスト出力
+func (p *OldMaidCuiPresenter) ActionLogOutput(om interfaces.OldMaidGame) string {
+	if !om.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(om.GetActionLog())
 }

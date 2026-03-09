@@ -7,6 +7,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -748,7 +749,7 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 		bj := domain.NewBlackJack(tc, player, dealer)
 		bj.Reset()
 		// Place a bet with PP side bet
-		err := bj.PlayerBet(100, 10, 0)
+		err := bj.PlayerBet(100, 10, 0, 0)
 		if err != nil {
 			t.Skip("cannot test side bet (deck exhausted)")
 		}
@@ -774,7 +775,7 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 		dealer.SetChips(1000)
 		bj := domain.NewBlackJack(tc, player, dealer)
 		bj.Reset()
-		err := bj.PlayerBet(100, 0, 10)
+		err := bj.PlayerBet(100, 0, 10, 0)
 		if err != nil {
 			t.Skip("cannot test side bet (deck exhausted)")
 		}
@@ -815,4 +816,125 @@ func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
 	bj.Reset()
 	output := bjp.Output(bj, nil)
 	assert.NotContains(t, output, "Penetration")
+}
+
+func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("multi-hand count shown when > 1", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		bj.GetPlayer().SetChips(2000)
+		err := bj.PlayerBet(100, 0, 0, 2)
+		assert.NoError(t, err)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "multi-hand: 2 hands")
+	})
+
+	t.Run("multi-hand count not shown when 1", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		err := bj.PlayerBet(100, 0, 0, 1)
+		assert.NoError(t, err)
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "multi-hand:")
+	})
+}
+
+func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("CPU with insurance bet shows insurance info", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		cpuHand.SetBet(100)
+		cpuPlayers[0].SetInsuranceBet(50)
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.Contains(t, output, "insurance: 50")
+	})
+
+	t.Run("CPU without insurance bet does not show insurance info", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+		bj.Reset()
+		cpuPlayers := bj.GetCpuPlayers()
+		cpuHand := cpuPlayers[0].GetHands()[0]
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		cpuHand.SetBet(100)
+		bj.SetPhase(domain.BJPhaseAction)
+		output := bjp.Output(bj, nil)
+		assert.NotContains(t, output, "insurance:")
+	})
+}
+
+func TestBlackJackCuiPresenter_EarlySurrenderPhase(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	bj, dealer := setupBJCuiTest(900, 1000)
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	bj.SetPhase(domain.BJPhaseEarlySurrender)
+	output := bjp.Output(bj, nil)
+	assert.Contains(t, output, "phase: EARLY SURRENDER")
+}
+
+func TestBlackJackCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewBlackJackCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "hit", Detail: "drew a card"},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "hit")
+		assert.Contains(t, result, "drew a card")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
 }

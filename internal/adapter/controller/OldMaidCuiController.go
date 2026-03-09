@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -23,8 +24,8 @@ func NewOldMaidCuiController(omi usecase.OldMaidInteractorIF) *OldMaidCuiControl
 func (c *OldMaidCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
-		func(_ []string) string { return c.omi.Reset(domain.DefaultOldMaidConfig()) },
-		func(command string) string { return "コマンドが不明です: " + command },
+		func(_ []string) string { return c.omi.Reset(c.omi.GetConfig()) },
+		unknownCommandMessage,
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "draw":
@@ -37,6 +38,61 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return c.omi.Draw(cardIdx), true
 			case "s", "shuffle":
 				return c.omi.Shuffle(), true
+			case "ro", "reorder":
+				indices := []int{}
+				for _, p := range args {
+					idx, err := strconv.Atoi(p)
+					if err == nil {
+						indices = append(indices, idx)
+					}
+				}
+				return c.omi.Reorder(indices), true
+			case "sm", "setmode":
+				if len(args) < 1 {
+					return "Game mode is required (0=Normal, 1=JijiNuki).", true
+				}
+				m, err := strconv.Atoi(args[0])
+				if err != nil || m < 0 || m > 1 {
+					return fmt.Sprintf("Invalid game mode: %s. Please enter 0-1.", args[0]), true
+				}
+				cfg := c.omi.GetConfig()
+				cfg.Mode = domain.OldMaidMode(m)
+				return c.omi.Reset(cfg), true
+			case "sps", "setplacementstrategy":
+				if len(args) < 1 {
+					return "CPU placement strategy flag is required (0=OFF, 1=ON).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return fmt.Sprintf("Invalid CPU placement strategy flag: %s. Please enter 0-1.", args[0]), true
+				}
+				cfg := c.omi.GetConfig()
+				cfg.CpuPlacementStrategy = v == 1
+				return c.omi.Reset(cfg), true
+			case "smetaai", "smai":
+				if len(args) < 1 {
+					return "Meta-AI flag is required (0=OFF, 1=ON).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return fmt.Sprintf("Invalid meta-AI flag: %s. Please enter 0-1.", args[0]), true
+				}
+				cfg := c.omi.GetConfig()
+				cfg.CpuMetaAI = v == 1
+				return c.omi.Reset(cfg), true
+			case "rp", "resetprofile":
+				return c.omi.ResetProfile(), true
+			case "sma", "setmemoryai":
+				if len(args) < 1 {
+					return "CPU memory AI flag is required (0=OFF, 1=ON).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return fmt.Sprintf("Invalid CPU memory AI flag: %s. Please enter 0-1.", args[0]), true
+				}
+				cfg := c.omi.GetConfig()
+				cfg.CpuMemoryAI = v == 1
+				return c.omi.Reset(cfg), true
 			}
 			return "", false
 		},

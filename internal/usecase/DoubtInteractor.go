@@ -14,6 +14,9 @@ type DoubtInteractorIF interface {
 	ResolveDoubt(doubterIndices []int) string
 	SkipDoubt() string
 	GetCpuDoubters() []int
+	GetConfig() domain.DoubtConfig
+	ResetProfile() string
+	ActionLog() string
 }
 
 // DoubtInteractor ダウトインタラクタークラス
@@ -24,12 +27,7 @@ type DoubtInteractor struct {
 
 // NewDoubtInteractor コンストラクタ
 func NewDoubtInteractor(d interfaces.DoubtGame, dp presenter.DoubtPresenter) *DoubtInteractor {
-	if d == nil {
-		panic("DoubtInteractor: d must not be nil")
-	}
-	if dp == nil {
-		panic("DoubtInteractor: dp must not be nil")
-	}
+	mustNotNil("DoubtInteractor", map[string]any{"d": d, "dp": dp})
 	return &DoubtInteractor{d: d, dp: dp}
 }
 
@@ -75,6 +73,22 @@ func (di *DoubtInteractor) SkipDoubt() string {
 // GetCpuDoubters CPUダウターインデックスリスト取得
 func (di *DoubtInteractor) GetCpuDoubters() []int {
 	return di.d.GetCpuDoubters()
+}
+
+// GetConfig 現在の設定を取得
+func (di *DoubtInteractor) GetConfig() domain.DoubtConfig {
+	return di.d.GetConfig()
+}
+
+// ResetProfile メタAIプロファイルをリセット
+func (di *DoubtInteractor) ResetProfile() string {
+	di.d.ResetProfile()
+	return di.dp.Output(di.d, nil)
+}
+
+// ActionLog 棋譜を出力する
+func (di *DoubtInteractor) ActionLog() string {
+	return di.dp.ActionLogOutput(di.d)
 }
 
 // runCpuTurns ゲームが終わるか人間の手番またはダウトフェーズになるまでCPUターンを実行

@@ -415,6 +415,12 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetPlayerCnt").Return(1)
 		gameMock.On("GetConfig").Return(domain.DefaultHoldemConfig())
 		gameMock.On("GetHandCount").Return(0)
+		gameMock.On("IsRebuyAvailable").Return(false)
+		gameMock.On("IsAddonAvailable").Return(false)
+		gameMock.On("GetRebuyCounts").Return([]int{0})
+		gameMock.On("GetAddonUsed").Return([]bool{false})
+		gameMock.On("GetRebuyPhaseType").Return(0)
+		gameMock.On("IsMuckAvailable").Return(false)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(99) // out of range
@@ -444,6 +450,12 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetPlayerCnt").Return(1)
 		gameMock.On("GetConfig").Return(domain.DefaultHoldemConfig())
 		gameMock.On("GetHandCount").Return(0)
+		gameMock.On("IsRebuyAvailable").Return(false)
+		gameMock.On("IsAddonAvailable").Return(false)
+		gameMock.On("GetRebuyCounts").Return([]int{0})
+		gameMock.On("GetAddonUsed").Return([]bool{false})
+		gameMock.On("GetRebuyPhaseType").Return(0)
+		gameMock.On("IsMuckAvailable").Return(false)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(-1) // negative
@@ -577,6 +589,83 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestHoldemWebPresenter_Output_RebuyAddonFields(t *testing.T) {
+	p := presenter.NewHoldemWebPresenter()
+
+	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.HoldemPlayer{
+			domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
+		}
+		h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+		return h, players
+	}
+
+	t.Run("default values when rebuy/addon disabled", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.False(t, out.RebuyAvailable)
+		assert.False(t, out.AddonAvailable)
+		assert.Equal(t, []int{0, 0, 0, 0}, out.RebuyCounts)
+		assert.Equal(t, []bool{false, false, false, false}, out.AddonUsed)
+		assert.False(t, out.RebuyEnabled)
+		assert.False(t, out.AddonEnabled)
+		assert.Equal(t, 3, out.RebuyMaxCount)
+		assert.Equal(t, 1000, out.RebuyChips)
+		assert.Equal(t, 1500, out.AddonChips)
+		assert.Equal(t, 20, out.RebuyPeriodHands)
+		assert.Equal(t, 20, out.AddonAfterHand)
+		assert.Equal(t, 0, out.RebuyPhaseType)
+	})
+
+	t.Run("values when rebuy/addon enabled with config", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseRebuy)
+		cfg := domain.HoldemConfig{
+			SmallBlind:       10,
+			BigBlind:         20,
+			InitChips:        1000,
+			TournamentMode:   true,
+			BlindLevelHands:  5,
+			BlindMultiplier:  200,
+			RebuyEnabled:     true,
+			RebuyMaxCount:    5,
+			RebuyChips:       2000,
+			RebuyPeriodHands: 30,
+			AddonEnabled:     true,
+			AddonChips:       3000,
+			AddonAfterHand:   25,
+		}
+		h.SetConfig(cfg)
+		h.SetRebuyCounts([]int{2, 1, 0, 3})
+		h.SetAddonUsed([]bool{true, false, false, true})
+		h.SetRebuyPhaseType(1)
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.True(t, out.RebuyEnabled)
+		assert.True(t, out.AddonEnabled)
+		assert.Equal(t, 5, out.RebuyMaxCount)
+		assert.Equal(t, 2000, out.RebuyChips)
+		assert.Equal(t, 3000, out.AddonChips)
+		assert.Equal(t, 30, out.RebuyPeriodHands)
+		assert.Equal(t, 25, out.AddonAfterHand)
+		assert.Equal(t, []int{2, 1, 0, 3}, out.RebuyCounts)
+		assert.Equal(t, []bool{true, false, false, true}, out.AddonUsed)
+		assert.Equal(t, 1, out.RebuyPhaseType)
+	})
+}
+
 func TestHoldemWebPresenter_Output_BettingLimitFields(t *testing.T) {
 	p := presenter.NewHoldemWebPresenter()
 
@@ -605,5 +694,195 @@ func TestHoldemWebPresenter_Output_BettingLimitFields(t *testing.T) {
 		assert.Equal(t, 0, out.BettingLimit)
 		assert.Equal(t, 0, out.RaiseCount)
 		assert.Equal(t, 0, out.MaxBetAmount)
+	})
+
+	t.Run("tableSize reflects player count", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 4, out.TableSize)
+	})
+
+	t.Run("tableSize 6-max", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players6 := make([]*domain.HoldemPlayer, 6)
+		players6[0] = domain.NewHoldemPlayer(true, domain.HoldemStyleTAG)
+		for i := 1; i < 6; i++ {
+			players6[i] = domain.NewHoldemPlayer(false, domain.HoldemStyleLAP)
+		}
+		h6 := domain.NewHoldem(tc, players6, domain.DefaultHoldemConfig())
+		h6.SetPhase(domain.HoldemPhasePreFlop)
+		players6[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+		players6[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+		result := p.Output(h6, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Equal(t, 6, out.TableSize)
+		assert.Equal(t, 6, len(out.Players))
+	})
+}
+
+func TestHoldemWebPresenter_Output_MuckFields(t *testing.T) {
+	p := presenter.NewHoldemWebPresenter()
+
+	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.HoldemPlayer{
+			domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
+		}
+		h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+		return h, players
+	}
+
+	t.Run("muckAvailable true when showdown and human lost", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.True(t, out.MuckAvailable)
+	})
+
+	t.Run("muckAvailable false when not showdown", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.False(t, out.MuckAvailable)
+	})
+
+	t.Run("mucked result: handRank=0 handName empty bestHand empty mucked=true", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", Kickers: []int{14, 13}, WonAmount: 0, Mucked: true, BestHand: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+			}},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, 0, out.RoundResults[0].HandRank)
+		assert.Equal(t, "", out.RoundResults[0].HandName)
+		assert.Equal(t, "", out.RoundResults[0].Kickers)
+		assert.Len(t, out.RoundResults[0].BestHand, 0)
+		assert.True(t, out.RoundResults[0].Mucked)
+		// non-mucked result is normal
+		assert.Equal(t, domain.PokerHandFlush, out.RoundResults[1].HandRank)
+		assert.False(t, out.RoundResults[1].Mucked)
+	})
+
+	t.Run("muck prompt message when IsMuckAvailable", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "Muck or show your hand.", out.Message)
+		assert.Equal(t, "holdem.muck.prompt", out.MessageCode)
+	})
+
+	t.Run("error takes priority over muck prompt", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+		})
+
+		result := p.Output(h, errors.New("some error"))
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "some error", out.Message)
+		assert.Equal(t, "", out.MessageCode)
+	})
+
+	t.Run("You mucked message in buildResultMessage", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetGameEndFlag(true)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+
+		assert.Equal(t, "You mucked.", out.Message)
+		assert.Equal(t, "holdem.result.mucked", out.MessageCode)
+	})
+}
+
+func TestHoldemWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewHoldemWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", Detail: "raised to 100", Cards: []*domain.Card{domain.NewCard(domain.CardDesignDiamond, 10, true)}},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"raise"`)
+		assert.Contains(t, result, `"detail":"raised to 100"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
 	})
 }

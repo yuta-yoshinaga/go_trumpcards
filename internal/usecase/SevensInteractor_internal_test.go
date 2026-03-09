@@ -17,7 +17,7 @@ func buildSevensEndedGame() *domain.Sevens {
 	config := domain.SevensConfig{
 		TunnelEnabled: false,
 		JokerCount:    0,
-		CpuStrategy:   false,
+		CpuStrategy:   domain.SevensCpuSimple,
 	}
 	players := []*domain.SevensPlayer{
 		domain.NewSevensPlayer(true),  // player 0: human
@@ -44,7 +44,7 @@ func buildSevensCpuTurnGame() *domain.Sevens {
 	config := domain.SevensConfig{
 		TunnelEnabled: false,
 		JokerCount:    0,
-		CpuStrategy:   false,
+		CpuStrategy:   domain.SevensCpuSimple,
 	}
 	players := []*domain.SevensPlayer{
 		domain.NewSevensPlayer(false), // player 0: CPU (current turn)
@@ -114,7 +114,7 @@ func TestSevensInteractor_PlayJoker_GameEndFlag(t *testing.T) {
 	config := domain.SevensConfig{
 		TunnelEnabled: false,
 		JokerCount:    1,
-		CpuStrategy:   false,
+		CpuStrategy:   domain.SevensCpuSimple,
 	}
 	players := []*domain.SevensPlayer{
 		domain.NewSevensPlayer(true),
@@ -151,7 +151,7 @@ func TestSevensInteractor_PlayJoker_SuccessRunCpuTurns(t *testing.T) {
 	config := domain.SevensConfig{
 		TunnelEnabled: false,
 		JokerCount:    1,
-		CpuStrategy:   false,
+		CpuStrategy:   domain.SevensCpuSimple,
 	}
 	players := []*domain.SevensPlayer{
 		domain.NewSevensPlayer(true),  // player 0: human
@@ -202,7 +202,7 @@ func TestSevensInteractor_runCpuTurns_HumanAutoHandleNoOption(t *testing.T) {
 	config := domain.SevensConfig{
 		TunnelEnabled: false,
 		JokerCount:    0,
-		CpuStrategy:   false,
+		CpuStrategy:   domain.SevensCpuSimple,
 	}
 	players := []*domain.SevensPlayer{
 		domain.NewSevensPlayer(true),  // player 0: human

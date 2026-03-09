@@ -26,8 +26,8 @@ func (_m *MockBlackJackInteractor) Stand() string {
 }
 
 // Bet モック
-func (_m *MockBlackJackInteractor) Bet(amount, ppBet, t3Bet int) string {
-	ret := _m.Called(amount, ppBet, t3Bet)
+func (_m *MockBlackJackInteractor) Bet(amount, ppBet, t3Bet, handCount int) string {
+	ret := _m.Called(amount, ppBet, t3Bet, handCount)
 	return ret.Get(0).(string)
 }
 
@@ -57,6 +57,18 @@ func (_m *MockBlackJackInteractor) DeclineInsurance() string {
 
 // Surrender モック
 func (_m *MockBlackJackInteractor) Surrender() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// EarlySurrender モック
+func (_m *MockBlackJackInteractor) EarlySurrender() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// DeclineEarlySurrender モック
+func (_m *MockBlackJackInteractor) DeclineEarlySurrender() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }
@@ -103,8 +115,26 @@ func (_m *MockBlackJackInteractor) SetDeckPenetration(penetration int) string {
 	return ret.Get(0).(string)
 }
 
+// SetCpuPlayerCount モック
+func (_m *MockBlackJackInteractor) SetCpuPlayerCount(count int) string {
+	ret := _m.Called(count)
+	return ret.Get(0).(string)
+}
+
+// SetSurrenderRule モック
+func (_m *MockBlackJackInteractor) SetSurrenderRule(rule int) string {
+	ret := _m.Called(rule)
+	return ret.Get(0).(string)
+}
+
 // ResetWithConfig モック
-func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
-	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration)
+func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string {
+	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration, surrenderRule)
+	return ret.Get(0).(string)
+}
+
+// ActionLog モック
+func (_m *MockBlackJackInteractor) ActionLog() string {
+	ret := _m.Called()
 	return ret.Get(0).(string)
 }

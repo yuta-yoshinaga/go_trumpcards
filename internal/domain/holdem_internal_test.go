@@ -2907,3 +2907,95 @@ func TestCpuDecide_PostFlop_GTO_HighCardBoard_ReducesBluff(t *testing.T) {
 	}
 	assert.True(t, checkFound, "should check on high-card board with weak hand")
 }
+
+func TestResolveShowdown_HumanLost_StaysAtShowdown(t *testing.T) {
+	h := newInternalTestHoldem()
+	h.SetDealerIdx(0)
+	h.SetPot(200)
+	h.phase = HoldemPhaseShowdown
+	h.startingChips = []int{1000, 1000, 1000, 1000}
+
+	// Human has weak hand, CPU1 has strong hand
+	h.players[0].Reset()
+	h.players[0].AddCard(NewCard(CardDesignSpade, 2, false))
+	h.players[0].AddCard(NewCard(CardDesignHeart, 3, false))
+
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[1].AddCard(NewCard(CardDesignHeart, 1, false))
+
+	// Fold players 2 and 3
+	h.players[2].SetFolded(true)
+	h.players[2].Reset()
+	h.players[2].AddCard(NewCard(CardDesignClover, 4, false))
+	h.players[2].AddCard(NewCard(CardDesignDiamond, 5, false))
+
+	h.players[3].SetFolded(true)
+	h.players[3].Reset()
+	h.players[3].AddCard(NewCard(CardDesignClover, 6, false))
+	h.players[3].AddCard(NewCard(CardDesignDiamond, 7, false))
+
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 8, false),
+		NewCard(CardDesignHeart, 9, false),
+		NewCard(CardDesignClover, 11, false),
+		NewCard(CardDesignDiamond, 12, false),
+		NewCard(CardDesignSpade, 13, false),
+	})
+
+	h.resolveShowdown()
+
+	// Human lost → stays at SHOWDOWN (not END)
+	assert.Equal(t, HoldemPhaseShowdown, h.phase)
+	assert.False(t, h.gameEndFlag)
+	// Results should exist
+	assert.True(t, len(h.roundResults) > 0)
+	// Human should have wonAmount == 0
+	for _, r := range h.roundResults {
+		if h.players[r.PlayerIdx].GetIsHuman() {
+			assert.Equal(t, 0, r.WonAmount)
+		}
+	}
+}
+
+func TestResolveShowdown_HumanWon_GoesToEnd(t *testing.T) {
+	h := newInternalTestHoldem()
+	h.SetDealerIdx(0)
+	h.SetPot(200)
+	h.startingChips = []int{1000, 1000, 1000, 1000}
+
+	// Human has strong hand (pair of aces)
+	h.players[0].Reset()
+	h.players[0].AddCard(NewCard(CardDesignSpade, 1, false))
+	h.players[0].AddCard(NewCard(CardDesignHeart, 1, false))
+
+	// CPU1 has weak hand
+	h.players[1].Reset()
+	h.players[1].AddCard(NewCard(CardDesignClover, 2, false))
+	h.players[1].AddCard(NewCard(CardDesignDiamond, 3, false))
+
+	// Fold players 2 and 3
+	h.players[2].SetFolded(true)
+	h.players[2].Reset()
+	h.players[2].AddCard(NewCard(CardDesignClover, 4, false))
+	h.players[2].AddCard(NewCard(CardDesignDiamond, 5, false))
+
+	h.players[3].SetFolded(true)
+	h.players[3].Reset()
+	h.players[3].AddCard(NewCard(CardDesignClover, 6, false))
+	h.players[3].AddCard(NewCard(CardDesignDiamond, 7, false))
+
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 8, false),
+		NewCard(CardDesignHeart, 9, false),
+		NewCard(CardDesignClover, 11, false),
+		NewCard(CardDesignDiamond, 12, false),
+		NewCard(CardDesignSpade, 13, false),
+	})
+
+	h.resolveShowdown()
+
+	// Human won → should go to END
+	assert.Equal(t, HoldemPhaseEnd, h.phase)
+	assert.True(t, h.gameEndFlag)
+}

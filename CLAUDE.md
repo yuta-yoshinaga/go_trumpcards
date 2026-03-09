@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -12,8 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-**Run the application:**
 ```sh
+# Run games
 go run ./cmd/cli blackjack  # BlackJack CLI
 go run ./cmd/cli poker      # 5-card Draw Poker CLI
 go run ./cmd/cli oldmaid    # Old Maid CLI
@@ -23,162 +23,48 @@ go run ./cmd/cli doubt      # Doubt (ダウト) CLI
 go run ./cmd/cli holdem     # Texas Hold'em CLI
 go run ./cmd/cli web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
-```
 
-**Test:**
-```sh
-go test -tags test ./...                                              # Run all tests
-go test -tags test ./internal/domain/...                              # Run tests in a specific package
-go test -tags test ./internal/domain/ -run TestBlackJack              # Run a single test by name
-go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Run all tests with coverage report
-go tool cover -func=coverage.out                                      # Show coverage summary by function
-go tool cover -html=coverage.out -o coverage.html                     # Generate HTML coverage report
-```
+# Test
+go test -tags test ./...                                              # Run all Go tests
+go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Coverage report
 
-**Format Go source files:**
-```sh
-goimports -w ./...   # Format and organize imports for all Go files
-```
+# Format
+goimports -w ./...           # Format and organize imports (use goimports, not gofmt)
 
-**Dependencies:**
-```sh
-go mod tidy
-```
+# Frontend
+cd frontend && npm install   # Install dependencies
+cd frontend && npm run build # Build React app
+cd frontend && npm run check # Biome lint + format check
+cd frontend && npm test      # Run Vitest unit tests
+cd frontend && npm run e2e   # Run Playwright E2E tests
 
-**Docker:**
-```sh
-docker build -t go_trumpcards .           # Build Docker image
-docker run --rm -d -p 8080:8080 go_trumpcards  # Run Docker container
+# Docker
+docker build -t go_trumpcards .
+docker run --rm -d -p 8080:8080 go_trumpcards
 ```
-
-**Frontend (React):**
-```sh
-cd frontend
-npm install              # Install Node.js dependencies
-npm run build            # Build React app to public/ (for local testing with Go server; Docker handles this automatically)
-npm run dev              # Start Vite dev server (proxies API to localhost:80)
-npm run check            # Run Biome lint + format check
-npm run check:write      # Run Biome lint + format check and auto-fix
-npm run lint             # Run Biome linter only
-npm run format           # Run Biome formatter (auto-fix)
-npm test                 # Run frontend unit tests (Vitest)
-npm run test:coverage    # Run frontend unit tests with coverage report (outputs to frontend/coverage/)
-npm run test:watch       # Run frontend tests in watch mode
-npm run e2e              # Run Playwright E2E tests (auto-starts Go server)
-npm run e2e:ui           # Run Playwright E2E tests with UI
-npm run e2e:headed       # Run Playwright E2E tests in headed mode
-```
-
 
 ## Go Formatting Rule
 
-**After editing any Go source file, always run `goimports -w` on the modified files before committing.** This ensures consistent code formatting and correct import organization (grouping, ordering, and removal of unused imports). Use `goimports`, not `gofmt`.
+**After editing any Go source file, always run `goimports -w` on the modified files before committing.** Use `goimports`, not `gofmt`.
 
 ## Architecture
 
-The project implements Clean Architecture with strict layer dependency rules (outer depends on inner, never the reverse). The directory layout follows `golang-standards/project-layout` (`cmd/` + `internal/`):
+Clean Architecture: `infrastructure` -> `adapter` -> `usecase` -> `domain`. See [`docs/architecture.md`](docs/architecture.md) for full details.
 
-```
-cmd/
-  cli/                         # CLI entrypoint (all games + web server)
-  server/                      # Web server dedicated entrypoint
-internal/
-  domain/                      # Core business logic (innermost)
-  usecase/                     # Application business rules (interactors)
-    presenter/                 # Presenter interfaces defined here
-  adapter/                     # Convert data between layers
-    controller/                # Route commands to use cases
-    presenter/                 # Implement presenter interfaces for CUI and Web
-  infrastructure/              # Outermost layer
-    ui/                        # CLI runner
-    web/                       # REST API server (go-json-rest)
-api/                           # OpenAPI specification
-frontend/                      # React frontend source (Vite + React + TypeScript)
-  src/
-    api/                       # API client functions (fetch wrappers for game endpoints)
-    components/                # Shared React components (NavBar, CardImage, CardBack)
-    hooks/                     # Custom React hooks (useGameApi, backed by TanStack React Query)
-    i18n/                      # i18n config and translation files (ja/en)
-    pages/                     # Game page components (BlackJackPage, PokerPage, OldMaidPage)
-    providers/                 # React context providers (QueryProvider for TanStack React Query)
-    types/                     # TypeScript type definitions for card/game data
-  e2e/                         # Playwright E2E test specs
-public/                        # Built frontend assets served by Go web server
-  assets/                      # Vite-compiled JS/CSS bundles
-  images/                      # Card images (PNG)
-  css/                         # Bootstrap CSS
-```
-
-**Data flow:** `infrastructure` → `adapter` → `usecase` → `domain`
-
-### Key patterns
-
-- **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
-- **Mock presenters**: `*_mock.go` files in `internal/adapter/presenter/` and `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: Seven endpoints — `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), `POST /sevens/exec` (Sevens), `POST /doubt/exec` (Doubt), and `POST /holdem/exec` (Texas Hold'em) — accept JSON with a `Cmd` field and game state.
-
-### Games implemented
-
-- **BlackJack**: Entities in `internal/domain/BlackJack.go`, `internal/domain/BlackJackPlayer.go`, `internal/domain/BlackJackHand.go`, `internal/domain/BlackJackSideBet.go`; interactor in `internal/usecase/BlackJackInteractor.go`. Features chip/betting system, split, double down, insurance, natural BJ 3:2 payout, soft-17 rule toggle (H17/S17), double-after-split toggle (DAS), configurable deck penetration (50%/75%), card counting training (Hi-Lo / KO / Zen Count / Omega II running count / true count display with selectable counting system), multi-player CPU seats (0-3 CPU players using basic strategy), side bets (Perfect Pairs and 21+3), and auto-advance round timer
-- **Poker (5-card Draw)**: Entities in `internal/domain/Poker.go`, `internal/domain/PokerPlayer.go`, `internal/domain/PokerConfig.go`, `internal/domain/PokerOdds.go`; interactor in `internal/usecase/PokerInteractor.go`. CLI and Web GUI (1 human vs 1-3 CPU), 4 CPU play styles (Conservative/Balanced/Aggressive/Bluffer) with exchange-count reading and bluff AI, optional joker wild cards (0-2, Five of a Kind rank), full side pot support, draw odds calculator (brute-force enumeration of all combinations during exchange phase), configurable betting limit (Fixed/Pot Limit/No Limit), kicker display at showdown
-- **Old Maid (Babanuki)**: Entities in `internal/domain/OldMaid.go`, `internal/domain/OldMaidPlayer.go`, `internal/domain/OldMaidConfig.go`; interactor in `internal/usecase/OldMaidInteractor.go`. Optional rules: CPU placement strategy (odd card at edges), CPU memory AI (remember draw positions and adjust selection strategy based on pair results and human hand changes). Features: draw history timeline (persistent log of all draws throughout the game), suspect pin (client-side toggle to mark CPU players suspected of holding the odd card)
-- **Daifugo**: Entities in `internal/domain/Daifugo.go`, `internal/domain/DaifugoPlayer.go`; interactor in `internal/usecase/DaifugoInteractor.go`. Supports optional rules: sandstorm (3 non-joker 3s clear the table like 8-cut), emperor (4 consecutive cards of all different suits on clear table triggers revolution + table clear, CPU AI can find emperor plays), sequence revolution (4+ card sequences trigger revolution), illegal finish (finishing with 8-cut/joker/revolution is penalized — player demoted to last rank, CPU AI avoids when safe alternative exists). Three CPU difficulty levels: Normal (default, balanced AI with card preservation), Easy (simple greedy play), Hard (strategic AI that adapts to opponent hand sizes and plays aggressively when opponents are close to finishing)
-- **Sevens (7並べ)**: Entities in `internal/domain/Sevens.go`, `internal/domain/SevensPlayer.go`, `internal/domain/SevensConfig.go`; interactor in `internal/usecase/SevensInteractor.go`. Supports optional rules: tunnel (A↔K circular), joker, CPU strategy, configurable max passes (0 = unlimited), no-joker-finish (ban finishing with a joker), joker reclaim (playing a real card on a joker-occupied position returns the joker to the player's hand), end stop (A/K止め — placing A blocks high side 8-K, placing K blocks low side A-6), and joker consecutive banned (ジョーカー連続禁止 — prevents playing joker on consecutive turns). CPU AI uses pass-urgency weighting to block opponents near pass exhaustion
-- **Doubt (ダウト)**: Entities in `internal/domain/Doubt.go`, `internal/domain/DoubtPlayer.go`; interactor in `internal/usecase/DoubtInteractor.go`. CLI and Web GUI (1 human vs 3 CPUs), 10-second async doubt window (CLI) / frontend countdown timer (Web), random CPU bluff/doubt AI, configurable penalty draw limit (loser picks up at most N cards; excess discarded from game)
-- **Texas Hold'em**: Entities in `internal/domain/Holdem.go`, `internal/domain/HoldemPlayer.go`, `internal/domain/HoldemConfig.go`; interactor in `internal/usecase/HoldemInteractor.go`. CLI and Web GUI (1 human vs 3 CPU), 5 CPU play styles (TAG/LAP/TAP/LAG/GTO) with bluff AI and GTO mixed strategy, full side pot support, HUD stats (VPIP%/PFR%/3Bet%/AF), pot-relative AI bet sizing, tournament mode with blind escalation, configurable betting limit (Fixed/Pot Limit/No Limit), kicker display at showdown
-
-## Testing Policy
+## Testing
 
 **Unit tests are mandatory. Every implementation must ship with tests in the same commit.**
 
-### TDD (Test-Driven Development)
-
-**All code changes must follow the TDD cycle (Red-Green-Refactor):**
-
-#### 1. Red — Write a failing test first
-
-Before writing any production code, create or modify a test file (`*_test.go`) that captures the expected behavior. Run the test and confirm it fails:
-
-```sh
-go test -tags test ./path/to/package -run TestNewFeature  # Confirm the test fails (Red)
-```
-
-Write tests in the corresponding location for each Clean Architecture layer:
-
-| Layer | Test location |
-|-------|--------------|
-| Domain | `internal/domain/*_test.go` |
-| Use cases | `internal/usecase/*Interactor_test.go` |
-| Presenters | `internal/adapter/presenter/*_test.go` |
-| Controllers | `internal/adapter/controller/*_test.go` |
-
-#### 2. Green — Write the minimum code to pass
-
-Implement only the code necessary to make the failing test pass. Do not add extra functionality beyond what the test requires:
-
-```sh
-go test -tags test ./path/to/package -run TestNewFeature  # Confirm the test passes (Green)
-```
-
-#### 3. Refactor — Clean up while keeping tests green
-
-Improve code quality (naming, structure, duplication removal) without changing behavior. Verify all tests still pass after refactoring:
-
-```sh
-go test -tags test ./...  # Confirm all tests still pass after refactoring
-```
-
-**Key rules:**
-- Never write production code without a corresponding failing test first
-- Each Red-Green-Refactor cycle should be small and focused
-- Run `go test` at every stage transition to verify the expected outcome
-- Apply this cycle at every layer of the Clean Architecture (Domain, Use cases, Presenters, Controllers)
+**All code changes must follow the TDD cycle (Red-Green-Refactor).** See [`.ai/skills/tdd-flow.md`](.ai/skills/tdd-flow.md) for the detailed workflow. Also see:
+- [`.ai/hooks/README.md`](.ai/hooks/README.md) -- Pre-commit verification commands
+- [`internal/CLAUDE.md`](internal/CLAUDE.md) -- Go-specific testing rules
+- [`frontend/CLAUDE.md`](frontend/CLAUDE.md) -- Frontend-specific testing rules
 
 ### Coverage standard
 
 The `cmd/` and `internal/infrastructure/` directories are excluded from coverage requirements. For all other packages under `internal/`, **branch coverage (C1) must be 100%**.
 
-When writing tests, always verify branch coverage—not just statement coverage (C0)—by ensuring every conditional branch (if/else, switch cases, loop exit conditions, etc.) is exercised.
+When writing tests, always verify branch coverage--not just statement coverage (C0)--by ensuring every conditional branch (if/else, switch cases, loop exit conditions, etc.) is exercised.
 
 ### Coverage requirements
 
@@ -193,15 +79,15 @@ When adding or modifying any game logic, provide tests for all four layers:
 
 ### Mock pattern
 
-- **Presenter mocks**: `internal/usecase/presenter/*_mock.go` — implement the presenter interface using `testify/mock`
-- **Interactor mocks**: `internal/adapter/controller/usecase/*_mock.go` — implement the interactor interface using `testify/mock`
+- **Presenter mocks**: `internal/usecase/presenter/*_mock.go` -- implement the presenter interface using `testify/mock`
+- **Interactor mocks**: `internal/adapter/controller/usecase/*_mock.go` -- implement the interactor interface using `testify/mock`
 - Follow the existing `BlackJack*_mock.go` files as the reference pattern
 
 ### Writing deterministic tests
 
 Card games involve shuffling, so tests must not depend on random outcomes:
 
-- **Avoid auto-hit/draw**: Give the dealer/CPU a score that prevents automatic card draws (e.g., BlackJack dealer ≥ 17, Poker dealer rank ≥ Two Pair so `dealerExchange` is skipped)
+- **Avoid auto-hit/draw**: Give the dealer/CPU a score that prevents automatic card draws (e.g., BlackJack dealer >= 17, Poker dealer rank >= Two Pair so `dealerExchange` is skipped)
 - **Force deterministic draws in OldMaid**: Give the target player exactly 1 card so `rand.Intn(1)` always returns 0
 - **Never assert on shuffled deck order**: Set up game state manually via `AddCard` instead of relying on `Reset`/`Shuffle`
 
@@ -223,7 +109,7 @@ Frontend unit tests are also mandatory. The test stack is **Vitest + React Testi
 | Components | `frontend/src/components/*.test.tsx` | Rendered output, props, event handlers |
 | Pages | `frontend/src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
 
-**Branch coverage (C1) must be 100%** for the four directories `frontend/src/api`, `frontend/src/components`, `frontend/src/pages`, and `frontend/src/utils`. When writing tests, always verify branch coverage—not just statement coverage (C0)—by ensuring every conditional branch (if/else, ternary, `??`, `&&`/`||` short-circuits, switch cases) is exercised.
+**Branch coverage (C1) must be 100%** for the four directories `frontend/src/api`, `frontend/src/components`, `frontend/src/pages`, and `frontend/src/utils`. When writing tests, always verify branch coverage--not just statement coverage (C0)--by ensuring every conditional branch (if/else, ternary, `??`, `&&`/`||` short-circuits, switch cases) is exercised.
 
 **Patterns:**
 
@@ -270,16 +156,17 @@ The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with *
 
 | Change type | Documents to update |
 |-------------|---------------------|
-| Add/remove a game | `README.md` (Description, Run section), `CLAUDE.md` (Commands, Games implemented), `AGENTS.md` (Repository Overview, Games implemented) |
-| Add/remove a CLI command (`cmd/cli/main.go`) | `README.md` (Run section), `CLAUDE.md` (Commands), `AGENTS.md` (Common Commands) |
-| Add/remove a Web API endpoint | `CLAUDE.md` (Web API in Key patterns), `AGENTS.md` (Web API in Key patterns), `api/openapi.yaml` |
-| Change request/response schema of a Web API endpoint | `api/openapi.yaml` |
-| Change architecture or layer structure | `README.md` (Architecture), `CLAUDE.md` (Architecture), `AGENTS.md` (Architecture) |
-| Change Git workflow or CI/CD | `CLAUDE.md` (Git Workflow), `AGENTS.md` (Git Workflow & CI/CD) |
+| Add/remove a game | [`README.md`](README.md) (Description, Run section), [`CLAUDE.md`](CLAUDE.md) (Commands), [`docs/games.md`](docs/games.md) |
+| Add/remove a CLI command (`cmd/cli/main.go`) | [`README.md`](README.md) (Run section), [`CLAUDE.md`](CLAUDE.md) (Commands) |
+| Add/remove a Web API endpoint | [`docs/architecture.md`](docs/architecture.md) (Web API in Key patterns), [`api/openapi.yaml`](api/openapi.yaml) |
+| Change request/response schema of a Web API endpoint | [`api/openapi.yaml`](api/openapi.yaml) |
+| Change architecture or layer structure | [`README.md`](README.md) (Architecture), [`CLAUDE.md`](CLAUDE.md) (Architecture), [`docs/architecture.md`](docs/architecture.md) |
+| Change Git workflow or CI/CD | [`CLAUDE.md`](CLAUDE.md) (Git Workflow) |
 | Modify anything under `frontend/` | Run `cd frontend && npm run build`, `cd frontend && npm run check`, and `cd frontend && npm test` and ensure all three pass before committing |
-| Add/remove frontend source files or change testing approach | Update `CLAUDE.md` (Frontend testing) and `AGENTS.md` (Frontend testing) |
-| Change frontend tooling or scripts | `frontend/README.md` (Scripts, Tooling) |
+| Add/remove frontend source files or change testing approach | Update Testing section in [`CLAUDE.md`](CLAUDE.md) (Frontend testing) and [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
+| Change frontend tooling or scripts | [`frontend/README.md`](frontend/README.md) (Scripts, Tooling) |
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game |
+| Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
@@ -291,94 +178,86 @@ Use commit type `docs` (or include doc changes in the same commit as the code ch
 
 ## Commit Message Format
 
-All commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+All commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
 ```
 
-**Types:**
-
-| Type | Description |
-|------|-------------|
-| `feat` | A new feature |
-| `fix` | A bug fix |
-| `docs` | Documentation only changes |
-| `style` | Changes that do not affect code meaning (formatting, etc.) |
-| `refactor` | A code change that neither fixes a bug nor adds a feature |
-| `perf` | A code change that improves performance |
-| `test` | Adding missing tests or correcting existing tests |
-| `chore` | Changes to the build process or auxiliary tools |
-
-**Examples:**
-
-```
-feat(entities): add new card type to BlackJack
-fix(poker): correct hand ranking for flush detection
-docs: update README with web deployment instructions
-test(blackjack): add tests for dealer bust scenario
-refactor(usecases): simplify interactor dependency injection
-```
+**Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
 
 **Rules:**
-- The description must be in lowercase and not end with a period.
-- Use the imperative mood in the description (e.g., "add feature" not "added feature").
-- Breaking changes must include `BREAKING CHANGE:` in the footer or append `!` after the type/scope.
+- Lowercase description, no trailing period
+- Imperative mood (e.g., "add feature" not "added feature")
+- Breaking changes: `BREAKING CHANGE:` in footer or `!` after type/scope
 
-## Workflow Orchestration
+## Workflow & Principles
 
-- **Plan Node Default**
-  - Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-  - If something goes sideways, STOP and re-plan immediately – don't keep pushing
-  - Use plan mode for verification steps, not just building
-  - Write detailed specs upfront to reduce ambiguity
+### Plan Node Default
 
-- **Subagent Strategy**
-  - Use subagents liberally to keep main context window clean
-  - Offload research, exploration, and parallel analysis to subagents
-  - For complex problems, throw more compute at it via subagents
-  - One task per subagent for focused execution
+- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+- If something goes sideways, STOP and re-plan immediately -- don't keep pushing
+- Use plan mode for verification steps, not just building
+- Write detailed specs upfront to reduce ambiguity
 
-- **Self-Improvement Loop**
-  - After ANY correction from the user: update `tasks/lessons.md` with the pattern
-  - Write rules for yourself that prevent the same mistake
-  - Ruthlessly iterate on these lessons until mistake rate drops
-  - Review lessons at session start for relevant project
+### Subagent Strategy
 
-- **Verification Before Done**
-  - Never mark a task complete without proving it works
-  - Diff behavior between main and your changes when relevant
-  - Ask yourself: "Would a staff engineer approve this?"
-  - Run tests, check logs, demonstrate correctness
+- Use subagents liberally to keep main context window clean
+- Offload research, exploration, and parallel analysis to subagents
+- For complex problems, throw more compute at it via subagents
+- One task per subagent for focused execution
 
-- **Demand Elegance (Balanced)**
-  - For non-trivial changes: pause and ask "is there a more elegant way?"
-  - If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-  - Skip this for simple, obvious fixes – don't over-engineer
-  - Challenge your own work before presenting it
+### Self-Improvement Loop
 
-- **Autonomous Bug Fixing**
-  - When given a bug report: just fix it. Don't ask for hand-holding
-  - Point at logs, errors, failing tests – then resolve them
-  - Zero context switching required from the user
-  - Go fix failing CI tests without being told how
+- After ANY correction from the user: update `tasks/lessons.md` (create on demand; not committed) with the pattern
+- Write rules for yourself that prevent the same mistake
+- Ruthlessly iterate on these lessons until mistake rate drops
+- Review lessons at session start for relevant project
 
-## Task Management
+### Verification Before Done
 
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
+- Never mark a task complete without proving it works
+- Diff behavior between main and your changes when relevant
+- Ask yourself: "Would a staff engineer approve this?"
+- Run tests, check logs, demonstrate correctness
+
+### Demand Elegance (Balanced)
+
+- For non-trivial changes: pause and ask "is there a more elegant way?"
+- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
+- Skip this for simple, obvious fixes -- don't over-engineer
+- Challenge your own work before presenting it
+
+### Autonomous Bug Fixing
+
+- When given a bug report: just fix it. Don't ask for hand-holding
+- Point at logs, errors, failing tests -- then resolve them
+- Zero context switching required from the user
+- Go fix failing CI tests without being told how
+
+### Task Management
+
+1. **Plan First**: Write plan to `tasks/todo.md` (create on demand; not committed) with checkable items
 2. **Verify Plan**: Check in before starting implementation
 3. **Track Progress**: Mark items complete as you go
 4. **Explain Changes**: High-level summary at each step
 5. **Document Results**: Add review section to `tasks/todo.md`
 6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
 
-## Core Principles
+### Core Principles
 
 - **Simplicity First**: Make every change as simple as possible. Impact minimal code.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
 - **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
-- **Dead Code Cleanup**: When modifying code, always remove any dead code or dead files you encounter. Use `golang.org/x/tools/cmd/deadcode` for Go and `knip` for TypeScript to identify unused code. Verify findings manually before deleting — static analysis tools can produce false positives (e.g., interface implementations called via reflection, mock methods). Delete confirmed dead code in the same commit as your feature or fix.
+- **Dead Code Cleanup**: When modifying code, always remove any dead code or dead files you encounter. Use `golang.org/x/tools/cmd/deadcode` for Go and `knip` for TypeScript to identify unused code. Verify findings manually before deleting -- static analysis tools can produce false positives (e.g., interface implementations called via reflection, mock methods). Delete confirmed dead code in the same commit as your feature or fix.
+
+## Detailed Context
+
+| Topic | File |
+|-------|------|
+| Architecture & key patterns | [`docs/architecture.md`](docs/architecture.md) |
+| Game descriptions & entities | [`docs/games.md`](docs/games.md) |
+| TDD skill | [`.ai/skills/tdd-flow.md`](.ai/skills/tdd-flow.md) |
+| Pre-commit hooks | [`.ai/hooks/README.md`](.ai/hooks/README.md) |
+| Go backend rules | [`internal/CLAUDE.md`](internal/CLAUDE.md) |
+| Frontend rules | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |

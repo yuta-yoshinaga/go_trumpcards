@@ -495,6 +495,156 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 	})
 }
 
+func TestDoubtWebController_ResetWithCpuHesitation(t *testing.T) {
+	mockOutput := `{"players":[],"cpuDoubters":[],"cpuActions":[]}`
+	win := 10
+
+	t.Run("cpuHesitationEnabled true is passed", func(t *testing.T) {
+		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal, CpuHesitationEnabled: true}
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput:         controller.BaseWebInput{Command: "reset", SessionID: "cfg-hes"},
+			DoubtWindowSec:       &win,
+			CpuHesitationEnabled: true,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("cpuHesitationEnabled omitted uses default (false)", func(t *testing.T) {
+		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal}
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-hes-nil"},
+			DoubtWindowSec: &win,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+}
+
+func TestDoubtWebController_ResetProfile(t *testing.T) {
+	mockOutput := `{"players":[],"cpuDoubters":[],"cpuActions":[]}`
+
+	t.Run("reset-profile command dispatches ResetProfile", func(t *testing.T) {
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetProfile").Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "reset-profile", SessionID: "rp-session-1"},
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetProfile")
+	})
+
+	t.Run("rp command dispatches ResetProfile", func(t *testing.T) {
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetProfile").Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput: controller.BaseWebInput{Command: "rp", SessionID: "rp-session-2"},
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetProfile")
+	})
+}
+
+func TestDoubtWebController_ResetWithCpuMetaAI(t *testing.T) {
+	mockOutput := `{"players":[],"cpuDoubters":[],"cpuActions":[]}`
+	win := 10
+
+	t.Run("cpuMetaAI true is passed", func(t *testing.T) {
+		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal, CpuMetaAI: true}
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-metaai-1"},
+			DoubtWindowSec: &win,
+			CpuMetaAI:      true,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+
+	t.Run("cpuMetaAI omitted uses default (false)", func(t *testing.T) {
+		expected := domain.DoubtConfig{DoubtWindowSec: 10, CpuMemoryLevel: domain.DoubtMemoryLevelNormal}
+		dgiMock := new(usecase.MockDoubtInteractor)
+		dgiMock.On("ResetWithConfig", expected).Return(mockOutput)
+
+		factory := func() uc.DoubtInteractorIF { return dgiMock }
+		ctrl := controller.NewDoubtWebController(factory)
+		defer ctrl.Stop()
+		api := rest.NewApi()
+		router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+		api.SetApp(router)
+
+		input := controller.DoubtWebInput{
+			BaseWebInput:   controller.BaseWebInput{Command: "reset", SessionID: "cfg-metaai-2"},
+			DoubtWindowSec: &win,
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+	})
+}
+
 func TestDoubtWebController_Stop(t *testing.T) {
 	dgiMock := new(usecase.MockDoubtInteractor)
 	factory := func() uc.DoubtInteractorIF { return dgiMock }
@@ -533,4 +683,40 @@ func TestDoubtWebOutputAction_HasTell_JSON(t *testing.T) {
 	if parsed.HasTell {
 		t.Error("expected HasTell to be false after JSON round-trip")
 	}
+}
+
+func TestDoubtWebController_Log(t *testing.T) {
+	mockLogOutput := `{"entries":[]}`
+	dgiMock := new(usecase.MockDoubtInteractor)
+	dgiMock.On("ActionLog").Return(mockLogOutput)
+
+	factory := func() uc.DoubtInteractorIF { return dgiMock }
+	ctrl := controller.NewDoubtWebController(factory)
+	defer ctrl.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/doubt/exec", ctrl.Exec))
+	api.SetApp(router)
+
+	t.Run("log command", func(t *testing.T) {
+		var input controller.DoubtWebInput
+		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"doubt-log-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockLogOutput)
+	})
+
+	t.Run("l shorthand", func(t *testing.T) {
+		var input controller.DoubtWebInput
+		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"doubt-log-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/doubt/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(mockLogOutput)
+	})
 }

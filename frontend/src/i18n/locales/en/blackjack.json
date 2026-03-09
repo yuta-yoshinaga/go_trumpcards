@@ -24,7 +24,9 @@
     "surrender": "Surrender",
     "insurance": "Insurance",
     "decline": "Decline",
-    "bet": "Bet"
+    "bet": "Bet",
+    "earlySurrender": "Early Surrender",
+    "continue": "Continue"
   },
   "betAmount": "Bet Amount:",
   "deckCount": "Decks:",
@@ -41,7 +43,15 @@
   },
   "trueCountNA": "TC=N/A",
   "das": "DAS",
+  "surrenderRule": "Surrender:",
+  "surrenderRuleNames": {
+    "0": "Late",
+    "1": "Early",
+    "2": "None"
+  },
   "penetration": "Penetration:",
+  "handCount": "Hands:",
+  "handCountUnit": "",
   "autoAdvance": "Auto Advance:",
   "autoAdvanceSec": "{{sec}}s",
   "sideBet": {

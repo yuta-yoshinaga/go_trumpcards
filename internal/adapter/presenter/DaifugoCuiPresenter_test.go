@@ -6,6 +6,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -385,6 +386,22 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "ゲーム終了")
 	})
 
+	t.Run("success Output shows 12ボンバー pending action prompt", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		config := domain.DaifugoConfig{QueenBomberEnabled: true}
+		dg := domain.NewDaifugo(tc, players, config)
+		// Human plays a 12; has spare card → QueenBomber pending set
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 9, false)) // spare
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		_ = dg.PlayerPlay([]int{0})
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "【12ボンバー】")
+	})
+
 	t.Run("success Output does not show 反則上がり for non-penalized player", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()
@@ -399,5 +416,46 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[3].SetRank(4)
 		result := tdp.Output(dg, nil)
 		assert.NotContains(t, result, "[反則上がり]")
+	})
+}
+
+func TestDaifugoCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewDaifugoCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 3 of spades"},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "played 3 of spades")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockDaifugoGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

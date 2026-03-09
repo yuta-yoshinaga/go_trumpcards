@@ -41,7 +41,7 @@ func TestBlackJackInteractor_Method(t *testing.T) {
 		assert.Equal(t, "----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n", tbj.Stand())
 	})
 	t.Run("success Bet", func(t *testing.T) {
-		assert.Equal(t, "----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n", tbj.Bet(100, 0, 0))
+		assert.Equal(t, "----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n", tbj.Bet(100, 0, 0, 0))
 	})
 	t.Run("success DoubleDown", func(t *testing.T) {
 		assert.Equal(t, "----------\ndealer score \nCLOVER 2,\n----------\nplayer score 22\nSPADE 2,SPADE 10,SPADE 11\n----------\n", tbj.DoubleDown())
@@ -70,6 +70,17 @@ func TestBlackJackInteractor_NewMethods(t *testing.T) {
 	t.Run("ToggleHint delegates to presenter", func(t *testing.T) {
 		assert.Equal(t, "ok", tbj.ToggleHint())
 	})
+}
+
+func TestBlackJackInteractor_ActionLog(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjpMock.On("ActionLogOutput", bjMock).Return(`{"entries":[]}`)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	bjpMock.AssertExpectations(t)
 }
 
 func TestToggleSoft17(t *testing.T) {
@@ -136,7 +147,7 @@ func TestResetWithConfig(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 2, true, true, domain.BJCountingKO, 0)
+	result := tbj.ResetWithConfig(true, 2, true, true, domain.BJCountingKO, 0, 0)
 	assert.Equal(t, "reset done", result)
 	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 2, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingKO})
 	bjMock.AssertNumberOfCalls(t, "Reset", 2)
@@ -151,7 +162,7 @@ func TestResetWithConfig_Error(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 5, false, false, 0, 0)
+	result := tbj.ResetWithConfig(true, 5, false, false, 0, 0, 0)
 	assert.Equal(t, "config error output", result)
 	bjMock.AssertNumberOfCalls(t, "Reset", 1)
 }
@@ -237,6 +248,33 @@ func TestSetDeckPenetration_Error(t *testing.T) {
 	assert.Equal(t, "error output", result)
 }
 
+func TestSetCpuPlayerCount(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("cpu count changed")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 2, CountingEnabled: false, DoubleAfterSplit: true}).Return(nil)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.SetCpuPlayerCount(2)
+	assert.Equal(t, "cpu count changed", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 2, CountingEnabled: false, DoubleAfterSplit: true})
+}
+
+func TestSetCpuPlayerCount_Error(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("error output")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 5, CountingEnabled: false, DoubleAfterSplit: true}).Return(errors.New("invalid cpu count"))
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.SetCpuPlayerCount(5)
+	assert.Equal(t, "error output", result)
+}
+
 func TestResetWithConfig_WithPenetration(t *testing.T) {
 	bjpMock := new(presenter.MockBlackJackPresenter)
 	bjpMock.On("Output", mock.Anything, mock.Anything).Return("reset done")
@@ -246,8 +284,76 @@ func TestResetWithConfig_WithPenetration(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 1, true, true, domain.BJCountingHiLo, 50)
+	result := tbj.ResetWithConfig(true, 1, true, true, domain.BJCountingHiLo, 50, 0)
 	assert.Equal(t, "reset done", result)
 	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50})
+	bjMock.AssertNumberOfCalls(t, "Reset", 2)
+}
+
+func TestEarlySurrender(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("early surrender")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("PlayerEarlySurrender").Return(nil)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.EarlySurrender()
+	assert.Equal(t, "early surrender", result)
+	bjMock.AssertCalled(t, "PlayerEarlySurrender")
+}
+
+func TestDeclineEarlySurrender(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("decline early surrender")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("PlayerDeclineEarlySurrender").Return(nil)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.DeclineEarlySurrender()
+	assert.Equal(t, "decline early surrender", result)
+	bjMock.AssertCalled(t, "PlayerDeclineEarlySurrender")
+}
+
+func TestSetSurrenderRule(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("surrender rule changed")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true, SurrenderRule: domain.BJSurrenderEarly}).Return(nil)
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.SetSurrenderRule(domain.BJSurrenderEarly)
+	assert.Equal(t, "surrender rule changed", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true, SurrenderRule: domain.BJSurrenderEarly})
+}
+
+func TestSetSurrenderRule_Error(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("error output")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("GetConfig").Return(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true})
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: false, DoubleAfterSplit: true, SurrenderRule: 99}).Return(errors.New("invalid surrender rule"))
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.SetSurrenderRule(99)
+	assert.Equal(t, "error output", result)
+}
+
+func TestResetWithConfig_WithSurrenderRule(t *testing.T) {
+	bjpMock := new(presenter.MockBlackJackPresenter)
+	bjpMock.On("Output", mock.Anything, mock.Anything).Return("reset done")
+
+	bjMock := new(interfaces.MockBlackJackGame)
+	bjMock.On("SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50, SurrenderRule: domain.BJSurrenderEarly}).Return(nil)
+	bjMock.On("Reset").Return()
+
+	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
+	result := tbj.ResetWithConfig(true, 1, true, true, domain.BJCountingHiLo, 50, domain.BJSurrenderEarly)
+	assert.Equal(t, "reset done", result)
+	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50, SurrenderRule: domain.BJSurrenderEarly})
 	bjMock.AssertNumberOfCalls(t, "Reset", 2)
 }

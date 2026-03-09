@@ -28,4 +28,5 @@ type PokerGame interface {
 	GetCpuExchanges() []domain.PokerCpuExchange
 	GetConfig() domain.PokerConfig
 	SetConfig(cfg domain.PokerConfig)
+	GetActionLog() []*domain.ActionLogEntry
 }

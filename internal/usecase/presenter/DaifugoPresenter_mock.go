@@ -16,3 +16,9 @@ func (_m *MockDaifugoPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	ret := _m.Called(dg, lastErr)
 	return ret.Get(0).(string)
 }
+
+// ActionLogOutput モック
+func (_m *MockDaifugoPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
+	ret := _m.Called(dg)
+	return ret.Get(0).(string)
+}

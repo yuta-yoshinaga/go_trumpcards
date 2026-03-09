@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makePokerCuiForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
@@ -558,13 +559,14 @@ func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 
 	odds := []domain.PokerDrawOdds{
-		{HandRank: 0, HandName: "High Card", Probability: 1.0, Count: 1, Total: 1},
+		{HandRank: 0, HandName: "High Card", Probability: 0.5, Count: 50, Total: 100},
+		{HandRank: 1, HandName: "One Pair", Probability: 0.3, Count: 30, Total: 100},
 	}
 
-	// OutputWithOdds delegates to Output (CUI ignores odds)
-	resultWithOdds := pres.OutputWithOdds(p, nil, odds)
-	resultPlain := pres.Output(p, nil)
-	assert.Equal(t, resultPlain, resultWithOdds)
+	result := pres.OutputWithOdds(p, nil, odds)
+	assert.Contains(t, result, "[ドローオッズ]")
+	assert.Contains(t, result, "High Card: 50.00% (50/100)")
+	assert.Contains(t, result, "One Pair: 30.00% (30/100)")
 }
 
 func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
@@ -578,6 +580,45 @@ func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
 	assert.Equal(t, resultPlain, resultWithOdds)
 }
 
+func TestPokerCuiPresenter_OutputWithOdds_EmptyOdds(t *testing.T) {
+	pres := presenter.NewPokerCuiPresenter()
+	p, players := makePokerCuiForPresenter()
+	p.SetPhase(domain.PokerPhaseExchange)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+
+	resultWithOdds := pres.OutputWithOdds(p, nil, []domain.PokerDrawOdds{})
+	resultPlain := pres.Output(p, nil)
+	assert.Equal(t, resultPlain, resultWithOdds)
+}
+
+func TestPokerCuiPresenter_Output_LowballMode(t *testing.T) {
+	pres := presenter.NewPokerCuiPresenter()
+
+	t.Run("lowball mode shows 2-7 Lowball", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.PokerPlayer{
+			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		}
+		cfg := domain.DefaultPokerConfig()
+		cfg.IsLowball = true
+		cfg.CpuCount = 1
+		p := domain.NewPoker(tc, players, cfg)
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		assert.Contains(t, result, "2-7 Lowball")
+	})
+
+	t.Run("normal mode does not show 2-7 Lowball", func(t *testing.T) {
+		p, _ := makePokerCuiForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		assert.NotContains(t, result, "2-7 Lowball")
+	})
+}
+
 func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 	pres := presenter.NewPokerCuiPresenter()
 
@@ -586,5 +627,46 @@ func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 		p.SetPhase(domain.PokerPhaseDeal)
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "Fixed")
+	})
+}
+
+func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewPokerCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "exchange", Detail: "exchanged 2 cards"},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "exchange")
+		assert.Contains(t, result, "exchanged 2 cards")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

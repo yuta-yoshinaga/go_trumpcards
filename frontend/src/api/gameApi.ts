@@ -1,4 +1,5 @@
 import type {
+  ActionLogResponse,
   BlackJackResponse,
   DaifugoConfigInput,
   DaifugoResponse,
@@ -29,11 +30,13 @@ export interface BlackJackConfigInput {
   doubleAfterSplit?: boolean;
   countingSystem?: number;
   deckPenetration?: number;
+  surrenderRule?: number;
 }
 
-export interface BlackJackSideBetInput {
+export interface BlackJackBetOptions {
   perfectPairsBet?: number;
   twentyOnePlus3Bet?: number;
+  handCount?: number;
 }
 
 export const blackjackApi = {
@@ -54,17 +57,22 @@ export const blackjackApi = {
       | 'togglecounting'
       | 'toggledas'
       | 'setcountingsystem'
-      | 'setpenetration',
+      | 'setpenetration'
+      | 'setcpucount'
+      | 'earlysurrender'
+      | 'declineearlysurrender'
+      | 'setsurrenderrule',
     amount?: number,
     config?: BlackJackConfigInput,
-    sideBets?: BlackJackSideBetInput,
-  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config, ...sideBets }),
+    betOptions?: BlackJackBetOptions,
+  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config, ...betOptions }),
 };
 
 export interface PokerConfigInput {
   cpuCount?: number;
   jokerCount?: number;
   bettingLimit?: number;
+  isLowball?: boolean;
 }
 
 export const pokerApi = {
@@ -84,6 +92,8 @@ export const oldmaidApi = {
     cpuPlacementStrategy?: boolean,
     reorderIndices?: number[],
     cpuMemoryAI?: boolean,
+    cpuHesitationEnabled?: boolean,
+    cpuMetaAI?: boolean,
   ) =>
     postJson<OldMaidResponse>('/oldmaid/exec', {
       command,
@@ -92,6 +102,8 @@ export const oldmaidApi = {
       cpuPlacementStrategy,
       reorderIndices,
       cpuMemoryAI,
+      cpuHesitationEnabled,
+      cpuMetaAI,
       sessionId,
     }),
 };
@@ -118,13 +130,16 @@ export const doubtApi = {
       doubtWindowSec: config?.doubtWindowSec,
       cpuMemoryLevel: config?.cpuMemoryLevel,
       penaltyDrawLimit: config?.penaltyDrawLimit,
+      cpuHesitationEnabled: config?.cpuHesitationEnabled,
+      cpuMetaAI: config?.cpuMetaAI,
     }),
 };
 
 export interface SevensConfigInput {
   tunnelEnabled?: boolean;
+  tunnelSkipWidth?: number;
   jokerCount?: number;
-  cpuStrategy?: boolean;
+  cpuStrategy?: number;
   maxPasses?: number;
   noJokerFinish?: boolean;
   jokerReclaim?: boolean;
@@ -157,11 +172,32 @@ export interface HoldemConfigInput {
   blindLevelHands?: number;
   blindMultiplier?: number;
   bettingLimit?: number;
+  tableSize?: number;
+  rebuyEnabled?: boolean;
+  rebuyMaxCount?: number;
+  rebuyChips?: number;
+  rebuyPeriodHands?: number;
+  addonEnabled?: boolean;
+  addonChips?: number;
+  addonAfterHand?: number;
 }
 
 export const holdemApi = {
   exec: (
-    command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin',
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon'
+      | 'muck'
+      | 'show',
     amount?: number,
     config?: HoldemConfigInput,
   ) =>
@@ -172,3 +208,18 @@ export const holdemApi = {
       ...config,
     }),
 };
+
+function fetchLog(url: string): Promise<ActionLogResponse> {
+  return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
+}
+
+const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem'] as const;
+type Game = (typeof games)[number];
+
+export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(
+  (acc, game) => {
+    acc[game] = () => fetchLog(`/${game}/exec`);
+    return acc;
+  },
+  {} as { [K in Game]: () => Promise<ActionLogResponse> },
+);

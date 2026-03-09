@@ -17,8 +17,8 @@ func (_m *MockBlackJackGame) Reset() {
 }
 
 // PlayerBet モック
-func (_m *MockBlackJackGame) PlayerBet(amount, ppBet, t3Bet int) error {
-	ret := _m.Called(amount, ppBet, t3Bet)
+func (_m *MockBlackJackGame) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
+	ret := _m.Called(amount, ppBet, t3Bet, handCount)
 	return ret.Error(0)
 }
 
@@ -133,6 +133,18 @@ func (_m *MockBlackJackGame) PlayerSurrender() error {
 	return ret.Error(0)
 }
 
+// PlayerEarlySurrender モック
+func (_m *MockBlackJackGame) PlayerEarlySurrender() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+// PlayerDeclineEarlySurrender モック
+func (_m *MockBlackJackGame) PlayerDeclineEarlySurrender() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
 // SetDeckCount モック
 func (_m *MockBlackJackGame) SetDeckCount(count int) error {
 	ret := _m.Called(count)
@@ -226,4 +238,31 @@ func (_m *MockBlackJackGame) Get21Plus3Bet() int {
 func (_m *MockBlackJackGame) GetDeckPenetration() int {
 	ret := _m.Called()
 	return ret.Int(0)
+}
+
+// GetMultiHandCount モック
+func (_m *MockBlackJackGame) GetMultiHandCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+// CanSurrenderHand モック
+func (_m *MockBlackJackGame) CanSurrenderHand(handIdx int) bool {
+	ret := _m.Called(handIdx)
+	return ret.Bool(0)
+}
+
+// CanSurrenderCpuHand モック
+func (_m *MockBlackJackGame) CanSurrenderCpuHand(cpuIdx, handIdx int) bool {
+	ret := _m.Called(cpuIdx, handIdx)
+	return ret.Bool(0)
+}
+
+// GetActionLog モック
+func (_m *MockBlackJackGame) GetActionLog() []*domain.ActionLogEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {
+		return val
+	}
+	return nil
 }

@@ -16,6 +16,14 @@ func NewHoldemCuiPresenter() *HoldemCuiPresenter {
 	return &HoldemCuiPresenter{}
 }
 
+// ActionLogOutput 棋譜をテキスト出力
+func (p *HoldemCuiPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
+	if !h.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(h.GetActionLog())
+}
+
 // Output ゲーム状態を文字列出力
 func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) string {
 	var b strings.Builder
@@ -29,7 +37,18 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	if cfg.TournamentMode {
 		fmt.Fprintf(&b, "トーナメント ハンド#%d SB:%d BB:%d (レベルアップ:%dハンド毎)\n",
 			h.GetHandCount(), cfg.SmallBlind, cfg.BigBlind, cfg.BlindLevelHands)
+		if cfg.RebuyEnabled {
+			fmt.Fprintf(&b, "リバイ: %dチップ (最大%d回, %dハンド目まで)\n",
+				cfg.RebuyChips, cfg.RebuyMaxCount, cfg.RebuyPeriodHands)
+		}
+		if cfg.AddonEnabled {
+			fmt.Fprintf(&b, "アドオン: %dチップ (%dハンド目に提供)\n",
+				cfg.AddonChips, cfg.AddonAfterHand)
+		}
 	}
+
+	// テーブルサイズ
+	fmt.Fprintf(&b, "テーブル: %d-max\n", h.GetPlayerCnt())
 
 	// ディーラー位置
 	fmt.Fprintf(&b, "ディーラー: Player %d\n", h.GetDealerIdx())
@@ -113,7 +132,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 
 	// ショーダウン結果
 	results := h.GetRoundResults()
-	if len(results) > 0 && h.GetPhase() == domain.HoldemPhaseEnd {
+	if len(results) > 0 && (h.GetPhase() == domain.HoldemPhaseEnd || h.GetPhase() == domain.HoldemPhaseShowdown) {
 		b.WriteString("==========\n")
 		b.WriteString("[結果]\n")
 		for _, r := range results {
@@ -121,7 +140,9 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			if !h.GetPlayer(r.PlayerIdx).GetIsHuman() {
 				name = fmt.Sprintf("CPU %d", r.PlayerIdx)
 			}
-			if r.HandName != "" {
+			if r.Mucked {
+				fmt.Fprintf(&b, "  %s: マック", name)
+			} else if r.HandName != "" {
 				fmt.Fprintf(&b, "  %s: %s", name, r.HandName)
 				if ks := domain.FormatKickers(r.Kickers); ks != "" {
 					fmt.Fprintf(&b, " (キッカー: %s)", ks)
@@ -133,6 +154,35 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 				fmt.Fprintf(&b, " → %dチップ獲得", r.WonAmount)
 			}
 			b.WriteString("\n")
+		}
+	}
+
+	// マックプロンプト
+	if h.IsMuckAvailable() {
+		b.WriteString("----------\n")
+		b.WriteString("マックしますか? (m=マック / sh=ショー)\n")
+	}
+
+	// リバイ/アドオンプロンプト
+	if h.GetPhase() == domain.HoldemPhaseRebuy {
+		b.WriteString("----------\n")
+		rebuyPhaseType := h.GetRebuyPhaseType()
+		if rebuyPhaseType == domain.HoldemRebuyPhaseRebuy {
+			rebuyCounts := h.GetRebuyCounts()
+			humanIdx := -1
+			for i := 0; i < h.GetPlayerCnt(); i++ {
+				if h.GetPlayer(i).GetIsHuman() {
+					humanIdx = i
+					break
+				}
+			}
+			if humanIdx >= 0 {
+				fmt.Fprintf(&b, "リバイしますか? (%dチップ, %d/%d回使用済) (rb=リバイ / sr=スキップ)\n",
+					cfg.RebuyChips, rebuyCounts[humanIdx], cfg.RebuyMaxCount)
+			}
+		} else if rebuyPhaseType == domain.HoldemRebuyPhaseAddon {
+			fmt.Fprintf(&b, "アドオンしますか? (%dチップ) (ad=アドオン / sa=スキップ)\n",
+				cfg.AddonChips)
 		}
 	}
 

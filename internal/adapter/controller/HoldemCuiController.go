@@ -23,7 +23,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.hi.Reset() },
-		func(command string) string { return "コマンドが不明です: " + command },
+		unknownCommandMessage,
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "fold":
@@ -54,9 +54,82 @@ func (c *HoldemCuiController) Exec(command string) string {
 				if err != nil || bl < 0 || bl > 2 {
 					return fmt.Sprintf("Invalid betting limit: %s. Please enter 0-2.", args[0]), true
 				}
-				cfg := domain.DefaultHoldemConfig()
+				cfg := c.hi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
 				return c.hi.ResetWithConfig(cfg), true
+			case "tm", "tournament":
+				if len(args) < 1 {
+					return "Tournament mode is required (0=OFF, 1=ON).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return fmt.Sprintf("Invalid tournament mode: %s. Please enter 0-1.", args[0]), true
+				}
+				cfg := c.hi.GetConfig()
+				cfg.TournamentMode = v == 1
+				return c.hi.ResetWithConfig(cfg), true
+			case "sb", "smallblind":
+				if len(args) < 1 {
+					return "Small blind amount is required (>=1).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 1 {
+					return fmt.Sprintf("Invalid small blind: %s. Please enter 1 or more.", args[0]), true
+				}
+				cfg := c.hi.GetConfig()
+				if v >= cfg.BigBlind {
+					return fmt.Sprintf("Small blind must be less than big blind (%d).", cfg.BigBlind), true
+				}
+				cfg.SmallBlind = v
+				return c.hi.ResetWithConfig(cfg), true
+			case "bb", "bigblind":
+				if len(args) < 1 {
+					return "Big blind amount is required (>=2).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 2 {
+					return fmt.Sprintf("Invalid big blind: %s. Please enter 2 or more.", args[0]), true
+				}
+				cfg := c.hi.GetConfig()
+				if v <= cfg.SmallBlind {
+					return fmt.Sprintf("Big blind must be greater than small blind (%d).", cfg.SmallBlind), true
+				}
+				cfg.BigBlind = v
+				return c.hi.ResetWithConfig(cfg), true
+			case "lh", "levelhand":
+				if len(args) < 1 {
+					return "Level-up hands is required (>=1).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 1 {
+					return fmt.Sprintf("Invalid level-up hands: %s. Please enter 1 or more.", args[0]), true
+				}
+				cfg := c.hi.GetConfig()
+				cfg.BlindLevelHands = v
+				return c.hi.ResetWithConfig(cfg), true
+			case "ts", "tablesize":
+				if len(args) < 1 {
+					return "Table size is required (4, 6, or 9).", true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || !domain.IsValidHoldemTableSize(v) {
+					return fmt.Sprintf("Invalid table size: %s. Please enter 4, 6, or 9.", args[0]), true
+				}
+				cfg := c.hi.GetConfig()
+				cfg.TableSize = v
+				return c.hi.ResetWithConfig(cfg), true
+			case "rb", "rebuy":
+				return c.hi.Rebuy(), true
+			case "sr", "skiprebuy":
+				return c.hi.SkipRebuy(), true
+			case "ad", "addon":
+				return c.hi.Addon(), true
+			case "sa", "skipaddon":
+				return c.hi.SkipAddon(), true
+			case "m", "muck":
+				return c.hi.Muck(), true
+			case "sh", "show":
+				return c.hi.ShowHand(), true
 			}
 			return "", false
 		},

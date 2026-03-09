@@ -1,10 +1,6 @@
 package ui
 
 import (
-	"bufio"
-	"fmt"
-	"os"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -35,21 +31,14 @@ func NewDaifugoCui() *DaifugoCui {
 
 // Exec ゲーム実行
 func (cui *DaifugoCui) Exec() {
-	fmt.Println(cui.dgc.Exec("r"))
-	scanner := bufio.NewScanner(os.Stdin)
-	for {
-		fmt.Println("コマンドを入力してください。")
-		fmt.Println("q・・・quit")
-		fmt.Println("r・・・reset")
-		fmt.Println("p [インデックス...]・・・カードを出す (インデックスなしでパス)")
-		input, exit := readInput(scanner)
-		if exit {
-			break
-		}
-		res := cui.dgc.Exec(input)
-		fmt.Println(res)
-		if res == "bye." {
-			break
-		}
-	}
+	RunCuiLoop(cui.dgc, []string{
+		"コマンドを入力してください。",
+		"q・・・quit",
+		"r・・・reset",
+		"p [インデックス...]・・・カードを出す (インデックスなしでパス)",
+		"sort [0-2]・・・手札ソート (0=強さ, 1=スート, 2=数字)",
+		"sd [0-2]・・・CPU難易度 (0=Normal, 1=Easy, 2=Hard)",
+		"sj [0-2]・・・ジョーカー枚数",
+		"sr <rule> <0|1>・・・ローカルルール切替",
+	})
 }

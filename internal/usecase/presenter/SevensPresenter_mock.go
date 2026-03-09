@@ -16,3 +16,9 @@ func (_m *MockSevensPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	ret := _m.Called(s, lastErr)
 	return ret.Get(0).(string)
 }
+
+// ActionLogOutput モック
+func (_m *MockSevensPresenter) ActionLogOutput(s interfaces.SevensGame) string {
+	ret := _m.Called(s)
+	return ret.Get(0).(string)
+}

@@ -48,6 +48,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			DrawnCard:      nil, // CPU drawn card is hidden to preserve game fairness
 			DiscardedPairs: action.DiscardedPairs,
 			DiscardedCards: make([]*controller.WebOutputCard, 0),
+			HesitationMs:   action.HesitationMs,
 		}
 		for _, card := range action.DiscardedCards {
 			a.DiscardedCards = append(a.DiscardedCards, cardToOutput(card))
@@ -107,6 +108,15 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		resObj.RemovedCard = cardToOutput(om.GetRemovedCard())
 	}
 
+	// メタAI情報
+	if profile := om.GetHumanProfile(); profile != nil {
+		resObj.MetaAI = &controller.OldMaidWebOutputMetaAI{
+			Enabled:      true,
+			GamesPlayed:  profile.GamesPlayed,
+			EdgePickRate: profile.PickRate(0) + profile.PickRate(2),
+		}
+	}
+
 	// エラーメッセージ
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
@@ -126,4 +136,12 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 	}
 
 	return marshalOrError(resObj)
+}
+
+// ActionLogOutput 棋譜をJSON出力
+func (owp *OldMaidWebPresenter) ActionLogOutput(om interfaces.OldMaidGame) string {
+	if !om.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(om.GetActionLog())
 }

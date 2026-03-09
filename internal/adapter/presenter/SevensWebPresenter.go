@@ -34,6 +34,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	cfg := s.GetConfig()
 	resObj.Config = controller.SevensWebOutputConfig{
 		TunnelEnabled:          cfg.TunnelEnabled,
+		TunnelSkipWidth:        cfg.TunnelSkipWidth,
 		JokerCount:             cfg.JokerCount,
 		CpuStrategy:            cfg.CpuStrategy,
 		MaxPasses:              cfg.MaxPasses,
@@ -102,6 +103,14 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 	}
 
 	return marshalOrError(resObj)
+}
+
+// ActionLogOutput 棋譜をJSON出力
+func (swp *SevensWebPresenter) ActionLogOutput(s interfaces.SevensGame) string {
+	if !s.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(s.GetActionLog())
 }
 
 // buildResultMessage ゲーム終了メッセージを生成

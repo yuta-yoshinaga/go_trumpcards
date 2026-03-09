@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -261,6 +262,34 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 	})
 }
 
+func TestOldMaidCuiPresenter_MetaAI(t *testing.T) {
+	top := presenter.NewOldMaidCuiPresenter()
+
+	t.Run("metaAI status line shown when profile exists", func(t *testing.T) {
+		om, _ := setupOldMaidCuiTest()
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		om.SetHumanProfile(&domain.OldMaidHumanProfile{
+			GamesPlayed:     3,
+			PositionBuckets: [3]int{4, 2, 6},
+			TotalPicks:      12,
+		})
+		result := top.Output(om, nil)
+		assert.Contains(t, result, "[メタAI]")
+		assert.Contains(t, result, "適応中")
+		assert.Contains(t, result, "ゲーム数: 3")
+		// EdgePickRate = (4/12 + 6/12)*100 ≈ 83%
+		assert.Contains(t, result, "端ピック率: 83%")
+	})
+
+	t.Run("no metaAI line when profile is nil", func(t *testing.T) {
+		om, _ := setupOldMaidCuiTest()
+		om.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		// No SetHumanProfile → profile is nil
+		result := top.Output(om, nil)
+		assert.NotContains(t, result, "[メタAI]")
+	})
+}
+
 func TestOldMaidCuiPresenter_DrawHistory(t *testing.T) {
 	top := presenter.NewOldMaidCuiPresenter()
 
@@ -395,4 +424,45 @@ func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {
 	result := top.Output(om, nil)
 	assert.NotContains(t, result, "（除外カード:")
 	assert.Contains(t, result, "ゲーム終了！")
+}
+
+func TestOldMaidCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewOldMaidCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockOldMaidGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card"},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "draw")
+		assert.Contains(t, result, "drew a card")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockOldMaidGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockOldMaidGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
 }

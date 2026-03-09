@@ -173,6 +173,20 @@ func (_m *MockOldMaidGame) GetCpuHighlightedCardIdx() int {
 	return ret.Int(0)
 }
 
+// GetHumanProfile モック
+func (_m *MockOldMaidGame) GetHumanProfile() *domain.OldMaidHumanProfile {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.OldMaidHumanProfile); ok {
+		return val
+	}
+	return nil
+}
+
+// ResetProfile モック
+func (_m *MockOldMaidGame) ResetProfile() {
+	_m.Called()
+}
+
 // ShuffleHumanHand モック
 func (_m *MockOldMaidGame) ShuffleHumanHand() error {
 	ret := _m.Called()
@@ -183,4 +197,13 @@ func (_m *MockOldMaidGame) ShuffleHumanHand() error {
 func (_m *MockOldMaidGame) ReorderHumanHand(indices []int) error {
 	ret := _m.Called(indices)
 	return ret.Error(0)
+}
+
+// GetActionLog モック
+func (_m *MockOldMaidGame) GetActionLog() []*domain.ActionLogEntry {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]*domain.ActionLogEntry); ok {
+		return val
+	}
+	return nil
 }

@@ -25,7 +25,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return bcc.bji.Reset() },
-		func(_ string) string { return "Unsupported command." },
+		unknownCommandMessage,
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "h", "hit":
@@ -42,6 +42,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				}
 				ppBet := 0
 				t3Bet := 0
+				handCount := 0
 				if len(args) >= 2 {
 					if v, e := strconv.Atoi(args[1]); e == nil {
 						ppBet = v
@@ -52,7 +53,12 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 						t3Bet = v
 					}
 				}
-				return bcc.bji.Bet(amount, ppBet, t3Bet), true
+				if len(args) >= 4 {
+					if v, e := strconv.Atoi(args[3]); e == nil {
+						handCount = v
+					}
+				}
+				return bcc.bji.Bet(amount, ppBet, t3Bet, handCount), true
 			case "d", "doubledown":
 				return bcc.bji.DoubleDown(), true
 			case "sp", "split":
@@ -63,6 +69,19 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return bcc.bji.DeclineInsurance(), true
 			case "sur", "surrender":
 				return bcc.bji.Surrender(), true
+			case "es", "earlysurrender":
+				return bcc.bji.EarlySurrender(), true
+			case "des", "declineearlysurrender":
+				return bcc.bji.DeclineEarlySurrender(), true
+			case "ssr", "setsurrenderrule":
+				if len(args) < 1 {
+					return "Surrender rule is required.", true
+				}
+				rule, err := strconv.Atoi(args[0])
+				if err != nil || rule < 0 || rule > domain.BJSurrenderMax {
+					return "Invalid surrender rule. Please enter a number (0-2).", true
+				}
+				return bcc.bji.SetSurrenderRule(rule), true
 			case "hint", "togglehint":
 				return bcc.bji.ToggleHint(), true
 			case "soft17", "togglesoft17":
@@ -80,6 +99,15 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 					return "Invalid deck count. Please enter a number.", true
 				}
 				return bcc.bji.SetDeckCount(count), true
+			case "scc", "setcpucount":
+				if len(args) < 1 {
+					return "CPU player count is required.", true
+				}
+				count, err := strconv.Atoi(args[0])
+				if err != nil || count < 0 || count > domain.BJMaxCpuPlayers {
+					return "Invalid CPU player count. Please enter a number (0-3).", true
+				}
+				return bcc.bji.SetCpuPlayerCount(count), true
 			case "scs", "setcountingsystem":
 				if len(args) < 1 {
 					return "Counting system is required.", true

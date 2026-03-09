@@ -16,6 +16,14 @@ func NewSevensCuiPresenter() *SevensCuiPresenter {
 	return &SevensCuiPresenter{}
 }
 
+// ActionLogOutput 棋譜をテキスト出力
+func (p *SevensCuiPresenter) ActionLogOutput(s interfaces.SevensGame) string {
+	if !s.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(s.GetActionLog())
+}
+
 // Output ゲーム状態を文字列出力
 func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) string {
 	var b strings.Builder
@@ -23,16 +31,22 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	b.WriteString("==========\n")
 	b.WriteString("Sevens (7並べ)\n")
 	config := s.GetConfig()
-	if config.TunnelEnabled || config.JokerCount > 0 || config.CpuStrategy || config.MaxPasses != domain.SevensMaxPasses || config.NoJokerFinish || config.JokerReclaimEnabled || config.EndStopEnabled || config.JokerConsecutiveBanned {
+	if config.TunnelEnabled || config.TunnelSkipWidth >= 2 || config.JokerCount > 0 || config.CpuStrategy != domain.SevensCpuSimple || config.MaxPasses != domain.SevensMaxPasses || config.NoJokerFinish || config.JokerReclaimEnabled || config.EndStopEnabled || config.JokerConsecutiveBanned {
 		b.WriteString("ルール:")
 		if config.TunnelEnabled {
 			b.WriteString(" [トンネル]")
 		}
+		if config.TunnelSkipWidth >= 2 {
+			fmt.Fprintf(&b, " [トンネルスキップ%d]", config.TunnelSkipWidth)
+		}
 		if config.JokerCount > 0 {
 			fmt.Fprintf(&b, " [ジョーカー×%d]", config.JokerCount)
 		}
-		if config.CpuStrategy {
+		switch config.CpuStrategy {
+		case domain.SevensCpuStrategic:
 			b.WriteString(" [CPU戦略]")
+		case domain.SevensCpuHarassment:
+			b.WriteString(" [嫌がらせ特化]")
 		}
 		if config.MaxPasses == 0 {
 			b.WriteString(" [パス無制限]")

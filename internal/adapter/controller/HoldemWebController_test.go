@@ -485,6 +485,289 @@ func TestHoldemWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) {
 	recorded.CodeIs(200)
 }
 
+// --- table size ---
+
+func TestHoldemWebController_Reset_WithTableSize_Valid(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = domain.HoldemTableSize6
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"tableSize": 6,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_WithTableSize_9max(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.TableSize = domain.HoldemTableSize9
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"tableSize": 9,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_WithTableSize_Invalid(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"tableSize": 5,
+			}))
+	recorded.CodeIs(400)
+}
+
+func TestHoldemWebController_Reset_WithTableSize_Invalid_3(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"tableSize": 3,
+			}))
+	recorded.CodeIs(400)
+}
+
+// --- rebuy / addon commands ---
+
+func TestHoldemWebController_Rebuy(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("Rebuy").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "rebuy", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_RebuyShort(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("Rebuy").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "rb", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_SkipRebuy(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("SkipRebuy").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "skiprebuy", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_SkipRebuyShort(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("SkipRebuy").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "sr", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Addon(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("Addon").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "addon", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_AddonShort(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("Addon").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "ad", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_SkipAddon(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("SkipAddon").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "skipaddon", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_SkipAddonShort(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("SkipAddon").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "sa", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+// --- reset with rebuy/addon config ---
+
+func TestHoldemWebController_Reset_WithRebuyConfig(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.RebuyEnabled = true
+	cfg.RebuyMaxCount = 5
+	cfg.RebuyChips = 2000
+	cfg.RebuyPeriodHands = 30
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":          "reset",
+				"sessionId":        "s-rebuy",
+				"rebuyEnabled":     true,
+				"rebuyMaxCount":    5,
+				"rebuyChips":       2000,
+				"rebuyPeriodHands": 30,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_WithAddonConfig(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	cfg := domain.DefaultHoldemConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonChips = 3000
+	cfg.AddonAfterHand = 25
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":        "reset",
+				"sessionId":      "s-addon",
+				"addonEnabled":   true,
+				"addonChips":     3000,
+				"addonAfterHand": 25,
+			}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Reset_WithRebuyAddonConfig_InvalidValues(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	// Values below threshold should be ignored (use defaults)
+	cfg := domain.DefaultHoldemConfig()
+	cfg.RebuyEnabled = true
+	cfg.AddonEnabled = true
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{
+				"command":          "reset",
+				"sessionId":        "s-inv-ra",
+				"rebuyEnabled":     true,
+				"rebuyMaxCount":    0,
+				"rebuyChips":       0,
+				"rebuyPeriodHands": 0,
+				"addonEnabled":     true,
+				"addonChips":       0,
+				"addonAfterHand":   0,
+			}))
+	recorded.CodeIs(200)
+}
+
+// --- muck / show commands ---
+
+func TestHoldemWebController_Muck(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("Muck").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "muck", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_MuckShort(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("Muck").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "m", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_ShowHand(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("ShowHand").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "show", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_ShowHandShort(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+	mi.On("ShowHand").Return(`{"phase":1}`)
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+			map[string]interface{}{"command": "sh", "sessionId": "s1"}))
+	recorded.CodeIs(200)
+}
+
 func TestHoldemWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)
@@ -502,4 +785,37 @@ func TestHoldemWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 				"bettingLimit": -1,
 			}))
 	recorded.CodeIs(200)
+}
+
+func TestHoldemWebController_Log(t *testing.T) {
+	mi := new(mockUsecase.MockHoldemInteractor)
+	api, hwc := newHoldemTestHandler(mi)
+	defer hwc.Stop()
+
+	mockLogOutput := `{"entries":[]}`
+	mi.On("ActionLog").Return(mockLogOutput)
+
+	t.Run("log command", func(t *testing.T) {
+		recorded := test.RunRequest(t, api.MakeHandler(),
+			test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+				map[string]interface{}{
+					"command":   "log",
+					"sessionId": "hd-log-1",
+				}))
+		recorded.CodeIs(200)
+		recorded.ContentTypeIsJson()
+		mi.AssertCalled(t, "ActionLog")
+	})
+
+	t.Run("l shorthand", func(t *testing.T) {
+		recorded := test.RunRequest(t, api.MakeHandler(),
+			test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
+				map[string]interface{}{
+					"command":   "l",
+					"sessionId": "hd-log-1",
+				}))
+		recorded.CodeIs(200)
+		recorded.ContentTypeIsJson()
+		mi.AssertCalled(t, "ActionLog")
+	})
 }

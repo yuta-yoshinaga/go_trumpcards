@@ -18,6 +18,8 @@ type BlackJackWebInput struct {
 	DeckPenetration   *int  `json:"deckPenetration,omitempty"`
 	PerfectPairsBet   *int  `json:"perfectPairsBet,omitempty"`
 	TwentyOnePlus3Bet *int  `json:"twentyOnePlus3Bet,omitempty"`
+	HandCount         *int  `json:"handCount,omitempty"`
+	SurrenderRule     *int  `json:"surrenderRule,omitempty"`
 }
 
 // BlackJackWebOutputHand ブラックジャックWebアウトプットハンド
@@ -43,8 +45,9 @@ type BlackJackWebOutputPlayer struct {
 
 // BlackJackWebOutputCpuSeat CPUプレイヤー席アウトプット
 type BlackJackWebOutputCpuSeat struct {
-	Chips int                       `json:"chips"`
-	Hands []*BlackJackWebOutputHand `json:"hands"`
+	Chips        int                       `json:"chips"`
+	Hands        []*BlackJackWebOutputHand `json:"hands"`
+	InsuranceBet int                       `json:"insuranceBet"`
 }
 
 // BlackJackWebOutputSideBetResult サイドベット結果アウトプット
@@ -83,112 +86,19 @@ type BlackJackWebOutput struct {
 	DoubleAfterSplit   bool                               `json:"doubleAfterSplit"`
 	CountingSystem     int                                `json:"countingSystem"`
 	DeckPenetration    int                                `json:"deckPenetration"`
+	MultiHandCount     int                                `json:"multiHandCount"`
+	SurrenderRule      int                                `json:"surrenderRule"`
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
-type BlackJackWebController struct {
-	baseController
-	factory func() usecase.BlackJackInteractorIF
-	store   *SessionStore[usecase.BlackJackInteractorIF]
-}
+type BlackJackWebController = GameWebController[usecase.BlackJackInteractorIF, BlackJackWebInput, *BlackJackWebOutput]
 
 // NewBlackJackWebController コンストラクタ
 func NewBlackJackWebController(factory func() usecase.BlackJackInteractorIF) *BlackJackWebController {
-	return &BlackJackWebController{
-		factory: factory,
-		store:   NewSessionStore[usecase.BlackJackInteractorIF](),
-	}
+	return NewGameWebController(factory, newBlackJackDefaultOutput, blackJackDispatch)
 }
 
-// Exec ゲーム実行
-func (bwc *BlackJackWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	execWithSession(&bwc.baseController, w, r, bwc.store, bwc.factory,
-		func(msg string) any { return bwc.newDefaultOutput(msg) },
-		nil,
-		func(w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput) bool {
-			switch param.Command {
-			case "r", "reset":
-				if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil || param.DeckPenetration != nil {
-					h17 := false
-					if param.DealerHitsSoft17 != nil {
-						h17 = *param.DealerHitsSoft17
-					}
-					cpuCount := 0
-					if param.CpuPlayerCount != nil {
-						cpuCount = *param.CpuPlayerCount
-					}
-					counting := false
-					if param.CountingEnabled != nil {
-						counting = *param.CountingEnabled
-					}
-					das := true
-					if param.DoubleAfterSplit != nil {
-						das = *param.DoubleAfterSplit
-					}
-					cs := 0
-					if param.CountingSystem != nil {
-						cs = *param.CountingSystem
-					}
-					dp := 0
-					if param.DeckPenetration != nil {
-						dp = *param.DeckPenetration
-					}
-					bwc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp))
-				} else {
-					bwc.writePresenterResponse(w, bji.Reset())
-				}
-			case "h", "hit":
-				bwc.writePresenterResponse(w, bji.Hit())
-			case "s", "stand":
-				bwc.writePresenterResponse(w, bji.Stand())
-			case "b", "bet":
-				ppBet := 0
-				if param.PerfectPairsBet != nil {
-					ppBet = *param.PerfectPairsBet
-				}
-				t3Bet := 0
-				if param.TwentyOnePlus3Bet != nil {
-					t3Bet = *param.TwentyOnePlus3Bet
-				}
-				bwc.writePresenterResponse(w, bji.Bet(param.Amount, ppBet, t3Bet))
-			case "d", "doubledown":
-				bwc.writePresenterResponse(w, bji.DoubleDown())
-			case "sp", "split":
-				bwc.writePresenterResponse(w, bji.Split())
-			case "i", "insurance":
-				bwc.writePresenterResponse(w, bji.Insurance())
-			case "di", "declineinsurance":
-				bwc.writePresenterResponse(w, bji.DeclineInsurance())
-			case "sur", "surrender":
-				bwc.writePresenterResponse(w, bji.Surrender())
-			case "togglehint":
-				bwc.writePresenterResponse(w, bji.ToggleHint())
-			case "sd", "setdeckcount":
-				bwc.writePresenterResponse(w, bji.SetDeckCount(param.Amount))
-			case "togglesoft17":
-				bwc.writePresenterResponse(w, bji.ToggleSoft17())
-			case "togglecounting":
-				bwc.writePresenterResponse(w, bji.ToggleCounting())
-			case "toggledas":
-				bwc.writePresenterResponse(w, bji.ToggleDAS())
-			case "scs", "setcountingsystem":
-				bwc.writePresenterResponse(w, bji.SetCountingSystem(param.Amount))
-			case "pen", "setpenetration":
-				bwc.writePresenterResponse(w, bji.SetDeckPenetration(param.Amount))
-			default:
-				return false
-			}
-			return true
-		})
-}
-
-// Stop stops the background cleanup goroutine of the session store.
-func (bwc *BlackJackWebController) Stop() {
-	bwc.store.Stop()
-}
-
-// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
-func (bwc *BlackJackWebController) newDefaultOutput(msg string) *BlackJackWebOutput {
+func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
 	return &BlackJackWebOutput{
 		Dealer:          &BlackJackWebOutputPlayer{},
 		Player:          &BlackJackWebOutputPlayer{},
@@ -196,4 +106,68 @@ func (bwc *BlackJackWebController) newDefaultOutput(msg string) *BlackJackWebOut
 		DeckCount:       1,
 		DeckPenetration: 75,
 	}
+}
+
+func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput, _ func(string) *BlackJackWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil || param.DeckPenetration != nil || param.SurrenderRule != nil {
+			h17 := derefBool(param.DealerHitsSoft17)
+			cpuCount := derefInt(param.CpuPlayerCount)
+			counting := derefBool(param.CountingEnabled)
+			das := derefBoolDefault(param.DoubleAfterSplit, true)
+			cs := derefInt(param.CountingSystem)
+			dp := derefInt(param.DeckPenetration)
+			sr := derefInt(param.SurrenderRule)
+			bc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp, sr))
+		} else {
+			bc.writePresenterResponse(w, bji.Reset())
+		}
+	case "h", "hit":
+		bc.writePresenterResponse(w, bji.Hit())
+	case "s", "stand":
+		bc.writePresenterResponse(w, bji.Stand())
+	case "b", "bet":
+		ppBet := derefInt(param.PerfectPairsBet)
+		t3Bet := derefInt(param.TwentyOnePlus3Bet)
+		hc := derefInt(param.HandCount)
+		bc.writePresenterResponse(w, bji.Bet(param.Amount, ppBet, t3Bet, hc))
+	case "d", "doubledown":
+		bc.writePresenterResponse(w, bji.DoubleDown())
+	case "sp", "split":
+		bc.writePresenterResponse(w, bji.Split())
+	case "i", "insurance":
+		bc.writePresenterResponse(w, bji.Insurance())
+	case "di", "declineinsurance":
+		bc.writePresenterResponse(w, bji.DeclineInsurance())
+	case "sur", "surrender":
+		bc.writePresenterResponse(w, bji.Surrender())
+	case "es", "earlysurrender":
+		bc.writePresenterResponse(w, bji.EarlySurrender())
+	case "des", "declineearlysurrender":
+		bc.writePresenterResponse(w, bji.DeclineEarlySurrender())
+	case "ssr", "setsurrenderrule":
+		bc.writePresenterResponse(w, bji.SetSurrenderRule(param.Amount))
+	case "togglehint":
+		bc.writePresenterResponse(w, bji.ToggleHint())
+	case "sd", "setdeckcount":
+		bc.writePresenterResponse(w, bji.SetDeckCount(param.Amount))
+	case "togglesoft17":
+		bc.writePresenterResponse(w, bji.ToggleSoft17())
+	case "togglecounting":
+		bc.writePresenterResponse(w, bji.ToggleCounting())
+	case "toggledas":
+		bc.writePresenterResponse(w, bji.ToggleDAS())
+	case "scs", "setcountingsystem":
+		bc.writePresenterResponse(w, bji.SetCountingSystem(param.Amount))
+	case "pen", "setpenetration":
+		bc.writePresenterResponse(w, bji.SetDeckPenetration(param.Amount))
+	case "scc", "setcpucount":
+		bc.writePresenterResponse(w, bji.SetCpuPlayerCount(param.Amount))
+	case "log", "l":
+		bc.writePresenterResponse(w, bji.ActionLog())
+	default:
+		return false
+	}
+	return true
 }

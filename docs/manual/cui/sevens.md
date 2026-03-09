@@ -26,8 +26,9 @@ go run ./cmd/cli sevens
 | オプション | 説明 |
 |------------|------|
 | トンネル | AとKが循環して繋がる（A↔K） |
+| トンネルスキップ | 通常の±1に加え、±N離れたカードからも繋げられる（2〜12、トンネル有効時は循環ラップ） |
 | ジョーカー | ジョーカーを場の任意の有効位置に配置できる（0〜2枚） |
-| CPU戦略 | CPUが戦略的にカードを選択する（自分に有利な手を評価、相手のパス残数を考慮） |
+| CPU戦略 | CPUの思考モード。`strategy` = 戦略的（自分に有利な手を評価）、`harassment` = 嫌がらせ特化（相手の進行を妨害重視） |
 | パス回数 | 最大パス回数を変更（デフォルト5回、0で無制限） |
 | ジョーカー上がり禁止 | 最後のカードがジョーカーの場合、出せない（パスまたは失格） |
 | ジョーカー回収 | ジョーカーが配置された位置に本物のカードを出すと、ジョーカーが手札に戻る |
@@ -66,7 +67,7 @@ flowchart TD
 | コマンド | 短縮形 | 説明 |
 |----------|--------|------|
 | `reset` | `r` | デフォルト設定で新しいゲームを開始 |
-| `reset tunnel joker=N strategy passes=N nojokerfinish jokerreclaim endstop jokerconsban` | `r tunnel joker=N strategy passes=N nojokerfinish jokerreclaim endstop jokerconsban` | オプション指定で開始（例: `r tunnel joker=1 strategy passes=0 nojokerfinish jokerreclaim endstop jokerconsban`） |
+| `reset tunnel tunnelskip=N joker=N strategy/harassment passes=N nojokerfinish jokerreclaim endstop jokerconsban` | `r tunnel tunnelskip=N joker=N strategy/harassment passes=N nojokerfinish jokerreclaim endstop jokerconsban` | オプション指定で開始（例: `r tunnel tunnelskip=3 joker=1 harassment passes=0 nojokerfinish jokerreclaim endstop jokerconsban`） |
 | `play N` | `p N` | インデックスNのカードを場に出す（例: `p 3`） |
 | `play` | `p` | パス（パス回数を1消費） |
 | `j cardIdx suitInt valueInt` | - | ジョーカーを配置（例: `j 0 1 6`） |

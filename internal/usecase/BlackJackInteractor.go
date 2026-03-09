@@ -11,12 +11,14 @@ type BlackJackInteractorIF interface {
 	Reset() string
 	Hit() string
 	Stand() string
-	Bet(amount, ppBet, t3Bet int) string
+	Bet(amount, ppBet, t3Bet, handCount int) string
 	DoubleDown() string
 	Split() string
 	Insurance() string
 	DeclineInsurance() string
 	Surrender() string
+	EarlySurrender() string
+	DeclineEarlySurrender() string
 	SetDeckCount(count int) string
 	ToggleHint() string
 	ToggleSoft17() string
@@ -24,7 +26,10 @@ type BlackJackInteractorIF interface {
 	ToggleDAS() string
 	SetCountingSystem(system int) string
 	SetDeckPenetration(penetration int) string
-	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string
+	SetCpuPlayerCount(count int) string
+	SetSurrenderRule(rule int) string
+	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string
+	ActionLog() string
 }
 
 // BlackJackInteractor ブラックジャックインタラクタークラス
@@ -35,12 +40,7 @@ type BlackJackInteractor struct {
 
 // NewBlackJackInteractor コンストラクタ
 func NewBlackJackInteractor(bj interfaces.BlackJackGame, bjp presenter.BlackJackPresenter) *BlackJackInteractor {
-	if bj == nil {
-		panic("BlackJackInteractor: bj must not be nil")
-	}
-	if bjp == nil {
-		panic("BlackJackInteractor: bjp must not be nil")
-	}
+	mustNotNil("BlackJackInteractor", map[string]any{"bj": bj, "bjp": bjp})
 	return &BlackJackInteractor{
 		bj:  bj,
 		bjp: bjp,
@@ -66,8 +66,8 @@ func (bi *BlackJackInteractor) Stand() string {
 }
 
 // Bet ベット
-func (bi *BlackJackInteractor) Bet(amount, ppBet, t3Bet int) string {
-	err := bi.bj.PlayerBet(amount, ppBet, t3Bet)
+func (bi *BlackJackInteractor) Bet(amount, ppBet, t3Bet, handCount int) string {
+	err := bi.bj.PlayerBet(amount, ppBet, t3Bet, handCount)
 	return bi.bjp.Output(bi.bj, err)
 }
 
@@ -98,6 +98,18 @@ func (bi *BlackJackInteractor) DeclineInsurance() string {
 // Surrender サレンダー
 func (bi *BlackJackInteractor) Surrender() string {
 	err := bi.bj.PlayerSurrender()
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// EarlySurrender アーリーサレンダー
+func (bi *BlackJackInteractor) EarlySurrender() string {
+	err := bi.bj.PlayerEarlySurrender()
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// DeclineEarlySurrender アーリーサレンダー辞退
+func (bi *BlackJackInteractor) DeclineEarlySurrender() string {
+	err := bi.bj.PlayerDeclineEarlySurrender()
 	return bi.bjp.Output(bi.bj, err)
 }
 
@@ -153,8 +165,24 @@ func (bi *BlackJackInteractor) SetDeckPenetration(penetration int) string {
 	return bi.bjp.Output(bi.bj, err)
 }
 
+// SetCpuPlayerCount CPUプレイヤー数変更
+func (bi *BlackJackInteractor) SetCpuPlayerCount(count int) string {
+	config := bi.bj.GetConfig()
+	config.CpuPlayerCount = count
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
+// SetSurrenderRule サレンダールール変更
+func (bi *BlackJackInteractor) SetSurrenderRule(rule int) string {
+	config := bi.bj.GetConfig()
+	config.SurrenderRule = rule
+	err := bi.bj.SetConfig(config)
+	return bi.bjp.Output(bi.bj, err)
+}
+
 // ResetWithConfig 設定付きリセット
-func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int) string {
+func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string {
 	bi.bj.Reset()
 	err := bi.bj.SetConfig(domain.BlackJackConfig{
 		DealerHitsSoft17: dealerHitsSoft17,
@@ -163,10 +191,16 @@ func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerC
 		DoubleAfterSplit: doubleAfterSplit,
 		CountingSystem:   countingSystem,
 		DeckPenetration:  deckPenetration,
+		SurrenderRule:    surrenderRule,
 	})
 	if err != nil {
 		return bi.bjp.Output(bi.bj, err)
 	}
 	bi.bj.Reset()
 	return bi.bjp.Output(bi.bj, nil)
+}
+
+// ActionLog 棋譜を出力する
+func (bi *BlackJackInteractor) ActionLog() string {
+	return bi.bjp.ActionLogOutput(bi.bj)
 }

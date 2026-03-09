@@ -49,6 +49,11 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		}
 	}
 
+	// マルチハンド情報
+	if bj.GetMultiHandCount() > 1 {
+		fmt.Fprintf(&b, "multi-hand: %d hands\n", bj.GetMultiHandCount())
+	}
+
 	// フェーズ情報
 	fmt.Fprintf(&b, "phase: %s\n", bjp.phaseStr(bj.GetPhase()))
 
@@ -110,7 +115,11 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	// CPUプレイヤー
 	cpuPlayers := bj.GetCpuPlayers()
 	for cpuIdx, cpu := range cpuPlayers {
-		fmt.Fprintf(&b, "--- CPU %d (chips: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips())
+		if cpu.GetInsuranceBet() > 0 {
+			fmt.Fprintf(&b, "--- CPU %d (chips: %d, insurance: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips(), cpu.GetInsuranceBet())
+		} else {
+			fmt.Fprintf(&b, "--- CPU %d (chips: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips())
+		}
 		for hi, hand := range cpu.GetHands() {
 			prefix := fmt.Sprintf("CPU %d", cpuIdx+1)
 			if len(cpu.GetHands()) > 1 {
@@ -209,6 +218,14 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	return b.String()
 }
 
+// ActionLogOutput 棋譜をテキスト出力
+func (bjp *BlackJackCuiPresenter) ActionLogOutput(bj interfaces.BlackJackGame) string {
+	if !bj.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(bj.GetActionLog())
+}
+
 // phaseStr フェーズ文字列
 func (bjp *BlackJackCuiPresenter) phaseStr(phase int) string {
 	switch phase {
@@ -222,6 +239,8 @@ func (bjp *BlackJackCuiPresenter) phaseStr(phase int) string {
 		return "ACTION"
 	case domain.BJPhaseEnd:
 		return "END"
+	case domain.BJPhaseEarlySurrender:
+		return "EARLY SURRENDER"
 	default:
 		return "UNKNOWN"
 	}

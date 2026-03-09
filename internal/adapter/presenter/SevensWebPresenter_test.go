@@ -57,8 +57,9 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 7, resObj.TableMaxVals[domain.CardDesignSpade])
 		// Config defaults
 		assert.False(t, resObj.Config.TunnelEnabled)
+		assert.Equal(t, 0, resObj.Config.TunnelSkipWidth)
 		assert.Equal(t, 0, resObj.Config.JokerCount)
-		assert.False(t, resObj.Config.CpuStrategy)
+		assert.Equal(t, 0, resObj.Config.CpuStrategy)
 		assert.False(t, resObj.Config.NoJokerFinish)
 		// TablePlaced: bit 7 set for each suit = 128
 		assert.Equal(t, 128, resObj.TablePlaced[domain.CardDesignSpade])
@@ -220,15 +221,16 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 	t.Run("success Output config with features enabled", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSPlayers()
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true, MaxPasses: 3, NoJokerFinish: true}
+		cfg := domain.SevensConfig{TunnelEnabled: true, TunnelSkipWidth: 3, JokerCount: 2, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 3, NoJokerFinish: true}
 		s := domain.NewSevens(tc, players, cfg)
 
 		result := tswp.Output(s, nil)
 		var resObj controller.SevensWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.True(t, resObj.Config.TunnelEnabled)
+		assert.Equal(t, 3, resObj.Config.TunnelSkipWidth)
 		assert.Equal(t, 2, resObj.Config.JokerCount)
-		assert.True(t, resObj.Config.CpuStrategy)
+		assert.Equal(t, 1, resObj.Config.CpuStrategy)
 		assert.Equal(t, 3, resObj.Config.MaxPasses)
 		assert.True(t, resObj.Config.NoJokerFinish)
 	})
@@ -565,5 +567,45 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotNil(t, resObj.HumanAction)
 		assert.False(t, resObj.HumanAction.ForcedPass)
+	})
+}
+
+func TestSevensWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewSevensWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 7 of hearts", Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, true)}},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"play"`)
+		assert.Contains(t, result, `"detail":"played 7 of hearts"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
 	})
 }

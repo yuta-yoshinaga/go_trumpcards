@@ -50,6 +50,47 @@ func TestNewHoldem(t *testing.T) {
 	assert.False(t, h.GetGameEndFlag())
 }
 
+func TestHoldem_Resize(t *testing.T) {
+	h := newTestHoldem()
+	assert.Equal(t, 4, h.GetPlayerCnt())
+
+	// Resize to 6 players
+	newPlayers := make([]*HoldemPlayer, 6)
+	newPlayers[0] = NewHoldemPlayer(true, HoldemStyleTAG)
+	for i := 1; i < 6; i++ {
+		newPlayers[i] = NewHoldemPlayer(false, HoldemStyleLAP)
+	}
+	h.Resize(newPlayers)
+	assert.Equal(t, 6, h.GetPlayerCnt())
+	assert.Equal(t, 0, h.GetHandCount())
+	assert.Equal(t, 6, len(h.GetActedFlags()))
+
+	// Should be able to reset and play with 6 players
+	err := h.Reset()
+	assert.NoError(t, err)
+	assert.Equal(t, 6, h.GetPlayerCnt())
+	for i := 0; i < 6; i++ {
+		assert.Equal(t, 2, h.GetPlayer(i).GetCardsSize())
+	}
+}
+
+func TestHoldem_Resize_To9(t *testing.T) {
+	h := newTestHoldem()
+
+	newPlayers := make([]*HoldemPlayer, 9)
+	newPlayers[0] = NewHoldemPlayer(true, HoldemStyleTAG)
+	for i := 1; i < 9; i++ {
+		newPlayers[i] = NewHoldemPlayer(false, HoldemStyleGTO)
+	}
+	h.Resize(newPlayers)
+	assert.Equal(t, 9, h.GetPlayerCnt())
+
+	err := h.Reset()
+	assert.NoError(t, err)
+	assert.Equal(t, 9, h.GetPlayerCnt())
+	assert.True(t, h.GetPot() > 0)
+}
+
 func TestHoldem_Reset(t *testing.T) {
 	h := newTestHoldem()
 	_ = h.Reset()
@@ -549,7 +590,11 @@ func TestHoldem_Showdown(t *testing.T) {
 	err := h.PlayerAction(HoldemActionCheck, 0)
 	assert.NoError(t, err)
 
-	// Game should be at showdown or end
+	// Human lost (player 3 has straight) → muck choice available
+	if h.IsMuckAvailable() {
+		err = h.ShowHand()
+		assert.NoError(t, err)
+	}
 	assert.True(t, h.GetGameEndFlag())
 	assert.True(t, len(h.GetRoundResults()) > 0)
 	// Player 0 has pair of aces → kickers should be populated
@@ -598,6 +643,12 @@ func TestHoldem_Showdown_Kickers(t *testing.T) {
 	})
 
 	err := h.PlayerAction(HoldemActionCheck, 0)
+	assert.NoError(t, err)
+	// Human lost → stays at SHOWDOWN for muck choice
+	assert.False(t, h.GetGameEndFlag())
+	assert.True(t, h.IsMuckAvailable())
+	// Muck and verify game ends
+	err = h.Muck()
 	assert.NoError(t, err)
 	assert.True(t, h.GetGameEndFlag())
 
@@ -1471,4 +1522,812 @@ func TestHoldem_BettingLimits_NoLimit(t *testing.T) {
 		err := h.PlayerAction(HoldemActionBet, 20)
 		assert.NoError(t, err)
 	})
+}
+
+// --- Rebuy / Addon tests ---
+
+// newTestHoldemWithRebuy creates a 4-player holdem with rebuy enabled
+func newTestHoldemWithRebuy() *Holdem {
+	players := []*HoldemPlayer{
+		NewHoldemPlayer(true, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleLAP),
+		NewHoldemPlayer(false, HoldemStyleLAG),
+	}
+	cfg := DefaultHoldemConfig()
+	cfg.RebuyEnabled = true
+	cfg.RebuyMaxCount = 3
+	cfg.RebuyChips = 1000
+	cfg.RebuyPeriodHands = 20
+	tc := NewTrumpCards(0)
+	h := NewHoldem(tc, players, cfg)
+	return h
+}
+
+func TestDefaultHoldemConfig_RebuyAddonDefaults(t *testing.T) {
+	cfg := DefaultHoldemConfig()
+	assert.False(t, cfg.RebuyEnabled)
+	assert.Equal(t, 3, cfg.RebuyMaxCount)
+	assert.Equal(t, 1000, cfg.RebuyChips)
+	assert.Equal(t, 20, cfg.RebuyPeriodHands)
+	assert.False(t, cfg.AddonEnabled)
+	assert.Equal(t, 1500, cfg.AddonChips)
+	assert.Equal(t, 20, cfg.AddonAfterHand)
+}
+
+func TestNewHoldem_InitializesRebuyAddonSlices(t *testing.T) {
+	h := newTestHoldem()
+	assert.Equal(t, []int{0, 0, 0, 0}, h.GetRebuyCounts())
+	assert.Equal(t, []bool{false, false, false, false}, h.GetAddonUsed())
+	assert.Equal(t, 0, h.GetRebuyPhaseType())
+}
+
+func TestHoldem_Resize_InitializesRebuyAddonSlices(t *testing.T) {
+	h := newTestHoldem()
+	newPlayers := make([]*HoldemPlayer, 6)
+	newPlayers[0] = NewHoldemPlayer(true, HoldemStyleTAG)
+	for i := 1; i < 6; i++ {
+		newPlayers[i] = NewHoldemPlayer(false, HoldemStyleLAP)
+	}
+	h.Resize(newPlayers)
+	assert.Equal(t, []int{0, 0, 0, 0, 0, 0}, h.GetRebuyCounts())
+	assert.Equal(t, []bool{false, false, false, false, false, false}, h.GetAddonUsed())
+}
+
+func TestHoldem_Reset_RebuyDisabled_BustedPlayerGetsInitChips(t *testing.T) {
+	h := newTestHoldem() // rebuy disabled by default
+	// Bust human player
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+	// With rebuy disabled, busted player gets InitChips
+	assert.True(t, h.GetPlayer(0).GetChips() > 0)
+}
+
+func TestHoldem_Reset_RebuyEnabled_CpuAutoRebuys(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// Bust CPU player 1
+	h.GetPlayer(1).SetChips(0)
+	// Human has chips, so no human rebuy prompt
+	h.GetPlayer(0).SetChips(1000)
+	_ = h.Reset()
+	// CPU should have auto-rebuyed: chips = RebuyChips (1000), rebuyCount = 1
+	assert.Equal(t, 1, h.GetRebuyCounts()[1])
+}
+
+func TestHoldem_Reset_RebuyEnabled_HumanBustedGetsRebuyPhase(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// Bust human player
+	h.GetPlayer(0).SetChips(0)
+	err := h.Reset()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 1, h.GetRebuyPhaseType()) // rebuyPhaseRebuy
+}
+
+func TestHoldem_Reset_RebuyEnabled_HumanHasChips_NoRebuyPrompt(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// Human has chips
+	h.GetPlayer(0).SetChips(500)
+	err := h.Reset()
+	assert.NoError(t, err)
+	// Should proceed to preflop (or later), not rebuy phase
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_Reset_RebuyEnabled_BeyondRebuyPeriod(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// Set hand count beyond rebuy period
+	h.SetHandCount(20) // handCount will become 21 after increment, > RebuyPeriodHands (20)
+	h.GetPlayer(0).SetChips(0)
+	err := h.Reset()
+	assert.NoError(t, err)
+	// Beyond rebuy period, no rebuy prompt
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_Reset_RebuyEnabled_MaxRebuyReached(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// Human already used max rebuys
+	h.SetRebuyCounts([]int{3, 0, 0, 0}) // maxCount = 3
+	h.GetPlayer(0).SetChips(0)
+	err := h.Reset()
+	assert.NoError(t, err)
+	// Max rebuys reached, no rebuy prompt
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_Reset_AddonEnabled_CpuAutoAddons(t *testing.T) {
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonChips = 1500
+	cfg.AddonAfterHand = 1 // addon at hand 1 (after first increment)
+	h.SetConfig(cfg)
+	// handCount starts at 0, after increment it becomes 1 = AddonAfterHand
+	// Human has chips, so no rebuy. All CPUs should auto-addon
+	// But human needs addon prompt
+	err := h.Reset()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 2, h.GetRebuyPhaseType()) // rebuyPhaseAddon
+	// CPUs should have gotten addon
+	addonUsed := h.GetAddonUsed()
+	assert.True(t, addonUsed[1])
+	assert.True(t, addonUsed[2])
+	assert.True(t, addonUsed[3])
+	assert.False(t, addonUsed[0]) // human not yet
+}
+
+func TestHoldem_Reset_AddonEnabled_NotAtAddonHand(t *testing.T) {
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 5
+	h.SetConfig(cfg)
+	// handCount will be 1 after reset, not 5
+	err := h.Reset()
+	assert.NoError(t, err)
+	assert.NotEqual(t, 2, h.GetRebuyPhaseType())
+}
+
+func TestHoldem_Reset_AddonEnabled_AlreadyUsed(t *testing.T) {
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	// Mark all as already used
+	h.SetAddonUsed([]bool{true, true, true, true})
+	err := h.Reset()
+	assert.NoError(t, err)
+	// No addon prompt since all already used
+	assert.NotEqual(t, 2, h.GetRebuyPhaseType())
+}
+
+func TestHoldem_Rebuy_Success(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// Bust human, trigger rebuy phase
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 1, h.GetRebuyPhaseType())
+
+	// Execute rebuy
+	err := h.Rebuy()
+	assert.NoError(t, err)
+	// Human should have chips now
+	assert.True(t, h.GetPlayer(0).GetChips() > 0)
+	// Rebuy count incremented
+	assert.Equal(t, 1, h.GetRebuyCounts()[0])
+	// Should have continued to deal (preflop or beyond)
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_Rebuy_WrongPhase(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	err := h.Rebuy()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_Rebuy_WrongPhaseType(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhaseRebuy)
+	h.SetRebuyPhaseType(2) // addon phase, not rebuy
+	err := h.Rebuy()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_Rebuy_ThenAddon(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1 // addon at hand 1
+	h.SetConfig(cfg)
+	// Bust human
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 1, h.GetRebuyPhaseType()) // rebuy first
+
+	// Do rebuy -> should transition to addon phase
+	err := h.Rebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 2, h.GetRebuyPhaseType()) // now addon phase
+}
+
+func TestHoldem_SkipRebuy_Success(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	// Busted human skips rebuy → game ends
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+}
+
+func TestHoldem_SkipRebuy_WrongPhase(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	err := h.SkipRebuy()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_SkipRebuy_WrongPhaseType(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhaseRebuy)
+	h.SetRebuyPhaseType(2) // addon, not rebuy
+	err := h.SkipRebuy()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_SkipRebuy_ThenAddon(t *testing.T) {
+	// When human has 0 chips and skips rebuy, game ends (no addon transition)
+	h := newTestHoldemWithRebuy()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+	assert.Equal(t, HoldemRebuyPhaseRebuy, h.GetRebuyPhaseType())
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+}
+
+func TestHoldem_Addon_Success(t *testing.T) {
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonChips = 1500
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	_ = h.Reset()
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 2, h.GetRebuyPhaseType())
+
+	chipsBefore := h.GetPlayer(0).GetChips()
+	err := h.Addon()
+	assert.NoError(t, err)
+	// Human should get addon chips
+	assert.Equal(t, chipsBefore+1500, h.GetPlayer(0).GetChips())
+	assert.True(t, h.GetAddonUsed()[0])
+	// Should continue to deal
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_Addon_WrongPhase(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	err := h.Addon()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_Addon_WrongPhaseType(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhaseRebuy)
+	h.SetRebuyPhaseType(1) // rebuy, not addon
+	err := h.Addon()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_SkipAddon_Success(t *testing.T) {
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	_ = h.Reset()
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 2, h.GetRebuyPhaseType())
+
+	err := h.SkipAddon()
+	assert.NoError(t, err)
+	// Should continue without addon
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.False(t, h.GetAddonUsed()[0])
+}
+
+func TestHoldem_SkipAddon_WrongPhase(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	err := h.SkipAddon()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_SkipAddon_WrongPhaseType(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhaseRebuy)
+	h.SetRebuyPhaseType(1) // rebuy, not addon
+	err := h.SkipAddon()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_IsRebuyAvailable(t *testing.T) {
+	t.Run("rebuy disabled returns false", func(t *testing.T) {
+		h := newTestHoldem() // rebuy disabled by default
+		h.GetPlayer(0).SetChips(0)
+		assert.False(t, h.IsRebuyAvailable())
+	})
+
+	t.Run("rebuy enabled human busted within period returns true", func(t *testing.T) {
+		h := newTestHoldemWithRebuy()
+		h.SetHandCount(5) // within RebuyPeriodHands=20
+		h.GetPlayer(0).SetChips(0)
+		assert.True(t, h.IsRebuyAvailable())
+	})
+
+	t.Run("rebuy enabled but beyond period returns false", func(t *testing.T) {
+		h := newTestHoldemWithRebuy()
+		h.SetHandCount(21) // > RebuyPeriodHands=20
+		h.GetPlayer(0).SetChips(0)
+		assert.False(t, h.IsRebuyAvailable())
+	})
+
+	t.Run("rebuy enabled but human has chips returns false", func(t *testing.T) {
+		h := newTestHoldemWithRebuy()
+		h.SetHandCount(5)
+		h.GetPlayer(0).SetChips(500)
+		assert.False(t, h.IsRebuyAvailable())
+	})
+
+	t.Run("rebuy enabled but max count reached returns false", func(t *testing.T) {
+		h := newTestHoldemWithRebuy()
+		h.SetHandCount(5)
+		h.GetPlayer(0).SetChips(0)
+		h.SetRebuyCounts([]int{3, 0, 0, 0}) // max=3
+		assert.False(t, h.IsRebuyAvailable())
+	})
+}
+
+func TestHoldem_IsAddonAvailable(t *testing.T) {
+	t.Run("addon disabled returns false", func(t *testing.T) {
+		h := newTestHoldem()
+		assert.False(t, h.IsAddonAvailable())
+	})
+
+	t.Run("addon enabled at correct hand returns true", func(t *testing.T) {
+		h := newTestHoldem()
+		cfg := h.GetConfig()
+		cfg.AddonEnabled = true
+		cfg.AddonAfterHand = 5
+		h.SetConfig(cfg)
+		h.SetHandCount(5)
+		assert.True(t, h.IsAddonAvailable())
+	})
+
+	t.Run("addon enabled but wrong hand returns false", func(t *testing.T) {
+		h := newTestHoldem()
+		cfg := h.GetConfig()
+		cfg.AddonEnabled = true
+		cfg.AddonAfterHand = 5
+		h.SetConfig(cfg)
+		h.SetHandCount(3)
+		assert.False(t, h.IsAddonAvailable())
+	})
+
+	t.Run("addon enabled but already used returns false", func(t *testing.T) {
+		h := newTestHoldem()
+		cfg := h.GetConfig()
+		cfg.AddonEnabled = true
+		cfg.AddonAfterHand = 5
+		h.SetConfig(cfg)
+		h.SetHandCount(5)
+		h.SetAddonUsed([]bool{true, false, false, false})
+		assert.False(t, h.IsAddonAvailable())
+	})
+}
+
+func TestHoldem_GetRebuyCounts_ReturnsCopy(t *testing.T) {
+	h := newTestHoldem()
+	h.SetRebuyCounts([]int{1, 2, 0, 0})
+	counts := h.GetRebuyCounts()
+	counts[0] = 99
+	// Original should not be modified
+	assert.Equal(t, 1, h.GetRebuyCounts()[0])
+}
+
+func TestHoldem_GetAddonUsed_ReturnsCopy(t *testing.T) {
+	h := newTestHoldem()
+	h.SetAddonUsed([]bool{true, false, false, false})
+	used := h.GetAddonUsed()
+	used[0] = false
+	// Original should not be modified
+	assert.True(t, h.GetAddonUsed()[0])
+}
+
+func TestHoldem_GetRebuyPhaseType(t *testing.T) {
+	h := newTestHoldem()
+	assert.Equal(t, 0, h.GetRebuyPhaseType())
+	h.SetRebuyPhaseType(1)
+	assert.Equal(t, 1, h.GetRebuyPhaseType())
+	h.SetRebuyPhaseType(2)
+	assert.Equal(t, 2, h.GetRebuyPhaseType())
+}
+
+func TestHoldem_Reset_RebuyEnabled_CpuMaxRebuyReached(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// CPU 1 already at max rebuys and busted
+	h.SetRebuyCounts([]int{0, 3, 0, 0})
+	h.GetPlayer(1).SetChips(0)
+	h.GetPlayer(0).SetChips(1000) // human has chips
+	_ = h.Reset()
+	// CPU 1 should NOT have gotten rebuy (already at max)
+	assert.Equal(t, 3, h.GetRebuyCounts()[1])
+}
+
+func TestHoldem_Reset_AddonEnabled_CpuAlreadyUsed(t *testing.T) {
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	// CPU 1 already used addon
+	h.SetAddonUsed([]bool{false, true, false, false})
+	_ = h.Reset()
+	// Phase should be rebuy (addon) because human still needs addon
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 2, h.GetRebuyPhaseType())
+	// CPU 1 should still be true (already used), CPUs 2,3 should have gotten addon
+	addonUsed := h.GetAddonUsed()
+	assert.True(t, addonUsed[1])
+	assert.True(t, addonUsed[2])
+	assert.True(t, addonUsed[3])
+}
+
+func TestHoldem_Reset_RebuyEnabled_NoBustedPlayers(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// All players have chips
+	for _, p := range h.GetPlayers() {
+		p.SetChips(500)
+	}
+	err := h.Reset()
+	assert.NoError(t, err)
+	// No rebuy prompt, should proceed to preflop
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_Rebuy_AddonNotDue(t *testing.T) {
+	// When rebuy succeeds but addon is not due (wrong hand), should go straight to continueReset
+	h := newTestHoldemWithRebuy()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 99 // not at this hand
+	h.SetConfig(cfg)
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+	assert.Equal(t, 1, h.GetRebuyPhaseType())
+
+	err := h.Rebuy()
+	assert.NoError(t, err)
+	// Should proceed directly, not to addon phase
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_SkipRebuy_AddonNotDue(t *testing.T) {
+	// Human has 0 chips and skips rebuy → game ends
+	h := newTestHoldemWithRebuy()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 99
+	h.SetConfig(cfg)
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+}
+
+func TestHoldem_Rebuy_AddonAllAlreadyUsed(t *testing.T) {
+	// Rebuy succeeds, addon is due but all players already used it
+	h := newTestHoldemWithRebuy()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	h.SetAddonUsed([]bool{true, true, true, true})
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+	assert.Equal(t, 1, h.GetRebuyPhaseType())
+
+	err := h.Rebuy()
+	assert.NoError(t, err)
+	// Addon all used, should go to continueReset
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_SkipRebuy_AddonAllAlreadyUsed(t *testing.T) {
+	// Human has 0 chips and skips rebuy → game ends
+	h := newTestHoldemWithRebuy()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	h.SetAddonUsed([]bool{true, true, true, true})
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+}
+
+func TestHoldem_Rebuy_AddonDisabled(t *testing.T) {
+	// Rebuy with addon disabled should go straight to continueReset
+	h := newTestHoldemWithRebuy() // addon disabled by default
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+	assert.Equal(t, 1, h.GetRebuyPhaseType())
+
+	err := h.Rebuy()
+	assert.NoError(t, err)
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+}
+
+func TestHoldem_SkipRebuy_AddonDisabled(t *testing.T) {
+	// Human has 0 chips and skips rebuy → game ends
+	h := newTestHoldemWithRebuy()
+	h.GetPlayer(0).SetChips(0)
+	_ = h.Reset()
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+}
+
+func TestHoldem_SkipRebuy_HumanHasChips_ContinuesGame(t *testing.T) {
+	// Safety path: human has chips > 0 in rebuy phase → game continues (continueReset)
+	h := newTestHoldemWithRebuy()
+	h.SetPhase(HoldemPhaseRebuy)
+	h.SetRebuyPhaseType(HoldemRebuyPhaseRebuy)
+	// Human still has chips (unusual but possible via test helper)
+	h.GetPlayer(0).SetChips(500)
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhasePreFlop, h.GetPhase())
+	assert.False(t, h.GetGameEndFlag())
+}
+
+func TestHoldem_SkipRebuy_HumanHasChips_TransitionsToAddon(t *testing.T) {
+	// Safety path: human has chips > 0 + addon is due → transitions to addon phase
+	h := newTestHoldemWithRebuy()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	h.SetHandCount(1) // match AddonAfterHand
+	h.SetPhase(HoldemPhaseRebuy)
+	h.SetRebuyPhaseType(HoldemRebuyPhaseRebuy)
+	h.GetPlayer(0).SetChips(500)
+
+	err := h.SkipRebuy()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, HoldemRebuyPhaseAddon, h.GetRebuyPhaseType())
+}
+
+func TestHoldem_Reset_AddonEnabled_NoCpuNeedAddon_HumanOnly(t *testing.T) {
+	// All CPUs already used addon, only human needs it
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	h.SetAddonUsed([]bool{false, true, true, true})
+	err := h.Reset()
+	assert.NoError(t, err)
+	assert.Equal(t, HoldemPhaseRebuy, h.GetPhase())
+	assert.Equal(t, 2, h.GetRebuyPhaseType())
+}
+
+func TestHoldem_Reset_AddonEnabled_AllCpuAddon_NoHumanNeeded(t *testing.T) {
+	// Human already used addon, only CPUs need it -> no rebuy phase prompt
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.AddonEnabled = true
+	cfg.AddonAfterHand = 1
+	h.SetConfig(cfg)
+	h.SetAddonUsed([]bool{true, false, false, false})
+	err := h.Reset()
+	assert.NoError(t, err)
+	// No addon prompt for human, CPUs auto-addon, proceed to deal
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+	// CPUs should have gotten addon
+	assert.True(t, h.GetAddonUsed()[1])
+	assert.True(t, h.GetAddonUsed()[2])
+	assert.True(t, h.GetAddonUsed()[3])
+}
+
+func TestHoldem_Reset_RebuyEnabled_OnlyCpuBusted_NoHumanPrompt(t *testing.T) {
+	h := newTestHoldemWithRebuy()
+	// Only CPU is busted, human is fine
+	h.GetPlayer(0).SetChips(1000)
+	h.GetPlayer(1).SetChips(0)
+	h.GetPlayer(2).SetChips(0)
+	err := h.Reset()
+	assert.NoError(t, err)
+	// Should not show rebuy phase for human
+	assert.NotEqual(t, HoldemPhaseRebuy, h.GetPhase())
+	// CPUs should have auto-rebuyed
+	assert.Equal(t, 1, h.GetRebuyCounts()[1])
+	assert.Equal(t, 1, h.GetRebuyCounts()[2])
+}
+
+func TestHoldem_HoldemPhaseRebuy_Constant(t *testing.T) {
+	assert.Equal(t, 7, HoldemPhaseRebuy)
+}
+
+// --- Muck / ShowHand / IsMuckAvailable tests ---
+
+func setupHoldemForMuck() *Holdem {
+	h := newTestHoldem()
+	for _, p := range h.players {
+		p.SetChips(1000)
+	}
+	h.setStartingChips([]int{1000, 1000, 1000, 1000})
+	h.SetPhase(HoldemPhaseShowdown)
+	h.SetDealerIdx(0)
+	// Human lost (wonAmount == 0)
+	h.SetRoundResults([]HoldemResult{
+		{PlayerIdx: 0, HandRank: 0, HandName: "High Card", WonAmount: 0},
+		{PlayerIdx: 1, HandRank: 1, HandName: "One Pair", WonAmount: 200},
+	})
+	return h
+}
+
+func TestHoldem_Muck_WrongPhase(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	err := h.Muck()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_ShowHand_WrongPhase(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	err := h.ShowHand()
+	assert.Error(t, err)
+	assert.ErrorIs(t, err, ErrWrongPhase)
+}
+
+func TestHoldem_Muck_SetsMuckedAndFinalizes(t *testing.T) {
+	h := setupHoldemForMuck()
+	dealerBefore := h.GetDealerIdx()
+
+	err := h.Muck()
+	assert.NoError(t, err)
+
+	// Phase should transition to END
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+	// Dealer should rotate
+	assert.Equal(t, (dealerBefore+1)%h.GetPlayerCnt(), h.GetDealerIdx())
+	// Human result should be mucked
+	for _, r := range h.GetRoundResults() {
+		if h.GetPlayer(r.PlayerIdx).GetIsHuman() {
+			assert.True(t, r.Mucked)
+		}
+	}
+}
+
+func TestHoldem_ShowHand_FinalizesWithoutMuck(t *testing.T) {
+	h := setupHoldemForMuck()
+	dealerBefore := h.GetDealerIdx()
+
+	err := h.ShowHand()
+	assert.NoError(t, err)
+
+	// Phase should transition to END
+	assert.Equal(t, HoldemPhaseEnd, h.GetPhase())
+	assert.True(t, h.GetGameEndFlag())
+	// Dealer should rotate
+	assert.Equal(t, (dealerBefore+1)%h.GetPlayerCnt(), h.GetDealerIdx())
+	// Human result should NOT be mucked
+	for _, r := range h.GetRoundResults() {
+		if h.GetPlayer(r.PlayerIdx).GetIsHuman() {
+			assert.False(t, r.Mucked)
+		}
+	}
+}
+
+func TestHoldem_IsMuckAvailable_NotShowdown(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhasePreFlop)
+	assert.False(t, h.IsMuckAvailable())
+}
+
+func TestHoldem_IsMuckAvailable_ShowdownHumanLost(t *testing.T) {
+	h := setupHoldemForMuck()
+	assert.True(t, h.IsMuckAvailable())
+}
+
+func TestHoldem_IsMuckAvailable_ShowdownHumanWon(t *testing.T) {
+	h := newTestHoldem()
+	h.SetPhase(HoldemPhaseShowdown)
+	h.SetRoundResults([]HoldemResult{
+		{PlayerIdx: 0, HandRank: 1, HandName: "One Pair", WonAmount: 200},
+		{PlayerIdx: 1, HandRank: 0, HandName: "High Card", WonAmount: 0},
+	})
+	assert.False(t, h.IsMuckAvailable())
+}
+
+// ---------------------------------------------------------------------------
+// ActionLog tests
+// ---------------------------------------------------------------------------
+
+func TestHoldem_ActionLog_Actions(t *testing.T) {
+	h := newTestHoldem()
+	// Reset creates blinds which log entries
+	err := h.Reset()
+	assert.NoError(t, err)
+
+	log := h.GetActionLog()
+	// After Reset, blinds should be logged
+	blindCount := 0
+	for _, e := range log {
+		if e.ActionType == "blind" {
+			blindCount++
+			assert.Contains(t, e.Detail, "blind")
+		}
+	}
+	assert.Equal(t, 2, blindCount, "expected 2 blind log entries (small + big)")
+
+	// If game hasn't ended and it's human's turn in preflop, try a fold
+	if !h.GetGameEndFlag() && h.GetPhase() >= HoldemPhasePreFlop && h.GetPhase() <= HoldemPhaseRiver {
+		if h.players[h.currentTurn].GetIsHuman() {
+			beforeLen := len(h.GetActionLog())
+			err = h.PlayerAction(HoldemActionFold, 0)
+			assert.NoError(t, err)
+			log = h.GetActionLog()
+			assert.Greater(t, len(log), beforeLen, "expected new log entries after fold")
+
+			foldFound := false
+			for _, e := range log {
+				if e.ActionType == "fold" && e.PlayerIdx == 0 {
+					foldFound = true
+					break
+				}
+			}
+			assert.True(t, foldFound, "expected fold action log entry")
+		}
+	}
+}
+
+func TestHoldem_ActionLog_Reset(t *testing.T) {
+	h := newTestHoldem()
+	_ = h.Reset()
+	firstLog := h.GetActionLog()
+	assert.NotEmpty(t, firstLog)
+	firstLogLen := len(firstLog)
+
+	// Reset again should clear the old log and create new entries
+	_ = h.Reset()
+	log := h.GetActionLog()
+	// The log should not accumulate entries from the previous round.
+	// After reset, TurnNumber starts from 0 (sequential index within the new round).
+	assert.NotEmpty(t, log)
+	assert.Equal(t, 1, log[0].TurnNumber, "first entry after reset should have TurnNumber 1")
+	// Verify that entries are not accumulated across resets
+	assert.LessOrEqual(t, len(log), firstLogLen+4, "log should not grow unboundedly across resets")
 }

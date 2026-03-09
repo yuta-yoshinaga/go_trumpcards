@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sevensApi } from '../api/gameApi';
+import { actionLogApi, sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SevensResponse } from '../types/card';
@@ -8,6 +8,7 @@ import { SevensPage } from './SevensPage';
 
 vi.mock('../api/gameApi', () => ({
   sevensApi: { exec: vi.fn() },
+  actionLogApi: { sevens: vi.fn() },
 }));
 
 const mockExec = vi.mocked(sevensApi.exec);
@@ -17,8 +18,9 @@ const mockExec = vi.mocked(sevensApi.exec);
 // With all 7s placed: value 6 or 8 of any suit is playable
 const defaultConfig = {
   tunnelEnabled: false,
+  tunnelSkipWidth: 0,
   jokerCount: 0,
-  cpuStrategy: false,
+  cpuStrategy: 0,
   maxPasses: 5,
   noJokerFinish: false,
   jokerReclaimEnabled: false,
@@ -253,8 +255,9 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -347,7 +350,7 @@ describe('SevensPage', () => {
         ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 2,
-        cpuStrategy: true,
+        cpuStrategy: 1,
       },
     };
     mockExec.mockResolvedValue(stateWithConfig);
@@ -358,6 +361,23 @@ describe('SevensPage', () => {
       expect(screen.getByText(/\[ジョーカー×2\]/)).toBeInTheDocument();
       expect(screen.getByText(/\[CPU戦略\]/)).toBeInTheDocument();
     });
+  });
+
+  it('shows harassment rule tag when cpuStrategy is 2', async () => {
+    const stateWithHarassment: SevensResponse = {
+      ...humanTurnState,
+      config: {
+        ...defaultConfig,
+        cpuStrategy: 2,
+      },
+    };
+    mockExec.mockResolvedValue(stateWithHarassment);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[嫌がらせ特化\]/)).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/\[CPU戦略\]/)).not.toBeInTheDocument();
   });
 
   it('does not show rule header with default config', async () => {
@@ -424,7 +444,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ルール設定 (リセット時に適用)')).toBeInTheDocument());
     expect(screen.getByLabelText('トンネル')).not.toBeChecked();
-    expect(screen.getByLabelText('CPU戦略')).not.toBeChecked();
+    expect(screen.getByRole('combobox', { name: 'CPU戦略' })).toHaveValue('0');
     expect(screen.getByRole('combobox', { name: 'ジョーカー' })).toHaveValue('0');
     expect(screen.getByRole('combobox', { name: 'パス回数' })).toHaveValue('5');
   });
@@ -435,7 +455,7 @@ describe('SevensPage', () => {
 
     fireEvent.click(screen.getByLabelText('トンネル'));
     fireEvent.change(screen.getByRole('combobox', { name: 'ジョーカー' }), { target: { value: '1' } });
-    fireEvent.click(screen.getByLabelText('CPU戦略'));
+    fireEvent.change(screen.getByRole('combobox', { name: 'CPU戦略' }), { target: { value: '1' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue({
@@ -444,15 +464,16 @@ describe('SevensPage', () => {
         ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 1,
-        cpuStrategy: true,
+        cpuStrategy: 1,
       },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: true,
+        tunnelSkipWidth: 0,
         jokerCount: 1,
-        cpuStrategy: true,
+        cpuStrategy: 1,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -469,7 +490,7 @@ describe('SevensPage', () => {
         ...defaultConfig,
         tunnelEnabled: true,
         jokerCount: 2,
-        cpuStrategy: true,
+        cpuStrategy: 1,
         maxPasses: 3,
       },
     };
@@ -477,7 +498,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => {
       expect(screen.getByLabelText('トンネル')).toBeChecked();
-      expect(screen.getByLabelText('CPU戦略')).toBeChecked();
+      expect(screen.getByRole('combobox', { name: 'CPU戦略' })).toHaveValue('1');
       expect(screen.getByRole('combobox', { name: 'ジョーカー' })).toHaveValue('2');
       expect(screen.getByRole('combobox', { name: 'パス回数' })).toHaveValue('3');
     });
@@ -696,8 +717,9 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 3,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -881,8 +903,9 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: true,
         jokerReclaim: false,
@@ -964,8 +987,9 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: true,
@@ -1073,6 +1097,69 @@ describe('SevensPage', () => {
     expect(highlightedA).toBeUndefined();
   });
 
+  // ── TunnelSkipWidth tests ──────────────────────────────────────
+
+  it('renders tunnelSkipWidth config select with default value 0 (off)', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+    const select = screen.getByRole('combobox', { name: /トンネルスキップ幅/ });
+    expect(select).toHaveValue('0');
+  });
+
+  it('shows rule badge [トンネルスキップ3] when config has tunnelSkipWidth >= 2', async () => {
+    const skipState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelSkipWidth: 3 },
+    };
+    mockExec.mockResolvedValue(skipState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/ルール:/)).toBeInTheDocument();
+      expect(screen.getByText(/\[トンネルスキップ3\]/)).toBeInTheDocument();
+    });
+  });
+
+  it('syncs tunnelSkipWidth select state from server response', async () => {
+    const skipState: SevensResponse = {
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelSkipWidth: 4 },
+    };
+    mockExec.mockResolvedValue(skipState);
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => {
+      const select = screen.getByRole('combobox', { name: /トンネルスキップ幅/ });
+      expect(select).toHaveValue('4');
+    });
+  });
+
+  it('sends tunnelSkipWidth in config when select is changed and reset is clicked', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+
+    const select = screen.getByRole('combobox', { name: /トンネルスキップ幅/ });
+    fireEvent.change(select, { target: { value: '3' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      config: { ...defaultConfig, tunnelSkipWidth: 3 },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
+        tunnelEnabled: false,
+        tunnelSkipWidth: 3,
+        jokerCount: 0,
+        cpuStrategy: 0,
+        maxPasses: 5,
+        noJokerFinish: false,
+        jokerReclaim: false,
+        endStop: false,
+        jokerConsecutiveBanned: false,
+      }),
+    );
+  });
+
   // ── EndStop tests ──────────────────────────────────────────────
 
   it('renders EndStop config checkbox unchecked by default', async () => {
@@ -1096,8 +1183,9 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -1271,8 +1359,9 @@ describe('SevensPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
+        tunnelSkipWidth: 0,
         jokerCount: 0,
-        cpuStrategy: false,
+        cpuStrategy: 0,
         maxPasses: 5,
         noJokerFinish: false,
         jokerReclaim: false,
@@ -1373,5 +1462,29 @@ describe('SevensPage', () => {
     // Both should be playable when rule is disabled
     const playableCards = screen.queryAllByTestId('playable-card');
     expect(playableCards).toHaveLength(2);
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+      tablePlaced: {},
+      config: {},
+    } as unknown as SevensResponse);
+
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.sevens).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.sevens).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

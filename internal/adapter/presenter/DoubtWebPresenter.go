@@ -87,6 +87,16 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 		resObj.Players = append(resObj.Players, pObj)
 	}
 
+	// メタAI情報
+	if profile := d.GetHumanProfile(); profile != nil {
+		resObj.MetaAI = &controller.DoubtWebOutputMetaAI{
+			Enabled:       true,
+			GamesPlayed:   profile.GamesPlayed,
+			BluffRate:     profile.BluffRate(1), // medium bracket as representative
+			DoubtAccuracy: profile.DoubtAccuracy(),
+		}
+	}
+
 	// メッセージ
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
@@ -121,6 +131,14 @@ func (dwp *DoubtWebPresenter) buildResultMessage(d interfaces.DoubtGame) string 
 	return fmt.Sprintf("ゲーム終了！ %sの勝ち！", name)
 }
 
+// ActionLogOutput 棋譜をJSON出力
+func (dwp *DoubtWebPresenter) ActionLogOutput(d interfaces.DoubtGame) string {
+	if !d.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(d.GetActionLog())
+}
+
 // actionToOutput DoubtCpuAction を DoubtWebOutputAction に変換
 // IsBluff は意図的に除外する（ダウト解決前に隠されたゲーム状態をクライアントに漏洩しないため）
 // HasTell はゲームの「リーク」メカニクスとして意図的に公開する
@@ -130,5 +148,6 @@ func (dwp *DoubtWebPresenter) actionToOutput(a *domain.DoubtCpuAction) *controll
 		ClaimedValue: a.ClaimedValue,
 		CardCount:    a.CardCount,
 		HasTell:      a.HasTell,
+		HesitationMs: a.HesitationMs,
 	}
 }

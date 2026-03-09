@@ -8,6 +8,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -473,4 +474,155 @@ func TestBlackJackWebPresenter_DeckPenetration50(t *testing.T) {
 	err := json.Unmarshal([]byte(output), &result)
 	assert.NoError(t, err)
 	assert.Equal(t, 50, result.DeckPenetration)
+}
+
+func TestBlackJackWebPresenter_MultiHandCount(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	bj := domain.NewDefaultBlackJack()
+	bj.Reset()
+	bj.GetPlayer().SetChips(2000)
+	err := bj.PlayerBet(100, 0, 0, 2)
+	assert.NoError(t, err)
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err = json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, result.MultiHandCount)
+}
+
+func TestBlackJackWebPresenter_CpuInsuranceBet(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 1, CountingEnabled: false})
+	bj.Reset()
+	cpuPlayers := bj.GetCpuPlayers()
+	cpuHand := cpuPlayers[0].GetHands()[0]
+	cpuHand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	cpuHand.AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+	cpuHand.SetBet(100)
+	cpuPlayers[0].SetInsuranceBet(50)
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
+	bj.SetPhase(domain.BJPhaseAction)
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(result.CpuPlayers))
+	assert.Equal(t, 50, result.CpuPlayers[0].InsuranceBet)
+}
+
+func TestBlackJackWebPresenter_SurrenderRule(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly, DoubleAfterSplit: true})
+	bj.Reset()
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, domain.BJSurrenderEarly, result.SurrenderRule)
+}
+
+func TestBlackJackWebPresenter_CanSurrenderHand(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderLate, DoubleAfterSplit: true})
+	bj.Reset()
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	bj.SetPhase(domain.BJPhaseAction)
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	// CanSurrender should reflect bj.CanSurrenderHand(0) which checks game-level rules
+	assert.Equal(t, bj.CanSurrenderHand(0), result.Hands[0].CanSurrender)
+}
+
+func TestBlackJackWebPresenter_EarlySurrenderPhase(t *testing.T) {
+	tbp := presenter.NewBlackJackWebPresenter()
+	tc := domain.NewTrumpCards(0)
+	player := domain.NewBlackJackPlayer()
+	dealer := domain.NewBlackJackPlayer()
+	player.SetChips(1000)
+	dealer.SetChips(1000)
+	bj := domain.NewBlackJack(tc, player, dealer)
+	_ = bj.SetConfig(domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly, DoubleAfterSplit: true})
+	bj.Reset()
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 9, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+	bj.SetPhase(domain.BJPhaseEarlySurrender)
+	output := tbp.Output(bj, nil)
+	var result controller.BlackJackWebOutput
+	err := json.Unmarshal([]byte(output), &result)
+	assert.NoError(t, err)
+	assert.Equal(t, domain.BJPhaseEarlySurrender, result.Phase)
+}
+
+func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewBlackJackWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "hit", Detail: "drew a card", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, true)}},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"hit"`)
+		assert.Contains(t, result, `"detail":"drew a card"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockBlackJackGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
 }

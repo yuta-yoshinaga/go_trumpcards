@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -145,7 +146,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output rule header with tunnel", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: false}
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 0, CpuStrategy: domain.SevensCpuSimple}
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
@@ -154,10 +155,22 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "[トンネル]")
 	})
 
+	t.Run("success Output rule header with tunnel skip width", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{TunnelSkipWidth: 3}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[トンネルスキップ3]")
+	})
+
 	t.Run("success Output rule header with joker", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: false}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 2, CpuStrategy: domain.SevensCpuSimple}
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
@@ -170,13 +183,26 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 	t.Run("success Output rule header with CPU strategy", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeSevensPlayersForPresenter()
-		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: true}
+		cfg := domain.SevensConfig{TunnelEnabled: false, JokerCount: 0, CpuStrategy: domain.SevensCpuStrategic}
 		s := domain.NewSevens(tc, players, cfg)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "ルール:")
 		assert.Contains(t, result, "[CPU戦略]")
+	})
+
+	t.Run("success Output rule header with CPU harassment", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeSevensPlayersForPresenter()
+		cfg := domain.SevensConfig{CpuStrategy: domain.SevensCpuHarassment}
+		s := domain.NewSevens(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		result := tsp.Output(s, nil)
+		assert.Contains(t, result, "ルール:")
+		assert.Contains(t, result, "[嫌がらせ特化]")
+		assert.NotContains(t, result, "[CPU戦略]")
 	})
 
 	t.Run("success Output no rule header with default config", func(t *testing.T) {
@@ -521,5 +547,46 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "パスしました")
 		assert.NotContains(t, result, "(出せるカードなし)")
+	})
+}
+
+func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewSevensCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 7 of hearts"},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "played 7 of hearts")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockSevensGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

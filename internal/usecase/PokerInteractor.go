@@ -10,10 +10,12 @@ import (
 type PokerInteractorIF interface {
 	Reset() string
 	ResetWithConfig(cfg domain.PokerConfig) string
+	GetConfig() domain.PokerConfig
 	Action(action int, amount int) string
 	Exchange(indices []int) string
 	Stand() string
 	Odds(indices []int) string
+	ActionLog() string
 }
 
 // PokerInteractor ポーカーインタラクタークラス
@@ -24,12 +26,7 @@ type PokerInteractor struct {
 
 // NewPokerInteractor コンストラクタ
 func NewPokerInteractor(p interfaces.PokerGame, pp presenter.PokerPresenter) *PokerInteractor {
-	if p == nil {
-		panic("PokerInteractor: p must not be nil")
-	}
-	if pp == nil {
-		panic("PokerInteractor: pp must not be nil")
-	}
+	mustNotNil("PokerInteractor", map[string]any{"p": p, "pp": pp})
 	return &PokerInteractor{
 		p:  p,
 		pp: pp,
@@ -40,6 +37,11 @@ func NewPokerInteractor(p interfaces.PokerGame, pp presenter.PokerPresenter) *Po
 func (pi *PokerInteractor) Reset() string {
 	err := pi.p.Reset()
 	return pi.pp.Output(pi.p, err)
+}
+
+// GetConfig 現在の設定を取得
+func (pi *PokerInteractor) GetConfig() domain.PokerConfig {
+	return pi.p.GetConfig()
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
@@ -65,6 +67,11 @@ func (pi *PokerInteractor) Exchange(indices []int) string {
 func (pi *PokerInteractor) Stand() string {
 	err := pi.p.PlayerStand()
 	return pi.pp.Output(pi.p, err)
+}
+
+// ActionLog 棋譜を出力する
+func (pi *PokerInteractor) ActionLog() string {
+	return pi.pp.ActionLogOutput(pi.p)
 }
 
 // Odds ドローオッズ計算

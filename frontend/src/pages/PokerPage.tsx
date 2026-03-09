@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { pokerApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CardImage } from '../components/CardImage';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -9,9 +10,10 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { RoundResults } from '../components/RoundResults';
+import { useActionLog } from '../hooks/useActionLog';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { handNameBadgeStyle } from '../styles/gameConstants';
 import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
@@ -30,8 +32,10 @@ export function PokerPage() {
   const { t } = useTranslation('poker');
   const { t: tc } = useTranslation('common');
   const { selected, setSelected, clear: clearSelection } = useCardSelection();
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('poker');
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
+  const [isLowball, setIsLowball] = useState(false);
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);
   const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const oddsGenRef = useRef(0);
@@ -110,6 +114,9 @@ export function PokerPage() {
           <span>
             {t('joker')} <strong>{state?.jokerCount}</strong>
           </span>
+        )}
+        {state?.isLowball && (
+          <span className="bg-yellow-600 text-white px-2 py-0.5 rounded text-xs font-bold">[{t('lowballMode')}]</span>
         )}
       </div>
 
@@ -230,6 +237,16 @@ export function PokerPage() {
           alwaysVisible
         />
 
+        {/* Action log */}
+        {state?.gameEndFlag && !actionLog && (
+          <div className="text-center my-2">
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+
         <ErrorAlert message={error} />
 
         {/* Betting controls */}
@@ -302,11 +319,18 @@ export function PokerPage() {
               <option value={2}>{tc('betting.noLimit')}</option>
             </select>
           </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={isLowball} onChange={(e) => setIsLowball(e.target.checked)} />
+            {t('lowball')}
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => exec('reset', undefined, undefined, { bettingLimit })}
+            onClick={() => {
+              hideActionLog();
+              exec('reset', undefined, undefined, { bettingLimit, isLowball });
+            }}
           >
             {tc('button.reset')}
           </button>

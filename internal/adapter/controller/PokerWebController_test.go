@@ -839,6 +839,26 @@ func TestPokerWebController_AllShortCommands(t *testing.T) {
 
 // --- betting limit ---
 
+func TestPokerWebController_Reset_IsLowball(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	cfg := domain.DefaultPokerConfig()
+	cfg.IsLowball = true
+	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+
+	recorded := test.RunRequest(t, api.MakeHandler(),
+		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+			map[string]interface{}{
+				"command":   "reset",
+				"sessionId": "s1",
+				"isLowball": true,
+			}))
+	recorded.CodeIs(200)
+	mi.AssertCalled(t, "ResetWithConfig", cfg)
+}
+
 func TestPokerWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	api, pwc := newPokerTestHandler(mi)
@@ -894,4 +914,37 @@ func TestPokerWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 				"bettingLimit": -1,
 			}))
 	recorded.CodeIs(200)
+}
+
+func TestPokerWebController_Log(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	api, pwc := newPokerTestHandler(mi)
+	defer pwc.Stop()
+
+	mockLogOutput := `{"entries":[]}`
+	mi.On("ActionLog").Return(mockLogOutput)
+
+	t.Run("log command", func(t *testing.T) {
+		recorded := test.RunRequest(t, api.MakeHandler(),
+			test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+				map[string]interface{}{
+					"command":   "log",
+					"sessionId": "pk-log-1",
+				}))
+		recorded.CodeIs(200)
+		recorded.ContentTypeIsJson()
+		mi.AssertCalled(t, "ActionLog")
+	})
+
+	t.Run("l shorthand", func(t *testing.T) {
+		recorded := test.RunRequest(t, api.MakeHandler(),
+			test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
+				map[string]interface{}{
+					"command":   "l",
+					"sessionId": "pk-log-1",
+				}))
+		recorded.CodeIs(200)
+		recorded.ContentTypeIsJson()
+		mi.AssertCalled(t, "ActionLog")
+	})
 }

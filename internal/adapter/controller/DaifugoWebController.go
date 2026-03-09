@@ -11,22 +11,24 @@ import (
 type DaifugoWebConfig struct {
 	JokerCount                int  `json:"jokerCount"`
 	EightCutEnabled           bool `json:"eightCutEnabled"`
-	SuitLockEnabled           bool `json:"suitLockEnabled"`
+	SuitLockMode              int  `json:"suitLockMode"`
 	ElevenBackEnabled         bool `json:"elevenBackEnabled"`
 	SequenceEnabled           bool `json:"sequenceEnabled"`
 	CardExchangeEnabled       bool `json:"cardExchangeEnabled"`
 	FiveSkipEnabled           bool `json:"fiveSkipEnabled"`
+	FiveSkipCount             int  `json:"fiveSkipCount"`
 	SevenPassEnabled          bool `json:"sevenPassEnabled"`
 	TenDiscardEnabled         bool `json:"tenDiscardEnabled"`
 	SpadeThreeEnabled         bool `json:"spadeThreeEnabled"`
 	CapitalFallEnabled        bool `json:"capitalFallEnabled"`
 	NineReverseEnabled        bool `json:"nineReverseEnabled"`
 	CoupDetatEnabled          bool `json:"coupDetatEnabled"`
-	IntenseLockEnabled        bool `json:"intenseLockEnabled"`
+	NumberLockEnabled         bool `json:"numberLockEnabled"`
 	SandstormEnabled          bool `json:"sandstormEnabled"`
 	EmperorEnabled            bool `json:"emperorEnabled"`
 	SequenceRevolutionEnabled bool `json:"sequenceRevolutionEnabled"`
 	IllegalFinishEnabled      bool `json:"illegalFinishEnabled"`
+	QueenBomberEnabled        bool `json:"queenBomberEnabled"`
 	CpuDifficulty             int  `json:"cpuDifficulty"`
 }
 
@@ -81,7 +83,7 @@ type DaifugoWebOutput struct {
 	Message             string                            `json:"message"`
 	MessageCode         string                            `json:"messageCode,omitempty"`
 	MessageParams       map[string]string                 `json:"messageParams,omitempty"`
-	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"
+	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"|"queenBomber"
 	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
 	ReverseDirection    bool                              `json:"reverseDirection"`
 	NumberLocked        bool                              `json:"numberLocked"`
@@ -89,87 +91,14 @@ type DaifugoWebOutput struct {
 }
 
 // DaifugoWebController 大富豪Webコントローラークラス
-type DaifugoWebController struct {
-	baseController
-	factory func() usecase.DaifugoInteractorIF
-	store   *SessionStore[usecase.DaifugoInteractorIF]
-}
+type DaifugoWebController = GameWebController[usecase.DaifugoInteractorIF, DaifugoWebInput, *DaifugoWebOutput]
 
 // NewDaifugoWebController コンストラクタ
 func NewDaifugoWebController(factory func() usecase.DaifugoInteractorIF) *DaifugoWebController {
-	return &DaifugoWebController{
-		factory: factory,
-		store:   NewSessionStore[usecase.DaifugoInteractorIF](),
-	}
+	return NewGameWebController(factory, newDaifugoDefaultOutput, daifugoDispatch)
 }
 
-// Exec ゲーム実行
-func (dwc *DaifugoWebController) Exec(w rest.ResponseWriter, r *rest.Request) {
-	execWithSession(&dwc.baseController, w, r, dwc.store, dwc.factory,
-		func(msg string) any { return dwc.newDefaultOutput(msg) },
-		nil,
-		func(w rest.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput) bool {
-			switch param.Command {
-			case "r", "reset":
-				if param.Config != nil {
-					dgConfig := convertWebConfig(*param.Config)
-					dwc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig))
-				} else {
-					dwc.writePresenterResponse(w, dgi.Reset())
-				}
-			case "p", "play":
-				indices := param.Indices
-				if indices == nil {
-					indices = []int{}
-				}
-				dwc.writePresenterResponse(w, dgi.Play(indices))
-			case "sort":
-				mode := domain.DaifugoSortByStrength
-				if param.SortMode != nil {
-					if m := *param.SortMode; m >= int(domain.DaifugoSortByStrength) && m <= int(domain.DaifugoSortByNumber) {
-						mode = domain.DaifugoSortMode(m)
-					}
-				}
-				dwc.writePresenterResponse(w, dgi.Sort(mode))
-			default:
-				return false
-			}
-			return true
-		})
-}
-
-// convertWebConfig DaifugoWebConfig を domain.DaifugoConfig に変換
-func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
-	return domain.DaifugoConfig{
-		JokerCount:                c.JokerCount,
-		EightCutEnabled:           c.EightCutEnabled,
-		SuitLockEnabled:           c.SuitLockEnabled,
-		ElevenBackEnabled:         c.ElevenBackEnabled,
-		SequenceEnabled:           c.SequenceEnabled,
-		CardExchangeEnabled:       c.CardExchangeEnabled,
-		FiveSkipEnabled:           c.FiveSkipEnabled,
-		SevenPassEnabled:          c.SevenPassEnabled,
-		TenDiscardEnabled:         c.TenDiscardEnabled,
-		SpadeThreeEnabled:         c.SpadeThreeEnabled,
-		CapitalFallEnabled:        c.CapitalFallEnabled,
-		NineReverseEnabled:        c.NineReverseEnabled,
-		CoupDetatEnabled:          c.CoupDetatEnabled,
-		IntenseLockEnabled:        c.IntenseLockEnabled,
-		SandstormEnabled:          c.SandstormEnabled,
-		EmperorEnabled:            c.EmperorEnabled,
-		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
-		IllegalFinishEnabled:      c.IllegalFinishEnabled,
-		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
-	}
-}
-
-// Stop stops the background cleanup goroutine of the session store.
-func (dwc *DaifugoWebController) Stop() {
-	dwc.store.Stop()
-}
-
-// newDefaultOutput エラー・定型応答用のデフォルト出力を返す
-func (dwc *DaifugoWebController) newDefaultOutput(msg string) *DaifugoWebOutput {
+func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {
 	return &DaifugoWebOutput{
 		Players:             make([]*DaifugoWebOutputPlayer, 0),
 		TableCards:          make([]*WebOutputCard, 0),
@@ -178,5 +107,63 @@ func (dwc *DaifugoWebController) newDefaultOutput(msg string) *DaifugoWebOutput 
 		Message:             msg,
 		PendingAction:       "none",
 		PendingActionTarget: -1,
+	}
+}
+
+func daifugoDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DaifugoInteractorIF, param DaifugoWebInput, _ func(string) *DaifugoWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		if param.Config != nil {
+			dgConfig := convertWebConfig(*param.Config)
+			bc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig))
+		} else {
+			bc.writePresenterResponse(w, dgi.Reset())
+		}
+	case "p", "play":
+		indices := param.Indices
+		if indices == nil {
+			indices = []int{}
+		}
+		bc.writePresenterResponse(w, dgi.Play(indices))
+	case "sort":
+		mode := domain.DaifugoSortByStrength
+		if param.SortMode != nil {
+			if m := *param.SortMode; m >= int(domain.DaifugoSortByStrength) && m <= int(domain.DaifugoSortByNumber) {
+				mode = domain.DaifugoSortMode(m)
+			}
+		}
+		bc.writePresenterResponse(w, dgi.Sort(mode))
+	case "log", "l":
+		bc.writePresenterResponse(w, dgi.ActionLog())
+	default:
+		return false
+	}
+	return true
+}
+
+// convertWebConfig DaifugoWebConfig を domain.DaifugoConfig に変換
+func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
+	return domain.DaifugoConfig{
+		JokerCount:                c.JokerCount,
+		EightCutEnabled:           c.EightCutEnabled,
+		SuitLockMode:              domain.DaifugoSuitLockMode(c.SuitLockMode),
+		ElevenBackEnabled:         c.ElevenBackEnabled,
+		SequenceEnabled:           c.SequenceEnabled,
+		CardExchangeEnabled:       c.CardExchangeEnabled,
+		FiveSkipEnabled:           c.FiveSkipEnabled,
+		FiveSkipCount:             c.FiveSkipCount,
+		SevenPassEnabled:          c.SevenPassEnabled,
+		TenDiscardEnabled:         c.TenDiscardEnabled,
+		SpadeThreeEnabled:         c.SpadeThreeEnabled,
+		CapitalFallEnabled:        c.CapitalFallEnabled,
+		NineReverseEnabled:        c.NineReverseEnabled,
+		CoupDetatEnabled:          c.CoupDetatEnabled,
+		NumberLockEnabled:         c.NumberLockEnabled,
+		SandstormEnabled:          c.SandstormEnabled,
+		EmperorEnabled:            c.EmperorEnabled,
+		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
+		IllegalFinishEnabled:      c.IllegalFinishEnabled,
+		QueenBomberEnabled:        c.QueenBomberEnabled,
+		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
 	}
 }

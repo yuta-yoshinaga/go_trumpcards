@@ -15,6 +15,10 @@ type OldMaidGame interface {
 	ShuffleHumanHand() error
 	ReorderHumanHand(indices []int) error
 
+	// meta-AI
+	GetHumanProfile() *domain.OldMaidHumanProfile
+	ResetProfile()
+
 	// presenter が呼ぶメソッド
 	GetPlayerCnt() int
 	GetPlayer(i int) *domain.OldMaidPlayer
@@ -33,4 +37,5 @@ type OldMaidGame interface {
 	GetConfig() domain.OldMaidConfig
 	GetRemovedCard() *domain.Card
 	GetCpuHighlightedCardIdx() int
+	GetActionLog() []*domain.ActionLogEntry
 }

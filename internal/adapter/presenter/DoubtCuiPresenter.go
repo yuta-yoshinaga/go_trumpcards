@@ -110,6 +110,15 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 		}
 	}
 
+	// メタAI状態
+	if profile := d.GetHumanProfile(); profile != nil {
+		fmt.Fprintf(&b, "[メタAI] 適応中 (ゲーム数: %d, ブラフ率: %.0f%%, ダウト正解率: %.0f%%)\n",
+			profile.GamesPlayed,
+			profile.BluffRate(1)*100,
+			profile.DoubtAccuracy()*100,
+		)
+	}
+
 	// エラーメッセージ
 	if lastErr != nil {
 		fmt.Fprintf(&b, "%s\n", lastErr.Error())
@@ -139,4 +148,12 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 
 	b.WriteString("==========\n")
 	return b.String()
+}
+
+// ActionLogOutput 棋譜をテキスト出力
+func (p *DoubtCuiPresenter) ActionLogOutput(d interfaces.DoubtGame) string {
+	if !d.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(d.GetActionLog())
 }

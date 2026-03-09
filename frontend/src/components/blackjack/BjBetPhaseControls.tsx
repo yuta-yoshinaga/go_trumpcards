@@ -10,6 +10,7 @@ import {
 
 const VALID_DECK_COUNTS = [1, 2, 4, 6, 8] as const;
 const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
+const VALID_HAND_COUNTS = [1, 2, 3] as const;
 const COUNTING_SYSTEMS = [BJ_COUNTING_HILO, BJ_COUNTING_KO, BJ_COUNTING_ZEN, BJ_COUNTING_OMEGA2] as const;
 
 export interface BjBetPhaseControlsProps {
@@ -31,6 +32,10 @@ export interface BjBetPhaseControlsProps {
   onCountingSystemChange: (v: number) => void;
   deckPenetration: number;
   onDeckPenetrationChange: (v: number) => void;
+  handCount: number;
+  onHandCountChange: (v: number) => void;
+  surrenderRule: number;
+  onSurrenderRuleChange: (v: number) => void;
   loading: boolean;
   onBet: () => void;
   perfectPairsBet: number;
@@ -57,6 +62,25 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           className="w-20 px-2 py-1 rounded text-sm"
           disabled={props.loading}
         />
+      </div>
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <label htmlFor="bj-hand-count" className="text-white text-sm">
+          {t('handCount')}
+        </label>
+        <select
+          id="bj-hand-count"
+          value={props.handCount}
+          onChange={(e) => props.onHandCountChange(Number(e.target.value))}
+          className="px-2 py-1 rounded text-sm"
+          disabled={props.loading}
+        >
+          {VALID_HAND_COUNTS.map((h) => (
+            <option key={h} value={h}>
+              {h}
+              {t('handCountUnit')}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="flex items-center justify-center gap-2 mb-2">
         <label htmlFor="bj-pp-bet" className="text-white text-sm">
@@ -185,6 +209,22 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           {BJ_VALID_PENETRATIONS.map((p) => (
             <option key={p} value={p}>
               {p}%
+            </option>
+          ))}
+        </select>
+        <label htmlFor="bj-surrender-rule" className="text-white text-sm">
+          {t('surrenderRule')}
+        </label>
+        <select
+          id="bj-surrender-rule"
+          value={props.surrenderRule}
+          onChange={(e) => props.onSurrenderRuleChange(Number(e.target.value))}
+          className="px-2 py-1 rounded text-sm"
+          disabled={props.loading}
+        >
+          {[0, 1, 2].map((r) => (
+            <option key={r} value={r}>
+              {t(`surrenderRuleNames.${r}`)}
             </option>
           ))}
         </select>

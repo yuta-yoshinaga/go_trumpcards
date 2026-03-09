@@ -41,3 +41,12 @@ func (h *Holdem) SetSidePots(pots []HoldemSidePot) { h.sidePots = pots }
 
 // SetHandCount ハンド数設定（テスト用）
 func (h *Holdem) SetHandCount(count int) { h.handCount = count }
+
+// SetRebuyCounts リバイ回数設定（テスト用）
+func (h *Holdem) SetRebuyCounts(counts []int) { h.rebuyCounts = counts }
+
+// SetAddonUsed アドオン使用フラグ設定（テスト用）
+func (h *Holdem) SetAddonUsed(used []bool) { h.addonUsed = used }
+
+// SetRebuyPhaseType リバイフェーズ種別設定（テスト用）
+func (h *Holdem) SetRebuyPhaseType(t int) { h.rebuyPhaseType = t }

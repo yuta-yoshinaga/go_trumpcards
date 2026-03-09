@@ -35,4 +35,5 @@ type DaifugoGame interface {
 	GetReverseDirection() bool
 	GetNumberLocked() bool
 	GetSortMode() domain.DaifugoSortMode
+	GetActionLog() []*domain.ActionLogEntry
 }

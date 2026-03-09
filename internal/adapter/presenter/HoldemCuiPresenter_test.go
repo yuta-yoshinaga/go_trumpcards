@@ -8,6 +8,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makeHoldemForPresenter() (*domain.Holdem, []*domain.HoldemPlayer) {
@@ -419,5 +420,229 @@ func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 		h.SetPhase(domain.HoldemPhasePreFlop)
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "Fixed")
+	})
+}
+
+func TestHoldemCuiPresenter_Output_RebuyAddon(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("tournament mode with rebuy enabled shows rebuy info", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		cfg := domain.HoldemConfig{
+			SmallBlind:       10,
+			BigBlind:         20,
+			InitChips:        1000,
+			TournamentMode:   true,
+			BlindLevelHands:  5,
+			BlindMultiplier:  200,
+			RebuyEnabled:     true,
+			RebuyChips:       1000,
+			RebuyMaxCount:    3,
+			RebuyPeriodHands: 20,
+		}
+		h.SetConfig(cfg)
+		h.SetHandCount(2)
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "リバイ: 1000チップ (最大3回, 20ハンド目まで)")
+	})
+
+	t.Run("tournament mode with addon enabled shows addon info", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		cfg := domain.HoldemConfig{
+			SmallBlind:      10,
+			BigBlind:        20,
+			InitChips:       1000,
+			TournamentMode:  true,
+			BlindLevelHands: 5,
+			BlindMultiplier: 200,
+			AddonEnabled:    true,
+			AddonChips:      1500,
+			AddonAfterHand:  20,
+		}
+		h.SetConfig(cfg)
+		h.SetHandCount(2)
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "アドオン: 1500チップ (20ハンド目に提供)")
+	})
+
+	t.Run("rebuy phase type 1 shows rebuy prompt", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		cfg := domain.HoldemConfig{
+			SmallBlind:       10,
+			BigBlind:         20,
+			InitChips:        1000,
+			TournamentMode:   true,
+			BlindLevelHands:  5,
+			BlindMultiplier:  200,
+			RebuyEnabled:     true,
+			RebuyChips:       1000,
+			RebuyMaxCount:    3,
+			RebuyPeriodHands: 20,
+		}
+		h.SetConfig(cfg)
+		h.SetPhase(domain.HoldemPhaseRebuy)
+		h.SetRebuyPhaseType(1)
+		h.SetRebuyCounts([]int{1, 0, 0, 0})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "リバイしますか?")
+		assert.Contains(t, result, "1000チップ")
+		assert.Contains(t, result, "1/3回使用済")
+		assert.Contains(t, result, "rb=リバイ / sr=スキップ")
+	})
+
+	t.Run("rebuy phase type 2 shows addon prompt", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		cfg := domain.HoldemConfig{
+			SmallBlind:      10,
+			BigBlind:        20,
+			InitChips:       1000,
+			TournamentMode:  true,
+			BlindLevelHands: 5,
+			BlindMultiplier: 200,
+			AddonEnabled:    true,
+			AddonChips:      1500,
+			AddonAfterHand:  20,
+		}
+		h.SetConfig(cfg)
+		h.SetPhase(domain.HoldemPhaseRebuy)
+		h.SetRebuyPhaseType(2)
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "アドオンしますか?")
+		assert.Contains(t, result, "1500チップ")
+		assert.Contains(t, result, "ad=アドオン / sa=スキップ")
+	})
+
+	t.Run("rebuy phase type 0 does not show prompt", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseRebuy)
+		h.SetRebuyPhaseType(0)
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "リバイしますか?")
+		assert.NotContains(t, result, "アドオンしますか?")
+	})
+}
+
+func TestHoldemCuiPresenter_Output_TableSize(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("displays 4-max", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "テーブル: 4-max")
+	})
+
+	t.Run("displays 6-max", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players6 := make([]*domain.HoldemPlayer, 6)
+		players6[0] = domain.NewHoldemPlayer(true, domain.HoldemStyleTAG)
+		for i := 1; i < 6; i++ {
+			players6[i] = domain.NewHoldemPlayer(false, domain.HoldemStyleLAP)
+		}
+		h := domain.NewHoldem(tc, players6, domain.DefaultHoldemConfig())
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "テーブル: 6-max")
+	})
+}
+
+func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("muck prompt displayed during showdown when IsMuckAvailable", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		// IsMuckAvailable returns true when phase=SHOWDOWN and human has wonAmount=0
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandOnePair, HandName: "One Pair", WonAmount: 0, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "マックしますか? (m=マック / sh=ショー)")
+	})
+
+	t.Run("muck prompt not displayed when not available", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "マックしますか?")
+	})
+
+	t.Run("mucked result displayed as マック", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandName: "One Pair", WonAmount: 0, Mucked: true, BestHand: nil},
+			{PlayerIdx: 1, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "You: マック")
+		assert.NotContains(t, result, "You: One Pair")
+	})
+
+	t.Run("results shown in showdown phase", func(t *testing.T) {
+		h, _ := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		h.SetRoundResults([]domain.HoldemResult{
+			{PlayerIdx: 0, HandRank: domain.PokerHandFlush, HandName: "Flush", WonAmount: 100, BestHand: nil},
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "[結果]")
+		assert.Contains(t, result, "You: Flush")
+	})
+}
+
+func TestHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewHoldemCuiPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", Detail: "raised to 100"},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "raise")
+		assert.Contains(t, result, "raised to 100")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockHoldemGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, "棋譜はありません")
+		mockGame.AssertExpectations(t)
 	})
 }

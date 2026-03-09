@@ -1,6 +1,9 @@
 package domain
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 // DoubtPlayerCnt ダウトプレイヤー数
 const DoubtPlayerCnt = 4
@@ -48,6 +51,13 @@ const (
 	tellChanceHard   = 0.05
 )
 
+// ダウト固有の迷い時間ディレイ定数 (共通定数は hesitation.go)
+const (
+	hesitationBluffSlowMin = 1200
+	hesitationBluffSlowMax = 1800
+	hesitationBluffFastPct = 0.6 // ブラフ時に速い反応を示す確率
+)
+
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
@@ -75,6 +85,7 @@ type DoubtCpuAction struct {
 	CardCount    int  // 出した枚数
 	IsBluff      bool // ブラフかどうか (CPU のみ追跡)
 	HasTell      bool // テル（緊張の兆候）を見せているか
+	HesitationMs int  // 迷い時間ディレイ (ミリ秒; 0=無効)
 }
 
 // DoubtDoubtResult ダウト解決結果
@@ -107,6 +118,8 @@ type Doubt struct {
 	lastDoubtResult *DoubtDoubtResult
 	config          DoubtConfig
 	turnCounter     int
+	humanProfile    *DoubtHumanProfile
+	actionLog       []*ActionLogEntry
 }
 
 // NewDoubt コンストラクタ
@@ -135,8 +148,18 @@ func (d *Doubt) Reset() {
 	d.humanAction = nil
 	d.winnerIdx = -1
 	d.turnCounter = 0
+	d.actionLog = nil
 
 	resetPlayers(d.players, func(p *DoubtPlayer) { p.ResetMemory() })
+
+	// メタAIプロファイルの管理
+	if d.config.CpuMetaAI {
+		if d.humanProfile != nil {
+			d.humanProfile.GamesPlayed++
+		} else {
+			d.humanProfile = &DoubtHumanProfile{}
+		}
+	}
 
 	d.trumpCards.Shuffle()
 	dealAllCards(d.trumpCards, d.players)
@@ -179,6 +202,18 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 	played := player.RemoveCards(cardIndices)
 	d.tableCards = append(d.tableCards, played...)
 
+	// メタAI: ブラフを記録
+	if d.config.CpuMetaAI && d.humanProfile != nil {
+		isBluff := false
+		for _, card := range played {
+			if card.GetValue() != claimedValue {
+				isBluff = true
+				break
+			}
+		}
+		d.humanProfile.RecordPlay(player.GetCardsSize(), isBluff)
+	}
+
 	d.lastAction = &DoubtAction{
 		PlayerIdx:    d.currentTurn,
 		ClaimedValue: claimedValue,
@@ -193,10 +228,13 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 	}
 	d.cpuActions = nil
 
+	d.appendLog(d.currentTurn, "play", fmt.Sprintf("declared %d, played %d card(s)", claimedValue, len(played)), played)
+
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
 		d.winnerIdx = d.currentTurn
 		d.gameEndFlag = true
+		d.appendLog(-1, "finish", fmt.Sprintf("player %d wins", d.currentTurn), nil)
 		return nil
 	}
 
@@ -226,7 +264,11 @@ func (d *Doubt) CpuPlay() {
 	// 状況に応じた動的ブラフ確率 (除去後の値で計算して既存の確率分布を維持)
 	postRemovalHandSize := player.GetCardsSize() - numCards
 	postRemovalTableCount := len(d.tableCards) + numCards
-	intentBluff := rand.Float64() < d.calcBluffChance(postRemovalHandSize, postRemovalTableCount)
+	bluffChance := d.calcBluffChance(postRemovalHandSize, postRemovalTableCount)
+	if d.config.CpuMetaAI && d.humanProfile != nil {
+		bluffChance = d.humanProfile.AdjustedBluffChance(bluffChance)
+	}
+	intentBluff := rand.Float64() < bluffChance
 
 	var played []*Card
 	var claimedValue int
@@ -276,12 +318,18 @@ func (d *Doubt) CpuPlay() {
 	if isActuallyBluff {
 		cpuAction.HasTell = rand.Float64() < calcTellChance(d.config.CpuMemoryLevel)
 	}
+	if d.config.CpuHesitationEnabled {
+		cpuAction.HesitationMs = calcDoubtHesitationMs(isActuallyBluff)
+	}
 	d.cpuActions = append(d.cpuActions, cpuAction)
+
+	d.appendLog(playerIdx, "play", fmt.Sprintf("declared %d, played %d card(s)", claimedValue, numCards), played)
 
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
 		d.winnerIdx = playerIdx
 		d.gameEndFlag = true
+		d.appendLog(-1, "finish", fmt.Sprintf("player %d wins", playerIdx), nil)
 		return
 	}
 
@@ -337,8 +385,15 @@ func (d *Doubt) decideCpuDoubters() {
 		if known+claimedCount > cardsPerValue {
 			// 物理的に不可能な宣言 → 100%ダウト
 			d.cpuDoubters = append(d.cpuDoubters, i)
-		} else if rand.Float64() < randomDoubtChance {
-			d.cpuDoubters = append(d.cpuDoubters, i)
+		} else {
+			effectiveChance := randomDoubtChance
+			if d.config.CpuMetaAI && d.humanProfile != nil && cardPlayerIdx == d.findHumanIdx() {
+				bracket := doubtHandSizeBracket(d.players[cardPlayerIdx].GetCardsSize())
+				effectiveChance = d.humanProfile.AdjustedDoubtChance(randomDoubtChance, bracket)
+			}
+			if rand.Float64() < effectiveChance {
+				d.cpuDoubters = append(d.cpuDoubters, i)
+			}
 		}
 	}
 }
@@ -389,6 +444,18 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 	}
 
 	wasLying := d.checkLying()
+
+	// メタAI: 人間がダウターの場合に結果を記録
+	if d.config.CpuMetaAI && d.humanProfile != nil {
+		humanIdx := d.findHumanIdx()
+		for _, di := range doubterIndices {
+			if di == humanIdx {
+				d.humanProfile.RecordDoubt(wasLying)
+				break
+			}
+		}
+	}
+
 	var loserIdx int
 	if wasLying {
 		loserIdx = d.lastAction.PlayerIdx
@@ -417,6 +484,13 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 		RevealedCards:  revealedCards,
 	}
 
+	lyingStr := "honest"
+	if wasLying {
+		lyingStr = "lying"
+	}
+	d.appendLog(doubter, "doubt", fmt.Sprintf("doubted player %d (%s)", d.lastAction.PlayerIdx, lyingStr), revealedCards)
+	d.appendLog(loserIdx, "penalty", fmt.Sprintf("takes %d card(s)", takeCount), nil)
+
 	// 非敗者のCPUがカードを記憶する
 	retentionChance := memoryRetentionChance(d.config.CpuMemoryLevel)
 	for i, p := range d.players {
@@ -439,6 +513,7 @@ func (d *Doubt) SkipDoubt() {
 	if d.phase != DoubtPhaseDoubt || d.lastAction == nil {
 		return
 	}
+	d.appendLog(-1, "nodoubt", "no one doubted", nil)
 	d.turnCounter++
 	d.lastDoubtResult = nil
 	d.currentTurn = (d.lastAction.PlayerIdx + 1) % DoubtPlayerCnt
@@ -503,6 +578,36 @@ func (d *Doubt) GetConfig() DoubtConfig { return d.config }
 // SetConfig ゲーム設定変更
 func (d *Doubt) SetConfig(cfg DoubtConfig) { d.config = cfg }
 
+// GetHumanProfile メタAIプロファイル取得
+func (d *Doubt) GetHumanProfile() *DoubtHumanProfile { return d.humanProfile }
+
+// ResetProfile メタAIプロファイルをリセットする
+func (d *Doubt) ResetProfile() { d.humanProfile = nil }
+
+// GetActionLog 棋譜を取得する
+func (d *Doubt) GetActionLog() []*ActionLogEntry { return d.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (d *Doubt) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	d.actionLog = append(d.actionLog, &ActionLogEntry{
+		TurnNumber: len(d.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
+}
+
+// findHumanIdx 人間プレイヤーのインデックスを返す (-1=なし)
+func (d *Doubt) findHumanIdx() int {
+	for i, p := range d.players {
+		if p.GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
 // memoryDecayRate 記憶力レベルに対応する記憶減衰率を返す
 func memoryDecayRate(level DoubtMemoryLevel) float64 {
 	switch level {
@@ -529,6 +634,17 @@ func calcTellChance(level DoubtMemoryLevel) float64 {
 	default:
 		return tellChanceNormal
 	}
+}
+
+// calcDoubtHesitationMs ブラフ状態に応じた迷い時間(ミリ秒)を算出する
+func calcDoubtHesitationMs(isBluff bool) int {
+	if isBluff {
+		if rand.Float64() < hesitationBluffFastPct {
+			return hesitationFastMin + rand.Intn(hesitationFastMax-hesitationFastMin+1)
+		}
+		return hesitationBluffSlowMin + rand.Intn(hesitationBluffSlowMax-hesitationBluffSlowMin+1)
+	}
+	return hesitationMediumMin + rand.Intn(hesitationMediumMax-hesitationMediumMin+1)
 }
 
 // selectMixedCards は手札から claimedValue に一致するカードと一致しないカードを

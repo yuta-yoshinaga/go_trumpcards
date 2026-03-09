@@ -17,6 +17,12 @@ func (_m *MockOldMaidInteractor) Reset(config domain.OldMaidConfig) string {
 	return ret.Get(0).(string)
 }
 
+// GetConfig モック
+func (_m *MockOldMaidInteractor) GetConfig() domain.OldMaidConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.OldMaidConfig)
+}
+
 // Draw モック
 func (_m *MockOldMaidInteractor) Draw(cardIdx int) string {
 	ret := _m.Called(cardIdx)
@@ -32,5 +38,17 @@ func (_m *MockOldMaidInteractor) Shuffle() string {
 // Reorder モック
 func (_m *MockOldMaidInteractor) Reorder(indices []int) string {
 	ret := _m.Called(indices)
+	return ret.Get(0).(string)
+}
+
+// ResetProfile モック
+func (_m *MockOldMaidInteractor) ResetProfile() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// ActionLog モック
+func (_m *MockOldMaidInteractor) ActionLog() string {
+	ret := _m.Called()
 	return ret.Get(0).(string)
 }

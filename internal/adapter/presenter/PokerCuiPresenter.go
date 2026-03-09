@@ -22,7 +22,11 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	players := p.GetPlayers()
 
 	b.WriteString("==========\n")
-	b.WriteString("5-Card Draw Poker\n")
+	if p.GetConfig().IsLowball {
+		b.WriteString("5-Card Draw Poker [2-7 Lowball]\n")
+	} else {
+		b.WriteString("5-Card Draw Poker\n")
+	}
 	b.WriteString("==========\n")
 
 	// ディーラー位置
@@ -160,7 +164,25 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	return b.String()
 }
 
-// OutputWithOdds ゲーム状態 + オッズ出力 (CUIではオッズ表示なし、Outputに委譲)
-func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr error, _ []domain.PokerDrawOdds) string {
-	return pcp.Output(p, lastErr)
+// ActionLogOutput 棋譜をテキスト出力
+func (pcp *PokerCuiPresenter) ActionLogOutput(p interfaces.PokerGame) string {
+	if !p.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(p.GetActionLog())
+}
+
+// OutputWithOdds ゲーム状態 + オッズ出力
+func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr error, odds []domain.PokerDrawOdds) string {
+	base := pcp.Output(p, lastErr)
+	if len(odds) == 0 {
+		return base
+	}
+	var oddsBuilder strings.Builder
+	oddsBuilder.WriteString("==========\n")
+	oddsBuilder.WriteString("[ドローオッズ]\n")
+	for _, o := range odds {
+		fmt.Fprintf(&oddsBuilder, "  %s: %.2f%% (%d/%d)\n", o.HandName, o.Probability*100, o.Count, o.Total)
+	}
+	return base + oddsBuilder.String()
 }

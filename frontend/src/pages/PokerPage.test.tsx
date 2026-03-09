@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pokerApi } from '../api/gameApi';
+import { actionLogApi, pokerApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { PokerResponse } from '../types/card';
@@ -8,6 +8,7 @@ import { PokerPage } from './PokerPage';
 
 vi.mock('../api/gameApi', () => ({
   pokerApi: { exec: vi.fn() },
+  actionLogApi: { poker: vi.fn() },
 }));
 
 const mockExec = vi.mocked(pokerApi.exec);
@@ -76,6 +77,7 @@ const initState: PokerResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  isLowball: false,
 };
 
 /** DEAL phase (phase 1): human's turn, no outstanding bet */
@@ -98,6 +100,7 @@ const dealState: PokerResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  isLowball: false,
 };
 
 /** DEAL with outstanding bet: shows call/raise */
@@ -162,6 +165,7 @@ const endState: PokerResponse = {
   bettingLimit: 0,
   raiseCount: 0,
   maxBetAmount: 0,
+  isLowball: false,
 };
 
 beforeEach(() => {
@@ -825,7 +829,9 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0, isLowball: false }),
+    );
   });
 
   it('sends updated bettingLimit when select is changed before reset', async () => {
@@ -838,7 +844,38 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1 }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1, isLowball: false }),
+    );
+  });
+
+  it('sends isLowball true when checkbox is checked before reset', async () => {
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const checkbox = screen.getByLabelText('2-7 ローボール');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0, isLowball: true }),
+    );
+  });
+
+  it('shows lowball mode indicator when isLowball is true', async () => {
+    const lowballState = { ...dealState, isLowball: true };
+    mockExec.mockResolvedValue(lowballState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('[2-7 ローボール モード]')).toBeInTheDocument());
+  });
+
+  it('does not show lowball mode indicator when isLowball is false', async () => {
+    mockExec.mockResolvedValue(dealState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByText(/ポット/)).toBeInTheDocument());
+    expect(screen.queryByText('[2-7 ローボール モード]')).not.toBeInTheDocument();
   });
 
   // ---- loading / disabled state ----
@@ -1115,5 +1152,28 @@ describe('PokerPage', () => {
 
     // Wait for state update then check panel is not shown
     await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      phase: 3, // PokerPhase.END
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+    } as unknown as PokerResponse);
+
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.poker).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.poker).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

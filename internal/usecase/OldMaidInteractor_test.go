@@ -176,6 +176,40 @@ func TestOldMaidInteractor_Reorder(t *testing.T) {
 	})
 }
 
+func TestOldMaidInteractor_GetConfig(t *testing.T) {
+	ompMock := new(presenter.MockOldMaidPresenter)
+	ompMock.On("Output", mock.Anything, mock.Anything).Return("")
+	gameMock := new(interfaces.MockOldMaidGame)
+	expectedCfg := domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki, CpuPlacementStrategy: true, CpuMemoryAI: true}
+	gameMock.On("GetConfig").Return(expectedCfg)
+	oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+	assert.Equal(t, expectedCfg, oi.GetConfig())
+}
+
+func TestOldMaidInteractor_ResetProfile(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	ompMock := new(presenter.MockOldMaidPresenter)
+	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+	gameMock := new(interfaces.MockOldMaidGame)
+	gameMock.On("ResetProfile").Return()
+
+	oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+	result := oi.ResetProfile()
+	assert.Equal(t, mockOutput, result)
+	gameMock.AssertCalled(t, "ResetProfile")
+}
+
+func TestOldMaidInteractor_ActionLog(t *testing.T) {
+	ompMock := new(presenter.MockOldMaidPresenter)
+	gameMock := new(interfaces.MockOldMaidGame)
+	ompMock.On("ActionLogOutput", gameMock).Return(`{"entries":[]}`)
+
+	oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+	result := oi.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	ompMock.AssertExpectations(t)
+}
+
 func TestOldMaidInteractor_Draw_GameEndsAfterCpuTurns(t *testing.T) {
 	// Game ends during runCpuTurns → ArrangeTargetForHumanDraw called but game ended
 	mockOutput := `{"players":[]}`

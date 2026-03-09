@@ -6,7 +6,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 type BlackJackGame interface {
 	// interactor が呼ぶメソッド
 	Reset()
-	PlayerBet(amount, ppBet, t3Bet int) error
+	PlayerBet(amount, ppBet, t3Bet, handCount int) error
 	PlayerInsurance() error
 	PlayerDeclineInsurance() error
 	PlayerHit() error
@@ -14,6 +14,8 @@ type BlackJackGame interface {
 	PlayerDoubleDown() error
 	PlayerSplit() error
 	PlayerSurrender() error
+	PlayerEarlySurrender() error
+	PlayerDeclineEarlySurrender() error
 	SetDeckCount(count int) error
 	ToggleHint()
 	SetConfig(config domain.BlackJackConfig) error
@@ -41,4 +43,8 @@ type BlackJackGame interface {
 	GetPerfectPairsBet() int
 	Get21Plus3Bet() int
 	GetDeckPenetration() int
+	GetMultiHandCount() int
+	CanSurrenderHand(handIdx int) bool
+	CanSurrenderCpuHand(cpuIdx, handIdx int) bool
+	GetActionLog() []*domain.ActionLogEntry
 }

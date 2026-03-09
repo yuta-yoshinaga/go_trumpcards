@@ -214,3 +214,38 @@ func TestOldMaid_drawCard_SoleActivePlayerWith5Players(t *testing.T) {
 	result := om.drawCard(4, 0)
 	assert.NotNil(t, result, "drawCard should return a card when player draws from self")
 }
+
+// TestCalcOldMaidHesitationMs 迷い時間計算のテスト
+func TestCalcOldMaidHesitationMs(t *testing.T) {
+	t.Run("drew joker gives slow range", func(t *testing.T) {
+		for i := 0; i < 100; i++ {
+			ms := calcOldMaidHesitationMs(false, true)
+			assert.GreaterOrEqual(t, ms, oldMaidHesitationJokerMin)
+			assert.LessOrEqual(t, ms, oldMaidHesitationJokerMax)
+		}
+	})
+
+	t.Run("got pair gives fast range", func(t *testing.T) {
+		for i := 0; i < 100; i++ {
+			ms := calcOldMaidHesitationMs(true, false)
+			assert.GreaterOrEqual(t, ms, hesitationFastMin)
+			assert.LessOrEqual(t, ms, hesitationFastMax)
+		}
+	})
+
+	t.Run("normal gives medium range", func(t *testing.T) {
+		for i := 0; i < 100; i++ {
+			ms := calcOldMaidHesitationMs(false, false)
+			assert.GreaterOrEqual(t, ms, hesitationMediumMin)
+			assert.LessOrEqual(t, ms, hesitationMediumMax)
+		}
+	})
+
+	t.Run("joker takes priority over pair", func(t *testing.T) {
+		for i := 0; i < 100; i++ {
+			ms := calcOldMaidHesitationMs(true, true)
+			assert.GreaterOrEqual(t, ms, oldMaidHesitationJokerMin)
+			assert.LessOrEqual(t, ms, oldMaidHesitationJokerMax)
+		}
+	})
+}

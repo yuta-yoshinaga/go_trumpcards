@@ -25,4 +25,5 @@ type SevensGame interface {
 	GetHumanAction() *domain.SevensCpuAction
 	GetCpuActions() []*domain.SevensCpuAction
 	GetTablePlaced() [5]uint16
+	GetActionLog() []*domain.ActionLogEntry
 }

@@ -26,7 +26,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return pcc.pi.Reset() },
-		func(_ string) string { return "Unsupported command." },
+		unknownCommandMessage,
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "e", "exchange":
@@ -72,8 +72,43 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				if err != nil || bl < 0 || bl > 2 {
 					return fmt.Sprintf("Invalid betting limit: %s. Please enter 0-2.", args[0]), true
 				}
-				cfg := domain.DefaultPokerConfig()
+				cfg := pcc.pi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
+				return pcc.pi.ResetWithConfig(cfg), true
+			case "scc", "setcpucount":
+				if len(args) < 1 {
+					return "CPU player count is required.", true
+				}
+				count, err := strconv.Atoi(args[0])
+				if err != nil || count < 1 || count > 3 {
+					return fmt.Sprintf("Invalid CPU player count: %s. Please enter 1-3.", args[0]), true
+				}
+				cfg := pcc.pi.GetConfig()
+				cfg.CpuCount = count
+				return pcc.pi.ResetWithConfig(cfg), true
+			case "sjc", "setjokercount":
+				if len(args) < 1 {
+					return "Joker count is required.", true
+				}
+				count, err := strconv.Atoi(args[0])
+				if err != nil || count < 0 || count > 2 {
+					return fmt.Sprintf("Invalid joker count: %s. Please enter 0-2.", args[0]), true
+				}
+				cfg := pcc.pi.GetConfig()
+				cfg.JokerCount = count
+				return pcc.pi.ResetWithConfig(cfg), true
+			case "o", "odds":
+				indices := []int{}
+				for _, p := range args {
+					idx, err := strconv.Atoi(p)
+					if err == nil && 0 <= idx && idx <= 4 {
+						indices = append(indices, idx)
+					}
+				}
+				return pcc.pi.Odds(indices), true
+			case "lw", "lowball":
+				cfg := pcc.pi.GetConfig()
+				cfg.IsLowball = !cfg.IsLowball
 				return pcc.pi.ResetWithConfig(cfg), true
 			}
 			return "", false

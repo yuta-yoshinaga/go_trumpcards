@@ -5,9 +5,6 @@ import (
 	"math/rand"
 )
 
-// テキサスホールデムプレイヤー数
-const HoldemPlayerCnt = 4
-
 // フェーズ定数
 const (
 	HoldemPhaseInit     = 0 // 初期状態
@@ -17,6 +14,7 @@ const (
 	HoldemPhaseRiver    = 4 // リバー
 	HoldemPhaseShowdown = 5 // ショーダウン
 	HoldemPhaseEnd      = 6 // ゲーム終了
+	HoldemPhaseRebuy    = 7 // リバイ/アドオン待ち
 )
 
 // アクション定数 (共通定数のエイリアス)
@@ -103,6 +101,7 @@ type HoldemResult struct {
 	BestHand  []*Card // ベスト5枚
 	Kickers   []int   // キッカーカード値
 	WonAmount int     // 獲得チップ
+	Mucked    bool    // マックしたかどうか
 }
 
 // HoldemCpuAction CPU行動記録
@@ -111,6 +110,13 @@ type HoldemCpuAction struct {
 	Action    int // アクション
 	Amount    int // 金額
 }
+
+// リバイフェーズ種別定数
+const (
+	HoldemRebuyPhaseNone  = 0 // なし
+	HoldemRebuyPhaseRebuy = 1 // リバイ待ち
+	HoldemRebuyPhaseAddon = 2 // アドオン待ち
+)
 
 // Holdem テキサスホールデムクラス
 type Holdem struct {
@@ -136,6 +142,10 @@ type Holdem struct {
 	threeBetTracked []bool // 当該ハンドで3Bet追跡済みかどうか
 	handCount       int    // ハンド数 (トーナメントモード用)
 	lastCpuError    error  // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
+	rebuyCounts     []int  // プレイヤーごとのリバイ回数
+	addonUsed       []bool // プレイヤーごとのアドオン使用フラグ
+	rebuyPhaseType  int    // 0=none, 1=rebuy pending, 2=addon pending
+	actionLog       []*ActionLogEntry
 }
 
 // NewHoldem コンストラクタ
@@ -152,6 +162,8 @@ func NewHoldem(trumpCards *TrumpCards, players []*HoldemPlayer, config HoldemCon
 		vpipTracked:     make([]bool, len(players)),
 		pfrTracked:      make([]bool, len(players)),
 		threeBetTracked: make([]bool, len(players)),
+		rebuyCounts:     make([]int, len(players)),
+		addonUsed:       make([]bool, len(players)),
 		config:          config,
 		phase:           HoldemPhaseInit,
 	}
@@ -170,6 +182,8 @@ func (h *Holdem) Reset() error {
 	h.actedFlags = make([]bool, len(h.players))
 	h.roundResults = make([]HoldemResult, 0)
 	h.cpuActions = make([]HoldemCpuAction, 0)
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
+	h.actionLog = nil
 
 	h.trumpCards.Shuffle()
 	for _, p := range h.players {
@@ -179,7 +193,7 @@ func (h *Holdem) Reset() error {
 		p.SetCurrentBet(0)
 		p.handRank = 0
 		p.bestHand = nil
-		if p.GetChips() <= 0 {
+		if p.GetChips() <= 0 && !h.config.RebuyEnabled {
 			p.SetChips(h.config.InitChips)
 		}
 		p.IncrementTotalHands()
@@ -203,6 +217,37 @@ func (h *Holdem) Reset() error {
 	}
 	h.handCount++
 
+	// リバイチェック: リバイ有効 & リバイ期間内
+	if h.config.RebuyEnabled && h.handCount <= h.config.RebuyPeriodHands {
+		needHumanRebuy := false
+		for i, p := range h.players {
+			if p.GetChips() <= 0 && h.rebuyCounts[i] < h.config.RebuyMaxCount {
+				if p.GetIsHuman() {
+					needHumanRebuy = true
+				} else {
+					// CPU自動リバイ
+					p.AddChips(h.config.RebuyChips)
+					h.rebuyCounts[i]++
+				}
+			}
+		}
+		if needHumanRebuy {
+			h.phase = HoldemPhaseRebuy
+			h.rebuyPhaseType = HoldemRebuyPhaseRebuy
+			return nil
+		}
+	}
+
+	// アドオンチェック: アドオン有効 & アドオンハンド番号に到達
+	if h.checkAndTransitionAddon() {
+		return nil
+	}
+
+	return h.continueReset()
+}
+
+// continueReset ディール以降のリセット処理 (リバイ/アドオン判定後に実行)
+func (h *Holdem) continueReset() error {
 	// ハンド開始時のチップを記録 (サイドポット計算用)
 	h.startingChips = make([]int, len(h.players))
 	for i, p := range h.players {
@@ -246,6 +291,7 @@ func (h *Holdem) postBlinds() {
 	h.players[sbIdx].SubtractChips(sbAmount)
 	h.players[sbIdx].SetCurrentBet(sbAmount)
 	h.pot += sbAmount
+	h.appendLog(sbIdx, "blind", fmt.Sprintf("posts small blind %d", sbAmount), nil)
 
 	bbAmount := h.config.BigBlind
 	if h.players[bbIdx].GetChips() < bbAmount {
@@ -254,6 +300,7 @@ func (h *Holdem) postBlinds() {
 	h.players[bbIdx].SubtractChips(bbAmount)
 	h.players[bbIdx].SetCurrentBet(bbAmount)
 	h.pot += bbAmount
+	h.appendLog(bbIdx, "blind", fmt.Sprintf("posts big blind %d", bbAmount), nil)
 
 	h.lastBet = bbAmount
 
@@ -371,6 +418,9 @@ func (h *Holdem) executeAction(playerIdx, action, amount int) error {
 		return err
 	}
 
+	// 棋譜記録
+	h.logAction(playerIdx, action, amount)
+
 	// フォールドでアクティブプレイヤーが1人になったらチェック
 	if h.countActivePlayers() == 1 {
 		h.resolveLastPlayer()
@@ -442,20 +492,24 @@ func (h *Holdem) advancePhase() {
 				h.communityCards = append(h.communityCards, card)
 			}
 		}
+		h.appendLog(-1, "deal", "dealt flop", h.communityCards)
 	case HoldemPhaseFlop:
 		h.phase = HoldemPhaseTurn
 		card := h.trumpCards.DrawCard()
 		if card != nil {
 			h.communityCards = append(h.communityCards, card)
 		}
+		h.appendLog(-1, "deal", "dealt turn", h.communityCards[3:])
 	case HoldemPhaseTurn:
 		h.phase = HoldemPhaseRiver
 		card := h.trumpCards.DrawCard()
 		if card != nil {
 			h.communityCards = append(h.communityCards, card)
 		}
+		h.appendLog(-1, "deal", "dealt river", h.communityCards[4:])
 	case HoldemPhaseRiver:
 		h.phase = HoldemPhaseShowdown
+		h.appendLog(-1, "showdown", "showdown", nil)
 		h.resolveShowdown()
 		return
 	}
@@ -546,6 +600,7 @@ func (h *Holdem) resolveShowdown() {
 
 	// 結果を構築
 	h.roundResults = make([]HoldemResult, 0)
+	humanLost := false
 	for i, p := range h.players {
 		if p.GetFolded() {
 			continue
@@ -559,11 +614,61 @@ func (h *Holdem) resolveShowdown() {
 			WonAmount: wonAmounts[i],
 		}
 		h.roundResults = append(h.roundResults, result)
+		if p.GetIsHuman() && wonAmounts[i] == 0 {
+			humanLost = true
+		}
 	}
 
+	// 人間が負けた場合、マック選択のためSHOWDOWNフェーズに留まる
+	if humanLost {
+		return
+	}
+
+	h.finalizeShowdown()
+}
+
+// finalizeShowdown ショーダウンを完了し、END フェーズに遷移する
+func (h *Holdem) finalizeShowdown() {
 	h.phase = HoldemPhaseEnd
 	h.gameEndFlag = true
 	h.dealerIdx = (h.dealerIdx + 1) % len(h.players)
+}
+
+// Muck 人間プレイヤーがハンドをマックする (公開せずに伏せる)
+func (h *Holdem) Muck() error {
+	if h.phase != HoldemPhaseShowdown {
+		return NewDomainError(ErrWrongPhase, "Muck is not available now.")
+	}
+	for i := range h.roundResults {
+		if h.players[h.roundResults[i].PlayerIdx].GetIsHuman() {
+			h.roundResults[i].Mucked = true
+			break
+		}
+	}
+	h.finalizeShowdown()
+	return nil
+}
+
+// ShowHand 人間プレイヤーがハンドを公開する
+func (h *Holdem) ShowHand() error {
+	if h.phase != HoldemPhaseShowdown {
+		return NewDomainError(ErrWrongPhase, "Show hand is not available now.")
+	}
+	h.finalizeShowdown()
+	return nil
+}
+
+// IsMuckAvailable 人間プレイヤーがマック可能かどうか
+func (h *Holdem) IsMuckAvailable() bool {
+	if h.phase != HoldemPhaseShowdown {
+		return false
+	}
+	for _, r := range h.roundResults {
+		if h.players[r.PlayerIdx].GetIsHuman() && r.WonAmount == 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // getHandName ハンドランクから名前を返す
@@ -581,8 +686,8 @@ func (h *Holdem) runCpuActions() error {
 	}
 	// maxIterationsはCPUアクションの無限ループを防ぐための安全策。
 	// 1ラウンドのアクションは最大でも「ベット→レイズ→リレイズ→キャップ」の4レイズ + 各プレイヤーのコールとなり、
-	// 4人プレイでは20アクションを超えることは稀。4ベッティングラウンドでも80アクション程度のため、200は十分な安全マージン。
-	const maxIterations = 200
+	// 9人プレイでは1ラウンド最大約45アクション、4ベッティングラウンドで約360アクション程度のため、500は十分な安全マージン。
+	const maxIterations = 500
 	iterations := 0
 	for !h.gameEndFlag && h.phase >= HoldemPhasePreFlop && h.phase <= HoldemPhaseRiver {
 		iterations++
@@ -1100,6 +1205,141 @@ func clamp(val, min, max int) int {
 	return val
 }
 
+// --- リバイ/アドオン ---
+
+// checkAndTransitionAddon はアドオン判定を行い、人間にアドオン決定を促す場合は true を返す。
+// CPU は自動でアドオンを実行する。
+func (h *Holdem) checkAndTransitionAddon() bool {
+	if h.config.AddonEnabled && h.handCount == h.config.AddonAfterHand {
+		needHumanAddon := false
+		for i, p := range h.players {
+			if !h.addonUsed[i] {
+				if p.GetIsHuman() {
+					needHumanAddon = true
+				} else {
+					p.AddChips(h.config.AddonChips)
+					h.addonUsed[i] = true
+				}
+			}
+		}
+		if needHumanAddon {
+			h.phase = HoldemPhaseRebuy
+			h.rebuyPhaseType = HoldemRebuyPhaseAddon
+			return true
+		}
+	}
+	return false
+}
+
+// Rebuy 人間プレイヤーがリバイを実行する
+func (h *Holdem) Rebuy() error {
+	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != HoldemRebuyPhaseRebuy {
+		return NewDomainError(ErrWrongPhase, "Rebuy is not available now.")
+	}
+	for i, p := range h.players {
+		if p.GetIsHuman() && p.GetChips() <= 0 && h.rebuyCounts[i] < h.config.RebuyMaxCount {
+			p.AddChips(h.config.RebuyChips)
+			h.rebuyCounts[i]++
+			h.appendLog(i, "rebuy", "rebuy", nil)
+			break
+		}
+	}
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
+	if h.checkAndTransitionAddon() {
+		return nil
+	}
+	return h.continueReset()
+}
+
+// SkipRebuy 人間プレイヤーがリバイを辞退する
+func (h *Holdem) SkipRebuy() error {
+	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != HoldemRebuyPhaseRebuy {
+		return NewDomainError(ErrWrongPhase, "Rebuy is not available now.")
+	}
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
+	// バスト中の人間がリバイを辞退 → ゲーム終了
+	for _, p := range h.players {
+		if p.GetIsHuman() && p.GetChips() <= 0 {
+			h.phase = HoldemPhaseEnd
+			h.gameEndFlag = true
+			return nil
+		}
+	}
+	// 人間にチップが残っている場合 (通常ありえないが安全策)
+	if h.checkAndTransitionAddon() {
+		return nil
+	}
+	return h.continueReset()
+}
+
+// Addon 人間プレイヤーがアドオンを実行する
+func (h *Holdem) Addon() error {
+	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != HoldemRebuyPhaseAddon {
+		return NewDomainError(ErrWrongPhase, "Addon is not available now.")
+	}
+	for i, p := range h.players {
+		if p.GetIsHuman() && !h.addonUsed[i] {
+			p.AddChips(h.config.AddonChips)
+			h.addonUsed[i] = true
+			break
+		}
+	}
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
+	return h.continueReset()
+}
+
+// SkipAddon 人間プレイヤーがアドオンを辞退する
+func (h *Holdem) SkipAddon() error {
+	if h.phase != HoldemPhaseRebuy || h.rebuyPhaseType != HoldemRebuyPhaseAddon {
+		return NewDomainError(ErrWrongPhase, "Addon is not available now.")
+	}
+	h.rebuyPhaseType = HoldemRebuyPhaseNone
+	return h.continueReset()
+}
+
+// IsRebuyAvailable 人間プレイヤーがリバイ可能かどうか
+func (h *Holdem) IsRebuyAvailable() bool {
+	if !h.config.RebuyEnabled || h.handCount > h.config.RebuyPeriodHands {
+		return false
+	}
+	for i, p := range h.players {
+		if p.GetIsHuman() && p.GetChips() <= 0 && h.rebuyCounts[i] < h.config.RebuyMaxCount {
+			return true
+		}
+	}
+	return false
+}
+
+// IsAddonAvailable 人間プレイヤーがアドオン可能かどうか
+func (h *Holdem) IsAddonAvailable() bool {
+	if !h.config.AddonEnabled || h.handCount != h.config.AddonAfterHand {
+		return false
+	}
+	for i, p := range h.players {
+		if p.GetIsHuman() && !h.addonUsed[i] {
+			return true
+		}
+	}
+	return false
+}
+
+// GetRebuyCounts プレイヤーごとのリバイ回数取得
+func (h *Holdem) GetRebuyCounts() []int {
+	result := make([]int, len(h.rebuyCounts))
+	copy(result, h.rebuyCounts)
+	return result
+}
+
+// GetAddonUsed プレイヤーごとのアドオン使用フラグ取得
+func (h *Holdem) GetAddonUsed() []bool {
+	result := make([]bool, len(h.addonUsed))
+	copy(result, h.addonUsed)
+	return result
+}
+
+// GetRebuyPhaseType リバイフェーズ種別取得
+func (h *Holdem) GetRebuyPhaseType() int { return h.rebuyPhaseType }
+
 // --- ゲッター ---
 
 // GetPhase フェーズ取得
@@ -1178,3 +1418,49 @@ func (h *Holdem) GetActedFlags() []bool {
 
 // GetHandCount ハンド数取得
 func (h *Holdem) GetHandCount() int { return h.handCount }
+
+// GetActionLog 棋譜を取得する
+func (h *Holdem) GetActionLog() []*ActionLogEntry { return h.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (h *Holdem) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	h.actionLog = append(h.actionLog, &ActionLogEntry{
+		TurnNumber: len(h.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
+}
+
+// logAction ベッティングアクションを棋譜に記録する
+func (h *Holdem) logAction(playerIdx, action, amount int) {
+	switch action {
+	case HoldemActionFold:
+		h.appendLog(playerIdx, "fold", "fold", nil)
+	case HoldemActionCheck:
+		h.appendLog(playerIdx, "check", "check", nil)
+	case HoldemActionCall:
+		h.appendLog(playerIdx, "call", fmt.Sprintf("call %d", h.players[playerIdx].GetCurrentBet()), nil)
+	case HoldemActionBet:
+		h.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+	case HoldemActionRaise:
+		h.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+	case HoldemActionAllIn:
+		h.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", h.players[playerIdx].GetCurrentBet()), nil)
+	}
+}
+
+// Resize プレイヤースライスを差し替え、プレイヤー数依存スライスを再初期化する
+func (h *Holdem) Resize(players []*HoldemPlayer) {
+	h.players = players
+	n := len(players)
+	h.actedFlags = make([]bool, n)
+	h.startingChips = make([]int, n)
+	h.vpipTracked = make([]bool, n)
+	h.pfrTracked = make([]bool, n)
+	h.threeBetTracked = make([]bool, n)
+	h.rebuyCounts = make([]int, n)
+	h.addonUsed = make([]bool, n)
+	h.handCount = 0
+}

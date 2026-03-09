@@ -48,7 +48,7 @@ func TestSevensInteractor_Method(t *testing.T) {
 	})
 
 	t.Run("success ResetWithConfig all enabled", func(t *testing.T) {
-		result := tsi.ResetWithConfig(domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: true, MaxPasses: domain.SevensMaxPasses})
+		result := tsi.ResetWithConfig(domain.SevensConfig{TunnelEnabled: true, JokerCount: 2, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: domain.SevensMaxPasses})
 		assert.Equal(t, mockOutput, result)
 	})
 
@@ -85,6 +85,17 @@ func TestSevensInteractor_Method(t *testing.T) {
 	})
 }
 
+func TestSevensInteractor_ActionLog(t *testing.T) {
+	spMock := new(presenter.MockSevensPresenter)
+	gameMock := new(interfaces.MockSevensGame)
+	spMock.On("ActionLogOutput", gameMock).Return(`{"entries":[]}`)
+
+	si := usecase.NewSevensInteractor(gameMock, spMock)
+	result := si.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	spMock.AssertExpectations(t)
+}
+
 func TestSevensInteractor_MockGame(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	spMock := new(presenter.MockSevensPresenter)
@@ -108,7 +119,7 @@ func TestSevensInteractor_MockGame(t *testing.T) {
 		gameMock.AssertCalled(t, "Reset")
 	})
 	t.Run("ResetWithConfig calls game.SetConfig and game.Reset", func(t *testing.T) {
-		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: true, MaxPasses: 3, NoJokerFinish: true}
+		cfg := domain.SevensConfig{TunnelEnabled: true, JokerCount: 1, CpuStrategy: domain.SevensCpuStrategic, MaxPasses: 3, NoJokerFinish: true}
 		result := si.ResetWithConfig(cfg)
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "SetConfig", cfg)

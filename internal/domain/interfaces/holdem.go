@@ -26,4 +26,18 @@ type HoldemGame interface {
 	IsHumanTurn() bool
 	GetActedFlags() []bool
 	GetHandCount() int
+	Resize(players []*domain.HoldemPlayer)
+	Rebuy() error
+	SkipRebuy() error
+	Addon() error
+	SkipAddon() error
+	IsRebuyAvailable() bool
+	IsAddonAvailable() bool
+	GetRebuyCounts() []int
+	GetAddonUsed() []bool
+	GetRebuyPhaseType() int
+	Muck() error
+	ShowHand() error
+	IsMuckAvailable() bool
+	GetActionLog() []*domain.ActionLogEntry
 }

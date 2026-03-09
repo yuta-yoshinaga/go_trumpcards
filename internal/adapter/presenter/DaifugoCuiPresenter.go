@@ -158,6 +158,8 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 			b.WriteString("【7渡し】渡すカードを選択してください (p [インデックス])\n")
 		case domain.DaifugoPendingTenDiscard:
 			b.WriteString("【10捨て】捨てるカードを選択してください (p [インデックス])\n")
+		case domain.DaifugoPendingQueenBomber:
+			b.WriteString("【12ボンバー】除去するカードの数字を入力してください (p [1-13])\n")
 		default:
 			b.WriteString("p [インデックス...] でカードを出す / p でパス\n")
 		}
@@ -165,6 +167,14 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 
 	b.WriteString("==========\n")
 	return b.String()
+}
+
+// ActionLogOutput 棋譜をテキスト出力
+func (p *DaifugoCuiPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
+	if !dg.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(dg.GetActionLog())
 }
 
 // rankName ランク名取得

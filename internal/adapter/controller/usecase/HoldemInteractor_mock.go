@@ -28,3 +28,51 @@ func (_m *MockHoldemInteractor) Action(action int, amount int) string {
 	ret := _m.Called(action, amount)
 	return ret.Get(0).(string)
 }
+
+// GetConfig モック
+func (_m *MockHoldemInteractor) GetConfig() domain.HoldemConfig {
+	ret := _m.Called()
+	return ret.Get(0).(domain.HoldemConfig)
+}
+
+// Rebuy モック
+func (_m *MockHoldemInteractor) Rebuy() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// SkipRebuy モック
+func (_m *MockHoldemInteractor) SkipRebuy() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// Addon モック
+func (_m *MockHoldemInteractor) Addon() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// SkipAddon モック
+func (_m *MockHoldemInteractor) SkipAddon() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// Muck モック
+func (_m *MockHoldemInteractor) Muck() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// ShowHand モック
+func (_m *MockHoldemInteractor) ShowHand() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+// ActionLog モック
+func (_m *MockHoldemInteractor) ActionLog() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}

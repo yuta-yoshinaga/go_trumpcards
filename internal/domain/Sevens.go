@@ -34,6 +34,7 @@ type Sevens struct {
 	humanAction *SevensCpuAction   // 人間の最後の行動
 	jokerPlaced [5]uint16          // jokerPlaced[suit] = ジョーカーが配置されたポジションのビットマスク
 	jokerCards  []*Card            // ボード上のジョーカーカードオブジェクト (回収用)
+	actionLog   []*ActionLogEntry  // 棋譜
 }
 
 // NewSevens コンストラクタ
@@ -66,6 +67,7 @@ func (s *Sevens) Reset() {
 	s.tablePlaced[0] = 0
 	s.jokerPlaced = [5]uint16{}
 	s.jokerCards = nil
+	s.actionLog = nil
 
 	// 全プレイヤーのリセット
 	resetPlayers(s.players, func(p *SevensPlayer) {
@@ -220,7 +222,31 @@ func (s *Sevens) isPositionPlayable(suit, value int) bool {
 			return true
 		}
 	}
+	// カスタムトンネル: ±TunnelSkipWidth の接続
+	if s.config.TunnelSkipWidth >= 2 {
+		low := value - s.config.TunnelSkipWidth
+		high := value + s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			low = wrapValue(low)
+			high = wrapValue(high)
+		}
+		if low >= 1 && low <= 13 && s.isPositionPlaced(suit, low) { // range check needed when TunnelEnabled=false
+			return true
+		}
+		if high >= 1 && high <= 13 && s.isPositionPlaced(suit, high) { // range check needed when TunnelEnabled=false
+			return true
+		}
+	}
 	return false
+}
+
+// wrapValue 値を1-13の循環範囲に収める
+func wrapValue(v int) int {
+	v = ((v - 1) % 13) + 1
+	if v <= 0 {
+		v += 13
+	}
+	return v
 }
 
 // hasAnyPlayablePosition ボード上に配置可能なポジションがあるか判定
@@ -372,6 +398,7 @@ func (s *Sevens) PlayerPlay(idx int) error {
 		}
 		player.IncrPassesUsed()
 		player.SetLastPlayedJoker(false)
+		s.appendLog(s.currentTurn, "pass", "pass", nil)
 		s.humanAction = &SevensCpuAction{
 			PlayerIdx:  s.currentTurn,
 			PlayedCard: nil,
@@ -397,10 +424,12 @@ func (s *Sevens) PlayerPlay(idx int) error {
 	playedCard := player.RemoveCard(idx)
 	s.reclaimJokerIfNeeded(s.currentTurn, card.GetDesign(), card.GetValue())
 	player.SetLastPlayedJoker(false)
+	s.appendLog(s.currentTurn, "play", fmt.Sprintf("played %s", cardLogStr(playedCard)), []*Card{playedCard})
 	s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: playedCard}
 
 	if player.GetCardsSize() == 0 {
 		s.assignRank(s.currentTurn)
+		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", s.currentTurn, player.GetRank()), nil)
 	}
 	if !s.checkGameEnd() {
 		s.advanceTurn()
@@ -442,6 +471,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 	playedCard := player.RemoveCard(cardIdx)
 	s.recordJokerCard(playedCard, targetSuit, targetValue)
 	player.SetLastPlayedJoker(true)
+	s.appendLog(s.currentTurn, "joker", fmt.Sprintf("played joker as %s %d", suitLogStr(targetSuit), targetValue), []*Card{playedCard})
 	s.humanAction = &SevensCpuAction{
 		PlayerIdx:   s.currentTurn,
 		PlayedCard:  playedCard,
@@ -451,6 +481,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 
 	if player.GetCardsSize() == 0 {
 		s.assignRank(s.currentTurn)
+		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", s.currentTurn, player.GetRank()), nil)
 	}
 	if !s.checkGameEnd() {
 		s.advanceTurn()
@@ -469,10 +500,14 @@ type sevensPlay struct {
 // findBestPlay CPUにとって最適な1手を探す
 // 戻り値: cardIdx, targetSuit, targetValue (-1 = 出せるカードなし)
 func (s *Sevens) findBestPlay(player *SevensPlayer) (int, int, int) {
-	if s.config.CpuStrategy {
+	switch s.config.CpuStrategy {
+	case SevensCpuStrategic:
 		return s.findPlayableStrategic(player)
+	case SevensCpuHarassment:
+		return s.findPlayableHarassment(player)
+	default:
+		return s.findPlayableSimple(player)
 	}
-	return s.findPlayableSimple(player)
 }
 
 // findPlayableSimple 最初に見つかった出せるカードを返す (戦略なし)
@@ -568,7 +603,21 @@ func (s *Sevens) passUrgencyWeight(player *SevensPlayer) int {
 	}
 }
 
-// countWeightedOpponentsBlocked パス残数で重み付けしたブロック相手数をカウント
+// countOpponentsHoldingCard 指定位置のカードを持っている相手の重み付きカウント (スキップ接続の評価用)
+func (s *Sevens) countOpponentsHoldingCard(self *SevensPlayer, suit, value int) int {
+	count := 0
+	for _, p := range s.players {
+		if p == self || p.GetIsFinished() {
+			continue
+		}
+		if s.playerHasCard(p, suit, value) {
+			count += s.passUrgencyWeight(p)
+		}
+	}
+	return count
+}
+
+// countWeightedOpponentsBlocked パス残数で重み付けしたブロック相手数をカウント (±1方向の逐次スキャン用)
 func (s *Sevens) countWeightedOpponentsBlocked(self *SevensPlayer, suit, fromValue, direction int) int {
 	count := 0
 	for _, p := range s.players {
@@ -637,6 +686,33 @@ func (s *Sevens) evaluatePlay(player *SevensPlayer, card *Card) int {
 		}
 	}
 
+	// カスタムトンネル: ±TunnelSkipWidth 方向の評価
+	// スキップ接続は単一位置のみ評価 (±1のような逐次スキャンではなく、距離Nの1点のみチェック)
+	if s.config.TunnelSkipWidth >= 2 {
+		skipLow := value - s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			skipLow = wrapValue(skipLow)
+		}
+		if skipLow >= 1 && skipLow <= 13 && !s.isPositionPlaced(suit, skipLow) { // range check needed when TunnelEnabled=false
+			if s.playerHasCard(player, suit, skipLow) {
+				score += 2
+			} else {
+				score -= 1 + s.countOpponentsHoldingCard(player, suit, skipLow)
+			}
+		}
+		skipHigh := value + s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			skipHigh = wrapValue(skipHigh)
+		}
+		if skipHigh >= 1 && skipHigh <= 13 && !s.isPositionPlaced(suit, skipHigh) { // range check needed when TunnelEnabled=false
+			if s.playerHasCard(player, suit, skipHigh) {
+				score += 2
+			} else {
+				score -= 1 + s.countOpponentsHoldingCard(player, suit, skipHigh)
+			}
+		}
+	}
+
 	return score
 }
 
@@ -663,6 +739,169 @@ func (s *Sevens) evaluateJokerPlays(player *SevensPlayer) (int, int, int) {
 	}
 
 	return bestSuit, bestValue, bestScore
+}
+
+// findPlayableHarassment 嫌がらせ特化で最適な1手を探す
+func (s *Sevens) findPlayableHarassment(player *SevensPlayer) (int, int, int) {
+	var plays []sevensPlay
+	jokerBlocked := s.isJokerBlockedByFinishRule(player) || s.isJokerBlockedByConsecutiveRule(player)
+
+	for i := 0; i < player.GetCardsSize(); i++ {
+		card := player.GetCard(i)
+		if card.GetDesign() == CardDesignJoker {
+			if jokerBlocked {
+				continue
+			}
+			bestSuit, bestValue, bestScore := s.evaluateJokerPlaysHarassment(player)
+			if bestSuit > 0 {
+				plays = append(plays, sevensPlay{
+					cardIdx:     i,
+					targetSuit:  bestSuit,
+					targetValue: bestValue,
+					score:       bestScore,
+				})
+			}
+			continue
+		}
+		if s.IsPlayable(card) {
+			score := s.evaluatePlayHarassment(player, card)
+			plays = append(plays, sevensPlay{
+				cardIdx: i,
+				score:   score,
+			})
+		}
+	}
+
+	if len(plays) == 0 {
+		return -1, 0, 0
+	}
+
+	best := plays[0]
+	for _, p := range plays[1:] {
+		if p.score > best.score {
+			best = p
+		}
+	}
+
+	// パス閾値: <= 0 (戦略モードの < 0 より攻撃的)
+	if best.score <= 0 && (player.GetMaxPasses() == 0 || player.GetPassesUsed() < player.GetMaxPasses()-1) {
+		return -1, 0, 0
+	}
+
+	return best.cardIdx, best.targetSuit, best.targetValue
+}
+
+// evaluatePlayHarassment 嫌がらせ特化の通常カード評価
+// 相手の進行をブロックすることを重視し、相手を助けるプレイを避ける
+func (s *Sevens) evaluatePlayHarassment(player *SevensPlayer, card *Card) int {
+	score := 0
+	suit := card.GetDesign()
+	value := card.GetValue()
+
+	// 下方向の次のカード
+	nextLow := value - 1
+	if s.config.TunnelEnabled && value == 1 {
+		nextLow = 13
+	}
+	if nextLow >= 1 && nextLow <= 13 && !s.isPositionPlaced(suit, nextLow) {
+		score += s.evaluateHarassmentDirection(player, suit, nextLow, -1)
+	}
+
+	// 上方向の次のカード
+	nextHigh := value + 1
+	if s.config.TunnelEnabled && value == 13 {
+		nextHigh = 1
+	}
+	if nextHigh >= 1 && nextHigh <= 13 && !s.isPositionPlaced(suit, nextHigh) {
+		score += s.evaluateHarassmentDirection(player, suit, nextHigh, +1)
+	}
+
+	// カスタムトンネル: ±TunnelSkipWidth 方向の評価
+	if s.config.TunnelSkipWidth >= 2 {
+		skipLow := value - s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			skipLow = wrapValue(skipLow)
+		}
+		if skipLow >= 1 && skipLow <= 13 && !s.isPositionPlaced(suit, skipLow) {
+			score += s.evaluateHarassmentSkipDirection(player, suit, skipLow)
+		}
+		skipHigh := value + s.config.TunnelSkipWidth
+		if s.config.TunnelEnabled {
+			skipHigh = wrapValue(skipHigh)
+		}
+		if skipHigh >= 1 && skipHigh <= 13 && !s.isPositionPlaced(suit, skipHigh) {
+			score += s.evaluateHarassmentSkipDirection(player, suit, skipHigh)
+		}
+	}
+
+	return score
+}
+
+// evaluateHarassmentPosition 嫌がらせ特化: プレイ候補先の評価
+func (s *Sevens) evaluateHarassmentPosition(player *SevensPlayer, suit, value, blockedCount int) int {
+	if s.anyOpponentHasCard(player, suit, value) {
+		// 相手が次のカードを持っている → 出すと相手を助けてしまう
+		urgency := s.passUrgencyWeight(player)
+		return -3 * urgency
+	}
+	if s.playerHasCard(player, suit, value) {
+		// 自分が次のカードを持っている
+		if blockedCount > 0 {
+			return 1
+		}
+		return 2
+	}
+	// 誰も持っていない → 相手がブロックされるので良い
+	return 2 * blockedCount
+}
+
+// evaluateHarassmentDirection 嫌がらせ特化: ±1方向の評価
+func (s *Sevens) evaluateHarassmentDirection(player *SevensPlayer, suit, nextValue, direction int) int {
+	blockedCount := s.countWeightedOpponentsBlocked(player, suit, nextValue, direction)
+	return s.evaluateHarassmentPosition(player, suit, nextValue, blockedCount)
+}
+
+// evaluateHarassmentSkipDirection 嫌がらせ特化: スキップ接続方向の評価
+func (s *Sevens) evaluateHarassmentSkipDirection(player *SevensPlayer, suit, skipValue int) int {
+	blockedCount := s.countOpponentsHoldingCard(player, suit, skipValue)
+	return s.evaluateHarassmentPosition(player, suit, skipValue, blockedCount)
+}
+
+// evaluateJokerPlaysHarassment ジョーカーの最適な配置先を嫌がらせ特化で評価
+func (s *Sevens) evaluateJokerPlaysHarassment(player *SevensPlayer) (int, int, int) {
+	bestSuit := 0
+	bestValue := 0
+	bestScore := sevensNoScore
+
+	for suit := CardDesignSpade; suit <= CardDesignDiamond; suit++ {
+		for value := 1; value <= 13; value++ {
+			if !s.isPositionPlayable(suit, value) {
+				continue
+			}
+			tmpCard := NewCard(suit, value, false)
+			score := s.evaluatePlayHarassment(player, tmpCard)
+			if score > bestScore {
+				bestScore = score
+				bestSuit = suit
+				bestValue = value
+			}
+		}
+	}
+
+	return bestSuit, bestValue, bestScore
+}
+
+// anyOpponentHasCard いずれかの対戦相手が指定カードを持っているか
+func (s *Sevens) anyOpponentHasCard(self *SevensPlayer, suit, value int) bool {
+	for _, p := range s.players {
+		if p == self || p.GetIsFinished() {
+			continue
+		}
+		if s.playerHasCard(p, suit, value) {
+			return true
+		}
+	}
+	return false
 }
 
 // playerHasCard プレイヤーが指定スート・値のカードを持っているか
@@ -711,9 +950,11 @@ func (s *Sevens) CpuPlay() {
 		if card.GetDesign() == CardDesignJoker {
 			s.recordJokerCard(playedCard, targetSuit, targetValue)
 			player.SetLastPlayedJoker(true)
+			s.appendLog(playerIdx, "joker", fmt.Sprintf("played joker as %s %d", suitLogStr(targetSuit), targetValue), []*Card{playedCard})
 		} else {
 			s.reclaimJokerIfNeeded(playerIdx, card.GetDesign(), card.GetValue())
 			player.SetLastPlayedJoker(false)
+			s.appendLog(playerIdx, "play", fmt.Sprintf("played %s", cardLogStr(playedCard)), []*Card{playedCard})
 		}
 		action := &SevensCpuAction{
 			PlayerIdx:   playerIdx,
@@ -725,6 +966,7 @@ func (s *Sevens) CpuPlay() {
 
 		if player.GetCardsSize() == 0 {
 			s.assignRank(playerIdx)
+			s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, player.GetRank()), nil)
 		}
 		if !s.checkGameEnd() {
 			s.advanceTurn()
@@ -733,6 +975,7 @@ func (s *Sevens) CpuPlay() {
 		// パス
 		player.IncrPassesUsed()
 		player.SetLastPlayedJoker(false)
+		s.appendLog(playerIdx, "pass", "pass", nil)
 		action := &SevensCpuAction{
 			PlayerIdx:  playerIdx,
 			PlayedCard: nil,
@@ -743,6 +986,7 @@ func (s *Sevens) CpuPlay() {
 	} else {
 		// パスも不可 → 失格
 		s.eliminatePlayer(playerIdx)
+		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, player.GetRank()), nil)
 		if !s.checkGameEnd() {
 			s.advanceTurn()
 		}
@@ -785,6 +1029,7 @@ func (s *Sevens) AutoHandleNoOption() {
 		s.cpuActions = append(s.cpuActions, action)
 	}
 	s.eliminatePlayer(playerIdx)
+	s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, s.players[playerIdx].GetRank()), nil)
 	if !s.checkGameEnd() {
 		s.advanceTurn()
 	}
@@ -865,5 +1110,52 @@ func (s *Sevens) SetConfig(config SevensConfig) {
 	if config.MaxPasses < 0 {
 		config.MaxPasses = 0
 	}
+	if config.TunnelSkipWidth < 0 {
+		config.TunnelSkipWidth = 0
+	}
+	if config.TunnelSkipWidth > 12 {
+		config.TunnelSkipWidth = 12
+	}
+	if config.CpuStrategy < SevensCpuSimple || config.CpuStrategy > SevensCpuHarassment {
+		config.CpuStrategy = SevensCpuSimple
+	}
 	s.config = config
+}
+
+// suitLogStr スートを棋譜用文字列に変換
+func suitLogStr(suit int) string {
+	switch suit {
+	case CardDesignSpade:
+		return "spade"
+	case CardDesignClover:
+		return "clover"
+	case CardDesignHeart:
+		return "heart"
+	case CardDesignDiamond:
+		return "diamond"
+	default:
+		return "joker"
+	}
+}
+
+// cardLogStr カードを棋譜用文字列に変換
+func cardLogStr(card *Card) string {
+	if card.GetDesign() == CardDesignJoker {
+		return "joker"
+	}
+	return fmt.Sprintf("%s %d", suitLogStr(card.GetDesign()), card.GetValue())
+}
+
+// GetActionLog 棋譜を取得する
+func (s *Sevens) GetActionLog() []*ActionLogEntry { return s.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (s *Sevens) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	s.actionLog = append(s.actionLog, &ActionLogEntry{
+		TurnNumber: len(s.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
 }

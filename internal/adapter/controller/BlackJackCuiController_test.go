@@ -15,7 +15,7 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 	bjiMock.On("Reset").Return(mockOutput)
 	bjiMock.On("Hit").Return(mockOutput)
 	bjiMock.On("Stand").Return(mockOutput)
-	bjiMock.On("Bet", 100, 0, 0).Return(mockOutput)
+	bjiMock.On("Bet", 100, 0, 0, 0).Return(mockOutput)
 	bjiMock.On("DoubleDown").Return(mockOutput)
 	bjiMock.On("Split").Return(mockOutput)
 	bjiMock.On("Insurance").Return(mockOutput)
@@ -88,10 +88,10 @@ func TestBlackJackCuiController_Method(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("declineinsurance"))
 	})
 	t.Run("success Exec other", func(t *testing.T) {
-		assert.Equal(t, "Unsupported command.", tbc.Exec("other"))
+		assert.Equal(t, "コマンドが不明です: other", tbc.Exec("other"))
 	})
 	t.Run("success Exec empty", func(t *testing.T) {
-		assert.Equal(t, "Unsupported command.", tbc.Exec(""))
+		assert.Equal(t, "コマンドが不明です: ", tbc.Exec(""))
 	})
 }
 
@@ -164,9 +164,9 @@ func TestBlackJackCuiController_SetCountingSystem(t *testing.T) {
 func TestBlackJackCuiController_BetWithSideBets(t *testing.T) {
 	mockOutput := "----------\n"
 	bjiMock := new(usecase.MockBlackJackInteractor)
-	bjiMock.On("Bet", 100, 10, 20).Return(mockOutput)
-	bjiMock.On("Bet", 100, 10, 0).Return(mockOutput)
-	bjiMock.On("Bet", 100, 0, 0).Return(mockOutput)
+	bjiMock.On("Bet", 100, 10, 20, 0).Return(mockOutput)
+	bjiMock.On("Bet", 100, 10, 0, 0).Return(mockOutput)
+	bjiMock.On("Bet", 100, 0, 0, 0).Return(mockOutput)
 	tbc := controller.NewBlackJackCuiController(bjiMock)
 
 	t.Run("bet with PP and T3", func(t *testing.T) {
@@ -180,6 +180,25 @@ func TestBlackJackCuiController_BetWithSideBets(t *testing.T) {
 	})
 	t.Run("bet with PP and invalid T3 (ignored)", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("b 100 10 xyz"))
+	})
+}
+
+func TestBlackJackCuiController_BetWithHandCount(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("Bet", 100, 0, 0, 2).Return(mockOutput)
+	bjiMock.On("Bet", 100, 10, 20, 3).Return(mockOutput)
+	bjiMock.On("Bet", 100, 0, 0, 0).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("bet with handCount", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("b 100 0 0 2"))
+	})
+	t.Run("bet with side bets and handCount", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("b 100 10 20 3"))
+	})
+	t.Run("bet with invalid handCount (ignored)", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("b 100 0 0 abc"))
 	})
 }
 
@@ -208,6 +227,36 @@ func TestBlackJackCuiController_Soft17AndCountingCommands(t *testing.T) {
 	})
 	t.Run("toggledas", func(t *testing.T) {
 		assert.Equal(t, mockOutput, tbc.Exec("toggledas"))
+	})
+}
+
+func TestBlackJackCuiController_SetCpuPlayerCount(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetCpuPlayerCount", 2).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("scc with valid count", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("scc 2"))
+	})
+	t.Run("setcpucount with valid count", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("setcpucount 2"))
+	})
+	t.Run("scc without arg", func(t *testing.T) {
+		assert.Equal(t, "CPU player count is required.", tbc.Exec("scc"))
+	})
+	t.Run("scc with invalid arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc abc"))
+	})
+	t.Run("scc with negative arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc -1"))
+	})
+	t.Run("scc with out-of-range arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc 4"))
+	})
+	t.Run("scc with zero (valid)", func(t *testing.T) {
+		bjiMock.On("SetCpuPlayerCount", 0).Return(mockOutput)
+		assert.Equal(t, mockOutput, tbc.Exec("scc 0"))
 	})
 }
 
@@ -253,4 +302,58 @@ func TestBlackJackCuiController_SetPenetration_LongForm(t *testing.T) {
 	bjiMock.On("SetDeckPenetration", 50).Return(mockOutput)
 	tbc := controller.NewBlackJackCuiController(bjiMock)
 	assert.Equal(t, mockOutput, tbc.Exec("setpenetration 50"))
+}
+
+func TestBlackJackCuiController_EarlySurrender(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("EarlySurrender").Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("es", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("es"))
+	})
+	t.Run("earlysurrender", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("earlysurrender"))
+	})
+}
+
+func TestBlackJackCuiController_DeclineEarlySurrender(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("DeclineEarlySurrender").Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("des", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("des"))
+	})
+	t.Run("declineearlysurrender", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("declineearlysurrender"))
+	})
+}
+
+func TestBlackJackCuiController_SetSurrenderRule(t *testing.T) {
+	mockOutput := "----------\n"
+	bjiMock := new(usecase.MockBlackJackInteractor)
+	bjiMock.On("SetSurrenderRule", 1).Return(mockOutput)
+	tbc := controller.NewBlackJackCuiController(bjiMock)
+
+	t.Run("ssr with valid rule", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("ssr 1"))
+	})
+	t.Run("setsurrenderrule with valid rule", func(t *testing.T) {
+		assert.Equal(t, mockOutput, tbc.Exec("setsurrenderrule 1"))
+	})
+	t.Run("ssr without arg", func(t *testing.T) {
+		assert.Equal(t, "Surrender rule is required.", tbc.Exec("ssr"))
+	})
+	t.Run("ssr with invalid arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr abc"))
+	})
+	t.Run("ssr with negative arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr -1"))
+	})
+	t.Run("ssr with out-of-range arg", func(t *testing.T) {
+		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr 3"))
+	})
 }

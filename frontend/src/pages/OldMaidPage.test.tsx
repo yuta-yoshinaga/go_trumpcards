@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { oldmaidApi } from '../api/gameApi';
+import { actionLogApi, oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OldMaidResponse } from '../types/card';
@@ -8,6 +8,7 @@ import { OldMaidPage } from './OldMaidPage';
 
 vi.mock('../api/gameApi', () => ({
   oldmaidApi: { exec: vi.fn() },
+  actionLogApi: { oldmaid: vi.fn() },
 }));
 
 const mockExec = vi.mocked(oldmaidApi.exec);
@@ -130,14 +131,36 @@ describe('OldMaidPage', () => {
     fireEvent.click(radios[1]);
     fireEvent.click(screen.getByLabelText('CPU心理戦（奇数カードを端に配置）'));
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true, undefined, false));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, 1, true, undefined, false, false, false),
+    );
   });
 
   it('ゲーム開始 calls reset with cpuMemoryAI=true when checkbox enabled', async () => {
     renderWithProviders(<OldMaidPage />);
     fireEvent.click(screen.getByLabelText('CPU記憶AI（引いた位置を記憶して戦略的に選択）'));
     fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, true));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, true, false, false),
+    );
+  });
+
+  it('ゲーム開始 calls reset with cpuHesitationEnabled=true when checkbox enabled', async () => {
+    renderWithProviders(<OldMaidPage />);
+    fireEvent.click(screen.getByLabelText('CPU迷い時間ディレイ（カード内容により反応速度が変化）'));
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, true, false),
+    );
+  });
+
+  it('ゲーム開始 calls reset with cpuMetaAI=true when checkbox enabled', async () => {
+    renderWithProviders(<OldMaidPage />);
+    fireEvent.click(screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）'));
+    fireEvent.click(screen.getByRole('button', { name: 'ゲーム開始' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, false, true),
+    );
   });
 
   it('hides setup screen after ゲーム開始', async () => {
@@ -260,7 +283,9 @@ describe('OldMaidPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByText('リセット'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, false, false),
+    );
   });
 
   it('calls draw when random draw button is clicked', async () => {
@@ -1120,4 +1145,26 @@ describe('OldMaidPage', () => {
       timeout: 4000,
     });
   }, 10000);
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      ...humanTurnState,
+      gameEndFlag: true,
+    });
+
+    renderWithProviders(<OldMaidPage />);
+    await waitFor(() => expect(screen.getByText('ゲーム開始')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('ゲーム開始'));
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.oldmaid).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.oldmaid).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+  });
 });

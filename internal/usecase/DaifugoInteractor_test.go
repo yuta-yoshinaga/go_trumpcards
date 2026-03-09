@@ -65,6 +65,17 @@ func TestDaifugoInteractor_Method(t *testing.T) {
 	})
 }
 
+func TestDaifugoInteractor_ActionLog(t *testing.T) {
+	dgpMock := new(presenter.MockDaifugoPresenter)
+	gameMock := new(interfaces.MockDaifugoGame)
+	dgpMock.On("ActionLogOutput", gameMock).Return(`{"entries":[]}`)
+
+	di := usecase.NewDaifugoInteractor(gameMock, dgpMock)
+	result := di.ActionLog()
+	assert.Equal(t, `{"entries":[]}`, result)
+	dgpMock.AssertExpectations(t)
+}
+
 func TestDaifugoInteractor_MockGame(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	dgpMock := new(presenter.MockDaifugoPresenter)
@@ -100,6 +111,12 @@ func TestDaifugoInteractor_MockGame(t *testing.T) {
 		result := diCpu.Play([]int{0})
 		assert.Equal(t, mockOutput, result)
 		cpuMock.AssertNotCalled(t, "PlayerPlay", mock.Anything)
+	})
+	t.Run("GetConfig delegates to game.GetConfig", func(t *testing.T) {
+		gameMock.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+		result := di.GetConfig()
+		assert.Equal(t, domain.DefaultDaifugoConfig(), result)
+		gameMock.AssertCalled(t, "GetConfig")
 	})
 	t.Run("ResetWithConfig calls game.SetConfig then game.Reset", func(t *testing.T) {
 		config := domain.DefaultDaifugoConfig()

@@ -33,6 +33,10 @@ func (c *SevensCuiController) Exec(command string) string {
 					switch {
 					case f == "tunnel":
 						cfg.TunnelEnabled = true
+					case strings.HasPrefix(f, "tunnelskip="):
+						if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "tunnelskip=")); err == nil {
+							cfg.TunnelSkipWidth = parsed
+						}
 					case strings.HasPrefix(f, "joker="):
 						if parsed, err := strconv.Atoi(strings.TrimPrefix(f, "joker=")); err == nil {
 							cfg.JokerCount = parsed
@@ -42,9 +46,13 @@ func (c *SevensCuiController) Exec(command string) string {
 							cfg.MaxPasses = parsed
 						}
 					case f == "strategy":
-						cfg.CpuStrategy = true
+						cfg.CpuStrategy = domain.SevensCpuStrategic
+					case f == "harassment":
+						cfg.CpuStrategy = domain.SevensCpuHarassment
 					case f == "nojokerfinish":
 						cfg.NoJokerFinish = true
+					case f == "jokerreclaim":
+						cfg.JokerReclaimEnabled = true
 					case f == "endstop":
 						cfg.EndStopEnabled = true
 					case f == "jokerconsban":
@@ -55,7 +63,7 @@ func (c *SevensCuiController) Exec(command string) string {
 			}
 			return c.sgi.Reset()
 		},
-		func(command string) string { return "コマンドが不明です: " + command },
+		unknownCommandMessage,
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":

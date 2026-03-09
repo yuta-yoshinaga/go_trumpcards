@@ -1,6 +1,9 @@
 package domain
 
-import "math/rand"
+import (
+	"fmt"
+	"math/rand"
+)
 
 // OldMaidPlayerCnt ババ抜きプレイヤー数
 const OldMaidPlayerCnt = 4
@@ -17,6 +20,12 @@ func newShuffledDeck(jokerCount int) *TrumpCards {
 	return tc
 }
 
+// OldMaid固有の迷い時間ディレイ定数 (共通定数は hesitation.go)
+const (
+	oldMaidHesitationJokerMin = 1000
+	oldMaidHesitationJokerMax = 1500
+)
+
 // OldMaidCpuAction CPUの1ターン分の行動記録
 type OldMaidCpuAction struct {
 	DrawPlayerIdx  int     // 引いたプレイヤーインデックス
@@ -24,6 +33,7 @@ type OldMaidCpuAction struct {
 	DrawnCard      *Card   // 引いたカード
 	DiscardedPairs int     // 捨てたペア数
 	DiscardedCards []*Card // 捨てたカード
+	HesitationMs   int     // 迷い時間ディレイ (ミリ秒; 0=無効)
 }
 
 // OldMaidDrawHistoryEntry ゲーム全体の引き履歴の1エントリ
@@ -55,6 +65,8 @@ type OldMaid struct {
 	removedCard           *Card                      // ジジ抜き: 除外されたカード
 	cpuHighlightedCardIdx int                        // CPU心理戦: 奇数カードの位置 (-1=なし)
 	humanHandDirty        bool                       // 人間がシャッフル/並び替えしたフラグ
+	humanProfile          *OldMaidHumanProfile       // メタAIプロファイル
+	actionLog             []*ActionLogEntry          // 棋譜
 }
 
 // NewOldMaid コンストラクタ
@@ -94,6 +106,12 @@ func (o *OldMaid) GetCpuHighlightedCardIdx() int { return o.cpuHighlightedCardId
 // GetHumanHandDirty 人間がシャッフル/並び替えしたか
 func (o *OldMaid) GetHumanHandDirty() bool { return o.humanHandDirty }
 
+// GetHumanProfile メタAIプロファイル取得
+func (o *OldMaid) GetHumanProfile() *OldMaidHumanProfile { return o.humanProfile }
+
+// ResetProfile メタAIプロファイルをリセットする
+func (o *OldMaid) ResetProfile() { o.humanProfile = nil }
+
 // Reset ゲーム初期化
 func (o *OldMaid) Reset() {
 	o.gameEndFlag = false
@@ -111,6 +129,16 @@ func (o *OldMaid) Reset() {
 	o.removedCard = nil
 	o.cpuHighlightedCardIdx = -1
 	o.humanHandDirty = false
+	o.actionLog = nil
+
+	// メタAIプロファイルの管理
+	if o.config.CpuMetaAI {
+		if o.humanProfile != nil {
+			o.humanProfile.GamesPlayed++
+		} else {
+			o.humanProfile = &OldMaidHumanProfile{}
+		}
+	}
 
 	// 全プレイヤーのカードリセット (記憶もクリア)
 	resetPlayers(o.players, func(p *OldMaidPlayer) {
@@ -210,17 +238,27 @@ func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 	o.lastDrawCard = card
 	o.hasDrawn = true
 
+	// 棋譜: ドロー
+	o.appendLog(playerIdx, "draw", fmt.Sprintf("drew from player %d", targetIdx), []*Card{card})
+
 	// ペアを捨てる
 	discardedCards, discardedCount := player.DiscardPairs()
 	o.lastDiscardedPairs = discardedCount
 	o.lastDiscardedCards = discardedCards
 
+	// 棋譜: ペア捨て
+	if discardedCount > 0 {
+		o.appendLog(playerIdx, "discard", fmt.Sprintf("discarded %d pair(s)", discardedCount), discardedCards)
+	}
+
 	// 手が空になったプレイヤーを上がりにする
 	if target.GetCardsSize() == 0 {
 		target.SetIsFinished(true)
+		o.appendLog(targetIdx, "finish", fmt.Sprintf("player %d finished", targetIdx), nil)
 	}
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
+		o.appendLog(playerIdx, "finish", fmt.Sprintf("player %d finished", playerIdx), nil)
 	}
 
 	// ゲーム終了チェック
@@ -270,6 +308,19 @@ func (o *OldMaid) PlayerDraw(cardIdx int) error {
 	}
 	if !o.players[o.currentTurn].GetIsHuman() {
 		return ErrNotHumanTurn
+	}
+	// メタAI: ピックと引きを記録
+	if o.config.CpuMetaAI && o.humanProfile != nil {
+		if cardIdx >= 0 {
+			targetIdx := o.getNextActivePlayer(o.currentTurn)
+			if targetIdx >= 0 {
+				targetSize := o.players[targetIdx].GetCardsSize()
+				if cardIdx < targetSize {
+					o.humanProfile.RecordPick(cardIdx, targetSize)
+				}
+			}
+		}
+		o.humanProfile.RecordDraw()
 	}
 	// 人間のターン開始時にCPU行動履歴をリセット
 	o.cpuActions = nil
@@ -406,11 +457,29 @@ func (o *OldMaid) CpuDraw() error {
 		DiscardedPairs: o.lastDiscardedPairs,
 		DiscardedCards: o.lastDiscardedCards,
 	}
+	if o.config.CpuHesitationEnabled {
+		drewJoker := card != nil && card.GetDesign() == CardDesignJoker
+		gotPair := o.lastDiscardedPairs > 0
+		action.HesitationMs = calcOldMaidHesitationMs(gotPair, drewJoker)
+	}
 	o.cpuActions = append(o.cpuActions, action)
 	if !o.gameEndFlag {
 		o.advanceTurn()
 	}
 	return nil
+}
+
+// calcOldMaidHesitationMs 引いたカードの結果に応じた迷い時間(ミリ秒)を算出する
+// Note: ジジ抜きモードではジョーカーがデッキに含まれないため drewJoker は常に false となり、
+// pair/normal の2分岐のみが使われる。
+func calcOldMaidHesitationMs(gotPair bool, drewJoker bool) int {
+	if drewJoker {
+		return oldMaidHesitationJokerMin + rand.Intn(oldMaidHesitationJokerMax-oldMaidHesitationJokerMin+1)
+	}
+	if gotPair {
+		return hesitationFastMin + rand.Intn(hesitationFastMax-hesitationFastMin+1)
+	}
+	return hesitationMediumMin + rand.Intn(hesitationMediumMax-hesitationMediumMin+1)
 }
 
 // detectOddCardIdx プレイヤーの手札から奇数カードのインデックスを検出する (内部処理)
@@ -467,15 +536,20 @@ func (o *OldMaid) ArrangeTargetForHumanDraw() {
 		return
 	}
 	size := target.GetCardsSize()
-	position := rand.Intn(2) // 0=先頭, 1=末尾
-	card := target.RemoveCard(oddIdx)
-	if position == 0 {
-		target.PrependCard(card)
-		o.cpuHighlightedCardIdx = 0
+	var position int
+	// メタAI: 人間が最もピックしにくい位置に配置
+	if o.config.CpuMetaAI && o.humanProfile != nil && o.humanProfile.AdaptStrength() >= metaAIMinAdaptForPlacement {
+		position = o.humanProfile.StrategicPlacement(size)
 	} else {
-		target.AddCard(card)
-		o.cpuHighlightedCardIdx = size - 1
+		if rand.Intn(2) == 0 {
+			position = 0
+		} else {
+			position = size - 1
+		}
 	}
+	card := target.RemoveCard(oddIdx)
+	target.InsertCard(card, position)
+	o.cpuHighlightedCardIdx = position
 }
 
 // findHumanPlayer 人間プレイヤーを検索する
@@ -499,6 +573,10 @@ func (o *OldMaid) ShuffleHumanHand() error {
 	}
 	human.ShuffleCards()
 	o.humanHandDirty = true
+	// メタAI: シャッフルを記録
+	if o.config.CpuMetaAI && o.humanProfile != nil {
+		o.humanProfile.RecordShuffle()
+	}
 	return nil
 }
 
@@ -599,4 +677,18 @@ func (o *OldMaid) GetHumanAction() *OldMaidCpuAction {
 // GetDrawHistory ゲーム全体の引き履歴取得
 func (o *OldMaid) GetDrawHistory() []*OldMaidDrawHistoryEntry {
 	return o.drawHistory
+}
+
+// GetActionLog 棋譜を取得する
+func (o *OldMaid) GetActionLog() []*ActionLogEntry { return o.actionLog }
+
+// appendLog 棋譜にエントリを追加する
+func (o *OldMaid) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	o.actionLog = append(o.actionLog, &ActionLogEntry{
+		TurnNumber: len(o.actionLog) + 1,
+		PlayerIdx:  playerIdx,
+		ActionType: actionType,
+		Detail:     detail,
+		Cards:      cards,
+	})
 }

@@ -104,6 +104,8 @@ flowchart TD
 | `reset` | `r` | 新しいゲームを開始 |
 | `play 値 idx...` | `p 値 idx...` | 手札のカードを出す（値=宣言値, idx=手札インデックス） |
 | `d` または `doubt` | - | ダウト！（ダウト判定ウィンドウ中のみ有効） |
+| `setmetaai N` | `smai N` | Meta-AI の切替（0=OFF, 1=ON） |
+| `resetprofile` | `rp` | Meta-AI のプロファイル（学習データ）をリセット |
 | `quit` | `q` | ゲーム終了 |
 
 ### `play` コマンドの詳細

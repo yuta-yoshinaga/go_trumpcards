@@ -1,6 +1,6 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { doubtApi } from '../api/gameApi';
+import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
@@ -8,11 +8,18 @@ import { DoubtPage } from './DoubtPage';
 
 vi.mock('../api/gameApi', () => ({
   doubtApi: { exec: vi.fn() },
+  actionLogApi: { doubt: vi.fn() },
 }));
 
 const mockExec = vi.mocked(doubtApi.exec);
 
-const defaultConfig: DoubtConfig = { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 0 };
+const defaultConfig: DoubtConfig = {
+  doubtWindowSec: 10,
+  cpuMemoryLevel: 1,
+  penaltyDrawLimit: 0,
+  cpuHesitationEnabled: false,
+  cpuMetaAI: false,
+};
 
 const humanTurnState: DoubtResponse = {
   players: [
@@ -529,6 +536,23 @@ describe('DoubtPage', () => {
     });
   });
 
+  // ── Hesitation delay before countdown ───────────────────────────────────
+
+  it('delays countdown start by hesitationMs when CPU action has hesitation', async () => {
+    const stateWithHesitation: DoubtResponse = {
+      ...doubtPhaseCpuPlayedState,
+      cpuActions: [{ playerIdx: 1, claimedValue: 2, cardCount: 2, isBluff: true, hesitationMs: 500 }],
+    };
+    mockExec.mockResolvedValue(stateWithHesitation);
+    renderWithProviders(<DoubtPage />);
+    // Wait for state to be rendered
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+    // Countdown should NOT appear immediately (hesitation delay of 500ms pending)
+    expect(screen.queryByText(/残り/)).not.toBeInTheDocument();
+    // After hesitation delay passes, countdown starts
+    await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+  });
+
   // ── No countdown in other phases ─────────────────────────────────────────
 
   it('does not show countdown in play phase', async () => {
@@ -845,37 +869,73 @@ describe('DoubtPage', () => {
       label: 'doubtWindowSec to 3s',
       selectIdx: 0,
       value: '3',
-      expected: { doubtWindowSec: 3, cpuMemoryLevel: 1, penaltyDrawLimit: 0 },
+      expected: {
+        doubtWindowSec: 3,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'doubtWindowSec to 5s',
       selectIdx: 0,
       value: '5',
-      expected: { doubtWindowSec: 5, cpuMemoryLevel: 1, penaltyDrawLimit: 0 },
+      expected: {
+        doubtWindowSec: 5,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'cpuMemoryLevel to Hard',
       selectIdx: 1,
       value: '2',
-      expected: { doubtWindowSec: 10, cpuMemoryLevel: 2, penaltyDrawLimit: 0 },
+      expected: {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 2,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'cpuMemoryLevel to Easy',
       selectIdx: 1,
       value: '0',
-      expected: { doubtWindowSec: 10, cpuMemoryLevel: 0, penaltyDrawLimit: 0 },
+      expected: {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 0,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'penaltyDrawLimit to 5',
       selectIdx: 2,
       value: '5',
-      expected: { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 5 },
+      expected: {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 5,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
     {
       label: 'penaltyDrawLimit to 3',
       selectIdx: 2,
       value: '3',
-      expected: { doubtWindowSec: 10, cpuMemoryLevel: 1, penaltyDrawLimit: 3 },
+      expected: {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 3,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: false,
+      },
     },
   ])('changing $label updates config passed to reset', async ({ selectIdx, value, expected }) => {
     renderWithProviders(<DoubtPage />);
@@ -891,6 +951,54 @@ describe('DoubtPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, expected));
+  });
+
+  it('toggling cpuHesitation checkbox updates config passed to reset', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+
+    const checkbox = screen.getByLabelText('CPU迷い時間ディレイ');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: true,
+        cpuMetaAI: false,
+      }),
+    );
+  });
+
+  it('toggling cpuMetaAI checkbox updates config passed to reset', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+
+    const checkbox = screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
+        doubtWindowSec: 10,
+        cpuMemoryLevel: 1,
+        penaltyDrawLimit: 0,
+        cpuHesitationEnabled: false,
+        cpuMetaAI: true,
+      }),
+    );
   });
 
   // ── Server-driven countdown ───────────────────────────────────────────────
@@ -923,5 +1031,31 @@ describe('DoubtPage', () => {
       renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 5 秒/)).toBeInTheDocument());
     });
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue({
+      gameEndFlag: true,
+      currentTurn: 0,
+      players: [],
+      playerIdx: 0,
+      playCards: [],
+      cpuDoubters: [],
+      cpuActions: [],
+      lastAction: null,
+    } as unknown as DoubtResponse);
+
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.doubt).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.doubt).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
 });

@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
 func makePokerForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
@@ -518,6 +519,40 @@ func TestPokerWebPresenter_OutputWithOdds(t *testing.T) {
 	})
 }
 
+func TestPokerWebPresenter_Output_IsLowball(t *testing.T) {
+	pres := presenter.NewPokerWebPresenter()
+
+	t.Run("isLowball true", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.PokerPlayer{
+			domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+			domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		}
+		cfg := domain.DefaultPokerConfig()
+		cfg.IsLowball = true
+		cfg.CpuCount = 1
+		p := domain.NewPoker(tc, players, cfg)
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.True(t, out.IsLowball)
+	})
+
+	t.Run("isLowball false", func(t *testing.T) {
+		p, _ := makePokerForPresenter()
+		p.SetPhase(domain.PokerPhaseDeal)
+
+		result := pres.Output(p, nil)
+		var out controller.PokerWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.False(t, out.IsLowball)
+	})
+}
+
 func TestPokerWebPresenter_Output_BettingLimitFields(t *testing.T) {
 	pres := presenter.NewPokerWebPresenter()
 
@@ -556,5 +591,45 @@ func TestPokerWebPresenter_Output_BettingLimitFields(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, out.BettingLimit)
 		assert.Equal(t, 120, out.MaxBetAmount) // pot(100) + lastBet(20)
+	})
+}
+
+func TestPokerWebPresenter_ActionLogOutput(t *testing.T) {
+	p := presenter.NewPokerWebPresenter()
+
+	t.Run("with entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "exchange", Detail: "exchanged 2 cards", Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, true)}},
+		}
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"actionType":"exchange"`)
+		assert.Contains(t, result, `"detail":"exchanged 2 cards"`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("nil_entries", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		mockGame.On("GetGameEndFlag").Return(true)
+		mockGame.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
+	})
+
+	t.Run("game_not_ended", func(t *testing.T) {
+		mockGame := new(interfaces.MockPokerGame)
+		mockGame.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(mockGame)
+
+		assert.Contains(t, result, `"entries":[]`)
+		mockGame.AssertExpectations(t)
 	})
 }

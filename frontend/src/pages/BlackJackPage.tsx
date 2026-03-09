@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BlackJackConfigInput, BlackJackSideBetInput } from '../api/gameApi';
+import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
+import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
+import { BjEarlySurrenderPhaseControls } from '../components/blackjack/BjEarlySurrenderPhaseControls';
 import { BjEndPhaseControls } from '../components/blackjack/BjEndPhaseControls';
 import { BjInsurancePhaseControls } from '../components/blackjack/BjInsurancePhaseControls';
 import {
@@ -22,7 +24,9 @@ import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { useActionLog } from '../hooks/useActionLog';
 import { useGameApi } from '../hooks/useGameApi';
+import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 
@@ -44,15 +48,18 @@ export function BlackJackPage() {
   const suggestionLabels = useSuggestionLabels(t);
 
   const [message, setMessage] = useState('');
+  const { actionLog, showActionLog, hideActionLog } = useActionLog('blackjack');
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
   const [cpuPlayerCount, setCpuPlayerCount] = useState(0);
   const [perfectPairsBet, setPerfectPairsBet] = useState(0);
   const [twentyOnePlus3Bet, setTwentyOnePlus3Bet] = useState(0);
+  const [handCount, setHandCount] = useState(1);
   const [doubleAfterSplit, setDoubleAfterSplit] = useState(true);
   const [countingSystem, setCountingSystem] = useState(0);
   const [deckPenetration, setDeckPenetration] = useState(75);
+  const [surrenderRule, setSurrenderRule] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
   const onSuccess = useCallback((res: BlackJackResponse) => {
@@ -63,6 +70,7 @@ export function BlackJackPage() {
     setDoubleAfterSplit(res.doubleAfterSplit);
     setCountingSystem(res.countingSystem);
     setDeckPenetration(res.deckPenetration);
+    setSurrenderRule(res.surrenderRule);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
 
@@ -89,6 +97,7 @@ export function BlackJackPage() {
   const showSurrender = !!currentHand?.canSurrender;
 
   const handleReset = useCallback(() => {
+    hideActionLog();
     const config: BlackJackConfigInput = {
       dealerHitsSoft17,
       cpuPlayerCount,
@@ -96,9 +105,20 @@ export function BlackJackPage() {
       doubleAfterSplit,
       countingSystem,
       deckPenetration,
+      surrenderRule,
     };
     exec('reset', undefined, config);
-  }, [exec, dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration]);
+  }, [
+    exec,
+    dealerHitsSoft17,
+    cpuPlayerCount,
+    countingEnabled,
+    doubleAfterSplit,
+    countingSystem,
+    deckPenetration,
+    surrenderRule,
+    hideActionLog,
+  ]);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
@@ -153,6 +173,11 @@ export function BlackJackPage() {
               <div key={cpuIdx} className="mb-3">
                 <h3 className="text-yellow-200 mt-0 mb-1">
                   CPU {cpuIdx + 1} ({cpu.chips} chips)
+                  {cpu.insuranceBet > 0 && (
+                    <span className="text-yellow-400 text-sm ml-2">
+                      [{t('insurance')} {cpu.insuranceBet}]
+                    </span>
+                  )}
                 </h3>
                 {cpu.hands.map((hand, handIdx) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: CPU hands have fixed order
@@ -192,7 +217,9 @@ export function BlackJackPage() {
               <div key={`hand-${handIndex}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
                   {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
-                  {handIndex === currentHandIdx && phase === BjPhase.ACTION && ' (*)'}
+                  {handIndex === currentHandIdx &&
+                    (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
+                    ' (*)'}
                   {hand.busted && ' [BUST]'}
                   {hand.doubled && ' [DD]'}
                   {hand.isBlackJack && ' [BJ]'}
@@ -251,6 +278,16 @@ export function BlackJackPage() {
         {/* Result message */}
         <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
 
+        {/* Action log */}
+        {phase === BjPhase.END && !actionLog && (
+          <div className="text-center my-2">
+            <button type="button" className={btnSecondary} onClick={showActionLog}>
+              {tc('actionLog.view')}
+            </button>
+          </div>
+        )}
+        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+
         <ErrorAlert message={error} />
 
         {/* Phase-based buttons */}
@@ -263,7 +300,7 @@ export function BlackJackPage() {
                 deckCount={state?.deckCount ?? 1}
                 onDeckCountChange={(v) => exec('setdeckcount', v)}
                 cpuPlayerCount={cpuPlayerCount}
-                onCpuPlayerCountChange={setCpuPlayerCount}
+                onCpuPlayerCountChange={(v) => exec('setcpucount', v)}
                 hintEnabled={hintEnabled}
                 onToggleHint={() => exec('togglehint')}
                 dealerHitsSoft17={dealerHitsSoft17}
@@ -276,12 +313,17 @@ export function BlackJackPage() {
                 onCountingSystemChange={(v) => exec('setcountingsystem', v)}
                 deckPenetration={deckPenetration}
                 onDeckPenetrationChange={(v) => exec('setpenetration', v)}
+                surrenderRule={surrenderRule}
+                onSurrenderRuleChange={(v) => exec('setsurrenderrule', v)}
+                handCount={handCount}
+                onHandCountChange={setHandCount}
                 loading={loading}
                 onBet={() => {
-                  const sideBets: BlackJackSideBetInput = {};
-                  if (perfectPairsBet > 0) sideBets.perfectPairsBet = perfectPairsBet;
-                  if (twentyOnePlus3Bet > 0) sideBets.twentyOnePlus3Bet = twentyOnePlus3Bet;
-                  exec('bet', betAmount, undefined, sideBets);
+                  const betOptions: BlackJackBetOptions = {};
+                  if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
+                  if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
+                  if (handCount > 1) betOptions.handCount = handCount;
+                  exec('bet', betAmount, undefined, betOptions);
                 }}
                 perfectPairsBet={perfectPairsBet}
                 onPerfectPairsBetChange={setPerfectPairsBet}
@@ -330,6 +372,16 @@ export function BlackJackPage() {
               onDoubleDown={() => exec('doubledown')}
               onSplit={() => exec('split')}
               onSurrender={() => exec('surrender')}
+            />
+          )}
+
+          {phase === BjPhase.EARLY_SURRENDER && (
+            <BjEarlySurrenderPhaseControls
+              loading={loading}
+              hintEnabled={hintEnabled}
+              suggestedAction={suggestedAction}
+              onSurrender={() => exec('earlysurrender')}
+              onContinue={() => exec('declineearlysurrender')}
             />
           )}
 

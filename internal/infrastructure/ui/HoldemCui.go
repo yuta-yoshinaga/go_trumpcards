@@ -18,14 +18,8 @@ type HoldemCui struct {
 
 // NewHoldemCui コンストラクタ
 func NewHoldemCui() *HoldemCui {
-	tc := domain.NewTrumpCards(0)
-	players := []*domain.HoldemPlayer{
-		domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
-		domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
-	}
-	holdem := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+	cfg := domain.DefaultHoldemConfig()
+	holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
 	return &HoldemCui{
 		hc: controller.NewHoldemCuiController(usecase.NewHoldemInteractor(holdem, presenter.NewHoldemCuiPresenter())),
 	}
@@ -46,6 +40,15 @@ func (cui *HoldemCui) Exec() {
 	fmt.Println("ra [amount]・・・raise (e.g. 'ra 30')")
 	fmt.Println("a・・・allin")
 	fmt.Println("bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)")
+	fmt.Println("tm [0-1]・・・tournament mode (0=OFF, 1=ON)")
+	fmt.Println("sb [amount]・・・small blind (>=1)")
+	fmt.Println("bb [amount]・・・big blind (>=2)")
+	fmt.Println("lh [hands]・・・blind level-up hands (>=1)")
+	fmt.Println("ts [4|6|9]・・・table size (4-max, 6-max, 9-max)")
+	fmt.Println("rb・・・rebuy (accept rebuy)")
+	fmt.Println("sr・・・skip rebuy (decline rebuy)")
+	fmt.Println("ad・・・addon (accept addon)")
+	fmt.Println("sa・・・skip addon (decline addon)")
 	fmt.Println("----------------")
 
 	for {
