@@ -2883,7 +2883,7 @@ func TestPoker_Showdown_LowballWinner(t *testing.T) {
 
 	// In lowball, player 0 (HighCard) should win
 	results := pk.GetRoundResults()
-	assert.True(t, len(results) >= 2)
+	assert.Equal(t, 2, len(results))
 	var p0Won, p1Won int
 	for _, r := range results {
 		if r.PlayerIdx == 0 {
