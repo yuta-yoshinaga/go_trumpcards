@@ -425,7 +425,7 @@ func TestDaifugoCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDaifugoGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 0, PlayerIdx: 0, ActionType: "play", Detail: "played 3 of spades"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 3 of spades"},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)

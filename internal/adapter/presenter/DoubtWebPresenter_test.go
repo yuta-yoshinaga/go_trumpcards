@@ -477,7 +477,7 @@ func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDoubtGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 0, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -486,7 +486,7 @@ func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, result, `"actionType":"play"`)
 		assert.Contains(t, result, `"detail":"declared 5, played 1 card(s)"`)
-		assert.Contains(t, result, `"turnNumber":0`)
+		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		mockGame.AssertExpectations(t)
 	})

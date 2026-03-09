@@ -321,7 +321,7 @@ func TestDoubtCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDoubtGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 0, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)"},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)

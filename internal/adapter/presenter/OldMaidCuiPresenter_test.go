@@ -432,7 +432,7 @@ func TestOldMaidCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockOldMaidGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 0, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card"},
+			{TurnNumber: 1, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card"},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)

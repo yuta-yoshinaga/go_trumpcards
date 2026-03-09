@@ -45,7 +45,7 @@ func TestActionLogToJSON(t *testing.T) {
 	t.Run("system entry playerIdx -1", func(t *testing.T) {
 		entries := []*domain.ActionLogEntry{
 			{
-				TurnNumber: 0,
+				TurnNumber: 1,
 				PlayerIdx:  -1,
 				ActionType: "deal",
 				Detail:     "dealt cards",
@@ -90,7 +90,7 @@ func TestActionLogToText(t *testing.T) {
 	t.Run("system entry shows SYSTEM", func(t *testing.T) {
 		entries := []*domain.ActionLogEntry{
 			{
-				TurnNumber: 0,
+				TurnNumber: 1,
 				PlayerIdx:  -1,
 				ActionType: "deal",
 				Detail:     "dealt cards",
