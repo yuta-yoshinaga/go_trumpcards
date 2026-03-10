@@ -1,0 +1,105 @@
+package controller
+
+import (
+	"net/http"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+
+	"github.com/ant0ine/go-json-rest/rest"
+)
+
+// MemoryWebInput 神経衰弱Webインプット
+type MemoryWebInput struct {
+	BaseWebInput
+	Position *int             `json:"position,omitempty"`
+	Config   *MemoryWebConfig `json:"config,omitempty"`
+}
+
+// MemoryWebConfig 神経衰弱Web設定
+type MemoryWebConfig struct {
+	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
+}
+
+// MemoryWebOutputPlayer 神経衰弱Webアウトプットプレイヤー
+type MemoryWebOutputPlayer struct {
+	ID        int  `json:"id"`
+	IsHuman   bool `json:"isHuman"`
+	PairCount int  `json:"pairCount"`
+}
+
+// MemoryWebOutputBoardCard 神経衰弱Webアウトプットボードカード
+type MemoryWebOutputBoardCard struct {
+	Card   *WebOutputCard `json:"card"`
+	FaceUp bool           `json:"faceUp"`
+	Taken  bool           `json:"taken"`
+}
+
+// MemoryWebOutput 神経衰弱Webアウトプット
+type MemoryWebOutput struct {
+	Players          []*MemoryWebOutputPlayer    `json:"players"`
+	Board            []*MemoryWebOutputBoardCard `json:"board"`
+	Phase            int                         `json:"phase"`
+	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
+	FirstFlipPos     int                         `json:"firstFlipPos"`
+	SecondFlipPos    int                         `json:"secondFlipPos"`
+	LastMatchResult  bool                        `json:"lastMatchResult"`
+	GameEndFlag      bool                        `json:"gameEndFlag"`
+	WinnerIdx        int                         `json:"winnerIdx"`
+	TurnNumber       int                         `json:"turnNumber"`
+	Message          string                      `json:"message"`
+	MessageCode      string                      `json:"messageCode,omitempty"`
+	MessageParams    map[string]string           `json:"messageParams,omitempty"`
+	Config           MemoryWebOutputConfig       `json:"config"`
+}
+
+// MemoryWebOutputConfig 神経衰弱設定アウトプット
+type MemoryWebOutputConfig struct {
+	CpuDifficulty int `json:"cpuDifficulty"`
+}
+
+// MemoryWebController 神経衰弱Webコントローラークラス
+type MemoryWebController = GameWebController[usecase.MemoryInteractorIF, MemoryWebInput, *MemoryWebOutput]
+
+// NewMemoryWebController コンストラクタ
+func NewMemoryWebController(factory func() usecase.MemoryInteractorIF) *MemoryWebController {
+	return NewGameWebController(factory, newMemoryDefaultOutput, memoryDispatch)
+}
+
+func newMemoryDefaultOutput(msg string) *MemoryWebOutput {
+	return &MemoryWebOutput{
+		Players:   make([]*MemoryWebOutputPlayer, 0),
+		Board:     make([]*MemoryWebOutputBoardCard, 0),
+		WinnerIdx: -1,
+		Message:   msg,
+	}
+}
+
+func memoryDispatch(bc *baseController, w rest.ResponseWriter, mi usecase.MemoryInteractorIF, param MemoryWebInput, newDefault func(string) *MemoryWebOutput) bool {
+	switch param.Command {
+	case "r", "reset":
+		cfg := domain.DefaultMemoryConfig()
+		if param.Config != nil {
+			if param.Config.CpuDifficulty != nil {
+				d := *param.Config.CpuDifficulty
+				if d >= int(domain.MemoryCpuDifficultyEasy) && d <= int(domain.MemoryCpuDifficultyHard) {
+					cfg.CpuDifficulty = domain.MemoryCpuDifficulty(d)
+				}
+			}
+		}
+		bc.writePresenterResponse(w, mi.ResetWithConfig(cfg))
+	case "f", "flip":
+		if param.Position == nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: position is required."))
+			return true
+		}
+		bc.writePresenterResponse(w, mi.Flip(*param.Position))
+	case "n", "next":
+		bc.writePresenterResponse(w, mi.Next())
+	case "log", "l":
+		bc.writePresenterResponse(w, mi.ActionLog())
+	default:
+		return false
+	}
+	return true
+}

@@ -10,6 +10,7 @@ import jaDaifugo from '../i18n/locales/ja/daifugo.json';
 import jaDoubt from '../i18n/locales/ja/doubt.json';
 import jaHearts from '../i18n/locales/ja/hearts.json';
 import jaHoldem from '../i18n/locales/ja/holdem.json';
+import jaMemory from '../i18n/locales/ja/memory.json';
 import jaOldmaid from '../i18n/locales/ja/oldmaid.json';
 import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
@@ -18,7 +19,7 @@ i18n.use(initReactI18next).init({
   lng: 'ja',
   fallbackLng: 'ja',
   defaultNS: 'common',
-  ns: ['common', 'blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem', 'hearts'],
+  ns: ['common', 'blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem', 'hearts', 'memory'],
   resources: {
     ja: {
       common: jaCommon,
@@ -30,6 +31,7 @@ i18n.use(initReactI18next).init({
       doubt: jaDoubt,
       holdem: jaHoldem,
       hearts: jaHearts,
+      memory: jaMemory,
     },
   },
   interpolation: { escapeValue: false },

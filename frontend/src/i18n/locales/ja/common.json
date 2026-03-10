@@ -7,7 +7,8 @@
     "sevens": "7並べ",
     "doubt": "ダウト",
     "holdem": "テキサスホールデム",
-    "hearts": "ハーツ"
+    "hearts": "ハーツ",
+    "memory": "神経衰弱"
   },
   "player": {
     "you": "あなた",
@@ -87,6 +88,12 @@
     "holdem.result.mucked": "マックしました。",
     "holdem.muck.prompt": "マックしますか?",
     "hearts.result.humanWin": "ゲーム終了！ あなたの勝ち！",
-    "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+    "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "memory.flip1": "1枚目をめくってください",
+    "memory.flip2": "2枚目をめくってください",
+    "memory.matched": "ペアが揃いました！",
+    "memory.mismatched": "残念、不一致です",
+    "memory.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "memory.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
   }
 }

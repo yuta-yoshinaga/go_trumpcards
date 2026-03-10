@@ -1,0 +1,100 @@
+package presenter
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// MemoryCuiPresenter 神経衰弱CUIプレゼンタークラス
+type MemoryCuiPresenter struct{}
+
+// NewMemoryCuiPresenter コンストラクタ
+func NewMemoryCuiPresenter() *MemoryCuiPresenter {
+	return &MemoryCuiPresenter{}
+}
+
+// Output ゲーム状態を文字列出力
+func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) string {
+	var b strings.Builder
+
+	b.WriteString("==========\n")
+	b.WriteString("Memory (神経衰弱)\n")
+	b.WriteString("==========\n")
+
+	// プレイヤー情報
+	for i := 0; i < m.GetPlayerCnt(); i++ {
+		player := m.GetPlayer(i)
+		name := cuiPlayerName(player, i)
+		fmt.Fprintf(&b, "%s: %dペア\n", name, player.GetPairCount())
+	}
+
+	b.WriteString("----------\n")
+
+	// ボードを4×13グリッドで表示
+	board := m.GetBoard()
+	for row := 0; row < 4; row++ {
+		for col := 0; col < 13; col++ {
+			pos := row*13 + col
+			if col != 0 {
+				b.WriteString(" ")
+			}
+			bc := board[pos]
+			if bc.Taken {
+				fmt.Fprintf(&b, "[%2d]    ", pos)
+			} else if bc.FaceUp {
+				fmt.Fprintf(&b, "[%2d]%s", pos, cuiCardStr(bc.Card))
+			} else {
+				fmt.Fprintf(&b, "[%2d]??  ", pos)
+			}
+		}
+		b.WriteString("\n")
+	}
+
+	b.WriteString("----------\n")
+
+	// エラーメッセージ
+	if lastErr != nil {
+		fmt.Fprintf(&b, "%s\n", lastErr.Error())
+	}
+
+	// ゲーム状態
+	if m.GetGameEndFlag() {
+		winnerIdx := m.GetWinnerIdx()
+		player := m.GetPlayer(winnerIdx)
+		fmt.Fprintf(&b, "ゲーム終了！ %sの勝利です！\n", cuiPlayerName(player, winnerIdx))
+	} else {
+		phase := m.GetPhase()
+		currentIdx := m.GetCurrentPlayerIdx()
+		player := m.GetPlayer(currentIdx)
+		playerStr := cuiPlayerName(player, currentIdx)
+		switch phase {
+		case domain.MemoryPhaseFlip1:
+			fmt.Fprintf(&b, "手番: %s — 1枚目を選んでください\n", playerStr)
+			b.WriteString("f <pos>・・・カードをめくる\n")
+		case domain.MemoryPhaseFlip2:
+			fmt.Fprintf(&b, "手番: %s — 2枚目を選んでください\n", playerStr)
+			b.WriteString("f <pos>・・・カードをめくる\n")
+		case domain.MemoryPhaseResult:
+			if m.GetLastMatchResult() {
+				b.WriteString("ペアが揃いました！\n")
+			} else {
+				b.WriteString("残念、不一致です。\n")
+			}
+			b.WriteString("n・・・次へ\n")
+		}
+	}
+
+	b.WriteString("==========\n")
+	return b.String()
+}
+
+// ActionLogOutput 棋譜をテキスト出力
+func (p *MemoryCuiPresenter) ActionLogOutput(m interfaces.MemoryGame) string {
+	if !m.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(m.GetActionLog())
+}

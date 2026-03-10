@@ -7,7 +7,8 @@
     "sevens": "Sevens",
     "doubt": "Doubt",
     "holdem": "Texas Hold'em",
-    "hearts": "Hearts"
+    "hearts": "Hearts",
+    "memory": "Memory"
   },
   "player": {
     "you": "You",
@@ -87,6 +88,12 @@
     "holdem.result.mucked": "You mucked.",
     "holdem.muck.prompt": "Muck or show your hand.",
     "hearts.result.humanWin": "Game over! You win!",
-    "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+    "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "memory.flip1": "Flip the first card",
+    "memory.flip2": "Flip the second card",
+    "memory.matched": "It's a match!",
+    "memory.mismatched": "No match",
+    "memory.result.humanWin": "Game over! You win!",
+    "memory.result.cpuWin": "Game over! CPU {{cpuId}} wins!"
   }
 }

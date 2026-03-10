@@ -1,0 +1,271 @@
+package presenter
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func newMockMemoryGame() *interfaces.MockMemoryGame {
+	return new(interfaces.MockMemoryGame)
+}
+
+func setupMemoryMockDefaults(mg *interfaces.MockMemoryGame) {
+	mg.On("GetPlayerCnt").Return(4).Maybe()
+	mg.On("GetGameEndFlag").Return(false).Maybe()
+	mg.On("GetPhase").Return(domain.MemoryPhaseFlip1).Maybe()
+	mg.On("GetCurrentPlayerIdx").Return(0).Maybe()
+	mg.On("GetFirstFlipPos").Return(-1).Maybe()
+	mg.On("GetSecondFlipPos").Return(-1).Maybe()
+	mg.On("GetLastMatchResult").Return(false).Maybe()
+	mg.On("GetWinnerIdx").Return(-1).Maybe()
+	mg.On("GetTurnNumber").Return(0).Maybe()
+
+	var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+	for i := 0; i < domain.MemoryBoardSize; i++ {
+		board[i] = &domain.MemoryBoardCard{
+			Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+			FaceUp: false,
+			Taken:  false,
+		}
+	}
+	mg.On("GetBoard").Return(board).Maybe()
+
+	for i := 0; i < 4; i++ {
+		p := domain.NewMemoryPlayer(i == 0)
+		mg.On("GetPlayer", i).Return(p).Maybe()
+	}
+}
+
+func TestMemoryCuiPresenterOutput(t *testing.T) {
+	t.Run("initial state", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		p := NewMemoryCuiPresenter()
+
+		result := p.Output(mg, nil)
+		assert.Contains(t, result, "Memory (神経衰弱)")
+		assert.Contains(t, result, "あなた: 0ペア")
+		assert.Contains(t, result, "CPU 1: 0ペア")
+		assert.Contains(t, result, "1枚目を選んでください")
+		assert.Contains(t, result, "f <pos>")
+	})
+
+	t.Run("flip2 phase", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		mg.ExpectedCalls = nil // clear defaults
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(false)
+		mg.On("GetPhase").Return(domain.MemoryPhaseFlip2)
+		mg.On("GetCurrentPlayerIdx").Return(0)
+		mg.On("GetLastMatchResult").Return(false)
+		mg.On("GetWinnerIdx").Return(-1)
+
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+				FaceUp: false,
+				Taken:  false,
+			}
+		}
+		// Card at position 0 is face up
+		board[0].FaceUp = true
+		mg.On("GetBoard").Return(board)
+		for i := 0; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
+		}
+
+		p := NewMemoryCuiPresenter()
+		result := p.Output(mg, nil)
+		assert.Contains(t, result, "2枚目を選んでください")
+		assert.Contains(t, result, "SPADE 1") // face up card
+	})
+
+	t.Run("result phase match", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		mg.ExpectedCalls = nil
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(false)
+		mg.On("GetPhase").Return(domain.MemoryPhaseResult)
+		mg.On("GetCurrentPlayerIdx").Return(0)
+		mg.On("GetLastMatchResult").Return(true)
+		mg.On("GetWinnerIdx").Return(-1)
+
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+				FaceUp: false,
+				Taken:  false,
+			}
+		}
+		mg.On("GetBoard").Return(board)
+		for i := 0; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
+		}
+
+		p := NewMemoryCuiPresenter()
+		result := p.Output(mg, nil)
+		assert.Contains(t, result, "ペアが揃いました！")
+		assert.Contains(t, result, "n・・・次へ")
+	})
+
+	t.Run("result phase miss", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		mg.ExpectedCalls = nil
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(false)
+		mg.On("GetPhase").Return(domain.MemoryPhaseResult)
+		mg.On("GetCurrentPlayerIdx").Return(0)
+		mg.On("GetLastMatchResult").Return(false)
+		mg.On("GetWinnerIdx").Return(-1)
+
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+				FaceUp: false,
+				Taken:  false,
+			}
+		}
+		mg.On("GetBoard").Return(board)
+		for i := 0; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
+		}
+
+		p := NewMemoryCuiPresenter()
+		result := p.Output(mg, nil)
+		assert.Contains(t, result, "残念、不一致です。")
+	})
+
+	t.Run("game end human wins", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		mg.ExpectedCalls = nil
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(true)
+		mg.On("GetWinnerIdx").Return(0)
+
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+				FaceUp: false,
+				Taken:  true,
+			}
+		}
+		mg.On("GetBoard").Return(board)
+		for i := 0; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
+		}
+
+		p := NewMemoryCuiPresenter()
+		result := p.Output(mg, nil)
+		assert.Contains(t, result, "ゲーム終了！ あなたの勝利です！")
+	})
+
+	t.Run("game end CPU wins", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		mg.ExpectedCalls = nil
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(true)
+		mg.On("GetWinnerIdx").Return(2)
+
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+				FaceUp: false,
+				Taken:  true,
+			}
+		}
+		mg.On("GetBoard").Return(board)
+		for i := 0; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
+		}
+
+		p := NewMemoryCuiPresenter()
+		result := p.Output(mg, nil)
+		assert.Contains(t, result, "ゲーム終了！ CPU 2の勝利です！")
+	})
+
+	t.Run("error message", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+
+		p := NewMemoryCuiPresenter()
+		result := p.Output(mg, errors.New("test error"))
+		assert.Contains(t, result, "test error")
+	})
+
+	t.Run("taken card shows blank", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		setupMemoryMockDefaults(mg)
+		mg.ExpectedCalls = nil
+		mg.On("GetPlayerCnt").Return(4)
+		mg.On("GetGameEndFlag").Return(false)
+		mg.On("GetPhase").Return(domain.MemoryPhaseFlip1)
+		mg.On("GetCurrentPlayerIdx").Return(0)
+		mg.On("GetWinnerIdx").Return(-1)
+		mg.On("GetLastMatchResult").Return(false)
+
+		var board [domain.MemoryBoardSize]*domain.MemoryBoardCard
+		for i := 0; i < domain.MemoryBoardSize; i++ {
+			board[i] = &domain.MemoryBoardCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, (i%13)+1, false),
+				FaceUp: false,
+				Taken:  i == 0, // position 0 taken
+			}
+		}
+		mg.On("GetBoard").Return(board)
+		for i := 0; i < 4; i++ {
+			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
+		}
+
+		p := NewMemoryCuiPresenter()
+		result := p.Output(mg, nil)
+		assert.Contains(t, result, "[ 0]    ") // taken card blank
+	})
+}
+
+func TestMemoryCuiPresenterActionLog(t *testing.T) {
+	t.Run("game not ended", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		mg.On("GetGameEndFlag").Return(false)
+
+		p := NewMemoryCuiPresenter()
+		result := p.ActionLogOutput(mg)
+		assert.NotEmpty(t, result)
+	})
+
+	t.Run("game ended with entries", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		mg.On("GetGameEndFlag").Return(true)
+		mg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "match", Detail: "ペア獲得"},
+		})
+
+		p := NewMemoryCuiPresenter()
+		result := p.ActionLogOutput(mg)
+		assert.Contains(t, result, "match")
+	})
+
+	t.Run("game ended with nil log", func(t *testing.T) {
+		mg := newMockMemoryGame()
+		mg.On("GetGameEndFlag").Return(true)
+		var nilLog []*domain.ActionLogEntry
+		mg.On("GetActionLog").Return(nilLog)
+
+		p := NewMemoryCuiPresenter()
+		result := p.ActionLogOutput(mg)
+		assert.NotEmpty(t, result)
+	})
+}
