@@ -1,0 +1,61 @@
+---
+globs: ["frontend/**/*.ts", "frontend/**/*.tsx"]
+---
+
+# フロントエンド (TypeScript/TSX) ファイル編集ルール
+
+## コミット前チェック（必須、全て通過すること）
+
+```sh
+cd frontend && npm run build   # Reactビルド
+cd frontend && npm run check   # Biome lint + フォーマットチェック
+cd frontend && npm test        # Vitestユニットテスト
+```
+
+## テスト
+
+- **ユニットテストは必須**。実装と同じコミットに含める
+- テストスタック: **Vitest + React Testing Library + jest-dom**
+
+### カバレッジ基準
+
+以下4ディレクトリで **ブランチカバレッジ (C1) 100%** が必須:
+
+- `frontend/src/api`
+- `frontend/src/components`
+- `frontend/src/pages`
+- `frontend/src/utils`
+
+if/else・三項演算子・`??`・`&&`/`||` 短絡評価・switchのすべての分岐を網羅すること。
+
+### テスト配置（レイヤー別）
+
+| レイヤー | テストファイル | テスト対象 |
+|---------|--------------|---------|
+| API client | `src/api/*.test.ts` | URL・リクエストボディ・エラーハンドリング |
+| Components | `src/components/*.test.tsx` | レンダリング・props・イベントハンドラ |
+| Pages | `src/pages/*.test.tsx` | マウント時APIコール・フェーズ別レンダリング・ボタン操作 |
+
+### テストパターン
+
+- **APIモック**: `vi.mock('../api/gameApi', ...)` でAPIモジュールをモック; `vi.mocked(api.exec)` でアクセス
+- **ルーター依存コンポーネント**: `NavBar` など `useLocation` を使うコンポーネントは `<MemoryRouter initialEntries={['/path']}>` でラップ
+- **非同期エフェクト待機**: `useEffect` でAPIを呼ぶコンポーネントは `waitFor(() => expect(...))` で待つ
+- **ボタンのクエリ**: テキストが複数要素に存在する場合は `screen.getByRole('button', { name: '...' })` を使う
+- **QueryClientProviderラップ**: pageテスト・hookテストは `renderWithProviders`（`frontend/src/test/renderWithProviders.tsx`）でラップ
+
+## i18n（国際化）
+
+Web GUIはJapanese (ja) / English (en) を `react-i18next` + `i18next-browser-languagedetector` でサポート。
+
+- **設定**: `frontend/src/i18n/index.ts`
+- **翻訳ファイル**: `frontend/src/i18n/locales/{ja,en}/<game>.json`
+- **コンポーネント内**: `useTranslation()` フックを使う
+- **非コンポーネントファイル** (`playerUtils.ts` など): `i18n` インスタンスを直接インポート
+- **テスト**: `frontend/src/test/setup.ts` でja翻訳が初期化済み
+
+## デッドコード
+
+- コード変更時に遭遇したデッドコードは必ず削除する
+- 検出ツール: `knip`
+- 削除前に手動で確認する（静的解析の誤検知に注意）
