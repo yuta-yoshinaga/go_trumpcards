@@ -28,6 +28,14 @@ tags:
     description: Doubt (ダウト) game
   - name: holdem
     description: Texas Hold'em game
+  - name: hearts
+    description: Hearts game
+  - name: memory
+    description: Memory (神経衰弱) game
+  - name: klondike
+    description: Klondike (ソリティア) game
+  - name: baccarat
+    description: Baccarat (バカラ) game
 
 paths:
   /blackjack/exec:
@@ -875,6 +883,346 @@ paths:
                     minRaise: 0
                     roundResults: []
                     cpuActions: []
+                    message: param error.
+
+  /hearts/exec:
+    post:
+      tags:
+        - hearts
+      summary: Execute a Hearts game command
+      description: |
+        Send a command to advance the Hearts game session identified by
+        `sessionId`.  Hearts is a 4-player trick-taking card game
+        (1 human + 3 CPU).  Players avoid taking hearts (1 point each)
+        and Q♠ (13 points).  Game ends when any player reaches 100+
+        points; lowest score wins.
+
+        The game proceeds through these phases:
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Pass        | `0`   | Pass 3 cards to another player |
+        | Play        | `1`   | Play a card to the current trick |
+        | TrickEnd    | `2`   | Trick complete; view result |
+        | RoundEnd    | `3`   | Round complete; view scores |
+        | GameEnd     | `4`   | Game over; final standings |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `pass`  | —       | Pass 3 cards (requires `cardIndices`) |
+        | `play`  | `p`     | Play a card (requires `cardIndex`) |
+        | `next`  | `n`     | Advance to next trick |
+        | `nextround` | `nr` | Advance to next round |
+        | `setdifficulty` | `sd` | Set CPU difficulty (requires `config.difficulty`: 0=Easy, 1=Normal, 2=Hard) |
+        | `setlimit` | `sl`  | Set point limit (requires `config.pointLimit`) |
+        | `log`   | `l`     | View action log |
+        | `quit`  | `q`     | End the session |
+      operationId: heartsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeartsRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              pass:
+                summary: Pass 3 cards
+                value:
+                  command: pass
+                  cardIndices: [0, 3, 7]
+                  sessionId: my-session-001
+              play:
+                summary: Play a card
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              next:
+                summary: Next trick
+                value:
+                  command: next
+                  sessionId: my-session-001
+              nextround:
+                summary: Next round
+                value:
+                  command: nextround
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeartsResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeartsResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    phase: 0
+                    roundNumber: 0
+                    trickNumber: 0
+                    currentPlayerIdx: 0
+                    currentTrick: []
+                    heartsBroken: false
+                    passDirection: 0
+                    gameEndFlag: false
+                    winnerIdx: -1
+                    message: param error.
+
+  /memory/exec:
+    post:
+      tags:
+        - memory
+      summary: Execute a Memory game command
+      description: |
+        Send a command to advance the Memory (神経衰弱) game session identified by
+        `sessionId`.  Memory is a 4-player concentration card game
+        (1 human + 3 CPU).  52 cards are laid face-down; each turn a player
+        flips 2 cards.  If they share the same rank the player takes the pair
+        and gets another turn; otherwise the cards are flipped back and play
+        passes to the next player.  Game ends when all 26 pairs are taken;
+        most pairs wins.
+
+        The game proceeds through these phases:
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Flip1       | `0`   | First card flip |
+        | Flip2       | `1`   | Second card flip |
+        | Result      | `2`   | Flip result (match or mismatch) |
+        | GameEnd     | `3`   | Game over; final standings |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game (accepts optional `config.cpuDifficulty`) |
+        | `flip`  | `f`     | Flip a card (requires `position`) |
+        | `next`  | `n`     | Advance after viewing result |
+        | `log`   | `l`     | View action log |
+      operationId: memoryExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              flip:
+                summary: Flip a card
+                value:
+                  command: flip
+                  position: 5
+                  sessionId: my-session-001
+              next:
+                summary: Advance after result
+                value:
+                  command: next
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    phase: 0
+                    board: []
+                    currentPlayerIdx: 0
+                    firstFlipPos: -1
+                    secondFlipPos: -1
+                    lastMatchResult: false
+                    turnNumber: 0
+                    gameEndFlag: false
+                    winnerIdx: -1
+                    message: param error.
+                    config:
+                      cpuDifficulty: 1
+
+  /klondike/exec:
+    post:
+      tags:
+        - klondike
+      summary: Execute a Klondike game command
+      description: |
+        Send a command to advance the Klondike (ソリティア) game session identified by
+        `sessionId`.  Klondike is a single-player solitaire card game using a
+        standard 52-card deck.  7 tableau columns with cascading face-down/face-up
+        cards, a stock pile, a waste pile, and 4 foundation piles (one per suit).
+        Build foundations from Ace to King by suit; build tableau columns in
+        descending rank with alternating colors.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All foundations completed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Draw card(s) from stock to waste |
+        | `move`         | `m`  | Move card(s) between zones (requires `from` and `to`) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
+        | `log`          | `l`  | View action log |
+      operationId: klondikeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KlondikeRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              move:
+                summary: Move a card
+                value:
+                  command: move
+                  from:
+                    zone: waste
+                  to:
+                    zone: tableau
+                    col: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KlondikeResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KlondikeResponse'
+              examples:
+                paramError:
+                  value:
+                    tableau: []
+                    stockCount: 0
+                    waste: []
+                    foundation: []
+                    phase: 0
+                    moveCount: 0
+                    message: param error.
+
+  /baccarat/exec:
+    post:
+      tags:
+        - baccarat
+      summary: Execute a Baccarat game command
+      description: |
+        Send a command to advance the Baccarat (バカラ) game session identified by
+        `sessionId`.  Baccarat is a casino card game using a standard 52-card deck.
+        Player bets on Player, Banker, or Tie, then cards are dealt automatically
+        following baccarat third-card rules.  Card points: A=1, 2-9=face value,
+        10/J/Q/K=0.  Hand value is the ones digit of the sum.
+
+        The game proceeds through these phases:
+
+        | Phase | Value | Description |
+        |-------|-------|-------------|
+        | Bet   | `1`   | Place a bet (amount and type) |
+        | End   | `2`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place a bet (requires `amount` and `betType`) |
+        | `log`   | `l`     | View action log |
+      operationId: baccaratExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaccaratRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              betPlayer:
+                summary: Bet 100 on Player
+                value:
+                  command: bet
+                  amount: 100
+                  betType: 0
+                  sessionId: my-session-001
+              betBanker:
+                summary: Bet 200 on Banker
+                value:
+                  command: bet
+                  amount: 200
+                  betType: 1
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaccaratResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaccaratResponse'
+              examples:
+                paramError:
+                  value:
+                    playerHand: []
+                    bankerHand: []
+                    playerHandValue: 0
+                    bankerHandValue: 0
+                    phase: 0
+                    chips: 0
+                    betAmount: 0
+                    betType: 0
+                    result: 0
+                    payout: 0
                     message: param error.
 
 components:
@@ -3433,3 +3781,583 @@ components:
             All hidden cards are revealed in the log entries.
           items:
             $ref: '#/components/schemas/ActionLogEntry'
+
+    # -------------------------------------------------------------------------
+    # Hearts
+    # -------------------------------------------------------------------------
+    HeartsRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `pass`,
+            `play` (`p`), `next` (`n`), `nextround` (`nr`),
+            `setdifficulty` (`sd`), `setlimit` (`sl`),
+            `log` (`l`), `quit` (`q`).
+          enum: [reset, r, pass, play, p, next, n, nextround, nr, setdifficulty, sd, setlimit, sl, log, l, quit, q]
+          example: play
+        cardIndices:
+          type: array
+          description: |
+            Hand indices of the 3 cards to pass (required for `pass` command).
+            Must contain exactly 3 indices.
+          items:
+            type: integer
+          example: [0, 3, 7]
+        cardIndex:
+          type: integer
+          description: Hand index of the card to play (required for `play` command)
+          example: 2
+        config:
+          type: object
+          description: Game configuration options (used with `reset`, `setdifficulty`, `setlimit` commands)
+          properties:
+            difficulty:
+              type: integer
+              description: "CPU difficulty level: 0 = Easy (random), 1 = Normal (point avoidance), 2 = Hard (strategic). Defaults to 1."
+              minimum: 0
+              maximum: 2
+              example: 1
+            pointLimit:
+              type: integer
+              description: "Point limit to end the game. Defaults to 100."
+              minimum: 1
+              example: 100
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    HeartsPlayer:
+      type: object
+      description: A player in the Hearts game
+      required:
+        - id
+        - isHuman
+        - score
+        - roundScore
+        - cards
+        - cardCount
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1–3 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this player is the human
+          example: true
+        score:
+          type: integer
+          description: Cumulative score across all rounds
+          example: 15
+        roundScore:
+          type: integer
+          description: Score accumulated in the current round
+          example: 3
+        cards:
+          type: array
+          description: Cards in hand (populated only for the human player)
+          items:
+            $ref: '#/components/schemas/Card'
+        cardCount:
+          type: integer
+          description: Number of cards in hand
+          example: 13
+
+    HeartsTrickCard:
+      type: object
+      description: A card played in the current trick
+      required:
+        - playerIdx
+        - card
+      properties:
+        playerIdx:
+          type: integer
+          description: Index of the player who played this card
+          example: 1
+        card:
+          $ref: '#/components/schemas/Card'
+
+    HeartsResponse:
+      type: object
+      description: Current state of the Hearts game
+      required:
+        - players
+        - phase
+        - roundNumber
+        - trickNumber
+        - currentPlayerIdx
+        - currentTrick
+        - heartsBroken
+        - passDirection
+        - gameEndFlag
+        - winnerIdx
+        - message
+      properties:
+        players:
+          type: array
+          description: All players in seat order
+          items:
+            $ref: '#/components/schemas/HeartsPlayer'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Pass, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 1
+        roundNumber:
+          type: integer
+          description: Current round number (1-based)
+          example: 1
+        trickNumber:
+          type: integer
+          description: Current trick number within the round (1-based)
+          example: 1
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        currentTrick:
+          type: array
+          description: Cards played in the current trick so far
+          items:
+            $ref: '#/components/schemas/HeartsTrickCard'
+        heartsBroken:
+          type: boolean
+          description: Whether hearts have been broken this round
+          example: false
+        passDirection:
+          type: integer
+          description: "Pass direction for the current round: 0 = left, 1 = right, 2 = across, 3 = none"
+          enum: [0, 1, 2, 3]
+          example: 0
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+          example: false
+        winnerIdx:
+          type: integer
+          description: Index of the winner (-1 while game is in progress)
+          example: -1
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        config:
+          type: object
+          description: Current game configuration
+          properties:
+            difficulty:
+              type: integer
+              description: "CPU difficulty level: 0 = Easy, 1 = Normal, 2 = Hard"
+              example: 1
+            pointLimit:
+              type: integer
+              description: Point limit to end the game
+              example: 100
+
+    # -------------------------------------------------------------------------
+    # Memory
+    # -------------------------------------------------------------------------
+    MemoryRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `flip` (`f`),
+            `next` (`n`), `log` (`l`).
+          enum: [reset, r, flip, f, next, n, log, l]
+          example: flip
+        position:
+          type: integer
+          description: Board position of the card to flip (required for `flip` command, 0-based index)
+          example: 5
+        config:
+          type: object
+          description: Game configuration options (used with `reset` command)
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: "CPU difficulty level: 0 = Easy (random), 1 = Normal (partial memory), 2 = Hard (perfect memory). Defaults to 1."
+              minimum: 0
+              maximum: 2
+              example: 1
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    MemoryPlayer:
+      type: object
+      description: A player in the Memory game
+      required:
+        - id
+        - isHuman
+        - pairCount
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1–3 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this player is the human
+          example: true
+        pairCount:
+          type: integer
+          description: Number of pairs collected
+          example: 3
+
+    MemoryBoardCard:
+      type: object
+      description: A card on the Memory board
+      required:
+        - faceUp
+        - taken
+      properties:
+        faceUp:
+          type: boolean
+          description: Whether the card is currently face-up
+          example: false
+        taken:
+          type: boolean
+          description: Whether the card has been taken as part of a pair
+          example: false
+        card:
+          description: Card details (only present when face-up)
+          $ref: '#/components/schemas/Card'
+
+    MemoryResponse:
+      type: object
+      description: Current state of the Memory game
+      required:
+        - players
+        - phase
+        - board
+        - currentPlayerIdx
+        - firstFlipPos
+        - secondFlipPos
+        - lastMatchResult
+        - turnNumber
+        - gameEndFlag
+        - winnerIdx
+        - message
+        - config
+      properties:
+        players:
+          type: array
+          description: All players in seat order
+          items:
+            $ref: '#/components/schemas/MemoryPlayer'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Flip1, 1 = Flip2, 2 = Result, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        board:
+          type: array
+          description: All 52 card positions on the board
+          items:
+            $ref: '#/components/schemas/MemoryBoardCard'
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+          example: 0
+        firstFlipPos:
+          type: integer
+          description: Board position of the first flipped card (-1 if none)
+          example: -1
+        secondFlipPos:
+          type: integer
+          description: Board position of the second flipped card (-1 if none)
+          example: -1
+        lastMatchResult:
+          type: boolean
+          description: Whether the last flip pair was a match
+          example: false
+        turnNumber:
+          type: integer
+          description: Current turn number (incremented after each pair flip)
+          example: 0
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+          example: false
+        winnerIdx:
+          type: integer
+          description: Index of the winner (-1 while game is in progress)
+          example: -1
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        config:
+          type: object
+          description: Current game configuration
+          required:
+            - cpuDifficulty
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: "CPU difficulty level: 0 = Easy, 1 = Normal, 2 = Hard"
+              example: 1
+
+    # -------------------------------------------------------------------------
+    # Klondike
+    # -------------------------------------------------------------------------
+    KlondikeZone:
+      type: object
+      description: Specifies a zone on the Klondike board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: waste, tableau, or foundation"
+          enum: [waste, tableau, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, required for tableau and foundation zones)
+          example: 3
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    KlondikeRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
+            `move` (`m`), `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `log` (`l`).
+          enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/KlondikeZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/KlondikeZone'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    KlondikeTableauCard:
+      type: object
+      description: A card in a Klondike tableau column
+      required:
+        - faceUp
+      properties:
+        faceUp:
+          type: boolean
+          description: Whether the card is face-up
+          example: true
+        card:
+          description: Card details (only present when face-up)
+          $ref: '#/components/schemas/Card'
+
+    KlondikeResponse:
+      type: object
+      description: Current state of the Klondike game
+      required:
+        - tableau
+        - stockCount
+        - waste
+        - foundation
+        - phase
+        - moveCount
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 7 tableau columns, each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/KlondikeTableauCard'
+        stockCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+          example: 24
+        waste:
+          type: array
+          description: Cards in the waste pile (top card is the last element)
+          items:
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            from:
+              $ref: '#/components/schemas/KlondikeZone'
+            to:
+              $ref: '#/components/schemas/KlondikeZone'
+
+    # -------------------------------------------------------------------------
+    # Baccarat
+    # -------------------------------------------------------------------------
+    BaccaratRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
+            `log` (`l`).
+          enum: [r, reset, b, bet, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Bet amount.  Required for `bet` command (minimum 10, must be a
+            multiple of 10).  Ignored for other commands.
+          minimum: 10
+          example: 100
+        betType:
+          type: integer
+          description: |
+            Bet type.  Required for `bet` command.
+            0 = Player, 1 = Banker, 2 = Tie.
+          enum: [0, 1, 2]
+          example: 0
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BaccaratResponse:
+      type: object
+      description: Current state of the Baccarat game
+      required:
+        - playerHand
+        - bankerHand
+        - playerHandValue
+        - bankerHandValue
+        - phase
+        - chips
+        - betAmount
+        - betType
+        - result
+        - payout
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand
+          items:
+            $ref: '#/components/schemas/Card'
+        bankerHand:
+          type: array
+          description: Cards in the banker's hand
+          items:
+            $ref: '#/components/schemas/Card'
+        playerHandValue:
+          type: integer
+          description: "Player hand value (ones digit of sum: 0-9)"
+          example: 7
+        bankerHandValue:
+          type: integer
+          description: "Banker hand value (ones digit of sum: 0-9)"
+          example: 5
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = End"
+          enum: [1, 2]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        betAmount:
+          type: integer
+          description: Current bet amount
+          example: 100
+        betType:
+          type: integer
+          description: "Current bet type: 0 = Player, 1 = Banker, 2 = Tie"
+          enum: [0, 1, 2]
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Banker wins, 0 = Tie/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        payout:
+          type: integer
+          description: Payout amount for the current round
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during bet phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

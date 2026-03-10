@@ -2,10 +2,14 @@ import type { ReactNode } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { NavBar } from './components/NavBar';
 import { gameRoutes } from './constants/gameRoutes';
+import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
+import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
+import { KlondikePage } from './pages/KlondikePage';
+import { MemoryPage } from './pages/MemoryPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
@@ -19,6 +23,10 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/sevens': <SevensPage />,
   '/doubt': <DoubtPage />,
   '/holdem': <HoldemPage />,
+  '/hearts': <HeartsPage />,
+  '/memory': <MemoryPage />,
+  '/klondike': <KlondikePage />,
+  '/baccarat': <BaccaratPage />,
 };
 
 export default function App() {

@@ -39,4 +39,4 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: Seven endpoints -- `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), `POST /sevens/exec` (Sevens), `POST /doubt/exec` (Doubt), and `POST /holdem/exec` (Texas Hold'em) -- accept JSON with a `Cmd` field and game state.
+- **Web API**: Eleven endpoints -- `POST /blackjack/exec` (BlackJack), `POST /poker/exec` (Poker), `POST /oldmaid/exec` (Old Maid), `POST /daifugo/exec` (Daifugo), `POST /sevens/exec` (Sevens), `POST /doubt/exec` (Doubt), `POST /holdem/exec` (Texas Hold'em), `POST /hearts/exec` (Hearts), `POST /memory/exec` (Memory), `POST /klondike/exec` (Klondike), and `POST /baccarat/exec` (Baccarat) -- accept JSON with a `Cmd` field and game state.

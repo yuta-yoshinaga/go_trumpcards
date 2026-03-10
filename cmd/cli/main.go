@@ -35,6 +35,18 @@ func main() {
 	case "holdem":
 		holdem := ui.NewHoldemCui()
 		holdem.Exec()
+	case "hearts":
+		hearts := ui.NewHeartsCui()
+		hearts.Exec()
+	case "memory":
+		memory := ui.NewMemoryCui()
+		memory.Exec()
+	case "klondike":
+		klondike := ui.NewKlondikeCui()
+		klondike.Exec()
+	case "baccarat":
+		baccarat := ui.NewBaccaratCui()
+		baccarat.Exec()
 	case "web":
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()

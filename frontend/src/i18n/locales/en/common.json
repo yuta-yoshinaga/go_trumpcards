@@ -6,7 +6,11 @@
     "daifugo": "Daifugo",
     "sevens": "Sevens",
     "doubt": "Doubt",
-    "holdem": "Texas Hold'em"
+    "holdem": "Texas Hold'em",
+    "hearts": "Hearts",
+    "memory": "Memory",
+    "klondike": "Klondike",
+    "baccarat": "Baccarat"
   },
   "player": {
     "you": "You",
@@ -84,6 +88,22 @@
     "holdem.result.folded": "You folded.",
     "holdem.result.lose": "You lose.",
     "holdem.result.mucked": "You mucked.",
-    "holdem.muck.prompt": "Muck or show your hand."
+    "holdem.muck.prompt": "Muck or show your hand.",
+    "hearts.result.humanWin": "Game over! You win!",
+    "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "memory.flip1": "Flip the first card",
+    "memory.flip2": "Flip the second card",
+    "memory.matched": "It's a match!",
+    "memory.mismatched": "No match",
+    "memory.result.humanWin": "Game over! You win!",
+    "memory.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "baccarat.result.playerWins": "Player wins!",
+    "baccarat.result.bankerWins": "Banker wins!",
+    "baccarat.result.tie": "Tie!",
+    "klondike.playing": "Playing",
+    "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "klondike.gameOver": "Game Over",
+    "klondike.hintAvailable": "Hint available",
+    "klondike.noHint": "No hint available"
   }
 }

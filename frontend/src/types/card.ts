@@ -470,3 +470,152 @@ export interface HoldemResponse {
   addonUsed: boolean[];
   muckAvailable: boolean;
 }
+
+// --- Hearts ---
+
+export interface HeartsPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+export interface HeartsTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+export interface HeartsConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+export const HEARTS_PHASE = {
+  PASS: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+export interface HeartsResponse {
+  players: HeartsPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: HeartsTrickCard[];
+  heartsBroken: boolean;
+  passDirection: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: HeartsConfig;
+}
+
+// --- Memory (神経衰弱) ---
+
+export interface MemoryPlayerData {
+  id: number;
+  isHuman: boolean;
+  pairCount: number;
+}
+
+export interface MemoryBoardCard {
+  card: Card | null;
+  faceUp: boolean;
+  taken: boolean;
+}
+
+export interface MemoryConfig {
+  cpuDifficulty: number;
+}
+
+export const MEMORY_PHASE = {
+  FLIP1: 0,
+  FLIP2: 1,
+  RESULT: 2,
+  GAME_END: 3,
+} as const;
+
+export interface MemoryResponse {
+  players: MemoryPlayerData[];
+  board: MemoryBoardCard[];
+  phase: number;
+  currentPlayerIdx: number;
+  firstFlipPos: number;
+  secondFlipPos: number;
+  lastMatchResult: boolean;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  turnNumber: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: MemoryConfig;
+}
+
+// --- Klondike (ソリティア) ---
+
+export interface KlondikeTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+export interface KlondikeHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+export const KLONDIKE_PHASE = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+export interface KlondikeResponse {
+  tableau: KlondikeTableauCard[][];
+  stockCount: number;
+  waste: Card[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: KlondikeHint;
+}
+
+export const BACCARAT_BET_PLAYER = 0;
+export const BACCARAT_BET_BANKER = 1;
+export const BACCARAT_BET_TIE = 2;
+
+export const BACCARAT_PHASE = {
+  BET: 1,
+  END: 2,
+} as const;
+
+export interface BaccaratResponse {
+  playerHand: Card[];
+  bankerHand: Card[];
+  playerHandValue: number;
+  bankerHandValue: number;
+  phase: number;
+  chips: number;
+  betAmount: number;
+  betType: number;
+  result: number;
+  payout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

@@ -6,7 +6,11 @@
     "daifugo": "大富豪",
     "sevens": "7並べ",
     "doubt": "ダウト",
-    "holdem": "テキサスホールデム"
+    "holdem": "テキサスホールデム",
+    "hearts": "ハーツ",
+    "memory": "神経衰弱",
+    "klondike": "クロンダイク",
+    "baccarat": "バカラ"
   },
   "player": {
     "you": "あなた",
@@ -84,6 +88,22 @@
     "holdem.result.folded": "フォールドしました。",
     "holdem.result.lose": "あなたの負けです。",
     "holdem.result.mucked": "マックしました。",
-    "holdem.muck.prompt": "マックしますか?"
+    "holdem.muck.prompt": "マックしますか?",
+    "hearts.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "memory.flip1": "1枚目をめくってください",
+    "memory.flip2": "2枚目をめくってください",
+    "memory.matched": "ペアが揃いました！",
+    "memory.mismatched": "残念、不一致です",
+    "memory.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "memory.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "baccarat.result.playerWins": "プレイヤーの勝ち！",
+    "baccarat.result.bankerWins": "バンカーの勝ち！",
+    "baccarat.result.tie": "引き分け！",
+    "klondike.playing": "プレイ中",
+    "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "klondike.gameOver": "ゲームオーバー",
+    "klondike.hintAvailable": "ヒントがあります",
+    "klondike.noHint": "ヒントはありません"
   }
 }

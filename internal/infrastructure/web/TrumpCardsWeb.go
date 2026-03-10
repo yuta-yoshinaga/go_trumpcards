@@ -28,6 +28,10 @@ type TrumpCardsWeb struct {
 	sgc *controller.SevensWebController
 	dwc *controller.DoubtWebController
 	hmc *controller.HoldemWebController
+	htc *controller.HeartsWebController
+	myc *controller.MemoryWebController
+	klc *controller.KlondikeWebController
+	bcc *controller.BaccaratWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -97,6 +101,36 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
 			return usecase.NewHoldemInteractor(holdem, presenter.NewHoldemWebPresenter())
 		}),
+		htc: controller.NewHeartsWebController(func() usecase.HeartsInteractorIF {
+			config := domain.DefaultHeartsConfig()
+			players := []*domain.HeartsPlayer{
+				domain.NewHeartsPlayer(true),
+				domain.NewHeartsPlayer(false),
+				domain.NewHeartsPlayer(false),
+				domain.NewHeartsPlayer(false),
+			}
+			hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
+			return usecase.NewHeartsInteractor(hearts, presenter.NewHeartsWebPresenter())
+		}),
+		myc: controller.NewMemoryWebController(func() usecase.MemoryInteractorIF {
+			config := domain.DefaultMemoryConfig()
+			players := []*domain.MemoryPlayer{
+				domain.NewMemoryPlayer(true),
+				domain.NewMemoryPlayer(false),
+				domain.NewMemoryPlayer(false),
+				domain.NewMemoryPlayer(false),
+			}
+			memory := domain.NewMemory(domain.NewTrumpCards(0), players, config)
+			return usecase.NewMemoryInteractor(memory, presenter.NewMemoryWebPresenter())
+		}),
+		klc: controller.NewKlondikeWebController(func() usecase.KlondikeInteractorIF {
+			klondike := domain.NewKlondike(domain.NewTrumpCards(0))
+			return usecase.NewKlondikeInteractor(klondike, presenter.NewKlondikeWebPresenter())
+		}),
+		bcc: controller.NewBaccaratWebController(func() usecase.BaccaratInteractorIF {
+			baccarat := domain.NewDefaultBaccarat()
+			return usecase.NewBaccaratInteractor(baccarat, presenter.NewBaccaratWebPresenter())
+		}),
 	}
 }
 
@@ -142,6 +176,10 @@ func (web *TrumpCardsWeb) Exec() {
 		{"/sevens/exec", web.sgc.Exec},
 		{"/doubt/exec", web.dwc.Exec},
 		{"/holdem/exec", web.hmc.Exec},
+		{"/hearts/exec", web.htc.Exec},
+		{"/memory/exec", web.myc.Exec},
+		{"/klondike/exec", web.klc.Exec},
+		{"/baccarat/exec", web.bcc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -201,6 +239,10 @@ func (web *TrumpCardsWeb) Exec() {
 	web.sgc.Stop()
 	web.dwc.Stop()
 	web.hmc.Stop()
+	web.htc.Stop()
+	web.myc.Stop()
+	web.klc.Stop()
+	web.bcc.Stop()
 	slog.Info("server stopped")
 }
 

@@ -1,0 +1,33 @@
+{
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "ポイント上限",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "heartsBroken": "ハートブレイク済",
+  "heartsNotBroken": "ハート未ブレイク",
+  "passDirection": {
+    "left": "パス方向: 左",
+    "right": "パス方向: 右",
+    "across": "パス方向: 対面",
+    "none": "パスなし"
+  },
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "scoresTricks": "トリック",
+  "passButton": "パス",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド"
+}

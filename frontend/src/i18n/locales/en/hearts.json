@@ -1,0 +1,33 @@
+{
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "heartsBroken": "Hearts Broken",
+  "heartsNotBroken": "Hearts Not Broken",
+  "passDirection": {
+    "left": "Pass Direction: Left",
+    "right": "Pass Direction: Right",
+    "across": "Pass Direction: Across",
+    "none": "No Pass"
+  },
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "currentTrick": "Current Trick",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "scoresTricks": "Tricks",
+  "passButton": "Pass",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round"
+}

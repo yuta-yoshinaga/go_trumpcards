@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Hearts, Memory, Klondike, Baccarat. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -21,6 +21,10 @@ go run ./cmd/cli daifugo    # Daifugo CLI
 go run ./cmd/cli sevens     # Sevens (7並べ) CLI
 go run ./cmd/cli doubt      # Doubt (ダウト) CLI
 go run ./cmd/cli holdem     # Texas Hold'em CLI
+go run ./cmd/cli hearts     # Hearts CLI
+go run ./cmd/cli memory     # Memory (神経衰弱) CLI
+go run ./cmd/cli klondike   # Klondike (ソリティア) CLI
+go run ./cmd/cli baccarat   # Baccarat (バカラ) CLI
 go run ./cmd/cli web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
 
@@ -144,7 +148,7 @@ E2E tests should not assert on specific card values (randomness). Instead, verif
 The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
 
 - **Config**: `frontend/src/i18n/index.ts`
-- **Translation files**: `frontend/src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem}.json`
+- **Translation files**: `frontend/src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem,hearts,memory,klondike}.json`
 - **In components**: use the `useTranslation()` hook
 - **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
 - **Tests**: i18n is initialized in `frontend/src/test/setup.ts` with ja translations loaded

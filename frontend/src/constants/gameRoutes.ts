@@ -6,4 +6,8 @@ export const gameRoutes = [
   { path: '/sevens', labelKey: 'nav.sevens' },
   { path: '/doubt', labelKey: 'nav.doubt' },
   { path: '/holdem', labelKey: 'nav.holdem' },
+  { path: '/hearts', labelKey: 'nav.hearts' },
+  { path: '/memory', labelKey: 'nav.memory' },
+  { path: '/klondike', labelKey: 'nav.klondike' },
+  { path: '/baccarat', labelKey: 'nav.baccarat' },
 ] as const;

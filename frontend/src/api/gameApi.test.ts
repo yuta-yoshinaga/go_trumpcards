@@ -1,10 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   actionLogApi,
+  baccaratApi,
   blackjackApi,
   daifugoApi,
   doubtApi,
+  heartsApi,
   holdemApi,
+  klondikeApi,
+  memoryApi,
   oldmaidApi,
   pokerApi,
   sessionId,
@@ -1535,6 +1539,374 @@ describe('gameApi', () => {
     });
   });
 
+  describe('heartsApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      trickNumber: 1,
+      currentPlayerIdx: 0,
+      currentTrick: [],
+      heartsBroken: false,
+      passDirection: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      leadPlayerIdx: 0,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 100 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await heartsApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/hearts/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndices: undefined,
+          cardIndex: undefined,
+          sessionId,
+          config: undefined,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await heartsApi.exec('play', undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/hearts/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            cardIndices: undefined,
+            cardIndex: 3,
+            sessionId,
+            config: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('calls with pass command and cardIndices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await heartsApi.exec('pass', [0, 1, 2]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/hearts/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'pass',
+            cardIndices: [0, 1, 2],
+            cardIndex: undefined,
+            sessionId,
+            config: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await heartsApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 50 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/hearts/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            cardIndices: undefined,
+            cardIndex: undefined,
+            sessionId,
+            config: { cpuDifficulty: 2, pointLimit: 50 },
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(heartsApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('memoryApi.exec', () => {
+    const payload = {
+      players: [],
+      board: [],
+      phase: 0,
+      currentPlayerIdx: 0,
+      firstFlipPos: -1,
+      secondFlipPos: -1,
+      lastMatchResult: false,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      turnNumber: 0,
+      message: '',
+      config: { cpuDifficulty: 1 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await memoryApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/memory/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          position: undefined,
+          sessionId,
+          config: undefined,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with flip command and position', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await memoryApi.exec('flip', 5);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/memory/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'flip',
+            position: 5,
+            sessionId,
+            config: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await memoryApi.exec('reset', undefined, { cpuDifficulty: 2 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/memory/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            position: undefined,
+            sessionId,
+            config: { cpuDifficulty: 2 },
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(memoryApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('klondikeApi.exec', () => {
+    const payload: {
+      tableau: { card: { design: string; value: number } | null; faceUp: boolean }[][];
+      stockCount: number;
+      waste: { design: string; value: number }[];
+      foundation: { design: string; value: number }[][];
+      phase: number;
+      moveCount: number;
+      message: string;
+    } = {
+      tableau: [[{ card: { design: 'SPADE', value: 13 }, faceUp: true }]],
+      stockCount: 20,
+      waste: [{ design: 'CLOVER', value: 3 }],
+      foundation: [[], [], [], []],
+      phase: 0,
+      moveCount: 0,
+      message: '',
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await klondikeApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/klondike/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          from: undefined,
+          to: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with draw command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('draw');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'draw',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with move command and from/to zones', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('move', { zone: 'waste' }, { zone: 'tableau', col: 3 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'move',
+            from: { zone: 'waste' },
+            to: { zone: 'tableau', col: 3 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with move command with cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('move', { zone: 'tableau', col: 0, cardIndex: 2 }, { zone: 'tableau', col: 3 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'move',
+            from: { zone: 'tableau', col: 0, cardIndex: 2 },
+            to: { zone: 'tableau', col: 3 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with giveup command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('giveup');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'giveup',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with hint command', async () => {
+      const hintPayload = {
+        ...payload,
+        hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
+      };
+      mockFetch.mockReturnValue(makeResponse(hintPayload));
+      const result = await klondikeApi.exec('hint');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'hint',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+      expect(result.hint).toEqual(hintPayload.hint);
+    });
+
+    it('calls with autocomplete command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('autocomplete');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'autocomplete',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'log',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(klondikeApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('baccaratApi.exec', () => {
+    it('sends reset command', async () => {
+      const mockResponse = { phase: 1, chips: 1000 };
+      mockFetch.mockReturnValue(makeResponse(mockResponse));
+      const result = await baccaratApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', amount: undefined, betType: undefined, sessionId }),
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('sends bet command with amount and betType', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 2 }));
+      await baccaratApi.exec('bet', 100, 0);
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'bet', amount: 100, betType: 0, sessionId }),
+      });
+    });
+
+    it('sends bet command with banker betType', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 2 }));
+      await baccaratApi.exec('bet', 100, 1);
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'bet', amount: 100, betType: 1, sessionId }),
+      });
+    });
+
+    it('sends log command', async () => {
+      mockFetch.mockReturnValue(makeResponse({ entries: [] }));
+      await baccaratApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', amount: undefined, betType: undefined, sessionId }),
+      });
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(baccaratApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('actionLogApi', () => {
     const logPayload = { entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'hit card', cards: [] }] };
 
@@ -1546,6 +1918,10 @@ describe('gameApi', () => {
       ['sevens', actionLogApi.sevens],
       ['doubt', actionLogApi.doubt],
       ['holdem', actionLogApi.holdem],
+      ['hearts', actionLogApi.hearts],
+      ['memory', actionLogApi.memory],
+      ['klondike', actionLogApi.klondike],
+      ['baccarat', actionLogApi.baccarat],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));

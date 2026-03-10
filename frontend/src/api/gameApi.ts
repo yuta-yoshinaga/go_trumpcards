@@ -1,11 +1,15 @@
 import type {
   ActionLogResponse,
+  BaccaratResponse,
   BlackJackResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  HeartsResponse,
   HoldemResponse,
+  KlondikeResponse,
+  MemoryResponse,
   OldMaidResponse,
   PokerResponse,
   SevensResponse,
@@ -209,11 +213,83 @@ export const holdemApi = {
     }),
 };
 
+export interface HeartsConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+export const heartsApi = {
+  exec: (
+    command: 'reset' | 'pass' | 'play' | 'next' | 'nextround',
+    cardIndices?: number[],
+    cardIndex?: number,
+    config?: HeartsConfigInput,
+  ) =>
+    postJson<HeartsResponse>('/hearts/exec', {
+      command,
+      cardIndices,
+      cardIndex,
+      sessionId,
+      config,
+    }),
+};
+
+export interface MemoryConfigInput {
+  cpuDifficulty?: number;
+}
+
+export const memoryApi = {
+  exec: (command: 'reset' | 'flip' | 'next' | 'log', position?: number, config?: MemoryConfigInput) =>
+    postJson<MemoryResponse>('/memory/exec', {
+      command,
+      position,
+      sessionId,
+      config,
+    }),
+};
+
+export interface KlondikeMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+export const klondikeApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log',
+    from?: KlondikeMoveZone,
+    to?: KlondikeMoveZone,
+  ) =>
+    postJson<KlondikeResponse>('/klondike/exec', {
+      command,
+      from,
+      to,
+      sessionId,
+    }),
+};
+
+export const baccaratApi = {
+  exec: (command: 'reset' | 'bet' | 'log', amount?: number, betType?: number) =>
+    postJson<BaccaratResponse>('/baccarat/exec', { command, amount, betType, sessionId }),
+};
+
 function fetchLog(url: string): Promise<ActionLogResponse> {
   return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
 }
 
-const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem'] as const;
+const games = [
+  'blackjack',
+  'poker',
+  'oldmaid',
+  'daifugo',
+  'sevens',
+  'doubt',
+  'holdem',
+  'hearts',
+  'memory',
+  'klondike',
+  'baccarat',
+] as const;
 type Game = (typeof games)[number];
 
 export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(
