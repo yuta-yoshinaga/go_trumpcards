@@ -1,0 +1,18 @@
+{
+  "title": "クロンダイク",
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "foundation": "組札",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "draw": "引く",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "empty": "空",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります"
+}

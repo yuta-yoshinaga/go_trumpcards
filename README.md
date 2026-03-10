@@ -18,6 +18,7 @@
 - **テキサスホールデム (Texas Hold'em)**: CLI および Web GUIで遊べます（1人 vs CPU×3、5種のプレイスタイル、サイドポット対応、キッカー表示） — [CUI版マニュアル](docs/manual/cui/holdem.md) / [Web版マニュアル](docs/manual/web/holdem.md)
 - **ハーツ (Hearts)**: CLI および Web GUIで遊べます（1人 vs CPU×3、トリックテイキング、シュート・ザ・ムーン、3段階CPU難易度） — [CUI版マニュアル](docs/manual/cui/hearts.md) / [Web版マニュアル](docs/manual/web/hearts.md)
 - **神経衰弱 (Memory)**: CLI および Web GUIで遊べます（1人 vs CPU×3、52枚のカードから同ランクのペアを揃える、3段階CPU難易度） — [CUI版マニュアル](docs/manual/cui/memory.md) / [Web版マニュアル](docs/manual/web/memory.md)
+- **クロンダイク (Klondike)**: CLI および Web GUIで遊べます（1人用ソリティア、52枚のカード、7列のタブロー、山札・ウェスト・4つの組札） — [CUI版マニュアル](docs/manual/cui/klondike.md) / [Web版マニュアル](docs/manual/web/klondike.md)
 
 ## Requirements
 
@@ -45,6 +46,7 @@ go run ./cmd/cli doubt      # ダウト CLI
 go run ./cmd/cli holdem     # テキサスホールデム CLI
 go run ./cmd/cli hearts     # ハーツ CLI
 go run ./cmd/cli memory     # 神経衰弱 CLI
+go run ./cmd/cli klondike   # クロンダイク CLI
 go run ./cmd/cli web        # REST API + Web GUI サーバー起動 (CLI経由)
 go run ./cmd/server         # REST API + Web GUI サーバー起動 (直接)
 ```

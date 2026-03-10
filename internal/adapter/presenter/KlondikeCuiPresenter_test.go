@@ -1,0 +1,222 @@
+//go:build test
+
+package presenter
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+func setupKlondikeCuiMockDefaults(kg *interfaces.MockKlondikeGame) {
+	kg.On("GetPhase").Return(domain.KlondikePhasePlaying).Maybe()
+	kg.On("GetMoveCount").Return(0).Maybe()
+	kg.On("GetStockCount").Return(24).Maybe()
+	kg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
+
+	var tableau [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+	for i := 0; i < domain.KlondikeTableauCnt; i++ {
+		tableau[i] = make([]*domain.KlondikeTableauCard, 0)
+		for j := 0; j <= i; j++ {
+			tableau[i] = append(tableau[i], &domain.KlondikeTableauCard{
+				Card:   domain.NewCard(domain.CardDesignSpade, j+1, false),
+				FaceUp: j == i,
+			})
+		}
+	}
+	kg.On("GetTableau").Return(tableau).Maybe()
+
+	var foundation [domain.KlondikeFoundationCnt][]*domain.Card
+	kg.On("GetFoundation").Return(foundation).Maybe()
+}
+
+func TestKlondikeCuiPresenter_Constructor(t *testing.T) {
+	p := NewKlondikeCuiPresenter()
+	assert.NotNil(t, p)
+}
+
+func TestKlondikeCuiPresenter_Output(t *testing.T) {
+	t.Run("initial state", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		p := NewKlondikeCuiPresenter()
+
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "Klondike")
+		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "Stock: 24枚")
+		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "列0:")
+		assert.Contains(t, result, "手数: 0")
+	})
+
+	t.Run("with waste card", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = nil
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetWaste")
+		kg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
+
+		p := NewKlondikeCuiPresenter()
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "Waste: HEART 5")
+	})
+
+	t.Run("with error", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		p := NewKlondikeCuiPresenter()
+
+		result := p.Output(kg, assert.AnError)
+		assert.Contains(t, result, assert.AnError.Error())
+	})
+
+	t.Run("game clear", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
+		kg.On("GetPhase").Return(domain.KlondikePhaseGameClear)
+
+		p := NewKlondikeCuiPresenter()
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "ゲームクリア！")
+	})
+
+	t.Run("game over", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
+		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
+
+		p := NewKlondikeCuiPresenter()
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "ゲームオーバー")
+	})
+
+	t.Run("empty tableau column", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetTableau")
+		var emptyTab [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+		kg.On("GetTableau").Return(emptyTab)
+
+		p := NewKlondikeCuiPresenter()
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "[空]")
+	})
+
+	t.Run("foundation with cards", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetFoundation")
+		var f [domain.KlondikeFoundationCnt][]*domain.Card
+		f[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		kg.On("GetFoundation").Return(f)
+
+		p := NewKlondikeCuiPresenter()
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "SPADE 1")
+	})
+
+	t.Run("face down card shows ??", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		p := NewKlondikeCuiPresenter()
+		result := p.Output(kg, nil)
+		// Column 1 has 2 cards: first face-down
+		assert.Contains(t, result, "??")
+	})
+}
+
+func TestKlondikeCuiPresenter_HintOutput(t *testing.T) {
+	t.Run("no hint", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		kg.On("GetHint").Return((*domain.KlondikeHint)(nil))
+
+		p := NewKlondikeCuiPresenter()
+		result := p.HintOutput(kg)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("tableau to foundation hint", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		kg.On("GetHint").Return(&domain.KlondikeHint{
+			FromZone:  "tableau",
+			FromCol:   0,
+			CardIndex: 2,
+			ToZone:    "foundation",
+			ToCol:     0,
+		})
+
+		p := NewKlondikeCuiPresenter()
+		result := p.HintOutput(kg)
+		assert.Contains(t, result, "タブロー列0[2]")
+		assert.Contains(t, result, "ファンデーション")
+	})
+
+	t.Run("waste to tableau hint", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		kg.On("GetHint").Return(&domain.KlondikeHint{
+			FromZone:  "waste",
+			FromCol:   -1,
+			CardIndex: -1,
+			ToZone:    "tableau",
+			ToCol:     3,
+		})
+
+		p := NewKlondikeCuiPresenter()
+		result := p.HintOutput(kg)
+		assert.Contains(t, result, "ウェイスト")
+		assert.Contains(t, result, "タブロー列3")
+	})
+}
+
+func TestKlondikeCuiPresenter_ActionLogOutput(t *testing.T) {
+	t.Run("during game", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
+
+		p := NewKlondikeCuiPresenter()
+		result := p.ActionLogOutput(kg)
+		assert.Contains(t, result, "棋譜はありません")
+	})
+
+	t.Run("after game clear", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		kg.On("GetPhase").Return(domain.KlondikePhaseGameClear)
+		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", Detail: "test", Cards: nil},
+		})
+
+		p := NewKlondikeCuiPresenter()
+		result := p.ActionLogOutput(kg)
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "draw")
+	})
+
+	t.Run("after game over", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
+		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
+
+		p := NewKlondikeCuiPresenter()
+		result := p.ActionLogOutput(kg)
+		assert.Contains(t, result, "棋譜はありません")
+	})
+}
+
+// filterCalls removes mock expectations for a given method name.
+func filterCalls(calls []*mock.Call, methodName string) []*mock.Call {
+	result := make([]*mock.Call, 0, len(calls))
+	for _, c := range calls {
+		if c.Method != methodName {
+			result = append(result, c)
+		}
+	}
+	return result
+}

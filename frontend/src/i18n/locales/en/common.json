@@ -8,7 +8,8 @@
     "doubt": "Doubt",
     "holdem": "Texas Hold'em",
     "hearts": "Hearts",
-    "memory": "Memory"
+    "memory": "Memory",
+    "klondike": "Klondike"
   },
   "player": {
     "you": "You",
@@ -94,6 +95,11 @@
     "memory.matched": "It's a match!",
     "memory.mismatched": "No match",
     "memory.result.humanWin": "Game over! You win!",
-    "memory.result.cpuWin": "Game over! CPU {{cpuId}} wins!"
+    "memory.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "klondike.playing": "Playing",
+    "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "klondike.gameOver": "Game Over",
+    "klondike.hintAvailable": "Hint available",
+    "klondike.noHint": "No hint available"
   }
 }

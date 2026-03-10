@@ -7,6 +7,7 @@ import type {
   DoubtResponse,
   HeartsResponse,
   HoldemResponse,
+  KlondikeResponse,
   MemoryResponse,
   OldMaidResponse,
   PokerResponse,
@@ -246,11 +247,42 @@ export const memoryApi = {
     }),
 };
 
+export interface KlondikeMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+export const klondikeApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log',
+    from?: KlondikeMoveZone,
+    to?: KlondikeMoveZone,
+  ) =>
+    postJson<KlondikeResponse>('/klondike/exec', {
+      command,
+      from,
+      to,
+      sessionId,
+    }),
+};
+
 function fetchLog(url: string): Promise<ActionLogResponse> {
   return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
 }
 
-const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem', 'hearts', 'memory'] as const;
+const games = [
+  'blackjack',
+  'poker',
+  'oldmaid',
+  'daifugo',
+  'sevens',
+  'doubt',
+  'holdem',
+  'hearts',
+  'memory',
+  'klondike',
+] as const;
 type Game = (typeof games)[number];
 
 export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(
