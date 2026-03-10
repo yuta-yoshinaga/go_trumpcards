@@ -305,10 +305,11 @@ func (m *Memory) flip(pos int) error {
 		}
 	}
 
-	if m.phase == MemoryPhaseFlip1 {
+	switch m.phase {
+	case MemoryPhaseFlip1:
 		m.firstFlipPos = pos
 		m.phase = MemoryPhaseFlip2
-	} else if m.phase == MemoryPhaseFlip2 {
+	case MemoryPhaseFlip2:
 		m.secondFlipPos = pos
 		m.phase = MemoryPhaseResult
 		m.turnNumber++
