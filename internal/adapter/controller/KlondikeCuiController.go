@@ -85,46 +85,31 @@ func (c *KlondikeCuiController) handleMoveFromWaste(args []string) string {
 
 func (c *KlondikeCuiController) handleMoveFromTableau(args []string) string {
 	if len(args) < 2 {
-		return "Usage: m t <col> <idx> t <col> | m t <col> f"
+		return "Usage: m t <fromCol> f | m t <fromCol> <cardIdx> t <toCol>"
 	}
 	fromCol, err := strconv.Atoi(args[0])
 	if err != nil {
 		return fmt.Sprintf("Invalid from column: %s.", args[0])
 	}
-	to := args[1]
-	switch to {
-	case "f":
-		return c.ki.MoveTableauToFoundation(fromCol)
-	case "t":
-		return c.handleMoveTableauToTableau(fromCol, args[2:])
-	default:
-		// Check if it's a card index (e.g., "m t 0 3 t 4")
-		cardIdx, err2 := strconv.Atoi(to)
-		if err2 != nil {
-			return fmt.Sprintf("Invalid to zone: %s.", to)
-		}
-		if len(args) < 4 {
-			return "Usage: m t <col> <idx> t <col>"
-		}
-		if args[2] != "t" {
-			return fmt.Sprintf("Invalid to zone: %s. Use 't' (tableau).", args[2])
-		}
-		toCol, err3 := strconv.Atoi(args[3])
-		if err3 != nil {
-			return fmt.Sprintf("Invalid to column: %s.", args[3])
-		}
-		return c.ki.MoveTableauToTableau(fromCol, cardIdx, toCol)
-	}
-}
 
-func (c *KlondikeCuiController) handleMoveTableauToTableau(fromCol int, args []string) string {
-	if len(args) < 1 {
-		return "Usage: m t <col> t <col> (moves top card)"
+	if args[1] == "f" {
+		return c.ki.MoveTableauToFoundation(fromCol)
 	}
-	toCol, err := strconv.Atoi(args[0])
+
+	// The only other valid format is "m t <fromCol> <cardIdx> t <toCol>"
+	if len(args) != 4 || args[2] != "t" {
+		return "Invalid move command. Usage: m t <fromCol> <cardIdx> t <toCol>"
+	}
+
+	cardIdx, err := strconv.Atoi(args[1])
 	if err != nil {
-		return fmt.Sprintf("Invalid to column: %s.", args[0])
+		return fmt.Sprintf("Invalid card index: %s.", args[1])
 	}
-	// Default to card index 0 (top face-up card) - simplified for "m t <from> t <to>"
-	return c.ki.MoveTableauToTableau(fromCol, 0, toCol)
+
+	toCol, err := strconv.Atoi(args[3])
+	if err != nil {
+		return fmt.Sprintf("Invalid to column: %s.", args[3])
+	}
+
+	return c.ki.MoveTableauToTableau(fromCol, cardIdx, toCol)
 }
