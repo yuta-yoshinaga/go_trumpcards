@@ -27,7 +27,7 @@ jobs:
 
       - name: Run repomix
         # .repomixignore is picked up automatically by repomix
-        run: npx --yes repomix --output repomix-output.txt --style xml
+        run: npx --yes repomix --output repomix-output.txt --style xml --compress --remove-empty-lines
 
       - name: Prepare pages directory
         run: |

@@ -29,6 +29,17 @@ public/assets/
 *.so
 go_trumpcards
 *.log
+*.html
+
+# Lock files (large, not useful for code reading)
+go.sum
+frontend/package-lock.json
+
+# Test files (large, reduce noise for reading)
+*_test.go
+*.test.ts
+*.test.tsx
+frontend/e2e/
 
 # Dependencies
 node_modules/
