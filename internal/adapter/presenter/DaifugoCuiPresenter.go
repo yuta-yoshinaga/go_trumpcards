@@ -27,7 +27,7 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 				fmt.Fprintf(b, "CPU %d", i)
 			}
 			if player.GetIsFinished() {
-				fmt.Fprintf(b, ": 上がり (ランク: %s)\n", p.rankName(player.GetRank()))
+				fmt.Fprintf(b, ": 上がり (ランク: %s)\n", daifugoRankName(player.GetRank()))
 			} else {
 				fmt.Fprintf(b, ": %d枚\n", player.GetCardsSize())
 				if player.GetIsHuman() {
@@ -142,7 +142,7 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 				if player.GetIllegalFinishPenalty() {
 					penalty = " [反則上がり]"
 				}
-				fmt.Fprintf(b, "  %s: %s%s\n", cuiPlayerName(dg.GetPlayer(i), i), p.rankName(player.GetRank()), penalty)
+				fmt.Fprintf(b, "  %s: %s%s\n", cuiPlayerName(dg.GetPlayer(i), i), daifugoRankName(player.GetRank()), penalty)
 			}
 		} else {
 			currentTurn := dg.GetCurrentTurn()
@@ -165,20 +165,4 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 // ActionLogOutput 棋譜をテキスト出力
 func (p *DaifugoCuiPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
 	return actionLogOutputText(dg)
-}
-
-// rankName ランク名取得
-func (p *DaifugoCuiPresenter) rankName(rank int) string {
-	switch rank {
-	case 1:
-		return "大富豪"
-	case 2:
-		return "富豪"
-	case 3:
-		return "平民"
-	case 4:
-		return "大貧民"
-	default:
-		return "不明"
-	}
 }
