@@ -384,6 +384,20 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.NoError(t, err)
 		assert.False(t, result.DoubleAfterSplit)
 	})
+	t.Run("success Output with side bet results", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		bj.GetPlayer().SetChips(5000)
+		err := bj.PlayerBet(100, 100, 0, 1) // ppBet=100 triggers side bet evaluation
+		assert.NoError(t, err)
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		err = json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.NotNil(t, result.SideBetResults)
+		assert.Equal(t, 1, len(result.SideBetResults))
+		assert.Equal(t, domain.BJSideBetPerfectPairs, result.SideBetResults[0].BetType)
+	})
 	t.Run("success Output with no side bet results", func(t *testing.T) {
 		tc := domain.NewTrumpCardsWithDecks(1, 0)
 		for i := 0; i < 10; i++ {
