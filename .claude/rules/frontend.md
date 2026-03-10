@@ -14,8 +14,24 @@ cd frontend && npm test        # Vitestユニットテスト
 
 ## テスト
 
-- **ユニットテストは必須**。実装と同じコミットに含める
-- テストスタック: **Vitest + React Testing Library + jest-dom**
+**ユニットテストは必須**。実装と同じコミットに含める。テストスタック: **Vitest + React Testing Library + jest-dom**
+
+### TDDサイクル (Red → Green → Refactor)
+
+実装前に必ずこのサイクルを守ること:
+
+1. **Red** — 失敗するテストを先に書く。実装コードを書く前に、期待動作を捉えるテストを作成し失敗を確認する:
+   ```sh
+   cd frontend && npm test -- --run TestNewFeature  # 失敗 (Red)
+   ```
+2. **Green** — テストをパスする最小限のコードを書く。余分な機能は追加しない:
+   ```sh
+   cd frontend && npm test -- --run TestNewFeature  # パス (Green)
+   ```
+3. **Refactor** — テストを維持しながらコードを整理する。命名・構造・重複除去を行い、全テストが通ることを確認:
+   ```sh
+   cd frontend && npm test  # 全テストパス (Refactor後)
+   ```
 
 ### カバレッジ基準
 
