@@ -16,6 +16,12 @@ func NewHoldemWebPresenter() *HoldemWebPresenter {
 
 // Output ゲーム状態をJSON出力
 func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) string {
+	resObj := hwp.buildOutput(h, lastErr)
+	return marshalOrError(resObj)
+}
+
+// buildOutput ゲーム状態をHoldemWebOutputに変換
+func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr error) *controller.HoldemWebOutput {
 	resObj := new(controller.HoldemWebOutput)
 	resObj.Phase = h.GetPhase()
 	resObj.Pot = h.GetPot()
@@ -49,23 +55,41 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 	resObj.RebuyPhaseType = h.GetRebuyPhaseType()
 	resObj.MuckAvailable = h.IsMuckAvailable()
 
-	// コミュニティカード
-	resObj.CommunityCards = make([]*controller.WebOutputCard, 0)
-	for _, card := range h.GetCommunityCards() {
-		resObj.CommunityCards = append(resObj.CommunityCards, cardToOutput(card))
-	}
+	resObj.CommunityCards = hwp.buildCommunityCardsOutput(h)
+	resObj.SidePots = hwp.buildSidePotsOutput(h)
+	resObj.Players = hwp.buildPlayersOutput(h)
+	resObj.CpuActions = hwp.buildCpuActionsOutput(h)
+	resObj.RoundResults = hwp.buildRoundResultsOutput(h)
 
-	// サイドポット
-	resObj.SidePots = make([]*controller.HoldemWebOutputSidePot, 0)
+	resObj.Message, resObj.MessageCode = hwp.buildMessage(h, lastErr)
+
+	return resObj
+}
+
+// buildCommunityCardsOutput コミュニティカード情報を構築
+func (hwp *HoldemWebPresenter) buildCommunityCardsOutput(h interfaces.HoldemGame) []*controller.WebOutputCard {
+	out := make([]*controller.WebOutputCard, 0)
+	for _, card := range h.GetCommunityCards() {
+		out = append(out, cardToOutput(card))
+	}
+	return out
+}
+
+// buildSidePotsOutput サイドポット情報を構築
+func (hwp *HoldemWebPresenter) buildSidePotsOutput(h interfaces.HoldemGame) []*controller.HoldemWebOutputSidePot {
+	out := make([]*controller.HoldemWebOutputSidePot, 0)
 	for _, sp := range h.GetSidePots() {
-		resObj.SidePots = append(resObj.SidePots, &controller.HoldemWebOutputSidePot{
+		out = append(out, &controller.HoldemWebOutputSidePot{
 			Amount:          sp.Amount,
 			EligiblePlayers: sp.EligiblePlayers,
 		})
 	}
+	return out
+}
 
-	// プレイヤー情報
-	resObj.Players = make([]*controller.HoldemWebOutputPlayer, 0)
+// buildPlayersOutput プレイヤー情報を構築
+func (hwp *HoldemWebPresenter) buildPlayersOutput(h interfaces.HoldemGame) []*controller.HoldemWebOutputPlayer {
+	out := make([]*controller.HoldemWebOutputPlayer, 0)
 	isShowdown := h.GetPhase() == domain.HoldemPhaseEnd || h.GetPhase() == domain.HoldemPhaseShowdown
 	for i := 0; i < h.GetPlayerCnt(); i++ {
 		player := h.GetPlayer(i)
@@ -102,21 +126,27 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 			}
 		}
 
-		resObj.Players = append(resObj.Players, pObj)
+		out = append(out, pObj)
 	}
+	return out
+}
 
-	// CPU行動記録
-	resObj.CpuActions = make([]*controller.HoldemWebOutputCpuAction, 0)
+// buildCpuActionsOutput CPU行動記録を構築
+func (hwp *HoldemWebPresenter) buildCpuActionsOutput(h interfaces.HoldemGame) []*controller.HoldemWebOutputCpuAction {
+	out := make([]*controller.HoldemWebOutputCpuAction, 0)
 	for _, action := range h.GetCpuActions() {
-		resObj.CpuActions = append(resObj.CpuActions, &controller.HoldemWebOutputCpuAction{
+		out = append(out, &controller.HoldemWebOutputCpuAction{
 			PlayerIdx: action.PlayerIdx,
 			Action:    action.Action,
 			Amount:    action.Amount,
 		})
 	}
+	return out
+}
 
-	// ラウンド結果
-	resObj.RoundResults = make([]*controller.HoldemWebOutputResult, 0)
+// buildRoundResultsOutput ラウンド結果を構築
+func (hwp *HoldemWebPresenter) buildRoundResultsOutput(h interfaces.HoldemGame) []*controller.HoldemWebOutputResult {
+	out := make([]*controller.HoldemWebOutputResult, 0)
 	for _, r := range h.GetRoundResults() {
 		result := &controller.HoldemWebOutputResult{
 			PlayerIdx: r.PlayerIdx,
@@ -136,22 +166,23 @@ func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) st
 				result.BestHand = append(result.BestHand, cardToOutput(card))
 			}
 		}
-		resObj.RoundResults = append(resObj.RoundResults, result)
+		out = append(out, result)
 	}
+	return out
+}
 
-	// メッセージ
+// buildMessage ゲーム結果メッセージを構築
+func (hwp *HoldemWebPresenter) buildMessage(h interfaces.HoldemGame, lastErr error) (string, string) {
 	if lastErr != nil {
-		resObj.Message = lastErr.Error()
-	} else if h.IsMuckAvailable() {
-		resObj.Message = "Muck or show your hand."
-		resObj.MessageCode = "holdem.muck.prompt"
-	} else if h.GetGameEndFlag() {
-		msg, code := hwp.buildResultMessage(h)
-		resObj.Message = msg
-		resObj.MessageCode = code
+		return lastErr.Error(), ""
 	}
-
-	return marshalOrError(resObj)
+	if h.IsMuckAvailable() {
+		return "Muck or show your hand.", "holdem.muck.prompt"
+	}
+	if h.GetGameEndFlag() {
+		return hwp.buildResultMessage(h)
+	}
+	return "", ""
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code

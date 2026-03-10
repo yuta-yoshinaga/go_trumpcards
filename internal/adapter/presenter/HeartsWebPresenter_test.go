@@ -324,6 +324,19 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "hearts.result.humanWin", resObj.MessageCode)
 	})
 
+	t.Run("unrecognized phase no messageCode", func(t *testing.T) {
+		m, _ := setupHeartsWebMockWithPlayers()
+		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.HeartsPhaseGameEnd)
+		// GetGameEndFlag remains false (default)
+
+		result := p.Output(m, nil)
+		var resObj controller.HeartsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Empty(t, resObj.Message)
+		assert.Empty(t, resObj.MessageCode)
+	})
 	t.Run("default config values", func(t *testing.T) {
 		m, _ := setupHeartsWebMockWithPlayers()
 
