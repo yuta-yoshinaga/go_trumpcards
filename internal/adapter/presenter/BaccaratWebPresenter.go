@@ -53,6 +53,7 @@ func (bp *BaccaratWebPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 		case domain.GameResultDraw:
 			resObj.Message = "Tie!"
 			resObj.MessageCode = "baccarat.result.tie"
+		default:
 		}
 	}
 

@@ -135,6 +135,26 @@ func TestBaccaratCuiPresenter_Output_UnknownPhase(t *testing.T) {
 	assert.Contains(t, result, "UNKNOWN")
 }
 
+func TestBaccaratCuiPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
+	p := NewBaccaratCuiPresenter()
+	m := new(interfaces.MockBaccaratGame)
+	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetPhase").Return(domain.BaccaratPhaseEnd).Maybe()
+	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetBankerHand").Return(([]*domain.Card)(nil)).Maybe()
+	m.On("GetPlayerHandValue").Return(0).Maybe()
+	m.On("GetBankerHandValue").Return(0).Maybe()
+	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetBetAmount").Return(100).Maybe()
+	m.On("GetBetType").Return(domain.BaccaratBetPlayer).Maybe()
+	m.On("GetResult").Return(domain.GameResult(99)).Maybe()
+	m.On("GetPayout").Return(0).Maybe()
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+
+	result := p.Output(m, nil)
+	assert.Contains(t, result, "payout: 0")
+}
+
 func TestBaccaratCuiPresenter_Output_UnknownBetType(t *testing.T) {
 	p := NewBaccaratCuiPresenter()
 	m := new(interfaces.MockBaccaratGame)

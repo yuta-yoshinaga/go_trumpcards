@@ -70,6 +70,7 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 			sb.WriteString("Banker wins!\n")
 		case domain.GameResultDraw:
 			sb.WriteString("Tie!\n")
+		default:
 		}
 		fmt.Fprintf(&sb, "payout: %d\n", b.GetPayout())
 		sb.WriteString("----------\n")

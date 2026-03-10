@@ -185,7 +185,7 @@ func (b *Baccarat) calculatePayout() int {
 		}
 		return 0
 	case BaccaratBetBanker:
-		if b.result == GameResultLose { // バンカー勝利
+		if b.result == GameResultLose { // GameResultLose = player lost = banker won
 			// 5%コミッション
 			winnings := b.betAmount - b.betAmount*BaccaratCommissionRate/100
 			return b.betAmount + winnings

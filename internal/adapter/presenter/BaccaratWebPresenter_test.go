@@ -128,6 +128,19 @@ func TestBaccaratWebPresenter_Output_EndPhase_Tie(t *testing.T) {
 	assert.Equal(t, "baccarat.result.tie", result.MessageCode)
 }
 
+func TestBaccaratWebPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
+	p := NewBaccaratWebPresenter()
+	m := new(interfaces.MockBaccaratGame)
+	setupBaccaratWebMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetGameEndFlag")
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetResult")
+	m.On("GetGameEndFlag").Return(true).Maybe()
+	m.On("GetResult").Return(domain.GameResult(99)).Maybe()
+
+	result := parseBaccaratOutput(t, p.Output(m, nil))
+	assert.Empty(t, result.Message)
+}
+
 func TestBaccaratWebPresenter_Output_Error(t *testing.T) {
 	p := NewBaccaratWebPresenter()
 	m := new(interfaces.MockBaccaratGame)
