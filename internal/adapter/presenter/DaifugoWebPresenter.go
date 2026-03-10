@@ -151,7 +151,7 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 			continue
 		}
 		rank := player.GetRank()
-		if rank < 1 || rank > 4 {
+		if rank < daifugoRankMin || rank > daifugoRankMax {
 			continue
 		}
 		var name string
