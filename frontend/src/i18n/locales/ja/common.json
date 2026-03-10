@@ -9,7 +9,8 @@
     "holdem": "テキサスホールデム",
     "hearts": "ハーツ",
     "memory": "神経衰弱",
-    "klondike": "クロンダイク"
+    "klondike": "クロンダイク",
+    "baccarat": "バカラ"
   },
   "player": {
     "you": "あなた",
@@ -96,6 +97,9 @@
     "memory.mismatched": "残念、不一致です",
     "memory.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "memory.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "baccarat.result.playerWins": "プレイヤーの勝ち！",
+    "baccarat.result.bankerWins": "バンカーの勝ち！",
+    "baccarat.result.tie": "引き分け！",
     "klondike.playing": "プレイ中",
     "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "klondike.gameOver": "ゲームオーバー",

@@ -9,4 +9,5 @@ export const gameRoutes = [
   { path: '/hearts', labelKey: 'nav.hearts' },
   { path: '/memory', labelKey: 'nav.memory' },
   { path: '/klondike', labelKey: 'nav.klondike' },
+  { path: '/baccarat', labelKey: 'nav.baccarat' },
 ] as const;

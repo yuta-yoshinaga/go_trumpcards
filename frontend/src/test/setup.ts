@@ -4,6 +4,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { afterEach } from 'vitest';
 
+import jaBaccarat from '../i18n/locales/ja/baccarat.json';
 import jaBlackjack from '../i18n/locales/ja/blackjack.json';
 import jaCommon from '../i18n/locales/ja/common.json';
 import jaDaifugo from '../i18n/locales/ja/daifugo.json';
@@ -19,7 +20,19 @@ i18n.use(initReactI18next).init({
   lng: 'ja',
   fallbackLng: 'ja',
   defaultNS: 'common',
-  ns: ['common', 'blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem', 'hearts', 'memory'],
+  ns: [
+    'common',
+    'blackjack',
+    'poker',
+    'oldmaid',
+    'daifugo',
+    'sevens',
+    'doubt',
+    'holdem',
+    'hearts',
+    'memory',
+    'baccarat',
+  ],
   resources: {
     ja: {
       common: jaCommon,
@@ -32,6 +45,7 @@ i18n.use(initReactI18next).init({
       holdem: jaHoldem,
       hearts: jaHearts,
       memory: jaMemory,
+      baccarat: jaBaccarat,
     },
   },
   interpolation: { escapeValue: false },

@@ -1,0 +1,24 @@
+{
+  "player": "プレイヤー:",
+  "banker": "バンカー:",
+  "betType": {
+    "player": "プレイヤー",
+    "banker": "バンカー",
+    "tie": "タイ"
+  },
+  "label": {
+    "value": "値: {{value}}",
+    "chips": "チップ: {{chips}}",
+    "betAmount": "ベット額:",
+    "betTarget": "ベット先:",
+    "payout": "配当: {{payout}}"
+  },
+  "button": {
+    "bet": "ベット",
+    "reset": "リセット"
+  },
+  "phase": {
+    "bet": "ベットフェーズ",
+    "end": "結果"
+  }
+}

@@ -9,7 +9,8 @@
     "holdem": "Texas Hold'em",
     "hearts": "Hearts",
     "memory": "Memory",
-    "klondike": "Klondike"
+    "klondike": "Klondike",
+    "baccarat": "Baccarat"
   },
   "player": {
     "you": "You",
@@ -96,6 +97,9 @@
     "memory.mismatched": "No match",
     "memory.result.humanWin": "Game over! You win!",
     "memory.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "baccarat.result.playerWins": "Player wins!",
+    "baccarat.result.bankerWins": "Banker wins!",
+    "baccarat.result.tie": "Tie!",
     "klondike.playing": "Playing",
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",

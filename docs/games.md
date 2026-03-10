@@ -12,6 +12,8 @@
 
 - **Klondike (ソリティア)**: Entities in `internal/domain/Klondike.go`; interactor in `internal/usecase/KlondikeInteractor.go`. CLI and Web GUI, single-player solitaire card game using a standard 52-card deck. 7 tableau columns with cascading face-down/face-up cards, a stock pile, a waste pile, and 4 foundation piles (one per suit). Build foundations from Ace to King by suit; build tableau columns in descending rank with alternating colors. Commands: reset, draw (flip stock to waste), move (waste/tableau to tableau/foundation), giveup, hint, autocomplete, log. Phases: Playing (0), GameClear (1), GameOver (2)
 
+- **Baccarat (バカラ)**: Entities in `internal/domain/Baccarat.go`; interactor in `internal/usecase/BaccaratInteractor.go`. CLI and Web GUI, casino card game using a standard 52-card deck. Player bets on Player/Banker/Tie, then cards are dealt automatically following baccarat third-card rules. Card points: A=1, 2-9=face value, 10/J/Q/K=0. Hand value is the ones digit of the sum. Natural (8 or 9) stops drawing. Payouts: Player bet 2:1, Banker bet 1.95:1 (5% commission), Tie bet 9:1 (8:1). Uses ChipHolder for chip/betting system. Commands: reset, bet (amount + type), log. Phases: Bet (1), End (2)
+
 ## Action Log (棋譜)
 
 All games support a `log` command that returns a cumulative action log of every action taken during the current game session. The log reveals all hidden cards (e.g., face-down cards, opponent hands) so players can review the full history of the game after the fact. Each log entry contains the turn number, player index, action type, a human-readable detail string, and optionally the cards involved in the action.

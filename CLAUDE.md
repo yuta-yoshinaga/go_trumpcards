@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Hearts, Memory, Klondike. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Hearts, Memory, Klondike, Baccarat. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -24,6 +24,7 @@ go run ./cmd/cli holdem     # Texas Hold'em CLI
 go run ./cmd/cli hearts     # Hearts CLI
 go run ./cmd/cli memory     # Memory (神経衰弱) CLI
 go run ./cmd/cli klondike   # Klondike (ソリティア) CLI
+go run ./cmd/cli baccarat   # Baccarat (バカラ) CLI
 go run ./cmd/cli web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
 

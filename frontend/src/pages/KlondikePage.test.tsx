@@ -331,9 +331,7 @@ describe('KlondikePage', () => {
     const foundationButton = foundationImg.closest('button') as HTMLButtonElement;
     fireEvent.click(foundationButton);
 
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)),
-    );
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
 
   it('foundation disabled when no source selected', async () => {
