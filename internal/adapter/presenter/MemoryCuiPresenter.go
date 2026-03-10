@@ -93,8 +93,5 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 
 // ActionLogOutput 棋譜をテキスト出力
 func (p *MemoryCuiPresenter) ActionLogOutput(m interfaces.MemoryGame) string {
-	if !m.GetGameEndFlag() {
-		return actionLogToText(nil)
-	}
-	return actionLogToText(m.GetActionLog())
+	return actionLogOutputText(m)
 }

@@ -11,6 +11,55 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
+// stubGameEndLogger is a test double for gameEndLogger.
+type stubGameEndLogger struct {
+	ended     bool
+	actionLog []*domain.ActionLogEntry
+}
+
+func (s *stubGameEndLogger) GetGameEndFlag() bool                   { return s.ended }
+func (s *stubGameEndLogger) GetActionLog() []*domain.ActionLogEntry { return s.actionLog }
+
+func TestActionLogOutputText(t *testing.T) {
+	t.Run("game not ended returns empty log", func(t *testing.T) {
+		g := &stubGameEndLogger{ended: false}
+		result := actionLogOutputText(g)
+		assert.Equal(t, "棋譜はありません。\n", result)
+	})
+
+	t.Run("game ended returns log", func(t *testing.T) {
+		g := &stubGameEndLogger{
+			ended: true,
+			actionLog: []*domain.ActionLogEntry{
+				{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "test"},
+			},
+		}
+		result := actionLogOutputText(g)
+		assert.Contains(t, result, "T1")
+		assert.Contains(t, result, "Player 0")
+	})
+}
+
+func TestActionLogOutputJSON(t *testing.T) {
+	t.Run("game not ended returns empty log", func(t *testing.T) {
+		g := &stubGameEndLogger{ended: false}
+		result := actionLogOutputJSON(g)
+		assert.Contains(t, result, `"entries":[]`)
+	})
+
+	t.Run("game ended returns log", func(t *testing.T) {
+		g := &stubGameEndLogger{
+			ended: true,
+			actionLog: []*domain.ActionLogEntry{
+				{TurnNumber: 2, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card"},
+			},
+		}
+		result := actionLogOutputJSON(g)
+		assert.Contains(t, result, `"turnNumber":2`)
+		assert.Contains(t, result, `"playerIdx":1`)
+	})
+}
+
 func TestActionLogToJSON(t *testing.T) {
 	t.Run("empty entries", func(t *testing.T) {
 		result := actionLogToJSON([]*domain.ActionLogEntry{})

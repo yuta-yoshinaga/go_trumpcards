@@ -168,10 +168,7 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 
 // ActionLogOutput 棋譜をJSON出力
 func (dwp *DaifugoWebPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
-	if !dg.GetGameEndFlag() {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(dg.GetActionLog())
+	return actionLogOutputJSON(dg)
 }
 
 // getSuitName スート名取得 (スート縛り用: 4スートのみ変換し、それ以外は空文字)

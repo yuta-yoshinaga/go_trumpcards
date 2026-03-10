@@ -111,8 +111,5 @@ func (p *MemoryWebPresenter) buildResultMessage(m interfaces.MemoryGame) string 
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *MemoryWebPresenter) ActionLogOutput(m interfaces.MemoryGame) string {
-	if !m.GetGameEndFlag() {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(m.GetActionLog())
+	return actionLogOutputJSON(m)
 }

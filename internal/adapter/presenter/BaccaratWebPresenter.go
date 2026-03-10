@@ -62,8 +62,5 @@ func (bp *BaccaratWebPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 
 // ActionLogOutput 棋譜をJSON出力
 func (bp *BaccaratWebPresenter) ActionLogOutput(b interfaces.BaccaratGame) string {
-	if !b.GetGameEndFlag() {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(b.GetActionLog())
+	return actionLogOutputJSON(b)
 }
