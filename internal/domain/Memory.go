@@ -120,8 +120,6 @@ func (m *Memory) CpuFlip() {
 		return
 	}
 
-	retentionChance := m.retentionChance()
-
 	// まず記憶から既知のペアを探す
 	pos1, pos2, found := p.FindAnyKnownPair()
 	if found && !m.board[pos1].Taken && !m.board[pos2].Taken {
@@ -152,8 +150,6 @@ func (m *Memory) CpuFlip() {
 	}
 	_ = m.flip(second)
 
-	// CPUは公開されたカードを記憶 (1枚目・2枚目の記憶は flip 内で全CPUに記録済)
-	_ = retentionChance // retention is handled in flip()
 }
 
 // ResolveFlip フリップ結果を解決する

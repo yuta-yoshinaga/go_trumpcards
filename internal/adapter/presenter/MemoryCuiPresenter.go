@@ -43,11 +43,11 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 			}
 			bc := board[pos]
 			if bc.Taken {
-				fmt.Fprintf(&b, "[%2d]    ", pos)
+				fmt.Fprintf(&b, "[%2d]%-10s", pos, "")
 			} else if bc.FaceUp {
-				fmt.Fprintf(&b, "[%2d]%s", pos, cuiCardStr(bc.Card))
+				fmt.Fprintf(&b, "[%2d]%-10s", pos, cuiCardStr(bc.Card))
 			} else {
-				fmt.Fprintf(&b, "[%2d]??  ", pos)
+				fmt.Fprintf(&b, "[%2d]%-10s", pos, "??")
 			}
 		}
 		b.WriteString("\n")

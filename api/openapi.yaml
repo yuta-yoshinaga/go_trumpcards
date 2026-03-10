@@ -1002,12 +1002,10 @@ paths:
 
         | Command | Aliases | Description |
         |---------|---------|-------------|
-        | `reset` | `r`     | Start / restart a game |
+        | `reset` | `r`     | Start / restart a game (accepts optional `config.cpuDifficulty`) |
         | `flip`  | `f`     | Flip a card (requires `position`) |
         | `next`  | `n`     | Advance after viewing result |
-        | `setdifficulty` | `sd` | Set CPU difficulty (requires `config.difficulty`: 0=Easy, 1=Normal, 2=Hard) |
         | `log`   | `l`     | View action log |
-        | `quit`  | `q`     | End the session |
       operationId: memoryExec
       requestBody:
         required: true
@@ -1052,11 +1050,15 @@ paths:
                     phase: 0
                     board: []
                     currentPlayerIdx: 0
-                    flippedPositions: []
-                    pairsRemaining: 26
+                    firstFlipPos: -1
+                    secondFlipPos: -1
+                    lastMatchResult: false
+                    turnNumber: 0
                     gameEndFlag: false
                     winnerIdx: -1
                     message: param error.
+                    config:
+                      cpuDifficulty: 1
 
 components:
   schemas:
@@ -3814,9 +3816,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `flip` (`f`),
-            `next` (`n`), `setdifficulty` (`sd`),
-            `log` (`l`), `quit` (`q`).
-          enum: [reset, r, flip, f, next, n, setdifficulty, sd, log, l, quit, q]
+            `next` (`n`), `log` (`l`).
+          enum: [reset, r, flip, f, next, n, log, l]
           example: flip
         position:
           type: integer
@@ -3824,9 +3825,9 @@ components:
           example: 5
         config:
           type: object
-          description: Game configuration options (used with `reset`, `setdifficulty` commands)
+          description: Game configuration options (used with `reset` command)
           properties:
-            difficulty:
+            cpuDifficulty:
               type: integer
               description: "CPU difficulty level: 0 = Easy (random), 1 = Normal (partial memory), 2 = Hard (perfect memory). Defaults to 1."
               minimum: 0
@@ -3843,7 +3844,6 @@ components:
       required:
         - id
         - isHuman
-        - pairs
         - pairCount
       properties:
         id:
@@ -3854,11 +3854,6 @@ components:
           type: boolean
           description: Whether this player is the human
           example: true
-        pairs:
-          type: array
-          description: Cards this player has collected as pairs
-          items:
-            $ref: '#/components/schemas/Card'
         pairCount:
           type: integer
           description: Number of pairs collected
@@ -3868,14 +3863,9 @@ components:
       type: object
       description: A card on the Memory board
       required:
-        - position
         - faceUp
         - taken
       properties:
-        position:
-          type: integer
-          description: Board position (0-based index)
-          example: 0
         faceUp:
           type: boolean
           description: Whether the card is currently face-up
@@ -3896,11 +3886,14 @@ components:
         - phase
         - board
         - currentPlayerIdx
-        - flippedPositions
-        - pairsRemaining
+        - firstFlipPos
+        - secondFlipPos
+        - lastMatchResult
+        - turnNumber
         - gameEndFlag
         - winnerIdx
         - message
+        - config
       properties:
         players:
           type: array
@@ -3921,16 +3914,22 @@ components:
           type: integer
           description: Index of the player whose turn it is
           example: 0
-        flippedPositions:
-          type: array
-          description: Board positions of currently flipped cards (0-2 elements)
-          items:
-            type: integer
-          example: []
-        pairsRemaining:
+        firstFlipPos:
           type: integer
-          description: Number of pairs still on the board
-          example: 26
+          description: Board position of the first flipped card (-1 if none)
+          example: -1
+        secondFlipPos:
+          type: integer
+          description: Board position of the second flipped card (-1 if none)
+          example: -1
+        lastMatchResult:
+          type: boolean
+          description: Whether the last flip pair was a match
+          example: false
+        turnNumber:
+          type: integer
+          description: Current turn number (incremented after each pair flip)
+          example: 0
         gameEndFlag:
           type: boolean
           description: Whether the game has ended
@@ -3954,8 +3953,10 @@ components:
         config:
           type: object
           description: Current game configuration
+          required:
+            - cpuDifficulty
           properties:
-            difficulty:
+            cpuDifficulty:
               type: integer
               description: "CPU difficulty level: 0 = Easy, 1 = Normal, 2 = Hard"
               example: 1

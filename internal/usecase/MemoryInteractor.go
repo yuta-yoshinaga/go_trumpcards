@@ -78,11 +78,7 @@ func (mi *MemoryInteractor) ActionLog() string {
 // runCpuTurns ゲームが終わるか人間の手番になるまでCPUターンを実行
 func (mi *MemoryInteractor) runCpuTurns() {
 	for !mi.m.GetGameEndFlag() {
-		phase := mi.m.GetPhase()
-		if phase == MemoryPhaseGameEnd {
-			break
-		}
-		if phase != domain.MemoryPhaseFlip1 {
+		if mi.m.GetPhase() != domain.MemoryPhaseFlip1 {
 			break
 		}
 		if mi.m.IsHumanTurn() {
@@ -92,6 +88,3 @@ func (mi *MemoryInteractor) runCpuTurns() {
 		mi.m.ResolveFlip()
 	}
 }
-
-// MemoryPhaseGameEnd はドメインの MemoryPhaseGameEnd を参照
-const MemoryPhaseGameEnd = domain.MemoryPhaseGameEnd
