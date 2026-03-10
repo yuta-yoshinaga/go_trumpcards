@@ -17,7 +17,7 @@ type cuiCardList interface {
 // cuiCardListStr returns a comma-separated card string for all cards in hand.
 func cuiCardListStr(hand cuiCardList) string {
 	parts := make([]string, hand.GetCardsSize())
-	for i := 0; i < hand.GetCardsSize(); i++ {
+	for i := range parts {
 		parts[i] = cuiCardStr(hand.GetCard(i))
 	}
 	return strings.Join(parts, ",")
