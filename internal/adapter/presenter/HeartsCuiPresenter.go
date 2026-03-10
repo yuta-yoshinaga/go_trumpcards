@@ -18,93 +18,86 @@ func NewHeartsCuiPresenter() *HeartsCuiPresenter {
 
 // Output ゲーム状態を文字列出力
 func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) string {
-	var b strings.Builder
+	return buildCuiOutput("Hearts (ハーツ)", func(b *strings.Builder) {
+		fmt.Fprintf(b, "ラウンド: %d  トリック: %d\n", h.GetRoundNumber(), h.GetTrickNumber())
 
-	b.WriteString("==========\n")
-	b.WriteString("Hearts (ハーツ)\n")
-	b.WriteString("==========\n")
+		if h.GetHeartsBroken() {
+			b.WriteString("ハートブレイク: あり\n")
+		} else {
+			b.WriteString("ハートブレイク: なし\n")
+		}
 
-	fmt.Fprintf(&b, "ラウンド: %d  トリック: %d\n", h.GetRoundNumber(), h.GetTrickNumber())
-
-	if h.GetHeartsBroken() {
-		b.WriteString("ハートブレイク: あり\n")
-	} else {
-		b.WriteString("ハートブレイク: なし\n")
-	}
-
-	// プレイヤー情報
-	for i := 0; i < h.GetPlayerCnt(); i++ {
-		player := h.GetPlayer(i)
-		name := cuiPlayerName(player, i)
-		fmt.Fprintf(&b, "%s: 累積%d点 ラウンド%d点 %d枚 %dトリック\n",
-			name,
-			player.GetCumulativeScore(),
-			player.GetRoundScore(),
-			player.GetCardsSize(),
-			player.GetTrickCount(),
-		)
-		if player.GetIsHuman() {
-			for j := 0; j < player.GetCardsSize(); j++ {
-				if j != 0 {
-					b.WriteString("  ")
+		// プレイヤー情報
+		for i := 0; i < h.GetPlayerCnt(); i++ {
+			player := h.GetPlayer(i)
+			name := cuiPlayerName(player, i)
+			fmt.Fprintf(b, "%s: 累積%d点 ラウンド%d点 %d枚 %dトリック\n",
+				name,
+				player.GetCumulativeScore(),
+				player.GetRoundScore(),
+				player.GetCardsSize(),
+				player.GetTrickCount(),
+			)
+			if player.GetIsHuman() {
+				for j := 0; j < player.GetCardsSize(); j++ {
+					if j != 0 {
+						b.WriteString("  ")
+					}
+					fmt.Fprintf(b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
 				}
-				fmt.Fprintf(&b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
-			}
-			if player.GetCardsSize() > 0 {
-				b.WriteString("\n")
+				if player.GetCardsSize() > 0 {
+					b.WriteString("\n")
+				}
 			}
 		}
-	}
 
-	b.WriteString("----------\n")
+		b.WriteString("----------\n")
 
-	// 現在のトリック
-	trick := h.GetCurrentTrick()
-	if len(trick) > 0 {
-		b.WriteString("トリック: ")
-		for i, tc := range trick {
-			if i != 0 {
-				b.WriteString(", ")
+		// 現在のトリック
+		trick := h.GetCurrentTrick()
+		if len(trick) > 0 {
+			b.WriteString("トリック: ")
+			for i, tc := range trick {
+				if i != 0 {
+					b.WriteString(", ")
+				}
+				player := h.GetPlayer(tc.PlayerIdx)
+				fmt.Fprintf(b, "%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
 			}
-			player := h.GetPlayer(tc.PlayerIdx)
-			fmt.Fprintf(&b, "%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
+			b.WriteString("\n")
 		}
-		b.WriteString("\n")
-	}
 
-	// エラーメッセージ
-	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", lastErr.Error())
-	}
-
-	// ゲーム状態
-	if h.GetGameEndFlag() {
-		winnerIdx := h.GetWinnerIdx()
-		player := h.GetPlayer(winnerIdx)
-		fmt.Fprintf(&b, "ゲーム終了！ %sの勝利です！\n", cuiPlayerName(player, winnerIdx))
-	} else {
-		phase := h.GetPhase()
-		switch phase {
-		case domain.HeartsPhasePass:
-			dir := h.GetPassDirection()
-			fmt.Fprintf(&b, "パスフェーズ: %s\n", cuiPassDirectionStr(dir))
-			b.WriteString("pass <idx> <idx> <idx>・・・3枚のカードを選択\n")
-		case domain.HeartsPhasePlay:
-			currentIdx := h.GetCurrentPlayerIdx()
-			player := h.GetPlayer(currentIdx)
-			fmt.Fprintf(&b, "手番: %s\n", cuiPlayerName(player, currentIdx))
-			b.WriteString("play <idx>・・・カードを出す\n")
-		case domain.HeartsPhaseTrickEnd:
-			b.WriteString("トリック終了\n")
-			b.WriteString("next・・・次のトリックへ\n")
-		case domain.HeartsPhaseRoundEnd:
-			b.WriteString("ラウンド終了\n")
-			b.WriteString("next・・・次のラウンドへ\n")
+		// エラーメッセージ
+		if lastErr != nil {
+			fmt.Fprintf(b, "%s\n", lastErr.Error())
 		}
-	}
 
-	b.WriteString("==========\n")
-	return b.String()
+		// ゲーム状態
+		if h.GetGameEndFlag() {
+			winnerIdx := h.GetWinnerIdx()
+			player := h.GetPlayer(winnerIdx)
+			fmt.Fprintf(b, "ゲーム終了！ %sの勝利です！\n", cuiPlayerName(player, winnerIdx))
+		} else {
+			phase := h.GetPhase()
+			switch phase {
+			case domain.HeartsPhasePass:
+				dir := h.GetPassDirection()
+				fmt.Fprintf(b, "パスフェーズ: %s\n", cuiPassDirectionStr(dir))
+				b.WriteString("pass <idx> <idx> <idx>・・・3枚のカードを選択\n")
+			case domain.HeartsPhasePlay:
+				currentIdx := h.GetCurrentPlayerIdx()
+				player := h.GetPlayer(currentIdx)
+				fmt.Fprintf(b, "手番: %s\n", cuiPlayerName(player, currentIdx))
+				b.WriteString("play <idx>・・・カードを出す\n")
+			case domain.HeartsPhaseTrickEnd:
+				b.WriteString("トリック終了\n")
+				b.WriteString("next・・・次のトリックへ\n")
+			case domain.HeartsPhaseRoundEnd:
+				b.WriteString("ラウンド終了\n")
+				b.WriteString("next・・・次のラウンドへ\n")
+			}
+		}
+	})
 }
 
 // ActionLogOutput 棋譜をテキスト出力

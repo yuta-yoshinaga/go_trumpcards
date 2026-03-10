@@ -18,83 +18,76 @@ func NewKlondikeCuiPresenter() *KlondikeCuiPresenter {
 
 // Output ゲーム状態を文字列出力
 func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) string {
-	var b strings.Builder
-
-	b.WriteString("==========\n")
-	b.WriteString("Klondike (ソリティア)\n")
-	b.WriteString("==========\n")
-
-	// ファンデーション
-	b.WriteString("Foundation: ")
-	foundation := k.GetFoundation()
-	for i := 0; i < domain.KlondikeFoundationCnt; i++ {
-		if i != 0 {
-			b.WriteString(" | ")
-		}
-		pile := foundation[i]
-		if len(pile) == 0 {
-			b.WriteString("[空]")
-		} else {
-			topCard := pile[len(pile)-1]
-			b.WriteString(cuiCardStr(topCard))
-		}
-	}
-	b.WriteString("\n")
-
-	// ストックとウェイスト
-	fmt.Fprintf(&b, "Stock: %d枚", k.GetStockCount())
-	waste := k.GetWaste()
-	if len(waste) > 0 {
-		fmt.Fprintf(&b, " | Waste: %s", cuiCardStr(waste[len(waste)-1]))
-	} else {
-		b.WriteString(" | Waste: [空]")
-	}
-	b.WriteString("\n")
-
-	b.WriteString("----------\n")
-
-	// タブロー
-	tableau := k.GetTableau()
-	for col := 0; col < domain.KlondikeTableauCnt; col++ {
-		fmt.Fprintf(&b, "列%d:", col)
-		colCards := tableau[col]
-		if len(colCards) == 0 {
-			b.WriteString(" [空]")
-		} else {
-			for j, tc := range colCards {
-				if j != 0 {
-					b.WriteString(" ")
-				}
-				if tc.FaceUp {
-					fmt.Fprintf(&b, " [%d]%s", j, cuiCardStr(tc.Card))
-				} else {
-					fmt.Fprintf(&b, " [%d]??", j)
-				}
+	return buildCuiOutput("Klondike (ソリティア)", func(b *strings.Builder) {
+		// ファンデーション
+		b.WriteString("Foundation: ")
+		foundation := k.GetFoundation()
+		for i := 0; i < domain.KlondikeFoundationCnt; i++ {
+			if i != 0 {
+				b.WriteString(" | ")
+			}
+			pile := foundation[i]
+			if len(pile) == 0 {
+				b.WriteString("[空]")
+			} else {
+				topCard := pile[len(pile)-1]
+				b.WriteString(cuiCardStr(topCard))
 			}
 		}
 		b.WriteString("\n")
-	}
 
-	b.WriteString("----------\n")
+		// ストックとウェイスト
+		fmt.Fprintf(b, "Stock: %d枚", k.GetStockCount())
+		waste := k.GetWaste()
+		if len(waste) > 0 {
+			fmt.Fprintf(b, " | Waste: %s", cuiCardStr(waste[len(waste)-1]))
+		} else {
+			b.WriteString(" | Waste: [空]")
+		}
+		b.WriteString("\n")
 
-	// エラーメッセージ
-	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", lastErr.Error())
-	}
+		b.WriteString("----------\n")
 
-	// ゲーム状態
-	phase := k.GetPhase()
-	switch phase {
-	case domain.KlondikePhasePlaying:
-		fmt.Fprintf(&b, "手数: %d\n", k.GetMoveCount())
-	case domain.KlondikePhaseGameClear:
-		fmt.Fprintf(&b, "ゲームクリア！ 手数: %d\n", k.GetMoveCount())
-	case domain.KlondikePhaseGameOver:
-		b.WriteString("ゲームオーバー\n")
-	}
+		// タブロー
+		tableau := k.GetTableau()
+		for col := 0; col < domain.KlondikeTableauCnt; col++ {
+			fmt.Fprintf(b, "列%d:", col)
+			colCards := tableau[col]
+			if len(colCards) == 0 {
+				b.WriteString(" [空]")
+			} else {
+				for j, tc := range colCards {
+					if j != 0 {
+						b.WriteString(" ")
+					}
+					if tc.FaceUp {
+						fmt.Fprintf(b, " [%d]%s", j, cuiCardStr(tc.Card))
+					} else {
+						fmt.Fprintf(b, " [%d]??", j)
+					}
+				}
+			}
+			b.WriteString("\n")
+		}
 
-	b.WriteString("==========\n")
-	return b.String()
+		b.WriteString("----------\n")
+
+		// エラーメッセージ
+		if lastErr != nil {
+			fmt.Fprintf(b, "%s\n", lastErr.Error())
+		}
+
+		// ゲーム状態
+		phase := k.GetPhase()
+		switch phase {
+		case domain.KlondikePhasePlaying:
+			fmt.Fprintf(b, "手数: %d\n", k.GetMoveCount())
+		case domain.KlondikePhaseGameClear:
+			fmt.Fprintf(b, "ゲームクリア！ 手数: %d\n", k.GetMoveCount())
+		case domain.KlondikePhaseGameOver:
+			b.WriteString("ゲームオーバー\n")
+		}
+	})
 }
 
 // HintOutput ヒントを文字列出力
