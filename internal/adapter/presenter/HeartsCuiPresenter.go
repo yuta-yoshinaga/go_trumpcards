@@ -109,10 +109,7 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 
 // ActionLogOutput 棋譜をテキスト出力
 func (p *HeartsCuiPresenter) ActionLogOutput(h interfaces.HeartsGame) string {
-	if !h.GetGameEndFlag() {
-		return actionLogToText(nil)
-	}
-	return actionLogToText(h.GetActionLog())
+	return actionLogOutputText(h)
 }
 
 // cuiPassDirectionStr パス方向の日本語表示
