@@ -422,3 +422,148 @@ func TestBaccarat_ResetAndReplay(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, b.GetGameEndFlag())
 }
+
+// TestBaccarat_DrawPhase_AllBranches covers all 4 non-natural path combinations in drawPhase().
+func TestBaccarat_DrawPhase_AllBranches(t *testing.T) {
+	// Helper: create a Baccarat backed by an unshuffled deck so DrawCard() is deterministic.
+	// Unshuffled NewTrumpCards(0) order: SpadeA(1),Spade2(2),Spade3(3),...
+	newDetB := func() *Baccarat {
+		b := &Baccarat{trumpCards: NewTrumpCards(0), phase: BaccaratPhaseBet}
+		b.SetChips(BaccaratDefaultChips)
+		return b
+	}
+
+	t.Run("player draws and banker draws", func(t *testing.T) {
+		b := newDetB()
+		// Player total=5 (≤5, draws). Banker total=3 (draws when playerThird != 8).
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 3, false), // point 3
+			NewCard(CardDesignHeart, 2, false), // point 2 → total 5
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 2, false),  // point 2
+			NewCard(CardDesignDiamond, 1, false), // point 1 → total 3
+		})
+		// deck[0]=SpadeA (point 1, ≠8) → player draws it; shouldBankerDraw(3,1,true)=true → banker draws deck[1]
+		b.drawPhase()
+		assert.Equal(t, 3, len(b.GetPlayerHand()), "player should draw 3rd card")
+		assert.Equal(t, 3, len(b.GetBankerHand()), "banker should draw 3rd card")
+	})
+
+	t.Run("player draws banker does not draw", func(t *testing.T) {
+		b := newDetB()
+		// Player total=5 (draws). Banker total=7 (never draws when player drew).
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 2, false), // total 5
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false), // total 7
+		})
+		// deck[0]=SpadeA (point 1) → player draws; shouldBankerDraw(7,1,true)=false (default)
+		b.drawPhase()
+		assert.Equal(t, 3, len(b.GetPlayerHand()), "player should draw 3rd card")
+		assert.Equal(t, 2, len(b.GetBankerHand()), "banker should not draw")
+	})
+
+	t.Run("player does not draw banker draws", func(t *testing.T) {
+		b := newDetB()
+		// Player total=6 (>5, stands; not natural). Banker total=5 (≤5, draws when player stood).
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 3, false), // total 6
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 2, false),
+			NewCard(CardDesignDiamond, 3, false), // total 5
+		})
+		// shouldPlayerDraw(6)=false; shouldBankerDraw(5,0,false)=true → banker draws deck[0]
+		b.drawPhase()
+		assert.Equal(t, 2, len(b.GetPlayerHand()), "player should not draw")
+		assert.Equal(t, 3, len(b.GetBankerHand()), "banker should draw 3rd card")
+	})
+
+	t.Run("player does not draw banker does not draw", func(t *testing.T) {
+		b := NewDefaultBaccarat() // deck irrelevant, no cards drawn
+		// Player total=7 (stands). Banker total=7 (stands when player stood).
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 4, false), // total 7
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false), // total 7
+		})
+		// shouldPlayerDraw(7)=false; shouldBankerDraw(7,0,false)=false
+		b.drawPhase()
+		assert.Equal(t, 2, len(b.GetPlayerHand()), "player should not draw")
+		assert.Equal(t, 2, len(b.GetBankerHand()), "banker should not draw")
+	})
+}
+
+// TestBaccarat_Judge_AllOutcomes covers all three outcome branches in judge().
+func TestBaccarat_Judge_AllOutcomes(t *testing.T) {
+	t.Run("player wins", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(900) // simulates state after 100 bet was subtracted
+		b.SetBetAmount(100)
+		b.SetBetType(BaccaratBetPlayer)
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 4, false), // 4
+			NewCard(CardDesignHeart, 5, false), // 5 → total 9
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false), // total 7
+		})
+		b.judge()
+		assert.Equal(t, GameResultWin, b.GetResult())
+		assert.Equal(t, 200, b.GetPayout())
+		assert.Equal(t, BaccaratPhaseEnd, b.GetPhase())
+		assert.True(t, b.GetGameEndFlag())
+		assert.Equal(t, 1100, b.GetChips()) // 900 + 200
+	})
+
+	t.Run("banker wins", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(900)
+		b.SetBetAmount(100)
+		b.SetBetType(BaccaratBetBanker)
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 4, false), // total 7
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 4, false),
+			NewCard(CardDesignDiamond, 5, false), // total 9
+		})
+		b.judge()
+		assert.Equal(t, GameResultLose, b.GetResult()) // GameResultLose = player lost = banker won
+		assert.Equal(t, 195, b.GetPayout())            // 100 + 95 (5% commission applied)
+		assert.Equal(t, BaccaratPhaseEnd, b.GetPhase())
+		assert.True(t, b.GetGameEndFlag())
+		assert.Equal(t, 1095, b.GetChips()) // 900 + 195
+	})
+
+	t.Run("tie", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(900)
+		b.SetBetAmount(100)
+		b.SetBetType(BaccaratBetTie)
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 4, false),
+			NewCard(CardDesignHeart, 5, false), // total 9
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 4, false),
+			NewCard(CardDesignDiamond, 5, false), // total 9
+		})
+		b.judge()
+		assert.Equal(t, GameResultDraw, b.GetResult())
+		assert.Equal(t, 900, b.GetPayout()) // 100 + 100*8
+		assert.Equal(t, BaccaratPhaseEnd, b.GetPhase())
+		assert.True(t, b.GetGameEndFlag())
+		assert.Equal(t, 1800, b.GetChips()) // 900 + 900
+	})
+}
