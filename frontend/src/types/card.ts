@@ -594,3 +594,28 @@ export interface KlondikeResponse {
   messageParams?: Record<string, string>;
   hint?: KlondikeHint;
 }
+
+export const BACCARAT_BET_PLAYER = 0;
+export const BACCARAT_BET_BANKER = 1;
+export const BACCARAT_BET_TIE = 2;
+
+export const BACCARAT_PHASE = {
+  BET: 1,
+  END: 2,
+} as const;
+
+export interface BaccaratResponse {
+  playerHand: Card[];
+  bankerHand: Card[];
+  playerHandValue: number;
+  bankerHandValue: number;
+  phase: number;
+  chips: number;
+  betAmount: number;
+  betType: number;
+  result: number;
+  payout: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

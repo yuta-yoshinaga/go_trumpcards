@@ -1,0 +1,24 @@
+{
+  "player": "Player:",
+  "banker": "Banker:",
+  "betType": {
+    "player": "Player",
+    "banker": "Banker",
+    "tie": "Tie"
+  },
+  "label": {
+    "value": "Value: {{value}}",
+    "chips": "Chips: {{chips}}",
+    "betAmount": "Bet Amount:",
+    "betTarget": "Bet Target:",
+    "payout": "Payout: {{payout}}"
+  },
+  "button": {
+    "bet": "Bet",
+    "reset": "Reset"
+  },
+  "phase": {
+    "bet": "Bet Phase",
+    "end": "Result"
+  }
+}

@@ -44,6 +44,9 @@ func main() {
 	case "klondike":
 		klondike := ui.NewKlondikeCui()
 		klondike.Exec()
+	case "baccarat":
+		baccarat := ui.NewBaccaratCui()
+		baccarat.Exec()
 	case "web":
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()

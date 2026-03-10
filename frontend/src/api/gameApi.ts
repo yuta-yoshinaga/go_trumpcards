@@ -1,5 +1,6 @@
 import type {
   ActionLogResponse,
+  BaccaratResponse,
   BlackJackResponse,
   DaifugoConfigInput,
   DaifugoResponse,
@@ -267,6 +268,11 @@ export const klondikeApi = {
     }),
 };
 
+export const baccaratApi = {
+  exec: (command: 'reset' | 'bet' | 'log', amount?: number, betType?: number) =>
+    postJson<BaccaratResponse>('/baccarat/exec', { command, amount, betType, sessionId }),
+};
+
 function fetchLog(url: string): Promise<ActionLogResponse> {
   return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
 }
@@ -282,6 +288,7 @@ const games = [
   'hearts',
   'memory',
   'klondike',
+  'baccarat',
 ] as const;
 type Game = (typeof games)[number];
 

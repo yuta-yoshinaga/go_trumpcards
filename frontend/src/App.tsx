@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { NavBar } from './components/NavBar';
 import { gameRoutes } from './constants/gameRoutes';
+import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
@@ -25,6 +26,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/hearts': <HeartsPage />,
   '/memory': <MemoryPage />,
   '/klondike': <KlondikePage />,
+  '/baccarat': <BaccaratPage />,
 };
 
 export default function App() {

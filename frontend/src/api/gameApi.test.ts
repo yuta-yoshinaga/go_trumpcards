@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   actionLogApi,
+  baccaratApi,
   blackjackApi,
   daifugoApi,
   doubtApi,
@@ -1857,6 +1858,55 @@ describe('gameApi', () => {
     });
   });
 
+  describe('baccaratApi.exec', () => {
+    it('sends reset command', async () => {
+      const mockResponse = { phase: 1, chips: 1000 };
+      mockFetch.mockReturnValue(makeResponse(mockResponse));
+      const result = await baccaratApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', amount: undefined, betType: undefined, sessionId }),
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('sends bet command with amount and betType', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 2 }));
+      await baccaratApi.exec('bet', 100, 0);
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'bet', amount: 100, betType: 0, sessionId }),
+      });
+    });
+
+    it('sends bet command with banker betType', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 2 }));
+      await baccaratApi.exec('bet', 100, 1);
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'bet', amount: 100, betType: 1, sessionId }),
+      });
+    });
+
+    it('sends log command', async () => {
+      mockFetch.mockReturnValue(makeResponse({ entries: [] }));
+      await baccaratApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'log', amount: undefined, betType: undefined, sessionId }),
+      });
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(baccaratApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('actionLogApi', () => {
     const logPayload = { entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'hit card', cards: [] }] };
 
@@ -1871,6 +1921,7 @@ describe('gameApi', () => {
       ['hearts', actionLogApi.hearts],
       ['memory', actionLogApi.memory],
       ['klondike', actionLogApi.klondike],
+      ['baccarat', actionLogApi.baccarat],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));

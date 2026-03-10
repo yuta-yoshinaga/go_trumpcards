@@ -150,6 +150,9 @@ func (k *Klondike) MoveWasteToFoundation() error {
 	}
 	card := k.waste[len(k.waste)-1]
 	fIdx := card.GetDesign() - 1
+	if fIdx < 0 || fIdx >= KlondikeFoundationCnt {
+		return errors.New("invalid card for foundation")
+	}
 	if !k.canPlaceOnFoundation(card, fIdx) {
 		return errors.New("cannot place card on foundation")
 	}
@@ -218,6 +221,9 @@ func (k *Klondike) MoveTableauToFoundation(col int) error {
 	tc := fromCards[len(fromCards)-1]
 	card := tc.Card
 	fIdx := card.GetDesign() - 1
+	if fIdx < 0 || fIdx >= KlondikeFoundationCnt {
+		return errors.New("invalid card for foundation")
+	}
 	if !k.canPlaceOnFoundation(card, fIdx) {
 		return errors.New("cannot place card on foundation")
 	}

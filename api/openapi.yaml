@@ -34,6 +34,8 @@ tags:
     description: Memory (神経衰弱) game
   - name: klondike
     description: Klondike (ソリティア) game
+  - name: baccarat
+    description: Baccarat (バカラ) game
 
 paths:
   /blackjack/exec:
@@ -1142,6 +1144,85 @@ paths:
                     foundation: []
                     phase: 0
                     moveCount: 0
+                    message: param error.
+
+  /baccarat/exec:
+    post:
+      tags:
+        - baccarat
+      summary: Execute a Baccarat game command
+      description: |
+        Send a command to advance the Baccarat (バカラ) game session identified by
+        `sessionId`.  Baccarat is a casino card game using a standard 52-card deck.
+        Player bets on Player, Banker, or Tie, then cards are dealt automatically
+        following baccarat third-card rules.  Card points: A=1, 2-9=face value,
+        10/J/Q/K=0.  Hand value is the ones digit of the sum.
+
+        The game proceeds through these phases:
+
+        | Phase | Value | Description |
+        |-------|-------|-------------|
+        | Bet   | `1`   | Place a bet (amount and type) |
+        | End   | `2`   | Round complete; shows result and payout |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place a bet (requires `amount` and `betType`) |
+        | `log`   | `l`     | View action log |
+      operationId: baccaratExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaccaratRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              betPlayer:
+                summary: Bet 100 on Player
+                value:
+                  command: bet
+                  amount: 100
+                  betType: 0
+                  sessionId: my-session-001
+              betBanker:
+                summary: Bet 200 on Banker
+                value:
+                  command: bet
+                  amount: 200
+                  betType: 1
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaccaratResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaccaratResponse'
+              examples:
+                paramError:
+                  value:
+                    playerHand: []
+                    bankerHand: []
+                    playerHandValue: 0
+                    bankerHandValue: 0
+                    phase: 0
+                    chips: 0
+                    betAmount: 0
+                    betType: 0
+                    result: 0
+                    payout: 0
                     message: param error.
 
 components:
@@ -4171,3 +4252,112 @@ components:
               $ref: '#/components/schemas/KlondikeZone'
             to:
               $ref: '#/components/schemas/KlondikeZone'
+
+    # -------------------------------------------------------------------------
+    # Baccarat
+    # -------------------------------------------------------------------------
+    BaccaratRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
+            `log` (`l`).
+          enum: [r, reset, b, bet, log, l]
+          example: bet
+        amount:
+          type: integer
+          description: |
+            Bet amount.  Required for `bet` command (minimum 10, must be a
+            multiple of 10).  Ignored for other commands.
+          minimum: 10
+          example: 100
+        betType:
+          type: integer
+          description: |
+            Bet type.  Required for `bet` command.
+            0 = Player, 1 = Banker, 2 = Tie.
+          enum: [0, 1, 2]
+          example: 0
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BaccaratResponse:
+      type: object
+      description: Current state of the Baccarat game
+      required:
+        - playerHand
+        - bankerHand
+        - playerHandValue
+        - bankerHandValue
+        - phase
+        - chips
+        - betAmount
+        - betType
+        - result
+        - payout
+        - message
+      properties:
+        playerHand:
+          type: array
+          description: Cards in the player's hand
+          items:
+            $ref: '#/components/schemas/Card'
+        bankerHand:
+          type: array
+          description: Cards in the banker's hand
+          items:
+            $ref: '#/components/schemas/Card'
+        playerHandValue:
+          type: integer
+          description: "Player hand value (ones digit of sum: 0-9)"
+          example: 7
+        bankerHandValue:
+          type: integer
+          description: "Banker hand value (ones digit of sum: 0-9)"
+          example: 5
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = End"
+          enum: [1, 2]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 1000
+        betAmount:
+          type: integer
+          description: Current bet amount
+          example: 100
+        betType:
+          type: integer
+          description: "Current bet type: 0 = Player, 1 = Banker, 2 = Tie"
+          enum: [0, 1, 2]
+          example: 0
+        result:
+          type: integer
+          description: "Game result: 1 = Player wins, -1 = Banker wins, 0 = Tie/not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        payout:
+          type: integer
+          description: Payout amount for the current round
+          example: 0
+        message:
+          type: string
+          description: Game result or error message. Empty during bet phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

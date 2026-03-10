@@ -31,6 +31,7 @@ type TrumpCardsWeb struct {
 	htc *controller.HeartsWebController
 	myc *controller.MemoryWebController
 	klc *controller.KlondikeWebController
+	bcc *controller.BaccaratWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -126,6 +127,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			klondike := domain.NewKlondike(domain.NewTrumpCards(0))
 			return usecase.NewKlondikeInteractor(klondike, presenter.NewKlondikeWebPresenter())
 		}),
+		bcc: controller.NewBaccaratWebController(func() usecase.BaccaratInteractorIF {
+			baccarat := domain.NewDefaultBaccarat()
+			return usecase.NewBaccaratInteractor(baccarat, presenter.NewBaccaratWebPresenter())
+		}),
 	}
 }
 
@@ -174,6 +179,7 @@ func (web *TrumpCardsWeb) Exec() {
 		{"/hearts/exec", web.htc.Exec},
 		{"/memory/exec", web.myc.Exec},
 		{"/klondike/exec", web.klc.Exec},
+		{"/baccarat/exec", web.bcc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -236,6 +242,7 @@ func (web *TrumpCardsWeb) Exec() {
 	web.htc.Stop()
 	web.myc.Stop()
 	web.klc.Stop()
+	web.bcc.Stop()
 	slog.Info("server stopped")
 }
 

@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
+import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
 import enCommon from './locales/en/common.json';
 import enDaifugo from './locales/en/daifugo.json';
@@ -13,6 +14,7 @@ import enMemory from './locales/en/memory.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enPoker from './locales/en/poker.json';
 import enSevens from './locales/en/sevens.json';
+import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
 import jaDaifugo from './locales/ja/daifugo.json';
@@ -42,6 +44,7 @@ i18n
         hearts: jaHearts,
         memory: jaMemory,
         klondike: jaKlondike,
+        baccarat: jaBaccarat,
       },
       en: {
         common: enCommon,
@@ -55,6 +58,7 @@ i18n
         hearts: enHearts,
         memory: enMemory,
         klondike: enKlondike,
+        baccarat: enBaccarat,
       },
     },
     fallbackLng: 'ja',
@@ -71,6 +75,7 @@ i18n
       'hearts',
       'memory',
       'klondike',
+      'baccarat',
     ],
     detection: {
       order: ['localStorage'],
