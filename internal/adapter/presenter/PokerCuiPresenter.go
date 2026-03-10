@@ -166,10 +166,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 
 // ActionLogOutput 棋譜をテキスト出力
 func (pcp *PokerCuiPresenter) ActionLogOutput(p interfaces.PokerGame) string {
-	if !p.GetGameEndFlag() {
-		return actionLogToText(nil)
-	}
-	return actionLogToText(p.GetActionLog())
+	return actionLogOutputText(p)
 }
 
 // OutputWithOdds ゲーム状態 + オッズ出力

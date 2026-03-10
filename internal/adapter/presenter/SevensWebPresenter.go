@@ -107,10 +107,7 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 
 // ActionLogOutput 棋譜をJSON出力
 func (swp *SevensWebPresenter) ActionLogOutput(s interfaces.SevensGame) string {
-	if !s.GetGameEndFlag() {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(s.GetActionLog())
+	return actionLogOutputJSON(s)
 }
 
 // buildResultMessage ゲーム終了メッセージを生成

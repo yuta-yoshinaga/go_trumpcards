@@ -133,10 +133,7 @@ func (dwp *DoubtWebPresenter) buildResultMessage(d interfaces.DoubtGame) string 
 
 // ActionLogOutput 棋譜をJSON出力
 func (dwp *DoubtWebPresenter) ActionLogOutput(d interfaces.DoubtGame) string {
-	if !d.GetGameEndFlag() {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(d.GetActionLog())
+	return actionLogOutputJSON(d)
 }
 
 // actionToOutput DoubtCpuAction を DoubtWebOutputAction に変換

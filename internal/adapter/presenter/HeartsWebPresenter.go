@@ -119,8 +119,5 @@ func (p *HeartsWebPresenter) buildResultMessage(h interfaces.HeartsGame) string 
 
 // ActionLogOutput 棋譜をJSON出力
 func (p *HeartsWebPresenter) ActionLogOutput(h interfaces.HeartsGame) string {
-	if !h.GetGameEndFlag() {
-		return actionLogToJSON(nil)
-	}
-	return actionLogToJSON(h.GetActionLog())
+	return actionLogOutputJSON(h)
 }

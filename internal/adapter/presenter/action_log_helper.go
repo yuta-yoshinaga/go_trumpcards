@@ -8,6 +8,28 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
+// gameEndLogger is a minimal interface satisfied by all game types that support action logs.
+type gameEndLogger interface {
+	GetGameEndFlag() bool
+	GetActionLog() []*domain.ActionLogEntry
+}
+
+// actionLogOutputText returns the action log as plain text, or an empty log if the game is not finished.
+func actionLogOutputText(game gameEndLogger) string {
+	if !game.GetGameEndFlag() {
+		return actionLogToText(nil)
+	}
+	return actionLogToText(game.GetActionLog())
+}
+
+// actionLogOutputJSON returns the action log as JSON, or an empty log if the game is not finished.
+func actionLogOutputJSON(game gameEndLogger) string {
+	if !game.GetGameEndFlag() {
+		return actionLogToJSON(nil)
+	}
+	return actionLogToJSON(game.GetActionLog())
+}
+
 // actionLogToJSON 棋譜をJSON文字列に変換する
 func actionLogToJSON(entries []*domain.ActionLogEntry) string {
 	out := &controller.ActionLogWebOutput{

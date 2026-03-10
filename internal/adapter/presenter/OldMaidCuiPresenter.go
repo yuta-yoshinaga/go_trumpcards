@@ -150,8 +150,5 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 
 // ActionLogOutput 棋譜をテキスト出力
 func (p *OldMaidCuiPresenter) ActionLogOutput(om interfaces.OldMaidGame) string {
-	if !om.GetGameEndFlag() {
-		return actionLogToText(nil)
-	}
-	return actionLogToText(om.GetActionLog())
+	return actionLogOutputText(om)
 }

@@ -81,10 +81,7 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 
 // ActionLogOutput 棋譜をテキスト出力
 func (bp *BaccaratCuiPresenter) ActionLogOutput(b interfaces.BaccaratGame) string {
-	if !b.GetGameEndFlag() {
-		return actionLogToText(nil)
-	}
-	return actionLogToText(b.GetActionLog())
+	return actionLogOutputText(b)
 }
 
 // phaseStr フェーズ文字列
