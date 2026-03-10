@@ -4,6 +4,12 @@ This directory contains the React frontend (Vite + React + TypeScript).
 
 ## Testing
 
+**TDD cycle (Red-Green-Refactor):**
+
+1. **Red** -- Write a failing test (`npm test -- --run TestName` confirms failure)
+2. **Green** -- Write the minimum code to pass the test
+3. **Refactor** -- Clean up while keeping all tests green (`npm test`)
+
 The test stack is **Vitest + React Testing Library + jest-dom**.
 
 | Layer | Location | What to test |
