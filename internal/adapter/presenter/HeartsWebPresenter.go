@@ -19,7 +19,6 @@ func NewHeartsWebPresenter() *HeartsWebPresenter {
 // Output ゲーム状態をJSON出力
 func (p *HeartsWebPresenter) Output(h interfaces.HeartsGame, lastErr error) string {
 	resObj := new(controller.HeartsWebOutput)
-	resObj.Players = make([]*controller.HeartsWebOutputPlayer, 0)
 	resObj.Phase = int(h.GetPhase())
 	resObj.RoundNumber = h.GetRoundNumber()
 	resObj.TrickNumber = h.GetTrickNumber()
@@ -37,17 +36,18 @@ func (p *HeartsWebPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 		PointLimit:    cfg.PointLimit,
 	}
 
-	resObj.CurrentTrick = p.buildTrickOutput(h)
+	trick := h.GetCurrentTrick()
+	resObj.CurrentTrick = p.buildTrickOutput(trick)
 	resObj.Players = p.buildPlayersOutput(h)
-	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(h, lastErr)
+	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(h, trick, lastErr)
 
 	return marshalOrError(resObj)
 }
 
 // buildTrickOutput 現在のトリック情報を構築
-func (p *HeartsWebPresenter) buildTrickOutput(h interfaces.HeartsGame) []*controller.HeartsWebOutputTrickCard {
+func (p *HeartsWebPresenter) buildTrickOutput(trick []*domain.HeartsTrickCard) []*controller.HeartsWebOutputTrickCard {
 	out := make([]*controller.HeartsWebOutputTrickCard, 0)
-	for _, tc := range h.GetCurrentTrick() {
+	for _, tc := range trick {
 		out = append(out, &controller.HeartsWebOutputTrickCard{
 			PlayerIdx: tc.PlayerIdx,
 			Card:      cardToOutput(tc.Card),
@@ -81,7 +81,7 @@ func (p *HeartsWebPresenter) buildPlayersOutput(h interfaces.HeartsGame) []*cont
 }
 
 // buildMessage ゲーム結果メッセージを構築
-func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, lastErr error) (string, string, map[string]string) {
+func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*domain.HeartsTrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
 		return lastErr.Error(), "", nil
 	}
@@ -95,7 +95,6 @@ func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, lastErr error
 		params := map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
 		return msg, "hearts.result.cpuWin", params
 	}
-	trick := h.GetCurrentTrick()
 	switch h.GetPhase() {
 	case domain.HeartsPhasePass:
 		return "", "hearts.passPhase", nil

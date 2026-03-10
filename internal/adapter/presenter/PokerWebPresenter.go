@@ -65,16 +65,20 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	resObj.CpuActions = pwp.buildCpuActionsOutput(p)
 	resObj.CpuExchanges = pwp.buildCpuExchangesOutput(p)
 	resObj.RoundResults = pwp.buildRoundResultsOutput(p)
-
-	if lastErr != nil {
-		resObj.Message = lastErr.Error()
-	} else if p.GetGameEndFlag() {
-		msg, code := pwp.buildResultMessage(p)
-		resObj.Message = msg
-		resObj.MessageCode = code
-	}
+	resObj.Message, resObj.MessageCode = pwp.buildMessage(p, lastErr)
 
 	return resObj
+}
+
+// buildMessage ゲーム結果メッセージを構築
+func (pwp *PokerWebPresenter) buildMessage(p interfaces.PokerGame, lastErr error) (string, string) {
+	if lastErr != nil {
+		return lastErr.Error(), ""
+	}
+	if p.GetGameEndFlag() {
+		return pwp.buildResultMessage(p)
+	}
+	return "", ""
 }
 
 // buildSidePotsOutput サイドポット情報を構築
