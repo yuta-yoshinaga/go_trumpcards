@@ -117,13 +117,13 @@ func (p *KlondikeCuiPresenter) ActionLogOutput(k interfaces.KlondikeGame) string
 
 // klondikeHintStr ヒントを文字列に変換
 func klondikeHintStr(hint *domain.KlondikeHint) string {
-	from := hint.FromZone
+	var from string
 	if hint.FromZone == "tableau" {
 		from = fmt.Sprintf("タブロー列%d[%d]", hint.FromCol, hint.CardIndex)
 	} else {
 		from = "ウェイスト"
 	}
-	to := hint.ToZone
+	var to string
 	if hint.ToZone == "foundation" {
 		to = "ファンデーション"
 	} else {

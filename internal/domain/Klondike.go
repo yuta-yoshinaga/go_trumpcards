@@ -114,7 +114,7 @@ func (k *Klondike) Draw() error {
 	k.stock = k.stock[:len(k.stock)-1]
 	k.waste = append(k.waste, card)
 	k.moveCount++
-	k.appendLog("draw", fmt.Sprintf("ストックからカードを引きました"), []*Card{card})
+	k.appendLog("draw", "ストックからカードを引きました", []*Card{card})
 	return nil
 }
 
@@ -159,7 +159,7 @@ func (k *Klondike) MoveWasteToFoundation() error {
 	k.waste = k.waste[:len(k.waste)-1]
 	k.foundation[fIdx] = append(k.foundation[fIdx], card)
 	k.moveCount++
-	k.appendLog("move", fmt.Sprintf("ウェイスト→ファンデーション"), []*Card{card})
+	k.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
 	k.checkGameClear()
 	return nil
 }
