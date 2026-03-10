@@ -6,7 +6,8 @@
     "daifugo": "Daifugo",
     "sevens": "Sevens",
     "doubt": "Doubt",
-    "holdem": "Texas Hold'em"
+    "holdem": "Texas Hold'em",
+    "hearts": "Hearts"
   },
   "player": {
     "you": "You",
@@ -84,6 +85,8 @@
     "holdem.result.folded": "You folded.",
     "holdem.result.lose": "You lose.",
     "holdem.result.mucked": "You mucked.",
-    "holdem.muck.prompt": "Muck or show your hand."
+    "holdem.muck.prompt": "Muck or show your hand.",
+    "hearts.result.humanWin": "Game over! You win!",
+    "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!"
   }
 }

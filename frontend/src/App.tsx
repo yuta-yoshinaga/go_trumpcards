@@ -5,6 +5,7 @@ import { gameRoutes } from './constants/gameRoutes';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
+import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { PokerPage } from './pages/PokerPage';
@@ -19,6 +20,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/sevens': <SevensPage />,
   '/doubt': <DoubtPage />,
   '/holdem': <HoldemPage />,
+  '/hearts': <HeartsPage />,
 };
 
 export default function App() {

@@ -35,6 +35,9 @@ func main() {
 	case "holdem":
 		holdem := ui.NewHoldemCui()
 		holdem.Exec()
+	case "hearts":
+		hearts := ui.NewHeartsCui()
+		hearts.Exec()
 	case "web":
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()

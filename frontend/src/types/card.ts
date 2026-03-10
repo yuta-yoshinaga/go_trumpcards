@@ -470,3 +470,51 @@ export interface HoldemResponse {
   addonUsed: boolean[];
   muckAvailable: boolean;
 }
+
+// --- Hearts ---
+
+export interface HeartsPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+export interface HeartsTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+export interface HeartsConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+export const HEARTS_PHASE = {
+  PASS: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+export interface HeartsResponse {
+  players: HeartsPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  currentTrick: HeartsTrickCard[];
+  heartsBroken: boolean;
+  passDirection: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: HeartsConfig;
+}

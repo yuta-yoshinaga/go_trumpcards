@@ -5,6 +5,7 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  HeartsResponse,
   HoldemResponse,
   OldMaidResponse,
   PokerResponse,
@@ -209,11 +210,32 @@ export const holdemApi = {
     }),
 };
 
+export interface HeartsConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+export const heartsApi = {
+  exec: (
+    command: 'reset' | 'pass' | 'play' | 'next' | 'nextround',
+    cardIndices?: number[],
+    cardIndex?: number,
+    config?: HeartsConfigInput,
+  ) =>
+    postJson<HeartsResponse>('/hearts/exec', {
+      command,
+      cardIndices,
+      cardIndex,
+      sessionId,
+      config,
+    }),
+};
+
 function fetchLog(url: string): Promise<ActionLogResponse> {
   return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
 }
 
-const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem'] as const;
+const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem', 'hearts'] as const;
 type Game = (typeof games)[number];
 
 export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(

@@ -6,7 +6,8 @@
     "daifugo": "大富豪",
     "sevens": "7並べ",
     "doubt": "ダウト",
-    "holdem": "テキサスホールデム"
+    "holdem": "テキサスホールデム",
+    "hearts": "ハーツ"
   },
   "player": {
     "you": "あなた",
@@ -84,6 +85,8 @@
     "holdem.result.folded": "フォールドしました。",
     "holdem.result.lose": "あなたの負けです。",
     "holdem.result.mucked": "マックしました。",
-    "holdem.muck.prompt": "マックしますか?"
+    "holdem.muck.prompt": "マックしますか?",
+    "hearts.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
   }
 }

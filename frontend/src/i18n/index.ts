@@ -6,6 +6,7 @@ import enBlackjack from './locales/en/blackjack.json';
 import enCommon from './locales/en/common.json';
 import enDaifugo from './locales/en/daifugo.json';
 import enDoubt from './locales/en/doubt.json';
+import enHearts from './locales/en/hearts.json';
 import enHoldem from './locales/en/holdem.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enPoker from './locales/en/poker.json';
@@ -14,6 +15,7 @@ import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
 import jaDaifugo from './locales/ja/daifugo.json';
 import jaDoubt from './locales/ja/doubt.json';
+import jaHearts from './locales/ja/hearts.json';
 import jaHoldem from './locales/ja/holdem.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaPoker from './locales/ja/poker.json';
@@ -33,6 +35,7 @@ i18n
         sevens: jaSevens,
         doubt: jaDoubt,
         holdem: jaHoldem,
+        hearts: jaHearts,
       },
       en: {
         common: enCommon,
@@ -43,11 +46,12 @@ i18n
         sevens: enSevens,
         doubt: enDoubt,
         holdem: enHoldem,
+        hearts: enHearts,
       },
     },
     fallbackLng: 'ja',
     defaultNS: 'common',
-    ns: ['common', 'blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem'],
+    ns: ['common', 'blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem', 'hearts'],
     detection: {
       order: ['localStorage'],
       lookupLocalStorage: 'i18n_lang',

@@ -16,6 +16,7 @@
 - **7並べ (Sevens)**: CLI および Web GUIで遊べます（オプションルール: トンネル、ジョーカー、CPU戦略、片側ストップ、ジョーカー連続禁止） — [CUI版マニュアル](docs/manual/cui/sevens.md) / [Web版マニュアル](docs/manual/web/sevens.md)
 - **ダウト (Doubt)**: CLI および Web GUIで遊べます（1人 vs CPU×3、10秒ダウト判定ウィンドウ付き） — [CUI版マニュアル](docs/manual/cui/doubt.md) / [Web版マニュアル](docs/manual/web/doubt.md)
 - **テキサスホールデム (Texas Hold'em)**: CLI および Web GUIで遊べます（1人 vs CPU×3、5種のプレイスタイル、サイドポット対応、キッカー表示） — [CUI版マニュアル](docs/manual/cui/holdem.md) / [Web版マニュアル](docs/manual/web/holdem.md)
+- **ハーツ (Hearts)**: CLI および Web GUIで遊べます（1人 vs CPU×3、トリックテイキング、シュート・ザ・ムーン、3段階CPU難易度） — [CUI版マニュアル](docs/manual/cui/hearts.md) / [Web版マニュアル](docs/manual/web/hearts.md)
 
 ## Requirements
 
@@ -41,6 +42,7 @@ go run ./cmd/cli daifugo    # 大富豪 CLI
 go run ./cmd/cli sevens     # 7並べ CLI
 go run ./cmd/cli doubt      # ダウト CLI
 go run ./cmd/cli holdem     # テキサスホールデム CLI
+go run ./cmd/cli hearts     # ハーツ CLI
 go run ./cmd/cli web        # REST API + Web GUI サーバー起動 (CLI経由)
 go run ./cmd/server         # REST API + Web GUI サーバー起動 (直接)
 ```
