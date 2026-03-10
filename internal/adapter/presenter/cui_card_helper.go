@@ -3,9 +3,25 @@ package presenter
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
+
+// cuiCardList is the minimal type constraint required by cuiCardListStr.
+type cuiCardList interface {
+	GetCardsSize() int
+	GetCard(idx int) *domain.Card
+}
+
+// cuiCardListStr returns a comma-separated card string for all cards in hand.
+func cuiCardListStr(hand cuiCardList) string {
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = cuiCardStr(hand.GetCard(i))
+	}
+	return strings.Join(parts, ",")
+}
 
 // cuiPlayer is the minimal type constraint required by cuiPlayerName.
 type cuiPlayer interface {

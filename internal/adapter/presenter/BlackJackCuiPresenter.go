@@ -61,12 +61,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	b.WriteString("dealer score ")
 	if bj.GetGameEndFlag() {
 		fmt.Fprintf(&b, "%d\n", dealer.GetScore())
-		for i := 0; i < dealer.GetCardsSize(); i++ {
-			if i != 0 {
-				b.WriteString(",")
-			}
-			b.WriteString(cuiCardStr(dealer.GetCard(i)))
-		}
+		b.WriteString(cuiCardListStr(dealer))
 		b.WriteString("\n")
 	} else {
 		b.WriteString("\n")
@@ -103,12 +98,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 			b.WriteString(" [SURRENDER]")
 		}
 		b.WriteString("\n")
-		for j := 0; j < hand.GetCardsSize(); j++ {
-			if j != 0 {
-				b.WriteString(",")
-			}
-			b.WriteString(cuiCardStr(hand.GetCard(j)))
-		}
+		b.WriteString(cuiCardListStr(hand))
 		b.WriteString("\n")
 	}
 
@@ -143,12 +133,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 			}
 			b.WriteString("\n")
 			if bj.GetGameEndFlag() || bj.GetPhase() != domain.BJPhaseBet {
-				for j := 0; j < hand.GetCardsSize(); j++ {
-					if j != 0 {
-						b.WriteString(",")
-					}
-					b.WriteString(cuiCardStr(hand.GetCard(j)))
-				}
+				b.WriteString(cuiCardListStr(hand))
 				b.WriteString("\n")
 			}
 		}
