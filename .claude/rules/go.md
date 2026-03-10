@@ -9,6 +9,10 @@ globs: ["**/*.go"]
 - **`goimports -w <file>` を必ず実行してからコミットする**（`gofmt` は使わない）
 - パス: `/home/yuta/go/bin/goimports`
 
+## Lint
+
+- **コミット前に `golangci-lint run ./...` を実行し、警告・エラーがないことを確認する**
+
 ## テスト
 
 - **ユニットテストは必須**。実装と同じコミットに含める
