@@ -243,18 +243,19 @@ describe('KlondikePage', () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
 
-    // Select a tableau card as source first
-    const faceUpButtons = screen.getAllByRole('button').filter((btn) => btn.querySelector('img'));
-    if (faceUpButtons.length > 0) {
-      fireEvent.click(faceUpButtons[0]);
-    }
+    // Select a tableau card (King of Spades) as source first
+    const tableauImg = screen.getByAltText('♠ K');
+    const tableauButton = tableauImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(tableauButton);
+    await waitFor(() => expect(tableauButton.className).toContain('ring-2'));
 
-    // Click waste card while source is selected - should return early
-    const wasteArea = screen.getByText('ウェイスト').closest('.text-center');
-    const wasteButton = wasteArea?.querySelector('button');
-    if (wasteButton) {
-      fireEvent.click(wasteButton);
-    }
+    // Click waste card while tableau source is selected - should return early (no source change)
+    const wasteImg = screen.getByAltText('♣ 3');
+    const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+
+    // Tableau card should still be the selected source (ring-2 still present)
+    expect(tableauButton.className).toContain('ring-2');
   });
 
   it('clicking tableau face-up card selects as source', async () => {
@@ -318,14 +319,21 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     // Select waste as source first
-    const wasteArea = screen.getByText('ウェイスト').closest('.text-center');
-    const wasteButton = wasteArea?.querySelector('button');
-    if (wasteButton) {
-      fireEvent.click(wasteButton);
-    }
+    const wasteImg = screen.getByAltText('♣ 3');
+    const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+    await waitFor(() => expect(wasteButton.className).toContain('ring-2'));
 
-    // Foundation buttons with cards should be enabled when source is selected
-    // Verify by checking button is not disabled
+    // Click foundation card (Ace of Spades in pile 0)
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(withFoundationState);
+    const foundationImg = screen.getByAltText('♠ A');
+    const foundationButton = foundationImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(foundationButton);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)),
+    );
   });
 
   it('foundation disabled when no source selected', async () => {
@@ -425,6 +433,18 @@ describe('KlondikePage', () => {
     });
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('プレイ中')).toBeInTheDocument());
+  });
+
+  it('displays hint error when hint fetch fails', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockRejectedValue(new Error('Network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() =>
+      expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
+    );
   });
 
   it('displays error message', async () => {

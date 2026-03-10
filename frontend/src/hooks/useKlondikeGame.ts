@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type KlondikeMoveZone, klondikeApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { KlondikeHint } from '../types/card';
 import { useGameApi } from './useGameApi';
 
@@ -7,6 +8,7 @@ export function useKlondikeGame() {
   const { state, loading, error, exec: rawExec } = useGameApi(klondikeApi.exec);
   const [selectedSource, setSelectedSource] = useState<KlondikeMoveZone | null>(null);
   const [hint, setHint] = useState<KlondikeHint | null>(null);
+  const [hintError, setHintError] = useState<string | null>(null);
 
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -33,8 +35,13 @@ export function useKlondikeGame() {
   }, [exec]);
 
   const handleHint = useCallback(async () => {
-    const res = await klondikeApi.exec('hint');
-    setHint(res.hint ?? null);
+    try {
+      const res = await klondikeApi.exec('hint');
+      setHint(res.hint ?? null);
+      setHintError(null);
+    } catch {
+      setHintError(NETWORK_ERROR_MESSAGE());
+    }
   }, []);
 
   const handleAutoComplete = useCallback(() => {
@@ -66,6 +73,7 @@ export function useKlondikeGame() {
     state,
     loading,
     error,
+    hintError,
     exec,
     selectedSource,
     hint,

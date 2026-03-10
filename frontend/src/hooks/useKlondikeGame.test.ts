@@ -130,6 +130,19 @@ describe('useKlondikeGame', () => {
     expect(result.current.hint).toBeNull();
   });
 
+  it('handleHint sets hintError on failure', async () => {
+    const { result } = renderHook(() => useKlondikeGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockRejectedValue(new Error('Network error'));
+    await act(async () => {
+      await result.current.handleHint();
+    });
+
+    expect(result.current.hintError).toBeTruthy();
+    expect(result.current.hint).toBeNull();
+  });
+
   it('handleSelectSource sets selectedSource', async () => {
     const { result } = renderHook(() => useKlondikeGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());

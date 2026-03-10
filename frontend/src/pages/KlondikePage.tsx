@@ -16,6 +16,7 @@ export function KlondikePage() {
     state,
     loading,
     error,
+    hintError,
     selectedSource,
     hint,
     handleDraw,
@@ -102,11 +103,7 @@ export function KlondikePage() {
               {pile.length > 0 ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (selectedSource) {
-                      handleSelectTarget({ zone: 'foundation', col: idx });
-                    }
-                  }}
+                  onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
                   className="p-0 border-0 bg-transparent cursor-pointer"
                 >
@@ -115,11 +112,7 @@ export function KlondikePage() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (selectedSource) {
-                      handleSelectTarget({ zone: 'foundation', col: idx });
-                    }
-                  }}
+                  onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
                   className="w-[60px] h-[84px] rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center"
                 >
@@ -144,11 +137,7 @@ export function KlondikePage() {
                 {col.length === 0 ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (selectedSource) {
-                        handleSelectTarget({ zone: 'tableau', col: colIdx });
-                      }
-                    }}
+                    onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
                     disabled={!isPlaying || loading || !selectedSource}
                     className="w-full h-[84px] rounded border-2 border-dashed border-white/20 text-white/20 text-xs flex items-center justify-center"
                   >
@@ -201,7 +190,7 @@ export function KlondikePage() {
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {/* Error */}
-        <ErrorAlert message={error} />
+        <ErrorAlert message={error ?? hintError} />
 
         {/* Action log */}
         {isEnded && actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}

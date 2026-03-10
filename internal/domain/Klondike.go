@@ -150,9 +150,6 @@ func (k *Klondike) MoveWasteToFoundation() error {
 	}
 	card := k.waste[len(k.waste)-1]
 	fIdx := card.GetDesign() - 1
-	if fIdx < 0 || fIdx >= KlondikeFoundationCnt {
-		return errors.New("invalid card for foundation")
-	}
 	if !k.canPlaceOnFoundation(card, fIdx) {
 		return errors.New("cannot place card on foundation")
 	}
@@ -221,9 +218,6 @@ func (k *Klondike) MoveTableauToFoundation(col int) error {
 	tc := fromCards[len(fromCards)-1]
 	card := tc.Card
 	fIdx := card.GetDesign() - 1
-	if fIdx < 0 || fIdx >= KlondikeFoundationCnt {
-		return errors.New("invalid card for foundation")
-	}
 	if !k.canPlaceOnFoundation(card, fIdx) {
 		return errors.New("cannot place card on foundation")
 	}
@@ -351,7 +345,7 @@ func (k *Klondike) AutoComplete() error {
 		for len(k.waste) > 0 {
 			card := k.waste[len(k.waste)-1]
 			fIdx := card.GetDesign() - 1
-			if fIdx < 0 || fIdx >= KlondikeFoundationCnt || !k.canPlaceOnFoundation(card, fIdx) {
+			if !k.canPlaceOnFoundation(card, fIdx) {
 				break
 			}
 			k.waste = k.waste[:len(k.waste)-1]
@@ -367,7 +361,7 @@ func (k *Klondike) AutoComplete() error {
 			tc := k.tableau[col][len(k.tableau[col])-1]
 			card := tc.Card
 			fIdx := card.GetDesign() - 1
-			if fIdx < 0 || fIdx >= KlondikeFoundationCnt || !k.canPlaceOnFoundation(card, fIdx) {
+			if !k.canPlaceOnFoundation(card, fIdx) {
 				continue
 			}
 			k.tableau[col] = k.tableau[col][:len(k.tableau[col])-1]

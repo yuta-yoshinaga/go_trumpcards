@@ -62,9 +62,6 @@ func (c *KlondikeCuiController) handleMove(args []string) string {
 }
 
 func (c *KlondikeCuiController) handleMoveFromWaste(args []string) string {
-	if len(args) < 1 {
-		return "Usage: m w t <col> | m w f"
-	}
 	to := args[0]
 	switch to {
 	case "t":

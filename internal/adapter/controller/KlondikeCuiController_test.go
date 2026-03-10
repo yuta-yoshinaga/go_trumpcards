@@ -145,6 +145,13 @@ func TestKlondikeCuiControllerMoveErrors(t *testing.T) {
 		assert.Contains(t, result, "Usage")
 	})
 
+	t.Run("move tableau one arg - too few for handleMoveFromTableau", func(t *testing.T) {
+		ki := newMockKlondikeInteractor()
+		c := NewKlondikeCuiController(ki)
+		result := c.Exec("m t 5")
+		assert.Contains(t, result, "Usage")
+	})
+
 	t.Run("move tableau invalid from col", func(t *testing.T) {
 		ki := newMockKlondikeInteractor()
 		c := NewKlondikeCuiController(ki)
