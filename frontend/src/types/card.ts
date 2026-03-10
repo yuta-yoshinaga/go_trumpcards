@@ -518,3 +518,45 @@ export interface HeartsResponse {
   messageParams?: Record<string, string>;
   config: HeartsConfig;
 }
+
+// --- Memory (神経衰弱) ---
+
+export interface MemoryPlayerData {
+  id: number;
+  isHuman: boolean;
+  pairCount: number;
+}
+
+export interface MemoryBoardCard {
+  card: Card | null;
+  faceUp: boolean;
+  taken: boolean;
+}
+
+export interface MemoryConfig {
+  cpuDifficulty: number;
+}
+
+export const MEMORY_PHASE = {
+  FLIP1: 0,
+  FLIP2: 1,
+  RESULT: 2,
+  GAME_END: 3,
+} as const;
+
+export interface MemoryResponse {
+  players: MemoryPlayerData[];
+  board: MemoryBoardCard[];
+  phase: number;
+  currentPlayerIdx: number;
+  firstFlipPos: number;
+  secondFlipPos: number;
+  lastMatchResult: boolean;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  turnNumber: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: MemoryConfig;
+}

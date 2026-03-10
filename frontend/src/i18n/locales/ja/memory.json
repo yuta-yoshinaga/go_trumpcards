@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresPairs": "ペア数",
+  "nextButton": "次へ",
+  "flipPrompt1": "1枚目をめくってください",
+  "flipPrompt2": "2枚目をめくってください",
+  "matched": "ペアが揃いました！",
+  "mismatched": "残念、不一致です"
+}

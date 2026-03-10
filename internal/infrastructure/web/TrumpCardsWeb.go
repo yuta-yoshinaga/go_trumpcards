@@ -29,6 +29,7 @@ type TrumpCardsWeb struct {
 	dwc *controller.DoubtWebController
 	hmc *controller.HoldemWebController
 	htc *controller.HeartsWebController
+	myc *controller.MemoryWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -109,6 +110,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
 			return usecase.NewHeartsInteractor(hearts, presenter.NewHeartsWebPresenter())
 		}),
+		myc: controller.NewMemoryWebController(func() usecase.MemoryInteractorIF {
+			config := domain.DefaultMemoryConfig()
+			players := []*domain.MemoryPlayer{
+				domain.NewMemoryPlayer(true),
+				domain.NewMemoryPlayer(false),
+				domain.NewMemoryPlayer(false),
+				domain.NewMemoryPlayer(false),
+			}
+			memory := domain.NewMemory(domain.NewTrumpCards(0), players, config)
+			return usecase.NewMemoryInteractor(memory, presenter.NewMemoryWebPresenter())
+		}),
 	}
 }
 
@@ -155,6 +167,7 @@ func (web *TrumpCardsWeb) Exec() {
 		{"/doubt/exec", web.dwc.Exec},
 		{"/holdem/exec", web.hmc.Exec},
 		{"/hearts/exec", web.htc.Exec},
+		{"/memory/exec", web.myc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -215,6 +228,7 @@ func (web *TrumpCardsWeb) Exec() {
 	web.dwc.Stop()
 	web.hmc.Stop()
 	web.htc.Stop()
+	web.myc.Stop()
 	slog.Info("server stopped")
 }
 

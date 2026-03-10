@@ -7,6 +7,7 @@ import type {
   DoubtResponse,
   HeartsResponse,
   HoldemResponse,
+  MemoryResponse,
   OldMaidResponse,
   PokerResponse,
   SevensResponse,
@@ -231,11 +232,25 @@ export const heartsApi = {
     }),
 };
 
+export interface MemoryConfigInput {
+  cpuDifficulty?: number;
+}
+
+export const memoryApi = {
+  exec: (command: 'reset' | 'flip' | 'next' | 'log', position?: number, config?: MemoryConfigInput) =>
+    postJson<MemoryResponse>('/memory/exec', {
+      command,
+      position,
+      sessionId,
+      config,
+    }),
+};
+
 function fetchLog(url: string): Promise<ActionLogResponse> {
   return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
 }
 
-const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem', 'hearts'] as const;
+const games = ['blackjack', 'poker', 'oldmaid', 'daifugo', 'sevens', 'doubt', 'holdem', 'hearts', 'memory'] as const;
 type Game = (typeof games)[number];
 
 export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(

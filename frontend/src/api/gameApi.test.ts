@@ -6,6 +6,7 @@ import {
   doubtApi,
   heartsApi,
   holdemApi,
+  memoryApi,
   oldmaidApi,
   pokerApi,
   sessionId,
@@ -1627,6 +1628,76 @@ describe('gameApi', () => {
     });
   });
 
+  describe('memoryApi.exec', () => {
+    const payload = {
+      players: [],
+      board: [],
+      phase: 0,
+      currentPlayerIdx: 0,
+      firstFlipPos: -1,
+      secondFlipPos: -1,
+      lastMatchResult: false,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      turnNumber: 0,
+      message: '',
+      config: { cpuDifficulty: 1 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await memoryApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/memory/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          position: undefined,
+          sessionId,
+          config: undefined,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with flip command and position', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await memoryApi.exec('flip', 5);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/memory/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'flip',
+            position: 5,
+            sessionId,
+            config: undefined,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await memoryApi.exec('reset', undefined, { cpuDifficulty: 2 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/memory/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            position: undefined,
+            sessionId,
+            config: { cpuDifficulty: 2 },
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(memoryApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('actionLogApi', () => {
     const logPayload = { entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'hit card', cards: [] }] };
 
@@ -1639,6 +1710,7 @@ describe('gameApi', () => {
       ['doubt', actionLogApi.doubt],
       ['holdem', actionLogApi.holdem],
       ['hearts', actionLogApi.hearts],
+      ['memory', actionLogApi.memory],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));

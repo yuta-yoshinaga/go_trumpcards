@@ -38,6 +38,9 @@ func main() {
 	case "hearts":
 		hearts := ui.NewHeartsCui()
 		hearts.Exec()
+	case "memory":
+		memory := ui.NewMemoryCui()
+		memory.Exec()
 	case "web":
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
