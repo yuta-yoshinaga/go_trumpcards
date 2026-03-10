@@ -27,7 +27,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	resObj.RevolutionActive = dg.GetRevolutionActive()
 	resObj.ElevenBackActive = dg.GetElevenBackActive()
 	resObj.SuitLocked = dg.GetSuitLocked()
-	resObj.LockedSuit = dwp.getSuitName(dg.GetLockedSuit())
+	resObj.LockedSuit = daifugoSuitName(dg.GetLockedSuit())
 	resObj.TableIsSequence = dg.GetTableIsSequence()
 
 	// ローカルルール設定
@@ -144,7 +144,6 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 
 // buildResultMessage ゲーム終了メッセージを生成
 func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) string {
-	rankNames := []string{"大富豪", "富豪", "平民", "大貧民"}
 	msg := "ゲーム終了！ "
 	for i := 0; i < dg.GetPlayerCnt(); i++ {
 		player := dg.GetPlayer(i)
@@ -152,7 +151,7 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 			continue
 		}
 		rank := player.GetRank()
-		if rank < 1 || rank > len(rankNames) {
+		if rank < daifugoRankMin || rank > daifugoRankMax {
 			continue
 		}
 		var name string
@@ -161,7 +160,7 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 		} else {
 			name = fmt.Sprintf("CPU %d", i)
 		}
-		msg += fmt.Sprintf("%s:%s ", name, rankNames[rank-1])
+		msg += fmt.Sprintf("%s:%s ", name, daifugoRankName(rank))
 	}
 	return msg
 }
@@ -169,14 +168,4 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 // ActionLogOutput 棋譜をJSON出力
 func (dwp *DaifugoWebPresenter) ActionLogOutput(dg interfaces.DaifugoGame) string {
 	return actionLogOutputJSON(dg)
-}
-
-// getSuitName スート名取得 (スート縛り用: 4スートのみ変換し、それ以外は空文字)
-func (dwp *DaifugoWebPresenter) getSuitName(suit int) string {
-	switch suit {
-	case domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond:
-		return cardDesignToString(suit)
-	default:
-		return ""
-	}
 }
