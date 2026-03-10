@@ -41,6 +41,9 @@ func main() {
 	case "memory":
 		memory := ui.NewMemoryCui()
 		memory.Exec()
+	case "klondike":
+		klondike := ui.NewKlondikeCui()
+		klondike.Exec()
 	case "web":
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()

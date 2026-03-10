@@ -8,7 +8,8 @@
     "doubt": "ダウト",
     "holdem": "テキサスホールデム",
     "hearts": "ハーツ",
-    "memory": "神経衰弱"
+    "memory": "神経衰弱",
+    "klondike": "クロンダイク"
   },
   "player": {
     "you": "あなた",
@@ -94,6 +95,11 @@
     "memory.matched": "ペアが揃いました！",
     "memory.mismatched": "残念、不一致です",
     "memory.result.humanWin": "ゲーム終了！ あなたの勝ち！",
-    "memory.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
+    "memory.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "klondike.playing": "プレイ中",
+    "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "klondike.gameOver": "ゲームオーバー",
+    "klondike.hintAvailable": "ヒントがあります",
+    "klondike.noHint": "ヒントはありません"
   }
 }

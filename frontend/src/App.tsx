@@ -7,6 +7,7 @@ import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
+import { KlondikePage } from './pages/KlondikePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { PokerPage } from './pages/PokerPage';
@@ -23,6 +24,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/holdem': <HoldemPage />,
   '/hearts': <HeartsPage />,
   '/memory': <MemoryPage />,
+  '/klondike': <KlondikePage />,
 };
 
 export default function App() {

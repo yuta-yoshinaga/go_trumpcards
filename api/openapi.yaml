@@ -32,6 +32,8 @@ tags:
     description: Hearts game
   - name: memory
     description: Memory (神経衰弱) game
+  - name: klondike
+    description: Klondike (ソリティア) game
 
 paths:
   /blackjack/exec:
@@ -1059,6 +1061,88 @@ paths:
                     message: param error.
                     config:
                       cpuDifficulty: 1
+
+  /klondike/exec:
+    post:
+      tags:
+        - klondike
+      summary: Execute a Klondike game command
+      description: |
+        Send a command to advance the Klondike (ソリティア) game session identified by
+        `sessionId`.  Klondike is a single-player solitaire card game using a
+        standard 52-card deck.  7 tableau columns with cascading face-down/face-up
+        cards, a stock pile, a waste pile, and 4 foundation piles (one per suit).
+        Build foundations from Ace to King by suit; build tableau columns in
+        descending rank with alternating colors.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All foundations completed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Draw card(s) from stock to waste |
+        | `move`         | `m`  | Move card(s) between zones (requires `from` and `to`) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
+        | `log`          | `l`  | View action log |
+      operationId: klondikeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KlondikeRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              move:
+                summary: Move a card
+                value:
+                  command: move
+                  from:
+                    zone: waste
+                  to:
+                    zone: tableau
+                    col: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KlondikeResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KlondikeResponse'
+              examples:
+                paramError:
+                  value:
+                    tableau: []
+                    stockCount: 0
+                    waste: []
+                    foundation: []
+                    phase: 0
+                    moveCount: 0
+                    message: param error.
 
 components:
   schemas:
@@ -3960,3 +4044,130 @@ components:
               type: integer
               description: "CPU difficulty level: 0 = Easy, 1 = Normal, 2 = Hard"
               example: 1
+
+    # -------------------------------------------------------------------------
+    # Klondike
+    # -------------------------------------------------------------------------
+    KlondikeZone:
+      type: object
+      description: Specifies a zone on the Klondike board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: waste, tableau, or foundation"
+          enum: [waste, tableau, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, required for tableau and foundation zones)
+          example: 3
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    KlondikeRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
+            `move` (`m`), `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `log` (`l`).
+          enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/KlondikeZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/KlondikeZone'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    KlondikeTableauCard:
+      type: object
+      description: A card in a Klondike tableau column
+      required:
+        - faceUp
+      properties:
+        faceUp:
+          type: boolean
+          description: Whether the card is face-up
+          example: true
+        card:
+          description: Card details (only present when face-up)
+          $ref: '#/components/schemas/Card'
+
+    KlondikeResponse:
+      type: object
+      description: Current state of the Klondike game
+      required:
+        - tableau
+        - stockCount
+        - waste
+        - foundation
+        - phase
+        - moveCount
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 7 tableau columns, each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/KlondikeTableauCard'
+        stockCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+          example: 24
+        waste:
+          type: array
+          description: Cards in the waste pile (top card is the last element)
+          items:
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            from:
+              $ref: '#/components/schemas/KlondikeZone'
+            to:
+              $ref: '#/components/schemas/KlondikeZone'

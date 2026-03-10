@@ -560,3 +560,37 @@ export interface MemoryResponse {
   messageParams?: Record<string, string>;
   config: MemoryConfig;
 }
+
+// --- Klondike (ソリティア) ---
+
+export interface KlondikeTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+export interface KlondikeHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+export const KLONDIKE_PHASE = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+export interface KlondikeResponse {
+  tableau: KlondikeTableauCard[][];
+  stockCount: number;
+  waste: Card[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: KlondikeHint;
+}

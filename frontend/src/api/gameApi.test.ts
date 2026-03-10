@@ -6,6 +6,7 @@ import {
   doubtApi,
   heartsApi,
   holdemApi,
+  klondikeApi,
   memoryApi,
   oldmaidApi,
   pokerApi,
@@ -1698,6 +1699,164 @@ describe('gameApi', () => {
     });
   });
 
+  describe('klondikeApi.exec', () => {
+    const payload: {
+      tableau: { card: { design: string; value: number } | null; faceUp: boolean }[][];
+      stockCount: number;
+      waste: { design: string; value: number }[];
+      foundation: { design: string; value: number }[][];
+      phase: number;
+      moveCount: number;
+      message: string;
+    } = {
+      tableau: [[{ card: { design: 'SPADE', value: 13 }, faceUp: true }]],
+      stockCount: 20,
+      waste: [{ design: 'CLOVER', value: 3 }],
+      foundation: [[], [], [], []],
+      phase: 0,
+      moveCount: 0,
+      message: '',
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await klondikeApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/klondike/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          from: undefined,
+          to: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with draw command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('draw');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'draw',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with move command and from/to zones', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('move', { zone: 'waste' }, { zone: 'tableau', col: 3 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'move',
+            from: { zone: 'waste' },
+            to: { zone: 'tableau', col: 3 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with move command with cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('move', { zone: 'tableau', col: 0, cardIndex: 2 }, { zone: 'tableau', col: 3 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'move',
+            from: { zone: 'tableau', col: 0, cardIndex: 2 },
+            to: { zone: 'tableau', col: 3 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with giveup command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('giveup');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'giveup',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with hint command', async () => {
+      const hintPayload = {
+        ...payload,
+        hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
+      };
+      mockFetch.mockReturnValue(makeResponse(hintPayload));
+      const result = await klondikeApi.exec('hint');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'hint',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+      expect(result.hint).toEqual(hintPayload.hint);
+    });
+
+    it('calls with autocomplete command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('autocomplete');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'autocomplete',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await klondikeApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/klondike/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'log',
+            from: undefined,
+            to: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(klondikeApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('actionLogApi', () => {
     const logPayload = { entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'hit card', cards: [] }] };
 
@@ -1711,6 +1870,7 @@ describe('gameApi', () => {
       ['holdem', actionLogApi.holdem],
       ['hearts', actionLogApi.hearts],
       ['memory', actionLogApi.memory],
+      ['klondike', actionLogApi.klondike],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));
