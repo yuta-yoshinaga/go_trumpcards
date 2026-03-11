@@ -266,6 +266,17 @@ describe('HeartsPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('card buttons have aria-label with card name', async () => {
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-label', '♠ A');
+
+    const cardBtn2 = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+    expect(cardBtn2).toHaveAttribute('aria-label', '♥ J');
+  });
+
   it('reset button calls exec', async () => {
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());

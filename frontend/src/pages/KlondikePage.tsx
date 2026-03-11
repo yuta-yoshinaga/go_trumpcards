@@ -8,6 +8,9 @@ import { useActionLog } from '../hooks/useActionLog';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { KLONDIKE_PHASE } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
+
+const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
 export function KlondikePage() {
   const { t } = useTranslation('klondike');
@@ -83,6 +86,7 @@ export function KlondikePage() {
                   handleSelectSource({ zone: 'waste' });
                 }}
                 disabled={!isPlaying || loading}
+                aria-label={cardAlt(state.waste[state.waste.length - 1])}
                 aria-pressed={isSourceSelected('waste')}
                 className={`p-0 border-0 bg-transparent cursor-pointer ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400 rounded' : ''}`}
               >
@@ -100,12 +104,13 @@ export function KlondikePage() {
           {/* Foundation piles */}
           {state.foundation.map((pile, idx) => (
             <div key={`f-${idx.toString()}`} className="text-center">
-              <div className="text-white/60 text-xs mb-1">{['♠', '♣', '♥', '♦'][idx]}</div>
+              <div className="text-white/60 text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
               {pile.length > 0 ? (
                 <button
                   type="button"
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
+                  aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
                   className="p-0 border-0 bg-transparent cursor-pointer"
                 >
                   <CardImage card={pile[pile.length - 1]} width={60} />
@@ -115,6 +120,7 @@ export function KlondikePage() {
                   type="button"
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
+                  aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: 0 })}
                   className="w-[60px] h-[84px] rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center"
                 >
                   A
@@ -162,6 +168,7 @@ export function KlondikePage() {
                             }
                           }}
                           disabled={!isPlaying || loading}
+                          aria-label={cardAlt(tc.card)}
                           aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400 rounded' : ''}`}
                         >

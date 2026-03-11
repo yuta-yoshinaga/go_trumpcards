@@ -616,6 +616,21 @@ describe('PokerPage', () => {
     expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('card button has aria-label with card name in exchange phase', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-label', '♠ A');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-label', '♠ A (交換選択中)');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-label', '♠ A');
+  });
+
   it('does not select card when not in exchange phase', async () => {
     mockExec.mockResolvedValue(dealState);
     renderWithProviders(<PokerPage />);

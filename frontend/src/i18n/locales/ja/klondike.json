@@ -14,5 +14,6 @@
   "gameOver": "ゲームオーバー",
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
-  "hintAvailable": "ヒントがあります"
+  "hintAvailable": "ヒントがあります",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚"
 }
