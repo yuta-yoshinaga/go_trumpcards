@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -12,6 +13,31 @@ import (
 )
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprint(os.Stderr, `USAGE:
+  go_trumpcards [game]
+  go_trumpcards --help
+
+GAMES:
+  blackjack    BlackJack (ブラックジャック)
+  poker        5-card Draw Poker (ポーカー)
+  oldmaid      Old Maid (ババ抜き)
+  daifugo      Daifugo / Great Fool (大富豪)
+  sevens       Sevens (7並べ)
+  doubt        Doubt (ダウト)
+  holdem       Texas Hold'em (テキサスホールデム)
+  hearts       Hearts (ハーツ)
+  memory       Memory / Concentration (神経衰弱)
+  klondike     Klondike Solitaire (ソリティア)
+  baccarat     Baccarat (バカラ)
+  web          Start REST API + web GUI server
+
+  (no argument) Interactive mode with game switching
+
+OPTIONS:
+  -h, --help   Show this help message
+`)
+	}
 	flag.Parse()
 	switch strings.ToLower(flag.Arg(0)) {
 	case "blackjack":

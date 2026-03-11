@@ -34,15 +34,22 @@ func (cui *OldMaidCui) Controller() CuiExecer { return cui.omc }
 // HelpLines returns the game's help lines.
 func (cui *OldMaidCui) HelpLines() []string {
 	return []string{
-		"コマンドを入力してください。",
-		"q・・・quit",
-		"r・・・reset",
-		"d・・・draw (カードを引く)",
-		"s・・・shuffle (手札をシャッフル)",
-		"ro [i0 i1 ...]・・・reorder (手札を並べ替え)",
-		"sm [0-1]・・・set mode (0=Normal, 1=JijiNuki)",
-		"sps [0-1]・・・set CPU placement strategy (0=OFF, 1=ON)",
-		"sma [0-1]・・・set CPU memory AI (0=OFF, 1=ON)",
+		"Old Maid (ババ抜き)",
+		"",
+		"Game commands:",
+		"  d                    draw a card",
+		"  s                    shuffle hand",
+		"  ro [i0 i1 ...]       reorder hand",
+		"",
+		"Settings:",
+		"  sm [0-1]             set mode (0=Normal, 1=JijiNuki)",
+		"  sps [0-1]            set CPU placement strategy (0=OFF, 1=ON)",
+		"  sma [0-1]            set CPU memory AI (0=OFF, 1=ON)",
+		"",
+		"Session:",
+		"  r                    reset game",
+		"  q                    quit",
+		"  help, ?              show this help",
 	}
 }
 

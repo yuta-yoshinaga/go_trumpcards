@@ -123,7 +123,7 @@ func TestGameManager_HelpLines(t *testing.T) {
 	// should contain current game indicator
 	found := false
 	for _, l := range lines {
-		if strings.Contains(l, "Current game: a") {
+		if strings.Contains(l, "current: a") {
 			found = true
 			break
 		}
@@ -143,6 +143,22 @@ func TestGameManager_HelpLines(t *testing.T) {
 	assert.True(t, gamesFound, "HelpLines should contain games command")
 }
 
+func TestGameManager_ExecHelp(t *testing.T) {
+	mgr, _, _ := newTestManager("a")
+	res := mgr.Exec("help")
+	assert.Contains(t, res, "help-a1")
+	assert.Contains(t, res, "help-a2")
+	assert.Contains(t, res, "current: a")
+	assert.Contains(t, res, "switch")
+}
+
+func TestGameManager_ExecHelpQuestion(t *testing.T) {
+	mgr, _, _ := newTestManager("a")
+	res := mgr.Exec("?")
+	assert.Contains(t, res, "help-a1")
+	assert.Contains(t, res, "current: a")
+}
+
 func TestGameManager_HelpLinesChangeOnSwitch(t *testing.T) {
 	mgr, _, _ := newTestManager("a")
 	mgr.Exec("switch b")
@@ -150,7 +166,7 @@ func TestGameManager_HelpLinesChangeOnSwitch(t *testing.T) {
 	assert.Contains(t, lines, "help-b1")
 	found := false
 	for _, l := range lines {
-		if strings.Contains(l, "Current game: b") {
+		if strings.Contains(l, "current: b") {
 			found = true
 			break
 		}

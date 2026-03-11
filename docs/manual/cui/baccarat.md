@@ -69,6 +69,7 @@ flowchart TD
 | `bet <amount> <type>` | `b <amount> <type>` | ベットする（金額とタイプを指定） |
 | `log` | `l` | アクションログ（棋譜）を表示 |
 | `quit` | `q` | ゲーム終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ### コマンド例
 

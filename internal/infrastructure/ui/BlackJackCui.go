@@ -28,17 +28,24 @@ func (cui *BlackJackCui) Controller() CuiExecer { return cui.bjc }
 // HelpLines returns the game's help lines.
 func (cui *BlackJackCui) HelpLines() []string {
 	return []string{
-		"Please enter a command.",
-		"q・・・quit",
-		"r・・・reset",
-		"b N [ppBet] [t3Bet] [handCount]・・・bet (e.g. b 100 0 0 2)",
-		"h・・・hit",
-		"s・・・stand",
-		"d・・・doubledown",
-		"sp・・・split",
-		"i・・・insurance",
-		"di・・・decline insurance",
-		"scc N・・・set CPU player count (0-3)",
+		"BlackJack (ブラックジャック)",
+		"",
+		"Game commands:",
+		"  h                    hit",
+		"  s                    stand",
+		"  d                    double down",
+		"  sp                   split",
+		"  i                    insurance",
+		"  di                   decline insurance",
+		"",
+		"Settings:",
+		"  b <n> [pp] [t3] [hands]  bet (e.g. b 100 0 0 2)",
+		"  scc <n>              set CPU count (0-3)",
+		"",
+		"Session:",
+		"  r                    reset game",
+		"  q                    quit",
+		"  help, ?              show this help",
 	}
 }
 

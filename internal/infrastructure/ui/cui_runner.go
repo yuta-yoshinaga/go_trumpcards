@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 // CuiExecer CUIコントローラの共通インタフェース
@@ -12,17 +13,15 @@ type CuiExecer interface {
 }
 
 // RunInteractiveCuiLoop runs an interactive multi-game CUI loop with game switching support.
-// The manager provides dynamic help lines and routes switch/games commands internally.
+// The manager handles help/? commands internally; other commands are delegated to the current game.
 func RunInteractiveCuiLoop(manager *GameManager) {
 	initMsg := manager.InitCurrentGame()
 	if initMsg != "" {
 		fmt.Println(initMsg)
 	}
+	fmt.Println(`Type "help" or "?" for commands.`)
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		for _, line := range manager.HelpLines() {
-			fmt.Println(line)
-		}
 		input, exit := readInput(scanner)
 		if exit {
 			break
@@ -36,17 +35,21 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 }
 
 // RunCuiLoop 標準CUIゲームループを実行する
-// helpLines は毎回入力前に表示されるヘルプメッセージ
+// helpLines は "help" / "?" コマンドが入力されたときのみ表示される
 func RunCuiLoop(controller CuiExecer, helpLines []string) {
 	fmt.Println(controller.Exec("r"))
+	fmt.Println(`Type "help" or "?" for commands.`)
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		for _, line := range helpLines {
-			fmt.Println(line)
-		}
 		input, exit := readInput(scanner)
 		if exit {
 			break
+		}
+		if strings.TrimSpace(input) == "help" || strings.TrimSpace(input) == "?" {
+			for _, line := range helpLines {
+				fmt.Println(line)
+			}
+			continue
 		}
 		res := controller.Exec(input)
 		fmt.Println(res)

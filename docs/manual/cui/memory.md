@@ -63,6 +63,7 @@ flowchart TD
 | `setdifficulty <0-2>` | `sd <0-2>` | CPU難易度を設定（0=Easy, 1=Normal, 2=Hard） |
 | `log` | `l` | アクションログ（棋譜）を表示 |
 | `quit` | `q` | ゲーム終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ### コマンド例
 
