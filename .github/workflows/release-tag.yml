@@ -17,6 +17,8 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ github.token }}
+      - name: Fetch new tag
+        run: git fetch --tags
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
