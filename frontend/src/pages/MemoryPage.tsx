@@ -82,6 +82,7 @@ export function MemoryPage() {
                 key={`board-${idx.toString()}`}
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
+                aria-hidden={bc.taken || undefined}
                 className={`relative aspect-[2/3] rounded border ${
                   bc.taken
                     ? 'bg-transparent border-transparent'
