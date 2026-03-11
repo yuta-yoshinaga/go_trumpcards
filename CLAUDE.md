@@ -14,6 +14,7 @@ Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Do
 
 ```sh
 # Run games
+go run ./cmd/cli            # Interactive mode (switch games with 'switch <game>')
 go run ./cmd/cli blackjack  # BlackJack CLI
 go run ./cmd/cli poker      # 5-card Draw Poker CLI
 go run ./cmd/cli oldmaid    # Old Maid CLI

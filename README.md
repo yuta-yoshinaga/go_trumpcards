@@ -38,6 +38,7 @@ cd go_trumpcards
 
 ### Run
 ```sh
+go run ./cmd/cli            # インタラクティブモード (ゲーム選択・切り替え可能)
 go run ./cmd/cli blackjack  # ブラックジャック CLI
 go run ./cmd/cli poker      # 5枚ドローポーカー CLI
 go run ./cmd/cli oldmaid    # ババ抜き CLI
