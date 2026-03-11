@@ -12,6 +12,9 @@ import { cardAlt } from '../utils/cardAlt';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
+const CARD_HEIGHT_PX = 84;
+const CARD_OVERLAP_PX = 22;
+
 export function KlondikePage() {
   const { t } = useTranslation('klondike');
   const { t: tc } = useTranslation('common');
@@ -140,7 +143,7 @@ export function KlondikePage() {
           {state.tableau.map((col, colIdx) => (
             <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
               <div className="text-white/40 text-xs text-center mb-1">{colIdx}</div>
-              <div className="relative" style={{ minHeight: 84 }}>
+              <div className="relative" style={{ minHeight: CARD_HEIGHT_PX }}>
                 {col.length === 0 ? (
                   <button
                     type="button"
@@ -155,7 +158,7 @@ export function KlondikePage() {
                     <div
                       key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
                       className="absolute left-0 right-0"
-                      style={{ top: cardIdx * 22 }}
+                      style={{ top: cardIdx * CARD_OVERLAP_PX }}
                     >
                       {tc.faceUp && tc.card ? (
                         <button
@@ -180,7 +183,7 @@ export function KlondikePage() {
                     </div>
                   ))
                 )}
-                {col.length > 0 && <div style={{ height: (col.length - 1) * 22 + 84 }} />}
+                {col.length > 0 && <div style={{ height: (col.length - 1) * CARD_OVERLAP_PX + CARD_HEIGHT_PX }} />}
               </div>
             </div>
           ))}
