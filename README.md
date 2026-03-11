@@ -31,6 +31,22 @@
 
 ## Usage
 ### Install
+
+#### go install（Go ユーザー向け）
+```sh
+go install github.com/yuta-yoshinaga/go_trumpcards/cmd/trumpcards@latest
+trumpcards blackjack
+```
+
+#### GitHub Releases からバイナリをダウンロード
+Linux/macOS/Windows 向けのビルド済みバイナリは [GitHub Releases](https://github.com/yuta-yoshinaga/go_trumpcards/releases) から入手できます。
+
+```sh
+# バージョン確認
+trumpcards --version
+```
+
+#### ソースからビルド
 ```sh
 git clone https://github.com/yuta-yoshinaga/go_trumpcards.git
 cd go_trumpcards
@@ -38,22 +54,22 @@ cd go_trumpcards
 
 ### Run
 ```sh
-go run ./cmd/cli                      # インタラクティブモード (ゲーム選択・切り替え可能)
-go run ./cmd/cli --lang en            # インタラクティブモード (英語)
-go run ./cmd/cli blackjack            # ブラックジャック CLI
-go run ./cmd/cli --lang en blackjack  # ブラックジャック CLI (英語)
-go run ./cmd/cli poker      # 5枚ドローポーカー CLI
-go run ./cmd/cli oldmaid    # ババ抜き CLI
-go run ./cmd/cli daifugo    # 大富豪 CLI
-go run ./cmd/cli sevens     # 7並べ CLI
-go run ./cmd/cli doubt      # ダウト CLI
-go run ./cmd/cli holdem     # テキサスホールデム CLI
-go run ./cmd/cli hearts     # ハーツ CLI
-go run ./cmd/cli memory     # 神経衰弱 CLI
-go run ./cmd/cli klondike   # クロンダイク CLI
-go run ./cmd/cli baccarat   # バカラ CLI
-go run ./cmd/cli web        # REST API + Web GUI サーバー起動 (CLI経由)
-go run ./cmd/server         # REST API + Web GUI サーバー起動 (直接)
+go run ./cmd/trumpcards                      # インタラクティブモード (ゲーム選択・切り替え可能)
+go run ./cmd/trumpcards --lang en            # インタラクティブモード (英語)
+go run ./cmd/trumpcards blackjack            # ブラックジャック CLI
+go run ./cmd/trumpcards --lang en blackjack  # ブラックジャック CLI (英語)
+go run ./cmd/trumpcards poker      # 5枚ドローポーカー CLI
+go run ./cmd/trumpcards oldmaid    # ババ抜き CLI
+go run ./cmd/trumpcards daifugo    # 大富豪 CLI
+go run ./cmd/trumpcards sevens     # 7並べ CLI
+go run ./cmd/trumpcards doubt      # ダウト CLI
+go run ./cmd/trumpcards holdem     # テキサスホールデム CLI
+go run ./cmd/trumpcards hearts     # ハーツ CLI
+go run ./cmd/trumpcards memory     # 神経衰弱 CLI
+go run ./cmd/trumpcards klondike   # クロンダイク CLI
+go run ./cmd/trumpcards baccarat   # バカラ CLI
+go run ./cmd/trumpcards web        # REST API + Web GUI サーバー起動 (CLI経由)
+go run ./cmd/server                # REST API + Web GUI サーバー起動 (直接)
 ```
 
 ### Test
@@ -93,7 +109,7 @@ Clean Architectureを採用しています。依存の方向は外側から内�
 
 ```
 cmd/
-  cli/                # CLIエントリーポイント（全ゲーム + Webサーバー）
+  trumpcards/         # CLIエントリーポイント（全ゲーム + Webサーバー）
   server/             # Webサーバー専用エントリーポイント
 internal/
   domain/             # コアビジネスロジック（最内層）
