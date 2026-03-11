@@ -52,7 +52,12 @@ func main() {
 		w := web.NewTrumpCardsWeb()
 		w.Exec()
 	default:
-		slog.Error("unknown command", "arg", flag.Arg(0))
-		os.Exit(1)
+		if flag.Arg(0) != "" {
+			slog.Error("unknown command", "arg", flag.Arg(0))
+			os.Exit(1)
+		}
+		// No argument: start interactive multi-game mode (defaults to blackjack).
+		manager := ui.NewGameManager("blackjack")
+		ui.RunInteractiveCuiLoop(manager)
 	}
 }
