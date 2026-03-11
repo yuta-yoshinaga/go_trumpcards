@@ -41,9 +41,36 @@ trumpcards blackjack
 #### GitHub Releases からバイナリをダウンロード
 Linux/macOS/Windows 向けのビルド済みバイナリは [GitHub Releases](https://github.com/yuta-yoshinaga/go_trumpcards/releases) から入手できます。
 
+**Linux / macOS**
 ```sh
-# バージョン確認
+# VERSION には取得したいバージョン番号を指定（例: v3.12.0）
+VERSION=v3.12.0
+
+# OS と アーキテクチャを確認して対応する URL を選択
+# Linux amd64:
+curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_linux_amd64.tar.gz" | tar xz
+# Linux arm64:
+curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_linux_arm64.tar.gz" | tar xz
+# macOS amd64 (Intel):
+curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_darwin_amd64.tar.gz" | tar xz
+# macOS arm64 (Apple Silicon):
+curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_darwin_arm64.tar.gz" | tar xz
+
+# PATH の通ったディレクトリに移動（例: /usr/local/bin）
+sudo mv trumpcards /usr/local/bin/
 trumpcards --version
+```
+
+**Windows (PowerShell)**
+```powershell
+# VERSION には取得したいバージョン番号を指定（例: v3.12.0）
+$VERSION = "v3.12.0"
+$VER = $VERSION.TrimStart("v")
+
+Invoke-WebRequest -Uri "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/$VERSION/trumpcards_${VER}_windows_amd64.zip" -OutFile "trumpcards.zip"
+Expand-Archive -Path "trumpcards.zip" -DestinationPath "."
+# trumpcards.exe を PATH の通ったディレクトリに移動してから実行
+.\trumpcards.exe --version
 ```
 
 #### ソースからビルド
