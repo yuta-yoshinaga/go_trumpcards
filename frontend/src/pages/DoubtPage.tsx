@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
@@ -44,9 +45,19 @@ export function DoubtPage() {
 
   const { actionLog, showActionLog, hideActionLog } = useActionLog('doubt');
 
+  const claimInputRef = useRef<HTMLInputElement>(null);
+
+  const isHumanTurn = !state?.gameEndFlag && state?.players[state.currentTurn]?.isHuman === true;
+  const showClaimInput = selectedCardIndices.length > 0 && isHumanTurn && state?.phase === 0;
+
+  useEffect(() => {
+    if (showClaimInput && claimInputRef.current) {
+      claimInputRef.current.focus();
+    }
+  }, [showClaimInput]);
+
   if (!state) return null;
 
-  const isHumanTurn = !state.gameEndFlag && state.players[state.currentTurn]?.isHuman === true;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const isDoubtPhase = state.phase === 1;
@@ -274,14 +285,16 @@ export function DoubtPage() {
             </div>
 
             {/* Claimed value input (shown when cards are selected) */}
-            {selectedCardIndices.length > 0 && isHumanTurn && state.phase === 0 && (
+            {showClaimInput && (
               <div className="mt-2 flex items-center gap-2">
                 <span className="text-white text-sm">{t('claimedValue')}</span>
                 <input
+                  ref={claimInputRef}
                   type="number"
                   min={1}
                   max={13}
                   value={claimedValue}
+                  aria-label={t('claimInputAriaLabel')}
                   onChange={(e) => {
                     const num = Number(e.target.value);
                     setClaimedValue(Math.max(1, Math.min(13, num)));
