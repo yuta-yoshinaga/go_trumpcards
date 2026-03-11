@@ -239,10 +239,53 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(stateWithCpuActions);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument());
-    expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument();
-    expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument();
-  });
+    // Each CPU action has an 800ms animation delay; wait for all to complete
+    await waitFor(
+      () => {
+        expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument();
+        expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument();
+        expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument();
+      },
+      { timeout: 4000 },
+    );
+  }, 10000);
+
+  it('shows intermediate CPU action during replay animation', async () => {
+    const stateWithCpuActions: DaifugoResponse = {
+      ...humanTurnState,
+      cpuActions: [
+        { playerIdx: 1, playedCards: [{ design: 'SPADE', value: 7 }] },
+        { playerIdx: 2, playedCards: null },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithCpuActions);
+    renderWithProviders(<DaifugoPage />);
+    // First intermediate state (CPU 1's action) appears before the second
+    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument());
+    // After all animation steps, CPU 2's action also appears
+    await waitFor(() => expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument(), { timeout: 4000 });
+  }, 10000);
+
+  it('enables play button after CPU replay animation completes', async () => {
+    const stateWithCpuActions: DaifugoResponse = {
+      ...humanTurnState,
+      currentTurn: 0,
+      cpuActions: [{ playerIdx: 1, playedCards: [{ design: 'SPADE', value: 7 }] }],
+    };
+    // reset → humanTurnState, play → stateWithCpuActions
+    mockExec.mockResolvedValueOnce(humanTurnState).mockResolvedValueOnce(stateWithCpuActions);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', []));
+
+    // Buttons stay disabled during animation
+    expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
+
+    // After replay delay, human turn is restored and buttons re-enable
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled(), { timeout: 4000 });
+  }, 10000);
 
   it('shows game result message when game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
