@@ -250,6 +250,44 @@ describe('DaifugoPage', () => {
     );
   }, 10000);
 
+  it('shows intermediate human action state before CPU replay (humanAction with playedCards)', async () => {
+    const stateWithHumanAndCpu: DaifugoResponse = {
+      ...humanTurnState,
+      currentTurn: 0,
+      humanAction: { playerIdx: 0, playedCards: [{ design: 'SPADE', value: 3 }] },
+      cpuActions: [{ playerIdx: 1, playedCards: [{ design: 'HEART', value: 5 }] }],
+      players: [
+        { ...humanTurnState.players[0], cardCount: 2 },
+        { ...humanTurnState.players[1], cardCount: 3 },
+        { ...humanTurnState.players[2] },
+        { ...humanTurnState.players[3] },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithHumanAndCpu);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument(), { timeout: 4000 });
+  }, 10000);
+
+  it('shows intermediate human action state before CPU replay (humanAction with empty playedCards)', async () => {
+    // Exercises the falsy branch: ha.playedCards?.length ? ha.playedCards : finalState.tableCards
+    const stateWithPassAndCpu: DaifugoResponse = {
+      ...humanTurnState,
+      currentTurn: 0,
+      humanAction: { playerIdx: 0, playedCards: [] },
+      tableCards: [{ design: 'DIAMOND', value: 7 }],
+      cpuActions: [{ playerIdx: 1, playedCards: [{ design: 'HEART', value: 5 }] }],
+      players: [
+        { ...humanTurnState.players[0], cardCount: 3 },
+        { ...humanTurnState.players[1], cardCount: 3 },
+        { ...humanTurnState.players[2] },
+        { ...humanTurnState.players[3] },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithPassAndCpu);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument(), { timeout: 4000 });
+  }, 10000);
+
   it('shows intermediate CPU action during replay animation', async () => {
     const stateWithCpuActions: DaifugoResponse = {
       ...humanTurnState,
