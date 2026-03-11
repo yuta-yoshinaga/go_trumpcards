@@ -33,13 +33,11 @@ func NewDoubtCui() *DoubtCui {
 	dc := controller.NewDoubtCuiController(
 		usecase.NewDoubtInteractor(game, new(presenter.DoubtCuiPresenter)),
 	)
-	cui := &DoubtCui{
+	return &DoubtCui{
 		dc:      dc,
 		game:    game,
 		inputCh: make(chan string, 10),
 	}
-	go cui.inputReader()
-	return cui
 }
 
 // Controller returns the game controller.
@@ -81,18 +79,15 @@ func (cui *DoubtCui) drainInput() {
 
 // Exec ゲームメインループ
 func (cui *DoubtCui) Exec() {
+	go cui.inputReader()
 	fmt.Println(cui.dc.Exec("r"))
 	for !cui.game.GetGameEndFlag() {
 		switch {
 		case cui.game.GetPhase() == domain.DoubtPhasePlay && cui.game.IsHumanTurn():
 			cui.drainInput()
-			fmt.Println("コマンドを入力してください。")
-			fmt.Println("q・・・quit")
-			fmt.Println("r・・・reset")
-			fmt.Println("p <値> <idx...>・・・カードを出す (値=宣言値, idx=手札インデックス)")
-			fmt.Println("sw <秒>・・・ダウト待機秒数設定 (1-60)")
-			fmt.Println("sm <レベル>・・・CPU記憶力設定 (0=Easy, 1=Normal, 2=Hard)")
-			fmt.Println("sp <上限>・・・ペナルティドロー上限設定 (0=無制限, >0=上限)")
+			for _, line := range cui.HelpLines() {
+				fmt.Println(line)
+			}
 			input := <-cui.inputCh
 			res := cui.dc.Exec(input)
 			fmt.Println(res)
