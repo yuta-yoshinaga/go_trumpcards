@@ -8,6 +8,17 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// memoryCellStr returns the display string for a single Memory board cell.
+func memoryCellStr(bc *domain.MemoryBoardCard, pos int) string {
+	if bc.Taken {
+		return fmt.Sprintf("[%2d]%-10s", pos, "")
+	}
+	if bc.FaceUp {
+		return fmt.Sprintf("[%2d]%-10s", pos, cuiCardStr(bc.Card))
+	}
+	return fmt.Sprintf("[%2d]%-10s", pos, "??")
+}
+
 // MemoryCuiPresenter 神経衰弱CUIプレゼンタークラス
 type MemoryCuiPresenter struct{}
 
@@ -31,20 +42,12 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 		// ボードを4×13グリッドで表示
 		board := m.GetBoard()
 		for row := 0; row < 4; row++ {
+			rowParts := make([]string, 13)
 			for col := 0; col < 13; col++ {
 				pos := row*13 + col
-				if col != 0 {
-					b.WriteString(" ")
-				}
-				bc := board[pos]
-				if bc.Taken {
-					fmt.Fprintf(b, "[%2d]%-10s", pos, "")
-				} else if bc.FaceUp {
-					fmt.Fprintf(b, "[%2d]%-10s", pos, cuiCardStr(bc.Card))
-				} else {
-					fmt.Fprintf(b, "[%2d]%-10s", pos, "??")
-				}
+				rowParts[col] = memoryCellStr(board[pos], pos)
 			}
+			b.WriteString(strings.Join(rowParts, " "))
 			b.WriteString("\n")
 		}
 

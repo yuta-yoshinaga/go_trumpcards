@@ -8,6 +8,19 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// klondikeColumnStr returns the display string for a Klondike tableau column.
+func klondikeColumnStr(colCards []*domain.KlondikeTableauCard) string {
+	parts := make([]string, len(colCards))
+	for j, tc := range colCards {
+		if tc.FaceUp {
+			parts[j] = fmt.Sprintf(" [%d]%s", j, cuiCardStr(tc.Card))
+		} else {
+			parts[j] = fmt.Sprintf(" [%d]??", j)
+		}
+	}
+	return strings.Join(parts, " ")
+}
+
 // KlondikeCuiPresenter クロンダイクCUIプレゼンタークラス
 type KlondikeCuiPresenter struct{}
 
@@ -51,21 +64,12 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 		// タブロー
 		tableau := k.GetTableau()
 		for col := 0; col < domain.KlondikeTableauCnt; col++ {
-			fmt.Fprintf(b, "列%d:", col)
 			colCards := tableau[col]
+			fmt.Fprintf(b, "列%d:", col)
 			if len(colCards) == 0 {
 				b.WriteString(" [空]")
 			} else {
-				for j, tc := range colCards {
-					if j != 0 {
-						b.WriteString(" ")
-					}
-					if tc.FaceUp {
-						fmt.Fprintf(b, " [%d]%s", j, cuiCardStr(tc.Card))
-					} else {
-						fmt.Fprintf(b, " [%d]??", j)
-					}
-				}
+				b.WriteString(klondikeColumnStr(colCards))
 			}
 			b.WriteString("\n")
 		}

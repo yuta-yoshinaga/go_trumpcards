@@ -8,6 +8,26 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// oldMaidPlayerStr returns the display string for a single OldMaid player.
+func oldMaidPlayerStr(player *domain.OldMaidPlayer, i int) string {
+	var b strings.Builder
+	if player.GetIsHuman() {
+		b.WriteString("[You]")
+	} else {
+		fmt.Fprintf(&b, "CPU %d", i)
+	}
+	if player.GetIsFinished() {
+		b.WriteString(": 上がり\n")
+	} else {
+		fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
+		if player.GetIsHuman() {
+			b.WriteString(cuiIndexedCardListStr(player))
+			b.WriteString("\n")
+		}
+	}
+	return b.String()
+}
+
 // OldMaidCuiPresenter ババ抜きCUIプレゼンタークラス
 type OldMaidCuiPresenter struct{}
 
@@ -24,26 +44,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 	}
 	return buildCuiOutput(title, func(b *strings.Builder) {
 		for i := 0; i < om.GetPlayerCnt(); i++ {
-			player := om.GetPlayer(i)
-			if player.GetIsHuman() {
-				b.WriteString("[You]")
-			} else {
-				fmt.Fprintf(b, "CPU %d", i)
-			}
-			if player.GetIsFinished() {
-				b.WriteString(": 上がり\n")
-			} else {
-				fmt.Fprintf(b, ": %d枚\n", player.GetCardsSize())
-				if player.GetIsHuman() {
-					for j := 0; j < player.GetCardsSize(); j++ {
-						if j != 0 {
-							b.WriteString("  ")
-						}
-						fmt.Fprintf(b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
-					}
-					b.WriteString("\n")
-				}
-			}
+			b.WriteString(oldMaidPlayerStr(om.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")

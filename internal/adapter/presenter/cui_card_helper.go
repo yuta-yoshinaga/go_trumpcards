@@ -104,3 +104,53 @@ func cuiBettingActionName(action int) string {
 	}
 	return "不明"
 }
+
+// cuiIndexedCardListStr returns a double-space separated indexed card string.
+// e.g. "[0]SPADE 5  [1]HEART 3"
+func cuiIndexedCardListStr(hand cuiCardList) string {
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStr(hand.GetCard(i)))
+	}
+	return strings.Join(parts, "  ")
+}
+
+// cuiCardListStrEmoji returns a double-space separated emoji card string (no index).
+// e.g. "♠5  ♥3"
+func cuiCardListStrEmoji(hand cuiCardList) string {
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = cuiCardStrEmoji(hand.GetCard(i))
+	}
+	return strings.Join(parts, "  ")
+}
+
+// cuiIndexedCardListStrEmoji returns a double-space separated indexed emoji card string.
+// e.g. "[0]♠5  [1]♥3"
+func cuiIndexedCardListStrEmoji(hand cuiCardList) string {
+	parts := make([]string, hand.GetCardsSize())
+	for i := range parts {
+		parts[i] = fmt.Sprintf("[%d]%s", i, cuiCardStrEmoji(hand.GetCard(i)))
+	}
+	return strings.Join(parts, "  ")
+}
+
+// cuiCardSliceStr returns a comma-space separated card string from a card slice.
+// e.g. "SPADE 5, HEART 3"
+func cuiCardSliceStr(cards []*domain.Card) string {
+	parts := make([]string, len(cards))
+	for i, c := range cards {
+		parts[i] = cuiCardStr(c)
+	}
+	return strings.Join(parts, ", ")
+}
+
+// cuiCardSliceStrEmoji returns a double-space separated emoji card string from a card slice.
+// e.g. "♠5  ♥3"
+func cuiCardSliceStrEmoji(cards []*domain.Card) string {
+	parts := make([]string, len(cards))
+	for i, c := range cards {
+		parts[i] = cuiCardStrEmoji(c)
+	}
+	return strings.Join(parts, "  ")
+}
