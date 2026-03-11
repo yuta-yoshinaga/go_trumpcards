@@ -1,0 +1,144 @@
+package ui
+
+import (
+	"fmt"
+	"strings"
+)
+
+// gameNames is the canonical ordered list of available game names.
+var gameNames = []string{
+	"blackjack", "poker", "oldmaid", "daifugo", "sevens",
+	"doubt", "holdem", "hearts", "memory", "klondike", "baccarat",
+}
+
+// cuiGame is implemented by each *Cui struct to expose its controller and help lines.
+type cuiGame interface {
+	Controller() CuiExecer
+	HelpLines() []string
+}
+
+// GameManager manages multiple game CUI controllers and enables dynamic switching.
+type GameManager struct {
+	games       map[string]CuiExecer
+	helpLines   map[string][]string
+	initialized map[string]bool
+	currentGame string
+	gameOrder   []string
+}
+
+// NewGameManager creates a GameManager starting with startGame (must be a valid game name).
+func NewGameManager(startGame string) *GameManager {
+	controllers, helpLines := buildGameEntries()
+	if _, ok := controllers[startGame]; !ok {
+		panic(fmt.Sprintf("NewGameManager: unknown start game %q", startGame))
+	}
+	return &GameManager{
+		games:       controllers,
+		helpLines:   helpLines,
+		initialized: make(map[string]bool),
+		currentGame: startGame,
+		gameOrder:   gameNames,
+	}
+}
+
+// Exec processes a command. "switch <game>" and "games" are handled by the manager;
+// all other commands are delegated to the current game's controller.
+func (m *GameManager) Exec(cmd string) string {
+	fields := strings.Fields(cmd)
+	if len(fields) > 0 {
+		switch fields[0] {
+		case "switch":
+			if len(fields) < 2 {
+				return "Usage: switch <game>. Type 'games' for the list."
+			}
+			return m.switchGame(fields[1])
+		case "games":
+			return m.listGames()
+		}
+	}
+	return m.games[m.currentGame].Exec(cmd)
+}
+
+// HelpLines returns the current game's help lines plus switch/games commands.
+func (m *GameManager) HelpLines() []string {
+	base := m.helpLines[m.currentGame]
+	lines := make([]string, len(base)+3)
+	copy(lines, base)
+	lines[len(base)] = fmt.Sprintf("--- Current game: %s ---", m.currentGame)
+	lines[len(base)+1] = "switch <game>・・・switch to another game (e.g. switch poker)"
+	lines[len(base)+2] = "games・・・list all available games"
+	return lines
+}
+
+// CurrentGame returns the name of the currently active game.
+func (m *GameManager) CurrentGame() string {
+	return m.currentGame
+}
+
+// InitCurrentGame initializes (resets) the current game if not yet done and returns the reset output.
+// This should be called once at startup before entering the game loop.
+func (m *GameManager) InitCurrentGame() string {
+	return m.initGame(m.currentGame)
+}
+
+func (m *GameManager) initGame(name string) string {
+	if !m.initialized[name] {
+		m.initialized[name] = true
+		return m.games[name].Exec("r")
+	}
+	return ""
+}
+
+func (m *GameManager) switchGame(name string) string {
+	name = strings.ToLower(name)
+	if _, ok := m.games[name]; !ok {
+		return fmt.Sprintf("Unknown game: %q. Type 'games' for the list.", name)
+	}
+	if name == m.currentGame {
+		return fmt.Sprintf("Already playing %s.", name)
+	}
+	m.currentGame = name
+	initMsg := m.initGame(name)
+	msg := fmt.Sprintf("Switched to %s.", name)
+	if initMsg != "" {
+		return msg + "\n" + initMsg
+	}
+	return msg
+}
+
+func (m *GameManager) listGames() string {
+	var sb strings.Builder
+	sb.WriteString("Available games:\n")
+	for _, name := range m.gameOrder {
+		if name == m.currentGame {
+			fmt.Fprintf(&sb, "  * %s (current)\n", name)
+		} else {
+			fmt.Fprintf(&sb, "    %s\n", name)
+		}
+	}
+	sb.WriteString("Use 'switch <game>' to switch.")
+	return sb.String()
+}
+
+func buildGameEntries() (map[string]CuiExecer, map[string][]string) {
+	entries := map[string]cuiGame{
+		"blackjack": NewBlackJackCui(),
+		"poker":     NewPokerCui(),
+		"oldmaid":   NewOldMaidCui(),
+		"daifugo":   NewDaifugoCui(),
+		"sevens":    NewSevensCui(),
+		"doubt":     NewDoubtCui(),
+		"holdem":    NewHoldemCui(),
+		"hearts":    NewHeartsCui(),
+		"memory":    NewMemoryCui(),
+		"klondike":  NewKlondikeCui(),
+		"baccarat":  NewBaccaratCui(),
+	}
+	controllers := make(map[string]CuiExecer, len(entries))
+	helpLines := make(map[string][]string, len(entries))
+	for name, g := range entries {
+		controllers[name] = g.Controller()
+		helpLines[name] = g.HelpLines()
+	}
+	return controllers, helpLines
+}

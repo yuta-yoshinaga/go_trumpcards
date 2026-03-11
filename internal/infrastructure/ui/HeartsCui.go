@@ -27,9 +27,12 @@ func NewHeartsCui() *HeartsCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *HeartsCui) Exec() {
-	RunCuiLoop(cui.hc, []string{
+// Controller returns the game controller.
+func (cui *HeartsCui) Controller() CuiExecer { return cui.hc }
+
+// HelpLines returns the game's help lines.
+func (cui *HeartsCui) HelpLines() []string {
+	return []string{
 		"Please enter a command.",
 		"q・・・quit",
 		"r・・・reset",
@@ -40,5 +43,10 @@ func (cui *HeartsCui) Exec() {
 		"sd <0-2>・・・set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
 		"sl <n>・・・set point limit",
 		"l・・・action log",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *HeartsCui) Exec() {
+	RunCuiLoop(cui.hc, cui.HelpLines())
 }

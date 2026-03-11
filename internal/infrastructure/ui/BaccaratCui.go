@@ -22,13 +22,21 @@ func NewBaccaratCui() *BaccaratCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *BaccaratCui) Exec() {
-	RunCuiLoop(cui.bc, []string{
+// Controller returns the game controller.
+func (cui *BaccaratCui) Controller() CuiExecer { return cui.bc }
+
+// HelpLines returns the game's help lines.
+func (cui *BaccaratCui) HelpLines() []string {
+	return []string{
 		"Please enter a command.",
 		"q・・・quit",
 		"r・・・reset",
 		"b N T・・・bet (e.g. b 100 0) T: 0=Player, 1=Banker, 2=Tie",
 		"log・・・action log",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *BaccaratCui) Exec() {
+	RunCuiLoop(cui.bc, cui.HelpLines())
 }
