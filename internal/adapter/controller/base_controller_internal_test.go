@@ -13,46 +13,40 @@ import (
 
 // --- deref helper tests ---
 
-func TestDerefBool(t *testing.T) {
-	t.Run("nil returns false", func(t *testing.T) {
-		assert.False(t, derefBool(nil))
+func TestDeref(t *testing.T) {
+	t.Run("bool nil returns zero", func(t *testing.T) {
+		assert.False(t, deref[bool](nil))
 	})
-	t.Run("non-nil returns value", func(t *testing.T) {
+	t.Run("bool non-nil returns value", func(t *testing.T) {
 		v := true
-		assert.True(t, derefBool(&v))
+		assert.True(t, deref(&v))
 	})
-}
-
-func TestDerefBoolDefault(t *testing.T) {
-	t.Run("nil returns default true", func(t *testing.T) {
-		assert.True(t, derefBoolDefault(nil, true))
+	t.Run("int nil returns zero", func(t *testing.T) {
+		assert.Equal(t, 0, deref[int](nil))
 	})
-	t.Run("nil returns default false", func(t *testing.T) {
-		assert.False(t, derefBoolDefault(nil, false))
-	})
-	t.Run("non-nil returns value", func(t *testing.T) {
-		v := false
-		assert.False(t, derefBoolDefault(&v, true))
-	})
-}
-
-func TestDerefInt(t *testing.T) {
-	t.Run("nil returns 0", func(t *testing.T) {
-		assert.Equal(t, 0, derefInt(nil))
-	})
-	t.Run("non-nil returns value", func(t *testing.T) {
+	t.Run("int non-nil returns value", func(t *testing.T) {
 		v := 42
-		assert.Equal(t, 42, derefInt(&v))
+		assert.Equal(t, 42, deref(&v))
 	})
 }
 
-func TestDerefIntDefault(t *testing.T) {
-	t.Run("nil returns default", func(t *testing.T) {
-		assert.Equal(t, 99, derefIntDefault(nil, 99))
+func TestDerefDefault(t *testing.T) {
+	t.Run("bool nil returns default true", func(t *testing.T) {
+		assert.True(t, derefDefault[bool](nil, true))
 	})
-	t.Run("non-nil returns value", func(t *testing.T) {
+	t.Run("bool nil returns default false", func(t *testing.T) {
+		assert.False(t, derefDefault[bool](nil, false))
+	})
+	t.Run("bool non-nil returns value", func(t *testing.T) {
+		v := false
+		assert.False(t, derefDefault(&v, true))
+	})
+	t.Run("int nil returns default", func(t *testing.T) {
+		assert.Equal(t, 99, derefDefault[int](nil, 99))
+	})
+	t.Run("int non-nil returns value", func(t *testing.T) {
 		v := 7
-		assert.Equal(t, 7, derefIntDefault(&v, 99))
+		assert.Equal(t, 7, derefDefault(&v, 99))
 	})
 }
 
