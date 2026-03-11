@@ -29,6 +29,8 @@ type GameManager struct {
 }
 
 // NewGameManager creates a GameManager starting with startGame (must be a valid game name).
+// i18n.SetLang must be called before NewGameManager: each game's HelpLines() is evaluated
+// once at construction time, so changing the language afterwards will not update cached help text.
 func NewGameManager(startGame string) *GameManager {
 	controllers, helpLines := buildGameEntries()
 	if _, ok := controllers[startGame]; !ok {

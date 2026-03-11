@@ -3,10 +3,12 @@ package i18n
 import (
 	"embed"
 	"encoding/json"
+	"io/fs"
 	"strings"
 )
 
-//go:embed locales
+//go:embed locales/ja
+//go:embed locales/en
 var localesFS embed.FS
 
 // QuitSentinel is the internal protocol value returned by controllers on quit.
@@ -21,7 +23,7 @@ func SetLang(lang string) {
 		lang = "ja"
 	}
 	currentLang = lang
-	translations = loadTranslations(lang)
+	translations = loadTranslations(localesFS, lang)
 }
 
 // Lang returns the currently active language.
@@ -45,12 +47,12 @@ func Tf(key string, params ...string) string {
 	return s
 }
 
-func loadTranslations(lang string) map[string]string {
+func loadTranslations(fsys fs.FS, lang string) map[string]string {
 	result := map[string]string{}
 	games := []string{"common", "blackjack", "poker", "oldmaid", "daifugo", "sevens", "doubt", "holdem", "hearts", "memory", "klondike", "baccarat"}
 	for _, game := range games {
 		path := "locales/" + lang + "/" + game + ".json"
-		data, err := localesFS.ReadFile(path)
+		data, err := fs.ReadFile(fsys, path)
 		if err != nil {
 			continue
 		}
@@ -70,5 +72,5 @@ func loadTranslations(lang string) map[string]string {
 }
 
 func init() {
-	translations = loadTranslations("ja")
+	translations = loadTranslations(localesFS, "ja")
 }
