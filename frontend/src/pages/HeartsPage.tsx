@@ -8,6 +8,7 @@ import { useActionLog } from '../hooks/useActionLog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { HEARTS_PHASE } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
 const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
@@ -180,6 +181,7 @@ export function HeartsPage() {
                 type="button"
                 key={`${card.design}-${card.value}-${idx}`}
                 onClick={() => toggleCard(idx)}
+                aria-label={cardAlt(card)}
                 aria-pressed={selectedCardIndices.includes(idx)}
                 className={`${selectedCardIndices.includes(idx) ? 'ring-2 ring-yellow-400 -translate-y-1' : ''} transition-transform`}
               >

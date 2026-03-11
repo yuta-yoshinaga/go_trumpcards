@@ -18,6 +18,7 @@ import { handNameBadgeStyle } from '../styles/gameConstants';
 import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
 import { toggleArrayItem } from '../utils/arrayUtils';
+import { cardAlt } from '../utils/cardAlt';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -193,6 +194,7 @@ export function PokerPage() {
                   <button
                     key={`${card.design}-${card.value}`}
                     type="button"
+                    aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                     aria-pressed={isSelected}
                     onClick={() => toggleSelect(i)}
                     style={{

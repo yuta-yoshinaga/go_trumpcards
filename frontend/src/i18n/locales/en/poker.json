@@ -9,5 +9,6 @@
   "cpuExchangeEntry": "Player {{idx}}: exchanged {{count}} card(s)",
   "exchangeCount": "Exchanged: {{count}}",
   "lowball": "2-7 Lowball",
-  "lowballMode": "2-7 Lowball Mode"
+  "lowballMode": "2-7 Lowball Mode",
+  "cardSelected": "(selected for exchange)"
 }
