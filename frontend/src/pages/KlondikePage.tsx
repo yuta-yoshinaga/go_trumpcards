@@ -83,6 +83,7 @@ export function KlondikePage() {
                   handleSelectSource({ zone: 'waste' });
                 }}
                 disabled={!isPlaying || loading}
+                aria-pressed={isSourceSelected('waste')}
                 className={`p-0 border-0 bg-transparent cursor-pointer ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400 rounded' : ''}`}
               >
                 <CardImage card={state.waste[state.waste.length - 1]} width={60} />
@@ -161,6 +162,7 @@ export function KlondikePage() {
                             }
                           }}
                           disabled={!isPlaying || loading}
+                          aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400 rounded' : ''}`}
                         >
                           <CardImage card={tc.card} width={60} style={{ width: '100%' }} />
