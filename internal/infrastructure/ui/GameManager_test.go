@@ -3,11 +3,19 @@
 package ui
 
 import (
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
+
+func TestMain(m *testing.M) {
+	i18n.SetLang("en")
+	os.Exit(m.Run())
+}
 
 // mockExecer is a simple CuiExecer mock for testing.
 type mockExecer struct {

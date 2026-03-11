@@ -1,0 +1,21 @@
+{
+  "bye": "Goodbye.",
+  "typeHelp": "Type \"help\" or \"?\" for commands.",
+  "unknownCommand": "Unknown command: {{cmd}}",
+  "gameCommands": "Game commands:",
+  "settings": "Settings:",
+  "session": "Session:",
+  "helpEntry": "  help, ?              show this help",
+  "resetEntry": "  r                    reset game",
+  "quitEntry": "  q                    quit",
+  "switchUsage": "Usage: switch <game>. Type 'games' for the list.",
+  "unknownGame": "Unknown game: \"{{name}}\". Type 'games' for the list.",
+  "alreadyPlaying": "Already playing {{name}}.",
+  "switchedTo": "Switched to {{name}}.",
+  "availableGames": "Available games:",
+  "currentGame": "(current)",
+  "useSwitchCmd": "Use 'switch <game>' to switch.",
+  "interactiveMode": "Interactive mode  (current: {{name}})",
+  "switchCmd": "  switch <game>  switch to another game (e.g. switch poker)",
+  "gamesCmd": "  games          list all available games"
+}

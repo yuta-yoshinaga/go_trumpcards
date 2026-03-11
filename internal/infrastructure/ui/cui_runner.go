@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // CuiExecer CUIコントローラの共通インタフェース
@@ -19,7 +21,7 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 	if initMsg != "" {
 		fmt.Println(initMsg)
 	}
-	fmt.Println(`Type "help" or "?" for commands.`)
+	fmt.Println(i18n.T("typeHelp"))
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		input, exit := readInput(scanner)
@@ -27,10 +29,11 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 			break
 		}
 		res := manager.Exec(input)
-		fmt.Println(res)
-		if res == "bye." {
+		if res == i18n.QuitSentinel {
+			fmt.Println(i18n.T("bye"))
 			break
 		}
+		fmt.Println(res)
 	}
 }
 
@@ -38,7 +41,7 @@ func RunInteractiveCuiLoop(manager *GameManager) {
 // helpLines は "help" / "?" コマンドが入力されたときのみ表示される
 func RunCuiLoop(controller CuiExecer, helpLines []string) {
 	fmt.Println(controller.Exec("r"))
-	fmt.Println(`Type "help" or "?" for commands.`)
+	fmt.Println(i18n.T("typeHelp"))
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		input, exit := readInput(scanner)
@@ -53,9 +56,10 @@ func RunCuiLoop(controller CuiExecer, helpLines []string) {
 			continue
 		}
 		res := controller.Exec(input)
-		fmt.Println(res)
-		if res == "bye." {
+		if res == i18n.QuitSentinel {
+			fmt.Println(i18n.T("bye"))
 			break
 		}
+		fmt.Println(res)
 	}
 }

@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Hearts (ハーツ)",
+  "helpPass": "  pass <i1> <i2> <i3>  pass 3 cards",
+  "helpPlay": "  p <idx>              play a card",
+  "helpNext": "  n                    next trick",
+  "helpNextRound": "  nr                   next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               point limit"
+}

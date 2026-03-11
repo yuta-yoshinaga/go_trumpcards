@@ -4,6 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -33,23 +34,23 @@ func (cui *HeartsCui) Controller() CuiExecer { return cui.hc }
 // HelpLines returns the game's help lines.
 func (cui *HeartsCui) HelpLines() []string {
 	return []string{
-		"Hearts (ハーツ)",
+		i18n.T("hearts.helpTitle"),
 		"",
-		"Game commands:",
-		"  pass <i1> <i2> <i3>  pass 3 cards",
-		"  p <i>                play card at index",
-		"  n                    next trick",
-		"  nr                   next round",
+		i18n.T("gameCommands"),
+		i18n.T("hearts.helpPass"),
+		i18n.T("hearts.helpPlay"),
+		i18n.T("hearts.helpNext"),
+		i18n.T("hearts.helpNextRound"),
 		"  l                    action log",
 		"",
-		"Settings:",
-		"  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-		"  sl <n>               set point limit",
+		i18n.T("settings"),
+		i18n.T("hearts.helpSetDifficulty"),
+		i18n.T("hearts.helpSetLimit"),
 		"",
-		"Session:",
-		"  r                    reset game",
-		"  q                    quit",
-		"  help, ?              show this help",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 

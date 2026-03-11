@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -46,22 +47,22 @@ func (cui *DoubtCui) Controller() CuiExecer { return cui.dc }
 // HelpLines returns the game's help lines.
 func (cui *DoubtCui) HelpLines() []string {
 	return []string{
-		"Doubt (ダウト)",
+		i18n.T("doubt.helpTitle"),
 		"",
-		"Game commands:",
-		"  p <value> <idx ...>  play cards (value=declared, idx=hand index)",
-		"  d [playerIdx ...]    doubt",
-		"  s                    skip doubt",
+		i18n.T("gameCommands"),
+		i18n.T("doubt.helpPlay"),
+		i18n.T("doubt.helpDoubt"),
+		i18n.T("doubt.helpSkip"),
 		"",
-		"Settings:",
-		"  sw <sec>             doubt window seconds (1-60)",
-		"  sm <level>           CPU memory level (0=Easy, 1=Normal, 2=Hard)",
-		"  sp <limit>           penalty draw limit (0=unlimited, >0=limit)",
+		i18n.T("settings"),
+		i18n.T("doubt.helpSetWindow"),
+		i18n.T("doubt.helpSetMemory"),
+		i18n.T("doubt.helpSetPenalty"),
 		"",
-		"Session:",
-		"  r                    reset game",
-		"  q                    quit",
-		"  help, ?              show this help",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 
@@ -88,7 +89,7 @@ func (cui *DoubtCui) drainInput() {
 func (cui *DoubtCui) Exec() {
 	go cui.inputReader()
 	fmt.Println(cui.dc.Exec("r"))
-	fmt.Println(`Type "help" or "?" for commands.`)
+	fmt.Println(i18n.T("typeHelp"))
 	for !cui.game.GetGameEndFlag() {
 		switch {
 		case cui.game.GetPhase() == domain.DoubtPhasePlay && cui.game.IsHumanTurn():
@@ -102,10 +103,11 @@ func (cui *DoubtCui) Exec() {
 				continue
 			}
 			res := cui.dc.Exec(input)
-			fmt.Println(res)
-			if res == "bye." {
+			if res == i18n.QuitSentinel {
+				fmt.Println(i18n.T("bye"))
 				return
 			}
+			fmt.Println(res)
 		case cui.game.GetPhase() == domain.DoubtPhaseDoubt:
 			cui.handleDoubtWindow()
 		}
@@ -140,7 +142,7 @@ func (cui *DoubtCui) handleDoubtWindow() {
 
 	if humanCanDoubt {
 		timeout := time.Duration(cui.game.GetConfig().DoubtWindowSec) * time.Second
-		fmt.Printf("ダウト！と言いますか？ (d / doubt → ダウト、Enter でスキップ) [%d秒]\n", cui.game.GetConfig().DoubtWindowSec)
+		fmt.Println(i18n.Tf("doubt.doubtPrompt", "sec", fmt.Sprintf("%d", cui.game.GetConfig().DoubtWindowSec)))
 		select {
 		case input := <-cui.inputCh:
 			trimmed := strings.TrimSpace(input)
@@ -149,7 +151,7 @@ func (cui *DoubtCui) handleDoubtWindow() {
 				allDoubters = append(allDoubters, humanIdx) // 人間がダウト
 			}
 		case <-time.After(timeout):
-			fmt.Println("タイムアウト: ダウトをスキップします")
+			fmt.Println(i18n.T("doubt.timeout"))
 		}
 	}
 

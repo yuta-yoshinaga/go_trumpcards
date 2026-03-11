@@ -4,6 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -35,21 +36,21 @@ func (cui *DaifugoCui) Controller() CuiExecer { return cui.dgc }
 // HelpLines returns the game's help lines.
 func (cui *DaifugoCui) HelpLines() []string {
 	return []string{
-		"Daifugo / Great Fool (大富豪)",
+		i18n.T("daifugo.helpTitle"),
 		"",
-		"Game commands:",
-		"  p [index ...]        play cards (no index = pass)",
-		"  sort [0-2]           sort hand (0=strength, 1=suit, 2=number)",
+		i18n.T("gameCommands"),
+		i18n.T("daifugo.helpPlay"),
+		i18n.T("daifugo.helpSort"),
 		"",
-		"Settings:",
-		"  sd [0-2]             CPU difficulty (0=Normal, 1=Easy, 2=Hard)",
-		"  sj [0-2]             joker count",
-		"  sr <rule> <0|1>      toggle local rule",
+		i18n.T("settings"),
+		i18n.T("daifugo.helpSetDifficulty"),
+		i18n.T("daifugo.helpSetJoker"),
+		i18n.T("daifugo.helpSetRule"),
 		"",
-		"Session:",
-		"  r                    reset game",
-		"  q                    quit",
-		"  help, ?              show this help",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 
