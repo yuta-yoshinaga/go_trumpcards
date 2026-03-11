@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Old Maid (ババ抜き)",
+  "helpDraw": "  d                    draw a card",
+  "helpShuffle": "  s                    shuffle hand",
+  "helpReorder": "  ro [i0 i1 ...]       reorder hand",
+  "helpSetMode": "  sm [0-1]             set mode (0=Normal, 1=JijiNuki)",
+  "helpSetPlacement": "  sps [0-1]            set CPU placement strategy (0=OFF, 1=ON)",
+  "helpSetMemoryAI": "  sma [0-1]            set CPU memory AI (0=OFF, 1=ON)"
+}

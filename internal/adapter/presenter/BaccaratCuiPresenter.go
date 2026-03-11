@@ -12,11 +12,6 @@ import (
 type BaccaratCuiPresenter struct {
 }
 
-// NewBaccaratCuiPresenter コンストラクタ
-func NewBaccaratCuiPresenter() *BaccaratCuiPresenter {
-	return &BaccaratCuiPresenter{}
-}
-
 // Output ゲーム状態を出力
 func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error) string {
 	var sb strings.Builder
@@ -30,12 +25,11 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	if len(playerHand) > 0 {
 		sb.WriteString("--- PLAYER ---\n")
 		fmt.Fprintf(&sb, "value: %d\n", b.GetPlayerHandValue())
+		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
-			if i != 0 {
-				sb.WriteString(",")
-			}
-			sb.WriteString(cuiCardStr(card))
+			parts[i] = cuiCardStr(card)
 		}
+		sb.WriteString(strings.Join(parts, ","))
 		sb.WriteString("\n")
 	}
 
@@ -44,12 +38,11 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	if len(bankerHand) > 0 {
 		sb.WriteString("--- BANKER ---\n")
 		fmt.Fprintf(&sb, "value: %d\n", b.GetBankerHandValue())
+		parts := make([]string, len(bankerHand))
 		for i, card := range bankerHand {
-			if i != 0 {
-				sb.WriteString(",")
-			}
-			sb.WriteString(cuiCardStr(card))
+			parts[i] = cuiCardStr(card)
 		}
+		sb.WriteString(strings.Join(parts, ","))
 		sb.WriteString("\n")
 	}
 

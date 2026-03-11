@@ -11,11 +11,6 @@ import (
 // MemoryWebPresenter 神経衰弱Webプレゼンタークラス
 type MemoryWebPresenter struct{}
 
-// NewMemoryWebPresenter コンストラクタ
-func NewMemoryWebPresenter() *MemoryWebPresenter {
-	return &MemoryWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (p *MemoryWebPresenter) Output(m interfaces.MemoryGame, lastErr error) string {
 	resObj := new(controller.MemoryWebOutput)

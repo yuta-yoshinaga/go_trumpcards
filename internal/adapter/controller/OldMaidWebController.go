@@ -117,7 +117,7 @@ func oldMaidDispatch(bc *baseController, w rest.ResponseWriter, omi usecase.OldM
 	case "rp", "reset-profile":
 		bc.writePresenterResponse(w, omi.ResetProfile())
 	case "d", "draw":
-		drawIdx := derefIntDefault(param.DrawIdx, -1)
+		drawIdx := derefDefault(param.DrawIdx, -1)
 		bc.writePresenterResponse(w, omi.Draw(drawIdx))
 	case "s", "shuffle":
 		bc.writePresenterResponse(w, omi.Shuffle())

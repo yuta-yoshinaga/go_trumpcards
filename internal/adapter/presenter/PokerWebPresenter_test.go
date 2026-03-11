@@ -27,7 +27,7 @@ func makePokerForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
 }
 
 func TestPokerWebPresenter_Output(t *testing.T) {
-	pres := presenter.NewPokerWebPresenter()
+	pres := new(presenter.PokerWebPresenter)
 
 	t.Run("initial state deal phase", func(t *testing.T) {
 		p, players := makePokerForPresenter()
@@ -459,7 +459,7 @@ func TestPokerWebPresenter_Output(t *testing.T) {
 }
 
 func TestPokerWebPresenter_OutputWithOdds(t *testing.T) {
-	pres := presenter.NewPokerWebPresenter()
+	pres := new(presenter.PokerWebPresenter)
 
 	t.Run("with odds data", func(t *testing.T) {
 		p, _ := makePokerForPresenter()
@@ -520,7 +520,7 @@ func TestPokerWebPresenter_OutputWithOdds(t *testing.T) {
 }
 
 func TestPokerWebPresenter_Output_IsLowball(t *testing.T) {
-	pres := presenter.NewPokerWebPresenter()
+	pres := new(presenter.PokerWebPresenter)
 
 	t.Run("isLowball true", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -554,7 +554,7 @@ func TestPokerWebPresenter_Output_IsLowball(t *testing.T) {
 }
 
 func TestPokerWebPresenter_Output_BettingLimitFields(t *testing.T) {
-	pres := presenter.NewPokerWebPresenter()
+	pres := new(presenter.PokerWebPresenter)
 
 	t.Run("default Fixed limit", func(t *testing.T) {
 		p, players := makePokerForPresenter()
@@ -595,7 +595,7 @@ func TestPokerWebPresenter_Output_BettingLimitFields(t *testing.T) {
 }
 
 func TestPokerWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewPokerWebPresenter()
+	p := new(presenter.PokerWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockPokerGame)

@@ -31,6 +31,49 @@
 
 ## Usage
 ### Install
+
+#### go install（Go ユーザー向け）
+```sh
+go install github.com/yuta-yoshinaga/go_trumpcards/cmd/trumpcards@latest
+trumpcards blackjack
+```
+
+#### GitHub Releases からバイナリをダウンロード
+Linux/macOS/Windows 向けのビルド済みバイナリは [GitHub Releases](https://github.com/yuta-yoshinaga/go_trumpcards/releases) から入手できます。
+
+**Linux / macOS**
+```sh
+# VERSION には取得したいバージョン番号を指定（例: v3.12.0）
+VERSION=v3.12.0
+
+# OS と アーキテクチャを確認して対応する URL を選択
+# Linux amd64:
+curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_linux_amd64.tar.gz" | tar xz
+# Linux arm64:
+curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_linux_arm64.tar.gz" | tar xz
+# macOS amd64 (Intel):
+curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_darwin_amd64.tar.gz" | tar xz
+# macOS arm64 (Apple Silicon):
+curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_darwin_arm64.tar.gz" | tar xz
+
+# PATH の通ったディレクトリに移動（例: /usr/local/bin）
+sudo mv trumpcards /usr/local/bin/
+trumpcards --version
+```
+
+**Windows (PowerShell)**
+```powershell
+# VERSION には取得したいバージョン番号を指定（例: v3.12.0）
+$VERSION = "v3.12.0"
+$VER = $VERSION.TrimStart("v")
+
+Invoke-WebRequest -Uri "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/$VERSION/trumpcards_${VER}_windows_amd64.zip" -OutFile "trumpcards.zip"
+Expand-Archive -Path "trumpcards.zip" -DestinationPath "."
+# trumpcards.exe を PATH の通ったディレクトリに移動してから実行
+.\trumpcards.exe --version
+```
+
+#### ソースからビルド
 ```sh
 git clone https://github.com/yuta-yoshinaga/go_trumpcards.git
 cd go_trumpcards
@@ -38,19 +81,22 @@ cd go_trumpcards
 
 ### Run
 ```sh
-go run ./cmd/cli blackjack  # ブラックジャック CLI
-go run ./cmd/cli poker      # 5枚ドローポーカー CLI
-go run ./cmd/cli oldmaid    # ババ抜き CLI
-go run ./cmd/cli daifugo    # 大富豪 CLI
-go run ./cmd/cli sevens     # 7並べ CLI
-go run ./cmd/cli doubt      # ダウト CLI
-go run ./cmd/cli holdem     # テキサスホールデム CLI
-go run ./cmd/cli hearts     # ハーツ CLI
-go run ./cmd/cli memory     # 神経衰弱 CLI
-go run ./cmd/cli klondike   # クロンダイク CLI
-go run ./cmd/cli baccarat   # バカラ CLI
-go run ./cmd/cli web        # REST API + Web GUI サーバー起動 (CLI経由)
-go run ./cmd/server         # REST API + Web GUI サーバー起動 (直接)
+go run ./cmd/trumpcards                      # インタラクティブモード (ゲーム選択・切り替え可能)
+go run ./cmd/trumpcards --lang en            # インタラクティブモード (英語)
+go run ./cmd/trumpcards blackjack            # ブラックジャック CLI
+go run ./cmd/trumpcards --lang en blackjack  # ブラックジャック CLI (英語)
+go run ./cmd/trumpcards poker      # 5枚ドローポーカー CLI
+go run ./cmd/trumpcards oldmaid    # ババ抜き CLI
+go run ./cmd/trumpcards daifugo    # 大富豪 CLI
+go run ./cmd/trumpcards sevens     # 7並べ CLI
+go run ./cmd/trumpcards doubt      # ダウト CLI
+go run ./cmd/trumpcards holdem     # テキサスホールデム CLI
+go run ./cmd/trumpcards hearts     # ハーツ CLI
+go run ./cmd/trumpcards memory     # 神経衰弱 CLI
+go run ./cmd/trumpcards klondike   # クロンダイク CLI
+go run ./cmd/trumpcards baccarat   # バカラ CLI
+go run ./cmd/trumpcards web        # REST API + Web GUI サーバー起動 (CLI経由)
+go run ./cmd/server                # REST API + Web GUI サーバー起動 (直接)
 ```
 
 ### Test
@@ -90,7 +136,7 @@ Clean Architectureを採用しています。依存の方向は外側から内�
 
 ```
 cmd/
-  cli/                # CLIエントリーポイント（全ゲーム + Webサーバー）
+  trumpcards/         # CLIエントリーポイント（全ゲーム + Webサーバー）
   server/             # Webサーバー専用エントリーポイント
 internal/
   domain/             # コアビジネスロジック（最内層）

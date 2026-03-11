@@ -43,16 +43,11 @@ func parseKlondikeOutput(t *testing.T, jsonStr string) *controller.KlondikeWebOu
 	return &out
 }
 
-func TestKlondikeWebPresenter_Constructor(t *testing.T) {
-	p := NewKlondikeWebPresenter()
-	assert.NotNil(t, p)
-}
-
 func TestKlondikeWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		setupKlondikeWebMockDefaults(kg)
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 
 		result := parseKlondikeOutput(t, p.Output(kg, nil))
 		assert.Equal(t, 0, result.Phase)
@@ -70,7 +65,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetWaste")
 		kg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.Output(kg, nil))
 		assert.Len(t, result.Waste, 1)
 		assert.Equal(t, "HEART", result.Waste[0].Design)
@@ -80,7 +75,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 	t.Run("face down card hides data", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		setupKlondikeWebMockDefaults(kg)
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 
 		result := parseKlondikeOutput(t, p.Output(kg, nil))
 		// Column 1 has 2 cards: first face-down
@@ -99,7 +94,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 		f[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
 		kg.On("GetFoundation").Return(f)
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.Output(kg, nil))
 		assert.Len(t, result.Foundation[0], 1)
 		assert.Equal(t, "SPADE", result.Foundation[0][0].Design)
@@ -108,7 +103,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 	t.Run("with error", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		setupKlondikeWebMockDefaults(kg)
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 
 		result := parseKlondikeOutput(t, p.Output(kg, assert.AnError))
 		assert.Equal(t, assert.AnError.Error(), result.Message)
@@ -120,7 +115,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameClear)
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.Output(kg, nil))
 		assert.Equal(t, "klondike.gameClear", result.MessageCode)
 		assert.Contains(t, result.Message, "ゲームクリア")
@@ -133,7 +128,7 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.Output(kg, nil))
 		assert.Equal(t, "klondike.gameOver", result.MessageCode)
 		assert.Contains(t, result.Message, "ゲームオーバー")
@@ -154,7 +149,7 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 		kg.On("GetMoveCount").Return(5)
 		kg.On("GetStockCount").Return(20)
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.HintOutput(kg))
 		assert.NotNil(t, result.Hint)
 		assert.Equal(t, "tableau", result.Hint.FromZone)
@@ -171,7 +166,7 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 		kg.On("GetMoveCount").Return(0)
 		kg.On("GetStockCount").Return(24)
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.HintOutput(kg))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "klondike.noHint", result.MessageCode)
@@ -183,7 +178,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := p.ActionLogOutput(kg)
 		var out controller.ActionLogWebOutput
 		err := json.Unmarshal([]byte(result), &out)
@@ -198,7 +193,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", Detail: "test", Cards: nil},
 		})
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := p.ActionLogOutput(kg)
 		var out controller.ActionLogWebOutput
 		err := json.Unmarshal([]byte(result), &out)
@@ -211,7 +206,7 @@ func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
 		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 
-		p := NewKlondikeWebPresenter()
+		p := new(KlondikeWebPresenter)
 		result := p.ActionLogOutput(kg)
 		var out controller.ActionLogWebOutput
 		err := json.Unmarshal([]byte(result), &out)

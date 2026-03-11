@@ -1,0 +1,11 @@
+{
+  "helpTitle": "Doubt",
+  "helpPlay": "  p <value> <idx ...>  play cards (value=declared, idx=hand index)",
+  "helpDoubt": "  d [playerIdx ...]    doubt",
+  "helpSkip": "  s                    skip doubt",
+  "helpSetWindow": "  sw <sec>             doubt window seconds (1-60)",
+  "helpSetMemory": "  sm <level>           CPU memory level (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetPenalty": "  sp <limit>           penalty draw limit (0=unlimited, >0=limit)",
+  "doubtPrompt": "Do you doubt? (d / doubt → doubt, Enter to skip) [{{sec}}s]",
+  "timeout": "Timeout: skipping doubt"
+}

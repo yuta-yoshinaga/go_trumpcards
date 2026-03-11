@@ -11,11 +11,6 @@ import (
 // DoubtWebPresenter ダウトWebプレゼンタークラス
 type DoubtWebPresenter struct{}
 
-// NewDoubtWebPresenter コンストラクタ
-func NewDoubtWebPresenter() *DoubtWebPresenter {
-	return &DoubtWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) string {
 	resObj := new(controller.DoubtWebOutput)

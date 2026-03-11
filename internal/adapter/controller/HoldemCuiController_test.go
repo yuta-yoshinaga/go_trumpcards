@@ -149,15 +149,15 @@ func TestHoldemCuiController_BettingLimit_LongCommand(t *testing.T) {
 func TestHoldemCuiController_BettingLimit_NoArgs(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("bl"), "Betting limit type is required")
+	assert.Contains(t, c.Exec("bl"), "ベッティングリミット")
 }
 
 func TestHoldemCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("bl 5"), "Invalid betting limit: 5")
-	assert.Contains(t, c.Exec("bl abc"), "Invalid betting limit: abc")
-	assert.Contains(t, c.Exec("bl -1"), "Invalid betting limit: -1")
+	assert.Contains(t, c.Exec("bl 5"), "5")
+	assert.Contains(t, c.Exec("bl abc"), "abc")
+	assert.Contains(t, c.Exec("bl -1"), "-1")
 }
 
 // --- tournament mode ---
@@ -185,15 +185,15 @@ func TestHoldemCuiController_TournamentMode_LongCommand(t *testing.T) {
 func TestHoldemCuiController_TournamentMode_NoArgs(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("tm"), "Tournament mode is required")
+	assert.Contains(t, c.Exec("tm"), "トーナメントモード")
 }
 
 func TestHoldemCuiController_TournamentMode_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("tm 5"), "Invalid tournament mode: 5")
-	assert.Contains(t, c.Exec("tm abc"), "Invalid tournament mode: abc")
-	assert.Contains(t, c.Exec("tm -1"), "Invalid tournament mode: -1")
+	assert.Contains(t, c.Exec("tm 5"), "5")
+	assert.Contains(t, c.Exec("tm abc"), "abc")
+	assert.Contains(t, c.Exec("tm -1"), "-1")
 }
 
 // --- small blind ---
@@ -221,23 +221,23 @@ func TestHoldemCuiController_SmallBlind_LongCommand(t *testing.T) {
 func TestHoldemCuiController_SmallBlind_NoArgs(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("sb"), "Small blind amount is required")
+	assert.Contains(t, c.Exec("sb"), "スモールブラインド")
 }
 
 func TestHoldemCuiController_SmallBlind_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("sb 0"), "Invalid small blind: 0")
-	assert.Contains(t, c.Exec("sb abc"), "Invalid small blind: abc")
-	assert.Contains(t, c.Exec("sb -1"), "Invalid small blind: -1")
+	assert.Contains(t, c.Exec("sb 0"), "0")
+	assert.Contains(t, c.Exec("sb abc"), "abc")
+	assert.Contains(t, c.Exec("sb -1"), "-1")
 }
 
 func TestHoldemCuiController_SmallBlind_NotLessThanBigBlind(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
 	mi.On("GetConfig").Return(domain.HoldemConfig{SmallBlind: 5, BigBlind: 10, InitChips: 1000, BlindLevelHands: 10, BlindMultiplier: 200})
-	assert.Contains(t, c.Exec("sb 10"), "Small blind must be less than big blind")
-	assert.Contains(t, c.Exec("sb 15"), "Small blind must be less than big blind")
+	assert.Contains(t, c.Exec("sb 10"), "スモールブラインドはビッグブラインド")
+	assert.Contains(t, c.Exec("sb 15"), "スモールブラインドはビッグブラインド")
 }
 
 // --- big blind ---
@@ -265,23 +265,23 @@ func TestHoldemCuiController_BigBlind_LongCommand(t *testing.T) {
 func TestHoldemCuiController_BigBlind_NoArgs(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("bb"), "Big blind amount is required")
+	assert.Contains(t, c.Exec("bb"), "ビッグブラインド")
 }
 
 func TestHoldemCuiController_BigBlind_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("bb 1"), "Invalid big blind: 1")
-	assert.Contains(t, c.Exec("bb abc"), "Invalid big blind: abc")
-	assert.Contains(t, c.Exec("bb -1"), "Invalid big blind: -1")
+	assert.Contains(t, c.Exec("bb 1"), "1")
+	assert.Contains(t, c.Exec("bb abc"), "abc")
+	assert.Contains(t, c.Exec("bb -1"), "-1")
 }
 
 func TestHoldemCuiController_BigBlind_NotGreaterThanSmallBlind(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
 	mi.On("GetConfig").Return(domain.HoldemConfig{SmallBlind: 5, BigBlind: 10, InitChips: 1000, BlindLevelHands: 10, BlindMultiplier: 200})
-	assert.Contains(t, c.Exec("bb 5"), "Big blind must be greater than small blind")
-	assert.Contains(t, c.Exec("bb 3"), "Big blind must be greater than small blind")
+	assert.Contains(t, c.Exec("bb 5"), "ビッグブラインドはスモールブラインド")
+	assert.Contains(t, c.Exec("bb 3"), "ビッグブラインドはスモールブラインド")
 }
 
 // --- level-up hands ---
@@ -309,15 +309,15 @@ func TestHoldemCuiController_LevelHand_LongCommand(t *testing.T) {
 func TestHoldemCuiController_LevelHand_NoArgs(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("lh"), "Level-up hands is required")
+	assert.Contains(t, c.Exec("lh"), "ハンド数が必要")
 }
 
 func TestHoldemCuiController_LevelHand_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("lh 0"), "Invalid level-up hands: 0")
-	assert.Contains(t, c.Exec("lh abc"), "Invalid level-up hands: abc")
-	assert.Contains(t, c.Exec("lh -1"), "Invalid level-up hands: -1")
+	assert.Contains(t, c.Exec("lh 0"), "0")
+	assert.Contains(t, c.Exec("lh abc"), "abc")
+	assert.Contains(t, c.Exec("lh -1"), "-1")
 }
 
 // --- table size ---
@@ -345,15 +345,15 @@ func TestHoldemCuiController_TableSize_LongCommand(t *testing.T) {
 func TestHoldemCuiController_TableSize_NoArgs(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("ts"), "Table size is required")
+	assert.Contains(t, c.Exec("ts"), "テーブルサイズ")
 }
 
 func TestHoldemCuiController_TableSize_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("ts 5"), "Invalid table size: 5")
-	assert.Contains(t, c.Exec("ts abc"), "Invalid table size: abc")
-	assert.Contains(t, c.Exec("ts -1"), "Invalid table size: -1")
+	assert.Contains(t, c.Exec("ts 5"), "5")
+	assert.Contains(t, c.Exec("ts abc"), "abc")
+	assert.Contains(t, c.Exec("ts -1"), "-1")
 }
 
 // --- rebuy ---

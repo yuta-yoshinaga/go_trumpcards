@@ -4,6 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -23,25 +24,40 @@ func NewPokerCui() *PokerCui {
 	}
 	poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
 	return &PokerCui{
-		pc: controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, presenter.NewPokerCuiPresenter())),
+		pc: controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, new(presenter.PokerCuiPresenter))),
+	}
+}
+
+// Controller returns the game controller.
+func (cui *PokerCui) Controller() CuiExecer { return cui.pc }
+
+// HelpLines returns the game's help lines.
+func (cui *PokerCui) HelpLines() []string {
+	return []string{
+		i18n.T("poker.helpTitle"),
+		"",
+		i18n.T("gameCommands"),
+		i18n.T("poker.helpBet"),
+		i18n.T("poker.helpCall"),
+		i18n.T("poker.helpRaise"),
+		i18n.T("poker.helpCheck"),
+		i18n.T("poker.helpFold"),
+		i18n.T("poker.helpAllIn"),
+		i18n.T("poker.helpExchange"),
+		i18n.T("poker.helpStand"),
+		"",
+		i18n.T("settings"),
+		i18n.T("poker.helpBettingLimit"),
+		i18n.T("poker.helpLowball"),
+		"",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 
 // Exec ゲーム実行
 func (cui *PokerCui) Exec() {
-	RunCuiLoop(cui.pc, []string{
-		"Please enter a command.",
-		"q・・・quit",
-		"r・・・reset",
-		"b [amount]・・・bet (e.g. 'b 20')",
-		"c・・・call",
-		"ra [amount]・・・raise (e.g. 'ra 30')",
-		"ck・・・check",
-		"f・・・fold",
-		"a・・・all-in",
-		"e [0-4]・・・exchange (e.g. 'e 0 2 4' to exchange cards at index 0, 2, 4)",
-		"s・・・stand (no exchange)",
-		"bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
-		"lw・・・toggle 2-7 Lowball mode",
-	})
+	RunCuiLoop(cui.pc, cui.HelpLines())
 }

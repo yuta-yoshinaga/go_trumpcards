@@ -48,7 +48,7 @@ func removeWebMockCall(calls []*mock.Call, method string) []*mock.Call {
 }
 
 func TestHeartsWebPresenter_Output(t *testing.T) {
-	p := presenter.NewHeartsWebPresenter()
+	p := new(presenter.HeartsWebPresenter)
 
 	t.Run("initial state", func(t *testing.T) {
 		m, players := setupHeartsWebMockWithPlayers()
@@ -324,6 +324,19 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "hearts.result.humanWin", resObj.MessageCode)
 	})
 
+	t.Run("unrecognized phase no messageCode", func(t *testing.T) {
+		m, _ := setupHeartsWebMockWithPlayers()
+		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.HeartsPhaseGameEnd)
+		// GetGameEndFlag remains false (default)
+
+		result := p.Output(m, nil)
+		var resObj controller.HeartsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Empty(t, resObj.Message)
+		assert.Empty(t, resObj.MessageCode)
+	})
 	t.Run("default config values", func(t *testing.T) {
 		m, _ := setupHeartsWebMockWithPlayers()
 
@@ -337,7 +350,7 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 }
 
 func TestHeartsWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewHeartsWebPresenter()
+	p := new(presenter.HeartsWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockHeartsGame)

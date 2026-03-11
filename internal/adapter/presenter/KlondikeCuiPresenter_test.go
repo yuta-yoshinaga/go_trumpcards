@@ -34,16 +34,11 @@ func setupKlondikeCuiMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("GetFoundation").Return(foundation).Maybe()
 }
 
-func TestKlondikeCuiPresenter_Constructor(t *testing.T) {
-	p := NewKlondikeCuiPresenter()
-	assert.NotNil(t, p)
-}
-
 func TestKlondikeCuiPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		setupKlondikeCuiMockDefaults(kg)
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "Klondike")
@@ -62,7 +57,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetWaste")
 		kg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "Waste: HEART 5")
 	})
@@ -70,7 +65,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 	t.Run("with error", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		setupKlondikeCuiMockDefaults(kg)
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 
 		result := p.Output(kg, assert.AnError)
 		assert.Contains(t, result, assert.AnError.Error())
@@ -82,7 +77,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameClear)
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "ゲームクリア！")
 	})
@@ -93,7 +88,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetPhase")
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
 	})
@@ -105,7 +100,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		var emptyTab [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
 		kg.On("GetTableau").Return(emptyTab)
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "[空]")
 	})
@@ -118,7 +113,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		f[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
 		kg.On("GetFoundation").Return(f)
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "SPADE 1")
 	})
@@ -126,7 +121,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 	t.Run("face down card shows ??", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		setupKlondikeCuiMockDefaults(kg)
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
 		// Column 1 has 2 cards: first face-down
 		assert.Contains(t, result, "??")
@@ -138,7 +133,7 @@ func TestKlondikeCuiPresenter_HintOutput(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetHint").Return((*domain.KlondikeHint)(nil))
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.HintOutput(kg)
 		assert.Contains(t, result, "ヒントはありません")
 	})
@@ -153,7 +148,7 @@ func TestKlondikeCuiPresenter_HintOutput(t *testing.T) {
 			ToCol:     0,
 		})
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.HintOutput(kg)
 		assert.Contains(t, result, "タブロー列0[2]")
 		assert.Contains(t, result, "ファンデーション")
@@ -169,7 +164,7 @@ func TestKlondikeCuiPresenter_HintOutput(t *testing.T) {
 			ToCol:     3,
 		})
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.HintOutput(kg)
 		assert.Contains(t, result, "ウェイスト")
 		assert.Contains(t, result, "タブロー列3")
@@ -181,7 +176,7 @@ func TestKlondikeCuiPresenter_ActionLogOutput(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.ActionLogOutput(kg)
 		assert.Contains(t, result, "棋譜はありません")
 	})
@@ -193,7 +188,7 @@ func TestKlondikeCuiPresenter_ActionLogOutput(t *testing.T) {
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", Detail: "test", Cards: nil},
 		})
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.ActionLogOutput(kg)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "draw")
@@ -204,7 +199,7 @@ func TestKlondikeCuiPresenter_ActionLogOutput(t *testing.T) {
 		kg.On("GetPhase").Return(domain.KlondikePhaseGameOver)
 		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{})
 
-		p := NewKlondikeCuiPresenter()
+		p := new(KlondikeCuiPresenter)
 		result := p.ActionLogOutput(kg)
 		assert.Contains(t, result, "棋譜はありません")
 	})

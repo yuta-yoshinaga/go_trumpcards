@@ -11,11 +11,6 @@ import (
 // PokerCuiPresenter ポーカーCUIプレゼンタークラス
 type PokerCuiPresenter struct{}
 
-// NewPokerCuiPresenter コンストラクタ
-func NewPokerCuiPresenter() *PokerCuiPresenter {
-	return &PokerCuiPresenter{}
-}
-
 // Output ゲーム状態を出力
 func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	var b strings.Builder
@@ -75,30 +70,17 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 
 		// 人間の手札は常に表示
 		if player.GetIsHuman() && !player.GetFolded() {
-			b.WriteString("  手札: ")
-			for j := 0; j < player.GetCardsSize(); j++ {
-				if j > 0 {
-					b.WriteString("  ")
-				}
-				fmt.Fprintf(&b, "[%d]%s", j, cuiCardStrEmoji(player.GetCard(j)))
-			}
+			handStr := cuiIndexedCardListStrEmoji(player)
 			if isEnd {
-				fmt.Fprintf(&b, "  [%s]", player.GetHandName())
+				fmt.Fprintf(&b, "  手札: %s  [%s]\n", handStr, player.GetHandName())
+			} else {
+				fmt.Fprintf(&b, "  手札: %s\n", handStr)
 			}
-			b.WriteString("\n")
 		}
 
 		// CPUの手札は終了時のみ表示
 		if !player.GetIsHuman() && isEnd && !player.GetFolded() {
-			b.WriteString("  手札: ")
-			for j := 0; j < player.GetCardsSize(); j++ {
-				if j > 0 {
-					b.WriteString("  ")
-				}
-				b.WriteString(cuiCardStrEmoji(player.GetCard(j)))
-			}
-			fmt.Fprintf(&b, "  [%s]", player.GetHandName())
-			b.WriteString("\n")
+			fmt.Fprintf(&b, "  手札: %s  [%s]\n", cuiCardListStrEmoji(player), player.GetHandName())
 		}
 	}
 
@@ -136,11 +118,12 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 			if !players[r.PlayerIdx].GetIsHuman() {
 				name = fmt.Sprintf("CPU %d", r.PlayerIdx)
 			}
+			kickers := ""
+			if ks := domain.FormatKickers(r.Kickers); ks != "" {
+				kickers = " (キッカー: " + ks + ")"
+			}
 			if r.HandName != "" {
-				fmt.Fprintf(&b, "  %s: %s", name, r.HandName)
-				if ks := domain.FormatKickers(r.Kickers); ks != "" {
-					fmt.Fprintf(&b, " (キッカー: %s)", ks)
-				}
+				fmt.Fprintf(&b, "  %s: %s%s", name, r.HandName, kickers)
 			} else {
 				fmt.Fprintf(&b, "  %s", name)
 			}

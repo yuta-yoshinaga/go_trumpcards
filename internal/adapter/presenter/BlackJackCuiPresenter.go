@@ -9,13 +9,51 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
-// BlackJackCuiPresenter ブラックジャックCUIプレゼンタークラス
-type BlackJackCuiPresenter struct {
+// bjHandStatusStr returns space-prefixed hand status tags like " [DD] [BUST]".
+func bjHandStatusStr(hand *domain.BlackJackHand) string {
+	var parts []string
+	if hand.IsDoubled() {
+		parts = append(parts, "[DD]")
+	}
+	if hand.IsBusted() {
+		parts = append(parts, "[BUST]")
+	}
+	if hand.IsStood() {
+		parts = append(parts, "[STAND]")
+	}
+	if hand.IsBlackJack() {
+		parts = append(parts, "[BJ]")
+	}
+	if hand.IsSurrendered() {
+		parts = append(parts, "[SURRENDER]")
+	}
+	if len(parts) == 0 {
+		return ""
+	}
+	return " " + strings.Join(parts, " ")
 }
 
-// NewBlackJackCuiPresenter コンストラクタ
-func NewBlackJackCuiPresenter() *BlackJackCuiPresenter {
-	return &BlackJackCuiPresenter{}
+// bjMultiHandResultStr returns the result string for multi-hand games.
+func bjMultiHandResultStr(bj interfaces.BlackJackGame, handCount int) string {
+	var b strings.Builder
+	for i := 0; i < handCount; i++ {
+		result := bj.GameJudgmentForHand(i)
+		fmt.Fprintf(&b, "hand %d: ", i+1)
+		switch result {
+		case domain.GameResultDraw:
+			b.WriteString("It is a draw.")
+		case domain.GameResultWin:
+			b.WriteString("You are the winner.")
+		case domain.GameResultLose:
+			b.WriteString("It is your loss.")
+		}
+		b.WriteString("\n")
+	}
+	return b.String()
+}
+
+// BlackJackCuiPresenter ブラックジャックCUIプレゼンタークラス
+type BlackJackCuiPresenter struct {
 }
 
 // Output ゲーム状態を出力
@@ -61,12 +99,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	b.WriteString("dealer score ")
 	if bj.GetGameEndFlag() {
 		fmt.Fprintf(&b, "%d\n", dealer.GetScore())
-		for i := 0; i < dealer.GetCardsSize(); i++ {
-			if i != 0 {
-				b.WriteString(",")
-			}
-			b.WriteString(cuiCardStr(dealer.GetCard(i)))
-		}
+		b.WriteString(cuiCardListStr(dealer))
 		b.WriteString("\n")
 	} else {
 		b.WriteString("\n")
@@ -86,29 +119,8 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		if i == bj.GetCurrentHandIdx() && !bj.GetGameEndFlag() {
 			prefix += " (*)"
 		}
-		fmt.Fprintf(&b, "%s score %d bet=%d", prefix, hand.GetScore(), hand.GetBet())
-		if hand.IsDoubled() {
-			b.WriteString(" [DD]")
-		}
-		if hand.IsBusted() {
-			b.WriteString(" [BUST]")
-		}
-		if hand.IsStood() {
-			b.WriteString(" [STAND]")
-		}
-		if hand.IsBlackJack() {
-			b.WriteString(" [BJ]")
-		}
-		if hand.IsSurrendered() {
-			b.WriteString(" [SURRENDER]")
-		}
-		b.WriteString("\n")
-		for j := 0; j < hand.GetCardsSize(); j++ {
-			if j != 0 {
-				b.WriteString(",")
-			}
-			b.WriteString(cuiCardStr(hand.GetCard(j)))
-		}
+		fmt.Fprintf(&b, "%s score %d bet=%d%s\n", prefix, hand.GetScore(), hand.GetBet(), bjHandStatusStr(hand))
+		b.WriteString(cuiCardListStr(hand))
 		b.WriteString("\n")
 	}
 
@@ -120,38 +132,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		} else {
 			fmt.Fprintf(&b, "--- CPU %d (chips: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips())
 		}
-		for hi, hand := range cpu.GetHands() {
-			prefix := fmt.Sprintf("CPU %d", cpuIdx+1)
-			if len(cpu.GetHands()) > 1 {
-				prefix = fmt.Sprintf("CPU %d hand %d", cpuIdx+1, hi+1)
-			}
-			fmt.Fprintf(&b, "%s score %d bet=%d", prefix, hand.GetScore(), hand.GetBet())
-			if hand.IsDoubled() {
-				b.WriteString(" [DD]")
-			}
-			if hand.IsBusted() {
-				b.WriteString(" [BUST]")
-			}
-			if hand.IsStood() {
-				b.WriteString(" [STAND]")
-			}
-			if hand.IsBlackJack() {
-				b.WriteString(" [BJ]")
-			}
-			if hand.IsSurrendered() {
-				b.WriteString(" [SURRENDER]")
-			}
-			b.WriteString("\n")
-			if bj.GetGameEndFlag() || bj.GetPhase() != domain.BJPhaseBet {
-				for j := 0; j < hand.GetCardsSize(); j++ {
-					if j != 0 {
-						b.WriteString(",")
-					}
-					b.WriteString(cuiCardStr(hand.GetCard(j)))
-				}
-				b.WriteString("\n")
-			}
-		}
+		writeBJCpuHands(&b, bj, cpuIdx, cpu)
 	}
 
 	b.WriteString("----------\n")
@@ -189,20 +170,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 
 	if bj.GetGameEndFlag() {
 		if len(hands) > 1 {
-			for i, hand := range hands {
-				_ = hand
-				result := bj.GameJudgmentForHand(i)
-				fmt.Fprintf(&b, "hand %d: ", i+1)
-				switch result {
-				case domain.GameResultDraw:
-					b.WriteString("It is a draw.")
-				case domain.GameResultWin:
-					b.WriteString("You are the winner.")
-				case domain.GameResultLose:
-					b.WriteString("It is your loss.")
-				}
-				b.WriteString("\n")
-			}
+			b.WriteString(bjMultiHandResultStr(bj, len(hands)))
 		} else {
 			switch bj.GameJudgment() {
 			case domain.GameResultDraw:
@@ -216,6 +184,21 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		b.WriteString("\n----------\n")
 	}
 	return b.String()
+}
+
+// writeBJCpuHands CPUハンド一覧を出力
+func writeBJCpuHands(b *strings.Builder, bj interfaces.BlackJackGame, cpuIdx int, cpu *domain.BlackJackCpuSeat) {
+	for hi, hand := range cpu.GetHands() {
+		prefix := fmt.Sprintf("CPU %d", cpuIdx+1)
+		if len(cpu.GetHands()) > 1 {
+			prefix = fmt.Sprintf("CPU %d hand %d", cpuIdx+1, hi+1)
+		}
+		fmt.Fprintf(b, "%s score %d bet=%d%s\n", prefix, hand.GetScore(), hand.GetBet(), bjHandStatusStr(hand))
+		if bj.GetGameEndFlag() || bj.GetPhase() != domain.BJPhaseBet {
+			b.WriteString(cuiCardListStr(hand))
+			b.WriteString("\n")
+		}
+	}
 }
 
 // ActionLogOutput 棋譜をテキスト出力

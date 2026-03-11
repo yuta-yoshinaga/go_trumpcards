@@ -51,7 +51,7 @@ func baccaratDispatch(bc *baseController, w rest.ResponseWriter, bi usecase.Bacc
 	case "r", "reset":
 		bc.writePresenterResponse(w, bi.Reset())
 	case "b", "bet":
-		bt := derefInt(param.BetType)
+		bt := deref(param.BetType)
 		bc.writePresenterResponse(w, bi.Bet(param.Amount, bt))
 	case "log", "l":
 		bc.writePresenterResponse(w, bi.ActionLog())

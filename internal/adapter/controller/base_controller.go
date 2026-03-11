@@ -29,28 +29,15 @@ func (b BaseWebInput) GetSessionID() string { return b.SessionID }
 // baseController 各WebController共通のレスポンス書き込みロジック
 type baseController struct{}
 
-func derefBool(p *bool) bool {
+func deref[T any](p *T) T {
+	var zero T
 	if p == nil {
-		return false
+		return zero
 	}
 	return *p
 }
 
-func derefBoolDefault(p *bool, defaultVal bool) bool {
-	if p == nil {
-		return defaultVal
-	}
-	return *p
-}
-
-func derefInt(p *int) int {
-	if p == nil {
-		return 0
-	}
-	return *p
-}
-
-func derefIntDefault(p *int, defaultVal int) int {
+func derefDefault[T any](p *T, defaultVal T) T {
 	if p == nil {
 		return defaultVal
 	}

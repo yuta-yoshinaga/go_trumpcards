@@ -1,0 +1,11 @@
+{
+  "helpTitle": "BlackJack",
+  "helpBet": "  b <n> [perfect-pairs] [triple-7s] [hands]  bet (e.g. b 100 0 0 2)",
+  "helpHit": "  h                    hit",
+  "helpStand": "  s                    stand",
+  "helpDouble": "  d                    double down",
+  "helpSplit": "  sp                   split",
+  "helpInsurance": "  i                    insurance",
+  "helpDeclineInsurance": "  di                   decline insurance",
+  "helpSetCpuCount": "  scc <n>              set CPU count (0-3)"
+}

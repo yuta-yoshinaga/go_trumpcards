@@ -9,7 +9,7 @@ import (
 )
 
 func TestBlackJackCuiPresenter_suggestionStr(t *testing.T) {
-	bjp := NewBlackJackCuiPresenter()
+	bjp := new(BlackJackCuiPresenter)
 	cases := []struct {
 		action domain.BJSuggestedAction
 		want   string

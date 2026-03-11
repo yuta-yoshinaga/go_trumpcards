@@ -33,7 +33,7 @@ func setupDaifugoCuiTest() (*domain.Daifugo, []*domain.DaifugoPlayer) {
 }
 
 func TestDaifugoCuiPresenter_Method(t *testing.T) {
-	tdp := presenter.NewDaifugoCuiPresenter()
+	tdp := new(presenter.DaifugoCuiPresenter)
 
 	t.Run("success Output initial state", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -420,7 +420,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 }
 
 func TestDaifugoCuiPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewDaifugoCuiPresenter()
+	p := new(presenter.DaifugoCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDaifugoGame)

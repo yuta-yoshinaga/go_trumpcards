@@ -1,0 +1,5 @@
+{
+  "helpTitle": "Sevens (7並べ)",
+  "helpPlay": "  p [idx]              play card (no index = pass)",
+  "helpJoker": "  j [cardIdx] [suit] [val]  place joker"
+}

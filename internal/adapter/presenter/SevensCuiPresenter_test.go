@@ -32,7 +32,7 @@ func setupSevensCuiTest() (*domain.Sevens, []*domain.SevensPlayer) {
 }
 
 func TestSevensCuiPresenter_Method(t *testing.T) {
-	tsp := presenter.NewSevensCuiPresenter()
+	tsp := new(presenter.SevensCuiPresenter)
 
 	t.Run("success Output initial state", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -551,7 +551,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 }
 
 func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewSevensCuiPresenter()
+	p := new(presenter.SevensCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockSevensGame)

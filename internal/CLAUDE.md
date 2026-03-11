@@ -15,7 +15,11 @@ This directory contains all Go backend code following Clean Architecture.
 
 ## Testing
 
-Follow TDD (Red-Green-Refactor). See [`../.ai/skills/tdd-flow.md`](../.ai/skills/tdd-flow.md) for the full workflow.
+**TDD cycle (Red-Green-Refactor):**
+
+1. **Red** -- Write a failing test (`go test -tags test ./pkg -run TestName` confirms failure)
+2. **Green** -- Write the minimum code to pass the test
+3. **Refactor** -- Clean up while keeping all tests green (`go test -tags test ./...`)
 
 **Branch coverage (C1) must be 100%** for all packages in this directory except `infrastructure/` (the top-level `cmd/` directory is also excluded project-wide).
 

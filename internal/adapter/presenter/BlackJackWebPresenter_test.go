@@ -14,7 +14,7 @@ import (
 )
 
 func TestBlackJackWebPresenters_Method(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 
 	t.Run("success Output bet phase (no cards)", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -229,7 +229,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 
 	t.Run("success Output includes dealerHitsSoft17 true", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -384,6 +384,20 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 		assert.NoError(t, err)
 		assert.False(t, result.DoubleAfterSplit)
 	})
+	t.Run("success Output with side bet results", func(t *testing.T) {
+		bj := domain.NewDefaultBlackJack()
+		bj.Reset()
+		bj.GetPlayer().SetChips(5000)
+		err := bj.PlayerBet(100, 100, 0, 1) // ppBet=100 triggers side bet evaluation
+		assert.NoError(t, err)
+		output := tbp.Output(bj, nil)
+		var result controller.BlackJackWebOutput
+		err = json.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+		assert.NotNil(t, result.SideBetResults)
+		assert.Equal(t, 1, len(result.SideBetResults))
+		assert.Equal(t, domain.BJSideBetPerfectPairs, result.SideBetResults[0].BetType)
+	})
 	t.Run("success Output with no side bet results", func(t *testing.T) {
 		tc := domain.NewTrumpCardsWithDecks(1, 0)
 		for i := 0; i < 10; i++ {
@@ -449,7 +463,7 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_DeckPenetration(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()
 	output := tbp.Output(bj, nil)
@@ -460,7 +474,7 @@ func TestBlackJackWebPresenter_DeckPenetration(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_DeckPenetration50(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -477,7 +491,7 @@ func TestBlackJackWebPresenter_DeckPenetration50(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_MultiHandCount(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()
 	bj.GetPlayer().SetChips(2000)
@@ -491,7 +505,7 @@ func TestBlackJackWebPresenter_MultiHandCount(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_CpuInsuranceBet(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -522,7 +536,7 @@ func TestBlackJackWebPresenter_CpuInsuranceBet(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_SurrenderRule(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -539,7 +553,7 @@ func TestBlackJackWebPresenter_SurrenderRule(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_CanSurrenderHand(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -564,7 +578,7 @@ func TestBlackJackWebPresenter_CanSurrenderHand(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_EarlySurrenderPhase(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -588,7 +602,7 @@ func TestBlackJackWebPresenter_EarlySurrenderPhase(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewBlackJackWebPresenter()
+	p := new(presenter.BlackJackWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockBlackJackGame)

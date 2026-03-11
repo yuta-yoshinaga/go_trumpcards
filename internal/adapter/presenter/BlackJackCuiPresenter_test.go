@@ -25,7 +25,7 @@ func setupBJCuiTest(playerChips, dealerChips int) (*domain.BlackJack, *domain.Bl
 }
 
 func TestBlackJackCuiPresenters_Method(t *testing.T) {
-	tbp := presenter.NewBlackJackCuiPresenter()
+	tbp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("success Output bet phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -352,7 +352,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("surrender flag displayed on hand", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(900, 1000)
@@ -411,7 +411,7 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_H17Display(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("H17 rule displayed when DealerHitsSoft17 is true", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(1000, 1000)
@@ -431,7 +431,7 @@ func TestBlackJackCuiPresenter_H17Display(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("Hi-Lo counting display with TC", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(1000, 1000)
@@ -482,7 +482,7 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_DASDisplay(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("No DAS rule displayed when DoubleAfterSplit is false", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(1000, 1000)
@@ -502,7 +502,7 @@ func TestBlackJackCuiPresenter_DASDisplay(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_CpuPlayerDisplay(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("CPU player displayed in action phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -554,7 +554,7 @@ func TestBlackJackCuiPresenter_CpuPlayerDisplay(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("CPU hand with DD flag", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -735,7 +735,7 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("side bet win displayed", func(t *testing.T) {
 		tc := domain.NewTrumpCardsWithDecks(1, 0)
@@ -791,8 +791,33 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 	})
 }
 
+func TestBlackJackCuiPresenter_SideBetWinBranch(t *testing.T) {
+	bjp := new(presenter.BlackJackCuiPresenter)
+	// Use retry loop to guarantee the r.Payout > 0 branch is exercised.
+	for attempt := 0; attempt < 1000; attempt++ {
+		tc := domain.NewTrumpCardsWithDecks(1, 0)
+		tc.Shuffle()
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		if err := bj.PlayerBet(100, 10, 0, 0); err != nil {
+			continue
+		}
+		results := bj.GetSideBetResults()
+		if len(results) > 0 && results[0].Payout > 0 {
+			output := bjp.Output(bj, nil)
+			assert.Contains(t, output, "WIN")
+			return
+		}
+	}
+	t.Fatal("side bet WIN branch never hit after 1000 attempts")
+}
+
 func TestBlackJackCuiPresenter_Penetration50(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 	bj, _ := setupBJCuiTest(1000, 1000)
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
 	bj.Reset()
@@ -801,7 +826,7 @@ func TestBlackJackCuiPresenter_Penetration50(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_Penetration75(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 	bj, _ := setupBJCuiTest(1000, 1000)
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 75, DoubleAfterSplit: true})
 	bj.Reset()
@@ -810,7 +835,7 @@ func TestBlackJackCuiPresenter_Penetration75(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 	bj, _ := setupBJCuiTest(1000, 1000)
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 0, DoubleAfterSplit: true})
 	bj.Reset()
@@ -819,7 +844,7 @@ func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("multi-hand count shown when > 1", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -842,7 +867,7 @@ func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("CPU with insurance bet shows insurance info", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -885,7 +910,7 @@ func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_EarlySurrenderPhase(t *testing.T) {
-	bjp := presenter.NewBlackJackCuiPresenter()
+	bjp := new(presenter.BlackJackCuiPresenter)
 	bj, dealer := setupBJCuiTest(900, 1000)
 	hand := bj.GetPlayerHands()[0]
 	hand.SetBet(100)
@@ -899,7 +924,7 @@ func TestBlackJackCuiPresenter_EarlySurrenderPhase(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewBlackJackCuiPresenter()
+	p := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockBlackJackGame)

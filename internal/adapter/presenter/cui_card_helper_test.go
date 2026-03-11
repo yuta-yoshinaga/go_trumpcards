@@ -98,6 +98,158 @@ func TestCuiPlayerName(t *testing.T) {
 	}
 }
 
+// mockCardList implements cuiCardList for testing.
+type mockCardList struct {
+	cards []*domain.Card
+}
+
+func (m *mockCardList) GetCardsSize() int            { return len(m.cards) }
+func (m *mockCardList) GetCard(idx int) *domain.Card { return m.cards[idx] }
+
+func TestCuiCardListStr(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []*domain.Card
+		expected string
+	}{
+		{"empty hand", []*domain.Card{}, ""},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "SPADE 1"},
+		{
+			"multiple cards",
+			[]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			},
+			"SPADE 1,HEART 5",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, cuiCardListStr(&mockCardList{cards: tt.cards}))
+		})
+	}
+}
+
+func TestCuiIndexedCardListStr(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []*domain.Card
+		expected string
+	}{
+		{"empty hand", []*domain.Card{}, ""},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "[0]SPADE 1"},
+		{
+			"multiple cards",
+			[]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			},
+			"[0]SPADE 1  [1]HEART 5",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, cuiIndexedCardListStr(&mockCardList{cards: tt.cards}))
+		})
+	}
+}
+
+func TestCuiCardListStrEmoji(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []*domain.Card
+		expected string
+	}{
+		{"empty hand", []*domain.Card{}, ""},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "♠1"},
+		{
+			"multiple cards",
+			[]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			},
+			"♠1  ♥5",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, cuiCardListStrEmoji(&mockCardList{cards: tt.cards}))
+		})
+	}
+}
+
+func TestCuiIndexedCardListStrEmoji(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []*domain.Card
+		expected string
+	}{
+		{"empty hand", []*domain.Card{}, ""},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "[0]♠1"},
+		{
+			"multiple cards",
+			[]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			},
+			"[0]♠1  [1]♥5",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, cuiIndexedCardListStrEmoji(&mockCardList{cards: tt.cards}))
+		})
+	}
+}
+
+func TestCuiCardSliceStr(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []*domain.Card
+		expected string
+	}{
+		{"empty slice", []*domain.Card{}, ""},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "SPADE 1"},
+		{
+			"multiple cards",
+			[]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			},
+			"SPADE 1, HEART 5",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, cuiCardSliceStr(tt.cards))
+		})
+	}
+}
+
+func TestCuiCardSliceStrEmoji(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []*domain.Card
+		expected string
+	}{
+		{"empty slice", []*domain.Card{}, ""},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "♠1"},
+		{
+			"multiple cards",
+			[]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			},
+			"♠1  ♥5",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, cuiCardSliceStrEmoji(tt.cards))
+		})
+	}
+}
+
 func TestCuiBettingActionName(t *testing.T) {
 	tests := []struct {
 		name     string

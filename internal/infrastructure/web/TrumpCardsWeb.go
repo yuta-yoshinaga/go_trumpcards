@@ -40,7 +40,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 		bjc: controller.NewBlackJackWebController(func() usecase.BlackJackInteractorIF {
 			return usecase.NewBlackJackInteractor(
 				domain.NewDefaultBlackJack(),
-				presenter.NewBlackJackWebPresenter(),
+				new(presenter.BlackJackWebPresenter),
 			)
 		}),
 		pkc: controller.NewPokerWebController(func() usecase.PokerInteractorIF {
@@ -52,7 +52,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
 			}
 			poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
-			return usecase.NewPokerInteractor(poker, presenter.NewPokerWebPresenter())
+			return usecase.NewPokerInteractor(poker, new(presenter.PokerWebPresenter))
 		}),
 		omc: controller.NewOldMaidWebController(func() usecase.OldMaidInteractorIF {
 			players := []*domain.OldMaidPlayer{
@@ -62,7 +62,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewOldMaidPlayer(false),
 			}
 			oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
-			return usecase.NewOldMaidInteractor(oldMaid, presenter.NewOldMaidWebPresenter())
+			return usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidWebPresenter))
 		}),
 		dgc: controller.NewDaifugoWebController(func() usecase.DaifugoInteractorIF {
 			config := domain.DefaultDaifugoConfig()
@@ -73,7 +73,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewDaifugoPlayer(false),
 			}
 			daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
-			return usecase.NewDaifugoInteractor(daifugo, presenter.NewDaifugoWebPresenter())
+			return usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoWebPresenter))
 		}),
 		sgc: controller.NewSevensWebController(func() usecase.SevensInteractorIF {
 			config := domain.DefaultSevensConfig()
@@ -84,7 +84,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewSevensPlayer(false),
 			}
 			sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
-			return usecase.NewSevensInteractor(sevens, presenter.NewSevensWebPresenter())
+			return usecase.NewSevensInteractor(sevens, new(presenter.SevensWebPresenter))
 		}),
 		dwc: controller.NewDoubtWebController(func() usecase.DoubtInteractorIF {
 			players := []*domain.DoubtPlayer{
@@ -94,12 +94,12 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewDoubtPlayer(false),
 			}
 			doubt := domain.NewDoubt(domain.NewTrumpCards(0), players)
-			return usecase.NewDoubtInteractor(doubt, presenter.NewDoubtWebPresenter())
+			return usecase.NewDoubtInteractor(doubt, new(presenter.DoubtWebPresenter))
 		}),
 		hmc: controller.NewHoldemWebController(func() usecase.HoldemInteractorIF {
 			cfg := domain.DefaultHoldemConfig()
 			holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
-			return usecase.NewHoldemInteractor(holdem, presenter.NewHoldemWebPresenter())
+			return usecase.NewHoldemInteractor(holdem, new(presenter.HoldemWebPresenter))
 		}),
 		htc: controller.NewHeartsWebController(func() usecase.HeartsInteractorIF {
 			config := domain.DefaultHeartsConfig()
@@ -110,7 +110,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewHeartsPlayer(false),
 			}
 			hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
-			return usecase.NewHeartsInteractor(hearts, presenter.NewHeartsWebPresenter())
+			return usecase.NewHeartsInteractor(hearts, new(presenter.HeartsWebPresenter))
 		}),
 		myc: controller.NewMemoryWebController(func() usecase.MemoryInteractorIF {
 			config := domain.DefaultMemoryConfig()
@@ -121,15 +121,15 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				domain.NewMemoryPlayer(false),
 			}
 			memory := domain.NewMemory(domain.NewTrumpCards(0), players, config)
-			return usecase.NewMemoryInteractor(memory, presenter.NewMemoryWebPresenter())
+			return usecase.NewMemoryInteractor(memory, new(presenter.MemoryWebPresenter))
 		}),
 		klc: controller.NewKlondikeWebController(func() usecase.KlondikeInteractorIF {
 			klondike := domain.NewKlondike(domain.NewTrumpCards(0))
-			return usecase.NewKlondikeInteractor(klondike, presenter.NewKlondikeWebPresenter())
+			return usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeWebPresenter))
 		}),
 		bcc: controller.NewBaccaratWebController(func() usecase.BaccaratInteractorIF {
 			baccarat := domain.NewDefaultBaccarat()
-			return usecase.NewBaccaratInteractor(baccarat, presenter.NewBaccaratWebPresenter())
+			return usecase.NewBaccaratInteractor(baccarat, new(presenter.BaccaratWebPresenter))
 		}),
 	}
 }

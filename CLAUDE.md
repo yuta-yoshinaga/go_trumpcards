@@ -14,18 +14,21 @@ Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Do
 
 ```sh
 # Run games
-go run ./cmd/cli blackjack  # BlackJack CLI
-go run ./cmd/cli poker      # 5-card Draw Poker CLI
-go run ./cmd/cli oldmaid    # Old Maid CLI
-go run ./cmd/cli daifugo    # Daifugo CLI
-go run ./cmd/cli sevens     # Sevens (7並べ) CLI
-go run ./cmd/cli doubt      # Doubt (ダウト) CLI
-go run ./cmd/cli holdem     # Texas Hold'em CLI
-go run ./cmd/cli hearts     # Hearts CLI
-go run ./cmd/cli memory     # Memory (神経衰弱) CLI
-go run ./cmd/cli klondike   # Klondike (ソリティア) CLI
-go run ./cmd/cli baccarat   # Baccarat (バカラ) CLI
-go run ./cmd/cli web        # Start REST API + web GUI server (via CLI)
+go run ./cmd/trumpcards                    # Interactive mode (switch games with 'switch <game>')
+go run ./cmd/trumpcards --lang en          # Interactive mode in English
+go run ./cmd/trumpcards blackjack          # BlackJack CLI
+go run ./cmd/trumpcards --lang en blackjack  # BlackJack CLI in English
+go run ./cmd/trumpcards poker      # 5-card Draw Poker CLI
+go run ./cmd/trumpcards oldmaid    # Old Maid CLI
+go run ./cmd/trumpcards daifugo    # Daifugo CLI
+go run ./cmd/trumpcards sevens     # Sevens (7並べ) CLI
+go run ./cmd/trumpcards doubt      # Doubt (ダウト) CLI
+go run ./cmd/trumpcards holdem     # Texas Hold'em CLI
+go run ./cmd/trumpcards hearts     # Hearts CLI
+go run ./cmd/trumpcards memory     # Memory (神経衰弱) CLI
+go run ./cmd/trumpcards klondike   # Klondike (ソリティア) CLI
+go run ./cmd/trumpcards baccarat   # Baccarat (バカラ) CLI
+go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
 
 # Test
@@ -59,8 +62,22 @@ Clean Architecture: `infrastructure` -> `adapter` -> `usecase` -> `domain`. See 
 
 **Unit tests are mandatory. Every implementation must ship with tests in the same commit.**
 
-**All code changes must follow the TDD cycle (Red-Green-Refactor).** See [`.ai/skills/tdd-flow.md`](.ai/skills/tdd-flow.md) for the detailed workflow. Also see:
-- [`.ai/hooks/README.md`](.ai/hooks/README.md) -- Pre-commit verification commands
+**All code changes must follow the TDD cycle (Red-Green-Refactor):**
+
+1. **Red** -- Write a failing test first. Before writing any production code, create or modify a test that captures the expected behavior and confirm it fails.
+2. **Green** -- Write the minimum code to make the failing test pass. Do not add extra functionality beyond what the test requires.
+3. **Refactor** -- Clean up (naming, structure, duplication) without changing behavior. Verify all tests still pass.
+
+Apply this cycle at every layer: Domain, Use cases, Presenters, Controllers.
+
+**Self-review checklist** -- before marking any task complete:
+
+1. All Go tests pass: `go test -tags test ./...`
+2. Go files formatted: `goimports -w` on modified files
+3. Frontend checks pass (if applicable): `cd frontend && npm run build && npm run check && npm test`
+4. Branch coverage is 100% for modified packages (excluding `cmd/` and `internal/infrastructure/`)
+
+Also see:
 - [`internal/CLAUDE.md`](internal/CLAUDE.md) -- Go-specific testing rules
 - [`frontend/CLAUDE.md`](frontend/CLAUDE.md) -- Frontend-specific testing rules
 
@@ -261,7 +278,5 @@ All commit messages must follow [Conventional Commits](https://www.conventionalc
 |-------|------|
 | Architecture & key patterns | [`docs/architecture.md`](docs/architecture.md) |
 | Game descriptions & entities | [`docs/games.md`](docs/games.md) |
-| TDD skill | [`.ai/skills/tdd-flow.md`](.ai/skills/tdd-flow.md) |
-| Pre-commit hooks | [`.ai/hooks/README.md`](.ai/hooks/README.md) |
 | Go backend rules | [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Frontend rules | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |

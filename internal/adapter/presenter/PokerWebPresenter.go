@@ -9,11 +9,6 @@ import (
 // PokerWebPresenter ポーカーWebプレゼンタークラス
 type PokerWebPresenter struct{}
 
-// NewPokerWebPresenter コンストラクタ
-func NewPokerWebPresenter() *PokerWebPresenter {
-	return &PokerWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	resObj := pwp.buildOutput(p, lastErr)
@@ -60,17 +55,42 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	resObj.MaxBetAmount = calcMaxBetAmount(p.GetConfig().BettingLimit, p.GetPot(), p.GetLastBet())
 	resObj.IsLowball = p.GetConfig().IsLowball
 
-	// サイドポット
-	resObj.SidePots = make([]*controller.PokerWebOutputSidePot, 0)
+	resObj.SidePots = pwp.buildSidePotsOutput(p)
+	resObj.Players = pwp.buildPlayersOutput(p)
+	resObj.CpuActions = pwp.buildCpuActionsOutput(p)
+	resObj.CpuExchanges = pwp.buildCpuExchangesOutput(p)
+	resObj.RoundResults = pwp.buildRoundResultsOutput(p)
+	resObj.Message, resObj.MessageCode = pwp.buildMessage(p, lastErr)
+
+	return resObj
+}
+
+// buildMessage ゲーム結果メッセージを構築
+func (pwp *PokerWebPresenter) buildMessage(p interfaces.PokerGame, lastErr error) (string, string) {
+	if lastErr != nil {
+		return lastErr.Error(), ""
+	}
+	if p.GetGameEndFlag() {
+		return pwp.buildResultMessage(p)
+	}
+	return "", ""
+}
+
+// buildSidePotsOutput サイドポット情報を構築
+func (pwp *PokerWebPresenter) buildSidePotsOutput(p interfaces.PokerGame) []*controller.PokerWebOutputSidePot {
+	out := make([]*controller.PokerWebOutputSidePot, 0)
 	for _, sp := range p.GetSidePots() {
-		resObj.SidePots = append(resObj.SidePots, &controller.PokerWebOutputSidePot{
+		out = append(out, &controller.PokerWebOutputSidePot{
 			Amount:          sp.Amount,
 			EligiblePlayers: sp.EligiblePlayers,
 		})
 	}
+	return out
+}
 
-	// プレイヤー情報
-	resObj.Players = make([]*controller.PokerWebOutputPlayer, 0)
+// buildPlayersOutput プレイヤー情報を構築
+func (pwp *PokerWebPresenter) buildPlayersOutput(p interfaces.PokerGame) []*controller.PokerWebOutputPlayer {
+	out := make([]*controller.PokerWebOutputPlayer, 0)
 	isEnd := p.GetPhase() == domain.PokerPhaseEnd
 	for i, player := range p.GetPlayers() {
 		pObj := &controller.PokerWebOutputPlayer{
@@ -98,32 +118,41 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 			pObj.HandName = player.GetHandName()
 		}
 
-		resObj.Players = append(resObj.Players, pObj)
+		out = append(out, pObj)
 	}
+	return out
+}
 
-	// CPU行動記録
-	resObj.CpuActions = make([]*controller.PokerWebOutputCpuAction, 0)
+// buildCpuActionsOutput CPU行動記録を構築
+func (pwp *PokerWebPresenter) buildCpuActionsOutput(p interfaces.PokerGame) []*controller.PokerWebOutputCpuAction {
+	out := make([]*controller.PokerWebOutputCpuAction, 0)
 	for _, action := range p.GetCpuActions() {
-		resObj.CpuActions = append(resObj.CpuActions, &controller.PokerWebOutputCpuAction{
+		out = append(out, &controller.PokerWebOutputCpuAction{
 			PlayerIdx: action.PlayerIdx,
 			Action:    action.Action,
 			Amount:    action.Amount,
 		})
 	}
+	return out
+}
 
-	// CPU交換記録
-	resObj.CpuExchanges = make([]*controller.PokerWebOutputCpuExchange, 0)
+// buildCpuExchangesOutput CPU交換記録を構築
+func (pwp *PokerWebPresenter) buildCpuExchangesOutput(p interfaces.PokerGame) []*controller.PokerWebOutputCpuExchange {
+	out := make([]*controller.PokerWebOutputCpuExchange, 0)
 	for _, ex := range p.GetCpuExchanges() {
-		resObj.CpuExchanges = append(resObj.CpuExchanges, &controller.PokerWebOutputCpuExchange{
+		out = append(out, &controller.PokerWebOutputCpuExchange{
 			PlayerIdx:     ex.PlayerIdx,
 			ExchangeCount: ex.ExchangeCount,
 		})
 	}
+	return out
+}
 
-	// ラウンド結果
-	resObj.RoundResults = make([]*controller.PokerWebOutputResult, 0)
+// buildRoundResultsOutput ラウンド結果を構築
+func (pwp *PokerWebPresenter) buildRoundResultsOutput(p interfaces.PokerGame) []*controller.PokerWebOutputResult {
+	out := make([]*controller.PokerWebOutputResult, 0)
 	for _, r := range p.GetRoundResults() {
-		resObj.RoundResults = append(resObj.RoundResults, &controller.PokerWebOutputResult{
+		out = append(out, &controller.PokerWebOutputResult{
 			PlayerIdx: r.PlayerIdx,
 			HandRank:  r.HandRank,
 			HandName:  r.HandName,
@@ -131,17 +160,7 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 			WonAmount: r.WonAmount,
 		})
 	}
-
-	// メッセージ
-	if lastErr != nil {
-		resObj.Message = lastErr.Error()
-	} else if p.GetGameEndFlag() {
-		msg, code := pwp.buildResultMessage(p)
-		resObj.Message = msg
-		resObj.MessageCode = code
-	}
-
-	return resObj
+	return out
 }
 
 // buildResultMessage builds the end-of-round message and its i18n code

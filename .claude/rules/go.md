@@ -15,9 +15,26 @@ globs: ["**/*.go"]
 
 ## テスト
 
-- **ユニットテストは必須**。実装と同じコミットに含める
-- **TDDサイクル (Red → Green → Refactor)** に従う
-- テスト実行: `go test -tags test ./...`
+**ユニットテストは必須**。実装と同じコミットに含める。
+
+### TDDサイクル (Red → Green → Refactor)
+
+実装前に必ずこのサイクルを守ること:
+
+1. **Red** — 失敗するテストを先に書く。実装コードを書く前に、期待動作を捉えるテストを作成し失敗を確認する:
+   ```sh
+   go test -tags test ./path/to/package -run TestNewFeature  # 失敗 (Red)
+   ```
+2. **Green** — テストをパスする最小限のコードを書く。余分な機能は追加しない:
+   ```sh
+   go test -tags test ./path/to/package -run TestNewFeature  # パス (Green)
+   ```
+3. **Refactor** — テストを維持しながらコードを整理する。命名・構造・重複除去を行い、全テストが通ることを確認:
+   ```sh
+   go test -tags test ./...  # 全テストパス (Refactor後)
+   ```
+
+テスト実行: `go test -tags test ./...`
 
 ### カバレッジ基準
 
