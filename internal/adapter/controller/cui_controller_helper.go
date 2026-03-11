@@ -1,10 +1,14 @@
 package controller
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+)
 
 // unknownCommandMessage は不明なコマンドに対する統一エラーメッセージを返す。
 func unknownCommandMessage(command string) string {
-	return "コマンドが不明です: " + command
+	return i18n.Tf("unknownCommand", "cmd", command)
 }
 
 // execCuiCommand は全CUIコントローラーで共通のコマンド解析を行うヘルパー関数。

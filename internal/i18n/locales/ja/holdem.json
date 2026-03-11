@@ -1,0 +1,13 @@
+{
+  "helpTitle": "Texas Hold'em (テキサスホールデム)",
+  "helpFold": "  f                    fold",
+  "helpCheck": "  ck                   check",
+  "helpCall": "  c                    call",
+  "helpBet": "  b <amount>           bet",
+  "helpRaise": "  ra <amount>          raise",
+  "helpAllIn": "  a                    all-in",
+  "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
+  "helpTournament": "  tm [0-1]             tournament mode",
+  "amountRequired": "ベット/レイズには金額の指定が必要です。",
+  "invalidAmount": "無効な金額です: {{val}}"
+}

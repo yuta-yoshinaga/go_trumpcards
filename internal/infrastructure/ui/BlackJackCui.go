@@ -4,6 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -28,24 +29,24 @@ func (cui *BlackJackCui) Controller() CuiExecer { return cui.bjc }
 // HelpLines returns the game's help lines.
 func (cui *BlackJackCui) HelpLines() []string {
 	return []string{
-		"BlackJack (ブラックジャック)",
+		i18n.T("blackjack.helpTitle"),
 		"",
-		"Game commands:",
-		"  b <n> [perfect-pairs] [triple-7s] [hands]  bet (e.g. b 100 0 0 2)",
-		"  h                    hit",
-		"  s                    stand",
-		"  d                    double down",
-		"  sp                   split",
-		"  i                    insurance",
-		"  di                   decline insurance",
+		i18n.T("gameCommands"),
+		i18n.T("blackjack.helpBet"),
+		i18n.T("blackjack.helpHit"),
+		i18n.T("blackjack.helpStand"),
+		i18n.T("blackjack.helpDouble"),
+		i18n.T("blackjack.helpSplit"),
+		i18n.T("blackjack.helpInsurance"),
+		i18n.T("blackjack.helpDeclineInsurance"),
 		"",
-		"Settings:",
-		"  scc <n>              set CPU count (0-3)",
+		i18n.T("settings"),
+		i18n.T("blackjack.helpSetCpuCount"),
 		"",
-		"Session:",
-		"  r                    reset game",
-		"  q                    quit",
-		"  help, ?              show this help",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 

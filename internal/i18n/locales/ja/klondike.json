@@ -1,0 +1,11 @@
+{
+  "helpTitle": "Klondike (ソリティア)",
+  "helpDraw": "  d                    draw from stock",
+  "helpMove": "  m w t <col>          move waste to tableau",
+  "helpMoveWF": "  m w f                move waste to foundation",
+  "helpMoveTF": "  m t <col> f          move tableau to foundation",
+  "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",
+  "helpGiveUp": "  g                    give up",
+  "helpHint": "  h                    hint",
+  "helpAutoComplete": "  ac                   auto-complete"
+}

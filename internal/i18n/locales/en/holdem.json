@@ -1,0 +1,13 @@
+{
+  "helpTitle": "Texas Hold'em",
+  "helpFold": "  f                    fold",
+  "helpCheck": "  ck                   check",
+  "helpCall": "  c                    call",
+  "helpBet": "  b <amount>           bet",
+  "helpRaise": "  ra <amount>          raise",
+  "helpAllIn": "  a                    all-in",
+  "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
+  "helpTournament": "  tm [0-1]             tournament mode",
+  "amountRequired": "Bet/raise requires an amount.",
+  "invalidAmount": "Invalid amount: {{val}}"
+}

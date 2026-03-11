@@ -7,15 +7,17 @@ import (
 	"os"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/web"
 )
 
 func main() {
+	lang := flag.String("lang", "", "language (ja or en)")
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, `USAGE:
-  go_trumpcards [game]
+  go_trumpcards [--lang ja|en] [game]
   go_trumpcards --help
 
 GAMES:
@@ -35,10 +37,27 @@ GAMES:
   (no argument) Interactive mode with game switching
 
 OPTIONS:
-  -h, --help   Show this help message
+  -h, --help        Show this help message
+  --lang ja|en      Language (default: ja)
 `)
 	}
 	flag.Parse()
+
+	// Language detection: --lang > LANG env > default "ja"
+	detectedLang := "ja"
+	if envLang := os.Getenv("LANG"); envLang != "" {
+		prefix := envLang
+		if idx := strings.IndexAny(envLang, "_-."); idx >= 0 {
+			prefix = envLang[:idx]
+		}
+		if prefix == "en" || prefix == "ja" {
+			detectedLang = prefix
+		}
+	}
+	if *lang != "" {
+		detectedLang = *lang
+	}
+	i18n.SetLang(detectedLang)
 	switch strings.ToLower(flag.Arg(0)) {
 	case "blackjack":
 		cui := ui.NewBlackJackCui()

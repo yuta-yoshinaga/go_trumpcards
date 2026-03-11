@@ -3,6 +3,8 @@ package ui
 import (
 	"fmt"
 	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // gameNames is the canonical ordered list of available game names.
@@ -49,7 +51,7 @@ func (m *GameManager) Exec(cmd string) string {
 		switch fields[0] {
 		case "switch":
 			if len(fields) < 2 {
-				return "Usage: switch <game>. Type 'games' for the list."
+				return i18n.T("switchUsage")
 			}
 			return m.switchGame(fields[1])
 		case "games":
@@ -66,9 +68,9 @@ func (m *GameManager) HelpLines() []string {
 	base := m.helpLines[m.currentGame]
 	extra := []string{
 		"",
-		fmt.Sprintf("Interactive mode  (current: %s)", m.currentGame),
-		"  switch <game>  switch to another game (e.g. switch poker)",
-		"  games          list all available games",
+		i18n.Tf("interactiveMode", "name", m.currentGame),
+		i18n.T("switchCmd"),
+		i18n.T("gamesCmd"),
 	}
 	lines := make([]string, len(base)+len(extra))
 	copy(lines, base)
@@ -98,14 +100,14 @@ func (m *GameManager) initGame(name string) string {
 func (m *GameManager) switchGame(name string) string {
 	name = strings.ToLower(name)
 	if _, ok := m.games[name]; !ok {
-		return fmt.Sprintf("Unknown game: %q. Type 'games' for the list.", name)
+		return i18n.Tf("unknownGame", "name", name)
 	}
 	if name == m.currentGame {
-		return fmt.Sprintf("Already playing %s.", name)
+		return i18n.Tf("alreadyPlaying", "name", name)
 	}
 	m.currentGame = name
 	initMsg := m.initGame(name)
-	msg := fmt.Sprintf("Switched to %s.", name)
+	msg := i18n.Tf("switchedTo", "name", name)
 	if initMsg != "" {
 		return msg + "\n" + initMsg
 	}
@@ -114,15 +116,15 @@ func (m *GameManager) switchGame(name string) string {
 
 func (m *GameManager) listGames() string {
 	var sb strings.Builder
-	sb.WriteString("Available games:\n")
+	sb.WriteString(i18n.T("availableGames") + "\n")
 	for _, name := range m.gameOrder {
 		if name == m.currentGame {
-			fmt.Fprintf(&sb, "  * %s (current)\n", name)
+			fmt.Fprintf(&sb, "  * %s %s\n", name, i18n.T("currentGame"))
 		} else {
 			fmt.Fprintf(&sb, "    %s\n", name)
 		}
 	}
-	sb.WriteString("Use 'switch <game>' to switch.")
+	sb.WriteString(i18n.T("useSwitchCmd"))
 	return sb.String()
 }
 

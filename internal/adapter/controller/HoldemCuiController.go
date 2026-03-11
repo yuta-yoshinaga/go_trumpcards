@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -139,11 +140,11 @@ func (c *HoldemCuiController) Exec(command string) string {
 // parseAmount 引数スライスからベット額を抽出する
 func parseAmount(args []string) (int, error) {
 	if len(args) < 1 {
-		return 0, fmt.Errorf("ベット/レイズには金額の指定が必要です。")
+		return 0, fmt.Errorf("%s", i18n.T("amountRequired"))
 	}
 	amount, err := strconv.Atoi(args[0])
 	if err != nil || amount <= 0 {
-		return 0, fmt.Errorf("無効な金額です: %s", args[0])
+		return 0, fmt.Errorf("%s", i18n.Tf("invalidAmount", "val", args[0]))
 	}
 	return amount, nil
 }

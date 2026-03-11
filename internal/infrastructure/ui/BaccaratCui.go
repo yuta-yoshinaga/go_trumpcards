@@ -4,6 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -28,16 +29,16 @@ func (cui *BaccaratCui) Controller() CuiExecer { return cui.bc }
 // HelpLines returns the game's help lines.
 func (cui *BaccaratCui) HelpLines() []string {
 	return []string{
-		"Baccarat (バカラ)",
+		i18n.T("baccarat.helpTitle"),
 		"",
-		"Game commands:",
-		"  b <n> <t>            bet (n=amount, t: 0=Player, 1=Banker, 2=Tie)",
+		i18n.T("gameCommands"),
+		i18n.T("baccarat.helpBet"),
 		"  log                  action log",
 		"",
-		"Session:",
-		"  r                    reset game",
-		"  q                    quit",
-		"  help, ?              show this help",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 

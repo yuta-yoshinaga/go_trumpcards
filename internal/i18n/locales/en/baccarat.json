@@ -1,0 +1,4 @@
+{
+  "helpTitle": "Baccarat",
+  "helpBet": "  b <amount> <type>    bet (type: 0=Player, 1=Banker, 2=Tie)"
+}

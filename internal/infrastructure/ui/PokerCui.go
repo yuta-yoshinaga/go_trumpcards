@@ -4,6 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -33,26 +34,26 @@ func (cui *PokerCui) Controller() CuiExecer { return cui.pc }
 // HelpLines returns the game's help lines.
 func (cui *PokerCui) HelpLines() []string {
 	return []string{
-		"5-card Draw Poker (ポーカー)",
+		i18n.T("poker.helpTitle"),
 		"",
-		"Game commands:",
-		"  b [amount]           bet (e.g. b 20)",
-		"  c                    call",
-		"  ra [amount]          raise (e.g. ra 30)",
-		"  ck                   check",
-		"  f                    fold",
-		"  a                    all-in",
-		"  e [0-4]              exchange cards (e.g. e 0 2 4)",
-		"  s                    stand (no exchange)",
+		i18n.T("gameCommands"),
+		i18n.T("poker.helpBet"),
+		i18n.T("poker.helpCall"),
+		i18n.T("poker.helpRaise"),
+		i18n.T("poker.helpCheck"),
+		i18n.T("poker.helpFold"),
+		i18n.T("poker.helpAllIn"),
+		i18n.T("poker.helpExchange"),
+		i18n.T("poker.helpStand"),
 		"",
-		"Settings:",
-		"  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
-		"  lw                   toggle 2-7 Lowball mode",
+		i18n.T("settings"),
+		i18n.T("poker.helpBettingLimit"),
+		i18n.T("poker.helpLowball"),
 		"",
-		"Session:",
-		"  r                    reset game",
-		"  q                    quit",
-		"  help, ?              show this help",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 

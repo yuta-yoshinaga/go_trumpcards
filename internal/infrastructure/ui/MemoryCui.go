@@ -4,6 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -33,20 +34,20 @@ func (cui *MemoryCui) Controller() CuiExecer { return cui.mc }
 // HelpLines returns the game's help lines.
 func (cui *MemoryCui) HelpLines() []string {
 	return []string{
-		"Memory / Concentration (神経衰弱)",
+		i18n.T("memory.helpTitle"),
 		"",
-		"Game commands:",
-		"  f <pos>              flip card at position",
-		"  n                    next (resolve flip)",
+		i18n.T("gameCommands"),
+		i18n.T("memory.helpFlip"),
+		i18n.T("memory.helpNext"),
 		"  l                    action log",
 		"",
-		"Settings:",
-		"  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+		i18n.T("settings"),
+		i18n.T("memory.helpSetDifficulty"),
 		"",
-		"Session:",
-		"  r                    reset game",
-		"  q                    quit",
-		"  help, ?              show this help",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 

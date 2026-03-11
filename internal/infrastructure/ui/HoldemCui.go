@@ -4,6 +4,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -27,32 +28,32 @@ func (cui *HoldemCui) Controller() CuiExecer { return cui.hc }
 // HelpLines returns the game's help lines.
 func (cui *HoldemCui) HelpLines() []string {
 	return []string{
-		"Texas Hold'em (テキサスホールデム)",
+		i18n.T("holdem.helpTitle"),
 		"",
-		"Game commands:",
-		"  f                    fold",
-		"  ck                   check",
-		"  c                    call",
-		"  b [amount]           bet (e.g. b 20)",
-		"  ra [amount]          raise (e.g. ra 30)",
-		"  a                    all-in",
+		i18n.T("gameCommands"),
+		i18n.T("holdem.helpFold"),
+		i18n.T("holdem.helpCheck"),
+		i18n.T("holdem.helpCall"),
+		i18n.T("holdem.helpBet"),
+		i18n.T("holdem.helpRaise"),
+		i18n.T("holdem.helpAllIn"),
 		"  rb                   rebuy",
 		"  sr                   skip rebuy",
 		"  ad                   add-on",
 		"  sa                   skip add-on",
 		"",
-		"Settings:",
-		"  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
-		"  tm [0-1]             tournament mode (0=OFF, 1=ON)",
+		i18n.T("settings"),
+		i18n.T("holdem.helpBettingLimit"),
+		i18n.T("holdem.helpTournament"),
 		"  sb <amount>          small blind (>=1)",
 		"  bb <amount>          big blind (>=2)",
 		"  lh <hands>           blind level-up hands (>=1)",
 		"  ts [4|6|9]           table size",
 		"",
-		"Session:",
-		"  r                    reset game",
-		"  q                    quit",
-		"  help, ?              show this help",
+		i18n.T("session"),
+		i18n.T("resetEntry"),
+		i18n.T("quitEntry"),
+		i18n.T("helpEntry"),
 	}
 }
 
