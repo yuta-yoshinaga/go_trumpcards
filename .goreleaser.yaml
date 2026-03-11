@@ -45,5 +45,8 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^chore:"
+      - "^refactor:"
+      - "^style:"
+      - "^perf:"
       - "Merge pull request"
       - "Merge branch"
