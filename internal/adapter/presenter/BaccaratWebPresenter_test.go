@@ -35,7 +35,7 @@ func parseBaccaratOutput(t *testing.T, jsonStr string) *controller.BaccaratWebOu
 }
 
 func TestBaccaratWebPresenter_Output_BetPhase(t *testing.T) {
-	p := NewBaccaratWebPresenter()
+	p := new(BaccaratWebPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	setupBaccaratWebMockDefaults(m)
 
@@ -48,7 +48,7 @@ func TestBaccaratWebPresenter_Output_BetPhase(t *testing.T) {
 }
 
 func TestBaccaratWebPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
-	p := NewBaccaratWebPresenter()
+	p := new(BaccaratWebPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	m.On("GetChips").Return(1100).Maybe()
 	m.On("GetPhase").Return(domain.BaccaratPhaseEnd).Maybe()
@@ -79,7 +79,7 @@ func TestBaccaratWebPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 }
 
 func TestBaccaratWebPresenter_Output_EndPhase_BankerWins(t *testing.T) {
-	p := NewBaccaratWebPresenter()
+	p := new(BaccaratWebPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	m.On("GetChips").Return(900).Maybe()
 	m.On("GetPhase").Return(domain.BaccaratPhaseEnd).Maybe()
@@ -104,7 +104,7 @@ func TestBaccaratWebPresenter_Output_EndPhase_BankerWins(t *testing.T) {
 }
 
 func TestBaccaratWebPresenter_Output_EndPhase_Tie(t *testing.T) {
-	p := NewBaccaratWebPresenter()
+	p := new(BaccaratWebPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	m.On("GetChips").Return(1900).Maybe()
 	m.On("GetPhase").Return(domain.BaccaratPhaseEnd).Maybe()
@@ -129,7 +129,7 @@ func TestBaccaratWebPresenter_Output_EndPhase_Tie(t *testing.T) {
 }
 
 func TestBaccaratWebPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
-	p := NewBaccaratWebPresenter()
+	p := new(BaccaratWebPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	setupBaccaratWebMockDefaults(m)
 	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetGameEndFlag")
@@ -142,7 +142,7 @@ func TestBaccaratWebPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
 }
 
 func TestBaccaratWebPresenter_Output_Error(t *testing.T) {
-	p := NewBaccaratWebPresenter()
+	p := new(BaccaratWebPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	setupBaccaratWebMockDefaults(m)
 
@@ -151,7 +151,7 @@ func TestBaccaratWebPresenter_Output_Error(t *testing.T) {
 }
 
 func TestBaccaratWebPresenter_ActionLogOutput(t *testing.T) {
-	p := NewBaccaratWebPresenter()
+	p := new(BaccaratWebPresenter)
 
 	t.Run("game not ended", func(t *testing.T) {
 		m := new(interfaces.MockBaccaratGame)

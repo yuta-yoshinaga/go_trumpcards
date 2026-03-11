@@ -25,7 +25,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		{
 			name: "BlackJackWebPresenter marshal error",
 			output: func() string {
-				p := NewBlackJackWebPresenter()
+				p := new(BlackJackWebPresenter)
 				bj := domain.NewDefaultBlackJack()
 				bj.Reset()
 				return p.Output(bj, nil)
@@ -34,7 +34,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		{
 			name: "PokerWebPresenter marshal error",
 			output: func() string {
-				p := NewPokerWebPresenter()
+				p := new(PokerWebPresenter)
 				players := []*domain.PokerPlayer{
 					domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
 					domain.NewPokerPlayer(false, domain.PokerStyleConservative),
@@ -46,7 +46,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		{
 			name: "PokerWebPresenter OutputWithOdds marshal error",
 			output: func() string {
-				p := NewPokerWebPresenter()
+				p := new(PokerWebPresenter)
 				players := []*domain.PokerPlayer{
 					domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
 					domain.NewPokerPlayer(false, domain.PokerStyleConservative),
@@ -61,7 +61,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		{
 			name: "OldMaidWebPresenter marshal error",
 			output: func() string {
-				p := NewOldMaidWebPresenter()
+				p := new(OldMaidWebPresenter)
 				players := []*domain.OldMaidPlayer{
 					domain.NewOldMaidPlayer(true),
 					domain.NewOldMaidPlayer(false),
@@ -75,7 +75,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		{
 			name: "DaifugoWebPresenter marshal error",
 			output: func() string {
-				p := NewDaifugoWebPresenter()
+				p := new(DaifugoWebPresenter)
 				players := []*domain.DaifugoPlayer{
 					domain.NewDaifugoPlayer(true),
 					domain.NewDaifugoPlayer(false),
@@ -89,7 +89,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		{
 			name: "SevensWebPresenter marshal error",
 			output: func() string {
-				p := NewSevensWebPresenter()
+				p := new(SevensWebPresenter)
 				players := []*domain.SevensPlayer{
 					domain.NewSevensPlayer(true),
 					domain.NewSevensPlayer(false),
@@ -103,7 +103,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		{
 			name: "DoubtWebPresenter marshal error",
 			output: func() string {
-				p := NewDoubtWebPresenter()
+				p := new(DoubtWebPresenter)
 				players := []*domain.DoubtPlayer{
 					domain.NewDoubtPlayer(true),
 					domain.NewDoubtPlayer(false),
@@ -117,7 +117,7 @@ func TestWebPresenters_MarshalError(t *testing.T) {
 		{
 			name: "HoldemWebPresenter marshal error",
 			output: func() string {
-				p := NewHoldemWebPresenter()
+				p := new(HoldemWebPresenter)
 				players := []*domain.HoldemPlayer{
 					domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
 					domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),

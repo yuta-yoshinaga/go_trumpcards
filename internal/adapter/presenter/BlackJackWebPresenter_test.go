@@ -14,7 +14,7 @@ import (
 )
 
 func TestBlackJackWebPresenters_Method(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 
 	t.Run("success Output bet phase (no cards)", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -229,7 +229,7 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 
 	t.Run("success Output includes dealerHitsSoft17 true", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -463,7 +463,7 @@ func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_DeckPenetration(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()
 	output := tbp.Output(bj, nil)
@@ -474,7 +474,7 @@ func TestBlackJackWebPresenter_DeckPenetration(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_DeckPenetration50(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -491,7 +491,7 @@ func TestBlackJackWebPresenter_DeckPenetration50(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_MultiHandCount(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()
 	bj.GetPlayer().SetChips(2000)
@@ -505,7 +505,7 @@ func TestBlackJackWebPresenter_MultiHandCount(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_CpuInsuranceBet(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -536,7 +536,7 @@ func TestBlackJackWebPresenter_CpuInsuranceBet(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_SurrenderRule(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -553,7 +553,7 @@ func TestBlackJackWebPresenter_SurrenderRule(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_CanSurrenderHand(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -578,7 +578,7 @@ func TestBlackJackWebPresenter_CanSurrenderHand(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_EarlySurrenderPhase(t *testing.T) {
-	tbp := presenter.NewBlackJackWebPresenter()
+	tbp := new(presenter.BlackJackWebPresenter)
 	tc := domain.NewTrumpCards(0)
 	player := domain.NewBlackJackPlayer()
 	dealer := domain.NewBlackJackPlayer()
@@ -602,7 +602,7 @@ func TestBlackJackWebPresenter_EarlySurrenderPhase(t *testing.T) {
 }
 
 func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewBlackJackWebPresenter()
+	p := new(presenter.BlackJackWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockBlackJackGame)

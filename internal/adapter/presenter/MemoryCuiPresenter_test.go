@@ -45,7 +45,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		mg := newMockMemoryGame()
 		setupMemoryMockDefaults(mg)
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "Memory (神経衰弱)")
@@ -81,7 +81,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "2枚目を選んでください")
 		assert.Contains(t, result, "SPADE 1") // face up card
@@ -111,7 +111,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "ペアが揃いました！")
 		assert.Contains(t, result, "n・・・次へ")
@@ -141,7 +141,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "残念、不一致です。")
 	})
@@ -167,7 +167,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "ゲーム終了！ あなたの勝利です！")
 	})
@@ -193,7 +193,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "ゲーム終了！ CPU 2の勝利です！")
 	})
@@ -202,7 +202,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		mg := newMockMemoryGame()
 		setupMemoryMockDefaults(mg)
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, errors.New("test error"))
 		assert.Contains(t, result, "test error")
 	})
@@ -231,7 +231,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "[ 0]    ") // taken card blank
 	})
@@ -242,7 +242,7 @@ func TestMemoryCuiPresenterActionLog(t *testing.T) {
 		mg := newMockMemoryGame()
 		mg.On("GetGameEndFlag").Return(false)
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.ActionLogOutput(mg)
 		assert.NotEmpty(t, result)
 	})
@@ -254,7 +254,7 @@ func TestMemoryCuiPresenterActionLog(t *testing.T) {
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "match", Detail: "ペア獲得"},
 		})
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.ActionLogOutput(mg)
 		assert.Contains(t, result, "match")
 	})
@@ -265,7 +265,7 @@ func TestMemoryCuiPresenterActionLog(t *testing.T) {
 		var nilLog []*domain.ActionLogEntry
 		mg.On("GetActionLog").Return(nilLog)
 
-		p := NewMemoryCuiPresenter()
+		p := new(MemoryCuiPresenter)
 		result := p.ActionLogOutput(mg)
 		assert.NotEmpty(t, result)
 	})

@@ -9,11 +9,6 @@ import (
 // HoldemWebPresenter テキサスホールデムWebプレゼンタークラス
 type HoldemWebPresenter struct{}
 
-// NewHoldemWebPresenter コンストラクタ
-func NewHoldemWebPresenter() *HoldemWebPresenter {
-	return &HoldemWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (hwp *HoldemWebPresenter) Output(h interfaces.HoldemGame, lastErr error) string {
 	resObj := hwp.buildOutput(h, lastErr)

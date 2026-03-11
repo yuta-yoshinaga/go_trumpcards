@@ -23,7 +23,7 @@ func makeDoubtGameForPresenter() (*domain.Doubt, []*domain.DoubtPlayer) {
 }
 
 func TestDoubtCuiPresenter_Output(t *testing.T) {
-	p := presenter.NewDoubtCuiPresenter()
+	p := new(presenter.DoubtCuiPresenter)
 
 	t.Run("initial state", func(t *testing.T) {
 		game, players := makeDoubtGameForPresenter()
@@ -316,7 +316,7 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 }
 
 func TestDoubtCuiPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewDoubtCuiPresenter()
+	p := new(presenter.DoubtCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDoubtGame)

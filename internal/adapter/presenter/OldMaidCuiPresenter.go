@@ -31,11 +31,6 @@ func oldMaidPlayerStr(player *domain.OldMaidPlayer, i int) string {
 // OldMaidCuiPresenter ババ抜きCUIプレゼンタークラス
 type OldMaidCuiPresenter struct{}
 
-// NewOldMaidCuiPresenter コンストラクタ
-func NewOldMaidCuiPresenter() *OldMaidCuiPresenter {
-	return &OldMaidCuiPresenter{}
-}
-
 // Output ゲーム状態を文字列出力
 func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) string {
 	title := "Old Maid (ババ抜き)"

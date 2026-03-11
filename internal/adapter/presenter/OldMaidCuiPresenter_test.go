@@ -27,7 +27,7 @@ func setupOldMaidCuiTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
 }
 
 func TestOldMaidCuiPresenter_Method(t *testing.T) {
-	top := presenter.NewOldMaidCuiPresenter()
+	top := new(presenter.OldMaidCuiPresenter)
 
 	makePlayers := func() []*domain.OldMaidPlayer {
 		return []*domain.OldMaidPlayer{
@@ -263,7 +263,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_MetaAI(t *testing.T) {
-	top := presenter.NewOldMaidCuiPresenter()
+	top := new(presenter.OldMaidCuiPresenter)
 
 	t.Run("metaAI status line shown when profile exists", func(t *testing.T) {
 		om, _ := setupOldMaidCuiTest()
@@ -291,7 +291,7 @@ func TestOldMaidCuiPresenter_MetaAI(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_DrawHistory(t *testing.T) {
-	top := presenter.NewOldMaidCuiPresenter()
+	top := new(presenter.OldMaidCuiPresenter)
 
 	t.Run("no history section when empty", func(t *testing.T) {
 		om, _ := setupOldMaidCuiTest()
@@ -336,7 +336,7 @@ func TestOldMaidCuiPresenter_DrawHistory(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_JijiNuki_Header(t *testing.T) {
-	top := presenter.NewOldMaidCuiPresenter()
+	top := new(presenter.OldMaidCuiPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -356,7 +356,7 @@ func TestOldMaidCuiPresenter_JijiNuki_Header(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_Normal_Header(t *testing.T) {
-	top := presenter.NewOldMaidCuiPresenter()
+	top := new(presenter.OldMaidCuiPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -376,7 +376,7 @@ func TestOldMaidCuiPresenter_Normal_Header(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_JijiNuki_GameEnd_ShowsRemovedCard(t *testing.T) {
-	top := presenter.NewOldMaidCuiPresenter()
+	top := new(presenter.OldMaidCuiPresenter)
 	tc := domain.NewTrumpCards(0)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -406,7 +406,7 @@ func TestOldMaidCuiPresenter_JijiNuki_GameEnd_ShowsRemovedCard(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {
-	top := presenter.NewOldMaidCuiPresenter()
+	top := new(presenter.OldMaidCuiPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -427,7 +427,7 @@ func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewOldMaidCuiPresenter()
+	p := new(presenter.OldMaidCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockOldMaidGame)

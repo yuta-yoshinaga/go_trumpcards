@@ -52,7 +52,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		mg := newMockMemoryGame()
 		setupMemoryWebMockDefaults(mg)
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 
 		result := parseMemoryOutput(t, p.Output(mg, nil))
 		assert.Len(t, result.Players, 4)
@@ -97,7 +97,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := parseMemoryOutput(t, p.Output(mg, nil))
 		assert.NotNil(t, result.Board[5].Card)
 		assert.True(t, result.Board[5].FaceUp)
@@ -132,7 +132,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := parseMemoryOutput(t, p.Output(mg, nil))
 		assert.Nil(t, result.Board[0].Card)
 		assert.True(t, result.Board[0].Taken)
@@ -166,7 +166,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := parseMemoryOutput(t, p.Output(mg, nil))
 		assert.Equal(t, "memory.matched", result.MessageCode)
 	})
@@ -199,7 +199,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := parseMemoryOutput(t, p.Output(mg, nil))
 		assert.Equal(t, "memory.mismatched", result.MessageCode)
 	})
@@ -230,7 +230,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := parseMemoryOutput(t, p.Output(mg, nil))
 		assert.True(t, result.GameEndFlag)
 		assert.Equal(t, "memory.result.humanWin", result.MessageCode)
@@ -263,7 +263,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := parseMemoryOutput(t, p.Output(mg, nil))
 		assert.Equal(t, "memory.result.cpuWin", result.MessageCode)
 		assert.Equal(t, "2", result.MessageParams["cpuId"])
@@ -273,7 +273,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 		mg := newMockMemoryGame()
 		setupMemoryWebMockDefaults(mg)
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := parseMemoryOutput(t, p.Output(mg, errors.New("test error")))
 		assert.Equal(t, "test error", result.Message)
 		assert.Empty(t, result.MessageCode)
@@ -307,7 +307,7 @@ func TestMemoryWebPresenterOutput(t *testing.T) {
 			mg.On("GetPlayer", i).Return(domain.NewMemoryPlayer(i == 0))
 		}
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := parseMemoryOutput(t, p.Output(mg, nil))
 		assert.Equal(t, 2, result.Config.CpuDifficulty)
 	})
@@ -318,7 +318,7 @@ func TestMemoryWebPresenterActionLog(t *testing.T) {
 		mg := newMockMemoryGame()
 		mg.On("GetGameEndFlag").Return(false)
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := p.ActionLogOutput(mg)
 		assert.NotEmpty(t, result)
 	})
@@ -330,7 +330,7 @@ func TestMemoryWebPresenterActionLog(t *testing.T) {
 			{TurnNumber: 1, PlayerIdx: 0, ActionType: "match", Detail: "ペア獲得"},
 		})
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := p.ActionLogOutput(mg)
 		assert.Contains(t, result, "match")
 	})
@@ -341,7 +341,7 @@ func TestMemoryWebPresenterActionLog(t *testing.T) {
 		var nilLog []*domain.ActionLogEntry
 		mg.On("GetActionLog").Return(nilLog)
 
-		p := NewMemoryWebPresenter()
+		p := new(MemoryWebPresenter)
 		result := p.ActionLogOutput(mg)
 		assert.NotEmpty(t, result)
 	})
@@ -352,7 +352,7 @@ func TestMemoryWebPresenterBuildResultMessageNilPlayer(t *testing.T) {
 	mg.On("GetWinnerIdx").Return(5)
 	mg.On("GetPlayer", 5).Return((*domain.MemoryPlayer)(nil))
 
-	p := NewMemoryWebPresenter()
+	p := new(MemoryWebPresenter)
 	result := p.buildResultMessage(mg)
 	assert.Contains(t, result, "CPU 5")
 }

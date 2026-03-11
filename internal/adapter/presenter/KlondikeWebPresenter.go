@@ -11,11 +11,6 @@ import (
 // KlondikeWebPresenter クロンダイクWebプレゼンタークラス
 type KlondikeWebPresenter struct{}
 
-// NewKlondikeWebPresenter コンストラクタ
-func NewKlondikeWebPresenter() *KlondikeWebPresenter {
-	return &KlondikeWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (p *KlondikeWebPresenter) Output(k interfaces.KlondikeGame, lastErr error) string {
 	resObj := new(controller.KlondikeWebOutput)

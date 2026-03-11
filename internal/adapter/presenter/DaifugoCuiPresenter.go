@@ -31,11 +31,6 @@ func daifugoPlayerStr(player *domain.DaifugoPlayer, i int) string {
 // DaifugoCuiPresenter 大富豪CUIプレゼンタークラス
 type DaifugoCuiPresenter struct{}
 
-// NewDaifugoCuiPresenter コンストラクタ
-func NewDaifugoCuiPresenter() *DaifugoCuiPresenter {
-	return &DaifugoCuiPresenter{}
-}
-
 // Output ゲーム状態を文字列出力
 func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	return buildCuiOutput("Daifugo (大富豪)", func(b *strings.Builder) {

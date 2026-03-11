@@ -14,7 +14,7 @@ import (
 )
 
 func TestDoubtWebPresenter_Method(t *testing.T) {
-	tdwp := presenter.NewDoubtWebPresenter()
+	tdwp := new(presenter.DoubtWebPresenter)
 
 	makeDPlayers := func() []*domain.DoubtPlayer {
 		return []*domain.DoubtPlayer{
@@ -472,7 +472,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 }
 
 func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewDoubtWebPresenter()
+	p := new(presenter.DoubtWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDoubtGame)

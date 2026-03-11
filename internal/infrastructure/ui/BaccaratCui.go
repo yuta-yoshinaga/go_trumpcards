@@ -17,7 +17,7 @@ func NewBaccaratCui() *BaccaratCui {
 	return &BaccaratCui{
 		bc: controller.NewBaccaratCuiController(usecase.NewBaccaratInteractor(
 			domain.NewDefaultBaccarat(),
-			presenter.NewBaccaratCuiPresenter(),
+			new(presenter.BaccaratCuiPresenter),
 		)),
 	}
 }

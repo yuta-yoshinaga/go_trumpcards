@@ -51,11 +51,6 @@ func sevensActionStr(playerName string, action *domain.SevensCpuAction) string {
 // SevensCuiPresenter 7並べCUIプレゼンタークラス
 type SevensCuiPresenter struct{}
 
-// NewSevensCuiPresenter コンストラクタ
-func NewSevensCuiPresenter() *SevensCuiPresenter {
-	return &SevensCuiPresenter{}
-}
-
 // ActionLogOutput 棋譜をテキスト出力
 func (p *SevensCuiPresenter) ActionLogOutput(s interfaces.SevensGame) string {
 	return actionLogOutputText(s)

@@ -10,11 +10,6 @@ import (
 type BlackJackWebPresenter struct {
 }
 
-// NewBlackJackWebPresenter コンストラクタ
-func NewBlackJackWebPresenter() *BlackJackWebPresenter {
-	return &BlackJackWebPresenter{}
-}
-
 // Output ゲーム状態を出力
 func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr error) string {
 	resObj := new(controller.BlackJackWebOutput)

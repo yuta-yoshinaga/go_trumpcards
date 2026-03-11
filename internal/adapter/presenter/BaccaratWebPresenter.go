@@ -10,11 +10,6 @@ import (
 type BaccaratWebPresenter struct {
 }
 
-// NewBaccaratWebPresenter コンストラクタ
-func NewBaccaratWebPresenter() *BaccaratWebPresenter {
-	return &BaccaratWebPresenter{}
-}
-
 // Output ゲーム状態を出力
 func (bp *BaccaratWebPresenter) Output(b interfaces.BaccaratGame, lastErr error) string {
 	resObj := new(controller.BaccaratWebOutput)

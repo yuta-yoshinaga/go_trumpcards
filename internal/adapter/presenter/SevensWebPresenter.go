@@ -10,11 +10,6 @@ import (
 // SevensWebPresenter 7並べWebプレゼンタークラス
 type SevensWebPresenter struct{}
 
-// NewSevensWebPresenter コンストラクタ
-func NewSevensWebPresenter() *SevensWebPresenter {
-	return &SevensWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) string {
 	resObj := new(controller.SevensWebOutput)

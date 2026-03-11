@@ -31,7 +31,7 @@ func NewDoubtCui() *DoubtCui {
 	}
 	game := domain.NewDoubt(domain.NewTrumpCards(0), players)
 	dc := controller.NewDoubtCuiController(
-		usecase.NewDoubtInteractor(game, presenter.NewDoubtCuiPresenter()),
+		usecase.NewDoubtInteractor(game, new(presenter.DoubtCuiPresenter)),
 	)
 	cui := &DoubtCui{
 		dc:      dc,

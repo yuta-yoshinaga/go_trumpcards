@@ -23,7 +23,7 @@ func NewOldMaidCui() *OldMaidCui {
 	oldMaid := domain.NewOldMaid(domain.NewTrumpCards(1), players)
 	return &OldMaidCui{
 		omc: controller.NewOldMaidCuiController(
-			usecase.NewOldMaidInteractor(oldMaid, presenter.NewOldMaidCuiPresenter()),
+			usecase.NewOldMaidInteractor(oldMaid, new(presenter.OldMaidCuiPresenter)),
 		),
 	}
 }

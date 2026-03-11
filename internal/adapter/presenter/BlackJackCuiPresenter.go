@@ -56,11 +56,6 @@ func bjMultiHandResultStr(bj interfaces.BlackJackGame, handCount int) string {
 type BlackJackCuiPresenter struct {
 }
 
-// NewBlackJackCuiPresenter コンストラクタ
-func NewBlackJackCuiPresenter() *BlackJackCuiPresenter {
-	return &BlackJackCuiPresenter{}
-}
-
 // Output ゲーム状態を出力
 func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr error) string {
 	player := bj.GetPlayer()

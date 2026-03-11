@@ -21,7 +21,7 @@ func NewHoldemCui() *HoldemCui {
 	cfg := domain.DefaultHoldemConfig()
 	holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
 	return &HoldemCui{
-		hc: controller.NewHoldemCuiController(usecase.NewHoldemInteractor(holdem, presenter.NewHoldemCuiPresenter())),
+		hc: controller.NewHoldemCuiController(usecase.NewHoldemInteractor(holdem, new(presenter.HoldemCuiPresenter))),
 	}
 }
 

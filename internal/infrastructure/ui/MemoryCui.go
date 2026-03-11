@@ -23,7 +23,7 @@ func NewMemoryCui() *MemoryCui {
 	}
 	memory := domain.NewMemory(domain.NewTrumpCards(0), players, config)
 	return &MemoryCui{
-		mc: controller.NewMemoryCuiController(usecase.NewMemoryInteractor(memory, presenter.NewMemoryCuiPresenter())),
+		mc: controller.NewMemoryCuiController(usecase.NewMemoryInteractor(memory, new(presenter.MemoryCuiPresenter))),
 	}
 }
 

@@ -12,11 +12,6 @@ import (
 type BaccaratCuiPresenter struct {
 }
 
-// NewBaccaratCuiPresenter コンストラクタ
-func NewBaccaratCuiPresenter() *BaccaratCuiPresenter {
-	return &BaccaratCuiPresenter{}
-}
-
 // Output ゲーム状態を出力
 func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error) string {
 	var sb strings.Builder

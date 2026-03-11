@@ -11,11 +11,6 @@ import (
 // PokerCuiPresenter ポーカーCUIプレゼンタークラス
 type PokerCuiPresenter struct{}
 
-// NewPokerCuiPresenter コンストラクタ
-func NewPokerCuiPresenter() *PokerCuiPresenter {
-	return &PokerCuiPresenter{}
-}
-
 // Output ゲーム状態を出力
 func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	var b strings.Builder

@@ -24,7 +24,7 @@ func makeHoldemForPresenter() (*domain.Holdem, []*domain.HoldemPlayer) {
 }
 
 func TestHoldemCuiPresenter_Output(t *testing.T) {
-	p := presenter.NewHoldemCuiPresenter()
+	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("initial state with no community cards", func(t *testing.T) {
 		h, players := makeHoldemForPresenter()
@@ -413,7 +413,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
-	p := presenter.NewHoldemCuiPresenter()
+	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("displays Fixed limit", func(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
@@ -424,7 +424,7 @@ func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_Output_RebuyAddon(t *testing.T) {
-	p := presenter.NewHoldemCuiPresenter()
+	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("tournament mode with rebuy enabled shows rebuy info", func(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
@@ -530,7 +530,7 @@ func TestHoldemCuiPresenter_Output_RebuyAddon(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_Output_TableSize(t *testing.T) {
-	p := presenter.NewHoldemCuiPresenter()
+	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("displays 4-max", func(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
@@ -554,7 +554,7 @@ func TestHoldemCuiPresenter_Output_TableSize(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
-	p := presenter.NewHoldemCuiPresenter()
+	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("muck prompt displayed during showdown when IsMuckAvailable", func(t *testing.T) {
 		h, _ := makeHoldemForPresenter()
@@ -607,7 +607,7 @@ func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewHoldemCuiPresenter()
+	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockHoldemGame)

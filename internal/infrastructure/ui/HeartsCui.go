@@ -23,7 +23,7 @@ func NewHeartsCui() *HeartsCui {
 	}
 	hearts := domain.NewHearts(domain.NewTrumpCards(0), players, config)
 	return &HeartsCui{
-		hc: controller.NewHeartsCuiController(usecase.NewHeartsInteractor(hearts, presenter.NewHeartsCuiPresenter())),
+		hc: controller.NewHeartsCuiController(usecase.NewHeartsInteractor(hearts, new(presenter.HeartsCuiPresenter))),
 	}
 }
 

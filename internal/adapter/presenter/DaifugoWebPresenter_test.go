@@ -14,7 +14,7 @@ import (
 )
 
 func TestDaifugoWebPresenter_Method(t *testing.T) {
-	tdwp := presenter.NewDaifugoWebPresenter()
+	tdwp := new(presenter.DaifugoWebPresenter)
 
 	makeDGPlayers := func() []*domain.DaifugoPlayer {
 		return []*domain.DaifugoPlayer{
@@ -667,7 +667,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 }
 
 func TestDaifugoWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewDaifugoWebPresenter()
+	p := new(presenter.DaifugoWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDaifugoGame)
