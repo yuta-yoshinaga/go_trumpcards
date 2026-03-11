@@ -137,7 +137,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		} else {
 			fmt.Fprintf(&b, "--- CPU %d (chips: %d) ---\n", cpuIdx+1, cpu.GetPlayer().GetChips())
 		}
-		bjp.writeCpuHands(&b, bj, cpuIdx, cpu)
+		writeBJCpuHands(&b, bj, cpuIdx, cpu)
 	}
 
 	b.WriteString("----------\n")
@@ -191,8 +191,8 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	return b.String()
 }
 
-// writeCpuHands CPUハンド一覧を出力
-func (bjp *BlackJackCuiPresenter) writeCpuHands(b *strings.Builder, bj interfaces.BlackJackGame, cpuIdx int, cpu *domain.BlackJackCpuSeat) {
+// writeBJCpuHands CPUハンド一覧を出力
+func writeBJCpuHands(b *strings.Builder, bj interfaces.BlackJackGame, cpuIdx int, cpu *domain.BlackJackCpuSeat) {
 	for hi, hand := range cpu.GetHands() {
 		prefix := fmt.Sprintf("CPU %d", cpuIdx+1)
 		if len(cpu.GetHands()) > 1 {

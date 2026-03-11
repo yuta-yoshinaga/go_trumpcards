@@ -226,6 +226,30 @@ func TestCuiCardSliceStr(t *testing.T) {
 	}
 }
 
+func TestCuiCardSliceStrEmoji(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []*domain.Card
+		expected string
+	}{
+		{"empty slice", []*domain.Card{}, ""},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "♠1"},
+		{
+			"multiple cards",
+			[]*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 5, false),
+			},
+			"♠1  ♥5",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, cuiCardSliceStrEmoji(tt.cards))
+		})
+	}
+}
+
 func TestCuiBettingActionName(t *testing.T) {
 	tests := []struct {
 		name     string

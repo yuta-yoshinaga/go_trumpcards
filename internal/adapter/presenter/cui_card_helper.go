@@ -144,3 +144,13 @@ func cuiCardSliceStr(cards []*domain.Card) string {
 	}
 	return strings.Join(parts, ", ")
 }
+
+// cuiCardSliceStrEmoji returns a double-space separated emoji card string from a card slice.
+// e.g. "♠5  ♥3"
+func cuiCardSliceStrEmoji(cards []*domain.Card) string {
+	parts := make([]string, len(cards))
+	for i, c := range cards {
+		parts[i] = cuiCardStrEmoji(c)
+	}
+	return strings.Join(parts, "  ")
+}

@@ -55,11 +55,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	if len(cc) == 0 {
 		b.WriteString("コミュニティ: (なし)\n")
 	} else {
-		parts := make([]string, len(cc))
-		for i, card := range cc {
-			parts[i] = cuiCardStrEmoji(card)
-		}
-		fmt.Fprintf(&b, "コミュニティ: %s\n", strings.Join(parts, "  "))
+		fmt.Fprintf(&b, "コミュニティ: %s\n", cuiCardSliceStrEmoji(cc))
 	}
 
 	// ポット
