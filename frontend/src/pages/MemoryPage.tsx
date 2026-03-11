@@ -75,7 +75,7 @@ export function MemoryPage() {
 
         {/* Board: 4×13 grid */}
         <div className="my-3 p-2 rounded bg-black/40">
-          <div className="grid grid-cols-13 gap-1">
+          <div className="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-13 gap-1">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
