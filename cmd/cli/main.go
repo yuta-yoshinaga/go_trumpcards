@@ -58,6 +58,9 @@ OPTIONS:
 		detectedLang = *lang
 	}
 	i18n.SetLang(detectedLang)
+	if i18n.Lang() != detectedLang && detectedLang != "" {
+		fmt.Fprintf(os.Stderr, "Warning: unsupported language %q, defaulting to ja\n", detectedLang)
+	}
 	switch strings.ToLower(flag.Arg(0)) {
 	case "blackjack":
 		cui := ui.NewBlackJackCui()

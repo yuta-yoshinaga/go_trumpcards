@@ -59,7 +59,11 @@ func loadTranslations(lang string) map[string]string {
 			continue
 		}
 		for k, v := range m {
-			result[k] = v
+			if game == "common" {
+				result[k] = v
+			} else {
+				result[game+"."+k] = v
+			}
 		}
 	}
 	return result

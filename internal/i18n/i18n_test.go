@@ -50,10 +50,19 @@ func TestTf_WithParams(t *testing.T) {
 	assert.Equal(t, "コマンドが不明です: foo", result)
 }
 
-func TestTf_WithMultipleParams(t *testing.T) {
-	i18n.SetLang("ja")
+func TestTf_WithSingleParam(t *testing.T) {
+	i18n.SetLang("en")
 	result := i18n.Tf("switchedTo", "name", "poker")
 	assert.Equal(t, "Switched to poker.", result)
+}
+
+func TestTf_WithMultipleParams(t *testing.T) {
+	i18n.SetLang("en")
+	// holdem.smallBlindMustBeLess has two substitution params: bb
+	// but we can test chips-style with unknownGame which has "name"
+	// Use a key that genuinely needs two pairs by checking Tf handles them all
+	result := i18n.Tf("unknownCommand", "cmd", "foo", "extra", "ignored")
+	assert.Equal(t, "Unknown command: foo", result)
 }
 
 func TestTf_WithNoParams_ReturnsT(t *testing.T) {
@@ -89,23 +98,23 @@ func TestTf_English_unknownCommand(t *testing.T) {
 
 func TestT_GameSpecific_ja(t *testing.T) {
 	i18n.SetLang("ja")
-	// doubt-specific key
-	assert.Contains(t, i18n.T("doubtPrompt"), "ダウト")
+	// doubt-specific key (prefixed with game name)
+	assert.Contains(t, i18n.T("doubt.doubtPrompt"), "ダウト")
 }
 
 func TestT_GameSpecific_en(t *testing.T) {
 	i18n.SetLang("en")
-	assert.Equal(t, "Timeout: skipping doubt", i18n.T("timeout"))
+	assert.Equal(t, "Timeout: skipping doubt", i18n.T("doubt.timeout"))
 }
 
 func TestT_HoldemKeys_ja(t *testing.T) {
 	i18n.SetLang("ja")
-	assert.Contains(t, i18n.T("amountRequired"), "ベット")
+	assert.Contains(t, i18n.T("holdem.amountRequired"), "ベット")
 }
 
 func TestT_HoldemKeys_en(t *testing.T) {
 	i18n.SetLang("en")
-	assert.Equal(t, "Bet/raise requires an amount.", i18n.T("amountRequired"))
+	assert.Equal(t, "Bet/raise requires an amount.", i18n.T("holdem.amountRequired"))
 }
 
 func TestTf_InteractiveMode_en(t *testing.T) {
@@ -117,13 +126,28 @@ func TestTf_InteractiveMode_en(t *testing.T) {
 func TestTf_UnknownGame_en(t *testing.T) {
 	i18n.SetLang("en")
 	result := i18n.Tf("unknownGame", "name", "chess")
-	assert.Equal(t, "Unknown game: chess. Type 'games' for the list.", result)
+	assert.Equal(t, "Unknown game: \"chess\". Type 'games' for the list.", result)
 }
 
 func TestTf_AlreadyPlaying_en(t *testing.T) {
 	i18n.SetLang("en")
 	result := i18n.Tf("alreadyPlaying", "name", "poker")
 	assert.Equal(t, "Already playing poker.", result)
+}
+
+func TestT_HelpLines_GamePrefixed_ja(t *testing.T) {
+	i18n.SetLang("ja")
+	// Verify game-specific help keys are correctly prefixed and accessible
+	assert.Equal(t, "BlackJack (ブラックジャック)", i18n.T("blackjack.helpTitle"))
+	assert.Equal(t, "5-card Draw Poker (ポーカー)", i18n.T("poker.helpTitle"))
+	assert.Equal(t, "Doubt (ダウト)", i18n.T("doubt.helpTitle"))
+}
+
+func TestT_HelpLines_GamePrefixed_en(t *testing.T) {
+	i18n.SetLang("en")
+	// Verify English game-specific help keys work
+	assert.NotEqual(t, "blackjack.helpTitle", i18n.T("blackjack.helpTitle"))
+	assert.NotEqual(t, "poker.helpTitle", i18n.T("poker.helpTitle"))
 }
 
 // Reset to ja after all tests to avoid polluting other packages

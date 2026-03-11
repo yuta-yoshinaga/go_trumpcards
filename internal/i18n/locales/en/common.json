@@ -9,7 +9,7 @@
   "resetEntry": "  r                    reset game",
   "quitEntry": "  q                    quit",
   "switchUsage": "Usage: switch <game>. Type 'games' for the list.",
-  "unknownGame": "Unknown game: {{name}}. Type 'games' for the list.",
+  "unknownGame": "Unknown game: \"{{name}}\". Type 'games' for the list.",
   "alreadyPlaying": "Already playing {{name}}.",
   "switchedTo": "Switched to {{name}}.",
   "availableGames": "Available games:",

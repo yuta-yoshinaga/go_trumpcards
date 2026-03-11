@@ -142,7 +142,7 @@ func (cui *DoubtCui) handleDoubtWindow() {
 
 	if humanCanDoubt {
 		timeout := time.Duration(cui.game.GetConfig().DoubtWindowSec) * time.Second
-		fmt.Println(i18n.Tf("doubtPrompt", "sec", fmt.Sprintf("%d", cui.game.GetConfig().DoubtWindowSec)))
+		fmt.Println(i18n.Tf("doubt.doubtPrompt", "sec", fmt.Sprintf("%d", cui.game.GetConfig().DoubtWindowSec)))
 		select {
 		case input := <-cui.inputCh:
 			trimmed := strings.TrimSpace(input)
@@ -151,7 +151,7 @@ func (cui *DoubtCui) handleDoubtWindow() {
 				allDoubters = append(allDoubters, humanIdx) // 人間がダウト
 			}
 		case <-time.After(timeout):
-			fmt.Println(i18n.T("timeout"))
+			fmt.Println(i18n.T("doubt.timeout"))
 		}
 	}
 
