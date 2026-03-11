@@ -11,11 +11,6 @@ import (
 // OldMaidWebPresenter ババ抜きWebプレゼンタークラス
 type OldMaidWebPresenter struct{}
 
-// NewOldMaidWebPresenter コンストラクタ
-func NewOldMaidWebPresenter() *OldMaidWebPresenter {
-	return &OldMaidWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error) string {
 	resObj := new(controller.OldMaidWebOutput)

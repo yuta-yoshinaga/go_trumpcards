@@ -31,11 +31,6 @@ func doubtPlayerStr(player *domain.DoubtPlayer, i int) string {
 // DoubtCuiPresenter ダウトCUIプレゼンタークラス
 type DoubtCuiPresenter struct{}
 
-// NewDoubtCuiPresenter コンストラクタ
-func NewDoubtCuiPresenter() *DoubtCuiPresenter {
-	return &DoubtCuiPresenter{}
-}
-
 // Output ゲーム状態を文字列出力
 func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string {
 	return buildCuiOutput("Doubt (ダウト)", func(b *strings.Builder) {

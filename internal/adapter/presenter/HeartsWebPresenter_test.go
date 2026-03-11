@@ -48,7 +48,7 @@ func removeWebMockCall(calls []*mock.Call, method string) []*mock.Call {
 }
 
 func TestHeartsWebPresenter_Output(t *testing.T) {
-	p := presenter.NewHeartsWebPresenter()
+	p := new(presenter.HeartsWebPresenter)
 
 	t.Run("initial state", func(t *testing.T) {
 		m, players := setupHeartsWebMockWithPlayers()
@@ -350,7 +350,7 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 }
 
 func TestHeartsWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewHeartsWebPresenter()
+	p := new(presenter.HeartsWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockHeartsGame)

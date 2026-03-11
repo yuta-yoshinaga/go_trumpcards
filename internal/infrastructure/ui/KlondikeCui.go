@@ -16,7 +16,7 @@ type KlondikeCui struct {
 func NewKlondikeCui() *KlondikeCui {
 	klondike := domain.NewKlondike(domain.NewTrumpCards(0))
 	return &KlondikeCui{
-		kc: controller.NewKlondikeCuiController(usecase.NewKlondikeInteractor(klondike, presenter.NewKlondikeCuiPresenter())),
+		kc: controller.NewKlondikeCuiController(usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeCuiPresenter))),
 	}
 }
 

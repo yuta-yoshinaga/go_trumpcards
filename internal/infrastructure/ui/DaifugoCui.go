@@ -24,7 +24,7 @@ func NewDaifugoCui() *DaifugoCui {
 	daifugo := domain.NewDaifugo(domain.NewTrumpCards(config.JokerCount), players, config)
 	return &DaifugoCui{
 		dgc: controller.NewDaifugoCuiController(
-			usecase.NewDaifugoInteractor(daifugo, presenter.NewDaifugoCuiPresenter()),
+			usecase.NewDaifugoInteractor(daifugo, new(presenter.DaifugoCuiPresenter)),
 		),
 	}
 }

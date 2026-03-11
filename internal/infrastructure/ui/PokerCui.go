@@ -23,7 +23,7 @@ func NewPokerCui() *PokerCui {
 	}
 	poker := domain.NewPoker(domain.NewTrumpCards(config.JokerCount), players, config)
 	return &PokerCui{
-		pc: controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, presenter.NewPokerCuiPresenter())),
+		pc: controller.NewPokerCuiController(usecase.NewPokerInteractor(poker, new(presenter.PokerCuiPresenter))),
 	}
 }
 

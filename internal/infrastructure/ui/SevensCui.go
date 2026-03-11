@@ -24,7 +24,7 @@ func NewSevensCui() *SevensCui {
 	sevens := domain.NewSevens(domain.NewTrumpCards(config.JokerCount), players, config)
 	return &SevensCui{
 		sgc: controller.NewSevensCuiController(
-			usecase.NewSevensInteractor(sevens, presenter.NewSevensCuiPresenter()),
+			usecase.NewSevensInteractor(sevens, new(presenter.SevensCuiPresenter)),
 		),
 	}
 }

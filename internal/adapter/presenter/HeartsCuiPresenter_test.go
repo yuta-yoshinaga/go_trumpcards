@@ -65,7 +65,7 @@ func setupHeartsCuiMockWithPlayers() (*interfaces.MockHeartsGame, []*domain.Hear
 }
 
 func TestHeartsCuiPresenter_Output(t *testing.T) {
-	p := presenter.NewHeartsCuiPresenter()
+	p := new(presenter.HeartsCuiPresenter)
 
 	t.Run("initial state with header and player info", func(t *testing.T) {
 		m, players := setupHeartsCuiMockWithPlayers()
@@ -274,7 +274,7 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 }
 
 func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewHeartsCuiPresenter()
+	p := new(presenter.HeartsCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockHeartsGame)

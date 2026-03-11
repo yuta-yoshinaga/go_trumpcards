@@ -13,7 +13,7 @@ import (
 )
 
 func TestSevensWebPresenter_Method(t *testing.T) {
-	tswp := presenter.NewSevensWebPresenter()
+	tswp := new(presenter.SevensWebPresenter)
 
 	makeSPlayers := func() []*domain.SevensPlayer {
 		return []*domain.SevensPlayer{
@@ -571,7 +571,7 @@ func TestSevensWebPresenter_Method(t *testing.T) {
 }
 
 func TestSevensWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewSevensWebPresenter()
+	p := new(presenter.SevensWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockSevensGame)

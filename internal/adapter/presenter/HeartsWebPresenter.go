@@ -11,11 +11,6 @@ import (
 // HeartsWebPresenter ハーツWebプレゼンタークラス
 type HeartsWebPresenter struct{}
 
-// NewHeartsWebPresenter コンストラクタ
-func NewHeartsWebPresenter() *HeartsWebPresenter {
-	return &HeartsWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (p *HeartsWebPresenter) Output(h interfaces.HeartsGame, lastErr error) string {
 	resObj := new(controller.HeartsWebOutput)

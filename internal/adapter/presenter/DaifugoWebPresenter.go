@@ -11,11 +11,6 @@ import (
 // DaifugoWebPresenter 大富豪Webプレゼンタークラス
 type DaifugoWebPresenter struct{}
 
-// NewDaifugoWebPresenter コンストラクタ
-func NewDaifugoWebPresenter() *DaifugoWebPresenter {
-	return &DaifugoWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	resObj := new(controller.DaifugoWebOutput)

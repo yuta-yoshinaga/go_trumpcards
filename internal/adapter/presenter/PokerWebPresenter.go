@@ -9,11 +9,6 @@ import (
 // PokerWebPresenter ポーカーWebプレゼンタークラス
 type PokerWebPresenter struct{}
 
-// NewPokerWebPresenter コンストラクタ
-func NewPokerWebPresenter() *PokerWebPresenter {
-	return &PokerWebPresenter{}
-}
-
 // Output ゲーム状態をJSON出力
 func (pwp *PokerWebPresenter) Output(p interfaces.PokerGame, lastErr error) string {
 	resObj := pwp.buildOutput(p, lastErr)

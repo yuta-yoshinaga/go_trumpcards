@@ -25,7 +25,7 @@ func makePokerCuiForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
 }
 
 func TestPokerCuiPresenter_Output(t *testing.T) {
-	pres := presenter.NewPokerCuiPresenter()
+	pres := new(presenter.PokerCuiPresenter)
 
 	t.Run("initial state with header and dealer info", func(t *testing.T) {
 		p, players := makePokerCuiForPresenter()
@@ -553,7 +553,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
-	pres := presenter.NewPokerCuiPresenter()
+	pres := new(presenter.PokerCuiPresenter)
 	p, players := makePokerCuiForPresenter()
 	p.SetPhase(domain.PokerPhaseExchange)
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
@@ -570,7 +570,7 @@ func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
-	pres := presenter.NewPokerCuiPresenter()
+	pres := new(presenter.PokerCuiPresenter)
 	p, players := makePokerCuiForPresenter()
 	p.SetPhase(domain.PokerPhaseExchange)
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
@@ -581,7 +581,7 @@ func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_OutputWithOdds_EmptyOdds(t *testing.T) {
-	pres := presenter.NewPokerCuiPresenter()
+	pres := new(presenter.PokerCuiPresenter)
 	p, players := makePokerCuiForPresenter()
 	p.SetPhase(domain.PokerPhaseExchange)
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
@@ -592,7 +592,7 @@ func TestPokerCuiPresenter_OutputWithOdds_EmptyOdds(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_Output_LowballMode(t *testing.T) {
-	pres := presenter.NewPokerCuiPresenter()
+	pres := new(presenter.PokerCuiPresenter)
 
 	t.Run("lowball mode shows 2-7 Lowball", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -620,7 +620,7 @@ func TestPokerCuiPresenter_Output_LowballMode(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
-	pres := presenter.NewPokerCuiPresenter()
+	pres := new(presenter.PokerCuiPresenter)
 
 	t.Run("displays Fixed limit", func(t *testing.T) {
 		p, _ := makePokerCuiForPresenter()
@@ -631,7 +631,7 @@ func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewPokerCuiPresenter()
+	p := new(presenter.PokerCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockPokerGame)

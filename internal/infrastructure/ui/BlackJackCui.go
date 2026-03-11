@@ -17,7 +17,7 @@ func NewBlackJackCui() *BlackJackCui {
 	return &BlackJackCui{
 		bjc: controller.NewBlackJackCuiController(usecase.NewBlackJackInteractor(
 			domain.NewDefaultBlackJack(),
-			presenter.NewBlackJackCuiPresenter(),
+			new(presenter.BlackJackCuiPresenter),
 		)),
 	}
 }

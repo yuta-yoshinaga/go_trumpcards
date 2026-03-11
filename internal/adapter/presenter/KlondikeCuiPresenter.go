@@ -24,11 +24,6 @@ func klondikeColumnStr(colCards []*domain.KlondikeTableauCard) string {
 // KlondikeCuiPresenter クロンダイクCUIプレゼンタークラス
 type KlondikeCuiPresenter struct{}
 
-// NewKlondikeCuiPresenter コンストラクタ
-func NewKlondikeCuiPresenter() *KlondikeCuiPresenter {
-	return &KlondikeCuiPresenter{}
-}
-
 // Output ゲーム状態を文字列出力
 func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) string {
 	return buildCuiOutput("Klondike (ソリティア)", func(b *strings.Builder) {

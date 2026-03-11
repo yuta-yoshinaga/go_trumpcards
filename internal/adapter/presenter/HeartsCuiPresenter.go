@@ -29,11 +29,6 @@ func heartsPlayerStr(player *domain.HeartsPlayer, i int) string {
 // HeartsCuiPresenter ハーツCUIプレゼンタークラス
 type HeartsCuiPresenter struct{}
 
-// NewHeartsCuiPresenter コンストラクタ
-func NewHeartsCuiPresenter() *HeartsCuiPresenter {
-	return &HeartsCuiPresenter{}
-}
-
 // Output ゲーム状態を文字列出力
 func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) string {
 	return buildCuiOutput("Hearts (ハーツ)", func(b *strings.Builder) {

@@ -11,11 +11,6 @@ import (
 // HoldemCuiPresenter テキサスホールデムCUIプレゼンタークラス
 type HoldemCuiPresenter struct{}
 
-// NewHoldemCuiPresenter コンストラクタ
-func NewHoldemCuiPresenter() *HoldemCuiPresenter {
-	return &HoldemCuiPresenter{}
-}
-
 // ActionLogOutput 棋譜をテキスト出力
 func (p *HoldemCuiPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
 	return actionLogOutputText(h)

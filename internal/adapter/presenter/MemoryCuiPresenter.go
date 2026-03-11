@@ -22,11 +22,6 @@ func memoryCellStr(bc *domain.MemoryBoardCard, pos int) string {
 // MemoryCuiPresenter 神経衰弱CUIプレゼンタークラス
 type MemoryCuiPresenter struct{}
 
-// NewMemoryCuiPresenter コンストラクタ
-func NewMemoryCuiPresenter() *MemoryCuiPresenter {
-	return &MemoryCuiPresenter{}
-}
-
 // Output ゲーム状態を文字列出力
 func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) string {
 	return buildCuiOutput("Memory (神経衰弱)", func(b *strings.Builder) {

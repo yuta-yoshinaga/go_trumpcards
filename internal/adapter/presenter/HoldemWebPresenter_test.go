@@ -14,7 +14,7 @@ import (
 )
 
 func TestHoldemWebPresenter_Output(t *testing.T) {
-	p := presenter.NewHoldemWebPresenter()
+	p := new(presenter.HoldemWebPresenter)
 
 	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
 		tc := domain.NewTrumpCards(0)
@@ -590,7 +590,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 }
 
 func TestHoldemWebPresenter_Output_RebuyAddonFields(t *testing.T) {
-	p := presenter.NewHoldemWebPresenter()
+	p := new(presenter.HoldemWebPresenter)
 
 	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
 		tc := domain.NewTrumpCards(0)
@@ -667,7 +667,7 @@ func TestHoldemWebPresenter_Output_RebuyAddonFields(t *testing.T) {
 }
 
 func TestHoldemWebPresenter_Output_BettingLimitFields(t *testing.T) {
-	p := presenter.NewHoldemWebPresenter()
+	p := new(presenter.HoldemWebPresenter)
 
 	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
 		tc := domain.NewTrumpCards(0)
@@ -731,7 +731,7 @@ func TestHoldemWebPresenter_Output_BettingLimitFields(t *testing.T) {
 }
 
 func TestHoldemWebPresenter_Output_MuckFields(t *testing.T) {
-	p := presenter.NewHoldemWebPresenter()
+	p := new(presenter.HoldemWebPresenter)
 
 	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
 		tc := domain.NewTrumpCards(0)
@@ -848,7 +848,7 @@ func TestHoldemWebPresenter_Output_MuckFields(t *testing.T) {
 }
 
 func TestHoldemWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewHoldemWebPresenter()
+	p := new(presenter.HoldemWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockHoldemGame)

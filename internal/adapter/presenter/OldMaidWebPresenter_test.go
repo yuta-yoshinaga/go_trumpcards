@@ -30,7 +30,7 @@ func setupOldMaidWebTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
 }
 
 func TestOldMaidWebPresenter_Method(t *testing.T) {
-	towp := presenter.NewOldMaidWebPresenter()
+	towp := new(presenter.OldMaidWebPresenter)
 
 	makePlayers := func() []*domain.OldMaidPlayer {
 		return []*domain.OldMaidPlayer{
@@ -340,7 +340,7 @@ func TestOldMaidWebPresenter_Method(t *testing.T) {
 }
 
 func TestOldMaidWebPresenter_MetaAI(t *testing.T) {
-	towp := presenter.NewOldMaidWebPresenter()
+	towp := new(presenter.OldMaidWebPresenter)
 
 	t.Run("metaAI populated when profile exists", func(t *testing.T) {
 		om, _ := setupOldMaidWebTest()
@@ -377,7 +377,7 @@ func TestOldMaidWebPresenter_MetaAI(t *testing.T) {
 }
 
 func TestOldMaidWebPresenter_CpuHighlightedCardIdx(t *testing.T) {
-	towp := presenter.NewOldMaidWebPresenter()
+	towp := new(presenter.OldMaidWebPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -397,7 +397,7 @@ func TestOldMaidWebPresenter_CpuHighlightedCardIdx(t *testing.T) {
 }
 
 func TestOldMaidWebPresenter_Mode_Normal(t *testing.T) {
-	towp := presenter.NewOldMaidWebPresenter()
+	towp := new(presenter.OldMaidWebPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -413,7 +413,7 @@ func TestOldMaidWebPresenter_Mode_Normal(t *testing.T) {
 }
 
 func TestOldMaidWebPresenter_JijiNuki_GameEnd_RevealsRemovedCard(t *testing.T) {
-	towp := presenter.NewOldMaidWebPresenter()
+	towp := new(presenter.OldMaidWebPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -449,7 +449,7 @@ func TestOldMaidWebPresenter_JijiNuki_GameEnd_RevealsRemovedCard(t *testing.T) {
 }
 
 func TestOldMaidWebPresenter_DrawHistory(t *testing.T) {
-	towp := presenter.NewOldMaidWebPresenter()
+	towp := new(presenter.OldMaidWebPresenter)
 
 	t.Run("empty history in initial state", func(t *testing.T) {
 		om, _ := setupOldMaidWebTest()
@@ -517,7 +517,7 @@ func TestOldMaidWebPresenter_DrawHistory(t *testing.T) {
 }
 
 func TestOldMaidWebPresenter_JijiNuki_GameNotEnd_NoRemovedCard(t *testing.T) {
-	towp := presenter.NewOldMaidWebPresenter()
+	towp := new(presenter.OldMaidWebPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
 		domain.NewOldMaidPlayer(true),
@@ -538,7 +538,7 @@ func TestOldMaidWebPresenter_JijiNuki_GameNotEnd_NoRemovedCard(t *testing.T) {
 }
 
 func TestOldMaidWebPresenter_ActionLogOutput(t *testing.T) {
-	p := presenter.NewOldMaidWebPresenter()
+	p := new(presenter.OldMaidWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockOldMaidGame)
