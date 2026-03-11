@@ -4,6 +4,7 @@ import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
@@ -93,7 +94,7 @@ export function OldMaidPage() {
       aria-busy={loading}
       aria-live="polite"
     >
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Mode badge */}

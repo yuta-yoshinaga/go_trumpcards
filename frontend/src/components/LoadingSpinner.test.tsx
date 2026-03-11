@@ -8,9 +8,8 @@ describe('LoadingSpinner', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders spinner with status role and sr-only text when loading is true', () => {
+  it('renders spinner with status role and accessible name when loading is true', () => {
     render(<LoadingSpinner loading={true} />);
-    expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: '処理中...' })).toBeInTheDocument();
   });
 });
