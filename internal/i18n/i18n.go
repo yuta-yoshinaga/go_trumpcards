@@ -72,5 +72,7 @@ func loadTranslations(fsys fs.FS, lang string) map[string]string {
 }
 
 func init() {
+	// Pre-load Japanese translations so T/Tf work correctly even if SetLang
+	// is never called (e.g. in tests that don't set a language).
 	translations = loadTranslations(localesFS, "ja")
 }

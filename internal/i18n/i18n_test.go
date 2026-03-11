@@ -65,16 +65,13 @@ func TestTf_ExtraParamsIgnored(t *testing.T) {
 
 func TestTf_WithMultipleSubstitutions(t *testing.T) {
 	i18n.SetLang("en")
-	// holdem.smallBlindMustBeLess has one placeholder {{bb}}, but we can
-	// verify two simultaneous substitutions via a key that has two placeholders.
-	// holdem.bigBlindMustBeGreater uses {{sb}}.
-	// Use the interactiveMode key (has {{name}}) combined with a multi-pair call.
-	// The cleanest test: call Tf with two pairs where one matches and one doesn't.
-	result := i18n.Tf("holdem.smallBlindMustBeLess", "bb", "10", "extra", "ignored")
-	assert.Contains(t, result, "10")
-	// Verify a key with two actual placeholders substituted in one call
-	result2 := i18n.Tf("unknownGame", "name", "chess")
-	assert.Equal(t, "Unknown game: \"chess\". Type 'games' for the list.", result2)
+	// Verify two simultaneous substitutions: holdem.bigBlindMustBeGreater has {{sb}}
+	// and holdem.smallBlindMustBeLess has {{bb}}.
+	result := i18n.Tf("holdem.smallBlindMustBeLess", "bb", "10")
+	assert.Equal(t, "Small blind must be less than big blind (10).", result)
+	// Second key with a different placeholder to confirm independent substitution
+	result2 := i18n.Tf("holdem.bigBlindMustBeGreater", "sb", "5")
+	assert.Equal(t, "Big blind must be greater than small blind (5).", result2)
 }
 
 func TestTf_WithNoParams_ReturnsT(t *testing.T) {

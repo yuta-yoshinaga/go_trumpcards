@@ -26,7 +26,7 @@ func execCuiCommand(
 	}
 	switch fields[0] {
 	case "q", "quit":
-		return "bye."
+		return i18n.QuitSentinel
 	case "r", "reset":
 		return resetFn(fields[1:])
 	default:
