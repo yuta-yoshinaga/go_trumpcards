@@ -34,11 +34,6 @@ func setupKlondikeCuiMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("GetFoundation").Return(foundation).Maybe()
 }
 
-func TestKlondikeCuiPresenter_Constructor(t *testing.T) {
-	p := new(KlondikeCuiPresenter)
-	assert.NotNil(t, p)
-}
-
 func TestKlondikeCuiPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)

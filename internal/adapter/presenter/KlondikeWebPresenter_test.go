@@ -43,11 +43,6 @@ func parseKlondikeOutput(t *testing.T, jsonStr string) *controller.KlondikeWebOu
 	return &out
 }
 
-func TestKlondikeWebPresenter_Constructor(t *testing.T) {
-	p := new(KlondikeWebPresenter)
-	assert.NotNil(t, p)
-}
-
 func TestKlondikeWebPresenter_Output(t *testing.T) {
 	t.Run("initial state", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
