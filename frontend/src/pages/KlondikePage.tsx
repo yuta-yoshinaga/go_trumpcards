@@ -10,6 +10,8 @@ import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../
 import { KLONDIKE_PHASE } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 
+const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+
 export function KlondikePage() {
   const { t } = useTranslation('klondike');
   const { t: tc } = useTranslation('common');
@@ -102,13 +104,13 @@ export function KlondikePage() {
           {/* Foundation piles */}
           {state.foundation.map((pile, idx) => (
             <div key={`f-${idx.toString()}`} className="text-center">
-              <div className="text-white/60 text-xs mb-1">{['♠', '♣', '♥', '♦'][idx]}</div>
+              <div className="text-white/60 text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
               {pile.length > 0 ? (
                 <button
                   type="button"
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
-                  aria-label={t('foundationAriaLabel', { suit: ['♠', '♣', '♥', '♦'][idx], count: pile.length })}
+                  aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
                   className="p-0 border-0 bg-transparent cursor-pointer"
                 >
                   <CardImage card={pile[pile.length - 1]} width={60} />
@@ -118,7 +120,7 @@ export function KlondikePage() {
                   type="button"
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
-                  aria-label={t('foundationAriaLabel', { suit: ['♠', '♣', '♥', '♦'][idx], count: 0 })}
+                  aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: 0 })}
                   className="w-[60px] h-[84px] rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center"
                 >
                   A
