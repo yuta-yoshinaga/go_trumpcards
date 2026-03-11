@@ -39,7 +39,7 @@ func (cui *BlackJackCui) HelpLines() []string {
 		"  di                   decline insurance",
 		"",
 		"Settings:",
-		"  b <n> [pp] [t3] [hands]  bet (e.g. b 100 0 0 2)",
+		"  b <n> [perfect-pairs] [triple-7s] [hands]  bet (e.g. b 100 0 0 2)",
 		"  scc <n>              set CPU count (0-3)",
 		"",
 		"Session:",

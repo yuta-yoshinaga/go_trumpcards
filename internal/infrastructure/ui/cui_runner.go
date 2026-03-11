@@ -45,7 +45,8 @@ func RunCuiLoop(controller CuiExecer, helpLines []string) {
 		if exit {
 			break
 		}
-		if strings.TrimSpace(input) == "help" || strings.TrimSpace(input) == "?" {
+		trimmed := strings.TrimSpace(input)
+		if trimmed == "help" || trimmed == "?" {
 			for _, line := range helpLines {
 				fmt.Println(line)
 			}

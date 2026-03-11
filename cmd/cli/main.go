@@ -80,6 +80,7 @@ OPTIONS:
 	default:
 		if flag.Arg(0) != "" {
 			slog.Error("unknown command", "arg", flag.Arg(0))
+			flag.Usage()
 			os.Exit(1)
 		}
 		// No argument: start interactive multi-game mode (defaults to blackjack).

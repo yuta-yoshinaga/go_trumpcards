@@ -40,8 +40,11 @@ func (cui *SevensCui) HelpLines() []string {
 		"Game commands:",
 		"  p [index]            play card (no index = pass)",
 		"",
-		"Session:",
+		"Settings:",
 		"  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
+		"",
+		"Session:",
+		"  r                    reset game",
 		"  q                    quit",
 		"  help, ?              show this help",
 	}

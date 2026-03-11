@@ -94,7 +94,8 @@ func (cui *DoubtCui) Exec() {
 		case cui.game.GetPhase() == domain.DoubtPhasePlay && cui.game.IsHumanTurn():
 			cui.drainInput()
 			input := <-cui.inputCh
-			if strings.TrimSpace(input) == "help" || strings.TrimSpace(input) == "?" {
+			trimmed := strings.TrimSpace(input)
+			if trimmed == "help" || trimmed == "?" {
 				for _, line := range cui.HelpLines() {
 					fmt.Println(line)
 				}
