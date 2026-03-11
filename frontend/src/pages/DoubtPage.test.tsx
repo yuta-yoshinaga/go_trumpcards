@@ -197,6 +197,24 @@ describe('DoubtPage', () => {
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
+  it('claim input has aria-label for screen readers', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const input = screen.getByRole('spinbutton');
+    expect(input).toHaveAttribute('aria-label', '宣言する枚数 (1〜13)');
+  });
+
+  it('claim input receives focus when it appears', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const input = screen.getByRole('spinbutton');
+    expect(document.activeElement).toBe(input);
+  });
+
   it('changes claimed value and shows special name', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
