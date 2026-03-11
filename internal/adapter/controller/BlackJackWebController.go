@@ -112,13 +112,13 @@ func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.Bl
 	switch param.Command {
 	case "r", "reset":
 		if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil || param.DeckPenetration != nil || param.SurrenderRule != nil {
-			h17 := derefBool(param.DealerHitsSoft17)
-			cpuCount := derefInt(param.CpuPlayerCount)
-			counting := derefBool(param.CountingEnabled)
-			das := derefBoolDefault(param.DoubleAfterSplit, true)
-			cs := derefInt(param.CountingSystem)
-			dp := derefInt(param.DeckPenetration)
-			sr := derefInt(param.SurrenderRule)
+			h17 := deref(param.DealerHitsSoft17)
+			cpuCount := deref(param.CpuPlayerCount)
+			counting := deref(param.CountingEnabled)
+			das := derefDefault(param.DoubleAfterSplit, true)
+			cs := deref(param.CountingSystem)
+			dp := deref(param.DeckPenetration)
+			sr := deref(param.SurrenderRule)
 			bc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp, sr))
 		} else {
 			bc.writePresenterResponse(w, bji.Reset())
@@ -128,9 +128,9 @@ func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.Bl
 	case "s", "stand":
 		bc.writePresenterResponse(w, bji.Stand())
 	case "b", "bet":
-		ppBet := derefInt(param.PerfectPairsBet)
-		t3Bet := derefInt(param.TwentyOnePlus3Bet)
-		hc := derefInt(param.HandCount)
+		ppBet := deref(param.PerfectPairsBet)
+		t3Bet := deref(param.TwentyOnePlus3Bet)
+		hc := deref(param.HandCount)
 		bc.writePresenterResponse(w, bji.Bet(param.Amount, ppBet, t3Bet, hc))
 	case "d", "doubledown":
 		bc.writePresenterResponse(w, bji.DoubleDown())

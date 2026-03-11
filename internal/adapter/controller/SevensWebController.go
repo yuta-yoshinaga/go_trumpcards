@@ -96,15 +96,15 @@ func sevensDispatch(bc *baseController, w rest.ResponseWriter, sgi usecase.Seven
 	case "r", "reset":
 		if param.TunnelEnabled != nil || param.TunnelSkipWidth != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil || param.EndStop != nil || param.JokerConsecutiveBanned != nil {
 			cfg := domain.SevensConfig{
-				TunnelEnabled:          derefBool(param.TunnelEnabled),
-				TunnelSkipWidth:        derefInt(param.TunnelSkipWidth),
-				JokerCount:             derefInt(param.JokerCount),
-				CpuStrategy:            derefInt(param.CpuStrategy),
-				MaxPasses:              derefIntDefault(param.MaxPasses, domain.SevensMaxPasses),
-				NoJokerFinish:          derefBool(param.NoJokerFinish),
-				JokerReclaimEnabled:    derefBool(param.JokerReclaim),
-				EndStopEnabled:         derefBool(param.EndStop),
-				JokerConsecutiveBanned: derefBool(param.JokerConsecutiveBanned),
+				TunnelEnabled:          deref(param.TunnelEnabled),
+				TunnelSkipWidth:        deref(param.TunnelSkipWidth),
+				JokerCount:             deref(param.JokerCount),
+				CpuStrategy:            deref(param.CpuStrategy),
+				MaxPasses:              derefDefault(param.MaxPasses, domain.SevensMaxPasses),
+				NoJokerFinish:          deref(param.NoJokerFinish),
+				JokerReclaimEnabled:    deref(param.JokerReclaim),
+				EndStopEnabled:         deref(param.EndStop),
+				JokerConsecutiveBanned: deref(param.JokerConsecutiveBanned),
 			}
 			bc.writePresenterResponse(w, sgi.ResetWithConfig(cfg))
 		} else {
