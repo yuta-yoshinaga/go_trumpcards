@@ -14,21 +14,21 @@ Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Do
 
 ```sh
 # Run games
-go run ./cmd/cli                    # Interactive mode (switch games with 'switch <game>')
-go run ./cmd/cli --lang en          # Interactive mode in English
-go run ./cmd/cli blackjack          # BlackJack CLI
-go run ./cmd/cli --lang en blackjack  # BlackJack CLI in English
-go run ./cmd/cli poker      # 5-card Draw Poker CLI
-go run ./cmd/cli oldmaid    # Old Maid CLI
-go run ./cmd/cli daifugo    # Daifugo CLI
-go run ./cmd/cli sevens     # Sevens (7並べ) CLI
-go run ./cmd/cli doubt      # Doubt (ダウト) CLI
-go run ./cmd/cli holdem     # Texas Hold'em CLI
-go run ./cmd/cli hearts     # Hearts CLI
-go run ./cmd/cli memory     # Memory (神経衰弱) CLI
-go run ./cmd/cli klondike   # Klondike (ソリティア) CLI
-go run ./cmd/cli baccarat   # Baccarat (バカラ) CLI
-go run ./cmd/cli web        # Start REST API + web GUI server (via CLI)
+go run ./cmd/trumpcards                    # Interactive mode (switch games with 'switch <game>')
+go run ./cmd/trumpcards --lang en          # Interactive mode in English
+go run ./cmd/trumpcards blackjack          # BlackJack CLI
+go run ./cmd/trumpcards --lang en blackjack  # BlackJack CLI in English
+go run ./cmd/trumpcards poker      # 5-card Draw Poker CLI
+go run ./cmd/trumpcards oldmaid    # Old Maid CLI
+go run ./cmd/trumpcards daifugo    # Daifugo CLI
+go run ./cmd/trumpcards sevens     # Sevens (7並べ) CLI
+go run ./cmd/trumpcards doubt      # Doubt (ダウト) CLI
+go run ./cmd/trumpcards holdem     # Texas Hold'em CLI
+go run ./cmd/trumpcards hearts     # Hearts CLI
+go run ./cmd/trumpcards memory     # Memory (神経衰弱) CLI
+go run ./cmd/trumpcards klondike   # Klondike (ソリティア) CLI
+go run ./cmd/trumpcards baccarat   # Baccarat (バカラ) CLI
+go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
 
 # Test

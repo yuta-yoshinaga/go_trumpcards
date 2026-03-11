@@ -13,12 +13,20 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/web"
 )
 
+// Injected via -ldflags at build time (e.g. by GoReleaser).
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
 	lang := flag.String("lang", "", "language (ja or en)")
+	showVersion := flag.Bool("version", false, "Show version information")
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, `USAGE:
-  go_trumpcards [--lang ja|en] [game]
-  go_trumpcards --help
+  trumpcards [--lang ja|en] [game]
+  trumpcards --help
 
 GAMES:
   blackjack    BlackJack (ブラックジャック)
@@ -39,9 +47,15 @@ GAMES:
 OPTIONS:
   -h, --help        Show this help message
   --lang ja|en      Language (default: ja)
+  --version         Show version information
 `)
 	}
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("trumpcards %s (commit: %s, built: %s)\n", version, commit, date)
+		return
+	}
 
 	// Language detection: --lang > LANG env > default "ja"
 	detectedLang := "ja"
