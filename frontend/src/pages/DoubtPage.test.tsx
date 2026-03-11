@@ -203,7 +203,7 @@ describe('DoubtPage', () => {
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     const input = screen.getByRole('spinbutton');
-    expect(input).toHaveAttribute('aria-label', '宣言する枚数 (1〜13)');
+    expect(input).toHaveAttribute('aria-label', '宣言する値 (1〜13)');
   });
 
   it('claim input receives focus when it appears', async () => {

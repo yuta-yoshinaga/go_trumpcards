@@ -294,7 +294,7 @@ export function DoubtPage() {
                   min={1}
                   max={13}
                   value={claimedValue}
-                  aria-label="宣言する枚数 (1〜13)"
+                  aria-label={t('claimInputAriaLabel')}
                   onChange={(e) => {
                     const num = Number(e.target.value);
                     setClaimedValue(Math.max(1, Math.min(13, num)));
