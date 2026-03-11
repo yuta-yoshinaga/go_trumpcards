@@ -4,6 +4,7 @@ import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -50,7 +51,7 @@ export function KlondikePage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">

@@ -6,6 +6,7 @@ import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
 import {
   actionDesc,
@@ -59,7 +60,7 @@ export function DoubtPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
       {/* Settings panel */}
       <details className="px-4 pt-2">
         <summary className="text-white/70 text-xs cursor-pointer select-none">{t('settings.title')}</summary>
