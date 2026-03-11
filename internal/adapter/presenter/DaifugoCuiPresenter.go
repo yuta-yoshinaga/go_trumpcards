@@ -8,6 +8,26 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// daifugoPlayerStr returns the display string for a single Daifugo player.
+func daifugoPlayerStr(player *domain.DaifugoPlayer, i int) string {
+	var b strings.Builder
+	if player.GetIsHuman() {
+		b.WriteString("[You]")
+	} else {
+		fmt.Fprintf(&b, "CPU %d", i)
+	}
+	if player.GetIsFinished() {
+		fmt.Fprintf(&b, ": 上がり (ランク: %s)\n", daifugoRankName(player.GetRank()))
+	} else {
+		fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
+		if player.GetIsHuman() {
+			b.WriteString(cuiIndexedCardListStr(player))
+			b.WriteString("\n")
+		}
+	}
+	return b.String()
+}
+
 // DaifugoCuiPresenter 大富豪CUIプレゼンタークラス
 type DaifugoCuiPresenter struct{}
 
@@ -20,26 +40,7 @@ func NewDaifugoCuiPresenter() *DaifugoCuiPresenter {
 func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	return buildCuiOutput("Daifugo (大富豪)", func(b *strings.Builder) {
 		for i := 0; i < dg.GetPlayerCnt(); i++ {
-			player := dg.GetPlayer(i)
-			if player.GetIsHuman() {
-				b.WriteString("[You]")
-			} else {
-				fmt.Fprintf(b, "CPU %d", i)
-			}
-			if player.GetIsFinished() {
-				fmt.Fprintf(b, ": 上がり (ランク: %s)\n", daifugoRankName(player.GetRank()))
-			} else {
-				fmt.Fprintf(b, ": %d枚\n", player.GetCardsSize())
-				if player.GetIsHuman() {
-					for j := 0; j < player.GetCardsSize(); j++ {
-						if j != 0 {
-							b.WriteString("  ")
-						}
-						fmt.Fprintf(b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
-					}
-					b.WriteString("\n")
-				}
-			}
+			b.WriteString(daifugoPlayerStr(dg.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
@@ -69,27 +70,19 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 		if len(exchangeActions) > 0 {
 			b.WriteString("[カード交換]\n")
 			for _, ex := range exchangeActions {
-				cardStrs := make([]string, len(ex.Cards))
-				for i, c := range ex.Cards {
-					cardStrs[i] = cuiCardStr(c)
-				}
 				fmt.Fprintf(b, "%s → %s: %s\n",
 					cuiPlayerName(dg.GetPlayer(ex.FromPlayerIdx), ex.FromPlayerIdx),
 					cuiPlayerName(dg.GetPlayer(ex.ToPlayerIdx), ex.ToPlayerIdx),
-					strings.Join(cardStrs, ", "))
+					cuiCardSliceStr(ex.Cards))
 			}
 		}
 
 		// 場のカード
 		tableCards := dg.GetTableCards()
 		if len(tableCards) > 0 {
-			cardStrs := make([]string, len(tableCards))
-			for i, c := range tableCards {
-				cardStrs[i] = cuiCardStr(c)
-			}
 			lastPlayIdx := dg.GetLastPlayPlayerIdx()
 			fmt.Fprintf(b, "場: %s (出したプレイヤー: %s)\n",
-				strings.Join(cardStrs, ", "),
+				cuiCardSliceStr(tableCards),
 				cuiPlayerName(dg.GetPlayer(lastPlayIdx), lastPlayIdx))
 		} else {
 			b.WriteString("場: なし (誰でも出せます)\n")
@@ -101,13 +94,9 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 			if len(humanAction.PlayedCards) == 0 {
 				fmt.Fprintf(b, "%sがパスしました\n", cuiPlayerName(dg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx))
 			} else {
-				cardStrs := make([]string, len(humanAction.PlayedCards))
-				for i, c := range humanAction.PlayedCards {
-					cardStrs[i] = cuiCardStr(c)
-				}
 				fmt.Fprintf(b, "%sが %s を出しました\n",
 					cuiPlayerName(dg.GetPlayer(humanAction.PlayerIdx), humanAction.PlayerIdx),
-					strings.Join(cardStrs, ", "))
+					cuiCardSliceStr(humanAction.PlayedCards))
 			}
 		}
 
@@ -120,11 +109,7 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 				if len(action.PlayedCards) == 0 {
 					fmt.Fprintf(b, "%sがパスしました\n", actPlayerName)
 				} else {
-					cardStrs := make([]string, len(action.PlayedCards))
-					for i, c := range action.PlayedCards {
-						cardStrs[i] = cuiCardStr(c)
-					}
-					fmt.Fprintf(b, "%sが %s を出しました\n", actPlayerName, strings.Join(cardStrs, ", "))
+					fmt.Fprintf(b, "%sが %s を出しました\n", actPlayerName, cuiCardSliceStr(action.PlayedCards))
 				}
 			}
 		}

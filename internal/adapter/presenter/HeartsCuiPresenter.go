@@ -8,6 +8,24 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// heartsPlayerStr returns the display string for a single Hearts player.
+func heartsPlayerStr(player *domain.HeartsPlayer, i int) string {
+	var b strings.Builder
+	name := cuiPlayerName(player, i)
+	fmt.Fprintf(&b, "%s: 累積%d点 ラウンド%d点 %d枚 %dトリック\n",
+		name,
+		player.GetCumulativeScore(),
+		player.GetRoundScore(),
+		player.GetCardsSize(),
+		player.GetTrickCount(),
+	)
+	if player.GetIsHuman() && player.GetCardsSize() > 0 {
+		b.WriteString(cuiIndexedCardListStr(player))
+		b.WriteString("\n")
+	}
+	return b.String()
+}
+
 // HeartsCuiPresenter ハーツCUIプレゼンタークラス
 type HeartsCuiPresenter struct{}
 
@@ -29,26 +47,7 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 
 		// プレイヤー情報
 		for i := 0; i < h.GetPlayerCnt(); i++ {
-			player := h.GetPlayer(i)
-			name := cuiPlayerName(player, i)
-			fmt.Fprintf(b, "%s: 累積%d点 ラウンド%d点 %d枚 %dトリック\n",
-				name,
-				player.GetCumulativeScore(),
-				player.GetRoundScore(),
-				player.GetCardsSize(),
-				player.GetTrickCount(),
-			)
-			if player.GetIsHuman() {
-				for j := 0; j < player.GetCardsSize(); j++ {
-					if j != 0 {
-						b.WriteString("  ")
-					}
-					fmt.Fprintf(b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
-				}
-				if player.GetCardsSize() > 0 {
-					b.WriteString("\n")
-				}
-			}
+			b.WriteString(heartsPlayerStr(h.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
@@ -56,15 +55,12 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 		// 現在のトリック
 		trick := h.GetCurrentTrick()
 		if len(trick) > 0 {
-			b.WriteString("トリック: ")
+			parts := make([]string, len(trick))
 			for i, tc := range trick {
-				if i != 0 {
-					b.WriteString(", ")
-				}
 				player := h.GetPlayer(tc.PlayerIdx)
-				fmt.Fprintf(b, "%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
+				parts[i] = fmt.Sprintf("%s=%s", cuiPlayerName(player, tc.PlayerIdx), cuiCardStr(tc.Card))
 			}
-			b.WriteString("\n")
+			fmt.Fprintf(b, "トリック: %s\n", strings.Join(parts, ", "))
 		}
 
 		// エラーメッセージ

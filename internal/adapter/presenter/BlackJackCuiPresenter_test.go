@@ -791,6 +791,31 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 	})
 }
 
+func TestBlackJackCuiPresenter_SideBetWinBranch(t *testing.T) {
+	bjp := presenter.NewBlackJackCuiPresenter()
+	// Use retry loop to guarantee the r.Payout > 0 branch is exercised.
+	for attempt := 0; attempt < 1000; attempt++ {
+		tc := domain.NewTrumpCardsWithDecks(1, 0)
+		tc.Shuffle()
+		player := domain.NewBlackJackPlayer()
+		dealer := domain.NewBlackJackPlayer()
+		player.SetChips(1000)
+		dealer.SetChips(1000)
+		bj := domain.NewBlackJack(tc, player, dealer)
+		bj.Reset()
+		if err := bj.PlayerBet(100, 10, 0, 0); err != nil {
+			continue
+		}
+		results := bj.GetSideBetResults()
+		if len(results) > 0 && results[0].Payout > 0 {
+			output := bjp.Output(bj, nil)
+			assert.Contains(t, output, "WIN")
+			return
+		}
+	}
+	t.Fatal("side bet WIN branch never hit after 1000 attempts")
+}
+
 func TestBlackJackCuiPresenter_Penetration50(t *testing.T) {
 	bjp := presenter.NewBlackJackCuiPresenter()
 	bj, _ := setupBJCuiTest(1000, 1000)

@@ -51,19 +51,16 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	fmt.Fprintf(&b, "ディーラー: Player %d\n", h.GetDealerIdx())
 
 	// コミュニティカード
-	b.WriteString("コミュニティ: ")
 	cc := h.GetCommunityCards()
 	if len(cc) == 0 {
-		b.WriteString("(なし)")
+		b.WriteString("コミュニティ: (なし)\n")
 	} else {
+		parts := make([]string, len(cc))
 		for i, card := range cc {
-			if i > 0 {
-				b.WriteString("  ")
-			}
-			b.WriteString(cuiCardStrEmoji(card))
+			parts[i] = cuiCardStrEmoji(card)
 		}
+		fmt.Fprintf(&b, "コミュニティ: %s\n", strings.Join(parts, "  "))
 	}
-	b.WriteString("\n")
 
 	// ポット
 	fmt.Fprintf(&b, "ポット: %d\n", h.GetPot())
@@ -102,14 +99,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 
 		// 人間のカードを表示
 		if player.GetIsHuman() && !player.GetFolded() {
-			b.WriteString("  手札: ")
-			for j := 0; j < player.GetCardsSize(); j++ {
-				if j > 0 {
-					b.WriteString("  ")
-				}
-				b.WriteString(cuiCardStrEmoji(player.GetCard(j)))
-			}
-			b.WriteString("\n")
+			fmt.Fprintf(&b, "  手札: %s\n", cuiCardListStrEmoji(player))
 		}
 	}
 
@@ -137,13 +127,14 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			if !h.GetPlayer(r.PlayerIdx).GetIsHuman() {
 				name = fmt.Sprintf("CPU %d", r.PlayerIdx)
 			}
+			kickers := ""
+			if ks := domain.FormatKickers(r.Kickers); ks != "" {
+				kickers = " (キッカー: " + ks + ")"
+			}
 			if r.Mucked {
 				fmt.Fprintf(&b, "  %s: マック", name)
 			} else if r.HandName != "" {
-				fmt.Fprintf(&b, "  %s: %s", name, r.HandName)
-				if ks := domain.FormatKickers(r.Kickers); ks != "" {
-					fmt.Fprintf(&b, " (キッカー: %s)", ks)
-				}
+				fmt.Fprintf(&b, "  %s: %s%s", name, r.HandName, kickers)
 			} else {
 				fmt.Fprintf(&b, "  %s", name)
 			}

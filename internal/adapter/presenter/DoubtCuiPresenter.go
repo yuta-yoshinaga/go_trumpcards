@@ -8,6 +8,26 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
 
+// doubtPlayerStr returns the display string for a single Doubt player.
+func doubtPlayerStr(player *domain.DoubtPlayer, i int) string {
+	var b strings.Builder
+	if player.GetIsHuman() {
+		b.WriteString("[You]")
+	} else {
+		fmt.Fprintf(&b, "CPU %d", i)
+	}
+	if player.GetIsFinished() {
+		b.WriteString(": 上がり\n")
+	} else {
+		fmt.Fprintf(&b, ": %d枚\n", player.GetCardsSize())
+		if player.GetIsHuman() {
+			b.WriteString(cuiIndexedCardListStr(player))
+			b.WriteString("\n")
+		}
+	}
+	return b.String()
+}
+
 // DoubtCuiPresenter ダウトCUIプレゼンタークラス
 type DoubtCuiPresenter struct{}
 
@@ -21,26 +41,7 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 	return buildCuiOutput("Doubt (ダウト)", func(b *strings.Builder) {
 		// プレイヤー情報
 		for i := 0; i < d.GetPlayerCnt(); i++ {
-			player := d.GetPlayer(i)
-			if player.GetIsHuman() {
-				b.WriteString("[You]")
-			} else {
-				fmt.Fprintf(b, "CPU %d", i)
-			}
-			if player.GetIsFinished() {
-				b.WriteString(": 上がり\n")
-			} else {
-				fmt.Fprintf(b, ": %d枚\n", player.GetCardsSize())
-				if player.GetIsHuman() {
-					for j := 0; j < player.GetCardsSize(); j++ {
-						if j != 0 {
-							b.WriteString("  ")
-						}
-						fmt.Fprintf(b, "[%d]%s", j, cuiCardStr(player.GetCard(j)))
-					}
-					b.WriteString("\n")
-				}
-			}
+			b.WriteString(doubtPlayerStr(d.GetPlayer(i), i))
 		}
 
 		b.WriteString("----------\n")
@@ -74,14 +75,7 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 			}
 			// 公開されたカード
 			if len(lastResult.RevealedCards) > 0 {
-				b.WriteString("  公開カード: ")
-				for i, card := range lastResult.RevealedCards {
-					if i != 0 {
-						b.WriteString(", ")
-					}
-					b.WriteString(cuiCardStr(card))
-				}
-				b.WriteString("\n")
+				fmt.Fprintf(b, "  公開カード: %s\n", cuiCardSliceStr(lastResult.RevealedCards))
 			}
 		}
 
