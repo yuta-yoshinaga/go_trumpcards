@@ -32,9 +32,10 @@ export function MemoryPage() {
       <details className="px-4 pt-2">
         <summary className="text-white/70 text-sm cursor-pointer">{t('settings.title')}</summary>
         <div className="mt-2 flex flex-wrap gap-4 text-sm text-white/70">
-          <label>
+          <label htmlFor="cpuDifficulty">
             {t('settings.cpuDifficulty')}
             <select
+              id="cpuDifficulty"
               value={memoryConfig.cpuDifficulty}
               onChange={(e) => handleConfigChange('cpuDifficulty', e.target.value)}
               className="ml-1 bg-gray-700 text-white rounded px-1"

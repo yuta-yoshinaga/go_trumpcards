@@ -64,9 +64,10 @@ export function DoubtPage() {
       <details className="px-4 pt-2">
         <summary className="text-white/70 text-xs cursor-pointer select-none">{t('settings.title')}</summary>
         <div className="bg-black/30 rounded-lg p-3 mt-1 flex flex-wrap gap-4 text-sm text-white">
-          <label className="flex items-center gap-2">
+          <label htmlFor="doubtWindowSec" className="flex items-center gap-2">
             {t('settings.doubtTime')}
             <select
+              id="doubtWindowSec"
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.doubtWindowSec}
               onChange={(e) => handleConfigChange('doubtWindowSec', e.target.value)}
@@ -78,9 +79,10 @@ export function DoubtPage() {
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2">
+          <label htmlFor="cpuMemoryLevel" className="flex items-center gap-2">
             {t('settings.cpuMemory')}
             <select
+              id="cpuMemoryLevel"
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.cpuMemoryLevel}
               onChange={(e) => handleConfigChange('cpuMemoryLevel', e.target.value)}
@@ -92,9 +94,10 @@ export function DoubtPage() {
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2">
+          <label htmlFor="penaltyDrawLimit" className="flex items-center gap-2">
             {t('settings.penaltyDrawLimit')}
             <select
+              id="penaltyDrawLimit"
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.penaltyDrawLimit}
               onChange={(e) => handleConfigChange('penaltyDrawLimit', e.target.value)}

@@ -176,13 +176,19 @@ export function SevensPage() {
 
         <div className="bg-black/30 rounded-lg py-1.5 px-3 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.85em] text-white/80">
           <span className="text-yellow-300 font-bold">{t('config.title')}</span>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgTunnel} onChange={(e) => setCfgTunnel(e.target.checked)} />
+          <label htmlFor="cfgTunnel" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgTunnel"
+              type="checkbox"
+              checked={cfgTunnel}
+              onChange={(e) => setCfgTunnel(e.target.checked)}
+            />
             {t('config.tunnel')}
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
+          <label htmlFor="cfgTunnelSkipWidth" className="flex items-center gap-1 cursor-pointer">
             {t('config.tunnelSkip')}
             <select
+              id="cfgTunnelSkipWidth"
               value={cfgTunnelSkipWidth}
               onChange={(e) => setCfgTunnelSkipWidth(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -195,9 +201,10 @@ export function SevensPage() {
               <option value={6}>6</option>
             </select>
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
+          <label htmlFor="cfgJokerCount" className="flex items-center gap-1 cursor-pointer">
             {t('config.joker')}
             <select
+              id="cfgJokerCount"
               value={cfgJokerCount}
               onChange={(e) => setCfgJokerCount(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -207,9 +214,10 @@ export function SevensPage() {
               <option value={2}>2</option>
             </select>
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
+          <label htmlFor="cfgCpuStrategy" className="flex items-center gap-1 cursor-pointer">
             {t('config.cpuStrategy')}
             <select
+              id="cfgCpuStrategy"
               value={cfgCpuStrategy}
               onChange={(e) => setCfgCpuStrategy(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -219,9 +227,10 @@ export function SevensPage() {
               <option value={2}>{t('config.cpuStrategyHarassment')}</option>
             </select>
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
+          <label htmlFor="cfgMaxPasses" className="flex items-center gap-1 cursor-pointer">
             {t('config.passCount')}
             <select
+              id="cfgMaxPasses"
               value={cfgMaxPasses}
               onChange={(e) => setCfgMaxPasses(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -232,20 +241,40 @@ export function SevensPage() {
               <option value={0}>{t('config.passUnlimited')}</option>
             </select>
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgNoJokerFinish} onChange={(e) => setCfgNoJokerFinish(e.target.checked)} />
+          <label htmlFor="cfgNoJokerFinish" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgNoJokerFinish"
+              type="checkbox"
+              checked={cfgNoJokerFinish}
+              onChange={(e) => setCfgNoJokerFinish(e.target.checked)}
+            />
             {t('config.noJokerFinish')}
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgJokerReclaim} onChange={(e) => setCfgJokerReclaim(e.target.checked)} />
+          <label htmlFor="cfgJokerReclaim" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgJokerReclaim"
+              type="checkbox"
+              checked={cfgJokerReclaim}
+              onChange={(e) => setCfgJokerReclaim(e.target.checked)}
+            />
             {t('config.jokerReclaim')}
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgEndStop} onChange={(e) => setCfgEndStop(e.target.checked)} />
+          <label htmlFor="cfgEndStop" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgEndStop"
+              type="checkbox"
+              checked={cfgEndStop}
+              onChange={(e) => setCfgEndStop(e.target.checked)}
+            />
             {t('config.endStop')}
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgJokerConsBan} onChange={(e) => setCfgJokerConsBan(e.target.checked)} />
+          <label htmlFor="cfgJokerConsBan" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgJokerConsBan"
+              type="checkbox"
+              checked={cfgJokerConsBan}
+              onChange={(e) => setCfgJokerConsBan(e.target.checked)}
+            />
             {t('config.jokerConsecutiveBanned')}
           </label>
         </div>
