@@ -239,6 +239,37 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(wasteButton.className).toContain('ring-2'));
   });
 
+  it('waste card button has aria-pressed false initially', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const wasteImg = screen.getByAltText('♣ 3');
+    const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+    expect(wasteButton).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('waste card button has aria-pressed true when selected', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const wasteImg = screen.getByAltText('♣ 3');
+    const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+    await waitFor(() => expect(wasteButton).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+
+    const cardImg = screen.getByAltText('♠ K');
+    const cardButton = cardImg.closest('button') as HTMLButtonElement;
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
+  });
+
   it('clicking waste card when source already selected does nothing', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
