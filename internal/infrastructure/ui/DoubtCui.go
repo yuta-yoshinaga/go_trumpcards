@@ -46,15 +46,22 @@ func (cui *DoubtCui) Controller() CuiExecer { return cui.dc }
 // HelpLines returns the game's help lines.
 func (cui *DoubtCui) HelpLines() []string {
 	return []string{
-		"コマンドを入力してください。",
-		"q・・・quit",
-		"r・・・reset",
-		"p <値> <idx...>・・・カードを出す (値=宣言値, idx=手札インデックス)",
-		"d [playerIdx...]・・・ダウト",
-		"s・・・スキップ（ダウトしない）",
-		"sw <秒>・・・ダウト待機秒数設定 (1-60)",
-		"sm <レベル>・・・CPU記憶力設定 (0=Easy, 1=Normal, 2=Hard)",
-		"sp <上限>・・・ペナルティドロー上限設定 (0=無制限, >0=上限)",
+		"Doubt (ダウト)",
+		"",
+		"Game commands:",
+		"  p <value> <idx ...>  play cards (value=declared, idx=hand index)",
+		"  d [playerIdx ...]    doubt",
+		"  s                    skip doubt",
+		"",
+		"Settings:",
+		"  sw <sec>             doubt window seconds (1-60)",
+		"  sm <level>           CPU memory level (0=Easy, 1=Normal, 2=Hard)",
+		"  sp <limit>           penalty draw limit (0=unlimited, >0=limit)",
+		"",
+		"Session:",
+		"  r                    reset game",
+		"  q                    quit",
+		"  help, ?              show this help",
 	}
 }
 
@@ -81,14 +88,19 @@ func (cui *DoubtCui) drainInput() {
 func (cui *DoubtCui) Exec() {
 	go cui.inputReader()
 	fmt.Println(cui.dc.Exec("r"))
+	fmt.Println(`Type "help" or "?" for commands.`)
 	for !cui.game.GetGameEndFlag() {
 		switch {
 		case cui.game.GetPhase() == domain.DoubtPhasePlay && cui.game.IsHumanTurn():
 			cui.drainInput()
-			for _, line := range cui.HelpLines() {
-				fmt.Println(line)
-			}
 			input := <-cui.inputCh
+			trimmed := strings.TrimSpace(input)
+			if trimmed == "help" || trimmed == "?" {
+				for _, line := range cui.HelpLines() {
+					fmt.Println(line)
+				}
+				continue
+			}
 			res := cui.dc.Exec(input)
 			fmt.Println(res)
 			if res == "bye." {

@@ -72,6 +72,7 @@ flowchart TD
 | `play` | `p` | パス（パス回数を1消費） |
 | `j cardIdx suitInt valueInt` | - | ジョーカーを配置（例: `j 0 1 6`） |
 | `quit` | `q` | ゲーム終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ### ジョーカーコマンドの詳細
 

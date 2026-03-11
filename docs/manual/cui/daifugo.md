@@ -113,6 +113,7 @@ flowchart TD
 | `setdifficulty N` | `sd N` | CPU難易度を設定（0=Normal、1=Easy、2=Hard） |
 | `setjoker N` | `sj N` | ジョーカー枚数を設定（0〜2） |
 | `quit` | `q` | ゲーム終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ### ルール設定コマンド（`sr`）
 

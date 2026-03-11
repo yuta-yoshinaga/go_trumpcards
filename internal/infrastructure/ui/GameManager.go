@@ -54,19 +54,25 @@ func (m *GameManager) Exec(cmd string) string {
 			return m.switchGame(fields[1])
 		case "games":
 			return m.listGames()
+		case "help", "?":
+			return strings.Join(m.HelpLines(), "\n")
 		}
 	}
 	return m.games[m.currentGame].Exec(cmd)
 }
 
-// HelpLines returns the current game's help lines plus switch/games commands.
+// HelpLines returns the current game's help lines plus interactive-mode commands.
 func (m *GameManager) HelpLines() []string {
 	base := m.helpLines[m.currentGame]
-	lines := make([]string, len(base)+3)
+	extra := []string{
+		"",
+		fmt.Sprintf("Interactive mode  (current: %s)", m.currentGame),
+		"  switch <game>  switch to another game (e.g. switch poker)",
+		"  games          list all available games",
+	}
+	lines := make([]string, len(base)+len(extra))
 	copy(lines, base)
-	lines[len(base)] = fmt.Sprintf("--- Current game: %s ---", m.currentGame)
-	lines[len(base)+1] = "switch <game>・・・switch to another game (e.g. switch poker)"
-	lines[len(base)+2] = "games・・・list all available games"
+	copy(lines[len(base):], extra)
 	return lines
 }
 

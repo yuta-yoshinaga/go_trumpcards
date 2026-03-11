@@ -33,13 +33,20 @@ func (cui *MemoryCui) Controller() CuiExecer { return cui.mc }
 // HelpLines returns the game's help lines.
 func (cui *MemoryCui) HelpLines() []string {
 	return []string{
-		"Please enter a command.",
-		"q・・・quit",
-		"r・・・reset",
-		"f <pos>・・・flip card at position",
-		"n・・・next (resolve flip)",
-		"sd <0-2>・・・set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-		"l・・・action log",
+		"Memory / Concentration (神経衰弱)",
+		"",
+		"Game commands:",
+		"  f <pos>              flip card at position",
+		"  n                    next (resolve flip)",
+		"  l                    action log",
+		"",
+		"Settings:",
+		"  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+		"",
+		"Session:",
+		"  r                    reset game",
+		"  q                    quit",
+		"  help, ?              show this help",
 	}
 }
 

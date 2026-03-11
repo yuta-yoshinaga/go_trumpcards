@@ -89,6 +89,7 @@ flowchart TD
 | `declineearlysurrender` | `des` | アーリーサレンダーを辞退して通常プレイを続行 |
 | `setsurrenderrule N` | `ssr N` | サレンダールールを設定（0=レイトサレンダー / 1=アーリーサレンダー / 2=サレンダー禁止） |
 | `quit` | `q` | ゲーム終了 |
+| `help` | `?` | コマンド一覧を表示 |
 
 ## 特殊ルール
 

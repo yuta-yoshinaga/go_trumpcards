@@ -33,16 +33,23 @@ func (cui *HeartsCui) Controller() CuiExecer { return cui.hc }
 // HelpLines returns the game's help lines.
 func (cui *HeartsCui) HelpLines() []string {
 	return []string{
-		"Please enter a command.",
-		"q・・・quit",
-		"r・・・reset",
-		"pass <i1> <i2> <i3>・・・pass 3 cards",
-		"p <i>・・・play card at index",
-		"n・・・next trick",
-		"nr・・・next round",
-		"sd <0-2>・・・set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
-		"sl <n>・・・set point limit",
-		"l・・・action log",
+		"Hearts (ハーツ)",
+		"",
+		"Game commands:",
+		"  pass <i1> <i2> <i3>  pass 3 cards",
+		"  p <i>                play card at index",
+		"  n                    next trick",
+		"  nr                   next round",
+		"  l                    action log",
+		"",
+		"Settings:",
+		"  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+		"  sl <n>               set point limit",
+		"",
+		"Session:",
+		"  r                    reset game",
+		"  q                    quit",
+		"  help, ?              show this help",
 	}
 }
 

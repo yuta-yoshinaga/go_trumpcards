@@ -28,11 +28,16 @@ func (cui *BaccaratCui) Controller() CuiExecer { return cui.bc }
 // HelpLines returns the game's help lines.
 func (cui *BaccaratCui) HelpLines() []string {
 	return []string{
-		"Please enter a command.",
-		"q・・・quit",
-		"r・・・reset",
-		"b N T・・・bet (e.g. b 100 0) T: 0=Player, 1=Banker, 2=Tie",
-		"log・・・action log",
+		"Baccarat (バカラ)",
+		"",
+		"Game commands:",
+		"  b <n> <t>            bet (n=amount, t: 0=Player, 1=Banker, 2=Tie)",
+		"  log                  action log",
+		"",
+		"Session:",
+		"  r                    reset game",
+		"  q                    quit",
+		"  help, ?              show this help",
 	}
 }
 

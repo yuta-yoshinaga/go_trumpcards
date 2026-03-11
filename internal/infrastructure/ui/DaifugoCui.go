@@ -35,14 +35,21 @@ func (cui *DaifugoCui) Controller() CuiExecer { return cui.dgc }
 // HelpLines returns the game's help lines.
 func (cui *DaifugoCui) HelpLines() []string {
 	return []string{
-		"コマンドを入力してください。",
-		"q・・・quit",
-		"r・・・reset",
-		"p [インデックス...]・・・カードを出す (インデックスなしでパス)",
-		"sort [0-2]・・・手札ソート (0=強さ, 1=スート, 2=数字)",
-		"sd [0-2]・・・CPU難易度 (0=Normal, 1=Easy, 2=Hard)",
-		"sj [0-2]・・・ジョーカー枚数",
-		"sr <rule> <0|1>・・・ローカルルール切替",
+		"Daifugo / Great Fool (大富豪)",
+		"",
+		"Game commands:",
+		"  p [index ...]        play cards (no index = pass)",
+		"  sort [0-2]           sort hand (0=strength, 1=suit, 2=number)",
+		"",
+		"Settings:",
+		"  sd [0-2]             CPU difficulty (0=Normal, 1=Easy, 2=Hard)",
+		"  sj [0-2]             joker count",
+		"  sr <rule> <0|1>      toggle local rule",
+		"",
+		"Session:",
+		"  r                    reset game",
+		"  q                    quit",
+		"  help, ?              show this help",
 	}
 }
 

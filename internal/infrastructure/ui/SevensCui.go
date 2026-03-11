@@ -35,10 +35,15 @@ func (cui *SevensCui) Controller() CuiExecer { return cui.sgc }
 // HelpLines returns the game's help lines.
 func (cui *SevensCui) HelpLines() []string {
 	return []string{
-		"コマンドを入力してください。",
-		"q・・・quit",
-		"r [tunnel] [joker=N] [strategy] [passes=N]・・・reset (オプションルール設定)",
-		"p [インデックス]・・・カードを出す (インデックスなしでパス)",
+		"Sevens (7並べ)",
+		"",
+		"Game commands:",
+		"  p [index]            play card (no index = pass)",
+		"",
+		"Session:",
+		"  r [tunnel] [joker=N] [strategy] [passes=N]  reset with options",
+		"  q                    quit",
+		"  help, ?              show this help",
 	}
 }
 
