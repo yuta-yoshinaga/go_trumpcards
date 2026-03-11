@@ -29,12 +29,20 @@ func NewSevensCui() *SevensCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *SevensCui) Exec() {
-	RunCuiLoop(cui.sgc, []string{
+// Controller returns the game controller.
+func (cui *SevensCui) Controller() CuiExecer { return cui.sgc }
+
+// HelpLines returns the game's help lines.
+func (cui *SevensCui) HelpLines() []string {
+	return []string{
 		"コマンドを入力してください。",
 		"q・・・quit",
 		"r [tunnel] [joker=N] [strategy] [passes=N]・・・reset (オプションルール設定)",
 		"p [インデックス]・・・カードを出す (インデックスなしでパス)",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *SevensCui) Exec() {
+	RunCuiLoop(cui.sgc, cui.HelpLines())
 }

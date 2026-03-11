@@ -25,6 +25,35 @@ func NewHoldemCui() *HoldemCui {
 	}
 }
 
+// Controller returns the game controller.
+func (cui *HoldemCui) Controller() CuiExecer { return cui.hc }
+
+// HelpLines returns the game's help lines.
+func (cui *HoldemCui) HelpLines() []string {
+	return []string{
+		"--- Commands ---",
+		"q・・・quit",
+		"r・・・reset",
+		"f・・・fold",
+		"ck・・・check",
+		"c・・・call",
+		"b [amount]・・・bet (e.g. 'b 20')",
+		"ra [amount]・・・raise (e.g. 'ra 30')",
+		"a・・・allin",
+		"bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
+		"tm [0-1]・・・tournament mode (0=OFF, 1=ON)",
+		"sb [amount]・・・small blind (>=1)",
+		"bb [amount]・・・big blind (>=2)",
+		"lh [hands]・・・blind level-up hands (>=1)",
+		"ts [4|6|9]・・・table size (4-max, 6-max, 9-max)",
+		"rb・・・rebuy (accept rebuy)",
+		"sr・・・skip rebuy (decline rebuy)",
+		"ad・・・addon (accept addon)",
+		"sa・・・skip addon (decline addon)",
+		"----------------",
+	}
+}
+
 // Exec ゲーム実行
 func (cui *HoldemCui) Exec() {
 	fmt.Println(cui.hc.Exec("r"))

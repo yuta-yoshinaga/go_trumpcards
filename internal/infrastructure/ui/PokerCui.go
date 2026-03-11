@@ -27,9 +27,12 @@ func NewPokerCui() *PokerCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *PokerCui) Exec() {
-	RunCuiLoop(cui.pc, []string{
+// Controller returns the game controller.
+func (cui *PokerCui) Controller() CuiExecer { return cui.pc }
+
+// HelpLines returns the game's help lines.
+func (cui *PokerCui) HelpLines() []string {
+	return []string{
 		"Please enter a command.",
 		"q・・・quit",
 		"r・・・reset",
@@ -43,5 +46,10 @@ func (cui *PokerCui) Exec() {
 		"s・・・stand (no exchange)",
 		"bl [0-2]・・・betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
 		"lw・・・toggle 2-7 Lowball mode",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *PokerCui) Exec() {
+	RunCuiLoop(cui.pc, cui.HelpLines())
 }

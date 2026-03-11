@@ -29,9 +29,12 @@ func NewDaifugoCui() *DaifugoCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *DaifugoCui) Exec() {
-	RunCuiLoop(cui.dgc, []string{
+// Controller returns the game controller.
+func (cui *DaifugoCui) Controller() CuiExecer { return cui.dgc }
+
+// HelpLines returns the game's help lines.
+func (cui *DaifugoCui) HelpLines() []string {
+	return []string{
 		"コマンドを入力してください。",
 		"q・・・quit",
 		"r・・・reset",
@@ -40,5 +43,10 @@ func (cui *DaifugoCui) Exec() {
 		"sd [0-2]・・・CPU難易度 (0=Normal, 1=Easy, 2=Hard)",
 		"sj [0-2]・・・ジョーカー枚数",
 		"sr <rule> <0|1>・・・ローカルルール切替",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *DaifugoCui) Exec() {
+	RunCuiLoop(cui.dgc, cui.HelpLines())
 }

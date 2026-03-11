@@ -28,9 +28,12 @@ func NewOldMaidCui() *OldMaidCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *OldMaidCui) Exec() {
-	RunCuiLoop(cui.omc, []string{
+// Controller returns the game controller.
+func (cui *OldMaidCui) Controller() CuiExecer { return cui.omc }
+
+// HelpLines returns the game's help lines.
+func (cui *OldMaidCui) HelpLines() []string {
+	return []string{
 		"コマンドを入力してください。",
 		"q・・・quit",
 		"r・・・reset",
@@ -40,5 +43,10 @@ func (cui *OldMaidCui) Exec() {
 		"sm [0-1]・・・set mode (0=Normal, 1=JijiNuki)",
 		"sps [0-1]・・・set CPU placement strategy (0=OFF, 1=ON)",
 		"sma [0-1]・・・set CPU memory AI (0=OFF, 1=ON)",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *OldMaidCui) Exec() {
+	RunCuiLoop(cui.omc, cui.HelpLines())
 }

@@ -27,9 +27,12 @@ func NewMemoryCui() *MemoryCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *MemoryCui) Exec() {
-	RunCuiLoop(cui.mc, []string{
+// Controller returns the game controller.
+func (cui *MemoryCui) Controller() CuiExecer { return cui.mc }
+
+// HelpLines returns the game's help lines.
+func (cui *MemoryCui) HelpLines() []string {
+	return []string{
 		"Please enter a command.",
 		"q・・・quit",
 		"r・・・reset",
@@ -37,5 +40,10 @@ func (cui *MemoryCui) Exec() {
 		"n・・・next (resolve flip)",
 		"sd <0-2>・・・set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
 		"l・・・action log",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *MemoryCui) Exec() {
+	RunCuiLoop(cui.mc, cui.HelpLines())
 }

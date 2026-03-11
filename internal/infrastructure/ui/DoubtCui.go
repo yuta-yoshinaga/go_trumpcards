@@ -42,6 +42,24 @@ func NewDoubtCui() *DoubtCui {
 	return cui
 }
 
+// Controller returns the game controller.
+func (cui *DoubtCui) Controller() CuiExecer { return cui.dc }
+
+// HelpLines returns the game's help lines.
+func (cui *DoubtCui) HelpLines() []string {
+	return []string{
+		"コマンドを入力してください。",
+		"q・・・quit",
+		"r・・・reset",
+		"p <値> <idx...>・・・カードを出す (値=宣言値, idx=手札インデックス)",
+		"d [playerIdx...]・・・ダウト",
+		"s・・・スキップ（ダウトしない）",
+		"sw <秒>・・・ダウト待機秒数設定 (1-60)",
+		"sm <レベル>・・・CPU記憶力設定 (0=Easy, 1=Normal, 2=Hard)",
+		"sp <上限>・・・ペナルティドロー上限設定 (0=無制限, >0=上限)",
+	}
+}
+
 // inputReader 標準入力を読み込み inputCh に送るゴルーチン
 func (cui *DoubtCui) inputReader() {
 	scanner := bufio.NewScanner(os.Stdin)

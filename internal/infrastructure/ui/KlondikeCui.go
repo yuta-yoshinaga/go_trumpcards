@@ -20,9 +20,12 @@ func NewKlondikeCui() *KlondikeCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *KlondikeCui) Exec() {
-	RunCuiLoop(cui.kc, []string{
+// Controller returns the game controller.
+func (cui *KlondikeCui) Controller() CuiExecer { return cui.kc }
+
+// HelpLines returns the game's help lines.
+func (cui *KlondikeCui) HelpLines() []string {
+	return []string{
 		"Please enter a command.",
 		"q・・・quit",
 		"r・・・reset",
@@ -35,5 +38,10 @@ func (cui *KlondikeCui) Exec() {
 		"h・・・hint",
 		"ac・・・auto-complete",
 		"l・・・action log",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *KlondikeCui) Exec() {
+	RunCuiLoop(cui.kc, cui.HelpLines())
 }

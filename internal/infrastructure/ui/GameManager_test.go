@@ -198,3 +198,9 @@ func TestGameManager_NewGameManager_Smoke(t *testing.T) {
 	assert.NotNil(t, mgr.games["blackjack"])
 	assert.Len(t, mgr.games, len(gameNames))
 }
+
+func TestGameManager_NewGameManager_PanicsOnInvalidGame(t *testing.T) {
+	assert.Panics(t, func() {
+		NewGameManager("chess")
+	})
+}

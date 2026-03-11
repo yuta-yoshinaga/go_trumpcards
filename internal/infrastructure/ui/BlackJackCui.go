@@ -22,9 +22,12 @@ func NewBlackJackCui() *BlackJackCui {
 	}
 }
 
-// Exec ゲーム実行
-func (cui *BlackJackCui) Exec() {
-	RunCuiLoop(cui.bjc, []string{
+// Controller returns the game controller.
+func (cui *BlackJackCui) Controller() CuiExecer { return cui.bjc }
+
+// HelpLines returns the game's help lines.
+func (cui *BlackJackCui) HelpLines() []string {
+	return []string{
 		"Please enter a command.",
 		"q・・・quit",
 		"r・・・reset",
@@ -36,5 +39,10 @@ func (cui *BlackJackCui) Exec() {
 		"i・・・insurance",
 		"di・・・decline insurance",
 		"scc N・・・set CPU player count (0-3)",
-	})
+	}
+}
+
+// Exec ゲーム実行
+func (cui *BlackJackCui) Exec() {
+	RunCuiLoop(cui.bjc, cui.HelpLines())
 }
