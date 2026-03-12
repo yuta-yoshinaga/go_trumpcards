@@ -1,34 +1,11 @@
 export type StatusBadgeVariant = 'success' | 'warning' | 'danger';
 
-const styles: Record<StatusBadgeVariant, React.CSSProperties> = {
-  success: {
-    background: '#5cb85c',
-    color: '#fff',
-    borderRadius: 6,
-    padding: '1px 8px',
-    marginLeft: 6,
-    fontSize: '0.8em',
-  },
-  warning: {
-    background: '#f0ad4e',
-    color: '#222',
-    borderRadius: 6,
-    padding: '1px 8px',
-    marginLeft: 6,
-    fontSize: '0.8em',
-    fontWeight: 'bold',
-  },
-  danger: {
-    background: '#dc3545',
-    color: '#fff',
-    borderRadius: 6,
-    padding: '1px 8px',
-    marginLeft: 6,
-    fontSize: '0.8em',
-    fontWeight: 'bold',
-  },
+const variantClasses: Record<StatusBadgeVariant, string> = {
+  success: 'bg-game-status-active text-white rounded-[6px] px-2 py-[1px] ml-1.5 text-[0.8em]',
+  warning: 'bg-game-status-waiting text-game-text-strong rounded-[6px] px-2 py-[1px] ml-1.5 text-[0.8em] font-bold',
+  danger: 'bg-game-status-out text-white rounded-[6px] px-2 py-[1px] ml-1.5 text-[0.8em] font-bold',
 };
 
 export function StatusBadge({ variant, children }: { variant: StatusBadgeVariant; children: React.ReactNode }) {
-  return <span style={styles[variant]}>{children}</span>;
+  return <span className={variantClasses[variant]}>{children}</span>;
 }

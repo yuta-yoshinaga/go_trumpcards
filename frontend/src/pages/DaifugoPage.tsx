@@ -88,7 +88,7 @@ export function DaifugoPage() {
           <div className="text-white font-bold mb-1.5">{t('tableCards')}</div>
           <div className="flex flex-wrap gap-1">
             {!state.tableCards || state.tableCards.length === 0 ? (
-              <span style={{ color: '#aaa' }}>{t('tableEmpty')}</span>
+              <span className="text-gray-400">{t('tableEmpty')}</span>
             ) : (
               state.tableCards.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={52} />)
             )}

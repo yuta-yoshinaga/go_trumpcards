@@ -56,7 +56,7 @@ describe('CpuTurnArea', () => {
     expect(screen.queryByText('考え中...')).not.toBeInTheDocument();
   });
 
-  it('applies dimmed style when finished and dimFinished is true (default)', () => {
+  it('applies dimmed class when finished and dimFinished is true (default)', () => {
     const { container } = render(
       <CpuTurnArea
         playerId={1}
@@ -67,10 +67,10 @@ describe('CpuTurnArea', () => {
         className={baseClass}
       />,
     );
-    expect(container.firstChild).toHaveStyle({ opacity: 0.5 });
+    expect(container.firstChild).toHaveClass('opacity-50');
   });
 
-  it('does not apply dimmed style when dimFinished is false', () => {
+  it('does not apply dimmed class when dimFinished is false', () => {
     const { container } = render(
       <CpuTurnArea
         playerId={1}
@@ -82,24 +82,25 @@ describe('CpuTurnArea', () => {
         className={baseClass}
       />,
     );
-    expect(container.firstChild).not.toHaveStyle({ opacity: 0.5 });
+    expect(container.firstChild).not.toHaveClass('opacity-50');
   });
 
-  it('applies active turn style when current turn', () => {
+  it('applies active turn class when current turn', () => {
     const { container } = render(
       <CpuTurnArea playerId={1} isHuman={false} isCurrentTurn={true} isFinished={false} className={baseClass} />,
     );
     const el = container.firstChild as HTMLElement;
-    expect(el.style.border).toContain('2px solid');
-    expect(el.style.boxShadow).toContain('0 0 12px');
+    expect(el).toHaveClass('border-2');
+    expect(el).toHaveClass('border-game-status-waiting');
+    expect(el.className).toContain('shadow-');
   });
 
-  it('applies no conditional style when idle', () => {
+  it('applies no conditional class when idle', () => {
     const { container } = render(
       <CpuTurnArea playerId={1} isHuman={false} isCurrentTurn={false} isFinished={false} className={baseClass} />,
     );
-    expect(container.firstChild).not.toHaveStyle({ opacity: 0.5 });
-    expect(container.firstChild).not.toHaveStyle({ border: '2px solid #f0ad4e' });
+    expect(container.firstChild).not.toHaveClass('opacity-50');
+    expect(container.firstChild).not.toHaveClass('border-game-status-waiting');
   });
 
   it('passes id prop to the outer div', () => {

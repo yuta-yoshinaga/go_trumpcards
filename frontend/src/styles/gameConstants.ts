@@ -26,19 +26,11 @@ export function bettingActionName(action: number): string {
   }
 }
 
-/** Badge style for hand name display (e.g. "ツーペア"). */
-export const handNameBadgeStyle: React.CSSProperties = {
-  background: '#f0ad4e',
-  color: '#222',
-};
+/** Badge classes for hand name display (e.g. "ツーペア"). */
+export const handNameBadgeClass = 'bg-game-status-waiting text-game-text-strong';
 
-/** Highlight style for the active turn player area. */
-export const activeTurnStyle: React.CSSProperties = {
-  border: '2px solid #f0ad4e',
-  boxShadow: '0 0 12px #f0ad4e',
-};
+/** Highlight classes for the active turn player area. */
+export const activeTurnClass = 'border-2 border-game-status-waiting shadow-[0_0_12px_var(--color-game-status-waiting)]';
 
-/** Dim style for finished players. */
-export const finishedPlayerStyle: React.CSSProperties = {
-  opacity: 0.5,
-};
+/** Dim classes for finished players. */
+export const finishedPlayerClass = 'opacity-50';

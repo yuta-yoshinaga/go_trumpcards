@@ -21,13 +21,16 @@ export function DaifugoHumanArea({
   onDragCard,
 }: HumanPlayerAreaProps) {
   const { t } = useTranslation('daifugo');
-  const conditionalStyle: React.CSSProperties = player.isFinished
-    ? { opacity: 0.5 }
+  const conditionalClass = player.isFinished
+    ? 'opacity-50'
     : isCurrentTurn
-      ? { border: '2px solid #5cb85c', boxShadow: '0 0 12px #5cb85c' }
-      : {};
+      ? 'border-2 border-game-status-active shadow-[0_0_12px_var(--color-game-status-active)]'
+      : '';
   return (
-    <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
+    <div
+      id={`player-area-${player.id}`}
+      className={`${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}
+    >
       <div className="text-white font-bold mb-1">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && (
@@ -36,9 +39,9 @@ export function DaifugoHumanArea({
         {player.illegalFinishPenalty && <StatusBadge variant="danger">{t('badge.illegalFinishPenalty')}</StatusBadge>}
       </div>
       {!player.isFinished && (
-        <div style={{ color: '#ccc', fontSize: '0.85em', marginBottom: 4 }}>
+        <div className="text-game-text-muted text-[0.85em] mb-1">
           {t('cardCount', { count: player.cardCount })}
-          {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>{t('selectToPlay')}</span>}
+          {isCurrentTurn && <span className="ml-2 text-game-text-highlight">{t('selectToPlay')}</span>}
         </div>
       )}
       <div className="flex flex-wrap gap-1">
@@ -59,7 +62,9 @@ export function DaifugoHumanArea({
               padding: 0,
               cursor: isCurrentTurn ? 'pointer' : 'default',
               borderRadius: 8,
-              border: selectedIndices.includes(i) ? '3px solid #f0ad4e' : '3px solid transparent',
+              border: selectedIndices.includes(i)
+                ? '3px solid var(--color-game-status-waiting)'
+                : '3px solid transparent',
               boxSizing: 'border-box',
             }}
           >

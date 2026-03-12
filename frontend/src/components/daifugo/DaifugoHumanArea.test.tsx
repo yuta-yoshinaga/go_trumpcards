@@ -157,7 +157,7 @@ describe('DaifugoHumanArea', () => {
     }
   });
 
-  it('selected card has highlighted border (3px solid #f0ad4e)', () => {
+  it('selected card has highlighted border (game-status-waiting)', () => {
     render(
       <DaifugoHumanArea
         player={makePlayer()}
@@ -168,7 +168,7 @@ describe('DaifugoHumanArea', () => {
       />,
     );
     const buttons = screen.getAllByRole('button');
-    expect(buttons[0].style.border).toBe('3px solid rgb(240, 173, 78)');
+    expect(buttons[0].style.border).toBe('3px solid var(--color-game-status-waiting)');
   });
 
   it('unselected card has transparent border', () => {
@@ -217,7 +217,7 @@ describe('DaifugoHumanArea', () => {
     expect(onDragCard).toHaveBeenCalledWith(1);
   });
 
-  it('applies active turn style (border + boxShadow) when current turn', () => {
+  it('applies active turn class (border + shadow) when current turn', () => {
     render(
       <DaifugoHumanArea
         player={makePlayer()}
@@ -228,11 +228,12 @@ describe('DaifugoHumanArea', () => {
       />,
     );
     const area = document.getElementById('player-area-0');
-    expect(area?.style.border).toBe('2px solid rgb(92, 184, 92)');
-    expect(area?.style.boxShadow).toBe('0 0 12px #5cb85c');
+    expect(area).toHaveClass('border-2');
+    expect(area).toHaveClass('border-game-status-active');
+    expect(area?.className).toContain('shadow-');
   });
 
-  it('applies opacity 0.5 when finished', () => {
+  it('applies opacity-50 class when finished', () => {
     render(
       <DaifugoHumanArea
         player={makePlayer({ isFinished: true, rank: 1 })}
@@ -243,10 +244,10 @@ describe('DaifugoHumanArea', () => {
       />,
     );
     const area = document.getElementById('player-area-0');
-    expect(area).toHaveStyle({ opacity: 0.5 });
+    expect(area).toHaveClass('opacity-50');
   });
 
-  it('applies no conditional style when not current turn and not finished', () => {
+  it('applies no conditional class when not current turn and not finished', () => {
     render(
       <DaifugoHumanArea
         player={makePlayer()}
@@ -257,8 +258,8 @@ describe('DaifugoHumanArea', () => {
       />,
     );
     const area = document.getElementById('player-area-0');
-    expect(area).not.toHaveStyle({ opacity: 0.5 });
-    expect(area).not.toHaveStyle({ border: '2px solid #5cb85c' });
+    expect(area).not.toHaveClass('opacity-50');
+    expect(area).not.toHaveClass('border-game-status-active');
   });
 
   it('renders no card buttons when cards is undefined/empty', () => {

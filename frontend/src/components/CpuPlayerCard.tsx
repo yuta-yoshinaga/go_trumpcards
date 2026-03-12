@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { handNameBadgeStyle } from '../styles/gameConstants';
+import { handNameBadgeClass } from '../styles/gameConstants';
 import type { Card } from '../types/card';
 import { CardBack, CardImage } from './CardImage';
 
@@ -38,7 +38,7 @@ export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, 
         {player.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{t('status.folded')}]</span>}
         {player.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{t('status.allIn')}]</span>}
         {showHandName && !player.folded && player.handName && (
-          <span className="inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5" style={handNameBadgeStyle}>
+          <span className={`inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
             {player.handName}
           </span>
         )}
