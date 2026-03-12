@@ -1,5 +1,7 @@
 {
   "nav": {
+    "switchToJa": "Switch to Japanese",
+    "switchToEn": "Switch to English",
     "blackjack": "Blackjack",
     "poker": "Poker",
     "oldmaid": "Old Maid",
