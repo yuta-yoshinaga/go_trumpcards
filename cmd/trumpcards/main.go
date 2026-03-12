@@ -47,6 +47,10 @@ OPTIONS:
   -h, --help        Show this help message
   --lang ja|en      Language (default: ja)
   --version         Show version information
+
+ENVIRONMENT VARIABLES:
+  PORT              Port number for the web server (default: 8080)
+                    Example: PORT=3000 trumpcards web
 `)
 	}
 	flag.Parse()
