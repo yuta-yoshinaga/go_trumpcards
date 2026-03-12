@@ -25,7 +25,8 @@ export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, 
   return (
     <div className="mb-3">
       <div className="text-white text-[0.95em] mb-1">
-        CPU {player.id} <span className="text-gray-300 text-[0.85em]">({player.playStyleName})</span>
+        {t('player.cpu', { id: player.id })}{' '}
+        <span className="text-gray-300 text-[0.85em]">({player.playStyleName})</span>
         <span className="ml-2 text-[0.85em]">
           {t('betting.chips')} {player.chips}
         </span>
