@@ -127,8 +127,23 @@ export function HoldemPage() {
               showHandName={isShowdown}
               extraInfo={
                 p.totalHands > 0 ? (
-                  <span className="ml-2 text-cyan-300 text-[0.8em]">
-                    VPIP:{p.vpip}% PFR:{p.pfr}% 3Bet:{p.threeBet}% AF:{p.af}
+                  <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
+                    <abbr title={t('stats.vpipTooltip')} className="cursor-help no-underline">
+                      {t('stats.vpip')}
+                    </abbr>
+                    :{p.vpip}%{' '}
+                    <abbr title={t('stats.pfrTooltip')} className="cursor-help no-underline">
+                      {t('stats.pfr')}
+                    </abbr>
+                    :{p.pfr}%{' '}
+                    <abbr title={t('stats.threeBetTooltip')} className="cursor-help no-underline">
+                      {t('stats.threeBet')}
+                    </abbr>
+                    :{p.threeBet}%{' '}
+                    <abbr title={t('stats.afTooltip')} className="cursor-help no-underline">
+                      {t('stats.af')}
+                    </abbr>
+                    :{p.af}
                   </span>
                 ) : undefined
               }
@@ -163,8 +178,23 @@ export function HoldemPage() {
                 {tc('betting.chips')} {humanPlayer.chips}
               </span>
               {humanPlayer.totalHands > 0 && (
-                <span className="ml-2 text-cyan-300 text-[0.8em]">
-                  VPIP:{humanPlayer.vpip}% PFR:{humanPlayer.pfr}% 3Bet:{humanPlayer.threeBet}% AF:{humanPlayer.af}
+                <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
+                  <abbr title={t('stats.vpipTooltip')} className="cursor-help no-underline">
+                    {t('stats.vpip')}
+                  </abbr>
+                  :{humanPlayer.vpip}%{' '}
+                  <abbr title={t('stats.pfrTooltip')} className="cursor-help no-underline">
+                    {t('stats.pfr')}
+                  </abbr>
+                  :{humanPlayer.pfr}%{' '}
+                  <abbr title={t('stats.threeBetTooltip')} className="cursor-help no-underline">
+                    {t('stats.threeBet')}
+                  </abbr>
+                  :{humanPlayer.threeBet}%{' '}
+                  <abbr title={t('stats.afTooltip')} className="cursor-help no-underline">
+                    {t('stats.af')}
+                  </abbr>
+                  :{humanPlayer.af}
                 </span>
               )}
               {humanPlayer.currentBet > 0 && (

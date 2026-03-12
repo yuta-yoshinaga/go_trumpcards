@@ -36,5 +36,15 @@
     "prompt": "マックしますか?",
     "muck": "マック",
     "show": "ショー"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR（プリフロップレイズ）: プリフロップでレイズした割合",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
+    "af": "AF",
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
   }
 }
