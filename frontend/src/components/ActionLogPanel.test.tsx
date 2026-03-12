@@ -94,4 +94,102 @@ describe('ActionLogPanel', () => {
     fireEvent.click(closeButton);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('has role="region" with aria-labelledby pointing to the title', () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const region = screen.getByRole('region', { name: '棋譜' });
+    expect(region).toBeInTheDocument();
+    const labelledById = region.getAttribute('aria-labelledby');
+    expect(labelledById).toBeTruthy();
+    const title = document.getElementById(labelledById as string);
+    expect(title?.textContent).toBe('棋譜');
+  });
+
+  it('announces copy confirmation via aria-live region', async () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const liveRegion = screen.getByTestId('copy-announcer');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
+    expect(liveRegion.textContent).toBe('');
+
+    const copyButton = screen.getByRole('button', { name: 'コピー' });
+    fireEvent.click(copyButton);
+
+    await waitFor(() => {
+      expect(liveRegion.textContent).toBe('コピーしました');
+    });
+  });
+
+  it('focuses the first focusable element on mount', () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const copyButton = screen.getByRole('button', { name: 'コピー' });
+    expect(document.activeElement).toBe(copyButton);
+  });
+
+  it('does not focus when no focusable elements exist', () => {
+    const spy = vi
+      .spyOn(HTMLElement.prototype, 'querySelectorAll')
+      .mockReturnValueOnce([] as unknown as NodeListOf<HTMLElement>);
+    render(<ActionLogPanel entries={[]} onClose={vi.fn()} />);
+    expect(document.activeElement).toBe(document.body);
+    spy.mockRestore();
+  });
+
+  it('traps focus: Tab from last element wraps to first', () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const region = screen.getByRole('region', { name: '棋譜' });
+    const closeButton = screen.getByRole('button', { name: '閉じる' });
+    const copyButton = screen.getByRole('button', { name: 'コピー' });
+
+    closeButton.focus();
+    fireEvent.keyDown(region, { key: 'Tab', shiftKey: false });
+    expect(document.activeElement).toBe(copyButton);
+  });
+
+  it('traps focus: Shift+Tab from first element wraps to last', () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const region = screen.getByRole('region', { name: '棋譜' });
+    const copyButton = screen.getByRole('button', { name: 'コピー' });
+    const closeButton = screen.getByRole('button', { name: '閉じる' });
+
+    copyButton.focus();
+    fireEvent.keyDown(region, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(closeButton);
+  });
+
+  it('does not trap focus on Shift+Tab from non-first element', () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const region = screen.getByRole('region', { name: '棋譜' });
+    const downloadButton = screen.getByRole('button', { name: 'ダウンロード' });
+
+    downloadButton.focus();
+    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true });
+    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    region.dispatchEvent(event);
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not trap focus when Tab is pressed on non-boundary element', () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const region = screen.getByRole('region', { name: '棋譜' });
+    const downloadButton = screen.getByRole('button', { name: 'ダウンロード' });
+
+    downloadButton.focus();
+    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: false, bubbles: true });
+    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    region.dispatchEvent(event);
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+  });
+
+  it('ignores non-Tab keydown events', () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const region = screen.getByRole('region', { name: '棋譜' });
+    const copyButton = screen.getByRole('button', { name: 'コピー' });
+
+    copyButton.focus();
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    region.dispatchEvent(event);
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+  });
 });
