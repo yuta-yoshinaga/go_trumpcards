@@ -264,5 +264,5 @@ func getListenPort() string {
 	if port != "" {
 		return ":" + port
 	}
-	return ":80"
+	return ":8080"
 }
