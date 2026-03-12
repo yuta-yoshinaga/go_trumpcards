@@ -21,6 +21,10 @@ var (
 )
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
 	noColorFlag := flag.Bool("no-color", false, "Disable color output")
@@ -67,7 +71,7 @@ ENVIRONMENT VARIABLES:
 
 	if *showVersion {
 		fmt.Printf("trumpcards %s (commit: %s, built: %s)\n", version, commit, date)
-		return
+		return 0
 	}
 
 	// Language detection: --lang > LANG env > default "ja"
@@ -125,15 +129,19 @@ ENVIRONMENT VARIABLES:
 	case "web":
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
-		w.Exec()
+		if err := w.Exec(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			return 1
+		}
 	default:
 		if flag.Arg(0) != "" {
 			fmt.Fprintf(os.Stderr, "Error: unknown game %q\n\n", flag.Arg(0))
 			flag.Usage()
-			os.Exit(1)
+			return 2
 		}
 		// No argument: start interactive multi-game mode (defaults to blackjack).
 		manager := ui.NewGameManager("blackjack")
 		ui.RunInteractiveCuiLoop(manager)
 	}
+	return 0
 }

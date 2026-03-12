@@ -137,7 +137,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 }
 
 // Exec ゲーム実行
-func (web *TrumpCardsWeb) Exec() {
+func (web *TrumpCardsWeb) Exec() error {
 	api := rest.NewApi()
 	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
 	if allowedOriginsStr == "" && os.Getenv("APP_ENV") != "production" {
@@ -190,7 +190,7 @@ func (web *TrumpCardsWeb) Exec() {
 	router, err := rest.MakeRouter(restRoutes...)
 	if err != nil {
 		slog.Error("failed to create router", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to create router: %w", err)
 	}
 	api.SetApp(router)
 	mux := http.NewServeMux()
@@ -219,8 +219,7 @@ func (web *TrumpCardsWeb) Exec() {
 	ln, err := net.Listen("tcp", srv.Addr)
 	if err != nil {
 		slog.Error("server listen error", "error", err)
-		fmt.Fprintf(os.Stderr, "Error: failed to start server: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to listen on %s: %w", srv.Addr, err)
 	}
 	port := ln.Addr().(*net.TCPAddr).Port
 	fmt.Printf("Server is running at http://localhost:%d\n", port)
@@ -229,12 +228,12 @@ func (web *TrumpCardsWeb) Exec() {
 	errCh := make(chan error, 1)
 	go func() { errCh <- srv.Serve(ln) }()
 
+	var runErr error
 	select {
 	case err := <-errCh:
 		if !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", "error", err)
-			fmt.Fprintf(os.Stderr, "Error: failed to start server: %v\n", err)
-			os.Exit(1)
+			runErr = fmt.Errorf("server error: %w", err)
 		}
 	case <-ctx.Done():
 		fmt.Println("\nShutting down server...")
@@ -259,6 +258,7 @@ func (web *TrumpCardsWeb) Exec() {
 	web.bcc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
+	return runErr
 }
 
 func getListenPort() string {
