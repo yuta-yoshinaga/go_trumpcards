@@ -27,7 +27,7 @@ test.describe('Hearts E2E', () => {
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
-    const handCards = page.locator('button[aria-pressed]');
+    const handCards = page.locator('button[aria-pressed]:has(img)');
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 60;
