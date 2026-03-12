@@ -13,7 +13,7 @@ export function CpuActionLog({ actions }: CpuActionLogProps) {
       <div className="font-bold mb-1">{t('label.cpuAction')}</div>
       {actions.map((a, i) => (
         <div key={`${i}-${a.playerIdx}-${a.action}`}>
-          Player {a.playerIdx}: {bettingActionName(a.action)}
+          {t('player.player', { idx: a.playerIdx })}: {bettingActionName(a.action)}
           {a.amount > 0 && ` (${a.amount})`}
         </div>
       ))}
