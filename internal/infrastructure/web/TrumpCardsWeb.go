@@ -3,7 +3,9 @@ package web
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -214,8 +216,17 @@ func (web *TrumpCardsWeb) Exec() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	ln, err := net.Listen("tcp", srv.Addr)
+	if err != nil {
+		slog.Error("server listen error", "error", err)
+		os.Exit(1)
+	}
+	port := ln.Addr().(*net.TCPAddr).Port
+	fmt.Printf("Server is running at http://localhost:%d\n", port)
+	fmt.Println("Press Ctrl+C to stop")
+
 	errCh := make(chan error, 1)
-	go func() { errCh <- srv.ListenAndServe() }()
+	go func() { errCh <- srv.Serve(ln) }()
 
 	select {
 	case err := <-errCh:
