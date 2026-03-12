@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log/slog"
 	"os"
 	"strings"
 
@@ -115,7 +114,7 @@ OPTIONS:
 		w.Exec()
 	default:
 		if flag.Arg(0) != "" {
-			slog.Error("unknown command", "arg", flag.Arg(0))
+			fmt.Fprintf(os.Stderr, "Error: unknown game %q\n\n", flag.Arg(0))
 			flag.Usage()
 			os.Exit(1)
 		}
