@@ -157,9 +157,9 @@ export function DoubtPage() {
         {/* Table area */}
         <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
           <div className="text-white font-bold mb-1">{t('table')}</div>
-          <div className="text-game-text-muted text-[0.9em]">{t('tableCards', { count: state.tableCardCount })}</div>
+          <div className="text-game-text-muted text-sm">{t('tableCards', { count: state.tableCardCount })}</div>
           {state.lastAction && (
-            <div className="text-yellow-300 text-[0.85em] mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
+            <div className="text-yellow-300 text-xs mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
           )}
         </div>
 
@@ -173,7 +173,7 @@ export function DoubtPage() {
                   <div className="text-yellow-300 text-lg font-bold mb-2">{t('countdown', { sec: countdown })}</div>
                 )}
                 {state.cpuDoubters.length > 0 && (
-                  <div className="text-game-text-muted text-[0.85em] mb-2">
+                  <div className="text-game-text-muted text-xs mb-2">
                     {t('cpuDoubters', { names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ') })}
                   </div>
                 )}
@@ -190,7 +190,7 @@ export function DoubtPage() {
               <>
                 <div className="text-white font-bold mb-2">{t('cpuJudging')}</div>
                 {state.cpuDoubters.length > 0 && (
-                  <div className="text-red-300 text-[0.9em] mb-2">
+                  <div className="text-red-300 text-sm mb-2">
                     {t('cpuDoubtExclaim', { names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ') })}
                   </div>
                 )}
@@ -204,7 +204,7 @@ export function DoubtPage() {
 
         {/* Last doubt result */}
         {state.lastDoubtResult && (
-          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-[0.85em]">
+          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
             <div className="text-white font-bold mb-1">{t('doubtResult.title')}</div>
             <div className={state.lastDoubtResult.wasLying ? 'text-red-300' : 'text-green-300'}>
               {state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth')}
@@ -235,12 +235,12 @@ export function DoubtPage() {
 
         {/* Human/CPU action logs */}
         {state.humanAction && !isDoubtPhase && (
-          <div className="bg-black/40 rounded-lg text-game-text-highlight py-2 px-3.5 my-2 text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-game-text-highlight py-2 px-3.5 my-2 text-xs">
             {actionDesc(state.humanAction, state.players, t)}
           </div>
         )}
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-xs">
             {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDesc(a, state.players, t))].join('\n')}
           </div>
         )}

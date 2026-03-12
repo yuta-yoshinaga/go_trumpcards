@@ -83,7 +83,7 @@ function Board({
                 );
               })}
               {tunnelEnabled && (
-                <span role="img" className="text-yellow-400 text-[0.65em] ml-0.5" aria-label={t('tunnelConnection')}>
+                <span role="img" className="text-yellow-400 text-xs ml-0.5" aria-label={t('tunnelConnection')}>
                   ↔
                 </span>
               )}

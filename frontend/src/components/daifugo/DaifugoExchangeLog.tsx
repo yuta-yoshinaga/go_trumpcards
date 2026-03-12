@@ -12,7 +12,7 @@ export function DaifugoExchangeLog({
 }) {
   const { t } = useTranslation('daifugo');
   return (
-    <div className="bg-black/40 rounded-lg text-[#ffd] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+    <div className="bg-black/40 rounded-lg text-[#ffd] py-2 px-3.5 my-2 whitespace-pre-line text-xs">
       {[
         t('exchange.title'),
         ...actions.map((a) => {
