@@ -31,7 +31,7 @@ test.describe('Hearts E2E', () => {
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 60;
-    let sawPass = false;
+    let _sawPass = false;
     let sawPlay = false;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       await expect(
@@ -47,7 +47,7 @@ test.describe('Hearts E2E', () => {
       if (!passVisible && !playVisible && !nextTrickVisible && !nextRoundVisible) break;
 
       if (passVisible) {
-        sawPass = true;
+        _sawPass = true;
         const cardCount = await handCards.count();
         if (cardCount >= 3) {
           await handCards.nth(0).click();
