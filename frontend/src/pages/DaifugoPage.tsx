@@ -123,13 +123,13 @@ export function DaifugoPage() {
         )}
 
         {state.humanAction && (
-          <div className="bg-black/40 rounded-lg text-[#cfc] py-2 px-3.5 my-2 text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-green-200 py-2 px-3.5 my-2 text-[0.85em]">
             {actionDescription(state.players, state.humanAction)}
           </div>
         )}
 
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-white py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
             {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDescription(state.players, a))].join('\n')}
           </div>
         )}

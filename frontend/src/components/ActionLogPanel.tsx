@@ -110,7 +110,7 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
       <div data-testid="copy-announcer" aria-live="polite" aria-atomic="true" className="sr-only">
         {copied ? t('actionLog.copied') : ''}
       </div>
-      <pre className="flex-1 overflow-y-auto text-[#ccc] text-xs whitespace-pre-wrap font-mono bg-black/40 rounded p-2">
+      <pre className="flex-1 overflow-y-auto text-white text-xs whitespace-pre-wrap font-mono bg-black/40 rounded p-2">
         {textContent}
       </pre>
     </section>

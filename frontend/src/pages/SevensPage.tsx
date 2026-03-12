@@ -110,7 +110,7 @@ export function SevensPage() {
         {state.humanAction && (
           <div
             data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
-            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-[#fca] border border-red-500/50' : 'bg-black/40 text-[#cfc]'}`}
+            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-orange-200 border border-red-500/50' : 'bg-black/40 text-green-200'}`}
           >
             {actionDesc(state.players, state.humanAction, t)}
           </div>
@@ -118,12 +118,12 @@ export function SevensPage() {
 
         {state.cpuActions && state.cpuActions.length > 0 && (
           <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-[0.85em]">
-            <span className="text-[#ccc]">{tc('label.cpuActions')}</span>
+            <span className="text-white">{tc('label.cpuActions')}</span>
             {state.cpuActions.map((a, i) => (
               <div
                 key={`cpu-action-${a.playerIdx}-${i}`}
                 data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
-                className={a.forcedPass ? 'text-[#fca]' : 'text-[#ccc]'}
+                className={a.forcedPass ? 'text-orange-200' : 'text-white'}
               >
                 {actionDesc(state.players, a, t)}
               </div>
@@ -175,7 +175,7 @@ export function SevensPage() {
           </div>
         )}
 
-        <div className="bg-black/30 rounded-lg py-1.5 px-3 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.85em] text-white/80">
+        <div className="bg-black/30 rounded-lg py-1.5 px-3 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.85em] text-white">
           <span className="text-yellow-300 font-bold">{t('config.title')}</span>
           <label htmlFor="cfgTunnel" className="flex items-center gap-1 cursor-pointer">
             <input
