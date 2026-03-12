@@ -8,7 +8,7 @@ export function NavBar() {
   const currentLang = i18n.language;
 
   return (
-    <nav style={{ textAlign: 'right', margin: '8px 10px' }} className="flex items-center justify-end gap-2 flex-wrap">
+    <nav className="flex items-center justify-end gap-2 flex-wrap my-2 mx-2.5">
       <div className="flex flex-wrap gap-1 flex-1 justify-end">
         {gameRoutes.map(({ path, labelKey }) => (
           <Link
