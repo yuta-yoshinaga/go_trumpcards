@@ -15,7 +15,7 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
   const { t } = useTranslation('daifugo');
   const badges: { label: string; bg: string; color: string }[] = [];
   if (state.revolutionActive) {
-    badges.push({ label: t('badge.revolution'), bg: '#d9534f', color: '#fff' });
+    badges.push({ label: t('badge.revolution'), bg: 'var(--color-daifugo-revolution)', color: 'white' });
   }
   if (state.elevenBackActive) {
     badges.push({
@@ -28,18 +28,18 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
     const modeSuffix = state.config.suitLockMode === 1 ? ` (${t('badge.suitLockPartial')})` : '';
     badges.push({
       label: t('badge.suitLock', { suit: state.lockedSuit }) + modeSuffix,
-      bg: '#5bc0de',
+      bg: 'var(--color-daifugo-suit-lock)',
       color: 'var(--color-game-text-strong)',
     });
   }
   if (state.tableIsSequence) {
-    badges.push({ label: t('badge.sequence'), bg: '#9b59b6', color: '#fff' });
+    badges.push({ label: t('badge.sequence'), bg: 'var(--color-daifugo-sequence)', color: 'white' });
   }
   if (state.reverseDirection) {
-    badges.push({ label: t('badge.nineReverse'), bg: '#e67e22', color: '#fff' });
+    badges.push({ label: t('badge.nineReverse'), bg: 'var(--color-daifugo-nine-reverse)', color: 'white' });
   }
   if (state.numberLocked) {
-    badges.push({ label: t('badge.numberLock'), bg: '#1abc9c', color: '#fff' });
+    badges.push({ label: t('badge.numberLock'), bg: 'var(--color-daifugo-number-lock)', color: 'white' });
   }
   if (badges.length === 0) return null;
   return (

@@ -7,6 +7,12 @@
   --color-game-text-muted: #cccccc;
   --color-game-text-highlight: #ccffcc;
   --color-game-text-strong: #222222;
+  --color-board-cell-empty-text: #555555;
+  --color-daifugo-revolution: #d9534f;
+  --color-daifugo-suit-lock: #5bc0de;
+  --color-daifugo-sequence: #9b59b6;
+  --color-daifugo-nine-reverse: #e67e22;
+  --color-daifugo-number-lock: #1abc9c;
 }
 
 html,
