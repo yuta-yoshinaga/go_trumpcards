@@ -9,15 +9,17 @@ import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardSelection } from '../hooks/useCardSelection';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import { handNameBadgeStyle } from '../styles/gameConstants';
+import { handNameBadgeClass } from '../styles/gameConstants';
 import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
 import { toggleArrayItem } from '../utils/arrayUtils';
+import { cardAlt } from '../utils/cardAlt';
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -101,7 +103,7 @@ export function PokerPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
       {/* Info bar */}
       <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
         <span>
@@ -177,15 +179,14 @@ export function PokerPage() {
               {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{tc('status.folded')}]</span>}
               {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{tc('status.allIn')}]</span>}
               {isEnd && !humanPlayer.folded && humanPlayer.handName && (
-                <span
-                  className="inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5"
-                  style={handNameBadgeStyle}
-                >
+                <span className={`inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                   {humanPlayer.handName}
                 </span>
               )}
             </div>
-            {canExchange && <div className="text-[#cfc] text-[0.85em] mb-1">{t('exchangeInstruction')}</div>}
+            {canExchange && (
+              <div className="text-game-text-highlight text-[0.85em] mb-1">{t('exchangeInstruction')}</div>
+            )}
             <div className="flex flex-wrap gap-1.5 mb-2">
               {humanPlayer.cards?.map((card, i) => {
                 const isSelected = selected.includes(i);
@@ -193,6 +194,7 @@ export function PokerPage() {
                   <button
                     key={`${card.design}-${card.value}`}
                     type="button"
+                    aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                     aria-pressed={isSelected}
                     onClick={() => toggleSelect(i)}
                     style={{
@@ -207,14 +209,14 @@ export function PokerPage() {
                       card={card}
                       width={60}
                       style={{
-                        border: isSelected ? '3px solid #f0ad4e' : '3px solid transparent',
+                        border: isSelected ? '3px solid var(--color-game-status-waiting)' : '3px solid transparent',
                         transform: isSelected ? 'translateY(-10px)' : undefined,
                         transition: 'transform 0.15s',
                       }}
                     />
                     <div
                       style={{
-                        color: '#f0ad4e',
+                        color: 'var(--color-game-status-waiting)',
                         fontSize: '0.75em',
                         fontWeight: 'bold',
                         visibility: isSelected ? 'visible' : 'hidden',

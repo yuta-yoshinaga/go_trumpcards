@@ -34,19 +34,22 @@ export function OldMaidPlayerArea({
 }: PlayerAreaProps) {
   const { t } = useTranslation('oldmaid');
   const { t: tc } = useTranslation('common');
-  const conditionalStyle: React.CSSProperties = player.isFinished
-    ? { opacity: 0.5 }
+  const conditionalClass = player.isFinished
+    ? 'opacity-50'
     : isSuspect
-      ? { border: '2px solid #dc3545', boxShadow: '0 0 12px #dc3545' }
+      ? 'border-2 border-game-status-out shadow-[0_0_12px_var(--color-game-status-out)]'
       : isTarget && !gameEndFlag
-        ? { border: '2px solid #f0ad4e', boxShadow: '0 0 12px #f0ad4e' }
-        : {};
+        ? 'border-2 border-game-status-waiting shadow-[0_0_12px_var(--color-game-status-waiting)]'
+        : '';
 
   const showSelectable = isHumanTurn && !loading && isTarget && !player.isFinished && !player.isHuman && !gameEndFlag;
   const showCount = Math.min(player.cardCount, 10);
 
   return (
-    <div id={`player-area-${player.id}`} className={playerAreaClass} style={conditionalStyle}>
+    <div
+      id={`player-area-${player.id}`}
+      className={`${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}
+    >
       <div className="text-white font-bold mb-1 text-[0.9em]">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && <StatusBadge variant="success">{tc('status.finished')}</StatusBadge>}
@@ -65,9 +68,11 @@ export function OldMaidPlayerArea({
         )}
       </div>
       {!player.isFinished && (
-        <div className="text-[#ccc] text-[0.8em] mb-1">{t('cardCount', { count: player.cardCount })}</div>
+        <div className="text-game-text-muted text-[0.8em] mb-1">{t('cardCount', { count: player.cardCount })}</div>
       )}
-      {showSelectable && !player.isFinished && <div className="text-[#cfc] text-[0.75em] mb-1">{t('draw')}</div>}
+      {showSelectable && !player.isFinished && (
+        <div className="text-game-text-highlight text-[0.75em] mb-1">{t('draw')}</div>
+      )}
       <div className="flex flex-wrap gap-0.5 justify-center">
         {player.isFinished ? null : player.isHuman ? (
           player.cards?.map((card, i) => (
@@ -115,9 +120,7 @@ export function OldMaidPlayerArea({
               );
             })}
             {player.cardCount > 10 && (
-              <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
-                +{player.cardCount - 10}
-              </span>
+              <span className="text-white self-center ml-0.5 text-[0.8em]">+{player.cardCount - 10}</span>
             )}
           </>
         ) : (
@@ -127,9 +130,7 @@ export function OldMaidPlayerArea({
               <CardBack key={i} width={40} />
             ))}
             {player.cardCount > 10 && (
-              <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
-                +{player.cardCount - 10}
-              </span>
+              <span className="text-white self-center ml-0.5 text-[0.8em]">+{player.cardCount - 10}</span>
             )}
           </>
         )}

@@ -1112,10 +1112,10 @@ describe('SevensPage', () => {
     // Board renders values 1-13 as spans; A is valueName(1) = 'A'
     // The SPADE A cell should have yellow border because K (13) is placed and tunnel is enabled
     const allACells = screen.getAllByText('A');
-    // Find the one in SPADE row (first occurrence) that has tunnel highlight border
-    const spadeACell = allACells.find((el) => el.style.borderColor !== '');
+    // Find the one in SPADE row (first occurrence) that has tunnel highlight border class
+    const spadeACell = allACells.find((el) => el.classList.contains('border-amber-400'));
     expect(spadeACell).toBeDefined();
-    expect(spadeACell).toHaveStyle({ borderColor: '#f59e0b' });
+    expect(spadeACell).toHaveClass('border-amber-400');
   });
 
   it('shows yellow border on K cell when A is placed (tunnel highlight)', async () => {
@@ -1129,10 +1129,10 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     const allKCells = screen.getAllByText('K');
-    // The SPADE K cell should have yellow border because A (1) is placed and tunnel is enabled
-    const spadeKCell = allKCells.find((el) => el.style.borderColor !== '');
+    // The SPADE K cell should have yellow border class because A (1) is placed and tunnel is enabled
+    const spadeKCell = allKCells.find((el) => el.classList.contains('border-amber-400'));
     expect(spadeKCell).toBeDefined();
-    expect(spadeKCell).toHaveStyle({ borderColor: '#f59e0b' });
+    expect(spadeKCell).toHaveClass('border-amber-400');
   });
 
   it('does not show tunnel highlight when tunnelEnabled is false', async () => {
@@ -1146,8 +1146,8 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
     const allACells = screen.getAllByText('A');
-    // No A cell should have yellow border when tunnel is disabled
-    const highlightedA = allACells.find((el) => el.style.borderColor !== '');
+    // No A cell should have tunnel highlight class when tunnel is disabled
+    const highlightedA = allACells.find((el) => el.classList.contains('border-amber-400'));
     expect(highlightedA).toBeUndefined();
   });
 

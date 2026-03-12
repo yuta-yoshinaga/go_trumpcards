@@ -207,6 +207,28 @@ describe('MemoryPage', () => {
     // Other cards should be enabled
   });
 
+  it('taken card buttons have aria-hidden to avoid empty slot announcements', async () => {
+    const takenBoard = makeBoard({ 0: { taken: true } });
+    mockExec.mockResolvedValue({ ...flip1State, board: takenBoard });
+    const { container } = renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    const hiddenButtons = container.querySelectorAll('button[aria-hidden="true"]');
+    expect(hiddenButtons.length).toBe(1);
+  });
+
+  it('changing cpu difficulty updates config used on reset', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    fireEvent.change(screen.getByRole('combobox', { name: 'CPU難易度' }), { target: { value: '2' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(flip1State);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+  });
+
   it('board cards disabled when face up', async () => {
     mockExec.mockResolvedValue(flip2State);
     renderWithProviders(<MemoryPage />);

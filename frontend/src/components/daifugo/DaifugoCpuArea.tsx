@@ -20,7 +20,7 @@ export function DaifugoCpuArea({ player, isCurrentTurn }: { player: DaifugoPlaye
       className={playerAreaClass}
     >
       {!player.isFinished && (
-        <div className="text-[#ccc] text-[0.85em]">{t('cardCount', { count: player.cardCount })}</div>
+        <div className="text-game-text-muted text-[0.85em]">{t('cardCount', { count: player.cardCount })}</div>
       )}
       {player.illegalFinishPenalty && <StatusBadge variant="danger">{t('badge.illegalFinishPenalty')}</StatusBadge>}
     </CpuTurnArea>

@@ -27,11 +27,10 @@ test.describe('Hearts E2E', () => {
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
-    const handCards = page.locator('button[aria-pressed]');
+    const handCards = page.locator('button[aria-pressed]:has(img)');
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 60;
-    let sawPass = false;
     let sawPlay = false;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       await expect(
@@ -47,7 +46,6 @@ test.describe('Hearts E2E', () => {
       if (!passVisible && !playVisible && !nextTrickVisible && !nextRoundVisible) break;
 
       if (passVisible) {
-        sawPass = true;
         const cardCount = await handCards.count();
         if (cardCount >= 3) {
           await handCards.nth(0).click();

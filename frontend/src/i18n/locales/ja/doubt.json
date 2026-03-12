@@ -33,5 +33,6 @@
     "sec": "{{sec}}秒",
     "cpuHesitation": "CPU迷い時間ディレイ",
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
-  }
+  },
+  "claimInputAriaLabel": "宣言する値 (1〜13)"
 }

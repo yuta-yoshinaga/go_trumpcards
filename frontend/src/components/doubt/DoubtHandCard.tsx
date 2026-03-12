@@ -22,7 +22,7 @@ export function DoubtHandCard({ card, index, selected, selectable, onToggle }: H
         padding: 0,
         cursor: selectable ? 'pointer' : 'default',
         borderRadius: 8,
-        border: selected ? '3px solid #5cb85c' : '3px solid transparent',
+        border: selected ? '3px solid var(--color-game-status-active)' : '3px solid transparent',
         transform: selected ? 'translateY(-8px)' : 'none',
         transition: 'transform 0.15s, border 0.15s',
         opacity: !selectable ? 0.5 : 1,

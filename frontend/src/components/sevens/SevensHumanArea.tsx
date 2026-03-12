@@ -32,26 +32,26 @@ function HumanArea({
   onPlay,
 }: HumanAreaProps) {
   const { t } = useTranslation('sevens');
-  const conditionalStyle: React.CSSProperties = player.isFinished
-    ? { opacity: 0.5 }
+  const conditionalClass = player.isFinished
+    ? 'opacity-50'
     : isCurrentTurn
-      ? { border: '2px solid #5cb85c', boxShadow: '0 0 12px #5cb85c' }
-      : {};
+      ? 'border-2 border-game-status-active shadow-[0_0_12px_var(--color-game-status-active)]'
+      : '';
   return (
-    <div className={playerAreaClass} style={conditionalStyle}>
+    <div className={`${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}>
       <div className="text-white font-bold mb-1">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && <StatusBadge variant="success">{t('rankLabel', { rank: player.rank })}</StatusBadge>}
       </div>
       {!player.isFinished && (
-        <div className="text-[#ccc] text-[0.85em] mb-1">
+        <div className="text-game-text-muted text-[0.85em] mb-1">
           {t('cardCount', { count: player.cardCount })}
           {'　'}
           {t('passCount', {
             used: player.passesUsed,
             max: player.maxPasses === 0 ? t('passUnlimited') : player.maxPasses,
           })}
-          {isCurrentTurn && <span style={{ marginLeft: 8, color: '#cfc' }}>{t('clickPlayable')}</span>}
+          {isCurrentTurn && <span className="ml-2 text-game-text-highlight">{t('clickPlayable')}</span>}
         </div>
       )}
       <div className="flex flex-wrap gap-1">
@@ -83,7 +83,7 @@ function HumanArea({
                 padding: 0,
                 cursor: playable ? 'pointer' : 'default',
                 borderRadius: 8,
-                border: playable ? '3px solid #5cb85c' : '3px solid transparent',
+                border: playable ? '3px solid var(--color-game-status-active)' : '3px solid transparent',
                 opacity: isCurrentTurn && !playable ? 0.5 : 1,
                 boxSizing: 'border-box',
               }}

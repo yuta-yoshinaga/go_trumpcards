@@ -89,9 +89,9 @@ describe('CpuPlayerCard', () => {
     const { container } = render(
       <CpuPlayerCard player={makePlayer({ handName: '' })} showCards={true} faceDownCount={2} showHandName={true} />,
     );
-    // No badge element with handNameBadgeStyle background
-    const badges = container.querySelectorAll('[style*="background"]');
-    expect(badges).toHaveLength(0);
+    // No badge element with handNameBadgeClass
+    const badge = container.querySelector('.bg-game-status-waiting');
+    expect(badge).not.toBeInTheDocument();
   });
 
   it('shows bet amount when currentBet > 0', () => {

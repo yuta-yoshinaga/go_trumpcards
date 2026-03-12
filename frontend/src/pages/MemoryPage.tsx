@@ -4,6 +4,7 @@ import { CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -26,15 +27,16 @@ export function MemoryPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading}>
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
 
       {/* Settings */}
-      <details className="px-4 pt-2">
-        <summary className="text-white/70 text-sm cursor-pointer">{t('settings.title')}</summary>
-        <div className="mt-2 flex flex-wrap gap-4 text-sm text-white/70">
-          <label>
+      <details className="px-4 pt-2 text-white text-sm">
+        <summary className="cursor-pointer">{t('settings.title')}</summary>
+        <div className="mt-2 flex flex-wrap gap-4">
+          <label htmlFor="cpuDifficulty">
             {t('settings.cpuDifficulty')}
             <select
+              id="cpuDifficulty"
               value={memoryConfig.cpuDifficulty}
               onChange={(e) => handleConfigChange('cpuDifficulty', e.target.value)}
               className="ml-1 bg-gray-700 text-white rounded px-1"
@@ -52,9 +54,9 @@ export function MemoryPage() {
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Player scores */}
-        <div className="my-2 p-2 rounded bg-black/30">
-          <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-          <table className="w-full text-sm text-white/70">
+        <div className="my-2 p-2 rounded bg-black/30 text-white text-sm">
+          <div className="mb-1">{t('scores')}</div>
+          <table className="w-full">
             <thead>
               <tr>
                 <th className="text-left">{t('scoresPlayer')}</th>
@@ -74,13 +76,14 @@ export function MemoryPage() {
 
         {/* Board: 4×13 grid */}
         <div className="my-3 p-2 rounded bg-black/40">
-          <div className="grid grid-cols-13 gap-1">
+          <div className="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-13 gap-1">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
                 key={`board-${idx.toString()}`}
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
+                aria-hidden={bc.taken || undefined}
                 className={`relative aspect-[2/3] rounded border ${
                   bc.taken
                     ? 'bg-transparent border-transparent'

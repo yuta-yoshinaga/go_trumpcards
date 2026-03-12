@@ -22,7 +22,7 @@ export function OldMaidDiscardedArea({ cards }: { cards: Card[] | undefined }) {
 
   return (
     <div className="my-2 p-2 bg-black/20 rounded-[10px] text-center min-h-[90px]">
-      <div className="text-[#ccc] text-[0.8em] mb-1.5">{t('lastDiscarded')}</div>
+      <div className="text-game-text-muted text-[0.8em] mb-1.5">{t('lastDiscarded')}</div>
       <div className="flex justify-center gap-5 items-end">
         {pairs.map(([c1, c2]) => (
           <div key={`${c1.design}-${c1.value}`} style={{ position: 'relative', width: 65, height: 82 }}>

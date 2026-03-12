@@ -153,6 +153,36 @@ describe('KlondikePage', () => {
     expect(aElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('empty foundation buttons have aria-label with suit and count 0', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: '♠ 組札 0枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札 0枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 組札 0枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 0枚' })).toBeInTheDocument();
+  });
+
+  it('foundation with cards has aria-label with card count', async () => {
+    mockExec.mockResolvedValue(withFoundationState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
+
+    // Pile 0: 1 card (♠ A), pile 2: 2 cards (♥ A, ♥ 2), piles 1 and 3 empty
+    expect(screen.getByRole('button', { name: '♠ 組札 1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 組札 2枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札 0枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 0枚' })).toBeInTheDocument();
+  });
+
+  it('tableau face-up card button has aria-label with card name', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+
+    const cardButton = screen.getByRole('button', { name: '♠ K' });
+    expect(cardButton).toHaveAttribute('aria-label', '♠ K');
+  });
+
   it('renders tableau columns', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
@@ -237,6 +267,45 @@ describe('KlondikePage', () => {
     fireEvent.click(wasteButton);
     // Should show ring highlight after re-render
     await waitFor(() => expect(wasteButton.className).toContain('ring-2'));
+  });
+
+  it('waste card button has aria-pressed false initially', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const wasteImg = screen.getByAltText('♣ 3');
+    const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+    expect(wasteButton).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('waste card button has aria-label with card name', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const wasteButton = screen.getByRole('button', { name: '♣ 3' });
+    expect(wasteButton).toHaveAttribute('aria-label', '♣ 3');
+  });
+
+  it('waste card button has aria-pressed true when selected', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+
+    const wasteImg = screen.getByAltText('♣ 3');
+    const wasteButton = wasteImg.closest('button') as HTMLButtonElement;
+    fireEvent.click(wasteButton);
+    await waitFor(() => expect(wasteButton).toHaveAttribute('aria-pressed', 'true'));
+  });
+
+  it('tableau face-up card button has aria-pressed false initially and true when selected', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument());
+
+    const cardImg = screen.getByAltText('♠ K');
+    const cardButton = cardImg.closest('button') as HTMLButtonElement;
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(cardButton);
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
   it('clicking waste card when source already selected does nothing', async () => {

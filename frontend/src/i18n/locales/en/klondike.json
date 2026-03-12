@@ -14,5 +14,6 @@
   "gameOver": "Game Over",
   "playing": "Playing",
   "noHint": "No hint available",
-  "hintAvailable": "Hint available"
+  "hintAvailable": "Hint available",
+  "foundationAriaLabel": "Foundation {{suit}} {{count}} cards"
 }

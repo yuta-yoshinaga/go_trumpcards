@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { ActionLogEntry } from '../types/card';
@@ -18,9 +18,19 @@ function formatEntry(entry: ActionLogEntry, t: (key: string, opts?: Record<strin
   return line;
 }
 
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((el) => !el.hasAttribute('disabled'));
+}
+
 export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
+  const titleId = useId();
 
   const textContent = entries.length === 0 ? t('actionLog.empty') : entries.map((e) => formatEntry(e, t)).join('\n');
 
@@ -29,6 +39,34 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     const timer = setTimeout(() => setCopied(false), 2000);
     return () => clearTimeout(timer);
   }, [copied]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current as HTMLElement;
+    const focusable = getFocusableElements(dialog);
+    if (focusable.length === 0) return;
+
+    focusable[0].focus();
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    dialog.addEventListener('keydown', handleKeyDown);
+    return () => dialog.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(textContent);
@@ -48,9 +86,15 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   };
 
   return (
-    <div className="bg-black/60 rounded-lg p-4 my-2 max-h-[60vh] flex flex-col">
+    <section
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      className="bg-black/60 rounded-lg p-4 my-2 max-h-[60vh] flex flex-col"
+    >
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-white font-bold text-sm">{t('actionLog.title')}</h3>
+        <h3 id={titleId} className="text-white font-bold text-sm">
+          {t('actionLog.title')}
+        </h3>
         <div className="flex gap-2">
           <button type="button" className={btnSecondary} onClick={handleCopy}>
             {copied ? t('actionLog.copied') : t('actionLog.copy')}
@@ -63,9 +107,12 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
           </button>
         </div>
       </div>
-      <pre className="flex-1 overflow-y-auto text-[#ccc] text-xs whitespace-pre-wrap font-mono bg-black/40 rounded p-2">
+      <div data-testid="copy-announcer" aria-live="polite" aria-atomic="true" className="sr-only">
+        {copied ? t('actionLog.copied') : ''}
+      </div>
+      <pre className="flex-1 overflow-y-auto text-white text-xs whitespace-pre-wrap font-mono bg-black/40 rounded p-2">
         {textContent}
       </pre>
-    </div>
+    </section>
   );
 }

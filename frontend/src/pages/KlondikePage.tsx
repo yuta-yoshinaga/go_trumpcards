@@ -4,10 +4,17 @@ import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { KLONDIKE_PHASE } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
+
+const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+
+const CARD_HEIGHT_PX = 84;
+const CARD_OVERLAP_PX = 22;
 
 export function KlondikePage() {
   const { t } = useTranslation('klondike');
@@ -44,7 +51,7 @@ export function KlondikePage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
@@ -83,6 +90,8 @@ export function KlondikePage() {
                   handleSelectSource({ zone: 'waste' });
                 }}
                 disabled={!isPlaying || loading}
+                aria-label={cardAlt(state.waste[state.waste.length - 1])}
+                aria-pressed={isSourceSelected('waste')}
                 className={`p-0 border-0 bg-transparent cursor-pointer ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400 rounded' : ''}`}
               >
                 <CardImage card={state.waste[state.waste.length - 1]} width={60} />
@@ -99,12 +108,13 @@ export function KlondikePage() {
           {/* Foundation piles */}
           {state.foundation.map((pile, idx) => (
             <div key={`f-${idx.toString()}`} className="text-center">
-              <div className="text-white/60 text-xs mb-1">{['♠', '♣', '♥', '♦'][idx]}</div>
+              <div className="text-white/60 text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
               {pile.length > 0 ? (
                 <button
                   type="button"
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
+                  aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
                   className="p-0 border-0 bg-transparent cursor-pointer"
                 >
                   <CardImage card={pile[pile.length - 1]} width={60} />
@@ -114,6 +124,7 @@ export function KlondikePage() {
                   type="button"
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
+                  aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: 0 })}
                   className="w-[60px] h-[84px] rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center"
                 >
                   A
@@ -133,7 +144,7 @@ export function KlondikePage() {
           {state.tableau.map((col, colIdx) => (
             <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
               <div className="text-white/40 text-xs text-center mb-1">{colIdx}</div>
-              <div className="relative" style={{ minHeight: 84 }}>
+              <div className="relative" style={{ minHeight: CARD_HEIGHT_PX }}>
                 {col.length === 0 ? (
                   <button
                     type="button"
@@ -148,7 +159,7 @@ export function KlondikePage() {
                     <div
                       key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}
                       className="absolute left-0 right-0"
-                      style={{ top: cardIdx * 22 }}
+                      style={{ top: cardIdx * CARD_OVERLAP_PX }}
                     >
                       {tc.faceUp && tc.card ? (
                         <button
@@ -161,6 +172,8 @@ export function KlondikePage() {
                             }
                           }}
                           disabled={!isPlaying || loading}
+                          aria-label={cardAlt(tc.card)}
+                          aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400 rounded' : ''}`}
                         >
                           <CardImage card={tc.card} width={60} style={{ width: '100%' }} />
@@ -171,7 +184,7 @@ export function KlondikePage() {
                     </div>
                   ))
                 )}
-                {col.length > 0 && <div style={{ height: (col.length - 1) * 22 + 84 }} />}
+                {col.length > 0 && <div style={{ height: (col.length - 1) * CARD_OVERLAP_PX + CARD_HEIGHT_PX }} />}
               </div>
             </div>
           ))}

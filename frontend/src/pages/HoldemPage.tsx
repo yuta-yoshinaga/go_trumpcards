@@ -9,11 +9,12 @@ import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
-import { handNameBadgeStyle } from '../styles/gameConstants';
+import { handNameBadgeClass } from '../styles/gameConstants';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 
 function usePhaseNames(t: (key: string) => string): Record<number, string> {
@@ -69,7 +70,7 @@ export function HoldemPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
       {/* Info bar */}
       <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
         <span>
@@ -174,10 +175,7 @@ export function HoldemPage() {
               {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{tc('status.folded')}]</span>}
               {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{tc('status.allIn')}]</span>}
               {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                <span
-                  className="inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5"
-                  style={handNameBadgeStyle}
-                >
+                <span className={`inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                   {humanPlayer.handName}
                 </span>
               )}

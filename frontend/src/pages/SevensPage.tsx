@@ -3,6 +3,7 @@ import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
@@ -60,7 +61,7 @@ export function SevensPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {state.config &&
           (state.config.tunnelEnabled ||
@@ -109,7 +110,7 @@ export function SevensPage() {
         {state.humanAction && (
           <div
             data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
-            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-[#fca] border border-red-500/50' : 'bg-black/40 text-[#cfc]'}`}
+            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-orange-200 border border-red-500/50' : 'bg-black/40 text-green-200'}`}
           >
             {actionDesc(state.players, state.humanAction, t)}
           </div>
@@ -117,12 +118,12 @@ export function SevensPage() {
 
         {state.cpuActions && state.cpuActions.length > 0 && (
           <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-[0.85em]">
-            <span className="text-[#ccc]">{tc('label.cpuActions')}</span>
+            <span className="text-white">{tc('label.cpuActions')}</span>
             {state.cpuActions.map((a, i) => (
               <div
                 key={`cpu-action-${a.playerIdx}-${i}`}
                 data-testid={a.forcedPass ? `cpu-action-forced-pass-${i}` : `cpu-action-${i}`}
-                className={a.forcedPass ? 'text-[#fca]' : 'text-[#ccc]'}
+                className={a.forcedPass ? 'text-orange-200' : 'text-white'}
               >
                 {actionDesc(state.players, a, t)}
               </div>
@@ -174,15 +175,21 @@ export function SevensPage() {
           </div>
         )}
 
-        <div className="bg-black/30 rounded-lg py-1.5 px-3 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.85em] text-white/80">
+        <div className="bg-black/30 rounded-lg py-1.5 px-3 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.85em] text-white">
           <span className="text-yellow-300 font-bold">{t('config.title')}</span>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgTunnel} onChange={(e) => setCfgTunnel(e.target.checked)} />
+          <label htmlFor="cfgTunnel" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgTunnel"
+              type="checkbox"
+              checked={cfgTunnel}
+              onChange={(e) => setCfgTunnel(e.target.checked)}
+            />
             {t('config.tunnel')}
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
+          <label htmlFor="cfgTunnelSkipWidth" className="flex items-center gap-1 cursor-pointer">
             {t('config.tunnelSkip')}
             <select
+              id="cfgTunnelSkipWidth"
               value={cfgTunnelSkipWidth}
               onChange={(e) => setCfgTunnelSkipWidth(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -195,9 +202,10 @@ export function SevensPage() {
               <option value={6}>6</option>
             </select>
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
+          <label htmlFor="cfgJokerCount" className="flex items-center gap-1 cursor-pointer">
             {t('config.joker')}
             <select
+              id="cfgJokerCount"
               value={cfgJokerCount}
               onChange={(e) => setCfgJokerCount(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -207,9 +215,10 @@ export function SevensPage() {
               <option value={2}>2</option>
             </select>
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
+          <label htmlFor="cfgCpuStrategy" className="flex items-center gap-1 cursor-pointer">
             {t('config.cpuStrategy')}
             <select
+              id="cfgCpuStrategy"
               value={cfgCpuStrategy}
               onChange={(e) => setCfgCpuStrategy(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -219,9 +228,10 @@ export function SevensPage() {
               <option value={2}>{t('config.cpuStrategyHarassment')}</option>
             </select>
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
+          <label htmlFor="cfgMaxPasses" className="flex items-center gap-1 cursor-pointer">
             {t('config.passCount')}
             <select
+              id="cfgMaxPasses"
               value={cfgMaxPasses}
               onChange={(e) => setCfgMaxPasses(Number(e.target.value))}
               className="bg-black/50 text-white rounded px-1 py-0.5"
@@ -232,20 +242,40 @@ export function SevensPage() {
               <option value={0}>{t('config.passUnlimited')}</option>
             </select>
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgNoJokerFinish} onChange={(e) => setCfgNoJokerFinish(e.target.checked)} />
+          <label htmlFor="cfgNoJokerFinish" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgNoJokerFinish"
+              type="checkbox"
+              checked={cfgNoJokerFinish}
+              onChange={(e) => setCfgNoJokerFinish(e.target.checked)}
+            />
             {t('config.noJokerFinish')}
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgJokerReclaim} onChange={(e) => setCfgJokerReclaim(e.target.checked)} />
+          <label htmlFor="cfgJokerReclaim" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgJokerReclaim"
+              type="checkbox"
+              checked={cfgJokerReclaim}
+              onChange={(e) => setCfgJokerReclaim(e.target.checked)}
+            />
             {t('config.jokerReclaim')}
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgEndStop} onChange={(e) => setCfgEndStop(e.target.checked)} />
+          <label htmlFor="cfgEndStop" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgEndStop"
+              type="checkbox"
+              checked={cfgEndStop}
+              onChange={(e) => setCfgEndStop(e.target.checked)}
+            />
             {t('config.endStop')}
           </label>
-          <label className="flex items-center gap-1 cursor-pointer">
-            <input type="checkbox" checked={cfgJokerConsBan} onChange={(e) => setCfgJokerConsBan(e.target.checked)} />
+          <label htmlFor="cfgJokerConsBan" className="flex items-center gap-1 cursor-pointer">
+            <input
+              id="cfgJokerConsBan"
+              type="checkbox"
+              checked={cfgJokerConsBan}
+              onChange={(e) => setCfgJokerConsBan(e.target.checked)}
+            />
             {t('config.jokerConsecutiveBanned')}
           </label>
         </div>

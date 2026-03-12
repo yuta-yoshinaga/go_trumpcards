@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
@@ -6,6 +7,7 @@ import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
 import {
   actionDesc,
@@ -43,9 +45,19 @@ export function DoubtPage() {
 
   const { actionLog, showActionLog, hideActionLog } = useActionLog('doubt');
 
+  const claimInputRef = useRef<HTMLInputElement>(null);
+
+  const isHumanTurn = !state?.gameEndFlag && state?.players[state.currentTurn]?.isHuman === true;
+  const showClaimInput = selectedCardIndices.length > 0 && isHumanTurn && state?.phase === 0;
+
+  useEffect(() => {
+    if (showClaimInput && claimInputRef.current) {
+      claimInputRef.current.focus();
+    }
+  }, [showClaimInput]);
+
   if (!state) return null;
 
-  const isHumanTurn = !state.gameEndFlag && state.players[state.currentTurn]?.isHuman === true;
   const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const isDoubtPhase = state.phase === 1;
@@ -59,14 +71,15 @@ export function DoubtPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading} aria-live="polite">
-      {loading && <span className="sr-only">{tc('status.loading')}</span>}
+      <LoadingSpinner loading={loading} />
       {/* Settings panel */}
       <details className="px-4 pt-2">
         <summary className="text-white/70 text-xs cursor-pointer select-none">{t('settings.title')}</summary>
         <div className="bg-black/30 rounded-lg p-3 mt-1 flex flex-wrap gap-4 text-sm text-white">
-          <label className="flex items-center gap-2">
+          <label htmlFor="doubtWindowSec" className="flex items-center gap-2">
             {t('settings.doubtTime')}
             <select
+              id="doubtWindowSec"
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.doubtWindowSec}
               onChange={(e) => handleConfigChange('doubtWindowSec', e.target.value)}
@@ -78,9 +91,10 @@ export function DoubtPage() {
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2">
+          <label htmlFor="cpuMemoryLevel" className="flex items-center gap-2">
             {t('settings.cpuMemory')}
             <select
+              id="cpuMemoryLevel"
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.cpuMemoryLevel}
               onChange={(e) => handleConfigChange('cpuMemoryLevel', e.target.value)}
@@ -92,9 +106,10 @@ export function DoubtPage() {
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2">
+          <label htmlFor="penaltyDrawLimit" className="flex items-center gap-2">
             {t('settings.penaltyDrawLimit')}
             <select
+              id="penaltyDrawLimit"
               className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
               value={doubtConfig.penaltyDrawLimit}
               onChange={(e) => handleConfigChange('penaltyDrawLimit', e.target.value)}
@@ -142,7 +157,7 @@ export function DoubtPage() {
         {/* Table area */}
         <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
           <div className="text-white font-bold mb-1">{t('table')}</div>
-          <div className="text-[#ccc] text-[0.9em]">{t('tableCards', { count: state.tableCardCount })}</div>
+          <div className="text-game-text-muted text-[0.9em]">{t('tableCards', { count: state.tableCardCount })}</div>
           {state.lastAction && (
             <div className="text-yellow-300 text-[0.85em] mt-1">{actionDesc(state.lastAction, state.players, t)}</div>
           )}
@@ -158,7 +173,7 @@ export function DoubtPage() {
                   <div className="text-yellow-300 text-lg font-bold mb-2">{t('countdown', { sec: countdown })}</div>
                 )}
                 {state.cpuDoubters.length > 0 && (
-                  <div className="text-[#ccc] text-[0.85em] mb-2">
+                  <div className="text-game-text-muted text-[0.85em] mb-2">
                     {t('cpuDoubters', { names: state.cpuDoubters.map((idx) => playerName(idx, false)).join(', ') })}
                   </div>
                 )}
@@ -194,7 +209,7 @@ export function DoubtPage() {
             <div className={state.lastDoubtResult.wasLying ? 'text-red-300' : 'text-green-300'}>
               {state.lastDoubtResult.wasLying ? t('doubtResult.wasLying') : t('doubtResult.wasTruth')}
             </div>
-            <div className="text-[#ccc]">
+            <div className="text-game-text-muted">
               {t('doubtResult.loserTook', {
                 name: playerName(
                   state.players[state.lastDoubtResult.loserIdx]?.id ?? state.lastDoubtResult.loserIdx,
@@ -220,12 +235,12 @@ export function DoubtPage() {
 
         {/* Human/CPU action logs */}
         {state.humanAction && !isDoubtPhase && (
-          <div className="bg-black/40 rounded-lg text-[#cfc] py-2 px-3.5 my-2 text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-game-text-highlight py-2 px-3.5 my-2 text-[0.85em]">
             {actionDesc(state.humanAction, state.players, t)}
           </div>
         )}
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-game-text-muted py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
             {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDesc(a, state.players, t))].join('\n')}
           </div>
         )}
@@ -270,21 +285,23 @@ export function DoubtPage() {
             </div>
 
             {/* Claimed value input (shown when cards are selected) */}
-            {selectedCardIndices.length > 0 && isHumanTurn && state.phase === 0 && (
+            {showClaimInput && (
               <div className="mt-2 flex items-center gap-2">
                 <span className="text-white text-sm">{t('claimedValue')}</span>
                 <input
+                  ref={claimInputRef}
                   type="number"
                   min={1}
                   max={13}
                   value={claimedValue}
+                  aria-label={t('claimInputAriaLabel')}
                   onChange={(e) => {
                     const num = Number(e.target.value);
                     setClaimedValue(Math.max(1, Math.min(13, num)));
                   }}
                   className="bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30"
                 />
-                <span className="text-[#ccc] text-xs">({valueName(claimedValue)})</span>
+                <span className="text-game-text-muted text-xs">({valueName(claimedValue)})</span>
               </div>
             )}
           </div>

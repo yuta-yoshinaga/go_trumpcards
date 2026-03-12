@@ -53,14 +53,13 @@ function Board({
                   fontSize: '0.7em',
                   fontWeight: isCenter ? 'bold' : 'normal',
                   background: canPlace
-                    ? '#3b82f6'
+                    ? 'var(--color-blue-500)'
                     : placed
                       ? isCenter
-                        ? '#f0ad4e'
-                        : '#5cb85c'
+                        ? 'var(--color-game-status-waiting)'
+                        : 'var(--color-game-status-active)'
                       : 'rgba(255,255,255,0.1)',
-                  color: canPlace ? '#fff' : placed ? '#000' : '#555',
-                  border: tunnelHighlight ? '1px solid #f59e0b' : undefined,
+                  color: canPlace ? 'white' : placed ? 'black' : 'var(--color-board-cell-empty-text)',
                   boxSizing: 'border-box',
                 };
                 if (canPlace) {
@@ -70,14 +69,15 @@ function Board({
                       type="button"
                       onClick={() => onJokerPlace?.(idx, v)}
                       aria-label={t('placeAriaLabel', { suit: suitName(idx), value: valueName(v) })}
-                      style={{ ...cellStyle, border: '1px solid #60a5fa', cursor: 'pointer', padding: 0 }}
+                      className="border border-blue-400"
+                      style={{ ...cellStyle, cursor: 'pointer', padding: 0 }}
                     >
                       {valueName(v)}
                     </button>
                   );
                 }
                 return (
-                  <span key={v} style={cellStyle}>
+                  <span key={v} className={tunnelHighlight ? 'border border-amber-400' : ''} style={cellStyle}>
                     {valueName(v)}
                   </span>
                 );
