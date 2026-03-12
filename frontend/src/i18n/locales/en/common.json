@@ -60,6 +60,9 @@
     "system": "SYSTEM",
     "player": "Player {{idx}}"
   },
+  "card": {
+    "back": "Card back"
+  },
   "label": {
     "result": "Result:",
     "cpuAction": "CPU Actions:",
