@@ -2,7 +2,7 @@
 
 exports[`StatusBadge > renders danger variant 1`] = `
 <span
-  style="background: rgb(220, 53, 69); color: rgb(255, 255, 255); border-radius: 6px; padding: 1px 8px; margin-left: 6px; font-size: 0.8em; font-weight: bold;"
+  class="bg-game-status-out text-white rounded-[6px] px-2 py-[1px] ml-1.5 text-[0.8em] font-bold"
 >
   容疑者
 </span>
@@ -10,7 +10,7 @@ exports[`StatusBadge > renders danger variant 1`] = `
 
 exports[`StatusBadge > renders success variant 1`] = `
 <span
-  style="background: rgb(92, 184, 92); color: rgb(255, 255, 255); border-radius: 6px; padding: 1px 8px; margin-left: 6px; font-size: 0.8em;"
+  class="bg-game-status-active text-white rounded-[6px] px-2 py-[1px] ml-1.5 text-[0.8em]"
 >
   上がり
 </span>
@@ -18,7 +18,7 @@ exports[`StatusBadge > renders success variant 1`] = `
 
 exports[`StatusBadge > renders warning variant 1`] = `
 <span
-  style="background: rgb(240, 173, 78); color: rgb(34, 34, 34); border-radius: 6px; padding: 1px 8px; margin-left: 6px; font-size: 0.8em; font-weight: bold;"
+  class="bg-game-status-waiting text-[#222] rounded-[6px] px-2 py-[1px] ml-1.5 text-[0.8em] font-bold"
 >
   考え中...
 </span>

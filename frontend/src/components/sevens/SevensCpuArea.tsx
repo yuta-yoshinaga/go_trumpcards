@@ -15,7 +15,7 @@ function SevCpuArea({ player, isCurrentTurn }: { player: SevensPlayerData; isCur
       className={playerAreaClass}
     >
       {!player.isFinished && (
-        <div className="text-[#ccc] text-[0.85em]">
+        <div className="text-game-text-muted text-[0.85em]">
           {t('cardCount', { count: player.cardCount })}
           {'　'}
           {t('passCount', {

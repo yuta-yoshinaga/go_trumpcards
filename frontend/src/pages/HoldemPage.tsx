@@ -14,7 +14,7 @@ import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
-import { handNameBadgeStyle } from '../styles/gameConstants';
+import { handNameBadgeClass } from '../styles/gameConstants';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 
 function usePhaseNames(t: (key: string) => string): Record<number, string> {
@@ -175,10 +175,7 @@ export function HoldemPage() {
               {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{tc('status.folded')}]</span>}
               {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{tc('status.allIn')}]</span>}
               {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                <span
-                  className="inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5"
-                  style={handNameBadgeStyle}
-                >
+                <span className={`inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                   {humanPlayer.handName}
                 </span>
               )}

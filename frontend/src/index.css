@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+@theme {
+  --color-game-status-active: #5cb85c;
+  --color-game-status-waiting: #f0ad4e;
+  --color-game-status-out: #dc3545;
+  --color-game-text-muted: #cccccc;
+  --color-game-text-highlight: #ccffcc;
+}
+
 html,
 body {
   margin: 0;

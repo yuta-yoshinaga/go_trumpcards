@@ -56,8 +56,8 @@ function Board({
                     ? '#3b82f6'
                     : placed
                       ? isCenter
-                        ? '#f0ad4e'
-                        : '#5cb85c'
+                        ? 'var(--color-game-status-waiting)'
+                        : 'var(--color-game-status-active)'
                       : 'rgba(255,255,255,0.1)',
                   color: canPlace ? '#fff' : placed ? '#000' : '#555',
                   border: tunnelHighlight ? '1px solid #f59e0b' : undefined,

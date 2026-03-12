@@ -18,7 +18,7 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
     badges.push({ label: t('badge.revolution'), bg: '#d9534f', color: '#fff' });
   }
   if (state.elevenBackActive) {
-    badges.push({ label: t('badge.elevenBack'), bg: '#f0ad4e', color: '#222' });
+    badges.push({ label: t('badge.elevenBack'), bg: 'var(--color-game-status-waiting)', color: '#222' });
   }
   if (state.suitLocked) {
     const modeSuffix = state.config.suitLockMode === 1 ? ` (${t('badge.suitLockPartial')})` : '';

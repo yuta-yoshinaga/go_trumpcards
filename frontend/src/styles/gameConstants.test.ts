@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PokerAction } from '../types/phases';
-import { activeTurnStyle, bettingActionName, finishedPlayerStyle, handNameBadgeStyle } from './gameConstants';
+import { activeTurnClass, bettingActionName, finishedPlayerClass, handNameBadgeClass } from './gameConstants';
 
 describe('bettingActionName', () => {
   it('maps all action values', () => {
@@ -17,22 +17,23 @@ describe('bettingActionName', () => {
   });
 });
 
-describe('handNameBadgeStyle', () => {
-  it('has correct background and color', () => {
-    expect(handNameBadgeStyle.background).toBe('#f0ad4e');
-    expect(handNameBadgeStyle.color).toBe('#222');
+describe('handNameBadgeClass', () => {
+  it('includes background and text color classes', () => {
+    expect(handNameBadgeClass).toContain('bg-game-status-waiting');
+    expect(handNameBadgeClass).toContain('text-[#222]');
   });
 });
 
-describe('activeTurnStyle', () => {
-  it('has correct border and boxShadow', () => {
-    expect(activeTurnStyle.border).toBe('2px solid #f0ad4e');
-    expect(activeTurnStyle.boxShadow).toBe('0 0 12px #f0ad4e');
+describe('activeTurnClass', () => {
+  it('includes border and shadow classes', () => {
+    expect(activeTurnClass).toContain('border-2');
+    expect(activeTurnClass).toContain('border-game-status-waiting');
+    expect(activeTurnClass).toContain('shadow-');
   });
 });
 
-describe('finishedPlayerStyle', () => {
-  it('has opacity 0.5', () => {
-    expect(finishedPlayerStyle.opacity).toBe(0.5);
+describe('finishedPlayerClass', () => {
+  it('is opacity-50', () => {
+    expect(finishedPlayerClass).toBe('opacity-50');
   });
 });

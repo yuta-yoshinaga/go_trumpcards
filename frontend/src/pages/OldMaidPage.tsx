@@ -159,7 +159,7 @@ export function OldMaidPage() {
 
         {/* CPU log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-[#ccc] py-1.5 px-2.5 my-1.5 whitespace-pre-line text-[0.8em] max-h-[120px] overflow-y-auto">
+          <div className="bg-black/40 rounded-lg text-game-text-muted py-1.5 px-2.5 my-1.5 whitespace-pre-line text-[0.8em] max-h-[120px] overflow-y-auto">
             {[
               tc('label.cpuActions'),
               ...state.cpuActions.map((action: CpuAction) => {
