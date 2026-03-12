@@ -32,7 +32,7 @@ export function KlondikePage() {
     handleSelectSource,
     handleSelectTarget,
   } = useKlondikeGame();
-  const { cardHeight, cardOverlap } = useCardDimensions();
+  const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('klondike');
 
   if (!state) return null;
@@ -62,13 +62,13 @@ export function KlondikePage() {
               {t('stock')} ({state.stockCount})
             </div>
             {state.stockCount > 0 ? (
-              <CardBack width={60} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
+              <CardBack width={cardWidth} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
             ) : (
               <button
                 type="button"
                 onClick={handleDraw}
                 disabled={!isPlaying || loading}
-                style={{ width: 60, height: cardHeight }}
+                style={{ width: cardWidth, height: cardHeight }}
                 className="rounded border-2 border-dashed border-white/30 text-white/40 text-xs flex items-center justify-center"
               >
                 {t('draw')}
@@ -94,11 +94,11 @@ export function KlondikePage() {
                 aria-pressed={isSourceSelected('waste')}
                 className={`p-0 border-0 bg-transparent cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
               >
-                <CardImage card={state.waste[state.waste.length - 1]} width={60} />
+                <CardImage card={state.waste[state.waste.length - 1]} width={cardWidth} />
               </button>
             ) : (
               <div
-                style={{ width: 60, height: cardHeight }}
+                style={{ width: cardWidth, height: cardHeight }}
                 className="rounded border border-white/20 flex items-center justify-center text-white/30 text-xs"
               >
                 {t('empty')}
@@ -120,7 +120,7 @@ export function KlondikePage() {
                   aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
                   className="p-0 border-0 bg-transparent cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
                 >
-                  <CardImage card={pile[pile.length - 1]} width={60} />
+                  <CardImage card={pile[pile.length - 1]} width={cardWidth} />
                 </button>
               ) : (
                 <button
@@ -128,7 +128,7 @@ export function KlondikePage() {
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
                   aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                  style={{ width: 60, height: cardHeight }}
+                  style={{ width: cardWidth, height: cardHeight }}
                   className="rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
                 >
                   A
@@ -181,10 +181,10 @@ export function KlondikePage() {
                           aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                         >
-                          <CardImage card={tc.card} width={60} style={{ width: '100%' }} />
+                          <CardImage card={tc.card} width={cardWidth} style={{ width: '100%' }} />
                         </button>
                       ) : (
-                        <CardBack width={60} className="w-full" />
+                        <CardBack width={cardWidth} className="w-full" />
                       )}
                     </div>
                   ))
