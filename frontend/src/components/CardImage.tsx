@@ -61,11 +61,11 @@ interface CardBackProps {
 
 export function CardBack({ width, style, className, onClick, ariaLabel }: CardBackProps) {
   const { t } = useTranslation('common');
-  const effectiveAriaLabel = onClick ? (ariaLabel ?? t('card.back')) : undefined;
+  const effectiveAriaLabel = onClick ? ariaLabel || t('card.back') : undefined;
   const img = (
     <img
       src="/images/z01.png"
-      alt={effectiveAriaLabel !== undefined ? '' : t('card.back')}
+      alt={onClick ? '' : t('card.back')}
       style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
     />
