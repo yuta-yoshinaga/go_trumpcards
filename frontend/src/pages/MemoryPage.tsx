@@ -59,8 +59,10 @@ export function MemoryPage() {
           <table className="w-full">
             <thead>
               <tr>
-                <th className="text-left">{t('scoresPlayer')}</th>
-                <th>{t('scoresPairs')}</th>
+                <th scope="col" className="text-left">
+                  {t('scoresPlayer')}
+                </th>
+                <th scope="col">{t('scoresPairs')}</th>
               </tr>
             </thead>
             <tbody>
