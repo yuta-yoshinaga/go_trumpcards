@@ -3,24 +3,23 @@ package color
 import "testing"
 
 func TestSetAndGetNoColor(t *testing.T) {
-	// Reset to default state after test
-	defer SetNoColor(false)
+	original := NoColor()
+	defer SetNoColor(original)
 
-	// Default: false
-	SetNoColor(false)
-	if NoColor() {
-		t.Error("expected NoColor() == false after SetNoColor(false)")
+	tests := []struct {
+		name  string
+		value bool
+	}{
+		{"set false", false},
+		{"set true", true},
+		{"set false again", false},
 	}
-
-	// Set to true
-	SetNoColor(true)
-	if !NoColor() {
-		t.Error("expected NoColor() == true after SetNoColor(true)")
-	}
-
-	// Toggle back to false
-	SetNoColor(false)
-	if NoColor() {
-		t.Error("expected NoColor() == false after second SetNoColor(false)")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetNoColor(tt.value)
+			if got := NoColor(); got != tt.value {
+				t.Errorf("NoColor() = %v, want %v", got, tt.value)
+			}
+		})
 	}
 }
