@@ -141,6 +141,13 @@ describe('CardBack', () => {
     expect(img).toHaveAttribute('alt', '');
   });
 
+  it('uses i18n fallback aria-label and empty alt when onClick is provided without ariaLabel', () => {
+    render(<CardBack onClick={() => undefined} />);
+    const btn = screen.getByRole('button', { name: 'カード裏面' });
+    expect(btn).toHaveAttribute('aria-label', 'カード裏面');
+    expect(btn.querySelector('img')).toHaveAttribute('alt', '');
+  });
+
   it('shows pointer cursor when onClick is provided', () => {
     render(<CardBack onClick={() => undefined} />);
     const img = screen.getByRole('button', { name: 'カード裏面' });

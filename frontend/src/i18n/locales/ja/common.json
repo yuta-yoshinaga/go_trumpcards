@@ -60,6 +60,9 @@
     "system": "SYSTEM",
     "player": "Player {{idx}}"
   },
+  "card": {
+    "back": "カード裏面"
+  },
   "label": {
     "result": "結果:",
     "cpuAction": "CPU行動:",
