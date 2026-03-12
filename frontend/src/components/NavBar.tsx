@@ -24,7 +24,7 @@ export function NavBar() {
       <div className="flex gap-0.5">
         <button
           type="button"
-          aria-label="日本語に切り替え"
+          aria-label={t('nav.switchToJa')}
           aria-pressed={currentLang === 'ja'}
           onClick={() => i18n.changeLanguage('ja')}
           className={`px-1.5 py-0.5 text-xs font-bold rounded-l transition-colors ${currentLang === 'ja' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
@@ -33,7 +33,7 @@ export function NavBar() {
         </button>
         <button
           type="button"
-          aria-label="Switch to English"
+          aria-label={t('nav.switchToEn')}
           aria-pressed={currentLang === 'en'}
           onClick={() => i18n.changeLanguage('en')}
           className={`px-1.5 py-0.5 text-xs font-bold rounded-r transition-colors ${currentLang === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}

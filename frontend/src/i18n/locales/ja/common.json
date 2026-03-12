@@ -1,5 +1,7 @@
 {
   "nav": {
+    "switchToJa": "日本語に切り替え",
+    "switchToEn": "Switch to English",
     "blackjack": "ブラックジャック",
     "poker": "ポーカー",
     "oldmaid": "ババ抜き",

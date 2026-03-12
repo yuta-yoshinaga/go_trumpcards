@@ -52,35 +52,30 @@ describe('NavBar', () => {
     }
   });
 
-  it('renders JA and EN language toggle buttons', () => {
+  it('renders JA and EN language toggle buttons with aria-labels and aria-pressed', () => {
     renderNavBar();
-    expect(screen.getByRole('button', { name: '日本語に切り替え' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Switch to English' })).toBeInTheDocument();
+    const jaBtn = screen.getByRole('button', { name: i18n.t('nav.switchToJa') });
+    const enBtn = screen.getByRole('button', { name: i18n.t('nav.switchToEn') });
+    expect(jaBtn).toBeInTheDocument();
+    expect(enBtn).toBeInTheDocument();
+    expect(jaBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(enBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('sets aria-pressed=true on JA button when language is ja', () => {
+  it('switches language to EN and updates aria-pressed when EN button is clicked', () => {
     renderNavBar();
-    expect(screen.getByRole('button', { name: '日本語に切り替え' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: 'Switch to English' })).toHaveAttribute('aria-pressed', 'false');
-  });
-
-  it('switches language to EN when EN button is clicked', () => {
-    renderNavBar();
-    fireEvent.click(screen.getByRole('button', { name: 'Switch to English' }));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.switchToEn') }));
     expect(i18n.language).toBe('en');
+    expect(screen.getByRole('button', { name: i18n.t('nav.switchToEn') })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: i18n.t('nav.switchToJa') })).toHaveAttribute('aria-pressed', 'false');
   });
 
-  it('sets aria-pressed=true on EN button when language is en', () => {
+  it('switches language back to JA and updates aria-pressed when JA button is clicked', () => {
     renderNavBar();
-    fireEvent.click(screen.getByRole('button', { name: 'Switch to English' }));
-    expect(screen.getByRole('button', { name: 'Switch to English' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: '日本語に切り替え' })).toHaveAttribute('aria-pressed', 'false');
-  });
-
-  it('switches language back to JA when JA button is clicked', () => {
-    renderNavBar();
-    fireEvent.click(screen.getByRole('button', { name: 'Switch to English' }));
-    fireEvent.click(screen.getByRole('button', { name: '日本語に切り替え' }));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.switchToEn') }));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.switchToJa') }));
     expect(i18n.language).toBe('ja');
+    expect(screen.getByRole('button', { name: i18n.t('nav.switchToJa') })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: i18n.t('nav.switchToEn') })).toHaveAttribute('aria-pressed', 'false');
   });
 });
