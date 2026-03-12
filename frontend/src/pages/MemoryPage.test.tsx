@@ -106,6 +106,15 @@ describe('MemoryPage', () => {
     expect(screen.getByText('CPU 3')).toBeInTheDocument();
   });
 
+  it('score table headers have scope="col" for accessibility', async () => {
+    const { container } = renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+    const ths = container.querySelectorAll('th');
+    ths.forEach((th) => {
+      expect(th).toHaveAttribute('scope', 'col');
+    });
+  });
+
   it('renders board with 52 buttons', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
