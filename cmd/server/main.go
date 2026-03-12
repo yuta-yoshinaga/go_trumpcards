@@ -9,10 +9,15 @@ import (
 )
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	infrastructure.InitLogger()
 	w := web.NewTrumpCardsWeb()
 	if err := w.Exec(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
