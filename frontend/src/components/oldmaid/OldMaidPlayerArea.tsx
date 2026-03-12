@@ -120,9 +120,7 @@ export function OldMaidPlayerArea({
               );
             })}
             {player.cardCount > 10 && (
-              <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
-                +{player.cardCount - 10}
-              </span>
+              <span className="text-white self-center ml-0.5 text-[0.8em]">+{player.cardCount - 10}</span>
             )}
           </>
         ) : (
@@ -132,9 +130,7 @@ export function OldMaidPlayerArea({
               <CardBack key={i} width={40} />
             ))}
             {player.cardCount > 10 && (
-              <span style={{ color: '#fff', alignSelf: 'center', marginLeft: 2, fontSize: '0.8em' }}>
-                +{player.cardCount - 10}
-              </span>
+              <span className="text-white self-center ml-0.5 text-[0.8em]">+{player.cardCount - 10}</span>
             )}
           </>
         )}

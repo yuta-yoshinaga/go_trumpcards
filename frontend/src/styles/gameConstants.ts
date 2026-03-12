@@ -27,7 +27,7 @@ export function bettingActionName(action: number): string {
 }
 
 /** Badge classes for hand name display (e.g. "ツーペア"). */
-export const handNameBadgeClass = 'bg-game-status-waiting text-[#222]';
+export const handNameBadgeClass = 'bg-game-status-waiting text-game-text-strong';
 
 /** Highlight classes for the active turn player area. */
 export const activeTurnClass = 'border-2 border-game-status-waiting shadow-[0_0_12px_var(--color-game-status-waiting)]';

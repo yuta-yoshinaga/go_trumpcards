@@ -18,11 +18,19 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
     badges.push({ label: t('badge.revolution'), bg: '#d9534f', color: '#fff' });
   }
   if (state.elevenBackActive) {
-    badges.push({ label: t('badge.elevenBack'), bg: 'var(--color-game-status-waiting)', color: '#222' });
+    badges.push({
+      label: t('badge.elevenBack'),
+      bg: 'var(--color-game-status-waiting)',
+      color: 'var(--color-game-text-strong)',
+    });
   }
   if (state.suitLocked) {
     const modeSuffix = state.config.suitLockMode === 1 ? ` (${t('badge.suitLockPartial')})` : '';
-    badges.push({ label: t('badge.suitLock', { suit: state.lockedSuit }) + modeSuffix, bg: '#5bc0de', color: '#222' });
+    badges.push({
+      label: t('badge.suitLock', { suit: state.lockedSuit }) + modeSuffix,
+      bg: '#5bc0de',
+      color: 'var(--color-game-text-strong)',
+    });
   }
   if (state.tableIsSequence) {
     badges.push({ label: t('badge.sequence'), bg: '#9b59b6', color: '#fff' });

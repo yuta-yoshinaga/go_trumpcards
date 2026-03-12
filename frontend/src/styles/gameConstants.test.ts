@@ -20,7 +20,7 @@ describe('bettingActionName', () => {
 describe('handNameBadgeClass', () => {
   it('includes background and text color classes', () => {
     expect(handNameBadgeClass).toContain('bg-game-status-waiting');
-    expect(handNameBadgeClass).toContain('text-[#222]');
+    expect(handNameBadgeClass).toContain('text-game-text-strong');
   });
 });
 
