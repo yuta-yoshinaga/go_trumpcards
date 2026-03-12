@@ -129,7 +129,7 @@ export function DaifugoPage() {
         )}
 
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-[#ccc] py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-white py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
             {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDescription(state.players, a))].join('\n')}
           </div>
         )}

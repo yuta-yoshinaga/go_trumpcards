@@ -31,8 +31,8 @@ export function MemoryPage() {
 
       {/* Settings */}
       <details className="px-4 pt-2">
-        <summary className="text-white/70 text-sm cursor-pointer">{t('settings.title')}</summary>
-        <div className="mt-2 flex flex-wrap gap-4 text-sm text-white/70">
+        <summary className="text-white text-sm cursor-pointer">{t('settings.title')}</summary>
+        <div className="mt-2 flex flex-wrap gap-4 text-sm text-white">
           <label htmlFor="cpuDifficulty">
             {t('settings.cpuDifficulty')}
             <select
@@ -55,8 +55,8 @@ export function MemoryPage() {
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Player scores */}
         <div className="my-2 p-2 rounded bg-black/30">
-          <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
-          <table className="w-full text-sm text-white/70">
+          <div className="text-white text-sm mb-1">{t('scores')}</div>
+          <table className="w-full text-sm text-white">
             <thead>
               <tr>
                 <th className="text-left">{t('scoresPlayer')}</th>
