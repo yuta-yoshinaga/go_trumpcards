@@ -153,14 +153,14 @@ describe('KlondikePage', () => {
     expect(aElements.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('empty foundation buttons have aria-label with suit and count 0', async () => {
+  it('empty foundation buttons have aria-label announcing empty slot with suit', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    expect(screen.getByRole('button', { name: '♠ 組札 0枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♣ 組札 0枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ 組札 0枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦ 組札 0枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♠)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♣)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♥)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♦)' })).toBeInTheDocument();
   });
 
   it('foundation with cards has aria-label with card count', async () => {
@@ -171,8 +171,8 @@ describe('KlondikePage', () => {
     // Pile 0: 1 card (♠ A), pile 2: 2 cards (♥ A, ♥ 2), piles 1 and 3 empty
     expect(screen.getByRole('button', { name: '♠ 組札 1枚' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♥ 組札 2枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♣ 組札 0枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦ 組札 0枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♣)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♦)' })).toBeInTheDocument();
   });
 
   it('tableau face-up card button has aria-label with card name', async () => {

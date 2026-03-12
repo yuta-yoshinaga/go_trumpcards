@@ -124,8 +124,8 @@ export function KlondikePage() {
                   type="button"
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
-                  aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: 0 })}
-                  className="w-[60px] h-[84px] rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center"
+                  aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                  className="w-[60px] h-[84px] rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/50"
                 >
                   A
                 </button>

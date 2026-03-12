@@ -15,5 +15,6 @@
   "playing": "プレイ中",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
-  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚"
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})"
 }
