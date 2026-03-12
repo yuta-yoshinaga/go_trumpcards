@@ -110,7 +110,7 @@ export function SevensPage() {
         {state.humanAction && (
           <div
             data-testid={state.humanAction.forcedPass ? 'human-action-forced-pass' : 'human-action'}
-            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-orange-200 border border-red-500/50' : 'bg-black/40 text-[#cfc]'}`}
+            className={`rounded-lg py-2 px-3.5 my-2 text-[0.85em] ${state.humanAction.forcedPass ? 'bg-red-900/50 text-orange-200 border border-red-500/50' : 'bg-black/40 text-green-200'}`}
           >
             {actionDesc(state.players, state.humanAction, t)}
           </div>
