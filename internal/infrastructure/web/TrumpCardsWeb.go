@@ -237,6 +237,7 @@ func (web *TrumpCardsWeb) Exec() {
 			os.Exit(1)
 		}
 	case <-ctx.Done():
+		fmt.Println("\nShutting down server...")
 		slog.Info("shutting down server")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
@@ -256,6 +257,7 @@ func (web *TrumpCardsWeb) Exec() {
 	web.myc.Stop()
 	web.klc.Stop()
 	web.bcc.Stop()
+	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 }
 
