@@ -20,14 +20,16 @@ function formatEntry(entry: ActionLogEntry, t: (key: string, opts?: Record<strin
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(
-    container.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+    container.querySelectorAll<HTMLElement>(
+      'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    ),
   ).filter((el) => !el.hasAttribute('disabled'));
 }
 
 export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
   const titleId = useId();
 
   const textContent = entries.length === 0 ? t('actionLog.empty') : entries.map((e) => formatEntry(e, t)).join('\n');
@@ -39,20 +41,16 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   }, [copied]);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
+    const dialog = dialogRef.current as HTMLElement;
     const focusable = getFocusableElements(dialog);
-    if (focusable.length > 0) {
-      focusable[0].focus();
-    }
+    if (focusable.length === 0) return;
+
+    focusable[0].focus();
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
-      const els = getFocusableElements(dialog);
-      if (els.length === 0) return;
-      const first = els[0];
-      const last = els[els.length - 1];
       if (e.shiftKey) {
         if (document.activeElement === first) {
           e.preventDefault();
@@ -88,10 +86,8 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   };
 
   return (
-    <div
+    <section
       ref={dialogRef}
-      role="dialog"
-      aria-modal="true"
       aria-labelledby={titleId}
       className="bg-black/60 rounded-lg p-4 my-2 max-h-[60vh] flex flex-col"
     >
@@ -111,12 +107,12 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
           </button>
         </div>
       </div>
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
+      <div data-testid="copy-announcer" aria-live="polite" aria-atomic="true" className="sr-only">
         {copied ? t('actionLog.copied') : ''}
       </div>
       <pre className="flex-1 overflow-y-auto text-[#ccc] text-xs whitespace-pre-wrap font-mono bg-black/40 rounded p-2">
         {textContent}
       </pre>
-    </div>
+    </section>
   );
 }

@@ -95,34 +95,28 @@ describe('ActionLogPanel', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('has role="dialog" and aria-modal="true"', () => {
+  it('has role="region" with aria-labelledby pointing to the title', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const dialog = screen.getByRole('dialog');
-    expect(dialog).toBeInTheDocument();
-    expect(dialog).toHaveAttribute('aria-modal', 'true');
-  });
-
-  it('has aria-labelledby pointing to the title', () => {
-    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const dialog = screen.getByRole('dialog');
-    const labelledById = dialog.getAttribute('aria-labelledby');
+    const region = screen.getByRole('region', { name: '棋譜' });
+    expect(region).toBeInTheDocument();
+    const labelledById = region.getAttribute('aria-labelledby');
     expect(labelledById).toBeTruthy();
     const title = document.getElementById(labelledById as string);
-    expect(title).toBeInTheDocument();
     expect(title?.textContent).toBe('棋譜');
   });
 
   it('announces copy confirmation via aria-live region', async () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const liveRegion = document.querySelector('[aria-live="polite"]');
-    expect(liveRegion).toBeInTheDocument();
-    expect(liveRegion?.textContent).toBe('');
+    const liveRegion = screen.getByTestId('copy-announcer');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveAttribute('aria-atomic', 'true');
+    expect(liveRegion.textContent).toBe('');
 
     const copyButton = screen.getByRole('button', { name: 'コピー' });
     fireEvent.click(copyButton);
 
     await waitFor(() => {
-      expect(liveRegion?.textContent).toBe('コピーしました');
+      expect(liveRegion.textContent).toBe('コピーしました');
     });
   });
 
@@ -132,50 +126,70 @@ describe('ActionLogPanel', () => {
     expect(document.activeElement).toBe(copyButton);
   });
 
+  it('does not focus when no focusable elements exist', () => {
+    const spy = vi
+      .spyOn(HTMLElement.prototype, 'querySelectorAll')
+      .mockReturnValueOnce([] as unknown as NodeListOf<HTMLElement>);
+    render(<ActionLogPanel entries={[]} onClose={vi.fn()} />);
+    expect(document.activeElement).toBe(document.body);
+    spy.mockRestore();
+  });
+
   it('traps focus: Tab from last element wraps to first', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const dialog = screen.getByRole('dialog');
+    const region = screen.getByRole('region', { name: '棋譜' });
     const closeButton = screen.getByRole('button', { name: '閉じる' });
     const copyButton = screen.getByRole('button', { name: 'コピー' });
 
     closeButton.focus();
-    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: false });
+    fireEvent.keyDown(region, { key: 'Tab', shiftKey: false });
     expect(document.activeElement).toBe(copyButton);
   });
 
   it('traps focus: Shift+Tab from first element wraps to last', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const dialog = screen.getByRole('dialog');
+    const region = screen.getByRole('region', { name: '棋譜' });
     const copyButton = screen.getByRole('button', { name: 'コピー' });
     const closeButton = screen.getByRole('button', { name: '閉じる' });
 
     copyButton.focus();
-    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true });
+    fireEvent.keyDown(region, { key: 'Tab', shiftKey: true });
     expect(document.activeElement).toBe(closeButton);
+  });
+
+  it('does not trap focus on Shift+Tab from non-first element', () => {
+    render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
+    const region = screen.getByRole('region', { name: '棋譜' });
+    const downloadButton = screen.getByRole('button', { name: 'ダウンロード' });
+
+    downloadButton.focus();
+    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true });
+    const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    region.dispatchEvent(event);
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
   });
 
   it('does not trap focus when Tab is pressed on non-boundary element', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const dialog = screen.getByRole('dialog');
+    const region = screen.getByRole('region', { name: '棋譜' });
     const downloadButton = screen.getByRole('button', { name: 'ダウンロード' });
 
     downloadButton.focus();
-    // Tab from middle element - no wrapping, default browser behavior
     const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: false, bubbles: true });
     const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
-    dialog.dispatchEvent(event);
+    region.dispatchEvent(event);
     expect(preventDefaultSpy).not.toHaveBeenCalled();
   });
 
   it('ignores non-Tab keydown events', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
-    const dialog = screen.getByRole('dialog');
+    const region = screen.getByRole('region', { name: '棋譜' });
     const copyButton = screen.getByRole('button', { name: 'コピー' });
 
     copyButton.focus();
     const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
     const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
-    dialog.dispatchEvent(event);
+    region.dispatchEvent(event);
     expect(preventDefaultSpy).not.toHaveBeenCalled();
   });
 });
