@@ -59,5 +59,15 @@
     "twentyOnePlus3": "21+3",
     "win": "{{name}} WIN +{{payout}}",
     "lose": "{{name}} LOSE -{{amount}}"
+  },
+  "status": {
+    "bust": "BUST",
+    "bustTooltip": "Bust: hand total exceeds 21",
+    "dd": "DD",
+    "ddTooltip": "Double Down: bet doubled, one card drawn",
+    "bj": "BJ",
+    "bjTooltip": "BlackJack: Ace and a 10-value card on first two cards",
+    "sur": "SUR",
+    "surTooltip": "Surrender: forfeit hand and reclaim half the bet"
   }
 }

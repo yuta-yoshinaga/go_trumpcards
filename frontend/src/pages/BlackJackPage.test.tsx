@@ -309,10 +309,14 @@ describe('BlackJackPage', () => {
     });
   });
 
-  it('shows BJ flag for blackjack hand', async () => {
+  it('shows BJ flag with tooltip for blackjack hand', async () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/\[BJ\]/)).toBeInTheDocument());
+    await waitFor(() => {
+      const elem = screen.getByTitle('ブラックジャック: 最初の2枚でAと10点のカード');
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent('[BJ]');
+    });
   });
 
   it('does not show dealer area in bet phase', async () => {
@@ -379,24 +383,46 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
-  it('shows [BUST] flag for busted hand', async () => {
+  it('shows [BUST] flag with tooltip for busted hand', async () => {
     const bustState: BlackJackResponse = {
       ...actionPhaseState,
       hands: [{ ...baseHand, busted: true }],
     };
     mockExec.mockResolvedValue(bustState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/\[BUST\]/)).toBeInTheDocument());
+    await waitFor(() => {
+      const elem = screen.getByTitle('バスト: 手札の合計が21を超えました');
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent('[BUST]');
+    });
   });
 
-  it('shows [DD] flag for doubled hand', async () => {
+  it('shows [DD] flag with tooltip for doubled hand', async () => {
     const ddState: BlackJackResponse = {
       ...actionPhaseState,
       hands: [{ ...baseHand, doubled: true }],
     };
     mockExec.mockResolvedValue(ddState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/\[DD\]/)).toBeInTheDocument());
+    await waitFor(() => {
+      const elem = screen.getByTitle('ダブルダウン: ベットを2倍にして1枚カードをドロー');
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent('[DD]');
+    });
+  });
+
+  it('shows [SUR] flag with tooltip for surrendered player hand', async () => {
+    const surState: BlackJackResponse = {
+      ...actionPhaseState,
+      hands: [{ ...baseHand, surrendered: true }],
+    };
+    mockExec.mockResolvedValue(surState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => {
+      const elem = screen.getByTitle('サレンダー: ハンドを放棄してベットの半額を回収');
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent('[SUR]');
+    });
   });
 
   it('shows insurance bet info when insuranceBet > 0', async () => {
@@ -635,14 +661,18 @@ describe('BlackJackPage', () => {
     });
   });
 
-  it('shows SURRENDER badge on surrendered hand', async () => {
+  it('shows [SUR] badge with tooltip on surrendered hand', async () => {
     const surrenderedEndState: BlackJackResponse = {
       ...endPhaseState,
       hands: [{ ...(endPhaseState.hands?.[0] as BlackJackHand), surrendered: true }],
     };
     mockExec.mockResolvedValue(surrenderedEndState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText('SURRENDER')).toBeInTheDocument());
+    await waitFor(() => {
+      const elem = screen.getByTitle('サレンダー: ハンドを放棄してベットの半額を回収');
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent('[SUR]');
+    });
   });
 
   it('shows deck count in chip bar', async () => {
@@ -818,8 +848,12 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      expect(screen.getByText(/\[BUST\]/)).toBeInTheDocument();
-      expect(screen.getByText(/\[DD\]/)).toBeInTheDocument();
+      const bustElem = screen.getByTitle('バスト: 手札の合計が21を超えました');
+      expect(bustElem).toBeInTheDocument();
+      expect(bustElem).toHaveTextContent('[BUST]');
+      const ddElem = screen.getByTitle('ダブルダウン: ベットを2倍にして1枚カードをドロー');
+      expect(ddElem).toBeInTheDocument();
+      expect(ddElem).toHaveTextContent('[DD]');
     });
   });
 
@@ -853,8 +887,12 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      expect(screen.getByText(/\[BJ\]/)).toBeInTheDocument();
-      expect(screen.getByText(/\[SUR\]/)).toBeInTheDocument();
+      const bjElem = screen.getByTitle('ブラックジャック: 最初の2枚でAと10点のカード');
+      expect(bjElem).toBeInTheDocument();
+      expect(bjElem).toHaveTextContent('[BJ]');
+      const surElem = screen.getByTitle('サレンダー: ハンドを放棄してベットの半額を回収');
+      expect(surElem).toBeInTheDocument();
+      expect(surElem).toHaveTextContent('[SUR]');
     });
   });
 
