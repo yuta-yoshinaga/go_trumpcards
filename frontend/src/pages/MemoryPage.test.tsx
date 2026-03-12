@@ -275,6 +275,12 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(screen.getByText('1枚目をめくってください')).toBeInTheDocument());
   });
 
+  it('renders landscape orientation banner in DOM', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.getByText('横向きにすると快適にプレイできます')).toBeInTheDocument();
+  });
+
   it('displays error message', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
