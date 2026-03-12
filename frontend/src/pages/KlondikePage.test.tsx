@@ -157,10 +157,9 @@ describe('KlondikePage', () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    expect(screen.getByRole('button', { name: '空の組札 (♠)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空の組札 (♣)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空の組札 (♥)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空の組札 (♦)' })).toBeInTheDocument();
+    for (const suit of ['♠', '♣', '♥', '♦']) {
+      expect(screen.getByRole('button', { name: `空の組札 (${suit})` })).toBeInTheDocument();
+    }
   });
 
   it('foundation with cards has aria-label with card count', async () => {
