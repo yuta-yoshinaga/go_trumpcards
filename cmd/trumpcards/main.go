@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
@@ -22,6 +23,7 @@ var (
 func main() {
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
+	noColorFlag := flag.Bool("no-color", false, "Disable color output")
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, `USAGE:
   trumpcards [--lang ja|en] [game]
@@ -46,14 +48,22 @@ GAMES:
 OPTIONS:
   -h, --help        Show this help message
   --lang ja|en      Language (default: ja)
+  --no-color        Disable color output
   --version         Show version information
 
 ENVIRONMENT VARIABLES:
+  NO_COLOR          Disable color output when set (see https://no-color.org/)
+                    Example: NO_COLOR=1 trumpcards blackjack
   PORT              Port number for the web server (default: 8080)
                     Example: PORT=3000 trumpcards web
 `)
 	}
 	flag.Parse()
+
+	// Color control: NO_COLOR env var (https://no-color.org/) or --no-color flag.
+	if os.Getenv("NO_COLOR") != "" || *noColorFlag {
+		color.SetNoColor(true)
+	}
 
 	if *showVersion {
 		fmt.Printf("trumpcards %s (commit: %s, built: %s)\n", version, commit, date)
