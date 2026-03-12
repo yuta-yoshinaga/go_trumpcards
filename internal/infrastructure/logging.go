@@ -31,7 +31,9 @@ func parseLogLevel(s string) slog.Level {
 		return slog.LevelWarn
 	case "ERROR":
 		return slog.LevelError
-	default:
+	case "INFO":
+		return slog.LevelInfo
+	default: // empty string or unrecognized value
 		return slog.LevelInfo
 	}
 }
