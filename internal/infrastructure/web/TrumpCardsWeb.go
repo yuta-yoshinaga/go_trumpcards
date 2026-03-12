@@ -219,6 +219,7 @@ func (web *TrumpCardsWeb) Exec() {
 	ln, err := net.Listen("tcp", srv.Addr)
 	if err != nil {
 		slog.Error("server listen error", "error", err)
+		fmt.Fprintf(os.Stderr, "Error: failed to start server: %v\n", err)
 		os.Exit(1)
 	}
 	port := ln.Addr().(*net.TCPAddr).Port
@@ -232,6 +233,7 @@ func (web *TrumpCardsWeb) Exec() {
 	case err := <-errCh:
 		if !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", "error", err)
+			fmt.Fprintf(os.Stderr, "Error: failed to start server: %v\n", err)
 			os.Exit(1)
 		}
 	case <-ctx.Done():
