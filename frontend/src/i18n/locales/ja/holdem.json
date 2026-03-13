@@ -12,25 +12,15 @@
   "communityCards": "コミュニティカード",
   "yourHand": "あなたの手札",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
-  "tableSize": {
-    "label": "テーブルサイズ",
-    "4max": "4-max",
-    "6max": "6-max",
-    "9max": "9-max"
-  },
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
     "accept": "リバイ",
-    "skip": "スキップ",
-    "label": "リバイ",
-    "enabled": "リバイ有効"
+    "skip": "スキップ"
   },
   "addon": {
     "prompt": "アドオンしますか? ({{chips}}チップ)",
     "accept": "アドオン",
-    "skip": "スキップ",
-    "label": "アドオン",
-    "enabled": "アドオン有効"
+    "skip": "スキップ"
   },
   "muck": {
     "prompt": "マックしますか?",
