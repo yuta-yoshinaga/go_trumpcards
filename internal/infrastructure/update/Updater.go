@@ -6,11 +6,13 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/minio/selfupdate"
 
@@ -25,6 +27,7 @@ type Updater struct {
 	reader         io.Reader
 	writer         io.Writer
 	errWriter      io.Writer
+	httpClient     *http.Client
 }
 
 // NewUpdater creates a new Updater.
@@ -36,6 +39,7 @@ func NewUpdater(currentVersion string, reader io.Reader, writer, errWriter io.Wr
 		reader:         reader,
 		writer:         writer,
 		errWriter:      errWriter,
+		httpClient:     &http.Client{Timeout: 60 * time.Second},
 	}
 }
 
@@ -52,7 +56,7 @@ type ghAsset struct {
 // Exec runs the self-update flow.
 func (u *Updater) Exec() error {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", u.repoOwner, u.repoName)
-	resp, err := http.Get(url) //nolint:gosec,noctx // simple GET to GitHub API
+	resp, err := u.httpClient.Get(url) //nolint:noctx // simple GET to GitHub API
 	if err != nil {
 		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", err.Error()))
 		return err
@@ -62,7 +66,7 @@ func (u *Updater) Exec() error {
 	if resp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("HTTP %d", resp.StatusCode)
 		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", errMsg))
-		return fmt.Errorf("%s", errMsg)
+		return errors.New(errMsg)
 	}
 
 	var release ghRelease
@@ -84,7 +88,7 @@ func (u *Updater) Exec() error {
 	_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "version", release.TagName)+" ")
 	var answer string
 	_, _ = fmt.Fscanln(u.reader, &answer)
-	if answer != "y" && answer != "Y" {
+	if strings.ToLower(strings.TrimSpace(answer)) != "y" {
 		_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
 		return nil
 	}
@@ -98,29 +102,8 @@ func (u *Updater) Exec() error {
 
 	_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateDownloading", "version", release.TagName))
 
-	// Download asset.
-	assetResp, err := http.Get(assetURL) //nolint:gosec,noctx // downloading release asset
-	if err != nil {
-		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
-		return err
-	}
-	defer func() { _ = assetResp.Body.Close() }()
-
-	assetData, err := io.ReadAll(assetResp.Body)
-	if err != nil {
-		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
-		return err
-	}
-
-	// Extract binary from archive.
-	binaryReader, err := u.extractBinary(assetName, assetData)
-	if err != nil {
-		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
-		return err
-	}
-
-	// Apply update.
-	if err := selfupdate.Apply(binaryReader, selfupdate.Options{}); err != nil {
+	// Download and apply update.
+	if err := u.downloadAndApply(assetName, assetURL); err != nil {
 		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
 		return err
 	}
@@ -129,7 +112,39 @@ func (u *Updater) Exec() error {
 	return nil
 }
 
+// downloadAndApply downloads the asset and applies the update.
+func (u *Updater) downloadAndApply(assetName, assetURL string) error {
+	assetResp, err := u.httpClient.Get(assetURL) //nolint:noctx // downloading release asset
+	if err != nil {
+		return err
+	}
+	defer func() { _ = assetResp.Body.Close() }()
+
+	// For tar.gz, stream directly without buffering the entire archive in memory.
+	if strings.HasSuffix(strings.ToLower(assetName), ".tar.gz") {
+		binaryReader, err := u.extractFromTarGzStream(assetResp.Body)
+		if err != nil {
+			return err
+		}
+		return selfupdate.Apply(binaryReader, selfupdate.Options{})
+	}
+
+	// For zip, we need io.ReaderAt so we must read the entire archive into memory.
+	assetData, err := io.ReadAll(assetResp.Body)
+	if err != nil {
+		return err
+	}
+
+	binaryName := "trumpcards.exe"
+	binaryReader, err := u.extractFromZip(assetData, binaryName)
+	if err != nil {
+		return err
+	}
+	return selfupdate.Apply(binaryReader, selfupdate.Options{})
+}
+
 // findAsset finds a matching release asset for the current OS/arch.
+// Uses GoReleaser naming convention: trumpcards_<version>_<os>_<arch>.<ext>
 func (u *Updater) findAsset(assets []ghAsset) (name, url string) {
 	osName := runtime.GOOS
 	archName := runtime.GOARCH
@@ -141,31 +156,23 @@ func (u *Updater) findAsset(assets []ghAsset) (name, url string) {
 		ext = ".tar.gz"
 	}
 
+	// Match GoReleaser suffix pattern: _<os>_<arch>.<ext>
+	suffix := fmt.Sprintf("_%s_%s%s", osName, archName, ext)
+
 	for _, a := range assets {
 		lower := strings.ToLower(a.Name)
-		if strings.Contains(lower, osName) && strings.Contains(lower, archName) && strings.HasSuffix(lower, ext) {
+		if strings.HasSuffix(lower, suffix) {
 			return a.Name, a.BrowserDownloadURL
 		}
 	}
 	return "", ""
 }
 
-// extractBinary extracts the binary from a tar.gz or zip archive.
-func (u *Updater) extractBinary(assetName string, data []byte) (io.Reader, error) {
+// extractFromTarGzStream extracts the trumpcards binary from a tar.gz stream.
+func (u *Updater) extractFromTarGzStream(r io.Reader) (io.Reader, error) {
 	binaryName := "trumpcards"
-	if runtime.GOOS == "windows" {
-		binaryName = "trumpcards.exe"
-	}
 
-	if strings.HasSuffix(strings.ToLower(assetName), ".zip") {
-		return u.extractFromZip(data, binaryName)
-	}
-	return u.extractFromTarGz(data, binaryName)
-}
-
-// extractFromTarGz extracts the named file from a tar.gz archive.
-func (u *Updater) extractFromTarGz(data []byte, name string) (io.Reader, error) {
-	gz, err := gzip.NewReader(bytes.NewReader(data))
+	gz, err := gzip.NewReader(r)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +187,7 @@ func (u *Updater) extractFromTarGz(data []byte, name string) (io.Reader, error) 
 		if err != nil {
 			return nil, err
 		}
-		if hdr.Name == name || strings.HasSuffix(hdr.Name, "/"+name) {
+		if hdr.Name == binaryName || strings.HasSuffix(hdr.Name, "/"+binaryName) {
 			buf := &bytes.Buffer{}
 			if _, err := io.Copy(buf, tr); err != nil { //nolint:gosec // trusted archive from GitHub
 				return nil, err
@@ -188,7 +195,7 @@ func (u *Updater) extractFromTarGz(data []byte, name string) (io.Reader, error) 
 			return buf, nil
 		}
 	}
-	return nil, fmt.Errorf("binary %q not found in archive", name)
+	return nil, fmt.Errorf("binary %q not found in archive", binaryName)
 }
 
 // extractFromZip extracts the named file from a zip archive.
