@@ -217,6 +217,16 @@ func (hwp *HoldemWebPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
 	return actionLogOutputJSON(h)
 }
 
+// calcMaxBetAmount ベッティングリミットに応じた最大ベット額を計算
+func calcMaxBetAmount(limit domain.BettingLimitType, pot, lastBet int) int {
+	switch limit {
+	case domain.BettingLimitPotLimit:
+		return pot + lastBet
+	default:
+		return 0
+	}
+}
+
 // getHandName ハンドランクから名前を返す
 func (hwp *HoldemWebPresenter) getHandName(rank int) string {
 	if rank >= 0 && rank < len(domain.PokerHandNames) {
