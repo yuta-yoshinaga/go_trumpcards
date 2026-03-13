@@ -33,8 +33,9 @@ func setupSevensCuiTest() (*domain.Sevens, []*domain.SevensPlayer) {
 }
 
 func TestSevensCuiPresenter_Method(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	tsp := new(presenter.SevensCuiPresenter)
 
 	t.Run("success Output initial state", func(t *testing.T) {
@@ -554,8 +555,9 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 }
 
 func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(presenter.SevensCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {

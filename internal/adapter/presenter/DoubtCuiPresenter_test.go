@@ -24,8 +24,9 @@ func makeDoubtGameForPresenter() (*domain.Doubt, []*domain.DoubtPlayer) {
 }
 
 func TestDoubtCuiPresenter_Output(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(presenter.DoubtCuiPresenter)
 
 	t.Run("initial state", func(t *testing.T) {
@@ -319,8 +320,9 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 }
 
 func TestDoubtCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(presenter.DoubtCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {

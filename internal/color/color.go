@@ -18,7 +18,7 @@ func NoColor() bool {
 const reset = "\033[0m"
 
 func wrap(code, s string) string {
-	if noColor.Load() {
+	if s == "" || noColor.Load() {
 		return s
 	}
 	return code + s + reset

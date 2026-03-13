@@ -64,8 +64,8 @@ func TestColorFunctionsEmptyString(t *testing.T) {
 	defer SetNoColor(original)
 
 	SetNoColor(false)
-	if got := Red(""); got != "\033[31m\033[0m" {
-		t.Errorf("Red(\"\") = %q, want %q", got, "\033[31m\033[0m")
+	if got := Red(""); got != "" {
+		t.Errorf("Red(\"\") = %q, want %q", got, "")
 	}
 
 	SetNoColor(true)

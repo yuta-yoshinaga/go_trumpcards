@@ -43,8 +43,9 @@ func setupMemoryMockDefaults(mg *interfaces.MockMemoryGame) {
 }
 
 func TestMemoryCuiPresenterOutput(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	t.Run("initial state", func(t *testing.T) {
 		mg := newMockMemoryGame()
 		setupMemoryMockDefaults(mg)
@@ -241,8 +242,9 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 }
 
 func TestMemoryCuiPresenterActionLog(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	t.Run("game not ended", func(t *testing.T) {
 		mg := newMockMemoryGame()
 		mg.On("GetGameEndFlag").Return(false)

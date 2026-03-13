@@ -26,8 +26,9 @@ func setupBaccaratCuiMockDefaults(m *interfaces.MockBaccaratGame) {
 }
 
 func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	setupBaccaratCuiMockDefaults(m)
@@ -38,8 +39,9 @@ func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	m.On("GetChips").Return(1100).Maybe()
@@ -71,8 +73,9 @@ func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_BankerWins(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	m.On("GetChips").Return(900).Maybe()
@@ -98,8 +101,9 @@ func TestBaccaratCuiPresenter_Output_EndPhase_BankerWins(t *testing.T) {
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_Tie(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	m.On("GetChips").Return(1900).Maybe()
@@ -125,8 +129,9 @@ func TestBaccaratCuiPresenter_Output_EndPhase_Tie(t *testing.T) {
 }
 
 func TestBaccaratCuiPresenter_Output_Error(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	setupBaccaratCuiMockDefaults(m)
@@ -136,8 +141,9 @@ func TestBaccaratCuiPresenter_Output_Error(t *testing.T) {
 }
 
 func TestBaccaratCuiPresenter_Output_UnknownPhase(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	setupBaccaratCuiMockDefaults(m)
@@ -149,8 +155,9 @@ func TestBaccaratCuiPresenter_Output_UnknownPhase(t *testing.T) {
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	m.On("GetChips").Return(1000).Maybe()
@@ -171,8 +178,9 @@ func TestBaccaratCuiPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
 }
 
 func TestBaccaratCuiPresenter_Output_UnknownBetType(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 	m := new(interfaces.MockBaccaratGame)
 	m.On("GetChips").Return(900).Maybe()
@@ -197,8 +205,9 @@ func TestBaccaratCuiPresenter_Output_UnknownBetType(t *testing.T) {
 }
 
 func TestBaccaratCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
 	color.SetNoColor(true)
-	defer color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
 	p := new(BaccaratCuiPresenter)
 
 	t.Run("game not ended", func(t *testing.T) {
