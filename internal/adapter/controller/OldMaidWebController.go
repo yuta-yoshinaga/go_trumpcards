@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -79,6 +80,21 @@ type OldMaidWebOutputMetaAI struct {
 	EdgePickRate float64 `json:"edgePickRate"`
 }
 
+// ToConfig builds an OldMaidConfig from the web input.
+// Returns an error if Mode is out of range.
+func (p OldMaidWebInput) ToConfig() (domain.OldMaidConfig, error) {
+	if p.Mode < 0 || p.Mode > int(domain.OldMaidModeJijiNuki) {
+		return domain.OldMaidConfig{}, errors.New("param error: mode must be between 0 and 1")
+	}
+	return domain.OldMaidConfig{
+		Mode:                 domain.OldMaidMode(p.Mode),
+		CpuPlacementStrategy: p.CpuPlacementStrategy,
+		CpuMemoryAI:          p.CpuMemoryAI,
+		CpuHesitationEnabled: p.CpuHesitationEnabled,
+		CpuMetaAI:            p.CpuMetaAI,
+	}, nil
+}
+
 // OldMaidWebController ババ抜きWebコントローラークラス
 type OldMaidWebController = GameWebController[usecase.OldMaidInteractorIF, OldMaidWebInput, *OldMaidWebOutput]
 
@@ -100,16 +116,10 @@ func newOldMaidDefaultOutput(msg string) *OldMaidWebOutput {
 func oldMaidDispatch(bc *baseController, w rest.ResponseWriter, omi usecase.OldMaidInteractorIF, param OldMaidWebInput, newDefault func(string) *OldMaidWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		if param.Mode < 0 || param.Mode > int(domain.OldMaidModeJijiNuki) {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: mode must be between 0 and 1."))
+		cfg, err := param.ToConfig()
+		if err != nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault(err.Error()))
 			return true
-		}
-		cfg := domain.OldMaidConfig{
-			Mode:                 domain.OldMaidMode(param.Mode),
-			CpuPlacementStrategy: param.CpuPlacementStrategy,
-			CpuMemoryAI:          param.CpuMemoryAI,
-			CpuHesitationEnabled: param.CpuHesitationEnabled,
-			CpuMetaAI:            param.CpuMetaAI,
 		}
 		bc.writePresenterResponse(w, omi.Reset(cfg))
 	case "rp", "reset-profile":

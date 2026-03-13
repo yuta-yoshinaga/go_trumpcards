@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -113,6 +114,79 @@ type HoldemWebOutput struct {
 	WebOutputBase
 }
 
+// ToConfig builds a HoldemConfig from the web input.
+// Returns an error if the blind configuration is invalid or tableSize is invalid.
+func (p HoldemWebInput) ToConfig() (domain.HoldemConfig, error) {
+	cfg := domain.DefaultHoldemConfig()
+	sb, bb := cfg.SmallBlind, cfg.BigBlind
+	sbProvided := p.SmallBlind != nil && *p.SmallBlind >= 1
+	bbProvided := p.BigBlind != nil && *p.BigBlind >= 1
+	if sbProvided {
+		sb = *p.SmallBlind
+	}
+	if bbProvided {
+		bb = *p.BigBlind
+	}
+	// 片方のみ指定された場合、もう片方を自動調整
+	if sbProvided && !bbProvided && sb >= cfg.BigBlind {
+		bb = sb * 2
+	} else if bbProvided && !sbProvided && bb > 1 {
+		sb = bb / 2
+	}
+	if sb >= bb {
+		return domain.HoldemConfig{}, errors.New("param error: smallBlind must be less than bigBlind")
+	}
+	cfg.SmallBlind = sb
+	cfg.BigBlind = bb
+	if p.TournamentMode != nil {
+		cfg.TournamentMode = *p.TournamentMode
+	}
+	if p.BlindLevelHands != nil && *p.BlindLevelHands >= 1 {
+		cfg.BlindLevelHands = *p.BlindLevelHands
+	}
+	if p.BlindMultiplier != nil && *p.BlindMultiplier >= 101 {
+		cfg.BlindMultiplier = *p.BlindMultiplier
+	}
+	if p.BettingLimit != nil {
+		bl := *p.BettingLimit
+		if bl < 0 {
+			bl = 0
+		} else if bl > 2 {
+			bl = 2
+		}
+		cfg.BettingLimit = domain.BettingLimitType(bl)
+	}
+	if p.TableSize != nil {
+		ts := *p.TableSize
+		if !domain.IsValidHoldemTableSize(ts) {
+			return domain.HoldemConfig{}, errors.New("param error: tableSize must be 4, 6, or 9")
+		}
+		cfg.TableSize = ts
+	}
+	if p.RebuyEnabled != nil {
+		cfg.RebuyEnabled = *p.RebuyEnabled
+	}
+	if p.RebuyMaxCount != nil && *p.RebuyMaxCount >= 1 {
+		cfg.RebuyMaxCount = *p.RebuyMaxCount
+	}
+	if p.RebuyChips != nil && *p.RebuyChips >= 1 {
+		cfg.RebuyChips = *p.RebuyChips
+	}
+	if p.RebuyPeriodHands != nil && *p.RebuyPeriodHands >= 1 {
+		cfg.RebuyPeriodHands = *p.RebuyPeriodHands
+	}
+	if p.AddonEnabled != nil {
+		cfg.AddonEnabled = *p.AddonEnabled
+	}
+	if p.AddonChips != nil && *p.AddonChips >= 1 {
+		cfg.AddonChips = *p.AddonChips
+	}
+	if p.AddonAfterHand != nil && *p.AddonAfterHand >= 1 {
+		cfg.AddonAfterHand = *p.AddonAfterHand
+	}
+	return cfg, nil
+}
+
 // HoldemWebController テキサスホールデムWebコントローラークラス
 type HoldemWebController = GameWebController[usecase.HoldemInteractorIF, HoldemWebInput, *HoldemWebOutput]
 
@@ -135,78 +209,10 @@ func newHoldemDefaultOutput(msg string) *HoldemWebOutput {
 func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.HoldemInteractorIF, param HoldemWebInput, newDefault func(string) *HoldemWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		cfg := domain.DefaultHoldemConfig()
-		sb, bb := cfg.SmallBlind, cfg.BigBlind
-		sbProvided := param.SmallBlind != nil && *param.SmallBlind >= 1
-		bbProvided := param.BigBlind != nil && *param.BigBlind >= 1
-		if sbProvided {
-			sb = *param.SmallBlind
-		}
-		if bbProvided {
-			bb = *param.BigBlind
-		}
-		// 片方のみ指定された場合、もう片方を自動調整
-		if sbProvided && !bbProvided && sb >= cfg.BigBlind {
-			bb = sb * 2
-		} else if bbProvided && !sbProvided && bb > 1 {
-			sb = bb / 2
-			if sb < 1 {
-				sb = 1
-			}
-		}
-		if sb >= bb {
-			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: smallBlind must be less than bigBlind."))
+		cfg, err := param.ToConfig()
+		if err != nil {
+			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault(err.Error()))
 			return true
-		}
-		cfg.SmallBlind = sb
-		cfg.BigBlind = bb
-		// トーナメントモード設定
-		if param.TournamentMode != nil {
-			cfg.TournamentMode = *param.TournamentMode
-		}
-		if param.BlindLevelHands != nil && *param.BlindLevelHands >= 1 {
-			cfg.BlindLevelHands = *param.BlindLevelHands
-		}
-		if param.BlindMultiplier != nil && *param.BlindMultiplier >= 101 {
-			cfg.BlindMultiplier = *param.BlindMultiplier
-		}
-		if param.BettingLimit != nil {
-			bl := *param.BettingLimit
-			if bl < 0 {
-				bl = 0
-			} else if bl > 2 {
-				bl = 2
-			}
-			cfg.BettingLimit = domain.BettingLimitType(bl)
-		}
-		if param.TableSize != nil {
-			ts := *param.TableSize
-			if !domain.IsValidHoldemTableSize(ts) {
-				bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: tableSize must be 4, 6, or 9."))
-				return true
-			}
-			cfg.TableSize = ts
-		}
-		if param.RebuyEnabled != nil {
-			cfg.RebuyEnabled = *param.RebuyEnabled
-		}
-		if param.RebuyMaxCount != nil && *param.RebuyMaxCount >= 1 {
-			cfg.RebuyMaxCount = *param.RebuyMaxCount
-		}
-		if param.RebuyChips != nil && *param.RebuyChips >= 1 {
-			cfg.RebuyChips = *param.RebuyChips
-		}
-		if param.RebuyPeriodHands != nil && *param.RebuyPeriodHands >= 1 {
-			cfg.RebuyPeriodHands = *param.RebuyPeriodHands
-		}
-		if param.AddonEnabled != nil {
-			cfg.AddonEnabled = *param.AddonEnabled
-		}
-		if param.AddonChips != nil && *param.AddonChips >= 1 {
-			cfg.AddonChips = *param.AddonChips
-		}
-		if param.AddonAfterHand != nil && *param.AddonAfterHand >= 1 {
-			cfg.AddonAfterHand = *param.AddonAfterHand
 		}
 		bc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
 	case "f", "fold":

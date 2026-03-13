@@ -63,6 +63,29 @@ type HeartsWebOutputConfig struct {
 	PointLimit    int `json:"pointLimit"`
 }
 
+// ToConfig builds a HeartsConfig from the nested web config, applying bounds checking.
+func (c *HeartsWebConfig) ToConfig() domain.HeartsConfig {
+	cfg := domain.DefaultHeartsConfig()
+	if c.CpuDifficulty != nil {
+		d := *c.CpuDifficulty
+		if d >= int(domain.HeartsCpuDifficultyEasy) && d <= int(domain.HeartsCpuDifficultyHard) {
+			cfg.CpuDifficulty = domain.HeartsCpuDifficulty(d)
+		}
+	}
+	if c.PointLimit != nil && *c.PointLimit >= 1 && *c.PointLimit <= 1000 {
+		cfg.PointLimit = *c.PointLimit
+	}
+	return cfg
+}
+
+// ToConfig builds a HeartsConfig from the web input.
+func (p HeartsWebInput) ToConfig() domain.HeartsConfig {
+	if p.Config != nil {
+		return p.Config.ToConfig()
+	}
+	return domain.DefaultHeartsConfig()
+}
+
 // HeartsWebController ハーツWebコントローラークラス
 type HeartsWebController = GameWebController[usecase.HeartsInteractorIF, HeartsWebInput, *HeartsWebOutput]
 
@@ -83,19 +106,7 @@ func newHeartsDefaultOutput(msg string) *HeartsWebOutput {
 func heartsDispatch(bc *baseController, w rest.ResponseWriter, hi usecase.HeartsInteractorIF, param HeartsWebInput, newDefault func(string) *HeartsWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		cfg := domain.DefaultHeartsConfig()
-		if param.Config != nil {
-			if param.Config.CpuDifficulty != nil {
-				d := *param.Config.CpuDifficulty
-				if d >= int(domain.HeartsCpuDifficultyEasy) && d <= int(domain.HeartsCpuDifficultyHard) {
-					cfg.CpuDifficulty = domain.HeartsCpuDifficulty(d)
-				}
-			}
-			if param.Config.PointLimit != nil && *param.Config.PointLimit >= 1 && *param.Config.PointLimit <= 1000 {
-				cfg.PointLimit = *param.Config.PointLimit
-			}
-		}
-		bc.writePresenterResponse(w, hi.ResetWithConfig(cfg))
+		bc.writePresenterResponse(w, hi.ResetWithConfig(param.ToConfig()))
 	case "pass":
 		if len(param.CardIndices) != 3 {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: pass requires exactly 3 card indices."))

@@ -28,7 +28,7 @@ type BlackJackInteractorIF interface {
 	SetDeckPenetration(penetration int) string
 	SetCpuPlayerCount(count int) string
 	SetSurrenderRule(rule int) string
-	ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string
+	ResetWithConfig(cfg domain.BlackJackConfig) string
 	ActionLog() string
 }
 
@@ -169,17 +169,9 @@ func (bi *BlackJackInteractor) SetSurrenderRule(rule int) string {
 }
 
 // ResetWithConfig 設定付きリセット
-func (bi *BlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string {
+func (bi *BlackJackInteractor) ResetWithConfig(cfg domain.BlackJackConfig) string {
 	bi.bj.Reset()
-	err := bi.bj.SetConfig(domain.BlackJackConfig{
-		DealerHitsSoft17: dealerHitsSoft17,
-		CpuPlayerCount:   cpuPlayerCount,
-		CountingEnabled:  countingEnabled,
-		DoubleAfterSplit: doubleAfterSplit,
-		CountingSystem:   countingSystem,
-		DeckPenetration:  deckPenetration,
-		SurrenderRule:    surrenderRule,
-	})
+	err := bi.bj.SetConfig(cfg)
 	if err != nil {
 		return bi.bjp.Output(bi.bj, err)
 	}

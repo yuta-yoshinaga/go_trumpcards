@@ -147,7 +147,7 @@ func TestResetWithConfig(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 2, true, true, domain.BJCountingKO, 0, 0)
+	result := tbj.ResetWithConfig(domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 2, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingKO})
 	assert.Equal(t, "reset done", result)
 	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 2, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingKO})
 	bjMock.AssertNumberOfCalls(t, "Reset", 2)
@@ -162,7 +162,7 @@ func TestResetWithConfig_Error(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 5, false, false, 0, 0, 0)
+	result := tbj.ResetWithConfig(domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 5})
 	assert.Equal(t, "config error output", result)
 	bjMock.AssertNumberOfCalls(t, "Reset", 1)
 }
@@ -284,7 +284,7 @@ func TestResetWithConfig_WithPenetration(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 1, true, true, domain.BJCountingHiLo, 50, 0)
+	result := tbj.ResetWithConfig(domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50})
 	assert.Equal(t, "reset done", result)
 	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50})
 	bjMock.AssertNumberOfCalls(t, "Reset", 2)
@@ -352,7 +352,7 @@ func TestResetWithConfig_WithSurrenderRule(t *testing.T) {
 	bjMock.On("Reset").Return()
 
 	tbj := usecase.NewBlackJackInteractor(bjMock, bjpMock)
-	result := tbj.ResetWithConfig(true, 1, true, true, domain.BJCountingHiLo, 50, domain.BJSurrenderEarly)
+	result := tbj.ResetWithConfig(domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50, SurrenderRule: domain.BJSurrenderEarly})
 	assert.Equal(t, "reset done", result)
 	bjMock.AssertCalled(t, "SetConfig", domain.BlackJackConfig{DealerHitsSoft17: true, CpuPlayerCount: 1, CountingEnabled: true, DoubleAfterSplit: true, CountingSystem: domain.BJCountingHiLo, DeckPenetration: 50, SurrenderRule: domain.BJSurrenderEarly})
 	bjMock.AssertNumberOfCalls(t, "Reset", 2)

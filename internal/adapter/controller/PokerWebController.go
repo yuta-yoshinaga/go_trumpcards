@@ -94,6 +94,42 @@ type PokerWebOutput struct {
 	WebOutputBase
 }
 
+// ToConfig builds a PokerConfig from the web input, applying bounds clamping.
+func (p PokerWebInput) ToConfig() domain.PokerConfig {
+	cfg := domain.DefaultPokerConfig()
+	if p.CpuCount != nil {
+		cc := *p.CpuCount
+		if cc < 1 {
+			cc = 1
+		} else if cc > 3 {
+			cc = 3
+		}
+		cfg.CpuCount = cc
+	}
+	if p.JokerCount != nil {
+		jc := *p.JokerCount
+		if jc < 0 {
+			jc = 0
+		} else if jc > 2 {
+			jc = 2
+		}
+		cfg.JokerCount = jc
+	}
+	if p.BettingLimit != nil {
+		bl := *p.BettingLimit
+		if bl < 0 {
+			bl = 0
+		} else if bl > 2 {
+			bl = 2
+		}
+		cfg.BettingLimit = domain.BettingLimitType(bl)
+	}
+	if p.IsLowball != nil {
+		cfg.IsLowball = *p.IsLowball
+	}
+	return cfg
+}
+
 // PokerWebController ポーカーWebコントローラークラス
 type PokerWebController = GameWebController[usecase.PokerInteractorIF, PokerWebInput, *PokerWebOutput]
 
@@ -116,38 +152,7 @@ func newPokerDefaultOutput(msg string) *PokerWebOutput {
 func pokerDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PokerInteractorIF, param PokerWebInput, _ func(string) *PokerWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		cfg := domain.DefaultPokerConfig()
-		if param.CpuCount != nil {
-			cc := *param.CpuCount
-			if cc < 1 {
-				cc = 1
-			} else if cc > 3 {
-				cc = 3
-			}
-			cfg.CpuCount = cc
-		}
-		if param.JokerCount != nil {
-			jc := *param.JokerCount
-			if jc < 0 {
-				jc = 0
-			} else if jc > 2 {
-				jc = 2
-			}
-			cfg.JokerCount = jc
-		}
-		if param.BettingLimit != nil {
-			bl := *param.BettingLimit
-			if bl < 0 {
-				bl = 0
-			} else if bl > 2 {
-				bl = 2
-			}
-			cfg.BettingLimit = domain.BettingLimitType(bl)
-		}
-		if param.IsLowball != nil {
-			cfg.IsLowball = *param.IsLowball
-		}
-		bc.writePresenterResponse(w, pi.ResetWithConfig(cfg))
+		bc.writePresenterResponse(w, pi.ResetWithConfig(param.ToConfig()))
 	case "e", "exchange":
 		indices := param.Indices
 		if indices == nil {

@@ -1,6 +1,9 @@
 package usecase
 
-import "github.com/stretchr/testify/mock"
+import (
+	"github.com/stretchr/testify/mock"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
 
 // MockBlackJackInteractor ブラックジャックインタラクターモック
 type MockBlackJackInteractor struct {
@@ -128,8 +131,8 @@ func (_m *MockBlackJackInteractor) SetSurrenderRule(rule int) string {
 }
 
 // ResetWithConfig モック
-func (_m *MockBlackJackInteractor) ResetWithConfig(dealerHitsSoft17 bool, cpuPlayerCount int, countingEnabled bool, doubleAfterSplit bool, countingSystem int, deckPenetration int, surrenderRule int) string {
-	ret := _m.Called(dealerHitsSoft17, cpuPlayerCount, countingEnabled, doubleAfterSplit, countingSystem, deckPenetration, surrenderRule)
+func (_m *MockBlackJackInteractor) ResetWithConfig(cfg domain.BlackJackConfig) string {
+	ret := _m.Called(cfg)
 	return ret.Get(0).(string)
 }
 
