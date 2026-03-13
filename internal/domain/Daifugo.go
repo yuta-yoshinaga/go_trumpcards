@@ -88,6 +88,9 @@ const (
 	DaifugoDifficultyHard   DaifugoCpuDifficulty = 2 // 難しい (ヒューリスティックAI)
 )
 
+// DaifugoFiveSkipCountMax 5飛びスキップ数最大
+const DaifugoFiveSkipCountMax = 5
+
 // DaifugoDifficultyNames 難易度名マップ
 var DaifugoDifficultyNames = map[DaifugoCpuDifficulty]string{
 	DaifugoDifficultyNormal: "Normal",
@@ -142,9 +145,6 @@ func DefaultDaifugoConfig() DaifugoConfig {
 		EmperorEnabled:      false,
 	}
 }
-
-// DaifugoFiveSkipCountMax 5飛びスキップ数最大
-const DaifugoFiveSkipCountMax = 5
 
 // Validate 設定値のドメインバリデーション
 func (c DaifugoConfig) Validate() error {

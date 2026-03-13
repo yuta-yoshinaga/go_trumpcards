@@ -109,6 +109,7 @@ func (c HoldemConfig) Validate() error {
 	if c.BlindLevelHands < 1 {
 		return fmt.Errorf("blind level hands must be >= 1, got %d", c.BlindLevelHands)
 	}
+	// TableSize == 0 means "keep current size / no change"; only validate non-zero values.
 	if c.TableSize != 0 && !IsValidHoldemTableSize(c.TableSize) {
 		return fmt.Errorf("invalid table size %d, must be %d, %d, or %d", c.TableSize, HoldemTableSize4, HoldemTableSize6, HoldemTableSize9)
 	}
