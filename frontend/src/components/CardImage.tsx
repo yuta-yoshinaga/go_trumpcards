@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { focusRingWhite } from '../styles/buttonStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 
@@ -76,6 +77,7 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
         type="button"
         onClick={onClick}
         aria-label={effectiveAriaLabel}
+        className={`${focusRingWhite} rounded-md`}
         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0 }}
       >
         {img}

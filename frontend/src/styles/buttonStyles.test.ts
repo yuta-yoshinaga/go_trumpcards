@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRing } from './buttonStyles';
+import {
+  btnDanger,
+  btnPrimary,
+  btnSecondary,
+  btnSuccess,
+  btnWarning,
+  focusRingBlue,
+  focusRingWhite,
+} from './buttonStyles';
 
 describe('buttonStyles', () => {
   it('btnPrimary includes blue background', () => {
@@ -22,9 +30,17 @@ describe('buttonStyles', () => {
     expect(btnSecondary).toContain('bg-gray-600');
   });
 
-  it('focusRing includes focus:ring-2 and focus:outline-none', () => {
-    expect(focusRing).toContain('focus:outline-none');
-    expect(focusRing).toContain('focus:ring-2');
-    expect(focusRing).toContain('focus:ring-white/70');
+  it('focusRingWhite includes focus-visible:ring-white/80', () => {
+    expect(focusRingWhite).toContain('focus-visible:outline-none');
+    expect(focusRingWhite).toContain('focus-visible:ring-2');
+    expect(focusRingWhite).toContain('focus-visible:ring-white/80');
+  });
+
+  it('focusRingBlue includes focus-visible:ring-blue-400 with offset', () => {
+    expect(focusRingBlue).toContain('focus-visible:outline-none');
+    expect(focusRingBlue).toContain('focus-visible:ring-2');
+    expect(focusRingBlue).toContain('focus-visible:ring-blue-400');
+    expect(focusRingBlue).toContain('focus-visible:ring-offset-2');
+    expect(focusRingBlue).toContain('focus-visible:ring-offset-black');
   });
 });
