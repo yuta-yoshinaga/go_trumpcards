@@ -133,7 +133,7 @@ func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.Bl
 	case "r", "reset":
 		if param.HasConfigParams() {
 			cfg := param.ToConfig()
-			bc.writePresenterResponse(w, bji.ResetWithConfig(cfg.DealerHitsSoft17, cfg.CpuPlayerCount, cfg.CountingEnabled, cfg.DoubleAfterSplit, cfg.CountingSystem, cfg.DeckPenetration, cfg.SurrenderRule))
+			bc.writePresenterResponse(w, bji.ResetWithConfig(cfg))
 		} else {
 			bc.writePresenterResponse(w, bji.Reset())
 		}
