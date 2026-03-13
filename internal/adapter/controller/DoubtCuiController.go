@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -73,7 +73,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 1 || v > 60 {
-					return fmt.Sprintf("Invalid doubt window: %s. Please enter 1-60.", args[0]), true
+					return cuimsg.InvalidOutOfRange("doubt window", args[0], "Please enter 1-60."), true
 				}
 				cfg := c.di.GetConfig()
 				cfg.DoubtWindowSec = v
@@ -84,7 +84,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid CPU memory level: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU memory level", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.di.GetConfig()
 				cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(v)
@@ -95,7 +95,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid meta-AI flag: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("meta-AI flag", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.di.GetConfig()
 				cfg.CpuMetaAI = v == 1
@@ -108,7 +108,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 {
-					return fmt.Sprintf("Invalid penalty draw limit: %s. Please enter 0 or more.", args[0]), true
+					return cuimsg.InvalidOutOfRange("penalty draw limit", args[0], "Please enter 0 or more."), true
 				}
 				cfg := c.di.GetConfig()
 				cfg.PenaltyDrawLimit = v

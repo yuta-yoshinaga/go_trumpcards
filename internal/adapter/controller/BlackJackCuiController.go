@@ -3,6 +3,7 @@ package controller
 import (
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -34,11 +35,11 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return bcc.bji.Stand(), true
 			case "b", "bet":
 				if len(args) < 1 {
-					return "Bet amount is required.", true
+					return cuimsg.Required("Bet amount"), true
 				}
 				amount, err := strconv.Atoi(args[0])
 				if err != nil || amount <= 0 {
-					return "Invalid bet amount. Please enter a number.", true
+					return cuimsg.InvalidNotANumber("bet amount"), true
 				}
 				ppBet := 0
 				t3Bet := 0
@@ -75,7 +76,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return bcc.bji.DeclineEarlySurrender(), true
 			case "ssr", "setsurrenderrule":
 				if len(args) < 1 {
-					return "Surrender rule is required.", true
+					return cuimsg.Required("Surrender rule"), true
 				}
 				rule, err := strconv.Atoi(args[0])
 				if err != nil || rule < 0 || rule > domain.BJSurrenderMax {
@@ -92,16 +93,16 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return bcc.bji.ToggleDAS(), true
 			case "sd", "setdeckcount":
 				if len(args) < 1 {
-					return "Deck count is required.", true
+					return cuimsg.Required("Deck count"), true
 				}
 				count, err := strconv.Atoi(args[0])
 				if err != nil || count <= 0 {
-					return "Invalid deck count. Please enter a number.", true
+					return cuimsg.InvalidNotANumber("deck count"), true
 				}
 				return bcc.bji.SetDeckCount(count), true
 			case "scc", "setcpucount":
 				if len(args) < 1 {
-					return "CPU player count is required.", true
+					return cuimsg.Required("CPU player count"), true
 				}
 				count, err := strconv.Atoi(args[0])
 				if err != nil || count < 0 || count > domain.BJMaxCpuPlayers {
@@ -110,7 +111,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return bcc.bji.SetCpuPlayerCount(count), true
 			case "scs", "setcountingsystem":
 				if len(args) < 1 {
-					return "Counting system is required.", true
+					return cuimsg.Required("Counting system"), true
 				}
 				system, err := strconv.Atoi(args[0])
 				if err != nil || system < 0 || system > domain.BJCountingMax {
@@ -119,11 +120,11 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				return bcc.bji.SetCountingSystem(system), true
 			case "pen", "setpenetration":
 				if len(args) < 1 {
-					return "Penetration rate is required.", true
+					return cuimsg.Required("Penetration rate"), true
 				}
 				pen, err := strconv.Atoi(args[0])
 				if err != nil {
-					return "Invalid penetration rate. Please enter a number.", true
+					return cuimsg.InvalidNotANumber("penetration rate"), true
 				}
 				return bcc.bji.SetDeckPenetration(pen), true
 			}

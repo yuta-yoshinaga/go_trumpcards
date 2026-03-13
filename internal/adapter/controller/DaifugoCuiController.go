@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -74,7 +74,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid CPU difficulty: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU difficulty", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(v)
@@ -85,7 +85,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid joker count: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("joker count", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.JokerCount = v
@@ -96,11 +96,11 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				}
 				setter, ok := daifugoRuleKeys[args[0]]
 				if !ok {
-					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
+					return "Unknown rule: " + args[0] + ".", true
 				}
 				v, err := strconv.Atoi(args[1])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid value: %s. Please enter 0 or 1.", args[1]), true
+					return cuimsg.InvalidOutOfRange("value", args[1], "Please enter 0 or 1."), true
 				}
 				cfg := c.dgi.GetConfig()
 				setter(&cfg, v == 1)
@@ -111,7 +111,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid suit lock mode: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("suit lock mode", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.SuitLockMode = domain.DaifugoSuitLockMode(v)
@@ -122,7 +122,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 1 || v > 5 {
-					return fmt.Sprintf("Invalid five skip count: %s. Please enter 1-5.", args[0]), true
+					return cuimsg.InvalidOutOfRange("five skip count", args[0], "Please enter 1-5."), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.FiveSkipCount = v

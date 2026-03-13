@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -70,29 +70,29 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				}
 				bl, err := strconv.Atoi(args[0])
 				if err != nil || bl < 0 || bl > 2 {
-					return fmt.Sprintf("Invalid betting limit: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("betting limit", args[0], "Please enter 0-2."), true
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
 				return pcc.pi.ResetWithConfig(cfg), true
 			case "scc", "setcpucount":
 				if len(args) < 1 {
-					return "CPU player count is required.", true
+					return cuimsg.Required("CPU player count"), true
 				}
 				count, err := strconv.Atoi(args[0])
 				if err != nil || count < 1 || count > 3 {
-					return fmt.Sprintf("Invalid CPU player count: %s. Please enter 1-3.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU player count", args[0], "Please enter 1-3."), true
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.CpuCount = count
 				return pcc.pi.ResetWithConfig(cfg), true
 			case "sjc", "setjokercount":
 				if len(args) < 1 {
-					return "Joker count is required.", true
+					return cuimsg.Required("Joker count"), true
 				}
 				count, err := strconv.Atoi(args[0])
 				if err != nil || count < 0 || count > 2 {
-					return fmt.Sprintf("Invalid joker count: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("joker count", args[0], "Please enter 0-2."), true
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.JokerCount = count

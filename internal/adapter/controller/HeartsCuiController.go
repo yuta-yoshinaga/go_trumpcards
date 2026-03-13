@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -53,7 +54,7 @@ func (c *HeartsCuiController) Exec(command string) string {
 				return c.hi.Pass(indices), true
 			case "p", "play":
 				if len(args) < 1 {
-					return "Card index is required.", true
+					return cuimsg.Required("Card index"), true
 				}
 				idx, err := strconv.Atoi(args[0])
 				if err != nil {
@@ -70,18 +71,18 @@ func (c *HeartsCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid CPU difficulty: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU difficulty", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.CpuDifficulty = domain.HeartsCpuDifficulty(v)
 				return c.hi.ResetWithConfig(cfg), true
 			case "sl", "setlimit":
 				if len(args) < 1 {
-					return "Point limit is required.", true
+					return cuimsg.Required("Point limit"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 1 {
-					return fmt.Sprintf("Invalid point limit: %s. Please enter 1 or more.", args[0]), true
+					return cuimsg.InvalidOutOfRange("point limit", args[0], "Please enter 1 or more."), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.PointLimit = v

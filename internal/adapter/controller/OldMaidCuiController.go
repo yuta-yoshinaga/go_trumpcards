@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -53,7 +53,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				}
 				m, err := strconv.Atoi(args[0])
 				if err != nil || m < 0 || m > 1 {
-					return fmt.Sprintf("Invalid game mode: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("game mode", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.Mode = domain.OldMaidMode(m)
@@ -64,7 +64,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid CPU placement strategy flag: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU placement strategy flag", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.CpuPlacementStrategy = v == 1
@@ -75,7 +75,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid meta-AI flag: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("meta-AI flag", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.CpuMetaAI = v == 1
@@ -88,7 +88,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid CPU memory AI flag: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU memory AI flag", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.CpuMemoryAI = v == 1
