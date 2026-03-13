@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -65,6 +66,9 @@ func setupHeartsCuiMockWithPlayers() (*interfaces.MockHeartsGame, []*domain.Hear
 }
 
 func TestHeartsCuiPresenter_Output(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	p := new(presenter.HeartsCuiPresenter)
 
 	t.Run("initial state with header and player info", func(t *testing.T) {
@@ -274,6 +278,9 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 }
 
 func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	p := new(presenter.HeartsCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {

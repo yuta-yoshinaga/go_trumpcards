@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -42,28 +43,28 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 
 		// ローカルルール状態
 		if dg.GetRevolutionActive() {
-			b.WriteString("【革命中】2が最弱、3が最強\n")
+			b.WriteString(color.BoldYellow("【革命中】") + "2が最弱、3が最強\n")
 		}
 		if dg.GetElevenBackActive() {
-			b.WriteString("【11バック】強さが逆転中\n")
+			b.WriteString(color.BoldYellow("【11バック】") + "強さが逆転中\n")
 		}
 		if dg.GetSuitLocked() {
-			fmt.Fprintf(b, "【スート縛り】%s\n", cuiSuitName(dg.GetLockedSuit()))
+			fmt.Fprintf(b, "%s%s\n", color.BoldYellow("【スート縛り】"), cuiSuitName(dg.GetLockedSuit()))
 		}
 		if dg.GetTableIsSequence() {
-			b.WriteString("【階段】\n")
+			b.WriteString(color.BoldYellow("【階段】") + "\n")
 		}
 		if dg.GetReverseDirection() {
-			b.WriteString("【9リバース】\n")
+			b.WriteString(color.BoldYellow("【9リバース】") + "\n")
 		}
 		if dg.GetNumberLocked() {
-			b.WriteString("【連番縛り】\n")
+			b.WriteString(color.BoldYellow("【連番縛り】") + "\n")
 		}
 
 		// カード交換記録
 		exchangeActions := dg.GetExchangeActions()
 		if len(exchangeActions) > 0 {
-			b.WriteString("[カード交換]\n")
+			b.WriteString(color.Bold("[カード交換]") + "\n")
 			for _, ex := range exchangeActions {
 				fmt.Fprintf(b, "%s → %s: %s\n",
 					cuiPlayerName(dg.GetPlayer(ex.FromPlayerIdx), ex.FromPlayerIdx),
@@ -98,7 +99,7 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 		// CPUの行動履歴を表示
 		cpuActions := dg.GetCpuActions()
 		if len(cpuActions) > 0 {
-			b.WriteString("[CPUの行動]\n")
+			b.WriteString(color.Bold("[CPUの行動]") + "\n")
 			for _, action := range cpuActions {
 				actPlayerName := cuiPlayerName(dg.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 				if len(action.PlayedCards) == 0 {
@@ -111,7 +112,7 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 
 		// エラーメッセージ
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", lastErr.Error())
+			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
 		}
 
 		if dg.GetGameEndFlag() {

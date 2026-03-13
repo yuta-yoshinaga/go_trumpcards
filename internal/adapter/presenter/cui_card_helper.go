@@ -5,8 +5,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
+
+// isRedSuit returns true for heart and diamond suits.
+func isRedSuit(design int) bool {
+	return design == domain.CardDesignHeart || design == domain.CardDesignDiamond
+}
 
 // cuiCardList is the minimal type constraint required by cuiCardListStr.
 type cuiCardList interface {
@@ -56,7 +62,11 @@ func cuiCardStr(card *domain.Card) string {
 	if name == "UNKNOWN" {
 		return "UNKNOWN"
 	}
-	return name + " " + strconv.Itoa(card.GetValue())
+	s := name + " " + strconv.Itoa(card.GetValue())
+	if isRedSuit(card.GetDesign()) {
+		return color.Red(s)
+	}
+	return s
 }
 
 // cuiCardStrEmoji returns an emoji-based card string (e.g. "♠5", "🃏0").
@@ -70,7 +80,11 @@ func cuiCardStrEmoji(card *domain.Card) string {
 	if d < 0 || d >= len(designs) {
 		d = 0
 	}
-	return fmt.Sprintf("%s%d", designs[d], card.GetValue())
+	s := fmt.Sprintf("%s%d", designs[d], card.GetValue())
+	if isRedSuit(card.GetDesign()) {
+		return color.Red(s)
+	}
+	return s
 }
 
 // cuiSuitName returns the suit name string for a given design constant.
@@ -91,9 +105,9 @@ func cuiPlayerName[P cuiPlayer](player P, idx int) string {
 		return "UNKNOWN"
 	}
 	if player.GetIsHuman() {
-		return "あなた"
+		return color.Bold("あなた")
 	}
-	return fmt.Sprintf("CPU %d", idx)
+	return color.Bold(fmt.Sprintf("CPU %d", idx))
 }
 
 // cuiBettingActionName returns the Japanese action name for betting actions.

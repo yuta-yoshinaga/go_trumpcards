@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
@@ -25,6 +26,9 @@ func setupBJCuiTest(playerChips, dealerChips int) (*domain.BlackJack, *domain.Bl
 }
 
 func TestBlackJackCuiPresenters_Method(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	tbp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("success Output bet phase", func(t *testing.T) {
@@ -352,6 +356,9 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("surrender flag displayed on hand", func(t *testing.T) {
@@ -411,6 +418,9 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_H17Display(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("H17 rule displayed when DealerHitsSoft17 is true", func(t *testing.T) {
@@ -431,6 +441,9 @@ func TestBlackJackCuiPresenter_H17Display(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("Hi-Lo counting display with TC", func(t *testing.T) {
@@ -482,6 +495,9 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_DASDisplay(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("No DAS rule displayed when DoubleAfterSplit is false", func(t *testing.T) {
@@ -502,6 +518,9 @@ func TestBlackJackCuiPresenter_DASDisplay(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_CpuPlayerDisplay(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("CPU player displayed in action phase", func(t *testing.T) {
@@ -554,6 +573,9 @@ func TestBlackJackCuiPresenter_CpuPlayerDisplay(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("CPU hand with DD flag", func(t *testing.T) {
@@ -735,6 +757,9 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("side bet win displayed", func(t *testing.T) {
@@ -792,6 +817,9 @@ func TestBlackJackCuiPresenter_SideBetResults(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_SideBetWinBranch(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 	// Use retry loop to guarantee the r.Payout > 0 branch is exercised.
 	for attempt := 0; attempt < 1000; attempt++ {
@@ -817,6 +845,9 @@ func TestBlackJackCuiPresenter_SideBetWinBranch(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_Penetration50(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 	bj, _ := setupBJCuiTest(1000, 1000)
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 50, DoubleAfterSplit: true})
@@ -826,6 +857,9 @@ func TestBlackJackCuiPresenter_Penetration50(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_Penetration75(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 	bj, _ := setupBJCuiTest(1000, 1000)
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 75, DoubleAfterSplit: true})
@@ -835,6 +869,9 @@ func TestBlackJackCuiPresenter_Penetration75(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 	bj, _ := setupBJCuiTest(1000, 1000)
 	_ = bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 0, DoubleAfterSplit: true})
@@ -844,6 +881,9 @@ func TestBlackJackCuiPresenter_Penetration0(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("multi-hand count shown when > 1", func(t *testing.T) {
@@ -867,6 +907,9 @@ func TestBlackJackCuiPresenter_MultiHand(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("CPU with insurance bet shows insurance info", func(t *testing.T) {
@@ -910,6 +953,9 @@ func TestBlackJackCuiPresenter_CpuInsuranceBet(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_EarlySurrenderPhase(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	bjp := new(presenter.BlackJackCuiPresenter)
 	bj, dealer := setupBJCuiTest(900, 1000)
 	hand := bj.GetPlayerHands()[0]
@@ -924,6 +970,9 @@ func TestBlackJackCuiPresenter_EarlySurrenderPhase(t *testing.T) {
 }
 
 func TestBlackJackCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	p := new(presenter.BlackJackCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {

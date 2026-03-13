@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -66,7 +67,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		// CPUの行動履歴を表示
 		cpuActions := om.GetCpuActions()
 		if len(cpuActions) > 0 {
-			b.WriteString("[CPUの行動]\n")
+			b.WriteString(color.Bold("[CPUの行動]") + "\n")
 			for _, action := range cpuActions {
 				actPlayerName := cuiPlayerName(om.GetPlayer(action.DrawPlayerIdx), action.DrawPlayerIdx)
 				actFromName := cuiPlayerName(om.GetPlayer(action.DrawFromIdx), action.DrawFromIdx)
@@ -82,7 +83,7 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 		// 引き履歴
 		drawHistory := om.GetDrawHistory()
 		if len(drawHistory) > 0 {
-			b.WriteString("[引き履歴]\n")
+			b.WriteString(color.Bold("[引き履歴]") + "\n")
 			for i, entry := range drawHistory {
 				drawerName := cuiPlayerName(om.GetPlayer(entry.DrawPlayerIdx), entry.DrawPlayerIdx)
 				fromName := cuiPlayerName(om.GetPlayer(entry.DrawFromIdx), entry.DrawFromIdx)
@@ -110,14 +111,14 @@ func (p *OldMaidCuiPresenter) Output(om interfaces.OldMaidGame, lastErr error) s
 
 		// エラーメッセージ
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", lastErr.Error())
+			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
 		}
 
 		if om.GetGameEndFlag() {
 			loserIdx := om.GetLoserIdx()
 			if loserIdx >= 0 {
 				loserName := cuiPlayerName(om.GetPlayer(loserIdx), loserIdx)
-				gameEndLine := fmt.Sprintf("ゲーム終了！ %sの負け！", loserName)
+				gameEndLine := fmt.Sprintf("ゲーム終了！ %s", color.Red(loserName+"の負け！"))
 				if om.GetConfig().Mode == domain.OldMaidModeJijiNuki && om.GetRemovedCard() != nil {
 					gameEndLine += fmt.Sprintf("（除外カード: %s）", cuiCardStr(om.GetRemovedCard()))
 				}

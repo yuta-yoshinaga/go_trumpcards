@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -46,17 +47,17 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	isEnd := p.GetPhase() == domain.PokerPhaseEnd
 	for i, player := range players {
 		if player.GetIsHuman() {
-			b.WriteString("[You]")
+			b.WriteString(color.Bold("[You]"))
 		} else {
-			fmt.Fprintf(&b, "CPU %d (%s)", i, player.GetPlayStyleName())
+			fmt.Fprintf(&b, "%s (%s)", color.Bold(fmt.Sprintf("CPU %d", i)), player.GetPlayStyleName())
 		}
 
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
 
 		if player.GetFolded() {
-			b.WriteString(" [フォールド]")
+			b.WriteString(" " + color.BoldYellow("[フォールド]"))
 		} else if player.GetAllIn() {
-			b.WriteString(" [オールイン]")
+			b.WriteString(" " + color.BoldYellow("[オールイン]"))
 		}
 
 		if player.GetCurrentBet() > 0 {
@@ -88,7 +89,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	cpuActions := p.GetCpuActions()
 	if len(cpuActions) > 0 {
 		b.WriteString("----------\n")
-		b.WriteString("[CPU行動]\n")
+		b.WriteString(color.Bold("[CPU行動]") + "\n")
 		for _, action := range cpuActions {
 			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
 			if action.Amount > 0 {
@@ -102,7 +103,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	cpuExchanges := p.GetCpuExchanges()
 	if len(cpuExchanges) > 0 {
 		b.WriteString("----------\n")
-		b.WriteString("[CPU交換]\n")
+		b.WriteString(color.Bold("[CPU交換]") + "\n")
 		for _, ex := range cpuExchanges {
 			fmt.Fprintf(&b, "  Player %d: %d枚交換\n", ex.PlayerIdx, ex.ExchangeCount)
 		}
@@ -112,7 +113,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	results := p.GetRoundResults()
 	if len(results) > 0 && isEnd {
 		b.WriteString("==========\n")
-		b.WriteString("[結果]\n")
+		b.WriteString(color.Bold("[結果]") + "\n")
 		for _, r := range results {
 			name := "You"
 			if !players[r.PlayerIdx].GetIsHuman() {
@@ -136,7 +137,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 
 	// エラーメッセージ
 	if lastErr != nil {
-		fmt.Fprintf(&b, "[エラー] %s\n", lastErr.Error())
+		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
 	}
 
 	// ゲーム終了メッセージ
@@ -160,7 +161,7 @@ func (pcp *PokerCuiPresenter) OutputWithOdds(p interfaces.PokerGame, lastErr err
 	}
 	var oddsBuilder strings.Builder
 	oddsBuilder.WriteString("==========\n")
-	oddsBuilder.WriteString("[ドローオッズ]\n")
+	oddsBuilder.WriteString(color.Bold("[ドローオッズ]") + "\n")
 	for _, o := range odds {
 		fmt.Fprintf(&oddsBuilder, "  %s: %.2f%% (%d/%d)\n", o.HandName, o.Probability*100, o.Count, o.Total)
 	}

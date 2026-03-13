@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -73,7 +74,7 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 
 		// エラーメッセージ
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", lastErr.Error())
+			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
 		}
 
 		// ゲーム状態
@@ -82,9 +83,9 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 		case domain.KlondikePhasePlaying:
 			fmt.Fprintf(b, "手数: %d\n", k.GetMoveCount())
 		case domain.KlondikePhaseGameClear:
-			fmt.Fprintf(b, "ゲームクリア！ 手数: %d\n", k.GetMoveCount())
+			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), k.GetMoveCount())
 		case domain.KlondikePhaseGameOver:
-			b.WriteString("ゲームオーバー\n")
+			b.WriteString(color.Red("ゲームオーバー") + "\n")
 		}
 	})
 }

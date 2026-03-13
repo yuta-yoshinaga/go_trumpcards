@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
@@ -27,6 +28,9 @@ func setupOldMaidCuiTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
 }
 
 func TestOldMaidCuiPresenter_Method(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	top := new(presenter.OldMaidCuiPresenter)
 
 	makePlayers := func() []*domain.OldMaidPlayer {
@@ -263,6 +267,9 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_MetaAI(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	top := new(presenter.OldMaidCuiPresenter)
 
 	t.Run("metaAI status line shown when profile exists", func(t *testing.T) {
@@ -291,6 +298,9 @@ func TestOldMaidCuiPresenter_MetaAI(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_DrawHistory(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	top := new(presenter.OldMaidCuiPresenter)
 
 	t.Run("no history section when empty", func(t *testing.T) {
@@ -336,6 +346,9 @@ func TestOldMaidCuiPresenter_DrawHistory(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_JijiNuki_Header(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	top := new(presenter.OldMaidCuiPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
@@ -356,6 +369,9 @@ func TestOldMaidCuiPresenter_JijiNuki_Header(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_Normal_Header(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	top := new(presenter.OldMaidCuiPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
@@ -376,6 +392,9 @@ func TestOldMaidCuiPresenter_Normal_Header(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_JijiNuki_GameEnd_ShowsRemovedCard(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	top := new(presenter.OldMaidCuiPresenter)
 	tc := domain.NewTrumpCards(0)
 	players := []*domain.OldMaidPlayer{
@@ -406,6 +425,9 @@ func TestOldMaidCuiPresenter_JijiNuki_GameEnd_ShowsRemovedCard(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	top := new(presenter.OldMaidCuiPresenter)
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
@@ -427,6 +449,9 @@ func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {
 }
 
 func TestOldMaidCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	p := new(presenter.OldMaidCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
