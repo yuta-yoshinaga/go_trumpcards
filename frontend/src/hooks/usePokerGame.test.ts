@@ -137,7 +137,9 @@ describe('usePokerGame', () => {
     act(() => result.current.toggleCard(0));
     expect(mockExec).not.toHaveBeenCalled();
 
-    await act(async () => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
     vi.useRealTimers();
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('odds', [0]));
@@ -153,7 +155,9 @@ describe('usePokerGame', () => {
     mockExec.mockResolvedValue({ ...exchangeState, odds: oddsData });
 
     act(() => result.current.toggleCard(0));
-    await act(async () => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
     vi.useRealTimers();
 
     await waitFor(() => expect(result.current.odds).toEqual(oddsData));
@@ -169,7 +173,9 @@ describe('usePokerGame', () => {
     mockExec.mockResolvedValue({ ...exchangeState });
 
     act(() => result.current.toggleCard(0));
-    await act(async () => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
     vi.useRealTimers();
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('odds', [0]));
@@ -186,7 +192,9 @@ describe('usePokerGame', () => {
     mockExec.mockResolvedValue({ ...exchangeState, odds: oddsData });
 
     act(() => result.current.toggleCard(0));
-    await act(async () => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
     vi.useRealTimers();
     await waitFor(() => expect(result.current.odds).toEqual(oddsData));
 
@@ -205,23 +213,35 @@ describe('usePokerGame', () => {
     let resolveStale!: (v: PokerResponse) => void;
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     mockExec.mockImplementationOnce(
-      (_cmd, _args) => new Promise<PokerResponse>((res) => { resolveStale = res; }),
+      (_cmd, _args) =>
+        new Promise<PokerResponse>((res) => {
+          resolveStale = res;
+        }),
     );
     mockExec.mockResolvedValue({ ...exchangeState, odds: freshOdds });
 
     // First toggle → starts stale request (not yet resolved)
     act(() => result.current.toggleCard(0));
-    await act(async () => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
 
     // Second toggle → starts fresh request, bumps generation
     act(() => result.current.toggleCard(1));
-    await act(async () => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
     vi.useRealTimers();
 
     await waitFor(() => expect(result.current.odds).toEqual(freshOdds));
 
     // Stale response resolves late — should be ignored
-    await act(async () => resolveStale({ ...exchangeState, odds: [{ handRank: 1, handName: 'ワンペア', probability: 0.4, count: 4, total: 10 }] }));
+    await act(async () =>
+      resolveStale({
+        ...exchangeState,
+        odds: [{ handRank: 1, handName: 'ワンペア', probability: 0.4, count: 4, total: 10 }],
+      }),
+    );
     expect(result.current.odds).toEqual(freshOdds);
   });
 
@@ -235,14 +255,18 @@ describe('usePokerGame', () => {
     mockExec.mockResolvedValue({ ...exchangeState, odds: oddsData });
 
     act(() => result.current.toggleCard(0));
-    await act(async () => { vi.advanceTimersByTime(300); });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
     vi.useRealTimers();
     await waitFor(() => expect(result.current.odds).toEqual(oddsData));
     expect(result.current.selected).toEqual([0]);
 
     // Trigger onSuccess via exec → should clear selection and odds
     mockExec.mockResolvedValue(baseState);
-    await act(async () => { await result.current.exec('exchange', [0]); });
+    await act(async () => {
+      await result.current.exec('exchange', [0]);
+    });
 
     expect(result.current.selected).toEqual([]);
     expect(result.current.odds).toBeNull();
@@ -257,7 +281,9 @@ describe('usePokerGame', () => {
 
     // Unmount without any pending timer — cleanup branch (timer === null) should not throw
     unmount();
-    expect(() => { vi.advanceTimersByTime(300); }).not.toThrow();
+    expect(() => {
+      vi.advanceTimersByTime(300);
+    }).not.toThrow();
     vi.useRealTimers();
   });
 
@@ -267,6 +293,7 @@ describe('usePokerGame', () => {
     await waitFor(() => expect(result.current.canExchange).toBe(true));
 
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockClear();
     mockExec.mockResolvedValue({ ...exchangeState, odds: [] });
 
     // Start a pending timer via toggleCard
@@ -274,7 +301,9 @@ describe('usePokerGame', () => {
 
     // Unmount before timer fires — should cancel the timer without throwing
     unmount();
-    expect(() => { vi.advanceTimersByTime(300); }).not.toThrow();
+    expect(() => {
+      vi.advanceTimersByTime(300);
+    }).not.toThrow();
     // Odds API should NOT have been called (timer was cancelled)
     expect(mockExec).not.toHaveBeenCalledWith('odds', [0]);
     vi.useRealTimers();

@@ -126,18 +126,11 @@ func TestOldMaidCuiController_SetMode_NoArgs(t *testing.T) {
 func TestOldMaidCuiController_SetMode_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	// non-numeric: controller handles directly
+	// non-numeric: controller catches
 	assert.Contains(t, c.Exec("sm abc"), "Invalid game mode: abc")
-	// numeric out-of-range: delegated to interactor
-	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
-	cfg2 := domain.DefaultOldMaidConfig()
-	cfg2.Mode = domain.OldMaidMode(2)
-	mi.On("Reset", cfg2).Return("error from domain")
-	assert.Equal(t, "error from domain", c.Exec("sm 2"))
-	cfgNeg := domain.DefaultOldMaidConfig()
-	cfgNeg.Mode = domain.OldMaidMode(-1)
-	mi.On("Reset", cfgNeg).Return("error from domain")
-	assert.Equal(t, "error from domain", c.Exec("sm -1"))
+	// numeric out-of-range: controller catches via ParseIntArg bounds
+	assert.Equal(t, "Invalid game mode: 2. Please enter 0-1.", c.Exec("sm 2"))
+	assert.Equal(t, "Invalid game mode: -1. Please enter 0-1.", c.Exec("sm -1"))
 }
 
 // --- set placement strategy ---

@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"strconv"
+	"math"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -29,16 +29,13 @@ func (bcc *BaccaratCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
-				if len(args) < 2 {
-					return "Usage: b <amount> <betType(0=Player,1=Banker,2=Tie)>", true
+				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
+				if !ok {
+					return errMsg, true
 				}
-				amount, err := strconv.Atoi(args[0])
-				if err != nil || amount <= 0 {
-					return cuimsg.InvalidNotANumber("bet amount"), true
-				}
-				betType, err := strconv.Atoi(args[1])
-				if err != nil || betType < 0 || betType > 2 {
-					return "Invalid bet type. Please enter 0(Player), 1(Banker), or 2(Tie).", true
+				betType, errMsg, ok := cuiutil.ParseIntArg(args[1:], "Bet type is required (0=Player, 1=Banker, 2=Tie).", "Invalid bet type. Please enter 0(Player), 1(Banker), or 2(Tie).", 0, 2)
+				if !ok {
+					return errMsg, true
 				}
 				return bcc.bi.Bet(amount, betType), true
 			case "log", "l":

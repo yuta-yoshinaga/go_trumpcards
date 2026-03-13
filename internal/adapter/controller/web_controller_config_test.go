@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
 func boolPtr(v bool) *bool { return &v }
-func intPtr(v int) *int    { return &v }
 
 // ---------------------------------------------------------------------------
 // BlackJackWebInput.HasConfigParams

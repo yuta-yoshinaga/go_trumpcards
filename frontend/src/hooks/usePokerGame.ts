@@ -11,6 +11,7 @@ export function usePokerGame() {
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);
   const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const oddsGenRef = useRef(0);
+  const mountedRef = useRef(true);
 
   const onSuccess = useCallback(() => {
     clearSelection();
@@ -25,7 +26,9 @@ export function usePokerGame() {
   }, [exec]);
 
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
       if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
     };
   }, []);
@@ -47,6 +50,7 @@ export function usePokerGame() {
           setOdds(null);
         } else {
           oddsTimerRef.current = setTimeout(() => {
+            if (!mountedRef.current) return;
             const gen = ++oddsGenRef.current;
             pokerApi
               .exec('odds', next)

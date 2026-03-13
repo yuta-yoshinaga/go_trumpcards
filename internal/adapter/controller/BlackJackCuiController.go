@@ -1,9 +1,10 @@
 package controller
 
 import (
-	"strconv"
+	"math"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -33,31 +34,13 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 			case "s", "stand":
 				return bcc.bji.Stand(), true
 			case "b", "bet":
-				if len(args) < 1 {
-					return cuimsg.Required("Bet amount"), true
+				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
+				if !ok {
+					return errMsg, true
 				}
-				amount, err := strconv.Atoi(args[0])
-				if err != nil || amount <= 0 {
-					return cuimsg.InvalidNotANumber("bet amount"), true
-				}
-				ppBet := 0
-				t3Bet := 0
-				handCount := 0
-				if len(args) >= 2 {
-					if v, e := strconv.Atoi(args[1]); e == nil {
-						ppBet = v
-					}
-				}
-				if len(args) >= 3 {
-					if v, e := strconv.Atoi(args[2]); e == nil {
-						t3Bet = v
-					}
-				}
-				if len(args) >= 4 {
-					if v, e := strconv.Atoi(args[3]); e == nil {
-						handCount = v
-					}
-				}
+				ppBet := cuiutil.ParseOptionalInt(args, 1, 0)
+				t3Bet := cuiutil.ParseOptionalInt(args, 2, 0)
+				handCount := cuiutil.ParseOptionalInt(args, 3, 0)
 				return bcc.bji.Bet(amount, ppBet, t3Bet, handCount), true
 			case "d", "doubledown":
 				return bcc.bji.DoubleDown(), true
@@ -74,12 +57,9 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 			case "des", "declineearlysurrender":
 				return bcc.bji.DeclineEarlySurrender(), true
 			case "ssr", "setsurrenderrule":
-				if len(args) < 1 {
-					return cuimsg.Required("Surrender rule"), true
-				}
-				rule, err := strconv.Atoi(args[0])
-				if err != nil {
-					return cuimsg.InvalidNotANumber("surrender rule"), true
+				rule, errMsg, ok := cuiutil.ParseIntArg(args, "Surrender rule is required.", "Invalid surrender rule: %s. Please enter a number (0-2).", 0, domain.BJSurrenderMax)
+				if !ok {
+					return errMsg, true
 				}
 				return bcc.bji.SetSurrenderRule(rule), true
 			case "hint", "togglehint":
@@ -91,39 +71,27 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 			case "das", "toggledas":
 				return bcc.bji.ToggleDAS(), true
 			case "sd", "setdeckcount":
-				if len(args) < 1 {
-					return cuimsg.Required("Deck count"), true
-				}
-				count, err := strconv.Atoi(args[0])
-				if err != nil || count <= 0 {
-					return cuimsg.InvalidNotANumber("deck count"), true
+				count, errMsg, ok := cuiutil.ParseIntArg(args, "Deck count is required.", "Invalid deck count. Please enter a number.", 1, math.MaxInt)
+				if !ok {
+					return errMsg, true
 				}
 				return bcc.bji.SetDeckCount(count), true
 			case "scc", "setcpucount":
-				if len(args) < 1 {
-					return cuimsg.Required("CPU player count"), true
-				}
-				count, err := strconv.Atoi(args[0])
-				if err != nil {
-					return cuimsg.InvalidNotANumber("CPU player count"), true
+				count, errMsg, ok := cuiutil.ParseIntArg(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter a number (0-3).", 0, domain.BJMaxCpuPlayers)
+				if !ok {
+					return errMsg, true
 				}
 				return bcc.bji.SetCpuPlayerCount(count), true
 			case "scs", "setcountingsystem":
-				if len(args) < 1 {
-					return cuimsg.Required("Counting system"), true
-				}
-				system, err := strconv.Atoi(args[0])
-				if err != nil {
-					return cuimsg.InvalidNotANumber("counting system"), true
+				system, errMsg, ok := cuiutil.ParseIntArg(args, "Counting system is required.", "Invalid counting system: %s. Please enter a number (0-3).", 0, domain.BJCountingMax)
+				if !ok {
+					return errMsg, true
 				}
 				return bcc.bji.SetCountingSystem(system), true
 			case "pen", "setpenetration":
-				if len(args) < 1 {
-					return cuimsg.Required("Penetration rate"), true
-				}
-				pen, err := strconv.Atoi(args[0])
-				if err != nil {
-					return cuimsg.InvalidNotANumber("penetration rate"), true
+				pen, errMsg, ok := cuiutil.ParseIntArg(args, "Penetration rate is required.", "Invalid penetration rate. Please enter a number.", cuiutil.NoMin, cuiutil.NoMax)
+				if !ok {
+					return errMsg, true
 				}
 				return bcc.bji.SetDeckPenetration(pen), true
 			}
