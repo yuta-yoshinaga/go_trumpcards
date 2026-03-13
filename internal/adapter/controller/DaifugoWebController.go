@@ -66,28 +66,26 @@ type DaifugoWebOutputExchangeAction struct {
 
 // DaifugoWebOutput 大富豪Webアウトプット
 type DaifugoWebOutput struct {
-	Players             []*DaifugoWebOutputPlayer         `json:"players"`
-	CurrentTurn         int                               `json:"currentTurn"`
-	TableCards          []*WebOutputCard                  `json:"tableCards"`
-	LastPlayPlayerIdx   int                               `json:"lastPlayPlayerIdx"`
-	GameEndFlag         bool                              `json:"gameEndFlag"`
-	RevolutionActive    bool                              `json:"revolutionActive"`
-	ElevenBackActive    bool                              `json:"elevenBackActive"`
-	SuitLocked          bool                              `json:"suitLocked"`
-	LockedSuit          string                            `json:"lockedSuit"`
-	TableIsSequence     bool                              `json:"tableIsSequence"`
-	Config              DaifugoWebConfig                  `json:"config"`
-	ExchangeActions     []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
-	CpuActions          []*DaifugoWebOutputAction         `json:"cpuActions"`
-	HumanAction         *DaifugoWebOutputAction           `json:"humanAction"`
-	Message             string                            `json:"message"`
-	MessageCode         string                            `json:"messageCode,omitempty"`
-	MessageParams       map[string]string                 `json:"messageParams,omitempty"`
-	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"|"queenBomber"
-	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
-	ReverseDirection    bool                              `json:"reverseDirection"`
-	NumberLocked        bool                              `json:"numberLocked"`
-	SortMode            int                               `json:"sortMode"`
+	Players           []*DaifugoWebOutputPlayer         `json:"players"`
+	CurrentTurn       int                               `json:"currentTurn"`
+	TableCards        []*WebOutputCard                  `json:"tableCards"`
+	LastPlayPlayerIdx int                               `json:"lastPlayPlayerIdx"`
+	GameEndFlag       bool                              `json:"gameEndFlag"`
+	RevolutionActive  bool                              `json:"revolutionActive"`
+	ElevenBackActive  bool                              `json:"elevenBackActive"`
+	SuitLocked        bool                              `json:"suitLocked"`
+	LockedSuit        string                            `json:"lockedSuit"`
+	TableIsSequence   bool                              `json:"tableIsSequence"`
+	Config            DaifugoWebConfig                  `json:"config"`
+	ExchangeActions   []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
+	CpuActions        []*DaifugoWebOutputAction         `json:"cpuActions"`
+	HumanAction       *DaifugoWebOutputAction           `json:"humanAction"`
+	PendingAction       string `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"|"queenBomber"
+	PendingActionTarget int    `json:"pendingActionTarget"` // -1 if none
+	ReverseDirection    bool   `json:"reverseDirection"`
+	NumberLocked        bool   `json:"numberLocked"`
+	SortMode            int    `json:"sortMode"`
+	WebOutputBase
 }
 
 // DaifugoWebController 大富豪Webコントローラークラス
@@ -104,7 +102,7 @@ func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {
 		TableCards:          make([]*WebOutputCard, 0),
 		CpuActions:          make([]*DaifugoWebOutputAction, 0),
 		ExchangeActions:     make([]*DaifugoWebOutputExchangeAction, 0),
-		Message:             msg,
+		WebOutputBase:       WebOutputBase{Message: msg},
 		PendingAction:       "none",
 		PendingActionTarget: -1,
 	}

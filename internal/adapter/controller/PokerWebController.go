@@ -72,28 +72,26 @@ type PokerWebOutputOdds struct {
 
 // PokerWebOutput ポーカーWebアウトプット
 type PokerWebOutput struct {
-	Players       []*PokerWebOutputPlayer      `json:"players"`
-	Pot           int                          `json:"pot"`
-	SidePots      []*PokerWebOutputSidePot     `json:"sidePots"`
-	DealerIdx     int                          `json:"dealerIdx"`
-	CurrentTurn   int                          `json:"currentTurn"`
-	Phase         int                          `json:"phase"`
-	GameEndFlag   bool                         `json:"gameEndFlag"`
-	LastBet       int                          `json:"lastBet"`
-	MinRaise      int                          `json:"minRaise"`
-	Ante          int                          `json:"ante"`
-	JokerCount    int                          `json:"jokerCount"`
-	BettingLimit  int                          `json:"bettingLimit"`
-	RaiseCount    int                          `json:"raiseCount"`
-	MaxBetAmount  int                          `json:"maxBetAmount"`
-	RoundResults  []*PokerWebOutputResult      `json:"roundResults"`
-	CpuActions    []*PokerWebOutputCpuAction   `json:"cpuActions"`
-	CpuExchanges  []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
-	Odds          []*PokerWebOutputOdds        `json:"odds,omitempty"`
-	IsLowball     bool                         `json:"isLowball"`
-	Message       string                       `json:"message"`
-	MessageCode   string                       `json:"messageCode,omitempty"`
-	MessageParams map[string]string            `json:"messageParams,omitempty"`
+	Players      []*PokerWebOutputPlayer      `json:"players"`
+	Pot          int                          `json:"pot"`
+	SidePots     []*PokerWebOutputSidePot     `json:"sidePots"`
+	DealerIdx    int                          `json:"dealerIdx"`
+	CurrentTurn  int                          `json:"currentTurn"`
+	Phase        int                          `json:"phase"`
+	GameEndFlag  bool                         `json:"gameEndFlag"`
+	LastBet      int                          `json:"lastBet"`
+	MinRaise     int                          `json:"minRaise"`
+	Ante         int                          `json:"ante"`
+	JokerCount   int                          `json:"jokerCount"`
+	BettingLimit int                          `json:"bettingLimit"`
+	RaiseCount   int                          `json:"raiseCount"`
+	MaxBetAmount int                          `json:"maxBetAmount"`
+	RoundResults []*PokerWebOutputResult      `json:"roundResults"`
+	CpuActions   []*PokerWebOutputCpuAction   `json:"cpuActions"`
+	CpuExchanges []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
+	Odds         []*PokerWebOutputOdds        `json:"odds,omitempty"`
+	IsLowball    bool                         `json:"isLowball"`
+	WebOutputBase
 }
 
 // PokerWebController ポーカーWebコントローラークラス
@@ -106,12 +104,12 @@ func NewPokerWebController(factory func() usecase.PokerInteractorIF) *PokerWebCo
 
 func newPokerDefaultOutput(msg string) *PokerWebOutput {
 	return &PokerWebOutput{
-		Players:      make([]*PokerWebOutputPlayer, 0),
-		SidePots:     make([]*PokerWebOutputSidePot, 0),
-		RoundResults: make([]*PokerWebOutputResult, 0),
-		CpuActions:   make([]*PokerWebOutputCpuAction, 0),
-		CpuExchanges: make([]*PokerWebOutputCpuExchange, 0),
-		Message:      msg,
+		Players:       make([]*PokerWebOutputPlayer, 0),
+		SidePots:      make([]*PokerWebOutputSidePot, 0),
+		RoundResults:  make([]*PokerWebOutputResult, 0),
+		CpuActions:    make([]*PokerWebOutputCpuAction, 0),
+		CpuExchanges:  make([]*PokerWebOutputCpuExchange, 0),
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 

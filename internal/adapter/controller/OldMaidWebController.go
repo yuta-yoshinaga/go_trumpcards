@@ -68,10 +68,8 @@ type OldMaidWebOutput struct {
 	CpuHighlightedCardIdx int                                 `json:"cpuHighlightedCardIdx"`
 	RemovedCard           *WebOutputCard                      `json:"removedCard"`
 	Mode                  int                                 `json:"mode"`
-	Message               string                              `json:"message"`
-	MessageCode           string                              `json:"messageCode,omitempty"`
-	MessageParams         map[string]string                   `json:"messageParams,omitempty"`
-	MetaAI                *OldMaidWebOutputMetaAI             `json:"metaAI,omitempty"`
+	WebOutputBase
+	MetaAI *OldMaidWebOutputMetaAI `json:"metaAI,omitempty"`
 }
 
 // OldMaidWebOutputMetaAI メタAI情報
@@ -95,7 +93,7 @@ func newOldMaidDefaultOutput(msg string) *OldMaidWebOutput {
 		CpuActions:            make([]*OldMaidWebOutputCpuAction, 0),
 		DrawHistory:           make([]*OldMaidWebOutputDrawHistoryEntry, 0),
 		CpuHighlightedCardIdx: -1,
-		Message:               msg,
+		WebOutputBase:         WebOutputBase{Message: msg},
 	}
 }
 

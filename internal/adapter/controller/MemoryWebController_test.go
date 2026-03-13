@@ -20,10 +20,10 @@ import (
 
 func mustMemoryOutputJSON(msg string) string {
 	out := &controller.MemoryWebOutput{
-		Players:   []*controller.MemoryWebOutputPlayer{},
-		Board:     []*controller.MemoryWebOutputBoardCard{},
-		WinnerIdx: -1,
-		Message:   msg,
+		Players:       []*controller.MemoryWebOutputPlayer{},
+		Board:         []*controller.MemoryWebOutputBoardCard{},
+		WinnerIdx:     -1,
+		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
