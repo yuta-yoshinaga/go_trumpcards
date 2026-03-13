@@ -6,9 +6,6 @@ export const btnSuccess = `${base} text-white bg-green-600 hover:bg-green-700`;
 export const btnDanger = `${base} text-white bg-red-600 hover:bg-red-700`;
 export const btnSecondary = `${base} text-white bg-gray-600 hover:bg-gray-500`;
 
-export const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-black/50';
-
 export const focusRingWhite = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80';
 
 export const focusRingBlue =
