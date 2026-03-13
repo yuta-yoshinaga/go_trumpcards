@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -49,33 +49,33 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return c.omi.Reorder(indices), true
 			case "sm", "setmode":
 				if len(args) < 1 {
-					return "Game mode is required (0=Normal, 1=JijiNuki).", true
+					return cuimsg.RequiredWithHint("Game mode", "(0=Normal, 1=JijiNuki)"), true
 				}
 				m, err := strconv.Atoi(args[0])
 				if err != nil || m < 0 || m > 1 {
-					return fmt.Sprintf("Invalid game mode: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("game mode", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.Mode = domain.OldMaidMode(m)
 				return c.omi.Reset(cfg), true
 			case "sps", "setplacementstrategy":
 				if len(args) < 1 {
-					return "CPU placement strategy flag is required (0=OFF, 1=ON).", true
+					return cuimsg.RequiredWithHint("CPU placement strategy flag", "(0=OFF, 1=ON)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid CPU placement strategy flag: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU placement strategy flag", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.CpuPlacementStrategy = v == 1
 				return c.omi.Reset(cfg), true
 			case "smetaai", "smai":
 				if len(args) < 1 {
-					return "Meta-AI flag is required (0=OFF, 1=ON).", true
+					return cuimsg.RequiredWithHint("Meta-AI flag", "(0=OFF, 1=ON)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid meta-AI flag: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("meta-AI flag", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.CpuMetaAI = v == 1
@@ -84,11 +84,11 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return c.omi.ResetProfile(), true
 			case "sma", "setmemoryai":
 				if len(args) < 1 {
-					return "CPU memory AI flag is required (0=OFF, 1=ON).", true
+					return cuimsg.RequiredWithHint("CPU memory AI flag", "(0=OFF, 1=ON)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid CPU memory AI flag: %s. Please enter 0-1.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU memory AI flag", args[0], "Please enter 0-1."), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.CpuMemoryAI = v == 1

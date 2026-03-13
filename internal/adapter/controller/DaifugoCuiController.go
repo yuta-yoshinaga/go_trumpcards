@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -70,22 +70,22 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				return c.dgi.Sort(mode), true
 			case "sd", "setdifficulty":
 				if len(args) < 1 {
-					return "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", true
+					return cuimsg.RequiredWithHint("CPU difficulty", "(0=Normal, 1=Easy, 2=Hard)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid CPU difficulty: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU difficulty", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(v)
 				return c.dgi.ResetWithConfig(cfg), true
 			case "sj", "setjoker":
 				if len(args) < 1 {
-					return "Joker count is required (0-2).", true
+					return cuimsg.RequiredWithHint("Joker count", "(0-2)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid joker count: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("joker count", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.JokerCount = v
@@ -96,33 +96,33 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				}
 				setter, ok := daifugoRuleKeys[args[0]]
 				if !ok {
-					return fmt.Sprintf("Unknown rule: %s.", args[0]), true
+					return "Unknown rule: " + args[0] + ".", true
 				}
 				v, err := strconv.Atoi(args[1])
 				if err != nil || v < 0 || v > 1 {
-					return fmt.Sprintf("Invalid value: %s. Please enter 0 or 1.", args[1]), true
+					return cuimsg.InvalidOutOfRange("value", args[1], "Please enter 0 or 1."), true
 				}
 				cfg := c.dgi.GetConfig()
 				setter(&cfg, v == 1)
 				return c.dgi.ResetWithConfig(cfg), true
 			case "suitlockmode":
 				if len(args) < 1 {
-					return "Suit lock mode is required (0=none, 1=partial, 2=full).", true
+					return cuimsg.RequiredWithHint("Suit lock mode", "(0=none, 1=partial, 2=full)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid suit lock mode: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("suit lock mode", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.SuitLockMode = domain.DaifugoSuitLockMode(v)
 				return c.dgi.ResetWithConfig(cfg), true
 			case "5skipcount":
 				if len(args) < 1 {
-					return "Five skip count is required (1-5).", true
+					return cuimsg.RequiredWithHint("Five skip count", "(1-5)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 1 || v > 5 {
-					return fmt.Sprintf("Invalid five skip count: %s. Please enter 1-5.", args[0]), true
+					return cuimsg.InvalidOutOfRange("five skip count", args[0], "Please enter 1-5."), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.FiveSkipCount = v

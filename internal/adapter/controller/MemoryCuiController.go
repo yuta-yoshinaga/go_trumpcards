@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -31,22 +31,22 @@ func (c *MemoryCuiController) Exec(command string) string {
 			switch cmd {
 			case "f", "flip":
 				if len(args) < 1 {
-					return "Position is required.", true
+					return cuimsg.Required("Position"), true
 				}
 				pos, err := strconv.Atoi(args[0])
 				if err != nil {
-					return fmt.Sprintf("Invalid position: %s.", args[0]), true
+					return cuimsg.InvalidValue("position", args[0]), true
 				}
 				return c.mi.Flip(pos), true
 			case "n", "next":
 				return c.mi.Next(), true
 			case "sd", "setdifficulty":
 				if len(args) < 1 {
-					return "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", true
+					return cuimsg.RequiredWithHint("CPU difficulty", "(0=Easy, 1=Normal, 2=Hard)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid CPU difficulty: %s. Please enter 0-2.", args[0]), true
+					return cuimsg.InvalidOutOfRange("CPU difficulty", args[0], "Please enter 0-2."), true
 				}
 				cfg := c.mi.GetConfig()
 				cfg.CpuDifficulty = domain.MemoryCpuDifficulty(v)

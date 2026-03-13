@@ -3,6 +3,7 @@ package controller
 import (
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -33,7 +34,7 @@ func (bcc *BaccaratCuiController) Exec(command string) string {
 				}
 				amount, err := strconv.Atoi(args[0])
 				if err != nil || amount <= 0 {
-					return "Invalid bet amount. Please enter a number.", true
+					return cuimsg.InvalidNotANumber("bet amount"), true
 				}
 				betType, err := strconv.Atoi(args[1])
 				if err != nil || betType < 0 || betType > 2 {
