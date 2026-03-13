@@ -46,6 +46,9 @@ func (pi *PokerInteractor) GetConfig() domain.PokerConfig {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (pi *PokerInteractor) ResetWithConfig(cfg domain.PokerConfig) string {
+	if err := cfg.Validate(); err != nil {
+		return pi.pp.Output(pi.p, err)
+	}
 	pi.p.SetConfig(cfg)
 	err := pi.p.Reset()
 	return pi.pp.Output(pi.p, err)

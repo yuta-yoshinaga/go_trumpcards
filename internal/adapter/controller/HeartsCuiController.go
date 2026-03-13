@@ -69,8 +69,8 @@ func (c *HeartsCuiController) Exec(command string) string {
 					return cuimsg.RequiredWithHint("CPU difficulty", "(0=Easy, 1=Normal, 2=Hard)"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 || v > 2 {
-					return cuimsg.InvalidOutOfRange("CPU difficulty", args[0], "Please enter 0-2."), true
+				if err != nil {
+					return cuimsg.InvalidValue("CPU difficulty", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.CpuDifficulty = domain.HeartsCpuDifficulty(v)
@@ -80,8 +80,8 @@ func (c *HeartsCuiController) Exec(command string) string {
 					return cuimsg.Required("Point limit"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 1 {
-					return cuimsg.InvalidOutOfRange("point limit", args[0], "Please enter 1 or more."), true
+				if err != nil {
+					return cuimsg.InvalidValue("point limit", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.PointLimit = v

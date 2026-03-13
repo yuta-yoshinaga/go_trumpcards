@@ -7453,3 +7453,52 @@ func TestDaifugo_ActionLog_Reset(t *testing.T) {
 	dg.Reset()
 	assert.Nil(t, dg.GetActionLog())
 }
+
+func TestDaifugoConfig_Validate(t *testing.T) {
+	validCfg := func() domain.DaifugoConfig {
+		return domain.DefaultDaifugoConfig()
+	}
+	t.Run("valid default config returns nil", func(t *testing.T) {
+		assert.NoError(t, validCfg().Validate())
+	})
+	t.Run("cpu difficulty below min returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(-1)
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("cpu difficulty above max returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(99)
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("joker count negative returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.JokerCount = -1
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("joker count above max returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.JokerCount = 99
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("suit lock mode below min returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.SuitLockMode = domain.DaifugoSuitLockMode(-1)
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("suit lock mode above max returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.SuitLockMode = domain.DaifugoSuitLockMode(99)
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("five skip count zero returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.FiveSkipCount = 0
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("five skip count above max returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.FiveSkipCount = 99
+		assert.Error(t, cfg.Validate())
+	})
+}

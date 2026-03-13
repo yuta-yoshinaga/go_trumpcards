@@ -143,6 +143,26 @@ func DefaultDaifugoConfig() DaifugoConfig {
 	}
 }
 
+// DaifugoFiveSkipCountMax 5飛びスキップ数最大
+const DaifugoFiveSkipCountMax = 5
+
+// Validate 設定値のドメインバリデーション
+func (c DaifugoConfig) Validate() error {
+	if c.CpuDifficulty < DaifugoDifficultyNormal || c.CpuDifficulty > DaifugoDifficultyHard {
+		return fmt.Errorf("CPU difficulty must be %d-%d, got %d", int(DaifugoDifficultyNormal), int(DaifugoDifficultyHard), int(c.CpuDifficulty))
+	}
+	if c.JokerCount < 0 || c.JokerCount > DaifugoJokerCount {
+		return fmt.Errorf("joker count must be 0-%d, got %d", DaifugoJokerCount, c.JokerCount)
+	}
+	if c.SuitLockMode < DaifugoSuitLockNone || c.SuitLockMode > DaifugoSuitLockFull {
+		return fmt.Errorf("suit lock mode must be %d-%d, got %d", int(DaifugoSuitLockNone), int(DaifugoSuitLockFull), int(c.SuitLockMode))
+	}
+	if c.FiveSkipCount < 1 || c.FiveSkipCount > DaifugoFiveSkipCountMax {
+		return fmt.Errorf("five skip count must be 1-%d, got %d", DaifugoFiveSkipCountMax, c.FiveSkipCount)
+	}
+	return nil
+}
+
 // DaifugoCpuAction CPUまたは人間の1ターン分の行動記録
 type DaifugoCpuAction struct {
 	PlayerIdx   int     // 行動したプレイヤーインデックス

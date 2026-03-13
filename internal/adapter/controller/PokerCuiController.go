@@ -69,8 +69,8 @@ func (pcc *PokerCuiController) Exec(command string) string {
 					return cuimsg.RequiredWithHint("Betting limit type", "(0=Fixed, 1=PotLimit, 2=NoLimit)"), true
 				}
 				bl, err := strconv.Atoi(args[0])
-				if err != nil || bl < 0 || bl > 2 {
-					return cuimsg.InvalidOutOfRange("betting limit", args[0], "Please enter 0-2."), true
+				if err != nil {
+					return cuimsg.InvalidValue("betting limit", args[0]), true
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
@@ -80,8 +80,8 @@ func (pcc *PokerCuiController) Exec(command string) string {
 					return cuimsg.Required("CPU player count"), true
 				}
 				count, err := strconv.Atoi(args[0])
-				if err != nil || count < 1 || count > 3 {
-					return cuimsg.InvalidOutOfRange("CPU player count", args[0], "Please enter 1-3."), true
+				if err != nil {
+					return cuimsg.InvalidValue("CPU player count", args[0]), true
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.CpuCount = count
@@ -91,8 +91,8 @@ func (pcc *PokerCuiController) Exec(command string) string {
 					return cuimsg.Required("Joker count"), true
 				}
 				count, err := strconv.Atoi(args[0])
-				if err != nil || count < 0 || count > 2 {
-					return cuimsg.InvalidOutOfRange("joker count", args[0], "Please enter 0-2."), true
+				if err != nil {
+					return cuimsg.InvalidValue("joker count", args[0]), true
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.JokerCount = count

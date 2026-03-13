@@ -170,9 +170,18 @@ func TestDaifugoCuiController_SetDifficulty_NoArgs(t *testing.T) {
 func TestDaifugoCuiController_SetDifficulty_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sd 3"), "Invalid CPU difficulty: 3")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("sd abc"), "Invalid CPU difficulty: abc")
-	assert.Contains(t, c.Exec("sd -1"), "Invalid CPU difficulty: -1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+	cfg3 := domain.DefaultDaifugoConfig()
+	cfg3.CpuDifficulty = domain.DaifugoCpuDifficulty(3)
+	mi.On("ResetWithConfig", cfg3).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sd 3"))
+	cfgNeg := domain.DefaultDaifugoConfig()
+	cfgNeg.CpuDifficulty = domain.DaifugoCpuDifficulty(-1)
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sd -1"))
 }
 
 // --- setjoker ---
@@ -206,9 +215,18 @@ func TestDaifugoCuiController_SetJoker_NoArgs(t *testing.T) {
 func TestDaifugoCuiController_SetJoker_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("sj 3"), "Invalid joker count: 3")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("sj abc"), "Invalid joker count: abc")
-	assert.Contains(t, c.Exec("sj -1"), "Invalid joker count: -1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+	cfg3 := domain.DefaultDaifugoConfig()
+	cfg3.JokerCount = 3
+	mi.On("ResetWithConfig", cfg3).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sj 3"))
+	cfgNeg := domain.DefaultDaifugoConfig()
+	cfgNeg.JokerCount = -1
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sj -1"))
 }
 
 // --- setrule ---
@@ -330,9 +348,18 @@ func TestDaifugoCuiController_SuitLockMode_NoArgs(t *testing.T) {
 func TestDaifugoCuiController_SuitLockMode_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("suitlockmode 3"), "Invalid suit lock mode: 3")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("suitlockmode abc"), "Invalid suit lock mode: abc")
-	assert.Contains(t, c.Exec("suitlockmode -1"), "Invalid suit lock mode: -1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+	cfg3 := domain.DefaultDaifugoConfig()
+	cfg3.SuitLockMode = domain.DaifugoSuitLockMode(3)
+	mi.On("ResetWithConfig", cfg3).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("suitlockmode 3"))
+	cfgNeg := domain.DefaultDaifugoConfig()
+	cfgNeg.SuitLockMode = domain.DaifugoSuitLockMode(-1)
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("suitlockmode -1"))
 }
 
 // --- 5skipcount ---
@@ -356,7 +383,16 @@ func TestDaifugoCuiController_FiveSkipCount_NoArgs(t *testing.T) {
 func TestDaifugoCuiController_FiveSkipCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecases.MockDaifugoInteractor)
 	c := controller.NewDaifugoCuiController(mi)
-	assert.Contains(t, c.Exec("5skipcount 0"), "Invalid five skip count: 0")
-	assert.Contains(t, c.Exec("5skipcount 6"), "Invalid five skip count: 6")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("5skipcount abc"), "Invalid five skip count: abc")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultDaifugoConfig())
+	cfg0 := domain.DefaultDaifugoConfig()
+	cfg0.FiveSkipCount = 0
+	mi.On("ResetWithConfig", cfg0).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("5skipcount 0"))
+	cfg6 := domain.DefaultDaifugoConfig()
+	cfg6.FiveSkipCount = 6
+	mi.On("ResetWithConfig", cfg6).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("5skipcount 6"))
 }
