@@ -306,6 +306,24 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ResetProfile")
 	})
 
+	t.Run("play command with invalid card args shows warning", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("p 5 abc 2")
+		assert.Contains(t, result, "'abc'")
+		assert.Contains(t, result, mockOutput)
+		m.AssertCalled(t, "Play", []int{2}, 5)
+	})
+
+	t.Run("doubt command with invalid args shows warning", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDoubtCuiController(m)
+		result := c.Exec("d xyz 1")
+		assert.Contains(t, result, "'xyz'")
+		assert.Contains(t, result, mockOutput)
+		m.AssertCalled(t, "ResolveDoubt", []int{1})
+	})
+
 	t.Run("unknown command", func(t *testing.T) {
 		c := controller.NewDoubtCuiController(newMock())
 		result := c.Exec("unknown")

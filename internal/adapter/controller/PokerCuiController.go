@@ -34,7 +34,8 @@ func (pcc *PokerCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "e", "exchange":
-				return pcc.pi.Exchange(cuiutil.ParseBoundedIntSlice(args, 0, 4)), true
+				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
+				return cuiutil.PrependSkippedWarning(pcc.pi.Exchange(indices), skipped), true
 			case "s", "stand":
 				return pcc.pi.Stand(), true
 			case "b", "bet":
@@ -86,7 +87,8 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				cfg.JokerCount = count
 				return pcc.pi.ResetWithConfig(cfg), true
 			case "o", "odds":
-				return pcc.pi.Odds(cuiutil.ParseBoundedIntSlice(args, 0, 4)), true
+				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
+				return cuiutil.PrependSkippedWarning(pcc.pi.Odds(indices), skipped), true
 			case "lw", "lowball":
 				cfg := pcc.pi.GetConfig()
 				cfg.IsLowball = !cfg.IsLowball

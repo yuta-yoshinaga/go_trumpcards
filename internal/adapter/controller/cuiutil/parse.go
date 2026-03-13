@@ -5,6 +5,9 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // NoMin is a sentinel value meaning "no lower bound" for ParseIntArg.
@@ -46,25 +49,52 @@ func ParseOptionalInt(args []string, idx, defaultVal int) int {
 	return v
 }
 
-// ParseIntSlice parses all elements of args as integers, silently skipping invalid entries.
-func ParseIntSlice(args []string) []int {
+// ParseIntSlice parses all elements of args as integers, returning skipped values.
+func ParseIntSlice(args []string) ([]int, []string) {
 	result := make([]int, 0, len(args))
+	var skipped []string
 	for _, s := range args {
 		if v, err := strconv.Atoi(s); err == nil {
 			result = append(result, v)
+		} else {
+			skipped = append(skipped, s)
 		}
 	}
-	return result
+	return result, skipped
 }
 
 // ParseBoundedIntSlice parses all elements of args as integers within [min, max],
-// silently skipping invalid or out-of-range entries.
-func ParseBoundedIntSlice(args []string, min, max int) []int {
+// returning skipped or out-of-range values.
+func ParseBoundedIntSlice(args []string, min, max int) ([]int, []string) {
 	result := make([]int, 0, len(args))
+	var skipped []string
 	for _, s := range args {
 		if v, err := strconv.Atoi(s); err == nil && v >= min && v <= max {
 			result = append(result, v)
+		} else {
+			skipped = append(skipped, s)
 		}
+	}
+	return result, skipped
+}
+
+// FormatSkippedWarning returns a warning string for skipped values.
+// Returns an empty string if skipped is empty.
+func FormatSkippedWarning(skipped []string) string {
+	if len(skipped) == 0 {
+		return ""
+	}
+	quoted := make([]string, len(skipped))
+	for i, s := range skipped {
+		quoted[i] = "'" + s + "'"
+	}
+	return color.Yellow(i18n.Tf("skippedWarning", "values", strings.Join(quoted, ", ")))
+}
+
+// PrependSkippedWarning prepends a warning to result if skipped is non-empty.
+func PrependSkippedWarning(result string, skipped []string) string {
+	if w := FormatSkippedWarning(skipped); w != "" {
+		return w + "\n" + result
 	}
 	return result
 }

@@ -92,7 +92,9 @@ func TestOldMaidCuiController_Reorder_InvalidIndex_NonNumeric(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
 	mi.On("Reorder", []int{2}).Return("reorder ok")
-	assert.Equal(t, "reorder ok", c.Exec("ro abc 2"))
+	result := c.Exec("ro abc 2")
+	assert.Contains(t, result, "'abc'")
+	assert.Contains(t, result, "reorder ok")
 }
 
 // --- set mode ---

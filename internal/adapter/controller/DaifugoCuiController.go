@@ -57,7 +57,8 @@ func (c *DaifugoCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				return c.dgi.Play(cuiutil.ParseIntSlice(args)), true
+				indices, skipped := cuiutil.ParseIntSlice(args)
+				return cuiutil.PrependSkippedWarning(c.dgi.Play(indices), skipped), true
 			case "sort":
 				mode := domain.DaifugoSortByStrength
 				if len(args) > 0 {
