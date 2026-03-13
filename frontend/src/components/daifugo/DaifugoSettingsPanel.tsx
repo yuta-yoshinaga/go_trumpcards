@@ -29,8 +29,8 @@ export function DaifugoSettingsPanel({ config, onChange }: SettingsPanelProps) {
   ];
   return (
     <details className="mb-2">
-      <summary className="cursor-pointer text-game-text-muted text-[0.85em] select-none">{t('settings.title')}</summary>
-      <div className="bg-black/40 rounded-lg p-2 mt-1 text-[0.82em] text-white">
+      <summary className="cursor-pointer text-game-text-muted text-xs select-none">{t('settings.title')}</summary>
+      <div className="bg-black/40 rounded-lg p-2 mt-1 text-xs text-white">
         <div className="mb-1 flex flex-wrap gap-x-4 gap-y-1">
           <span>
             <label htmlFor="joker-count" className="mr-2">

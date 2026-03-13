@@ -44,7 +44,7 @@ function HumanArea({
         {player.isFinished && <StatusBadge variant="success">{t('rankLabel', { rank: player.rank })}</StatusBadge>}
       </div>
       {!player.isFinished && (
-        <div className="text-game-text-muted text-[0.85em] mb-1">
+        <div className="text-game-text-muted text-xs mb-1">
           {t('cardCount', { count: player.cardCount })}
           {'　'}
           {t('passCount', {

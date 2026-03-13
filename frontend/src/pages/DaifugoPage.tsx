@@ -96,7 +96,7 @@ export function DaifugoPage() {
         </div>
 
         {pendingBanner && (
-          <div className="bg-yellow-700/80 rounded-[10px] text-white text-center py-2 px-4 text-[0.95em] font-bold my-2">
+          <div className="bg-yellow-700/80 rounded-[10px] text-white text-center py-2 px-4 text-sm font-bold my-2">
             {pendingBanner}
             {pendingAction === 'queenBomber' && isHumanTurn && (
               <div className="flex flex-wrap justify-center gap-1 mt-2">
@@ -123,13 +123,13 @@ export function DaifugoPage() {
         )}
 
         {state.humanAction && (
-          <div className="bg-black/40 rounded-lg text-green-200 py-2 px-3.5 my-2 text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-green-200 py-2 px-3.5 my-2 text-xs">
             {actionDescription(state.players, state.humanAction)}
           </div>
         )}
 
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-white py-2 px-3.5 my-2 whitespace-pre-line text-[0.85em]">
+          <div className="bg-black/40 rounded-lg text-white py-2 px-3.5 my-2 whitespace-pre-line text-xs">
             {[tc('label.cpuActions'), ...state.cpuActions.map((a) => actionDescription(state.players, a))].join('\n')}
           </div>
         )}

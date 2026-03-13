@@ -18,7 +18,7 @@ export function GameMessageBox({ message, messageCode, messageParams, alwaysVisi
   }
   if (!alwaysVisible && !displayMessage) return null;
   return (
-    <div className="bg-black/55 rounded-lg text-white text-center px-4 py-2 text-[1.1em] font-bold mb-2">
+    <div className="bg-black/55 rounded-lg text-white text-center px-4 py-2 text-lg font-bold mb-2">
       {displayMessage}
     </div>
   );

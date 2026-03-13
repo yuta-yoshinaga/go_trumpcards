@@ -136,7 +136,7 @@ export function PokerPage() {
               showHandName={isEnd}
               extraInfo={
                 (phase === PokerPhase.SECOND_BET || isEnd) && p.exchangeCount > 0 && !p.folded ? (
-                  <span className="ml-2 text-[0.85em]">{t('exchangeCount', { count: p.exchangeCount })}</span>
+                  <span className="ml-2 text-xs">{t('exchangeCount', { count: p.exchangeCount })}</span>
                 ) : undefined
               }
             />
@@ -147,7 +147,7 @@ export function PokerPage() {
 
         {/* CPU exchanges log */}
         {state?.cpuExchanges && state.cpuExchanges.length > 0 && (
-          <div className="bg-black/30 rounded p-2 mb-3 text-white text-[0.85em]">
+          <div className="bg-black/30 rounded p-2 mb-3 text-white text-xs">
             <div className="font-bold mb-1">{t('cpuExchange')}</div>
             {state.cpuExchanges.map((ex, i) => (
               <div key={`${i}-${ex.playerIdx}`}>
@@ -166,27 +166,25 @@ export function PokerPage() {
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
-            <div className="text-white text-[1.1em] mb-1">
+            <div className="text-white text-lg mb-1">
               {t('yourHand')}
-              <span className="ml-3 text-[0.85em]">
+              <span className="ml-3 text-xs">
                 {tc('betting.chips')} {humanPlayer.chips}
               </span>
               {humanPlayer.currentBet > 0 && (
-                <span className="ml-2 text-[0.85em]">
+                <span className="ml-2 text-xs">
                   {tc('betting.currentBet')} {humanPlayer.currentBet}
                 </span>
               )}
-              {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{tc('status.folded')}]</span>}
-              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{tc('status.allIn')}]</span>}
+              {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
               {isEnd && !humanPlayer.folded && humanPlayer.handName && (
-                <span className={`inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                   {humanPlayer.handName}
                 </span>
               )}
             </div>
-            {canExchange && (
-              <div className="text-game-text-highlight text-[0.85em] mb-1">{t('exchangeInstruction')}</div>
-            )}
+            {canExchange && <div className="text-game-text-highlight text-xs mb-1">{t('exchangeInstruction')}</div>}
             <div className="flex flex-wrap gap-1.5 mb-2">
               {humanPlayer.cards?.map((card, i) => {
                 const isSelected = selected.includes(i);
@@ -272,7 +270,7 @@ export function PokerPage() {
 
         {/* Draw odds panel */}
         {canExchange && odds && odds.some((o) => o.probability > 0) && (
-          <div className="bg-black/40 rounded-lg px-4 py-2 mb-2 text-white text-[0.85em]" data-testid="odds-panel">
+          <div className="bg-black/40 rounded-lg px-4 py-2 mb-2 text-white text-xs" data-testid="odds-panel">
             <div className="font-bold mb-1">{t('drawOdds')}</div>
             {odds
               .filter((o) => o.probability > 0)
