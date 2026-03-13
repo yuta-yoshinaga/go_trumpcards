@@ -64,12 +64,12 @@ func TestBaccaratCuiController_Bet_Errors(t *testing.T) {
 
 	t.Run("missing args", func(t *testing.T) {
 		result := c.Exec("b")
-		assert.Contains(t, result, "Usage")
+		assert.Contains(t, result, "Bet amount is required")
 	})
 
 	t.Run("missing bet type", func(t *testing.T) {
 		result := c.Exec("b 100")
-		assert.Contains(t, result, "Usage")
+		assert.Contains(t, result, "Bet type is required")
 	})
 
 	t.Run("invalid amount", func(t *testing.T) {

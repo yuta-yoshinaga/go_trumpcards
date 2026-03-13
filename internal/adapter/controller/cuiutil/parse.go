@@ -18,6 +18,7 @@ const NoMax = math.MaxInt
 // missingMsg is returned when args is empty.
 // invalidMsg is returned when the value is non-numeric or out of range.
 // If invalidMsg contains "%s", it is formatted with args[0] via fmt.Sprintf.
+// Only a single %s verb is supported; %%s and multiple verbs are not handled.
 func ParseIntArg(args []string, missingMsg, invalidMsg string, min, max int) (int, string, bool) {
 	if len(args) < 1 {
 		return 0, missingMsg, false
