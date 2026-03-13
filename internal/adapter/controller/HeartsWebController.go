@@ -53,10 +53,8 @@ type HeartsWebOutput struct {
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerIdx        int                         `json:"winnerIdx"`
 	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	Message          string                      `json:"message"`
-	MessageCode      string                      `json:"messageCode,omitempty"`
-	MessageParams    map[string]string           `json:"messageParams,omitempty"`
-	Config           HeartsWebOutputConfig       `json:"config"`
+	WebOutputBase
+	Config HeartsWebOutputConfig `json:"config"`
 }
 
 // HeartsWebOutputConfig ハーツ設定アウトプット
@@ -75,10 +73,10 @@ func NewHeartsWebController(factory func() usecase.HeartsInteractorIF) *HeartsWe
 
 func newHeartsDefaultOutput(msg string) *HeartsWebOutput {
 	return &HeartsWebOutput{
-		Players:      make([]*HeartsWebOutputPlayer, 0),
-		CurrentTrick: make([]*HeartsWebOutputTrickCard, 0),
-		WinnerIdx:    -1,
-		Message:      msg,
+		Players:       make([]*HeartsWebOutputPlayer, 0),
+		CurrentTrick:  make([]*HeartsWebOutputTrickCard, 0),
+		WinnerIdx:     -1,
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 

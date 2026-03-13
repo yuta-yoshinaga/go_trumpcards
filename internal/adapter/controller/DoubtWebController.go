@@ -55,23 +55,21 @@ type DoubtWebOutputDoubtResult struct {
 
 // DoubtWebOutput ダウトWebアウトプット
 type DoubtWebOutput struct {
-	Players          []*DoubtWebOutputPlayer    `json:"players"`
-	CurrentTurn      int                        `json:"currentTurn"`
-	Phase            int                        `json:"phase"`
-	TableCardCount   int                        `json:"tableCardCount"`
-	LastAction       *DoubtWebOutputAction      `json:"lastAction"`
-	CpuDoubters      []int                      `json:"cpuDoubters"`
-	CpuActions       []*DoubtWebOutputAction    `json:"cpuActions"`
-	HumanAction      *DoubtWebOutputAction      `json:"humanAction"`
-	LastDoubtResult  *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	Message          string                     `json:"message"`
-	MessageCode      string                     `json:"messageCode,omitempty"`
-	MessageParams    map[string]string          `json:"messageParams,omitempty"`
-	DoubtWindowSec   int                        `json:"doubtWindowSec"`
-	PenaltyDrawLimit int                        `json:"penaltyDrawLimit"`
-	MetaAI           *DoubtWebOutputMetaAI      `json:"metaAI,omitempty"`
+	Players         []*DoubtWebOutputPlayer    `json:"players"`
+	CurrentTurn     int                        `json:"currentTurn"`
+	Phase           int                        `json:"phase"`
+	TableCardCount  int                        `json:"tableCardCount"`
+	LastAction      *DoubtWebOutputAction      `json:"lastAction"`
+	CpuDoubters     []int                      `json:"cpuDoubters"`
+	CpuActions      []*DoubtWebOutputAction    `json:"cpuActions"`
+	HumanAction     *DoubtWebOutputAction      `json:"humanAction"`
+	LastDoubtResult *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
+	GameEndFlag     bool                       `json:"gameEndFlag"`
+	WinnerIdx       int                        `json:"winnerIdx"`
+	DoubtWindowSec   int                   `json:"doubtWindowSec"`
+	PenaltyDrawLimit int                   `json:"penaltyDrawLimit"`
+	MetaAI           *DoubtWebOutputMetaAI `json:"metaAI,omitempty"`
+	WebOutputBase
 }
 
 // DoubtWebOutputMetaAI メタAI情報
@@ -95,11 +93,11 @@ func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebCo
 
 func newDoubtDefaultOutput(msg string) *DoubtWebOutput {
 	return &DoubtWebOutput{
-		Players:     make([]*DoubtWebOutputPlayer, 0),
-		CpuDoubters: make([]int, 0),
-		CpuActions:  make([]*DoubtWebOutputAction, 0),
-		WinnerIdx:   -1,
-		Message:     msg,
+		Players:       make([]*DoubtWebOutputPlayer, 0),
+		CpuDoubters:   make([]int, 0),
+		CpuActions:    make([]*DoubtWebOutputAction, 0),
+		WinnerIdx:     -1,
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 

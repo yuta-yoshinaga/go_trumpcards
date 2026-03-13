@@ -61,33 +61,31 @@ type BlackJackWebOutputSideBetResult struct {
 
 // BlackJackWebOutput ブラックジャックWebアウトプット
 type BlackJackWebOutput struct {
-	Dealer             *BlackJackWebOutputPlayer          `json:"dealer"`
-	Player             *BlackJackWebOutputPlayer          `json:"player"`
-	Hands              []*BlackJackWebOutputHand          `json:"hands,omitempty"`
-	CurrentHandIdx     int                                `json:"currentHandIdx"`
-	Phase              int                                `json:"phase"`
-	InsuranceBet       int                                `json:"insuranceBet"`
-	InsuranceAvailable bool                               `json:"insuranceAvailable"`
-	Message            string                             `json:"message"`
-	MessageCode        string                             `json:"messageCode,omitempty"`
-	MessageParams      map[string]string                  `json:"messageParams,omitempty"`
-	HintEnabled        bool                               `json:"hintEnabled"`
-	SuggestedAction    int                                `json:"suggestedAction"`
-	DeckCount          int                                `json:"deckCount"`
-	DealerHitsSoft17   bool                               `json:"dealerHitsSoft17"`
-	CountingEnabled    bool                               `json:"countingEnabled"`
-	CpuPlayerCount     int                                `json:"cpuPlayerCount"`
-	RunningCount       int                                `json:"runningCount"`
-	TrueCount          float64                            `json:"trueCount"`
-	CpuPlayers         []*BlackJackWebOutputCpuSeat       `json:"cpuPlayers,omitempty"`
-	PerfectPairsBet    int                                `json:"perfectPairsBet"`
-	TwentyOnePlus3Bet  int                                `json:"twentyOnePlus3Bet"`
-	SideBetResults     []*BlackJackWebOutputSideBetResult `json:"sideBetResults,omitempty"`
-	DoubleAfterSplit   bool                               `json:"doubleAfterSplit"`
-	CountingSystem     int                                `json:"countingSystem"`
-	DeckPenetration    int                                `json:"deckPenetration"`
-	MultiHandCount     int                                `json:"multiHandCount"`
-	SurrenderRule      int                                `json:"surrenderRule"`
+	Dealer             *BlackJackWebOutputPlayer `json:"dealer"`
+	Player             *BlackJackWebOutputPlayer `json:"player"`
+	Hands              []*BlackJackWebOutputHand `json:"hands,omitempty"`
+	CurrentHandIdx     int                       `json:"currentHandIdx"`
+	Phase              int                       `json:"phase"`
+	InsuranceBet       int                       `json:"insuranceBet"`
+	InsuranceAvailable bool                      `json:"insuranceAvailable"`
+	HintEnabled       bool                               `json:"hintEnabled"`
+	SuggestedAction   int                                `json:"suggestedAction"`
+	DeckCount         int                                `json:"deckCount"`
+	DealerHitsSoft17  bool                               `json:"dealerHitsSoft17"`
+	CountingEnabled   bool                               `json:"countingEnabled"`
+	CpuPlayerCount    int                                `json:"cpuPlayerCount"`
+	RunningCount      int                                `json:"runningCount"`
+	TrueCount         float64                            `json:"trueCount"`
+	CpuPlayers        []*BlackJackWebOutputCpuSeat       `json:"cpuPlayers,omitempty"`
+	PerfectPairsBet   int                                `json:"perfectPairsBet"`
+	TwentyOnePlus3Bet int                                `json:"twentyOnePlus3Bet"`
+	SideBetResults    []*BlackJackWebOutputSideBetResult `json:"sideBetResults,omitempty"`
+	DoubleAfterSplit  bool                               `json:"doubleAfterSplit"`
+	CountingSystem    int                                `json:"countingSystem"`
+	DeckPenetration   int                                `json:"deckPenetration"`
+	MultiHandCount    int                                `json:"multiHandCount"`
+	SurrenderRule     int                                `json:"surrenderRule"`
+	WebOutputBase
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -102,7 +100,7 @@ func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
 	return &BlackJackWebOutput{
 		Dealer:          &BlackJackWebOutputPlayer{},
 		Player:          &BlackJackWebOutputPlayer{},
-		Message:         msg,
+		WebOutputBase:   WebOutputBase{Message: msg},
 		DeckCount:       1,
 		DeckPenetration: 75,
 	}

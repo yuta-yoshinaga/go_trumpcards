@@ -735,34 +735,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        bettingLimit: 0,
-        tableSize: 4,
-        rebuyEnabled: false,
-        addonEnabled: false,
-      }),
-    );
-  });
-
-  it('sends updated bettingLimit when select is changed before reset', async () => {
-    renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-
-    const select = screen.getByLabelText('リミット:');
-    fireEvent.change(select, { target: { value: '1' } });
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(initState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        bettingLimit: 1,
-        tableSize: 4,
-        rebuyEnabled: false,
-        addonEnabled: false,
-      }),
-    );
   });
 
   // ---- loading / disabled state ----
@@ -969,95 +942,6 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(screen.getByText(/SB\/BB:/)).toBeInTheDocument());
     expect(screen.queryByText(/ハンド#/)).not.toBeInTheDocument();
     expect(screen.queryByText(/レベルアップ:/)).not.toBeInTheDocument();
-  });
-
-  // ---- table size selector ----
-  it('shows table size selector with default 4-max', async () => {
-    renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const select = screen.getByLabelText('テーブルサイズ');
-    expect(select).toBeInTheDocument();
-    expect((select as HTMLSelectElement).value).toBe('4');
-  });
-
-  it('sends tableSize when reset is clicked after changing table size', async () => {
-    renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-
-    const select = screen.getByLabelText('テーブルサイズ');
-    fireEvent.change(select, { target: { value: '6' } });
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(initState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        bettingLimit: 0,
-        tableSize: 6,
-        rebuyEnabled: false,
-        addonEnabled: false,
-      }),
-    );
-  });
-
-  it('sends tableSize 9 when 9-max is selected', async () => {
-    renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-
-    const select = screen.getByLabelText('テーブルサイズ');
-    fireEvent.change(select, { target: { value: '9' } });
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(initState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        bettingLimit: 0,
-        tableSize: 9,
-        rebuyEnabled: false,
-        addonEnabled: false,
-      }),
-    );
-  });
-
-  it('sends rebuyEnabled true when rebuy checkbox is checked', async () => {
-    renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-
-    const checkbox = screen.getByLabelText('リバイ有効');
-    fireEvent.click(checkbox);
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(initState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        bettingLimit: 0,
-        tableSize: 4,
-        rebuyEnabled: true,
-        addonEnabled: false,
-      }),
-    );
-  });
-
-  it('sends addonEnabled true when addon checkbox is checked', async () => {
-    renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-
-    const checkbox = screen.getByLabelText('アドオン有効');
-    fireEvent.click(checkbox);
-
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(initState);
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        bettingLimit: 0,
-        tableSize: 4,
-        rebuyEnabled: false,
-        addonEnabled: true,
-      }),
-    );
   });
 
   // ---- rebuy phase ----

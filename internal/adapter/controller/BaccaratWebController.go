@@ -15,19 +15,17 @@ type BaccaratWebInput struct {
 
 // BaccaratWebOutput バカラWebアウトプット
 type BaccaratWebOutput struct {
-	PlayerHand      []*WebOutputCard  `json:"playerHand"`
-	BankerHand      []*WebOutputCard  `json:"bankerHand"`
-	PlayerHandValue int               `json:"playerHandValue"`
-	BankerHandValue int               `json:"bankerHandValue"`
-	Phase           int               `json:"phase"`
-	Chips           int               `json:"chips"`
-	BetAmount       int               `json:"betAmount"`
-	BetType         int               `json:"betType"`
-	Result          int               `json:"result"`
-	Payout          int               `json:"payout"`
-	Message         string            `json:"message"`
-	MessageCode     string            `json:"messageCode,omitempty"`
-	MessageParams   map[string]string `json:"messageParams,omitempty"`
+	PlayerHand      []*WebOutputCard `json:"playerHand"`
+	BankerHand      []*WebOutputCard `json:"bankerHand"`
+	PlayerHandValue int              `json:"playerHandValue"`
+	BankerHandValue int              `json:"bankerHandValue"`
+	Phase           int              `json:"phase"`
+	Chips           int              `json:"chips"`
+	BetAmount       int              `json:"betAmount"`
+	BetType         int              `json:"betType"`
+	Result          int              `json:"result"`
+	Payout          int              `json:"payout"`
+	WebOutputBase
 }
 
 // BaccaratWebController バカラWebコントローラークラス
@@ -40,9 +38,9 @@ func NewBaccaratWebController(factory func() usecase.BaccaratInteractorIF) *Bacc
 
 func newBaccaratDefaultOutput(msg string) *BaccaratWebOutput {
 	return &BaccaratWebOutput{
-		PlayerHand: make([]*WebOutputCard, 0),
-		BankerHand: make([]*WebOutputCard, 0),
-		Message:    msg,
+		PlayerHand:    make([]*WebOutputCard, 0),
+		BankerHand:    make([]*WebOutputCard, 0),
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 
