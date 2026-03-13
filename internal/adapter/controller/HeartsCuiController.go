@@ -45,18 +45,13 @@ func (c *HeartsCuiController) Exec(command string) string {
 			switch cmd {
 			case "pass":
 				indices, skipped := cuiutil.ParseIntSlice(args)
+				var result string
 				if len(indices) != 3 {
-					result := "Pass requires exactly 3 card indices."
-					if w := cuiutil.FormatSkippedWarning(skipped); w != "" {
-						result = w + "\n" + result
-					}
-					return result, true
+					result = "Pass requires exactly 3 card indices."
+				} else {
+					result = c.hi.Pass(indices)
 				}
-				result := c.hi.Pass(indices)
-				if w := cuiutil.FormatSkippedWarning(skipped); w != "" {
-					result = w + "\n" + result
-				}
-				return result, true
+				return cuiutil.PrependSkippedWarning(result, skipped), true
 			case "p", "play":
 				idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
 				if !ok {

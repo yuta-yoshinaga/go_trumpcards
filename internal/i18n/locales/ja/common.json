@@ -18,5 +18,6 @@
   "useSwitchCmd": "'switch <game>' でゲームを切り替えます。",
   "interactiveMode": "インタラクティブモード (現在: {{name}})",
   "switchCmd": "  switch <game>   別のゲームに切り替え (例: switch poker)",
-  "gamesCmd": "  games           利用可能なゲームの一覧"
+  "gamesCmd": "  games           利用可能なゲームの一覧",
+  "skippedWarning": "警告: 無効な値 {{values}} は無視されました"
 }

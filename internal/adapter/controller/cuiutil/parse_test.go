@@ -2,6 +2,7 @@ package cuiutil_test
 
 import (
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -240,4 +241,18 @@ func TestFormatSkippedWarning_Single(t *testing.T) {
 func TestFormatSkippedWarning_Multiple(t *testing.T) {
 	result := cuiutil.FormatSkippedWarning([]string{"abc", "5"})
 	assert.Equal(t, "\033[33m警告: 無効な値 'abc', '5' は無視されました\033[0m", result)
+}
+
+// --- PrependSkippedWarning ---
+
+func TestPrependSkippedWarning_NoSkipped(t *testing.T) {
+	assert.Equal(t, "result", cuiutil.PrependSkippedWarning("result", nil))
+	assert.Equal(t, "result", cuiutil.PrependSkippedWarning("result", []string{}))
+}
+
+func TestPrependSkippedWarning_WithSkipped(t *testing.T) {
+	result := cuiutil.PrependSkippedWarning("game output", []string{"abc"})
+	assert.Contains(t, result, "'abc'")
+	assert.Contains(t, result, "game output")
+	assert.True(t, strings.Index(result, "'abc'") < strings.Index(result, "game output"))
 }

@@ -36,11 +36,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return c.omi.Shuffle(), true
 			case "ro", "reorder":
 				indices, skipped := cuiutil.ParseIntSlice(args)
-				result := c.omi.Reorder(indices)
-				if w := cuiutil.FormatSkippedWarning(skipped); w != "" {
-					result = w + "\n" + result
-				}
-				return result, true
+				return cuiutil.PrependSkippedWarning(c.omi.Reorder(indices), skipped), true
 			case "sm", "setmode":
 				m, errMsg, ok := cuiutil.ParseIntArg(args, "Game mode is required (0=Normal, 1=JijiNuki).", "Invalid game mode: %s. Please enter 0-1.", 0, 1)
 				if !ok {

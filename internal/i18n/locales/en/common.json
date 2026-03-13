@@ -18,5 +18,6 @@
   "useSwitchCmd": "Use 'switch <game>' to switch.",
   "interactiveMode": "Interactive mode  (current: {{name}})",
   "switchCmd": "  switch <game>  switch to another game (e.g. switch poker)",
-  "gamesCmd": "  games          list all available games"
+  "gamesCmd": "  games          list all available games",
+  "skippedWarning": "Warning: invalid values {{values}} were ignored"
 }

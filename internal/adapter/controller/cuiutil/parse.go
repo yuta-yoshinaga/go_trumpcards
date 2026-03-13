@@ -5,6 +5,9 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // NoMin is a sentinel value meaning "no lower bound" for ParseIntArg.
@@ -85,5 +88,13 @@ func FormatSkippedWarning(skipped []string) string {
 	for i, s := range skipped {
 		quoted[i] = "'" + s + "'"
 	}
-	return "\033[33m警告: 無効な値 " + strings.Join(quoted, ", ") + " は無視されました\033[0m"
+	return color.Yellow(i18n.Tf("skippedWarning", "values", strings.Join(quoted, ", ")))
+}
+
+// PrependSkippedWarning prepends a warning to result if skipped is non-empty.
+func PrependSkippedWarning(result string, skipped []string) string {
+	if w := FormatSkippedWarning(skipped); w != "" {
+		return w + "\n" + result
+	}
+	return result
 }
