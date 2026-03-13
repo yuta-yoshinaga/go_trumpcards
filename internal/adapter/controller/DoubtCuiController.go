@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"strconv"
+	"math"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -42,60 +42,36 @@ func (c *DoubtCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				claimedValue := 0
-				if len(args) > 0 {
-					if parsed, err := strconv.Atoi(args[0]); err == nil {
-						claimedValue = parsed
-					}
-				}
-				cardIndices := []int{}
+				claimedValue := cuiutil.ParseOptionalInt(args, 0, 0)
+				var cardArgs []string
 				if len(args) > 1 {
-					for _, f := range args[1:] {
-						if parsed, err := strconv.Atoi(f); err == nil {
-							cardIndices = append(cardIndices, parsed)
-						}
-					}
+					cardArgs = args[1:]
 				}
-				return c.di.Play(cardIndices, claimedValue), true
+				return c.di.Play(cuiutil.ParseIntSlice(cardArgs), claimedValue), true
 			case "d", "doubt":
-				doubterIndices := []int{}
-				for _, f := range args {
-					if parsed, err := strconv.Atoi(f); err == nil {
-						doubterIndices = append(doubterIndices, parsed)
-					}
-				}
-				return c.di.ResolveDoubt(doubterIndices), true
+				return c.di.ResolveDoubt(cuiutil.ParseIntSlice(args)), true
 			case "s", "skip":
 				return c.di.SkipDoubt(), true
 			case "sw", "setwindow":
-				if len(args) < 1 {
-					return cuimsg.RequiredWithHint("Doubt window seconds", "(1-60)"), true
-				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 1 || v > 60 {
-					return cuimsg.InvalidOutOfRange("doubt window", args[0], "Please enter 1-60."), true
+				v, errMsg, ok := cuiutil.ParseIntArg(args, "Doubt window seconds is required (1-60).", "Invalid doubt window: %s. Please enter 1-60.", 1, 60)
+				if !ok {
+					return errMsg, true
 				}
 				cfg := c.di.GetConfig()
 				cfg.DoubtWindowSec = v
 				return c.di.ResetWithConfig(cfg), true
 			case "sm", "setmemory":
-				if len(args) < 1 {
-					return cuimsg.RequiredWithHint("CPU memory level", "(0=Easy, 1=Normal, 2=Hard)"), true
-				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 || v > 2 {
-					return cuimsg.InvalidOutOfRange("CPU memory level", args[0], "Please enter 0-2."), true
+				v, errMsg, ok := cuiutil.ParseIntArg(args, "CPU memory level is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU memory level: %s. Please enter 0-2.", 0, 2)
+				if !ok {
+					return errMsg, true
 				}
 				cfg := c.di.GetConfig()
 				cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(v)
 				return c.di.ResetWithConfig(cfg), true
 			case "smetaai", "smai":
-				if len(args) < 1 {
-					return cuimsg.RequiredWithHint("Meta-AI flag", "(0=OFF, 1=ON)"), true
-				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 || v > 1 {
-					return cuimsg.InvalidOutOfRange("meta-AI flag", args[0], "Please enter 0-1."), true
+				v, errMsg, ok := cuiutil.ParseIntArg(args, "Meta-AI flag is required (0=OFF, 1=ON).", "Invalid meta-AI flag: %s. Please enter 0-1.", 0, 1)
+				if !ok {
+					return errMsg, true
 				}
 				cfg := c.di.GetConfig()
 				cfg.CpuMetaAI = v == 1
@@ -103,12 +79,9 @@ func (c *DoubtCuiController) Exec(command string) string {
 			case "rp", "resetprofile":
 				return c.di.ResetProfile(), true
 			case "sp", "setpenalty":
-				if len(args) < 1 {
-					return cuimsg.RequiredWithHint("Penalty draw limit", "(0=unlimited, >0=limit)"), true
-				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 {
-					return cuimsg.InvalidOutOfRange("penalty draw limit", args[0], "Please enter 0 or more."), true
+				v, errMsg, ok := cuiutil.ParseIntArg(args, "Penalty draw limit is required (0=unlimited, >0=limit).", "Invalid penalty draw limit: %s. Please enter 0 or more.", 0, math.MaxInt)
+				if !ok {
+					return errMsg, true
 				}
 				cfg := c.di.GetConfig()
 				cfg.PenaltyDrawLimit = v
