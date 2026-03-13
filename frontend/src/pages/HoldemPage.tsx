@@ -29,50 +29,30 @@ function usePhaseNames(t: (key: string) => string): Record<number, string> {
   };
 }
 
+function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
+  return (
+    // biome-ignore lint/a11y/noNoninteractiveTabindex: tabIndex needed for keyboard tooltip access
+    <span className="group relative cursor-help" tabIndex={0} aria-describedby={id}>
+      {label}
+      <span
+        id={id}
+        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
+        role="tooltip"
+      >
+        {tooltipText}
+      </span>
+    </span>
+  );
+}
+
 function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
   const { t } = useTranslation('holdem');
   return (
     <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
-      <span className="group relative cursor-help">
-        {t('stats.vpip')}
-        <span
-          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100"
-          role="tooltip"
-        >
-          {t('stats.vpipTooltip')}
-        </span>
-      </span>
-      :{vpip}%{' '}
-      <span className="group relative cursor-help">
-        {t('stats.pfr')}
-        <span
-          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100"
-          role="tooltip"
-        >
-          {t('stats.pfrTooltip')}
-        </span>
-      </span>
-      :{pfr}%{' '}
-      <span className="group relative cursor-help">
-        {t('stats.threeBet')}
-        <span
-          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100"
-          role="tooltip"
-        >
-          {t('stats.threeBetTooltip')}
-        </span>
-      </span>
-      :{threeBet}%{' '}
-      <span className="group relative cursor-help">
-        {t('stats.af')}
-        <span
-          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100"
-          role="tooltip"
-        >
-          {t('stats.afTooltip')}
-        </span>
-      </span>
-      :{af}
+      <StatTooltip id="tooltip-vpip" label={t('stats.vpip')} tooltipText={t('stats.vpipTooltip')} />:{vpip}%{' '}
+      <StatTooltip id="tooltip-pfr" label={t('stats.pfr')} tooltipText={t('stats.pfrTooltip')} />:{pfr}%{' '}
+      <StatTooltip id="tooltip-3bet" label={t('stats.threeBet')} tooltipText={t('stats.threeBetTooltip')} />:{threeBet}%{' '}
+      <StatTooltip id="tooltip-af" label={t('stats.af')} tooltipText={t('stats.afTooltip')} />:{af}
     </span>
   );
 }
