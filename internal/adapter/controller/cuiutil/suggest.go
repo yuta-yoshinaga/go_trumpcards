@@ -4,11 +4,12 @@ package cuiutil
 func LevenshteinDistance(a, b string) int {
 	ra, rb := []rune(a), []rune(b)
 	la, lb := len(ra), len(rb)
+	if la > lb {
+		ra, rb = rb, ra
+		la, lb = lb, la
+	}
 	if la == 0 {
 		return lb
-	}
-	if lb == 0 {
-		return la
 	}
 	prev := make([]int, lb+1)
 	curr := make([]int, lb+1)

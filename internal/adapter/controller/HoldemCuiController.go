@@ -24,7 +24,12 @@ func (c *HoldemCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return c.hi.Reset() },
-		[]string{"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise", "a", "allin", "bl", "bettinglimit", "tm", "tournament", "sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize", "rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show"},
+		[]string{
+			"f", "fold", "ck", "check", "c", "call", "b", "bet", "ra", "raise",
+			"a", "allin", "bl", "bettinglimit", "tm", "tournament",
+			"sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize",
+			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
+		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "fold":

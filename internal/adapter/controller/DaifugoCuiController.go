@@ -50,7 +50,10 @@ func (c *DaifugoCuiController) Exec(command string) string {
 			cfg := c.dgi.GetConfig()
 			return c.dgi.ResetWithConfig(cfg)
 		},
-		[]string{"p", "play", "sort", "sd", "setdifficulty", "sj", "setjoker", "sr", "setrule", "suitlockmode", "5skipcount"},
+		[]string{
+			"p", "play", "sort", "sd", "setdifficulty", "sj", "setjoker",
+			"sr", "setrule", "suitlockmode", "5skipcount",
+		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":

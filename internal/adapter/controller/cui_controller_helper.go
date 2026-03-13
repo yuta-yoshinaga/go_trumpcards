@@ -34,7 +34,7 @@ func execCuiCommand(
 	allCommands := append(commonCommands, validCommands...)
 	fields := strings.Fields(command)
 	if len(fields) == 0 {
-		return unknownCommandMessage(command, nil)
+		return unknownCommandMessage("", nil)
 	}
 	switch fields[0] {
 	case "q", "quit":

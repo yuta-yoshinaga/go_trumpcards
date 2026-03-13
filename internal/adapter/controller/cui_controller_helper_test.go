@@ -45,7 +45,7 @@ func TestExecCuiCommand(t *testing.T) {
 
 	t.Run("whitespace only input", func(t *testing.T) {
 		result := execCuiCommand("   ", resetFn, validCmds, gameHandler)
-		assert.Equal(t, "コマンドが不明です:    ", result)
+		assert.Equal(t, "コマンドが不明です: ", result)
 	})
 
 	t.Run("q command", func(t *testing.T) {
