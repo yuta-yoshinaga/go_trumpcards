@@ -53,7 +53,7 @@ export function usePokerGame() {
               .then((res) => {
                 if (gen === oddsGenRef.current) setOdds(res.odds ?? null);
               })
-              .catch(() => {});
+              .catch((err) => console.error('Failed to fetch poker odds:', err));
           }, 300);
         }
         return next;
