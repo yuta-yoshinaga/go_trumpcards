@@ -27,6 +27,7 @@ func main() {
 func run() int {
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
+	flag.BoolVar(showVersion, "V", false, "Show version information (shorthand)")
 	noColorFlag := flag.Bool("no-color", false, "Disable color output")
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, `USAGE:
@@ -53,7 +54,7 @@ OPTIONS:
   -h, --help        Show this help message
   --lang ja|en      Language (default: ja)
   --no-color        Disable color output
-  --version         Show version information
+  -V, --version     Show version information
 
 ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output when set (see https://no-color.org/)
