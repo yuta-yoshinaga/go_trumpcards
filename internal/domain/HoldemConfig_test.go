@@ -97,3 +97,58 @@ func TestHoldemPlayStyleNames(t *testing.T) {
 	assert.Equal(t, "LAG", HoldemPlayStyleNames[HoldemStyleLAG])
 	assert.Equal(t, "GTO", HoldemPlayStyleNames[HoldemStyleGTO])
 }
+
+func TestHoldemConfig_Validate(t *testing.T) {
+	validCfg := func() HoldemConfig {
+		return HoldemConfig{
+			BettingLimit:    BettingLimitFixed,
+			SmallBlind:      5,
+			BigBlind:        10,
+			BlindLevelHands: 10,
+		}
+	}
+	t.Run("valid config returns nil", func(t *testing.T) {
+		assert.NoError(t, validCfg().Validate())
+	})
+	t.Run("betting limit below min returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.BettingLimit = BettingLimitType(-1)
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("betting limit above max returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.BettingLimit = BettingLimitType(99)
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("small blind zero returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.SmallBlind = 0
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("big blind one returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.BigBlind = 1
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("small blind equals big blind returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.SmallBlind = 10
+		cfg.BigBlind = 10
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("blind level hands zero returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.BlindLevelHands = 0
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("invalid table size returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.TableSize = 5
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("zero table size is valid (default)", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.TableSize = 0
+		assert.NoError(t, cfg.Validate())
+	})
+}

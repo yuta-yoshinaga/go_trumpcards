@@ -225,3 +225,16 @@ func TestPokerInteractor_Odds_Error(t *testing.T) {
 	result := pi.Odds(indices)
 	assert.Equal(t, "error output", result)
 }
+
+func TestPokerInteractor_ResetWithConfig_ValidationError(t *testing.T) {
+	ppMock := new(presenter.MockPokerPresenter)
+	gameMock := new(interfaces.MockPokerGame)
+	ppMock.On("Output", gameMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
+
+	pi := usecase.NewPokerInteractor(gameMock, ppMock)
+	cfg := domain.DefaultPokerConfig()
+	cfg.CpuCount = 0
+	result := pi.ResetWithConfig(cfg)
+	assert.Equal(t, "validation error", result)
+	gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
+}

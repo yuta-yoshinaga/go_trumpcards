@@ -41,6 +41,9 @@ func (hi *HoldemInteractor) Reset() string {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
+	if err := cfg.Validate(); err != nil {
+		return hi.hp.Output(hi.h, err)
+	}
 	// テーブルサイズ変更時はプレイヤーを再構築
 	if cfg.TableSize > 0 && cfg.TableSize != hi.h.GetPlayerCnt() {
 		hi.h.Resize(domain.NewPlayersForTable(cfg.TableSize))

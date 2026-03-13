@@ -258,9 +258,18 @@ func TestPokerCuiController_BettingLimit_NoArgs(t *testing.T) {
 func TestPokerCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("bl 5"), "Invalid betting limit: 5")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("bl abc"), "Invalid betting limit: abc")
-	assert.Contains(t, c.Exec("bl -1"), "Invalid betting limit: -1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
+	cfg5 := domain.DefaultPokerConfig()
+	cfg5.BettingLimit = domain.BettingLimitType(5)
+	mi.On("ResetWithConfig", cfg5).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("bl 5"))
+	cfgNeg := domain.DefaultPokerConfig()
+	cfgNeg.BettingLimit = domain.BettingLimitType(-1)
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("bl -1"))
 }
 
 // --- lowball ---
@@ -319,10 +328,22 @@ func TestPokerCuiController_SetCpuCount_NoArgs(t *testing.T) {
 func TestPokerCuiController_SetCpuCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("scc 0"), "Invalid CPU player count: 0")
-	assert.Contains(t, c.Exec("scc 4"), "Invalid CPU player count: 4")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("scc abc"), "Invalid CPU player count: abc")
-	assert.Contains(t, c.Exec("scc -1"), "Invalid CPU player count: -1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
+	cfg0 := domain.DefaultPokerConfig()
+	cfg0.CpuCount = 0
+	mi.On("ResetWithConfig", cfg0).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("scc 0"))
+	cfg4 := domain.DefaultPokerConfig()
+	cfg4.CpuCount = 4
+	mi.On("ResetWithConfig", cfg4).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("scc 4"))
+	cfgNeg := domain.DefaultPokerConfig()
+	cfgNeg.CpuCount = -1
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("scc -1"))
 }
 
 // --- set joker count ---
@@ -366,9 +387,18 @@ func TestPokerCuiController_SetJokerCount_NoArgs(t *testing.T) {
 func TestPokerCuiController_SetJokerCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("sjc -1"), "Invalid joker count: -1")
-	assert.Contains(t, c.Exec("sjc 3"), "Invalid joker count: 3")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("sjc abc"), "Invalid joker count: abc")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
+	cfgNeg := domain.DefaultPokerConfig()
+	cfgNeg.JokerCount = -1
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sjc -1"))
+	cfg3 := domain.DefaultPokerConfig()
+	cfg3.JokerCount = 3
+	mi.On("ResetWithConfig", cfg3).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sjc 3"))
 }
 
 // --- odds ---

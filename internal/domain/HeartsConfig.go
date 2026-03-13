@@ -1,5 +1,7 @@
 package domain
 
+import "fmt"
+
 // HeartsCpuDifficulty CPU の難易度レベル
 type HeartsCpuDifficulty int
 
@@ -21,4 +23,15 @@ type HeartsConfig struct {
 // DefaultHeartsConfig デフォルト設定を返す
 func DefaultHeartsConfig() HeartsConfig {
 	return HeartsConfig{CpuDifficulty: HeartsCpuDifficultyNormal, PointLimit: 100}
+}
+
+// Validate 設定値のドメインバリデーション
+func (c HeartsConfig) Validate() error {
+	if c.CpuDifficulty < HeartsCpuDifficultyEasy || c.CpuDifficulty > HeartsCpuDifficultyHard {
+		return fmt.Errorf("CPU difficulty must be %d-%d, got %d", int(HeartsCpuDifficultyEasy), int(HeartsCpuDifficultyHard), int(c.CpuDifficulty))
+	}
+	if c.PointLimit < 1 {
+		return fmt.Errorf("point limit must be >= 1, got %d", c.PointLimit)
+	}
+	return nil
 }

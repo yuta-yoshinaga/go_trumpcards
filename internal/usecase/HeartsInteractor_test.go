@@ -90,6 +90,18 @@ func TestHeartsInteractor_ResetWithConfig(t *testing.T) {
 	})
 }
 
+func TestHeartsInteractor_ResetWithConfig_ValidationError(t *testing.T) {
+	hpMock := new(presenter.MockHeartsPresenter)
+	gameMock := new(interfaces.MockHeartsGame)
+	hpMock.On("Output", gameMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
+
+	hi := usecase.NewHeartsInteractor(gameMock, hpMock)
+	cfg := domain.HeartsConfig{CpuDifficulty: domain.HeartsCpuDifficulty(-1), PointLimit: 100}
+	result := hi.ResetWithConfig(cfg)
+	assert.Equal(t, "validation error", result)
+	gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
+}
+
 func TestHeartsInteractor_Pass(t *testing.T) {
 	mockOutput := `{"phase":1}`
 

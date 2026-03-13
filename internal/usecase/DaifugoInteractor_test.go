@@ -131,3 +131,16 @@ func TestDaifugoInteractor_MockGame(t *testing.T) {
 		gameMock.AssertCalled(t, "SortHumanHand", domain.DaifugoSortBySuit)
 	})
 }
+
+func TestDaifugoInteractor_ResetWithConfig_ValidationError(t *testing.T) {
+	dgpMock := new(presenter.MockDaifugoPresenter)
+	gameMock := new(interfaces.MockDaifugoGame)
+	dgpMock.On("Output", gameMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
+
+	di := usecase.NewDaifugoInteractor(gameMock, dgpMock)
+	cfg := domain.DefaultDaifugoConfig()
+	cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(-1)
+	result := di.ResetWithConfig(cfg)
+	assert.Equal(t, "validation error", result)
+	gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
+}

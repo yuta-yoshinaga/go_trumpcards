@@ -65,13 +65,11 @@ func TestTf_ExtraParamsIgnored(t *testing.T) {
 
 func TestTf_WithMultipleSubstitutions(t *testing.T) {
 	i18n.SetLang("en")
-	// Verify two simultaneous substitutions: holdem.bigBlindMustBeGreater has {{sb}}
-	// and holdem.smallBlindMustBeLess has {{bb}}.
-	result := i18n.Tf("holdem.smallBlindMustBeLess", "bb", "10")
-	assert.Equal(t, "Small blind must be less than big blind (10).", result)
-	// Second key with a different placeholder to confirm independent substitution
-	result2 := i18n.Tf("holdem.bigBlindMustBeGreater", "sb", "5")
-	assert.Equal(t, "Big blind must be greater than small blind (5).", result2)
+	// Verify substitution works independently across two separate calls.
+	result := i18n.Tf("holdem.invalidSmallBlind", "val", "0")
+	assert.Equal(t, "Invalid small blind: 0. Please enter 1 or more.", result)
+	result2 := i18n.Tf("holdem.invalidBigBlind", "val", "1")
+	assert.Equal(t, "Invalid big blind: 1. Please enter 2 or more.", result2)
 }
 
 func TestTf_WithNoParams_ReturnsT(t *testing.T) {

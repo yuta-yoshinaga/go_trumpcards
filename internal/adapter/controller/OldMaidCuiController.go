@@ -52,8 +52,8 @@ func (c *OldMaidCuiController) Exec(command string) string {
 					return cuimsg.RequiredWithHint("Game mode", "(0=Normal, 1=JijiNuki)"), true
 				}
 				m, err := strconv.Atoi(args[0])
-				if err != nil || m < 0 || m > 1 {
-					return cuimsg.InvalidOutOfRange("game mode", args[0], "Please enter 0-1."), true
+				if err != nil {
+					return cuimsg.InvalidValue("game mode", args[0]), true
 				}
 				cfg := c.omi.GetConfig()
 				cfg.Mode = domain.OldMaidMode(m)

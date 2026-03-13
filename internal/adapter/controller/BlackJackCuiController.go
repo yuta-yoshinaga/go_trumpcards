@@ -4,7 +4,6 @@ import (
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -79,8 +78,8 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 					return cuimsg.Required("Surrender rule"), true
 				}
 				rule, err := strconv.Atoi(args[0])
-				if err != nil || rule < 0 || rule > domain.BJSurrenderMax {
-					return cuimsg.InvalidOutOfRange("surrender rule", args[0], "Please enter a number (0-2)."), true
+				if err != nil {
+					return cuimsg.InvalidNotANumber("surrender rule"), true
 				}
 				return bcc.bji.SetSurrenderRule(rule), true
 			case "hint", "togglehint":
@@ -105,8 +104,8 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 					return cuimsg.Required("CPU player count"), true
 				}
 				count, err := strconv.Atoi(args[0])
-				if err != nil || count < 0 || count > domain.BJMaxCpuPlayers {
-					return cuimsg.InvalidOutOfRange("CPU player count", args[0], "Please enter a number (0-3)."), true
+				if err != nil {
+					return cuimsg.InvalidNotANumber("CPU player count"), true
 				}
 				return bcc.bji.SetCpuPlayerCount(count), true
 			case "scs", "setcountingsystem":
@@ -114,8 +113,8 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 					return cuimsg.Required("Counting system"), true
 				}
 				system, err := strconv.Atoi(args[0])
-				if err != nil || system < 0 || system > domain.BJCountingMax {
-					return cuimsg.InvalidOutOfRange("counting system", args[0], "Please enter a number (0-3)."), true
+				if err != nil {
+					return cuimsg.InvalidNotANumber("counting system"), true
 				}
 				return bcc.bji.SetCountingSystem(system), true
 			case "pen", "setpenetration":

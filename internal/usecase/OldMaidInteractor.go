@@ -39,6 +39,9 @@ func (oi *OldMaidInteractor) GetConfig() domain.OldMaidConfig {
 
 // Reset ゲーム初期化
 func (oi *OldMaidInteractor) Reset(config domain.OldMaidConfig) string {
+	if err := config.Validate(); err != nil {
+		return oi.omp.Output(oi.om, err)
+	}
 	oi.om.SetConfig(config)
 	oi.om.Reset()
 	oi.runCpuTurns()

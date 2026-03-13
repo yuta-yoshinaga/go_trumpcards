@@ -19,3 +19,18 @@ func TestOldMaidMode_Values(t *testing.T) {
 	assert.Equal(t, domain.OldMaidMode(0), domain.OldMaidModeNormal)
 	assert.Equal(t, domain.OldMaidMode(1), domain.OldMaidModeJijiNuki)
 }
+
+func TestOldMaidConfig_Validate(t *testing.T) {
+	t.Run("normal mode returns nil", func(t *testing.T) {
+		cfg := domain.OldMaidConfig{Mode: domain.OldMaidModeNormal}
+		assert.NoError(t, cfg.Validate())
+	})
+	t.Run("jiji nuki mode returns nil", func(t *testing.T) {
+		cfg := domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki}
+		assert.NoError(t, cfg.Validate())
+	})
+	t.Run("invalid mode returns error", func(t *testing.T) {
+		cfg := domain.OldMaidConfig{Mode: domain.OldMaidMode(99)}
+		assert.Error(t, cfg.Validate())
+	})
+}

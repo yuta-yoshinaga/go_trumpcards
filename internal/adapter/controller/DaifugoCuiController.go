@@ -73,8 +73,8 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return cuimsg.RequiredWithHint("CPU difficulty", "(0=Normal, 1=Easy, 2=Hard)"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 || v > 2 {
-					return cuimsg.InvalidOutOfRange("CPU difficulty", args[0], "Please enter 0-2."), true
+				if err != nil {
+					return cuimsg.InvalidValue("CPU difficulty", args[0]), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(v)
@@ -84,8 +84,8 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return cuimsg.RequiredWithHint("Joker count", "(0-2)"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 || v > 2 {
-					return cuimsg.InvalidOutOfRange("joker count", args[0], "Please enter 0-2."), true
+				if err != nil {
+					return cuimsg.InvalidValue("joker count", args[0]), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.JokerCount = v
@@ -110,8 +110,8 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return cuimsg.RequiredWithHint("Suit lock mode", "(0=none, 1=partial, 2=full)"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 || v > 2 {
-					return cuimsg.InvalidOutOfRange("suit lock mode", args[0], "Please enter 0-2."), true
+				if err != nil {
+					return cuimsg.InvalidValue("suit lock mode", args[0]), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.SuitLockMode = domain.DaifugoSuitLockMode(v)
@@ -121,8 +121,8 @@ func (c *DaifugoCuiController) Exec(command string) string {
 					return cuimsg.RequiredWithHint("Five skip count", "(1-5)"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 1 || v > 5 {
-					return cuimsg.InvalidOutOfRange("five skip count", args[0], "Please enter 1-5."), true
+				if err != nil {
+					return cuimsg.InvalidValue("five skip count", args[0]), true
 				}
 				cfg := c.dgi.GetConfig()
 				cfg.FiveSkipCount = v
