@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/minio/selfupdate"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -53,20 +54,20 @@ func (u *Updater) Exec() error {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", u.repoOwner, u.repoName)
 	resp, err := http.Get(url) //nolint:gosec,noctx // simple GET to GitHub API
 	if err != nil {
-		fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", err.Error()))
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", err.Error()))
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		errMsg := fmt.Sprintf("HTTP %d", resp.StatusCode)
-		fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", errMsg))
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", errMsg))
 		return fmt.Errorf("%s", errMsg)
 	}
 
 	var release ghRelease
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
-		fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", err.Error()))
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateFetchError", "error", err.Error()))
 		return err
 	}
 
@@ -75,56 +76,56 @@ func (u *Updater) Exec() error {
 
 	// If current version is not "dev" and matches latest, already up to date.
 	if currentClean != "dev" && currentClean == latestVersion {
-		fmt.Fprintln(u.writer, i18n.Tf("updateAlreadyLatest", "version", release.TagName))
+		_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateAlreadyLatest", "version", release.TagName))
 		return nil
 	}
 
 	// Prompt for confirmation.
-	fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "version", release.TagName)+" ")
+	_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "version", release.TagName)+" ")
 	var answer string
-	fmt.Fscanln(u.reader, &answer)
+	_, _ = fmt.Fscanln(u.reader, &answer)
 	if answer != "y" && answer != "Y" {
-		fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
+		_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
 		return nil
 	}
 
 	// Find matching asset.
 	assetName, assetURL := u.findAsset(release.Assets)
 	if assetURL == "" {
-		fmt.Fprintln(u.errWriter, i18n.Tf("updateNoAsset", "os", runtime.GOOS, "arch", runtime.GOARCH))
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateNoAsset", "os", runtime.GOOS, "arch", runtime.GOARCH))
 		return fmt.Errorf("no matching asset for %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
 
-	fmt.Fprintln(u.writer, i18n.Tf("updateDownloading", "version", release.TagName))
+	_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateDownloading", "version", release.TagName))
 
 	// Download asset.
 	assetResp, err := http.Get(assetURL) //nolint:gosec,noctx // downloading release asset
 	if err != nil {
-		fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
 		return err
 	}
-	defer assetResp.Body.Close()
+	defer func() { _ = assetResp.Body.Close() }()
 
 	assetData, err := io.ReadAll(assetResp.Body)
 	if err != nil {
-		fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
 		return err
 	}
 
 	// Extract binary from archive.
 	binaryReader, err := u.extractBinary(assetName, assetData)
 	if err != nil {
-		fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
 		return err
 	}
 
 	// Apply update.
 	if err := selfupdate.Apply(binaryReader, selfupdate.Options{}); err != nil {
-		fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
+		_, _ = fmt.Fprintln(u.errWriter, i18n.Tf("updateApplyError", "error", err.Error()))
 		return err
 	}
 
-	fmt.Fprintln(u.writer, i18n.Tf("updateSuccess", "version", release.TagName))
+	_, _ = fmt.Fprintln(u.writer, i18n.Tf("updateSuccess", "version", release.TagName))
 	return nil
 }
 
@@ -168,7 +169,7 @@ func (u *Updater) extractFromTarGz(data []byte, name string) (io.Reader, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer gz.Close()
+	defer func() { _ = gz.Close() }()
 
 	tr := tar.NewReader(gz)
 	for {
@@ -203,11 +204,12 @@ func (u *Updater) extractFromZip(data []byte, name string) (io.Reader, error) {
 			if err != nil {
 				return nil, err
 			}
-			defer rc.Close()
 			buf := &bytes.Buffer{}
-			if _, err := io.Copy(buf, rc); err != nil { //nolint:gosec // trusted archive from GitHub
-				return nil, err
+			if _, cpErr := io.Copy(buf, rc); cpErr != nil { //nolint:gosec // trusted archive from GitHub
+				_ = rc.Close()
+				return nil, cpErr
 			}
+			_ = rc.Close()
 			return buf, nil
 		}
 	}
