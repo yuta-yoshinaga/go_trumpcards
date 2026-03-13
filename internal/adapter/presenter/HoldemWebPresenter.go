@@ -35,7 +35,7 @@ func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr erro
 	resObj.BettingLimit = int(cfg.BettingLimit)
 	resObj.TableSize = h.GetPlayerCnt()
 	resObj.RaiseCount = h.GetRaiseCount()
-	resObj.MaxBetAmount = calcMaxBetAmount(cfg.BettingLimit, h.GetPot(), h.GetLastBet())
+	_, resObj.MaxBetAmount = domain.CalculateBettingLimits(cfg.BettingLimit, h.GetPot(), h.GetLastBet())
 	resObj.RebuyAvailable = h.IsRebuyAvailable()
 	resObj.AddonAvailable = h.IsAddonAvailable()
 	resObj.RebuyCounts = h.GetRebuyCounts()
@@ -215,16 +215,6 @@ func (hwp *HoldemWebPresenter) buildResultMessage(h interfaces.HoldemGame) (stri
 // ActionLogOutput 棋譜をJSON出力
 func (hwp *HoldemWebPresenter) ActionLogOutput(h interfaces.HoldemGame) string {
 	return actionLogOutputJSON(h)
-}
-
-// calcMaxBetAmount ベッティングリミットに応じた最大ベット額を計算
-func calcMaxBetAmount(limit domain.BettingLimitType, pot, lastBet int) int {
-	switch limit {
-	case domain.BettingLimitPotLimit:
-		return pot + lastBet
-	default:
-		return 0
-	}
 }
 
 // getHandName ハンドランクから名前を返す
