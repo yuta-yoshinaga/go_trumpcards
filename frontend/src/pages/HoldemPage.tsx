@@ -29,6 +29,30 @@ function usePhaseNames(t: (key: string) => string): Record<number, string> {
   };
 }
 
+function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
+  const { t } = useTranslation('holdem');
+  return (
+    <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
+      <abbr title={t('stats.vpipTooltip')} className="cursor-help">
+        {t('stats.vpip')}
+      </abbr>
+      :{vpip}%{' '}
+      <abbr title={t('stats.pfrTooltip')} className="cursor-help">
+        {t('stats.pfr')}
+      </abbr>
+      :{pfr}%{' '}
+      <abbr title={t('stats.threeBetTooltip')} className="cursor-help">
+        {t('stats.threeBet')}
+      </abbr>
+      :{threeBet}%{' '}
+      <abbr title={t('stats.afTooltip')} className="cursor-help">
+        {t('stats.af')}
+      </abbr>
+      :{af}
+    </span>
+  );
+}
+
 export function HoldemPage() {
   const { t } = useTranslation('holdem');
   const { t: tc } = useTranslation('common');
@@ -126,26 +150,7 @@ export function HoldemPage() {
               faceDownCount={2}
               showHandName={isShowdown}
               extraInfo={
-                p.totalHands > 0 ? (
-                  <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
-                    <abbr title={t('stats.vpipTooltip')} className="cursor-help no-underline">
-                      {t('stats.vpip')}
-                    </abbr>
-                    :{p.vpip}%{' '}
-                    <abbr title={t('stats.pfrTooltip')} className="cursor-help no-underline">
-                      {t('stats.pfr')}
-                    </abbr>
-                    :{p.pfr}%{' '}
-                    <abbr title={t('stats.threeBetTooltip')} className="cursor-help no-underline">
-                      {t('stats.threeBet')}
-                    </abbr>
-                    :{p.threeBet}%{' '}
-                    <abbr title={t('stats.afTooltip')} className="cursor-help no-underline">
-                      {t('stats.af')}
-                    </abbr>
-                    :{p.af}
-                  </span>
-                ) : undefined
+                p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
               }
             />
           ))}
@@ -178,24 +183,12 @@ export function HoldemPage() {
                 {tc('betting.chips')} {humanPlayer.chips}
               </span>
               {humanPlayer.totalHands > 0 && (
-                <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
-                  <abbr title={t('stats.vpipTooltip')} className="cursor-help no-underline">
-                    {t('stats.vpip')}
-                  </abbr>
-                  :{humanPlayer.vpip}%{' '}
-                  <abbr title={t('stats.pfrTooltip')} className="cursor-help no-underline">
-                    {t('stats.pfr')}
-                  </abbr>
-                  :{humanPlayer.pfr}%{' '}
-                  <abbr title={t('stats.threeBetTooltip')} className="cursor-help no-underline">
-                    {t('stats.threeBet')}
-                  </abbr>
-                  :{humanPlayer.threeBet}%{' '}
-                  <abbr title={t('stats.afTooltip')} className="cursor-help no-underline">
-                    {t('stats.af')}
-                  </abbr>
-                  :{humanPlayer.af}
-                </span>
+                <HudStats
+                  vpip={humanPlayer.vpip}
+                  pfr={humanPlayer.pfr}
+                  threeBet={humanPlayer.threeBet}
+                  af={humanPlayer.af}
+                />
               )}
               {humanPlayer.currentBet > 0 && (
                 <span className="ml-2 text-[0.85em]">
