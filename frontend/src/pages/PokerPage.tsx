@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { pokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CardImage } from '../components/CardImage';
@@ -12,13 +11,10 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
-import { useCardSelection } from '../hooks/useCardSelection';
-import { useGameApi } from '../hooks/useGameApi';
+import { usePokerGame } from '../hooks/usePokerGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
-import type { PokerOdds } from '../types/card';
 import { PokerPhase } from '../types/phases';
-import { toggleArrayItem } from '../utils/arrayUtils';
 import { cardAlt } from '../utils/cardAlt';
 
 const cardWrapBase: React.CSSProperties = {
@@ -33,31 +29,11 @@ const cardWrapBase: React.CSSProperties = {
 export function PokerPage() {
   const { t } = useTranslation('poker');
   const { t: tc } = useTranslation('common');
-  const { selected, setSelected, clear: clearSelection } = useCardSelection();
+  const { state, loading, error, exec, selected, toggleCard, odds, canExchange } = usePokerGame();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('poker');
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
   const [isLowball, setIsLowball] = useState(false);
-  const [odds, setOdds] = useState<PokerOdds[] | null>(null);
-  const oddsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const oddsGenRef = useRef(0);
-
-  const onSuccess = useCallback(() => {
-    clearSelection();
-    setOdds(null);
-    oddsGenRef.current++;
-  }, [clearSelection]);
-  const { state, loading, error, exec } = useGameApi(pokerApi.exec, { onSuccess });
-
-  useEffect(() => {
-    exec('reset');
-  }, [exec]);
-
-  useEffect(() => {
-    return () => {
-      if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -69,37 +45,13 @@ export function PokerPage() {
 
   const phase = state?.phase ?? PokerPhase.INIT;
   const isBettingPhase = phase === PokerPhase.DEAL || phase === PokerPhase.SECOND_BET;
-  const isExchangePhase = phase === PokerPhase.EXCHANGE;
   const isEnd = phase === PokerPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isBettingPhase && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
-  const canExchange = isExchangePhase && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 10;
-
-  const toggleSelect = (idx: number) => {
-    if (!canExchange) return;
-    setSelected((prev) => {
-      const next = toggleArrayItem(prev, idx);
-      if (oddsTimerRef.current !== null) clearTimeout(oddsTimerRef.current);
-      if (next.length === 0) {
-        setOdds(null);
-      } else {
-        oddsTimerRef.current = setTimeout(() => {
-          const gen = ++oddsGenRef.current;
-          pokerApi
-            .exec('odds', next)
-            .then((res) => {
-              if (gen === oddsGenRef.current) setOdds(res.odds ?? null);
-            })
-            .catch(() => {});
-        }, 300);
-      }
-      return next;
-    });
-  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
@@ -194,7 +146,7 @@ export function PokerPage() {
                     type="button"
                     aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                     aria-pressed={isSelected}
-                    onClick={() => toggleSelect(i)}
+                    onClick={() => toggleCard(i)}
                     style={{
                       background: 'none',
                       border: 'none',
