@@ -57,7 +57,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 			case "des", "declineearlysurrender":
 				return bcc.bji.DeclineEarlySurrender(), true
 			case "ssr", "setsurrenderrule":
-				rule, errMsg, ok := cuiutil.ParseIntArg(args, "Surrender rule is required.", "Invalid surrender rule. Please enter a number (0-2).", 0, domain.BJSurrenderMax)
+				rule, errMsg, ok := cuiutil.ParseIntArg(args, "Surrender rule is required.", "Invalid surrender rule: %s. Please enter a number (0-2).", 0, domain.BJSurrenderMax)
 				if !ok {
 					return errMsg, true
 				}
@@ -77,13 +77,13 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				}
 				return bcc.bji.SetDeckCount(count), true
 			case "scc", "setcpucount":
-				count, errMsg, ok := cuiutil.ParseIntArg(args, "CPU player count is required.", "Invalid CPU player count. Please enter a number (0-3).", 0, domain.BJMaxCpuPlayers)
+				count, errMsg, ok := cuiutil.ParseIntArg(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter a number (0-3).", 0, domain.BJMaxCpuPlayers)
 				if !ok {
 					return errMsg, true
 				}
 				return bcc.bji.SetCpuPlayerCount(count), true
 			case "scs", "setcountingsystem":
-				system, errMsg, ok := cuiutil.ParseIntArg(args, "Counting system is required.", "Invalid counting system. Please enter a number (0-3).", 0, domain.BJCountingMax)
+				system, errMsg, ok := cuiutil.ParseIntArg(args, "Counting system is required.", "Invalid counting system: %s. Please enter a number (0-3).", 0, domain.BJCountingMax)
 				if !ok {
 					return errMsg, true
 				}
