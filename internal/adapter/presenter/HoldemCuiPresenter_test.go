@@ -277,7 +277,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		h.SetPhase(domain.HoldemPhasePreFlop)
 
 		result := p.Output(h, errors.New("test error"))
-		assert.Contains(t, result, "[エラー] test error")
+		assert.Contains(t, result, "test error")
 	})
 
 	t.Run("game end message displayed", func(t *testing.T) {

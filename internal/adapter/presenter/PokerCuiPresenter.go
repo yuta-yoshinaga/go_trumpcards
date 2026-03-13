@@ -137,7 +137,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 
 	// エラーメッセージ
 	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", color.Red("[エラー] "+lastErr.Error()))
+		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
 	}
 
 	// ゲーム終了メッセージ

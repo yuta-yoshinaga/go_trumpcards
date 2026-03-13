@@ -168,7 +168,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 
 	// エラーメッセージ
 	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", color.Red("[エラー] "+lastErr.Error()))
+		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
 	}
 
 	// ゲーム終了メッセージ

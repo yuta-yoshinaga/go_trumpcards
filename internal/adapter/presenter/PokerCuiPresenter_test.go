@@ -408,7 +408,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		p.SetPhase(domain.PokerPhaseDeal)
 
 		result := pres.Output(p, errors.New("test error"))
-		assert.Contains(t, result, "[エラー] test error")
+		assert.Contains(t, result, "test error")
 	})
 
 	t.Run("no error hides error section", func(t *testing.T) {
@@ -416,7 +416,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		p.SetPhase(domain.PokerPhaseDeal)
 
 		result := pres.Output(p, nil)
-		assert.NotContains(t, result, "[エラー]")
+		assert.NotContains(t, result, "test error")
 	})
 
 	t.Run("game end message displayed", func(t *testing.T) {
