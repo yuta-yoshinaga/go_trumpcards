@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, blackjackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -309,10 +310,14 @@ describe('BlackJackPage', () => {
     });
   });
 
-  it('shows BJ flag for blackjack hand', async () => {
+  it('shows BJ flag with tooltip for blackjack hand', async () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/\[BJ\]/)).toBeInTheDocument());
+    await waitFor(() => {
+      const elem = screen.getByTitle(i18n.t('blackjack:status.bjTooltip'));
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.bj')}]`);
+    });
   });
 
   it('does not show dealer area in bet phase', async () => {
@@ -379,24 +384,46 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
-  it('shows [BUST] flag for busted hand', async () => {
+  it('shows [BUST] flag with tooltip for busted hand', async () => {
     const bustState: BlackJackResponse = {
       ...actionPhaseState,
       hands: [{ ...baseHand, busted: true }],
     };
     mockExec.mockResolvedValue(bustState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/\[BUST\]/)).toBeInTheDocument());
+    await waitFor(() => {
+      const elem = screen.getByTitle(i18n.t('blackjack:status.bustTooltip'));
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.bust')}]`);
+    });
   });
 
-  it('shows [DD] flag for doubled hand', async () => {
+  it('shows [DD] flag with tooltip for doubled hand', async () => {
     const ddState: BlackJackResponse = {
       ...actionPhaseState,
       hands: [{ ...baseHand, doubled: true }],
     };
     mockExec.mockResolvedValue(ddState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/\[DD\]/)).toBeInTheDocument());
+    await waitFor(() => {
+      const elem = screen.getByTitle(i18n.t('blackjack:status.ddTooltip'));
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.dd')}]`);
+    });
+  });
+
+  it('shows [SUR] flag with tooltip for surrendered player hand', async () => {
+    const surState: BlackJackResponse = {
+      ...actionPhaseState,
+      hands: [{ ...baseHand, surrendered: true }],
+    };
+    mockExec.mockResolvedValue(surState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => {
+      const elem = screen.getByTitle(i18n.t('blackjack:status.surTooltip'));
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.sur')}]`);
+    });
   });
 
   it('shows insurance bet info when insuranceBet > 0', async () => {
@@ -635,14 +662,18 @@ describe('BlackJackPage', () => {
     });
   });
 
-  it('shows SURRENDER badge on surrendered hand', async () => {
+  it('shows [SUR] badge with tooltip on surrendered hand', async () => {
     const surrenderedEndState: BlackJackResponse = {
       ...endPhaseState,
       hands: [{ ...(endPhaseState.hands?.[0] as BlackJackHand), surrendered: true }],
     };
     mockExec.mockResolvedValue(surrenderedEndState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText('SURRENDER')).toBeInTheDocument());
+    await waitFor(() => {
+      const elem = screen.getByTitle(i18n.t('blackjack:status.surTooltip'));
+      expect(elem).toBeInTheDocument();
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.sur')}]`);
+    });
   });
 
   it('shows deck count in chip bar', async () => {
@@ -818,8 +849,12 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      expect(screen.getByText(/\[BUST\]/)).toBeInTheDocument();
-      expect(screen.getByText(/\[DD\]/)).toBeInTheDocument();
+      const bustElem = screen.getByTitle(i18n.t('blackjack:status.bustTooltip'));
+      expect(bustElem).toBeInTheDocument();
+      expect(bustElem).toHaveTextContent(`[${i18n.t('blackjack:status.bust')}]`);
+      const ddElem = screen.getByTitle(i18n.t('blackjack:status.ddTooltip'));
+      expect(ddElem).toBeInTheDocument();
+      expect(ddElem).toHaveTextContent(`[${i18n.t('blackjack:status.dd')}]`);
     });
   });
 
@@ -853,8 +888,12 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      expect(screen.getByText(/\[BJ\]/)).toBeInTheDocument();
-      expect(screen.getByText(/\[SUR\]/)).toBeInTheDocument();
+      const bjElem = screen.getByTitle(i18n.t('blackjack:status.bjTooltip'));
+      expect(bjElem).toBeInTheDocument();
+      expect(bjElem).toHaveTextContent(`[${i18n.t('blackjack:status.bj')}]`);
+      const surElem = screen.getByTitle(i18n.t('blackjack:status.surTooltip'));
+      expect(surElem).toBeInTheDocument();
+      expect(surElem).toHaveTextContent(`[${i18n.t('blackjack:status.sur')}]`);
     });
   });
 

@@ -20,6 +20,7 @@ import {
   BJ_SUGGEST_STAND,
   BJ_SUGGEST_SURRENDER,
 } from '../components/blackjack/bjConstants';
+import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -186,10 +187,12 @@ export function BlackJackPage() {
                     <div className="text-yellow-100 text-sm">
                       {cpu.hands.length > 1 ? `${t('hand', { idx: handIdx + 1 })} ` : ''}
                       {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
-                      {hand.busted && ' [BUST]'}
-                      {hand.doubled && ' [DD]'}
-                      {hand.isBlackJack && ' [BJ]'}
-                      {hand.surrendered && ' [SUR]'}
+                      <HandStatusBadges
+                        busted={hand.busted}
+                        doubled={hand.doubled}
+                        isBlackJack={hand.isBlackJack}
+                        surrendered={hand.surrendered}
+                      />
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {hand.cards.map((card, cardIdx) => (
@@ -221,12 +224,12 @@ export function BlackJackPage() {
                   {handIndex === currentHandIdx &&
                     (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
                     ' (*)'}
-                  {hand.busted && ' [BUST]'}
-                  {hand.doubled && ' [DD]'}
-                  {hand.isBlackJack && ' [BJ]'}
-                  {hand.surrendered && (
-                    <span className="ml-1 text-xs bg-gray-500 text-white px-1 rounded">SURRENDER</span>
-                  )}
+                  <HandStatusBadges
+                    busted={hand.busted}
+                    doubled={hand.doubled}
+                    isBlackJack={hand.isBlackJack}
+                    surrendered={hand.surrendered}
+                  />
                 </h3>
                 <h3 className="text-white mt-0 mb-0.5">
                   {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
