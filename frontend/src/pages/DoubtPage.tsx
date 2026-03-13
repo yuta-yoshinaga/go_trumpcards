@@ -16,7 +16,7 @@ import {
   PENALTY_DRAW_LIMIT_OPTIONS,
   useDoubtGame,
 } from '../hooks/useDoubtGame';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import type { DoubtCpuAction } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
@@ -299,7 +299,7 @@ export function DoubtPage() {
                     const num = Number(e.target.value);
                     setClaimedValue(Math.max(1, Math.min(13, num)));
                   }}
-                  className="bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  className={`bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30 ${focusRingBlue}`}
                 />
                 <span className="text-game-text-muted text-xs">({valueName(claimedValue)})</span>
               </div>

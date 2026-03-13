@@ -8,3 +8,8 @@ export const btnSecondary = `${base} text-white bg-gray-600 hover:bg-gray-500`;
 
 export const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-black/50';
+
+export const focusRingWhite = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80';
+
+export const focusRingBlue =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black';

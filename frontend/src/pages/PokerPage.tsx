@@ -12,7 +12,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
 import { usePokerGame } from '../hooks/usePokerGame';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { PokerPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
@@ -147,7 +147,7 @@ export function PokerPage() {
                     aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                     aria-pressed={isSelected}
                     onClick={() => toggleCard(i)}
-                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded"
+                    className={`${focusRingBlue} rounded`}
                     style={{
                       background: 'none',
                       border: 'none',
