@@ -134,12 +134,9 @@ func (p HoldemWebInput) ToConfig() (domain.HoldemConfig, error) {
 		bb = sb * 2
 	} else if bbProvided && !sbProvided && bb > 1 {
 		sb = bb / 2
-		if sb < 1 {
-			sb = 1
-		}
 	}
 	if sb >= bb {
-		return domain.HoldemConfig{}, errors.New("param error: smallBlind must be less than bigBlind.")
+		return domain.HoldemConfig{}, errors.New("param error: smallBlind must be less than bigBlind")
 	}
 	cfg.SmallBlind = sb
 	cfg.BigBlind = bb
@@ -164,7 +161,7 @@ func (p HoldemWebInput) ToConfig() (domain.HoldemConfig, error) {
 	if p.TableSize != nil {
 		ts := *p.TableSize
 		if !domain.IsValidHoldemTableSize(ts) {
-			return domain.HoldemConfig{}, errors.New("param error: tableSize must be 4, 6, or 9.")
+			return domain.HoldemConfig{}, errors.New("param error: tableSize must be 4, 6, or 9")
 		}
 		cfg.TableSize = ts
 	}
