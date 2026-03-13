@@ -19,9 +19,9 @@ import (
 
 func mustKlondikeOutputJSON(msg string) string {
 	out := &controller.KlondikeWebOutput{
-		Tableau:    [][]*controller.KlondikeWebOutputTableauCard{},
-		Waste:      []*controller.WebOutputCard{},
-		Foundation: [][]*controller.WebOutputCard{},
+		Tableau:       [][]*controller.KlondikeWebOutputTableauCard{},
+		Waste:         []*controller.WebOutputCard{},
+		Foundation:    [][]*controller.WebOutputCard{},
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

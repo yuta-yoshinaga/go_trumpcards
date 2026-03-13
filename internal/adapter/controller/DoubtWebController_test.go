@@ -20,9 +20,9 @@ import (
 // and returns its JSON representation, mirroring newDefaultOutput in the controller.
 func mustDoubtOutputJSON(msg string) string {
 	out := &controller.DoubtWebOutput{
-		Players:     []*controller.DoubtWebOutputPlayer{},
-		CpuDoubters: []int{},
-		CpuActions:  []*controller.DoubtWebOutputAction{},
+		Players:       []*controller.DoubtWebOutputPlayer{},
+		CpuDoubters:   []int{},
+		CpuActions:    []*controller.DoubtWebOutputAction{},
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
