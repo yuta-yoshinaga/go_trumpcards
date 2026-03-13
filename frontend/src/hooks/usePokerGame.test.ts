@@ -159,6 +159,23 @@ describe('usePokerGame', () => {
     await waitFor(() => expect(result.current.odds).toEqual(oddsData));
   });
 
+  it('sets odds to null when API response has no odds field', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    const { result } = renderHook(() => usePokerGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.canExchange).toBe(true));
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    // Response without an odds field → res.odds is undefined → res.odds ?? null = null
+    mockExec.mockResolvedValue({ ...exchangeState });
+
+    act(() => result.current.toggleCard(0));
+    await act(async () => { vi.advanceTimersByTime(300); });
+    vi.useRealTimers();
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('odds', [0]));
+    expect(result.current.odds).toBeNull();
+  });
+
   it('clears odds when selection becomes empty', async () => {
     mockExec.mockResolvedValue(exchangeState);
     const { result } = renderHook(() => usePokerGame(), { wrapper: createWrapper() });
@@ -231,18 +248,35 @@ describe('usePokerGame', () => {
     expect(result.current.odds).toBeNull();
   });
 
-  it('cleans up debounce timer on unmount without errors', async () => {
+  it('cleans up debounce timer on unmount without errors (no pending timer)', async () => {
     mockExec.mockResolvedValue(exchangeState);
     const { result, unmount } = renderHook(() => usePokerGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());
 
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-    // Directly manipulate canExchangeRef by triggering toggleCard via the toggle function
-    // Since state has EXCHANGE phase and currentTurn=0 (human), canExchange should be true
-    mockExec.mockResolvedValue({ ...exchangeState, odds: [] });
 
-    // Unmount before timer fires — should not throw
+    // Unmount without any pending timer — cleanup branch (timer === null) should not throw
     unmount();
     expect(() => { vi.advanceTimersByTime(300); }).not.toThrow();
+    vi.useRealTimers();
+  });
+
+  it('cancels pending debounce timer on unmount (clearTimeout branch)', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    const { result, unmount } = renderHook(() => usePokerGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.canExchange).toBe(true));
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mockExec.mockResolvedValue({ ...exchangeState, odds: [] });
+
+    // Start a pending timer via toggleCard
+    act(() => result.current.toggleCard(0));
+
+    // Unmount before timer fires — should cancel the timer without throwing
+    unmount();
+    expect(() => { vi.advanceTimersByTime(300); }).not.toThrow();
+    // Odds API should NOT have been called (timer was cancelled)
+    expect(mockExec).not.toHaveBeenCalledWith('odds', [0]);
+    vi.useRealTimers();
   });
 });
