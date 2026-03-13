@@ -45,7 +45,7 @@ type KlondikeWebOutput struct {
 	Foundation [][]*WebOutputCard                `json:"foundation"`
 	Phase      int                               `json:"phase"`
 	MoveCount  int                               `json:"moveCount"`
-	Hint *KlondikeWebOutputHint `json:"hint,omitempty"`
+	Hint       *KlondikeWebOutputHint            `json:"hint,omitempty"`
 	WebOutputBase
 }
 

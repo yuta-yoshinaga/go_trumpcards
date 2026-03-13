@@ -35,7 +35,7 @@ func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr erro
 	resObj.BettingLimit = int(cfg.BettingLimit)
 	resObj.TableSize = h.GetPlayerCnt()
 	resObj.RaiseCount = h.GetRaiseCount()
-	resObj.MaxBetAmount = calcMaxBetAmount(cfg.BettingLimit, h.GetPot(), h.GetLastBet())
+	_, resObj.MaxBetAmount = domain.CalculateBettingLimits(cfg.BettingLimit, h.GetPot(), h.GetLastBet())
 	resObj.RebuyAvailable = h.IsRebuyAvailable()
 	resObj.AddonAvailable = h.IsAddonAvailable()
 	resObj.RebuyCounts = h.GetRebuyCounts()
