@@ -59,10 +59,6 @@ export function HoldemPage() {
   const phaseNames = usePhaseNames(t);
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const [betAmount, setBetAmount] = useState(20);
-  const [bettingLimit, setBettingLimit] = useState(0);
-  const [tableSize, setTableSize] = useState(4);
-  const [rebuyEnabled, setRebuyEnabled] = useState(false);
-  const [addonEnabled, setAddonEnabled] = useState(false);
   const { actionLog, showActionLog, hideActionLog } = useActionLog('holdem');
 
   useEffect(() => {
@@ -325,47 +321,15 @@ export function HoldemPage() {
           />
         )}
 
-        {/* Settings + Reset */}
-        <div className="text-center flex items-center justify-center gap-3">
-          <label className="text-white text-sm flex items-center gap-1">
-            {tc('betting.bettingLimit')}
-            <select
-              value={bettingLimit}
-              onChange={(e) => setBettingLimit(Number(e.target.value))}
-              className="px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
-            >
-              <option value={0}>{tc('betting.fixed')}</option>
-              <option value={1}>{tc('betting.potLimit')}</option>
-              <option value={2}>{tc('betting.noLimit')}</option>
-            </select>
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            {t('tableSize.label')}
-            <select
-              value={tableSize}
-              onChange={(e) => setTableSize(Number(e.target.value))}
-              className="px-2 py-1 text-sm rounded bg-white/90 text-gray-900"
-            >
-              <option value={4}>{t('tableSize.4max')}</option>
-              <option value={6}>{t('tableSize.6max')}</option>
-              <option value={9}>{t('tableSize.9max')}</option>
-            </select>
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={rebuyEnabled} onChange={(e) => setRebuyEnabled(e.target.checked)} />
-            {t('rebuy.enabled')}
-          </label>
-          <label className="text-white text-sm flex items-center gap-1">
-            <input type="checkbox" checked={addonEnabled} onChange={(e) => setAddonEnabled(e.target.checked)} />
-            {t('addon.enabled')}
-          </label>
+        {/* Reset */}
+        <div className="text-center">
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
             onClick={() => {
               hideActionLog();
-              exec('reset', undefined, { bettingLimit, tableSize, rebuyEnabled, addonEnabled });
+              exec('reset');
             }}
           >
             {tc('button.reset')}
