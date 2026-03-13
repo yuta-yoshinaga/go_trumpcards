@@ -82,13 +82,3 @@ body {
 .animate-sweat-drop {
   animation: sweat-drop 2s ease-in-out;
 }
-
-.memory-landscape-banner {
-  display: none;
-}
-
-@media (max-width: 639px) and (orientation: portrait) {
-  .memory-landscape-banner {
-    display: flex;
-  }
-}
