@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/update"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/web"
 )
 
@@ -46,6 +47,7 @@ GAMES:
   memory       Memory / Concentration (神経衰弱)
   klondike     Klondike Solitaire (ソリティア)
   baccarat     Baccarat (バカラ)
+  update       Self-update to the latest version
   web          Start REST API + web GUI server
 
   (no argument) Interactive mode with game switching
@@ -127,6 +129,11 @@ ENVIRONMENT VARIABLES:
 	case "baccarat":
 		baccarat := ui.NewBaccaratCui()
 		baccarat.Exec()
+	case "update":
+		updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
+		if err := updater.Exec(); err != nil {
+			return 1
+		}
 	case "web":
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()
