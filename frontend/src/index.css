@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+  --breakpoint-xs: 480px;
   --color-game-status-active: #5cb85c;
   --color-game-status-waiting: #f0ad4e;
   --color-game-status-out: #dc3545;

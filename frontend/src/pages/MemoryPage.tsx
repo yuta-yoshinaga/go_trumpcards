@@ -29,6 +29,12 @@ export function MemoryPage() {
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
 
+      {/* Landscape orientation banner (visible on small portrait screens) */}
+      <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">
+        <span aria-hidden="true">&#8635;</span>
+        <span>{t('landscapeBanner')}</span>
+      </div>
+
       {/* Settings */}
       <details className="px-4 pt-2 text-white text-sm">
         <summary className="cursor-pointer">{t('settings.title')}</summary>
@@ -76,9 +82,9 @@ export function MemoryPage() {
           </table>
         </div>
 
-        {/* Board: 4×13 grid */}
+        {/* Board: responsive grid (4/6/8/13 columns by breakpoint) */}
         <div className="my-3 p-2 rounded bg-black/40">
-          <div className="grid grid-cols-4 sm:grid-cols-7 md:grid-cols-13 gap-1">
+          <div className="grid grid-cols-4 xs:grid-cols-6 sm:grid-cols-8 md:grid-cols-13 gap-1">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
