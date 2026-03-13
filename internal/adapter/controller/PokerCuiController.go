@@ -26,7 +26,11 @@ func (pcc *PokerCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return pcc.pi.Reset() },
-		unknownCommandMessage,
+		[]string{
+			"e", "exchange", "s", "stand", "b", "bet", "c", "call", "ra", "raise",
+			"f", "fold", "ck", "check", "a", "allin", "bl", "bettinglimit",
+			"scc", "setcpucount", "sjc", "setjokercount", "o", "odds", "lw", "lowball",
+		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "e", "exchange":

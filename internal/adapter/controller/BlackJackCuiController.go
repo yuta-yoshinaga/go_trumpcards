@@ -26,7 +26,14 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return bcc.bji.Reset() },
-		unknownCommandMessage,
+		[]string{
+			"h", "hit", "s", "stand", "b", "bet", "d", "doubledown", "sp", "split",
+			"i", "insurance", "di", "declineinsurance", "sur", "surrender",
+			"es", "earlysurrender", "des", "declineearlysurrender",
+			"ssr", "setsurrenderrule", "hint", "togglehint", "soft17", "togglesoft17",
+			"counting", "togglecounting", "das", "toggledas",
+			"sd", "setdeckcount", "scc", "setcpucount", "scs", "setcountingsystem", "pen", "setpenetration",
+		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "h", "hit":

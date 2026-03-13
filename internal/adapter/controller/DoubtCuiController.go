@@ -38,7 +38,10 @@ func (c *DoubtCuiController) Exec(command string) string {
 			cfg := c.di.GetConfig()
 			return c.di.ResetWithConfig(cfg)
 		},
-		unknownCommandMessage,
+		[]string{
+			"p", "play", "d", "doubt", "s", "skip", "sw", "setwindow",
+			"sm", "setmemory", "smetaai", "smai", "rp", "resetprofile", "sp", "setpenalty",
+		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":

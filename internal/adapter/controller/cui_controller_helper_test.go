@@ -9,8 +9,18 @@ import (
 )
 
 func TestUnknownCommandMessage(t *testing.T) {
-	assert.Equal(t, "コマンドが不明です: foo", unknownCommandMessage("foo"))
-	assert.Equal(t, "コマンドが不明です: ", unknownCommandMessage(""))
+	t.Run("no suggestion", func(t *testing.T) {
+		assert.Equal(t, "コマンドが不明です: foo", unknownCommandMessage("foo", nil))
+	})
+	t.Run("empty command", func(t *testing.T) {
+		assert.Equal(t, "コマンドが不明です: ", unknownCommandMessage("", nil))
+	})
+	t.Run("with suggestion", func(t *testing.T) {
+		assert.Equal(t, "コマンドが不明です: hti。もしかして 'hit' ですか？", unknownCommandMessage("hti", []string{"hit", "stand"}))
+	})
+	t.Run("no close match", func(t *testing.T) {
+		assert.Equal(t, "コマンドが不明です: zzzzzzz", unknownCommandMessage("zzzzzzz", []string{"hit", "stand"}))
+	})
 }
 
 func TestExecCuiCommand(t *testing.T) {
@@ -20,7 +30,7 @@ func TestExecCuiCommand(t *testing.T) {
 		}
 		return "reset"
 	}
-	unknownMsg := func(cmd string) string { return "unknown:" + cmd }
+	validCmds := []string{"g", "game"}
 	gameHandler := func(cmd string, args []string) (string, bool) {
 		if cmd == "g" {
 			return "game", true
@@ -29,38 +39,46 @@ func TestExecCuiCommand(t *testing.T) {
 	}
 
 	t.Run("empty input", func(t *testing.T) {
-		assert.Equal(t, "unknown:", execCuiCommand("", resetFn, unknownMsg, gameHandler))
+		result := execCuiCommand("", resetFn, validCmds, gameHandler)
+		assert.Equal(t, "コマンドが不明です: ", result)
 	})
 
 	t.Run("whitespace only input", func(t *testing.T) {
-		assert.Equal(t, "unknown:   ", execCuiCommand("   ", resetFn, unknownMsg, gameHandler))
+		result := execCuiCommand("   ", resetFn, validCmds, gameHandler)
+		assert.Equal(t, "コマンドが不明です: ", result)
 	})
 
 	t.Run("q command", func(t *testing.T) {
-		assert.Equal(t, "bye.", execCuiCommand("q", resetFn, unknownMsg, gameHandler))
+		assert.Equal(t, "bye.", execCuiCommand("q", resetFn, validCmds, gameHandler))
 	})
 
 	t.Run("quit command", func(t *testing.T) {
-		assert.Equal(t, "bye.", execCuiCommand("quit", resetFn, unknownMsg, gameHandler))
+		assert.Equal(t, "bye.", execCuiCommand("quit", resetFn, validCmds, gameHandler))
 	})
 
 	t.Run("r command without args", func(t *testing.T) {
-		assert.Equal(t, "reset", execCuiCommand("r", resetFn, unknownMsg, gameHandler))
+		assert.Equal(t, "reset", execCuiCommand("r", resetFn, validCmds, gameHandler))
 	})
 
 	t.Run("reset command without args", func(t *testing.T) {
-		assert.Equal(t, "reset", execCuiCommand("reset", resetFn, unknownMsg, gameHandler))
+		assert.Equal(t, "reset", execCuiCommand("reset", resetFn, validCmds, gameHandler))
 	})
 
 	t.Run("r command with args", func(t *testing.T) {
-		assert.Equal(t, "reset:tunnel", execCuiCommand("r tunnel", resetFn, unknownMsg, gameHandler))
+		assert.Equal(t, "reset:tunnel", execCuiCommand("r tunnel", resetFn, validCmds, gameHandler))
 	})
 
 	t.Run("handled game command", func(t *testing.T) {
-		assert.Equal(t, "game", execCuiCommand("g", resetFn, unknownMsg, gameHandler))
+		assert.Equal(t, "game", execCuiCommand("g", resetFn, validCmds, gameHandler))
 	})
 
-	t.Run("unhandled game command falls through to unknown", func(t *testing.T) {
-		assert.Equal(t, "unknown:xyz", execCuiCommand("xyz", resetFn, unknownMsg, gameHandler))
+	t.Run("unhandled game command with suggestion", func(t *testing.T) {
+		result := execCuiCommand("gam", resetFn, validCmds, gameHandler)
+		assert.Equal(t, "コマンドが不明です: gam。もしかして 'game' ですか？", result)
+	})
+
+	t.Run("unhandled game command no suggestion", func(t *testing.T) {
+		result := execCuiCommand("zzzzzzz", resetFn, validCmds, gameHandler)
+		assert.Equal(t, "コマンドが不明です: zzzzzzz", result)
 	})
 }

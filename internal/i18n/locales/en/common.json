@@ -2,6 +2,7 @@
   "bye": "Goodbye.",
   "typeHelp": "Type \"help\" or \"?\" for commands.",
   "unknownCommand": "Unknown command: {{cmd}}",
+  "unknownCommandWithSuggestion": "Unknown command: {{cmd}}. Did you mean '{{suggestion}}'?",
   "gameCommands": "Game commands:",
   "settings": "Settings:",
   "session": "Session:",
