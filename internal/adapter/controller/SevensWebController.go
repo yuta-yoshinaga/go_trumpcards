@@ -61,18 +61,38 @@ type SevensWebOutputConfig struct {
 
 // SevensWebOutput 7並べWebアウトプット
 type SevensWebOutput struct {
-	Players       []*SevensWebOutputPlayer `json:"players"`
-	CurrentTurn   int                      `json:"currentTurn"`
-	TableMinVals  [5]int                   `json:"tableMinVals"`
-	TableMaxVals  [5]int                   `json:"tableMaxVals"`
-	TablePlaced   [5]int                   `json:"tablePlaced"`
-	Config        SevensWebOutputConfig    `json:"config"`
-	GameEndFlag   bool                     `json:"gameEndFlag"`
-	CpuActions    []*SevensWebOutputAction `json:"cpuActions"`
-	HumanAction   *SevensWebOutputAction   `json:"humanAction"`
-	Message       string                   `json:"message"`
-	MessageCode   string                   `json:"messageCode,omitempty"`
-	MessageParams map[string]string        `json:"messageParams,omitempty"`
+	Players      []*SevensWebOutputPlayer `json:"players"`
+	CurrentTurn  int                      `json:"currentTurn"`
+	TableMinVals [5]int                   `json:"tableMinVals"`
+	TableMaxVals [5]int                   `json:"tableMaxVals"`
+	TablePlaced  [5]int                   `json:"tablePlaced"`
+	Config       SevensWebOutputConfig    `json:"config"`
+	GameEndFlag  bool                     `json:"gameEndFlag"`
+	CpuActions   []*SevensWebOutputAction `json:"cpuActions"`
+	HumanAction  *SevensWebOutputAction   `json:"humanAction"`
+	WebOutputBase
+}
+
+// HasConfigParams reports whether any config parameter is set in the input.
+func (p SevensWebInput) HasConfigParams() bool {
+	return p.TunnelEnabled != nil || p.TunnelSkipWidth != nil || p.JokerCount != nil ||
+		p.CpuStrategy != nil || p.MaxPasses != nil || p.NoJokerFinish != nil ||
+		p.JokerReclaim != nil || p.EndStop != nil || p.JokerConsecutiveBanned != nil
+}
+
+// ToConfig builds a SevensConfig from the web input pointer fields.
+func (p SevensWebInput) ToConfig() domain.SevensConfig {
+	return domain.SevensConfig{
+		TunnelEnabled:          deref(p.TunnelEnabled),
+		TunnelSkipWidth:        deref(p.TunnelSkipWidth),
+		JokerCount:             deref(p.JokerCount),
+		CpuStrategy:            deref(p.CpuStrategy),
+		MaxPasses:              derefDefault(p.MaxPasses, domain.SevensMaxPasses),
+		NoJokerFinish:          deref(p.NoJokerFinish),
+		JokerReclaimEnabled:    deref(p.JokerReclaim),
+		EndStopEnabled:         deref(p.EndStop),
+		JokerConsecutiveBanned: deref(p.JokerConsecutiveBanned),
+	}
 }
 
 // SevensWebController 7並べWebコントローラークラス
@@ -85,28 +105,17 @@ func NewSevensWebController(factory func() usecase.SevensInteractorIF) *SevensWe
 
 func newSevensDefaultOutput(msg string) *SevensWebOutput {
 	return &SevensWebOutput{
-		Players:    make([]*SevensWebOutputPlayer, 0),
-		CpuActions: make([]*SevensWebOutputAction, 0),
-		Message:    msg,
+		Players:       make([]*SevensWebOutputPlayer, 0),
+		CpuActions:    make([]*SevensWebOutputAction, 0),
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 
 func sevensDispatch(bc *baseController, w rest.ResponseWriter, sgi usecase.SevensInteractorIF, param SevensWebInput, _ func(string) *SevensWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		if param.TunnelEnabled != nil || param.TunnelSkipWidth != nil || param.JokerCount != nil || param.CpuStrategy != nil || param.MaxPasses != nil || param.NoJokerFinish != nil || param.JokerReclaim != nil || param.EndStop != nil || param.JokerConsecutiveBanned != nil {
-			cfg := domain.SevensConfig{
-				TunnelEnabled:          deref(param.TunnelEnabled),
-				TunnelSkipWidth:        deref(param.TunnelSkipWidth),
-				JokerCount:             deref(param.JokerCount),
-				CpuStrategy:            deref(param.CpuStrategy),
-				MaxPasses:              derefDefault(param.MaxPasses, domain.SevensMaxPasses),
-				NoJokerFinish:          deref(param.NoJokerFinish),
-				JokerReclaimEnabled:    deref(param.JokerReclaim),
-				EndStopEnabled:         deref(param.EndStop),
-				JokerConsecutiveBanned: deref(param.JokerConsecutiveBanned),
-			}
-			bc.writePresenterResponse(w, sgi.ResetWithConfig(cfg))
+		if param.HasConfigParams() {
+			bc.writePresenterResponse(w, sgi.ResetWithConfig(param.ToConfig()))
 		} else {
 			bc.writePresenterResponse(w, sgi.Reset())
 		}

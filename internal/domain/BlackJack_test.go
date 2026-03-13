@@ -1630,6 +1630,53 @@ func TestIsBalancedCountingSystem(t *testing.T) {
 	assert.True(t, domain.IsBalancedCountingSystem(domain.BJCountingOmegaII), "Omega II is balanced")
 }
 
+func TestBlackJackConfig_Validate(t *testing.T) {
+	t.Run("valid default config", func(t *testing.T) {
+		cfg := domain.DefaultBlackJackConfig()
+		assert.NoError(t, cfg.Validate())
+	})
+	t.Run("CPU count negative fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{CpuPlayerCount: -1}
+		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+	})
+	t.Run("CPU count too high fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{CpuPlayerCount: domain.BJMaxCpuPlayers + 1}
+		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+	})
+	t.Run("counting system negative fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{CountingSystem: -1}
+		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+	})
+	t.Run("counting system too high fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{CountingSystem: domain.BJCountingMax + 1}
+		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+	})
+	t.Run("surrender rule negative fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{SurrenderRule: -1}
+		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+	})
+	t.Run("surrender rule too high fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderMax + 1}
+		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+	})
+	t.Run("deck penetration 0 ok (use default)", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{DeckPenetration: 0}
+		assert.NoError(t, cfg.Validate())
+	})
+	t.Run("deck penetration 50 ok", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{DeckPenetration: 50}
+		assert.NoError(t, cfg.Validate())
+	})
+	t.Run("deck penetration 75 ok", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{DeckPenetration: 75}
+		assert.NoError(t, cfg.Validate())
+	})
+	t.Run("deck penetration invalid fails", func(t *testing.T) {
+		cfg := domain.BlackJackConfig{DeckPenetration: 60}
+		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+	})
+}
+
 func TestBlackJack_DAS_Enabled(t *testing.T) {
 	// DAS enabled (default) → double down after split should succeed
 	tc := domain.NewTrumpCards(0)

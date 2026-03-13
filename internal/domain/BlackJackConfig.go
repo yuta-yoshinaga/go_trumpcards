@@ -48,6 +48,32 @@ func DefaultBlackJackConfig() BlackJackConfig {
 	}
 }
 
+// Validate 設定値のドメインバリデーション
+func (c BlackJackConfig) Validate() error {
+	if c.CpuPlayerCount < 0 || c.CpuPlayerCount > BJMaxCpuPlayers {
+		return NewDomainError(ErrInvalidAmount, "CPU player count must be 0-3.")
+	}
+	if c.CountingSystem < 0 || c.CountingSystem > BJCountingMax {
+		return NewDomainError(ErrInvalidAmount, "Invalid counting system.")
+	}
+	if c.SurrenderRule < 0 || c.SurrenderRule > BJSurrenderMax {
+		return NewDomainError(ErrInvalidAmount, "Invalid surrender rule.")
+	}
+	if c.DeckPenetration != 0 {
+		validPen := false
+		for _, v := range BJValidPenetrations {
+			if v == c.DeckPenetration {
+				validPen = true
+				break
+			}
+		}
+		if !validPen {
+			return NewDomainError(ErrInvalidAmount, "Invalid deck penetration. Use 50 or 75.")
+		}
+	}
+	return nil
+}
+
 // IsBalancedCountingSystem バランスドカウンティングシステムか (TC計算可能)
 func IsBalancedCountingSystem(system int) bool {
 	return system != BJCountingKO

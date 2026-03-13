@@ -47,15 +47,33 @@ type MemoryWebOutput struct {
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerIdx        int                         `json:"winnerIdx"`
 	TurnNumber       int                         `json:"turnNumber"`
-	Message          string                      `json:"message"`
-	MessageCode      string                      `json:"messageCode,omitempty"`
-	MessageParams    map[string]string           `json:"messageParams,omitempty"`
-	Config           MemoryWebOutputConfig       `json:"config"`
+	WebOutputBase
+	Config MemoryWebOutputConfig `json:"config"`
 }
 
 // MemoryWebOutputConfig 神経衰弱設定アウトプット
 type MemoryWebOutputConfig struct {
 	CpuDifficulty int `json:"cpuDifficulty"`
+}
+
+// ToConfig builds a MemoryConfig from the nested web config, applying bounds checking.
+func (c *MemoryWebConfig) ToConfig() domain.MemoryConfig {
+	cfg := domain.DefaultMemoryConfig()
+	if c.CpuDifficulty != nil {
+		d := *c.CpuDifficulty
+		if d >= int(domain.MemoryCpuDifficultyEasy) && d <= int(domain.MemoryCpuDifficultyHard) {
+			cfg.CpuDifficulty = domain.MemoryCpuDifficulty(d)
+		}
+	}
+	return cfg
+}
+
+// ToConfig builds a MemoryConfig from the web input.
+func (p MemoryWebInput) ToConfig() domain.MemoryConfig {
+	if p.Config != nil {
+		return p.Config.ToConfig()
+	}
+	return domain.DefaultMemoryConfig()
 }
 
 // MemoryWebController 神経衰弱Webコントローラークラス
@@ -68,26 +86,17 @@ func NewMemoryWebController(factory func() usecase.MemoryInteractorIF) *MemoryWe
 
 func newMemoryDefaultOutput(msg string) *MemoryWebOutput {
 	return &MemoryWebOutput{
-		Players:   make([]*MemoryWebOutputPlayer, 0),
-		Board:     make([]*MemoryWebOutputBoardCard, 0),
-		WinnerIdx: -1,
-		Message:   msg,
+		Players:       make([]*MemoryWebOutputPlayer, 0),
+		Board:         make([]*MemoryWebOutputBoardCard, 0),
+		WinnerIdx:     -1,
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 
 func memoryDispatch(bc *baseController, w rest.ResponseWriter, mi usecase.MemoryInteractorIF, param MemoryWebInput, newDefault func(string) *MemoryWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		cfg := domain.DefaultMemoryConfig()
-		if param.Config != nil {
-			if param.Config.CpuDifficulty != nil {
-				d := *param.Config.CpuDifficulty
-				if d >= int(domain.MemoryCpuDifficultyEasy) && d <= int(domain.MemoryCpuDifficultyHard) {
-					cfg.CpuDifficulty = domain.MemoryCpuDifficulty(d)
-				}
-			}
-		}
-		bc.writePresenterResponse(w, mi.ResetWithConfig(cfg))
+		bc.writePresenterResponse(w, mi.ResetWithConfig(param.ToConfig()))
 	case "f", "flip":
 		if param.Position == nil {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: position is required."))

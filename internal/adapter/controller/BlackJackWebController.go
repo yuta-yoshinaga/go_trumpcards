@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -68,9 +69,6 @@ type BlackJackWebOutput struct {
 	Phase              int                                `json:"phase"`
 	InsuranceBet       int                                `json:"insuranceBet"`
 	InsuranceAvailable bool                               `json:"insuranceAvailable"`
-	Message            string                             `json:"message"`
-	MessageCode        string                             `json:"messageCode,omitempty"`
-	MessageParams      map[string]string                  `json:"messageParams,omitempty"`
 	HintEnabled        bool                               `json:"hintEnabled"`
 	SuggestedAction    int                                `json:"suggestedAction"`
 	DeckCount          int                                `json:"deckCount"`
@@ -88,6 +86,26 @@ type BlackJackWebOutput struct {
 	DeckPenetration    int                                `json:"deckPenetration"`
 	MultiHandCount     int                                `json:"multiHandCount"`
 	SurrenderRule      int                                `json:"surrenderRule"`
+	WebOutputBase
+}
+
+// HasConfigParams reports whether any config parameter is set in the input.
+func (p BlackJackWebInput) HasConfigParams() bool {
+	return p.DealerHitsSoft17 != nil || p.CpuPlayerCount != nil || p.CountingEnabled != nil ||
+		p.DoubleAfterSplit != nil || p.CountingSystem != nil || p.DeckPenetration != nil || p.SurrenderRule != nil
+}
+
+// ToConfig builds a BlackJackConfig from the web input pointer fields.
+func (p BlackJackWebInput) ToConfig() domain.BlackJackConfig {
+	return domain.BlackJackConfig{
+		DealerHitsSoft17: deref(p.DealerHitsSoft17),
+		CpuPlayerCount:   deref(p.CpuPlayerCount),
+		CountingEnabled:  deref(p.CountingEnabled),
+		DoubleAfterSplit: derefDefault(p.DoubleAfterSplit, true),
+		CountingSystem:   deref(p.CountingSystem),
+		DeckPenetration:  deref(p.DeckPenetration),
+		SurrenderRule:    deref(p.SurrenderRule),
+	}
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス
@@ -102,7 +120,7 @@ func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
 	return &BlackJackWebOutput{
 		Dealer:          &BlackJackWebOutputPlayer{},
 		Player:          &BlackJackWebOutputPlayer{},
-		Message:         msg,
+		WebOutputBase:   WebOutputBase{Message: msg},
 		DeckCount:       1,
 		DeckPenetration: 75,
 	}
@@ -111,15 +129,9 @@ func newBlackJackDefaultOutput(msg string) *BlackJackWebOutput {
 func blackJackDispatch(bc *baseController, w rest.ResponseWriter, bji usecase.BlackJackInteractorIF, param BlackJackWebInput, _ func(string) *BlackJackWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		if param.DealerHitsSoft17 != nil || param.CpuPlayerCount != nil || param.CountingEnabled != nil || param.DoubleAfterSplit != nil || param.CountingSystem != nil || param.DeckPenetration != nil || param.SurrenderRule != nil {
-			h17 := deref(param.DealerHitsSoft17)
-			cpuCount := deref(param.CpuPlayerCount)
-			counting := deref(param.CountingEnabled)
-			das := derefDefault(param.DoubleAfterSplit, true)
-			cs := deref(param.CountingSystem)
-			dp := deref(param.DeckPenetration)
-			sr := deref(param.SurrenderRule)
-			bc.writePresenterResponse(w, bji.ResetWithConfig(h17, cpuCount, counting, das, cs, dp, sr))
+		if param.HasConfigParams() {
+			cfg := param.ToConfig()
+			bc.writePresenterResponse(w, bji.ResetWithConfig(cfg))
 		} else {
 			bc.writePresenterResponse(w, bji.Reset())
 		}

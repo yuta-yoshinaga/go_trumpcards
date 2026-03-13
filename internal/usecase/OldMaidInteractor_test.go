@@ -234,3 +234,15 @@ func TestOldMaidInteractor_Draw_GameEndsAfterCpuTurns(t *testing.T) {
 	assert.Equal(t, mockOutput, result)
 	gameMock.AssertCalled(t, "ArrangeTargetForHumanDraw")
 }
+
+func TestOldMaidInteractor_Reset_ValidationError(t *testing.T) {
+	omMock := new(interfaces.MockOldMaidGame)
+	ompMock := new(presenter.MockOldMaidPresenter)
+	ompMock.On("Output", omMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
+
+	oi := usecase.NewOldMaidInteractor(omMock, ompMock)
+	cfg := domain.OldMaidConfig{Mode: domain.OldMaidMode(99)}
+	result := oi.Reset(cfg)
+	assert.Equal(t, "validation error", result)
+	omMock.AssertNotCalled(t, "SetConfig", mock.Anything)
+}

@@ -52,7 +52,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 					return i18n.T("holdem.bettingLimitRequired"), true
 				}
 				bl, err := strconv.Atoi(args[0])
-				if err != nil || bl < 0 || bl > 2 {
+				if err != nil {
 					return i18n.Tf("holdem.invalidBettingLimit", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
@@ -74,13 +74,10 @@ func (c *HoldemCuiController) Exec(command string) string {
 					return i18n.T("holdem.smallBlindRequired"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 1 {
+				if err != nil {
 					return i18n.Tf("holdem.invalidSmallBlind", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
-				if v >= cfg.BigBlind {
-					return i18n.Tf("holdem.smallBlindMustBeLess", "bb", strconv.Itoa(cfg.BigBlind)), true
-				}
 				cfg.SmallBlind = v
 				return c.hi.ResetWithConfig(cfg), true
 			case "bb", "bigblind":
@@ -88,13 +85,10 @@ func (c *HoldemCuiController) Exec(command string) string {
 					return i18n.T("holdem.bigBlindRequired"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 2 {
+				if err != nil {
 					return i18n.Tf("holdem.invalidBigBlind", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
-				if v <= cfg.SmallBlind {
-					return i18n.Tf("holdem.bigBlindMustBeGreater", "sb", strconv.Itoa(cfg.SmallBlind)), true
-				}
 				cfg.BigBlind = v
 				return c.hi.ResetWithConfig(cfg), true
 			case "lh", "levelhand":
@@ -102,7 +96,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 					return i18n.T("holdem.levelHandRequired"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 1 {
+				if err != nil {
 					return i18n.Tf("holdem.invalidLevelHand", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
@@ -113,7 +107,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 					return i18n.T("holdem.tableSizeRequired"), true
 				}
 				v, err := strconv.Atoi(args[0])
-				if err != nil || !domain.IsValidHoldemTableSize(v) {
+				if err != nil {
 					return i18n.Tf("holdem.invalidTableSize", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()

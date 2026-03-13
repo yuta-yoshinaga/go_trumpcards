@@ -101,6 +101,8 @@ func TestBlackJackCuiController_NewCommands(t *testing.T) {
 	bjiMock.On("Surrender").Return(mockOutput)
 	bjiMock.On("ToggleHint").Return(mockOutput)
 	bjiMock.On("SetDeckCount", 6).Return(mockOutput)
+	bjiMock.On("SetDeckCount", -1).Return("error from domain")
+	bjiMock.On("SetDeckCount", 0).Return("error from domain")
 	tbc := controller.NewBlackJackCuiController(bjiMock)
 
 	t.Run("sur", func(t *testing.T) {
@@ -151,13 +153,13 @@ func TestBlackJackCuiController_SetCountingSystem(t *testing.T) {
 		assert.Equal(t, "Counting system is required.", tbc.Exec("scs"))
 	})
 	t.Run("scs with invalid arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs abc"))
+		assert.Equal(t, "Invalid counting system: abc. Please enter a number (0-3).", tbc.Exec("scs abc"))
 	})
 	t.Run("scs with negative arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs -1"))
+		assert.Equal(t, "Invalid counting system: -1. Please enter a number (0-3).", tbc.Exec("scs -1"))
 	})
 	t.Run("scs with out-of-range arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid counting system. Please enter a number (0-3).", tbc.Exec("scs 4"))
+		assert.Equal(t, "Invalid counting system: 4. Please enter a number (0-3).", tbc.Exec("scs 4"))
 	})
 }
 
@@ -246,13 +248,13 @@ func TestBlackJackCuiController_SetCpuPlayerCount(t *testing.T) {
 		assert.Equal(t, "CPU player count is required.", tbc.Exec("scc"))
 	})
 	t.Run("scc with invalid arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc abc"))
+		assert.Equal(t, "Invalid CPU player count: abc. Please enter a number (0-3).", tbc.Exec("scc abc"))
 	})
 	t.Run("scc with negative arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc -1"))
+		assert.Equal(t, "Invalid CPU player count: -1. Please enter a number (0-3).", tbc.Exec("scc -1"))
 	})
 	t.Run("scc with out-of-range arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid CPU player count. Please enter a number (0-3).", tbc.Exec("scc 4"))
+		assert.Equal(t, "Invalid CPU player count: 4. Please enter a number (0-3).", tbc.Exec("scc 4"))
 	})
 	t.Run("scc with zero (valid)", func(t *testing.T) {
 		bjiMock.On("SetCpuPlayerCount", 0).Return(mockOutput)
@@ -348,12 +350,12 @@ func TestBlackJackCuiController_SetSurrenderRule(t *testing.T) {
 		assert.Equal(t, "Surrender rule is required.", tbc.Exec("ssr"))
 	})
 	t.Run("ssr with invalid arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr abc"))
+		assert.Equal(t, "Invalid surrender rule: abc. Please enter a number (0-2).", tbc.Exec("ssr abc"))
 	})
 	t.Run("ssr with negative arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr -1"))
+		assert.Equal(t, "Invalid surrender rule: -1. Please enter a number (0-2).", tbc.Exec("ssr -1"))
 	})
 	t.Run("ssr with out-of-range arg", func(t *testing.T) {
-		assert.Equal(t, "Invalid surrender rule. Please enter a number (0-2).", tbc.Exec("ssr 3"))
+		assert.Equal(t, "Invalid surrender rule: 3. Please enter a number (0-2).", tbc.Exec("ssr 3"))
 	})
 }

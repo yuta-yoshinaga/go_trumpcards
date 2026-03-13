@@ -66,12 +66,10 @@ type DoubtWebOutput struct {
 	LastDoubtResult  *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
 	GameEndFlag      bool                       `json:"gameEndFlag"`
 	WinnerIdx        int                        `json:"winnerIdx"`
-	Message          string                     `json:"message"`
-	MessageCode      string                     `json:"messageCode,omitempty"`
-	MessageParams    map[string]string          `json:"messageParams,omitempty"`
 	DoubtWindowSec   int                        `json:"doubtWindowSec"`
 	PenaltyDrawLimit int                        `json:"penaltyDrawLimit"`
 	MetaAI           *DoubtWebOutputMetaAI      `json:"metaAI,omitempty"`
+	WebOutputBase
 }
 
 // DoubtWebOutputMetaAI メタAI情報
@@ -80,6 +78,26 @@ type DoubtWebOutputMetaAI struct {
 	GamesPlayed   int     `json:"gamesPlayed"`
 	BluffRate     float64 `json:"bluffRate"`
 	DoubtAccuracy float64 `json:"doubtAccuracy"`
+}
+
+// ToConfig builds a DoubtConfig from the web input.
+func (p DoubtWebInput) ToConfig() domain.DoubtConfig {
+	cfg := domain.DefaultDoubtConfig()
+	if p.DoubtWindowSec != nil && *p.DoubtWindowSec >= 1 {
+		cfg.DoubtWindowSec = *p.DoubtWindowSec
+	}
+	if p.CpuMemoryLevel != nil {
+		level := *p.CpuMemoryLevel
+		if level >= int(domain.DoubtMemoryLevelEasy) && level <= int(domain.DoubtMemoryLevelHard) {
+			cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
+		}
+	}
+	if p.PenaltyDrawLimit != nil && *p.PenaltyDrawLimit >= 0 {
+		cfg.PenaltyDrawLimit = *p.PenaltyDrawLimit
+	}
+	cfg.CpuHesitationEnabled = p.CpuHesitationEnabled
+	cfg.CpuMetaAI = p.CpuMetaAI
+	return cfg
 }
 
 // DoubtWebController ダウトWebコントローラークラス
@@ -95,33 +113,18 @@ func NewDoubtWebController(factory func() usecase.DoubtInteractorIF) *DoubtWebCo
 
 func newDoubtDefaultOutput(msg string) *DoubtWebOutput {
 	return &DoubtWebOutput{
-		Players:     make([]*DoubtWebOutputPlayer, 0),
-		CpuDoubters: make([]int, 0),
-		CpuActions:  make([]*DoubtWebOutputAction, 0),
-		WinnerIdx:   -1,
-		Message:     msg,
+		Players:       make([]*DoubtWebOutputPlayer, 0),
+		CpuDoubters:   make([]int, 0),
+		CpuActions:    make([]*DoubtWebOutputAction, 0),
+		WinnerIdx:     -1,
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 
 func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtInteractorIF, param DoubtWebInput, newDefault func(string) *DoubtWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		cfg := domain.DefaultDoubtConfig()
-		if param.DoubtWindowSec != nil && *param.DoubtWindowSec >= 1 {
-			cfg.DoubtWindowSec = *param.DoubtWindowSec
-		}
-		if param.CpuMemoryLevel != nil {
-			level := *param.CpuMemoryLevel
-			if level >= int(domain.DoubtMemoryLevelEasy) && level <= int(domain.DoubtMemoryLevelHard) {
-				cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
-			}
-		}
-		if param.PenaltyDrawLimit != nil && *param.PenaltyDrawLimit >= 0 {
-			cfg.PenaltyDrawLimit = *param.PenaltyDrawLimit
-		}
-		cfg.CpuHesitationEnabled = param.CpuHesitationEnabled
-		cfg.CpuMetaAI = param.CpuMetaAI
-		bc.writePresenterResponse(w, dgi.ResetWithConfig(cfg))
+		bc.writePresenterResponse(w, dgi.ResetWithConfig(param.ToConfig()))
 	case "p", "play":
 		if len(param.CardIndices) > MaxCardIndices {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))

@@ -155,9 +155,18 @@ func TestHoldemCuiController_BettingLimit_NoArgs(t *testing.T) {
 func TestHoldemCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("bl 5"), "5")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("bl abc"), "abc")
-	assert.Contains(t, c.Exec("bl -1"), "-1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg5 := domain.DefaultHoldemConfig()
+	cfg5.BettingLimit = domain.BettingLimitType(5)
+	mi.On("ResetWithConfig", cfg5).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("bl 5"))
+	cfgNeg := domain.DefaultHoldemConfig()
+	cfgNeg.BettingLimit = domain.BettingLimitType(-1)
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("bl -1"))
 }
 
 // --- tournament mode ---
@@ -227,17 +236,33 @@ func TestHoldemCuiController_SmallBlind_NoArgs(t *testing.T) {
 func TestHoldemCuiController_SmallBlind_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("sb 0"), "0")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("sb abc"), "abc")
-	assert.Contains(t, c.Exec("sb -1"), "-1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg0 := domain.DefaultHoldemConfig()
+	cfg0.SmallBlind = 0
+	mi.On("ResetWithConfig", cfg0).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sb 0"))
+	cfgNeg := domain.DefaultHoldemConfig()
+	cfgNeg.SmallBlind = -1
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sb -1"))
 }
 
 func TestHoldemCuiController_SmallBlind_NotLessThanBigBlind(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	mi.On("GetConfig").Return(domain.HoldemConfig{SmallBlind: 5, BigBlind: 10, InitChips: 1000, BlindLevelHands: 10, BlindMultiplier: 200})
-	assert.Contains(t, c.Exec("sb 10"), "スモールブラインドはビッグブラインド")
-	assert.Contains(t, c.Exec("sb 15"), "スモールブラインドはビッグブラインド")
+	baseCfg := domain.HoldemConfig{SmallBlind: 5, BigBlind: 10, InitChips: 1000, BlindLevelHands: 10, BlindMultiplier: 200}
+	mi.On("GetConfig").Return(baseCfg)
+	cfg10 := baseCfg
+	cfg10.SmallBlind = 10
+	mi.On("ResetWithConfig", cfg10).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sb 10"))
+	cfg15 := baseCfg
+	cfg15.SmallBlind = 15
+	mi.On("ResetWithConfig", cfg15).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("sb 15"))
 }
 
 // --- big blind ---
@@ -271,17 +296,33 @@ func TestHoldemCuiController_BigBlind_NoArgs(t *testing.T) {
 func TestHoldemCuiController_BigBlind_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("bb 1"), "1")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("bb abc"), "abc")
-	assert.Contains(t, c.Exec("bb -1"), "-1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg1 := domain.DefaultHoldemConfig()
+	cfg1.BigBlind = 1
+	mi.On("ResetWithConfig", cfg1).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("bb 1"))
+	cfgNeg := domain.DefaultHoldemConfig()
+	cfgNeg.BigBlind = -1
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("bb -1"))
 }
 
 func TestHoldemCuiController_BigBlind_NotGreaterThanSmallBlind(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	mi.On("GetConfig").Return(domain.HoldemConfig{SmallBlind: 5, BigBlind: 10, InitChips: 1000, BlindLevelHands: 10, BlindMultiplier: 200})
-	assert.Contains(t, c.Exec("bb 5"), "ビッグブラインドはスモールブラインド")
-	assert.Contains(t, c.Exec("bb 3"), "ビッグブラインドはスモールブラインド")
+	baseCfg := domain.HoldemConfig{SmallBlind: 5, BigBlind: 10, InitChips: 1000, BlindLevelHands: 10, BlindMultiplier: 200}
+	mi.On("GetConfig").Return(baseCfg)
+	cfg5 := baseCfg
+	cfg5.BigBlind = 5
+	mi.On("ResetWithConfig", cfg5).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("bb 5"))
+	cfg3 := baseCfg
+	cfg3.BigBlind = 3
+	mi.On("ResetWithConfig", cfg3).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("bb 3"))
 }
 
 // --- level-up hands ---
@@ -315,9 +356,18 @@ func TestHoldemCuiController_LevelHand_NoArgs(t *testing.T) {
 func TestHoldemCuiController_LevelHand_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("lh 0"), "0")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("lh abc"), "abc")
-	assert.Contains(t, c.Exec("lh -1"), "-1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg0 := domain.DefaultHoldemConfig()
+	cfg0.BlindLevelHands = 0
+	mi.On("ResetWithConfig", cfg0).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("lh 0"))
+	cfgNeg := domain.DefaultHoldemConfig()
+	cfgNeg.BlindLevelHands = -1
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("lh -1"))
 }
 
 // --- table size ---
@@ -351,9 +401,18 @@ func TestHoldemCuiController_TableSize_NoArgs(t *testing.T) {
 func TestHoldemCuiController_TableSize_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockHoldemInteractor)
 	c := NewHoldemCuiController(mi)
-	assert.Contains(t, c.Exec("ts 5"), "5")
+	// non-numeric: controller handles directly
 	assert.Contains(t, c.Exec("ts abc"), "abc")
-	assert.Contains(t, c.Exec("ts -1"), "-1")
+	// numeric out-of-range: delegated to interactor
+	mi.On("GetConfig").Return(domain.DefaultHoldemConfig())
+	cfg5 := domain.DefaultHoldemConfig()
+	cfg5.TableSize = 5
+	mi.On("ResetWithConfig", cfg5).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("ts 5"))
+	cfgNeg := domain.DefaultHoldemConfig()
+	cfgNeg.TableSize = -1
+	mi.On("ResetWithConfig", cfgNeg).Return("error from domain")
+	assert.Equal(t, "error from domain", c.Exec("ts -1"))
 }
 
 // --- rebuy ---

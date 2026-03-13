@@ -61,6 +61,9 @@ func (di *DaifugoInteractor) GetConfig() domain.DaifugoConfig {
 
 // ResetWithConfig 設定を変更してゲームを初期化
 func (di *DaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) string {
+	if err := config.Validate(); err != nil {
+		return di.dgp.Output(di.dg, err)
+	}
 	di.dg.SetConfig(config)
 	di.dg.Reset()
 	di.runCpuTurns()

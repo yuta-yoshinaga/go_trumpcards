@@ -21,3 +21,26 @@ func TestHeartsCpuDifficultyConstants(t *testing.T) {
 	assert.Equal(t, domain.HeartsCpuDifficulty(1), domain.HeartsCpuDifficultyNormal)
 	assert.Equal(t, domain.HeartsCpuDifficulty(2), domain.HeartsCpuDifficultyHard)
 }
+
+func TestHeartsConfig_Validate(t *testing.T) {
+	t.Run("valid config returns nil", func(t *testing.T) {
+		cfg := domain.HeartsConfig{CpuDifficulty: domain.HeartsCpuDifficultyNormal, PointLimit: 100}
+		assert.NoError(t, cfg.Validate())
+	})
+	t.Run("cpu difficulty below min returns error", func(t *testing.T) {
+		cfg := domain.HeartsConfig{CpuDifficulty: domain.HeartsCpuDifficulty(-1), PointLimit: 100}
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("cpu difficulty above max returns error", func(t *testing.T) {
+		cfg := domain.HeartsConfig{CpuDifficulty: domain.HeartsCpuDifficulty(99), PointLimit: 100}
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("point limit zero returns error", func(t *testing.T) {
+		cfg := domain.HeartsConfig{CpuDifficulty: domain.HeartsCpuDifficultyNormal, PointLimit: 0}
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("point limit negative returns error", func(t *testing.T) {
+		cfg := domain.HeartsConfig{CpuDifficulty: domain.HeartsCpuDifficultyNormal, PointLimit: -1}
+		assert.Error(t, cfg.Validate())
+	})
+}

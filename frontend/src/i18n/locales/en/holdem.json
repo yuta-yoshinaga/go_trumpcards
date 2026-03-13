@@ -12,25 +12,15 @@
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
-  "tableSize": {
-    "label": "Table Size",
-    "4max": "4-max",
-    "6max": "6-max",
-    "9max": "9-max"
-  },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
     "accept": "Rebuy",
-    "skip": "Skip",
-    "label": "Rebuy",
-    "enabled": "Rebuy Enabled"
+    "skip": "Skip"
   },
   "addon": {
     "prompt": "Addon? ({{chips}} chips)",
     "accept": "Addon",
-    "skip": "Skip",
-    "label": "Addon",
-    "enabled": "Addon Enabled"
+    "skip": "Skip"
   },
   "muck": {
     "prompt": "Muck or show your hand.",

@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"fmt"
-	"strconv"
+	"math"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -41,23 +41,15 @@ func (c *HeartsCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "pass":
-				indices := []int{}
-				for _, f := range args {
-					if parsed, err := strconv.Atoi(f); err == nil {
-						indices = append(indices, parsed)
-					}
-				}
+				indices := cuiutil.ParseIntSlice(args)
 				if len(indices) != 3 {
 					return "Pass requires exactly 3 card indices.", true
 				}
 				return c.hi.Pass(indices), true
 			case "p", "play":
-				if len(args) < 1 {
-					return "Card index is required.", true
-				}
-				idx, err := strconv.Atoi(args[0])
-				if err != nil {
-					return fmt.Sprintf("Invalid card index: %s.", args[0]), true
+				idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				if !ok {
+					return errMsg, true
 				}
 				return c.hi.Play(idx), true
 			case "n", "next":
@@ -65,23 +57,17 @@ func (c *HeartsCuiController) Exec(command string) string {
 			case "nr", "nextround":
 				return c.hi.NextRound(), true
 			case "sd", "setdifficulty":
-				if len(args) < 1 {
-					return "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", true
-				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid CPU difficulty: %s. Please enter 0-2.", args[0]), true
+				v, errMsg, ok := cuiutil.ParseIntArg(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2)
+				if !ok {
+					return errMsg, true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.CpuDifficulty = domain.HeartsCpuDifficulty(v)
 				return c.hi.ResetWithConfig(cfg), true
 			case "sl", "setlimit":
-				if len(args) < 1 {
-					return "Point limit is required.", true
-				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 1 {
-					return fmt.Sprintf("Invalid point limit: %s. Please enter 1 or more.", args[0]), true
+				v, errMsg, ok := cuiutil.ParseIntArg(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt)
+				if !ok {
+					return errMsg, true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.PointLimit = v

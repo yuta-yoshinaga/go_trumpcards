@@ -1,5 +1,7 @@
 package domain
 
+import "fmt"
+
 // OldMaidMode ババ抜きモード
 type OldMaidMode int
 
@@ -20,4 +22,12 @@ type OldMaidConfig struct {
 // DefaultOldMaidConfig デフォルト設定を返す
 func DefaultOldMaidConfig() OldMaidConfig {
 	return OldMaidConfig{Mode: OldMaidModeNormal, CpuPlacementStrategy: false}
+}
+
+// Validate 設定値のドメインバリデーション
+func (c OldMaidConfig) Validate() error {
+	if c.Mode != OldMaidModeNormal && c.Mode != OldMaidModeJijiNuki {
+		return fmt.Errorf("invalid game mode %d, must be %d (Normal) or %d (JijiNuki)", int(c.Mode), int(OldMaidModeNormal), int(OldMaidModeJijiNuki))
+	}
+	return nil
 }

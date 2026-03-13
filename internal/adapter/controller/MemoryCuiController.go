@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"fmt"
-	"strconv"
-
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -30,23 +28,17 @@ func (c *MemoryCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "flip":
-				if len(args) < 1 {
-					return "Position is required.", true
-				}
-				pos, err := strconv.Atoi(args[0])
-				if err != nil {
-					return fmt.Sprintf("Invalid position: %s.", args[0]), true
+				pos, errMsg, ok := cuiutil.ParseIntArg(args, "Position is required.", "Invalid position: %s.", cuiutil.NoMin, cuiutil.NoMax)
+				if !ok {
+					return errMsg, true
 				}
 				return c.mi.Flip(pos), true
 			case "n", "next":
 				return c.mi.Next(), true
 			case "sd", "setdifficulty":
-				if len(args) < 1 {
-					return "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", true
-				}
-				v, err := strconv.Atoi(args[0])
-				if err != nil || v < 0 || v > 2 {
-					return fmt.Sprintf("Invalid CPU difficulty: %s. Please enter 0-2.", args[0]), true
+				v, errMsg, ok := cuiutil.ParseIntArg(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2)
+				if !ok {
+					return errMsg, true
 				}
 				cfg := c.mi.GetConfig()
 				cfg.CpuDifficulty = domain.MemoryCpuDifficulty(v)

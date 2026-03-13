@@ -258,9 +258,11 @@ func TestPokerCuiController_BettingLimit_NoArgs(t *testing.T) {
 func TestPokerCuiController_BettingLimit_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("bl 5"), "Invalid betting limit: 5")
+	// non-numeric: controller catches
 	assert.Contains(t, c.Exec("bl abc"), "Invalid betting limit: abc")
-	assert.Contains(t, c.Exec("bl -1"), "Invalid betting limit: -1")
+	// numeric out-of-range: controller catches via ParseIntArg bounds
+	assert.Equal(t, "Invalid betting limit: 5. Please enter 0-2.", c.Exec("bl 5"))
+	assert.Equal(t, "Invalid betting limit: -1. Please enter 0-2.", c.Exec("bl -1"))
 }
 
 // --- lowball ---
@@ -319,10 +321,12 @@ func TestPokerCuiController_SetCpuCount_NoArgs(t *testing.T) {
 func TestPokerCuiController_SetCpuCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("scc 0"), "Invalid CPU player count: 0")
-	assert.Contains(t, c.Exec("scc 4"), "Invalid CPU player count: 4")
+	// non-numeric: controller catches
 	assert.Contains(t, c.Exec("scc abc"), "Invalid CPU player count: abc")
-	assert.Contains(t, c.Exec("scc -1"), "Invalid CPU player count: -1")
+	// numeric out-of-range: controller catches via ParseIntArg bounds
+	assert.Equal(t, "Invalid CPU player count: 0. Please enter 1-3.", c.Exec("scc 0"))
+	assert.Equal(t, "Invalid CPU player count: 4. Please enter 1-3.", c.Exec("scc 4"))
+	assert.Equal(t, "Invalid CPU player count: -1. Please enter 1-3.", c.Exec("scc -1"))
 }
 
 // --- set joker count ---
@@ -366,9 +370,11 @@ func TestPokerCuiController_SetJokerCount_NoArgs(t *testing.T) {
 func TestPokerCuiController_SetJokerCount_InvalidValue(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Contains(t, c.Exec("sjc -1"), "Invalid joker count: -1")
-	assert.Contains(t, c.Exec("sjc 3"), "Invalid joker count: 3")
+	// non-numeric: controller catches
 	assert.Contains(t, c.Exec("sjc abc"), "Invalid joker count: abc")
+	// numeric out-of-range: controller catches via ParseIntArg bounds
+	assert.Equal(t, "Invalid joker count: -1. Please enter 0-2.", c.Exec("sjc -1"))
+	assert.Equal(t, "Invalid joker count: 3. Please enter 0-2.", c.Exec("sjc 3"))
 }
 
 // --- odds ---

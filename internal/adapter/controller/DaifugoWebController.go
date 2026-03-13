@@ -32,6 +32,33 @@ type DaifugoWebConfig struct {
 	CpuDifficulty             int  `json:"cpuDifficulty"`
 }
 
+// ToConfig converts DaifugoWebConfig to domain.DaifugoConfig.
+func (c DaifugoWebConfig) ToConfig() domain.DaifugoConfig {
+	return domain.DaifugoConfig{
+		JokerCount:                c.JokerCount,
+		EightCutEnabled:           c.EightCutEnabled,
+		SuitLockMode:              domain.DaifugoSuitLockMode(c.SuitLockMode),
+		ElevenBackEnabled:         c.ElevenBackEnabled,
+		SequenceEnabled:           c.SequenceEnabled,
+		CardExchangeEnabled:       c.CardExchangeEnabled,
+		FiveSkipEnabled:           c.FiveSkipEnabled,
+		FiveSkipCount:             c.FiveSkipCount,
+		SevenPassEnabled:          c.SevenPassEnabled,
+		TenDiscardEnabled:         c.TenDiscardEnabled,
+		SpadeThreeEnabled:         c.SpadeThreeEnabled,
+		CapitalFallEnabled:        c.CapitalFallEnabled,
+		NineReverseEnabled:        c.NineReverseEnabled,
+		CoupDetatEnabled:          c.CoupDetatEnabled,
+		NumberLockEnabled:         c.NumberLockEnabled,
+		SandstormEnabled:          c.SandstormEnabled,
+		EmperorEnabled:            c.EmperorEnabled,
+		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
+		IllegalFinishEnabled:      c.IllegalFinishEnabled,
+		QueenBomberEnabled:        c.QueenBomberEnabled,
+		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
+	}
+}
+
 // DaifugoWebInput 大富豪Webインプット
 type DaifugoWebInput struct {
 	BaseWebInput
@@ -80,14 +107,12 @@ type DaifugoWebOutput struct {
 	ExchangeActions     []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
 	CpuActions          []*DaifugoWebOutputAction         `json:"cpuActions"`
 	HumanAction         *DaifugoWebOutputAction           `json:"humanAction"`
-	Message             string                            `json:"message"`
-	MessageCode         string                            `json:"messageCode,omitempty"`
-	MessageParams       map[string]string                 `json:"messageParams,omitempty"`
 	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"|"queenBomber"
 	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
 	ReverseDirection    bool                              `json:"reverseDirection"`
 	NumberLocked        bool                              `json:"numberLocked"`
 	SortMode            int                               `json:"sortMode"`
+	WebOutputBase
 }
 
 // DaifugoWebController 大富豪Webコントローラークラス
@@ -104,7 +129,7 @@ func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {
 		TableCards:          make([]*WebOutputCard, 0),
 		CpuActions:          make([]*DaifugoWebOutputAction, 0),
 		ExchangeActions:     make([]*DaifugoWebOutputExchangeAction, 0),
-		Message:             msg,
+		WebOutputBase:       WebOutputBase{Message: msg},
 		PendingAction:       "none",
 		PendingActionTarget: -1,
 	}
@@ -114,8 +139,7 @@ func daifugoDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.Daif
 	switch param.Command {
 	case "r", "reset":
 		if param.Config != nil {
-			dgConfig := convertWebConfig(*param.Config)
-			bc.writePresenterResponse(w, dgi.ResetWithConfig(dgConfig))
+			bc.writePresenterResponse(w, dgi.ResetWithConfig(param.Config.ToConfig()))
 		} else {
 			bc.writePresenterResponse(w, dgi.Reset())
 		}
@@ -139,31 +163,4 @@ func daifugoDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.Daif
 		return false
 	}
 	return true
-}
-
-// convertWebConfig DaifugoWebConfig を domain.DaifugoConfig に変換
-func convertWebConfig(c DaifugoWebConfig) domain.DaifugoConfig {
-	return domain.DaifugoConfig{
-		JokerCount:                c.JokerCount,
-		EightCutEnabled:           c.EightCutEnabled,
-		SuitLockMode:              domain.DaifugoSuitLockMode(c.SuitLockMode),
-		ElevenBackEnabled:         c.ElevenBackEnabled,
-		SequenceEnabled:           c.SequenceEnabled,
-		CardExchangeEnabled:       c.CardExchangeEnabled,
-		FiveSkipEnabled:           c.FiveSkipEnabled,
-		FiveSkipCount:             c.FiveSkipCount,
-		SevenPassEnabled:          c.SevenPassEnabled,
-		TenDiscardEnabled:         c.TenDiscardEnabled,
-		SpadeThreeEnabled:         c.SpadeThreeEnabled,
-		CapitalFallEnabled:        c.CapitalFallEnabled,
-		NineReverseEnabled:        c.NineReverseEnabled,
-		CoupDetatEnabled:          c.CoupDetatEnabled,
-		NumberLockEnabled:         c.NumberLockEnabled,
-		SandstormEnabled:          c.SandstormEnabled,
-		EmperorEnabled:            c.EmperorEnabled,
-		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
-		IllegalFinishEnabled:      c.IllegalFinishEnabled,
-		QueenBomberEnabled:        c.QueenBomberEnabled,
-		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
-	}
 }

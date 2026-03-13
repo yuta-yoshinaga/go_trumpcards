@@ -19,9 +19,9 @@ import (
 
 func mustBaccaratOutputJSON(msg string) string {
 	out := &controller.BaccaratWebOutput{
-		PlayerHand: make([]*controller.WebOutputCard, 0),
-		BankerHand: make([]*controller.WebOutputCard, 0),
-		Message:    msg,
+		PlayerHand:    make([]*controller.WebOutputCard, 0),
+		BankerHand:    make([]*controller.WebOutputCard, 0),
+		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

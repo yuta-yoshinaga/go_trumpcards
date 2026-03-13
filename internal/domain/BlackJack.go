@@ -849,26 +849,8 @@ func (b *BlackJack) SetConfig(config BlackJackConfig) error {
 	if b.phase != BJPhaseBet {
 		return NewDomainError(ErrWrongPhase, "Config can only be changed during the bet phase.")
 	}
-	if config.CpuPlayerCount < 0 || config.CpuPlayerCount > BJMaxCpuPlayers {
-		return NewDomainError(ErrInvalidAmount, "CPU player count must be 0-3.")
-	}
-	if config.CountingSystem < 0 || config.CountingSystem > BJCountingMax {
-		return NewDomainError(ErrInvalidAmount, "Invalid counting system.")
-	}
-	if config.SurrenderRule < 0 || config.SurrenderRule > BJSurrenderMax {
-		return NewDomainError(ErrInvalidAmount, "Invalid surrender rule.")
-	}
-	if config.DeckPenetration != 0 {
-		validPen := false
-		for _, v := range BJValidPenetrations {
-			if v == config.DeckPenetration {
-				validPen = true
-				break
-			}
-		}
-		if !validPen {
-			return NewDomainError(ErrInvalidAmount, "Invalid deck penetration. Use 50 or 75.")
-		}
+	if err := config.Validate(); err != nil {
+		return err
 	}
 	// カウンティングシステム変更時はランニングカウントをリセット
 	if config.CountingSystem != b.config.CountingSystem {

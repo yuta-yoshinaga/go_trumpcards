@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -67,32 +68,11 @@ func (c *SevensCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				idx := -1 // デフォルトはパス
-				if len(args) > 0 {
-					if parsed, err := strconv.Atoi(args[0]); err == nil {
-						idx = parsed
-					}
-				}
-				return c.sgi.Play(idx), true
+				return c.sgi.Play(cuiutil.ParseOptionalInt(args, 0, -1)), true
 			case "j", "joker":
-				cardIdx := 0
-				targetSuit := 0
-				targetValue := 0
-				if len(args) > 0 {
-					if parsed, err := strconv.Atoi(args[0]); err == nil {
-						cardIdx = parsed
-					}
-				}
-				if len(args) > 1 {
-					if parsed, err := strconv.Atoi(args[1]); err == nil {
-						targetSuit = parsed
-					}
-				}
-				if len(args) > 2 {
-					if parsed, err := strconv.Atoi(args[2]); err == nil {
-						targetValue = parsed
-					}
-				}
+				cardIdx := cuiutil.ParseOptionalInt(args, 0, 0)
+				targetSuit := cuiutil.ParseOptionalInt(args, 1, 0)
+				targetValue := cuiutil.ParseOptionalInt(args, 2, 0)
 				return c.sgi.PlayJoker(cardIdx, targetSuit, targetValue), true
 			}
 			return "", false

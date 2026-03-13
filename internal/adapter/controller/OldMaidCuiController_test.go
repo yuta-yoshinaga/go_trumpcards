@@ -126,9 +126,11 @@ func TestOldMaidCuiController_SetMode_NoArgs(t *testing.T) {
 func TestOldMaidCuiController_SetMode_InvalidValue(t *testing.T) {
 	mi := new(usecase.MockOldMaidInteractor)
 	c := controller.NewOldMaidCuiController(mi)
-	assert.Contains(t, c.Exec("sm 2"), "Invalid game mode: 2")
+	// non-numeric: controller catches
 	assert.Contains(t, c.Exec("sm abc"), "Invalid game mode: abc")
-	assert.Contains(t, c.Exec("sm -1"), "Invalid game mode: -1")
+	// numeric out-of-range: controller catches via ParseIntArg bounds
+	assert.Equal(t, "Invalid game mode: 2. Please enter 0-1.", c.Exec("sm 2"))
+	assert.Equal(t, "Invalid game mode: -1. Please enter 0-1.", c.Exec("sm -1"))
 }
 
 // --- set placement strategy ---
