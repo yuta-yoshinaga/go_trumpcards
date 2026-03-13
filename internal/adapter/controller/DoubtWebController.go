@@ -66,10 +66,10 @@ type DoubtWebOutput struct {
 	LastDoubtResult *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
 	GameEndFlag     bool                       `json:"gameEndFlag"`
 	WinnerIdx       int                        `json:"winnerIdx"`
-	WebOutputBase
 	DoubtWindowSec   int                   `json:"doubtWindowSec"`
 	PenaltyDrawLimit int                   `json:"penaltyDrawLimit"`
 	MetaAI           *DoubtWebOutputMetaAI `json:"metaAI,omitempty"`
+	WebOutputBase
 }
 
 // DoubtWebOutputMetaAI メタAI情報

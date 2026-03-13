@@ -90,7 +90,6 @@ type HoldemWebOutput struct {
 	MaxBetAmount   int                         `json:"maxBetAmount"`
 	RoundResults   []*HoldemWebOutputResult    `json:"roundResults"`
 	CpuActions     []*HoldemWebOutputCpuAction `json:"cpuActions"`
-	WebOutputBase
 	HandCount        int    `json:"handCount"`
 	SmallBlind       int    `json:"smallBlind"`
 	BigBlind         int    `json:"bigBlind"`
@@ -111,6 +110,7 @@ type HoldemWebOutput struct {
 	AddonAfterHand   int    `json:"addonAfterHand"`
 	RebuyPhaseType   int    `json:"rebuyPhaseType"`
 	MuckAvailable    bool   `json:"muckAvailable"`
+	WebOutputBase
 }
 
 // HoldemWebController テキサスホールデムWebコントローラークラス

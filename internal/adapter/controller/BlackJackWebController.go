@@ -68,7 +68,6 @@ type BlackJackWebOutput struct {
 	Phase              int                       `json:"phase"`
 	InsuranceBet       int                       `json:"insuranceBet"`
 	InsuranceAvailable bool                      `json:"insuranceAvailable"`
-	WebOutputBase
 	HintEnabled       bool                               `json:"hintEnabled"`
 	SuggestedAction   int                                `json:"suggestedAction"`
 	DeckCount         int                                `json:"deckCount"`
@@ -86,6 +85,7 @@ type BlackJackWebOutput struct {
 	DeckPenetration   int                                `json:"deckPenetration"`
 	MultiHandCount    int                                `json:"multiHandCount"`
 	SurrenderRule     int                                `json:"surrenderRule"`
+	WebOutputBase
 }
 
 // BlackJackWebController ブラックジャックWebコントローラークラス

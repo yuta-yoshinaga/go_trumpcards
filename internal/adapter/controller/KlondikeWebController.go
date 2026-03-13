@@ -45,8 +45,8 @@ type KlondikeWebOutput struct {
 	Foundation [][]*WebOutputCard                `json:"foundation"`
 	Phase      int                               `json:"phase"`
 	MoveCount  int                               `json:"moveCount"`
-	WebOutputBase
 	Hint *KlondikeWebOutputHint `json:"hint,omitempty"`
+	WebOutputBase
 }
 
 // KlondikeWebController クロンダイクWebコントローラークラス

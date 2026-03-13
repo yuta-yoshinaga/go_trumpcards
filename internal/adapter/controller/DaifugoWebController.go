@@ -80,12 +80,12 @@ type DaifugoWebOutput struct {
 	ExchangeActions   []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
 	CpuActions        []*DaifugoWebOutputAction         `json:"cpuActions"`
 	HumanAction       *DaifugoWebOutputAction           `json:"humanAction"`
-	WebOutputBase
 	PendingAction       string `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"|"queenBomber"
 	PendingActionTarget int    `json:"pendingActionTarget"` // -1 if none
 	ReverseDirection    bool   `json:"reverseDirection"`
 	NumberLocked        bool   `json:"numberLocked"`
 	SortMode            int    `json:"sortMode"`
+	WebOutputBase
 }
 
 // DaifugoWebController 大富豪Webコントローラークラス
