@@ -877,11 +877,13 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => {
       const statsElem = screen.getByTestId('hud-stats');
-      expect(statsElem).toHaveTextContent('VPIP:60% PFR:20% 3Bet:10% AF:2.5');
-      expect(within(statsElem).getByTitle(/VPIP（ボランタリー・プット・イン・ポット）/)).toBeInTheDocument();
-      expect(within(statsElem).getByTitle(/PFR（プリフロップレイズ）/)).toBeInTheDocument();
-      expect(within(statsElem).getByTitle(/3Bet（スリーベット）/)).toBeInTheDocument();
-      expect(within(statsElem).getByTitle(/AF（アグレッションファクター）/)).toBeInTheDocument();
+      expect(statsElem).toHaveTextContent(/VPIP.*:60%.*PFR.*:20%.*3Bet.*:10%.*AF.*:2\.5/);
+      expect(
+        within(statsElem).getByRole('tooltip', { name: /VPIP（ボランタリー・プット・イン・ポット）/ }),
+      ).toBeInTheDocument();
+      expect(within(statsElem).getByRole('tooltip', { name: /PFR（プリフロップレイズ）/ })).toBeInTheDocument();
+      expect(within(statsElem).getByRole('tooltip', { name: /3Bet（スリーベット）/ })).toBeInTheDocument();
+      expect(within(statsElem).getByRole('tooltip', { name: /AF（アグレッションファクター）/ })).toBeInTheDocument();
     });
   });
 
@@ -900,8 +902,10 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => {
       const statsElem = screen.getByTestId('hud-stats');
-      expect(statsElem).toHaveTextContent('VPIP:33% PFR:0% 3Bet:0% AF:-');
-      expect(within(statsElem).getByTitle(/VPIP（ボランタリー・プット・イン・ポット）/)).toBeInTheDocument();
+      expect(statsElem).toHaveTextContent(/VPIP.*:33%.*PFR.*:0%.*3Bet.*:0%.*AF.*:-/);
+      expect(
+        within(statsElem).getByRole('tooltip', { name: /VPIP（ボランタリー・プット・イン・ポット）/ }),
+      ).toBeInTheDocument();
     });
   });
 

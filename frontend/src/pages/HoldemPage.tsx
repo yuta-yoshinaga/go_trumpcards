@@ -33,21 +33,45 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
   const { t } = useTranslation('holdem');
   return (
     <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
-      <abbr title={t('stats.vpipTooltip')} className="cursor-help">
+      <span className="group relative cursor-help">
         {t('stats.vpip')}
-      </abbr>
+        <span
+          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100"
+          role="tooltip"
+        >
+          {t('stats.vpipTooltip')}
+        </span>
+      </span>
       :{vpip}%{' '}
-      <abbr title={t('stats.pfrTooltip')} className="cursor-help">
+      <span className="group relative cursor-help">
         {t('stats.pfr')}
-      </abbr>
+        <span
+          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100"
+          role="tooltip"
+        >
+          {t('stats.pfrTooltip')}
+        </span>
+      </span>
       :{pfr}%{' '}
-      <abbr title={t('stats.threeBetTooltip')} className="cursor-help">
+      <span className="group relative cursor-help">
         {t('stats.threeBet')}
-      </abbr>
+        <span
+          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100"
+          role="tooltip"
+        >
+          {t('stats.threeBetTooltip')}
+        </span>
+      </span>
       :{threeBet}%{' '}
-      <abbr title={t('stats.afTooltip')} className="cursor-help">
+      <span className="group relative cursor-help">
         {t('stats.af')}
-      </abbr>
+        <span
+          className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover:opacity-100"
+          role="tooltip"
+        >
+          {t('stats.afTooltip')}
+        </span>
+      </span>
       :{af}
     </span>
   );
