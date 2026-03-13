@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/update"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/web"
 )
 
@@ -27,6 +28,7 @@ func main() {
 func run() int {
 	lang := flag.String("lang", "", "language (ja or en)")
 	showVersion := flag.Bool("version", false, "Show version information")
+	flag.BoolVar(showVersion, "V", false, "Show version information (shorthand)")
 	noColorFlag := flag.Bool("no-color", false, "Disable color output")
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, `USAGE:
@@ -45,6 +47,7 @@ GAMES:
   memory       Memory / Concentration (神経衰弱)
   klondike     Klondike Solitaire (ソリティア)
   baccarat     Baccarat (バカラ)
+  update       Self-update to the latest version
   web          Start REST API + web GUI server
 
   (no argument) Interactive mode with game switching
@@ -53,7 +56,7 @@ OPTIONS:
   -h, --help        Show this help message
   --lang ja|en      Language (default: ja)
   --no-color        Disable color output
-  --version         Show version information
+  -V, --version     Show version information
 
 ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output when set (see https://no-color.org/)
@@ -126,6 +129,11 @@ ENVIRONMENT VARIABLES:
 	case "baccarat":
 		baccarat := ui.NewBaccaratCui()
 		baccarat.Exec()
+	case "update":
+		updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
+		if err := updater.Exec(); err != nil {
+			return 1
+		}
 	case "web":
 		infrastructure.InitLogger()
 		w := web.NewTrumpCardsWeb()

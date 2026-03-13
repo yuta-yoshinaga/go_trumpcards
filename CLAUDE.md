@@ -28,6 +28,7 @@ go run ./cmd/trumpcards hearts     # Hearts CLI
 go run ./cmd/trumpcards memory     # Memory (神経衰弱) CLI
 go run ./cmd/trumpcards klondike   # Klondike (ソリティア) CLI
 go run ./cmd/trumpcards baccarat   # Baccarat (バカラ) CLI
+go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
 

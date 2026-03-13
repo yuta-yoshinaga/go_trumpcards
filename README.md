@@ -95,6 +95,7 @@ go run ./cmd/trumpcards hearts     # ハーツ CLI
 go run ./cmd/trumpcards memory     # 神経衰弱 CLI
 go run ./cmd/trumpcards klondike   # クロンダイク CLI
 go run ./cmd/trumpcards baccarat   # バカラ CLI
+go run ./cmd/trumpcards update     # 最新版にセルフアップデート
 go run ./cmd/trumpcards web        # REST API + Web GUI サーバー起動 (CLI経由)
 go run ./cmd/server                # REST API + Web GUI サーバー起動 (直接)
 PORT=3000 go run ./cmd/trumpcards web  # カスタムポートで起動 (デフォルト: 8080)

@@ -64,7 +64,7 @@ func (c *SevensCuiController) Exec(command string) string {
 			}
 			return c.sgi.Reset()
 		},
-		unknownCommandMessage,
+		[]string{"p", "play", "j", "joker"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":

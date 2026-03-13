@@ -2,6 +2,7 @@
   "bye": "さようなら。",
   "typeHelp": "「help」または「?」でコマンド一覧を表示します。",
   "unknownCommand": "コマンドが不明です: {{cmd}}",
+  "unknownCommandWithSuggestion": "コマンドが不明です: {{cmd}}。もしかして '{{suggestion}}' ですか？",
   "gameCommands": "ゲームコマンド:",
   "settings": "設定:",
   "session": "セッション:",
@@ -17,5 +18,14 @@
   "useSwitchCmd": "'switch <game>' でゲームを切り替えます。",
   "interactiveMode": "インタラクティブモード (現在: {{name}})",
   "switchCmd": "  switch <game>   別のゲームに切り替え (例: switch poker)",
-  "gamesCmd": "  games           利用可能なゲームの一覧"
+  "gamesCmd": "  games           利用可能なゲームの一覧",
+  "skippedWarning": "警告: 無効な値 {{values}} は無視されました",
+  "updateAlreadyLatest": "既に最新バージョン({{version}})です",
+  "updateAvailable": "最新版({{version}})があります。アップデートしますか？ [y/N]",
+  "updateCancelled": "アップデートをキャンセルしました",
+  "updateDownloading": "{{version}} をダウンロード中...",
+  "updateSuccess": "{{version}} にアップデートしました",
+  "updateFetchError": "最新リリース情報の取得に失敗しました: {{error}}",
+  "updateNoAsset": "お使いの環境({{os}}/{{arch}})に対応するバイナリが見つかりませんでした",
+  "updateApplyError": "アップデートの適用に失敗しました: {{error}}"
 }

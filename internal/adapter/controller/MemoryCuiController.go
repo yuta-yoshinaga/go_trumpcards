@@ -24,7 +24,7 @@ func (c *MemoryCuiController) Exec(command string) string {
 			cfg := c.mi.GetConfig()
 			return c.mi.ResetWithConfig(cfg)
 		},
-		unknownCommandMessage,
+		[]string{"f", "flip", "n", "next", "sd", "setdifficulty", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "flip":

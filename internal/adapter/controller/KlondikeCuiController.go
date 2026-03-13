@@ -24,7 +24,7 @@ func (c *KlondikeCuiController) Exec(command string) string {
 		func(_ []string) string {
 			return c.ki.Reset()
 		},
-		unknownCommandMessage,
+		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "draw":

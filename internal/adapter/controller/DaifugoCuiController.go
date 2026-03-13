@@ -50,11 +50,15 @@ func (c *DaifugoCuiController) Exec(command string) string {
 			cfg := c.dgi.GetConfig()
 			return c.dgi.ResetWithConfig(cfg)
 		},
-		unknownCommandMessage,
+		[]string{
+			"p", "play", "sort", "sd", "setdifficulty", "sj", "setjoker",
+			"sr", "setrule", "suitlockmode", "5skipcount",
+		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "p", "play":
-				return c.dgi.Play(cuiutil.ParseIntSlice(args)), true
+				indices, skipped := cuiutil.ParseIntSlice(args)
+				return cuiutil.PrependSkippedWarning(c.dgi.Play(indices), skipped), true
 			case "sort":
 				mode := domain.DaifugoSortByStrength
 				if len(args) > 0 {

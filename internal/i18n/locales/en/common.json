@@ -2,6 +2,7 @@
   "bye": "Goodbye.",
   "typeHelp": "Type \"help\" or \"?\" for commands.",
   "unknownCommand": "Unknown command: {{cmd}}",
+  "unknownCommandWithSuggestion": "Unknown command: {{cmd}}. Did you mean '{{suggestion}}'?",
   "gameCommands": "Game commands:",
   "settings": "Settings:",
   "session": "Session:",
@@ -17,5 +18,14 @@
   "useSwitchCmd": "Use 'switch <game>' to switch.",
   "interactiveMode": "Interactive mode  (current: {{name}})",
   "switchCmd": "  switch <game>  switch to another game (e.g. switch poker)",
-  "gamesCmd": "  games          list all available games"
+  "gamesCmd": "  games          list all available games",
+  "skippedWarning": "Warning: invalid values {{values}} were ignored",
+  "updateAlreadyLatest": "Already on the latest version ({{version}})",
+  "updateAvailable": "A new version ({{version}}) is available. Update now? [y/N]",
+  "updateCancelled": "Update cancelled",
+  "updateDownloading": "Downloading {{version}}...",
+  "updateSuccess": "Successfully updated to {{version}}",
+  "updateFetchError": "Failed to fetch latest release info: {{error}}",
+  "updateNoAsset": "No binary found for your platform ({{os}}/{{arch}})",
+  "updateApplyError": "Failed to apply update: {{error}}"
 }

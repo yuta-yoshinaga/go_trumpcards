@@ -5,10 +5,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
 func TestCuiCardStr(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
 	tests := []struct {
 		name     string
 		card     *domain.Card
@@ -30,6 +34,10 @@ func TestCuiCardStr(t *testing.T) {
 }
 
 func TestCuiCardStrEmoji(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		card     *domain.Card
@@ -80,6 +88,10 @@ func (m *mockCuiPlayer) GetIsHuman() bool {
 }
 
 func TestCuiPlayerName(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		player   *mockCuiPlayer
@@ -107,6 +119,10 @@ func (m *mockCardList) GetCardsSize() int            { return len(m.cards) }
 func (m *mockCardList) GetCard(idx int) *domain.Card { return m.cards[idx] }
 
 func TestCuiCardListStr(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		cards    []*domain.Card
@@ -131,6 +147,10 @@ func TestCuiCardListStr(t *testing.T) {
 }
 
 func TestCuiIndexedCardListStr(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		cards    []*domain.Card
@@ -155,6 +175,10 @@ func TestCuiIndexedCardListStr(t *testing.T) {
 }
 
 func TestCuiCardListStrEmoji(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		cards    []*domain.Card
@@ -179,6 +203,10 @@ func TestCuiCardListStrEmoji(t *testing.T) {
 }
 
 func TestCuiIndexedCardListStrEmoji(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		cards    []*domain.Card
@@ -203,6 +231,10 @@ func TestCuiIndexedCardListStrEmoji(t *testing.T) {
 }
 
 func TestCuiCardSliceStr(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		cards    []*domain.Card
@@ -227,6 +259,10 @@ func TestCuiCardSliceStr(t *testing.T) {
 }
 
 func TestCuiCardSliceStrEmoji(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		cards    []*domain.Card
@@ -251,6 +287,10 @@ func TestCuiCardSliceStrEmoji(t *testing.T) {
 }
 
 func TestCuiBettingActionName(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
 	tests := []struct {
 		name     string
 		action   int
@@ -269,4 +309,94 @@ func TestCuiBettingActionName(t *testing.T) {
 			assert.Equal(t, tt.expected, cuiBettingActionName(tt.action))
 		})
 	}
+}
+
+func TestIsRedSuit(t *testing.T) {
+	assert.True(t, isRedSuit(domain.CardDesignHeart))
+	assert.True(t, isRedSuit(domain.CardDesignDiamond))
+	assert.False(t, isRedSuit(domain.CardDesignSpade))
+	assert.False(t, isRedSuit(domain.CardDesignClover))
+	assert.False(t, isRedSuit(domain.CardDesignJoker))
+	assert.False(t, isRedSuit(99))
+}
+
+func TestCuiCardStrColor(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	// Red suits should have ANSI red codes
+	heartCard := domain.NewCard(domain.CardDesignHeart, 10, false)
+	got := cuiCardStr(heartCard)
+	assert.Contains(t, got, "\033[31m")
+	assert.Contains(t, got, "\033[0m")
+	assert.Contains(t, got, "HEART 10")
+
+	diamondCard := domain.NewCard(domain.CardDesignDiamond, 5, false)
+	got = cuiCardStr(diamondCard)
+	assert.Contains(t, got, "\033[31m")
+
+	// Black suits should NOT have ANSI red codes
+	spadeCard := domain.NewCard(domain.CardDesignSpade, 1, false)
+	got = cuiCardStr(spadeCard)
+	assert.NotContains(t, got, "\033[31m")
+	assert.Equal(t, "SPADE 1", got)
+
+	// Joker should not be colored
+	jokerCard := domain.NewCard(domain.CardDesignJoker, 0, false)
+	got = cuiCardStr(jokerCard)
+	assert.NotContains(t, got, "\033[31m")
+	assert.Equal(t, "JOKER", got)
+
+	// nil card should not be colored
+	got = cuiCardStr(nil)
+	assert.Equal(t, "??", got)
+
+	// Unknown design should not be colored
+	unknownCard := domain.NewCard(99, 1, false)
+	got = cuiCardStr(unknownCard)
+	assert.Equal(t, "UNKNOWN", got)
+}
+
+func TestCuiCardStrEmojiColor(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	// Red suits should have ANSI red codes
+	heartCard := domain.NewCard(domain.CardDesignHeart, 10, false)
+	got := cuiCardStrEmoji(heartCard)
+	assert.Contains(t, got, "\033[31m")
+	assert.Contains(t, got, "♥10")
+
+	diamondCard := domain.NewCard(domain.CardDesignDiamond, 5, false)
+	got = cuiCardStrEmoji(diamondCard)
+	assert.Contains(t, got, "\033[31m")
+	assert.Contains(t, got, "♦5")
+
+	// Black suits should NOT have ANSI red codes
+	spadeCard := domain.NewCard(domain.CardDesignSpade, 1, false)
+	got = cuiCardStrEmoji(spadeCard)
+	assert.NotContains(t, got, "\033[31m")
+	assert.Equal(t, "♠1", got)
+}
+
+func TestCuiPlayerNameColor(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	// Human player should be bold
+	got := cuiPlayerName(&mockCuiPlayer{isHuman: true}, 0)
+	assert.Contains(t, got, "\033[1m")
+	assert.Contains(t, got, "あなた")
+
+	// CPU player should be bold
+	got = cuiPlayerName(&mockCuiPlayer{isHuman: false}, 1)
+	assert.Contains(t, got, "\033[1m")
+	assert.Contains(t, got, "CPU 1")
+
+	// nil player should not be colored
+	got = cuiPlayerName[*mockCuiPlayer](nil, 0)
+	assert.Equal(t, "UNKNOWN", got)
 }
