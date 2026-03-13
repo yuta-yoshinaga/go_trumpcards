@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -24,6 +25,8 @@ func makeHoldemForPresenter() (*domain.Holdem, []*domain.HoldemPlayer) {
 }
 
 func TestHoldemCuiPresenter_Output(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("initial state with no community cards", func(t *testing.T) {
@@ -413,6 +416,8 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("displays Fixed limit", func(t *testing.T) {
@@ -424,6 +429,8 @@ func TestHoldemCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_Output_RebuyAddon(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("tournament mode with rebuy enabled shows rebuy info", func(t *testing.T) {
@@ -530,6 +537,8 @@ func TestHoldemCuiPresenter_Output_RebuyAddon(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_Output_TableSize(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("displays 4-max", func(t *testing.T) {
@@ -554,6 +563,8 @@ func TestHoldemCuiPresenter_Output_TableSize(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("muck prompt displayed during showdown when IsMuckAvailable", func(t *testing.T) {
@@ -607,6 +618,8 @@ func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
 }
 
 func TestHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	p := new(presenter.HoldemCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {

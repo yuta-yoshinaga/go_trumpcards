@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
@@ -33,6 +34,8 @@ func setupDaifugoCuiTest() (*domain.Daifugo, []*domain.DaifugoPlayer) {
 }
 
 func TestDaifugoCuiPresenter_Method(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	tdp := new(presenter.DaifugoCuiPresenter)
 
 	t.Run("success Output initial state", func(t *testing.T) {
@@ -420,6 +423,8 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 }
 
 func TestDaifugoCuiPresenter_ActionLogOutput(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	p := new(presenter.DaifugoCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {

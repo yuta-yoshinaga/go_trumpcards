@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -45,7 +46,8 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 		// 最後のプレイ情報
 		lastAction := d.GetLastAction()
 		if lastAction != nil {
-			fmt.Fprintf(b, "[最後のプレイ] %sが「%d」を%d枚出しました\n",
+			fmt.Fprintf(b, "%s %sが「%d」を%d枚出しました\n",
+				color.Bold("[最後のプレイ]"),
 				cuiPlayerName(d.GetPlayer(lastAction.PlayerIdx), lastAction.PlayerIdx),
 				lastAction.ClaimedValue,
 				lastAction.CardCount,
@@ -59,11 +61,11 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 			cardPlayerName := cuiPlayerName(d.GetPlayer(lastResult.CardPlayerIdx), lastResult.CardPlayerIdx)
 			loserName := cuiPlayerName(d.GetPlayer(lastResult.LoserIdx), lastResult.LoserIdx)
 			if lastResult.WasLying {
-				fmt.Fprintf(b, "[ダウト] %sが%sをダウト → 嘘つき！ %sが%d枚引き取りました\n",
-					doubterName, cardPlayerName, loserName, lastResult.CardCount)
+				fmt.Fprintf(b, "%s %sが%sをダウト → %s %sが%d枚引き取りました\n",
+					color.Bold("[ダウト]"), doubterName, cardPlayerName, color.Green("嘘つき！"), loserName, lastResult.CardCount)
 			} else {
-				fmt.Fprintf(b, "[ダウト] %sが%sをダウト → 正直者！ %sが%d枚引き取りました\n",
-					doubterName, cardPlayerName, loserName, lastResult.CardCount)
+				fmt.Fprintf(b, "%s %sが%sをダウト → %s %sが%d枚引き取りました\n",
+					color.Bold("[ダウト]"), doubterName, cardPlayerName, color.Red("正直者！"), loserName, lastResult.CardCount)
 			}
 			if lastResult.DiscardedCount > 0 {
 				fmt.Fprintf(b, "  (%d枚がゲームから除外されました)\n", lastResult.DiscardedCount)
@@ -84,7 +86,7 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 		// CPUの行動履歴
 		cpuActions := d.GetCpuActions()
 		if len(cpuActions) > 0 {
-			b.WriteString("[CPUの行動]\n")
+			b.WriteString(color.Bold("[CPUの行動]") + "\n")
 			for _, action := range cpuActions {
 				fmt.Fprintf(b, "%sが「%d」を%d枚出しました\n",
 					cuiPlayerName(d.GetPlayer(action.PlayerIdx), action.PlayerIdx),
@@ -105,13 +107,13 @@ func (p *DoubtCuiPresenter) Output(d interfaces.DoubtGame, lastErr error) string
 
 		// エラーメッセージ
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", lastErr.Error())
+			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
 		}
 
 		// ゲーム状態
 		if d.GetGameEndFlag() {
 			winnerIdx := d.GetWinnerIdx()
-			fmt.Fprintf(b, "ゲーム終了！ %sの勝利です！\n", cuiPlayerName(d.GetPlayer(winnerIdx), winnerIdx))
+			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(d.GetPlayer(winnerIdx), winnerIdx)+"の勝利です！"))
 		} else {
 			currentTurn := d.GetCurrentTurn()
 			phase := d.GetPhase()

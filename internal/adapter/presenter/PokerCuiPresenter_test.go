@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -25,6 +26,8 @@ func makePokerCuiForPresenter() (*domain.Poker, []*domain.PokerPlayer) {
 }
 
 func TestPokerCuiPresenter_Output(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	pres := new(presenter.PokerCuiPresenter)
 
 	t.Run("initial state with header and dealer info", func(t *testing.T) {
@@ -553,6 +556,8 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	pres := new(presenter.PokerCuiPresenter)
 	p, players := makePokerCuiForPresenter()
 	p.SetPhase(domain.PokerPhaseExchange)
@@ -570,6 +575,8 @@ func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	pres := new(presenter.PokerCuiPresenter)
 	p, players := makePokerCuiForPresenter()
 	p.SetPhase(domain.PokerPhaseExchange)
@@ -581,6 +588,8 @@ func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_OutputWithOdds_EmptyOdds(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	pres := new(presenter.PokerCuiPresenter)
 	p, players := makePokerCuiForPresenter()
 	p.SetPhase(domain.PokerPhaseExchange)
@@ -592,6 +601,8 @@ func TestPokerCuiPresenter_OutputWithOdds_EmptyOdds(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_Output_LowballMode(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	pres := new(presenter.PokerCuiPresenter)
 
 	t.Run("lowball mode shows 2-7 Lowball", func(t *testing.T) {
@@ -620,6 +631,8 @@ func TestPokerCuiPresenter_Output_LowballMode(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	pres := new(presenter.PokerCuiPresenter)
 
 	t.Run("displays Fixed limit", func(t *testing.T) {
@@ -631,6 +644,8 @@ func TestPokerCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 }
 
 func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	p := new(presenter.PokerCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {

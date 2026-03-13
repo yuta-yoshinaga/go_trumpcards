@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -50,14 +51,14 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 
 		// エラーメッセージ
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", lastErr.Error())
+			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
 		}
 
 		// ゲーム状態
 		if m.GetGameEndFlag() {
 			winnerIdx := m.GetWinnerIdx()
 			player := m.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %sの勝利です！\n", cuiPlayerName(player, winnerIdx))
+			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
 		} else {
 			phase := m.GetPhase()
 			currentIdx := m.GetCurrentPlayerIdx()
@@ -72,9 +73,9 @@ func (p *MemoryCuiPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 				b.WriteString("f <pos>・・・カードをめくる\n")
 			case domain.MemoryPhaseResult:
 				if m.GetLastMatchResult() {
-					b.WriteString("ペアが揃いました！\n")
+					b.WriteString(color.Green("ペアが揃いました！") + "\n")
 				} else {
-					b.WriteString("残念、不一致です。\n")
+					b.WriteString(color.Yellow("残念、不一致です。") + "\n")
 				}
 				b.WriteString("n・・・次へ\n")
 			}

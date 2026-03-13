@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -42,6 +43,8 @@ func setupMemoryMockDefaults(mg *interfaces.MockMemoryGame) {
 }
 
 func TestMemoryCuiPresenterOutput(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	t.Run("initial state", func(t *testing.T) {
 		mg := newMockMemoryGame()
 		setupMemoryMockDefaults(mg)
@@ -238,6 +241,8 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 }
 
 func TestMemoryCuiPresenterActionLog(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	t.Run("game not ended", func(t *testing.T) {
 		mg := newMockMemoryGame()
 		mg.On("GetGameEndFlag").Return(false)

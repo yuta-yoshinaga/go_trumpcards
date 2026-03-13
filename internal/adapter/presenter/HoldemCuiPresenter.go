@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -66,9 +67,9 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	for i := 0; i < h.GetPlayerCnt(); i++ {
 		player := h.GetPlayer(i)
 		if player.GetIsHuman() {
-			b.WriteString("[You]")
+			b.WriteString(color.Bold("[You]"))
 		} else {
-			fmt.Fprintf(&b, "CPU %d (%s)", i, player.GetPlayStyleName())
+			fmt.Fprintf(&b, "%s (%s)", color.Bold(fmt.Sprintf("CPU %d", i)), player.GetPlayStyleName())
 		}
 
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
@@ -78,9 +79,9 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		}
 
 		if player.GetFolded() {
-			b.WriteString(" [フォールド]")
+			b.WriteString(" " + color.BoldYellow("[フォールド]"))
 		} else if player.GetAllIn() {
-			b.WriteString(" [オールイン]")
+			b.WriteString(" " + color.BoldYellow("[オールイン]"))
 		}
 
 		if player.GetCurrentBet() > 0 {
@@ -98,7 +99,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	cpuActions := h.GetCpuActions()
 	if len(cpuActions) > 0 {
 		b.WriteString("----------\n")
-		b.WriteString("[CPU行動]\n")
+		b.WriteString(color.Bold("[CPU行動]") + "\n")
 		for _, action := range cpuActions {
 			fmt.Fprintf(&b, "  Player %d: %s", action.PlayerIdx, cuiBettingActionName(action.Action))
 			if action.Amount > 0 {
@@ -112,7 +113,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	results := h.GetRoundResults()
 	if len(results) > 0 && (h.GetPhase() == domain.HoldemPhaseEnd || h.GetPhase() == domain.HoldemPhaseShowdown) {
 		b.WriteString("==========\n")
-		b.WriteString("[結果]\n")
+		b.WriteString(color.Bold("[結果]") + "\n")
 		for _, r := range results {
 			name := "You"
 			if !h.GetPlayer(r.PlayerIdx).GetIsHuman() {
@@ -167,7 +168,7 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 
 	// エラーメッセージ
 	if lastErr != nil {
-		fmt.Fprintf(&b, "[エラー] %s\n", lastErr.Error())
+		fmt.Fprintf(&b, "%s\n", color.Red("[エラー] "+lastErr.Error()))
 	}
 
 	// ゲーム終了メッセージ

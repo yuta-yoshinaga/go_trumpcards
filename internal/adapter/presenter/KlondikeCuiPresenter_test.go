@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -35,6 +36,8 @@ func setupKlondikeCuiMockDefaults(kg *interfaces.MockKlondikeGame) {
 }
 
 func TestKlondikeCuiPresenter_Output(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	t.Run("initial state", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		setupKlondikeCuiMockDefaults(kg)
@@ -129,6 +132,8 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 }
 
 func TestKlondikeCuiPresenter_HintOutput(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	t.Run("no hint", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetHint").Return((*domain.KlondikeHint)(nil))
@@ -172,6 +177,8 @@ func TestKlondikeCuiPresenter_HintOutput(t *testing.T) {
 }
 
 func TestKlondikeCuiPresenter_ActionLogOutput(t *testing.T) {
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
 	t.Run("during game", func(t *testing.T) {
 		kg := new(interfaces.MockKlondikeGame)
 		kg.On("GetPhase").Return(domain.KlondikePhasePlaying)

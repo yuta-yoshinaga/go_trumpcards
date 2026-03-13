@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -23,7 +24,7 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	// プレイヤーハンド
 	playerHand := b.GetPlayerHand()
 	if len(playerHand) > 0 {
-		sb.WriteString("--- PLAYER ---\n")
+		sb.WriteString("--- " + color.Bold("PLAYER") + " ---\n")
 		fmt.Fprintf(&sb, "value: %d\n", b.GetPlayerHandValue())
 		parts := make([]string, len(playerHand))
 		for i, card := range playerHand {
@@ -36,7 +37,7 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	// バンカーハンド
 	bankerHand := b.GetBankerHand()
 	if len(bankerHand) > 0 {
-		sb.WriteString("--- BANKER ---\n")
+		sb.WriteString("--- " + color.Bold("BANKER") + " ---\n")
 		fmt.Fprintf(&sb, "value: %d\n", b.GetBankerHandValue())
 		parts := make([]string, len(bankerHand))
 		for i, card := range bankerHand {
@@ -50,7 +51,7 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 
 	// エラーメッセージ
 	if lastErr != nil {
-		fmt.Fprintf(&sb, "%s\n", lastErr.Error())
+		fmt.Fprintf(&sb, "%s\n", color.Red(lastErr.Error()))
 	}
 
 	// ゲーム結果
@@ -58,11 +59,11 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 		fmt.Fprintf(&sb, "bet: %d on %s\n", b.GetBetAmount(), bp.betTypeStr(b.GetBetType()))
 		switch b.GetResult() {
 		case domain.GameResultWin:
-			sb.WriteString("Player wins!\n")
+			sb.WriteString(color.Green("Player wins!") + "\n")
 		case domain.GameResultLose:
-			sb.WriteString("Banker wins!\n")
+			sb.WriteString(color.Red("Banker wins!") + "\n")
 		case domain.GameResultDraw:
-			sb.WriteString("Tie!\n")
+			sb.WriteString(color.Yellow("Tie!") + "\n")
 		default:
 		}
 		fmt.Fprintf(&sb, "payout: %d\n", b.GetPayout())

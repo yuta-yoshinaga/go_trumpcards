@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -13,19 +14,19 @@ import (
 func bjHandStatusStr(hand *domain.BlackJackHand) string {
 	var parts []string
 	if hand.IsDoubled() {
-		parts = append(parts, "[DD]")
+		parts = append(parts, color.BoldYellow("[DD]"))
 	}
 	if hand.IsBusted() {
-		parts = append(parts, "[BUST]")
+		parts = append(parts, color.BoldYellow("[BUST]"))
 	}
 	if hand.IsStood() {
-		parts = append(parts, "[STAND]")
+		parts = append(parts, color.BoldYellow("[STAND]"))
 	}
 	if hand.IsBlackJack() {
-		parts = append(parts, "[BJ]")
+		parts = append(parts, color.BoldYellow("[BJ]"))
 	}
 	if hand.IsSurrendered() {
-		parts = append(parts, "[SURRENDER]")
+		parts = append(parts, color.BoldYellow("[SURRENDER]"))
 	}
 	if len(parts) == 0 {
 		return ""
@@ -41,11 +42,11 @@ func bjMultiHandResultStr(bj interfaces.BlackJackGame, handCount int) string {
 		fmt.Fprintf(&b, "hand %d: ", i+1)
 		switch result {
 		case domain.GameResultDraw:
-			b.WriteString("It is a draw.")
+			b.WriteString(color.Yellow("It is a draw."))
 		case domain.GameResultWin:
-			b.WriteString("You are the winner.")
+			b.WriteString(color.Green("You are the winner."))
 		case domain.GameResultLose:
-			b.WriteString("It is your loss.")
+			b.WriteString(color.Red("It is your loss."))
 		}
 		b.WriteString("\n")
 	}
@@ -96,7 +97,7 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	fmt.Fprintf(&b, "phase: %s\n", bjp.phaseStr(bj.GetPhase()))
 
 	// dealer
-	b.WriteString("dealer score ")
+	b.WriteString(color.Bold("dealer") + " score ")
 	if bj.GetGameEndFlag() {
 		fmt.Fprintf(&b, "%d\n", dealer.GetScore())
 		b.WriteString(cuiCardListStr(dealer))
@@ -112,9 +113,9 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	// player hands
 	hands := bj.GetPlayerHands()
 	for i, hand := range hands {
-		prefix := "player"
+		prefix := color.Bold("player")
 		if len(hands) > 1 {
-			prefix = "hand " + strconv.Itoa(i+1)
+			prefix = color.Bold("hand " + strconv.Itoa(i+1))
 		}
 		if i == bj.GetCurrentHandIdx() && !bj.GetGameEndFlag() {
 			prefix += " (*)"
@@ -159,13 +160,13 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	if bj.IsHintEnabled() {
 		suggestion := bj.GetBasicStrategySuggestion()
 		if suggestion != domain.BJSuggestNone {
-			fmt.Fprintf(&b, "[HINT: %s]\n", bjp.suggestionStr(suggestion))
+			fmt.Fprintf(&b, "%s\n", color.Yellow("[HINT: "+bjp.suggestionStr(suggestion)+"]"))
 		}
 	}
 
 	// エラーメッセージ（ベット失敗等）
 	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", lastErr.Error())
+		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
 	}
 
 	if bj.GetGameEndFlag() {
@@ -174,11 +175,11 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		} else {
 			switch bj.GameJudgment() {
 			case domain.GameResultDraw:
-				b.WriteString("It is a draw.\n")
+				b.WriteString(color.Yellow("It is a draw.") + "\n")
 			case domain.GameResultWin:
-				b.WriteString("You are the winner.\n")
+				b.WriteString(color.Green("You are the winner.") + "\n")
 			case domain.GameResultLose:
-				b.WriteString("It is your loss.\n")
+				b.WriteString(color.Red("It is your loss.") + "\n")
 			}
 		}
 		b.WriteString("\n----------\n")

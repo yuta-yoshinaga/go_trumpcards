@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -66,36 +67,36 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	if config.TunnelEnabled || config.TunnelSkipWidth >= 2 || config.JokerCount > 0 || config.CpuStrategy != domain.SevensCpuSimple || config.MaxPasses != domain.SevensMaxPasses || config.NoJokerFinish || config.JokerReclaimEnabled || config.EndStopEnabled || config.JokerConsecutiveBanned {
 		b.WriteString("ルール:")
 		if config.TunnelEnabled {
-			b.WriteString(" [トンネル]")
+			b.WriteString(" " + color.Yellow("[トンネル]"))
 		}
 		if config.TunnelSkipWidth >= 2 {
-			fmt.Fprintf(&b, " [トンネルスキップ%d]", config.TunnelSkipWidth)
+			b.WriteString(" " + color.Yellow(fmt.Sprintf("[トンネルスキップ%d]", config.TunnelSkipWidth)))
 		}
 		if config.JokerCount > 0 {
-			fmt.Fprintf(&b, " [ジョーカー×%d]", config.JokerCount)
+			b.WriteString(" " + color.Yellow(fmt.Sprintf("[ジョーカー×%d]", config.JokerCount)))
 		}
 		switch config.CpuStrategy {
 		case domain.SevensCpuStrategic:
-			b.WriteString(" [CPU戦略]")
+			b.WriteString(" " + color.Yellow("[CPU戦略]"))
 		case domain.SevensCpuHarassment:
-			b.WriteString(" [嫌がらせ特化]")
+			b.WriteString(" " + color.Yellow("[嫌がらせ特化]"))
 		}
 		if config.MaxPasses == 0 {
-			b.WriteString(" [パス無制限]")
+			b.WriteString(" " + color.Yellow("[パス無制限]"))
 		} else if config.MaxPasses != domain.SevensMaxPasses {
-			fmt.Fprintf(&b, " [パス%d回]", config.MaxPasses)
+			b.WriteString(" " + color.Yellow(fmt.Sprintf("[パス%d回]", config.MaxPasses)))
 		}
 		if config.NoJokerFinish {
-			b.WriteString(" [ジョーカー上がり禁止]")
+			b.WriteString(" " + color.Yellow("[ジョーカー上がり禁止]"))
 		}
 		if config.JokerReclaimEnabled {
-			b.WriteString(" [ジョーカー回収]")
+			b.WriteString(" " + color.Yellow("[ジョーカー回収]"))
 		}
 		if config.EndStopEnabled {
-			b.WriteString(" [片側ストップ]")
+			b.WriteString(" " + color.Yellow("[片側ストップ]"))
 		}
 		if config.JokerConsecutiveBanned {
-			b.WriteString(" [ジョーカー連続禁止]")
+			b.WriteString(" " + color.Yellow("[ジョーカー連続禁止]"))
 		}
 		b.WriteString("\n")
 	}
@@ -126,7 +127,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 	// CPUの行動履歴を表示
 	cpuActions := s.GetCpuActions()
 	if len(cpuActions) > 0 {
-		b.WriteString("[CPUの行動]\n")
+		b.WriteString(color.Bold("[CPUの行動]") + "\n")
 		for _, action := range cpuActions {
 			actPlayerName := cuiPlayerName(s.GetPlayer(action.PlayerIdx), action.PlayerIdx)
 			b.WriteString(sevensActionStr(actPlayerName, action))
@@ -135,7 +136,7 @@ func (p *SevensCuiPresenter) Output(s interfaces.SevensGame, lastErr error) stri
 
 	// エラーメッセージ
 	if lastErr != nil {
-		fmt.Fprintf(&b, "%s\n", lastErr.Error())
+		fmt.Fprintf(&b, "%s\n", color.Red(lastErr.Error()))
 	}
 
 	if s.GetGameEndFlag() {

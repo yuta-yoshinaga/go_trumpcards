@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 )
@@ -60,14 +61,14 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 
 		// エラーメッセージ
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", lastErr.Error())
+			fmt.Fprintf(b, "%s\n", color.Red(lastErr.Error()))
 		}
 
 		// ゲーム状態
 		if h.GetGameEndFlag() {
 			winnerIdx := h.GetWinnerIdx()
 			player := h.GetPlayer(winnerIdx)
-			fmt.Fprintf(b, "ゲーム終了！ %sの勝利です！\n", cuiPlayerName(player, winnerIdx))
+			fmt.Fprintf(b, "ゲーム終了！ %s\n", color.Green(cuiPlayerName(player, winnerIdx)+"の勝利です！"))
 		} else {
 			phase := h.GetPhase()
 			switch phase {
