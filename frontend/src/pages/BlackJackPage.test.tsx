@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, blackjackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -313,9 +314,9 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(endPhaseState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      const elem = screen.getByTitle('ブラックジャック: 最初の2枚でAと10点のカード');
+      const elem = screen.getByTitle(i18n.t('blackjack:status.bjTooltip'));
       expect(elem).toBeInTheDocument();
-      expect(elem).toHaveTextContent('[BJ]');
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.bj')}]`);
     });
   });
 
@@ -391,9 +392,9 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(bustState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      const elem = screen.getByTitle('バスト: 手札の合計が21を超えました');
+      const elem = screen.getByTitle(i18n.t('blackjack:status.bustTooltip'));
       expect(elem).toBeInTheDocument();
-      expect(elem).toHaveTextContent('[BUST]');
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.bust')}]`);
     });
   });
 
@@ -405,9 +406,9 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(ddState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      const elem = screen.getByTitle('ダブルダウン: ベットを2倍にして1枚カードをドロー');
+      const elem = screen.getByTitle(i18n.t('blackjack:status.ddTooltip'));
       expect(elem).toBeInTheDocument();
-      expect(elem).toHaveTextContent('[DD]');
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.dd')}]`);
     });
   });
 
@@ -419,9 +420,9 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(surState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      const elem = screen.getByTitle('サレンダー: ハンドを放棄してベットの半額を回収');
+      const elem = screen.getByTitle(i18n.t('blackjack:status.surTooltip'));
       expect(elem).toBeInTheDocument();
-      expect(elem).toHaveTextContent('[SUR]');
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.sur')}]`);
     });
   });
 
@@ -669,9 +670,9 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(surrenderedEndState);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      const elem = screen.getByTitle('サレンダー: ハンドを放棄してベットの半額を回収');
+      const elem = screen.getByTitle(i18n.t('blackjack:status.surTooltip'));
       expect(elem).toBeInTheDocument();
-      expect(elem).toHaveTextContent('[SUR]');
+      expect(elem).toHaveTextContent(`[${i18n.t('blackjack:status.sur')}]`);
     });
   });
 
@@ -848,12 +849,12 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      const bustElem = screen.getByTitle('バスト: 手札の合計が21を超えました');
+      const bustElem = screen.getByTitle(i18n.t('blackjack:status.bustTooltip'));
       expect(bustElem).toBeInTheDocument();
-      expect(bustElem).toHaveTextContent('[BUST]');
-      const ddElem = screen.getByTitle('ダブルダウン: ベットを2倍にして1枚カードをドロー');
+      expect(bustElem).toHaveTextContent(`[${i18n.t('blackjack:status.bust')}]`);
+      const ddElem = screen.getByTitle(i18n.t('blackjack:status.ddTooltip'));
       expect(ddElem).toBeInTheDocument();
-      expect(ddElem).toHaveTextContent('[DD]');
+      expect(ddElem).toHaveTextContent(`[${i18n.t('blackjack:status.dd')}]`);
     });
   });
 
@@ -887,12 +888,12 @@ describe('BlackJackPage', () => {
     mockExec.mockResolvedValue(stateWithCpu);
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => {
-      const bjElem = screen.getByTitle('ブラックジャック: 最初の2枚でAと10点のカード');
+      const bjElem = screen.getByTitle(i18n.t('blackjack:status.bjTooltip'));
       expect(bjElem).toBeInTheDocument();
-      expect(bjElem).toHaveTextContent('[BJ]');
-      const surElem = screen.getByTitle('サレンダー: ハンドを放棄してベットの半額を回収');
+      expect(bjElem).toHaveTextContent(`[${i18n.t('blackjack:status.bj')}]`);
+      const surElem = screen.getByTitle(i18n.t('blackjack:status.surTooltip'));
       expect(surElem).toBeInTheDocument();
-      expect(surElem).toHaveTextContent('[SUR]');
+      expect(surElem).toHaveTextContent(`[${i18n.t('blackjack:status.sur')}]`);
     });
   });
 

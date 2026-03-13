@@ -20,6 +20,7 @@ import {
   BJ_SUGGEST_STAND,
   BJ_SUGGEST_SURRENDER,
 } from '../components/blackjack/bjConstants';
+import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -186,26 +187,12 @@ export function BlackJackPage() {
                     <div className="text-yellow-100 text-sm">
                       {cpu.hands.length > 1 ? `${t('hand', { idx: handIdx + 1 })} ` : ''}
                       {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
-                      {hand.busted && (
-                        <abbr title={t('status.bustTooltip')} className="ml-1">
-                          [{t('status.bust')}]
-                        </abbr>
-                      )}
-                      {hand.doubled && (
-                        <abbr title={t('status.ddTooltip')} className="ml-1">
-                          [{t('status.dd')}]
-                        </abbr>
-                      )}
-                      {hand.isBlackJack && (
-                        <abbr title={t('status.bjTooltip')} className="ml-1">
-                          [{t('status.bj')}]
-                        </abbr>
-                      )}
-                      {hand.surrendered && (
-                        <abbr title={t('status.surTooltip')} className="ml-1">
-                          [{t('status.sur')}]
-                        </abbr>
-                      )}
+                      <HandStatusBadges
+                        busted={hand.busted}
+                        doubled={hand.doubled}
+                        isBlackJack={hand.isBlackJack}
+                        surrendered={hand.surrendered}
+                      />
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {hand.cards.map((card, cardIdx) => (
@@ -237,26 +224,12 @@ export function BlackJackPage() {
                   {handIndex === currentHandIdx &&
                     (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
                     ' (*)'}
-                  {hand.busted && (
-                    <abbr title={t('status.bustTooltip')} className="ml-1">
-                      [{t('status.bust')}]
-                    </abbr>
-                  )}
-                  {hand.doubled && (
-                    <abbr title={t('status.ddTooltip')} className="ml-1">
-                      [{t('status.dd')}]
-                    </abbr>
-                  )}
-                  {hand.isBlackJack && (
-                    <abbr title={t('status.bjTooltip')} className="ml-1">
-                      [{t('status.bj')}]
-                    </abbr>
-                  )}
-                  {hand.surrendered && (
-                    <abbr title={t('status.surTooltip')} className="ml-1 text-xs bg-gray-500 text-white px-1 rounded">
-                      [{t('status.sur')}]
-                    </abbr>
-                  )}
+                  <HandStatusBadges
+                    busted={hand.busted}
+                    doubled={hand.doubled}
+                    isBlackJack={hand.isBlackJack}
+                    surrendered={hand.surrendered}
+                  />
                 </h3>
                 <h3 className="text-white mt-0 mb-0.5">
                   {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
