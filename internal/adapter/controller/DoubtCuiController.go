@@ -69,7 +69,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				return c.di.SkipDoubt(), true
 			case "sw", "setwindow":
 				if len(args) < 1 {
-					return "Doubt window seconds is required (1-60).", true
+					return cuimsg.RequiredWithHint("Doubt window seconds", "(1-60)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 1 || v > 60 {
@@ -80,7 +80,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				return c.di.ResetWithConfig(cfg), true
 			case "sm", "setmemory":
 				if len(args) < 1 {
-					return "CPU memory level is required (0=Easy, 1=Normal, 2=Hard).", true
+					return cuimsg.RequiredWithHint("CPU memory level", "(0=Easy, 1=Normal, 2=Hard)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
@@ -91,7 +91,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				return c.di.ResetWithConfig(cfg), true
 			case "smetaai", "smai":
 				if len(args) < 1 {
-					return "Meta-AI flag is required (0=OFF, 1=ON).", true
+					return cuimsg.RequiredWithHint("Meta-AI flag", "(0=OFF, 1=ON)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
@@ -104,7 +104,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				return c.di.ResetProfile(), true
 			case "sp", "setpenalty":
 				if len(args) < 1 {
-					return "Penalty draw limit is required (0=unlimited, >0=limit).", true
+					return cuimsg.RequiredWithHint("Penalty draw limit", "(0=unlimited, >0=limit)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 {

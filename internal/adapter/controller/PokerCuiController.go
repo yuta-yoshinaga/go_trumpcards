@@ -66,7 +66,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				return pcc.pi.Action(domain.PokerActionAllIn, 0), true
 			case "bl", "bettinglimit":
 				if len(args) < 1 {
-					return "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", true
+					return cuimsg.RequiredWithHint("Betting limit type", "(0=Fixed, 1=PotLimit, 2=NoLimit)"), true
 				}
 				bl, err := strconv.Atoi(args[0])
 				if err != nil || bl < 0 || bl > 2 {

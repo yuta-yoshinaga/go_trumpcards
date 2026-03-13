@@ -70,7 +70,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				return c.dgi.Sort(mode), true
 			case "sd", "setdifficulty":
 				if len(args) < 1 {
-					return "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", true
+					return cuimsg.RequiredWithHint("CPU difficulty", "(0=Normal, 1=Easy, 2=Hard)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
@@ -81,7 +81,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				return c.dgi.ResetWithConfig(cfg), true
 			case "sj", "setjoker":
 				if len(args) < 1 {
-					return "Joker count is required (0-2).", true
+					return cuimsg.RequiredWithHint("Joker count", "(0-2)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
@@ -107,7 +107,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				return c.dgi.ResetWithConfig(cfg), true
 			case "suitlockmode":
 				if len(args) < 1 {
-					return "Suit lock mode is required (0=none, 1=partial, 2=full).", true
+					return cuimsg.RequiredWithHint("Suit lock mode", "(0=none, 1=partial, 2=full)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {
@@ -118,7 +118,7 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				return c.dgi.ResetWithConfig(cfg), true
 			case "5skipcount":
 				if len(args) < 1 {
-					return "Five skip count is required (1-5).", true
+					return cuimsg.RequiredWithHint("Five skip count", "(1-5)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 1 || v > 5 {

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuimsg"
@@ -58,7 +57,7 @@ func (c *HeartsCuiController) Exec(command string) string {
 				}
 				idx, err := strconv.Atoi(args[0])
 				if err != nil {
-					return fmt.Sprintf("Invalid card index: %s.", args[0]), true
+					return cuimsg.InvalidValue("card index", args[0]), true
 				}
 				return c.hi.Play(idx), true
 			case "n", "next":
@@ -67,7 +66,7 @@ func (c *HeartsCuiController) Exec(command string) string {
 				return c.hi.NextRound(), true
 			case "sd", "setdifficulty":
 				if len(args) < 1 {
-					return "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", true
+					return cuimsg.RequiredWithHint("CPU difficulty", "(0=Easy, 1=Normal, 2=Hard)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 2 {

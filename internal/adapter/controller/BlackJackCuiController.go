@@ -80,7 +80,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				}
 				rule, err := strconv.Atoi(args[0])
 				if err != nil || rule < 0 || rule > domain.BJSurrenderMax {
-					return "Invalid surrender rule. Please enter a number (0-2).", true
+					return cuimsg.InvalidOutOfRange("surrender rule", args[0], "Please enter a number (0-2)."), true
 				}
 				return bcc.bji.SetSurrenderRule(rule), true
 			case "hint", "togglehint":
@@ -106,7 +106,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				}
 				count, err := strconv.Atoi(args[0])
 				if err != nil || count < 0 || count > domain.BJMaxCpuPlayers {
-					return "Invalid CPU player count. Please enter a number (0-3).", true
+					return cuimsg.InvalidOutOfRange("CPU player count", args[0], "Please enter a number (0-3)."), true
 				}
 				return bcc.bji.SetCpuPlayerCount(count), true
 			case "scs", "setcountingsystem":
@@ -115,7 +115,7 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				}
 				system, err := strconv.Atoi(args[0])
 				if err != nil || system < 0 || system > domain.BJCountingMax {
-					return "Invalid counting system. Please enter a number (0-3).", true
+					return cuimsg.InvalidOutOfRange("counting system", args[0], "Please enter a number (0-3)."), true
 				}
 				return bcc.bji.SetCountingSystem(system), true
 			case "pen", "setpenetration":

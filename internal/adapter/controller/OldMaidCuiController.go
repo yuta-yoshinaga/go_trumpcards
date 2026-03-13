@@ -49,7 +49,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return c.omi.Reorder(indices), true
 			case "sm", "setmode":
 				if len(args) < 1 {
-					return "Game mode is required (0=Normal, 1=JijiNuki).", true
+					return cuimsg.RequiredWithHint("Game mode", "(0=Normal, 1=JijiNuki)"), true
 				}
 				m, err := strconv.Atoi(args[0])
 				if err != nil || m < 0 || m > 1 {
@@ -60,7 +60,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return c.omi.Reset(cfg), true
 			case "sps", "setplacementstrategy":
 				if len(args) < 1 {
-					return "CPU placement strategy flag is required (0=OFF, 1=ON).", true
+					return cuimsg.RequiredWithHint("CPU placement strategy flag", "(0=OFF, 1=ON)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
@@ -71,7 +71,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return c.omi.Reset(cfg), true
 			case "smetaai", "smai":
 				if len(args) < 1 {
-					return "Meta-AI flag is required (0=OFF, 1=ON).", true
+					return cuimsg.RequiredWithHint("Meta-AI flag", "(0=OFF, 1=ON)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
@@ -84,7 +84,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return c.omi.ResetProfile(), true
 			case "sma", "setmemoryai":
 				if len(args) < 1 {
-					return "CPU memory AI flag is required (0=OFF, 1=ON).", true
+					return cuimsg.RequiredWithHint("CPU memory AI flag", "(0=OFF, 1=ON)"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
