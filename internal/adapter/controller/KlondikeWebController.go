@@ -39,16 +39,14 @@ type KlondikeWebOutputHint struct {
 
 // KlondikeWebOutput クロンダイクWebアウトプット
 type KlondikeWebOutput struct {
-	Tableau       [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	StockCount    int                               `json:"stockCount"`
-	Waste         []*WebOutputCard                  `json:"waste"`
-	Foundation    [][]*WebOutputCard                `json:"foundation"`
-	Phase         int                               `json:"phase"`
-	MoveCount     int                               `json:"moveCount"`
-	Message       string                            `json:"message"`
-	MessageCode   string                            `json:"messageCode,omitempty"`
-	MessageParams map[string]string                 `json:"messageParams,omitempty"`
-	Hint          *KlondikeWebOutputHint            `json:"hint,omitempty"`
+	Tableau    [][]*KlondikeWebOutputTableauCard `json:"tableau"`
+	StockCount int                               `json:"stockCount"`
+	Waste      []*WebOutputCard                  `json:"waste"`
+	Foundation [][]*WebOutputCard                `json:"foundation"`
+	Phase      int                               `json:"phase"`
+	MoveCount  int                               `json:"moveCount"`
+	WebOutputBase
+	Hint *KlondikeWebOutputHint `json:"hint,omitempty"`
 }
 
 // KlondikeWebController クロンダイクWebコントローラークラス
@@ -61,10 +59,10 @@ func NewKlondikeWebController(factory func() usecase.KlondikeInteractorIF) *Klon
 
 func newKlondikeDefaultOutput(msg string) *KlondikeWebOutput {
 	return &KlondikeWebOutput{
-		Tableau:    make([][]*KlondikeWebOutputTableauCard, 0),
-		Waste:      make([]*WebOutputCard, 0),
-		Foundation: make([][]*WebOutputCard, 0),
-		Message:    msg,
+		Tableau:       make([][]*KlondikeWebOutputTableauCard, 0),
+		Waste:         make([]*WebOutputCard, 0),
+		Foundation:    make([][]*WebOutputCard, 0),
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 

@@ -47,10 +47,8 @@ type MemoryWebOutput struct {
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerIdx        int                         `json:"winnerIdx"`
 	TurnNumber       int                         `json:"turnNumber"`
-	Message          string                      `json:"message"`
-	MessageCode      string                      `json:"messageCode,omitempty"`
-	MessageParams    map[string]string           `json:"messageParams,omitempty"`
-	Config           MemoryWebOutputConfig       `json:"config"`
+	WebOutputBase
+	Config MemoryWebOutputConfig `json:"config"`
 }
 
 // MemoryWebOutputConfig 神経衰弱設定アウトプット
@@ -68,10 +66,10 @@ func NewMemoryWebController(factory func() usecase.MemoryInteractorIF) *MemoryWe
 
 func newMemoryDefaultOutput(msg string) *MemoryWebOutput {
 	return &MemoryWebOutput{
-		Players:   make([]*MemoryWebOutputPlayer, 0),
-		Board:     make([]*MemoryWebOutputBoardCard, 0),
-		WinnerIdx: -1,
-		Message:   msg,
+		Players:       make([]*MemoryWebOutputPlayer, 0),
+		Board:         make([]*MemoryWebOutputBoardCard, 0),
+		WinnerIdx:     -1,
+		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }
 

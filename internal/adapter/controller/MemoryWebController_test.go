@@ -23,7 +23,7 @@ func mustMemoryOutputJSON(msg string) string {
 		Players:   []*controller.MemoryWebOutputPlayer{},
 		Board:     []*controller.MemoryWebOutputBoardCard{},
 		WinnerIdx: -1,
-		Message:   msg,
+		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

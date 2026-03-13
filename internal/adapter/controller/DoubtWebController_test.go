@@ -23,8 +23,8 @@ func mustDoubtOutputJSON(msg string) string {
 		Players:     []*controller.DoubtWebOutputPlayer{},
 		CpuDoubters: []int{},
 		CpuActions:  []*controller.DoubtWebOutputAction{},
-		WinnerIdx:   -1,
-		Message:     msg,
+		WinnerIdx:     -1,
+		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

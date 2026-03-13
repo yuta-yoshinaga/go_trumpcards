@@ -75,44 +75,42 @@ type HoldemWebOutputSidePot struct {
 
 // HoldemWebOutput テキサスホールデムWebアウトプット
 type HoldemWebOutput struct {
-	Players          []*HoldemWebOutputPlayer    `json:"players"`
-	CommunityCards   []*WebOutputCard            `json:"communityCards"`
-	Pot              int                         `json:"pot"`
-	SidePots         []*HoldemWebOutputSidePot   `json:"sidePots"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	CurrentTurn      int                         `json:"currentTurn"`
-	Phase            int                         `json:"phase"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	LastBet          int                         `json:"lastBet"`
-	MinRaise         int                         `json:"minRaise"`
-	BettingLimit     int                         `json:"bettingLimit"`
-	RaiseCount       int                         `json:"raiseCount"`
-	MaxBetAmount     int                         `json:"maxBetAmount"`
-	RoundResults     []*HoldemWebOutputResult    `json:"roundResults"`
-	CpuActions       []*HoldemWebOutputCpuAction `json:"cpuActions"`
-	Message          string                      `json:"message"`
-	MessageCode      string                      `json:"messageCode,omitempty"`
-	MessageParams    map[string]string           `json:"messageParams,omitempty"`
-	HandCount        int                         `json:"handCount"`
-	SmallBlind       int                         `json:"smallBlind"`
-	BigBlind         int                         `json:"bigBlind"`
-	TournamentMode   bool                        `json:"tournamentMode"`
-	BlindLevelHands  int                         `json:"blindLevelHands"`
-	BlindMultiplier  int                         `json:"blindMultiplier"`
-	TableSize        int                         `json:"tableSize"`
-	RebuyAvailable   bool                        `json:"rebuyAvailable"`
-	AddonAvailable   bool                        `json:"addonAvailable"`
-	RebuyCounts      []int                       `json:"rebuyCounts"`
-	AddonUsed        []bool                      `json:"addonUsed"`
-	RebuyEnabled     bool                        `json:"rebuyEnabled"`
-	AddonEnabled     bool                        `json:"addonEnabled"`
-	RebuyMaxCount    int                         `json:"rebuyMaxCount"`
-	RebuyChips       int                         `json:"rebuyChips"`
-	AddonChips       int                         `json:"addonChips"`
-	RebuyPeriodHands int                         `json:"rebuyPeriodHands"`
-	AddonAfterHand   int                         `json:"addonAfterHand"`
-	RebuyPhaseType   int                         `json:"rebuyPhaseType"`
-	MuckAvailable    bool                        `json:"muckAvailable"`
+	Players        []*HoldemWebOutputPlayer    `json:"players"`
+	CommunityCards []*WebOutputCard            `json:"communityCards"`
+	Pot            int                         `json:"pot"`
+	SidePots       []*HoldemWebOutputSidePot   `json:"sidePots"`
+	DealerIdx      int                         `json:"dealerIdx"`
+	CurrentTurn    int                         `json:"currentTurn"`
+	Phase          int                         `json:"phase"`
+	GameEndFlag    bool                        `json:"gameEndFlag"`
+	LastBet        int                         `json:"lastBet"`
+	MinRaise       int                         `json:"minRaise"`
+	BettingLimit   int                         `json:"bettingLimit"`
+	RaiseCount     int                         `json:"raiseCount"`
+	MaxBetAmount   int                         `json:"maxBetAmount"`
+	RoundResults   []*HoldemWebOutputResult    `json:"roundResults"`
+	CpuActions     []*HoldemWebOutputCpuAction `json:"cpuActions"`
+	WebOutputBase
+	HandCount        int    `json:"handCount"`
+	SmallBlind       int    `json:"smallBlind"`
+	BigBlind         int    `json:"bigBlind"`
+	TournamentMode   bool   `json:"tournamentMode"`
+	BlindLevelHands  int    `json:"blindLevelHands"`
+	BlindMultiplier  int    `json:"blindMultiplier"`
+	TableSize        int    `json:"tableSize"`
+	RebuyAvailable   bool   `json:"rebuyAvailable"`
+	AddonAvailable   bool   `json:"addonAvailable"`
+	RebuyCounts      []int  `json:"rebuyCounts"`
+	AddonUsed        []bool `json:"addonUsed"`
+	RebuyEnabled     bool   `json:"rebuyEnabled"`
+	AddonEnabled     bool   `json:"addonEnabled"`
+	RebuyMaxCount    int    `json:"rebuyMaxCount"`
+	RebuyChips       int    `json:"rebuyChips"`
+	AddonChips       int    `json:"addonChips"`
+	RebuyPeriodHands int    `json:"rebuyPeriodHands"`
+	AddonAfterHand   int    `json:"addonAfterHand"`
+	RebuyPhaseType   int    `json:"rebuyPhaseType"`
+	MuckAvailable    bool   `json:"muckAvailable"`
 }
 
 // HoldemWebController テキサスホールデムWebコントローラークラス
@@ -130,7 +128,7 @@ func newHoldemDefaultOutput(msg string) *HoldemWebOutput {
 		SidePots:       make([]*HoldemWebOutputSidePot, 0),
 		RoundResults:   make([]*HoldemWebOutputResult, 0),
 		CpuActions:     make([]*HoldemWebOutputCpuAction, 0),
-		Message:        msg,
+		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }
 

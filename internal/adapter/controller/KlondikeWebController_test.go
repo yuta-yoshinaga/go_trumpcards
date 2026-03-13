@@ -22,7 +22,7 @@ func mustKlondikeOutputJSON(msg string) string {
 		Tableau:    [][]*controller.KlondikeWebOutputTableauCard{},
 		Waste:      []*controller.WebOutputCard{},
 		Foundation: [][]*controller.WebOutputCard{},
-		Message:    msg,
+		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

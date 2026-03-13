@@ -22,8 +22,8 @@ func mustHeartsOutputJSON(msg string) string {
 	out := &controller.HeartsWebOutput{
 		Players:      []*controller.HeartsWebOutputPlayer{},
 		CurrentTrick: []*controller.HeartsWebOutputTrickCard{},
-		WinnerIdx:    -1,
-		Message:      msg,
+		WinnerIdx:     -1,
+		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
