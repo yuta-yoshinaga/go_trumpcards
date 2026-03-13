@@ -76,6 +76,7 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
         type="button"
         onClick={onClick}
         aria-label={effectiveAriaLabel}
+        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded"
         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0 }}
       >
         {img}

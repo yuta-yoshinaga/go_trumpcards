@@ -147,6 +147,7 @@ export function PokerPage() {
                     aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                     aria-pressed={isSelected}
                     onClick={() => toggleCard(i)}
+                    className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded"
                     style={{
                       background: 'none',
                       border: 'none',

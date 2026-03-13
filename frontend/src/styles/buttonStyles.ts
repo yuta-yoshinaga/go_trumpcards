@@ -7,4 +7,4 @@ export const btnDanger = `${base} text-white bg-red-600 hover:bg-red-700`;
 export const btnSecondary = `${base} text-white bg-gray-600 hover:bg-gray-500`;
 
 export const focusRing =
-  'focus:outline-none focus:ring-2 focus:ring-white/70 focus:ring-offset-1 focus:ring-offset-black/50';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-black/50';

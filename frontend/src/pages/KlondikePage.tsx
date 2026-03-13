@@ -69,7 +69,7 @@ export function KlondikePage() {
                 onClick={handleDraw}
                 disabled={!isPlaying || loading}
                 style={{ width: cardWidth, height: cardHeight }}
-                className="rounded border-2 border-dashed border-white/30 text-white/40 text-xs flex items-center justify-center"
+                className="rounded border-2 border-dashed border-white/30 text-white/40 text-xs flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
               >
                 {t('draw')}
               </button>

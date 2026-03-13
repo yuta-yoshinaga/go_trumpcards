@@ -22,9 +22,9 @@ describe('buttonStyles', () => {
     expect(btnSecondary).toContain('bg-gray-600');
   });
 
-  it('focusRing includes focus:ring-2 and focus:outline-none', () => {
-    expect(focusRing).toContain('focus:outline-none');
-    expect(focusRing).toContain('focus:ring-2');
-    expect(focusRing).toContain('focus:ring-white/70');
+  it('focusRing includes focus-visible:ring-2 and focus-visible:outline-none', () => {
+    expect(focusRing).toContain('focus-visible:outline-none');
+    expect(focusRing).toContain('focus-visible:ring-2');
+    expect(focusRing).toContain('focus-visible:ring-white/70');
   });
 });
