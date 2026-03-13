@@ -55,20 +55,20 @@ type DoubtWebOutputDoubtResult struct {
 
 // DoubtWebOutput ダウトWebアウトプット
 type DoubtWebOutput struct {
-	Players         []*DoubtWebOutputPlayer    `json:"players"`
-	CurrentTurn     int                        `json:"currentTurn"`
-	Phase           int                        `json:"phase"`
-	TableCardCount  int                        `json:"tableCardCount"`
-	LastAction      *DoubtWebOutputAction      `json:"lastAction"`
-	CpuDoubters     []int                      `json:"cpuDoubters"`
-	CpuActions      []*DoubtWebOutputAction    `json:"cpuActions"`
-	HumanAction     *DoubtWebOutputAction      `json:"humanAction"`
-	LastDoubtResult *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
-	GameEndFlag     bool                       `json:"gameEndFlag"`
-	WinnerIdx       int                        `json:"winnerIdx"`
-	DoubtWindowSec   int                   `json:"doubtWindowSec"`
-	PenaltyDrawLimit int                   `json:"penaltyDrawLimit"`
-	MetaAI           *DoubtWebOutputMetaAI `json:"metaAI,omitempty"`
+	Players          []*DoubtWebOutputPlayer    `json:"players"`
+	CurrentTurn      int                        `json:"currentTurn"`
+	Phase            int                        `json:"phase"`
+	TableCardCount   int                        `json:"tableCardCount"`
+	LastAction       *DoubtWebOutputAction      `json:"lastAction"`
+	CpuDoubters      []int                      `json:"cpuDoubters"`
+	CpuActions       []*DoubtWebOutputAction    `json:"cpuActions"`
+	HumanAction      *DoubtWebOutputAction      `json:"humanAction"`
+	LastDoubtResult  *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
+	GameEndFlag      bool                       `json:"gameEndFlag"`
+	WinnerIdx        int                        `json:"winnerIdx"`
+	DoubtWindowSec   int                        `json:"doubtWindowSec"`
+	PenaltyDrawLimit int                        `json:"penaltyDrawLimit"`
+	MetaAI           *DoubtWebOutputMetaAI      `json:"metaAI,omitempty"`
 	WebOutputBase
 }
 

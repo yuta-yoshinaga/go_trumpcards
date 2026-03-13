@@ -66,25 +66,25 @@ type DaifugoWebOutputExchangeAction struct {
 
 // DaifugoWebOutput 大富豪Webアウトプット
 type DaifugoWebOutput struct {
-	Players           []*DaifugoWebOutputPlayer         `json:"players"`
-	CurrentTurn       int                               `json:"currentTurn"`
-	TableCards        []*WebOutputCard                  `json:"tableCards"`
-	LastPlayPlayerIdx int                               `json:"lastPlayPlayerIdx"`
-	GameEndFlag       bool                              `json:"gameEndFlag"`
-	RevolutionActive  bool                              `json:"revolutionActive"`
-	ElevenBackActive  bool                              `json:"elevenBackActive"`
-	SuitLocked        bool                              `json:"suitLocked"`
-	LockedSuit        string                            `json:"lockedSuit"`
-	TableIsSequence   bool                              `json:"tableIsSequence"`
-	Config            DaifugoWebConfig                  `json:"config"`
-	ExchangeActions   []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
-	CpuActions        []*DaifugoWebOutputAction         `json:"cpuActions"`
-	HumanAction       *DaifugoWebOutputAction           `json:"humanAction"`
-	PendingAction       string `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"|"queenBomber"
-	PendingActionTarget int    `json:"pendingActionTarget"` // -1 if none
-	ReverseDirection    bool   `json:"reverseDirection"`
-	NumberLocked        bool   `json:"numberLocked"`
-	SortMode            int    `json:"sortMode"`
+	Players             []*DaifugoWebOutputPlayer         `json:"players"`
+	CurrentTurn         int                               `json:"currentTurn"`
+	TableCards          []*WebOutputCard                  `json:"tableCards"`
+	LastPlayPlayerIdx   int                               `json:"lastPlayPlayerIdx"`
+	GameEndFlag         bool                              `json:"gameEndFlag"`
+	RevolutionActive    bool                              `json:"revolutionActive"`
+	ElevenBackActive    bool                              `json:"elevenBackActive"`
+	SuitLocked          bool                              `json:"suitLocked"`
+	LockedSuit          string                            `json:"lockedSuit"`
+	TableIsSequence     bool                              `json:"tableIsSequence"`
+	Config              DaifugoWebConfig                  `json:"config"`
+	ExchangeActions     []*DaifugoWebOutputExchangeAction `json:"exchangeActions"`
+	CpuActions          []*DaifugoWebOutputAction         `json:"cpuActions"`
+	HumanAction         *DaifugoWebOutputAction           `json:"humanAction"`
+	PendingAction       string                            `json:"pendingAction"`       // "none"|"sevenPass"|"tenDiscard"|"queenBomber"
+	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
+	ReverseDirection    bool                              `json:"reverseDirection"`
+	NumberLocked        bool                              `json:"numberLocked"`
+	SortMode            int                               `json:"sortMode"`
 	WebOutputBase
 }
 
