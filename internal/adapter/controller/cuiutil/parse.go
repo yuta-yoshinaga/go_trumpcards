@@ -46,25 +46,44 @@ func ParseOptionalInt(args []string, idx, defaultVal int) int {
 	return v
 }
 
-// ParseIntSlice parses all elements of args as integers, silently skipping invalid entries.
-func ParseIntSlice(args []string) []int {
+// ParseIntSlice parses all elements of args as integers, returning skipped values.
+func ParseIntSlice(args []string) ([]int, []string) {
 	result := make([]int, 0, len(args))
+	var skipped []string
 	for _, s := range args {
 		if v, err := strconv.Atoi(s); err == nil {
 			result = append(result, v)
+		} else {
+			skipped = append(skipped, s)
 		}
 	}
-	return result
+	return result, skipped
 }
 
 // ParseBoundedIntSlice parses all elements of args as integers within [min, max],
-// silently skipping invalid or out-of-range entries.
-func ParseBoundedIntSlice(args []string, min, max int) []int {
+// returning skipped or out-of-range values.
+func ParseBoundedIntSlice(args []string, min, max int) ([]int, []string) {
 	result := make([]int, 0, len(args))
+	var skipped []string
 	for _, s := range args {
 		if v, err := strconv.Atoi(s); err == nil && v >= min && v <= max {
 			result = append(result, v)
+		} else {
+			skipped = append(skipped, s)
 		}
 	}
-	return result
+	return result, skipped
+}
+
+// FormatSkippedWarning returns a warning string for skipped values.
+// Returns an empty string if skipped is empty.
+func FormatSkippedWarning(skipped []string) string {
+	if len(skipped) == 0 {
+		return ""
+	}
+	quoted := make([]string, len(skipped))
+	for i, s := range skipped {
+		quoted[i] = "'" + s + "'"
+	}
+	return "\033[33m警告: 無効な値 " + strings.Join(quoted, ", ") + " は無視されました\033[0m"
 }

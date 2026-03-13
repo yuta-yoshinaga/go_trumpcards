@@ -130,10 +130,19 @@ func TestDaifugoCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "Sort", domain.DaifugoSortByStrength)
 	})
 
-	t.Run("play command ignores non-numeric index", func(t *testing.T) {
+	t.Run("play command ignores non-numeric index with warning", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewDaifugoCuiController(m)
 		result := c.Exec("p 0 abc 2")
+		assert.Contains(t, result, "'abc'")
+		assert.Contains(t, result, mockOutput)
+		m.AssertCalled(t, "Play", []int{0, 2})
+	})
+
+	t.Run("play command no warning when all valid", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewDaifugoCuiController(m)
+		result := c.Exec("p 0 2")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "Play", []int{0, 2})
 	})

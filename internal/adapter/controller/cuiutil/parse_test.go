@@ -140,59 +140,104 @@ func TestParseOptionalInt_DefaultWhenEmpty(t *testing.T) {
 // --- ParseIntSlice ---
 
 func TestParseIntSlice_Empty(t *testing.T) {
-	assert.Equal(t, []int{}, cuiutil.ParseIntSlice([]string{}))
+	result, skipped := cuiutil.ParseIntSlice([]string{})
+	assert.Equal(t, []int{}, result)
+	assert.Empty(t, skipped)
 }
 
 func TestParseIntSlice_AllValid(t *testing.T) {
-	assert.Equal(t, []int{1, 2, 3}, cuiutil.ParseIntSlice([]string{"1", "2", "3"}))
+	result, skipped := cuiutil.ParseIntSlice([]string{"1", "2", "3"})
+	assert.Equal(t, []int{1, 2, 3}, result)
+	assert.Empty(t, skipped)
 }
 
 func TestParseIntSlice_SkipsInvalid(t *testing.T) {
-	assert.Equal(t, []int{1, 3}, cuiutil.ParseIntSlice([]string{"1", "abc", "3"}))
+	result, skipped := cuiutil.ParseIntSlice([]string{"1", "abc", "3"})
+	assert.Equal(t, []int{1, 3}, result)
+	assert.Equal(t, []string{"abc"}, skipped)
 }
 
 func TestParseIntSlice_AllInvalid(t *testing.T) {
-	assert.Equal(t, []int{}, cuiutil.ParseIntSlice([]string{"x", "y"}))
+	result, skipped := cuiutil.ParseIntSlice([]string{"x", "y"})
+	assert.Equal(t, []int{}, result)
+	assert.Equal(t, []string{"x", "y"}, skipped)
 }
 
 func TestParseIntSlice_NegativeValues(t *testing.T) {
-	assert.Equal(t, []int{-1, 2, -3}, cuiutil.ParseIntSlice([]string{"-1", "2", "-3"}))
+	result, skipped := cuiutil.ParseIntSlice([]string{"-1", "2", "-3"})
+	assert.Equal(t, []int{-1, 2, -3}, result)
+	assert.Empty(t, skipped)
 }
 
 func TestParseIntSlice_Nil(t *testing.T) {
-	assert.Equal(t, []int{}, cuiutil.ParseIntSlice(nil))
+	result, skipped := cuiutil.ParseIntSlice(nil)
+	assert.Equal(t, []int{}, result)
+	assert.Empty(t, skipped)
 }
 
 // --- ParseBoundedIntSlice ---
 
 func TestParseBoundedIntSlice_Empty(t *testing.T) {
-	assert.Equal(t, []int{}, cuiutil.ParseBoundedIntSlice([]string{}, 0, 4))
+	result, skipped := cuiutil.ParseBoundedIntSlice([]string{}, 0, 4)
+	assert.Equal(t, []int{}, result)
+	assert.Empty(t, skipped)
 }
 
 func TestParseBoundedIntSlice_AllInRange(t *testing.T) {
-	assert.Equal(t, []int{0, 2, 4}, cuiutil.ParseBoundedIntSlice([]string{"0", "2", "4"}, 0, 4))
+	result, skipped := cuiutil.ParseBoundedIntSlice([]string{"0", "2", "4"}, 0, 4)
+	assert.Equal(t, []int{0, 2, 4}, result)
+	assert.Empty(t, skipped)
 }
 
 func TestParseBoundedIntSlice_SkipsBelowMin(t *testing.T) {
-	assert.Equal(t, []int{1}, cuiutil.ParseBoundedIntSlice([]string{"-1", "1"}, 0, 4))
+	result, skipped := cuiutil.ParseBoundedIntSlice([]string{"-1", "1"}, 0, 4)
+	assert.Equal(t, []int{1}, result)
+	assert.Equal(t, []string{"-1"}, skipped)
 }
 
 func TestParseBoundedIntSlice_SkipsAboveMax(t *testing.T) {
-	assert.Equal(t, []int{3}, cuiutil.ParseBoundedIntSlice([]string{"5", "3"}, 0, 4))
+	result, skipped := cuiutil.ParseBoundedIntSlice([]string{"5", "3"}, 0, 4)
+	assert.Equal(t, []int{3}, result)
+	assert.Equal(t, []string{"5"}, skipped)
 }
 
 func TestParseBoundedIntSlice_SkipsNonNumeric(t *testing.T) {
-	assert.Equal(t, []int{2}, cuiutil.ParseBoundedIntSlice([]string{"abc", "2"}, 0, 4))
+	result, skipped := cuiutil.ParseBoundedIntSlice([]string{"abc", "2"}, 0, 4)
+	assert.Equal(t, []int{2}, result)
+	assert.Equal(t, []string{"abc"}, skipped)
 }
 
 func TestParseBoundedIntSlice_AllInvalid(t *testing.T) {
-	assert.Equal(t, []int{}, cuiutil.ParseBoundedIntSlice([]string{"abc", "-1", "5", "99"}, 0, 4))
+	result, skipped := cuiutil.ParseBoundedIntSlice([]string{"abc", "-1", "5", "99"}, 0, 4)
+	assert.Equal(t, []int{}, result)
+	assert.Equal(t, []string{"abc", "-1", "5", "99"}, skipped)
 }
 
 func TestParseBoundedIntSlice_AtBoundaries(t *testing.T) {
-	assert.Equal(t, []int{0, 4}, cuiutil.ParseBoundedIntSlice([]string{"0", "4"}, 0, 4))
+	result, skipped := cuiutil.ParseBoundedIntSlice([]string{"0", "4"}, 0, 4)
+	assert.Equal(t, []int{0, 4}, result)
+	assert.Empty(t, skipped)
 }
 
 func TestParseBoundedIntSlice_Nil(t *testing.T) {
-	assert.Equal(t, []int{}, cuiutil.ParseBoundedIntSlice(nil, 0, 4))
+	result, skipped := cuiutil.ParseBoundedIntSlice(nil, 0, 4)
+	assert.Equal(t, []int{}, result)
+	assert.Empty(t, skipped)
+}
+
+// --- FormatSkippedWarning ---
+
+func TestFormatSkippedWarning_Empty(t *testing.T) {
+	assert.Equal(t, "", cuiutil.FormatSkippedWarning(nil))
+	assert.Equal(t, "", cuiutil.FormatSkippedWarning([]string{}))
+}
+
+func TestFormatSkippedWarning_Single(t *testing.T) {
+	result := cuiutil.FormatSkippedWarning([]string{"abc"})
+	assert.Equal(t, "\033[33m警告: 無効な値 'abc' は無視されました\033[0m", result)
+}
+
+func TestFormatSkippedWarning_Multiple(t *testing.T) {
+	result := cuiutil.FormatSkippedWarning([]string{"abc", "5"})
+	assert.Equal(t, "\033[33m警告: 無効な値 'abc', '5' は無視されました\033[0m", result)
 }
