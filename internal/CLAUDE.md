@@ -50,6 +50,10 @@ Card games involve shuffling, so tests must not depend on random outcomes:
 
 **After editing any Go source file, always run `goimports -w` on the modified files before committing.** Use `goimports`, not `gofmt`.
 
+## Lint
+
+**Before committing, run `golangci-lint run ./...` and ensure no warnings or errors.**
+
 ## Run tests
 
 ```sh

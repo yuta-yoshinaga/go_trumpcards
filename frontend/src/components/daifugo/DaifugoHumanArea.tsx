@@ -39,7 +39,7 @@ export function DaifugoHumanArea({
         {player.illegalFinishPenalty && <StatusBadge variant="danger">{t('badge.illegalFinishPenalty')}</StatusBadge>}
       </div>
       {!player.isFinished && (
-        <div className="text-game-text-muted text-[0.85em] mb-1">
+        <div className="text-game-text-muted text-xs mb-1">
           {t('cardCount', { count: player.cardCount })}
           {isCurrentTurn && <span className="ml-2 text-game-text-highlight">{t('selectToPlay')}</span>}
         </div>

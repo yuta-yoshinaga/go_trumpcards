@@ -106,6 +106,15 @@ describe('MemoryPage', () => {
     expect(screen.getByText('CPU 3')).toBeInTheDocument();
   });
 
+  it('score table headers have scope="col" for accessibility', async () => {
+    const { container } = renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+    const ths = container.querySelectorAll('th');
+    ths.forEach((th) => {
+      expect(th).toHaveAttribute('scope', 'col');
+    });
+  });
+
   it('renders board with 52 buttons', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
@@ -264,6 +273,12 @@ describe('MemoryPage', () => {
     mockExec.mockResolvedValue({ ...flip1State, message: 'テストメッセージ', messageCode: 'memory.flip1' });
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByText('1枚目をめくってください')).toBeInTheDocument());
+  });
+
+  it('renders landscape orientation banner in DOM', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.getByText('横向きにすると快適にプレイできます')).toBeInTheDocument();
   });
 
   it('displays error message', async () => {

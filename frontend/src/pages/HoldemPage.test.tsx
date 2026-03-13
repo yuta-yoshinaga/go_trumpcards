@@ -902,14 +902,21 @@ describe('HoldemPage', () => {
       ],
     });
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/VPIP:60% PFR:20% 3Bet:10% AF:2\.5/)).toBeInTheDocument());
+    await waitFor(() => {
+      const statsElem = screen.getByTestId('hud-stats');
+      expect(statsElem).toHaveTextContent('VPIP:60% PFR:20% 3Bet:10% AF:2.5');
+      expect(within(statsElem).getByTitle(/VPIP（ボランタリー・プット・イン・ポット）/)).toBeInTheDocument();
+      expect(within(statsElem).getByTitle(/PFR（プリフロップレイズ）/)).toBeInTheDocument();
+      expect(within(statsElem).getByTitle(/3Bet（スリーベット）/)).toBeInTheDocument();
+      expect(within(statsElem).getByTitle(/AF（アグレッションファクター）/)).toBeInTheDocument();
+    });
   });
 
   it('does not show HUD stats for CPU when totalHands is 0', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
-    expect(screen.queryByText(/VPIP:/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hud-stats')).not.toBeInTheDocument();
   });
 
   it('shows HUD stats for human when totalHands > 0', async () => {
@@ -918,14 +925,18 @@ describe('HoldemPage', () => {
       players: [humanPlayer({ totalHands: 3, vpip: 33, pfr: 0, threeBet: 0, af: '-' }), cpuPlayer(1), cpuPlayer(2)],
     });
     renderWithProviders(<HoldemPage />);
-    await waitFor(() => expect(screen.getByText(/VPIP:33% PFR:0% 3Bet:0% AF:-/)).toBeInTheDocument());
+    await waitFor(() => {
+      const statsElem = screen.getByTestId('hud-stats');
+      expect(statsElem).toHaveTextContent('VPIP:33% PFR:0% 3Bet:0% AF:-');
+      expect(within(statsElem).getByTitle(/VPIP（ボランタリー・プット・イン・ポット）/)).toBeInTheDocument();
+    });
   });
 
   it('does not show HUD stats for human when totalHands is 0', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText(/あなたの手札/)).toBeInTheDocument());
-    expect(screen.queryByText(/VPIP:/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hud-stats')).not.toBeInTheDocument();
   });
 
   // ---- SB/BB info bar ----

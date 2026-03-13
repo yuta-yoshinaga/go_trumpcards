@@ -50,7 +50,7 @@ export function OldMaidPlayerArea({
       id={`player-area-${player.id}`}
       className={`${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}
     >
-      <div className="text-white font-bold mb-1 text-[0.9em]">
+      <div className="text-white font-bold mb-1 text-sm">
         {playerName(player.id, player.isHuman)}
         {player.isFinished && <StatusBadge variant="success">{tc('status.finished')}</StatusBadge>}
         {isTarget && !player.isHuman && !player.isFinished && !gameEndFlag && (
@@ -60,7 +60,7 @@ export function OldMaidPlayerArea({
         {onToggleSuspect && !player.isFinished && !gameEndFlag && (
           <button
             type="button"
-            className="ml-1 px-1.5 py-0.5 text-[0.65em] rounded bg-red-700/60 hover:bg-red-700 text-white"
+            className="ml-1 px-1.5 py-0.5 text-xs rounded bg-red-700/60 hover:bg-red-700 text-white"
             onClick={onToggleSuspect}
           >
             {isSuspect ? t('suspect.unpin') : t('suspect.pin')}
@@ -68,11 +68,9 @@ export function OldMaidPlayerArea({
         )}
       </div>
       {!player.isFinished && (
-        <div className="text-game-text-muted text-[0.8em] mb-1">{t('cardCount', { count: player.cardCount })}</div>
+        <div className="text-game-text-muted text-xs mb-1">{t('cardCount', { count: player.cardCount })}</div>
       )}
-      {showSelectable && !player.isFinished && (
-        <div className="text-game-text-highlight text-[0.75em] mb-1">{t('draw')}</div>
-      )}
+      {showSelectable && !player.isFinished && <div className="text-game-text-highlight text-xs mb-1">{t('draw')}</div>}
       <div className="flex flex-wrap gap-0.5 justify-center">
         {player.isFinished ? null : player.isHuman ? (
           player.cards?.map((card, i) => (
@@ -120,7 +118,7 @@ export function OldMaidPlayerArea({
               );
             })}
             {player.cardCount > 10 && (
-              <span className="text-white self-center ml-0.5 text-[0.8em]">+{player.cardCount - 10}</span>
+              <span className="text-white self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>
             )}
           </>
         ) : (
@@ -130,7 +128,7 @@ export function OldMaidPlayerArea({
               <CardBack key={i} width={40} />
             ))}
             {player.cardCount > 10 && (
-              <span className="text-white self-center ml-0.5 text-[0.8em]">+{player.cardCount - 10}</span>
+              <span className="text-white self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>
             )}
           </>
         )}

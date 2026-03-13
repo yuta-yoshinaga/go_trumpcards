@@ -152,14 +152,14 @@ export function OldMaidPage() {
 
         {/* Status */}
         {statusLines.length > 0 && (
-          <div className="bg-black/50 rounded-lg text-white py-2 px-3 my-2 whitespace-pre-line text-[0.9em]">
+          <div className="bg-black/50 rounded-lg text-white py-2 px-3 my-2 whitespace-pre-line text-sm">
             {statusLines.join('\n')}
           </div>
         )}
 
         {/* CPU log */}
         {state.cpuActions && state.cpuActions.length > 0 && (
-          <div className="bg-black/40 rounded-lg text-game-text-muted py-1.5 px-2.5 my-1.5 whitespace-pre-line text-[0.8em] max-h-[120px] overflow-y-auto">
+          <div className="bg-black/40 rounded-lg text-game-text-muted py-1.5 px-2.5 my-1.5 whitespace-pre-line text-xs max-h-[120px] overflow-y-auto">
             {[
               tc('label.cpuActions'),
               ...state.cpuActions.map((action: CpuAction) => {
@@ -182,7 +182,7 @@ export function OldMaidPage() {
 
         {/* JijiNuki: show removed card at game end */}
         {state.gameEndFlag && state.removedCard && (
-          <div className="text-center my-2 text-white text-[0.9em]">
+          <div className="text-center my-2 text-white text-sm">
             {t('removedCard', { card: cardLabel(state.removedCard) })}
           </div>
         )}

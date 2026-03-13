@@ -13,5 +13,6 @@
   "flipPrompt1": "1枚目をめくってください",
   "flipPrompt2": "2枚目をめくってください",
   "matched": "ペアが揃いました！",
-  "mismatched": "残念、不一致です"
+  "mismatched": "残念、不一致です",
+  "landscapeBanner": "横向きにすると快適にプレイできます"
 }

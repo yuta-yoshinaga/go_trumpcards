@@ -59,5 +59,15 @@
     "twentyOnePlus3": "21+3",
     "win": "{{name}} WIN +{{payout}}",
     "lose": "{{name}} LOSE -{{amount}}"
+  },
+  "status": {
+    "bust": "BUST",
+    "bustTooltip": "バスト: 手札の合計が21を超えました",
+    "dd": "DD",
+    "ddTooltip": "ダブルダウン: ベットを2倍にして1枚カードをドロー",
+    "bj": "BJ",
+    "bjTooltip": "ブラックジャック: 最初の2枚でAと10点のカード",
+    "sur": "SUR",
+    "surTooltip": "サレンダー: ハンドを放棄してベットの半額を回収"
   }
 }

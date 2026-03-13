@@ -3,7 +3,9 @@ package web
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -135,7 +137,7 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 }
 
 // Exec ゲーム実行
-func (web *TrumpCardsWeb) Exec() {
+func (web *TrumpCardsWeb) Exec() error {
 	api := rest.NewApi()
 	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
 	if allowedOriginsStr == "" && os.Getenv("APP_ENV") != "production" {
@@ -188,7 +190,7 @@ func (web *TrumpCardsWeb) Exec() {
 	router, err := rest.MakeRouter(restRoutes...)
 	if err != nil {
 		slog.Error("failed to create router", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to create router: %w", err)
 	}
 	api.SetApp(router)
 	mux := http.NewServeMux()
@@ -214,16 +216,27 @@ func (web *TrumpCardsWeb) Exec() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	errCh := make(chan error, 1)
-	go func() { errCh <- srv.ListenAndServe() }()
+	ln, err := net.Listen("tcp", srv.Addr)
+	if err != nil {
+		slog.Error("server listen error", "error", err)
+		return fmt.Errorf("failed to listen on %s: %w", srv.Addr, err)
+	}
+	port := ln.Addr().(*net.TCPAddr).Port
+	fmt.Printf("Server is running at http://localhost:%d\n", port)
+	fmt.Println("Press Ctrl+C to stop")
 
+	errCh := make(chan error, 1)
+	go func() { errCh <- srv.Serve(ln) }()
+
+	var runErr error
 	select {
 	case err := <-errCh:
 		if !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server error", "error", err)
-			os.Exit(1)
+			runErr = fmt.Errorf("server error: %w", err)
 		}
 	case <-ctx.Done():
+		fmt.Println("\nShutting down server...")
 		slog.Info("shutting down server")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
@@ -243,7 +256,9 @@ func (web *TrumpCardsWeb) Exec() {
 	web.myc.Stop()
 	web.klc.Stop()
 	web.bcc.Stop()
+	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
+	return runErr
 }
 
 func getListenPort() string {
@@ -251,5 +266,5 @@ func getListenPort() string {
 	if port != "" {
 		return ":" + port
 	}
-	return ":80"
+	return ":8080"
 }

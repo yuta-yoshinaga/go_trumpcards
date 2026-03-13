@@ -29,6 +29,30 @@ function usePhaseNames(t: (key: string) => string): Record<number, string> {
   };
 }
 
+function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; threeBet: number; af: string }) {
+  const { t } = useTranslation('holdem');
+  return (
+    <span className="ml-2 text-cyan-300 text-[0.8em]" data-testid="hud-stats">
+      <abbr title={t('stats.vpipTooltip')} className="cursor-help">
+        {t('stats.vpip')}
+      </abbr>
+      :{vpip}%{' '}
+      <abbr title={t('stats.pfrTooltip')} className="cursor-help">
+        {t('stats.pfr')}
+      </abbr>
+      :{pfr}%{' '}
+      <abbr title={t('stats.threeBetTooltip')} className="cursor-help">
+        {t('stats.threeBet')}
+      </abbr>
+      :{threeBet}%{' '}
+      <abbr title={t('stats.afTooltip')} className="cursor-help">
+        {t('stats.af')}
+      </abbr>
+      :{af}
+    </span>
+  );
+}
+
 export function HoldemPage() {
   const { t } = useTranslation('holdem');
   const { t: tc } = useTranslation('common');
@@ -97,7 +121,7 @@ export function HoldemPage() {
       <div className="flex-1 overflow-y-auto pt-4 px-5">
         {/* Community cards */}
         <div className="mb-4">
-          <div className="text-white text-[1.1em] mb-1.5">{t('communityCards')}</div>
+          <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
           <div className="flex flex-wrap gap-2">
             {state?.communityCards?.length
               ? state.communityCards.map((card) => (
@@ -126,11 +150,7 @@ export function HoldemPage() {
               faceDownCount={2}
               showHandName={isShowdown}
               extraInfo={
-                p.totalHands > 0 ? (
-                  <span className="ml-2 text-cyan-300 text-[0.8em]">
-                    VPIP:{p.vpip}% PFR:{p.pfr}% 3Bet:{p.threeBet}% AF:{p.af}
-                  </span>
-                ) : undefined
+                p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
               }
             />
           ))}
@@ -157,25 +177,28 @@ export function HoldemPage() {
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
-            <div className="text-white text-[1.1em] mb-1">
+            <div className="text-white text-lg mb-1">
               {t('yourHand')}
-              <span className="ml-3 text-[0.85em]">
+              <span className="ml-3 text-xs">
                 {tc('betting.chips')} {humanPlayer.chips}
               </span>
               {humanPlayer.totalHands > 0 && (
-                <span className="ml-2 text-cyan-300 text-[0.8em]">
-                  VPIP:{humanPlayer.vpip}% PFR:{humanPlayer.pfr}% 3Bet:{humanPlayer.threeBet}% AF:{humanPlayer.af}
-                </span>
+                <HudStats
+                  vpip={humanPlayer.vpip}
+                  pfr={humanPlayer.pfr}
+                  threeBet={humanPlayer.threeBet}
+                  af={humanPlayer.af}
+                />
               )}
               {humanPlayer.currentBet > 0 && (
-                <span className="ml-2 text-[0.85em]">
+                <span className="ml-2 text-xs">
                   {tc('betting.currentBet')} {humanPlayer.currentBet}
                 </span>
               )}
-              {humanPlayer.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{tc('status.folded')}]</span>}
-              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{tc('status.allIn')}]</span>}
+              {humanPlayer.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+              {humanPlayer.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
               {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
-                <span className={`inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+                <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                   {humanPlayer.handName}
                 </span>
               )}

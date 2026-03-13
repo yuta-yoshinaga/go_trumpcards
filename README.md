@@ -97,6 +97,8 @@ go run ./cmd/trumpcards klondike   # クロンダイク CLI
 go run ./cmd/trumpcards baccarat   # バカラ CLI
 go run ./cmd/trumpcards web        # REST API + Web GUI サーバー起動 (CLI経由)
 go run ./cmd/server                # REST API + Web GUI サーバー起動 (直接)
+PORT=3000 go run ./cmd/trumpcards web  # カスタムポートで起動 (デフォルト: 8080)
+PORT=3000 go run ./cmd/server          # カスタムポートで起動 (直接)
 ```
 
 ### Test
@@ -128,6 +130,7 @@ docker build -t go_trumpcards .
 #### Run
 ```sh
 docker run --rm -d -p 8080:8080 go_trumpcards
+docker run --rm -d -e PORT=3000 -p 3000:3000 go_trumpcards  # カスタムポート
 ```
 Open [http://localhost:8080](http://localhost:8080) in your browser.
 

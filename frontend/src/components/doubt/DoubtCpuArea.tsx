@@ -27,7 +27,7 @@ export function DoubtCpuArea({
       className={playerAreaClass}
       nameClassName="text-sm"
     >
-      <div className="text-game-text-muted text-[0.85em]">{t('cardCount', { count: player.cardCount })}</div>
+      <div className="text-game-text-muted text-xs">{t('cardCount', { count: player.cardCount })}</div>
       {hasTell && (
         <span className="animate-sweat-drop text-lg" role="img" aria-label={t('tell')}>
           💧

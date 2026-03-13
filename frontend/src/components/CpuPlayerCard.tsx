@@ -24,21 +24,21 @@ export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, 
   const { t } = useTranslation('common');
   return (
     <div className="mb-3">
-      <div className="text-white text-[0.95em] mb-1">
-        CPU {player.id} <span className="text-gray-300 text-[0.85em]">({player.playStyleName})</span>
-        <span className="ml-2 text-[0.85em]">
+      <div className="text-white text-sm mb-1">
+        {t('player.cpu', { id: player.id })} <span className="text-gray-300 text-xs">({player.playStyleName})</span>
+        <span className="ml-2 text-xs">
           {t('betting.chips')} {player.chips}
         </span>
         {extraInfo}
         {player.currentBet > 0 && (
-          <span className="ml-2 text-[0.85em]">
+          <span className="ml-2 text-xs">
             {t('betting.currentBet')} {player.currentBet}
           </span>
         )}
-        {player.folded && <span className="ml-2 text-red-300 text-[0.85em]">[{t('status.folded')}]</span>}
-        {player.allIn && <span className="ml-2 text-yellow-300 text-[0.85em]">[{t('status.allIn')}]</span>}
+        {player.folded && <span className="ml-2 text-red-300 text-xs">[{t('status.folded')}]</span>}
+        {player.allIn && <span className="ml-2 text-yellow-300 text-xs">[{t('status.allIn')}]</span>}
         {showHandName && !player.folded && player.handName && (
-          <span className={`inline-block ml-2 text-[0.85em] font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
+          <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
             {player.handName}
           </span>
         )}

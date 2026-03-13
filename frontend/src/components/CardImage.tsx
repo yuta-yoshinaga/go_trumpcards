@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 
@@ -59,10 +60,12 @@ interface CardBackProps {
 }
 
 export function CardBack({ width, style, className, onClick, ariaLabel }: CardBackProps) {
+  const { t } = useTranslation('common');
+  const effectiveAriaLabel = onClick ? ariaLabel || t('card.back') : undefined;
   const img = (
     <img
       src="/images/z01.png"
-      alt={onClick && ariaLabel ? '' : 'カード裏面'}
+      alt={onClick ? '' : t('card.back')}
       style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
       className={className}
     />
@@ -72,7 +75,7 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
       <button
         type="button"
         onClick={onClick}
-        aria-label={ariaLabel}
+        aria-label={effectiveAriaLabel}
         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0 }}
       >
         {img}
