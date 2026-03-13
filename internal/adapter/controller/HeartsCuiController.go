@@ -37,7 +37,7 @@ func (c *HeartsCuiController) Exec(command string) string {
 			cfg := c.hi.GetConfig()
 			return c.hi.ResetWithConfig(cfg)
 		},
-		unknownCommandMessage,
+		[]string{"pass", "p", "play", "n", "next", "nr", "nextround", "sd", "setdifficulty", "sl", "setlimit", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "pass":

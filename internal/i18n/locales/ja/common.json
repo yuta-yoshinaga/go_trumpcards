@@ -2,6 +2,7 @@
   "bye": "さようなら。",
   "typeHelp": "「help」または「?」でコマンド一覧を表示します。",
   "unknownCommand": "コマンドが不明です: {{cmd}}",
+  "unknownCommandWithSuggestion": "コマンドが不明です: {{cmd}}。もしかして '{{suggestion}}' ですか？",
   "gameCommands": "ゲームコマンド:",
   "settings": "設定:",
   "session": "セッション:",
