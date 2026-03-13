@@ -84,7 +84,7 @@ type OldMaidWebOutputMetaAI struct {
 // Returns an error if Mode is out of range.
 func (p OldMaidWebInput) ToConfig() (domain.OldMaidConfig, error) {
 	if p.Mode < 0 || p.Mode > int(domain.OldMaidModeJijiNuki) {
-		return domain.OldMaidConfig{}, errors.New("param error: mode must be between 0 and 1")
+		return domain.OldMaidConfig{}, errors.New("param error: mode must be between 0 and 1.")
 	}
 	return domain.OldMaidConfig{
 		Mode:                 domain.OldMaidMode(p.Mode),

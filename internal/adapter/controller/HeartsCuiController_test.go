@@ -196,13 +196,13 @@ func TestHeartsCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty negative", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sd -1")
-		assert.Equal(t, mockOutput, result)
+		assert.Equal(t, "Invalid CPU difficulty: -1. Please enter 0-2.", result)
 	})
 
 	t.Run("setdifficulty over 2", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sd 3")
-		assert.Equal(t, mockOutput, result)
+		assert.Equal(t, "Invalid CPU difficulty: 3. Please enter 0-2.", result)
 	})
 
 	// setlimit
@@ -241,13 +241,13 @@ func TestHeartsCuiController_Exec(t *testing.T) {
 	t.Run("setlimit zero", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sl 0")
-		assert.Equal(t, mockOutput, result)
+		assert.Equal(t, "Invalid point limit: 0. Please enter 1 or more.", result)
 	})
 
 	t.Run("setlimit negative", func(t *testing.T) {
 		c := controller.NewHeartsCuiController(newMock())
 		result := c.Exec("sl -1")
-		assert.Equal(t, mockOutput, result)
+		assert.Equal(t, "Invalid point limit: -1. Please enter 1 or more.", result)
 	})
 
 	// log
