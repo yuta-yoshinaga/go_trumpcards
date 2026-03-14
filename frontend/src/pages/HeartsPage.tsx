@@ -247,12 +247,13 @@ export function HeartsPage() {
             type="button"
             className={btnWarning}
             onClick={() =>
-              requestConfirm(() =>
-                exec('reset', undefined, undefined, {
+              requestConfirm(() => {
+                hideActionLog();
+                return exec('reset', undefined, undefined, {
                   cpuDifficulty: heartsConfig.cpuDifficulty,
                   pointLimit: heartsConfig.pointLimit,
-                }),
-              )
+                });
+              })
             }
             disabled={loading}
           >

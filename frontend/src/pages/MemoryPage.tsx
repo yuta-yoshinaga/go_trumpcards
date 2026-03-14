@@ -149,7 +149,10 @@ export function MemoryPage() {
             type="button"
             className={btnWarning}
             onClick={() =>
-              requestConfirm(() => exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty }))
+              requestConfirm(() => {
+                hideActionLog();
+                return exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
+              })
             }
             disabled={loading}
           >

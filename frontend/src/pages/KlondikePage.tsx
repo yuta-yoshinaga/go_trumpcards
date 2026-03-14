@@ -246,7 +246,17 @@ export function KlondikePage() {
               </button>
             </>
           )}
-          <button type="button" className={btnWarning} onClick={() => requestConfirm(handleReset)} disabled={loading}>
+          <button
+            type="button"
+            className={btnWarning}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                return handleReset();
+              })
+            }
+            disabled={loading}
+          >
             {tc('button.reset')}
           </button>
         </div>

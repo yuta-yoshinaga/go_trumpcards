@@ -588,4 +588,23 @@ describe('KlondikePage', () => {
     expect(buttonNames).not.toContain('自動完成');
     expect(buttonNames).not.toContain('ギブアップ');
   });
+
+  it('reset hides the action log panel if open', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    vi.mocked(actionLogApi.klondike).mockResolvedValueOnce({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: 'waste→tableau' }],
+    });
+
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+  });
 });
