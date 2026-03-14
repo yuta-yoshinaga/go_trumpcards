@@ -41,12 +41,12 @@ func (p *OldMaidPlayer) DiscardPairs() ([]*Card, int) {
 		found := false
 		for i := 0; i < len(p.cards); i++ {
 			c1 := p.cards[i]
-			if c1.GetDesign() == CardDesignJoker {
+			if IsJoker(c1) {
 				continue
 			}
 			for j := i + 1; j < len(p.cards); j++ {
 				c2 := p.cards[j]
-				if c2.GetDesign() == CardDesignJoker {
+				if IsJoker(c2) {
 					continue
 				}
 				if c1.GetValue() == c2.GetValue() {

@@ -40,7 +40,7 @@ func (p *DaifugoPlayer) SortCardsByStrength(strengthFn func(*Card) int) {
 // SortCards カードを大富豪の通常ルールに従った強さ順 (弱い順) にソート
 func (p *DaifugoPlayer) SortCards() {
 	p.SortCardsByStrength(func(c *Card) int {
-		if c.GetDesign() == CardDesignJoker {
+		if IsJoker(c) {
 			return DaifugoJokerStrength
 		}
 		return DaifugoCardStrength(c.GetValue())
