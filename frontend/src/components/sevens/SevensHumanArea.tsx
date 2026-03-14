@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { playableCardStyle } from '../../styles/cardStyles';
 import type { Card, SevensPlayerData } from '../../types/card';
 import { valueName } from '../../utils/cardUtils';
 import { playerName } from '../../utils/playerUtils';
@@ -83,7 +84,7 @@ function HumanArea({
                 padding: 0,
                 cursor: playable ? 'pointer' : 'default',
                 borderRadius: 8,
-                border: playable ? '3px solid var(--color-game-status-active)' : '3px solid transparent',
+                ...playableCardStyle(playable),
                 opacity: isCurrentTurn && !playable ? 0.5 : 1,
                 boxSizing: 'border-box',
               }}

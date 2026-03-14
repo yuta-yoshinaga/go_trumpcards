@@ -10,6 +10,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import {
@@ -76,6 +77,11 @@ export function DoubtPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
+      {/* Phase indicator */}
+      <PhaseIndicator
+        phaseName={state.gameEndFlag ? t('phase.end') : state.phase === 1 ? t('phase.doubt') : t('phase.play')}
+        isHumanTurn={isHumanTurn}
+      />
       {/* Settings panel */}
       <SettingsPanel
         title={t('settings.title')}

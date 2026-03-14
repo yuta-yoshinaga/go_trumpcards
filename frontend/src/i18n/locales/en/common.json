@@ -65,6 +65,10 @@
     "system": "SYSTEM",
     "player": "Player {{idx}}"
   },
+  "turnIndicator": {
+    "yourTurn": "Your Turn",
+    "waiting": "Waiting"
+  },
   "card": {
     "back": "Card back"
   },

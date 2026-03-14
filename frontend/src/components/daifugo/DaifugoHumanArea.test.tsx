@@ -157,7 +157,7 @@ describe('DaifugoHumanArea', () => {
     }
   });
 
-  it('selected card has highlighted border (game-status-waiting)', () => {
+  it('selected card has highlighted border (game-card-selected)', () => {
     render(
       <DaifugoHumanArea
         player={makePlayer()}
@@ -168,7 +168,7 @@ describe('DaifugoHumanArea', () => {
       />,
     );
     const buttons = screen.getAllByRole('button');
-    expect(buttons[0].style.border).toBe('3px solid var(--color-game-status-waiting)');
+    expect(buttons[0].style.border).toBe('3px solid var(--color-game-card-selected)');
   });
 
   it('unselected card has transparent border', () => {

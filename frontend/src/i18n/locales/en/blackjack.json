@@ -1,4 +1,12 @@
 {
+  "phase": {
+    "bet": "Bet",
+    "deal": "Deal",
+    "insurance": "Insurance",
+    "action": "Action",
+    "earlySurrender": "Early Surrender",
+    "end": "Result"
+  },
   "player": "Player:",
   "deck": "Deck:",
   "deckUnit": "deck(s)",

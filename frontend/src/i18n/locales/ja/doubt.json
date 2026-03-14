@@ -1,4 +1,9 @@
 {
+  "phase": {
+    "play": "プレイ",
+    "doubt": "ダウト判定",
+    "end": "結果"
+  },
   "cardCount": "{{count}}枚",
   "table": "テーブル",
   "tableCards": "場のカード: {{count}}枚",

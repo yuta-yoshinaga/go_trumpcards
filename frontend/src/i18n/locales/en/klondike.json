@@ -1,4 +1,9 @@
 {
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
   "title": "Klondike",
   "stock": "Stock",
   "waste": "Waste",

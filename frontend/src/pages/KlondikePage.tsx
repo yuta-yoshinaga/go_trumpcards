@@ -6,6 +6,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
@@ -54,6 +55,15 @@ export function KlondikePage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
+
+      {/* Phase indicator */}
+      <PhaseIndicator
+        phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      >
+        <span>
+          {t('moveCount')}: {state.moveCount}
+        </span>
+      </PhaseIndicator>
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
@@ -139,11 +149,6 @@ export function KlondikePage() {
               )}
             </div>
           ))}
-        </div>
-
-        {/* Move count */}
-        <div className="text-white/60 text-sm mb-2">
-          {t('moveCount')}: {state.moveCount}
         </div>
 
         {/* Tableau */}

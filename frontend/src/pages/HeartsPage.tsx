@@ -7,10 +7,12 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { selectedCardStyle } from '../styles/cardStyles';
 import { HEARTS_PHASE } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
@@ -47,9 +49,23 @@ export function HeartsPage() {
   const isGameEnd = state.phase === HEARTS_PHASE.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  const phaseNameMap: Record<number, string> = {
+    [HEARTS_PHASE.PASS]: t('phase.pass'),
+    [HEARTS_PHASE.PLAY]: t('phase.play'),
+    [HEARTS_PHASE.TRICK_END]: t('phase.trickEnd'),
+    [HEARTS_PHASE.ROUND_END]: t('phase.roundEnd'),
+    [HEARTS_PHASE.GAME_END]: t('phase.gameEnd'),
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
+
+      {/* Phase indicator */}
+      <PhaseIndicator
+        phaseName={phaseNameMap[state.phase] ?? t('phase.play')}
+        isHumanTurn={isPassPhase || isHumanTurn}
+      />
 
       {/* Settings */}
       <SettingsPanel
@@ -183,7 +199,14 @@ export function HeartsPage() {
                 onClick={() => toggleCard(idx)}
                 aria-label={cardAlt(card)}
                 aria-pressed={selectedCardIndices.includes(idx)}
-                className={`${selectedCardIndices.includes(idx) ? 'ring-2 ring-yellow-400 -translate-y-1' : ''} transition-transform`}
+                className="transition-transform"
+                style={{
+                  background: 'none',
+                  padding: 0,
+                  borderRadius: 8,
+                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                  boxSizing: 'border-box',
+                }}
               >
                 <CardImage card={card} />
               </button>

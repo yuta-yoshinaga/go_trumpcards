@@ -1,4 +1,9 @@
 {
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
   "title": "クロンダイク",
   "stock": "山札",
   "waste": "ウェイスト",

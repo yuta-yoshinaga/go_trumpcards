@@ -7,6 +7,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
@@ -29,9 +30,19 @@ export function MemoryPage() {
   const isGameEnd = state.phase === MEMORY_PHASE.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
+  const phaseNameMap: Record<number, string> = {
+    [MEMORY_PHASE.FLIP1]: t('phase.flip1'),
+    [MEMORY_PHASE.FLIP2]: t('phase.flip2'),
+    [MEMORY_PHASE.RESULT]: t('phase.result'),
+    [MEMORY_PHASE.GAME_END]: t('phase.gameEnd'),
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
+
+      {/* Phase indicator */}
+      <PhaseIndicator phaseName={phaseNameMap[state.phase] ?? t('phase.flip1')} isHumanTurn={isHumanTurn} />
 
       {/* Landscape orientation banner (visible on small portrait screens) */}
       <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">

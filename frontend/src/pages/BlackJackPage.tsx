@@ -27,12 +27,24 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
+
+function usePhaseNames(t: (key: string) => string): Record<number, string> {
+  return {
+    [BjPhase.BET]: t('phase.bet'),
+    [BjPhase.DEAL]: t('phase.deal'),
+    [BjPhase.INSURANCE]: t('phase.insurance'),
+    [BjPhase.ACTION]: t('phase.action'),
+    [BjPhase.END]: t('phase.end'),
+    [BjPhase.EARLY_SURRENDER]: t('phase.earlySurrender'),
+  };
+}
 
 function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
   return {
@@ -49,6 +61,7 @@ function useSuggestionLabels(t: (key: string) => string): Record<number, string>
 export function BlackJackPage() {
   const { t } = useTranslation('blackjack');
   const { t: tc } = useTranslation('common');
+  const phaseNames = usePhaseNames(t);
   const suggestionLabels = useSuggestionLabels(t);
 
   const [message, setMessage] = useState('');
@@ -128,9 +141,18 @@ export function BlackJackPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
-      {/* Chip info bar */}
+      {/* Phase indicator + info bar */}
       {state && (
-        <div className="shrink-0 bg-black/40 text-white text-sm px-4 py-1.5 flex justify-between flex-wrap gap-1">
+        <PhaseIndicator
+          phaseName={phaseNames[phase] ?? t('phase.bet')}
+          isHumanTurn={
+            phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER
+              ? true
+              : phase === BjPhase.END
+                ? false
+                : undefined
+          }
+        >
           <span>
             {t('player')} {state.player.chips} chips
           </span>
@@ -147,7 +169,7 @@ export function BlackJackPage() {
           <span>
             {tc('label.dealer')} {state.dealer.chips} chips
           </span>
-        </div>
+        </PhaseIndicator>
       )}
 
       {/* Scrollable: dealer area + CPU players */}

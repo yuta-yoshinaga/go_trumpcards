@@ -65,6 +65,10 @@
     "system": "SYSTEM",
     "player": "Player {{idx}}"
   },
+  "turnIndicator": {
+    "yourTurn": "あなたのターン",
+    "waiting": "待機中"
+  },
   "card": {
     "back": "カード裏面"
   },
