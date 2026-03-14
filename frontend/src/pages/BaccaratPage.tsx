@@ -14,12 +14,12 @@ import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { BaccaratResponse } from '../types/card';
-import { BACCARAT_BET_BANKER, BACCARAT_BET_PLAYER, BACCARAT_BET_TIE, BACCARAT_PHASE } from '../types/card';
+import { BaccaratBetType, BaccaratPhase } from '../types/phases';
 
 const BET_TYPE_LABELS: Record<number, string> = {
-  [BACCARAT_BET_PLAYER]: 'betType.player',
-  [BACCARAT_BET_BANKER]: 'betType.banker',
-  [BACCARAT_BET_TIE]: 'betType.tie',
+  [BaccaratBetType.PLAYER]: 'betType.player',
+  [BaccaratBetType.BANKER]: 'betType.banker',
+  [BaccaratBetType.TIE]: 'betType.tie',
 };
 
 export function BaccaratPage() {
@@ -27,7 +27,7 @@ export function BaccaratPage() {
   const { t: tc } = useTranslation('common');
 
   const [betAmount, setBetAmount] = useState(100);
-  const [betType, setBetType] = useState(BACCARAT_BET_PLAYER);
+  const [betType, setBetType] = useState<number>(BaccaratBetType.PLAYER);
 
   const onSuccess = useCallback((_res: BaccaratResponse) => {}, []);
 
@@ -42,8 +42,8 @@ export function BaccaratPage() {
 
   if (!state) return null;
 
-  const isBetPhase = state.phase === BACCARAT_PHASE.BET;
-  const isEndPhase = state.phase === BACCARAT_PHASE.END;
+  const isBetPhase = state.phase === BaccaratPhase.BET;
+  const isEndPhase = state.phase === BaccaratPhase.END;
 
   const handleBet = () => {
     exec('bet', betAmount, betType);
@@ -133,9 +133,9 @@ export function BaccaratPage() {
                 onChange={(e) => setBetType(Number(e.target.value))}
                 className="px-2 py-1 rounded text-sm"
               >
-                <option value={BACCARAT_BET_PLAYER}>{t(BET_TYPE_LABELS[BACCARAT_BET_PLAYER])}</option>
-                <option value={BACCARAT_BET_BANKER}>{t(BET_TYPE_LABELS[BACCARAT_BET_BANKER])}</option>
-                <option value={BACCARAT_BET_TIE}>{t(BET_TYPE_LABELS[BACCARAT_BET_TIE])}</option>
+                <option value={BaccaratBetType.PLAYER}>{t(BET_TYPE_LABELS[BaccaratBetType.PLAYER])}</option>
+                <option value={BaccaratBetType.BANKER}>{t(BET_TYPE_LABELS[BaccaratBetType.BANKER])}</option>
+                <option value={BaccaratBetType.TIE}>{t(BET_TYPE_LABELS[BaccaratBetType.TIE])}</option>
               </select>
             </div>
             <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>

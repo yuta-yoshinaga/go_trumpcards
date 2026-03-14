@@ -12,7 +12,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
-import { KLONDIKE_PHASE } from '../types/card';
+import { KlondikePhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -41,9 +41,9 @@ export function KlondikePage() {
 
   if (!state) return null;
 
-  const isPlaying = state.phase === KLONDIKE_PHASE.PLAYING;
-  const isGameClear = state.phase === KLONDIKE_PHASE.GAME_CLEAR;
-  const isGameOver = state.phase === KLONDIKE_PHASE.GAME_OVER;
+  const isPlaying = state.phase === KlondikePhase.PLAYING;
+  const isGameClear = state.phase === KlondikePhase.GAME_CLEAR;
+  const isGameOver = state.phase === KlondikePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
