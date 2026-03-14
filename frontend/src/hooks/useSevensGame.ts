@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
 import type { SevensResponse } from '../types/card';
+import { runReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
-import { runReplay } from './useGameReplay';
 
 function computeTableMinVals(tablePlaced: number[]): number[] {
   const result = [0, 0, 0, 0, 0];

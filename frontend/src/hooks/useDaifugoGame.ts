@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import type { DaifugoConfigInput, DaifugoResponse } from '../types/card';
+import { runReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
-import { runReplay } from './useGameReplay';
 
 const defaultConfigInput: DaifugoConfigInput = {
   jokerCount: 2,

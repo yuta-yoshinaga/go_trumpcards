@@ -1,11 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { REPLAY_DELAY_MS, type ReplayConfig, runReplay } from './useGameReplay';
-
-describe('REPLAY_DELAY_MS', () => {
-  it('is 800', () => {
-    expect(REPLAY_DELAY_MS).toBe(800);
-  });
-});
+import { type ReplayConfig, runReplay } from './gameReplay';
 
 describe('runReplay', () => {
   beforeEach(() => {

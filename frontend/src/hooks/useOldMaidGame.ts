@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import type { Card, OldMaidResponse } from '../types/card';
+import { REPLAY_DELAY_MS, runReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
-import { REPLAY_DELAY_MS, runReplay } from './useGameReplay';
 
 export const OldMaidMode = {
   Normal: 0,
