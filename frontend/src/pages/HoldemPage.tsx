@@ -245,7 +245,7 @@ export function HoldemPage() {
               >
                 {t('muck.muck')}
               </button>
-              <button type="button" className={btnSecondary} disabled={loading} onClick={() => exec('show')}>
+              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('show')}>
                 {t('muck.show')}
               </button>
             </div>
@@ -267,7 +267,7 @@ export function HoldemPage() {
               >
                 {t('rebuy.accept')}
               </button>
-              <button type="button" className={btnSecondary} disabled={loading} onClick={() => exec('skiprebuy')}>
+              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('skiprebuy')}>
                 {t('rebuy.skip')}
               </button>
             </div>
@@ -285,7 +285,7 @@ export function HoldemPage() {
               >
                 {t('addon.accept')}
               </button>
-              <button type="button" className={btnSecondary} disabled={loading} onClick={() => exec('skipaddon')}>
+              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('skipaddon')}>
                 {t('addon.skip')}
               </button>
             </div>
