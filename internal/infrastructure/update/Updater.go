@@ -124,7 +124,7 @@ func (pr *progressReader) Read(p []byte) (int, error) {
 	n, err := pr.reader.Read(p)
 	pr.current += int64(n)
 	if pr.total > 0 {
-		pct := pr.current * 100 / pr.total
+		pct := min(100, pr.current*100/pr.total)
 		_, _ = fmt.Fprintf(pr.writer, "\r  %d%% (%s / %s)", pct, formatBytes(pr.current), formatBytes(pr.total))
 	} else {
 		_, _ = fmt.Fprintf(pr.writer, "\r  %s downloaded", formatBytes(pr.current))
@@ -159,16 +159,17 @@ func (u *Updater) downloadAndApply(assetName, assetURL string) error {
 	}
 	defer func() { _ = assetResp.Body.Close() }()
 
-	body := io.Reader(&progressReader{
+	body := &progressReader{
 		reader: assetResp.Body,
 		total:  assetResp.ContentLength,
 		writer: u.writer,
-	})
+	}
 
 	// For tar.gz, stream directly without buffering the entire archive in memory.
 	if strings.HasSuffix(strings.ToLower(assetName), ".tar.gz") {
 		binaryReader, err := u.extractFromTarGzStream(body)
 		if err != nil {
+			_, _ = fmt.Fprintln(u.writer)
 			return err
 		}
 		_, _ = fmt.Fprintln(u.writer)
@@ -178,6 +179,7 @@ func (u *Updater) downloadAndApply(assetName, assetURL string) error {
 	// For zip, we need io.ReaderAt so we must read the entire archive into memory.
 	assetData, err := io.ReadAll(body)
 	if err != nil {
+		_, _ = fmt.Fprintln(u.writer)
 		return err
 	}
 	_, _ = fmt.Fprintln(u.writer)
