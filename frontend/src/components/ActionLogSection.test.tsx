@@ -56,4 +56,13 @@ describe('ActionLogSection', () => {
     expect(screen.getByTestId('action-log-panel')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '棋譜を見る' })).not.toBeInTheDocument();
   });
+
+  it('calls hideActionLog when panel close button is clicked', () => {
+    const hideActionLog = vi.fn();
+    render(
+      <ActionLogSection isEndPhase={false} actionLog={[entry]} showActionLog={vi.fn()} hideActionLog={hideActionLog} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'close' }));
+    expect(hideActionLog).toHaveBeenCalledTimes(1);
+  });
 });
