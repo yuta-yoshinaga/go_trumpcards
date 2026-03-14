@@ -65,7 +65,7 @@ export function BaccaratPage() {
         {state.playerHand.length > 0 && (
           <div className="mb-4">
             <div className="text-yellow-300 font-bold text-center mb-1">
-              {t('player')} {t('label.value', { value: state.playerHandValue })}
+              🟡 {t('player')} {t('label.value', { value: state.playerHandValue })}
             </div>
             <div className="flex justify-center gap-2">
               {state.playerHand.map((card, i) => (
@@ -79,7 +79,7 @@ export function BaccaratPage() {
         {state.bankerHand.length > 0 && (
           <div className="mb-4">
             <div className="text-red-300 font-bold text-center mb-1">
-              {t('banker')} {t('label.value', { value: state.bankerHandValue })}
+              🔴 {t('banker')} {t('label.value', { value: state.bankerHandValue })}
             </div>
             <div className="flex justify-center gap-2">
               {state.bankerHand.map((card, i) => (

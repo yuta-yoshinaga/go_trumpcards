@@ -1,4 +1,5 @@
-const base = 'px-3 py-1.5 text-sm font-medium rounded disabled:opacity-50 disabled:cursor-not-allowed mx-1.5';
+const base =
+  'px-3 py-1.5 text-sm font-medium rounded disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale mx-1.5';
 
 export const btnPrimary = `${base} text-white bg-blue-600 hover:bg-blue-700`;
 export const btnWarning = `${base} text-gray-900 bg-yellow-400 hover:bg-yellow-500`;
