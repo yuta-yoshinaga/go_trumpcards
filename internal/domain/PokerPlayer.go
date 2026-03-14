@@ -107,7 +107,7 @@ func evalFiveCardHandWithJokers(cards []*Card) int {
 	// ジョーカーの位置を探す
 	jokerIndices := make([]int, 0)
 	for i, c := range cards {
-		if c.GetDesign() == CardDesignJoker {
+		if IsJoker(c) {
 			jokerIndices = append(jokerIndices, i)
 		}
 	}
