@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/term"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
@@ -67,8 +69,9 @@ ENVIRONMENT VARIABLES:
 	}
 	flag.Parse()
 
-	// Color control: NO_COLOR env var (https://no-color.org/) or --no-color flag.
-	if os.Getenv("NO_COLOR") != "" || *noColorFlag {
+	// Color control: NO_COLOR env var (https://no-color.org/), --no-color flag,
+	// or non-TTY stdout (pipe/redirect auto-detection).
+	if os.Getenv("NO_COLOR") != "" || *noColorFlag || !term.IsTerminal(int(os.Stdout.Fd())) {
 		color.SetNoColor(true)
 	}
 
