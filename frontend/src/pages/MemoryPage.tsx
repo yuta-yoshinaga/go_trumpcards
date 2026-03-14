@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -36,26 +37,26 @@ export function MemoryPage() {
       </div>
 
       {/* Settings */}
-      <details className="px-4 pt-2 text-white text-sm">
-        <summary className="cursor-pointer">{t('settings.title')}</summary>
-        <div className="mt-2 flex flex-wrap gap-4">
-          <label htmlFor="cpuDifficulty">
-            {t('settings.cpuDifficulty')}
-            <select
-              id="cpuDifficulty"
-              value={memoryConfig.cpuDifficulty}
-              onChange={(e) => handleConfigChange('cpuDifficulty', e.target.value)}
-              className="ml-1 bg-gray-700 text-white rounded px-1"
-            >
-              {CPU_DIFFICULTY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {t(`settings.${o.label.toLowerCase()}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </details>
+      <SettingsPanel
+        title={t('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'cpuDifficulty',
+                label: t('settings.cpuDifficulty'),
+                value: memoryConfig.cpuDifficulty,
+                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                  value: o.value,
+                  label: t(`settings.${o.label.toLowerCase()}`),
+                })),
+                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+              },
+            ],
+          },
+        ]}
+      />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">

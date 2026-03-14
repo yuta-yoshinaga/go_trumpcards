@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -48,39 +49,34 @@ export function HeartsPage() {
       <LoadingSpinner loading={loading} />
 
       {/* Settings */}
-      <details className="px-4 pt-2">
-        <summary className="text-white/70 text-sm cursor-pointer">{t('settings.title')}</summary>
-        <div className="mt-2 flex flex-wrap gap-4 text-sm text-white/70">
-          <label>
-            {t('settings.cpuDifficulty')}
-            <select
-              value={heartsConfig.cpuDifficulty}
-              onChange={(e) => handleConfigChange('cpuDifficulty', e.target.value)}
-              className="ml-1 bg-gray-700 text-white rounded px-1"
-            >
-              {CPU_DIFFICULTY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {t(`settings.${o.label.toLowerCase()}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('settings.pointLimit')}
-            <select
-              value={heartsConfig.pointLimit}
-              onChange={(e) => handleConfigChange('pointLimit', e.target.value)}
-              className="ml-1 bg-gray-700 text-white rounded px-1"
-            >
-              {POINT_LIMIT_OPTIONS.map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </details>
+      <SettingsPanel
+        title={t('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'cpuDifficulty',
+                label: t('settings.cpuDifficulty'),
+                value: heartsConfig.cpuDifficulty,
+                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                  value: o.value,
+                  label: t(`settings.${o.label.toLowerCase()}`),
+                })),
+                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+              },
+              {
+                type: 'select',
+                id: 'pointLimit',
+                label: t('settings.pointLimit'),
+                value: heartsConfig.pointLimit,
+                options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                onSelect: (v) => handleConfigChange('pointLimit', v),
+              },
+            ],
+          },
+        ]}
+      />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
