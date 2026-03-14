@@ -43,6 +43,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       id={item.id}
                       type="checkbox"
                       checked={item.checked ?? false}
+                      disabled={item.disabled}
                       onChange={(e) => item.onToggle?.(e.target.checked)}
                     />
                     {item.label}
@@ -81,7 +82,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
 
           if (group.title) {
             return (
-              <fieldset key={group.id ?? group.title} className={gi > 0 ? 'mt-2' : ''}>
+              <fieldset key={group.id ?? `group-${gi.toString()}`} className={gi > 0 ? 'mt-2' : ''}>
                 <legend className="text-yellow-300 font-bold text-xs mb-1">{group.title}</legend>
                 {content}
               </fieldset>

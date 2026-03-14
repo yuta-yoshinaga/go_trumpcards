@@ -61,6 +61,106 @@ export function SevensPage() {
     humanPlayer != null &&
     (humanPlayer.maxPasses === 0 || humanPlayer.passesUsed < humanPlayer.maxPasses);
 
+  const settingsGroups: SettingsGroup[] = [
+    {
+      title: t('config.groupRules'),
+      items: [
+        {
+          type: 'checkbox',
+          id: 'cfgTunnel',
+          label: t('config.tunnel'),
+          checked: cfgTunnel,
+          onToggle: setCfgTunnel,
+        },
+        {
+          type: 'select',
+          id: 'cfgTunnelSkipWidth',
+          label: t('config.tunnelSkip'),
+          value: cfgTunnelSkipWidth,
+          options: [
+            { value: 0, label: t('config.tunnelSkipOff') },
+            { value: 2, label: '2' },
+            { value: 3, label: '3' },
+            { value: 4, label: '4' },
+            { value: 5, label: '5' },
+            { value: 6, label: '6' },
+          ],
+          onSelect: (v) => setCfgTunnelSkipWidth(Number(v)),
+        },
+        {
+          type: 'checkbox',
+          id: 'cfgNoJokerFinish',
+          label: t('config.noJokerFinish'),
+          checked: cfgNoJokerFinish,
+          onToggle: setCfgNoJokerFinish,
+        },
+        {
+          type: 'checkbox',
+          id: 'cfgJokerReclaim',
+          label: t('config.jokerReclaim'),
+          checked: cfgJokerReclaim,
+          onToggle: setCfgJokerReclaim,
+        },
+        {
+          type: 'checkbox',
+          id: 'cfgEndStop',
+          label: t('config.endStop'),
+          checked: cfgEndStop,
+          onToggle: setCfgEndStop,
+        },
+        {
+          type: 'checkbox',
+          id: 'cfgJokerConsBan',
+          label: t('config.jokerConsecutiveBanned'),
+          checked: cfgJokerConsBan,
+          onToggle: setCfgJokerConsBan,
+        },
+      ],
+    },
+    {
+      title: t('config.groupGame'),
+      items: [
+        {
+          type: 'select',
+          id: 'cfgJokerCount',
+          label: t('config.joker'),
+          value: cfgJokerCount,
+          options: [
+            { value: 0, label: '0' },
+            { value: 1, label: '1' },
+            { value: 2, label: '2' },
+          ],
+          onSelect: (v) => setCfgJokerCount(Number(v)),
+        },
+        {
+          type: 'select',
+          id: 'cfgCpuStrategy',
+          label: t('config.cpuStrategy'),
+          value: cfgCpuStrategy,
+          options: [
+            { value: 0, label: t('config.cpuStrategyOff') },
+            { value: 1, label: t('config.cpuStrategyStrategic') },
+            { value: 2, label: t('config.cpuStrategyHarassment') },
+          ],
+          onSelect: (v) => setCfgCpuStrategy(Number(v)),
+        },
+        {
+          type: 'select',
+          id: 'cfgMaxPasses',
+          label: t('config.passCount'),
+          value: cfgMaxPasses,
+          options: [
+            { value: 3, label: '3' },
+            { value: 5, label: '5' },
+            { value: 10, label: '10' },
+            { value: 0, label: t('config.passUnlimited') },
+          ],
+          onSelect: (v) => setCfgMaxPasses(Number(v)),
+        },
+      ],
+    },
+  ];
+
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
@@ -177,108 +277,7 @@ export function SevensPage() {
           </div>
         )}
 
-        {(() => {
-          const groups: SettingsGroup[] = [
-            {
-              title: t('config.groupRules'),
-              items: [
-                {
-                  type: 'checkbox',
-                  id: 'cfgTunnel',
-                  label: t('config.tunnel'),
-                  checked: cfgTunnel,
-                  onToggle: setCfgTunnel,
-                },
-                {
-                  type: 'select',
-                  id: 'cfgTunnelSkipWidth',
-                  label: t('config.tunnelSkip'),
-                  value: cfgTunnelSkipWidth,
-                  options: [
-                    { value: 0, label: t('config.tunnelSkipOff') },
-                    { value: 2, label: '2' },
-                    { value: 3, label: '3' },
-                    { value: 4, label: '4' },
-                    { value: 5, label: '5' },
-                    { value: 6, label: '6' },
-                  ],
-                  onSelect: (v) => setCfgTunnelSkipWidth(Number(v)),
-                },
-                {
-                  type: 'checkbox',
-                  id: 'cfgNoJokerFinish',
-                  label: t('config.noJokerFinish'),
-                  checked: cfgNoJokerFinish,
-                  onToggle: setCfgNoJokerFinish,
-                },
-                {
-                  type: 'checkbox',
-                  id: 'cfgJokerReclaim',
-                  label: t('config.jokerReclaim'),
-                  checked: cfgJokerReclaim,
-                  onToggle: setCfgJokerReclaim,
-                },
-                {
-                  type: 'checkbox',
-                  id: 'cfgEndStop',
-                  label: t('config.endStop'),
-                  checked: cfgEndStop,
-                  onToggle: setCfgEndStop,
-                },
-                {
-                  type: 'checkbox',
-                  id: 'cfgJokerConsBan',
-                  label: t('config.jokerConsecutiveBanned'),
-                  checked: cfgJokerConsBan,
-                  onToggle: setCfgJokerConsBan,
-                },
-              ],
-            },
-            {
-              title: t('config.groupGame'),
-              items: [
-                {
-                  type: 'select',
-                  id: 'cfgJokerCount',
-                  label: t('config.joker'),
-                  value: cfgJokerCount,
-                  options: [
-                    { value: 0, label: '0' },
-                    { value: 1, label: '1' },
-                    { value: 2, label: '2' },
-                  ],
-                  onSelect: (v) => setCfgJokerCount(Number(v)),
-                },
-                {
-                  type: 'select',
-                  id: 'cfgCpuStrategy',
-                  label: t('config.cpuStrategy'),
-                  value: cfgCpuStrategy,
-                  options: [
-                    { value: 0, label: t('config.cpuStrategyOff') },
-                    { value: 1, label: t('config.cpuStrategyStrategic') },
-                    { value: 2, label: t('config.cpuStrategyHarassment') },
-                  ],
-                  onSelect: (v) => setCfgCpuStrategy(Number(v)),
-                },
-                {
-                  type: 'select',
-                  id: 'cfgMaxPasses',
-                  label: t('config.passCount'),
-                  value: cfgMaxPasses,
-                  options: [
-                    { value: 3, label: '3' },
-                    { value: 5, label: '5' },
-                    { value: 10, label: '10' },
-                    { value: 0, label: t('config.passUnlimited') },
-                  ],
-                  onSelect: (v) => setCfgMaxPasses(Number(v)),
-                },
-              ],
-            },
-          ];
-          return <SettingsPanel title={t('config.title')} groups={groups} />;
-        })()}
+        <SettingsPanel title={t('config.title')} groups={settingsGroups} />
 
         <ErrorAlert message={error} />
 

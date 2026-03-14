@@ -72,6 +72,26 @@ describe('SettingsPanel', () => {
     expect(onSelect).toHaveBeenCalledWith('b');
   });
 
+  it('renders disabled checkbox', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[{ items: [{ type: 'checkbox', id: 'cb1', label: 'Disabled Check', checked: false, disabled: true }] }]}
+      />,
+    );
+    expect(screen.getByLabelText('Disabled Check')).toBeDisabled();
+  });
+
+  it('renders enabled checkbox when disabled is false', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[{ items: [{ type: 'checkbox', id: 'cb1', label: 'Enabled Check', checked: false, disabled: false }] }]}
+      />,
+    );
+    expect(screen.getByLabelText('Enabled Check')).not.toBeDisabled();
+  });
+
   it('renders disabled select', () => {
     render(
       <SettingsPanel
