@@ -34,6 +34,15 @@ func TestDecayMemories_DecayRateZero_NeverForgets(t *testing.T) {
 	assert.Len(t, result, 3)
 }
 
+func TestDecayMemories_NegativeDecayRate_NeverForgets(t *testing.T) {
+	entries := []testMemoryEntry{
+		{turnSeen: 0},
+		{turnSeen: 5},
+	}
+	result := DecayMemories(entries, 1000, -0.1)
+	assert.Len(t, result, 2)
+}
+
 func TestDecayMemories_EmptySlice(t *testing.T) {
 	result := DecayMemories([]testMemoryEntry{}, 10, 0.5)
 	assert.Empty(t, result)

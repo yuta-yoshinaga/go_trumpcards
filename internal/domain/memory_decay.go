@@ -10,7 +10,7 @@ type MemoryEntry interface {
 // DecayMemories 古い記憶を確率的に忘却する共通関数
 // 忘却確率 = decayRate * (currentTurn - entry.GetTurnSeen())
 func DecayMemories[T MemoryEntry](memories []T, currentTurn int, decayRate float64) []T {
-	if len(memories) == 0 {
+	if len(memories) == 0 || decayRate <= 0 {
 		return memories
 	}
 	kept := memories[:0]
