@@ -14,6 +14,7 @@ export interface SettingsItem {
 }
 
 export interface SettingsGroup {
+  id?: string;
   title?: string;
   items: SettingsItem[];
 }
@@ -46,7 +47,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                     />
                     {item.label}
                     {item.tooltip && (
-                      <span className="hidden group-hover/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                      <span className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
                         {item.tooltip}
                       </span>
                     )}
@@ -68,7 +69,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       ))}
                     </select>
                     {item.tooltip && (
-                      <span className="hidden group-hover/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                      <span className="hidden group-hover/tip:block group-focus-within/tip:block absolute bottom-full left-0 mb-1 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
                         {item.tooltip}
                       </span>
                     )}
@@ -80,14 +81,14 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
 
           if (group.title) {
             return (
-              <fieldset key={group.title} className={gi > 0 ? 'mt-2' : ''}>
+              <fieldset key={group.id ?? group.title} className={gi > 0 ? 'mt-2' : ''}>
                 <legend className="text-yellow-300 font-bold text-xs mb-1">{group.title}</legend>
                 {content}
               </fieldset>
             );
           }
           return (
-            <div key={`group-${gi.toString()}`} className={gi > 0 ? 'mt-2' : ''}>
+            <div key={group.id ?? `group-${gi.toString()}`} className={gi > 0 ? 'mt-2' : ''}>
               {content}
             </div>
           );
