@@ -206,13 +206,13 @@ func TestPokerWebInput_ToConfig_NilPointers(t *testing.T) {
 func TestPokerWebInput_ToConfig_CpuCountBelowMin(t *testing.T) {
 	p := controller.PokerWebInput{CpuCount: intPtr(0)}
 	cfg := p.ToConfig()
-	assert.Equal(t, 1, cfg.CpuCount)
+	assert.Equal(t, 3, cfg.CpuCount) // out-of-range → default
 }
 
 func TestPokerWebInput_ToConfig_CpuCountAboveMax(t *testing.T) {
 	p := controller.PokerWebInput{CpuCount: intPtr(10)}
 	cfg := p.ToConfig()
-	assert.Equal(t, 3, cfg.CpuCount)
+	assert.Equal(t, 3, cfg.CpuCount) // out-of-range → default
 }
 
 func TestPokerWebInput_ToConfig_CpuCountInRange(t *testing.T) {
@@ -230,7 +230,7 @@ func TestPokerWebInput_ToConfig_JokerCountBelowMin(t *testing.T) {
 func TestPokerWebInput_ToConfig_JokerCountAboveMax(t *testing.T) {
 	p := controller.PokerWebInput{JokerCount: intPtr(5)}
 	cfg := p.ToConfig()
-	assert.Equal(t, 2, cfg.JokerCount)
+	assert.Equal(t, 0, cfg.JokerCount) // out-of-range → default
 }
 
 func TestPokerWebInput_ToConfig_JokerCountInRange(t *testing.T) {
@@ -248,7 +248,7 @@ func TestPokerWebInput_ToConfig_BettingLimitBelowMin(t *testing.T) {
 func TestPokerWebInput_ToConfig_BettingLimitAboveMax(t *testing.T) {
 	p := controller.PokerWebInput{BettingLimit: intPtr(5)}
 	cfg := p.ToConfig()
-	assert.Equal(t, domain.BettingLimitType(2), cfg.BettingLimit)
+	assert.Equal(t, domain.BettingLimitType(0), cfg.BettingLimit) // out-of-range → default
 }
 
 func TestPokerWebInput_ToConfig_BettingLimitInRange(t *testing.T) {

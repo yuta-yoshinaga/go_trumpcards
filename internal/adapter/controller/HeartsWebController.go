@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
@@ -66,15 +67,8 @@ type HeartsWebOutputConfig struct {
 // ToConfig builds a HeartsConfig from the nested web config, applying bounds checking.
 func (c *HeartsWebConfig) ToConfig() domain.HeartsConfig {
 	cfg := domain.DefaultHeartsConfig()
-	if c.CpuDifficulty != nil {
-		d := *c.CpuDifficulty
-		if d >= int(domain.HeartsCpuDifficultyEasy) && d <= int(domain.HeartsCpuDifficultyHard) {
-			cfg.CpuDifficulty = domain.HeartsCpuDifficulty(d)
-		}
-	}
-	if c.PointLimit != nil && *c.PointLimit >= 1 && *c.PointLimit <= 1000 {
-		cfg.PointLimit = *c.PointLimit
-	}
+	cfg.CpuDifficulty = domain.HeartsCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.HeartsCpuDifficultyEasy), int(domain.HeartsCpuDifficultyHard), int(cfg.CpuDifficulty)))
+	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
 	return cfg
 }
 

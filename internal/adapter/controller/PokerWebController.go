@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
@@ -97,33 +98,9 @@ type PokerWebOutput struct {
 // ToConfig builds a PokerConfig from the web input, applying bounds clamping.
 func (p PokerWebInput) ToConfig() domain.PokerConfig {
 	cfg := domain.DefaultPokerConfig()
-	if p.CpuCount != nil {
-		cc := *p.CpuCount
-		if cc < 1 {
-			cc = 1
-		} else if cc > 3 {
-			cc = 3
-		}
-		cfg.CpuCount = cc
-	}
-	if p.JokerCount != nil {
-		jc := *p.JokerCount
-		if jc < 0 {
-			jc = 0
-		} else if jc > 2 {
-			jc = 2
-		}
-		cfg.JokerCount = jc
-	}
-	if p.BettingLimit != nil {
-		bl := *p.BettingLimit
-		if bl < 0 {
-			bl = 0
-		} else if bl > 2 {
-			bl = 2
-		}
-		cfg.BettingLimit = domain.BettingLimitType(bl)
-	}
+	cfg.CpuCount = webutil.BoundedIntPtr(p.CpuCount, domain.PokerCpuCountMin, domain.PokerCpuCountMax, cfg.CpuCount)
+	cfg.JokerCount = webutil.BoundedIntPtr(p.JokerCount, 0, domain.PokerJokerCountMax, cfg.JokerCount)
+	cfg.BettingLimit = domain.BettingLimitType(webutil.BoundedIntPtr(p.BettingLimit, int(domain.BettingLimitFixed), int(domain.BettingLimitNoLimit), int(cfg.BettingLimit)))
 	if p.IsLowball != nil {
 		cfg.IsLowball = *p.IsLowball
 	}
