@@ -10,6 +10,9 @@ type cardMemoryEntry struct {
 	turnSeen int // 記憶したターン番号
 }
 
+// GetTurnSeen MemoryEntryインターフェース実装
+func (e cardMemoryEntry) GetTurnSeen() int { return e.turnSeen }
+
 // DoubtPlayer ダウトプレイヤークラス
 type DoubtPlayer struct {
 	*GamePlayer
@@ -55,14 +58,5 @@ func (p *DoubtPlayer) CountKnownCards(value int) int {
 // DecayMemories 古い記憶を確率的に忘却する
 // 忘却確率 = decayRate * (currentTurn - turnSeen)
 func (p *DoubtPlayer) DecayMemories(currentTurn int, decayRate float64) {
-	kept := p.cardMemories[:0]
-	for _, entry := range p.cardMemories {
-		age := currentTurn - entry.turnSeen
-		forgetProb := decayRate * float64(age)
-		if forgetProb >= 1.0 || rand.Float64() < forgetProb {
-			continue // 忘却
-		}
-		kept = append(kept, entry)
-	}
-	p.cardMemories = kept
+	p.cardMemories = DecayMemories(p.cardMemories, currentTurn, decayRate)
 }
