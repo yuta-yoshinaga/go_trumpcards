@@ -98,9 +98,9 @@ type PokerWebOutput struct {
 // ToConfig builds a PokerConfig from the web input, applying bounds clamping.
 func (p PokerWebInput) ToConfig() domain.PokerConfig {
 	cfg := domain.DefaultPokerConfig()
-	cfg.CpuCount = webutil.ClampIntPtr(p.CpuCount, 1, 3, cfg.CpuCount)
-	cfg.JokerCount = webutil.ClampIntPtr(p.JokerCount, 0, 2, cfg.JokerCount)
-	cfg.BettingLimit = domain.BettingLimitType(webutil.ClampIntPtr(p.BettingLimit, 0, 2, int(cfg.BettingLimit)))
+	cfg.CpuCount = webutil.BoundedIntPtr(p.CpuCount, domain.PokerCpuCountMin, domain.PokerCpuCountMax, cfg.CpuCount)
+	cfg.JokerCount = webutil.BoundedIntPtr(p.JokerCount, 0, domain.PokerJokerCountMax, cfg.JokerCount)
+	cfg.BettingLimit = domain.BettingLimitType(webutil.BoundedIntPtr(p.BettingLimit, int(domain.BettingLimitFixed), int(domain.BettingLimitNoLimit), int(cfg.BettingLimit)))
 	if p.IsLowball != nil {
 		cfg.IsLowball = *p.IsLowball
 	}

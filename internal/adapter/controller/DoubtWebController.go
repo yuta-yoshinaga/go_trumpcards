@@ -85,9 +85,9 @@ type DoubtWebOutputMetaAI struct {
 // ToConfig builds a DoubtConfig from the web input.
 func (p DoubtWebInput) ToConfig() domain.DoubtConfig {
 	cfg := domain.DefaultDoubtConfig()
-	cfg.DoubtWindowSec = webutil.ClampIntPtr(p.DoubtWindowSec, 1, math.MaxInt, cfg.DoubtWindowSec)
-	cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(webutil.ClampIntPtr(p.CpuMemoryLevel, int(domain.DoubtMemoryLevelEasy), int(domain.DoubtMemoryLevelHard), int(cfg.CpuMemoryLevel)))
-	cfg.PenaltyDrawLimit = webutil.ClampIntPtr(p.PenaltyDrawLimit, 0, math.MaxInt, cfg.PenaltyDrawLimit)
+	cfg.DoubtWindowSec = webutil.BoundedIntPtr(p.DoubtWindowSec, 1, math.MaxInt, cfg.DoubtWindowSec)
+	cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(webutil.BoundedIntPtr(p.CpuMemoryLevel, int(domain.DoubtMemoryLevelEasy), int(domain.DoubtMemoryLevelHard), int(cfg.CpuMemoryLevel)))
+	cfg.PenaltyDrawLimit = webutil.BoundedIntPtr(p.PenaltyDrawLimit, 0, math.MaxInt, cfg.PenaltyDrawLimit)
 	cfg.CpuHesitationEnabled = p.CpuHesitationEnabled
 	cfg.CpuMetaAI = p.CpuMetaAI
 	return cfg

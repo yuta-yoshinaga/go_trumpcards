@@ -903,7 +903,7 @@ func TestPokerWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	cfg.BettingLimit = domain.BettingLimitFixed // clamped from -1 to 0
+	// out-of-range → default (BettingLimit=0)
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),

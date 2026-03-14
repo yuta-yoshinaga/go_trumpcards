@@ -67,8 +67,8 @@ type HeartsWebOutputConfig struct {
 // ToConfig builds a HeartsConfig from the nested web config, applying bounds checking.
 func (c *HeartsWebConfig) ToConfig() domain.HeartsConfig {
 	cfg := domain.DefaultHeartsConfig()
-	cfg.CpuDifficulty = domain.HeartsCpuDifficulty(webutil.ClampIntPtr(c.CpuDifficulty, int(domain.HeartsCpuDifficultyEasy), int(domain.HeartsCpuDifficultyHard), int(cfg.CpuDifficulty)))
-	cfg.PointLimit = webutil.ClampIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
+	cfg.CpuDifficulty = domain.HeartsCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.HeartsCpuDifficultyEasy), int(domain.HeartsCpuDifficultyHard), int(cfg.CpuDifficulty)))
+	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
 	return cfg
 }
 

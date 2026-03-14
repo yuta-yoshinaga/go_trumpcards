@@ -60,7 +60,7 @@ type MemoryWebOutputConfig struct {
 // ToConfig builds a MemoryConfig from the nested web config, applying bounds checking.
 func (c *MemoryWebConfig) ToConfig() domain.MemoryConfig {
 	cfg := domain.DefaultMemoryConfig()
-	cfg.CpuDifficulty = domain.MemoryCpuDifficulty(webutil.ClampIntPtr(c.CpuDifficulty, int(domain.MemoryCpuDifficultyEasy), int(domain.MemoryCpuDifficultyHard), int(cfg.CpuDifficulty)))
+	cfg.CpuDifficulty = domain.MemoryCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.MemoryCpuDifficultyEasy), int(domain.MemoryCpuDifficultyHard), int(cfg.CpuDifficulty)))
 	return cfg
 }
 

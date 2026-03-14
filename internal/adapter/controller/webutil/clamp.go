@@ -1,12 +1,12 @@
 package webutil
 
-// ClampIntPtr returns *ptr if non-nil and within [min, max], otherwise defaultVal.
-func ClampIntPtr(ptr *int, min, max, defaultVal int) int {
+// BoundedIntPtr returns *ptr if non-nil and within [lo, hi], otherwise defaultVal.
+func BoundedIntPtr(ptr *int, lo, hi, defaultVal int) int {
 	if ptr == nil {
 		return defaultVal
 	}
 	val := *ptr
-	if val < min || val > max {
+	if val < lo || val > hi {
 		return defaultVal
 	}
 	return val
