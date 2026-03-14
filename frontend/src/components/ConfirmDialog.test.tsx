@@ -63,9 +63,30 @@ describe('ConfirmDialog', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 
-  it('handles keyDown on overlay and dialog without error', () => {
-    render(<ConfirmDialog {...defaultProps()} />);
+  it('calls onCancel when Escape key is pressed on overlay', () => {
+    const onCancel = vi.fn();
+    render(<ConfirmDialog {...defaultProps({ onCancel })} />);
     fireEvent.keyDown(screen.getByRole('presentation'), { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  it('does not call onCancel for non-Escape key on overlay', () => {
+    const onCancel = vi.fn();
+    render(<ConfirmDialog {...defaultProps({ onCancel })} />);
+    fireEvent.keyDown(screen.getByRole('presentation'), { key: 'Enter' });
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('does not propagate keyDown from dialog content to overlay', () => {
+    const onCancel = vi.fn();
+    render(<ConfirmDialog {...defaultProps({ onCancel })} />);
     fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Escape' });
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('uses aria-labelledby referencing the title element', () => {
+    render(<ConfirmDialog {...defaultProps()} />);
+    expect(screen.getByRole('alertdialog')).toHaveAttribute('aria-labelledby', 'confirm-dialog-title');
+    expect(screen.getByText('リセット確認')).toHaveAttribute('id', 'confirm-dialog-title');
   });
 });

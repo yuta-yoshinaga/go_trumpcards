@@ -18,18 +18,22 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={props.onCancel}
-      onKeyDown={() => {}}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') props.onCancel();
+      }}
       role="presentation"
     >
       <div
         role="alertdialog"
         aria-modal="true"
-        aria-label={props.title}
+        aria-labelledby="confirm-dialog-title"
         className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
-        onKeyDown={() => {}}
+        onKeyDown={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-bold text-gray-900 mb-2">{props.title}</h2>
+        <h2 id="confirm-dialog-title" className="text-lg font-bold text-gray-900 mb-2">
+          {props.title}
+        </h2>
         <p className="text-gray-700 mb-4">{props.message}</p>
         <div className="flex justify-end gap-2">
           <button type="button" className={btnSecondary} onClick={props.onCancel}>
