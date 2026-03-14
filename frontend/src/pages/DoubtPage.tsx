@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
 import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -73,72 +74,56 @@ export function DoubtPage() {
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
       {/* Settings panel */}
-      <details className="px-4 pt-2">
-        <summary className="text-white/70 text-xs cursor-pointer select-none">{t('settings.title')}</summary>
-        <div className="bg-black/30 rounded-lg p-3 mt-1 flex flex-wrap gap-4 text-sm text-white">
-          <label htmlFor="doubtWindowSec" className="flex items-center gap-2">
-            {t('settings.doubtTime')}
-            <select
-              id="doubtWindowSec"
-              className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
-              value={doubtConfig.doubtWindowSec}
-              onChange={(e) => handleConfigChange('doubtWindowSec', e.target.value)}
-            >
-              {DOUBT_WINDOW_OPTIONS.map((sec) => (
-                <option key={sec} value={sec}>
-                  {t('settings.sec', { sec })}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label htmlFor="cpuMemoryLevel" className="flex items-center gap-2">
-            {t('settings.cpuMemory')}
-            <select
-              id="cpuMemoryLevel"
-              className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
-              value={doubtConfig.cpuMemoryLevel}
-              onChange={(e) => handleConfigChange('cpuMemoryLevel', e.target.value)}
-            >
-              {CPU_MEMORY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label htmlFor="penaltyDrawLimit" className="flex items-center gap-2">
-            {t('settings.penaltyDrawLimit')}
-            <select
-              id="penaltyDrawLimit"
-              className="bg-black/50 text-white rounded px-2 py-1 border border-white/30"
-              value={doubtConfig.penaltyDrawLimit}
-              onChange={(e) => handleConfigChange('penaltyDrawLimit', e.target.value)}
-            >
-              {PENALTY_DRAW_LIMIT_OPTIONS.map((v) => (
-                <option key={v} value={v}>
-                  {v === 0 ? t('settings.unlimited') : t('settings.cards', { count: v })}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={doubtConfig.cpuHesitationEnabled}
-              onChange={(e) => handleConfigToggle('cpuHesitationEnabled', e.target.checked)}
-            />
-            {t('settings.cpuHesitation')}
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={doubtConfig.cpuMetaAI}
-              onChange={(e) => handleConfigToggle('cpuMetaAI', e.target.checked)}
-            />
-            {t('settings.cpuMetaAI')}
-          </label>
-        </div>
-      </details>
+      <SettingsPanel
+        title={t('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'doubtWindowSec',
+                label: t('settings.doubtTime'),
+                value: doubtConfig.doubtWindowSec,
+                options: DOUBT_WINDOW_OPTIONS.map((sec) => ({ value: sec, label: t('settings.sec', { sec }) })),
+                onSelect: (v) => handleConfigChange('doubtWindowSec', v),
+              },
+              {
+                type: 'select',
+                id: 'cpuMemoryLevel',
+                label: t('settings.cpuMemory'),
+                value: doubtConfig.cpuMemoryLevel,
+                options: CPU_MEMORY_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label })),
+                onSelect: (v) => handleConfigChange('cpuMemoryLevel', v),
+              },
+              {
+                type: 'select',
+                id: 'penaltyDrawLimit',
+                label: t('settings.penaltyDrawLimit'),
+                value: doubtConfig.penaltyDrawLimit,
+                options: PENALTY_DRAW_LIMIT_OPTIONS.map((v) => ({
+                  value: v,
+                  label: v === 0 ? t('settings.unlimited') : t('settings.cards', { count: v }),
+                })),
+                onSelect: (v) => handleConfigChange('penaltyDrawLimit', v),
+              },
+              {
+                type: 'checkbox',
+                id: 'cpuHesitation',
+                label: t('settings.cpuHesitation'),
+                checked: doubtConfig.cpuHesitationEnabled,
+                onToggle: (checked) => handleConfigToggle('cpuHesitationEnabled', checked),
+              },
+              {
+                type: 'checkbox',
+                id: 'cpuMetaAI',
+                label: t('settings.cpuMetaAI'),
+                checked: doubtConfig.cpuMetaAI,
+                onToggle: (checked) => handleConfigToggle('cpuMetaAI', checked),
+              },
+            ],
+          },
+        ]}
+      />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">

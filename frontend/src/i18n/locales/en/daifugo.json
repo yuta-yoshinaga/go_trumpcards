@@ -67,6 +67,9 @@
     "cpuDifficulty": "CPU Difficulty:",
     "difficultyNormal": "Normal",
     "difficultyEasy": "Easy",
-    "difficultyHard": "Hard"
+    "difficultyHard": "Hard",
+    "groupBasic": "Basic Rules",
+    "groupSpecial": "Special Rules",
+    "groupGame": "Game Settings"
   }
 }

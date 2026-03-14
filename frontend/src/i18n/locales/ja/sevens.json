@@ -46,6 +46,8 @@
     "noJokerFinish": "ジョーカー上がり禁止",
     "jokerReclaim": "ジョーカー回収",
     "endStop": "片側ストップ",
-    "jokerConsecutiveBanned": "ジョーカー連続禁止"
+    "jokerConsecutiveBanned": "ジョーカー連続禁止",
+    "groupRules": "ルール",
+    "groupGame": "ゲーム設定"
   }
 }
