@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -11,7 +11,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
-import { btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { MEMORY_PHASE } from '../types/card';
 import { playerName } from '../utils/playerUtils';
 
@@ -129,14 +129,12 @@ export function MemoryPage() {
         <ErrorAlert message={error} />
 
         {/* Action log */}
-        {isGameEnd && actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-        {isGameEnd && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
+        <ActionLogSection
+          isEndPhase={isGameEnd}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       {/* Footer */}
@@ -151,7 +149,10 @@ export function MemoryPage() {
             type="button"
             className={btnWarning}
             onClick={() =>
-              requestConfirm(() => exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty }))
+              requestConfirm(() => {
+                hideActionLog();
+                return exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
+              })
             }
             disabled={loading}
           >

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -11,7 +11,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { HEARTS_PHASE } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
@@ -177,14 +177,12 @@ export function HeartsPage() {
         <ErrorAlert message={error} />
 
         {/* Action log */}
-        {isGameEnd && actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-        {isGameEnd && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
+        <ActionLogSection
+          isEndPhase={isGameEnd}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       {/* Footer */}
@@ -249,12 +247,13 @@ export function HeartsPage() {
             type="button"
             className={btnWarning}
             onClick={() =>
-              requestConfirm(() =>
-                exec('reset', undefined, undefined, {
+              requestConfirm(() => {
+                hideActionLog();
+                return exec('reset', undefined, undefined, {
                   cpuDifficulty: heartsConfig.cpuDifficulty,
                   pointLimit: heartsConfig.pointLimit,
-                }),
-              )
+                });
+              })
             }
             disabled={loading}
           >
