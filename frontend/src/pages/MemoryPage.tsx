@@ -12,7 +12,7 @@ import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { btnSuccess, btnWarning } from '../styles/buttonStyles';
-import { MEMORY_PHASE } from '../types/card';
+import { MemoryPhase } from '../types/phases';
 import { playerName } from '../utils/playerUtils';
 
 export function MemoryPage() {
@@ -24,17 +24,17 @@ export function MemoryPage() {
 
   if (!state) return null;
 
-  const isFlip1 = state.phase === MEMORY_PHASE.FLIP1;
-  const isFlip2 = state.phase === MEMORY_PHASE.FLIP2;
-  const isResult = state.phase === MEMORY_PHASE.RESULT;
-  const isGameEnd = state.phase === MEMORY_PHASE.GAME_END || state.gameEndFlag;
+  const isFlip1 = state.phase === MemoryPhase.FLIP1;
+  const isFlip2 = state.phase === MemoryPhase.FLIP2;
+  const isResult = state.phase === MemoryPhase.RESULT;
+  const isGameEnd = state.phase === MemoryPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   const phaseNameMap: Record<number, string> = {
-    [MEMORY_PHASE.FLIP1]: t('phase.flip1'),
-    [MEMORY_PHASE.FLIP2]: t('phase.flip2'),
-    [MEMORY_PHASE.RESULT]: t('phase.result'),
-    [MEMORY_PHASE.GAME_END]: t('phase.gameEnd'),
+    [MemoryPhase.FLIP1]: t('phase.flip1'),
+    [MemoryPhase.FLIP2]: t('phase.flip2'),
+    [MemoryPhase.RESULT]: t('phase.result'),
+    [MemoryPhase.GAME_END]: t('phase.gameEnd'),
   };
 
   return (

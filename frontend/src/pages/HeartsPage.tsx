@@ -13,7 +13,7 @@ import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
-import { HEARTS_PHASE } from '../types/card';
+import { HeartsPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
@@ -42,19 +42,19 @@ export function HeartsPage() {
   if (!state) return null;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
-  const isPassPhase = state.phase === HEARTS_PHASE.PASS;
-  const isPlayPhase = state.phase === HEARTS_PHASE.PLAY;
-  const isTrickEnd = state.phase === HEARTS_PHASE.TRICK_END;
-  const isRoundEnd = state.phase === HEARTS_PHASE.ROUND_END;
-  const isGameEnd = state.phase === HEARTS_PHASE.GAME_END || state.gameEndFlag;
+  const isPassPhase = state.phase === HeartsPhase.PASS;
+  const isPlayPhase = state.phase === HeartsPhase.PLAY;
+  const isTrickEnd = state.phase === HeartsPhase.TRICK_END;
+  const isRoundEnd = state.phase === HeartsPhase.ROUND_END;
+  const isGameEnd = state.phase === HeartsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   const phaseNameMap: Record<number, string> = {
-    [HEARTS_PHASE.PASS]: t('phase.pass'),
-    [HEARTS_PHASE.PLAY]: t('phase.play'),
-    [HEARTS_PHASE.TRICK_END]: t('phase.trickEnd'),
-    [HEARTS_PHASE.ROUND_END]: t('phase.roundEnd'),
-    [HEARTS_PHASE.GAME_END]: t('phase.gameEnd'),
+    [HeartsPhase.PASS]: t('phase.pass'),
+    [HeartsPhase.PLAY]: t('phase.play'),
+    [HeartsPhase.TRICK_END]: t('phase.trickEnd'),
+    [HeartsPhase.ROUND_END]: t('phase.roundEnd'),
+    [HeartsPhase.GAME_END]: t('phase.gameEnd'),
   };
 
   return (
