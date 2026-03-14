@@ -14,8 +14,8 @@ test.describe('Memory E2E', () => {
     // Verify score table is visible
     await expect(page.getByText('スコア')).toBeVisible();
 
-    // Verify board cards are present (52 card buttons + reset button)
-    const boardButtons = page.locator('button');
+    // Verify board cards are present (52 numbered card buttons)
+    const boardButtons = page.locator('button').filter({ hasText: /^\d+$/ });
     await expect(boardButtons.first()).toBeVisible();
 
     const nextButton = page.getByRole('button', { name: '次へ' });
