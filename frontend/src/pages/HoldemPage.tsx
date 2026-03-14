@@ -20,9 +20,6 @@ import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 
-const btnGray =
-  'min-w-[90px] rounded bg-gray-500 px-4 py-2 text-sm text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale';
-
 function usePhaseNames(t: (key: string) => string): Record<number, string> {
   return {
     [HoldemPhase.PRE_FLOP]: t('phase.preFlop'),
@@ -248,7 +245,7 @@ export function HoldemPage() {
               >
                 {t('muck.muck')}
               </button>
-              <button type="button" className={btnGray} disabled={loading} onClick={() => exec('show')}>
+              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('show')}>
                 {t('muck.show')}
               </button>
             </div>
@@ -270,7 +267,7 @@ export function HoldemPage() {
               >
                 {t('rebuy.accept')}
               </button>
-              <button type="button" className={btnGray} disabled={loading} onClick={() => exec('skiprebuy')}>
+              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('skiprebuy')}>
                 {t('rebuy.skip')}
               </button>
             </div>
@@ -288,7 +285,7 @@ export function HoldemPage() {
               >
                 {t('addon.accept')}
               </button>
-              <button type="button" className={btnGray} disabled={loading} onClick={() => exec('skipaddon')}>
+              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('skipaddon')}>
                 {t('addon.skip')}
               </button>
             </div>
