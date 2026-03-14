@@ -83,9 +83,11 @@ export const KlondikePhase = {
 } as const;
 
 // Baccarat bet type constants (sync: internal/domain/Baccarat.go)
-export const BaccaratBetPlayer = 0;
-export const BaccaratBetBanker = 1;
-export const BaccaratBetTie = 2;
+export const BaccaratBetType = {
+  PLAYER: 0,
+  BANKER: 1,
+  TIE: 2,
+} as const;
 
 // Baccarat phase constants (sync: internal/domain/Baccarat.go)
 export const BaccaratPhase = {
