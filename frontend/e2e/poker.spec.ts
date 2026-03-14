@@ -9,6 +9,7 @@ test.describe('Poker E2E', () => {
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await expect(resetButton).toBeVisible();
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // DEAL phase: use チェック or コール to proceed
@@ -41,6 +42,7 @@ test.describe('Poker E2E', () => {
 
     // Start another round
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
   });
 });
