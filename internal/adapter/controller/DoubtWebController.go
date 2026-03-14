@@ -2,8 +2,10 @@ package controller
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
@@ -83,18 +85,9 @@ type DoubtWebOutputMetaAI struct {
 // ToConfig builds a DoubtConfig from the web input.
 func (p DoubtWebInput) ToConfig() domain.DoubtConfig {
 	cfg := domain.DefaultDoubtConfig()
-	if p.DoubtWindowSec != nil && *p.DoubtWindowSec >= 1 {
-		cfg.DoubtWindowSec = *p.DoubtWindowSec
-	}
-	if p.CpuMemoryLevel != nil {
-		level := *p.CpuMemoryLevel
-		if level >= int(domain.DoubtMemoryLevelEasy) && level <= int(domain.DoubtMemoryLevelHard) {
-			cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(level)
-		}
-	}
-	if p.PenaltyDrawLimit != nil && *p.PenaltyDrawLimit >= 0 {
-		cfg.PenaltyDrawLimit = *p.PenaltyDrawLimit
-	}
+	cfg.DoubtWindowSec = webutil.ClampIntPtr(p.DoubtWindowSec, 1, math.MaxInt, cfg.DoubtWindowSec)
+	cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(webutil.ClampIntPtr(p.CpuMemoryLevel, int(domain.DoubtMemoryLevelEasy), int(domain.DoubtMemoryLevelHard), int(cfg.CpuMemoryLevel)))
+	cfg.PenaltyDrawLimit = webutil.ClampIntPtr(p.PenaltyDrawLimit, 0, math.MaxInt, cfg.PenaltyDrawLimit)
 	cfg.CpuHesitationEnabled = p.CpuHesitationEnabled
 	cfg.CpuMetaAI = p.CpuMetaAI
 	return cfg

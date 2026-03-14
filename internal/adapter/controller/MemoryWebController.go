@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
@@ -59,12 +60,7 @@ type MemoryWebOutputConfig struct {
 // ToConfig builds a MemoryConfig from the nested web config, applying bounds checking.
 func (c *MemoryWebConfig) ToConfig() domain.MemoryConfig {
 	cfg := domain.DefaultMemoryConfig()
-	if c.CpuDifficulty != nil {
-		d := *c.CpuDifficulty
-		if d >= int(domain.MemoryCpuDifficultyEasy) && d <= int(domain.MemoryCpuDifficultyHard) {
-			cfg.CpuDifficulty = domain.MemoryCpuDifficulty(d)
-		}
-	}
+	cfg.CpuDifficulty = domain.MemoryCpuDifficulty(webutil.ClampIntPtr(c.CpuDifficulty, int(domain.MemoryCpuDifficultyEasy), int(domain.MemoryCpuDifficultyHard), int(cfg.CpuDifficulty)))
 	return cfg
 }
 
