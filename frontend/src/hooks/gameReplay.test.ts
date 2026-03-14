@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { type ReplayConfig, runReplay } from './gameReplay';
+import { type ReplayConfig, runReplay, shouldSkipReplay } from './gameReplay';
 
 describe('runReplay', () => {
   beforeEach(() => {
@@ -107,5 +107,62 @@ describe('runReplay', () => {
     expect(getActionDelay).toHaveBeenCalledTimes(2);
     expect(getActionDelay).toHaveBeenCalledWith('final', 0);
     expect(getActionDelay).toHaveBeenCalledWith('final', 1);
+  });
+});
+
+describe('shouldSkipReplay', () => {
+  it('returns false and updates ref on first call (ref is undefined)', () => {
+    const ref = { current: undefined as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+    const actions = [{ id: 1 }];
+
+    const skipped = shouldSkipReplay(actions, ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(false);
+    expect(ref.current).toEqual(actions);
+    expect(setDisplayState).not.toHaveBeenCalled();
+  });
+
+  it('returns true and calls setDisplayState when actions unchanged', () => {
+    const actions = [{ id: 1 }];
+    const ref = { current: [{ id: 1 }] as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+
+    const skipped = shouldSkipReplay(actions, ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(true);
+    expect(setDisplayState).toHaveBeenCalledWith('state');
+  });
+
+  it('returns false and updates ref when actions change', () => {
+    const ref = { current: [{ id: 1 }] as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+    const newActions = [{ id: 2 }];
+
+    const skipped = shouldSkipReplay(newActions, ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(false);
+    expect(ref.current).toEqual(newActions);
+    expect(setDisplayState).not.toHaveBeenCalled();
+  });
+
+  it('returns false on first call with empty actions (ref undefined vs [])', () => {
+    const ref = { current: undefined as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+
+    const skipped = shouldSkipReplay([], ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(false);
+    expect(ref.current).toEqual([]);
+  });
+
+  it('returns true when both current and new are empty arrays', () => {
+    const ref = { current: [] as unknown[] | undefined };
+    const setDisplayState = vi.fn();
+
+    const skipped = shouldSkipReplay([], ref, 'state', setDisplayState);
+
+    expect(skipped).toBe(true);
+    expect(setDisplayState).toHaveBeenCalledWith('state');
   });
 });

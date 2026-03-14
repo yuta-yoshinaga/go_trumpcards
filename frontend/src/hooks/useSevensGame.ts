@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
 import type { SevensResponse } from '../types/card';
-import { runReplay } from './gameReplay';
+import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
 
 function computeTableMinVals(tablePlaced: number[]): number[] {
@@ -100,12 +100,9 @@ export function useSevensGame() {
     setCfgJokerReclaim(res.config.jokerReclaimEnabled);
     setCfgEndStop(res.config.endStopEnabled);
     setCfgJokerConsBan(res.config.jokerConsecutiveBanned);
-    const newActions = res.cpuActions ?? [];
-    if (JSON.stringify(lastReplayedActionsRef.current) === JSON.stringify(newActions)) {
-      setDisplayState(res);
+    if (shouldSkipReplay(res.cpuActions ?? [], lastReplayedActionsRef, res, setDisplayState)) {
       return;
     }
-    lastReplayedActionsRef.current = newActions;
     await runReplay(res, setDisplayState, {
       buildReplayStates: buildSevensReplayStates,
     });
