@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import type { SettingsGroup } from '../components/common/SettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -10,6 +11,7 @@ import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { playerName } from '../utils/playerUtils';
@@ -47,6 +49,7 @@ export function SevensPage() {
     handleJokerPlace,
   } = useSevensGame();
 
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('sevens');
 
   if (!state) return null;
@@ -286,20 +289,22 @@ export function SevensPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              exec('reset', -1, 0, 0, {
-                tunnelEnabled: cfgTunnel,
-                tunnelSkipWidth: cfgTunnelSkipWidth,
-                jokerCount: cfgJokerCount,
-                cpuStrategy: cfgCpuStrategy,
-                maxPasses: cfgMaxPasses,
-                noJokerFinish: cfgNoJokerFinish,
-                jokerReclaim: cfgJokerReclaim,
-                endStop: cfgEndStop,
-                jokerConsecutiveBanned: cfgJokerConsBan,
-              });
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                exec('reset', -1, 0, 0, {
+                  tunnelEnabled: cfgTunnel,
+                  tunnelSkipWidth: cfgTunnelSkipWidth,
+                  jokerCount: cfgJokerCount,
+                  cpuStrategy: cfgCpuStrategy,
+                  maxPasses: cfgMaxPasses,
+                  noJokerFinish: cfgNoJokerFinish,
+                  jokerReclaim: cfgJokerReclaim,
+                  endStop: cfgEndStop,
+                  jokerConsecutiveBanned: cfgJokerConsBan,
+                });
+              })
+            }
           >
             {tc('button.reset')}
           </button>
@@ -318,6 +323,15 @@ export function SevensPage() {
           )}
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

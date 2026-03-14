@@ -22,11 +22,13 @@ import {
 } from '../components/blackjack/bjConstants';
 import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
@@ -75,6 +77,7 @@ export function BlackJackPage() {
     setSurrenderRule(res.surrenderRule);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   useEffect(() => {
     exec('reset');
@@ -393,11 +396,21 @@ export function BlackJackPage() {
             <BjEndPhaseControls
               loading={loading}
               onReset={handleReset}
+              onManualReset={() => requestConfirm(handleReset)}
               autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
             />
           )}
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

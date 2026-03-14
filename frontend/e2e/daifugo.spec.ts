@@ -9,6 +9,7 @@ test.describe('Daifugo E2E', () => {
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await expect(resetButton).toBeVisible();
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Verify game controls are visible
@@ -24,6 +25,7 @@ test.describe('Daifugo E2E', () => {
     // Game is still running, reset to start fresh
     await expect(resetButton).toBeVisible();
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Verify controls are back

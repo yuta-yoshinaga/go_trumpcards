@@ -252,6 +252,7 @@ describe('SevensPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
@@ -522,6 +523,7 @@ describe('SevensPage', () => {
       },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: true,
@@ -583,6 +585,7 @@ describe('SevensPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   }, 10000);
 
@@ -593,11 +596,13 @@ describe('SevensPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   }, 10000);
 
@@ -768,6 +773,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, maxPasses: 3 },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
@@ -954,6 +960,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, noJokerFinish: true },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
@@ -1038,6 +1045,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, jokerReclaimEnabled: true },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
@@ -1199,6 +1207,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, tunnelSkipWidth: 3 },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
@@ -1234,6 +1243,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, endStopEnabled: true },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
@@ -1410,6 +1420,7 @@ describe('SevensPage', () => {
       config: { ...defaultConfig, jokerConsecutiveBanned: true },
     });
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, {
         tunnelEnabled: false,
@@ -1540,5 +1551,32 @@ describe('SevensPage', () => {
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+  });
+
+  // --- ConfirmDialog tests ---
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<SevensPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, expect.any(Object)));
   });
 });

@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { HEARTS_PHASE } from '../types/card';
@@ -33,6 +35,7 @@ export function HeartsPage() {
     handleNextRound,
   } = useHeartsGame();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('hearts');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!state) return null;
 
@@ -223,10 +226,12 @@ export function HeartsPage() {
             type="button"
             className={btnWarning}
             onClick={() =>
-              exec('reset', undefined, undefined, {
-                cpuDifficulty: heartsConfig.cpuDifficulty,
-                pointLimit: heartsConfig.pointLimit,
-              })
+              requestConfirm(() =>
+                exec('reset', undefined, undefined, {
+                  cpuDifficulty: heartsConfig.cpuDifficulty,
+                  pointLimit: heartsConfig.pointLimit,
+                }),
+              )
             }
             disabled={loading}
           >
@@ -234,6 +239,15 @@ export function HeartsPage() {
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

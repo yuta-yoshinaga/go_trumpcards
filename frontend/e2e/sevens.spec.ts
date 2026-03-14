@@ -9,6 +9,7 @@ test.describe('Sevens E2E', () => {
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await expect(resetButton).toBeVisible();
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Game loop
@@ -44,6 +45,7 @@ test.describe('Sevens E2E', () => {
 
     // Reset for next game
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
   });
 });

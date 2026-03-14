@@ -4,6 +4,7 @@ import { holdemApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -12,6 +13,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -65,6 +67,7 @@ export function HoldemPage() {
   const { t: tc } = useTranslation('common');
   const phaseNames = usePhaseNames(t);
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const [betAmount, setBetAmount] = useState(20);
   const { actionLog, showActionLog, hideActionLog } = useActionLog('holdem');
 
@@ -319,15 +322,26 @@ export function HoldemPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              exec('reset');
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                exec('reset');
+              })
+            }
           >
             {tc('button.reset')}
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

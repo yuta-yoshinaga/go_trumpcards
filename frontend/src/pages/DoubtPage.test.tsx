@@ -264,6 +264,7 @@ describe('DoubtPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, defaultConfig));
   });
@@ -278,6 +279,7 @@ describe('DoubtPage', () => {
     });
     mockExec.mockReturnValueOnce(slowPromise);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
 
@@ -292,6 +294,7 @@ describe('DoubtPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
@@ -303,12 +306,14 @@ describe('DoubtPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
@@ -327,6 +332,7 @@ describe('DoubtPage', () => {
     });
     mockExec.mockReturnValueOnce(slowPromise);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByText('処理中...')).toBeInTheDocument();
@@ -967,6 +973,7 @@ describe('DoubtPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, expected));
   });
@@ -983,6 +990,7 @@ describe('DoubtPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
@@ -1007,6 +1015,7 @@ describe('DoubtPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, {
@@ -1049,6 +1058,39 @@ describe('DoubtPage', () => {
       renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByText(/残り 5 秒/)).toBeInTheDocument());
     });
+  });
+
+  // ── ConfirmDialog on reset ─────────────────────────────────────────────────
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, undefined, defaultConfig));
   });
 
   it('handles action log visibility and API fetch', async () => {

@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { MEMORY_PHASE } from '../types/card';
@@ -17,6 +19,7 @@ export function MemoryPage() {
   const { t: tc } = useTranslation('common');
   const { state, loading, error, exec, memoryConfig, handleConfigChange, handleFlip, handleNext } = useMemoryGame();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('memory');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!state) return null;
 
@@ -137,9 +140,7 @@ export function MemoryPage() {
             type="button"
             className={btnWarning}
             onClick={() =>
-              exec('reset', undefined, {
-                cpuDifficulty: memoryConfig.cpuDifficulty,
-              })
+              requestConfirm(() => exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty }))
             }
             disabled={loading}
           >
@@ -147,6 +148,15 @@ export function MemoryPage() {
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
 import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
@@ -10,6 +11,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import {
   actionDesc,
   CPU_MEMORY_OPTIONS,
@@ -44,6 +46,7 @@ export function DoubtPage() {
     handleCpuDoubtConfirm,
   } = useDoubtGame();
 
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('doubt');
 
   const claimInputRef = useRef<HTMLInputElement>(null);
@@ -300,10 +303,12 @@ export function DoubtPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              exec('reset', undefined, undefined, undefined, doubtConfig);
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                exec('reset', undefined, undefined, undefined, doubtConfig);
+              })
+            }
           >
             {tc('button.reset')}
           </button>
@@ -319,6 +324,15 @@ export function DoubtPage() {
           )}
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

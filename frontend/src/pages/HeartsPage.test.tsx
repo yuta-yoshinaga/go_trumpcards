@@ -214,6 +214,7 @@ describe('HeartsPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
@@ -229,6 +230,7 @@ describe('HeartsPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 100 }),
@@ -246,6 +248,7 @@ describe('HeartsPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 200 }),
@@ -284,6 +287,7 @@ describe('HeartsPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 100 }),
@@ -347,6 +351,7 @@ describe('HeartsPage', () => {
     });
     mockExec.mockReturnValueOnce(slow);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
     expect(screen.getByText('処理中...')).toBeInTheDocument();
@@ -459,6 +464,41 @@ describe('HeartsPage', () => {
     expect(screen.queryByText('ゲーム終了')).not.toBeInTheDocument();
   });
 
+  // ── ConfirmDialog on reset ─────────────────────────────────────────────────
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 100 }),
+    );
+  });
+
   it('handles action log visibility and API fetch', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<HeartsPage />);
@@ -499,6 +539,7 @@ describe('HeartsPage', () => {
     });
     mockExec.mockReturnValueOnce(slow);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
 

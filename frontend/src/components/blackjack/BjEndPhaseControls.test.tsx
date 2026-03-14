@@ -16,11 +16,20 @@ describe('BjEndPhaseControls', () => {
     expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument();
   });
 
-  it('calls onReset when reset button is clicked', () => {
+  it('calls onReset when reset button is clicked and onManualReset is not provided', () => {
     const onReset = vi.fn();
     render(<BjEndPhaseControls {...defaultProps({ onReset })} />);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     expect(onReset).toHaveBeenCalled();
+  });
+
+  it('calls onManualReset instead of onReset when onManualReset is provided', () => {
+    const onReset = vi.fn();
+    const onManualReset = vi.fn();
+    render(<BjEndPhaseControls {...defaultProps({ onReset, onManualReset })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(onManualReset).toHaveBeenCalled();
+    expect(onReset).not.toHaveBeenCalled();
   });
 
   it('disables reset button when loading is true', () => {

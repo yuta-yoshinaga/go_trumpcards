@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { BaccaratResponse } from '../types/card';
@@ -35,6 +37,7 @@ export function BaccaratPage() {
   }, [exec]);
 
   const { actionLog, showActionLog, hideActionLog } = useActionLog('baccarat');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!state) return null;
 
@@ -139,7 +142,7 @@ export function BaccaratPage() {
         )}
         {isEndPhase && (
           <div className="flex justify-center gap-2 pb-2">
-            <button type="button" className={btnPrimary} onClick={handleReset} disabled={loading}>
+            <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
               {t('button.reset')}
             </button>
             <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
@@ -148,6 +151,15 @@ export function BaccaratPage() {
           </div>
         )}
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

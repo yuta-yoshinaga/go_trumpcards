@@ -844,6 +844,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0, isLowball: false }),
     );
@@ -859,6 +860,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1, isLowball: false }),
     );
@@ -874,6 +876,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0, isLowball: true }),
     );
@@ -923,6 +926,7 @@ describe('PokerPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
@@ -932,10 +936,12 @@ describe('PokerPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
@@ -1190,5 +1196,32 @@ describe('PokerPage', () => {
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+  });
+
+  // --- ConfirmDialog tests ---
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
   });
 });
