@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
@@ -152,14 +152,12 @@ export function DaifugoPage() {
         />
 
         {/* Action log */}
-        {state.gameEndFlag && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+        <ActionLogSection
+          isEndPhase={state.gameEndFlag}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">

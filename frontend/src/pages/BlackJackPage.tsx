@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEarlySurrenderPhaseControls } from '../components/blackjack/BjEarlySurrenderPhaseControls';
@@ -31,7 +31,6 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
-import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 
@@ -308,14 +307,12 @@ export function BlackJackPage() {
         <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
 
         {/* Action log */}
-        {phase === BjPhase.END && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+        <ActionLogSection
+          isEndPhase={phase === BjPhase.END}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
 
         <ErrorAlert message={error} />
 

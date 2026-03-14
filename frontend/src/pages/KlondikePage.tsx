@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -11,7 +11,7 @@ import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { KLONDIKE_PHASE } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 
@@ -219,14 +219,12 @@ export function KlondikePage() {
         <ErrorAlert message={error ?? hintError} />
 
         {/* Action log */}
-        {isEnded && actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-        {isEnded && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
+        <ActionLogSection
+          isEndPhase={isEnded}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       {/* Footer */}

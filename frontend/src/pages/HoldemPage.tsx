@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { holdemApi } from '../api/gameApi';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -163,14 +163,12 @@ export function HoldemPage() {
         {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
 
         {/* Action log */}
-        {state?.gameEndFlag && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+        <ActionLogSection
+          isEndPhase={!!state?.gameEndFlag}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       {/* Sticky footer: player hand + buttons */}
@@ -245,7 +243,12 @@ export function HoldemPage() {
               >
                 {t('muck.muck')}
               </button>
-              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('show')}>
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('show')}
+              >
                 {t('muck.show')}
               </button>
             </div>
@@ -267,7 +270,12 @@ export function HoldemPage() {
               >
                 {t('rebuy.accept')}
               </button>
-              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('skiprebuy')}>
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('skiprebuy')}
+              >
                 {t('rebuy.skip')}
               </button>
             </div>
@@ -285,7 +293,12 @@ export function HoldemPage() {
               >
                 {t('addon.accept')}
               </button>
-              <button type="button" className={`${btnSecondary} min-w-[90px]`} disabled={loading} onClick={() => exec('skipaddon')}>
+              <button
+                type="button"
+                className={`${btnSecondary} min-w-[90px]`}
+                disabled={loading}
+                onClick={() => exec('skipaddon')}
+              >
                 {t('addon.skip')}
               </button>
             </div>
