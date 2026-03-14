@@ -1224,4 +1224,18 @@ describe('PokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
   });
+
+  // --- PhaseIndicator coverage ---
+
+  it('phase indicator shows your turn during exchange phase', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting during end phase', async () => {
+    mockExec.mockResolvedValue(endState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
 });

@@ -329,4 +329,17 @@ describe('MemoryPage', () => {
       expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
     );
   });
+
+  // --- PhaseIndicator coverage ---
+
+  it('phase indicator shows your turn when human flip turn', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting when cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
 });

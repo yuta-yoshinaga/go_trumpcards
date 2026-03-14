@@ -582,4 +582,24 @@ describe('HeartsPage', () => {
     await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
+
+  // --- PhaseIndicator coverage ---
+
+  it('phase indicator shows your turn during pass phase', async () => {
+    mockExec.mockResolvedValue(passPhaseState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows your turn when human play turn', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting when cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
 });
