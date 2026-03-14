@@ -42,7 +42,10 @@
   "button": {
     "reset": "Reset",
     "pass": "Pass",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "confirmReset": "Confirm Reset",
+    "confirmResetMessage": "Are you sure you want to reset the game?",
+    "confirm": "Confirm"
   },
   "status": {
     "loading": "Loading...",

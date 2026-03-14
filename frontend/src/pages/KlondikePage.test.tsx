@@ -252,6 +252,7 @@ describe('KlondikePage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
@@ -513,6 +514,39 @@ describe('KlondikePage', () => {
     );
   });
 
+  // ── ConfirmDialog on reset ─────────────────────────────────────────────────
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
   it('displays error message', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
@@ -520,6 +554,7 @@ describe('KlondikePage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('Network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),

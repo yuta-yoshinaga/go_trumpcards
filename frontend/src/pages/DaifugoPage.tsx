@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
 import { DaifugoHumanArea } from '../components/daifugo/DaifugoHumanArea';
@@ -11,6 +12,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { DaifugoAction } from '../types/card';
@@ -33,6 +35,7 @@ export function DaifugoPage() {
     handleConfigChange,
   } = useDaifugoGame();
 
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('daifugo');
 
   if (!state) return null;
@@ -195,10 +198,12 @@ export function DaifugoPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              exec('reset', [], configInput);
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                exec('reset', [], configInput);
+              })
+            }
           >
             {tc('button.reset')}
           </button>
@@ -231,6 +236,15 @@ export function DaifugoPage() {
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

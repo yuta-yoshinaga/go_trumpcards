@@ -193,6 +193,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', [], expect.any(Object)));
   });
 
@@ -453,6 +454,7 @@ describe('DaifugoPage', () => {
     mockExec.mockReset();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   }, 10000);
 
@@ -582,6 +584,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ jokerCount: 0 })));
   });
 
@@ -594,6 +597,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ fiveSkipEnabled: true })),
     );
@@ -873,6 +877,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ sandstormEnabled: true })),
     );
@@ -885,6 +890,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ emperorEnabled: true })),
     );
@@ -911,6 +917,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ sequenceRevolutionEnabled: true })),
     );
@@ -923,6 +930,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ illegalFinishEnabled: true })),
     );
@@ -998,6 +1006,7 @@ describe('DaifugoPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(humanTurnState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', [], expect.objectContaining({ cpuDifficulty: 2 })),
     );
@@ -1024,5 +1033,32 @@ describe('DaifugoPage', () => {
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+  });
+
+  // --- ConfirmDialog tests ---
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', [], expect.any(Object)));
   });
 });

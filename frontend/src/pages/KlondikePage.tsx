@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { KLONDIKE_PHASE } from '../types/card';
@@ -34,6 +36,7 @@ export function KlondikePage() {
   } = useKlondikeGame();
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('klondike');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!state) return null;
 
@@ -240,11 +243,20 @@ export function KlondikePage() {
               </button>
             </>
           )}
-          <button type="button" className={btnWarning} onClick={handleReset} disabled={loading}>
+          <button type="button" className={btnWarning} onClick={() => requestConfirm(handleReset)} disabled={loading}>
             {tc('button.reset')}
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

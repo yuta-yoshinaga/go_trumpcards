@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -11,6 +12,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -30,6 +32,7 @@ export function PokerPage() {
   const { t } = useTranslation('poker');
   const { t: tc } = useTranslation('common');
   const { state, loading, error, exec, selected, toggleCard, odds, canExchange } = usePokerGame();
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('poker');
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
@@ -280,15 +283,26 @@ export function PokerPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              exec('reset', undefined, undefined, { bettingLimit, isLowball });
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                exec('reset', undefined, undefined, { bettingLimit, isLowball });
+              })
+            }
           >
             {tc('button.reset')}
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }
