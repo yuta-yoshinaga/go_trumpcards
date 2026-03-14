@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // readInput はスキャナから1行を読み込み、EOFとエラーを処理します。
@@ -12,7 +14,7 @@ func readInput(scanner *bufio.Scanner) (text string, exit bool) {
 	fmt.Print("> ")
 	if !scanner.Scan() {
 		if err := scanner.Err(); err != nil {
-			fmt.Fprintf(os.Stderr, "入力の読み取り中にエラーが発生しました: %v\n", err)
+			fmt.Fprintln(os.Stderr, i18n.Tf("inputReadError", "error", err.Error()))
 		}
 		return "", true
 	}

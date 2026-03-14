@@ -27,5 +27,6 @@
   "updateSuccess": "{{version}} にアップデートしました",
   "updateFetchError": "最新リリース情報の取得に失敗しました: {{error}}",
   "updateNoAsset": "お使いの環境({{os}}/{{arch}})に対応するバイナリが見つかりませんでした",
-  "updateApplyError": "アップデートの適用に失敗しました: {{error}}"
+  "updateApplyError": "アップデートの適用に失敗しました: {{error}}",
+  "inputReadError": "入力の読み取り中にエラーが発生しました: {{error}}"
 }

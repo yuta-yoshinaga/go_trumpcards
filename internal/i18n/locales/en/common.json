@@ -27,5 +27,6 @@
   "updateSuccess": "Successfully updated to {{version}}",
   "updateFetchError": "Failed to fetch latest release info: {{error}}",
   "updateNoAsset": "No binary found for your platform ({{os}}/{{arch}})",
-  "updateApplyError": "Failed to apply update: {{error}}"
+  "updateApplyError": "Failed to apply update: {{error}}",
+  "inputReadError": "Error reading input: {{error}}"
 }
