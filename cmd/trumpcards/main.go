@@ -60,6 +60,14 @@ OPTIONS:
   --no-color        Disable color output
   -V, --version     Show version information
 
+EXAMPLES:
+  trumpcards                     Start interactive mode (switch games with 'switch <game>')
+  trumpcards blackjack           Play BlackJack
+  trumpcards --lang en poker     Play Poker in English
+  trumpcards update              Self-update to the latest version
+  NO_COLOR=1 trumpcards hearts   Play Hearts without color output
+  trumpcards web                 Start the web GUI server
+
 ENVIRONMENT VARIABLES:
   NO_COLOR          Disable color output when set (see https://no-color.org/)
                     Example: NO_COLOR=1 trumpcards blackjack
