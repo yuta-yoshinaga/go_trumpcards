@@ -2,6 +2,8 @@
   "nav": {
     "switchToJa": "Switch to Japanese",
     "switchToEn": "Switch to English",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
     "blackjack": "Blackjack",
     "poker": "Poker",
     "oldmaid": "Old Maid",
@@ -40,7 +42,10 @@
   "button": {
     "reset": "Reset",
     "pass": "Pass",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "confirmReset": "Confirm Reset",
+    "confirmResetMessage": "Are you sure you want to reset the game?",
+    "confirm": "Confirm"
   },
   "status": {
     "loading": "Loading...",
@@ -59,6 +64,10 @@
     "empty": "No actions recorded.",
     "system": "SYSTEM",
     "player": "Player {{idx}}"
+  },
+  "turnIndicator": {
+    "yourTurn": "Your Turn",
+    "waiting": "Waiting"
   },
   "card": {
     "back": "Card back"

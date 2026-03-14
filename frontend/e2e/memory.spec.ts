@@ -9,13 +9,14 @@ test.describe('Memory E2E', () => {
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await expect(resetButton).toBeVisible();
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Verify score table is visible
     await expect(page.getByText('スコア')).toBeVisible();
 
-    // Verify board cards are present (52 card buttons + reset button)
-    const boardButtons = page.locator('button');
+    // Verify board cards are present (52 numbered card buttons)
+    const boardButtons = page.locator('button').filter({ hasText: /^\d+$/ });
     await expect(boardButtons.first()).toBeVisible();
 
     const nextButton = page.getByRole('button', { name: '次へ' });
@@ -54,6 +55,7 @@ test.describe('Memory E2E', () => {
 
     // Reset and verify game restarts
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     await expect(page.getByText('スコア')).toBeVisible();
   });
@@ -74,6 +76,7 @@ test.describe('Memory E2E', () => {
     // Reset with new settings
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Verify game started

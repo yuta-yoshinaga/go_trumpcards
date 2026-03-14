@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { focusRingWhite } from '../styles/buttonStyles';
 import type { Card } from '../types/card';
 import { cardAlt } from '../utils/cardAlt';
 
@@ -40,7 +41,7 @@ export function CardImage({
     <img
       src={getImagePath(card)}
       alt={cardAlt(card)}
-      style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
+      style={{ width: width ?? 80, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
       className={className}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -66,7 +67,7 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
     <img
       src="/images/z01.png"
       alt={onClick ? '' : t('card.back')}
-      style={{ width: width ?? 80, borderRadius: 6, display: 'block', ...style }}
+      style={{ width: width ?? 80, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
       className={className}
     />
   );
@@ -76,6 +77,7 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
         type="button"
         onClick={onClick}
         aria-label={effectiveAriaLabel}
+        className={`${focusRingWhite} rounded-md`}
         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0 }}
       >
         {img}

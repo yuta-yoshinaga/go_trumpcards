@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
 import { DaifugoHumanArea } from '../components/daifugo/DaifugoHumanArea';
@@ -11,6 +12,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { DaifugoAction } from '../types/card';
@@ -33,6 +35,7 @@ export function DaifugoPage() {
     handleConfigChange,
   } = useDaifugoGame();
 
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('daifugo');
 
   if (!state) return null;
@@ -149,14 +152,12 @@ export function DaifugoPage() {
         />
 
         {/* Action log */}
-        {state.gameEndFlag && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+        <ActionLogSection
+          isEndPhase={state.gameEndFlag}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
@@ -195,10 +196,12 @@ export function DaifugoPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              exec('reset', [], configInput);
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                exec('reset', [], configInput);
+              })
+            }
           >
             {tc('button.reset')}
           </button>
@@ -231,6 +234,15 @@ export function DaifugoPage() {
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

@@ -9,6 +9,7 @@ test.describe("Texas Hold'em E2E", () => {
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await expect(resetButton).toBeVisible();
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Play through betting rounds: PRE_FLOP → FLOP → TURN → RIVER → SHOWDOWN
@@ -51,6 +52,7 @@ test.describe("Texas Hold'em E2E", () => {
 
     // Start next round
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
   });
 });

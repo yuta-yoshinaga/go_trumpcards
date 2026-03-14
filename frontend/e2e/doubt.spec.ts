@@ -9,6 +9,7 @@ test.describe('Doubt E2E', () => {
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await expect(resetButton).toBeVisible();
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     const MAX_TURNS = 300;
@@ -55,6 +56,7 @@ test.describe('Doubt E2E', () => {
 
     // Reset
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
   });
 });

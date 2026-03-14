@@ -493,14 +493,6 @@ export interface HeartsConfig {
   pointLimit: number;
 }
 
-export const HEARTS_PHASE = {
-  PASS: 0,
-  PLAY: 1,
-  TRICK_END: 2,
-  ROUND_END: 3,
-  GAME_END: 4,
-} as const;
-
 export interface HeartsResponse {
   players: HeartsPlayerData[];
   phase: number;
@@ -537,13 +529,6 @@ export interface MemoryConfig {
   cpuDifficulty: number;
 }
 
-export const MEMORY_PHASE = {
-  FLIP1: 0,
-  FLIP2: 1,
-  RESULT: 2,
-  GAME_END: 3,
-} as const;
-
 export interface MemoryResponse {
   players: MemoryPlayerData[];
   board: MemoryBoardCard[];
@@ -576,12 +561,6 @@ export interface KlondikeHint {
   toCol: number;
 }
 
-export const KLONDIKE_PHASE = {
-  PLAYING: 0,
-  GAME_CLEAR: 1,
-  GAME_OVER: 2,
-} as const;
-
 export interface KlondikeResponse {
   tableau: KlondikeTableauCard[][];
   stockCount: number;
@@ -594,15 +573,6 @@ export interface KlondikeResponse {
   messageParams?: Record<string, string>;
   hint?: KlondikeHint;
 }
-
-export const BACCARAT_BET_PLAYER = 0;
-export const BACCARAT_BET_BANKER = 1;
-export const BACCARAT_BET_TIE = 2;
-
-export const BACCARAT_PHASE = {
-  BET: 1,
-  END: 2,
-} as const;
 
 export interface BaccaratResponse {
   playerHand: Card[];

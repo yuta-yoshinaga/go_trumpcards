@@ -1,4 +1,11 @@
 {
+  "phase": {
+    "init": "Initializing",
+    "deal": "Deal",
+    "exchange": "Exchange",
+    "secondBet": "Second Bet",
+    "end": "Result"
+  },
   "yourHand": "Your Hand",
   "joker": "Jokers:",
   "exchangeInstruction": "Click cards to select, then press \"Exchange\" or \"Stand\".",

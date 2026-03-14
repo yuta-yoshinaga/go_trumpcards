@@ -3,20 +3,23 @@ import { useTranslation } from 'react-i18next';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { BaccaratResponse } from '../types/card';
-import { BACCARAT_BET_BANKER, BACCARAT_BET_PLAYER, BACCARAT_BET_TIE, BACCARAT_PHASE } from '../types/card';
+import { BaccaratBetType, BaccaratPhase } from '../types/phases';
 
 const BET_TYPE_LABELS: Record<number, string> = {
-  [BACCARAT_BET_PLAYER]: 'betType.player',
-  [BACCARAT_BET_BANKER]: 'betType.banker',
-  [BACCARAT_BET_TIE]: 'betType.tie',
+  [BaccaratBetType.PLAYER]: 'betType.player',
+  [BaccaratBetType.BANKER]: 'betType.banker',
+  [BaccaratBetType.TIE]: 'betType.tie',
 };
 
 export function BaccaratPage() {
@@ -24,7 +27,7 @@ export function BaccaratPage() {
   const { t: tc } = useTranslation('common');
 
   const [betAmount, setBetAmount] = useState(100);
-  const [betType, setBetType] = useState(BACCARAT_BET_PLAYER);
+  const [betType, setBetType] = useState<number>(BaccaratBetType.PLAYER);
 
   const onSuccess = useCallback((_res: BaccaratResponse) => {}, []);
 
@@ -35,11 +38,12 @@ export function BaccaratPage() {
   }, [exec]);
 
   const { actionLog, showActionLog, hideActionLog } = useActionLog('baccarat');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!state) return null;
 
-  const isBetPhase = state.phase === BACCARAT_PHASE.BET;
-  const isEndPhase = state.phase === BACCARAT_PHASE.END;
+  const isBetPhase = state.phase === BaccaratPhase.BET;
+  const isEndPhase = state.phase === BaccaratPhase.END;
 
   const handleBet = () => {
     exec('bet', betAmount, betType);
@@ -53,11 +57,13 @@ export function BaccaratPage() {
     <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
 
+      {/* Phase indicator */}
+      <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>
+        <span>{t('label.chips', { chips: state.chips })}</span>
+      </PhaseIndicator>
+
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         <ErrorAlert message={error} />
-
-        {/* Chips */}
-        <div className="text-white text-center mb-2 font-bold">{t('label.chips', { chips: state.chips })}</div>
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
@@ -65,7 +71,7 @@ export function BaccaratPage() {
         {state.playerHand.length > 0 && (
           <div className="mb-4">
             <div className="text-yellow-300 font-bold text-center mb-1">
-              {t('player')} {t('label.value', { value: state.playerHandValue })}
+              <span aria-hidden="true">🟡</span> {t('player')} {t('label.value', { value: state.playerHandValue })}
             </div>
             <div className="flex justify-center gap-2">
               {state.playerHand.map((card, i) => (
@@ -79,7 +85,7 @@ export function BaccaratPage() {
         {state.bankerHand.length > 0 && (
           <div className="mb-4">
             <div className="text-red-300 font-bold text-center mb-1">
-              {t('banker')} {t('label.value', { value: state.bankerHandValue })}
+              <span aria-hidden="true">🔴</span> {t('banker')} {t('label.value', { value: state.bankerHandValue })}
             </div>
             <div className="flex justify-center gap-2">
               {state.bankerHand.map((card, i) => (
@@ -127,9 +133,9 @@ export function BaccaratPage() {
                 onChange={(e) => setBetType(Number(e.target.value))}
                 className="px-2 py-1 rounded text-sm"
               >
-                <option value={BACCARAT_BET_PLAYER}>{t(BET_TYPE_LABELS[BACCARAT_BET_PLAYER])}</option>
-                <option value={BACCARAT_BET_BANKER}>{t(BET_TYPE_LABELS[BACCARAT_BET_BANKER])}</option>
-                <option value={BACCARAT_BET_TIE}>{t(BET_TYPE_LABELS[BACCARAT_BET_TIE])}</option>
+                <option value={BaccaratBetType.PLAYER}>{t(BET_TYPE_LABELS[BaccaratBetType.PLAYER])}</option>
+                <option value={BaccaratBetType.BANKER}>{t(BET_TYPE_LABELS[BaccaratBetType.BANKER])}</option>
+                <option value={BaccaratBetType.TIE}>{t(BET_TYPE_LABELS[BaccaratBetType.TIE])}</option>
               </select>
             </div>
             <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
@@ -139,7 +145,7 @@ export function BaccaratPage() {
         )}
         {isEndPhase && (
           <div className="flex justify-center gap-2 pb-2">
-            <button type="button" className={btnPrimary} onClick={handleReset} disabled={loading}>
+            <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
               {t('button.reset')}
             </button>
             <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
@@ -148,6 +154,15 @@ export function BaccaratPage() {
           </div>
         )}
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

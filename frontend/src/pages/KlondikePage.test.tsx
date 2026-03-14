@@ -102,7 +102,7 @@ describe('KlondikePage', () => {
 
   it('renders move count', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText(/手数: 5/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
   it('renders waste card', async () => {
@@ -252,6 +252,7 @@ describe('KlondikePage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
@@ -498,7 +499,7 @@ describe('KlondikePage', () => {
       messageCode: 'klondike.playing',
     });
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText('プレイ中')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThanOrEqual(1));
   });
 
   it('displays hint error when hint fetch fails', async () => {
@@ -513,6 +514,39 @@ describe('KlondikePage', () => {
     );
   });
 
+  // ── ConfirmDialog on reset ─────────────────────────────────────────────────
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
   it('displays error message', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
@@ -520,6 +554,7 @@ describe('KlondikePage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('Network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
@@ -552,5 +587,24 @@ describe('KlondikePage', () => {
     expect(buttonNames).not.toContain('ヒント');
     expect(buttonNames).not.toContain('自動完成');
     expect(buttonNames).not.toContain('ギブアップ');
+  });
+
+  it('reset hides the action log panel if open', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    vi.mocked(actionLogApi.klondike).mockResolvedValueOnce({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: 'waste→tableau' }],
+    });
+
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
   });
 });

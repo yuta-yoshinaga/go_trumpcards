@@ -1,4 +1,11 @@
 {
+  "phase": {
+    "pass": "パス",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",

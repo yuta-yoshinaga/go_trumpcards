@@ -87,7 +87,7 @@ func TestPokerWebController_Reset_WithCpuCount_BelowMin(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	cfg.CpuCount = 1 // clamped from 0 to 1
+	// out-of-range → default (CpuCount=3)
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
@@ -106,7 +106,7 @@ func TestPokerWebController_Reset_WithCpuCount_AboveMax(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	cfg.CpuCount = 3 // clamped from 5 to 3
+	// out-of-range → default (CpuCount=3)
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
@@ -144,7 +144,7 @@ func TestPokerWebController_Reset_WithJokerCount_BelowMin(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	cfg.JokerCount = 0 // clamped from -1 to 0
+	// out-of-range → default (JokerCount=0)
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
@@ -163,7 +163,7 @@ func TestPokerWebController_Reset_WithJokerCount_AboveMax(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	cfg.JokerCount = 2 // clamped from 5 to 2
+	// out-of-range → default (JokerCount=0)
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
@@ -884,7 +884,7 @@ func TestPokerWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	cfg.BettingLimit = domain.BettingLimitNoLimit // clamped from 5 to 2
+	// out-of-range → default (BettingLimit=0)
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
@@ -903,7 +903,7 @@ func TestPokerWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	cfg.BettingLimit = domain.BettingLimitFixed // clamped from -1 to 0
+	// out-of-range → default (BettingLimit=0)
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),

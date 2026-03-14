@@ -1010,6 +1010,7 @@ describe('BlackJackPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(betPhaseState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         dealerHitsSoft17: false,
@@ -1417,5 +1418,63 @@ describe('BlackJackPage', () => {
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+  });
+
+  // --- ConfirmDialog tests ---
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(betPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+  });
+
+  // --- PhaseIndicator coverage ---
+
+  it('phase indicator shows your turn during action phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows your turn during early surrender phase', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, phase: 6 });
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting during end phase', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
+
+  it('phase indicator shows no turn indicator during insurance phase', async () => {
+    mockExec.mockResolvedValue(insurancePhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByText('あなたのターン')).not.toBeInTheDocument();
+    expect(screen.queryByText('待機中')).not.toBeInTheDocument();
   });
 });

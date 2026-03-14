@@ -67,6 +67,9 @@
     "cpuDifficulty": "CPU難易度:",
     "difficultyNormal": "ふつう",
     "difficultyEasy": "よわい",
-    "difficultyHard": "つよい"
+    "difficultyHard": "つよい",
+    "groupBasic": "基本ルール",
+    "groupSpecial": "特殊ルール",
+    "groupGame": "ゲーム設定"
   }
 }

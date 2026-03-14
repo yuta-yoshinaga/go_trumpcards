@@ -1,15 +1,18 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
-import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import { KLONDIKE_PHASE } from '../types/card';
+import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { KlondikePhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -34,12 +37,13 @@ export function KlondikePage() {
   } = useKlondikeGame();
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('klondike');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!state) return null;
 
-  const isPlaying = state.phase === KLONDIKE_PHASE.PLAYING;
-  const isGameClear = state.phase === KLONDIKE_PHASE.GAME_CLEAR;
-  const isGameOver = state.phase === KLONDIKE_PHASE.GAME_OVER;
+  const isPlaying = state.phase === KlondikePhase.PLAYING;
+  const isGameClear = state.phase === KlondikePhase.GAME_CLEAR;
+  const isGameOver = state.phase === KlondikePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
@@ -51,6 +55,15 @@ export function KlondikePage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
+
+      {/* Phase indicator */}
+      <PhaseIndicator
+        phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
+      >
+        <span>
+          {t('moveCount')}: {state.moveCount}
+        </span>
+      </PhaseIndicator>
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
@@ -69,7 +82,7 @@ export function KlondikePage() {
                 onClick={handleDraw}
                 disabled={!isPlaying || loading}
                 style={{ width: cardWidth, height: cardHeight }}
-                className="rounded border-2 border-dashed border-white/30 text-white/40 text-xs flex items-center justify-center"
+                className={`rounded border-2 border-dashed border-white/30 text-white/40 text-xs flex items-center justify-center ${focusRingWhite}`}
               >
                 {t('draw')}
               </button>
@@ -92,7 +105,7 @@ export function KlondikePage() {
                 disabled={!isPlaying || loading}
                 aria-label={cardAlt(state.waste[state.waste.length - 1])}
                 aria-pressed={isSourceSelected('waste')}
-                className={`p-0 border-0 bg-transparent cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
+                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
               >
                 <CardImage card={state.waste[state.waste.length - 1]} width={cardWidth} />
               </button>
@@ -118,7 +131,7 @@ export function KlondikePage() {
                   onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
                   disabled={!isPlaying || loading || !selectedSource}
                   aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
-                  className="p-0 border-0 bg-transparent cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                 >
                   <CardImage card={pile[pile.length - 1]} width={cardWidth} />
                 </button>
@@ -129,18 +142,13 @@ export function KlondikePage() {
                   disabled={!isPlaying || loading || !selectedSource}
                   aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                   style={{ width: cardWidth, height: cardHeight }}
-                  className="rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                  className={`rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center ${focusRingWhite}`}
                 >
                   A
                 </button>
               )}
             </div>
           ))}
-        </div>
-
-        {/* Move count */}
-        <div className="text-white/60 text-sm mb-2">
-          {t('moveCount')}: {state.moveCount}
         </div>
 
         {/* Tableau */}
@@ -155,7 +163,7 @@ export function KlondikePage() {
                     onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
                     disabled={!isPlaying || loading || !selectedSource}
                     style={{ height: cardHeight }}
-                    className="w-full rounded border-2 border-dashed border-white/20 text-white/20 text-xs flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                    className={`w-full rounded border-2 border-dashed border-white/20 text-white/20 text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
                     K
                   </button>
@@ -179,7 +187,7 @@ export function KlondikePage() {
                           disabled={!isPlaying || loading}
                           aria-label={cardAlt(tc.card)}
                           aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
-                          className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
+                          className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                         >
                           <CardImage card={tc.card} width={cardWidth} style={{ width: '100%' }} />
                         </button>
@@ -211,14 +219,12 @@ export function KlondikePage() {
         <ErrorAlert message={error ?? hintError} />
 
         {/* Action log */}
-        {isEnded && actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-        {isEnded && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
+        <ActionLogSection
+          isEndPhase={isEnded}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       {/* Footer */}
@@ -240,11 +246,30 @@ export function KlondikePage() {
               </button>
             </>
           )}
-          <button type="button" className={btnWarning} onClick={handleReset} disabled={loading}>
+          <button
+            type="button"
+            className={btnWarning}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                return handleReset();
+              })
+            }
+            disabled={loading}
+          >
             {tc('button.reset')}
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

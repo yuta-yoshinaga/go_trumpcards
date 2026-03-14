@@ -25,7 +25,8 @@ describe('NavBar', () => {
   it('renders navigation links for all game routes', () => {
     renderNavBar();
     const links = screen.getAllByRole('link');
-    expect(links).toHaveLength(gameRoutes.length);
+    // game links + brand link
+    expect(links.length).toBeGreaterThanOrEqual(gameRoutes.length);
   });
 
   for (const { path, labelKey } of gameRoutes) {
@@ -54,28 +55,116 @@ describe('NavBar', () => {
 
   it('renders JA and EN language toggle buttons with aria-labels and aria-pressed', () => {
     renderNavBar();
-    const jaBtn = screen.getByRole('button', { name: i18n.t('nav.switchToJa') });
-    const enBtn = screen.getByRole('button', { name: i18n.t('nav.switchToEn') });
-    expect(jaBtn).toBeInTheDocument();
-    expect(enBtn).toBeInTheDocument();
-    expect(jaBtn).toHaveAttribute('aria-pressed', 'true');
-    expect(enBtn).toHaveAttribute('aria-pressed', 'false');
+    const jaBtns = screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') });
+    const enBtns = screen.getAllByRole('button', { name: i18n.t('nav.switchToEn') });
+    expect(jaBtns.length).toBeGreaterThanOrEqual(1);
+    expect(enBtns.length).toBeGreaterThanOrEqual(1);
+    expect(jaBtns[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(enBtns[0]).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('switches language to EN and updates aria-pressed when EN button is clicked', () => {
     renderNavBar();
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.switchToEn') }));
+    fireEvent.click(screen.getAllByRole('button', { name: i18n.t('nav.switchToEn') })[0]);
     expect(i18n.language).toBe('en');
-    expect(screen.getByRole('button', { name: i18n.t('nav.switchToEn') })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: i18n.t('nav.switchToJa') })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getAllByRole('button', { name: i18n.t('nav.switchToEn') })[0]).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') })[0]).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
   });
 
   it('switches language back to JA and updates aria-pressed when JA button is clicked', () => {
     renderNavBar();
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.switchToEn') }));
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.switchToJa') }));
+    fireEvent.click(screen.getAllByRole('button', { name: i18n.t('nav.switchToEn') })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') })[0]);
     expect(i18n.language).toBe('ja');
-    expect(screen.getByRole('button', { name: i18n.t('nav.switchToJa') })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: i18n.t('nav.switchToEn') })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') })[0]).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getAllByRole('button', { name: i18n.t('nav.switchToEn') })[0]).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+  });
+
+  describe('hamburger menu', () => {
+    it('renders hamburger button with openMenu aria-label and aria-controls', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      expect(btn).toBeInTheDocument();
+      expect(btn).toHaveAttribute('aria-expanded', 'false');
+      expect(btn).toHaveAttribute('aria-controls', 'main-nav');
+      expect(btn).toHaveTextContent('☰');
+    });
+
+    it('nav has id matching aria-controls and hidden class by default', () => {
+      renderNavBar();
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveAttribute('id', 'main-nav');
+      expect(nav).toHaveClass('hidden');
+    });
+
+    it('clicking hamburger toggles menu open', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      expect(btn).toHaveAttribute('aria-expanded', 'true');
+      expect(btn).toHaveTextContent('✕');
+      const nav = screen.getByRole('navigation');
+      expect(nav).not.toHaveClass('hidden');
+    });
+
+    it('clicking hamburger again toggles menu closed and updates aria-label', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const closeBtn = screen.getByRole('button', { name: i18n.t('nav.closeMenu') });
+      expect(closeBtn).toBeInTheDocument();
+      fireEvent.click(closeBtn);
+      expect(closeBtn).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.getByRole('button', { name: i18n.t('nav.openMenu') })).toBeInTheDocument();
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveClass('hidden');
+    });
+
+    it('clicking a game link closes the menu', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const firstLink = screen
+        .getAllByRole('link')
+        .find((link) => gameRoutes.some(({ path }) => link.getAttribute('href') === path));
+      expect(firstLink).toBeDefined();
+      fireEvent.click(firstLink as HTMLElement);
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveClass('hidden');
+      expect(screen.getByRole('button', { name: i18n.t('nav.openMenu') })).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('renders brand link pointing to home', () => {
+      renderNavBar();
+      const brandLink = screen.getByRole('link', { name: 'Trump Cards' });
+      expect(brandLink).toHaveAttribute('href', '/');
+    });
+
+    it('clicking brand link closes the menu', () => {
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      fireEvent.click(screen.getByRole('link', { name: 'Trump Cards' }));
+      const nav = screen.getByRole('navigation');
+      expect(nav).toHaveClass('hidden');
+    });
+
+    it('language toggle is always accessible in mobile header', () => {
+      renderNavBar();
+      // Language buttons exist even when nav is hidden (mobile header has its own)
+      const jaBtns = screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') });
+      expect(jaBtns.length).toBeGreaterThanOrEqual(2);
+    });
   });
 });

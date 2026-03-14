@@ -1,21 +1,35 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { usePokerGame } from '../hooks/usePokerGame';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { PokerPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
+
+function usePhaseNames(t: (key: string) => string): Record<number, string> {
+  return {
+    [PokerPhase.INIT]: t('phase.init'),
+    [PokerPhase.DEAL]: t('phase.deal'),
+    [PokerPhase.EXCHANGE]: t('phase.exchange'),
+    [PokerPhase.SECOND_BET]: t('phase.secondBet'),
+    [PokerPhase.END]: t('phase.end'),
+  };
+}
 
 const cardWrapBase: React.CSSProperties = {
   position: 'relative',
@@ -29,7 +43,9 @@ const cardWrapBase: React.CSSProperties = {
 export function PokerPage() {
   const { t } = useTranslation('poker');
   const { t: tc } = useTranslation('common');
+  const phaseNames = usePhaseNames(t);
   const { state, loading, error, exec, selected, toggleCard, odds, canExchange } = usePokerGame();
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('poker');
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
@@ -56,8 +72,8 @@ export function PokerPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
-      {/* Info bar */}
-      <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
+      {/* Phase indicator + info bar */}
+      <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canExchange}>
         <span>
           {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
         </span>
@@ -72,7 +88,7 @@ export function PokerPage() {
         {state?.isLowball && (
           <span className="bg-yellow-600 text-white px-2 py-0.5 rounded text-xs font-bold">[{t('lowballMode')}]</span>
         )}
-      </div>
+      </PhaseIndicator>
 
       {/* Scrollable: CPU players + logs */}
       <div className="flex-1 overflow-y-auto pt-4 px-5">
@@ -147,6 +163,7 @@ export function PokerPage() {
                     aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}`}
                     aria-pressed={isSelected}
                     onClick={() => toggleCard(i)}
+                    className={`${focusRingBlue} rounded`}
                     style={{
                       background: 'none',
                       border: 'none',
@@ -155,18 +172,10 @@ export function PokerPage() {
                       cursor: canExchange ? 'pointer' : 'default',
                     }}
                   >
-                    <CardImage
-                      card={card}
-                      width={60}
-                      style={{
-                        border: isSelected ? '3px solid var(--color-game-status-waiting)' : '3px solid transparent',
-                        transform: isSelected ? 'translateY(-10px)' : undefined,
-                        transition: 'transform 0.15s',
-                      }}
-                    />
+                    <CardImage card={card} width={60} style={selectedCardStyle(isSelected)} />
                     <div
                       style={{
-                        color: 'var(--color-game-status-waiting)',
+                        color: 'var(--color-game-card-selected)',
                         fontSize: '0.75em',
                         fontWeight: 'bold',
                         visibility: isSelected ? 'visible' : 'hidden',
@@ -190,14 +199,12 @@ export function PokerPage() {
         />
 
         {/* Action log */}
-        {state?.gameEndFlag && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+        <ActionLogSection
+          isEndPhase={!!state?.gameEndFlag}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
 
         <ErrorAlert message={error} />
 
@@ -279,15 +286,26 @@ export function PokerPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              exec('reset', undefined, undefined, { bettingLimit, isLowball });
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                exec('reset', undefined, undefined, { bettingLimit, isLowball });
+              })
+            }
           >
             {tc('button.reset')}
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

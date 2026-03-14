@@ -62,7 +62,7 @@ describe('CardImage', () => {
   it('defaults to 80px width when width prop is omitted', () => {
     const card: Card = { design: 'SPADE', value: 1 };
     render(<CardImage card={card} />);
-    expect(screen.getByRole('img')).toHaveStyle({ width: '80px' });
+    expect(screen.getByRole('img')).toHaveStyle({ width: '80px', maxWidth: '100%' });
   });
 
   it('sets draggable attribute when draggable prop is true', () => {
@@ -167,6 +167,6 @@ describe('CardBack', () => {
 
   it('defaults to 80px width when width prop is omitted', () => {
     render(<CardBack />);
-    expect(screen.getByRole('img')).toHaveStyle({ width: '80px' });
+    expect(screen.getByRole('img')).toHaveStyle({ width: '80px', maxWidth: '100%' });
   });
 });

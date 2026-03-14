@@ -9,6 +9,9 @@ type memoryCardEntry struct {
 	turnSeen int // 記憶したターン番号
 }
 
+// GetTurnSeen MemoryEntryインターフェース実装
+func (e memoryCardEntry) GetTurnSeen() int { return e.turnSeen }
+
 // MemoryPlayer 神経衰弱プレイヤークラス
 type MemoryPlayer struct {
 	*GamePlayer
@@ -70,16 +73,7 @@ func (p *MemoryPlayer) RecordRevealedCard(position int, rank int, retentionChanc
 
 // DecayMemories 古い記憶を確率的に忘却する
 func (p *MemoryPlayer) DecayMemories(currentTurn int, decayRate float64) {
-	kept := p.cardMemories[:0]
-	for _, entry := range p.cardMemories {
-		age := currentTurn - entry.turnSeen
-		forgetProb := decayRate * float64(age)
-		if forgetProb >= 1.0 || rand.Float64() < forgetProb {
-			continue
-		}
-		kept = append(kept, entry)
-	}
-	p.cardMemories = kept
+	p.cardMemories = DecayMemories(p.cardMemories, currentTurn, decayRate)
 }
 
 // FindKnownMatch 指定したrankの既知ペア位置を探す

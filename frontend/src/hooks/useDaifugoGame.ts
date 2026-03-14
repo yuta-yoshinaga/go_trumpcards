@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import type { DaifugoConfigInput, DaifugoResponse } from '../types/card';
+import { runReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
-
-const REPLAY_DELAY_MS = 800;
 
 const defaultConfigInput: DaifugoConfigInput = {
   jokerCount: 2,
@@ -29,8 +28,6 @@ const defaultConfigInput: DaifugoConfigInput = {
   queenBomberEnabled: false,
   cpuDifficulty: 0,
 };
-
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /** Build the display state right after human's action, before any CPU actions. */
 function buildDaifugoHumanActionState(finalState: DaifugoResponse): DaifugoResponse | null {
@@ -111,21 +108,10 @@ export function useDaifugoGame() {
   const onSuccess = useCallback(
     async (res: DaifugoResponse) => {
       clearSelection();
-      const humanState = buildDaifugoHumanActionState(res);
-      if (humanState) {
-        setDisplayState(humanState);
-        await delay(REPLAY_DELAY_MS);
-      }
-      const replayStates = buildDaifugoReplayStates(res);
-      if (replayStates.length === 0) {
-        setDisplayState(res);
-        return;
-      }
-      for (const replayState of replayStates) {
-        setDisplayState(replayState);
-        await delay(REPLAY_DELAY_MS);
-      }
-      setDisplayState(res);
+      await runReplay(res, setDisplayState, {
+        buildReplayStates: buildDaifugoReplayStates,
+        buildHumanActionState: buildDaifugoHumanActionState,
+      });
     },
     [clearSelection],
   );

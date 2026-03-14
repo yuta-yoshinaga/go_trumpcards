@@ -1,5 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import type { SettingsGroup } from '../components/common/SettingsPanel';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -8,8 +11,9 @@ import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useSevensGame } from '../hooks/useSevensGame';
-import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
 
@@ -45,6 +49,7 @@ export function SevensPage() {
     handleJokerPlace,
   } = useSevensGame();
 
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('sevens');
 
   if (!state) return null;
@@ -58,6 +63,106 @@ export function SevensPage() {
     isHumanTurn &&
     humanPlayer != null &&
     (humanPlayer.maxPasses === 0 || humanPlayer.passesUsed < humanPlayer.maxPasses);
+
+  const settingsGroups: SettingsGroup[] = [
+    {
+      title: t('config.groupRules'),
+      items: [
+        {
+          type: 'checkbox',
+          id: 'cfgTunnel',
+          label: t('config.tunnel'),
+          checked: cfgTunnel,
+          onToggle: setCfgTunnel,
+        },
+        {
+          type: 'select',
+          id: 'cfgTunnelSkipWidth',
+          label: t('config.tunnelSkip'),
+          value: cfgTunnelSkipWidth,
+          options: [
+            { value: 0, label: t('config.tunnelSkipOff') },
+            { value: 2, label: '2' },
+            { value: 3, label: '3' },
+            { value: 4, label: '4' },
+            { value: 5, label: '5' },
+            { value: 6, label: '6' },
+          ],
+          onSelect: (v) => setCfgTunnelSkipWidth(Number(v)),
+        },
+        {
+          type: 'checkbox',
+          id: 'cfgNoJokerFinish',
+          label: t('config.noJokerFinish'),
+          checked: cfgNoJokerFinish,
+          onToggle: setCfgNoJokerFinish,
+        },
+        {
+          type: 'checkbox',
+          id: 'cfgJokerReclaim',
+          label: t('config.jokerReclaim'),
+          checked: cfgJokerReclaim,
+          onToggle: setCfgJokerReclaim,
+        },
+        {
+          type: 'checkbox',
+          id: 'cfgEndStop',
+          label: t('config.endStop'),
+          checked: cfgEndStop,
+          onToggle: setCfgEndStop,
+        },
+        {
+          type: 'checkbox',
+          id: 'cfgJokerConsBan',
+          label: t('config.jokerConsecutiveBanned'),
+          checked: cfgJokerConsBan,
+          onToggle: setCfgJokerConsBan,
+        },
+      ],
+    },
+    {
+      title: t('config.groupGame'),
+      items: [
+        {
+          type: 'select',
+          id: 'cfgJokerCount',
+          label: t('config.joker'),
+          value: cfgJokerCount,
+          options: [
+            { value: 0, label: '0' },
+            { value: 1, label: '1' },
+            { value: 2, label: '2' },
+          ],
+          onSelect: (v) => setCfgJokerCount(Number(v)),
+        },
+        {
+          type: 'select',
+          id: 'cfgCpuStrategy',
+          label: t('config.cpuStrategy'),
+          value: cfgCpuStrategy,
+          options: [
+            { value: 0, label: t('config.cpuStrategyOff') },
+            { value: 1, label: t('config.cpuStrategyStrategic') },
+            { value: 2, label: t('config.cpuStrategyHarassment') },
+          ],
+          onSelect: (v) => setCfgCpuStrategy(Number(v)),
+        },
+        {
+          type: 'select',
+          id: 'cfgMaxPasses',
+          label: t('config.passCount'),
+          value: cfgMaxPasses,
+          options: [
+            { value: 3, label: '3' },
+            { value: 5, label: '5' },
+            { value: 10, label: '10' },
+            { value: 0, label: t('config.passUnlimited') },
+          ],
+          onSelect: (v) => setCfgMaxPasses(Number(v)),
+        },
+      ],
+    },
+  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
@@ -147,14 +252,12 @@ export function SevensPage() {
           messageParams={state.gameEndFlag ? undefined : state.messageParams}
         />
 
-        {state.gameEndFlag && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+        <ActionLogSection
+          isEndPhase={state.gameEndFlag}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
@@ -175,110 +278,7 @@ export function SevensPage() {
           </div>
         )}
 
-        <div className="bg-black/30 rounded-lg py-1.5 px-3 mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white">
-          <span className="text-yellow-300 font-bold">{t('config.title')}</span>
-          <label htmlFor="cfgTunnel" className="flex items-center gap-1 cursor-pointer">
-            <input
-              id="cfgTunnel"
-              type="checkbox"
-              checked={cfgTunnel}
-              onChange={(e) => setCfgTunnel(e.target.checked)}
-            />
-            {t('config.tunnel')}
-          </label>
-          <label htmlFor="cfgTunnelSkipWidth" className="flex items-center gap-1 cursor-pointer">
-            {t('config.tunnelSkip')}
-            <select
-              id="cfgTunnelSkipWidth"
-              value={cfgTunnelSkipWidth}
-              onChange={(e) => setCfgTunnelSkipWidth(Number(e.target.value))}
-              className="bg-black/50 text-white rounded px-1 py-0.5"
-            >
-              <option value={0}>{t('config.tunnelSkipOff')}</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
-              <option value={5}>5</option>
-              <option value={6}>6</option>
-            </select>
-          </label>
-          <label htmlFor="cfgJokerCount" className="flex items-center gap-1 cursor-pointer">
-            {t('config.joker')}
-            <select
-              id="cfgJokerCount"
-              value={cfgJokerCount}
-              onChange={(e) => setCfgJokerCount(Number(e.target.value))}
-              className="bg-black/50 text-white rounded px-1 py-0.5"
-            >
-              <option value={0}>0</option>
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-            </select>
-          </label>
-          <label htmlFor="cfgCpuStrategy" className="flex items-center gap-1 cursor-pointer">
-            {t('config.cpuStrategy')}
-            <select
-              id="cfgCpuStrategy"
-              value={cfgCpuStrategy}
-              onChange={(e) => setCfgCpuStrategy(Number(e.target.value))}
-              className="bg-black/50 text-white rounded px-1 py-0.5"
-            >
-              <option value={0}>{t('config.cpuStrategyOff')}</option>
-              <option value={1}>{t('config.cpuStrategyStrategic')}</option>
-              <option value={2}>{t('config.cpuStrategyHarassment')}</option>
-            </select>
-          </label>
-          <label htmlFor="cfgMaxPasses" className="flex items-center gap-1 cursor-pointer">
-            {t('config.passCount')}
-            <select
-              id="cfgMaxPasses"
-              value={cfgMaxPasses}
-              onChange={(e) => setCfgMaxPasses(Number(e.target.value))}
-              className="bg-black/50 text-white rounded px-1 py-0.5"
-            >
-              <option value={3}>3</option>
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={0}>{t('config.passUnlimited')}</option>
-            </select>
-          </label>
-          <label htmlFor="cfgNoJokerFinish" className="flex items-center gap-1 cursor-pointer">
-            <input
-              id="cfgNoJokerFinish"
-              type="checkbox"
-              checked={cfgNoJokerFinish}
-              onChange={(e) => setCfgNoJokerFinish(e.target.checked)}
-            />
-            {t('config.noJokerFinish')}
-          </label>
-          <label htmlFor="cfgJokerReclaim" className="flex items-center gap-1 cursor-pointer">
-            <input
-              id="cfgJokerReclaim"
-              type="checkbox"
-              checked={cfgJokerReclaim}
-              onChange={(e) => setCfgJokerReclaim(e.target.checked)}
-            />
-            {t('config.jokerReclaim')}
-          </label>
-          <label htmlFor="cfgEndStop" className="flex items-center gap-1 cursor-pointer">
-            <input
-              id="cfgEndStop"
-              type="checkbox"
-              checked={cfgEndStop}
-              onChange={(e) => setCfgEndStop(e.target.checked)}
-            />
-            {t('config.endStop')}
-          </label>
-          <label htmlFor="cfgJokerConsBan" className="flex items-center gap-1 cursor-pointer">
-            <input
-              id="cfgJokerConsBan"
-              type="checkbox"
-              checked={cfgJokerConsBan}
-              onChange={(e) => setCfgJokerConsBan(e.target.checked)}
-            />
-            {t('config.jokerConsecutiveBanned')}
-          </label>
-        </div>
+        <SettingsPanel title={t('config.title')} groups={settingsGroups} />
 
         <ErrorAlert message={error} />
 
@@ -287,20 +287,22 @@ export function SevensPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              exec('reset', -1, 0, 0, {
-                tunnelEnabled: cfgTunnel,
-                tunnelSkipWidth: cfgTunnelSkipWidth,
-                jokerCount: cfgJokerCount,
-                cpuStrategy: cfgCpuStrategy,
-                maxPasses: cfgMaxPasses,
-                noJokerFinish: cfgNoJokerFinish,
-                jokerReclaim: cfgJokerReclaim,
-                endStop: cfgEndStop,
-                jokerConsecutiveBanned: cfgJokerConsBan,
-              });
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                exec('reset', -1, 0, 0, {
+                  tunnelEnabled: cfgTunnel,
+                  tunnelSkipWidth: cfgTunnelSkipWidth,
+                  jokerCount: cfgJokerCount,
+                  cpuStrategy: cfgCpuStrategy,
+                  maxPasses: cfgMaxPasses,
+                  noJokerFinish: cfgNoJokerFinish,
+                  jokerReclaim: cfgJokerReclaim,
+                  endStop: cfgEndStop,
+                  jokerConsecutiveBanned: cfgJokerConsBan,
+                });
+              })
+            }
           >
             {tc('button.reset')}
           </button>
@@ -319,6 +321,15 @@ export function SevensPage() {
           )}
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { selectedCardStyle } from '../../styles/cardStyles';
 import type { DaifugoPlayerData } from '../../types/card';
 import { playerName } from '../../utils/playerUtils';
 import { CardImage } from '../CardImage';
@@ -62,9 +63,7 @@ export function DaifugoHumanArea({
               padding: 0,
               cursor: isCurrentTurn ? 'pointer' : 'default',
               borderRadius: 8,
-              border: selectedIndices.includes(i)
-                ? '3px solid var(--color-game-status-waiting)'
-                : '3px solid transparent',
+              ...selectedCardStyle(selectedIndices.includes(i)),
               boxSizing: 'border-box',
             }}
           >

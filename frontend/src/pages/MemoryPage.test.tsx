@@ -202,6 +202,7 @@ describe('MemoryPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(flip1State);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
   });
@@ -235,6 +236,7 @@ describe('MemoryPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(flip1State);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
   });
 
@@ -281,6 +283,39 @@ describe('MemoryPage', () => {
     expect(screen.getByText('横向きにすると快適にプレイできます')).toBeInTheDocument();
   });
 
+  // ── ConfirmDialog on reset ─────────────────────────────────────────────────
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(flip1State);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 1 }));
+  });
+
   it('displays error message', async () => {
     renderWithProviders(<MemoryPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
@@ -288,9 +323,42 @@ describe('MemoryPage', () => {
     mockExec.mockReset();
     mockExec.mockRejectedValue(new Error('Network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
       expect(screen.getByText('通信エラーが発生しました。もう一度お試しください。')).toBeInTheDocument(),
     );
+  });
+
+  // --- PhaseIndicator coverage ---
+
+  it('phase indicator shows your turn when human flip turn', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting when cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
+
+  it('reset hides the action log panel if open', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    vi.mocked(actionLogApi.memory).mockResolvedValueOnce({
+      entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'match', detail: 'test' }],
+    });
+
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '棋譜を見る' })).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: '棋譜を見る' }));
+    await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(flip1State);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
   });
 });

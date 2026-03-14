@@ -1,4 +1,9 @@
 {
+  "phase": {
+    "play": "Play",
+    "doubt": "Doubt Judgment",
+    "end": "Result"
+  },
   "cardCount": "{{count}} cards",
   "table": "Table",
   "tableCards": "Table Cards: {{count}}",

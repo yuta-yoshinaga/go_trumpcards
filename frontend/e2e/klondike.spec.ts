@@ -39,6 +39,7 @@ test.describe('Klondike E2E', () => {
     // Click reset
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Verify game restarted
@@ -67,6 +68,7 @@ test.describe('Klondike E2E', () => {
 
     // Reset to start a new game
     await page.getByRole('button', { name: 'リセット' }).click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: 'ヒント' })).toBeVisible();
   });

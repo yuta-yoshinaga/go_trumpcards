@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import type { Card, OldMaidResponse } from '../types/card';
+import { REPLAY_DELAY_MS, runReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
-
-const REPLAY_DELAY_MS = 800;
 
 export const OldMaidMode = {
   Normal: 0,
   JijiNuki: 1,
 } as const;
-
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /** Compute intermediate player card counts by reversing all CPU actions from the final state,
  *  then replay forward. Returns one OldMaidResponse per CPU action (state after each action). */
@@ -138,23 +135,12 @@ export function useOldMaidGame() {
   }, [displayState?.lastDrawCard]);
 
   const onSuccess = useCallback(async (res: OldMaidResponse) => {
-    const humanDrawState = buildHumanDrawState(res);
-    if (humanDrawState) {
-      setDisplayState(humanDrawState);
-      await delay(REPLAY_DELAY_MS);
-    }
-    const replayStates = buildReplayStates(res);
-    if (replayStates.length === 0) {
-      setDisplayState(res);
-      return;
-    }
-    for (let i = 0; i < replayStates.length; i++) {
-      setDisplayState(replayStates[i]);
+    await runReplay(res, setDisplayState, {
+      buildReplayStates,
+      buildHumanActionState: buildHumanDrawState,
       // hesitationMs is 0 when disabled; || falls back to REPLAY_DELAY_MS (min enabled value is 300ms)
-      const actionDelay = res.cpuActions[i]?.hesitationMs || REPLAY_DELAY_MS;
-      await delay(actionDelay);
-    }
-    setDisplayState(res);
+      getActionDelay: (state, i) => state.cpuActions[i]?.hesitationMs || REPLAY_DELAY_MS,
+    });
   }, []);
 
   const { loading, error, exec } = useGameApi(oldmaidApi.exec, { onSuccess });

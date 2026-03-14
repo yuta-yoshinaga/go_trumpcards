@@ -1,14 +1,19 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
-import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import { HEARTS_PHASE } from '../types/card';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { selectedCardStyle } from '../styles/cardStyles';
+import { HeartsPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
@@ -32,55 +37,65 @@ export function HeartsPage() {
     handleNextRound,
   } = useHeartsGame();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('hearts');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!state) return null;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
-  const isPassPhase = state.phase === HEARTS_PHASE.PASS;
-  const isPlayPhase = state.phase === HEARTS_PHASE.PLAY;
-  const isTrickEnd = state.phase === HEARTS_PHASE.TRICK_END;
-  const isRoundEnd = state.phase === HEARTS_PHASE.ROUND_END;
-  const isGameEnd = state.phase === HEARTS_PHASE.GAME_END || state.gameEndFlag;
+  const isPassPhase = state.phase === HeartsPhase.PASS;
+  const isPlayPhase = state.phase === HeartsPhase.PLAY;
+  const isTrickEnd = state.phase === HeartsPhase.TRICK_END;
+  const isRoundEnd = state.phase === HeartsPhase.ROUND_END;
+  const isGameEnd = state.phase === HeartsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  const phaseNameMap: Record<number, string> = {
+    [HeartsPhase.PASS]: t('phase.pass'),
+    [HeartsPhase.PLAY]: t('phase.play'),
+    [HeartsPhase.TRICK_END]: t('phase.trickEnd'),
+    [HeartsPhase.ROUND_END]: t('phase.roundEnd'),
+    [HeartsPhase.GAME_END]: t('phase.gameEnd'),
+  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
 
+      {/* Phase indicator */}
+      <PhaseIndicator
+        phaseName={phaseNameMap[state.phase] ?? t('phase.play')}
+        isHumanTurn={isPassPhase || isHumanTurn}
+      />
+
       {/* Settings */}
-      <details className="px-4 pt-2">
-        <summary className="text-white/70 text-sm cursor-pointer">{t('settings.title')}</summary>
-        <div className="mt-2 flex flex-wrap gap-4 text-sm text-white/70">
-          <label>
-            {t('settings.cpuDifficulty')}
-            <select
-              value={heartsConfig.cpuDifficulty}
-              onChange={(e) => handleConfigChange('cpuDifficulty', e.target.value)}
-              className="ml-1 bg-gray-700 text-white rounded px-1"
-            >
-              {CPU_DIFFICULTY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {t(`settings.${o.label.toLowerCase()}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('settings.pointLimit')}
-            <select
-              value={heartsConfig.pointLimit}
-              onChange={(e) => handleConfigChange('pointLimit', e.target.value)}
-              className="ml-1 bg-gray-700 text-white rounded px-1"
-            >
-              {POINT_LIMIT_OPTIONS.map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </details>
+      <SettingsPanel
+        title={t('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'cpuDifficulty',
+                label: t('settings.cpuDifficulty'),
+                value: heartsConfig.cpuDifficulty,
+                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                  value: o.value,
+                  label: t(`settings.${o.label.toLowerCase()}`),
+                })),
+                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+              },
+              {
+                type: 'select',
+                id: 'pointLimit',
+                label: t('settings.pointLimit'),
+                value: heartsConfig.pointLimit,
+                options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                onSelect: (v) => handleConfigChange('pointLimit', v),
+              },
+            ],
+          },
+        ]}
+      />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
@@ -162,14 +177,12 @@ export function HeartsPage() {
         <ErrorAlert message={error} />
 
         {/* Action log */}
-        {isGameEnd && actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-        {isGameEnd && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
+        <ActionLogSection
+          isEndPhase={isGameEnd}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       {/* Footer */}
@@ -184,7 +197,14 @@ export function HeartsPage() {
                 onClick={() => toggleCard(idx)}
                 aria-label={cardAlt(card)}
                 aria-pressed={selectedCardIndices.includes(idx)}
-                className={`${selectedCardIndices.includes(idx) ? 'ring-2 ring-yellow-400 -translate-y-1' : ''} transition-transform`}
+                className="transition-transform"
+                style={{
+                  background: 'none',
+                  padding: 0,
+                  borderRadius: 8,
+                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                  boxSizing: 'border-box',
+                }}
               >
                 <CardImage card={card} />
               </button>
@@ -227,9 +247,12 @@ export function HeartsPage() {
             type="button"
             className={btnWarning}
             onClick={() =>
-              exec('reset', undefined, undefined, {
-                cpuDifficulty: heartsConfig.cpuDifficulty,
-                pointLimit: heartsConfig.pointLimit,
+              requestConfirm(() => {
+                hideActionLog();
+                return exec('reset', undefined, undefined, {
+                  cpuDifficulty: heartsConfig.cpuDifficulty,
+                  pointLimit: heartsConfig.pointLimit,
+                });
               })
             }
             disabled={loading}
@@ -238,6 +261,15 @@ export function HeartsPage() {
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

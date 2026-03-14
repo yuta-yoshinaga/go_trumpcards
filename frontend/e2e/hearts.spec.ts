@@ -9,6 +9,7 @@ test.describe('Hearts E2E', () => {
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await expect(resetButton).toBeVisible();
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Verify round/trick info is visible
@@ -90,6 +91,7 @@ test.describe('Hearts E2E', () => {
 
     // Reset and verify game restarts
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
   });
@@ -115,6 +117,7 @@ test.describe('Hearts E2E', () => {
     // Reset with new settings
     const resetButton = page.getByRole('button', { name: 'リセット' });
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // Verify game started with new settings

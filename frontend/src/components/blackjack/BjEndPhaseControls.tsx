@@ -5,6 +5,7 @@ import { btnPrimary } from '../../styles/buttonStyles';
 export interface BjEndPhaseControlsProps {
   loading: boolean;
   onReset: () => void;
+  onManualReset?: () => void;
   autoAdvanceSeconds?: number;
 }
 
@@ -40,7 +41,7 @@ export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
       type="button"
       className={`${btnPrimary} animate-pulse ring-2 ring-white ring-offset-2 ring-offset-green-800`}
       disabled={props.loading}
-      onClick={props.onReset}
+      onClick={props.onManualReset ?? props.onReset}
     >
       {t('button.reset')}
       {countdown !== null ? ` (${countdown}s)` : ''}

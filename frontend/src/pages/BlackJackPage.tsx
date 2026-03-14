@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
 import { BjBetPhaseControls } from '../components/blackjack/BjBetPhaseControls';
 import { BjEarlySurrenderPhaseControls } from '../components/blackjack/BjEarlySurrenderPhaseControls';
@@ -22,15 +22,28 @@ import {
 } from '../components/blackjack/bjConstants';
 import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
-import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
+
+function usePhaseNames(t: (key: string) => string): Record<number, string> {
+  return {
+    [BjPhase.BET]: t('phase.bet'),
+    [BjPhase.DEAL]: t('phase.deal'),
+    [BjPhase.INSURANCE]: t('phase.insurance'),
+    [BjPhase.ACTION]: t('phase.action'),
+    [BjPhase.END]: t('phase.end'),
+    [BjPhase.EARLY_SURRENDER]: t('phase.earlySurrender'),
+  };
+}
 
 function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
   return {
@@ -47,6 +60,7 @@ function useSuggestionLabels(t: (key: string) => string): Record<number, string>
 export function BlackJackPage() {
   const { t } = useTranslation('blackjack');
   const { t: tc } = useTranslation('common');
+  const phaseNames = usePhaseNames(t);
   const suggestionLabels = useSuggestionLabels(t);
 
   const [message, setMessage] = useState('');
@@ -75,6 +89,7 @@ export function BlackJackPage() {
     setSurrenderRule(res.surrenderRule);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   useEffect(() => {
     exec('reset');
@@ -125,9 +140,18 @@ export function BlackJackPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
-      {/* Chip info bar */}
+      {/* Phase indicator + info bar */}
       {state && (
-        <div className="shrink-0 bg-black/40 text-white text-sm px-4 py-1.5 flex justify-between flex-wrap gap-1">
+        <PhaseIndicator
+          phaseName={phaseNames[phase] ?? t('phase.bet')}
+          isHumanTurn={
+            phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER
+              ? true
+              : phase === BjPhase.END
+                ? false
+                : undefined
+          }
+        >
           <span>
             {t('player')} {state.player.chips} chips
           </span>
@@ -144,7 +168,7 @@ export function BlackJackPage() {
           <span>
             {tc('label.dealer')} {state.dealer.chips} chips
           </span>
-        </div>
+        </PhaseIndicator>
       )}
 
       {/* Scrollable: dealer area + CPU players */}
@@ -283,14 +307,12 @@ export function BlackJackPage() {
         <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
 
         {/* Action log */}
-        {phase === BjPhase.END && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+        <ActionLogSection
+          isEndPhase={phase === BjPhase.END}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
 
         <ErrorAlert message={error} />
 
@@ -393,11 +415,21 @@ export function BlackJackPage() {
             <BjEndPhaseControls
               loading={loading}
               onReset={handleReset}
+              onManualReset={() => requestConfirm(handleReset)}
               autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
             />
           )}
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

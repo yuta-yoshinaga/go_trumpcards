@@ -735,6 +735,7 @@ describe('HoldemPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
@@ -768,6 +769,7 @@ describe('HoldemPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
   });
 
@@ -777,10 +779,12 @@ describe('HoldemPage', () => {
 
     mockExec.mockRejectedValueOnce(new Error('network error'));
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
 
     mockExec.mockResolvedValueOnce(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
@@ -877,11 +881,13 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => {
       const statsElem = screen.getByTestId('hud-stats');
-      expect(statsElem).toHaveTextContent('VPIP:60% PFR:20% 3Bet:10% AF:2.5');
-      expect(within(statsElem).getByTitle(/VPIP（ボランタリー・プット・イン・ポット）/)).toBeInTheDocument();
-      expect(within(statsElem).getByTitle(/PFR（プリフロップレイズ）/)).toBeInTheDocument();
-      expect(within(statsElem).getByTitle(/3Bet（スリーベット）/)).toBeInTheDocument();
-      expect(within(statsElem).getByTitle(/AF（アグレッションファクター）/)).toBeInTheDocument();
+      expect(statsElem).toHaveTextContent(/VPIP.*:60%.*PFR.*:20%.*3Bet.*:10%.*AF.*:2\.5/);
+      expect(
+        within(statsElem).getByRole('tooltip', { name: /VPIP（ボランタリー・プット・イン・ポット）/ }),
+      ).toBeInTheDocument();
+      expect(within(statsElem).getByRole('tooltip', { name: /PFR（プリフロップレイズ）/ })).toBeInTheDocument();
+      expect(within(statsElem).getByRole('tooltip', { name: /3Bet（スリーベット）/ })).toBeInTheDocument();
+      expect(within(statsElem).getByRole('tooltip', { name: /AF（アグレッションファクター）/ })).toBeInTheDocument();
     });
   });
 
@@ -900,8 +906,10 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => {
       const statsElem = screen.getByTestId('hud-stats');
-      expect(statsElem).toHaveTextContent('VPIP:33% PFR:0% 3Bet:0% AF:-');
-      expect(within(statsElem).getByTitle(/VPIP（ボランタリー・プット・イン・ポット）/)).toBeInTheDocument();
+      expect(statsElem).toHaveTextContent(/VPIP.*:33%.*PFR.*:0%.*3Bet.*:0%.*AF.*:-/);
+      expect(
+        within(statsElem).getByRole('tooltip', { name: /VPIP（ボランタリー・プット・イン・ポット）/ }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -1134,6 +1142,38 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('結果')).toBeInTheDocument());
     expect(screen.queryByTestId('muck-controls')).not.toBeInTheDocument();
+  });
+
+  // ---- ConfirmDialog on reset ----
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('executes reset on confirm', async () => {
+    renderWithProviders(<HoldemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
   it('handles action log visibility and API fetch', async () => {

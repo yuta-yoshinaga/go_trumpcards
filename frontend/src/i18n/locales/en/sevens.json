@@ -46,6 +46,8 @@
     "noJokerFinish": "No Joker Finish",
     "jokerReclaim": "Joker Reclaim",
     "endStop": "End Stop",
-    "jokerConsecutiveBanned": "No Consecutive Joker"
+    "jokerConsecutiveBanned": "No Consecutive Joker",
+    "groupRules": "Rules",
+    "groupGame": "Game Settings"
   }
 }

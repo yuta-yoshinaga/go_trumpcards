@@ -17,6 +17,7 @@ test.describe('Baccarat E2E', () => {
 
     // Reset back to bet phase
     await resetButton.click();
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
   });

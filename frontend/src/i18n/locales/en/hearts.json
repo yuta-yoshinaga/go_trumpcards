@@ -1,4 +1,11 @@
 {
+  "phase": {
+    "pass": "Pass",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",

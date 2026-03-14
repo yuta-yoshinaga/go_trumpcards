@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
 import type { SevensResponse } from '../types/card';
+import { runReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
-
-const REPLAY_DELAY_MS = 800;
-
-const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 function computeTableMinVals(tablePlaced: number[]): number[] {
   const result = [0, 0, 0, 0, 0];
@@ -101,16 +98,9 @@ export function useSevensGame() {
     setCfgJokerReclaim(res.config.jokerReclaimEnabled);
     setCfgEndStop(res.config.endStopEnabled);
     setCfgJokerConsBan(res.config.jokerConsecutiveBanned);
-    const replayStates = buildSevensReplayStates(res);
-    if (replayStates.length === 0) {
-      setDisplayState(res);
-      return;
-    }
-    for (const replayState of replayStates) {
-      setDisplayState(replayState);
-      await delay(REPLAY_DELAY_MS);
-    }
-    setDisplayState(res);
+    await runReplay(res, setDisplayState, {
+      buildReplayStates: buildSevensReplayStates,
+    });
   }, []);
 
   const { loading, error, exec } = useGameApi(sevensApi.exec, { onSuccess });

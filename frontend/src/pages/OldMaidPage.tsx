@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -10,6 +11,7 @@ import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import type { CpuAction } from '../types/card';
@@ -46,6 +48,7 @@ export function OldMaidPage() {
   } = useOldMaidGame();
 
   const { actionLog, showActionLog, hideActionLog } = useActionLog('oldmaid');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!gameSettings) {
     return (
@@ -188,14 +191,12 @@ export function OldMaidPage() {
         )}
 
         {/* Action log */}
-        {state.gameEndFlag && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
-        {actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
+        <ActionLogSection
+          isEndPhase={state.gameEndFlag}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
@@ -235,10 +236,12 @@ export function OldMaidPage() {
             type="button"
             className={`${btnPrimary} min-w-[80px]`}
             disabled={loading}
-            onClick={() => {
-              hideActionLog();
-              handleReset();
-            }}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                handleReset();
+              })
+            }
           >
             {tc('button.reset')}
           </button>
@@ -260,6 +263,15 @@ export function OldMaidPage() {
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }

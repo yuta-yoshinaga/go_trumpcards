@@ -1,4 +1,10 @@
 {
+  "phase": {
+    "flip1": "1枚目",
+    "flip2": "2枚目",
+    "result": "結果確認",
+    "gameEnd": "ゲーム終了"
+  },
   "settings": {
     "title": "設定",
     "cpuDifficulty": "CPU難易度",

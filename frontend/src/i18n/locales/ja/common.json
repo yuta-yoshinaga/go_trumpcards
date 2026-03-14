@@ -2,6 +2,8 @@
   "nav": {
     "switchToJa": "日本語に切り替え",
     "switchToEn": "Switch to English",
+    "openMenu": "メニューを開く",
+    "closeMenu": "メニューを閉じる",
     "blackjack": "ブラックジャック",
     "poker": "ポーカー",
     "oldmaid": "ババ抜き",
@@ -40,7 +42,10 @@
   "button": {
     "reset": "リセット",
     "pass": "パス",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "confirmReset": "リセット確認",
+    "confirmResetMessage": "本当にゲームをリセットしますか？",
+    "confirm": "確認"
   },
   "status": {
     "loading": "処理中...",
@@ -59,6 +64,10 @@
     "empty": "棋譜はありません。",
     "system": "SYSTEM",
     "player": "Player {{idx}}"
+  },
+  "turnIndicator": {
+    "yourTurn": "あなたのターン",
+    "waiting": "待機中"
   },
   "card": {
     "back": "カード裏面"

@@ -1,14 +1,18 @@
 import { useTranslation } from 'react-i18next';
-import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
+import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
-import { btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
-import { MEMORY_PHASE } from '../types/card';
+import { btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { MemoryPhase } from '../types/phases';
 import { playerName } from '../utils/playerUtils';
 
 export function MemoryPage() {
@@ -16,18 +20,29 @@ export function MemoryPage() {
   const { t: tc } = useTranslation('common');
   const { state, loading, error, exec, memoryConfig, handleConfigChange, handleFlip, handleNext } = useMemoryGame();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('memory');
+  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   if (!state) return null;
 
-  const isFlip1 = state.phase === MEMORY_PHASE.FLIP1;
-  const isFlip2 = state.phase === MEMORY_PHASE.FLIP2;
-  const isResult = state.phase === MEMORY_PHASE.RESULT;
-  const isGameEnd = state.phase === MEMORY_PHASE.GAME_END || state.gameEndFlag;
+  const isFlip1 = state.phase === MemoryPhase.FLIP1;
+  const isFlip2 = state.phase === MemoryPhase.FLIP2;
+  const isResult = state.phase === MemoryPhase.RESULT;
+  const isGameEnd = state.phase === MemoryPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  const phaseNameMap: Record<number, string> = {
+    [MemoryPhase.FLIP1]: t('phase.flip1'),
+    [MemoryPhase.FLIP2]: t('phase.flip2'),
+    [MemoryPhase.RESULT]: t('phase.result'),
+    [MemoryPhase.GAME_END]: t('phase.gameEnd'),
+  };
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
+
+      {/* Phase indicator */}
+      <PhaseIndicator phaseName={phaseNameMap[state.phase] ?? t('phase.flip1')} isHumanTurn={isHumanTurn} />
 
       {/* Landscape orientation banner (visible on small portrait screens) */}
       <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">
@@ -36,26 +51,26 @@ export function MemoryPage() {
       </div>
 
       {/* Settings */}
-      <details className="px-4 pt-2 text-white text-sm">
-        <summary className="cursor-pointer">{t('settings.title')}</summary>
-        <div className="mt-2 flex flex-wrap gap-4">
-          <label htmlFor="cpuDifficulty">
-            {t('settings.cpuDifficulty')}
-            <select
-              id="cpuDifficulty"
-              value={memoryConfig.cpuDifficulty}
-              onChange={(e) => handleConfigChange('cpuDifficulty', e.target.value)}
-              className="ml-1 bg-gray-700 text-white rounded px-1"
-            >
-              {CPU_DIFFICULTY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {t(`settings.${o.label.toLowerCase()}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </details>
+      <SettingsPanel
+        title={t('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'cpuDifficulty',
+                label: t('settings.cpuDifficulty'),
+                value: memoryConfig.cpuDifficulty,
+                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                  value: o.value,
+                  label: t(`settings.${o.label.toLowerCase()}`),
+                })),
+                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+              },
+            ],
+          },
+        ]}
+      />
 
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
@@ -84,7 +99,7 @@ export function MemoryPage() {
 
         {/* Board: responsive grid (4/6/8/13 columns by breakpoint) */}
         <div className="my-3 p-2 rounded bg-black/40">
-          <div className="grid grid-cols-4 xs:grid-cols-6 sm:grid-cols-8 md:grid-cols-13 gap-1">
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1">
             {state.board.map((bc, idx) => (
               <button
                 type="button"
@@ -114,14 +129,12 @@ export function MemoryPage() {
         <ErrorAlert message={error} />
 
         {/* Action log */}
-        {isGameEnd && actionLog && <ActionLogPanel entries={actionLog} onClose={hideActionLog} />}
-        {isGameEnd && !actionLog && (
-          <div className="text-center my-2">
-            <button type="button" className={btnSecondary} onClick={showActionLog}>
-              {tc('actionLog.view')}
-            </button>
-          </div>
-        )}
+        <ActionLogSection
+          isEndPhase={isGameEnd}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
       </div>
 
       {/* Footer */}
@@ -136,8 +149,9 @@ export function MemoryPage() {
             type="button"
             className={btnWarning}
             onClick={() =>
-              exec('reset', undefined, {
-                cpuDifficulty: memoryConfig.cpuDifficulty,
+              requestConfirm(() => {
+                hideActionLog();
+                return exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
               })
             }
             disabled={loading}
@@ -146,6 +160,15 @@ export function MemoryPage() {
           </button>
         </div>
       </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
     </div>
   );
 }
