@@ -177,5 +177,7 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(screen.getAllByRole('img').length).toBe(4));
     expect(screen.getByText(/値: 2/)).toBeInTheDocument();
     expect(screen.getByText(/値: 7/)).toBeInTheDocument();
+    expect(screen.getByText('🟡')).toBeInTheDocument();
+    expect(screen.getByText('🔴')).toBeInTheDocument();
   });
 });

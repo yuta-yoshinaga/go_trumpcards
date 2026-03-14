@@ -30,6 +30,10 @@ describe('buttonStyles', () => {
     expect(btnSecondary).toContain('bg-gray-600');
   });
 
+  it('base includes disabled:grayscale', () => {
+    expect(btnPrimary).toContain('disabled:grayscale');
+  });
+
   it('focusRingWhite includes focus-visible:ring-white/80', () => {
     expect(focusRingWhite).toContain('focus-visible:outline-none');
     expect(focusRingWhite).toContain('focus-visible:ring-2');
