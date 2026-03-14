@@ -78,4 +78,61 @@ describe('NavBar', () => {
     expect(screen.getByRole('button', { name: i18n.t('nav.switchToJa') })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: i18n.t('nav.switchToEn') })).toHaveAttribute('aria-pressed', 'false');
   });
+
+  describe('hamburger menu', () => {
+    it('renders hamburger button with openMenu aria-label', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      expect(btn).toBeInTheDocument();
+      expect(btn).toHaveAttribute('aria-expanded', 'false');
+      expect(btn).toHaveTextContent('☰');
+    });
+
+    it('nav is hidden by default on mobile (has hidden class)', () => {
+      renderNavBar();
+      const nav = screen.getByRole('navigation');
+      expect(nav.className).toContain('hidden');
+    });
+
+    it('clicking hamburger toggles menu open', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      expect(btn).toHaveAttribute('aria-expanded', 'true');
+      expect(btn).toHaveTextContent('✕');
+      const nav = screen.getByRole('navigation');
+      expect(nav.className).not.toContain('hidden');
+    });
+
+    it('clicking hamburger again toggles menu closed', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const closeBtn = screen.getByRole('button', { name: i18n.t('nav.closeMenu') });
+      fireEvent.click(closeBtn);
+      expect(closeBtn).toHaveAttribute('aria-expanded', 'false');
+      const nav = screen.getByRole('navigation');
+      expect(nav.className).toContain('hidden');
+    });
+
+    it('aria-label toggles between openMenu and closeMenu', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      expect(screen.getByRole('button', { name: i18n.t('nav.closeMenu') })).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.closeMenu') }));
+      expect(screen.getByRole('button', { name: i18n.t('nav.openMenu') })).toBeInTheDocument();
+    });
+
+    it('clicking a game link closes the menu', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const firstLink = screen.getAllByRole('link')[0];
+      fireEvent.click(firstLink);
+      const nav = screen.getByRole('navigation');
+      expect(nav.className).toContain('hidden');
+      expect(screen.getByRole('button', { name: i18n.t('nav.openMenu') })).toHaveAttribute('aria-expanded', 'false');
+    });
+  });
 });

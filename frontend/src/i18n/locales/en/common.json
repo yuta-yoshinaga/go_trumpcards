@@ -2,6 +2,8 @@
   "nav": {
     "switchToJa": "Switch to Japanese",
     "switchToEn": "Switch to English",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
     "blackjack": "Blackjack",
     "poker": "Poker",
     "oldmaid": "Old Maid",
