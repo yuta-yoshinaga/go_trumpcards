@@ -17,10 +17,7 @@ describe('runReplay', () => {
   });
 
   const flushDelays = async () => {
-    // Flush all pending promises and timers
-    for (let i = 0; i < 20; i++) {
-      await vi.advanceTimersByTimeAsync(REPLAY_DELAY_MS);
-    }
+    await vi.runAllTimersAsync();
   };
 
   it('sets final state immediately when no human action and no replay states', async () => {
