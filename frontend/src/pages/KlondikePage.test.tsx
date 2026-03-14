@@ -102,7 +102,7 @@ describe('KlondikePage', () => {
 
   it('renders move count', async () => {
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText(/手数: 5/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
   it('renders waste card', async () => {
@@ -499,7 +499,7 @@ describe('KlondikePage', () => {
       messageCode: 'klondike.playing',
     });
     renderWithProviders(<KlondikePage />);
-    await waitFor(() => expect(screen.getByText('プレイ中')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThanOrEqual(1));
   });
 
   it('displays hint error when hint fetch fails', async () => {

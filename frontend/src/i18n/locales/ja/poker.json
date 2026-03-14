@@ -1,4 +1,11 @@
 {
+  "phase": {
+    "init": "初期化中",
+    "deal": "ディール",
+    "exchange": "交換",
+    "secondBet": "セカンドベット",
+    "end": "結果"
+  },
   "yourHand": "あなたの手札",
   "joker": "ジョーカー:",
   "exchangeInstruction": "交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。",

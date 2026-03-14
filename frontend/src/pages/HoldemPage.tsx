@@ -11,6 +11,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
@@ -101,11 +102,8 @@ export function HoldemPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
-      {/* Info bar */}
-      <div className="shrink-0 bg-black/40 text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1">
-        <span>
-          <strong>{phaseNames[phase] ?? t('phase.init')}</strong>
-        </span>
+      {/* Phase indicator + info bar */}
+      <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
         <span>
           {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
         </span>
@@ -121,7 +119,7 @@ export function HoldemPage() {
         {state?.tournamentMode && (
           <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
         )}
-      </div>
+      </PhaseIndicator>
 
       {/* Scrollable: community cards + CPU players */}
       <div className="flex-1 overflow-y-auto pt-4 px-5">

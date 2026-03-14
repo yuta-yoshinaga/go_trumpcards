@@ -1,4 +1,10 @@
 {
+  "phase": {
+    "flip1": "First Card",
+    "flip2": "Second Card",
+    "result": "Result",
+    "gameEnd": "Game End"
+  },
   "settings": {
     "title": "Settings",
     "cpuDifficulty": "CPU Difficulty",

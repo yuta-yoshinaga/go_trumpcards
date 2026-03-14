@@ -1,4 +1,12 @@
 {
+  "phase": {
+    "bet": "ベット",
+    "deal": "ディール",
+    "insurance": "インシュランス",
+    "action": "アクション",
+    "earlySurrender": "アーリーサレンダー",
+    "end": "結果"
+  },
   "player": "プレイヤー:",
   "deck": "デッキ:",
   "deckUnit": "デッキ",

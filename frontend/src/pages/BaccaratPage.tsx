@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
@@ -56,11 +57,13 @@ export function BaccaratPage() {
     <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
 
+      {/* Phase indicator */}
+      <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>
+        <span>{t('label.chips', { chips: state.chips })}</span>
+      </PhaseIndicator>
+
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         <ErrorAlert message={error} />
-
-        {/* Chips */}
-        <div className="text-white text-center mb-2 font-bold">{t('label.chips', { chips: state.chips })}</div>
 
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
