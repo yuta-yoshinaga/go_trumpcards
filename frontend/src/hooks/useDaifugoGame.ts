@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
 import type { DaifugoConfigInput, DaifugoResponse } from '../types/card';
 import { runReplay } from './gameReplay';
@@ -105,9 +105,17 @@ export function useDaifugoGame() {
   const [configInput, setConfigInput] = useState<DaifugoConfigInput>(defaultConfigInput);
   const [displayState, setDisplayState] = useState<DaifugoResponse | null>(null);
 
+  const lastReplayedActionsRef = useRef<DaifugoResponse['cpuActions']>(undefined);
+
   const onSuccess = useCallback(
     async (res: DaifugoResponse) => {
       clearSelection();
+      const newActions = res.cpuActions ?? [];
+      if (JSON.stringify(lastReplayedActionsRef.current) === JSON.stringify(newActions)) {
+        setDisplayState(res);
+        return;
+      }
+      lastReplayedActionsRef.current = newActions;
       await runReplay(res, setDisplayState, {
         buildReplayStates: buildDaifugoReplayStates,
         buildHumanActionState: buildDaifugoHumanActionState,

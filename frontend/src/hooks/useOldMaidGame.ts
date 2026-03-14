@@ -134,7 +134,15 @@ export function useOldMaidGame() {
     };
   }, [displayState?.lastDrawCard]);
 
+  const lastReplayedActionsRef = useRef<OldMaidResponse['cpuActions']>(undefined);
+
   const onSuccess = useCallback(async (res: OldMaidResponse) => {
+    const newActions = res.cpuActions ?? [];
+    if (JSON.stringify(lastReplayedActionsRef.current) === JSON.stringify(newActions)) {
+      setDisplayState(res);
+      return;
+    }
+    lastReplayedActionsRef.current = newActions;
     await runReplay(res, setDisplayState, {
       buildReplayStates,
       buildHumanActionState: buildHumanDrawState,
