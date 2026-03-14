@@ -112,6 +112,45 @@ func (u *Updater) Exec() error {
 	return nil
 }
 
+// progressReader wraps an io.Reader to display download progress.
+type progressReader struct {
+	reader  io.Reader
+	total   int64
+	current int64
+	writer  io.Writer
+}
+
+func (pr *progressReader) Read(p []byte) (int, error) {
+	n, err := pr.reader.Read(p)
+	pr.current += int64(n)
+	if pr.total > 0 {
+		pct := pr.current * 100 / pr.total
+		_, _ = fmt.Fprintf(pr.writer, "\r  %d%% (%s / %s)", pct, formatBytes(pr.current), formatBytes(pr.total))
+	} else {
+		_, _ = fmt.Fprintf(pr.writer, "\r  %s downloaded", formatBytes(pr.current))
+	}
+	return n, err
+}
+
+// formatBytes formats bytes into a human-readable string (KB/MB/GB).
+func formatBytes(b int64) string {
+	const (
+		kb = 1024
+		mb = kb * 1024
+		gb = mb * 1024
+	)
+	switch {
+	case b >= gb:
+		return fmt.Sprintf("%.1f GB", float64(b)/float64(gb))
+	case b >= mb:
+		return fmt.Sprintf("%.1f MB", float64(b)/float64(mb))
+	case b >= kb:
+		return fmt.Sprintf("%.1f KB", float64(b)/float64(kb))
+	default:
+		return fmt.Sprintf("%d B", b)
+	}
+}
+
 // downloadAndApply downloads the asset and applies the update.
 func (u *Updater) downloadAndApply(assetName, assetURL string) error {
 	assetResp, err := u.httpClient.Get(assetURL) //nolint:noctx // downloading release asset
@@ -120,20 +159,28 @@ func (u *Updater) downloadAndApply(assetName, assetURL string) error {
 	}
 	defer func() { _ = assetResp.Body.Close() }()
 
+	body := io.Reader(&progressReader{
+		reader: assetResp.Body,
+		total:  assetResp.ContentLength,
+		writer: u.writer,
+	})
+
 	// For tar.gz, stream directly without buffering the entire archive in memory.
 	if strings.HasSuffix(strings.ToLower(assetName), ".tar.gz") {
-		binaryReader, err := u.extractFromTarGzStream(assetResp.Body)
+		binaryReader, err := u.extractFromTarGzStream(body)
 		if err != nil {
 			return err
 		}
+		_, _ = fmt.Fprintln(u.writer)
 		return selfupdate.Apply(binaryReader, selfupdate.Options{})
 	}
 
 	// For zip, we need io.ReaderAt so we must read the entire archive into memory.
-	assetData, err := io.ReadAll(assetResp.Body)
+	assetData, err := io.ReadAll(body)
 	if err != nil {
 		return err
 	}
+	_, _ = fmt.Fprintln(u.writer)
 
 	binaryName := "trumpcards.exe"
 	binaryReader, err := u.extractFromZip(assetData, binaryName)
