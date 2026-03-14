@@ -8,6 +8,24 @@ export interface ReplayConfig<TState> {
   getActionDelay?: (finalState: TState, actionIndex: number) => number;
 }
 
+/**
+ * Check if replay should be skipped because cpuActions haven't changed.
+ * Updates the ref and returns true if replay was skipped (setDisplayState called directly).
+ */
+export function shouldSkipReplay<TState>(
+  newActions: unknown[],
+  lastReplayedActionsRef: { current: unknown[] | undefined },
+  res: TState,
+  setDisplayState: (state: TState) => void,
+): boolean {
+  if (JSON.stringify(lastReplayedActionsRef.current) === JSON.stringify(newActions)) {
+    setDisplayState(res);
+    return true;
+  }
+  lastReplayedActionsRef.current = newActions;
+  return false;
+}
+
 export async function runReplay<TState>(
   finalState: TState,
   setDisplayState: (state: TState) => void,

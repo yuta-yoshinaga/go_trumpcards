@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
 import type { SevensResponse } from '../types/card';
-import { runReplay } from './gameReplay';
+import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
 
 function computeTableMinVals(tablePlaced: number[]): number[] {
@@ -87,6 +87,8 @@ export function useSevensGame() {
   const [cfgJokerConsBan, setCfgJokerConsBan] = useState(false);
   const [displayState, setDisplayState] = useState<SevensResponse | null>(null);
 
+  const lastReplayedActionsRef = useRef<SevensResponse['cpuActions']>(undefined);
+
   const onSuccess = useCallback(async (res: SevensResponse) => {
     setJokerCardIdx(null);
     setCfgTunnel(res.config.tunnelEnabled);
@@ -98,6 +100,9 @@ export function useSevensGame() {
     setCfgJokerReclaim(res.config.jokerReclaimEnabled);
     setCfgEndStop(res.config.endStopEnabled);
     setCfgJokerConsBan(res.config.jokerConsecutiveBanned);
+    if (shouldSkipReplay(res.cpuActions ?? [], lastReplayedActionsRef, res, setDisplayState)) {
+      return;
+    }
     await runReplay(res, setDisplayState, {
       buildReplayStates: buildSevensReplayStates,
     });
