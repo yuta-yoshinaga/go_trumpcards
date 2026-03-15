@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { focusRingWhite } from '../../styles/buttonStyles';
 import { playableCardStyle } from '../../styles/cardStyles';
 import type { Card, SevensPlayerData } from '../../types/card';
 import { valueName } from '../../utils/cardUtils';
@@ -75,6 +76,7 @@ function HumanArea({
             <button
               key={`${card.design}-${card.value}`}
               type="button"
+              className={focusRingWhite}
               disabled={!playable}
               onClick={() => onPlay(i)}
               title={playable ? t('playTitle', { design: card.design, value: valueName(card.value) }) : undefined}

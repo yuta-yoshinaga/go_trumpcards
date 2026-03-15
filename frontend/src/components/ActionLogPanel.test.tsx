@@ -181,6 +181,36 @@ describe('ActionLogPanel', () => {
     expect(preventDefaultSpy).not.toHaveBeenCalled();
   });
 
+  it('restores focus to trigger element on close', () => {
+    const triggerButton = document.createElement('button');
+    triggerButton.textContent = 'Trigger';
+    document.body.appendChild(triggerButton);
+    triggerButton.focus();
+
+    const onClose = vi.fn();
+    render(<ActionLogPanel entries={sampleEntries} onClose={onClose} />);
+    // Panel has stolen focus to its first focusable element
+    expect(document.activeElement).not.toBe(triggerButton);
+
+    const closeButton = screen.getByRole('button', { name: '閉じる' });
+    fireEvent.click(closeButton);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(triggerButton);
+
+    document.body.removeChild(triggerButton);
+  });
+
+  it('does not error when no element was focused before open', () => {
+    // document.activeElement is document.body by default
+    const onClose = vi.fn();
+    render(<ActionLogPanel entries={sampleEntries} onClose={onClose} />);
+
+    const closeButton = screen.getByRole('button', { name: '閉じる' });
+    fireEvent.click(closeButton);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    // Should not throw; body.focus() is a no-op so this is safe
+  });
+
   it('ignores non-Tab keydown events', () => {
     render(<ActionLogPanel entries={sampleEntries} onClose={vi.fn()} />);
     const region = screen.getByRole('region', { name: '棋譜' });
