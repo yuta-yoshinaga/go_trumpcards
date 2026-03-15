@@ -6,9 +6,9 @@ This directory contains the React frontend (Vite + React + TypeScript).
 
 **TDD cycle (Red-Green-Refactor):**
 
-1. **Red** -- Write a failing test (`npm test -- --run TestName` confirms failure)
+1. **Red** -- Write a failing test (`bun run test -- --run TestName` confirms failure)
 2. **Green** -- Write the minimum code to pass the test
-3. **Refactor** -- Clean up while keeping all tests green (`npm test`)
+3. **Refactor** -- Clean up while keeping all tests green (`bun run test`)
 
 The test stack is **Vitest + React Testing Library + jest-dom**.
 
@@ -33,9 +33,9 @@ The test stack is **Vitest + React Testing Library + jest-dom**.
 E2E tests use **Playwright** (Chromium only) and live in `e2e/`. They verify game flows against the real Go server.
 
 ```sh
-npm run e2e          # Run E2E tests (auto-starts Go server on port 8080)
-npm run e2e:headed   # Run E2E tests in headed browser
-npm run e2e:ui       # Run with Playwright UI
+bun run e2e          # Run E2E tests (auto-starts Go server on port 8080)
+bun run e2e:headed   # Run E2E tests in headed browser
+bun run e2e:ui       # Run with Playwright UI
 ```
 
 E2E tests should not assert on specific card values (randomness). Instead, verify flow: button visibility, phase transitions, and reset behavior.
@@ -54,7 +54,7 @@ The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with *
 ## Pre-commit checks
 
 ```sh
-npm run build        # Build React app
-npm run check        # Biome lint + format check
-npm test             # Run Vitest unit tests
+bun run build        # Build React app
+bun run check        # Biome lint + format check
+bun run test         # Run Vitest unit tests
 ```

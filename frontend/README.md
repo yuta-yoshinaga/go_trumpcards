@@ -4,16 +4,16 @@ This project uses [Vite](https://vitejs.dev/) with [React](https://react.dev/) a
 
 ## Scripts
 
-- `npm run dev`: Start the development server
-- `npm run build`: Build for production
-- `npm run preview`: Preview the production build
-- `npm run check`: Run [Biome](https://biomejs.dev/) to check for linting and formatting errors
-- `npm run check:write`: Run Biome and automatically fix linting/formatting errors
-- `npm test`: Run tests with [Vitest](https://vitest.dev/)
-- `npm run test:coverage`: Run tests with coverage
-- `npm run e2e`: Run [Playwright](https://playwright.dev/) E2E tests (auto-starts Go server)
-- `npm run e2e:ui`: Run Playwright E2E tests with UI
-- `npm run e2e:headed`: Run Playwright E2E tests in headed mode
+- `bun run dev`: Start the development server
+- `bun run build`: Build for production
+- `bun run preview`: Preview the production build
+- `bun run check`: Run [Biome](https://biomejs.dev/) to check for linting and formatting errors
+- `bun run check:write`: Run Biome and automatically fix linting/formatting errors
+- `bun run test`: Run tests with [Vitest](https://vitest.dev/)
+- `bun run test:coverage`: Run tests with coverage
+- `bun run e2e`: Run [Playwright](https://playwright.dev/) E2E tests (auto-starts Go server)
+- `bun run e2e:ui`: Run Playwright E2E tests with UI
+- `bun run e2e:headed`: Run Playwright E2E tests in headed mode
 
 ## Tooling
 
