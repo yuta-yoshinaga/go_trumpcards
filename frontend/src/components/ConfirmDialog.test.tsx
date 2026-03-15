@@ -63,24 +63,17 @@ describe('ConfirmDialog', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 
-  it('calls onCancel when Escape key is pressed on overlay', () => {
-    const onCancel = vi.fn();
-    render(<ConfirmDialog {...defaultProps({ onCancel })} />);
-    fireEvent.keyDown(screen.getByRole('presentation'), { key: 'Escape' });
-    expect(onCancel).toHaveBeenCalledOnce();
-  });
-
-  it('does not call onCancel for non-Escape key on overlay', () => {
-    const onCancel = vi.fn();
-    render(<ConfirmDialog {...defaultProps({ onCancel })} />);
-    fireEvent.keyDown(screen.getByRole('presentation'), { key: 'Enter' });
-    expect(onCancel).not.toHaveBeenCalled();
-  });
-
-  it('does not propagate keyDown from dialog content to overlay', () => {
+  it('calls onCancel when Escape key is pressed on dialog', () => {
     const onCancel = vi.fn();
     render(<ConfirmDialog {...defaultProps({ onCancel })} />);
     fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  it('does not call onCancel for non-Escape key on dialog', () => {
+    const onCancel = vi.fn();
+    render(<ConfirmDialog {...defaultProps({ onCancel })} />);
+    fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Enter' });
     expect(onCancel).not.toHaveBeenCalled();
   });
 
