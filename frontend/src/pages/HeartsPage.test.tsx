@@ -305,6 +305,15 @@ describe('HeartsPage', () => {
     });
   });
 
+  it('score table headers have scope="col" for accessibility', async () => {
+    const { container } = renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+    const ths = container.querySelectorAll('th');
+    ths.forEach((th) => {
+      expect(th).toHaveAttribute('scope', 'col');
+    });
+  });
+
   it('shows hearts broken text', async () => {
     mockExec.mockResolvedValue(heartsBrokenState);
     renderWithProviders(<HeartsPage />);

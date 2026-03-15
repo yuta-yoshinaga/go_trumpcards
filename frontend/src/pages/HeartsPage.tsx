@@ -175,10 +175,12 @@ export function HeartsPage() {
           <table className="w-full text-sm text-white/70">
             <thead>
               <tr>
-                <th className="text-left">{t('scoresPlayer')}</th>
-                <th>{t('scoresRound')}</th>
-                <th>{t('scoresTotal')}</th>
-                <th>{t('scoresTricks')}</th>
+                <th scope="col" className="text-left">
+                  {t('scoresPlayer')}
+                </th>
+                <th scope="col">{t('scoresRound')}</th>
+                <th scope="col">{t('scoresTotal')}</th>
+                <th scope="col">{t('scoresTricks')}</th>
               </tr>
             </thead>
             <tbody>
