@@ -2,20 +2,15 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 3.12.x  | :white_check_mark: |
+| < 3.12  | :x:                |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+To report a security vulnerability, please use [GitHub's Private Vulnerability Reporting](https://github.com/yuta-yoshinaga/go_trumpcards/security/advisories/new).
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Please do **not** report security vulnerabilities through public GitHub issues.
+
+You can expect an initial response within 48 hours. We will keep you informed of our progress and notify you when the issue is resolved.
