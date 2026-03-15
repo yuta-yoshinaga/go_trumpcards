@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
 import type { Card, OldMaidResponse } from '../types/card';
-import { REPLAY_DELAY_MS, runReplay } from './gameReplay';
+import { REPLAY_DELAY_MS, runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
 
 export const OldMaidMode = {
@@ -134,7 +134,12 @@ export function useOldMaidGame() {
     };
   }, [displayState?.lastDrawCard]);
 
+  const lastReplayedActionsRef = useRef<OldMaidResponse['cpuActions']>(undefined);
+
   const onSuccess = useCallback(async (res: OldMaidResponse) => {
+    if (shouldSkipReplay(res.cpuActions ?? [], lastReplayedActionsRef, res, setDisplayState)) {
+      return;
+    }
     await runReplay(res, setDisplayState, {
       buildReplayStates,
       buildHumanActionState: buildHumanDrawState,

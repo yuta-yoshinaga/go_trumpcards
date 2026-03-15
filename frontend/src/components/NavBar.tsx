@@ -37,7 +37,7 @@ export function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div>
+    <div className="bg-gray-800">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
         <Link to="/" className="text-white font-bold" onClick={() => setIsOpen(false)}>
           Trump Cards
