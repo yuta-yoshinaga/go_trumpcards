@@ -49,8 +49,9 @@ describe('OldMaidDiscardedArea', () => {
     const cards = [makeCard('SPADE', 1), makeCard('HEART', 1)];
     const { container } = render(<OldMaidDiscardedArea cards={cards} />);
     const pairContainer = container.querySelector('div[style*="position: relative"]') as HTMLElement;
-    expect(pairContainer.style.width).toBe('60px');
-    expect(pairContainer.style.height).toBe('84px');
+    // desktop: cardWidth=60, cardHeight=84, overlapLeft=11, overlapTop=7
+    expect(pairContainer.style.width).toBe('71px');
+    expect(pairContainer.style.height).toBe('91px');
   });
 
   it('uses mobile card dimensions on narrow viewport', () => {
@@ -58,8 +59,9 @@ describe('OldMaidDiscardedArea', () => {
     const cards = [makeCard('SPADE', 1), makeCard('HEART', 1)];
     const { container } = render(<OldMaidDiscardedArea cards={cards} />);
     const pairContainer = container.querySelector('div[style*="position: relative"]') as HTMLElement;
-    expect(pairContainer.style.width).toBe('40px');
-    expect(pairContainer.style.height).toBe('60px');
+    // mobile: cardWidth=40, cardHeight=60, overlapLeft=7, overlapTop=4
+    expect(pairContainer.style.width).toBe('47px');
+    expect(pairContainer.style.height).toBe('64px');
   });
 
   it('scales overlap offsets proportionally on desktop', () => {
