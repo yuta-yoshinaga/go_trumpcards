@@ -73,6 +73,7 @@ export function usePokerGame() {
     exec,
     selected,
     toggleCard,
+    clearSelection,
     odds,
     canExchange,
   };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { holdemApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -13,6 +13,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
@@ -95,6 +96,22 @@ export function HoldemPage() {
   const isAddonPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.ADDON;
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'c', action: () => exec('call'), enabled: hasOutstandingBet },
+      { key: 'r', action: () => (hasOutstandingBet ? exec('raise', betAmount) : exec('bet', betAmount)) },
+      { key: 'k', action: () => exec('check'), enabled: !hasOutstandingBet },
+      { key: 'f', action: () => exec('fold') },
+      { key: 'a', action: () => exec('allin') },
+    ],
+    [exec, hasOutstandingBet, betAmount],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: canAct && !loading,
+  });
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">

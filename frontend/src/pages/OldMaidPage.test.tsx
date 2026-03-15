@@ -1198,4 +1198,40 @@ describe('OldMaidPage', () => {
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, false, false),
     );
   });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing d triggers draw random on human turn', async () => {
+    await startGame();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('pressing s triggers shuffle on human turn', async () => {
+    await startGame();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('shuffle'));
+  });
+
+  it('keyboard shortcuts are disabled on CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    await startGame();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    fireEvent.keyDown(document, { key: 's' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('keyboard shortcuts are disabled at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    await startGame();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    fireEvent.keyDown(document, { key: 's' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
 });

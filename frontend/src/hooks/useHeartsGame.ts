@@ -64,6 +64,7 @@ export function useHeartsGame() {
     heartsConfig,
     selectedCardIndices,
     toggleCard,
+    clearSelection,
     handleConfigChange,
     handlePass,
     handlePlay,

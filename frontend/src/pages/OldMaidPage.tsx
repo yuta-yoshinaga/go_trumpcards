@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
@@ -10,6 +11,7 @@ import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
@@ -49,6 +51,22 @@ export function OldMaidPage() {
 
   const { actionLog, showActionLog, hideActionLog } = useActionLog('oldmaid');
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
+
+  const isHumanTurnForKbd =
+    !!displayState && !displayState.gameEndFlag && !!displayState.players[displayState.currentTurn]?.isHuman;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: () => exec('draw') },
+      { key: 's', action: () => exec('shuffle') },
+    ],
+    [exec],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!gameSettings && isHumanTurnForKbd && !loading,
+  });
 
   if (!gameSettings) {
     return (

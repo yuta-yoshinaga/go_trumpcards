@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -12,6 +13,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -29,6 +31,7 @@ export function DaifugoPage() {
     exec,
     selectedIndices,
     toggleCardSelection,
+    clearSelection,
     configInput,
     handleDragCard,
     handleDrop,
@@ -37,6 +40,26 @@ export function DaifugoPage() {
 
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('daifugo');
+
+  const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const kbdConfirm = useCallback(() => {
+    if (!loading && isHumanTurnForKbd && selectedIndices.length > 0) {
+      exec(
+        'play',
+        [...selectedIndices].sort((a, b) => a - b),
+      );
+    }
+  }, [loading, isHumanTurnForKbd, selectedIndices, exec]);
+
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCardSelection,
+    onConfirm: kbdConfirm,
+    onClear: clearSelection,
+    enabled: isHumanTurnForKbd && !loading,
+  });
 
   if (!state) return null;
 

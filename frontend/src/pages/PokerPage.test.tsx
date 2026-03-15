@@ -1238,4 +1238,82 @@ describe('PokerPage', () => {
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
   });
+
+  // --- Keyboard navigation tests ---
+
+  describe('keyboard navigation', () => {
+    it('pressing number keys toggles card selection', async () => {
+      mockExec.mockResolvedValue(exchangeState);
+      renderWithProviders(<PokerPage />);
+      await waitFor(() => expect(screen.getByText('交換するカードを選んでください')).toBeInTheDocument());
+
+      const buttons = screen.getAllByRole('button', { pressed: false });
+      const cardButtons = buttons.filter((b) => b.getAttribute('aria-pressed') !== null);
+      expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
+
+      // Press '1' to toggle first card
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+
+      // Press '1' again to deselect
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('Enter key triggers exchange', async () => {
+      mockExec.mockResolvedValue(exchangeState);
+      renderWithProviders(<PokerPage />);
+      await waitFor(() => expect(screen.getByText('交換するカードを選んでください')).toBeInTheDocument());
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(secondBetState);
+
+      // Select a card first, then press Enter
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'Enter' });
+      });
+
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', [0]));
+    });
+
+    it('Escape key clears selection', async () => {
+      mockExec.mockResolvedValue(exchangeState);
+      renderWithProviders(<PokerPage />);
+      await waitFor(() => expect(screen.getByText('交換するカードを選んでください')).toBeInTheDocument());
+
+      const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+
+      // Select a card
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+
+      // Press Escape to clear
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'Escape' });
+      });
+      expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('keyboard is disabled when not in exchange phase', async () => {
+      mockExec.mockResolvedValue(dealState);
+      renderWithProviders(<PokerPage />);
+      await waitFor(() => expect(screen.getByText('あなたの番です')).toBeInTheDocument());
+
+      const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+
+      // Press '1' - should not toggle since we're in deal phase, not exchange
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
+    });
+  });
 });

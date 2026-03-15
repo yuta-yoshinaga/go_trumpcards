@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -11,6 +12,7 @@ import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
@@ -51,6 +53,25 @@ export function SevensPage() {
 
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('sevens');
+
+  const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
+  const humanCardCount = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const noop = useCallback(() => {}, []);
+  const directPlay = useCallback(
+    (idx: number) => {
+      handleCardPlay(idx);
+    },
+    [handleCardPlay],
+  );
+  useCardKeyboardNav({
+    cardCount: humanCardCount,
+    onToggle: noop,
+    onConfirm: noop,
+    onClear: noop,
+    enabled: isHumanTurnForKbd && !loading,
+    onDirectPlay: directPlay,
+  });
 
   if (!state) return null;
 

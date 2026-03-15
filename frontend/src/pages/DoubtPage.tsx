@@ -12,6 +12,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import {
   actionDesc,
@@ -45,6 +46,7 @@ export function DoubtPage() {
     handleDoubt,
     handleSkip,
     handleCpuDoubtConfirm,
+    clearSelection,
   } = useDoubtGame();
 
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
@@ -61,9 +63,19 @@ export function DoubtPage() {
     }
   }, [showClaimInput]);
 
+  const isHumanPlayTurn = isHumanTurn && state?.phase === 0;
+  const humanPlayer = state?.players.find((p) => p.isHuman);
+
+  useCardKeyboardNav({
+    cardCount: humanPlayer?.cards?.length ?? 0,
+    onToggle: toggleCard,
+    onConfirm: handlePlay,
+    onClear: clearSelection,
+    enabled: isHumanPlayTurn && !loading,
+  });
+
   if (!state) return null;
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const isDoubtPhase = state.phase === 1;
   const cpuPlayed = isDoubtPhase && state.lastAction !== null && !state.players[state.lastAction.playerIdx]?.isHuman;
