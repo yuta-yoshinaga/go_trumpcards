@@ -87,7 +87,7 @@ export function DoubtPage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading} aria-live="polite">
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
       {/* Phase indicator */}
       <PhaseIndicator
@@ -264,7 +264,7 @@ export function DoubtPage() {
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
-      <GameFooter className="bg-[#101c3a] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {/* Human player info */}
         {humanPlayer && (
           <div className="mb-2">

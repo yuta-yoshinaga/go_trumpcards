@@ -192,6 +192,13 @@ The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with *
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
+### Intermediate design docs
+
+**Do NOT commit intermediate design documents (e.g., `docs/superpowers/specs/`) to the repository.** These documents are not maintained after implementation and become tech debt. Instead:
+
+- **Design specs and brainstorming output**: Post as a comment on the relevant GitHub issue
+- **Architecture Decision Records (ADRs)**: These ARE worth committing to `docs/adr/` — they capture the *why* behind decisions and remain valuable long-term
+
 ## Git Workflow
 
 - **`develop`**: Default branch; target for all PRs. CodeQL analysis and `golangci-lint` run on push/PR.

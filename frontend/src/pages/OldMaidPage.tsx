@@ -110,7 +110,7 @@ export function OldMaidPage() {
   return (
     <div
       key={shakeKey}
-      className={`flex-1 flex flex-col min-h-0 bg-[#1a5c1a]${shakeKey > 0 ? ' animate-shake' : ''}`}
+      className={`flex-1 flex flex-col min-h-0 bg-game-bg-green${shakeKey > 0 ? ' animate-shake' : ''}`}
       aria-busy={loading}
       aria-live="polite"
     >
@@ -217,7 +217,7 @@ export function OldMaidPage() {
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
-      <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
