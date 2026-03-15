@@ -121,7 +121,7 @@ export function MemoryPage() {
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
                 aria-hidden={bc.taken || undefined}
-                className={`relative aspect-[2/3] rounded border ${
+                className={`relative aspect-[2/3] rounded border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
                   bc.taken
                     ? 'bg-transparent border-transparent'
                     : bc.faceUp

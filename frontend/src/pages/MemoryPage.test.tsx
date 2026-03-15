@@ -374,6 +374,16 @@ describe('MemoryPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  it('board card buttons have focus-visible ring classes', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    const boardButtons = screen.getAllByRole('button').filter((btn) => btn.className.includes('aspect-'));
+    expect(boardButtons.length).toBeGreaterThan(0);
+    for (const btn of boardButtons) {
+      expect(btn.className).toContain('focus-visible:ring-white/80');
+    }
+  });
+
   it('pressing n does not trigger next outside RESULT phase', async () => {
     mockExec.mockResolvedValue(flip1State);
     renderWithProviders(<MemoryPage />);

@@ -30,6 +30,7 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);
   const dialogRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<Element | null>(null);
   const titleId = useId();
 
   const textContent = entries.length === 0 ? t('actionLog.empty') : entries.map((e) => formatEntry(e, t)).join('\n');
@@ -41,6 +42,8 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   }, [copied]);
 
   useEffect(() => {
+    triggerRef.current = document.activeElement;
+
     const dialog = dialogRef.current as HTMLElement;
     const focusable = getFocusableElements(dialog);
     if (focusable.length === 0) return;
@@ -102,7 +105,16 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
           <button type="button" className={btnSecondary} onClick={handleDownload}>
             {t('actionLog.download')}
           </button>
-          <button type="button" className={btnPrimary} onClick={onClose}>
+          <button
+            type="button"
+            className={btnPrimary}
+            onClick={() => {
+              onClose();
+              if (triggerRef.current instanceof HTMLElement) {
+                triggerRef.current.focus();
+              }
+            }}
+          >
             {t('actionLog.close')}
           </button>
         </div>
