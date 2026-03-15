@@ -21,12 +21,9 @@ export function useActionKeyboardNav({ bindings, enabled }: UseActionKeyboardNav
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag && IGNORED_TAGS.has(tag)) return;
 
-      for (const binding of bindings) {
-        if (binding.key === e.key) {
-          if (binding.enabled === false) return;
-          binding.action();
-          return;
-        }
+      const binding = bindings.find((b) => b.key === e.key);
+      if (binding && binding.enabled !== false) {
+        binding.action();
       }
     };
 

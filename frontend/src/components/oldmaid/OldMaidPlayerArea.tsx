@@ -47,40 +47,40 @@ export function OldMaidPlayerArea({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!onReorder || !player.cards || player.cards.length === 0) return;
     const max = player.cards.length - 1;
-    if (e.key === 'Escape') {
-      setFocusedCardIdx(null);
-      return;
-    }
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      if (e.shiftKey) {
-        if (focusedCardIdx !== null && focusedCardIdx > 0) {
-          const indices = player.cards.map((_, idx) => idx);
-          const tmp = indices[focusedCardIdx];
-          indices[focusedCardIdx] = indices[focusedCardIdx - 1];
-          indices[focusedCardIdx - 1] = tmp;
-          setFocusedCardIdx(focusedCardIdx - 1);
-          onReorder(indices);
+
+    const swapAndReorder = (index1: number, index2: number) => {
+      const indices = Array.from(player.cards!.keys());
+      [indices[index1], indices[index2]] = [indices[index2], indices[index1]];
+      onReorder(indices);
+      setFocusedCardIdx(index2);
+    };
+
+    switch (e.key) {
+      case 'Escape':
+        setFocusedCardIdx(null);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (e.shiftKey) {
+          if (focusedCardIdx !== null && focusedCardIdx > 0) {
+            swapAndReorder(focusedCardIdx, focusedCardIdx - 1);
+          }
+        } else {
+          setFocusedCardIdx((prev) => (prev === null ? 0 : Math.max(0, prev - 1)));
         }
-      } else {
-        setFocusedCardIdx((prev) => (prev === null ? 0 : Math.max(0, prev - 1)));
-      }
-      return;
-    }
-    if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      if (e.shiftKey) {
-        if (focusedCardIdx !== null && focusedCardIdx < max) {
-          const indices = player.cards.map((_, idx) => idx);
-          const tmp = indices[focusedCardIdx];
-          indices[focusedCardIdx] = indices[focusedCardIdx + 1];
-          indices[focusedCardIdx + 1] = tmp;
-          setFocusedCardIdx(focusedCardIdx + 1);
-          onReorder(indices);
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (e.shiftKey) {
+          if (focusedCardIdx !== null && focusedCardIdx < max) {
+            swapAndReorder(focusedCardIdx, focusedCardIdx + 1);
+          }
+        } else {
+          setFocusedCardIdx((prev) => (prev === null ? 0 : Math.min(max, prev + 1)));
         }
-      } else {
-        setFocusedCardIdx((prev) => (prev === null ? 0 : Math.min(max, prev + 1)));
-      }
+        break;
+      default:
+        break;
     }
   };
 
