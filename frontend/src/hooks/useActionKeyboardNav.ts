@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { IGNORED_TAGS } from './keyboardNavUtils';
 
 interface ActionBinding {
   key: string;
@@ -10,8 +11,6 @@ interface UseActionKeyboardNavOptions {
   bindings: ActionBinding[];
   enabled: boolean;
 }
-
-const IGNORED_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
 export function useActionKeyboardNav({ bindings, enabled }: UseActionKeyboardNavOptions): void {
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { IGNORED_TAGS } from './keyboardNavUtils';
 
 interface UseCardKeyboardNavOptions {
   cardCount: number;
@@ -8,8 +9,6 @@ interface UseCardKeyboardNavOptions {
   enabled: boolean;
   onDirectPlay?: (index: number) => void;
 }
-
-const IGNORED_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 
 export function useCardKeyboardNav({
   cardCount,
@@ -36,7 +35,7 @@ export function useCardKeyboardNav({
       }
 
       const digit = Number.parseInt(e.key, 10);
-      if (Number.isNaN(digit) || digit < 0 || digit > 9) return;
+      if (Number.isNaN(digit) || digit > 9) return;
 
       const index = digit === 0 ? 9 : digit - 1;
       if (index >= cardCount) return;
