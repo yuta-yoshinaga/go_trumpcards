@@ -631,6 +631,23 @@ describe('PokerPage', () => {
     expect(cardBtn).toHaveAttribute('aria-label', '♠ A');
   });
 
+  it('applies unified selectedCardStyle to card button when selected', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    // Before selection: transparent border, no transform
+    expect(cardBtn.style.border).toBe('3px solid transparent');
+    expect(cardBtn.style.transform).toBe('none');
+
+    fireEvent.click(cardBtn);
+    // After selection: selectedCardStyle applied to button (border + transform + shadow)
+    expect(cardBtn.style.border).toContain('3px solid');
+    expect(cardBtn.style.border).not.toBe('3px solid transparent');
+    expect(cardBtn.style.transform).toBe('translateY(-8px)');
+  });
+
   it('does not select card when not in exchange phase', async () => {
     mockExec.mockResolvedValue(dealState);
     renderWithProviders(<PokerPage />);
