@@ -32,15 +32,6 @@ function usePhaseNames(t: (key: string) => string): Record<number, string> {
   };
 }
 
-const cardWrapBase: React.CSSProperties = {
-  position: 'relative',
-  cursor: 'pointer',
-  transition: 'transform 0.15s',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-};
-
 export function PokerPage() {
   const { t } = useTranslation('poker');
   const { t: tc } = useTranslation('common');
@@ -178,23 +169,14 @@ export function PokerPage() {
                     className={`${focusRingBlue} rounded`}
                     style={{
                       background: 'none',
-                      border: 'none',
                       padding: 0,
-                      ...cardWrapBase,
                       cursor: canExchange ? 'pointer' : 'default',
+                      borderRadius: 8,
+                      ...selectedCardStyle(isSelected),
+                      boxSizing: 'border-box',
                     }}
                   >
-                    <CardImage card={card} width={60} style={selectedCardStyle(isSelected)} />
-                    <div
-                      style={{
-                        color: 'var(--color-game-card-selected)',
-                        fontSize: '0.75em',
-                        fontWeight: 'bold',
-                        visibility: isSelected ? 'visible' : 'hidden',
-                      }}
-                    >
-                      {t('exchangeLabel')}
-                    </div>
+                    <CardImage card={card} width={60} />
                   </button>
                 );
               })}
