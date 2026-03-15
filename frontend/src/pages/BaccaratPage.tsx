@@ -77,8 +77,6 @@ export function BaccaratPage() {
       </PhaseIndicator>
 
       <div className="flex-1 overflow-y-auto pt-3 px-4">
-        <ErrorAlert message={error} />
-
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {/* Player Hand */}
@@ -120,6 +118,7 @@ export function BaccaratPage() {
 
       {/* Footer */}
       <GameFooter className="bg-gray-800 px-4 pt-3">
+        <ErrorAlert message={error} />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2">
             <div className="flex items-center gap-2">
