@@ -234,9 +234,6 @@ export function KlondikePage() {
         {/* Message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-        {/* Error */}
-        <ErrorAlert message={error ?? hintError} />
-
         {/* Action log */}
         <ActionLogSection
           isEndPhase={isEnded}
@@ -248,6 +245,7 @@ export function KlondikePage() {
 
       {/* Footer */}
       <GameFooter className="bg-game-bg-casino-dark border-white/20 px-4 py-2.5">
+        <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
             <>
