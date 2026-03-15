@@ -8,6 +8,7 @@ import (
 
 	"golang.org/x/term"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure"
@@ -154,7 +155,16 @@ ENVIRONMENT VARIABLES:
 		}
 	default:
 		if flag.Arg(0) != "" {
-			fmt.Fprintf(os.Stderr, "Error: unknown game %q\n\n", flag.Arg(0))
+			validGames := []string{
+				"blackjack", "poker", "oldmaid", "daifugo", "sevens",
+				"doubt", "holdem", "hearts", "memory", "klondike",
+				"baccarat", "update", "web",
+			}
+			fmt.Fprintf(os.Stderr, "Error: unknown game %q\n", flag.Arg(0))
+			if suggestion := cuiutil.SuggestCommand(flag.Arg(0), validGames, 2); suggestion != "" {
+				fmt.Fprintf(os.Stderr, "\n  Did you mean %q?\n", suggestion)
+			}
+			fmt.Fprintln(os.Stderr)
 			flag.Usage()
 			return 2
 		}
