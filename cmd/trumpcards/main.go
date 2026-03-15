@@ -107,70 +107,61 @@ ENVIRONMENT VARIABLES:
 	if i18n.Lang() != detectedLang && detectedLang != "" {
 		fmt.Fprintf(os.Stderr, "Warning: unsupported language %q, defaulting to ja\n", detectedLang)
 	}
-	switch strings.ToLower(flag.Arg(0)) {
-	case "blackjack":
-		cui := ui.NewBlackJackCui()
-		cui.Exec()
-	case "poker":
-		poker := ui.NewPokerCui()
-		poker.Exec()
-	case "oldmaid":
-		oldmaid := ui.NewOldMaidCui()
-		oldmaid.Exec()
-	case "daifugo":
-		daifugo := ui.NewDaifugoCui()
-		daifugo.Exec()
-	case "sevens":
-		sevens := ui.NewSevensCui()
-		sevens.Exec()
-	case "doubt":
-		doubt := ui.NewDoubtCui()
-		doubt.Exec()
-	case "holdem":
-		holdem := ui.NewHoldemCui()
-		holdem.Exec()
-	case "hearts":
-		hearts := ui.NewHeartsCui()
-		hearts.Exec()
-	case "memory":
-		memory := ui.NewMemoryCui()
-		memory.Exec()
-	case "klondike":
-		klondike := ui.NewKlondikeCui()
-		klondike.Exec()
-	case "baccarat":
-		baccarat := ui.NewBaccaratCui()
-		baccarat.Exec()
-	case "update":
-		updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
-		if err := updater.Exec(); err != nil {
-			return 1
-		}
-	case "web":
-		infrastructure.InitLogger()
-		w := web.NewTrumpCardsWeb()
-		if err := w.Exec(); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-			return 1
-		}
-	default:
-		if flag.Arg(0) != "" {
-			validGames := []string{
-				"blackjack", "poker", "oldmaid", "daifugo", "sevens",
-				"doubt", "holdem", "hearts", "memory", "klondike",
-				"baccarat", "update", "web",
+	commands := map[string]func() int{
+		"blackjack": func() int { ui.NewBlackJackCui().Exec(); return 0 },
+		"poker":     func() int { ui.NewPokerCui().Exec(); return 0 },
+		"oldmaid":   func() int { ui.NewOldMaidCui().Exec(); return 0 },
+		"daifugo":   func() int { ui.NewDaifugoCui().Exec(); return 0 },
+		"sevens":    func() int { ui.NewSevensCui().Exec(); return 0 },
+		"doubt":     func() int { ui.NewDoubtCui().Exec(); return 0 },
+		"holdem":    func() int { ui.NewHoldemCui().Exec(); return 0 },
+		"hearts":    func() int { ui.NewHeartsCui().Exec(); return 0 },
+		"memory":    func() int { ui.NewMemoryCui().Exec(); return 0 },
+		"klondike":  func() int { ui.NewKlondikeCui().Exec(); return 0 },
+		"baccarat":  func() int { ui.NewBaccaratCui().Exec(); return 0 },
+		"update": func() int {
+			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
+			if err := updater.Exec(); err != nil {
+				return 1
 			}
-			fmt.Fprintf(os.Stderr, "Error: unknown game %q\n", flag.Arg(0))
-			if suggestion := cuiutil.SuggestCommand(flag.Arg(0), validGames, 2); suggestion != "" {
-				fmt.Fprintf(os.Stderr, "\n  Did you mean %q?\n", suggestion)
+			return 0
+		},
+		"web": func() int {
+			infrastructure.InitLogger()
+			w := web.NewTrumpCardsWeb()
+			if err := w.Exec(); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				return 1
 			}
-			fmt.Fprintln(os.Stderr)
-			flag.Usage()
-			return 2
-		}
-		// No argument: start interactive multi-game mode (defaults to blackjack).
-		manager := ui.NewGameManager("blackjack")
-		ui.RunInteractiveCuiLoop(manager)
+			return 0
+		},
 	}
+
+	arg := strings.ToLower(flag.Arg(0))
+	if handler, ok := commands[arg]; ok {
+		return handler()
+	}
+
+	if arg != "" {
+		fmt.Fprintf(os.Stderr, "Error: unknown game %q\n", arg)
+		if suggestion := cuiutil.SuggestCommand(arg, mapKeys(commands), 2); suggestion != "" {
+			fmt.Fprintf(os.Stderr, "\n  Did you mean %q?\n", suggestion)
+		}
+		fmt.Fprintln(os.Stderr)
+		flag.Usage()
+		return 2
+	}
+
+	// No argument: start interactive multi-game mode (defaults to blackjack).
+	manager := ui.NewGameManager("blackjack")
+	ui.RunInteractiveCuiLoop(manager)
 	return 0
+}
+
+func mapKeys(m map[string]func() int) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }
