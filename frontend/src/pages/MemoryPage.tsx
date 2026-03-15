@@ -13,7 +13,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
-import { btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { MemoryPhase } from '../types/phases';
 import { playerName } from '../utils/playerUtils';
 
@@ -121,7 +121,7 @@ export function MemoryPage() {
                 disabled={loading || !isHumanTurn || bc.taken || bc.faceUp}
                 onClick={() => handleFlip(idx)}
                 aria-hidden={bc.taken || undefined}
-                className={`relative aspect-[2/3] rounded border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
+                className={`relative aspect-[2/3] rounded border ${focusRingWhite} ${
                   bc.taken
                     ? 'bg-transparent border-transparent'
                     : bc.faceUp

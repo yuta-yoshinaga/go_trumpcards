@@ -76,6 +76,13 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     setCopied(true);
   };
 
+  const handleClose = () => {
+    onClose();
+    if (triggerRef.current instanceof HTMLElement) {
+      triggerRef.current.focus();
+    }
+  };
+
   const handleDownload = () => {
     const blob = new Blob([textContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -105,16 +112,7 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
           <button type="button" className={btnSecondary} onClick={handleDownload}>
             {t('actionLog.download')}
           </button>
-          <button
-            type="button"
-            className={btnPrimary}
-            onClick={() => {
-              onClose();
-              if (triggerRef.current instanceof HTMLElement) {
-                triggerRef.current.focus();
-              }
-            }}
-          >
+          <button type="button" className={btnPrimary} onClick={handleClose}>
             {t('actionLog.close')}
           </button>
         </div>
