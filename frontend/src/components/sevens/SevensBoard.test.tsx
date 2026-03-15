@@ -92,8 +92,7 @@ describe('SevensBoard', () => {
   it('calls onJokerPlace when clicking a playable cell', () => {
     const onJokerPlace = vi.fn();
     render(<SevensBoard {...defaultProps} jokerSelecting={true} onJokerPlace={onJokerPlace} />);
-    const buttons = screen.getAllByRole('button');
-    buttons[0].click();
+    screen.getByLabelText('SPADE 6 に配置').click();
     expect(onJokerPlace).toHaveBeenCalledTimes(1);
   });
 
@@ -118,15 +117,14 @@ describe('SevensBoard', () => {
   it('joker playable button uses desktop dimensions on wide viewport', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
     render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
-    const button = screen.getAllByRole('button')[0];
+    const button = screen.getByLabelText('SPADE 6 に配置') as HTMLElement;
     expect(button.style.width).toBe('26px');
     expect(button.style.height).toBe('26px');
   });
 
   it('does not throw when clicking playable cell without onJokerPlace', () => {
     render(<SevensBoard {...defaultProps} jokerSelecting={true} />);
-    const buttons = screen.getAllByRole('button');
-    expect(() => buttons[0].click()).not.toThrow();
+    expect(() => screen.getByLabelText('SPADE 6 に配置').click()).not.toThrow();
   });
 
   it('highlights A cell when K is placed and tunnelEnabled', () => {
