@@ -8,7 +8,7 @@ Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Do
 |------|---------|
 | [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
-| [npm](https://www.npmjs.com/) | 11.x |
+| [Bun](https://bun.sh/) | 1.3.10 |
 
 ## Commands
 
@@ -43,11 +43,11 @@ goimports -w ./...           # Format and organize imports (use goimports, not g
 golangci-lint run ./...      # Run Go linter (must pass before commit)
 
 # Frontend
-cd frontend && npm install   # Install dependencies
-cd frontend && npm run build # Build React app
-cd frontend && npm run check # Biome lint + format check
-cd frontend && npm test      # Run Vitest unit tests
-cd frontend && npm run e2e   # Run Playwright E2E tests
+cd frontend && bun install   # Install dependencies
+cd frontend && bun run build # Build React app
+cd frontend && bun run check # Biome lint + format check
+cd frontend && bun run test  # Run Vitest unit tests
+cd frontend && bun run e2e   # Run Playwright E2E tests
 
 # Docker
 docker build -t go_trumpcards .
@@ -83,7 +83,7 @@ Before marking any task complete:
 1. All Go tests pass: `go test -tags test ./...`
 2. Go lint passes: `golangci-lint run ./...`
 3. Go files formatted: `goimports -w` on modified files
-4. Frontend checks pass (if applicable): `cd frontend && npm run build && npm run check && npm test`
+4. Frontend checks pass (if applicable): `cd frontend && bun run build && bun run check && bun run test`
 5. Branch coverage is 100% for modified packages
 
 ### Detailed rules by layer
@@ -103,7 +103,7 @@ Before marking any task complete:
 | Change request/response schema of a Web API endpoint | [`api/openapi.yaml`](api/openapi.yaml) |
 | Change architecture or layer structure | [`README.md`](README.md) (Architecture), [`CLAUDE.md`](CLAUDE.md) (Architecture), [`docs/architecture.md`](docs/architecture.md) |
 | Change Git workflow or CI/CD | [`CLAUDE.md`](CLAUDE.md) (Git Workflow) |
-| Modify anything under `frontend/` | Run `cd frontend && npm run build`, `cd frontend && npm run check`, and `cd frontend && npm test` and ensure all three pass before committing |
+| Modify anything under `frontend/` | Run `cd frontend && bun run build`, `cd frontend && bun run check`, and `cd frontend && bun run test` and ensure all three pass before committing |
 | Add/remove frontend source files or change testing approach | Update Testing section in [`CLAUDE.md`](CLAUDE.md) (Frontend testing) and [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
 | Change frontend tooling or scripts | [`frontend/README.md`](frontend/README.md) (Scripts, Tooling) |
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game |

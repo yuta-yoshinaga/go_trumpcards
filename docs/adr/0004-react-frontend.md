@@ -26,5 +26,5 @@ React + Vite + TypeScriptでフロントエンドを再構築する:
 - コンポーネントベースで再利用性が大幅に向上
 - TypeScriptによるコンパイル時の型チェックでバグを早期発見
 - Viteにより開発時のHMRが高速
-- Node.js/npmが新たな依存として必要
+- Node.js/npmが新たな依存として必要（npmは後にbunに移行、ADR-0021参照）
 - ビルド成果物を `public/` に配置し、GoサーバーからSPAとして配信
