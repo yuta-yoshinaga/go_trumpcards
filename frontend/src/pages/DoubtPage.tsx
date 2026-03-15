@@ -291,14 +291,16 @@ export function DoubtPage() {
             {/* Claimed value input (shown when cards are selected) */}
             {showClaimInput && (
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-white text-sm">{t('claimedValue')}</span>
+                <label htmlFor="claim-input" className="text-white text-sm">
+                  {t('claimedValue')}
+                </label>
                 <input
                   ref={claimInputRef}
                   type="number"
                   min={1}
                   max={13}
                   value={claimedValue}
-                  aria-label={t('claimInputAriaLabel')}
+                  id="claim-input"
                   onChange={(e) => {
                     const num = Number(e.target.value);
                     setClaimedValue(Math.max(1, Math.min(13, num)));
