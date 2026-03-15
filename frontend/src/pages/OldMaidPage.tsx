@@ -82,7 +82,6 @@ export function OldMaidPage() {
         onHesitationChange={setSetupHesitation}
         onMetaAIChange={setSetupMetaAI}
         onStart={handleStart}
-        loading={loading}
       />
     );
   }

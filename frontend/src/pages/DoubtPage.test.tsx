@@ -197,13 +197,15 @@ describe('DoubtPage', () => {
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
-  it('claim input has aria-label for screen readers', async () => {
+  it('claim input is associated with label via htmlFor/id', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     const input = screen.getByRole('spinbutton');
-    expect(input).toHaveAttribute('aria-label', '宣言する値 (1〜13)');
+    expect(input).toHaveAttribute('id', 'claim-input');
+    const label = input.closest('.mt-2')?.querySelector('label');
+    expect(label).toHaveAttribute('for', 'claim-input');
   });
 
   it('claim input receives focus when it appears', async () => {
