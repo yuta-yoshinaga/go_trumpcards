@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -746,10 +746,22 @@ describe('OldMaidPage', () => {
     });
   }, 10000);
 
-  it('setup screen has aria-busy attribute', () => {
+  it('setup screen groups radio buttons in fieldset with legend', () => {
     renderWithProviders(<OldMaidPage />);
-    const setupContainer = screen.getByText('Old Maid 設定').closest('[aria-busy]') as HTMLElement;
-    expect(setupContainer).toHaveAttribute('aria-busy', 'false');
+    const legend = screen.getByText('モード選択');
+    const fieldset = legend.closest('fieldset');
+    expect(fieldset).toBeInTheDocument();
+    const radios = within(fieldset as HTMLElement).getAllByRole('radio');
+    expect(radios).toHaveLength(2);
+  });
+
+  it('setup screen groups checkboxes in fieldset with legend', () => {
+    renderWithProviders(<OldMaidPage />);
+    const legend = screen.getByText('CPU設定');
+    const fieldset = legend.closest('fieldset');
+    expect(fieldset).toBeInTheDocument();
+    const checkboxes = within(fieldset as HTMLElement).getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(4);
   });
 
   it('sets aria-busy and sr-only loading text on game screen while loading', async () => {
