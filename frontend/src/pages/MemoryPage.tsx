@@ -52,7 +52,7 @@ export function MemoryPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading}>
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
 
       {/* Phase indicator */}
@@ -152,7 +152,7 @@ export function MemoryPage() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-[#101c3a] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         <div className="flex gap-2 items-center">
           {isResult && (
             <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>

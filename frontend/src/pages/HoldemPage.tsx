@@ -114,7 +114,7 @@ export function HoldemPage() {
   });
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
@@ -189,7 +189,7 @@ export function HoldemPage() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <GameFooter className="bg-[#155715] border-white/20 px-5 py-3">
+      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">

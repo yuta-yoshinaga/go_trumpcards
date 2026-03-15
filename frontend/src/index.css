@@ -14,6 +14,17 @@
   --color-daifugo-nine-reverse: #e67e22;
   --color-daifugo-number-lock: #1abc9c;
   --color-game-card-selected: #3b82f6;
+  /* Game background colors */
+  --color-game-bg-green: #1a5c1a;
+  --color-game-bg-green-dark: #163e16;
+  --color-game-bg-green-bright: #008000;
+  --color-game-bg-green-bright-dark: #005a00;
+  --color-game-bg-green-poker: #1a6b1a;
+  --color-game-bg-green-poker-dark: #155715;
+  --color-game-bg-casino: #0d5016;
+  --color-game-bg-casino-dark: #0a3a10;
+  --color-game-bg-blue: #1a2c5c;
+  --color-game-bg-blue-dark: #101c3a;
 }
 
 html,

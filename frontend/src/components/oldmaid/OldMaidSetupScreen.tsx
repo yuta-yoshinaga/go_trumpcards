@@ -33,7 +33,7 @@ export function OldMaidSetupScreen({
 }: SetupScreenProps) {
   const { t } = useTranslation('oldmaid');
   return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-[#1a5c1a] p-6 gap-4" aria-busy={loading}>
+    <div className="flex-1 flex flex-col items-center justify-center bg-game-bg-green p-6 gap-4" aria-busy={loading}>
       <div className="text-white text-2xl font-bold mb-2">{t('setup.title')}</div>
       <div className="bg-black/40 rounded-xl p-4 w-full max-w-sm flex flex-col gap-3">
         <div className="text-white font-bold mb-1">{t('setup.modeSelect')}</div>

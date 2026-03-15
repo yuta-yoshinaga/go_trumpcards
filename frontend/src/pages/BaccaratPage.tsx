@@ -68,7 +68,7 @@ export function BaccaratPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading}>
       <LoadingSpinner loading={loading} />
 
       {/* Phase indicator */}

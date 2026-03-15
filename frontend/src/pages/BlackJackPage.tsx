@@ -155,7 +155,7 @@ export function BlackJackPage() {
   ]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-bright" aria-busy={loading} aria-live="polite">
       <LoadingSpinner loading={loading} />
       {/* Phase indicator + info bar */}
       {state && (
@@ -253,7 +253,7 @@ export function BlackJackPage() {
       </div>
 
       {/* Sticky footer: player hand + result + buttons */}
-      <GameFooter className="bg-[#005a00] border-white/15 px-4 py-3">
+      <GameFooter className="bg-game-bg-green-bright-dark border-white/15 px-4 py-3">
         {/* Player hands */}
         {state && phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">

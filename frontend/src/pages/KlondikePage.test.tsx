@@ -582,7 +582,9 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
 
     // Footer should not have draw/hint/autocomplete/giveup
-    const footerButtons = screen.getAllByRole('button').filter((btn) => btn.closest('[class*="bg-[#0a3a10]"]'));
+    const footerButtons = screen
+      .getAllByRole('button')
+      .filter((btn) => btn.closest('[class*="bg-game-bg-casino-dark"]'));
     const buttonNames = footerButtons.map((btn) => btn.textContent);
     expect(buttonNames).not.toContain('ヒント');
     expect(buttonNames).not.toContain('自動完成');
