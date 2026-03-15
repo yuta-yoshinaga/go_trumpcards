@@ -8,7 +8,8 @@
     "cpuMemoryAI": "CPU記憶AI（引いた位置を記憶して戦略的に選択）",
     "cpuHesitation": "CPU迷い時間ディレイ（カード内容により反応速度が変化）",
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）",
-    "start": "ゲーム開始"
+    "start": "ゲーム開始",
+    "cpuSettings": "CPU設定"
   },
   "badge": {
     "jijiNuki": "ジジ抜き"
