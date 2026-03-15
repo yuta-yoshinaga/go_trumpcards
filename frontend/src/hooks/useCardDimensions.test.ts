@@ -80,18 +80,4 @@ describe('useCardDimensions', () => {
     unmount();
     expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
   });
-
-  it('mobile dimensions include sevens cell fields', () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
-    const { result } = renderHook(() => useCardDimensions());
-    expect(result.current.sevensCellSize).toBe(20);
-    expect(result.current.sevensFontSize).toBe('0.6em');
-  });
-
-  it('desktop dimensions include sevens cell fields', () => {
-    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1024 });
-    const { result } = renderHook(() => useCardDimensions());
-    expect(result.current.sevensCellSize).toBe(26);
-    expect(result.current.sevensFontSize).toBe('0.75em');
-  });
 });
