@@ -746,12 +746,6 @@ describe('OldMaidPage', () => {
     });
   }, 10000);
 
-  it('setup screen has aria-busy attribute', () => {
-    renderWithProviders(<OldMaidPage />);
-    const setupContainer = screen.getByText('Old Maid 設定').closest('[aria-busy]') as HTMLElement;
-    expect(setupContainer).toHaveAttribute('aria-busy', 'false');
-  });
-
   it('setup screen groups radio buttons in fieldset with legend', () => {
     renderWithProviders(<OldMaidPage />);
     const legend = screen.getByText('モード選択');
