@@ -208,7 +208,7 @@ describe('ActionLogPanel', () => {
     const closeButton = screen.getByRole('button', { name: '閉じる' });
     fireEvent.click(closeButton);
     expect(onClose).toHaveBeenCalledTimes(1);
-    // Should not throw; body is not an HTMLElement focus target but it's fine
+    // Should not throw; body.focus() is a no-op so this is safe
   });
 
   it('ignores non-Tab keydown events', () => {
