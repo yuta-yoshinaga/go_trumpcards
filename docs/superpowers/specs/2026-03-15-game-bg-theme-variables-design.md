@@ -5,7 +5,7 @@
 
 ## Problem
 
-Game page background colors are hardcoded as Tailwind arbitrary values (`bg-[#xxxxxx]`) across 11 page files (20 instances total). This prevents centralized color management and theme extensibility.
+Game page background colors are hardcoded as Tailwind arbitrary values (`bg-[#xxxxxx]`) across 11 page files and 1 component file (22 source instances + 3 test file references = 25 total). This prevents centralized color management and theme extensibility.
 
 ## Solution
 
@@ -24,7 +24,7 @@ Five distinct color pairs (main + dark footer variant):
 | `--color-game-bg-green-poker` | `#1a6b1a` | `bg-game-bg-green-poker` | Poker, Hold'em |
 | `--color-game-bg-green-poker-dark` | `#155715` | `bg-game-bg-green-poker-dark` | Poker, Hold'em (footer) |
 | `--color-game-bg-casino` | `#0d5016` | `bg-game-bg-casino` | Klondike, Baccarat |
-| `--color-game-bg-casino-dark` | `#0a3a10` | `bg-game-bg-casino-dark` | Klondike (footer) |
+| `--color-game-bg-casino-dark` | `#0a3a10` | `bg-game-bg-casino-dark` | Klondike (footer). Note: Baccarat footer uses `bg-gray-800` intentionally — not included. |
 | `--color-game-bg-blue` | `#1a2c5c` | `bg-game-bg-blue` | Doubt, Hearts, Memory |
 | `--color-game-bg-blue-dark` | `#101c3a` | `bg-game-bg-blue-dark` | Doubt, Hearts, Memory (footer) |
 
@@ -64,6 +64,7 @@ Five distinct color pairs (main + dark footer variant):
 | KlondikePage.tsx | `bg-[#0d5016]` | `bg-game-bg-casino` |
 | KlondikePage.tsx | `bg-[#0a3a10]` | `bg-game-bg-casino-dark` |
 | BaccaratPage.tsx | `bg-[#0d5016]` | `bg-game-bg-casino` |
+| OldMaidSetupScreen.tsx | `bg-[#1a5c1a]` | `bg-game-bg-green` |
 | DoubtPage.tsx | `bg-[#1a2c5c]` | `bg-game-bg-blue` |
 | DoubtPage.tsx | `bg-[#101c3a]` | `bg-game-bg-blue-dark` |
 | HeartsPage.tsx | `bg-[#1a2c5c]` | `bg-game-bg-blue` |
@@ -73,7 +74,8 @@ Five distinct color pairs (main + dark footer variant):
 
 ### 3. Test files — Update any hardcoded color assertions
 
-KlondikePage.test.tsx references `bg-[#0d5016]` and needs updating to `bg-game-bg-casino`.
+- KlondikePage.test.tsx references `bg-[#0a3a10]` — update to `bg-game-bg-casino-dark`
+- GameFooter.test.tsx references `bg-[#005a00]` — update to `bg-game-bg-green-bright-dark`
 
 ## Testing
 
