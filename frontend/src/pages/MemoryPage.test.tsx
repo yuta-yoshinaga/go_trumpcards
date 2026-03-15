@@ -361,4 +361,25 @@ describe('MemoryPage', () => {
 
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
   });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing n triggers next in RESULT phase', async () => {
+    mockExec.mockResolvedValue(resultMatchState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次へ' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(flip1State);
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('pressing n does not trigger next outside RESULT phase', async () => {
+    mockExec.mockResolvedValue(flip1State);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'n' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
 });

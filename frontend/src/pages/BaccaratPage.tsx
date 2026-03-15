@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
@@ -9,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
@@ -40,10 +41,23 @@ export function BaccaratPage() {
   const { actionLog, showActionLog, hideActionLog } = useActionLog('baccarat');
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
-  if (!state) return null;
+  const isBetPhase = state?.phase === BaccaratPhase.BET;
+  const isEndPhase = state?.phase === BaccaratPhase.END;
 
-  const isBetPhase = state.phase === BaccaratPhase.BET;
-  const isEndPhase = state.phase === BaccaratPhase.END;
+  const actionBindings = useMemo(
+    () => [
+      { key: 'b', action: () => exec('bet', betAmount, betType), enabled: isBetPhase },
+      { key: 'r', action: () => exec('reset'), enabled: isEndPhase },
+    ],
+    [exec, betAmount, betType, isBetPhase, isEndPhase],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!state && !loading,
+  });
+
+  if (!state) return null;
 
   const handleBet = () => {
     exec('bet', betAmount, betType);

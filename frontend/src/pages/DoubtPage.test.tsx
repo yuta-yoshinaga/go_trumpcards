@@ -1118,4 +1118,113 @@ describe('DoubtPage', () => {
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
+
+  // ── Keyboard navigation ──────────────────────────────────────────────────
+
+  describe('keyboard navigation', () => {
+    it('pressing number key toggles card when in human play turn', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      // Press '1' to toggle the first card
+      fireEvent.keyDown(document, { key: '1' });
+      const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+      // Press '1' again to deselect
+      fireEvent.keyDown(document, { key: '1' });
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('pressing "2" toggles second card', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♥ J')).toBeInTheDocument());
+
+      fireEvent.keyDown(document, { key: '2' });
+      const cardBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('Enter key triggers play', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      // Select a card first
+      fireEvent.keyDown(document, { key: '1' });
+      expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(cpuTurnState);
+      fireEvent.keyDown(document, { key: 'Enter' });
+
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1));
+    });
+
+    it('Escape key clears selection', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      // Select a card
+      fireEvent.keyDown(document, { key: '1' });
+      const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+      // Press Escape to clear
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+    });
+
+    it('keyboard is disabled when not in human play turn', async () => {
+      mockExec.mockResolvedValue(cpuTurnState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+
+      // Press '1' should have no effect (CPU's turn)
+      fireEvent.keyDown(document, { key: '1' });
+      // Human cards are still rendered but no toggle should happen
+      const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('keyboard is disabled during doubt phase', async () => {
+      mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText('ダウトしますか？')).toBeInTheDocument());
+
+      // Press '1' should have no effect (doubt phase, not play phase)
+      fireEvent.keyDown(document, { key: '1' });
+      const cards = screen.queryAllByAltText('♠ A');
+      for (const card of cards) {
+        const btn = card.closest('button');
+        if (btn) {
+          expect(btn).toHaveAttribute('aria-pressed', 'false');
+        }
+      }
+    });
+
+    it('keyboard is disabled when game has ended', async () => {
+      mockExec.mockResolvedValue(gameEndState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
+
+      // No play button, keyboard should be disabled
+      fireEvent.keyDown(document, { key: '1' });
+      // No cards to check since game ended, just ensure no errors
+    });
+
+    it('number keys do not fire when typing in claim input', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      // Select a card to show claim input
+      fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+      const input = screen.getByRole('spinbutton');
+
+      // Press '2' while focused on input - should not toggle second card
+      fireEvent.keyDown(input, { key: '2' });
+      const secondCardBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+      expect(secondCardBtn).toHaveAttribute('aria-pressed', 'false');
+    });
+  });
 });

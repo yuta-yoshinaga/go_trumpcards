@@ -161,6 +161,7 @@ export function useDaifugoGame() {
     exec,
     selectedIndices,
     toggleCardSelection,
+    clearSelection,
     configInput,
     handleDragCard,
     handleDrop,

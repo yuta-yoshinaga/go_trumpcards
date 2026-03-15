@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
@@ -28,6 +28,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
@@ -112,6 +113,22 @@ export function BlackJackPage() {
     ((hands?.length ?? 0) <= 1 || doubleAfterSplit);
   const showSplit = !!currentHand?.canSplit && playerChips >= currentHand.bet;
   const showSurrender = !!currentHand?.canSurrender;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'h', action: () => exec('hit') },
+      { key: 's', action: () => exec('stand') },
+      { key: 'd', action: () => exec('doubledown'), enabled: showDoubleDown },
+      { key: 'p', action: () => exec('split'), enabled: showSplit },
+      { key: 'u', action: () => exec('surrender'), enabled: showSurrender },
+    ],
+    [exec, showDoubleDown, showSplit, showSurrender],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: phase === BjPhase.ACTION && !loading,
+  });
 
   const handleReset = useCallback(() => {
     hideActionLog();

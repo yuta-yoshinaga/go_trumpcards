@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { playerAreaBase } from '../../styles/gameStyles';
 import type { OldMaidPlayerData } from '../../types/card';
@@ -34,6 +35,55 @@ export function OldMaidPlayerArea({
 }: PlayerAreaProps) {
   const { t } = useTranslation('oldmaid');
   const { t: tc } = useTranslation('common');
+  const [focusedCardIdx, setFocusedCardIdx] = useState<number | null>(null);
+  const cardCount = player.cards?.length ?? 0;
+
+  useEffect(() => {
+    if (focusedCardIdx !== null && focusedCardIdx >= cardCount) {
+      setFocusedCardIdx(null);
+    }
+  }, [cardCount, focusedCardIdx]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!onReorder || !player.cards || player.cards.length === 0) return;
+    const max = player.cards.length - 1;
+    if (e.key === 'Escape') {
+      setFocusedCardIdx(null);
+      return;
+    }
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        if (focusedCardIdx !== null && focusedCardIdx > 0) {
+          const indices = player.cards.map((_, idx) => idx);
+          const tmp = indices[focusedCardIdx];
+          indices[focusedCardIdx] = indices[focusedCardIdx - 1];
+          indices[focusedCardIdx - 1] = tmp;
+          setFocusedCardIdx(focusedCardIdx - 1);
+          onReorder(indices);
+        }
+      } else {
+        setFocusedCardIdx((prev) => (prev === null ? 0 : Math.max(0, prev - 1)));
+      }
+      return;
+    }
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        if (focusedCardIdx !== null && focusedCardIdx < max) {
+          const indices = player.cards.map((_, idx) => idx);
+          const tmp = indices[focusedCardIdx];
+          indices[focusedCardIdx] = indices[focusedCardIdx + 1];
+          indices[focusedCardIdx + 1] = tmp;
+          setFocusedCardIdx(focusedCardIdx + 1);
+          onReorder(indices);
+        }
+      } else {
+        setFocusedCardIdx((prev) => (prev === null ? 0 : Math.min(max, prev + 1)));
+      }
+    }
+  };
+
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isSuspect
@@ -71,13 +121,19 @@ export function OldMaidPlayerArea({
         <div className="text-game-text-muted text-xs mb-1">{t('cardCount', { count: player.cardCount })}</div>
       )}
       {showSelectable && !player.isFinished && <div className="text-game-text-highlight text-xs mb-1">{t('draw')}</div>}
-      <div className="flex flex-wrap gap-0.5 justify-center">
+      <div
+        className="flex flex-wrap gap-0.5 justify-center"
+        {...(player.isHuman && !player.isFinished && onReorder
+          ? { tabIndex: 0, onKeyDown: handleKeyDown, 'data-testid': 'human-card-container' }
+          : {})}
+      >
         {player.isFinished ? null : player.isHuman ? (
           player.cards?.map((card, i) => (
             <CardImage
               key={`${card.design}-${card.value}`}
               card={card}
               width={50}
+              className={focusedCardIdx === i && onReorder ? 'ring-2 ring-blue-500' : undefined}
               draggable={!gameEndFlag && !!onReorder}
               onDragStart={(e: React.DragEvent) => {
                 e.dataTransfer.setData('oldmaidCardIndex', String(i));

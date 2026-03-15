@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -8,6 +9,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
@@ -21,6 +23,18 @@ export function MemoryPage() {
   const { state, loading, error, exec, memoryConfig, handleConfigChange, handleFlip, handleNext } = useMemoryGame();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('memory');
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
+
+  const isResultForKbd = state?.phase === MemoryPhase.RESULT;
+
+  const actionBindings = useMemo(
+    () => [{ key: 'n', action: handleNext, enabled: isResultForKbd }],
+    [handleNext, isResultForKbd],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!state && !loading,
+  });
 
   if (!state) return null;
 

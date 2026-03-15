@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
@@ -7,6 +8,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
@@ -38,6 +40,23 @@ export function KlondikePage() {
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('klondike');
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
+
+  const isPlayingForKbd = state?.phase === KlondikePhase.PLAYING;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw },
+      { key: 'h', action: handleHint },
+      { key: 'a', action: handleAutoComplete },
+      { key: 'g', action: handleGiveUp },
+    ],
+    [handleDraw, handleHint, handleAutoComplete, handleGiveUp],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!isPlayingForKbd && !loading,
+  });
 
   if (!state) return null;
 

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -9,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -30,6 +32,7 @@ export function HeartsPage() {
     heartsConfig,
     selectedCardIndices,
     toggleCard,
+    clearSelection,
     handleConfigChange,
     handlePass,
     handlePlay,
@@ -38,6 +41,27 @@ export function HeartsPage() {
   } = useHeartsGame();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('hearts');
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
+
+  const isPassPhaseForKbd = state?.phase === HeartsPhase.PASS;
+  const isPlayPhaseForKbd = state?.phase === HeartsPhase.PLAY;
+  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const confirmAction = useCallback(() => {
+    if (isPassPhaseForKbd) {
+      handlePass();
+    } else {
+      handlePlay();
+    }
+  }, [isPassPhaseForKbd, handlePass, handlePlay]);
+
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: confirmAction,
+    onClear: clearSelection,
+    enabled: (isPassPhaseForKbd || !!isHumanTurnForKbd) && !loading,
+  });
 
   if (!state) return null;
 
