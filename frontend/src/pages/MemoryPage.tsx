@@ -59,7 +59,7 @@ export function MemoryPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNames[state.phase] ?? t('phase.flip1')} isHumanTurn={isHumanTurn} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn} />
 
       {/* Landscape orientation banner (visible on small portrait screens) */}
       <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">

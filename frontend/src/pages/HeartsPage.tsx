@@ -89,7 +89,7 @@ export function HeartsPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNames[state.phase] ?? t('phase.play')} isHumanTurn={isPassPhase || isHumanTurn} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isPassPhase || isHumanTurn} />
 
       {/* Settings */}
       <SettingsPanel
