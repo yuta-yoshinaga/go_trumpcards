@@ -1,7 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
+import jaCommon from '../i18n/locales/ja/common.json';
 import { ErrorBoundary } from './ErrorBoundary';
+
+const errorTitle = jaCommon.label.errorBoundaryTitle;
+const retryLabel = jaCommon.label.errorBoundaryRetry;
 
 function ThrowingChild(): ReactNode {
   throw new Error('test error');
@@ -24,8 +28,8 @@ describe('ErrorBoundary', () => {
         <ThrowingChild />
       </ErrorBoundary>,
     );
-    expect(screen.getByText('エラーが発生しました')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '再試行' })).toBeInTheDocument();
+    expect(screen.getByText(errorTitle)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: retryLabel })).toBeInTheDocument();
     vi.restoreAllMocks();
   });
 
@@ -45,13 +49,13 @@ describe('ErrorBoundary', () => {
         <MaybeThrow />
       </ErrorBoundary>,
     );
-    expect(screen.getByText('エラーが発生しました')).toBeInTheDocument();
+    expect(screen.getByText(errorTitle)).toBeInTheDocument();
 
     shouldThrow = false;
-    fireEvent.click(screen.getByRole('button', { name: '再試行' }));
+    fireEvent.click(screen.getByRole('button', { name: retryLabel }));
 
     expect(screen.getByText('recovered')).toBeInTheDocument();
-    expect(screen.queryByText('エラーが発生しました')).not.toBeInTheDocument();
+    expect(screen.queryByText(errorTitle)).not.toBeInTheDocument();
     vi.restoreAllMocks();
   });
 });
