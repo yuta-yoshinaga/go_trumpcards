@@ -91,10 +91,10 @@ beforeEach(() => {
 });
 
 describe('DoubtPage', () => {
-  it('renders nothing before first API response', () => {
+  it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<DoubtPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<DoubtPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('calls reset command on mount', async () => {
@@ -320,13 +320,12 @@ describe('DoubtPage', () => {
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: DoubtResponse) => void;
     const slowPromise = new Promise<DoubtResponse>((res) => {
@@ -337,12 +336,10 @@ describe('DoubtPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(humanTurnState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 

@@ -6,11 +6,11 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
+import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -88,7 +88,7 @@ export function OldMaidPage() {
     );
   }
 
-  if (!displayState) return null;
+  if (!displayState) return <OldMaidSkeleton />;
 
   const state = displayState;
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
@@ -116,7 +116,6 @@ export function OldMaidPage() {
       aria-busy={loading}
       aria-live="polite"
     >
-      <LoadingSpinner loading={loading} />
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Mode badge */}

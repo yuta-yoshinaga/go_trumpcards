@@ -96,10 +96,10 @@ beforeEach(() => {
 });
 
 describe('HeartsPage', () => {
-  it('renders null when no state', () => {
+  it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<HeartsPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<HeartsPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('calls reset on mount', async () => {
@@ -363,7 +363,6 @@ describe('HeartsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(playPhaseState);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());

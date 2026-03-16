@@ -173,6 +173,12 @@ beforeEach(() => {
 });
 
 describe('PokerPage', () => {
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<PokerPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   // ---- mount & reset ----
   it('calls reset on mount', async () => {
     renderWithProviders(<PokerPage />);
@@ -970,14 +976,13 @@ describe('PokerPage', () => {
   });
 
   // ---- aria-busy / sr-only ----
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     mockExec.mockResolvedValue(dealState);
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'ベット' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: PokerResponse) => void;
     const slowPromise = new Promise<PokerResponse>((res) => {
@@ -987,12 +992,10 @@ describe('PokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(dealState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 

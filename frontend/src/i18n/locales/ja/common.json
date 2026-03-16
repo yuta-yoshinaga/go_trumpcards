@@ -48,7 +48,6 @@
     "confirm": "確認"
   },
   "status": {
-    "loading": "処理中...",
     "folded": "フォールド",
     "allIn": "オールイン",
     "finished": "上がり",

@@ -9,8 +9,8 @@ import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -76,7 +76,7 @@ export function DoubtPage() {
     enabled: isHumanPlayTurn && !loading,
   });
 
-  if (!state) return null;
+  if (!state) return <DoubtSkeleton />;
 
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const isDoubtPhase = state.phase === 1;
@@ -90,7 +90,6 @@ export function DoubtPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
       {/* Phase indicator */}
       <PhaseIndicator
         phaseName={state.gameEndFlag ? t('phase.end') : state.phase === 1 ? t('phase.doubt') : t('phase.play')}
