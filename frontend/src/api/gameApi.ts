@@ -27,6 +27,10 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+function gameExec<T>(game: string, body: Record<string, unknown>): Promise<T> {
+  return postJson<T>(`/${game}/exec`, { ...body, sessionId });
+}
+
 export interface BlackJackConfigInput {
   dealerHitsSoft17?: boolean;
   cpuPlayerCount?: number;
@@ -69,7 +73,7 @@ export const blackjackApi = {
     amount?: number,
     config?: BlackJackConfigInput,
     betOptions?: BlackJackBetOptions,
-  ) => postJson<BlackJackResponse>('/blackjack/exec', { command, amount, sessionId, ...config, ...betOptions }),
+  ) => gameExec<BlackJackResponse>('blackjack', { command, amount, ...config, ...betOptions }),
 };
 
 export interface PokerConfigInput {
@@ -85,7 +89,7 @@ export const pokerApi = {
     indices?: number[],
     amount?: number,
     config?: PokerConfigInput,
-  ) => postJson<PokerResponse>('/poker/exec', { command, indices, amount, ...config, sessionId }),
+  ) => gameExec<PokerResponse>('poker', { command, indices, amount, ...config }),
 };
 
 export const oldmaidApi = {
@@ -99,7 +103,7 @@ export const oldmaidApi = {
     cpuHesitationEnabled?: boolean,
     cpuMetaAI?: boolean,
   ) =>
-    postJson<OldMaidResponse>('/oldmaid/exec', {
+    gameExec<OldMaidResponse>('oldmaid', {
       command,
       drawIdx,
       mode,
@@ -108,13 +112,12 @@ export const oldmaidApi = {
       cpuMemoryAI,
       cpuHesitationEnabled,
       cpuMetaAI,
-      sessionId,
     }),
 };
 
 export const daifugoApi = {
   exec: (command: 'reset' | 'play' | 'sort', indices?: number[], config?: DaifugoConfigInput, sortMode?: number) =>
-    postJson<DaifugoResponse>('/daifugo/exec', { command, indices, config, sortMode, sessionId }),
+    gameExec<DaifugoResponse>('daifugo', { command, indices, config, sortMode }),
 };
 
 export const doubtApi = {
@@ -125,12 +128,11 @@ export const doubtApi = {
     doubterIndices?: number[],
     config?: DoubtConfig,
   ) =>
-    postJson<DoubtResponse>('/doubt/exec', {
+    gameExec<DoubtResponse>('doubt', {
       command,
       cardIndices,
       claimedValue,
       doubterIndices,
-      sessionId,
       doubtWindowSec: config?.doubtWindowSec,
       cpuMemoryLevel: config?.cpuMemoryLevel,
       penaltyDrawLimit: config?.penaltyDrawLimit,
@@ -159,12 +161,11 @@ export const sevensApi = {
     jokerTargetValue = 0,
     config?: SevensConfigInput,
   ) =>
-    postJson<SevensResponse>('/sevens/exec', {
+    gameExec<SevensResponse>('sevens', {
       command,
       index,
       jokerTargetSuit,
       jokerTargetValue,
-      sessionId,
       ...config,
     }),
 };
@@ -205,10 +206,9 @@ export const holdemApi = {
     amount?: number,
     config?: HoldemConfigInput,
   ) =>
-    postJson<HoldemResponse>('/holdem/exec', {
+    gameExec<HoldemResponse>('holdem', {
       command,
       amount,
-      sessionId,
       ...config,
     }),
 };
@@ -225,11 +225,10 @@ export const heartsApi = {
     cardIndex?: number,
     config?: HeartsConfigInput,
   ) =>
-    postJson<HeartsResponse>('/hearts/exec', {
+    gameExec<HeartsResponse>('hearts', {
       command,
       cardIndices,
       cardIndex,
-      sessionId,
       config,
     }),
 };
@@ -240,10 +239,9 @@ export interface MemoryConfigInput {
 
 export const memoryApi = {
   exec: (command: 'reset' | 'flip' | 'next' | 'log', position?: number, config?: MemoryConfigInput) =>
-    postJson<MemoryResponse>('/memory/exec', {
+    gameExec<MemoryResponse>('memory', {
       command,
       position,
-      sessionId,
       config,
     }),
 };
@@ -260,22 +258,17 @@ export const klondikeApi = {
     from?: KlondikeMoveZone,
     to?: KlondikeMoveZone,
   ) =>
-    postJson<KlondikeResponse>('/klondike/exec', {
+    gameExec<KlondikeResponse>('klondike', {
       command,
       from,
       to,
-      sessionId,
     }),
 };
 
 export const baccaratApi = {
   exec: (command: 'reset' | 'bet' | 'log', amount?: number, betType?: number) =>
-    postJson<BaccaratResponse>('/baccarat/exec', { command, amount, betType, sessionId }),
+    gameExec<BaccaratResponse>('baccarat', { command, amount, betType }),
 };
-
-function fetchLog(url: string): Promise<ActionLogResponse> {
-  return postJson<ActionLogResponse>(url, { command: 'log', sessionId });
-}
 
 const games = [
   'blackjack',
@@ -294,7 +287,7 @@ type Game = (typeof games)[number];
 
 export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(
   (acc, game) => {
-    acc[game] = () => fetchLog(`/${game}/exec`);
+    acc[game] = () => gameExec<ActionLogResponse>(game, { command: 'log' });
     return acc;
   },
   {} as { [K in Game]: () => Promise<ActionLogResponse> },
