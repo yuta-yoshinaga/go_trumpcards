@@ -21,6 +21,7 @@ vi.mock('./useConfirmDialog', () => ({
 
 import { useTranslation } from 'react-i18next';
 import { useActionLog } from './useActionLog';
+import { useConfirmDialog } from './useConfirmDialog';
 
 describe('useGamePageSetup', () => {
   beforeEach(() => {
@@ -36,6 +37,11 @@ describe('useGamePageSetup', () => {
   it('calls useActionLog with game name', () => {
     renderHook(() => useGamePageSetup('poker'));
     expect(useActionLog).toHaveBeenCalledWith('poker');
+  });
+
+  it('calls useConfirmDialog', () => {
+    renderHook(() => useGamePageSetup('blackjack'));
+    expect(useConfirmDialog).toHaveBeenCalled();
   });
 
   it('returns t and tc from useTranslation', () => {
