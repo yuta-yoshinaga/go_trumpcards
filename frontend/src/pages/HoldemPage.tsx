@@ -15,6 +15,7 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -65,6 +66,7 @@ export function HoldemPage() {
   const { t } = useTranslation('holdem');
   const { t: tc } = useTranslation('common');
   const phaseNames = usePhaseNames(t);
+  const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const [betAmount, setBetAmount] = useState(20);
@@ -146,13 +148,13 @@ export function HoldemPage() {
                   <CardImage
                     key={`${card.design}-${card.value}`}
                     card={card}
-                    width={60}
+                    width={cardWidth}
                     style={{ border: '3px solid transparent' }}
                   />
                 ))
               : Array.from({ length: 5 }).map((_, i) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: placeholder
-                  <CardBack key={i} width={60} />
+                  <CardBack key={i} width={cardWidth} />
                 ))}
           </div>
         </div>
@@ -225,14 +227,14 @@ export function HoldemPage() {
                     <CardImage
                       key={`${card.design}-${card.value}`}
                       card={card}
-                      width={60}
+                      width={cardWidth}
                       style={{ border: '3px solid transparent' }}
                     />
                   ))
                 : !humanPlayer.folded &&
                   Array.from({ length: 2 }).map((_, i) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: placeholder
-                    <CardBack key={i} width={60} />
+                    <CardBack key={i} width={cardWidth} />
                   ))}
             </div>
           </div>

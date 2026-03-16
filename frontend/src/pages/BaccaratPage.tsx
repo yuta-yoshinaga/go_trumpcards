@@ -11,6 +11,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -32,6 +33,7 @@ export function BaccaratPage() {
 
   const onSuccess = useCallback((_res: BaccaratResponse) => {}, []);
 
+  const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec } = useGameApi(baccaratApi.exec, { onSuccess });
 
   useEffect(() => {
@@ -87,7 +89,7 @@ export function BaccaratPage() {
             </div>
             <div className="flex justify-center gap-2">
               {state.playerHand.map((card, i) => (
-                <CardImage key={`p-${card.design}-${card.value}-${i}`} card={card} width={60} />
+                <CardImage key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
           </div>
@@ -101,7 +103,7 @@ export function BaccaratPage() {
             </div>
             <div className="flex justify-center gap-2">
               {state.bankerHand.map((card, i) => (
-                <CardImage key={`b-${card.design}-${card.value}-${i}`} card={card} width={60} />
+                <CardImage key={`b-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
           </div>

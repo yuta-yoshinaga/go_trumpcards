@@ -13,6 +13,7 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
@@ -38,6 +39,7 @@ export function DaifugoPage() {
     handleConfigChange,
   } = useDaifugoGame();
 
+  const { cardWidth } = useCardDimensions();
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('daifugo');
 
@@ -116,7 +118,9 @@ export function DaifugoPage() {
             {!state.tableCards || state.tableCards.length === 0 ? (
               <span className="text-gray-400">{t('tableEmpty')}</span>
             ) : (
-              state.tableCards.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={52} />)
+              state.tableCards.map((card) => (
+                <CardImage key={`${card.design}-${card.value}`} card={card} width={cardWidth} />
+              ))
             )}
           </div>
         </div>

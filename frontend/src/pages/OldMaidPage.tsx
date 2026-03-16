@@ -13,6 +13,7 @@ import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
@@ -49,6 +50,7 @@ export function OldMaidPage() {
     setGameSettings,
   } = useOldMaidGame();
 
+  const { cardWidth } = useCardDimensions();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('oldmaid');
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
@@ -162,10 +164,10 @@ export function OldMaidPage() {
           <div className="flex justify-center my-2" data-testid="card-reveal-area">
             {revealedCard ? (
               <div className="animate-flipIn">
-                <CardImage card={revealedCard} width={60} />
+                <CardImage card={revealedCard} width={cardWidth} />
               </div>
             ) : (
-              <CardBack width={60} />
+              <CardBack width={cardWidth} />
             )}
           </div>
         )}
