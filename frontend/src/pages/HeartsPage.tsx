@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
@@ -39,6 +40,7 @@ export function HeartsPage() {
     handleNextTrick,
     handleNextRound,
   } = useHeartsGame();
+  const { cardWidth } = useCardDimensions();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('hearts');
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
@@ -156,7 +158,7 @@ export function HeartsPage() {
             <div className="flex gap-2">
               {state.currentTrick.map((trickCard) => (
                 <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                  <CardImage card={trickCard.card} />
+                  <CardImage card={trickCard.card} width={cardWidth} />
                   <div className="text-white/50 text-xs mt-1">
                     {playerName(
                       state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
@@ -229,7 +231,7 @@ export function HeartsPage() {
                   boxSizing: 'border-box',
                 }}
               >
-                <CardImage card={card} />
+                <CardImage card={card} width={cardWidth} />
               </button>
             ))}
           </div>

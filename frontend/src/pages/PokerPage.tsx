@@ -13,6 +13,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { usePokerGame } from '../hooks/usePokerGame';
@@ -36,6 +37,7 @@ export function PokerPage() {
   const { t } = useTranslation('poker');
   const { t: tc } = useTranslation('common');
   const phaseNames = usePhaseNames(t);
+  const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec, selected, toggleCard, clearSelection, odds, canExchange } = usePokerGame();
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('poker');
@@ -176,7 +178,7 @@ export function PokerPage() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <CardImage card={card} width={60} />
+                    <CardImage card={card} width={cardWidth} />
                   </button>
                 );
               })}

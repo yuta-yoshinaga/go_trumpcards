@@ -11,6 +11,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
@@ -20,6 +21,7 @@ import { playerName } from '../utils/playerUtils';
 export function MemoryPage() {
   const { t } = useTranslation('memory');
   const { t: tc } = useTranslation('common');
+  const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec, memoryConfig, handleConfigChange, handleFlip, handleNext } = useMemoryGame();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('memory');
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
@@ -129,7 +131,7 @@ export function MemoryPage() {
                       : 'bg-blue-800 border-blue-600 hover:border-yellow-400'
                 } transition-all`}
               >
-                {bc.faceUp && bc.card && <CardImage card={bc.card} />}
+                {bc.faceUp && bc.card && <CardImage card={bc.card} width={cardWidth} />}
                 {!bc.taken && !bc.faceUp && <span className="text-white/40 text-xs">{idx}</span>}
               </button>
             ))}

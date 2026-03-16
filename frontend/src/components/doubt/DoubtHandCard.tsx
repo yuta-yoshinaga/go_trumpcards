@@ -1,3 +1,4 @@
+import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { selectedCardStyle } from '../../styles/cardStyles';
 import type { Card } from '../../types/card';
 import { CardImage } from '../CardImage';
@@ -11,6 +12,7 @@ interface HandCardProps {
 }
 
 export function DoubtHandCard({ card, index, selected, selectable, onToggle }: HandCardProps) {
+  const { cardWidth } = useCardDimensions();
   return (
     <button
       type="button"
@@ -28,7 +30,7 @@ export function DoubtHandCard({ card, index, selected, selectable, onToggle }: H
         boxSizing: 'border-box',
       }}
     >
-      <CardImage card={card} width={52} />
+      <CardImage card={card} width={cardWidth} />
     </button>
   );
 }

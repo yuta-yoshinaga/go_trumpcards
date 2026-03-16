@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { playerAreaBase } from '../../styles/gameStyles';
 import type { OldMaidPlayerData } from '../../types/card';
 import { playerName } from '../../utils/playerUtils';
@@ -35,6 +36,7 @@ export function OldMaidPlayerArea({
 }: PlayerAreaProps) {
   const { t } = useTranslation('oldmaid');
   const { t: tc } = useTranslation('common');
+  const { cardWidth } = useCardDimensions();
   const [focusedCardIdx, setFocusedCardIdx] = useState<number | null>(null);
   const cardCount = player.cards?.length ?? 0;
 
@@ -132,7 +134,7 @@ export function OldMaidPlayerArea({
             <CardImage
               key={`${card.design}-${card.value}`}
               card={card}
-              width={50}
+              width={cardWidth}
               className={focusedCardIdx === i && onReorder ? 'ring-2 ring-blue-500' : undefined}
               draggable={!gameEndFlag && !!onReorder}
               onDragStart={(e: React.DragEvent) => {
@@ -166,7 +168,7 @@ export function OldMaidPlayerArea({
                 <CardBack
                   // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
                   key={i}
-                  width={40}
+                  width={cardWidth}
                   style={cardStyle}
                   onClick={() => onDraw(i)}
                   ariaLabel={t('drawCardAriaLabel', { idx: i + 1 })}
@@ -181,7 +183,7 @@ export function OldMaidPlayerArea({
           <>
             {Array.from({ length: showCount }).map((_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              <CardBack key={i} width={40} />
+              <CardBack key={i} width={cardWidth} />
             ))}
             {player.cardCount > 10 && (
               <span className="text-white self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>

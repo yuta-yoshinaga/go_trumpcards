@@ -30,6 +30,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
 import type { BlackJackResponse } from '../types/card';
@@ -64,6 +65,7 @@ export function BlackJackPage() {
   const phaseNames = usePhaseNames(t);
   const suggestionLabels = useSuggestionLabels(t);
 
+  const { cardWidth } = useCardDimensions();
   const [message, setMessage] = useState('');
   const { actionLog, showActionLog, hideActionLog } = useActionLog('blackjack');
   const [betAmount, setBetAmount] = useState(10);
@@ -201,9 +203,9 @@ export function BlackJackPage() {
             </h3>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card, idx) => (
-                <CardImage key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={60} />
+                <CardImage key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
               ))}
-              {!state.dealer.score && <CardBack width={60} />}
+              {!state.dealer.score && <CardBack width={cardWidth} />}
             </div>
           </div>
         )}
@@ -240,7 +242,7 @@ export function BlackJackPage() {
                         <CardImage
                           key={`cpu${cpuIdx}-hand${handIdx}-${cardIdx}-${card.design}-${card.value}`}
                           card={card}
-                          width={50}
+                          width={cardWidth}
                         />
                       ))}
                     </div>
@@ -280,7 +282,7 @@ export function BlackJackPage() {
                     <CardImage
                       key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
                       card={card}
-                      width={60}
+                      width={cardWidth}
                     />
                   ))}
                 </div>

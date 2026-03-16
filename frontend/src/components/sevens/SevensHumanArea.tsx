@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { focusRingWhite } from '../../styles/buttonStyles';
 import { playableCardStyle } from '../../styles/cardStyles';
 import type { Card, SevensPlayerData } from '../../types/card';
@@ -34,6 +35,7 @@ function HumanArea({
   onPlay,
 }: HumanAreaProps) {
   const { t } = useTranslation('sevens');
+  const { cardWidth } = useCardDimensions();
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isCurrentTurn
@@ -91,7 +93,7 @@ function HumanArea({
                 boxSizing: 'border-box',
               }}
             >
-              <CardImage card={card} width={52} />
+              <CardImage card={card} width={cardWidth} />
             </button>
           );
         })}

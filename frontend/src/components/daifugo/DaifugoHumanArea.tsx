@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { selectedCardStyle } from '../../styles/cardStyles';
 import type { DaifugoPlayerData } from '../../types/card';
 import { playerName } from '../../utils/playerUtils';
@@ -22,6 +23,7 @@ export function DaifugoHumanArea({
   onDragCard,
 }: HumanPlayerAreaProps) {
   const { t } = useTranslation('daifugo');
+  const { cardWidth } = useCardDimensions();
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isCurrentTurn
@@ -67,7 +69,7 @@ export function DaifugoHumanArea({
               boxSizing: 'border-box',
             }}
           >
-            <CardImage card={card} width={52} />
+            <CardImage card={card} width={cardWidth} />
           </button>
         ))}
       </div>

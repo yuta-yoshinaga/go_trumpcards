@@ -12,6 +12,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { useActionLog } from '../hooks/useActionLog';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import {
@@ -49,6 +50,7 @@ export function DoubtPage() {
     clearSelection,
   } = useDoubtGame();
 
+  const { cardWidth } = useCardDimensions();
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const { actionLog, showActionLog, hideActionLog } = useActionLog('doubt');
 
@@ -232,7 +234,7 @@ export function DoubtPage() {
             {state.lastDoubtResult.revealedCards.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {state.lastDoubtResult.revealedCards.map((card, i) => (
-                  <CardImage key={`${card.design}-${card.value}-${i}`} card={card} width={36} />
+                  <CardImage key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                 ))}
               </div>
             )}
