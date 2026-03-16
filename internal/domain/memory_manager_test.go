@@ -9,6 +9,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMemoryManager_AddMemory(t *testing.T) {
+	t.Run("add to empty", func(t *testing.T) {
+		m := &memoryManager[testMemoryEntry]{}
+		m.AddMemory(testMemoryEntry{turnSeen: 5})
+		assert.Len(t, m.cardMemories, 1)
+		assert.Equal(t, 5, m.cardMemories[0].turnSeen)
+	})
+
+	t.Run("add to existing", func(t *testing.T) {
+		m := &memoryManager[testMemoryEntry]{
+			cardMemories: []testMemoryEntry{{turnSeen: 1}},
+		}
+		m.AddMemory(testMemoryEntry{turnSeen: 3})
+		assert.Len(t, m.cardMemories, 2)
+		assert.Equal(t, 3, m.cardMemories[1].turnSeen)
+	})
+}
+
 func TestMemoryManager_ResetMemory(t *testing.T) {
 	t.Run("reset clears all memories", func(t *testing.T) {
 		m := &memoryManager[testMemoryEntry]{

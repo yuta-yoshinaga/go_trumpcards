@@ -18,6 +18,7 @@ Accepted
 
 - **`IsJoker`**: ジョーカー判定を統一ヘルパーに集約
 - **`DecayMemories`**: Memory/Doubt 共通のメモリ減衰ジェネリック関数
+- **`memoryManager[T]`**: `ResetMemory`/`DecayMemories`/`AddMemory` を持つ埋め込みジェネリック構造体。`DoubtPlayer` と `MemoryPlayer` に埋め込んで状態と振る舞いを共有
 - **`ClampIntPtr`**: コントローラーの `ToConfig` で使用する整数クランプヘルパー
 - **`cuiutil`**: CUI共通ユーティリティパッケージ
 - **`cuimsg`**: CUIエラーメッセージの一元管理

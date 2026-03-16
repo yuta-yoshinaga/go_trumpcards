@@ -59,7 +59,7 @@ func (p *MemoryPlayer) RecordRevealedCard(position int, rank int, retentionChanc
 		}
 	}
 	if rand.Float64() < retentionChance {
-		p.cardMemories = append(p.cardMemories, memoryCardEntry{position: position, rank: rank, turnSeen: turnNumber})
+		p.AddMemory(memoryCardEntry{position: position, rank: rank, turnSeen: turnNumber})
 	}
 }
 

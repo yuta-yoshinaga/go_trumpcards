@@ -5,6 +5,11 @@ type memoryManager[T MemoryEntry] struct {
 	cardMemories []T
 }
 
+// AddMemory 記憶を追加する
+func (m *memoryManager[T]) AddMemory(entry T) {
+	m.cardMemories = append(m.cardMemories, entry)
+}
+
 // ResetMemory カード記憶をリセットする
 func (m *memoryManager[T]) ResetMemory() {
 	m.cardMemories = nil

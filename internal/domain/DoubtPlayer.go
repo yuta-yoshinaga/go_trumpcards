@@ -29,7 +29,7 @@ func NewDoubtPlayer(isHuman bool) *DoubtPlayer {
 // RecordRevealedCard 公開されたカードを記憶する (retentionChance の確率で記録)
 func (p *DoubtPlayer) RecordRevealedCard(value int, retentionChance float64, turnNumber int) {
 	if rand.Float64() < retentionChance {
-		p.cardMemories = append(p.cardMemories, cardMemoryEntry{value: value, turnSeen: turnNumber})
+		p.AddMemory(cardMemoryEntry{value: value, turnSeen: turnNumber})
 	}
 }
 
