@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -9,9 +8,8 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { KlondikePhase } from '../types/phases';
@@ -20,8 +18,8 @@ import { cardAlt } from '../utils/cardAlt';
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
 export function KlondikePage() {
-  const { t } = useTranslation('klondike');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('klondike');
   const {
     state,
     loading,
@@ -38,8 +36,6 @@ export function KlondikePage() {
     handleSelectTarget,
   } = useKlondikeGame();
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('klondike');
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   const isPlayingForKbd = state?.phase === KlondikePhase.PLAYING;
 

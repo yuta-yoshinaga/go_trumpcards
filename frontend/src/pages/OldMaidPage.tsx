@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -12,9 +11,8 @@ import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
 import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import type { CpuAction } from '../types/card';
@@ -22,8 +20,8 @@ import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName } from '../utils/playerUtils';
 
 export function OldMaidPage() {
-  const { t } = useTranslation('oldmaid');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('oldmaid');
   const {
     displayState,
     setupMode,
@@ -51,8 +49,6 @@ export function OldMaidPage() {
   } = useOldMaidGame();
 
   const { cardWidth } = useCardDimensions();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('oldmaid');
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   const isHumanTurnForKbd =
     !!displayState && !displayState.gameEndFlag && !!displayState.players[displayState.currentTurn]?.isHuman;

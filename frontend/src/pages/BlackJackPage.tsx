@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -29,10 +28,9 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
@@ -59,14 +57,13 @@ function useSuggestionLabels(t: (key: string) => string): Record<number, string>
 }
 
 export function BlackJackPage() {
-  const { t } = useTranslation('blackjack');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('blackjack');
   const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
 
   const { cardWidth } = useCardDimensions();
   const [message, setMessage] = useState('');
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('blackjack');
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
@@ -91,7 +88,6 @@ export function BlackJackPage() {
     setSurrenderRule(res.surrenderRule);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   useEffect(() => {
     exec('reset');

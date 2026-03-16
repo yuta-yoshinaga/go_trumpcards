@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import type { SettingsGroup } from '../components/common/SettingsPanel';
@@ -11,17 +10,16 @@ import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
 import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
-import { useActionLog } from '../hooks/useActionLog';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
 
 export function SevensPage() {
-  const { t } = useTranslation('sevens');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('sevens');
   const {
     state,
     loading,
@@ -50,9 +48,6 @@ export function SevensPage() {
     handleCardPlay,
     handleJokerPlace,
   } = useSevensGame();
-
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('sevens');
 
   const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
   const humanCardCount = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
