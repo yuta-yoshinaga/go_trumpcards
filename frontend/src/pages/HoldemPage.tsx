@@ -14,10 +14,9 @@ import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
@@ -62,14 +61,12 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 }
 
 export function HoldemPage() {
-  const { t } = useTranslation('holdem');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('holdem');
   const phaseNames = usePhaseNames('holdem', HOLDEM_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const [betAmount, setBetAmount] = useState(20);
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('holdem');
 
   useEffect(() => {
     exec('reset');

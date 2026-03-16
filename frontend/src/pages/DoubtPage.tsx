@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -11,10 +10,8 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
-import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import {
   actionDesc,
   CPU_MEMORY_OPTIONS,
@@ -22,14 +19,15 @@ import {
   PENALTY_DRAW_LIMIT_OPTIONS,
   useDoubtGame,
 } from '../hooks/useDoubtGame';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import type { DoubtCpuAction } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 
 export function DoubtPage() {
-  const { t } = useTranslation('doubt');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('doubt');
   const {
     state,
     loading,
@@ -51,8 +49,6 @@ export function DoubtPage() {
   } = useDoubtGame();
 
   const { cardWidth } = useCardDimensions();
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('doubt');
 
   const claimInputRef = useRef<HTMLInputElement>(null);
 

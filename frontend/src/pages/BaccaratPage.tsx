@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
@@ -10,10 +9,9 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BaccaratSkeleton } from '../components/skeleton/BaccaratSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
-import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { BaccaratResponse } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
@@ -25,8 +23,8 @@ const BET_TYPE_LABELS: Record<number, string> = {
 };
 
 export function BaccaratPage() {
-  const { t } = useTranslation('baccarat');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('baccarat');
 
   const [betAmount, setBetAmount] = useState(100);
   const [betType, setBetType] = useState<number>(BaccaratBetType.PLAYER);
@@ -39,9 +37,6 @@ export function BaccaratPage() {
   useEffect(() => {
     exec('reset');
   }, [exec]);
-
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('baccarat');
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   const isBetPhase = state?.phase === BaccaratPhase.BET;
   const isEndPhase = state?.phase === BaccaratPhase.END;

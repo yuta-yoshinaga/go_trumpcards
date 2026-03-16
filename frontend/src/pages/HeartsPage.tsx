@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -9,10 +8,9 @@ import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
-import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
@@ -32,8 +30,8 @@ const HEARTS_PHASE_KEYS: Readonly<Record<number, string>> = {
 const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
 export function HeartsPage() {
-  const { t } = useTranslation('hearts');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('hearts');
   const {
     state,
     loading,
@@ -50,8 +48,6 @@ export function HeartsPage() {
     handleNextRound,
   } = useHeartsGame();
   const { cardWidth } = useCardDimensions();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('hearts');
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   const isPassPhaseForKbd = state?.phase === HeartsPhase.PASS;
   const isPlayPhaseForKbd = state?.phase === HeartsPhase.PLAY;
