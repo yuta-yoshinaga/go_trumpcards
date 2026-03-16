@@ -39,7 +39,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			DrawFromIdx:    action.DrawFromIdx,
 			DrawnCard:      nil, // CPU drawn card is hidden to preserve game fairness
 			DiscardedPairs: action.DiscardedPairs,
-			DiscardedCards: cardsToOutput(action.DiscardedCards),
+			DiscardedCards: cardsToOutputOrEmpty(action.DiscardedCards),
 			HesitationMs:   action.HesitationMs,
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
@@ -52,7 +52,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			DrawFromIdx:    ha.DrawFromIdx,
 			DrawnCard:      cardToOutput(ha.DrawnCard),
 			DiscardedPairs: ha.DiscardedPairs,
-			DiscardedCards: cardsToOutput(ha.DiscardedCards),
+			DiscardedCards: cardsToOutputOrEmpty(ha.DiscardedCards),
 		}
 		resObj.HumanAction = haObj
 	}
