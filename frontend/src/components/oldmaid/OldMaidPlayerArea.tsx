@@ -183,7 +183,7 @@ export function OldMaidPlayerArea({
           <>
             {Array.from({ length: showCount }).map((_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              <CardBack key={i} width={40} />
+              <CardBack key={i} width={cardWidth} />
             ))}
             {player.cardCount > 10 && (
               <span className="text-white self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>
