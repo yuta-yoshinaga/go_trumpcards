@@ -81,7 +81,9 @@
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
     "chipsWon": "+{{amount}}チップ",
     "kicker": "キッカー: {{kickers}}",
-    "mucked": "マック"
+    "mucked": "マック",
+    "errorBoundaryTitle": "エラーが発生しました",
+    "errorBoundaryRetry": "再試行"
   },
   "messageCode": {
     "blackjack.result.draw": "引き分けです。",

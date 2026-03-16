@@ -81,7 +81,9 @@
     "networkError": "A network error occurred. Please try again.",
     "chipsWon": "+{{amount}} chips",
     "kicker": "Kicker: {{kickers}}",
-    "mucked": "Mucked"
+    "mucked": "Mucked",
+    "errorBoundaryTitle": "An error occurred",
+    "errorBoundaryRetry": "Retry"
   },
   "messageCode": {
     "blackjack.result.draw": "It is a draw.",
