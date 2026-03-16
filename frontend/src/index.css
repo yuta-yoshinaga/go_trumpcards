@@ -4,10 +4,10 @@
   --color-game-status-active: #5cb85c;
   --color-game-status-waiting: #f0ad4e;
   --color-game-status-out: #dc3545;
-  --color-game-text-muted: #d4d4d4;
+  --color-game-text-muted: #e5e5e5;
   --color-game-text-highlight: #ccffcc;
   --color-game-text-strong: #222222;
-  --color-board-cell-empty-text: #555555;
+  --color-board-cell-empty-text: #7a7a7a;
   --color-daifugo-revolution: #d9534f;
   --color-daifugo-suit-lock: #5bc0de;
   --color-daifugo-sequence: #9b59b6;
