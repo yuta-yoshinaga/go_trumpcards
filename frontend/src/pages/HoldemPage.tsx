@@ -18,21 +18,20 @@ import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 
-function usePhaseNames(t: (key: string) => string): Record<number, string> {
-  return {
-    [HoldemPhase.PRE_FLOP]: t('phase.preFlop'),
-    [HoldemPhase.FLOP]: t('phase.flop'),
-    [HoldemPhase.TURN]: t('phase.turn'),
-    [HoldemPhase.RIVER]: t('phase.river'),
-    [HoldemPhase.SHOWDOWN]: t('phase.showdown'),
-    [HoldemPhase.END]: t('phase.end'),
-    [HoldemPhase.REBUY]: t('phase.rebuy'),
-  };
-}
+const HOLDEM_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [HoldemPhase.PRE_FLOP]: 'preFlop',
+  [HoldemPhase.FLOP]: 'flop',
+  [HoldemPhase.TURN]: 'turn',
+  [HoldemPhase.RIVER]: 'river',
+  [HoldemPhase.SHOWDOWN]: 'showdown',
+  [HoldemPhase.END]: 'end',
+  [HoldemPhase.REBUY]: 'rebuy',
+};
 
 function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
   return (
@@ -65,7 +64,7 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 export function HoldemPage() {
   const { t } = useTranslation('holdem');
   const { t: tc } = useTranslation('common');
-  const phaseNames = usePhaseNames(t);
+  const phaseNames = usePhaseNames('holdem', HOLDEM_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();

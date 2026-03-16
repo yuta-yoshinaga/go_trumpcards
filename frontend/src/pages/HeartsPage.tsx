@@ -14,11 +14,20 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { HeartsPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
+
+const HEARTS_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [HeartsPhase.PASS]: 'pass',
+  [HeartsPhase.PLAY]: 'play',
+  [HeartsPhase.TRICK_END]: 'trickEnd',
+  [HeartsPhase.ROUND_END]: 'roundEnd',
+  [HeartsPhase.GAME_END]: 'gameEnd',
+};
 
 const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
@@ -65,6 +74,8 @@ export function HeartsPage() {
     enabled: (isPassPhaseForKbd || !!isHumanTurnForKbd) && !loading,
   });
 
+  const phaseNames = usePhaseNames('hearts', HEARTS_PHASE_KEYS);
+
   if (!state) return <HeartsSkeleton />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
@@ -75,21 +86,10 @@ export function HeartsPage() {
   const isGameEnd = state.phase === HeartsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
-  const phaseNameMap: Record<number, string> = {
-    [HeartsPhase.PASS]: t('phase.pass'),
-    [HeartsPhase.PLAY]: t('phase.play'),
-    [HeartsPhase.TRICK_END]: t('phase.trickEnd'),
-    [HeartsPhase.ROUND_END]: t('phase.roundEnd'),
-    [HeartsPhase.GAME_END]: t('phase.gameEnd'),
-  };
-
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       {/* Phase indicator */}
-      <PhaseIndicator
-        phaseName={phaseNameMap[state.phase] ?? t('phase.play')}
-        isHumanTurn={isPassPhase || isHumanTurn}
-      />
+      <PhaseIndicator phaseName={phaseNames[state.phase] ?? t('phase.play')} isHumanTurn={isPassPhase || isHumanTurn} />
 
       {/* Settings */}
       <SettingsPanel

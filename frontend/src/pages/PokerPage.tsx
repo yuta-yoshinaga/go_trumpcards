@@ -16,6 +16,7 @@ import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
@@ -23,20 +24,18 @@ import { handNameBadgeClass } from '../styles/gameConstants';
 import { PokerPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 
-function usePhaseNames(t: (key: string) => string): Record<number, string> {
-  return {
-    [PokerPhase.INIT]: t('phase.init'),
-    [PokerPhase.DEAL]: t('phase.deal'),
-    [PokerPhase.EXCHANGE]: t('phase.exchange'),
-    [PokerPhase.SECOND_BET]: t('phase.secondBet'),
-    [PokerPhase.END]: t('phase.end'),
-  };
-}
+const POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [PokerPhase.INIT]: 'init',
+  [PokerPhase.DEAL]: 'deal',
+  [PokerPhase.EXCHANGE]: 'exchange',
+  [PokerPhase.SECOND_BET]: 'secondBet',
+  [PokerPhase.END]: 'end',
+};
 
 export function PokerPage() {
   const { t } = useTranslation('poker');
   const { t: tc } = useTranslation('common');
-  const phaseNames = usePhaseNames(t);
+  const phaseNames = usePhaseNames('poker', POKER_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec, selected, toggleCard, clearSelection, odds, canExchange } = usePokerGame();
   const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
