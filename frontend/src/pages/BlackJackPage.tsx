@@ -33,19 +33,18 @@ import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { useGameApi } from '../hooks/useGameApi';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 
-function usePhaseNames(t: (key: string) => string): Record<number, string> {
-  return {
-    [BjPhase.BET]: t('phase.bet'),
-    [BjPhase.DEAL]: t('phase.deal'),
-    [BjPhase.INSURANCE]: t('phase.insurance'),
-    [BjPhase.ACTION]: t('phase.action'),
-    [BjPhase.END]: t('phase.end'),
-    [BjPhase.EARLY_SURRENDER]: t('phase.earlySurrender'),
-  };
-}
+const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [BjPhase.BET]: 'bet',
+  [BjPhase.DEAL]: 'deal',
+  [BjPhase.INSURANCE]: 'insurance',
+  [BjPhase.ACTION]: 'action',
+  [BjPhase.END]: 'end',
+  [BjPhase.EARLY_SURRENDER]: 'earlySurrender',
+};
 
 function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
   return {
@@ -62,7 +61,7 @@ function useSuggestionLabels(t: (key: string) => string): Record<number, string>
 export function BlackJackPage() {
   const { t } = useTranslation('blackjack');
   const { t: tc } = useTranslation('common');
-  const phaseNames = usePhaseNames(t);
+  const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
 
   const { cardWidth } = useCardDimensions();

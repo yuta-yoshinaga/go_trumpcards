@@ -14,9 +14,17 @@ import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { MemoryPhase } from '../types/phases';
 import { playerName } from '../utils/playerUtils';
+
+const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [MemoryPhase.FLIP1]: 'flip1',
+  [MemoryPhase.FLIP2]: 'flip2',
+  [MemoryPhase.RESULT]: 'result',
+  [MemoryPhase.GAME_END]: 'gameEnd',
+};
 
 export function MemoryPage() {
   const { t } = useTranslation('memory');
@@ -38,6 +46,8 @@ export function MemoryPage() {
     enabled: !!state && !loading,
   });
 
+  const phaseNames = usePhaseNames('memory', MEMORY_PHASE_KEYS);
+
   if (!state) return <MemorySkeleton />;
 
   const isFlip1 = state.phase === MemoryPhase.FLIP1;
@@ -46,17 +56,10 @@ export function MemoryPage() {
   const isGameEnd = state.phase === MemoryPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isFlip1 || isFlip2) && state.players[state.currentPlayerIdx]?.isHuman === true;
 
-  const phaseNameMap: Record<number, string> = {
-    [MemoryPhase.FLIP1]: t('phase.flip1'),
-    [MemoryPhase.FLIP2]: t('phase.flip2'),
-    [MemoryPhase.RESULT]: t('phase.result'),
-    [MemoryPhase.GAME_END]: t('phase.gameEnd'),
-  };
-
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNameMap[state.phase] ?? t('phase.flip1')} isHumanTurn={isHumanTurn} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn} />
 
       {/* Landscape orientation banner (visible on small portrait screens) */}
       <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">
