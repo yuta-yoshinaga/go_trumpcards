@@ -50,7 +50,7 @@ func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr erro
 	resObj.RebuyPhaseType = h.GetRebuyPhaseType()
 	resObj.MuckAvailable = h.IsMuckAvailable()
 
-	resObj.CommunityCards = hwp.buildCommunityCardsOutput(h)
+	resObj.CommunityCards = cardsToOutput(h.GetCommunityCards())
 	resObj.SidePots = hwp.buildSidePotsOutput(h)
 	resObj.Players = hwp.buildPlayersOutput(h)
 	resObj.CpuActions = hwp.buildCpuActionsOutput(h)
@@ -59,15 +59,6 @@ func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr erro
 	resObj.Message, resObj.MessageCode = hwp.buildMessage(h, lastErr)
 
 	return resObj
-}
-
-// buildCommunityCardsOutput コミュニティカード情報を構築
-func (hwp *HoldemWebPresenter) buildCommunityCardsOutput(h interfaces.HoldemGame) []*controller.WebOutputCard {
-	out := make([]*controller.WebOutputCard, 0)
-	for _, card := range h.GetCommunityCards() {
-		out = append(out, cardToOutput(card))
-	}
-	return out
 }
 
 // buildSidePotsOutput サイドポット情報を構築
@@ -101,24 +92,18 @@ func (hwp *HoldemWebPresenter) buildPlayersOutput(h interfaces.HoldemGame) []*co
 			PFR:           player.GetPFR(),
 			ThreeBet:      player.GetThreeBet(),
 			AF:            player.GetAFDisplay(),
-			Cards:         make([]*controller.WebOutputCard, 0),
-			BestHand:      make([]*controller.WebOutputCard, 0),
 		}
 
 		// 人間のカードは常に表示、CPUのカードはショーダウン時のみ表示
-		if player.GetIsHuman() || (isShowdown && !player.GetFolded()) {
-			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
-			}
-		}
+		pObj.Cards = playerCardsToOutput(player, player.GetIsHuman() || (isShowdown && !player.GetFolded()))
 
 		// ショーダウン時のハンド情報
 		if isShowdown && !player.GetFolded() {
 			pObj.HandRank = player.GetHandRank()
 			pObj.HandName = hwp.getHandName(player.GetHandRank())
-			for _, card := range player.GetBestHand() {
-				pObj.BestHand = append(pObj.BestHand, cardToOutput(card))
-			}
+			pObj.BestHand = cardsToOutput(player.GetBestHand())
+		} else {
+			pObj.BestHand = make([]*controller.WebOutputCard, 0)
 		}
 
 		out = append(out, pObj)
@@ -157,9 +142,7 @@ func (hwp *HoldemWebPresenter) buildRoundResultsOutput(h interfaces.HoldemGame) 
 			result.HandName = ""
 			result.Kickers = ""
 		} else {
-			for _, card := range r.BestHand {
-				result.BestHand = append(result.BestHand, cardToOutput(card))
-			}
+			result.BestHand = cardsToOutput(r.BestHand)
 		}
 		out = append(out, result)
 	}

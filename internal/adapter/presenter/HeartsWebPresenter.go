@@ -60,15 +60,10 @@ func (p *HeartsWebPresenter) buildPlayersOutput(h interfaces.HeartsGame) []*cont
 			ID:              i,
 			IsHuman:         player.GetIsHuman(),
 			CardCount:       player.GetCardsSize(),
-			Cards:           make([]*controller.WebOutputCard, 0),
+			Cards:           playerCardsToOutput(player, player.GetIsHuman()),
 			RoundScore:      player.GetRoundScore(),
 			CumulativeScore: player.GetCumulativeScore(),
 			TrickCount:      player.GetTrickCount(),
-		}
-		if player.GetIsHuman() {
-			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
-			}
 		}
 		out = append(out, pObj)
 	}
