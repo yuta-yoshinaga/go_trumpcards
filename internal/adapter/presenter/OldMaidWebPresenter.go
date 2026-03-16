@@ -28,11 +28,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		resObj.LastDrawCard = cardToOutput(om.GetLastDrawCard())
 	}
 	resObj.LastDiscardedPairs = om.GetLastDiscardedPairs()
-	if ldc := om.GetLastDiscardedCards(); ldc != nil {
-		resObj.LastDiscardedCards = cardsToOutput(ldc)
-	} else {
-		resObj.LastDiscardedCards = make([]*controller.WebOutputCard, 0)
-	}
+	resObj.LastDiscardedCards = cardsToOutputOrEmpty(om.GetLastDiscardedCards())
 	resObj.HasDrawn = om.GetHasDrawn()
 
 	// CPU行動履歴

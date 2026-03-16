@@ -46,3 +46,11 @@ func cardsToOutput(cards []*domain.Card) []*controller.WebOutputCard {
 	}
 	return result
 }
+
+// cardsToOutputOrEmpty カードスライスを共通WebOutputCardスライスに変換 (nil → 空スライス)
+func cardsToOutputOrEmpty(cards []*domain.Card) []*controller.WebOutputCard {
+	if cards == nil {
+		return make([]*controller.WebOutputCard, 0)
+	}
+	return cardsToOutput(cards)
+}

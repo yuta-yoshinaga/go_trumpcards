@@ -15,10 +15,10 @@ func (bp *BaccaratWebPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	resObj := new(controller.BaccaratWebOutput)
 
 	// プレイヤーハンド
-	resObj.PlayerHand = cardsToOutput(b.GetPlayerHand())
+	resObj.PlayerHand = cardsToOutputOrEmpty(b.GetPlayerHand())
 
 	// バンカーハンド
-	resObj.BankerHand = cardsToOutput(b.GetBankerHand())
+	resObj.BankerHand = cardsToOutputOrEmpty(b.GetBankerHand())
 
 	resObj.PlayerHandValue = b.GetPlayerHandValue()
 	resObj.BankerHandValue = b.GetBankerHandValue()

@@ -107,3 +107,19 @@ func TestCardsToOutput(t *testing.T) {
 		assert.Equal(t, 0, len(result))
 	})
 }
+
+func TestCardsToOutputOrEmpty(t *testing.T) {
+	t.Run("nil slice returns empty", func(t *testing.T) {
+		result := cardsToOutputOrEmpty(nil)
+		assert.NotNil(t, result)
+		assert.Equal(t, 0, len(result))
+	})
+	t.Run("non-nil slice", func(t *testing.T) {
+		cards := []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+		}
+		result := cardsToOutputOrEmpty(cards)
+		assert.Equal(t, 1, len(result))
+		assert.Equal(t, "SPADE", result[0].Design)
+	})
+}

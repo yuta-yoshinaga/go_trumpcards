@@ -79,7 +79,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	}
 
 	// 場のカード
-	resObj.TableCards = cardsToOutput(dg.GetTableCards())
+	resObj.TableCards = cardsToOutputOrEmpty(dg.GetTableCards())
 
 	// CPU行動履歴
 	resObj.CpuActions = make([]*controller.DaifugoWebOutputAction, 0)
