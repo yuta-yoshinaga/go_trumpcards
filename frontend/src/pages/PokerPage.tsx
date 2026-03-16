@@ -9,9 +9,9 @@ import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
+import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -74,9 +74,10 @@ export function PokerPage() {
     enabled: canExchange,
   });
 
+  if (!state) return <PokerSkeleton />;
+
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canExchange}>
         <span>

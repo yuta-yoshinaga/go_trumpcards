@@ -26,8 +26,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -156,43 +156,42 @@ export function BlackJackPage() {
     hideActionLog,
   ]);
 
+  if (!state) return <BlackJackSkeleton />;
+
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-bright" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
       {/* Phase indicator + info bar */}
-      {state && (
-        <PhaseIndicator
-          phaseName={phaseNames[phase] ?? t('phase.bet')}
-          isHumanTurn={
-            phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER
-              ? true
-              : phase === BjPhase.END
-                ? false
-                : undefined
-          }
-        >
+      <PhaseIndicator
+        phaseName={phaseNames[phase] ?? t('phase.bet')}
+        isHumanTurn={
+          phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER
+            ? true
+            : phase === BjPhase.END
+              ? false
+              : undefined
+        }
+      >
+        <span>
+          {t('player')} {state.player.chips} chips
+        </span>
+        <span>
+          {t('deck')} {state.deckCount}
+          {t('deckUnit')}
+        </span>
+        {countingEnabled && (
           <span>
-            {t('player')} {state.player.chips} chips
+            {t(`countingSystemNames.${countingSystem}`)} RC={state.runningCount}{' '}
+            {countingSystem === BJ_COUNTING_KO ? t('trueCountNA') : `TC=${state.trueCount.toFixed(1)}`}
           </span>
-          <span>
-            {t('deck')} {state.deckCount}
-            {t('deckUnit')}
-          </span>
-          {countingEnabled && (
-            <span>
-              {t(`countingSystemNames.${countingSystem}`)} RC={state.runningCount}{' '}
-              {countingSystem === BJ_COUNTING_KO ? t('trueCountNA') : `TC=${state.trueCount.toFixed(1)}`}
-            </span>
-          )}
-          <span>
-            {tc('label.dealer')} {state.dealer.chips} chips
-          </span>
-        </PhaseIndicator>
-      )}
+        )}
+        <span>
+          {tc('label.dealer')} {state.dealer.chips} chips
+        </span>
+      </PhaseIndicator>
 
       {/* Scrollable: dealer area + CPU players */}
       <div className="flex-1 overflow-y-auto p-4">
-        {state && phase !== BjPhase.BET && (
+        {phase !== BjPhase.BET && (
           <div>
             <h3 className="text-white">
               {t('dealerHand')}
@@ -211,7 +210,7 @@ export function BlackJackPage() {
         )}
 
         {/* CPU players */}
-        {state && phase !== BjPhase.BET && cpuPlayers.length > 0 && (
+        {phase !== BjPhase.BET && cpuPlayers.length > 0 && (
           <div className="mt-4">
             {cpuPlayers.map((cpu, cpuIdx) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: CPU seats have fixed order
@@ -257,7 +256,7 @@ export function BlackJackPage() {
       {/* Sticky footer: player hand + result + buttons */}
       <GameFooter className="bg-game-bg-green-bright-dark border-white/15 px-4 py-3">
         {/* Player hands */}
-        {state && phase !== BjPhase.BET && hands.length > 0 && (
+        {phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
             {hands.map((hand, handIndex) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: player hands have fixed order per round
@@ -292,7 +291,7 @@ export function BlackJackPage() {
         )}
 
         {/* Insurance info */}
-        {state && state.insuranceBet > 0 && (
+        {state.insuranceBet > 0 && (
           <div className="text-yellow-300 text-sm mb-1">
             {t('insurance')} {state.insuranceBet}
           </div>

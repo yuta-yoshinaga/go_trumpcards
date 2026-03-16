@@ -6,8 +6,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -58,7 +58,7 @@ export function KlondikePage() {
     enabled: !!isPlayingForKbd && !loading,
   });
 
-  if (!state) return null;
+  if (!state) return <KlondikeSkeleton />;
 
   const isPlaying = state.phase === KlondikePhase.PLAYING;
   const isGameClear = state.phase === KlondikePhase.GAME_CLEAR;
@@ -73,8 +73,6 @@ export function KlondikePage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading}>
-      <LoadingSpinner loading={loading} />
-
       {/* Phase indicator */}
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}

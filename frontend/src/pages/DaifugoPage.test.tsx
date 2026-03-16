@@ -110,10 +110,10 @@ beforeEach(() => {
 });
 
 describe('DaifugoPage', () => {
-  it('renders nothing before first API response', () => {
+  it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<DaifugoPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<DaifugoPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('calls reset command on mount', async () => {
@@ -763,13 +763,12 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0, 1]));
   });
 
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: DaifugoResponse) => void;
     const slowPromise = new Promise<DaifugoResponse>((res) => {
@@ -779,12 +778,10 @@ describe('DaifugoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(humanTurnState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 

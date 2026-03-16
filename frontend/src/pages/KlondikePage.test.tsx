@@ -88,10 +88,10 @@ beforeEach(() => {
 });
 
 describe('KlondikePage', () => {
-  it('renders null when no state', () => {
+  it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<KlondikePage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<KlondikePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('renders stock count', async () => {

@@ -231,6 +231,12 @@ beforeEach(() => {
 });
 
 describe('HoldemPage', () => {
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<HoldemPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   // ---- mount & reset ----
   it('calls reset on mount', async () => {
     renderWithProviders(<HoldemPage />);
@@ -842,14 +848,13 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 60));
   });
 
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'ベット' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: HoldemResponse) => void;
     const slowPromise = new Promise<HoldemResponse>((res) => {
@@ -859,12 +864,10 @@ describe('HoldemPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(preFlopState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 

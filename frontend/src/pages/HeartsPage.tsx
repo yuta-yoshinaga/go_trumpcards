@@ -7,8 +7,8 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -65,7 +65,7 @@ export function HeartsPage() {
     enabled: (isPassPhaseForKbd || !!isHumanTurnForKbd) && !loading,
   });
 
-  if (!state) return null;
+  if (!state) return <HeartsSkeleton />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPassPhase = state.phase === HeartsPhase.PASS;
@@ -85,8 +85,6 @@ export function HeartsPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
-      <LoadingSpinner loading={loading} />
-
       {/* Phase indicator */}
       <PhaseIndicator
         phaseName={phaseNameMap[state.phase] ?? t('phase.play')}

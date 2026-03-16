@@ -77,10 +77,10 @@ describe('BaccaratPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
-  it('returns null before state loads', () => {
+  it('renders skeleton before state loads', () => {
     mockExec.mockReturnValue(new Promise(() => {})); // never resolves
-    const { container } = renderWithProviders(<BaccaratPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<BaccaratPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('shows end phase with player wins', async () => {

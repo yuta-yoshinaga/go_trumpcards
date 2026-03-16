@@ -7,8 +7,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
+import { BaccaratSkeleton } from '../components/skeleton/BaccaratSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useActionLog } from '../hooks/useActionLog';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -59,7 +59,7 @@ export function BaccaratPage() {
     enabled: !!state && !loading,
   });
 
-  if (!state) return null;
+  if (!state) return <BaccaratSkeleton />;
 
   const handleBet = () => {
     exec('bet', betAmount, betType);
@@ -71,8 +71,6 @@ export function BaccaratPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading}>
-      <LoadingSpinner loading={loading} />
-
       {/* Phase indicator */}
       <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>
         <span>{t('label.chips', { chips: state.chips })}</span>

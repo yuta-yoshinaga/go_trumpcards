@@ -87,10 +87,10 @@ beforeEach(() => {
 });
 
 describe('MemoryPage', () => {
-  it('renders null when no state', () => {
+  it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<MemoryPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<MemoryPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('renders reset on mount', async () => {

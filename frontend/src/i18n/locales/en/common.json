@@ -48,7 +48,6 @@
     "confirm": "Confirm"
   },
   "status": {
-    "loading": "Loading...",
     "folded": "Folded",
     "allIn": "All-in",
     "finished": "Finished",
