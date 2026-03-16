@@ -59,9 +59,7 @@ func (bjp *BlackJackWebPresenter) buildDealerOutput(bj interfaces.BlackJackGame)
 	out.Chips = dealer.GetChips()
 	if bj.GetGameEndFlag() {
 		out.Score = dealer.GetScore()
-		for i := 0; i < dealer.GetCardsSize(); i++ {
-			out.Cards = append(out.Cards, cardToOutput(dealer.GetCard(i)))
-		}
+		out.Cards = playerCardsToOutput(dealer, true)
 	} else if dealer.GetCardsSize() > 0 {
 		out.Cards = append(out.Cards, cardToOutput(dealer.GetCard(0)))
 	}
@@ -75,10 +73,7 @@ func (bjp *BlackJackWebPresenter) buildHandsOutput(bj interfaces.BlackJackGame) 
 	for i, hand := range hands {
 		h := new(controller.BlackJackWebOutputHand)
 		h.Score = hand.GetScore()
-		h.Cards = make([]*controller.WebOutputCard, 0)
-		for j := 0; j < hand.GetCardsSize(); j++ {
-			h.Cards = append(h.Cards, cardToOutput(hand.GetCard(j)))
-		}
+		h.Cards = playerCardsToOutput(hand, true)
 		h.Bet = hand.GetBet()
 		h.Stood = hand.IsStood()
 		h.Doubled = hand.IsDoubled()
@@ -107,12 +102,7 @@ func (bjp *BlackJackWebPresenter) buildCpuPlayersOutput(bj interfaces.BlackJackG
 		for j, hand := range cpu.GetHands() {
 			h := new(controller.BlackJackWebOutputHand)
 			h.Score = hand.GetScore()
-			h.Cards = make([]*controller.WebOutputCard, 0)
-			if bj.GetGameEndFlag() || bj.GetPhase() != domain.BJPhaseBet {
-				for k := 0; k < hand.GetCardsSize(); k++ {
-					h.Cards = append(h.Cards, cardToOutput(hand.GetCard(k)))
-				}
-			}
+			h.Cards = playerCardsToOutput(hand, bj.GetGameEndFlag() || bj.GetPhase() != domain.BJPhaseBet)
 			h.Bet = hand.GetBet()
 			h.Stood = hand.IsStood()
 			h.Doubled = hand.IsDoubled()

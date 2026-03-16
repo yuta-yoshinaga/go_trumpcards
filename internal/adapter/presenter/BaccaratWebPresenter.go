@@ -15,16 +15,10 @@ func (bp *BaccaratWebPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	resObj := new(controller.BaccaratWebOutput)
 
 	// プレイヤーハンド
-	resObj.PlayerHand = make([]*controller.WebOutputCard, 0)
-	for _, card := range b.GetPlayerHand() {
-		resObj.PlayerHand = append(resObj.PlayerHand, cardToOutput(card))
-	}
+	resObj.PlayerHand = cardsToOutput(b.GetPlayerHand())
 
 	// バンカーハンド
-	resObj.BankerHand = make([]*controller.WebOutputCard, 0)
-	for _, card := range b.GetBankerHand() {
-		resObj.BankerHand = append(resObj.BankerHand, cardToOutput(card))
-	}
+	resObj.BankerHand = cardsToOutput(b.GetBankerHand())
 
 	resObj.PlayerHandValue = b.GetPlayerHandValue()
 	resObj.BankerHandValue = b.GetBankerHandValue()

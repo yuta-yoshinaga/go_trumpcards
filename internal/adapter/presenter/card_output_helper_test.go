@@ -39,6 +39,52 @@ func TestCardToOutput(t *testing.T) {
 	})
 }
 
+// mockCardHolder is a test implementation of cardHolder
+type mockCardHolder struct {
+	cards []*domain.Card
+}
+
+func (m *mockCardHolder) GetCardsSize() int {
+	return len(m.cards)
+}
+
+func (m *mockCardHolder) GetCard(i int) *domain.Card {
+	return m.cards[i]
+}
+
+func TestPlayerCardsToOutput(t *testing.T) {
+	t.Run("shouldShow true with cards", func(t *testing.T) {
+		holder := &mockCardHolder{
+			cards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+				domain.NewCard(domain.CardDesignHeart, 13, false),
+			},
+		}
+		result := playerCardsToOutput(holder, true)
+		assert.Equal(t, 2, len(result))
+		assert.Equal(t, "SPADE", result[0].Design)
+		assert.Equal(t, 1, result[0].Value)
+		assert.Equal(t, "HEART", result[1].Design)
+		assert.Equal(t, 13, result[1].Value)
+	})
+	t.Run("shouldShow false", func(t *testing.T) {
+		holder := &mockCardHolder{
+			cards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 1, false),
+			},
+		}
+		result := playerCardsToOutput(holder, false)
+		assert.NotNil(t, result)
+		assert.Equal(t, 0, len(result))
+	})
+	t.Run("shouldShow true with zero cards", func(t *testing.T) {
+		holder := &mockCardHolder{cards: []*domain.Card{}}
+		result := playerCardsToOutput(holder, true)
+		assert.NotNil(t, result)
+		assert.Equal(t, 0, len(result))
+	})
+}
+
 func TestCardsToOutput(t *testing.T) {
 	t.Run("normal slice", func(t *testing.T) {
 		cards := []*domain.Card{

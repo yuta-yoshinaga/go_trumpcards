@@ -72,12 +72,7 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 			IsHuman:    player.GetIsHuman(),
 			IsFinished: player.GetIsFinished(),
 			CardCount:  player.GetCardsSize(),
-			Cards:      make([]*controller.WebOutputCard, 0),
-		}
-		if player.GetIsHuman() {
-			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
-			}
+			Cards:      playerCardsToOutput(player, player.GetIsHuman()),
 		}
 		resObj.Players = append(resObj.Players, pObj)
 	}
