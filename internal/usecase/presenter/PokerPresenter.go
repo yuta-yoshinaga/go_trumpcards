@@ -7,7 +7,6 @@ import (
 
 // PokerPresenter ポーカープレゼンターインタフェース
 type PokerPresenter interface {
-	Output(p interfaces.PokerGame, lastErr error) string
+	GamePresenter[interfaces.PokerGame]
 	OutputWithOdds(p interfaces.PokerGame, lastErr error, odds []domain.PokerDrawOdds) string
-	ActionLogOutput(p interfaces.PokerGame) string
 }
