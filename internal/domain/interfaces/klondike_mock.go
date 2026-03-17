@@ -15,6 +15,10 @@ func (_m *MockKlondikeGame) Reset() {
 	_m.Called()
 }
 
+func (_m *MockKlondikeGame) ResetWithConfig(cfg domain.KlondikeConfig) {
+	_m.Called(cfg)
+}
+
 func (_m *MockKlondikeGame) Draw() error {
 	ret := _m.Called()
 	return ret.Error(0)
@@ -56,6 +60,16 @@ func (_m *MockKlondikeGame) GetHint() *domain.KlondikeHint {
 func (_m *MockKlondikeGame) AutoComplete() error {
 	ret := _m.Called()
 	return ret.Error(0)
+}
+
+func (_m *MockKlondikeGame) Undo() error {
+	ret := _m.Called()
+	return ret.Error(0)
+}
+
+func (_m *MockKlondikeGame) CanUndo() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
 }
 
 func (_m *MockKlondikeGame) GetPhase() domain.KlondikePhase {
@@ -104,4 +118,19 @@ func (_m *MockKlondikeGame) GetActionLog() []*domain.ActionLogEntry {
 		return nil
 	}
 	return v.([]*domain.ActionLogEntry)
+}
+
+func (_m *MockKlondikeGame) GetDrawCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockKlondikeGame) GetScore() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
+func (_m *MockKlondikeGame) GetScoringMode() domain.KlondikeScoringMode {
+	ret := _m.Called()
+	return ret.Get(0).(domain.KlondikeScoringMode)
 }

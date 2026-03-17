@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { type KlondikeMoveZone, klondikeApi } from '../api/gameApi';
+import { type KlondikeConfigInput, type KlondikeMoveZone, klondikeApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { KlondikeHint } from '../types/card';
 import { useGameApi } from './useGameApi';
@@ -28,6 +28,15 @@ export function useKlondikeGame() {
     exec('reset');
   }, [exec]);
 
+  const handleResetWithConfig = useCallback(
+    (config: KlondikeConfigInput) => {
+      setSelectedSource(null);
+      setHint(null);
+      exec('reset', undefined, undefined, config);
+    },
+    [exec],
+  );
+
   const handleGiveUp = useCallback(() => {
     setSelectedSource(null);
     setHint(null);
@@ -48,6 +57,12 @@ export function useKlondikeGame() {
     setSelectedSource(null);
     setHint(null);
     exec('autocomplete');
+  }, [exec]);
+
+  const handleUndo = useCallback(() => {
+    setSelectedSource(null);
+    setHint(null);
+    exec('undo');
   }, [exec]);
 
   const handleSelectSource = useCallback((zone: KlondikeMoveZone) => {
@@ -79,9 +94,11 @@ export function useKlondikeGame() {
     hint,
     handleDraw,
     handleReset,
+    handleResetWithConfig,
     handleGiveUp,
     handleHint,
     handleAutoComplete,
+    handleUndo,
     handleSelectSource,
     handleSelectTarget,
   };

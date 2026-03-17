@@ -82,6 +82,12 @@ export const KlondikePhase = {
   GAME_OVER: 2,
 } as const;
 
+// Klondike scoring mode constants (sync: internal/domain/Klondike.go)
+export const KlondikeScoringMode = {
+  NONE: 0,
+  VEGAS: 1,
+} as const;
+
 // Baccarat bet type constants (sync: internal/domain/Baccarat.go)
 export const BaccaratBetType = {
   PLAYER: 0,

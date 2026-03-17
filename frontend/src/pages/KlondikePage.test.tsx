@@ -40,6 +40,10 @@ const playingState: KlondikeResponse = {
   foundation: [[], [], [], []],
   phase: 0,
   moveCount: 5,
+  drawCount: 1,
+  canUndo: false,
+  score: -52,
+  scoringMode: 0,
   message: '',
 };
 
@@ -638,5 +642,123 @@ describe('KlondikePage', () => {
     fireEvent.keyDown(document, { key: 'd' });
     fireEvent.keyDown(document, { key: 'h' });
     expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  // --- Feature 1: 3-card draw mode ---
+
+  it('renders draw mode selector', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('ドローモード')).toBeInTheDocument());
+    expect(screen.getByText('1枚引き')).toBeInTheDocument();
+    expect(screen.getByText('3枚引き')).toBeInTheDocument();
+  });
+
+  it('changing draw mode resets game with config', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('ドローモード')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, drawCount: 3 });
+    fireEvent.change(screen.getByLabelText('ドローモード'), { target: { value: '3' } });
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 3, scoringMode: 0 }),
+    );
+  });
+
+  it('in 3-card mode shows up to 3 waste cards fanned', async () => {
+    const threeCardState: KlondikeResponse = {
+      ...playingState,
+      drawCount: 3,
+      waste: [card('SPADE', 2), card('HEART', 3), card('CLOVER', 4)],
+    };
+    mockExec.mockResolvedValue(threeCardState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    // All 3 cards should be visible as images
+    const imgs = screen.getAllByRole('img');
+    expect(imgs.length).toBeGreaterThanOrEqual(3);
+  });
+
+  // --- Feature 2: Undo ---
+
+  it('renders undo button when playing', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '元に戻す' })).toBeInTheDocument());
+  });
+
+  it('undo button disabled when canUndo is false', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: false });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '元に戻す' })).toBeDisabled());
+  });
+
+  it('clicking undo dispatches undo command', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '元に戻す' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('pressing z triggers undo in PLAYING phase', async () => {
+    mockExec.mockResolvedValue({ ...playingState, canUndo: true });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '元に戻す' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  // --- Feature 3: Vegas scoring & timer ---
+
+  it('renders scoring mode selector', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('スコアモード')).toBeInTheDocument());
+    expect(screen.getByText('なし')).toBeInTheDocument();
+    expect(screen.getByText('ベガス')).toBeInTheDocument();
+  });
+
+  it('shows score when Vegas mode is active', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 1, score: -42 });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText(/スコア: -42/)).toBeInTheDocument());
+  });
+
+  it('does not show score when scoring mode is None', async () => {
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 0 });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText(/手数: 5/)).toBeInTheDocument());
+    expect(screen.queryByText(/スコア:/)).not.toBeInTheDocument();
+  });
+
+  it('renders timer', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText(/タイム: 00:00/)).toBeInTheDocument());
+  });
+
+  it('changing scoring mode resets game with config', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByLabelText('スコアモード')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...playingState, scoringMode: 1 });
+    fireEvent.change(screen.getByLabelText('スコアモード'), { target: { value: '1' } });
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 1, scoringMode: 1 }),
+    );
+  });
+
+  it('shows total score on game clear in Vegas mode', async () => {
+    mockExec.mockResolvedValue({ ...gameClearState, scoringMode: 1, score: 208 });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText(/合計スコア:/)).toBeInTheDocument());
   });
 });

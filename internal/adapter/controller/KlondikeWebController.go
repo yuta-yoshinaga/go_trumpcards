@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -11,8 +12,15 @@ import (
 // KlondikeWebInput クロンダイクWebインプット
 type KlondikeWebInput struct {
 	BaseWebInput
-	From *KlondikeWebZone `json:"from,omitempty"`
-	To   *KlondikeWebZone `json:"to,omitempty"`
+	From   *KlondikeWebZone   `json:"from,omitempty"`
+	To     *KlondikeWebZone   `json:"to,omitempty"`
+	Config *KlondikeWebConfig `json:"config,omitempty"`
+}
+
+// KlondikeWebConfig 設定
+type KlondikeWebConfig struct {
+	DrawCount   *int `json:"drawCount,omitempty"`
+	ScoringMode *int `json:"scoringMode,omitempty"`
 }
 
 // KlondikeWebZone ゾーン指定
@@ -39,13 +47,17 @@ type KlondikeWebOutputHint struct {
 
 // KlondikeWebOutput クロンダイクWebアウトプット
 type KlondikeWebOutput struct {
-	Tableau    [][]*KlondikeWebOutputTableauCard `json:"tableau"`
-	StockCount int                               `json:"stockCount"`
-	Waste      []*WebOutputCard                  `json:"waste"`
-	Foundation [][]*WebOutputCard                `json:"foundation"`
-	Phase      int                               `json:"phase"`
-	MoveCount  int                               `json:"moveCount"`
-	Hint       *KlondikeWebOutputHint            `json:"hint,omitempty"`
+	Tableau     [][]*KlondikeWebOutputTableauCard `json:"tableau"`
+	StockCount  int                               `json:"stockCount"`
+	Waste       []*WebOutputCard                  `json:"waste"`
+	Foundation  [][]*WebOutputCard                `json:"foundation"`
+	Phase       int                               `json:"phase"`
+	MoveCount   int                               `json:"moveCount"`
+	DrawCount   int                               `json:"drawCount"`
+	CanUndo     bool                              `json:"canUndo"`
+	Score       int                               `json:"score"`
+	ScoringMode int                               `json:"scoringMode"`
+	Hint        *KlondikeWebOutputHint            `json:"hint,omitempty"`
 	WebOutputBase
 }
 
@@ -69,7 +81,18 @@ func newKlondikeDefaultOutput(msg string) *KlondikeWebOutput {
 func klondikeDispatch(bc *baseController, w rest.ResponseWriter, ki usecase.KlondikeInteractorIF, param KlondikeWebInput, newDefault func(string) *KlondikeWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		bc.writePresenterResponse(w, ki.Reset())
+		if param.Config != nil {
+			cfg := domain.KlondikeConfig{}
+			if param.Config.DrawCount != nil {
+				cfg.DrawCount = *param.Config.DrawCount
+			}
+			if param.Config.ScoringMode != nil {
+				cfg.ScoringMode = domain.KlondikeScoringMode(*param.Config.ScoringMode)
+			}
+			bc.writePresenterResponse(w, ki.ResetWithConfig(cfg))
+		} else {
+			bc.writePresenterResponse(w, ki.Reset())
+		}
 	case "d", "draw":
 		bc.writePresenterResponse(w, ki.Draw())
 	case "m", "move":
@@ -82,6 +105,8 @@ func klondikeDispatch(bc *baseController, w rest.ResponseWriter, ki usecase.Klon
 		bc.writePresenterResponse(w, ki.AutoComplete())
 	case "log", "l":
 		bc.writePresenterResponse(w, ki.ActionLog())
+	case "u", "undo":
+		bc.writePresenterResponse(w, ki.Undo())
 	default:
 		return false
 	}

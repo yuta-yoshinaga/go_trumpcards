@@ -1,6 +1,10 @@
 package usecase
 
-import "github.com/stretchr/testify/mock"
+import (
+	"github.com/stretchr/testify/mock"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
 
 // MockKlondikeInteractor クロンダイクインタラクターモック
 type MockKlondikeInteractor struct {
@@ -9,6 +13,11 @@ type MockKlondikeInteractor struct {
 
 func (_m *MockKlondikeInteractor) Reset() string {
 	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+func (_m *MockKlondikeInteractor) ResetWithConfig(cfg domain.KlondikeConfig) string {
+	ret := _m.Called(cfg)
 	return ret.Get(0).(string)
 }
 
@@ -53,6 +62,11 @@ func (_m *MockKlondikeInteractor) AutoComplete() string {
 }
 
 func (_m *MockKlondikeInteractor) ActionLog() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
+func (_m *MockKlondikeInteractor) Undo() string {
 	ret := _m.Called()
 	return ret.Get(0).(string)
 }

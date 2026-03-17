@@ -252,16 +252,23 @@ export interface KlondikeMoveZone {
   cardIndex?: number;
 }
 
+export interface KlondikeConfigInput {
+  drawCount?: number;
+  scoringMode?: number;
+}
+
 export const klondikeApi = {
   exec: (
-    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log',
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
     from?: KlondikeMoveZone,
     to?: KlondikeMoveZone,
+    config?: KlondikeConfigInput,
   ) =>
     gameExec<KlondikeResponse>('klondike', {
       command,
       from,
       to,
+      config,
     }),
 };
 
