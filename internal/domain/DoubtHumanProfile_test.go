@@ -178,12 +178,11 @@ func TestDoubtHumanProfile_HesitationStdDev(t *testing.T) {
 
 	t.Run("computed from data", func(t *testing.T) {
 		p := &DoubtHumanProfile{}
-		// 1000, 2000, 3000 → mean=2000, population stddev = sqrt(2/3 * 1000000) ≈ 816.5
+		// 1000, 2000, 3000 → mean=2000, sample stddev = sqrt(M2/(N-1)) = sqrt(2000000/2) = 1000
 		p.RecordHesitation(1000)
 		p.RecordHesitation(2000)
 		p.RecordHesitation(3000)
-		// population stddev = sqrt(M2/N) = sqrt(2000000/3) ≈ 816.5
-		assert.InDelta(t, 816.5, p.HesitationStdDev(), 1.0)
+		assert.InDelta(t, 1000.0, p.HesitationStdDev(), 1.0)
 	})
 }
 
@@ -234,8 +233,8 @@ func TestDoubtHumanProfile_HesitationBoost(t *testing.T) {
 		p.RecordHesitation(1000)
 		p.RecordHesitation(2000)
 		p.RecordHesitation(3000)
-		// mean=2000, sd≈816.5, z(5000)=(3000/816.5)≈3.67
-		// boost = (3.67 - 1.0) * 0.05 ≈ 0.134 → capped to 0.10
+		// mean=2000, sd=1000, z(5000)=(3000/1000)=3.0
+		// boost = (3.0 - 1.0) * 0.05 = 0.10 → exactly at cap
 		assert.InDelta(t, 0.10, p.HesitationBoost(5000), 0.001)
 	})
 

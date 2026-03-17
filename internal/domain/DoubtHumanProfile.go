@@ -110,7 +110,7 @@ func (p *DoubtHumanProfile) HesitationStdDev() float64 {
 	if p.HesitationCount < 2 {
 		return 0
 	}
-	return math.Sqrt(p.HesitationM2 / float64(p.HesitationCount))
+	return math.Sqrt(p.HesitationM2 / float64(p.HesitationCount-1))
 }
 
 // HesitationZScore 指定msの迷い時間のz-scoreを返す (データ不足の場合0)
