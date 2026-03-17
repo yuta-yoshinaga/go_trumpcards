@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -21,10 +22,16 @@ func NewKlondikeCuiController(ki usecase.KlondikeInteractorIF) *KlondikeCuiContr
 func (c *KlondikeCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
-		func(_ []string) string {
+		func(args []string) string {
+			if len(args) > 0 {
+				n, err := strconv.Atoi(args[0])
+				if err == nil && (n == 1 || n == 3) {
+					return c.ki.ResetWithConfig(domain.KlondikeConfig{DrawCount: n})
+				}
+			}
 			return c.ki.Reset()
 		},
-		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l"},
+		[]string{"d", "draw", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "d", "draw":
@@ -39,6 +46,8 @@ func (c *KlondikeCuiController) Exec(command string) string {
 				return c.ki.AutoComplete(), true
 			case "log", "l":
 				return c.ki.ActionLog(), true
+			case "u", "undo":
+				return c.ki.Undo(), true
 			}
 			return "", false
 		},

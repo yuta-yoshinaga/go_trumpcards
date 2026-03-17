@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
 func newMockKlondikeInteractor() *mockusecase.MockKlondikeInteractor {
@@ -207,4 +208,35 @@ func TestKlondikeCuiControllerEmpty(t *testing.T) {
 	c := NewKlondikeCuiController(ki)
 	result := c.Exec("")
 	assert.Contains(t, result, "コマンドが不明です")
+}
+
+func TestKlondikeCuiControllerResetWithConfig(t *testing.T) {
+	t.Run("reset 3", func(t *testing.T) {
+		ki := newMockKlondikeInteractor()
+		c := NewKlondikeCuiController(ki)
+		ki.On("ResetWithConfig", domain.KlondikeConfig{DrawCount: 3}).Return("reset3_output")
+		assert.Equal(t, "reset3_output", c.Exec("reset 3"))
+	})
+
+	t.Run("reset 1", func(t *testing.T) {
+		ki := newMockKlondikeInteractor()
+		c := NewKlondikeCuiController(ki)
+		ki.On("ResetWithConfig", domain.KlondikeConfig{DrawCount: 1}).Return("reset1_output")
+		assert.Equal(t, "reset1_output", c.Exec("reset 1"))
+	})
+
+	t.Run("reset abc falls back to Reset", func(t *testing.T) {
+		ki := newMockKlondikeInteractor()
+		c := NewKlondikeCuiController(ki)
+		ki.On("Reset").Return("reset_output")
+		assert.Equal(t, "reset_output", c.Exec("reset abc"))
+	})
+}
+
+func TestKlondikeCuiControllerUndo(t *testing.T) {
+	ki := newMockKlondikeInteractor()
+	c := NewKlondikeCuiController(ki)
+	ki.On("Undo").Return("undo_output")
+	assert.Equal(t, "undo_output", c.Exec("u"))
+	assert.Equal(t, "undo_output", c.Exec("undo"))
 }

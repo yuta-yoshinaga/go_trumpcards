@@ -18,6 +18,10 @@ func setupKlondikeWebMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("GetMoveCount").Return(0).Maybe()
 	kg.On("GetStockCount").Return(24).Maybe()
 	kg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
+	kg.On("GetDrawCount").Return(1).Maybe()
+	kg.On("CanUndo").Return(false).Maybe()
+	kg.On("GetScore").Return(-52).Maybe()
+	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone).Maybe()
 
 	var tableau [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
 	for i := 0; i < domain.KlondikeTableauCnt; i++ {
@@ -148,6 +152,10 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 		kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
 		kg.On("GetMoveCount").Return(5)
 		kg.On("GetStockCount").Return(20)
+		kg.On("GetDrawCount").Return(1)
+		kg.On("CanUndo").Return(false)
+		kg.On("GetScore").Return(-52)
+		kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
 
 		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.HintOutput(kg))
@@ -165,12 +173,124 @@ func TestKlondikeWebPresenter_HintOutput(t *testing.T) {
 		kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
 		kg.On("GetMoveCount").Return(0)
 		kg.On("GetStockCount").Return(24)
+		kg.On("GetDrawCount").Return(1)
+		kg.On("CanUndo").Return(false)
+		kg.On("GetScore").Return(-52)
+		kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
 
 		p := new(KlondikeWebPresenter)
 		result := parseKlondikeOutput(t, p.HintOutput(kg))
 		assert.Nil(t, result.Hint)
 		assert.Equal(t, "klondike.noHint", result.MessageCode)
 	})
+}
+
+func TestKlondikeWebPresenter_Output_DrawCount(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	setupKlondikeWebMockDefaults(kg)
+	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetDrawCount")
+	kg.On("GetDrawCount").Return(3)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.Output(kg, nil))
+	assert.Equal(t, 3, result.DrawCount)
+}
+
+func TestKlondikeWebPresenter_Output_CanUndo(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	setupKlondikeWebMockDefaults(kg)
+	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "CanUndo")
+	kg.On("CanUndo").Return(true)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.Output(kg, nil))
+	assert.True(t, result.CanUndo)
+}
+
+func TestKlondikeWebPresenter_Output_Score(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	setupKlondikeWebMockDefaults(kg)
+	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetScore")
+	kg.On("GetScore").Return(100)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.Output(kg, nil))
+	assert.Equal(t, 100, result.Score)
+}
+
+func TestKlondikeWebPresenter_Output_ScoringMode(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	setupKlondikeWebMockDefaults(kg)
+	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "GetScoringMode")
+	kg.On("GetScoringMode").Return(domain.KlondikeScoringVegas)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.Output(kg, nil))
+	assert.Equal(t, int(domain.KlondikeScoringVegas), result.ScoringMode)
+}
+
+func TestKlondikeWebPresenter_HintOutput_DrawCount(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	kg.On("GetHint").Return((*domain.KlondikeHint)(nil))
+	kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
+	kg.On("GetMoveCount").Return(0)
+	kg.On("GetStockCount").Return(24)
+	kg.On("GetDrawCount").Return(3)
+	kg.On("CanUndo").Return(false)
+	kg.On("GetScore").Return(-52)
+	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.HintOutput(kg))
+	assert.Equal(t, 3, result.DrawCount)
+}
+
+func TestKlondikeWebPresenter_HintOutput_CanUndo(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	kg.On("GetHint").Return((*domain.KlondikeHint)(nil))
+	kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
+	kg.On("GetMoveCount").Return(0)
+	kg.On("GetStockCount").Return(24)
+	kg.On("GetDrawCount").Return(1)
+	kg.On("CanUndo").Return(true)
+	kg.On("GetScore").Return(-52)
+	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.HintOutput(kg))
+	assert.True(t, result.CanUndo)
+}
+
+func TestKlondikeWebPresenter_HintOutput_Score(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	kg.On("GetHint").Return((*domain.KlondikeHint)(nil))
+	kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
+	kg.On("GetMoveCount").Return(0)
+	kg.On("GetStockCount").Return(24)
+	kg.On("GetDrawCount").Return(1)
+	kg.On("CanUndo").Return(false)
+	kg.On("GetScore").Return(200)
+	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.HintOutput(kg))
+	assert.Equal(t, 200, result.Score)
+}
+
+func TestKlondikeWebPresenter_HintOutput_ScoringMode(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	kg.On("GetHint").Return((*domain.KlondikeHint)(nil))
+	kg.On("GetPhase").Return(domain.KlondikePhasePlaying)
+	kg.On("GetMoveCount").Return(0)
+	kg.On("GetStockCount").Return(24)
+	kg.On("GetDrawCount").Return(1)
+	kg.On("CanUndo").Return(false)
+	kg.On("GetScore").Return(-52)
+	kg.On("GetScoringMode").Return(domain.KlondikeScoringVegas)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.HintOutput(kg))
+	assert.Equal(t, int(domain.KlondikeScoringVegas), result.ScoringMode)
 }
 
 func TestKlondikeWebPresenter_ActionLogOutput(t *testing.T) {

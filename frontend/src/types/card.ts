@@ -568,6 +568,10 @@ export interface KlondikeResponse {
   foundation: Card[][];
   phase: number;
   moveCount: number;
+  drawCount: number;
+  canUndo: boolean;
+  score: number;
+  scoringMode: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

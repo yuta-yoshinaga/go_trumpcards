@@ -14,6 +14,7 @@
   "giveup": "Give Up",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
+  "undo": "Undo",
   "empty": "Empty",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
@@ -21,5 +22,15 @@
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
   "foundationAriaLabel": "Foundation {{suit}} {{count}} cards",
-  "emptyFoundationAriaLabel": "Empty Foundation ({{suit}})"
+  "emptyFoundationAriaLabel": "Empty Foundation ({{suit}})",
+  "drawMode": "Draw Mode",
+  "drawMode1": "Draw 1",
+  "drawMode3": "Draw 3",
+  "score": "Score",
+  "timer": "Time",
+  "timeBonus": "Time Bonus",
+  "totalScore": "Total Score",
+  "scoringMode": "Scoring Mode",
+  "scoringNone": "None",
+  "scoringVegas": "Vegas"
 }

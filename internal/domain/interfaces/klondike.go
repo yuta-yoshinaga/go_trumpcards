@@ -6,6 +6,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 type KlondikeGame interface {
 	// interactor が呼ぶメソッド
 	Reset()
+	ResetWithConfig(cfg domain.KlondikeConfig)
 	Draw() error
 	MoveWasteToTableau(col int) error
 	MoveWasteToFoundation() error
@@ -14,6 +15,8 @@ type KlondikeGame interface {
 	GiveUp()
 	GetHint() *domain.KlondikeHint
 	AutoComplete() error
+	Undo() error
+	CanUndo() bool
 
 	// state readers
 	GetPhase() domain.KlondikePhase
@@ -24,4 +27,7 @@ type KlondikeGame interface {
 	GetFoundation() [domain.KlondikeFoundationCnt][]*domain.Card
 	AllFaceUp() bool
 	GetActionLog() []*domain.ActionLogEntry
+	GetDrawCount() int
+	GetScore() int
+	GetScoringMode() domain.KlondikeScoringMode
 }

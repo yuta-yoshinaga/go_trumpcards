@@ -1,0 +1,37 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+export function useKlondikeTimer(isPlaying: boolean) {
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const clearTimer = useCallback(() => {
+    if (intervalRef.current !== null) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
+  const resetTimer = useCallback(() => {
+    clearTimer();
+    setElapsedSeconds(0);
+  }, [clearTimer]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      clearTimer();
+      intervalRef.current = setInterval(() => {
+        setElapsedSeconds((prev) => (prev as number) + 1);
+      }, 1000);
+    } else {
+      clearTimer();
+    }
+    return clearTimer;
+  }, [isPlaying, clearTimer]);
+
+  const timeBonus = useCallback((seconds: number) => {
+    if (seconds <= 0) return 0;
+    return Math.floor(700000 / seconds);
+  }, []);
+
+  return { elapsedSeconds, resetTimer, timeBonus };
+}

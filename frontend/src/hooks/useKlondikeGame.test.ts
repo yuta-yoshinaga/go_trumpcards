@@ -32,6 +32,10 @@ const defaultState: KlondikeResponse = {
   foundation: [[], [], [], []],
   phase: 0,
   moveCount: 0,
+  drawCount: 1,
+  canUndo: false,
+  score: -52,
+  scoringMode: 0,
   message: '',
 };
 
@@ -241,5 +245,31 @@ describe('useKlondikeGame', () => {
 
     expect(result.current.selectedSource).toBeNull();
     expect(result.current.hint).toBeNull();
+  });
+
+  it('handleUndo dispatches undo command', async () => {
+    const { result } = renderHook(() => useKlondikeGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(defaultState);
+    act(() => {
+      result.current.handleUndo();
+    });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+  });
+
+  it('handleResetWithConfig dispatches reset with config', async () => {
+    const { result } = renderHook(() => useKlondikeGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...defaultState, drawCount: 3 });
+    act(() => {
+      result.current.handleResetWithConfig({ drawCount: 3 });
+    });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 3 }));
   });
 });

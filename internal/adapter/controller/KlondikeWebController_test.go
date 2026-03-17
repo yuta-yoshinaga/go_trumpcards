@@ -11,6 +11,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	uc "github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -360,6 +361,66 @@ func TestKlondikeWebController_MoveErrors(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusBadRequest)
+	})
+}
+
+func TestKlondikeWebController_ResetWithConfig(t *testing.T) {
+	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"phase":0,"moveCount":0,"drawCount":3,"message":""}`
+
+	kiMock := new(usecase.MockKlondikeInteractor)
+	kiMock.On("ResetWithConfig", domain.KlondikeConfig{DrawCount: 3}).Return(mockOutput)
+
+	factory := func() uc.KlondikeInteractorIF { return kiMock }
+	ctrl := controller.NewKlondikeWebController(factory)
+	defer ctrl.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/klondike/exec", ctrl.Exec))
+	api.SetApp(router)
+
+	input := controller.KlondikeWebInput{
+		BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "s1"},
+		Config:       &controller.KlondikeWebConfig{DrawCount: intPtr(3)},
+	}
+	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded.CodeIs(http.StatusOK)
+	recorded.BodyIs(mockOutput)
+}
+
+func TestKlondikeWebController_Undo(t *testing.T) {
+	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+
+	kiMock := new(usecase.MockKlondikeInteractor)
+	kiMock.On("Undo").Return(mockOutput)
+
+	factory := func() uc.KlondikeInteractorIF { return kiMock }
+	ctrl := controller.NewKlondikeWebController(factory)
+	defer ctrl.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/klondike/exec", ctrl.Exec))
+	api.SetApp(router)
+
+	t.Run("undo u", func(t *testing.T) {
+		var input controller.KlondikeWebInput
+		_ = json.Unmarshal([]byte(`{"command":"u","sessionId":"s1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
+	})
+
+	t.Run("undo", func(t *testing.T) {
+		var input controller.KlondikeWebInput
+		_ = json.Unmarshal([]byte(`{"command":"undo","sessionId":"s1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
 	})
 }
 
