@@ -52,11 +52,8 @@ func (oi *OldMaidInteractor) Reset(config domain.OldMaidConfig) string {
 // Draw 人間プレイヤーがカードを引く
 // cardIdx: 引くカードのインデックス。-1 の場合はランダム選択。
 func (oi *OldMaidInteractor) Draw(cardIdx int) string {
-	if oi.om.GetGameEndFlag() {
-		return oi.omp.Output(oi.om, nil)
-	}
-	if !oi.om.IsHumanTurn() {
-		return oi.omp.Output(oi.om, nil)
+	if out, blocked := guardNotPlayable(oi.om, oi.omp); blocked {
+		return out
 	}
 	err := oi.om.PlayerDraw(cardIdx)
 	if err == nil && !oi.om.GetGameEndFlag() {

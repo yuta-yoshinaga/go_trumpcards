@@ -41,11 +41,8 @@ func (di *DaifugoInteractor) Reset() string {
 // Play 人間プレイヤーがカードを出す (または パスする)
 // indices: 出すカードのインデックス。空の場合はパス。
 func (di *DaifugoInteractor) Play(indices []int) string {
-	if di.dg.GetGameEndFlag() {
-		return di.dgp.Output(di.dg, nil)
-	}
-	if !di.dg.IsHumanTurn() {
-		return di.dgp.Output(di.dg, nil)
+	if out, blocked := guardNotPlayable(di.dg, di.dgp); blocked {
+		return out
 	}
 	err := di.dg.PlayerPlay(indices)
 	if err == nil && !di.dg.GetGameEndFlag() && !di.dg.HasPendingAction() {
