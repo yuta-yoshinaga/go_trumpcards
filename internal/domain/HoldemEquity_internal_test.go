@@ -6,6 +6,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestEvalBestFromSeven_LessThan5Cards(t *testing.T) {
+	t.Run("0 cards", func(t *testing.T) {
+		rank, best := evalBestFromSeven(nil)
+		assert.Equal(t, PokerHandHighCard, rank)
+		assert.Nil(t, best)
+	})
+
+	t.Run("3 cards", func(t *testing.T) {
+		cards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 13, false),
+			NewCard(CardDesignClover, 5, false),
+		}
+		rank, best := evalBestFromSeven(cards)
+		assert.Equal(t, PokerHandHighCard, rank)
+		assert.Nil(t, best)
+	})
+}
+
 func TestHoldem_GetEquity(t *testing.T) {
 	setup := func(phase int) *Holdem {
 		h := newTestHoldem()
@@ -44,6 +63,23 @@ func TestHoldem_GetEquity(t *testing.T) {
 	t.Run("returns nil when human folded", func(t *testing.T) {
 		h := setup(HoldemPhaseFlop)
 		h.players[0].SetFolded(true)
+		assert.Nil(t, h.GetEquity())
+	})
+
+	t.Run("returns nil when no human player", func(t *testing.T) {
+		players := []*HoldemPlayer{
+			NewHoldemPlayer(false, HoldemStyleTAG),
+			NewHoldemPlayer(false, HoldemStyleLAP),
+		}
+		cfg := DefaultHoldemConfig()
+		tc := NewTrumpCards(0)
+		h := NewHoldem(tc, players, cfg)
+		h.phase = HoldemPhasePreFlop
+		for _, p := range h.players {
+			p.SetChips(1000)
+			p.AddCard(NewCard(CardDesignSpade, 1, false))
+			p.AddCard(NewCard(CardDesignHeart, 13, false))
+		}
 		assert.Nil(t, h.GetEquity())
 	})
 
@@ -141,5 +177,13 @@ func TestHoldem_GetPotOdds(t *testing.T) {
 		// potOdds = 30 / (100+30) * 100 = 23.08
 		result := h.GetPotOdds()
 		assert.InDelta(t, 23.08, result, 0.01)
+	})
+
+	t.Run("returns 0 when humanCurrentBet exceeds lastBet", func(t *testing.T) {
+		h := setup(HoldemPhasePreFlop)
+		h.lastBet = 10
+		h.players[0].SetCurrentBet(50)
+		// callAmount = 10 - 50 = -40 → clamped to 0
+		assert.Equal(t, 0.0, h.GetPotOdds())
 	})
 }

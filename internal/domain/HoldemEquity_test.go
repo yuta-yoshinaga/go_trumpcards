@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"math"
 	"math/rand"
 	"testing"
 
@@ -136,6 +135,28 @@ func TestCalcEquity_HandOdds(t *testing.T) {
 	})
 }
 
+func TestCalcEquity_NeededCardsExceedsPool(t *testing.T) {
+	t.Run("too many opponents for available pool", func(t *testing.T) {
+		// Use 2 human cards + 5 community = 7 known, pool = 45
+		// With 25 opponents, neededCards = 0 + 25*2 = 50 > 45
+		humanCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 1, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignClover, 2, false),
+			NewCard(CardDesignDiamond, 7, false),
+			NewCard(CardDesignSpade, 9, false),
+			NewCard(CardDesignHeart, 4, false),
+			NewCard(CardDesignClover, 6, false),
+		}
+		rng := rand.New(rand.NewSource(42))
+		result := CalcEquity(humanCards, communityCards, 25, 100, rng)
+		// All simulations skipped → wins=0 → equity=0
+		assert.Equal(t, 0.0, result.Equity)
+	})
+}
+
 func TestCalcEquity_RiverExact(t *testing.T) {
 	t.Run("river with unbeatable hand has equity 1.0", func(t *testing.T) {
 		// Royal flush: A K Q J 10 of spades
@@ -157,7 +178,6 @@ func TestCalcEquity_RiverExact(t *testing.T) {
 }
 
 func TestCalcPotOdds_NegativeCallAmount(t *testing.T) {
-	// Negative call shouldn't happen but ensure no panic
 	result := CalcPotOdds(100, -10)
-	assert.True(t, math.IsInf(result, 0) || result < 0 || result >= 0) // just no panic
+	assert.Equal(t, 0.0, result)
 }

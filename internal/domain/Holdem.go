@@ -1346,18 +1346,19 @@ func (h *Holdem) GetEquity() *HoldemEquityResult {
 		return nil
 	}
 	// 人間プレイヤーを探す
-	var humanCards []*Card
+	var humanPlayer *HoldemPlayer
 	for _, p := range h.players {
 		if p.GetIsHuman() {
-			if p.GetFolded() {
-				return nil
-			}
-			humanCards = make([]*Card, p.GetCardsSize())
-			for i := 0; i < p.GetCardsSize(); i++ {
-				humanCards[i] = p.GetCard(i)
-			}
+			humanPlayer = p
 			break
 		}
+	}
+	if humanPlayer == nil || humanPlayer.GetFolded() {
+		return nil
+	}
+	humanCards := make([]*Card, humanPlayer.GetCardsSize())
+	for i := 0; i < humanPlayer.GetCardsSize(); i++ {
+		humanCards[i] = humanPlayer.GetCard(i)
 	}
 	// フォールドしていないアクティブ相手プレイヤー数
 	activePlayers := 0

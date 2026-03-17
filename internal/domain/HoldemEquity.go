@@ -123,14 +123,10 @@ func CalcEquity(humanCards, communityCards []*Card, activePlayers, simulations i
 
 // CalcPotOdds ポットオッズを計算 (パーセンテージ 0-100)
 func CalcPotOdds(pot, callAmount int) float64 {
-	if callAmount == 0 {
+	if callAmount <= 0 {
 		return 0.0
 	}
-	total := pot + callAmount
-	if total == 0 {
-		return 0.0
-	}
-	return float64(callAmount) / float64(total) * 100.0
+	return float64(callAmount) / float64(pot+callAmount) * 100.0
 }
 
 // shuffleCards Fisher-Yatesシャッフル
