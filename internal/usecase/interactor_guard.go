@@ -1,7 +1,7 @@
 package usecase
 
 type playableGame interface {
-	GetGameEndFlag() bool
+	gameEndChecker
 	IsHumanTurn() bool
 }
 
