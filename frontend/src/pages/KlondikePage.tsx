@@ -41,7 +41,7 @@ export function KlondikePage() {
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === KlondikePhase.PLAYING;
-  const { elapsedSeconds, resetTimer, timeBonus } = useKlondikeTimer(isPlayingForKbd ?? false);
+  const { elapsedSeconds, resetTimer, timeBonus } = useKlondikeTimer(isPlayingForKbd);
 
   const [drawCountSetting, setDrawCountSetting] = useState(1);
   const [scoringModeSetting, setScoringModeSetting] = useState(0);
@@ -346,6 +346,8 @@ export function KlondikePage() {
               requestConfirm(() => {
                 hideActionLog();
                 resetTimer();
+                setDrawCountSetting(1);
+                setScoringModeSetting(0);
                 return handleReset();
               })
             }

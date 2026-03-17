@@ -20,7 +20,7 @@ export function useKlondikeTimer(isPlaying: boolean) {
     if (isPlaying) {
       clearTimer();
       intervalRef.current = setInterval(() => {
-        setElapsedSeconds((prev) => (prev as number) + 1);
+        setElapsedSeconds((prev) => prev + 1);
       }, 1000);
     } else {
       clearTimer();
