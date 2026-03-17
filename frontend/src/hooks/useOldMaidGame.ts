@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { oldmaidApi } from '../api/gameApi';
-import type { Card, OldMaidResponse } from '../types/card';
+import type { Card, CpuAction, OldMaidResponse } from '../types/card';
+import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder';
 import { REPLAY_DELAY_MS, runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
 
@@ -9,35 +10,38 @@ export const OldMaidMode = {
   JijiNuki: 1,
 } as const;
 
-/** Compute intermediate player card counts by reversing all CPU actions from the final state,
- *  then replay forward. Returns one OldMaidResponse per CPU action (state after each action). */
-function buildReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
+interface OldMaidCtx {
+  counts: number[];
+}
+
+const oldMaidInitContext = (fs: OldMaidResponse): OldMaidCtx => ({
+  counts: fs.players.map((p) => p.cardCount),
+});
+
+const oldMaidReverseAction = (ctx: OldMaidCtx, a: CpuAction) => {
+  ctx.counts[a.drawPlayerIdx] = ctx.counts[a.drawPlayerIdx] + 2 * a.discardedPairs - 1;
+  ctx.counts[a.drawFromIdx] = ctx.counts[a.drawFromIdx] + 1;
+};
+
+const oldMaidApplyAction = (ctx: OldMaidCtx, a: CpuAction) => {
+  ctx.counts[a.drawFromIdx] -= 1;
+  ctx.counts[a.drawPlayerIdx] += 1 - 2 * a.discardedPairs;
+};
+
+function buildOldMaidReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
   const actions = finalState.cpuActions;
-
-  // Work backwards to get counts before all CPU actions
-  const counts = finalState.players.map((p) => p.cardCount);
-  for (let i = actions.length - 1; i >= 0; i--) {
-    const a = actions[i];
-    counts[a.drawPlayerIdx] = counts[a.drawPlayerIdx] + 2 * a.discardedPairs - 1;
-    counts[a.drawFromIdx] = counts[a.drawFromIdx] + 1;
-  }
-
-  // Play forward, building a display state after each CPU action
-  const states: OldMaidResponse[] = [];
-  for (let i = 0; i < actions.length; i++) {
-    const a = actions[i];
-    counts[a.drawFromIdx] -= 1;
-    counts[a.drawPlayerIdx] += 1 - 2 * a.discardedPairs;
-
-    const isLastAction = i === actions.length - 1;
-    // Intermediate replay states carry the full final drawHistory intentionally:
-    // history entries don't reveal card contents, so showing all entries is safe.
-    states.push({
-      ...finalState,
-      players: finalState.players.map((p, idx) => ({
+  return buildReplayStates({
+    actions,
+    finalState,
+    initContext: oldMaidInitContext,
+    reverseAction: oldMaidReverseAction,
+    applyAction: oldMaidApplyAction,
+    buildState: (fs, ctx, a, processedActions, isLast) => ({
+      ...fs,
+      players: fs.players.map((p, idx) => ({
         ...p,
-        cardCount: Math.max(0, counts[idx]),
-        isFinished: counts[idx] <= 0,
+        cardCount: Math.max(0, ctx.counts[idx]),
+        isFinished: ctx.counts[idx] <= 0,
       })),
       currentTurn: a.drawPlayerIdx,
       hasDrawn: true,
@@ -46,50 +50,47 @@ function buildReplayStates(finalState: OldMaidResponse): OldMaidResponse[] {
       lastDrawCard: a.drawnCard,
       lastDiscardedPairs: a.discardedPairs,
       lastDiscardedCards: a.discardedCards ?? [],
-      cpuActions: actions.slice(0, i + 1),
-      gameEndFlag: isLastAction ? finalState.gameEndFlag : false,
-      message: isLastAction ? finalState.message : '',
-      nextDrawTargetIdx: isLastAction ? finalState.nextDrawTargetIdx : actions[i + 1].drawFromIdx,
-    });
-  }
-  return states;
+      cpuActions: processedActions,
+      gameEndFlag: isLast ? fs.gameEndFlag : false,
+      message: isLast ? fs.message : '',
+      nextDrawTargetIdx: isLast ? fs.nextDrawTargetIdx : actions[processedActions.length].drawFromIdx,
+    }),
+  });
 }
 
-/** Build the display state right after human's draw, before any CPU actions. */
 function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | null {
   const ha = finalState.humanAction;
   if (!ha) return null;
 
-  const counts = finalState.players.map((p) => p.cardCount);
-  for (let i = finalState.cpuActions.length - 1; i >= 0; i--) {
-    const a = finalState.cpuActions[i];
-    counts[a.drawPlayerIdx] = counts[a.drawPlayerIdx] + 2 * a.discardedPairs - 1;
-    counts[a.drawFromIdx] = counts[a.drawFromIdx] + 1;
-  }
-
   const [firstCpuAction] = finalState.cpuActions;
 
-  return {
-    ...finalState,
-    players: finalState.players.map((p, idx) => ({
-      ...p,
-      cardCount: Math.max(0, counts[idx]),
-      isFinished: counts[idx] <= 0,
-    })),
-    hasDrawn: true,
-    lastDrawPlayerIdx: ha.drawPlayerIdx,
-    lastDrawFromIdx: ha.drawFromIdx,
-    lastDrawCard: ha.drawnCard,
-    lastDiscardedPairs: ha.discardedPairs,
-    lastDiscardedCards: ha.discardedCards ?? [],
-    cpuActions: [],
-    ...(firstCpuAction && {
-      currentTurn: firstCpuAction.drawPlayerIdx,
-      gameEndFlag: false,
-      message: '',
-      nextDrawTargetIdx: firstCpuAction.drawFromIdx,
+  return buildHumanActionState({
+    actions: finalState.cpuActions,
+    finalState,
+    initContext: oldMaidInitContext,
+    reverseAction: oldMaidReverseAction,
+    buildState: (fs, ctx) => ({
+      ...fs,
+      players: fs.players.map((p, idx) => ({
+        ...p,
+        cardCount: Math.max(0, ctx.counts[idx]),
+        isFinished: ctx.counts[idx] <= 0,
+      })),
+      hasDrawn: true,
+      lastDrawPlayerIdx: ha.drawPlayerIdx,
+      lastDrawFromIdx: ha.drawFromIdx,
+      lastDrawCard: ha.drawnCard,
+      lastDiscardedPairs: ha.discardedPairs,
+      lastDiscardedCards: ha.discardedCards ?? [],
+      cpuActions: [],
+      ...(firstCpuAction && {
+        currentTurn: firstCpuAction.drawPlayerIdx,
+        gameEndFlag: false,
+        message: '',
+        nextDrawTargetIdx: firstCpuAction.drawFromIdx,
+      }),
     }),
-  };
+  });
 }
 
 export function useOldMaidGame() {
@@ -141,7 +142,7 @@ export function useOldMaidGame() {
       return;
     }
     await runReplay(res, setDisplayState, {
-      buildReplayStates,
+      buildReplayStates: buildOldMaidReplayStates,
       buildHumanActionState: buildHumanDrawState,
       // hesitationMs is 0 when disabled; || falls back to REPLAY_DELAY_MS (min enabled value is 300ms)
       getActionDelay: (state, i) => state.cpuActions[i]?.hesitationMs || REPLAY_DELAY_MS,
