@@ -36,5 +36,14 @@
     "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
     "af": "AF",
     "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "learning": {
+    "title": "ラーニングモード",
+    "toggle": "ラーニングモード",
+    "equity": "エクイティ",
+    "potOdds": "ポットオッズ",
+    "plusEV": "+EV (期待値プラス)",
+    "minusEV": "-EV (期待値マイナス)",
+    "handOdds": "ハンドオッズ"
   }
 }

@@ -74,6 +74,19 @@ type HoldemWebOutputSidePot struct {
 	EligiblePlayers []int `json:"eligiblePlayers"`
 }
 
+// HoldemWebOutputEquity テキサスホールデムエクイティ情報
+type HoldemWebOutputEquity struct {
+	WinProbability float64                    `json:"winProbability"`
+	HandOdds       []*HoldemWebOutputHandOdds `json:"handOdds"`
+}
+
+// HoldemWebOutputHandOdds テキサスホールデムハンドオッズ
+type HoldemWebOutputHandOdds struct {
+	HandRank    int     `json:"handRank"`
+	HandName    string  `json:"handName"`
+	Probability float64 `json:"probability"`
+}
+
 // HoldemWebOutput テキサスホールデムWebアウトプット
 type HoldemWebOutput struct {
 	Players          []*HoldemWebOutputPlayer    `json:"players"`
@@ -111,6 +124,8 @@ type HoldemWebOutput struct {
 	AddonAfterHand   int                         `json:"addonAfterHand"`
 	RebuyPhaseType   int                         `json:"rebuyPhaseType"`
 	MuckAvailable    bool                        `json:"muckAvailable"`
+	Equity           *HoldemWebOutputEquity      `json:"equity,omitempty"`
+	PotOdds          *float64                    `json:"potOdds,omitempty"`
 	WebOutputBase
 }
 

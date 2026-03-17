@@ -56,6 +56,25 @@ func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr erro
 	resObj.CpuActions = hwp.buildCpuActionsOutput(h)
 	resObj.RoundResults = hwp.buildRoundResultsOutput(h)
 
+	// エクイティ情報
+	eq := h.GetEquity()
+	if eq != nil {
+		handOdds := make([]*controller.HoldemWebOutputHandOdds, len(eq.HandOdds))
+		for i, ho := range eq.HandOdds {
+			handOdds[i] = &controller.HoldemWebOutputHandOdds{
+				HandRank:    ho.HandRank,
+				HandName:    ho.HandName,
+				Probability: ho.Probability,
+			}
+		}
+		resObj.Equity = &controller.HoldemWebOutputEquity{
+			WinProbability: eq.Equity,
+			HandOdds:       handOdds,
+		}
+		potOdds := h.GetPotOdds()
+		resObj.PotOdds = &potOdds
+	}
+
 	resObj.Message, resObj.MessageCode = hwp.buildMessage(h, lastErr)
 
 	return resObj

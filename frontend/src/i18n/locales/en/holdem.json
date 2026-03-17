@@ -36,5 +36,14 @@
     "threeBetTooltip": "3Bet: % of hands where player re-raised an opponent's raise",
     "af": "AF",
     "afTooltip": "AF (Aggression Factor): ratio of aggressive actions (bet/raise) to passive actions (call)"
+  },
+  "learning": {
+    "title": "Learning Mode",
+    "toggle": "Learning Mode",
+    "equity": "Equity",
+    "potOdds": "Pot Odds",
+    "plusEV": "+EV (Positive Expected Value)",
+    "minusEV": "-EV (Negative Expected Value)",
+    "handOdds": "Hand Odds"
   }
 }

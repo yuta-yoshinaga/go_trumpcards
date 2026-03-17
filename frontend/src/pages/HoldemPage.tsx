@@ -7,6 +7,7 @@ import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
+import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -67,6 +68,7 @@ export function HoldemPage() {
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const [betAmount, setBetAmount] = useState(20);
+  const [learningMode, setLearningMode] = useState(false);
 
   useEffect(() => {
     exec('reset');
@@ -189,6 +191,24 @@ export function HoldemPage() {
 
       {/* Sticky footer: player hand + buttons */}
       <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
+        {/* Learning mode toggle */}
+        <div className="flex items-center gap-2 mb-2" data-testid="learning-mode-toggle">
+          <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
+            {t('learning.toggle')}
+          </label>
+          <input
+            id="learningModeCheckbox"
+            type="checkbox"
+            checked={learningMode}
+            onChange={(e) => setLearningMode(e.target.checked)}
+          />
+        </div>
+
+        {/* Equity display */}
+        {learningMode && state?.equity && state.potOdds != null && (
+          <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+        )}
+
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">

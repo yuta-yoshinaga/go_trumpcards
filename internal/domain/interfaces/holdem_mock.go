@@ -254,3 +254,18 @@ func (_m *MockHoldemGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// GetEquity モック
+func (_m *MockHoldemGame) GetEquity() *domain.HoldemEquityResult {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.HoldemEquityResult); ok {
+		return val
+	}
+	return nil
+}
+
+// GetPotOdds モック
+func (_m *MockHoldemGame) GetPotOdds() float64 {
+	ret := _m.Called()
+	return ret.Get(0).(float64)
+}
