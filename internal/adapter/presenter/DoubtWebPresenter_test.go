@@ -309,8 +309,8 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
 		_ = d.PlayerPlay([]int{0}, 5, 0) // human plays → DoubtPhase
-		d.ResolveDoubt(nil)           // skip → currentTurn=1, Play phase
-		d.CpuPlay()                   // CPU 1 plays 1 card → wins
+		d.ResolveDoubt(nil)              // skip → currentTurn=1, Play phase
+		d.CpuPlay()                      // CPU 1 plays 1 card → wins
 		result := tdwp.Output(d, nil)
 		var resObj controller.DoubtWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
