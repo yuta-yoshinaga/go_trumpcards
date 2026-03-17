@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
@@ -13,7 +13,6 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
-import type { BaccaratResponse } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
 
 const BET_TYPE_LABELS: Record<number, string> = {
@@ -29,10 +28,8 @@ export function BaccaratPage() {
   const [betAmount, setBetAmount] = useState(100);
   const [betType, setBetType] = useState<number>(BaccaratBetType.PLAYER);
 
-  const onSuccess = useCallback((_res: BaccaratResponse) => {}, []);
-
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec } = useGameApi(baccaratApi.exec, { onSuccess });
+  const { state, loading, error, exec } = useGameApi(baccaratApi.exec);
 
   useEffect(() => {
     exec('reset');
