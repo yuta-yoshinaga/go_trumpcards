@@ -40,4 +40,6 @@ type HoldemGame interface {
 	ShowHand() error
 	IsMuckAvailable() bool
 	GetActionLog() []*domain.ActionLogEntry
+	GetEquity() *domain.HoldemEquityResult
+	GetPotOdds() float64
 }

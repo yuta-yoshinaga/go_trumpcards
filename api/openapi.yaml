@@ -3735,6 +3735,56 @@ components:
           type: boolean
           description: Whether the human player can muck (hide) their hand at showdown (available when human lost)
           example: false
+        equity:
+          $ref: '#/components/schemas/HoldemEquity'
+        potOdds:
+          type: number
+          format: double
+          description: Pot odds percentage (0-100). Only present during PreFlop-River phases.
+          example: 33.33
+
+    HoldemEquity:
+      type: object
+      description: Equity (win probability) calculated via Monte Carlo simulation. Only present during PreFlop-River phases when human is active.
+      required:
+        - winProbability
+        - handOdds
+      properties:
+        winProbability:
+          type: number
+          format: double
+          description: Win probability (0.0 - 1.0)
+          minimum: 0
+          maximum: 1
+          example: 0.75
+        handOdds:
+          type: array
+          items:
+            $ref: '#/components/schemas/HoldemHandOdds'
+
+    HoldemHandOdds:
+      type: object
+      required:
+        - handRank
+        - handName
+        - probability
+      properties:
+        handRank:
+          type: integer
+          description: Hand rank (0=HighCard, 1=OnePair, ..., 9=RoyalFlush)
+          minimum: 0
+          example: 1
+        handName:
+          type: string
+          description: Hand rank name
+          example: "One Pair"
+        probability:
+          type: number
+          format: double
+          description: Probability of achieving this hand rank (0.0 - 1.0)
+          minimum: 0
+          maximum: 1
+          example: 0.5
 
     # -------------------------------------------------------------------------
     # Action Log (common across all games)

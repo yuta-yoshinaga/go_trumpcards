@@ -469,6 +469,19 @@ export interface HoldemResponse {
   addonAfterHand: number;
   addonUsed: boolean[];
   muckAvailable: boolean;
+  equity?: HoldemEquity;
+  potOdds?: number;
+}
+
+export interface HoldemEquity {
+  winProbability: number;
+  handOdds: HoldemHandOdds[];
+}
+
+export interface HoldemHandOdds {
+  handRank: number;
+  handName: string;
+  probability: number;
 }
 
 // --- Hearts ---

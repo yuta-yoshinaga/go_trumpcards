@@ -1340,6 +1340,57 @@ func (h *Holdem) GetAddonUsed() []bool {
 // GetRebuyPhaseType リバイフェーズ種別取得
 func (h *Holdem) GetRebuyPhaseType() int { return h.rebuyPhaseType }
 
+// GetEquity エクイティ計算結果を返す (PreFlop-Riverフェーズで人間がフォールドしていない場合のみ)
+func (h *Holdem) GetEquity() *HoldemEquityResult {
+	if h.phase < HoldemPhasePreFlop || h.phase > HoldemPhaseRiver {
+		return nil
+	}
+	// 人間プレイヤーを探す
+	var humanPlayer *HoldemPlayer
+	for _, p := range h.players {
+		if p.GetIsHuman() {
+			humanPlayer = p
+			break
+		}
+	}
+	if humanPlayer == nil || humanPlayer.GetFolded() {
+		return nil
+	}
+	humanCards := make([]*Card, humanPlayer.GetCardsSize())
+	for i := 0; i < humanPlayer.GetCardsSize(); i++ {
+		humanCards[i] = humanPlayer.GetCard(i)
+	}
+	// フォールドしていないアクティブ相手プレイヤー数
+	activePlayers := 0
+	for _, p := range h.players {
+		if !p.GetIsHuman() && !p.GetFolded() {
+			activePlayers++
+		}
+	}
+	result := CalcEquity(humanCards, h.communityCards, activePlayers, holdemEquitySimulations, nil)
+	return &result
+}
+
+// GetPotOdds ポットオッズを返す (PreFlop-Riverフェーズのみ)
+func (h *Holdem) GetPotOdds() float64 {
+	if h.phase < HoldemPhasePreFlop || h.phase > HoldemPhaseRiver {
+		return 0.0
+	}
+	// 人間プレイヤーの現在ベットを取得
+	humanCurrentBet := 0
+	for _, p := range h.players {
+		if p.GetIsHuman() {
+			humanCurrentBet = p.GetCurrentBet()
+			break
+		}
+	}
+	callAmount := h.lastBet - humanCurrentBet
+	if callAmount < 0 {
+		callAmount = 0
+	}
+	return CalcPotOdds(h.pot, callAmount)
+}
+
 // --- ゲッター ---
 
 // GetPhase フェーズ取得

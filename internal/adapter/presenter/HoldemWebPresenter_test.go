@@ -421,6 +421,8 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetAddonUsed").Return([]bool{false})
 		gameMock.On("GetRebuyPhaseType").Return(0)
 		gameMock.On("IsMuckAvailable").Return(false)
+		gameMock.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
+		gameMock.On("GetPotOdds").Return(0.0)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(99) // out of range
@@ -456,6 +458,8 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("GetAddonUsed").Return([]bool{false})
 		gameMock.On("GetRebuyPhaseType").Return(0)
 		gameMock.On("IsMuckAvailable").Return(false)
+		gameMock.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
+		gameMock.On("GetPotOdds").Return(0.0)
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(-1) // negative
@@ -884,5 +888,64 @@ func TestHoldemWebPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, result, `"entries":[]`)
 		mockGame.AssertExpectations(t)
+	})
+}
+
+func TestHoldemWebPresenter_Equity(t *testing.T) {
+	p := new(presenter.HoldemWebPresenter)
+
+	setup := func() (*domain.Holdem, []*domain.HoldemPlayer) {
+		tc := domain.NewTrumpCards(0)
+		players := []*domain.HoldemPlayer{
+			domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+			domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
+		}
+		h := domain.NewHoldem(tc, players, domain.DefaultHoldemConfig())
+		return h, players
+	}
+
+	t.Run("equity populated during active phase", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.NotNil(t, out.Equity)
+		assert.Greater(t, out.Equity.WinProbability, 0.0)
+		assert.NotEmpty(t, out.Equity.HandOdds)
+		assert.NotNil(t, out.PotOdds)
+	})
+
+	t.Run("equity nil during showdown", func(t *testing.T) {
+		h, players := setup()
+		h.SetPhase(domain.HoldemPhaseShowdown)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 1, false))
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		err := json.Unmarshal([]byte(result), &out)
+		assert.NoError(t, err)
+		assert.Nil(t, out.Equity)
+		assert.Nil(t, out.PotOdds)
+	})
+
+	t.Run("equity nil during end phase", func(t *testing.T) {
+		h, _ := setup()
+		h.SetPhase(domain.HoldemPhaseEnd)
+		h.SetGameEndFlag(true)
+		h.SetRoundResults([]domain.HoldemResult{})
+
+		result := p.Output(h, nil)
+		var out controller.HoldemWebOutput
+		_ = json.Unmarshal([]byte(result), &out)
+		assert.Nil(t, out.Equity)
+		assert.Nil(t, out.PotOdds)
 	})
 }
