@@ -388,6 +388,7 @@ export interface DoubtMetaAI {
   gamesPlayed: number;
   bluffRate: number;
   doubtAccuracy: number;
+  hesitationMean: number;
 }
 
 export interface HoldemPlayerData {

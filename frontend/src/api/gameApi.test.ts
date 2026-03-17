@@ -1068,6 +1068,23 @@ describe('gameApi', () => {
       );
     });
 
+    it('sends humanPlayMs when provided', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await doubtApi.exec('play', [0], 5, undefined, undefined, 1500);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/doubt/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            cardIndices: [0],
+            claimedValue: 5,
+            humanPlayMs: 1500,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(doubtApi.exec('reset')).rejects.toThrow('HTTP error: 500');

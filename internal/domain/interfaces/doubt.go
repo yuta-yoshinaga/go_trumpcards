@@ -6,7 +6,7 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 type DoubtGame interface {
 	// interactor が呼ぶメソッド
 	Reset()
-	PlayerPlay(cardIndices []int, claimedValue int) error
+	PlayerPlay(cardIndices []int, claimedValue int, humanPlayMs int) error
 	CpuPlay()
 	ResolveDoubt(doubterIndices []int)
 	SkipDoubt()

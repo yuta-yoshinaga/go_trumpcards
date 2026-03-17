@@ -248,6 +248,25 @@ export function DoubtPage() {
           </div>
         )}
 
+        {/* Meta-AI info */}
+        {state.metaAI?.enabled && (
+          <div className="bg-black/40 rounded-lg py-2 px-3.5 my-2 text-xs">
+            <div className="text-white font-bold mb-1">{t('metaAI.title')}</div>
+            <div className="text-game-text-muted">{t('metaAI.gamesPlayed', { count: state.metaAI.gamesPlayed })}</div>
+            <div className="text-game-text-muted">
+              {t('metaAI.bluffRate', { rate: `${(state.metaAI.bluffRate * 100).toFixed(0)}%` })}
+            </div>
+            <div className="text-game-text-muted">
+              {t('metaAI.doubtAccuracy', { rate: `${(state.metaAI.doubtAccuracy * 100).toFixed(0)}%` })}
+            </div>
+            {state.metaAI.hesitationMean > 0 && (
+              <div className="text-game-text-muted">
+                {t('metaAI.hesitationMean', { ms: Math.round(state.metaAI.hesitationMean) })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Result message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 

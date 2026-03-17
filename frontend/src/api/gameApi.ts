@@ -127,12 +127,14 @@ export const doubtApi = {
     claimedValue?: number,
     doubterIndices?: number[],
     config?: DoubtConfig,
+    humanPlayMs?: number,
   ) =>
     gameExec<DoubtResponse>('doubt', {
       command,
       cardIndices,
       claimedValue,
       doubterIndices,
+      humanPlayMs,
       doubtWindowSec: config?.doubtWindowSec,
       cpuMemoryLevel: config?.cpuMemoryLevel,
       penaltyDrawLimit: config?.penaltyDrawLimit,

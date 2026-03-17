@@ -51,7 +51,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 					cardArgs = args[1:]
 				}
 				indices, skipped := cuiutil.ParseIntSlice(cardArgs)
-				return cuiutil.PrependSkippedWarning(c.di.Play(indices, claimedValue), skipped), true
+				return cuiutil.PrependSkippedWarning(c.di.Play(indices, claimedValue, 0), skipped), true
 			case "d", "doubt":
 				indices, skipped := cuiutil.ParseIntSlice(args)
 				return cuiutil.PrependSkippedWarning(c.di.ResolveDoubt(indices), skipped), true

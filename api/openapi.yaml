@@ -3012,6 +3012,10 @@ components:
             session-scoped game history (Meta-AI). Defaults to false.
           default: false
           example: false
+        humanPlayMs:
+          type: integer
+          description: Human play hesitation time in milliseconds (0=not measured)
+          example: 1200
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -3237,6 +3241,11 @@ components:
               format: float
               description: Accuracy of the human player's doubt calls (0.0–1.0)
               example: 0.60
+            hesitationMean:
+              type: number
+              format: float
+              description: Average human hesitation time in milliseconds
+              example: 950.0
 
     # -------------------------------------------------------------------------
     # Texas Hold'em

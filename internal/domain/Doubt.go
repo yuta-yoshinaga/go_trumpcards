@@ -119,6 +119,7 @@ type Doubt struct {
 	config          DoubtConfig
 	turnCounter     int
 	humanProfile    *DoubtHumanProfile
+	lastHumanPlayMs int
 	actionLog       []*ActionLogEntry
 }
 
@@ -166,8 +167,8 @@ func (d *Doubt) Reset() {
 }
 
 // PlayerPlay 人間プレイヤーがカードを出す
-// cardIndices: 出すカードのインデックス, claimedValue: 宣言する値 (1-13)
-func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
+// cardIndices: 出すカードのインデックス, claimedValue: 宣言する値 (1-13), humanPlayMs: 迷い時間(ms, 0=計測なし)
+func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int, humanPlayMs int) error {
 	if d.gameEndFlag {
 		return ErrGameEnded
 	}
@@ -202,7 +203,8 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 	played := player.RemoveCards(cardIndices)
 	d.tableCards = append(d.tableCards, played...)
 
-	// メタAI: ブラフを記録
+	// メタAI: ブラフ・迷い時間を記録
+	d.lastHumanPlayMs = humanPlayMs
 	if d.config.CpuMetaAI && d.humanProfile != nil {
 		isBluff := false
 		for _, card := range played {
@@ -212,6 +214,7 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int) error {
 			}
 		}
 		d.humanProfile.RecordPlay(player.GetCardsSize(), isBluff)
+		d.humanProfile.RecordHesitation(humanPlayMs)
 	}
 
 	d.lastAction = &DoubtAction{
@@ -389,7 +392,7 @@ func (d *Doubt) decideCpuDoubters() {
 			effectiveChance := randomDoubtChance
 			if d.config.CpuMetaAI && d.humanProfile != nil && cardPlayerIdx == d.findHumanIdx() {
 				bracket := doubtHandSizeBracket(d.players[cardPlayerIdx].GetCardsSize())
-				effectiveChance = d.humanProfile.AdjustedDoubtChance(randomDoubtChance, bracket)
+				effectiveChance = d.humanProfile.AdjustedDoubtChance(randomDoubtChance, bracket, d.lastHumanPlayMs)
 			}
 			if rand.Float64() < effectiveChance {
 				d.cpuDoubters = append(d.cpuDoubters, i)

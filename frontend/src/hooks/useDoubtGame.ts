@@ -42,6 +42,7 @@ export function useDoubtGame() {
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoSkipRef = useRef(false);
   const cpuDoubtersRef = useRef<number[]>([]);
+  const playTurnStartRef = useRef<number>(0);
 
   const onSuccess = useCallback(() => {
     clearSelection();
@@ -113,6 +114,12 @@ export function useDoubtGame() {
   }, [countdown, exec]);
 
   useEffect(() => {
+    if (state && state.phase === 0 && state.players[state.currentTurn]?.isHuman) {
+      playTurnStartRef.current = Date.now();
+    }
+  }, [state]);
+
+  useEffect(() => {
     if (!state) return;
     if (state.phase === 1 && state.lastAction !== null) {
       const lastActionPlayer = state.players[state.lastAction.playerIdx];
@@ -130,7 +137,9 @@ export function useDoubtGame() {
   }, [state, startCountdown]);
 
   const handlePlay = useCallback(() => {
-    exec('play', selectedCardIndices, claimedValue);
+    const elapsed = playTurnStartRef.current > 0 ? Date.now() - playTurnStartRef.current : 0;
+    playTurnStartRef.current = 0;
+    exec('play', selectedCardIndices, claimedValue, undefined, undefined, elapsed);
   }, [exec, selectedCardIndices, claimedValue]);
 
   const handleDoubt = useCallback(() => {

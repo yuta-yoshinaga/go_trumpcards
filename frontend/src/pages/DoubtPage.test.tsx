@@ -256,7 +256,9 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('play', [0], 1, undefined, undefined, expect.any(Number)),
+    );
   });
 
   it('calls reset when reset button is clicked', async () => {
@@ -1027,6 +1029,66 @@ describe('DoubtPage', () => {
     );
   });
 
+  // ── Meta-AI display ────────────────────────────────────────────────────────
+
+  it('displays MetaAI info when metaAI is enabled', async () => {
+    const metaAIState: DoubtResponse = {
+      ...humanTurnState,
+      metaAI: {
+        enabled: true,
+        gamesPlayed: 3,
+        bluffRate: 0.6,
+        doubtAccuracy: 0.75,
+        hesitationMean: 1234,
+      },
+    };
+    mockExec.mockResolvedValue(metaAIState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('メタAI情報')).toBeInTheDocument());
+    expect(screen.getByText('ゲーム数: 3')).toBeInTheDocument();
+    expect(screen.getByText('ブラフ率: 60%')).toBeInTheDocument();
+    expect(screen.getByText('ダウト正解率: 75%')).toBeInTheDocument();
+    expect(screen.getByText('平均迷い時間: 1234ms')).toBeInTheDocument();
+  });
+
+  it('does not display MetaAI info when metaAI is not present', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    expect(screen.queryByText('メタAI情報')).not.toBeInTheDocument();
+  });
+
+  it('hides hesitationMean row when hesitationMean is 0', async () => {
+    const metaAIState: DoubtResponse = {
+      ...humanTurnState,
+      metaAI: {
+        enabled: true,
+        gamesPlayed: 0,
+        bluffRate: 0,
+        doubtAccuracy: 0,
+        hesitationMean: 0,
+      },
+    };
+    mockExec.mockResolvedValue(metaAIState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('メタAI情報')).toBeInTheDocument());
+    expect(screen.queryByText(/平均迷い時間/)).not.toBeInTheDocument();
+  });
+
+  it('does not set playTurnStart when currentTurn player is missing', async () => {
+    // State where currentTurn points to a non-existent player index
+    const stateWithMissingPlayer: DoubtResponse = {
+      ...humanTurnState,
+      currentTurn: 99,
+      phase: 0,
+    };
+    mockExec.mockResolvedValue(stateWithMissingPlayer);
+    renderWithProviders(<DoubtPage />);
+    // Page renders without error; 出す button is absent (no human turn)
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
   // ── Server-driven countdown ───────────────────────────────────────────────
 
   describe('server-driven countdown', () => {
@@ -1156,7 +1218,9 @@ describe('DoubtPage', () => {
       mockExec.mockResolvedValue(cpuTurnState);
       fireEvent.keyDown(document, { key: 'Enter' });
 
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1));
+      await waitFor(() =>
+        expect(mockExec).toHaveBeenCalledWith('play', [0], 1, undefined, undefined, expect.any(Number)),
+      );
     });
 
     it('Escape key clears selection', async () => {
