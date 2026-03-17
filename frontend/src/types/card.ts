@@ -592,6 +592,14 @@ export interface KlondikeResponse {
   hint?: KlondikeHint;
 }
 
+export interface BaccaratSideBetResult {
+  betType: number;
+  resultType: number;
+  resultName: string;
+  betAmount: number;
+  payout: number;
+}
+
 export interface BaccaratResponse {
   playerHand: Card[];
   bankerHand: Card[];
@@ -603,6 +611,10 @@ export interface BaccaratResponse {
   betType: number;
   result: number;
   payout: number;
+  history: number[];
+  playerPairBet: number;
+  bankerPairBet: number;
+  sideBetResults: BaccaratSideBetResult[];
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

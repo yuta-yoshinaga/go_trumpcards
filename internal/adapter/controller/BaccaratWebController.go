@@ -9,22 +9,37 @@ import (
 // BaccaratWebInput バカラWebインプット
 type BaccaratWebInput struct {
 	BaseWebInput
-	Amount  int  `json:"amount,omitempty"`
-	BetType *int `json:"betType,omitempty"`
+	Amount        int  `json:"amount,omitempty"`
+	BetType       *int `json:"betType,omitempty"`
+	PlayerPairBet *int `json:"playerPairBet,omitempty"`
+	BankerPairBet *int `json:"bankerPairBet,omitempty"`
+}
+
+// BaccaratWebOutputSideBetResult サイドベット結果
+type BaccaratWebOutputSideBetResult struct {
+	BetType    int    `json:"betType"`
+	ResultType int    `json:"resultType"`
+	ResultName string `json:"resultName"`
+	BetAmount  int    `json:"betAmount"`
+	Payout     int    `json:"payout"`
 }
 
 // BaccaratWebOutput バカラWebアウトプット
 type BaccaratWebOutput struct {
-	PlayerHand      []*WebOutputCard `json:"playerHand"`
-	BankerHand      []*WebOutputCard `json:"bankerHand"`
-	PlayerHandValue int              `json:"playerHandValue"`
-	BankerHandValue int              `json:"bankerHandValue"`
-	Phase           int              `json:"phase"`
-	Chips           int              `json:"chips"`
-	BetAmount       int              `json:"betAmount"`
-	BetType         int              `json:"betType"`
-	Result          int              `json:"result"`
-	Payout          int              `json:"payout"`
+	PlayerHand      []*WebOutputCard                  `json:"playerHand"`
+	BankerHand      []*WebOutputCard                  `json:"bankerHand"`
+	PlayerHandValue int                               `json:"playerHandValue"`
+	BankerHandValue int                               `json:"bankerHandValue"`
+	Phase           int                               `json:"phase"`
+	Chips           int                               `json:"chips"`
+	BetAmount       int                               `json:"betAmount"`
+	BetType         int                               `json:"betType"`
+	Result          int                               `json:"result"`
+	Payout          int                               `json:"payout"`
+	History         []int                             `json:"history"`
+	PlayerPairBet   int                               `json:"playerPairBet"`
+	BankerPairBet   int                               `json:"bankerPairBet"`
+	SideBetResults  []*BaccaratWebOutputSideBetResult `json:"sideBetResults"`
 	WebOutputBase
 }
 
@@ -38,9 +53,11 @@ func NewBaccaratWebController(factory func() usecase.BaccaratInteractorIF) *Bacc
 
 func newBaccaratDefaultOutput(msg string) *BaccaratWebOutput {
 	return &BaccaratWebOutput{
-		PlayerHand:    make([]*WebOutputCard, 0),
-		BankerHand:    make([]*WebOutputCard, 0),
-		WebOutputBase: WebOutputBase{Message: msg},
+		PlayerHand:     make([]*WebOutputCard, 0),
+		BankerHand:     make([]*WebOutputCard, 0),
+		History:        make([]int, 0),
+		SideBetResults: make([]*BaccaratWebOutputSideBetResult, 0),
+		WebOutputBase:  WebOutputBase{Message: msg},
 	}
 }
 
@@ -50,9 +67,13 @@ func baccaratDispatch(bc *baseController, w rest.ResponseWriter, bi usecase.Bacc
 		bc.writePresenterResponse(w, bi.Reset())
 	case "b", "bet":
 		bt := deref(param.BetType)
-		bc.writePresenterResponse(w, bi.Bet(param.Amount, bt))
+		ppBet := deref(param.PlayerPairBet)
+		bpBet := deref(param.BankerPairBet)
+		bc.writePresenterResponse(w, bi.Bet(param.Amount, bt, ppBet, bpBet))
 	case "log", "l":
 		bc.writePresenterResponse(w, bi.ActionLog())
+	case "ch", "clearhistory":
+		bc.writePresenterResponse(w, bi.ClearHistory())
 	default:
 		return false
 	}

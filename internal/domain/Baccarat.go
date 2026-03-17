@@ -27,19 +27,30 @@ const (
 	BaccaratStandMinValue   = 7     // スタンド最小値
 )
 
+// バカラ結果定数（罫線用）
+const (
+	BaccaratResultPlayer = 0 // プレイヤー勝利
+	BaccaratResultBanker = 1 // バンカー勝利
+	BaccaratResultTie    = 2 // タイ
+)
+
 // Baccarat バカラクラス
 type Baccarat struct {
-	trumpCards  *TrumpCards       // トランプカード
-	playerHand  []*Card           // プレイヤーハンド
-	bankerHand  []*Card           // バンカーハンド
-	chips       ChipHolder        // チップ
-	betAmount   int               // ベット額
-	betType     int               // ベットタイプ
-	phase       int               // 現在のフェーズ
-	gameEndFlag bool              // ゲーム終了フラグ
-	result      GameResult        // ゲーム結果
-	payout      int               // 配当金額
-	actionLog   []*ActionLogEntry // 棋譜
+	trumpCards     *TrumpCards         // トランプカード
+	playerHand     []*Card             // プレイヤーハンド
+	bankerHand     []*Card             // バンカーハンド
+	chips          ChipHolder          // チップ
+	betAmount      int                 // ベット額
+	betType        int                 // ベットタイプ
+	phase          int                 // 現在のフェーズ
+	gameEndFlag    bool                // ゲーム終了フラグ
+	result         GameResult          // ゲーム結果
+	payout         int                 // 配当金額
+	actionLog      []*ActionLogEntry   // 棋譜
+	history        []int               // 罫線（Big Road）履歴
+	playerPairBet  int                 // プレイヤーペアベット額
+	bankerPairBet  int                 // バンカーペアベット額
+	sideBetResults []*BacSideBetResult // サイドベット結果
 }
 
 // NewBaccarat コンストラクタ
@@ -59,7 +70,7 @@ func NewDefaultBaccarat() *Baccarat {
 	return b
 }
 
-// Reset ゲーム初期化
+// Reset ゲーム初期化（履歴は保持）
 func (b *Baccarat) Reset() {
 	b.gameEndFlag = false
 	b.phase = BaccaratPhaseBet
@@ -70,6 +81,9 @@ func (b *Baccarat) Reset() {
 	b.result = 0
 	b.payout = 0
 	b.actionLog = nil
+	b.playerPairBet = 0
+	b.bankerPairBet = 0
+	b.sideBetResults = nil
 	if b.chips.GetChips() < BaccaratMinBet {
 		b.chips.SetChips(BaccaratDefaultChips)
 	}
@@ -79,8 +93,13 @@ func (b *Baccarat) Reset() {
 	}
 }
 
+// ClearHistory 罫線履歴をクリアする
+func (b *Baccarat) ClearHistory() {
+	b.history = nil
+}
+
 // Bet ベット＆ゲーム実行（バカラはベット後に全自動進行）
-func (b *Baccarat) Bet(amount, betType int) error {
+func (b *Baccarat) Bet(amount, betType, ppBet, bpBet int) error {
 	if b.phase != BaccaratPhaseBet {
 		return NewDomainError(ErrWrongPhase, "Bet is only allowed during the bet phase.")
 	}
@@ -90,11 +109,23 @@ func (b *Baccarat) Bet(amount, betType int) error {
 	if amount < BaccaratMinBet || amount%BaccaratMinBet != 0 || amount > BaccaratMaxBet {
 		return NewDomainError(ErrInvalidAmount, "Invalid bet amount.")
 	}
-	if !b.chips.SubtractChips(amount) {
+	if ppBet < 0 || bpBet < 0 {
+		return NewDomainError(ErrInvalidAmount, "Side bet amount must not be negative.")
+	}
+	if ppBet > 0 && (ppBet < BaccaratMinBet || ppBet%BaccaratMinBet != 0 || ppBet > BaccaratMaxBet) {
+		return NewDomainError(ErrInvalidAmount, "Invalid player pair bet amount.")
+	}
+	if bpBet > 0 && (bpBet < BaccaratMinBet || bpBet%BaccaratMinBet != 0 || bpBet > BaccaratMaxBet) {
+		return NewDomainError(ErrInvalidAmount, "Invalid banker pair bet amount.")
+	}
+	totalCost := amount + ppBet + bpBet
+	if !b.chips.SubtractChips(totalCost) {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	b.betAmount = amount
 	b.betType = betType
+	b.playerPairBet = ppBet
+	b.bankerPairBet = bpBet
 	b.appendLog(0, "bet", fmt.Sprintf("bet %d on %s", amount, betTypeName(betType)), nil)
 
 	// ディール
@@ -165,9 +196,22 @@ func (b *Baccarat) judge() {
 		b.appendLog(-1, "result", "tie", nil)
 	}
 
+	// 罫線に結果を追加
+	switch b.result {
+	case GameResultWin:
+		b.history = append(b.history, BaccaratResultPlayer)
+	case GameResultLose:
+		b.history = append(b.history, BaccaratResultBanker)
+	default:
+		b.history = append(b.history, BaccaratResultTie)
+	}
+
 	// 配当計算
 	b.payout = b.calculatePayout()
 	b.chips.AddChips(b.payout)
+
+	// サイドベット評価
+	b.evaluateSideBets()
 
 	b.gameEndFlag = true
 	b.phase = BaccaratPhaseEnd
@@ -274,6 +318,41 @@ func (b *Baccarat) appendLog(playerIdx int, actionType, detail string, cards []*
 	})
 }
 
+// evaluateSideBets サイドベットを評価し、当選時はチップに加算する
+func (b *Baccarat) evaluateSideBets() {
+	b.sideBetResults = nil
+	if b.playerPairBet > 0 {
+		resultType, resultName := EvaluateBaccaratPair(b.playerHand[0], b.playerHand[1])
+		payout := 0
+		if resultType == BacPairMatch {
+			payout = b.playerPairBet + b.playerPairBet*BacPairPayout(resultType)
+			b.chips.AddChips(payout)
+		}
+		b.sideBetResults = append(b.sideBetResults, &BacSideBetResult{
+			BetType:    BacSideBetPlayerPair,
+			ResultType: resultType,
+			ResultName: resultName,
+			BetAmount:  b.playerPairBet,
+			Payout:     payout,
+		})
+	}
+	if b.bankerPairBet > 0 {
+		resultType, resultName := EvaluateBaccaratPair(b.bankerHand[0], b.bankerHand[1])
+		payout := 0
+		if resultType == BacPairMatch {
+			payout = b.bankerPairBet + b.bankerPairBet*BacPairPayout(resultType)
+			b.chips.AddChips(payout)
+		}
+		b.sideBetResults = append(b.sideBetResults, &BacSideBetResult{
+			BetType:    BacSideBetBankerPair,
+			ResultType: resultType,
+			ResultName: resultName,
+			BetAmount:  b.bankerPairBet,
+			Payout:     payout,
+		})
+	}
+}
+
 // --- Getters ---
 
 // GetPlayerHand プレイヤーハンド取得
@@ -312,6 +391,18 @@ func (b *Baccarat) GetBankerHandValue() int { return b.CalculateHandValue(b.bank
 // GetActionLog 棋譜を取得する
 func (b *Baccarat) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
+// GetHistory 罫線履歴を取得する
+func (b *Baccarat) GetHistory() []int { return b.history }
+
+// GetPlayerPairBet プレイヤーペアベット額を取得する
+func (b *Baccarat) GetPlayerPairBet() int { return b.playerPairBet }
+
+// GetBankerPairBet バンカーペアベット額を取得する
+func (b *Baccarat) GetBankerPairBet() int { return b.bankerPairBet }
+
+// GetSideBetResults サイドベット結果を取得する
+func (b *Baccarat) GetSideBetResults() []*BacSideBetResult { return b.sideBetResults }
+
 // --- Test helpers ---
 
 // SetPhase フェーズ設定（テスト用）
@@ -337,3 +428,12 @@ func (b *Baccarat) SetGameEndFlag(flag bool) { b.gameEndFlag = flag }
 
 // SetChips チップ設定（テスト用）
 func (b *Baccarat) SetChips(chips int) { b.chips.SetChips(chips) }
+
+// SetHistory 罫線履歴設定（テスト用）
+func (b *Baccarat) SetHistory(history []int) { b.history = history }
+
+// SetPlayerPairBet プレイヤーペアベット額設定（テスト用）
+func (b *Baccarat) SetPlayerPairBet(amount int) { b.playerPairBet = amount }
+
+// SetBankerPairBet バンカーペアベット額設定（テスト用）
+func (b *Baccarat) SetBankerPairBet(amount int) { b.bankerPairBet = amount }

@@ -24,6 +24,10 @@ func setupBaccaratWebMockDefaults(m *interfaces.MockBaccaratGame) {
 	m.On("GetResult").Return(domain.GameResult(0)).Maybe()
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetPlayerPairBet").Return(0).Maybe()
+	m.On("GetBankerPairBet").Return(0).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 }
 
 func parseBaccaratOutput(t *testing.T, jsonStr string) *controller.BaccaratWebOutput {
@@ -45,6 +49,8 @@ func TestBaccaratWebPresenter_Output_BetPhase(t *testing.T) {
 	assert.Empty(t, result.PlayerHand)
 	assert.Empty(t, result.BankerHand)
 	assert.Empty(t, result.Message)
+	assert.Empty(t, result.History)
+	assert.Empty(t, result.SideBetResults)
 }
 
 func TestBaccaratWebPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
@@ -68,6 +74,10 @@ func TestBaccaratWebPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultWin).Maybe()
 	m.On("GetPayout").Return(200).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return([]int{domain.BaccaratResultPlayer}).Maybe()
+	m.On("GetPlayerPairBet").Return(0).Maybe()
+	m.On("GetBankerPairBet").Return(0).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := parseBaccaratOutput(t, p.Output(m, nil))
 	assert.Equal(t, domain.BaccaratPhaseEnd, result.Phase)
@@ -76,6 +86,7 @@ func TestBaccaratWebPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Equal(t, 2, len(result.PlayerHand))
 	assert.Equal(t, 2, len(result.BankerHand))
 	assert.Equal(t, 200, result.Payout)
+	assert.Equal(t, []int{domain.BaccaratResultPlayer}, result.History)
 }
 
 func TestBaccaratWebPresenter_Output_EndPhase_BankerWins(t *testing.T) {
@@ -97,6 +108,10 @@ func TestBaccaratWebPresenter_Output_EndPhase_BankerWins(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultLose).Maybe()
 	m.On("GetPayout").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return([]int{domain.BaccaratResultBanker}).Maybe()
+	m.On("GetPlayerPairBet").Return(0).Maybe()
+	m.On("GetBankerPairBet").Return(0).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := parseBaccaratOutput(t, p.Output(m, nil))
 	assert.Equal(t, "Banker wins!", result.Message)
@@ -122,6 +137,10 @@ func TestBaccaratWebPresenter_Output_EndPhase_Tie(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultDraw).Maybe()
 	m.On("GetPayout").Return(900).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+	m.On("GetHistory").Return(([]int)(nil)).Maybe()
+	m.On("GetPlayerPairBet").Return(0).Maybe()
+	m.On("GetBankerPairBet").Return(0).Maybe()
+	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := parseBaccaratOutput(t, p.Output(m, nil))
 	assert.Equal(t, "Tie!", result.Message)
@@ -148,6 +167,41 @@ func TestBaccaratWebPresenter_Output_Error(t *testing.T) {
 
 	result := parseBaccaratOutput(t, p.Output(m, domain.NewDomainError(domain.ErrInvalidAmount, "Invalid bet amount.")))
 	assert.Equal(t, "Invalid bet amount.", result.Message)
+}
+
+func TestBaccaratWebPresenter_Output_WithSideBetResults(t *testing.T) {
+	p := new(BaccaratWebPresenter)
+	m := new(interfaces.MockBaccaratGame)
+	setupBaccaratWebMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetSideBetResults")
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPlayerPairBet")
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetBankerPairBet")
+	m.On("GetPlayerPairBet").Return(10).Maybe()
+	m.On("GetBankerPairBet").Return(20).Maybe()
+	m.On("GetSideBetResults").Return([]*domain.BacSideBetResult{
+		{BetType: domain.BacSideBetPlayerPair, ResultType: domain.BacPairMatch, ResultName: "Pair", BetAmount: 10, Payout: 120},
+		{BetType: domain.BacSideBetBankerPair, ResultType: domain.BacPairNone, ResultName: "", BetAmount: 20, Payout: 0},
+	}).Maybe()
+
+	result := parseBaccaratOutput(t, p.Output(m, nil))
+	assert.Equal(t, 10, result.PlayerPairBet)
+	assert.Equal(t, 20, result.BankerPairBet)
+	assert.Len(t, result.SideBetResults, 2)
+	assert.Equal(t, domain.BacSideBetPlayerPair, result.SideBetResults[0].BetType)
+	assert.Equal(t, 120, result.SideBetResults[0].Payout)
+	assert.Equal(t, domain.BacSideBetBankerPair, result.SideBetResults[1].BetType)
+	assert.Equal(t, 0, result.SideBetResults[1].Payout)
+}
+
+func TestBaccaratWebPresenter_Output_WithHistory(t *testing.T) {
+	p := new(BaccaratWebPresenter)
+	m := new(interfaces.MockBaccaratGame)
+	setupBaccaratWebMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetHistory")
+	m.On("GetHistory").Return([]int{domain.BaccaratResultPlayer, domain.BaccaratResultBanker, domain.BaccaratResultTie}).Maybe()
+
+	result := parseBaccaratOutput(t, p.Output(m, nil))
+	assert.Equal(t, []int{0, 1, 2}, result.History)
 }
 
 func TestBaccaratWebPresenter_ActionLogOutput(t *testing.T) {

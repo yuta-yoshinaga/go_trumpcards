@@ -20,5 +20,15 @@
   "phase": {
     "bet": "ベットフェーズ",
     "end": "結果"
+  },
+  "sideBet": {
+    "playerPair": "プレイヤーペア",
+    "bankerPair": "バンカーペア",
+    "pair": "ペア",
+    "noPair": "ペアなし"
+  },
+  "road": {
+    "title": "罫線",
+    "clear": "履歴クリア"
   }
 }

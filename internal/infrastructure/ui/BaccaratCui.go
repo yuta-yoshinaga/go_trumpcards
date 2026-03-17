@@ -34,6 +34,7 @@ func (cui *BaccaratCui) HelpLines() []string {
 		i18n.T("gameCommands"),
 		i18n.T("baccarat.helpBet"),
 		"  log                  action log",
+		"  ch                   clear history",
 		"",
 		i18n.T("session"),
 		i18n.T("resetEntry"),

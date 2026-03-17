@@ -12,8 +12,13 @@ func (m *MockBaccaratInteractor) Reset() string {
 	return args.String(0)
 }
 
-func (m *MockBaccaratInteractor) Bet(amount, betType int) string {
-	args := m.Called(amount, betType)
+func (m *MockBaccaratInteractor) Bet(amount, betType, ppBet, bpBet int) string {
+	args := m.Called(amount, betType, ppBet, bpBet)
+	return args.String(0)
+}
+
+func (m *MockBaccaratInteractor) ClearHistory() string {
+	args := m.Called()
 	return args.String(0)
 }
 

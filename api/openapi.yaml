@@ -4362,8 +4362,8 @@ components:
           type: string
           description: |
             Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
-            `log` (`l`).
-          enum: [r, reset, b, bet, log, l]
+            `log` (`l`), `clearhistory` (`ch`).
+          enum: [r, reset, b, bet, log, l, ch, clearhistory]
           example: bet
         amount:
           type: integer
@@ -4379,6 +4379,20 @@ components:
             0 = Player, 1 = Banker, 2 = Tie.
           enum: [0, 1, 2]
           example: 0
+        playerPairBet:
+          type: integer
+          description: |
+            Side bet amount on Player Pair.  Optional; used with the `bet`
+            command.  Ignored for other commands.
+          minimum: 0
+          example: 50
+        bankerPairBet:
+          type: integer
+          description: |
+            Side bet amount on Banker Pair.  Optional; used with the `bet`
+            command.  Ignored for other commands.
+          minimum: 0
+          example: 50
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -4445,6 +4459,44 @@ components:
           type: integer
           description: Payout amount for the current round
           example: 0
+        history:
+          type: array
+          description: |
+            Big Road history — an ordered list of round results.
+            Each element is an integer: 1 = Player win, -1 = Banker win, 0 = Tie.
+          items:
+            type: integer
+            enum: [-1, 0, 1]
+          example: [1, -1, -1, 0, 1]
+        playerPairBet:
+          type: integer
+          description: Current Player Pair side bet amount
+          example: 0
+        bankerPairBet:
+          type: integer
+          description: Current Banker Pair side bet amount
+          example: 0
+        sideBetResults:
+          type: array
+          description: Results of side bets for the current round
+          items:
+            type: object
+            properties:
+              betType:
+                type: integer
+                description: "Side bet type identifier"
+              resultType:
+                type: integer
+                description: "Result type identifier"
+              resultName:
+                type: string
+                description: "Human-readable result name"
+              betAmount:
+                type: integer
+                description: "Amount wagered on this side bet"
+              payout:
+                type: integer
+                description: "Payout amount (0 if lost)"
         message:
           type: string
           description: Game result or error message. Empty during bet phase.
