@@ -16,9 +16,9 @@ type KlondikeGame interface {
 	GetHint() *domain.KlondikeHint
 	AutoComplete() error
 	Undo() error
-	CanUndo() bool
 
 	// state readers
+	CanUndo() bool
 	GetPhase() domain.KlondikePhase
 	GetMoveCount() int
 	GetStockCount() int
