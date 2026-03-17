@@ -42,11 +42,8 @@ func (mi *MemoryInteractor) ResetWithConfig(cfg domain.MemoryConfig) string {
 
 // Flip カードをめくる
 func (mi *MemoryInteractor) Flip(pos int) string {
-	if mi.m.GetGameEndFlag() {
-		return mi.mp.Output(mi.m, nil)
-	}
-	if !mi.m.IsHumanTurn() {
-		return mi.mp.Output(mi.m, nil)
+	if out, blocked := guardNotPlayable(mi.m, mi.mp); blocked {
+		return out
 	}
 	err := mi.m.PlayerFlip(pos)
 	if err != nil {
@@ -57,8 +54,8 @@ func (mi *MemoryInteractor) Flip(pos int) string {
 
 // Next 結果を解決し、CPU ターンを実行する
 func (mi *MemoryInteractor) Next() string {
-	if mi.m.GetGameEndFlag() {
-		return mi.mp.Output(mi.m, nil)
+	if out, blocked := guardGameEnd(mi.m, mi.mp); blocked {
+		return out
 	}
 	mi.m.ResolveFlip()
 	mi.runCpuTurns()

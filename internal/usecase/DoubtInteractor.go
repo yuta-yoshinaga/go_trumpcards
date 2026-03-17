@@ -46,11 +46,8 @@ func (di *DoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig) string {
 
 // Play 人間プレイヤーがカードを出す
 func (di *DoubtInteractor) Play(cardIndices []int, claimedValue int) string {
-	if di.d.GetGameEndFlag() {
-		return di.dp.Output(di.d, nil)
-	}
-	if !di.d.IsHumanTurn() {
-		return di.dp.Output(di.d, nil)
+	if out, blocked := guardNotPlayable(di.d, di.dp); blocked {
+		return out
 	}
 	err := di.d.PlayerPlay(cardIndices, claimedValue)
 	return di.dp.Output(di.d, err)
