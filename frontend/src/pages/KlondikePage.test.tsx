@@ -755,4 +755,10 @@ describe('KlondikePage', () => {
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { drawCount: 1, scoringMode: 1 }),
     );
   });
+
+  it('shows total score on game clear in Vegas mode', async () => {
+    mockExec.mockResolvedValue({ ...gameClearState, scoringMode: 1, score: 208 });
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByText(/合計スコア:/)).toBeInTheDocument());
+  });
 });

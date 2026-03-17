@@ -300,7 +300,6 @@ func (k *Klondike) MoveTableauToFoundation(col int) error {
 // GiveUp ギブアップ
 func (k *Klondike) GiveUp() {
 	if k.phase == KlondikePhasePlaying {
-		k.takeSnapshot()
 		k.phase = KlondikePhaseGameOver
 		k.appendLog("giveup", "ギブアップしました", nil)
 	}

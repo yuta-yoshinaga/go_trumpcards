@@ -389,6 +389,32 @@ func TestKlondikeWebController_ResetWithConfig(t *testing.T) {
 	recorded.BodyIs(mockOutput)
 }
 
+func TestKlondikeWebController_ResetWithScoringMode(t *testing.T) {
+	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
+
+	kiMock := new(usecase.MockKlondikeInteractor)
+	kiMock.On("ResetWithConfig", domain.KlondikeConfig{ScoringMode: domain.KlondikeScoringVegas}).Return(mockOutput)
+
+	factory := func() uc.KlondikeInteractorIF { return kiMock }
+	ctrl := controller.NewKlondikeWebController(factory)
+	defer ctrl.Stop()
+
+	api := rest.NewApi()
+	router, _ := rest.MakeRouter(rest.Post("/klondike/exec", ctrl.Exec))
+	api.SetApp(router)
+
+	scoringMode := 1
+	input := controller.KlondikeWebInput{
+		BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "s1"},
+		Config:       &controller.KlondikeWebConfig{ScoringMode: &scoringMode},
+	}
+	req := test.MakeSimpleRequest("POST", "http://1.2.3.4/klondike/exec", &input)
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	recorded := test.RunRequest(t, api.MakeHandler(), req)
+	recorded.CodeIs(http.StatusOK)
+	recorded.BodyIs(mockOutput)
+}
+
 func TestKlondikeWebController_Undo(t *testing.T) {
 	mockOutput := `{"tableau":[],"stockCount":0,"waste":[],"foundation":[],"phase":0,"moveCount":0,"message":""}`
 
