@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -26,24 +25,24 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 
-function usePhaseNames(t: (key: string) => string): Record<number, string> {
-  return {
-    [BjPhase.BET]: t('phase.bet'),
-    [BjPhase.DEAL]: t('phase.deal'),
-    [BjPhase.INSURANCE]: t('phase.insurance'),
-    [BjPhase.ACTION]: t('phase.action'),
-    [BjPhase.END]: t('phase.end'),
-    [BjPhase.EARLY_SURRENDER]: t('phase.earlySurrender'),
-  };
-}
+const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [BjPhase.BET]: 'bet',
+  [BjPhase.DEAL]: 'deal',
+  [BjPhase.INSURANCE]: 'insurance',
+  [BjPhase.ACTION]: 'action',
+  [BjPhase.END]: 'end',
+  [BjPhase.EARLY_SURRENDER]: 'earlySurrender',
+};
 
 function useSuggestionLabels(t: (key: string) => string): Record<number, string> {
   return {
@@ -58,13 +57,13 @@ function useSuggestionLabels(t: (key: string) => string): Record<number, string>
 }
 
 export function BlackJackPage() {
-  const { t } = useTranslation('blackjack');
-  const { t: tc } = useTranslation('common');
-  const phaseNames = usePhaseNames(t);
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('blackjack');
+  const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
   const suggestionLabels = useSuggestionLabels(t);
 
+  const { cardWidth } = useCardDimensions();
   const [message, setMessage] = useState('');
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('blackjack');
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
@@ -89,7 +88,6 @@ export function BlackJackPage() {
     setSurrenderRule(res.surrenderRule);
   }, []);
   const { state, loading, error, exec } = useGameApi(blackjackApi.exec, { onSuccess });
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
   useEffect(() => {
     exec('reset');
@@ -112,6 +110,22 @@ export function BlackJackPage() {
     ((hands?.length ?? 0) <= 1 || doubleAfterSplit);
   const showSplit = !!currentHand?.canSplit && playerChips >= currentHand.bet;
   const showSurrender = !!currentHand?.canSurrender;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'h', action: () => exec('hit') },
+      { key: 's', action: () => exec('stand') },
+      { key: 'd', action: () => exec('doubledown'), enabled: showDoubleDown },
+      { key: 'p', action: () => exec('split'), enabled: showSplit },
+      { key: 'u', action: () => exec('surrender'), enabled: showSurrender },
+    ],
+    [exec, showDoubleDown, showSplit, showSurrender],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: phase === BjPhase.ACTION && !loading,
+  });
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -137,43 +151,42 @@ export function BlackJackPage() {
     hideActionLog,
   ]);
 
+  if (!state) return <BlackJackSkeleton />;
+
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#008000]" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-bright" aria-busy={loading} aria-live="polite">
       {/* Phase indicator + info bar */}
-      {state && (
-        <PhaseIndicator
-          phaseName={phaseNames[phase] ?? t('phase.bet')}
-          isHumanTurn={
-            phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER
-              ? true
-              : phase === BjPhase.END
-                ? false
-                : undefined
-          }
-        >
+      <PhaseIndicator
+        phaseName={phaseNames[phase] ?? t('phase.bet')}
+        isHumanTurn={
+          phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER
+            ? true
+            : phase === BjPhase.END
+              ? false
+              : undefined
+        }
+      >
+        <span>
+          {t('player')} {state.player.chips} chips
+        </span>
+        <span>
+          {t('deck')} {state.deckCount}
+          {t('deckUnit')}
+        </span>
+        {countingEnabled && (
           <span>
-            {t('player')} {state.player.chips} chips
+            {t(`countingSystemNames.${countingSystem}`)} RC={state.runningCount}{' '}
+            {countingSystem === BJ_COUNTING_KO ? t('trueCountNA') : `TC=${state.trueCount.toFixed(1)}`}
           </span>
-          <span>
-            {t('deck')} {state.deckCount}
-            {t('deckUnit')}
-          </span>
-          {countingEnabled && (
-            <span>
-              {t(`countingSystemNames.${countingSystem}`)} RC={state.runningCount}{' '}
-              {countingSystem === BJ_COUNTING_KO ? t('trueCountNA') : `TC=${state.trueCount.toFixed(1)}`}
-            </span>
-          )}
-          <span>
-            {tc('label.dealer')} {state.dealer.chips} chips
-          </span>
-        </PhaseIndicator>
-      )}
+        )}
+        <span>
+          {tc('label.dealer')} {state.dealer.chips} chips
+        </span>
+      </PhaseIndicator>
 
       {/* Scrollable: dealer area + CPU players */}
       <div className="flex-1 overflow-y-auto p-4">
-        {state && phase !== BjPhase.BET && (
+        {phase !== BjPhase.BET && (
           <div>
             <h3 className="text-white">
               {t('dealerHand')}
@@ -184,15 +197,15 @@ export function BlackJackPage() {
             </h3>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card, idx) => (
-                <CardImage key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={60} />
+                <CardImage key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
               ))}
-              {!state.dealer.score && <CardBack width={60} />}
+              {!state.dealer.score && <CardBack width={cardWidth} />}
             </div>
           </div>
         )}
 
         {/* CPU players */}
-        {state && phase !== BjPhase.BET && cpuPlayers.length > 0 && (
+        {phase !== BjPhase.BET && cpuPlayers.length > 0 && (
           <div className="mt-4">
             {cpuPlayers.map((cpu, cpuIdx) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: CPU seats have fixed order
@@ -223,7 +236,7 @@ export function BlackJackPage() {
                         <CardImage
                           key={`cpu${cpuIdx}-hand${handIdx}-${cardIdx}-${card.design}-${card.value}`}
                           card={card}
-                          width={50}
+                          width={cardWidth}
                         />
                       ))}
                     </div>
@@ -236,9 +249,9 @@ export function BlackJackPage() {
       </div>
 
       {/* Sticky footer: player hand + result + buttons */}
-      <GameFooter className="bg-[#005a00] border-white/15 px-4 py-3">
+      <GameFooter className="bg-game-bg-green-bright-dark border-white/15 px-4 py-3">
         {/* Player hands */}
-        {state && phase !== BjPhase.BET && hands.length > 0 && (
+        {phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
             {hands.map((hand, handIndex) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: player hands have fixed order per round
@@ -263,7 +276,7 @@ export function BlackJackPage() {
                     <CardImage
                       key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
                       card={card}
-                      width={60}
+                      width={cardWidth}
                     />
                   ))}
                 </div>
@@ -273,7 +286,7 @@ export function BlackJackPage() {
         )}
 
         {/* Insurance info */}
-        {state && state.insuranceBet > 0 && (
+        {state.insuranceBet > 0 && (
           <div className="text-yellow-300 text-sm mb-1">
             {t('insurance')} {state.insuranceBet}
           </div>

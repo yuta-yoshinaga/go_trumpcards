@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -10,18 +10,19 @@ import { DaifugoSettingsPanel } from '../components/daifugo/DaifugoSettingsPanel
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { DaifugoAction } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
 export function DaifugoPage() {
-  const { t } = useTranslation('daifugo');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('daifugo');
   const {
     state,
     loading,
@@ -29,16 +30,36 @@ export function DaifugoPage() {
     exec,
     selectedIndices,
     toggleCardSelection,
+    clearSelection,
     configInput,
     handleDragCard,
     handleDrop,
     handleConfigChange,
   } = useDaifugoGame();
 
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('daifugo');
+  const { cardWidth } = useCardDimensions();
 
-  if (!state) return null;
+  const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const kbdConfirm = useCallback(() => {
+    if (!loading && isHumanTurnForKbd && selectedIndices.length > 0) {
+      exec(
+        'play',
+        [...selectedIndices].sort((a, b) => a - b),
+      );
+    }
+  }, [loading, isHumanTurnForKbd, selectedIndices, exec]);
+
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCardSelection,
+    onConfirm: kbdConfirm,
+    onClear: clearSelection,
+    enabled: isHumanTurnForKbd && !loading,
+  });
+
+  if (!state) return <DaifugoSkeleton />;
 
   const pendingAction = state.pendingAction ?? 'none';
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
@@ -73,8 +94,7 @@ export function DaifugoPage() {
   ] as const;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
@@ -93,7 +113,9 @@ export function DaifugoPage() {
             {!state.tableCards || state.tableCards.length === 0 ? (
               <span className="text-gray-400">{t('tableEmpty')}</span>
             ) : (
-              state.tableCards.map((card) => <CardImage key={`${card.design}-${card.value}`} card={card} width={52} />)
+              state.tableCards.map((card) => (
+                <CardImage key={`${card.design}-${card.value}`} card={card} width={cardWidth} />
+              ))
             )}
           </div>
         </div>
@@ -160,7 +182,7 @@ export function DaifugoPage() {
         />
       </div>
 
-      <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
 
         <div className="text-center mb-1">

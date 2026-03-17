@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { playerAreaBase } from '../../styles/gameStyles';
 import type { OldMaidPlayerData } from '../../types/card';
 import { playerName } from '../../utils/playerUtils';
@@ -34,6 +36,56 @@ export function OldMaidPlayerArea({
 }: PlayerAreaProps) {
   const { t } = useTranslation('oldmaid');
   const { t: tc } = useTranslation('common');
+  const { cardWidth } = useCardDimensions();
+  const [focusedCardIdx, setFocusedCardIdx] = useState<number | null>(null);
+  const cardCount = player.cards?.length ?? 0;
+
+  useEffect(() => {
+    if (focusedCardIdx !== null && focusedCardIdx >= cardCount) {
+      setFocusedCardIdx(null);
+    }
+  }, [cardCount, focusedCardIdx]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!onReorder || !player.cards || player.cards.length === 0) return;
+    const max = player.cards.length - 1;
+
+    const swapAndReorder = (index1: number, index2: number) => {
+      const indices = Array.from(player.cards!.keys());
+      [indices[index1], indices[index2]] = [indices[index2], indices[index1]];
+      onReorder(indices);
+      setFocusedCardIdx(index2);
+    };
+
+    switch (e.key) {
+      case 'Escape':
+        setFocusedCardIdx(null);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (e.shiftKey) {
+          if (focusedCardIdx !== null && focusedCardIdx > 0) {
+            swapAndReorder(focusedCardIdx, focusedCardIdx - 1);
+          }
+        } else {
+          setFocusedCardIdx((prev) => (prev === null ? 0 : Math.max(0, prev - 1)));
+        }
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        if (e.shiftKey) {
+          if (focusedCardIdx !== null && focusedCardIdx < max) {
+            swapAndReorder(focusedCardIdx, focusedCardIdx + 1);
+          }
+        } else {
+          setFocusedCardIdx((prev) => (prev === null ? 0 : Math.min(max, prev + 1)));
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isSuspect
@@ -71,13 +123,19 @@ export function OldMaidPlayerArea({
         <div className="text-game-text-muted text-xs mb-1">{t('cardCount', { count: player.cardCount })}</div>
       )}
       {showSelectable && !player.isFinished && <div className="text-game-text-highlight text-xs mb-1">{t('draw')}</div>}
-      <div className="flex flex-wrap gap-0.5 justify-center">
+      <div
+        className="flex flex-wrap gap-0.5 justify-center"
+        {...(player.isHuman && !player.isFinished && onReorder
+          ? { tabIndex: 0, onKeyDown: handleKeyDown, 'data-testid': 'human-card-container' }
+          : {})}
+      >
         {player.isFinished ? null : player.isHuman ? (
           player.cards?.map((card, i) => (
             <CardImage
               key={`${card.design}-${card.value}`}
               card={card}
-              width={50}
+              width={cardWidth}
+              className={focusedCardIdx === i && onReorder ? 'ring-2 ring-blue-500' : undefined}
               draggable={!gameEndFlag && !!onReorder}
               onDragStart={(e: React.DragEvent) => {
                 e.dataTransfer.setData('oldmaidCardIndex', String(i));
@@ -110,7 +168,7 @@ export function OldMaidPlayerArea({
                 <CardBack
                   // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
                   key={i}
-                  width={40}
+                  width={cardWidth}
                   style={cardStyle}
                   onClick={() => onDraw(i)}
                   ariaLabel={t('drawCardAriaLabel', { idx: i + 1 })}
@@ -125,7 +183,7 @@ export function OldMaidPlayerArea({
           <>
             {Array.from({ length: showCount }).map((_, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
-              <CardBack key={i} width={40} />
+              <CardBack key={i} width={cardWidth} />
             ))}
             {player.cardCount > 10 && (
               <span className="text-white self-center ml-0.5 text-xs">+{player.cardCount - 10}</span>

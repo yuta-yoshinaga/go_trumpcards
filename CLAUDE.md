@@ -8,7 +8,7 @@ Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Do
 |------|---------|
 | [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
-| [npm](https://www.npmjs.com/) | 11.x |
+| [Bun](https://bun.sh/) | 1.3.10 |
 
 ## Commands
 
@@ -39,12 +39,15 @@ go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Coverage
 # Format
 goimports -w ./...           # Format and organize imports (use goimports, not gofmt)
 
+# Lint
+golangci-lint run ./...      # Run Go linter (must pass before commit)
+
 # Frontend
-cd frontend && npm install   # Install dependencies
-cd frontend && npm run build # Build React app
-cd frontend && npm run check # Biome lint + format check
-cd frontend && npm test      # Run Vitest unit tests
-cd frontend && npm run e2e   # Run Playwright E2E tests
+cd frontend && bun install   # Install dependencies
+cd frontend && bun run build # Build React app
+cd frontend && bun run check # Biome lint + format check
+cd frontend && bun run test  # Run Vitest unit tests
+cd frontend && bun run e2e   # Run Playwright E2E tests
 
 # Docker
 docker build -t go_trumpcards .
@@ -65,112 +68,28 @@ Clean Architecture: `infrastructure` -> `adapter` -> `usecase` -> `domain`. See 
 
 **All code changes must follow the TDD cycle (Red-Green-Refactor):**
 
-1. **Red** -- Write a failing test first. Before writing any production code, create or modify a test that captures the expected behavior and confirm it fails.
-2. **Green** -- Write the minimum code to make the failing test pass. Do not add extra functionality beyond what the test requires.
-3. **Refactor** -- Clean up (naming, structure, duplication) without changing behavior. Verify all tests still pass.
-
-Apply this cycle at every layer: Domain, Use cases, Presenters, Controllers.
-
-**Self-review checklist** -- before marking any task complete:
-
-1. All Go tests pass: `go test -tags test ./...`
-2. Go files formatted: `goimports -w` on modified files
-3. Frontend checks pass (if applicable): `cd frontend && npm run build && npm run check && npm test`
-4. Branch coverage is 100% for modified packages (excluding `cmd/` and `internal/infrastructure/`)
-
-Also see:
-- [`internal/CLAUDE.md`](internal/CLAUDE.md) -- Go-specific testing rules
-- [`frontend/CLAUDE.md`](frontend/CLAUDE.md) -- Frontend-specific testing rules
+1. **Red** -- Write a failing test first. Confirm it fails before writing production code.
+2. **Green** -- Write the minimum code to make the test pass.
+3. **Refactor** -- Clean up without changing behavior. Verify all tests still pass.
 
 ### Coverage standard
 
-The `cmd/` and `internal/infrastructure/` directories are excluded from coverage requirements. For all other packages under `internal/`, **branch coverage (C1) must be 100%**.
+**Branch coverage (C1) must be 100%** for all packages except `cmd/` and `internal/infrastructure/` (Go) and for `frontend/src/{api,components,pages,utils}` (TypeScript). Always verify every conditional branch is exercised, not just statement coverage (C0).
 
-When writing tests, always verify branch coverage--not just statement coverage (C0)--by ensuring every conditional branch (if/else, switch cases, loop exit conditions, etc.) is exercised.
+### Self-review checklist
 
-### Coverage requirements
+Before marking any task complete:
 
-When adding or modifying any game logic, provide tests for all four layers:
+1. All Go tests pass: `go test -tags test ./...`
+2. Go lint passes: `golangci-lint run ./...`
+3. Go files formatted: `goimports -w` on modified files
+4. Frontend checks pass (if applicable): `cd frontend && bun run build && bun run check && bun run test`
+5. Branch coverage is 100% for modified packages
 
-| Layer | Location | What to test |
-|-------|----------|--------------|
-| Domain | `internal/domain/*_test.go` | All public methods, edge cases, boundary values |
-| Use cases | `internal/usecase/*Interactor_test.go` | Each interactor method via a mock presenter |
-| Presenters | `internal/adapter/presenter/*_test.go` | CUI text output and Web JSON output for every game phase |
-| Controllers | `internal/adapter/controller/*_test.go` | Every supported command including unknown/empty input |
+### Detailed rules by layer
 
-### Mock pattern
-
-- **Presenter mocks**: `internal/usecase/presenter/*_mock.go` -- implement the presenter interface using `testify/mock`
-- **Interactor mocks**: `internal/adapter/controller/usecase/*_mock.go` -- implement the interactor interface using `testify/mock`
-- Follow the existing `BlackJack*_mock.go` files as the reference pattern
-
-### Writing deterministic tests
-
-Card games involve shuffling, so tests must not depend on random outcomes:
-
-- **Avoid auto-hit/draw**: Give the dealer/CPU a score that prevents automatic card draws (e.g., BlackJack dealer >= 17, Poker dealer rank >= Two Pair so `dealerExchange` is skipped)
-- **Force deterministic draws in OldMaid**: Give the target player exactly 1 card so `rand.Intn(1)` always returns 0
-- **Never assert on shuffled deck order**: Set up game state manually via `AddCard` instead of relying on `Reset`/`Shuffle`
-
-### Verifying tests
-
-Always run the full test suite before committing and ensure it passes:
-
-```sh
-go test -tags test ./...
-```
-
-### Frontend testing
-
-Frontend unit tests are also mandatory. The test stack is **Vitest + React Testing Library + jest-dom**.
-
-| Layer | Location | What to test |
-|-------|----------|--------------|
-| API client | `frontend/src/api/*.test.ts` | Correct URL, request body, and error handling for every API method |
-| Components | `frontend/src/components/*.test.tsx` | Rendered output, props, event handlers |
-| Pages | `frontend/src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
-
-**Branch coverage (C1) must be 100%** for the four directories `frontend/src/api`, `frontend/src/components`, `frontend/src/pages`, and `frontend/src/utils`. When writing tests, always verify branch coverage--not just statement coverage (C0)--by ensuring every conditional branch (if/else, ternary, `??`, `&&`/`||` short-circuits, switch cases) is exercised.
-
-**Patterns:**
-
-- **Mock the API module**: use `vi.mock('../api/gameApi', ...)` inside page test files; access the typed mock with `vi.mocked(api.exec)`
-- **Wrap router-dependent components**: render `NavBar` (and any component using `useLocation`) inside `<MemoryRouter initialEntries={['/path']}>`
-- **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
-- **Query buttons by role**: when a text string appears in multiple elements (e.g., "交換" appears on both cards and a button), use `screen.getByRole('button', { name: '交換' })` instead of `getByText`
-- **Wrap with QueryClientProvider**: page tests and hook tests must render inside a `QueryClientProvider` (use `renderWithProviders` from `frontend/src/test/renderWithProviders.tsx`)
-
-**Run build, Biome check, and frontend tests before committing:**
-
-```sh
-cd frontend && npm run build
-cd frontend && npm run check
-cd frontend && npm test
-```
-
-### E2E testing
-
-E2E tests use **Playwright** (Chromium only) and live in `frontend/e2e/`. They verify game flows (navigation, button availability, phase transitions) against the real Go server.
-
-```sh
-cd frontend && npm run e2e          # Run E2E tests (auto-starts Go server on port 8080)
-cd frontend && npm run e2e:headed   # Run E2E tests in headed browser
-cd frontend && npm run e2e:ui       # Run with Playwright UI
-```
-
-E2E tests should not assert on specific card values (randomness). Instead, verify flow: button visibility, phase transitions, and reset behavior.
-
-### i18n (Internationalization)
-
-The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
-
-- **Config**: `frontend/src/i18n/index.ts`
-- **Translation files**: `frontend/src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem,hearts,memory,klondike,baccarat}.json`
-- **In components**: use the `useTranslation()` hook
-- **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
-- **Tests**: i18n is initialized in `frontend/src/test/setup.ts` with ja translations loaded
-- **Server responses**: Web presenters send `messageCode` and `messageParams` alongside `message` for i18n-ready frontend rendering
+- [`internal/CLAUDE.md`](internal/CLAUDE.md) -- Go backend: test locations, mock pattern, deterministic test techniques, lint
+- [`frontend/CLAUDE.md`](frontend/CLAUDE.md) -- Frontend: test locations, mock pattern, E2E testing, i18n
 
 ## Documentation Maintenance
 
@@ -184,13 +103,21 @@ The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with *
 | Change request/response schema of a Web API endpoint | [`api/openapi.yaml`](api/openapi.yaml) |
 | Change architecture or layer structure | [`README.md`](README.md) (Architecture), [`CLAUDE.md`](CLAUDE.md) (Architecture), [`docs/architecture.md`](docs/architecture.md) |
 | Change Git workflow or CI/CD | [`CLAUDE.md`](CLAUDE.md) (Git Workflow) |
-| Modify anything under `frontend/` | Run `cd frontend && npm run build`, `cd frontend && npm run check`, and `cd frontend && npm test` and ensure all three pass before committing |
+| Modify anything under `frontend/` | Run `cd frontend && bun run build`, `cd frontend && bun run check`, and `cd frontend && bun run test` and ensure all three pass before committing |
 | Add/remove frontend source files or change testing approach | Update Testing section in [`CLAUDE.md`](CLAUDE.md) (Frontend testing) and [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
 | Change frontend tooling or scripts | [`frontend/README.md`](frontend/README.md) (Scripts, Tooling) |
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
+| Make an architectural decision (new technology, pattern, or structural change) | Add or update an ADR in [`docs/adr/`](docs/adr/) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
+
+### Intermediate design docs
+
+**Do NOT commit intermediate design documents (e.g., `docs/superpowers/specs/`) to the repository.** These documents are not maintained after implementation and become tech debt. Instead:
+
+- **Design specs and brainstorming output**: Post as a comment on the relevant GitHub issue
+- **Architecture Decision Records (ADRs)**: These ARE worth committing to `docs/adr/` — they capture the *why* behind decisions and remain valuable long-term
 
 ## Git Workflow
 
@@ -214,6 +141,13 @@ All commit messages must follow [Conventional Commits](https://www.conventionalc
 - Breaking changes: `BREAKING CHANGE:` in footer or `!` after type/scope
 
 ## Workflow & Principles
+
+### ADR-Driven Decision Making
+
+- **Before starting any architectural change**, review relevant ADRs in [`docs/adr/`](docs/adr/) to understand past decisions and their rationale
+- When a change contradicts or supersedes an existing ADR, update the ADR's status to `Superseded` and create a new ADR documenting the new decision
+- When making a new architectural decision (technology choice, structural change, new pattern), create a new ADR before or alongside the implementation
+- ADR format: Status, Date, Context, Decision, Consequences (see [`docs/adr/README.md`](docs/adr/README.md))
 
 ### Plan Node Default
 
@@ -278,6 +212,7 @@ All commit messages must follow [Conventional Commits](https://www.conventionalc
 | Topic | File |
 |-------|------|
 | Architecture & key patterns | [`docs/architecture.md`](docs/architecture.md) |
+| Architecture Decision Records | [`docs/adr/`](docs/adr/) |
 | Game descriptions & entities | [`docs/games.md`](docs/games.md) |
 | Go backend rules | [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Frontend rules | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |

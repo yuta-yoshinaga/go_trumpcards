@@ -88,10 +88,10 @@ beforeEach(() => {
 });
 
 describe('KlondikePage', () => {
-  it('renders null when no state', () => {
+  it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<KlondikePage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<KlondikePage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('renders stock count', async () => {
@@ -582,7 +582,7 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
 
     // Footer should not have draw/hint/autocomplete/giveup
-    const footerButtons = screen.getAllByRole('button').filter((btn) => btn.closest('[class*="bg-[#0a3a10]"]'));
+    const footerButtons = screen.getAllByRole('button').filter((btn) => btn.closest('.shrink-0.border-t'));
     const buttonNames = footerButtons.map((btn) => btn.textContent);
     expect(buttonNames).not.toContain('ヒント');
     expect(buttonNames).not.toContain('自動完成');
@@ -606,5 +606,37 @@ describe('KlondikePage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+  });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing d triggers draw in PLAYING phase', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('pressing h triggers hint in PLAYING phase', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(withHintState);
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+  });
+
+  it('keyboard shortcuts are disabled when game is over', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームオーバー'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    fireEvent.keyDown(document, { key: 'h' });
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

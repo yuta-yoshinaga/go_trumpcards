@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
 import { gameRoutes } from './constants/gameRoutes';
 import { BaccaratPage } from './pages/BaccaratPage';
@@ -32,16 +33,18 @@ const pageByPath: Record<GamePath, ReactNode> = {
 export default function App() {
   return (
     <HashRouter>
-      <div className="flex flex-col h-full">
-        <NavBar />
-        <div className="flex-1 flex flex-col min-h-0">
-          <Routes>
-            {gameRoutes.map(({ path }) => (
-              <Route key={path} path={path} element={pageByPath[path]} />
-            ))}
-          </Routes>
+      <ErrorBoundary>
+        <div className="flex flex-col h-full">
+          <NavBar />
+          <div className="flex-1 flex flex-col min-h-0">
+            <Routes>
+              {gameRoutes.map(({ path }) => (
+                <Route key={path} path={path} element={pageByPath[path]} />
+              ))}
+            </Routes>
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     </HashRouter>
   );
 }

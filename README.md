@@ -27,7 +27,7 @@
 |------|---------|
 | [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
-| [npm](https://www.npmjs.com/) | 11.x |
+| [Bun](https://bun.sh/) | 1.3.10 |
 
 ## Usage
 ### Install

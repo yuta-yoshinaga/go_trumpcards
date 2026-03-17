@@ -102,15 +102,10 @@ func (pwp *PokerWebPresenter) buildPlayersOutput(p interfaces.PokerGame) []*cont
 			AllIn:         player.GetAllIn(),
 			ExchangeCount: player.GetExchangeCount(),
 			PlayStyleName: player.GetPlayStyleName(),
-			Cards:         make([]*controller.WebOutputCard, 0),
 		}
 
 		// 人間のカードは常に表示、CPUのカードは終了時のみ表示
-		if player.GetIsHuman() || (isEnd && !player.GetFolded()) {
-			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
-			}
-		}
+		pObj.Cards = playerCardsToOutput(player, player.GetIsHuman() || (isEnd && !player.GetFolded()))
 
 		// 終了時のハンド情報
 		if isEnd && !player.GetFolded() {

@@ -87,10 +87,10 @@ beforeEach(() => {
 });
 
 describe('MemoryPage', () => {
-  it('renders null when no state', () => {
+  it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<MemoryPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<MemoryPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('renders reset on mount', async () => {
@@ -360,5 +360,36 @@ describe('MemoryPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+  });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing n triggers next in RESULT phase', async () => {
+    mockExec.mockResolvedValue(resultMatchState);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次へ' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(flip1State);
+    fireEvent.keyDown(document, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('board card buttons have focus-visible ring classes', async () => {
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    const boardButtons = screen.getAllByRole('button').filter((btn) => btn.className.includes('aspect-'));
+    expect(boardButtons.length).toBeGreaterThan(0);
+    for (const btn of boardButtons) {
+      expect(btn.className).toContain('focus-visible:ring-white/80');
+    }
+  });
+
+  it('pressing n does not trigger next outside RESULT phase', async () => {
+    mockExec.mockResolvedValue(flip1State);
+    renderWithProviders(<MemoryPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'n' });
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

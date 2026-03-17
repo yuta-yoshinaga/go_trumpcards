@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, holdemApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -231,6 +231,12 @@ beforeEach(() => {
 });
 
 describe('HoldemPage', () => {
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<HoldemPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   // ---- mount & reset ----
   it('calls reset on mount', async () => {
     renderWithProviders(<HoldemPage />);
@@ -842,14 +848,13 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 60));
   });
 
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'ベット' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: HoldemResponse) => void;
     const slowPromise = new Promise<HoldemResponse>((res) => {
@@ -859,12 +864,10 @@ describe('HoldemPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(preFlopState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 
@@ -1174,6 +1177,135 @@ describe('HoldemPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  // ---- Keyboard navigation ----
+  describe('keyboard navigation', () => {
+    it('pressing c triggers call when canAct and hasOutstandingBet', async () => {
+      mockExec.mockResolvedValue(preFlopWithBetState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(preFlopWithBetState);
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'c' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
+    });
+
+    it('pressing k triggers check when canAct and !hasOutstandingBet', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(preFlopState);
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'k' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
+    });
+
+    it('pressing f triggers fold when canAct', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(preFlopState);
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'f' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
+    });
+
+    it('pressing a triggers allin when canAct', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(preFlopState);
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'a' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin'));
+    });
+
+    it('pressing r triggers raise when hasOutstandingBet', async () => {
+      mockExec.mockResolvedValue(preFlopWithBetState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(preFlopWithBetState);
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'r' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 20));
+    });
+
+    it('pressing r triggers bet when !hasOutstandingBet', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(preFlopState);
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'r' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 20));
+    });
+
+    it('keyboard is disabled when not canAct', async () => {
+      mockExec.mockResolvedValue(showdownState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
+
+      mockExec.mockClear();
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'c' });
+        fireEvent.keyDown(document, { key: 'k' });
+        fireEvent.keyDown(document, { key: 'f' });
+        fireEvent.keyDown(document, { key: 'a' });
+      });
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('pressing c is ignored when !hasOutstandingBet', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'c' });
+      });
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('pressing k is ignored when hasOutstandingBet', async () => {
+      mockExec.mockResolvedValue(preFlopWithBetState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+
+      mockExec.mockClear();
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: 'k' });
+      });
+      expect(mockExec).not.toHaveBeenCalled();
+    });
   });
 
   it('handles action log visibility and API fetch', async () => {

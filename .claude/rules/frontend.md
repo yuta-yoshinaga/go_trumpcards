@@ -7,9 +7,9 @@ globs: ["frontend/**/*.ts", "frontend/**/*.tsx"]
 ## コミット前チェック（必須、全て通過すること）
 
 ```sh
-cd frontend && npm run build   # Reactビルド
-cd frontend && npm run check   # Biome lint + フォーマットチェック
-cd frontend && npm test        # Vitestユニットテスト
+cd frontend && bun run build   # Reactビルド
+cd frontend && bun run check   # Biome lint + フォーマットチェック
+cd frontend && bun run test    # Vitestユニットテスト
 ```
 
 ## テスト
@@ -22,15 +22,15 @@ cd frontend && npm test        # Vitestユニットテスト
 
 1. **Red** — 失敗するテストを先に書く。実装コードを書く前に、期待動作を捉えるテストを作成し失敗を確認する:
    ```sh
-   cd frontend && npm test -- --run TestNewFeature  # 失敗 (Red)
+   cd frontend && bun run test -- --run TestNewFeature  # 失敗 (Red)
    ```
 2. **Green** — テストをパスする最小限のコードを書く。余分な機能は追加しない:
    ```sh
-   cd frontend && npm test -- --run TestNewFeature  # パス (Green)
+   cd frontend && bun run test -- --run TestNewFeature  # パス (Green)
    ```
 3. **Refactor** — テストを維持しながらコードを整理する。命名・構造・重複除去を行い、全テストが通ることを確認:
    ```sh
-   cd frontend && npm test  # 全テストパス (Refactor後)
+   cd frontend && bun run test  # 全テストパス (Refactor後)
    ```
 
 ### カバレッジ基準

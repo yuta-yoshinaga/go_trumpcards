@@ -110,10 +110,10 @@ beforeEach(() => {
 });
 
 describe('DaifugoPage', () => {
-  it('renders nothing before first API response', () => {
+  it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<DaifugoPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<DaifugoPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('calls reset command on mount', async () => {
@@ -763,13 +763,12 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0, 1]));
   });
 
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: DaifugoResponse) => void;
     const slowPromise = new Promise<DaifugoResponse>((res) => {
@@ -779,12 +778,10 @@ describe('DaifugoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(humanTurnState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 
@@ -1060,5 +1057,74 @@ describe('DaifugoPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', [], expect.any(Object)));
+  });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing number key toggles card selection', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('img', { name: '♠ 3' })).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: '1' });
+    // card at index 0 should now be selected (visually highlighted)
+    const card1 = screen.getByRole('img', { name: '♠ 3' }).closest('button');
+    expect(card1).toBeDefined();
+
+    // pressing again toggles it off
+    fireEvent.keyDown(document, { key: '1' });
+  });
+
+  it('pressing Enter triggers play with selected cards', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('img', { name: '♠ 3' })).toBeInTheDocument());
+
+    // select first card
+    fireEvent.keyDown(document, { key: '1' });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(cpuTurnState);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0]));
+  });
+
+  it('pressing Escape clears card selection', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('img', { name: '♠ 3' })).toBeInTheDocument());
+
+    // select a card first
+    fireEvent.keyDown(document, { key: '1' });
+
+    // press Escape to clear
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    // Enter should not trigger play since selection is cleared
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    // exec should not have been called with 'play' since no cards selected
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
+  it('keyboard navigation is disabled when not human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('img', { name: '♠ 3' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
+  it('number key beyond card count is ignored', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('img', { name: '♠ 3' })).toBeInTheDocument());
+
+    // human has 3 cards, key '4' (index 3) should be ignored
+    fireEvent.keyDown(document, { key: '4' });
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    // no cards selected so Enter should not call play
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 });

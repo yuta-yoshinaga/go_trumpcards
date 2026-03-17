@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { holdemApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -10,27 +10,27 @@ import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 
-function usePhaseNames(t: (key: string) => string): Record<number, string> {
-  return {
-    [HoldemPhase.PRE_FLOP]: t('phase.preFlop'),
-    [HoldemPhase.FLOP]: t('phase.flop'),
-    [HoldemPhase.TURN]: t('phase.turn'),
-    [HoldemPhase.RIVER]: t('phase.river'),
-    [HoldemPhase.SHOWDOWN]: t('phase.showdown'),
-    [HoldemPhase.END]: t('phase.end'),
-    [HoldemPhase.REBUY]: t('phase.rebuy'),
-  };
-}
+const HOLDEM_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [HoldemPhase.PRE_FLOP]: 'preFlop',
+  [HoldemPhase.FLOP]: 'flop',
+  [HoldemPhase.TURN]: 'turn',
+  [HoldemPhase.RIVER]: 'river',
+  [HoldemPhase.SHOWDOWN]: 'showdown',
+  [HoldemPhase.END]: 'end',
+  [HoldemPhase.REBUY]: 'rebuy',
+};
 
 function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
   return (
@@ -61,13 +61,12 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 }
 
 export function HoldemPage() {
-  const { t } = useTranslation('holdem');
-  const { t: tc } = useTranslation('common');
-  const phaseNames = usePhaseNames(t);
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('holdem');
+  const phaseNames = usePhaseNames('holdem', HOLDEM_PHASE_KEYS);
+  const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
   const [betAmount, setBetAmount] = useState(20);
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('holdem');
 
   useEffect(() => {
     exec('reset');
@@ -96,9 +95,26 @@ export function HoldemPage() {
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
 
+  const actionBindings = useMemo(
+    () => [
+      { key: 'c', action: () => exec('call'), enabled: hasOutstandingBet },
+      { key: 'r', action: () => (hasOutstandingBet ? exec('raise', betAmount) : exec('bet', betAmount)) },
+      { key: 'k', action: () => exec('check'), enabled: !hasOutstandingBet },
+      { key: 'f', action: () => exec('fold') },
+      { key: 'a', action: () => exec('allin') },
+    ],
+    [exec, hasOutstandingBet, betAmount],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: canAct && !loading,
+  });
+
+  if (!state) return <HoldemSkeleton />;
+
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
         <span>
@@ -129,13 +145,13 @@ export function HoldemPage() {
                   <CardImage
                     key={`${card.design}-${card.value}`}
                     card={card}
-                    width={60}
+                    width={cardWidth}
                     style={{ border: '3px solid transparent' }}
                   />
                 ))
               : Array.from({ length: 5 }).map((_, i) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: placeholder
-                  <CardBack key={i} width={60} />
+                  <CardBack key={i} width={cardWidth} />
                 ))}
           </div>
         </div>
@@ -172,7 +188,7 @@ export function HoldemPage() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <GameFooter className="bg-[#155715] border-white/20 px-5 py-3">
+      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
@@ -208,14 +224,14 @@ export function HoldemPage() {
                     <CardImage
                       key={`${card.design}-${card.value}`}
                       card={card}
-                      width={60}
+                      width={cardWidth}
                       style={{ border: '3px solid transparent' }}
                     />
                   ))
                 : !humanPlayer.folded &&
                   Array.from({ length: 2 }).map((_, i) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: placeholder
-                    <CardBack key={i} width={60} />
+                    <CardBack key={i} width={cardWidth} />
                   ))}
             </div>
           </div>

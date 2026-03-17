@@ -156,6 +156,7 @@ export function useDoubtGame() {
     doubtConfig,
     selectedCardIndices,
     toggleCard,
+    clearSelection,
     claimedValue,
     setClaimedValue,
     stopCountdown,

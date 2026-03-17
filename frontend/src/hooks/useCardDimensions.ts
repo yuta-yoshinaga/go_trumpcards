@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 const MOBILE_BREAKPOINT = 640;
 
 export const CARD_DIMENSIONS = {
-  mobile: { cardHeight: 60, cardOverlap: 16, cardWidth: 40 },
-  desktop: { cardHeight: 84, cardOverlap: 22, cardWidth: 60 },
+  mobile: { cardHeight: 60, cardOverlap: 16, cardWidth: 40, sevensCellSize: 20, sevensFontSize: '0.6em' },
+  desktop: { cardHeight: 84, cardOverlap: 22, cardWidth: 60, sevensCellSize: 26, sevensFontSize: '0.75em' },
 } as const;
 
 export function useCardDimensions() {

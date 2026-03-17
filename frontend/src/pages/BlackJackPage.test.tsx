@@ -161,6 +161,12 @@ beforeEach(() => {
 });
 
 describe('BlackJackPage', () => {
+  it('renders skeleton before first API response', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<BlackJackPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
   it('calls reset command on mount', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -682,13 +688,12 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByText('デッキ: 6デッキ')).toBeInTheDocument());
   });
 
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'ベット' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: BlackJackResponse) => void;
     const slowPromise = new Promise<BlackJackResponse>((res) => {
@@ -698,12 +703,10 @@ describe('BlackJackPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(betPhaseState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 
@@ -1448,6 +1451,70 @@ describe('BlackJackPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.any(Object)));
+  });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing h triggers hit in ACTION phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.keyDown(document, { key: 'h' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hit'));
+  });
+
+  it('pressing s triggers stand in ACTION phase', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'スタンド' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
+  });
+
+  it('pressing d triggers doubledown when double is available', async () => {
+    mockExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ダブルダウン' })).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(actionPhaseState);
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubledown'));
+  });
+
+  it('pressing d does not trigger doubledown when double is unavailable', async () => {
+    const noDoubleState: BlackJackResponse = {
+      ...actionPhaseState,
+      hands: [
+        {
+          ...baseHand,
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'DIAMOND', value: 10 },
+            { design: 'SPADE', value: 3 },
+          ],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(noDoubleState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    expect(mockExec).not.toHaveBeenCalledWith('doubledown');
+  });
+
+  it('keyboard shortcuts are disabled when not in ACTION phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'h' });
+    fireEvent.keyDown(document, { key: 's' });
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   // --- PhaseIndicator coverage ---

@@ -16,26 +16,20 @@ func (e cardMemoryEntry) GetTurnSeen() int { return e.turnSeen }
 // DoubtPlayer ダウトプレイヤークラス
 type DoubtPlayer struct {
 	*GamePlayer
-	cardMemories []cardMemoryEntry // 記憶したカードのリスト
+	memoryManager[cardMemoryEntry]
 }
 
 // NewDoubtPlayer コンストラクタ
 func NewDoubtPlayer(isHuman bool) *DoubtPlayer {
 	return &DoubtPlayer{
-		GamePlayer:   NewGamePlayer(isHuman),
-		cardMemories: nil,
+		GamePlayer: NewGamePlayer(isHuman),
 	}
-}
-
-// ResetMemory カード記憶をリセットする
-func (p *DoubtPlayer) ResetMemory() {
-	p.cardMemories = nil
 }
 
 // RecordRevealedCard 公開されたカードを記憶する (retentionChance の確率で記録)
 func (p *DoubtPlayer) RecordRevealedCard(value int, retentionChance float64, turnNumber int) {
 	if rand.Float64() < retentionChance {
-		p.cardMemories = append(p.cardMemories, cardMemoryEntry{value: value, turnSeen: turnNumber})
+		p.AddMemory(cardMemoryEntry{value: value, turnSeen: turnNumber})
 	}
 }
 
@@ -53,10 +47,4 @@ func (p *DoubtPlayer) CountKnownCards(value int) int {
 		}
 	}
 	return count
-}
-
-// DecayMemories 古い記憶を確率的に忘却する
-// 忘却確率 = decayRate * (currentTurn - turnSeen)
-func (p *DoubtPlayer) DecayMemories(currentTurn int, decayRate float64) {
-	p.cardMemories = DecayMemories(p.cardMemories, currentTurn, decayRate)
 }

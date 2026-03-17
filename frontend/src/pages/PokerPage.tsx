@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CardImage } from '../components/CardImage';
@@ -9,11 +8,13 @@ import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
@@ -21,32 +22,20 @@ import { handNameBadgeClass } from '../styles/gameConstants';
 import { PokerPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 
-function usePhaseNames(t: (key: string) => string): Record<number, string> {
-  return {
-    [PokerPhase.INIT]: t('phase.init'),
-    [PokerPhase.DEAL]: t('phase.deal'),
-    [PokerPhase.EXCHANGE]: t('phase.exchange'),
-    [PokerPhase.SECOND_BET]: t('phase.secondBet'),
-    [PokerPhase.END]: t('phase.end'),
-  };
-}
-
-const cardWrapBase: React.CSSProperties = {
-  position: 'relative',
-  cursor: 'pointer',
-  transition: 'transform 0.15s',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
+const POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [PokerPhase.INIT]: 'init',
+  [PokerPhase.DEAL]: 'deal',
+  [PokerPhase.EXCHANGE]: 'exchange',
+  [PokerPhase.SECOND_BET]: 'secondBet',
+  [PokerPhase.END]: 'end',
 };
 
 export function PokerPage() {
-  const { t } = useTranslation('poker');
-  const { t: tc } = useTranslation('common');
-  const phaseNames = usePhaseNames(t);
-  const { state, loading, error, exec, selected, toggleCard, odds, canExchange } = usePokerGame();
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('poker');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('poker');
+  const phaseNames = usePhaseNames('poker', POKER_PHASE_KEYS);
+  const { cardWidth } = useCardDimensions();
+  const { state, loading, error, exec, selected, toggleCard, clearSelection, odds, canExchange } = usePokerGame();
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
   const [isLowball, setIsLowball] = useState(false);
@@ -68,10 +57,22 @@ export function PokerPage() {
   const canAct = isBettingPhase && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 10;
+  const cardCount = humanPlayer?.cards?.length ?? 0;
+
+  useCardKeyboardNav({
+    cardCount,
+    onToggle: toggleCard,
+    onConfirm: useCallback(() => {
+      if (canExchange && !loading) exec('exchange', selected);
+    }, [canExchange, loading, exec, selected]),
+    onClear: clearSelection,
+    enabled: canExchange,
+  });
+
+  if (!state) return <PokerSkeleton />;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a6b1a]" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct || canExchange}>
         <span>
@@ -130,7 +131,7 @@ export function PokerPage() {
       </div>
 
       {/* Sticky footer: player hand + buttons */}
-      <GameFooter className="bg-[#155715] border-white/20 px-5 py-3">
+      <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">
@@ -166,23 +167,14 @@ export function PokerPage() {
                     className={`${focusRingBlue} rounded`}
                     style={{
                       background: 'none',
-                      border: 'none',
                       padding: 0,
-                      ...cardWrapBase,
                       cursor: canExchange ? 'pointer' : 'default',
+                      borderRadius: 8,
+                      ...selectedCardStyle(isSelected),
+                      boxSizing: 'border-box',
                     }}
                   >
-                    <CardImage card={card} width={60} style={selectedCardStyle(isSelected)} />
-                    <div
-                      style={{
-                        color: 'var(--color-game-card-selected)',
-                        fontSize: '0.75em',
-                        fontWeight: 'bold',
-                        visibility: isSelected ? 'visible' : 'hidden',
-                      }}
-                    >
-                      {t('exchangeLabel')}
-                    </div>
+                    <CardImage card={card} width={cardWidth} />
                   </button>
                 );
               })}

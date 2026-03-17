@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { daifugoApi } from '../api/gameApi';
-import type { DaifugoConfigInput, DaifugoResponse } from '../types/card';
+import type { Card, DaifugoAction, DaifugoConfigInput, DaifugoResponse } from '../types/card';
+import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder';
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
@@ -29,70 +30,76 @@ const defaultConfigInput: DaifugoConfigInput = {
   cpuDifficulty: 0,
 };
 
-/** Build the display state right after human's action, before any CPU actions. */
+interface DaifugoCountsCtx {
+  counts: number[];
+}
+
+interface DaifugoCtx extends DaifugoCountsCtx {
+  currentTableCards: Card[];
+}
+
+const daifugoInitContext = (fs: DaifugoResponse): DaifugoCtx => ({
+  counts: fs.players.map((p) => p.cardCount),
+  currentTableCards: fs.humanAction?.playedCards?.length ? fs.humanAction.playedCards : ([] as Card[]),
+});
+
+const daifugoReverseAction = (ctx: DaifugoCountsCtx, a: DaifugoAction) => {
+  ctx.counts[a.playerIdx] += a.playedCards?.length ?? 0;
+};
+
+const daifugoApplyAction = (ctx: DaifugoCtx, a: DaifugoAction) => {
+  ctx.counts[a.playerIdx] = Math.max(0, ctx.counts[a.playerIdx] - (a.playedCards?.length ?? 0));
+  if (a.playedCards?.length) {
+    ctx.currentTableCards = a.playedCards;
+  }
+};
+
 function buildDaifugoHumanActionState(finalState: DaifugoResponse): DaifugoResponse | null {
   if (!finalState.humanAction || (finalState.cpuActions?.length ?? 0) === 0) return null;
 
-  const counts = finalState.players.map((p) => p.cardCount);
-  for (let i = finalState.cpuActions.length - 1; i >= 0; i--) {
-    const a = finalState.cpuActions[i];
-    counts[a.playerIdx] += a.playedCards?.length ?? 0;
-  }
-
   const [firstCpuAction] = finalState.cpuActions;
   const ha = finalState.humanAction;
-  return {
-    ...finalState,
-    players: finalState.players.map((p, idx) => ({
-      ...p,
-      cardCount: Math.max(0, counts[idx]),
-    })),
-    currentTurn: firstCpuAction.playerIdx,
-    tableCards: ha.playedCards?.length ? ha.playedCards : finalState.tableCards,
-    cpuActions: [],
-    gameEndFlag: false,
-    message: '',
-  };
+  return buildHumanActionState({
+    actions: finalState.cpuActions,
+    finalState,
+    initContext: (fs) => ({ counts: fs.players.map((p) => p.cardCount) }),
+    reverseAction: daifugoReverseAction,
+    buildState: (fs, ctx) => ({
+      ...fs,
+      players: fs.players.map((p, idx) => ({
+        ...p,
+        cardCount: Math.max(0, ctx.counts[idx]),
+      })),
+      currentTurn: firstCpuAction.playerIdx,
+      tableCards: ha.playedCards?.length ? ha.playedCards : fs.tableCards,
+      cpuActions: [],
+      gameEndFlag: false,
+      message: '',
+    }),
+  });
 }
 
-/** Compute intermediate display states, one per CPU action. */
 function buildDaifugoReplayStates(finalState: DaifugoResponse): DaifugoResponse[] {
-  const actions = finalState.cpuActions ?? [];
-  if (actions.length === 0) return [];
-
-  const counts = finalState.players.map((p) => p.cardCount);
-  for (let i = actions.length - 1; i >= 0; i--) {
-    const a = actions[i];
-    counts[a.playerIdx] += a.playedCards?.length ?? 0;
-  }
-
-  let currentTableCards = finalState.humanAction?.playedCards?.length
-    ? finalState.humanAction.playedCards
-    : ([] as typeof finalState.tableCards);
-
-  const states: DaifugoResponse[] = [];
-  for (let i = 0; i < actions.length; i++) {
-    const a = actions[i];
-    counts[a.playerIdx] = Math.max(0, counts[a.playerIdx] - (a.playedCards?.length ?? 0));
-    if (a.playedCards?.length) {
-      currentTableCards = a.playedCards;
-    }
-    const isLastAction = i === actions.length - 1;
-    states.push({
-      ...finalState,
-      players: finalState.players.map((p, idx) => ({
+  return buildReplayStates({
+    actions: finalState.cpuActions ?? [],
+    finalState,
+    initContext: daifugoInitContext,
+    reverseAction: daifugoReverseAction,
+    applyAction: daifugoApplyAction,
+    buildState: (fs, ctx, a, processedActions, isLast) => ({
+      ...fs,
+      players: fs.players.map((p, idx) => ({
         ...p,
-        cardCount: Math.max(0, counts[idx]),
+        cardCount: Math.max(0, ctx.counts[idx]),
       })),
       currentTurn: a.playerIdx,
-      tableCards: currentTableCards,
+      tableCards: ctx.currentTableCards,
       lastPlayPlayerIdx: a.playerIdx,
-      cpuActions: actions.slice(0, i + 1),
-      gameEndFlag: isLastAction ? finalState.gameEndFlag : false,
-      message: isLastAction ? finalState.message : '',
-    });
-  }
-  return states;
+      cpuActions: processedActions,
+      gameEndFlag: isLast ? fs.gameEndFlag : false,
+      message: isLast ? fs.message : '',
+    }),
+  });
 }
 
 export function useDaifugoGame() {
@@ -161,6 +168,7 @@ export function useDaifugoGame() {
     exec,
     selectedIndices,
     toggleCardSelection,
+    clearSelection,
     configInput,
     handleDragCard,
     handleDrop,

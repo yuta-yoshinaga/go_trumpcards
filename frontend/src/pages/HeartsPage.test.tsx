@@ -96,10 +96,10 @@ beforeEach(() => {
 });
 
 describe('HeartsPage', () => {
-  it('renders null when no state', () => {
+  it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<HeartsPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<HeartsPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('calls reset on mount', async () => {
@@ -305,6 +305,15 @@ describe('HeartsPage', () => {
     });
   });
 
+  it('score table headers have scope="col" for accessibility', async () => {
+    const { container } = renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+    const ths = container.querySelectorAll('th');
+    ths.forEach((th) => {
+      expect(th).toHaveAttribute('scope', 'col');
+    });
+  });
+
   it('shows hearts broken text', async () => {
     mockExec.mockResolvedValue(heartsBrokenState);
     renderWithProviders(<HeartsPage />);
@@ -354,7 +363,6 @@ describe('HeartsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(playPhaseState);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
@@ -601,6 +609,97 @@ describe('HeartsPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
+
+  // ── Keyboard navigation ────────────────────────────────────────────────────
+
+  it('pressing number key toggles card in play phase', async () => {
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('pressing number key toggles card in pass phase', async () => {
+    mockExec.mockResolvedValue(passPhaseState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('Enter key triggers play in play phase', async () => {
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: '1' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+  });
+
+  it('Enter key triggers pass in pass phase', async () => {
+    mockExec.mockResolvedValue({
+      ...passPhaseState,
+      players: [
+        {
+          ...passPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 11 },
+            { design: 'CLOVER', value: 5 },
+          ],
+        },
+        ...passPhaseState.players.slice(1),
+      ],
+    });
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: '3' });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pass', [0, 1, 2]));
+  });
+
+  it('Escape key clears selection', async () => {
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('keyboard nav disabled when not human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('reset hides the action log panel if open', async () => {

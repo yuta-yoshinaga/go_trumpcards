@@ -50,8 +50,8 @@ func (hi *HeartsInteractor) ResetWithConfig(cfg domain.HeartsConfig) string {
 
 // Pass カード交換
 func (hi *HeartsInteractor) Pass(cardIndices []int) string {
-	if hi.h.GetGameEndFlag() {
-		return hi.hp.Output(hi.h, nil)
+	if out, blocked := guardGameEnd(hi.h, hi.hp); blocked {
+		return out
 	}
 	err := hi.h.PlayerPass(cardIndices)
 	if err != nil {
@@ -65,11 +65,8 @@ func (hi *HeartsInteractor) Pass(cardIndices []int) string {
 
 // Play カードをプレイ
 func (hi *HeartsInteractor) Play(cardIndex int) string {
-	if hi.h.GetGameEndFlag() {
-		return hi.hp.Output(hi.h, nil)
-	}
-	if !hi.h.IsHumanTurn() {
-		return hi.hp.Output(hi.h, nil)
+	if out, blocked := guardNotPlayable(hi.h, hi.hp); blocked {
+		return out
 	}
 	err := hi.h.PlayerPlay(cardIndex)
 	if err != nil {
@@ -89,8 +86,8 @@ func (hi *HeartsInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (hi *HeartsInteractor) NextRound() string {
 	hi.h.ScoreRound()
-	if hi.h.GetGameEndFlag() {
-		return hi.hp.Output(hi.h, nil)
+	if out, blocked := guardGameEnd(hi.h, hi.hp); blocked {
+		return out
 	}
 	hi.h.NextRound()
 	return hi.hp.Output(hi.h, nil)

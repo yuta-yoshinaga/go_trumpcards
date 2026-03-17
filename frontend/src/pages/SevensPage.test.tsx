@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -158,10 +158,10 @@ beforeEach(() => {
 });
 
 describe('SevensPage', () => {
-  it('renders nothing before first API response', () => {
+  it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<SevensPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<SevensPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('calls reset command on mount', async () => {
@@ -917,13 +917,12 @@ describe('SevensPage', () => {
     await waitFor(() => expect(screen.getByTestId('cpu-action-0')).toBeInTheDocument());
   });
 
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'パス' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: SevensResponse) => void;
     const slowPromise = new Promise<SevensResponse>((res) => {
@@ -933,12 +932,10 @@ describe('SevensPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'パス' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(humanTurnState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 
@@ -1578,5 +1575,72 @@ describe('SevensPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', -1, 0, 0, expect.any(Object)));
+  });
+
+  // --- Keyboard navigation tests ---
+
+  describe('keyboard navigation', () => {
+    it('pressing number key directly plays the card at that index', async () => {
+      renderWithProviders(<SevensPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(cpuTurnState);
+
+      // Press '1' to play the first card (SPADE 6, index 0)
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    });
+
+    it('pressing "3" plays the third card', async () => {
+      renderWithProviders(<SevensPage />);
+      await waitFor(() => expect(screen.getByAltText('♣ 8')).toBeInTheDocument());
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(cpuTurnState);
+
+      // Press '3' to play third card (CLOVER 8, index 2)
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '3' });
+      });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
+    });
+
+    it('keyboard is disabled when not human turn', async () => {
+      mockExec.mockResolvedValue(cpuTurnState);
+      renderWithProviders(<SevensPage />);
+      await waitFor(() => expect(screen.getByText('ボード')).toBeInTheDocument());
+      mockExec.mockClear();
+
+      // Press '1' - should not trigger play since it's CPU's turn
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('keyboard is disabled when game has ended', async () => {
+      mockExec.mockResolvedValue(gameEndState);
+      renderWithProviders(<SevensPage />);
+      await waitFor(() => expect(screen.getByText(/ゲーム終了/)).toBeInTheDocument());
+      mockExec.mockClear();
+
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '1' });
+      });
+      expect(mockExec).not.toHaveBeenCalled();
+    });
+
+    it('ignores key press for out-of-range index', async () => {
+      renderWithProviders(<SevensPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ 6')).toBeInTheDocument());
+      mockExec.mockClear();
+
+      // Human has 3 cards, pressing '5' (index 4) should be ignored
+      await act(async () => {
+        fireEvent.keyDown(document, { key: '5' });
+      });
+      expect(mockExec).not.toHaveBeenCalled();
+    });
   });
 });

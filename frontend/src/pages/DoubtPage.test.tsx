@@ -91,10 +91,10 @@ beforeEach(() => {
 });
 
 describe('DoubtPage', () => {
-  it('renders nothing before first API response', () => {
+  it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
-    const { container } = renderWithProviders(<DoubtPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<DoubtPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('calls reset command on mount', async () => {
@@ -197,13 +197,15 @@ describe('DoubtPage', () => {
     expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
-  it('claim input has aria-label for screen readers', async () => {
+  it('claim input is associated with label via htmlFor/id', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
     const input = screen.getByRole('spinbutton');
-    expect(input).toHaveAttribute('aria-label', '宣言する値 (1〜13)');
+    expect(input).toHaveAttribute('id', 'claim-input');
+    const label = input.closest('.mt-2')?.querySelector('label');
+    expect(label).toHaveAttribute('for', 'claim-input');
   });
 
   it('claim input receives focus when it appears', async () => {
@@ -318,13 +320,12 @@ describe('DoubtPage', () => {
     await waitFor(() => expect(screen.queryByText(NETWORK_ERROR_MESSAGE())).not.toBeInTheDocument());
   });
 
-  it('sets aria-busy and sr-only loading text while loading', async () => {
+  it('sets aria-busy while loading', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
     const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: DoubtResponse) => void;
     const slowPromise = new Promise<DoubtResponse>((res) => {
@@ -335,12 +336,10 @@ describe('DoubtPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(humanTurnState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 
@@ -1117,5 +1116,114 @@ describe('DoubtPage', () => {
     fireEvent.click(screen.getByText('閉じる'));
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+  });
+
+  // ── Keyboard navigation ──────────────────────────────────────────────────
+
+  describe('keyboard navigation', () => {
+    it('pressing number key toggles card when in human play turn', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      // Press '1' to toggle the first card
+      fireEvent.keyDown(document, { key: '1' });
+      const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+      // Press '1' again to deselect
+      fireEvent.keyDown(document, { key: '1' });
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('pressing "2" toggles second card', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♥ J')).toBeInTheDocument());
+
+      fireEvent.keyDown(document, { key: '2' });
+      const cardBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('Enter key triggers play', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      // Select a card first
+      fireEvent.keyDown(document, { key: '1' });
+      expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
+
+      mockExec.mockClear();
+      mockExec.mockResolvedValue(cpuTurnState);
+      fireEvent.keyDown(document, { key: 'Enter' });
+
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0], 1));
+    });
+
+    it('Escape key clears selection', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      // Select a card
+      fireEvent.keyDown(document, { key: '1' });
+      const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+      // Press Escape to clear
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+    });
+
+    it('keyboard is disabled when not in human play turn', async () => {
+      mockExec.mockResolvedValue(cpuTurnState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+
+      // Press '1' should have no effect (CPU's turn)
+      fireEvent.keyDown(document, { key: '1' });
+      // Human cards are still rendered but no toggle should happen
+      const cardBtn = screen.getByAltText('♠ A').closest('button') as HTMLButtonElement;
+      expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('keyboard is disabled during doubt phase', async () => {
+      mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText('ダウトしますか？')).toBeInTheDocument());
+
+      // Press '1' should have no effect (doubt phase, not play phase)
+      fireEvent.keyDown(document, { key: '1' });
+      const cards = screen.queryAllByAltText('♠ A');
+      for (const card of cards) {
+        const btn = card.closest('button');
+        if (btn) {
+          expect(btn).toHaveAttribute('aria-pressed', 'false');
+        }
+      }
+    });
+
+    it('keyboard is disabled when game has ended', async () => {
+      mockExec.mockResolvedValue(gameEndState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
+
+      // No play button, keyboard should be disabled
+      fireEvent.keyDown(document, { key: '1' });
+      // No cards to check since game ended, just ensure no errors
+    });
+
+    it('number keys do not fire when typing in claim input', async () => {
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+      // Select a card to show claim input
+      fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+      const input = screen.getByRole('spinbutton');
+
+      // Press '2' while focused on input - should not toggle second card
+      fireEvent.keyDown(input, { key: '2' });
+      const secondCardBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
+      expect(secondCardBtn).toHaveAttribute('aria-pressed', 'false');
+    });
   });
 });

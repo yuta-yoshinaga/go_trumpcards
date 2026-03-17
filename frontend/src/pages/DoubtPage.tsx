@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -9,10 +8,10 @@ import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import {
   actionDesc,
   CPU_MEMORY_OPTIONS,
@@ -20,14 +19,15 @@ import {
   PENALTY_DRAW_LIMIT_OPTIONS,
   useDoubtGame,
 } from '../hooks/useDoubtGame';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import type { DoubtCpuAction } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 
 export function DoubtPage() {
-  const { t } = useTranslation('doubt');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('doubt');
   const {
     state,
     loading,
@@ -45,10 +45,10 @@ export function DoubtPage() {
     handleDoubt,
     handleSkip,
     handleCpuDoubtConfirm,
+    clearSelection,
   } = useDoubtGame();
 
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('doubt');
+  const { cardWidth } = useCardDimensions();
 
   const claimInputRef = useRef<HTMLInputElement>(null);
 
@@ -61,9 +61,19 @@ export function DoubtPage() {
     }
   }, [showClaimInput]);
 
-  if (!state) return null;
+  const isHumanPlayTurn = isHumanTurn && state?.phase === 0;
+  const humanPlayer = state?.players.find((p) => p.isHuman);
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
+  useCardKeyboardNav({
+    cardCount: humanPlayer?.cards?.length ?? 0,
+    onToggle: toggleCard,
+    onConfirm: handlePlay,
+    onClear: clearSelection,
+    enabled: isHumanPlayTurn && !loading,
+  });
+
+  if (!state) return <DoubtSkeleton />;
+
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
   const isDoubtPhase = state.phase === 1;
   const cpuPlayed = isDoubtPhase && state.lastAction !== null && !state.players[state.lastAction.playerIdx]?.isHuman;
@@ -75,8 +85,7 @@ export function DoubtPage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading} aria-live="polite">
       {/* Phase indicator */}
       <PhaseIndicator
         phaseName={state.gameEndFlag ? t('phase.end') : state.phase === 1 ? t('phase.doubt') : t('phase.play')}
@@ -220,7 +229,7 @@ export function DoubtPage() {
             {state.lastDoubtResult.revealedCards.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {state.lastDoubtResult.revealedCards.map((card, i) => (
-                  <CardImage key={`${card.design}-${card.value}-${i}`} card={card} width={36} />
+                  <CardImage key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                 ))}
               </div>
             )}
@@ -252,7 +261,7 @@ export function DoubtPage() {
       </div>
 
       {/* Sticky footer: human player hand + action buttons */}
-      <GameFooter className="bg-[#101c3a] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {/* Human player info */}
         {humanPlayer && (
           <div className="mb-2">
@@ -279,14 +288,16 @@ export function DoubtPage() {
             {/* Claimed value input (shown when cards are selected) */}
             {showClaimInput && (
               <div className="mt-2 flex items-center gap-2">
-                <span className="text-white text-sm">{t('claimedValue')}</span>
+                <label htmlFor="claim-input" className="text-white text-sm">
+                  {t('claimedValue')}
+                </label>
                 <input
                   ref={claimInputRef}
                   type="number"
                   min={1}
                   max={13}
                   value={claimedValue}
-                  aria-label={t('claimInputAriaLabel')}
+                  id="claim-input"
                   onChange={(e) => {
                     const num = Number(e.target.value);
                     setClaimedValue(Math.max(1, Math.min(13, num)));

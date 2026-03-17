@@ -1,6 +1,6 @@
 # Stage 1: Build React frontend
 # Pinned to a specific digest for reproducible builds
-FROM node:24-alpine@sha256:7fddd9ddeae8196abf4a3ef2de34e11f7b1a722119f91f28ddf1e99dcafdf114 AS frontend-builder
+FROM oven/bun:1.3.10-alpine@sha256:32f1fcccb1523960b254c4f80973bee1a910d60be000a45c20c9129a1efcffee AS frontend-builder
 
 WORKDIR /app
 
@@ -10,18 +10,15 @@ COPY public/ ./public/
 
 WORKDIR /app/frontend
 
-# Upgrade npm to 11.x to match the version required by package.json
-RUN npm install -g npm@11
-
 # Install dependencies in a separate layer so this step is only
-# re-run when package.json or package-lock.json changes
-COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
+# re-run when package.json or bun.lock changes
+COPY frontend/package.json frontend/bun.lock ./
+RUN bun install --frozen-lockfile
 
 # Copy remaining frontend source and build
 # Output goes to ../public (i.e. /app/public) per vite.config.ts
 COPY frontend/ ./
-RUN npm run build
+RUN bun run build
 
 # Stage 2: Build Go binary
 # Pinned to a specific digest for reproducible builds

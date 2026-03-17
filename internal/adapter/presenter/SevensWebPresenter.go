@@ -78,12 +78,9 @@ func (swp *SevensWebPresenter) Output(s interfaces.SevensGame, lastErr error) st
 		pObj.CardCount = player.GetCardsSize()
 		pObj.PassesUsed = player.GetPassesUsed()
 		pObj.MaxPasses = player.GetMaxPasses()
-		pObj.Cards = make([]*controller.WebOutputCard, 0)
+		pObj.Cards = playerCardsToOutput(player, player.GetIsHuman())
 		if player.GetIsHuman() {
 			pObj.LastPlayedJoker = player.GetLastPlayedJoker()
-			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
-			}
 		}
 		resObj.Players = append(resObj.Players, pObj)
 	}

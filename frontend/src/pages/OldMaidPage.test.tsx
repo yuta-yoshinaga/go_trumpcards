@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -746,18 +746,29 @@ describe('OldMaidPage', () => {
     });
   }, 10000);
 
-  it('setup screen has aria-busy attribute', () => {
+  it('setup screen groups radio buttons in fieldset with legend', () => {
     renderWithProviders(<OldMaidPage />);
-    const setupContainer = screen.getByText('Old Maid 設定').closest('[aria-busy]') as HTMLElement;
-    expect(setupContainer).toHaveAttribute('aria-busy', 'false');
+    const legend = screen.getByText('モード選択');
+    const fieldset = legend.closest('fieldset');
+    expect(fieldset).toBeInTheDocument();
+    const radios = within(fieldset as HTMLElement).getAllByRole('radio');
+    expect(radios).toHaveLength(2);
   });
 
-  it('sets aria-busy and sr-only loading text on game screen while loading', async () => {
+  it('setup screen groups checkboxes in fieldset with legend', () => {
+    renderWithProviders(<OldMaidPage />);
+    const legend = screen.getByText('CPU設定');
+    const fieldset = legend.closest('fieldset');
+    expect(fieldset).toBeInTheDocument();
+    const checkboxes = within(fieldset as HTMLElement).getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(4);
+  });
+
+  it('sets aria-busy on game screen while loading', async () => {
     await startGame();
 
     const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-live]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
-    expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
 
     let resolve!: (value: OldMaidResponse) => void;
     const slowPromise = new Promise<OldMaidResponse>((res) => {
@@ -767,12 +778,10 @@ describe('OldMaidPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ランダムに引く' }));
 
     expect(container).toHaveAttribute('aria-busy', 'true');
-    expect(screen.getByText('処理中...')).toBeInTheDocument();
 
     resolve(humanTurnState);
     await waitFor(() => {
       expect(container).toHaveAttribute('aria-busy', 'false');
-      expect(screen.queryByText('処理中...')).not.toBeInTheDocument();
     });
   });
 
@@ -1197,5 +1206,41 @@ describe('OldMaidPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, 0, false, undefined, false, false, false),
     );
+  });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing d triggers draw random on human turn', async () => {
+    await startGame();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('pressing s triggers shuffle on human turn', async () => {
+    await startGame();
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(humanTurnState);
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('shuffle'));
+  });
+
+  it('keyboard shortcuts are disabled on CPU turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    await startGame();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    fireEvent.keyDown(document, { key: 's' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('keyboard shortcuts are disabled at game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    await startGame();
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    fireEvent.keyDown(document, { key: 's' });
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });

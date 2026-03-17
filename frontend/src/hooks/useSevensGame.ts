@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { sevensApi } from '../api/gameApi';
-import type { SevensResponse } from '../types/card';
+import type { SevensAction, SevensResponse } from '../types/card';
+import { buildReplayStates } from '../utils/replayBuilder';
 import { runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
 
@@ -30,48 +31,44 @@ function computeTableMaxVals(tablePlaced: number[]): number[] {
   return result;
 }
 
-/** Compute intermediate display states, one per CPU action. */
+const isCardPlay = (a: SevensAction): boolean =>
+  !a.forcedPass && a.playedCard !== null && a.targetSuit > 0 && a.targetValue > 0;
+
 function buildSevensReplayStates(finalState: SevensResponse): SevensResponse[] {
-  const actions = finalState.cpuActions ?? [];
-  if (actions.length === 0) return [];
-
-  // Work backwards to reconstruct state before all CPU actions
-  const counts = finalState.players.map((p) => p.cardCount);
-  const tablePlaced = [...finalState.tablePlaced];
-  for (let i = actions.length - 1; i >= 0; i--) {
-    const a = actions[i];
-    if (!a.forcedPass && a.playedCard !== null && a.targetSuit > 0 && a.targetValue > 0) {
-      counts[a.playerIdx] += 1;
-      tablePlaced[a.targetSuit] &= ~(1 << a.targetValue);
-    }
-  }
-
-  // Play forward, building a display state after each CPU action
-  const currentPlaced = [...tablePlaced];
-  const states: SevensResponse[] = [];
-  for (let i = 0; i < actions.length; i++) {
-    const a = actions[i];
-    if (!a.forcedPass && a.playedCard !== null && a.targetSuit > 0 && a.targetValue > 0) {
-      counts[a.playerIdx] = Math.max(0, counts[a.playerIdx] - 1);
-      currentPlaced[a.targetSuit] |= 1 << a.targetValue;
-    }
-    const isLastAction = i === actions.length - 1;
-    states.push({
-      ...finalState,
-      players: finalState.players.map((p, idx) => ({
+  return buildReplayStates({
+    actions: finalState.cpuActions ?? [],
+    finalState,
+    initContext: (fs) => ({
+      counts: fs.players.map((p) => p.cardCount),
+      currentPlaced: [...fs.tablePlaced],
+    }),
+    reverseAction: (ctx, a) => {
+      if (isCardPlay(a)) {
+        ctx.counts[a.playerIdx] += 1;
+        ctx.currentPlaced[a.targetSuit] &= ~(1 << a.targetValue);
+      }
+    },
+    applyAction: (ctx, a) => {
+      if (isCardPlay(a)) {
+        ctx.counts[a.playerIdx] = Math.max(0, ctx.counts[a.playerIdx] - 1);
+        ctx.currentPlaced[a.targetSuit] |= 1 << a.targetValue;
+      }
+    },
+    buildState: (fs, ctx, a, processedActions, isLast) => ({
+      ...fs,
+      players: fs.players.map((p, idx) => ({
         ...p,
-        cardCount: Math.max(0, counts[idx]),
+        cardCount: Math.max(0, ctx.counts[idx]),
       })),
       currentTurn: a.playerIdx,
-      tablePlaced: [...currentPlaced],
-      tableMinVals: computeTableMinVals(currentPlaced),
-      tableMaxVals: computeTableMaxVals(currentPlaced),
-      cpuActions: actions.slice(0, i + 1),
-      gameEndFlag: isLastAction ? finalState.gameEndFlag : false,
-      message: isLastAction ? finalState.message : '',
-    });
-  }
-  return states;
+      tablePlaced: [...ctx.currentPlaced],
+      tableMinVals: computeTableMinVals(ctx.currentPlaced),
+      tableMaxVals: computeTableMaxVals(ctx.currentPlaced),
+      cpuActions: processedActions,
+      gameEndFlag: isLast ? fs.gameEndFlag : false,
+      message: isLast ? fs.message : '',
+    }),
+  });
 }
 
 export function useSevensGame() {

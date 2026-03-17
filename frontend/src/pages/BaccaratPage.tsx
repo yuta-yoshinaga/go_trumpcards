@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useMemo, useState } from 'react';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CardImage } from '../components/CardImage';
@@ -7,13 +6,13 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { BaccaratSkeleton } from '../components/skeleton/BaccaratSkeleton';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
-import type { BaccaratResponse } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
 
 const BET_TYPE_LABELS: Record<number, string> = {
@@ -23,27 +22,36 @@ const BET_TYPE_LABELS: Record<number, string> = {
 };
 
 export function BaccaratPage() {
-  const { t } = useTranslation('baccarat');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('baccarat');
 
   const [betAmount, setBetAmount] = useState(100);
   const [betType, setBetType] = useState<number>(BaccaratBetType.PLAYER);
 
-  const onSuccess = useCallback((_res: BaccaratResponse) => {}, []);
-
-  const { state, loading, error, exec } = useGameApi(baccaratApi.exec, { onSuccess });
+  const { cardWidth } = useCardDimensions();
+  const { state, loading, error, exec } = useGameApi(baccaratApi.exec);
 
   useEffect(() => {
     exec('reset');
   }, [exec]);
 
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('baccarat');
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
+  const isBetPhase = state?.phase === BaccaratPhase.BET;
+  const isEndPhase = state?.phase === BaccaratPhase.END;
 
-  if (!state) return null;
+  const actionBindings = useMemo(
+    () => [
+      { key: 'b', action: () => exec('bet', betAmount, betType), enabled: isBetPhase },
+      { key: 'r', action: () => exec('reset'), enabled: isEndPhase },
+    ],
+    [exec, betAmount, betType, isBetPhase, isEndPhase],
+  );
 
-  const isBetPhase = state.phase === BaccaratPhase.BET;
-  const isEndPhase = state.phase === BaccaratPhase.END;
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!state && !loading,
+  });
+
+  if (!state) return <BaccaratSkeleton />;
 
   const handleBet = () => {
     exec('bet', betAmount, betType);
@@ -54,17 +62,13 @@ export function BaccaratPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
-      <LoadingSpinner loading={loading} />
-
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading}>
       {/* Phase indicator */}
       <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>
         <span>{t('label.chips', { chips: state.chips })}</span>
       </PhaseIndicator>
 
       <div className="flex-1 overflow-y-auto pt-3 px-4">
-        <ErrorAlert message={error} />
-
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
         {/* Player Hand */}
@@ -75,7 +79,7 @@ export function BaccaratPage() {
             </div>
             <div className="flex justify-center gap-2">
               {state.playerHand.map((card, i) => (
-                <CardImage key={`p-${card.design}-${card.value}-${i}`} card={card} width={60} />
+                <CardImage key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
           </div>
@@ -89,7 +93,7 @@ export function BaccaratPage() {
             </div>
             <div className="flex justify-center gap-2">
               {state.bankerHand.map((card, i) => (
-                <CardImage key={`b-${card.design}-${card.value}-${i}`} card={card} width={60} />
+                <CardImage key={`b-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
           </div>
@@ -106,6 +110,7 @@ export function BaccaratPage() {
 
       {/* Footer */}
       <GameFooter className="bg-gray-800 px-4 pt-3">
+        <ErrorAlert message={error} />
         {isBetPhase && (
           <div className="flex flex-col items-center gap-2 pb-2">
             <div className="flex items-center gap-2">

@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import type { SettingsGroup } from '../components/common/SettingsPanel';
@@ -6,20 +6,20 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { SevensBoard } from '../components/sevens/SevensBoard';
 import { SevensCpuArea } from '../components/sevens/SevensCpuArea';
 import { SevensHumanArea } from '../components/sevens/SevensHumanArea';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
 import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
 
 export function SevensPage() {
-  const { t } = useTranslation('sevens');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('sevens');
   const {
     state,
     loading,
@@ -49,10 +49,26 @@ export function SevensPage() {
     handleJokerPlace,
   } = useSevensGame();
 
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('sevens');
+  const isHumanTurnForKbd = !!state && !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
+  const humanCardCount = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
 
-  if (!state) return null;
+  const noop = useCallback(() => {}, []);
+  const directPlay = useCallback(
+    (idx: number) => {
+      handleCardPlay(idx);
+    },
+    [handleCardPlay],
+  );
+  useCardKeyboardNav({
+    cardCount: humanCardCount,
+    onToggle: noop,
+    onConfirm: noop,
+    onClear: noop,
+    enabled: isHumanTurnForKbd && !loading,
+    onDirectPlay: directPlay,
+  });
+
+  if (!state) return <SevensSkeleton />;
 
   const tablePlaced = state.tablePlaced;
   const tunnelEnabled = state.config.tunnelEnabled;
@@ -165,8 +181,7 @@ export function SevensPage() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a5c1a]" aria-busy={loading} aria-live="polite">
-      <LoadingSpinner loading={loading} />
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {state.config &&
           (state.config.tunnelEnabled ||
@@ -260,7 +275,7 @@ export function SevensPage() {
         />
       </div>
 
-      <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         {humanPlayer && (
           <div className="mb-2">
             <SevensHumanArea

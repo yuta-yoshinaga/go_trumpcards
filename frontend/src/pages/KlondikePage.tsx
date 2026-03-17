@@ -1,15 +1,15 @@
-import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { useActionLog } from '../hooks/useActionLog';
+import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { KlondikePhase } from '../types/phases';
@@ -18,8 +18,8 @@ import { cardAlt } from '../utils/cardAlt';
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
 export function KlondikePage() {
-  const { t } = useTranslation('klondike');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('klondike');
   const {
     state,
     loading,
@@ -36,10 +36,25 @@ export function KlondikePage() {
     handleSelectTarget,
   } = useKlondikeGame();
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('klondike');
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
 
-  if (!state) return null;
+  const isPlayingForKbd = state?.phase === KlondikePhase.PLAYING;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw },
+      { key: 'h', action: handleHint },
+      { key: 'a', action: handleAutoComplete },
+      { key: 'g', action: handleGiveUp },
+    ],
+    [handleDraw, handleHint, handleAutoComplete, handleGiveUp],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!isPlayingForKbd && !loading,
+  });
+
+  if (!state) return <KlondikeSkeleton />;
 
   const isPlaying = state.phase === KlondikePhase.PLAYING;
   const isGameClear = state.phase === KlondikePhase.GAME_CLEAR;
@@ -53,9 +68,7 @@ export function KlondikePage() {
     selectedSource.cardIndex === cardIndex;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#0d5016]" aria-busy={loading}>
-      <LoadingSpinner loading={loading} />
-
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading}>
       {/* Phase indicator */}
       <PhaseIndicator
         phaseName={isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing')}
@@ -215,9 +228,6 @@ export function KlondikePage() {
         {/* Message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-        {/* Error */}
-        <ErrorAlert message={error ?? hintError} />
-
         {/* Action log */}
         <ActionLogSection
           isEndPhase={isEnded}
@@ -228,7 +238,8 @@ export function KlondikePage() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-[#0a3a10] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-casino-dark border-white/20 px-4 py-2.5">
+        <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
             <>

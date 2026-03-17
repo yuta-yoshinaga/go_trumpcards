@@ -1,17 +1,18 @@
-import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
 import { OldMaidSetupScreen } from '../components/oldmaid/OldMaidSetupScreen';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { OldMaidSkeleton } from '../components/skeleton/OldMaidSkeleton';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import type { CpuAction } from '../types/card';
@@ -19,8 +20,8 @@ import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName } from '../utils/playerUtils';
 
 export function OldMaidPage() {
-  const { t } = useTranslation('oldmaid');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('oldmaid');
   const {
     displayState,
     setupMode,
@@ -47,8 +48,23 @@ export function OldMaidPage() {
     setGameSettings,
   } = useOldMaidGame();
 
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('oldmaid');
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
+  const { cardWidth } = useCardDimensions();
+
+  const isHumanTurnForKbd =
+    !!displayState && !displayState.gameEndFlag && !!displayState.players[displayState.currentTurn]?.isHuman;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: () => exec('draw') },
+      { key: 's', action: () => exec('shuffle') },
+    ],
+    [exec],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!gameSettings && isHumanTurnForKbd && !loading,
+  });
 
   if (!gameSettings) {
     return (
@@ -64,12 +80,11 @@ export function OldMaidPage() {
         onHesitationChange={setSetupHesitation}
         onMetaAIChange={setSetupMetaAI}
         onStart={handleStart}
-        loading={loading}
       />
     );
   }
 
-  if (!displayState) return null;
+  if (!displayState) return <OldMaidSkeleton />;
 
   const state = displayState;
   const isHumanTurn = !state.gameEndFlag && !!state.players[state.currentTurn]?.isHuman;
@@ -93,11 +108,10 @@ export function OldMaidPage() {
   return (
     <div
       key={shakeKey}
-      className={`flex-1 flex flex-col min-h-0 bg-[#1a5c1a]${shakeKey > 0 ? ' animate-shake' : ''}`}
+      className={`flex-1 flex flex-col min-h-0 bg-game-bg-green${shakeKey > 0 ? ' animate-shake' : ''}`}
       aria-busy={loading}
       aria-live="polite"
     >
-      <LoadingSpinner loading={loading} />
       {/* Scrollable: CPU rows + discard + status + logs + result */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Mode badge */}
@@ -145,10 +159,10 @@ export function OldMaidPage() {
           <div className="flex justify-center my-2" data-testid="card-reveal-area">
             {revealedCard ? (
               <div className="animate-flipIn">
-                <CardImage card={revealedCard} width={60} />
+                <CardImage card={revealedCard} width={cardWidth} />
               </div>
             ) : (
-              <CardBack width={60} />
+              <CardBack width={cardWidth} />
             )}
           </div>
         )}
@@ -200,7 +214,7 @@ export function OldMaidPage() {
       </div>
 
       {/* Sticky footer: human player hand + buttons */}
-      <GameFooter className="bg-[#163e16] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         {/* Human player */}
         {humanPlayer && (
           <div className="mb-2">

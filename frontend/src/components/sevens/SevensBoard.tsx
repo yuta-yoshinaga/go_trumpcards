@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { suitName, valueName } from '../../utils/cardUtils';
 import { isPositionPlaced, isPositionPlayable, SUITS } from '../../utils/sevensUtils';
 
@@ -20,6 +21,7 @@ function Board({
   onJokerPlace,
 }: BoardProps) {
   const { t } = useTranslation('sevens');
+  const { sevensCellSize, sevensFontSize } = useCardDimensions();
   return (
     <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
       <div className="text-white font-bold mb-2">
@@ -27,10 +29,12 @@ function Board({
         {tunnelEnabled && <span className="text-yellow-400 text-xs ml-2">{t('tunnelTag')}</span>}
         {jokerSelecting && <span className="text-green-400 text-xs ml-2">{t('jokerSelectHint')}</span>}
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {SUITS.map(({ idx, name, label, color }) => (
           <div key={name} className="bg-white/[0.08] rounded-lg py-1.5 px-2.5 flex items-center gap-2">
-            <span style={{ color, fontWeight: 'bold', fontSize: '1.1em', minWidth: 18 }}>{label}</span>
+            <span className="min-w-[18px]" style={{ color, fontWeight: 'bold', fontSize: '1.1em' }}>
+              {label}
+            </span>
             <div className="flex flex-wrap gap-[3px] items-center">
               {Array.from({ length: 13 }, (_, i) => i + 1).map((v) => {
                 const placed = isPositionPlaced(tablePlaced, idx, v);
@@ -45,12 +49,12 @@ function Board({
                     (v === 13 && isPositionPlaced(tablePlaced, idx, 1)));
                 const cellStyle: React.CSSProperties = {
                   display: 'inline-block',
-                  width: 22,
-                  height: 22,
-                  lineHeight: '22px',
+                  width: sevensCellSize,
+                  height: sevensCellSize,
+                  lineHeight: `${sevensCellSize}px`,
                   textAlign: 'center',
                   borderRadius: 4,
-                  fontSize: '0.7em',
+                  fontSize: sevensFontSize,
                   fontWeight: isCenter ? 'bold' : 'normal',
                   background: canPlace
                     ? 'var(--color-blue-500)'

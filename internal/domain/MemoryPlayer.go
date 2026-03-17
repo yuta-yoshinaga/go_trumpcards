@@ -15,18 +15,15 @@ func (e memoryCardEntry) GetTurnSeen() int { return e.turnSeen }
 // MemoryPlayer 神経衰弱プレイヤークラス
 type MemoryPlayer struct {
 	*GamePlayer
-	pairCount    int               // 獲得したペア数
-	pairs        [][2]*Card        // 獲得したペア
-	cardMemories []memoryCardEntry // 記憶したカードのリスト
+	pairCount int        // 獲得したペア数
+	pairs     [][2]*Card // 獲得したペア
+	memoryManager[memoryCardEntry]
 }
 
 // NewMemoryPlayer コンストラクタ
 func NewMemoryPlayer(isHuman bool) *MemoryPlayer {
 	return &MemoryPlayer{
-		GamePlayer:   NewGamePlayer(isHuman),
-		pairCount:    0,
-		pairs:        nil,
-		cardMemories: nil,
+		GamePlayer: NewGamePlayer(isHuman),
 	}
 }
 
@@ -45,16 +42,11 @@ func (p *MemoryPlayer) AddPair(c1, c2 *Card) {
 	p.pairCount++
 }
 
-// ResetMemory カード記憶をリセットする
-func (p *MemoryPlayer) ResetMemory() {
-	p.cardMemories = nil
-}
-
 // ResetGame ゲームリセット（ペア・記憶・手札をクリア）
 func (p *MemoryPlayer) ResetGame() {
 	p.pairCount = 0
 	p.pairs = nil
-	p.cardMemories = nil
+	p.ResetMemory()
 	p.Reset()
 }
 
@@ -67,13 +59,8 @@ func (p *MemoryPlayer) RecordRevealedCard(position int, rank int, retentionChanc
 		}
 	}
 	if rand.Float64() < retentionChance {
-		p.cardMemories = append(p.cardMemories, memoryCardEntry{position: position, rank: rank, turnSeen: turnNumber})
+		p.AddMemory(memoryCardEntry{position: position, rank: rank, turnSeen: turnNumber})
 	}
-}
-
-// DecayMemories 古い記憶を確率的に忘却する
-func (p *MemoryPlayer) DecayMemories(currentTurn int, decayRate float64) {
-	p.cardMemories = DecayMemories(p.cardMemories, currentTurn, decayRate)
 }
 
 // FindKnownMatch 指定したrankの既知ペア位置を探す

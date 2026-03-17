@@ -28,10 +28,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		resObj.LastDrawCard = cardToOutput(om.GetLastDrawCard())
 	}
 	resObj.LastDiscardedPairs = om.GetLastDiscardedPairs()
-	resObj.LastDiscardedCards = make([]*controller.WebOutputCard, 0)
-	for _, card := range om.GetLastDiscardedCards() {
-		resObj.LastDiscardedCards = append(resObj.LastDiscardedCards, cardToOutput(card))
-	}
+	resObj.LastDiscardedCards = cardsToOutputOrEmpty(om.GetLastDiscardedCards())
 	resObj.HasDrawn = om.GetHasDrawn()
 
 	// CPU行動履歴
@@ -42,11 +39,8 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			DrawFromIdx:    action.DrawFromIdx,
 			DrawnCard:      nil, // CPU drawn card is hidden to preserve game fairness
 			DiscardedPairs: action.DiscardedPairs,
-			DiscardedCards: make([]*controller.WebOutputCard, 0),
+			DiscardedCards: cardsToOutputOrEmpty(action.DiscardedCards),
 			HesitationMs:   action.HesitationMs,
-		}
-		for _, card := range action.DiscardedCards {
-			a.DiscardedCards = append(a.DiscardedCards, cardToOutput(card))
 		}
 		resObj.CpuActions = append(resObj.CpuActions, a)
 	}
@@ -58,10 +52,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			DrawFromIdx:    ha.DrawFromIdx,
 			DrawnCard:      cardToOutput(ha.DrawnCard),
 			DiscardedPairs: ha.DiscardedPairs,
-			DiscardedCards: make([]*controller.WebOutputCard, 0),
-		}
-		for _, card := range ha.DiscardedCards {
-			haObj.DiscardedCards = append(haObj.DiscardedCards, cardToOutput(card))
+			DiscardedCards: cardsToOutputOrEmpty(ha.DiscardedCards),
 		}
 		resObj.HumanAction = haObj
 	}
@@ -73,12 +64,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 		pObj.IsHuman = player.GetIsHuman()
 		pObj.IsFinished = player.GetIsFinished()
 		pObj.CardCount = player.GetCardsSize()
-		pObj.Cards = make([]*controller.WebOutputCard, 0)
-		if player.GetIsHuman() {
-			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
-			}
-		}
+		pObj.Cards = playerCardsToOutput(player, player.GetIsHuman())
 		resObj.Players = append(resObj.Players, pObj)
 	}
 

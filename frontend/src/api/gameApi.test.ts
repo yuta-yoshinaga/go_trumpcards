@@ -282,10 +282,10 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'reset',
             amount: undefined,
-            sessionId,
             dealerHitsSoft17: true,
             cpuPlayerCount: 2,
             countingEnabled: true,
+            sessionId,
           }),
         }),
       );
@@ -312,9 +312,9 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'bet',
             amount: 100,
-            sessionId,
             perfectPairsBet: 10,
             twentyOnePlus3Bet: 20,
+            sessionId,
           }),
         }),
       );
@@ -469,8 +469,8 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'reset',
             amount: undefined,
-            sessionId,
             surrenderRule: 1,
+            sessionId,
           }),
         }),
       );
@@ -1043,12 +1043,12 @@ describe('gameApi', () => {
         expect.objectContaining({
           body: JSON.stringify({
             command: 'reset',
-            sessionId,
             doubtWindowSec: 3,
             cpuMemoryLevel: 2,
             penaltyDrawLimit: 5,
             cpuHesitationEnabled: true,
             cpuMetaAI: false,
+            sessionId,
           }),
         }),
       );
@@ -1211,11 +1211,11 @@ describe('gameApi', () => {
           index: -1,
           jokerTargetSuit: 0,
           jokerTargetValue: 0,
-          sessionId,
           tunnelEnabled: true,
           jokerCount: 2,
           cpuStrategy: 1,
           noJokerFinish: true,
+          sessionId,
         }),
       });
     });
@@ -1244,11 +1244,11 @@ describe('gameApi', () => {
           index: -1,
           jokerTargetSuit: 0,
           jokerTargetValue: 0,
-          sessionId,
           tunnelEnabled: true,
           jokerCount: 2,
           cpuStrategy: 1,
           maxPasses: 3,
+          sessionId,
         }),
       });
     });
@@ -1284,9 +1284,9 @@ describe('gameApi', () => {
           index: -1,
           jokerTargetSuit: 0,
           jokerTargetValue: 0,
-          sessionId,
           jokerCount: 1,
           jokerConsecutiveBanned: true,
+          sessionId,
         }),
       });
     });
@@ -1393,9 +1393,9 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'reset',
             amount: undefined,
-            sessionId,
             smallBlind: 10,
             bigBlind: 20,
+            sessionId,
           }),
         }),
       );
@@ -1414,10 +1414,10 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'reset',
             amount: undefined,
-            sessionId,
             tournamentMode: true,
             blindLevelHands: 5,
             blindMultiplier: 200,
+            sessionId,
           }),
         }),
       );
@@ -1432,8 +1432,8 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'reset',
             amount: undefined,
-            sessionId,
             bettingLimit: 2,
+            sessionId,
           }),
         }),
       );
@@ -1448,8 +1448,8 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'reset',
             amount: undefined,
-            sessionId,
             tableSize: 6,
+            sessionId,
           }),
         }),
       );
@@ -1494,10 +1494,10 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'reset',
             amount: undefined,
-            sessionId,
             rebuyEnabled: true,
             addonEnabled: true,
             rebuyMaxCount: 5,
+            sessionId,
           }),
         }),
       );
@@ -1566,8 +1566,8 @@ describe('gameApi', () => {
           command: 'reset',
           cardIndices: undefined,
           cardIndex: undefined,
-          sessionId,
           config: undefined,
+          sessionId,
         }),
       });
       expect(result).toEqual(payload);
@@ -1583,8 +1583,8 @@ describe('gameApi', () => {
             command: 'play',
             cardIndices: undefined,
             cardIndex: 3,
-            sessionId,
             config: undefined,
+            sessionId,
           }),
         }),
       );
@@ -1600,8 +1600,8 @@ describe('gameApi', () => {
             command: 'pass',
             cardIndices: [0, 1, 2],
             cardIndex: undefined,
-            sessionId,
             config: undefined,
+            sessionId,
           }),
         }),
       );
@@ -1617,8 +1617,8 @@ describe('gameApi', () => {
             command: 'reset',
             cardIndices: undefined,
             cardIndex: undefined,
-            sessionId,
             config: { cpuDifficulty: 2, pointLimit: 50 },
+            sessionId,
           }),
         }),
       );
@@ -1655,8 +1655,8 @@ describe('gameApi', () => {
         body: JSON.stringify({
           command: 'reset',
           position: undefined,
-          sessionId,
           config: undefined,
+          sessionId,
         }),
       });
       expect(result).toEqual(payload);
@@ -1671,8 +1671,8 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'flip',
             position: 5,
-            sessionId,
             config: undefined,
+            sessionId,
           }),
         }),
       );
@@ -1687,8 +1687,8 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'reset',
             position: undefined,
-            sessionId,
             config: { cpuDifficulty: 2 },
+            sessionId,
           }),
         }),
       );

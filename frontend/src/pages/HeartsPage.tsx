@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next';
+import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -6,22 +6,32 @@ import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 import { PhaseIndicator } from '../components/PhaseIndicator';
-import { useActionLog } from '../hooks/useActionLog';
-import { useConfirmDialog } from '../hooks/useConfirmDialog';
+import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
+import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { HeartsPhase } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
+const HEARTS_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [HeartsPhase.PASS]: 'pass',
+  [HeartsPhase.PLAY]: 'play',
+  [HeartsPhase.TRICK_END]: 'trickEnd',
+  [HeartsPhase.ROUND_END]: 'roundEnd',
+  [HeartsPhase.GAME_END]: 'gameEnd',
+};
+
 const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
 export function HeartsPage() {
-  const { t } = useTranslation('hearts');
-  const { t: tc } = useTranslation('common');
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('hearts');
   const {
     state,
     loading,
@@ -30,16 +40,39 @@ export function HeartsPage() {
     heartsConfig,
     selectedCardIndices,
     toggleCard,
+    clearSelection,
     handleConfigChange,
     handlePass,
     handlePlay,
     handleNextTrick,
     handleNextRound,
   } = useHeartsGame();
-  const { actionLog, showActionLog, hideActionLog } = useActionLog('hearts');
-  const { isOpen: confirmOpen, requestConfirm, confirm: confirmReset, cancel: cancelReset } = useConfirmDialog();
+  const { cardWidth } = useCardDimensions();
 
-  if (!state) return null;
+  const isPassPhaseForKbd = state?.phase === HeartsPhase.PASS;
+  const isPlayPhaseForKbd = state?.phase === HeartsPhase.PLAY;
+  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const confirmAction = useCallback(() => {
+    if (isPassPhaseForKbd) {
+      handlePass();
+    } else {
+      handlePlay();
+    }
+  }, [isPassPhaseForKbd, handlePass, handlePlay]);
+
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: confirmAction,
+    onClear: clearSelection,
+    enabled: (isPassPhaseForKbd || !!isHumanTurnForKbd) && !loading,
+  });
+
+  const phaseNames = usePhaseNames('hearts', HEARTS_PHASE_KEYS);
+
+  if (!state) return <HeartsSkeleton />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPassPhase = state.phase === HeartsPhase.PASS;
@@ -49,23 +82,10 @@ export function HeartsPage() {
   const isGameEnd = state.phase === HeartsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
 
-  const phaseNameMap: Record<number, string> = {
-    [HeartsPhase.PASS]: t('phase.pass'),
-    [HeartsPhase.PLAY]: t('phase.play'),
-    [HeartsPhase.TRICK_END]: t('phase.trickEnd'),
-    [HeartsPhase.ROUND_END]: t('phase.roundEnd'),
-    [HeartsPhase.GAME_END]: t('phase.gameEnd'),
-  };
-
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#1a2c5c]" aria-busy={loading}>
-      <LoadingSpinner loading={loading} />
-
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       {/* Phase indicator */}
-      <PhaseIndicator
-        phaseName={phaseNameMap[state.phase] ?? t('phase.play')}
-        isHumanTurn={isPassPhase || isHumanTurn}
-      />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isPassPhase || isHumanTurn} />
 
       {/* Settings */}
       <SettingsPanel
@@ -132,7 +152,7 @@ export function HeartsPage() {
             <div className="flex gap-2">
               {state.currentTrick.map((trickCard) => (
                 <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                  <CardImage card={trickCard.card} />
+                  <CardImage card={trickCard.card} width={cardWidth} />
                   <div className="text-white/50 text-xs mt-1">
                     {playerName(
                       state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
@@ -151,10 +171,12 @@ export function HeartsPage() {
           <table className="w-full text-sm text-white/70">
             <thead>
               <tr>
-                <th className="text-left">{t('scoresPlayer')}</th>
-                <th>{t('scoresRound')}</th>
-                <th>{t('scoresTotal')}</th>
-                <th>{t('scoresTricks')}</th>
+                <th scope="col" className="text-left">
+                  {t('scoresPlayer')}
+                </th>
+                <th scope="col">{t('scoresRound')}</th>
+                <th scope="col">{t('scoresTotal')}</th>
+                <th scope="col">{t('scoresTricks')}</th>
               </tr>
             </thead>
             <tbody>
@@ -173,9 +195,6 @@ export function HeartsPage() {
         {/* Message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
-        {/* Error */}
-        <ErrorAlert message={error} />
-
         {/* Action log */}
         <ActionLogSection
           isEndPhase={isGameEnd}
@@ -186,7 +205,7 @@ export function HeartsPage() {
       </div>
 
       {/* Footer */}
-      <GameFooter className="bg-[#101c3a] border-white/20 px-4 py-2.5">
+      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {/* Human cards */}
         {humanPlayer && (
           <div className="flex flex-wrap gap-1 mb-2">
@@ -206,11 +225,13 @@ export function HeartsPage() {
                   boxSizing: 'border-box',
                 }}
               >
-                <CardImage card={card} />
+                <CardImage card={card} width={cardWidth} />
               </button>
             ))}
           </div>
         )}
+
+        <ErrorAlert message={error} />
 
         <div className="flex gap-2 items-center">
           {isPassPhase && (

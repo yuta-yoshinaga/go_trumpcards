@@ -15,7 +15,6 @@ type DaifugoWebPresenter struct{}
 func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error) string {
 	resObj := new(controller.DaifugoWebOutput)
 	resObj.Players = make([]*controller.DaifugoWebOutputPlayer, 0)
-	resObj.TableCards = make([]*controller.WebOutputCard, 0)
 	resObj.CurrentTurn = dg.GetCurrentTurn()
 	resObj.LastPlayPlayerIdx = dg.GetLastPlayPlayerIdx()
 	resObj.GameEndFlag = dg.GetGameEndFlag()
@@ -80,9 +79,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 	}
 
 	// 場のカード
-	for _, c := range dg.GetTableCards() {
-		resObj.TableCards = append(resObj.TableCards, cardToOutput(c))
-	}
+	resObj.TableCards = cardsToOutputOrEmpty(dg.GetTableCards())
 
 	// CPU行動履歴
 	resObj.CpuActions = make([]*controller.DaifugoWebOutputAction, 0)
@@ -116,12 +113,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		pObj.Rank = player.GetRank()
 		pObj.CardCount = player.GetCardsSize()
 		pObj.IllegalFinishPenalty = player.GetIllegalFinishPenalty()
-		pObj.Cards = make([]*controller.WebOutputCard, 0)
-		if player.GetIsHuman() {
-			for j := 0; j < player.GetCardsSize(); j++ {
-				pObj.Cards = append(pObj.Cards, cardToOutput(player.GetCard(j)))
-			}
-		}
+		pObj.Cards = playerCardsToOutput(player, player.GetIsHuman())
 		resObj.Players = append(resObj.Players, pObj)
 	}
 

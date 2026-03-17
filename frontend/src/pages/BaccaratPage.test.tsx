@@ -77,10 +77,10 @@ describe('BaccaratPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
-  it('returns null before state loads', () => {
+  it('renders skeleton before state loads', () => {
     mockExec.mockReturnValue(new Promise(() => {})); // never resolves
-    const { container } = renderWithProviders(<BaccaratPage />);
-    expect(container.firstChild).toBeNull();
+    renderWithProviders(<BaccaratPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
   it('shows end phase with player wins', async () => {
@@ -226,5 +226,45 @@ describe('BaccaratPage', () => {
     expect(screen.getByText(/値: 7/)).toBeInTheDocument();
     expect(screen.getByText('🟡')).toBeInTheDocument();
     expect(screen.getByText('🔴')).toBeInTheDocument();
+  });
+
+  // --- Keyboard navigation tests ---
+
+  it('pressing b triggers bet in BET phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    fireEvent.keyDown(document, { key: 'b' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0));
+  });
+
+  it('pressing r triggers reset in END phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤーの勝ち/)).toBeInTheDocument());
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(betPhaseState);
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('pressing b does not trigger bet in END phase', async () => {
+    mockExec.mockResolvedValue(endPhasePlayerWins);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText(/プレイヤーの勝ち/)).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('pressing r does not trigger reset in BET phase', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'r' });
+    expect(mockExec).not.toHaveBeenCalled();
   });
 });
