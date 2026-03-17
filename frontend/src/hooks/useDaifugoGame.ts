@@ -30,8 +30,11 @@ const defaultConfigInput: DaifugoConfigInput = {
   cpuDifficulty: 0,
 };
 
-interface DaifugoCtx {
+interface DaifugoCountsCtx {
   counts: number[];
+}
+
+interface DaifugoCtx extends DaifugoCountsCtx {
   currentTableCards: Card[];
 }
 
@@ -40,7 +43,7 @@ const daifugoInitContext = (fs: DaifugoResponse): DaifugoCtx => ({
   currentTableCards: fs.humanAction?.playedCards?.length ? fs.humanAction.playedCards : ([] as Card[]),
 });
 
-const daifugoReverseAction = (ctx: DaifugoCtx, a: DaifugoAction) => {
+const daifugoReverseAction = (ctx: DaifugoCountsCtx, a: DaifugoAction) => {
   ctx.counts[a.playerIdx] += a.playedCards?.length ?? 0;
 };
 
@@ -60,9 +63,7 @@ function buildDaifugoHumanActionState(finalState: DaifugoResponse): DaifugoRespo
     actions: finalState.cpuActions,
     finalState,
     initContext: (fs) => ({ counts: fs.players.map((p) => p.cardCount) }),
-    reverseAction: (ctx, a) => {
-      ctx.counts[a.playerIdx] += a.playedCards?.length ?? 0;
-    },
+    reverseAction: daifugoReverseAction,
     buildState: (fs, ctx) => ({
       ...fs,
       players: fs.players.map((p, idx) => ({
