@@ -80,10 +80,11 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 	// メタAI情報
 	if profile := d.GetHumanProfile(); profile != nil {
 		resObj.MetaAI = &controller.DoubtWebOutputMetaAI{
-			Enabled:       true,
-			GamesPlayed:   profile.GamesPlayed,
-			BluffRate:     profile.BluffRate(1), // medium bracket as representative
-			DoubtAccuracy: profile.DoubtAccuracy(),
+			Enabled:        true,
+			GamesPlayed:    profile.GamesPlayed,
+			BluffRate:      profile.BluffRate(1), // medium bracket as representative
+			DoubtAccuracy:  profile.DoubtAccuracy(),
+			HesitationMean: profile.HesitationMean,
 		}
 	}
 

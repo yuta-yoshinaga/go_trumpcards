@@ -24,8 +24,8 @@ func (_m *MockDoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig) string {
 }
 
 // Play モック
-func (_m *MockDoubtInteractor) Play(cardIndices []int, claimedValue int) string {
-	ret := _m.Called(cardIndices, claimedValue)
+func (_m *MockDoubtInteractor) Play(cardIndices []int, claimedValue int, humanPlayMs int) string {
+	ret := _m.Called(cardIndices, claimedValue, humanPlayMs)
 	return ret.Get(0).(string)
 }
 

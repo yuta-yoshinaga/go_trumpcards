@@ -17,8 +17,8 @@ func (_m *MockDoubtGame) Reset() {
 }
 
 // PlayerPlay モック
-func (_m *MockDoubtGame) PlayerPlay(cardIndices []int, claimedValue int) error {
-	ret := _m.Called(cardIndices, claimedValue)
+func (_m *MockDoubtGame) PlayerPlay(cardIndices []int, claimedValue int, humanPlayMs int) error {
+	ret := _m.Called(cardIndices, claimedValue, humanPlayMs)
 	return ret.Error(0)
 }
 

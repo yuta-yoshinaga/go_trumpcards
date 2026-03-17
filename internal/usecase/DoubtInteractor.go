@@ -10,7 +10,7 @@ import (
 type DoubtInteractorIF interface {
 	Reset() string
 	ResetWithConfig(cfg domain.DoubtConfig) string
-	Play(cardIndices []int, claimedValue int) string
+	Play(cardIndices []int, claimedValue int, humanPlayMs int) string
 	ResolveDoubt(doubterIndices []int) string
 	SkipDoubt() string
 	GetCpuDoubters() []int
@@ -45,11 +45,11 @@ func (di *DoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig) string {
 }
 
 // Play 人間プレイヤーがカードを出す
-func (di *DoubtInteractor) Play(cardIndices []int, claimedValue int) string {
+func (di *DoubtInteractor) Play(cardIndices []int, claimedValue int, humanPlayMs int) string {
 	if out, blocked := guardNotPlayable(di.d, di.dp); blocked {
 		return out
 	}
-	err := di.d.PlayerPlay(cardIndices, claimedValue)
+	err := di.d.PlayerPlay(cardIndices, claimedValue, humanPlayMs)
 	return di.dp.Output(di.d, err)
 }
 

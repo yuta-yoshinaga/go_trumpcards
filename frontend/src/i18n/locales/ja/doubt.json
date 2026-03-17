@@ -38,5 +38,12 @@
     "sec": "{{sec}}秒",
     "cpuHesitation": "CPU迷い時間ディレイ",
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "metaAI": {
+    "title": "メタAI情報",
+    "gamesPlayed": "ゲーム数: {{count}}",
+    "bluffRate": "ブラフ率: {{rate}}",
+    "doubtAccuracy": "ダウト正解率: {{rate}}",
+    "hesitationMean": "平均迷い時間: {{ms}}ms"
   }
 }

@@ -18,7 +18,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		m := new(mockUsecases.MockDoubtInteractor)
 		m.On("GetConfig").Return(domain.DefaultDoubtConfig())
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
-		m.On("Play", mock.Anything, mock.Anything).Return(mockOutput)
+		m.On("Play", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("ResolveDoubt", mock.Anything).Return(mockOutput)
 		m.On("SkipDoubt").Return(mockOutput)
 		return m
@@ -57,7 +57,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		c := controller.NewDoubtCuiController(m)
 		result := c.Exec("p 5 0 2")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "Play", []int{0, 2}, 5)
+		m.AssertCalled(t, "Play", []int{0, 2}, 5, 0)
 	})
 
 	t.Run("play command play with value and indices", func(t *testing.T) {
@@ -65,7 +65,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		c := controller.NewDoubtCuiController(m)
 		result := c.Exec("play 3 0 1 2")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "Play", []int{0, 1, 2}, 3)
+		m.AssertCalled(t, "Play", []int{0, 1, 2}, 3, 0)
 	})
 
 	t.Run("play command p with no args uses 0 value and empty indices", func(t *testing.T) {
@@ -73,7 +73,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		c := controller.NewDoubtCuiController(m)
 		result := c.Exec("p")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "Play", []int{}, 0)
+		m.AssertCalled(t, "Play", []int{}, 0, 0)
 	})
 
 	t.Run("play command p with only value and no card indices", func(t *testing.T) {
@@ -81,7 +81,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		c := controller.NewDoubtCuiController(m)
 		result := c.Exec("p 7")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "Play", []int{}, 7)
+		m.AssertCalled(t, "Play", []int{}, 7, 0)
 	})
 
 	t.Run("doubt command d with indices", func(t *testing.T) {
@@ -312,7 +312,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		result := c.Exec("p 5 abc 2")
 		assert.Contains(t, result, "'abc'")
 		assert.Contains(t, result, mockOutput)
-		m.AssertCalled(t, "Play", []int{2}, 5)
+		m.AssertCalled(t, "Play", []int{2}, 5, 0)
 	})
 
 	t.Run("doubt command with invalid args shows warning", func(t *testing.T) {

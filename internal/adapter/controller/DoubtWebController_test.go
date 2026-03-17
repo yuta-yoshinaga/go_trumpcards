@@ -39,8 +39,8 @@ func TestDoubtWebController_Method(t *testing.T) {
 
 	dgiMock := new(usecase.MockDoubtInteractor)
 	dgiMock.On("ResetWithConfig", domain.DefaultDoubtConfig()).Return(mockOutput)
-	dgiMock.On("Play", []int{0}, 1).Return(mockOutput)
-	dgiMock.On("Play", []int{0}, 13).Return(mockOutput)
+	dgiMock.On("Play", []int{0}, 1, 0).Return(mockOutput)
+	dgiMock.On("Play", []int{0}, 13, 0).Return(mockOutput)
 	dgiMock.On("GetCpuDoubters").Return([]int{})
 	dgiMock.On("ResolveDoubt", []int{0}).Return(mockOutput)
 	dgiMock.On("ResolveDoubt", []int{}).Return(mockOutput)

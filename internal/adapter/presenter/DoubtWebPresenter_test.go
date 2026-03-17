@@ -87,7 +87,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		d, players := setupDoubtWebTest()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 		// Human plays card at index 0, claims value 5
-		_ = d.PlayerPlay([]int{0}, 5)
+		_ = d.PlayerPlay([]int{0}, 5, 0)
 		result := tdwp.Output(d, nil)
 		var resObj controller.DoubtWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
@@ -111,7 +111,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 	t.Run("success Output humanAction non-nil", func(t *testing.T) {
 		d, players := setupDoubtWebTest()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
-		_ = d.PlayerPlay([]int{0}, 5)
+		_ = d.PlayerPlay([]int{0}, 5, 0)
 		result := tdwp.Output(d, nil)
 		var resObj controller.DoubtWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
@@ -286,7 +286,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
-		_ = d.PlayerPlay([]int{0}, 5) // human plays last card → wins
+		_ = d.PlayerPlay([]int{0}, 5, 0) // human plays last card → wins
 		result := tdwp.Output(d, nil)
 		var resObj controller.DoubtWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
@@ -308,7 +308,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
-		_ = d.PlayerPlay([]int{0}, 5) // human plays → DoubtPhase
+		_ = d.PlayerPlay([]int{0}, 5, 0) // human plays → DoubtPhase
 		d.ResolveDoubt(nil)           // skip → currentTurn=1, Play phase
 		d.CpuPlay()                   // CPU 1 plays 1 card → wins
 		result := tdwp.Output(d, nil)
@@ -425,6 +425,7 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 3, resObj.MetaAI.GamesPlayed)
 		assert.InDelta(t, 0.4, resObj.MetaAI.BluffRate, 0.001)      // 2/5
 		assert.InDelta(t, 0.75, resObj.MetaAI.DoubtAccuracy, 0.001) // 3/4
+		assert.InDelta(t, 0.0, resObj.MetaAI.HesitationMean, 0.001) // no hesitation data recorded
 	})
 
 	t.Run("success Output metaAI omitted when profile is nil", func(t *testing.T) {

@@ -210,7 +210,7 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 	t.Run("game ended shows winner", func(t *testing.T) {
 		game, players := makeDoubtGameForPresenter()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		_ = game.PlayerPlay([]int{0}, 1) // game ends
+		_ = game.PlayerPlay([]int{0}, 1, 0) // game ends
 		game.SetWinnerIdx(0)
 
 		result := p.Output(game, nil)

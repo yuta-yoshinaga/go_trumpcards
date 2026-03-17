@@ -38,5 +38,12 @@
     "sec": "{{sec}}s",
     "cpuHesitation": "CPU Hesitation Delay",
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "metaAI": {
+    "title": "Meta-AI Info",
+    "gamesPlayed": "Games: {{count}}",
+    "bluffRate": "Bluff Rate: {{rate}}",
+    "doubtAccuracy": "Doubt Accuracy: {{rate}}",
+    "hesitationMean": "Avg Hesitation: {{ms}}ms"
   }
 }

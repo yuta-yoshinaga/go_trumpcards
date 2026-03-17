@@ -89,11 +89,11 @@ func TestDoubt_PlayerPlay_Errors(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		game.SetPhase(domain.DoubtPhasePlay)
 		// End the game manually
-		err := game.PlayerPlay([]int{0}, 1)
+		err := game.PlayerPlay([]int{0}, 1, 0)
 		assert.NoError(t, err)
 		assert.True(t, game.GetGameEndFlag())
 		// Try again
-		err = game.PlayerPlay([]int{0}, 1)
+		err = game.PlayerPlay([]int{0}, 1, 0)
 		assert.ErrorIs(t, err, domain.ErrGameEnded)
 	})
 
@@ -101,7 +101,7 @@ func TestDoubt_PlayerPlay_Errors(t *testing.T) {
 		game, players := makeDoubtGame()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		game.SetPhase(domain.DoubtPhaseDoubt)
-		err := game.PlayerPlay([]int{0}, 1)
+		err := game.PlayerPlay([]int{0}, 1, 0)
 		assert.ErrorIs(t, err, domain.ErrWrongPhase)
 	})
 
@@ -145,28 +145,28 @@ func TestDoubt_PlayerPlay_Errors(t *testing.T) {
 		game3.SkipDoubt() // currentTurn = (0+1)%4 = 1 (CPU)
 		// Now currentTurn=1 (CPU), phase=Play
 		players3[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		err := game3.PlayerPlay([]int{0}, 1)
+		err := game3.PlayerPlay([]int{0}, 1, 0)
 		assert.ErrorIs(t, err, domain.ErrNotHumanTurn)
 	})
 
 	t.Run("invalid claimed value too low", func(t *testing.T) {
 		game, players := makeDoubtGame()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		err := game.PlayerPlay([]int{0}, 0)
+		err := game.PlayerPlay([]int{0}, 0, 0)
 		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 	})
 
 	t.Run("invalid claimed value too high", func(t *testing.T) {
 		game, players := makeDoubtGame()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		err := game.PlayerPlay([]int{0}, 14)
+		err := game.PlayerPlay([]int{0}, 14, 0)
 		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 	})
 
 	t.Run("empty card indices", func(t *testing.T) {
 		game, players := makeDoubtGame()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		err := game.PlayerPlay([]int{}, 1)
+		err := game.PlayerPlay([]int{}, 1, 0)
 		assert.ErrorIs(t, err, domain.ErrInvalidPlay)
 	})
 
@@ -174,14 +174,14 @@ func TestDoubt_PlayerPlay_Errors(t *testing.T) {
 		game, players := makeDoubtGame()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-		err := game.PlayerPlay([]int{0, 0}, 1)
+		err := game.PlayerPlay([]int{0, 0}, 1, 0)
 		assert.ErrorIs(t, err, domain.ErrInvalidCard)
 	})
 
 	t.Run("out of range card index", func(t *testing.T) {
 		game, players := makeDoubtGame()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		err := game.PlayerPlay([]int{99}, 1)
+		err := game.PlayerPlay([]int{99}, 1, 0)
 		assert.ErrorIs(t, err, domain.ErrInvalidCard)
 	})
 }
@@ -192,7 +192,7 @@ func TestDoubt_PlayerPlay_Success(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 
-		err := game.PlayerPlay([]int{0}, 5)
+		err := game.PlayerPlay([]int{0}, 5, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, domain.DoubtPhaseDoubt, game.GetPhase())
 		assert.Equal(t, 1, game.GetTableCardCount())
@@ -211,7 +211,7 @@ func TestDoubt_PlayerPlay_Success(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
 
-		err := game.PlayerPlay([]int{0, 1}, 3)
+		err := game.PlayerPlay([]int{0, 1}, 3, 0)
 		assert.NoError(t, err)
 		assert.Equal(t, 2, game.GetTableCardCount())
 		assert.Equal(t, 2, game.GetLastAction().CardCount)
@@ -222,7 +222,7 @@ func TestDoubt_PlayerPlay_Success(t *testing.T) {
 		game, players := makeDoubtGame()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 
-		err := game.PlayerPlay([]int{0}, 1)
+		err := game.PlayerPlay([]int{0}, 1, 0)
 		assert.NoError(t, err)
 		assert.True(t, game.GetGameEndFlag())
 		assert.Equal(t, 0, game.GetWinnerIdx())
@@ -249,7 +249,7 @@ func TestDoubt_CpuPlay(t *testing.T) {
 		_, p2 := makeDoubtGame()
 		g2 := domain.NewDoubt(domain.NewTrumpCards(0), p2)
 		p2[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-		_ = g2.PlayerPlay([]int{0}, 1) // ends game
+		_ = g2.PlayerPlay([]int{0}, 1, 0) // ends game
 		before := g2.GetTableCardCount()
 		g2.CpuPlay() // no-op
 		assert.Equal(t, before, g2.GetTableCardCount())
@@ -385,7 +385,7 @@ func TestDoubt_DecideCpuDoubters(t *testing.T) {
 		g := domain.NewDoubt(domain.NewTrumpCards(0), players)
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-		_ = g.PlayerPlay([]int{0}, 1)
+		_ = g.PlayerPlay([]int{0}, 1, 0)
 		// cpuDoubters should only contain CPU players (1, 2, 3), not card player (0)
 		for _, idx := range g.GetCpuDoubters() {
 			assert.NotEqual(t, 0, idx)
@@ -633,7 +633,7 @@ func TestDoubt_DecideCpuDoubters_ImpossibleClaim(t *testing.T) {
 	}
 
 	// Human plays value=5 (claimed), count=1 → known(5)+1 = 5 > 4 → impossible
-	err := game.PlayerPlay([]int{0}, 5)
+	err := game.PlayerPlay([]int{0}, 5, 0)
 	assert.NoError(t, err)
 
 	// CPU 1 should ALWAYS doubt (impossible claim)
@@ -652,7 +652,7 @@ func TestDoubt_DecideCpuDoubters_SkipsFinishedPlayers(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 	players[1].SetIsFinished(true) // CPU 1 finished
 
-	_ = game.PlayerPlay([]int{0}, 1)
+	_ = game.PlayerPlay([]int{0}, 1, 0)
 
 	// CPU 1 should not be in doubters (finished)
 	for _, idx := range game.GetCpuDoubters() {
@@ -885,7 +885,7 @@ func TestDoubt_MemoryDecay_EasyLevel(t *testing.T) {
 		// Trigger decideCpuDoubters which calls DecayMemories
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-		_ = game.PlayerPlay([]int{0}, 1)
+		_ = game.PlayerPlay([]int{0}, 1, 0)
 
 		if players[1].CountKnownCards(5) == 0 {
 			forgotten = true
@@ -909,7 +909,7 @@ func TestDoubt_MemoryDecay_HardLevel(t *testing.T) {
 	// Trigger decideCpuDoubters which calls DecayMemories
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-	_ = game.PlayerPlay([]int{0}, 1)
+	_ = game.PlayerPlay([]int{0}, 1, 0)
 
 	// Hard level: memory should never be lost
 	assert.Equal(t, 1, players[1].CountKnownCards(5))
@@ -1051,7 +1051,7 @@ func TestDoubt_HasTell(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
-		_ = game.PlayerPlay([]int{0}, 5)
+		_ = game.PlayerPlay([]int{0}, 5, 0)
 		ha := game.GetHumanAction()
 		assert.NotNil(t, ha)
 		assert.False(t, ha.HasTell)
@@ -1147,7 +1147,7 @@ func TestDoubt_MetaAI_PlayerPlayRecordsBluff(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
 		// Play card index 0 (value=5) but claim value=3 → bluff
-		err := game.PlayerPlay([]int{0}, 3)
+		err := game.PlayerPlay([]int{0}, 3, 0)
 		assert.NoError(t, err)
 
 		profile := game.GetHumanProfile()
@@ -1167,7 +1167,7 @@ func TestDoubt_MetaAI_PlayerPlayRecordsBluff(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
 		// Play card index 0 (value=5) and claim value=5 → honest
-		err := game.PlayerPlay([]int{0}, 5)
+		err := game.PlayerPlay([]int{0}, 5, 0)
 		assert.NoError(t, err)
 
 		profile := game.GetHumanProfile()
@@ -1246,7 +1246,7 @@ func TestDoubt_MetaAI_CpuUsesAdjustedDoubtChance(t *testing.T) {
 			game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: false})
 			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-			_ = game.PlayerPlay([]int{0}, 1)
+			_ = game.PlayerPlay([]int{0}, 1, 0)
 			baselineDoubts += len(game.GetCpuDoubters())
 		}
 
@@ -1263,7 +1263,7 @@ func TestDoubt_MetaAI_CpuUsesAdjustedDoubtChance(t *testing.T) {
 			game.SetHumanProfile(profile)
 			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
-			_ = game.PlayerPlay([]int{0}, 1)
+			_ = game.PlayerPlay([]int{0}, 1, 0)
 			metaDoubts += len(game.GetCpuDoubters())
 		}
 
@@ -1319,6 +1319,50 @@ func TestDoubt_MetaAI_CpuUsesAdjustedBluffChance(t *testing.T) {
 	})
 }
 
+func TestDoubt_MetaAI_PlayerPlayRecordsHesitation(t *testing.T) {
+	t.Run("hesitation is recorded when humanPlayMs > 0", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+		game.SetHumanProfile(&domain.DoubtHumanProfile{})
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		err := game.PlayerPlay([]int{0}, 5, 1500)
+		assert.NoError(t, err)
+
+		profile := game.GetHumanProfile()
+		assert.Equal(t, 1, profile.HesitationCount)
+		assert.InDelta(t, 1500.0, profile.HesitationMean, 0.001)
+	})
+
+	t.Run("hesitation is not recorded when humanPlayMs is 0", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: true})
+		game.SetHumanProfile(&domain.DoubtHumanProfile{})
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		err := game.PlayerPlay([]int{0}, 5, 0)
+		assert.NoError(t, err)
+
+		profile := game.GetHumanProfile()
+		assert.Equal(t, 0, profile.HesitationCount)
+	})
+
+	t.Run("hesitation not recorded when metaAI is disabled", func(t *testing.T) {
+		game, players := makeDoubtGame()
+		game.SetConfig(domain.DoubtConfig{DoubtWindowSec: 10, CpuMetaAI: false})
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+
+		_ = game.PlayerPlay([]int{0}, 5, 2000)
+		assert.Nil(t, game.GetHumanProfile())
+	})
+}
+
 // ---------------------------------------------------------------------------
 // ActionLog tests
 // ---------------------------------------------------------------------------
@@ -1330,7 +1374,7 @@ func TestDoubt_ActionLog_PlayerPlay(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	game.SetPhase(domain.DoubtPhasePlay)
 
-	err := game.PlayerPlay([]int{0}, 1)
+	err := game.PlayerPlay([]int{0}, 1, 0)
 	assert.NoError(t, err)
 
 	log := game.GetActionLog()
@@ -1372,7 +1416,7 @@ func TestDoubt_ActionLog_ResolveDoubt(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
 	game.SetPhase(domain.DoubtPhasePlay)
-	err := game.PlayerPlay([]int{0}, 5) // bluff: card is 1, claims 5
+	err := game.PlayerPlay([]int{0}, 5, 0) // bluff: card is 1, claims 5
 	assert.NoError(t, err)
 
 	// Set phase to doubt and resolve
@@ -1401,7 +1445,7 @@ func TestDoubt_ActionLog_SkipDoubt(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	game.SetPhase(domain.DoubtPhasePlay)
-	err := game.PlayerPlay([]int{0}, 1)
+	err := game.PlayerPlay([]int{0}, 1, 0)
 	assert.NoError(t, err)
 
 	game.SetPhase(domain.DoubtPhaseDoubt)
@@ -1425,7 +1469,7 @@ func TestDoubt_ActionLog_Finish(t *testing.T) {
 	// Give human exactly 1 card so game ends on play
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 	game.SetPhase(domain.DoubtPhasePlay)
-	err := game.PlayerPlay([]int{0}, 1)
+	err := game.PlayerPlay([]int{0}, 1, 0)
 	assert.NoError(t, err)
 	assert.True(t, game.GetGameEndFlag())
 
@@ -1447,7 +1491,7 @@ func TestDoubt_ActionLog_Reset(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 	game.SetPhase(domain.DoubtPhasePlay)
-	_ = game.PlayerPlay([]int{0}, 1)
+	_ = game.PlayerPlay([]int{0}, 1, 0)
 	assert.NotEmpty(t, game.GetActionLog())
 
 	game.Reset()
