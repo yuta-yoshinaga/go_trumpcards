@@ -259,9 +259,11 @@ export function DoubtPage() {
             <div className="text-game-text-muted">
               {t('metaAI.doubtAccuracy', { rate: `${(state.metaAI.doubtAccuracy * 100).toFixed(0)}%` })}
             </div>
-            <div className="text-game-text-muted">
-              {t('metaAI.hesitationMean', { ms: Math.round(state.metaAI.hesitationMean) })}
-            </div>
+            {state.metaAI.hesitationMean > 0 && (
+              <div className="text-game-text-muted">
+                {t('metaAI.hesitationMean', { ms: Math.round(state.metaAI.hesitationMean) })}
+              </div>
+            )}
           </div>
         )}
 

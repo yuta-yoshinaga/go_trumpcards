@@ -1058,6 +1058,37 @@ describe('DoubtPage', () => {
     expect(screen.queryByText('メタAI情報')).not.toBeInTheDocument();
   });
 
+  it('hides hesitationMean row when hesitationMean is 0', async () => {
+    const metaAIState: DoubtResponse = {
+      ...humanTurnState,
+      metaAI: {
+        enabled: true,
+        gamesPlayed: 0,
+        bluffRate: 0,
+        doubtAccuracy: 0,
+        hesitationMean: 0,
+      },
+    };
+    mockExec.mockResolvedValue(metaAIState);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByText('メタAI情報')).toBeInTheDocument());
+    expect(screen.queryByText(/平均迷い時間/)).not.toBeInTheDocument();
+  });
+
+  it('does not set playTurnStart when currentTurn player is missing', async () => {
+    // State where currentTurn points to a non-existent player index
+    const stateWithMissingPlayer: DoubtResponse = {
+      ...humanTurnState,
+      currentTurn: 99,
+      phase: 0,
+    };
+    mockExec.mockResolvedValue(stateWithMissingPlayer);
+    renderWithProviders(<DoubtPage />);
+    // Page renders without error; 出す button is absent (no human turn)
+    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
   // ── Server-driven countdown ───────────────────────────────────────────────
 
   describe('server-driven countdown', () => {
