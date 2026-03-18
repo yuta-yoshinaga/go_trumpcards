@@ -60,6 +60,9 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 		if dg.GetNumberLocked() {
 			b.WriteString(color.BoldYellow("【連番縛り】") + "\n")
 		}
+		if dg.GetSequenceLocked() {
+			b.WriteString(color.BoldYellow("【階段縛り】") + "\n")
+		}
 
 		// カード交換記録
 		exchangeActions := dg.GetExchangeActions()

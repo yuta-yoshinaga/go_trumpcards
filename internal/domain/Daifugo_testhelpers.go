@@ -46,3 +46,6 @@ func (d *Daifugo) SetLastPlayPlayerIdx(idx int) { d.lastPlayPlayerIdx = idx }
 
 // SetRevolutionActive 革命フラグ設定（テスト用）
 func (d *Daifugo) SetRevolutionActive(v bool) { d.revolutionActive = v }
+
+// SetSequenceLocked 階段縛り設定（テスト用）
+func (d *Daifugo) SetSequenceLocked(v bool) { d.sequenceLocked = v }

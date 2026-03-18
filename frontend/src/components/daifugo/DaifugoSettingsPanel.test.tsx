@@ -10,6 +10,7 @@ const defaultConfig: DaifugoConfigInput = {
   elevenBackEnabled: true,
   sequenceEnabled: true,
   cardExchangeEnabled: true,
+  blindExchangeEnabled: false,
   fiveSkipEnabled: false,
   fiveSkipCount: 1,
   sevenPassEnabled: false,
@@ -22,6 +23,7 @@ const defaultConfig: DaifugoConfigInput = {
   sandstormEnabled: false,
   emperorEnabled: false,
   sequenceRevolutionEnabled: false,
+  sequenceLockEnabled: false,
   illegalFinishEnabled: false,
   queenBomberEnabled: false,
   cpuDifficulty: 0,
@@ -118,8 +120,10 @@ describe('DaifugoSettingsPanel', () => {
       '砂嵐',
       'エンペラー',
       '階段革命',
+      '階段縛り',
       '反則上がり',
       '12ボンバー',
+      'ブラインド交換',
     ];
     for (const label of expectedLabels) {
       expect(screen.getByLabelText(label)).toBeInTheDocument();
@@ -168,5 +172,25 @@ describe('DaifugoSettingsPanel', () => {
   it('enables fiveSkipCount select when fiveSkipEnabled is true', () => {
     render(<DaifugoSettingsPanel config={{ ...defaultConfig, fiveSkipEnabled: true }} onChange={vi.fn()} />);
     expect(screen.getByLabelText('5飛びスキップ数:')).not.toBeDisabled();
+  });
+
+  it('disables sequenceLockEnabled checkbox when sequenceEnabled is false', () => {
+    render(<DaifugoSettingsPanel config={{ ...defaultConfig, sequenceEnabled: false }} onChange={vi.fn()} />);
+    expect(screen.getByLabelText('階段縛り')).toBeDisabled();
+  });
+
+  it('enables sequenceLockEnabled checkbox when sequenceEnabled is true', () => {
+    render(<DaifugoSettingsPanel config={{ ...defaultConfig, sequenceEnabled: true }} onChange={vi.fn()} />);
+    expect(screen.getByLabelText('階段縛り')).not.toBeDisabled();
+  });
+
+  it('disables blindExchangeEnabled checkbox when cardExchangeEnabled is false', () => {
+    render(<DaifugoSettingsPanel config={{ ...defaultConfig, cardExchangeEnabled: false }} onChange={vi.fn()} />);
+    expect(screen.getByLabelText('ブラインド交換')).toBeDisabled();
+  });
+
+  it('enables blindExchangeEnabled checkbox when cardExchangeEnabled is true', () => {
+    render(<DaifugoSettingsPanel config={{ ...defaultConfig, cardExchangeEnabled: true }} onChange={vi.fn()} />);
+    expect(screen.getByLabelText('ブラインド交換')).not.toBeDisabled();
   });
 });

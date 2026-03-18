@@ -26,6 +26,7 @@
     "sequence": "Sequence",
     "nineReverse": "9-Reverse",
     "numberLock": "Number Lock",
+    "sequenceLock": "Sequence Lock",
     "illegalFinishPenalty": "Illegal Finish"
   },
   "exchange": {
@@ -62,8 +63,10 @@
     "sandstorm": "Sandstorm",
     "emperor": "Emperor",
     "sequenceRevolution": "Sequence Revolution",
+    "sequenceLock": "Sequence Lock",
     "illegalFinish": "Illegal Finish",
     "queenBomber": "Queen Bomber",
+    "blindExchange": "Blind Exchange",
     "cpuDifficulty": "CPU Difficulty:",
     "difficultyNormal": "Normal",
     "difficultyEasy": "Easy",

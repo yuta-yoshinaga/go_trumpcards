@@ -2408,6 +2408,10 @@ components:
           type: boolean
           description: Whether カード交換 (card exchange) based on previous ranks is enabled
           example: true
+        blindExchangeEnabled:
+          type: boolean
+          description: Whether ブラインドカード交換 (blind card exchange — upper-rank player gives random cards instead of weakest) rule is enabled (default false)
+          example: false
         fiveSkipEnabled:
           type: boolean
           description: Whether 5飛び (five-skip) rule is enabled (default false)
@@ -2462,6 +2466,10 @@ components:
           type: boolean
           description: Whether 階段革命 (sequence revolution — 4+ card sequences trigger revolution) rule is enabled (default false)
           example: false
+        sequenceLockEnabled:
+          type: boolean
+          description: Whether 階段縛り (sequence lock — playing a sequence on a sequence locks to sequences; persists across table clears) rule is enabled (default false)
+          example: false
         illegalFinishEnabled:
           type: boolean
           description: Whether 反則上がり (illegal finish — finishing with 8-cut, joker, or revolution is penalized) rule is enabled (default false)
@@ -2515,6 +2523,7 @@ components:
         - pendingActionTarget
         - reverseDirection
         - numberLocked
+        - sequenceLocked
         - sortMode
       properties:
         players:
@@ -2611,6 +2620,10 @@ components:
         numberLocked:
           type: boolean
           description: Whether number lock (連番縛り / 激シバ) is active
+          example: false
+        sequenceLocked:
+          type: boolean
+          description: Whether sequence lock (階段縛り) is active — only sequences or emperor can be played when table is clear
           example: false
         sortMode:
           type: integer

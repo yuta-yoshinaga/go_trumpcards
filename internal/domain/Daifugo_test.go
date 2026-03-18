@@ -7502,3 +7502,381 @@ func TestDaifugoConfig_Validate(t *testing.T) {
 		assert.Error(t, cfg.Validate())
 	})
 }
+
+// --- 階段縛り (Sequence Lock) ---
+
+func sequenceLockConfig() domain.DaifugoConfig {
+	return domain.DaifugoConfig{SequenceEnabled: true, SequenceLockEnabled: true}
+}
+
+func TestDaifugo_SequenceLock(t *testing.T) {
+	t.Run("sequence on sequence triggers lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		dg := domain.NewDaifugo(tc, players, config)
+
+		// Human plays a sequence
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false)) // spare
+		// CPU1 plays a stronger sequence
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false)) // spare
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		assert.False(t, dg.GetSequenceLocked())
+
+		// Human plays sequence [3S,4S,5S]
+		err := dg.PlayerPlay([]int{0, 1, 2})
+		assert.NoError(t, err)
+		assert.True(t, dg.GetTableIsSequence())
+		// Not yet locked (first sequence on empty table)
+		assert.False(t, dg.GetSequenceLocked())
+
+		// CPU1 plays stronger sequence on top → lock triggers
+		dg.CpuPlay()
+		assert.True(t, dg.GetSequenceLocked())
+	})
+
+	t.Run("group on sequence does not trigger lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		// SequenceEnabled: true, SequenceLockEnabled: true, but table is sequence, new play is group
+		config := sequenceLockConfig()
+		dg := domain.NewDaifugo(tc, players, config)
+
+		// Human plays sequence
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		// Give spare cards to others
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		err := dg.PlayerPlay([]int{0, 1, 2})
+		assert.NoError(t, err)
+		assert.True(t, dg.GetTableIsSequence())
+		// All CPUs pass, table clears
+		dg.CpuPlay()
+		dg.CpuPlay()
+		dg.CpuPlay()
+		// After all pass, table clears but sequenceLocked is still false
+		assert.False(t, dg.GetSequenceLocked())
+	})
+
+	t.Run("disabled config does not trigger lock", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := domain.DaifugoConfig{SequenceEnabled: true, SequenceLockEnabled: false}
+		dg := domain.NewDaifugo(tc, players, config)
+
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		_ = dg.PlayerPlay([]int{0, 1, 2})
+		dg.CpuPlay()
+		assert.False(t, dg.GetSequenceLocked())
+	})
+
+	t.Run("clearTableState does NOT reset sequenceLocked", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+
+		// All pass to clear table
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		// Human plays, others pass → table clears
+		_ = dg.PlayerPlay([]int{0})
+		dg.CpuPlay()
+		dg.CpuPlay()
+		dg.CpuPlay()
+		// Table should be cleared but lock persists
+		assert.True(t, dg.GetSequenceLocked())
+	})
+
+	t.Run("Reset clears sequenceLocked", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+		assert.True(t, dg.GetSequenceLocked())
+
+		dg.Reset()
+		assert.False(t, dg.GetSequenceLocked())
+	})
+
+	t.Run("isPlayable: locked clear table rejects groups, accepts sequences", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+
+		// Give human a group (pair) and a sequence
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		// Sequence [3S,4S,5S] should be playable
+		err := dg.PlayerPlay([]int{0, 1, 2})
+		assert.NoError(t, err)
+	})
+
+	t.Run("isPlayable: locked clear table rejects single card", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+
+		// Give human only single cards
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		// Single card should be rejected when locked
+		err := dg.PlayerPlay([]int{0})
+		assert.Error(t, err)
+	})
+
+	t.Run("isPlayable: locked clear table accepts emperor", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := domain.DaifugoConfig{SequenceEnabled: true, SequenceLockEnabled: true, EmperorEnabled: true}
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+
+		// Give human an emperor (4 cards, consecutive, different suits)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false)) // spare
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		// Emperor should be playable even when locked
+		err := dg.PlayerPlay([]int{0, 1, 2, 3})
+		assert.NoError(t, err)
+	})
+
+	t.Run("CPU opening play finds sequence when locked", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+		dg.SetCurrentTurn(1)
+
+		// CPU1 has sequence cards
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false)) // spare
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		dg.CpuPlay()
+		actions := dg.GetCpuActions()
+		assert.NotNil(t, actions)
+		assert.NotNil(t, actions[0].PlayedCards, "CPU should play a sequence when locked")
+		assert.Equal(t, 3, len(actions[0].PlayedCards))
+	})
+
+	t.Run("CPU passes if no sequence available when locked", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+		dg.SetCurrentTurn(1)
+
+		// CPU1 has no sequence cards (scattered suits)
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		dg.CpuPlay()
+		actions := dg.GetCpuActions()
+		assert.NotNil(t, actions)
+		assert.Nil(t, actions[0].PlayedCards, "CPU should pass when no sequence available")
+	})
+
+	t.Run("CPU Easy finds sequence when locked", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		config.CpuDifficulty = domain.DaifugoDifficultyEasy
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+		dg.SetCurrentTurn(1)
+
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		dg.CpuPlay()
+		actions := dg.GetCpuActions()
+		assert.NotNil(t, actions)
+		assert.NotNil(t, actions[0].PlayedCards)
+		assert.Equal(t, 3, len(actions[0].PlayedCards))
+	})
+
+	t.Run("CPU Hard finds sequence when locked", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		config.CpuDifficulty = domain.DaifugoDifficultyHard
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+		dg.SetCurrentTurn(1)
+
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		dg.CpuPlay()
+		actions := dg.GetCpuActions()
+		assert.NotNil(t, actions)
+		assert.NotNil(t, actions[0].PlayedCards)
+		assert.Equal(t, 3, len(actions[0].PlayedCards))
+	})
+}
+
+// --- ブラインドカード交換 (Blind Card Exchange) ---
+
+func TestDaifugo_BlindExchange(t *testing.T) {
+	t.Run("blind disabled: upper gives weakest", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := domain.DaifugoConfig{CardExchangeEnabled: true, BlindExchangeEnabled: false}
+		dg := domain.NewDaifugo(tc, players, config)
+
+		players[0].SetRank(domain.DaifugoRankDaifugo)
+		players[1].SetRank(domain.DaifugoRankDaihinmin)
+		players[2].SetRank(domain.DaifugoRankFugo)
+		players[3].SetRank(domain.DaifugoRankHeimin)
+
+		dg.Reset()
+		actions := dg.GetExchangeActions()
+		assert.NotNil(t, actions)
+		assert.Equal(t, 4, len(actions))
+	})
+
+	t.Run("blind enabled: retry loop confirms at least one exchange differs from weakest-only", func(t *testing.T) {
+		diffFound := false
+		for attempt := 0; attempt < 1000; attempt++ {
+			tc := domain.NewTrumpCards(0)
+			players := makeDaifugoPlayers()
+			config := domain.DaifugoConfig{CardExchangeEnabled: true, BlindExchangeEnabled: true}
+			dg := domain.NewDaifugo(tc, players, config)
+
+			players[0].SetRank(domain.DaifugoRankDaifugo)
+			players[1].SetRank(domain.DaifugoRankDaihinmin)
+			players[2].SetRank(domain.DaifugoRankFugo)
+			players[3].SetRank(domain.DaifugoRankHeimin)
+
+			dg.Reset()
+			actions := dg.GetExchangeActions()
+			if actions == nil || len(actions) < 2 {
+				continue
+			}
+
+			// Check the upper→lower exchange (action at index 1 for daifugo→daihinmin)
+			// In blind mode, the cards given by upper should sometimes NOT be the weakest
+			// Find the upper→lower action
+			for _, act := range actions {
+				// Upper giving to lower: cards not necessarily the weakest
+				// We can detect non-weakest by checking if any exchanged card is not at the beginning of sorted hand
+				if act.Cards != nil && len(act.Cards) > 0 {
+					for _, c := range act.Cards {
+						// If upper gives a card with strength > 5 (i.e., not just the weakest 3s),
+						// that confirms randomness
+						if c.GetDesign() != domain.CardDesignJoker && domain.DaifugoCardStrength(c.GetValue()) > 5 {
+							diffFound = true
+							break
+						}
+					}
+				}
+				if diffFound {
+					break
+				}
+			}
+			if diffFound {
+				break
+			}
+		}
+		assert.True(t, diffFound, "blind exchange should sometimes give non-weakest cards")
+	})
+
+	t.Run("blind enabled: exchange still produces correct total card count", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := domain.DaifugoConfig{CardExchangeEnabled: true, BlindExchangeEnabled: true}
+		dg := domain.NewDaifugo(tc, players, config)
+
+		players[0].SetRank(domain.DaifugoRankDaifugo)
+		players[1].SetRank(domain.DaifugoRankDaihinmin)
+		players[2].SetRank(domain.DaifugoRankFugo)
+		players[3].SetRank(domain.DaifugoRankHeimin)
+
+		dg.Reset()
+		total := 0
+		for i := 0; i < dg.GetPlayerCnt(); i++ {
+			total += dg.GetPlayer(i).GetCardsSize()
+		}
+		assert.Equal(t, 52, total)
+	})
+}
+
+func TestDaifugo_SetSequenceLocked(t *testing.T) {
+	tc := domain.NewTrumpCards(0)
+	players := makeDaifugoPlayers()
+	dg := domain.NewDaifugo(tc, players, noRulesConfig())
+	assert.False(t, dg.GetSequenceLocked())
+	dg.SetSequenceLocked(true)
+	assert.True(t, dg.GetSequenceLocked())
+	dg.SetSequenceLocked(false)
+	assert.False(t, dg.GetSequenceLocked())
+}

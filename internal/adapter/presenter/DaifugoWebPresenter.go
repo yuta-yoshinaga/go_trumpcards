@@ -33,6 +33,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		ElevenBackEnabled:         config.ElevenBackEnabled,
 		SequenceEnabled:           config.SequenceEnabled,
 		CardExchangeEnabled:       config.CardExchangeEnabled,
+		BlindExchangeEnabled:      config.BlindExchangeEnabled,
 		FiveSkipEnabled:           config.FiveSkipEnabled,
 		FiveSkipCount:             config.FiveSkipCount,
 		SevenPassEnabled:          config.SevenPassEnabled,
@@ -45,6 +46,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 		SandstormEnabled:          config.SandstormEnabled,
 		EmperorEnabled:            config.EmperorEnabled,
 		SequenceRevolutionEnabled: config.SequenceRevolutionEnabled,
+		SequenceLockEnabled:       config.SequenceLockEnabled,
 		IllegalFinishEnabled:      config.IllegalFinishEnabled,
 		QueenBomberEnabled:        config.QueenBomberEnabled,
 		CpuDifficulty:             int(config.CpuDifficulty),
@@ -52,6 +54,7 @@ func (dwp *DaifugoWebPresenter) Output(dg interfaces.DaifugoGame, lastErr error)
 
 	resObj.ReverseDirection = dg.GetReverseDirection()
 	resObj.NumberLocked = dg.GetNumberLocked()
+	resObj.SequenceLocked = dg.GetSequenceLocked()
 	resObj.SortMode = int(dg.GetSortMode())
 
 	// ペンディングアクション
