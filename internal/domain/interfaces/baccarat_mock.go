@@ -15,9 +15,13 @@ func (m *MockBaccaratGame) Reset() {
 	m.Called()
 }
 
-func (m *MockBaccaratGame) Bet(amount, betType int) error {
-	args := m.Called(amount, betType)
+func (m *MockBaccaratGame) Bet(amount, betType, ppBet, bpBet int) error {
+	args := m.Called(amount, betType, ppBet, bpBet)
 	return args.Error(0)
+}
+
+func (m *MockBaccaratGame) ClearHistory() {
+	m.Called()
 }
 
 func (m *MockBaccaratGame) GetPlayerHand() []*domain.Card {
@@ -87,4 +91,30 @@ func (m *MockBaccaratGame) GetActionLog() []*domain.ActionLogEntry {
 		return nil
 	}
 	return args.Get(0).([]*domain.ActionLogEntry)
+}
+
+func (m *MockBaccaratGame) GetHistory() []int {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]int)
+}
+
+func (m *MockBaccaratGame) GetPlayerPairBet() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
+func (m *MockBaccaratGame) GetBankerPairBet() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
+func (m *MockBaccaratGame) GetSideBetResults() []*domain.BacSideBetResult {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]*domain.BacSideBetResult)
 }

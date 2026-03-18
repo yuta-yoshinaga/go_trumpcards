@@ -19,9 +19,11 @@ import (
 
 func mustBaccaratOutputJSON(msg string) string {
 	out := &controller.BaccaratWebOutput{
-		PlayerHand:    make([]*controller.WebOutputCard, 0),
-		BankerHand:    make([]*controller.WebOutputCard, 0),
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		PlayerHand:     make([]*controller.WebOutputCard, 0),
+		BankerHand:     make([]*controller.WebOutputCard, 0),
+		History:        make([]int, 0),
+		SideBetResults: make([]*controller.BaccaratWebOutputSideBetResult, 0),
+		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -33,15 +35,17 @@ func mustBaccaratOutputJSON(msg string) string {
 func baccaratIntPtr(v int) *int { return &v }
 
 func TestBaccaratWebController_Method(t *testing.T) {
-	mockOutput := `{"playerHand":[],"bankerHand":[],"playerHandValue":0,"bankerHandValue":0,"phase":0,"chips":0,"betAmount":0,"betType":0,"result":0,"payout":0,"message":""}`
+	mockOutput := `{"playerHand":[],"bankerHand":[],"playerHandValue":0,"bankerHandValue":0,"phase":0,"chips":0,"betAmount":0,"betType":0,"result":0,"payout":0,"history":[],"playerPairBet":0,"bankerPairBet":0,"sideBetResults":[],"message":""}`
 	expectedBody := mockOutput
 
 	biMock := new(usecase.MockBaccaratInteractor)
 	biMock.On("Reset").Return(mockOutput)
-	biMock.On("Bet", 100, 0).Return(mockOutput)
-	biMock.On("Bet", 100, 1).Return(mockOutput)
-	biMock.On("Bet", 100, 2).Return(mockOutput)
+	biMock.On("Bet", 100, 0, 0, 0).Return(mockOutput)
+	biMock.On("Bet", 100, 1, 0, 0).Return(mockOutput)
+	biMock.On("Bet", 100, 2, 0, 0).Return(mockOutput)
+	biMock.On("Bet", 100, 0, 10, 20).Return(mockOutput)
 	biMock.On("ActionLog").Return(mockOutput)
+	biMock.On("ClearHistory").Return(mockOutput)
 
 	factory := func() uc.BaccaratInteractorIF { return biMock }
 	ctrl := controller.NewBaccaratWebController(factory)
@@ -132,6 +136,21 @@ func TestBaccaratWebController_Method(t *testing.T) {
 		recorded.BodyIs(expectedBody)
 	})
 
+	t.Run("bet with side bets", func(t *testing.T) {
+		input := controller.BaccaratWebInput{
+			BaseWebInput:  controller.BaseWebInput{Command: "b", SessionID: "s1"},
+			Amount:        100,
+			BetType:       baccaratIntPtr(0),
+			PlayerPairBet: baccaratIntPtr(10),
+			BankerPairBet: baccaratIntPtr(20),
+		}
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/baccarat/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(expectedBody)
+	})
+
 	t.Run("action log", func(t *testing.T) {
 		var input controller.BaccaratWebInput
 		_ = json.Unmarshal([]byte(`{"command":"log","sessionId":"s1"}`), &input)
@@ -145,6 +164,26 @@ func TestBaccaratWebController_Method(t *testing.T) {
 	t.Run("action log l", func(t *testing.T) {
 		var input controller.BaccaratWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"s1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/baccarat/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("clear history ch", func(t *testing.T) {
+		var input controller.BaccaratWebInput
+		_ = json.Unmarshal([]byte(`{"command":"ch","sessionId":"s1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/baccarat/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("clear history clearhistory", func(t *testing.T) {
+		var input controller.BaccaratWebInput
+		_ = json.Unmarshal([]byte(`{"command":"clearhistory","sessionId":"s1"}`), &input)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/baccarat/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)

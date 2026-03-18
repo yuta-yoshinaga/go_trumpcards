@@ -24,7 +24,7 @@ func TestNewDefaultBaccarat(t *testing.T) {
 func TestBaccarat_Reset(t *testing.T) {
 	b := NewDefaultBaccarat()
 
-	t.Run("reset clears state", func(t *testing.T) {
+	t.Run("reset clears state but keeps history", func(t *testing.T) {
 		b.SetPhase(BaccaratPhaseEnd)
 		b.SetGameEndFlag(true)
 		b.SetPlayerHand([]*Card{NewCard(CardDesignSpade, 1, false)})
@@ -32,6 +32,9 @@ func TestBaccarat_Reset(t *testing.T) {
 		b.SetBetAmount(100)
 		b.SetBetType(BaccaratBetBanker)
 		b.SetResult(GameResultWin)
+		b.SetPlayerPairBet(10)
+		b.SetBankerPairBet(20)
+		b.SetHistory([]int{BaccaratResultPlayer, BaccaratResultBanker})
 		b.Reset()
 		assert.Equal(t, BaccaratPhaseBet, b.GetPhase())
 		assert.False(t, b.GetGameEndFlag())
@@ -42,6 +45,11 @@ func TestBaccarat_Reset(t *testing.T) {
 		assert.Equal(t, GameResult(0), b.GetResult())
 		assert.Equal(t, 0, b.GetPayout())
 		assert.Nil(t, b.GetActionLog())
+		assert.Equal(t, 0, b.GetPlayerPairBet())
+		assert.Equal(t, 0, b.GetBankerPairBet())
+		assert.Nil(t, b.GetSideBetResults())
+		// history is preserved across resets
+		assert.Equal(t, []int{BaccaratResultPlayer, BaccaratResultBanker}, b.GetHistory())
 	})
 
 	t.Run("reset refills chips when below minimum", func(t *testing.T) {
@@ -57,39 +65,47 @@ func TestBaccarat_Reset(t *testing.T) {
 	})
 }
 
+func TestBaccarat_ClearHistory(t *testing.T) {
+	b := NewDefaultBaccarat()
+	b.SetHistory([]int{BaccaratResultPlayer, BaccaratResultBanker})
+	assert.NotNil(t, b.GetHistory())
+	b.ClearHistory()
+	assert.Nil(t, b.GetHistory())
+}
+
 func TestBaccarat_Bet_Errors(t *testing.T) {
 	t.Run("wrong phase", func(t *testing.T) {
 		b := NewDefaultBaccarat()
 		b.SetPhase(BaccaratPhaseEnd)
-		err := b.Bet(100, BaccaratBetPlayer)
+		err := b.Bet(100, BaccaratBetPlayer, 0, 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "bet phase")
 	})
 
 	t.Run("invalid bet type", func(t *testing.T) {
 		b := NewDefaultBaccarat()
-		err := b.Bet(100, 3)
+		err := b.Bet(100, 3, 0, 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Invalid bet type")
 	})
 
 	t.Run("invalid bet type negative", func(t *testing.T) {
 		b := NewDefaultBaccarat()
-		err := b.Bet(100, -1)
+		err := b.Bet(100, -1, 0, 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Invalid bet type")
 	})
 
 	t.Run("bet too small", func(t *testing.T) {
 		b := NewDefaultBaccarat()
-		err := b.Bet(5, BaccaratBetPlayer)
+		err := b.Bet(5, BaccaratBetPlayer, 0, 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Invalid bet amount")
 	})
 
 	t.Run("bet not multiple of min", func(t *testing.T) {
 		b := NewDefaultBaccarat()
-		err := b.Bet(15, BaccaratBetPlayer)
+		err := b.Bet(15, BaccaratBetPlayer, 0, 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Invalid bet amount")
 	})
@@ -97,7 +113,7 @@ func TestBaccarat_Bet_Errors(t *testing.T) {
 	t.Run("bet too large", func(t *testing.T) {
 		b := NewDefaultBaccarat()
 		b.SetChips(20000)
-		err := b.Bet(BaccaratMaxBet+10, BaccaratBetPlayer)
+		err := b.Bet(BaccaratMaxBet+10, BaccaratBetPlayer, 0, 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Invalid bet amount")
 	})
@@ -105,7 +121,73 @@ func TestBaccarat_Bet_Errors(t *testing.T) {
 	t.Run("insufficient chips", func(t *testing.T) {
 		b := NewDefaultBaccarat()
 		b.SetChips(50)
-		err := b.Bet(100, BaccaratBetPlayer)
+		err := b.Bet(100, BaccaratBetPlayer, 0, 0)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "Insufficient chips")
+	})
+
+	t.Run("negative player pair bet", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		err := b.Bet(100, BaccaratBetPlayer, -10, 0)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "negative")
+	})
+
+	t.Run("negative banker pair bet", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		err := b.Bet(100, BaccaratBetPlayer, 0, -10)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "negative")
+	})
+
+	t.Run("invalid player pair bet amount not multiple", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		err := b.Bet(100, BaccaratBetPlayer, 15, 0)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "player pair bet amount")
+	})
+
+	t.Run("invalid player pair bet too small", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		err := b.Bet(100, BaccaratBetPlayer, 5, 0)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "player pair bet amount")
+	})
+
+	t.Run("invalid player pair bet too large", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(30000)
+		err := b.Bet(100, BaccaratBetPlayer, BaccaratMaxBet+10, 0)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "player pair bet amount")
+	})
+
+	t.Run("invalid banker pair bet amount not multiple", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		err := b.Bet(100, BaccaratBetPlayer, 0, 15)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "banker pair bet amount")
+	})
+
+	t.Run("invalid banker pair bet too small", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		err := b.Bet(100, BaccaratBetPlayer, 0, 5)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "banker pair bet amount")
+	})
+
+	t.Run("invalid banker pair bet too large", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(30000)
+		err := b.Bet(100, BaccaratBetPlayer, 0, BaccaratMaxBet+10)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "banker pair bet amount")
+	})
+
+	t.Run("insufficient chips with side bets", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(150) // not enough for 100 + 100 + 0
+		err := b.Bet(100, BaccaratBetPlayer, 100, 0)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Insufficient chips")
 	})
@@ -113,7 +195,7 @@ func TestBaccarat_Bet_Errors(t *testing.T) {
 
 func TestBaccarat_Bet_Success(t *testing.T) {
 	b := NewDefaultBaccarat()
-	err := b.Bet(100, BaccaratBetPlayer)
+	err := b.Bet(100, BaccaratBetPlayer, 0, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, BaccaratPhaseEnd, b.GetPhase())
 	assert.True(t, b.GetGameEndFlag())
@@ -126,6 +208,18 @@ func TestBaccarat_Bet_Success(t *testing.T) {
 	assert.LessOrEqual(t, len(b.GetPlayerHand()), 3)
 	assert.LessOrEqual(t, len(b.GetBankerHand()), 3)
 	assert.NotNil(t, b.GetActionLog())
+	// history should have one entry
+	assert.Len(t, b.GetHistory(), 1)
+}
+
+func TestBaccarat_Bet_WithSideBets(t *testing.T) {
+	b := NewDefaultBaccarat()
+	err := b.Bet(100, BaccaratBetPlayer, 10, 20)
+	assert.NoError(t, err)
+	assert.Equal(t, 10, b.GetPlayerPairBet())
+	assert.Equal(t, 20, b.GetBankerPairBet())
+	assert.NotNil(t, b.GetSideBetResults())
+	assert.Len(t, b.GetSideBetResults(), 2)
 }
 
 func TestBaccarat_CardPointValue(t *testing.T) {
@@ -387,7 +481,7 @@ func TestBaccarat_Getters(t *testing.T) {
 func TestBaccarat_FullGame_PlayerWins(t *testing.T) {
 	b := NewDefaultBaccarat()
 	initialChips := b.GetChips()
-	err := b.Bet(100, BaccaratBetPlayer)
+	err := b.Bet(100, BaccaratBetPlayer, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, b.GetGameEndFlag())
 
@@ -404,7 +498,7 @@ func TestBaccarat_FullGame_AllBetTypes(t *testing.T) {
 	for _, bt := range []int{BaccaratBetPlayer, BaccaratBetBanker, BaccaratBetTie} {
 		t.Run(betTypeName(bt), func(t *testing.T) {
 			b := NewDefaultBaccarat()
-			err := b.Bet(100, bt)
+			err := b.Bet(100, bt, 0, 0)
 			assert.NoError(t, err)
 			assert.True(t, b.GetGameEndFlag())
 			assert.NotNil(t, b.GetActionLog())
@@ -414,13 +508,15 @@ func TestBaccarat_FullGame_AllBetTypes(t *testing.T) {
 
 func TestBaccarat_ResetAndReplay(t *testing.T) {
 	b := NewDefaultBaccarat()
-	err := b.Bet(100, BaccaratBetPlayer)
+	err := b.Bet(100, BaccaratBetPlayer, 0, 0)
 	assert.NoError(t, err)
 	b.Reset()
 	assert.Equal(t, BaccaratPhaseBet, b.GetPhase())
-	err = b.Bet(100, BaccaratBetBanker)
+	err = b.Bet(100, BaccaratBetBanker, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, b.GetGameEndFlag())
+	// history should have 2 entries after 2 rounds
+	assert.Len(t, b.GetHistory(), 2)
 }
 
 // TestBaccarat_DrawPhase_AllBranches covers all 4 non-natural path combinations in drawPhase().
@@ -523,6 +619,7 @@ func TestBaccarat_Judge_AllOutcomes(t *testing.T) {
 		assert.Equal(t, BaccaratPhaseEnd, b.GetPhase())
 		assert.True(t, b.GetGameEndFlag())
 		assert.Equal(t, 1100, b.GetChips()) // 900 + 200
+		assert.Contains(t, b.GetHistory(), BaccaratResultPlayer)
 	})
 
 	t.Run("banker wins", func(t *testing.T) {
@@ -544,6 +641,7 @@ func TestBaccarat_Judge_AllOutcomes(t *testing.T) {
 		assert.Equal(t, BaccaratPhaseEnd, b.GetPhase())
 		assert.True(t, b.GetGameEndFlag())
 		assert.Equal(t, 1095, b.GetChips()) // 900 + 195
+		assert.Contains(t, b.GetHistory(), BaccaratResultBanker)
 	})
 
 	t.Run("tie", func(t *testing.T) {
@@ -565,5 +663,151 @@ func TestBaccarat_Judge_AllOutcomes(t *testing.T) {
 		assert.Equal(t, BaccaratPhaseEnd, b.GetPhase())
 		assert.True(t, b.GetGameEndFlag())
 		assert.Equal(t, 1800, b.GetChips()) // 900 + 900
+		assert.Contains(t, b.GetHistory(), BaccaratResultTie)
+	})
+}
+
+func TestBaccarat_EvaluateSideBets(t *testing.T) {
+	t.Run("player pair wins", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(900)
+		b.SetBetAmount(100)
+		b.SetBetType(BaccaratBetPlayer)
+		b.SetPlayerPairBet(10)
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignHeart, 5, false), // pair!
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+		})
+		b.evaluateSideBets()
+		assert.Len(t, b.GetSideBetResults(), 1)
+		r := b.GetSideBetResults()[0]
+		assert.Equal(t, BacSideBetPlayerPair, r.BetType)
+		assert.Equal(t, BacPairMatch, r.ResultType)
+		assert.Equal(t, 10+10*BacPairPayoutRate, r.Payout) // 10 + 110 = 120
+	})
+
+	t.Run("player pair loses", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(900)
+		b.SetBetAmount(100)
+		b.SetBetType(BaccaratBetPlayer)
+		b.SetPlayerPairBet(10)
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignHeart, 6, false), // no pair
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+		})
+		b.evaluateSideBets()
+		assert.Len(t, b.GetSideBetResults(), 1)
+		r := b.GetSideBetResults()[0]
+		assert.Equal(t, BacSideBetPlayerPair, r.BetType)
+		assert.Equal(t, BacPairNone, r.ResultType)
+		assert.Equal(t, 0, r.Payout)
+	})
+
+	t.Run("banker pair wins", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(900)
+		b.SetBetAmount(100)
+		b.SetBetType(BaccaratBetPlayer)
+		b.SetBankerPairBet(20)
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignHeart, 6, false),
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 7, false),
+			NewCard(CardDesignDiamond, 7, false), // pair!
+		})
+		b.evaluateSideBets()
+		assert.Len(t, b.GetSideBetResults(), 1)
+		r := b.GetSideBetResults()[0]
+		assert.Equal(t, BacSideBetBankerPair, r.BetType)
+		assert.Equal(t, BacPairMatch, r.ResultType)
+		assert.Equal(t, 20+20*BacPairPayoutRate, r.Payout) // 20 + 220 = 240
+	})
+
+	t.Run("banker pair loses", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(900)
+		b.SetBetAmount(100)
+		b.SetBetType(BaccaratBetPlayer)
+		b.SetBankerPairBet(20)
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignHeart, 6, false),
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false), // no pair
+		})
+		b.evaluateSideBets()
+		assert.Len(t, b.GetSideBetResults(), 1)
+		r := b.GetSideBetResults()[0]
+		assert.Equal(t, BacSideBetBankerPair, r.BetType)
+		assert.Equal(t, BacPairNone, r.ResultType)
+		assert.Equal(t, 0, r.Payout)
+	})
+
+	t.Run("both side bets", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(900)
+		b.SetBetAmount(100)
+		b.SetBetType(BaccaratBetPlayer)
+		b.SetPlayerPairBet(10)
+		b.SetBankerPairBet(20)
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignHeart, 5, false), // pair
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false), // no pair
+		})
+		b.evaluateSideBets()
+		assert.Len(t, b.GetSideBetResults(), 2)
+		assert.Equal(t, BacSideBetPlayerPair, b.GetSideBetResults()[0].BetType)
+		assert.Equal(t, BacSideBetBankerPair, b.GetSideBetResults()[1].BetType)
+	})
+
+	t.Run("no side bets", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetPlayerHand([]*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignHeart, 6, false),
+		})
+		b.SetBankerHand([]*Card{
+			NewCard(CardDesignClover, 3, false),
+			NewCard(CardDesignDiamond, 4, false),
+		})
+		b.evaluateSideBets()
+		assert.Nil(t, b.GetSideBetResults())
+	})
+}
+
+func TestBaccarat_History(t *testing.T) {
+	t.Run("history accumulates across rounds", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetChips(10000)
+		for i := 0; i < 3; i++ {
+			err := b.Bet(100, BaccaratBetPlayer, 0, 0)
+			assert.NoError(t, err)
+			b.Reset()
+		}
+		assert.Len(t, b.GetHistory(), 3)
+	})
+
+	t.Run("clear history resets", func(t *testing.T) {
+		b := NewDefaultBaccarat()
+		b.SetHistory([]int{0, 1, 2})
+		b.ClearHistory()
+		assert.Nil(t, b.GetHistory())
 	})
 }

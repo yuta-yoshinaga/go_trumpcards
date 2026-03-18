@@ -20,5 +20,15 @@
   "phase": {
     "bet": "Bet Phase",
     "end": "Result"
+  },
+  "sideBet": {
+    "playerPair": "Player Pair",
+    "bankerPair": "Banker Pair",
+    "pair": "Pair",
+    "noPair": "No Pair"
+  },
+  "road": {
+    "title": "Big Road",
+    "clear": "Clear History"
   }
 }

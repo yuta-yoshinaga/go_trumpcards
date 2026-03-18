@@ -14,10 +14,11 @@ import (
 func newMockBaccaratInteractor() *usecase.MockBaccaratInteractor {
 	m := new(usecase.MockBaccaratInteractor)
 	m.On("Reset").Return("reset result")
-	m.On("Bet", 100, 0).Return("bet player result")
-	m.On("Bet", 100, 1).Return("bet banker result")
-	m.On("Bet", 100, 2).Return("bet tie result")
+	m.On("Bet", 100, 0, 0, 0).Return("bet player result")
+	m.On("Bet", 100, 1, 0, 0).Return("bet banker result")
+	m.On("Bet", 100, 2, 0, 0).Return("bet tie result")
 	m.On("ActionLog").Return("action log result")
+	m.On("ClearHistory").Return("clear history result")
 	return m
 }
 
@@ -109,6 +110,14 @@ func TestBaccaratCuiController_ActionLog(t *testing.T) {
 
 	assert.Equal(t, "action log result", c.Exec("log"))
 	assert.Equal(t, "action log result", c.Exec("l"))
+}
+
+func TestBaccaratCuiController_ClearHistory(t *testing.T) {
+	m := newMockBaccaratInteractor()
+	c := controller.NewBaccaratCuiController(m)
+
+	assert.Equal(t, "clear history result", c.Exec("ch"))
+	assert.Equal(t, "clear history result", c.Exec("clearhistory"))
 }
 
 func TestBaccaratCuiController_Unknown(t *testing.T) {

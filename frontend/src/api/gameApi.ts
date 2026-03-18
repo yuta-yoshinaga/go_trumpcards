@@ -275,8 +275,13 @@ export const klondikeApi = {
 };
 
 export const baccaratApi = {
-  exec: (command: 'reset' | 'bet' | 'log', amount?: number, betType?: number) =>
-    gameExec<BaccaratResponse>('baccarat', { command, amount, betType }),
+  exec: (
+    command: 'reset' | 'bet' | 'log' | 'clearhistory',
+    amount?: number,
+    betType?: number,
+    playerPairBet?: number,
+    bankerPairBet?: number,
+  ) => gameExec<BaccaratResponse>('baccarat', { command, amount, betType, playerPairBet, bankerPairBet }),
 };
 
 const games = [

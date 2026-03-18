@@ -6,7 +6,8 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 type BaccaratGame interface {
 	// interactor が呼ぶメソッド
 	Reset()
-	Bet(amount, betType int) error
+	Bet(amount, betType, ppBet, bpBet int) error
+	ClearHistory()
 
 	// presenter が呼ぶメソッド
 	GetPlayerHand() []*domain.Card
@@ -21,4 +22,8 @@ type BaccaratGame interface {
 	GetPlayerHandValue() int
 	GetBankerHandValue() int
 	GetActionLog() []*domain.ActionLogEntry
+	GetHistory() []int
+	GetPlayerPairBet() int
+	GetBankerPairBet() int
+	GetSideBetResults() []*domain.BacSideBetResult
 }

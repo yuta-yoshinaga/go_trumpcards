@@ -20,12 +20,12 @@ func NewBaccaratCuiController(bi usecase.BaccaratInteractorIF) *BaccaratCuiContr
 }
 
 // Exec ゲーム実行
-// コマンド例: "r", "b 100 0", "q"
+// コマンド例: "r", "b 100 0", "ch", "q"
 func (bcc *BaccaratCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
 		func(_ []string) string { return bcc.bi.Reset() },
-		[]string{"b", "bet", "log", "l"},
+		[]string{"b", "bet", "log", "l", "ch", "clearhistory"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bet":
@@ -37,9 +37,11 @@ func (bcc *BaccaratCuiController) Exec(command string) string {
 				if !ok {
 					return errMsg, true
 				}
-				return bcc.bi.Bet(amount, betType), true
+				return bcc.bi.Bet(amount, betType, 0, 0), true
 			case "log", "l":
 				return bcc.bi.ActionLog(), true
+			case "ch", "clearhistory":
+				return bcc.bi.ClearHistory(), true
 			}
 			return "", false
 		},
