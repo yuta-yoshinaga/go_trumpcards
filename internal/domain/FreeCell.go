@@ -133,9 +133,7 @@ func (f *FreeCell) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 
 	// 移動実行
 	f.takeSnapshot()
-	for _, c := range movingCards {
-		f.tableau[toCol] = append(f.tableau[toCol], c)
-	}
+	f.tableau[toCol] = append(f.tableau[toCol], movingCards...)
 	f.tableau[fromCol] = fromCards[:cardIndex]
 	f.moveCount++
 	movedCards := make([]*Card, len(movingCards))
