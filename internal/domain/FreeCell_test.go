@@ -106,6 +106,29 @@ func TestFreeCellMoveTableauToTableauSupermove(t *testing.T) {
 	assert.Equal(t, 3, len(f.tableau[0]))
 }
 
+func TestFreeCellMoveTableauToTableauTopCard(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// cardIndex=-1 は一番上のカードを移動
+	f.tableau[0] = []*Card{makeCard(CardDesignSpade, 13)}
+	f.tableau[1] = []*Card{makeCard(CardDesignHeart, 12)}
+
+	err := f.MoveTableauToTableau(1, -1, 0)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(f.tableau[0]))
+	assert.Equal(t, 0, len(f.tableau[1]))
+}
+
+func TestFreeCellMoveTableauToTableauTopCardEmptyColumn(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// cardIndex=-1 で空の列からは移動できない
+	err := f.MoveTableauToTableau(0, -1, 1)
+	assert.Error(t, err)
+}
+
 func TestFreeCellMoveTableauToTableauKingToEmpty(t *testing.T) {
 	f := setupPlayingFreeCell()
 	clearTableauFC(f)
@@ -573,6 +596,19 @@ func TestFreeCellGetHintTableauToFreeCell(t *testing.T) {
 	assert.Equal(t, "tableau", hint.FromZone)
 	assert.Equal(t, "freecell", hint.ToZone)
 	assert.Equal(t, 3, hint.ToCol) // cell 3が空
+}
+
+func TestFreeCellGetHintFreeCellKingToEmptyTableau(t *testing.T) {
+	f := setupPlayingFreeCell()
+	clearTableauFC(f)
+
+	// King in freecell should be hinted to move to empty tableau column
+	f.freeCells[0] = makeCard(CardDesignSpade, 13)
+	hint := f.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "freecell", hint.FromZone)
+	assert.Equal(t, 0, hint.FromCol)
+	assert.Equal(t, "tableau", hint.ToZone)
 }
 
 func TestFreeCellGetHintNoHint(t *testing.T) {

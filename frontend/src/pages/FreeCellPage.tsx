@@ -91,13 +91,7 @@ export function FreeCellPage() {
               {card ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (selectedSource) {
-                      handleSelectTarget({ zone: 'freecell', cell: idx });
-                    } else {
-                      handleSelectSource({ zone: 'freecell', cell: idx });
-                    }
-                  }}
+                  onClick={() => handleSelectSource({ zone: 'freecell', cell: idx })}
                   disabled={!isPlaying || loading}
                   aria-label={cardAlt(card)}
                   aria-pressed={isSourceSelected('freecell', undefined, idx)}

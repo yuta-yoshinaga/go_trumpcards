@@ -56,11 +56,9 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 		case domain.FreeCellPhasePlaying:
 			resObj.MessageCode = "freecell.playing"
 		case domain.FreeCellPhaseGameClear:
-			resObj.Message = fmt.Sprintf("ゲームクリア！ 手数: %d", f.GetMoveCount())
 			resObj.MessageCode = "freecell.gameClear"
 			resObj.MessageParams = map[string]string{"moveCount": fmt.Sprintf("%d", f.GetMoveCount())}
 		case domain.FreeCellPhaseGameOver:
-			resObj.Message = "ゲームオーバー"
 			resObj.MessageCode = "freecell.gameOver"
 		}
 	}

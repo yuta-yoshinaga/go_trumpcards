@@ -110,6 +110,9 @@ func (f *FreeCell) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 		return errors.New("from and to columns are the same")
 	}
 	fromCards := f.tableau[fromCol]
+	if cardIndex == -1 {
+		cardIndex = len(fromCards) - 1
+	}
 	if cardIndex < 0 || cardIndex >= len(fromCards) {
 		return errors.New("invalid card index")
 	}
@@ -346,7 +349,7 @@ func (f *FreeCell) GetHint() *FreeCellHint {
 		}
 		card := f.freeCells[cell]
 		for toCol := 0; toCol < FreeCellTableauCnt; toCol++ {
-			if len(f.tableau[toCol]) == 0 {
+			if len(f.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
 				continue
 			}
 			if f.canPlaceOnTableau(card, toCol) {
