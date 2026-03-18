@@ -69,7 +69,8 @@ function BigRoadGrid({ history }: { history: number[] }) {
       while (grid[actualRow].length <= actualCol) grid[actualRow].push(null);
       grid[actualRow][actualCol] = col[row];
     }
-    colOffset += 1;
+    const colWidth = col.length > ROAD_MAX_ROWS ? 1 + (col.length - ROAD_MAX_ROWS) : 1;
+    colOffset += colWidth;
   }
 
   // Ensure all rows have same length

@@ -90,6 +90,21 @@ const endPhaseWithHistory: BaccaratResponse = {
   history: [0, 1, 0, 0, 1, 2, 1],
 };
 
+const endPhaseWithDragonTail: BaccaratResponse = {
+  ...endPhasePlayerWins,
+  history: [0, 0, 0, 0, 0, 0, 0, 1], // 7 player wins (dragon tail) + 1 banker
+};
+
+const endPhaseWithLeadingTie: BaccaratResponse = {
+  ...endPhasePlayerWins,
+  history: [2, 0, 1], // tie first, then player, then banker
+};
+
+const endPhaseWithOnlyTies: BaccaratResponse = {
+  ...endPhasePlayerWins,
+  history: [2, 2, 2], // only ties
+};
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -284,6 +299,29 @@ describe('BaccaratPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
     expect(screen.queryByTestId('big-road')).not.toBeInTheDocument();
     expect(screen.queryByText('罫線')).not.toBeInTheDocument();
+  });
+
+  it('renders Big Road with dragon tail (7+ same side)', async () => {
+    mockExec.mockResolvedValue(endPhaseWithDragonTail);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByTestId('big-road')).toBeInTheDocument());
+    // Dragon tail: 7 player wins should create overflow columns, then banker in separate column
+    expect(screen.getByText('罫線')).toBeInTheDocument();
+  });
+
+  it('renders Big Road with leading tie (tie dropped silently)', async () => {
+    mockExec.mockResolvedValue(endPhaseWithLeadingTie);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByTestId('big-road')).toBeInTheDocument());
+  });
+
+  it('does not render Big Road when history is only ties', async () => {
+    mockExec.mockResolvedValue(endPhaseWithOnlyTies);
+    renderWithProviders(<BaccaratPage />);
+    await waitFor(() => expect(screen.getByText('プレイヤーの勝ち！')).toBeInTheDocument());
+    // Only ties means columns is empty, so BigRoadGrid returns null
+    // But history.length > 0, so the title and clear button should show
+    expect(screen.queryByTestId('big-road')).not.toBeInTheDocument();
   });
 
   it('calls clearhistory when clear button is clicked', async () => {
