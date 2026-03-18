@@ -290,12 +290,12 @@ func (h *Hearts) ResolveTrick() {
 	// ポイント計算
 	points := 0
 	for _, tc := range h.currentTrick {
-		points += cardPoints(tc.Card)
+		points += cardPoints(tc.Card, h.config.OmnibusJD)
 	}
 	h.players[winnerIdx].roundScore += points
 
 	winnerName := h.playerName(winnerIdx)
-	h.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (+%d pts)", winnerName, h.trickNumber, points), trickCards)
+	h.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (%+d pts)", winnerName, h.trickNumber, points), trickCards)
 
 	h.leadPlayerIdx = winnerIdx
 
@@ -324,9 +324,14 @@ func (h *Hearts) ScoreRound() {
 	}
 
 	// シュート・ザ・ムーン判定
+	// オムニバス時: 全ペナルティ(26) + J♦(-10) = 16 がムーンしきい値
+	moonThreshold := HeartsMaxPoints
+	if h.config.OmnibusJD {
+		moonThreshold = HeartsMaxPoints - 10
+	}
 	moonShooter := -1
 	for i := 0; i < HeartsPlayerCnt; i++ {
-		if h.players[i].roundScore == HeartsMaxPoints {
+		if h.players[i].roundScore == moonThreshold {
 			moonShooter = i
 			break
 		}
@@ -565,7 +570,7 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 		}
 		// 最初のトリックではハートとQ♠を出せない（強制される場合を除く）
 		if h.trickNumber == 1 {
-			if isPointCard(card) && h.playerHasNonPointCard(player) {
+			if isPointCard(card, h.config.OmnibusJD) && h.playerHasNonPointCard(player) {
 				return NewDomainError(ErrInvalidPlay, "最初のトリックではポイントカードを出せません")
 			}
 		}
@@ -611,33 +616,47 @@ func (h *Hearts) playerHasNonHeart(playerIdx int) bool {
 // playerHasNonPointCard プレイヤーがポイントカード以外のカードを持っているか
 func (h *Hearts) playerHasNonPointCard(player *HeartsPlayer) bool {
 	for i := 0; i < player.GetCardsSize(); i++ {
-		if !isPointCard(player.GetCard(i)) {
+		if !isPointCard(player.GetCard(i), h.config.OmnibusJD) {
 			return true
 		}
 	}
 	return false
 }
 
-// isPointCard ポイントカードかどうか (ハートまたはQ♠)
-func isPointCard(card *Card) bool {
+// isPointCard ポイントカードかどうか (ハートまたはQ♠、オムニバス時はJ♦も含む)
+func isPointCard(card *Card, omnibusJD bool) bool {
 	if card.GetDesign() == CardDesignHeart {
 		return true
 	}
 	if card.GetDesign() == CardDesignSpade && card.GetValue() == 12 {
+		return true
+	}
+	if omnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
 		return true
 	}
 	return false
 }
 
 // cardPoints カードのポイント値
-func cardPoints(card *Card) int {
+func cardPoints(card *Card, omnibusJD bool) int {
 	if card.GetDesign() == CardDesignHeart {
 		return 1
 	}
 	if card.GetDesign() == CardDesignSpade && card.GetValue() == 12 {
 		return 13
 	}
+	if omnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
+		return -10
+	}
 	return 0
+}
+
+// isPenaltyCard ペナルティカードかどうか (ハートまたはQ♠のみ。J♦は含まない)
+func isPenaltyCard(card *Card) bool {
+	if card.GetDesign() == CardDesignHeart {
+		return true
+	}
+	return card.GetDesign() == CardDesignSpade && card.GetValue() == 12
 }
 
 // trickWinner トリックの勝者を決定する
@@ -782,6 +801,10 @@ func (h *Hearts) cpuPassNormal(player *HeartsPlayer) []*Card {
 		if card.GetDesign() == CardDesignHeart {
 			score += 20
 		}
+		// オムニバス時はJ♦を渡さない（有利なカード）
+		if h.config.OmnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
+			score = -100
+		}
 		scores[i] = cardScore{idx: i, score: score}
 	}
 	sort.Slice(scores, func(i, j int) bool { return scores[i].score > scores[j].score })
@@ -821,6 +844,10 @@ func (h *Hearts) cpuPassHard(player *HeartsPlayer) []*Card {
 		// ボイド作成: 枚数が少ないスートの高いカードを優先
 		if suitCounts[card.GetDesign()] <= 3 && card.GetDesign() != CardDesignHeart {
 			score += 30
+		}
+		// オムニバス時はJ♦を渡さない（有利なカード）
+		if h.config.OmnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
+			score = -100
 		}
 		scores[i] = cardScore{idx: i, score: score}
 	}
@@ -924,14 +951,17 @@ func (h *Hearts) cpuPlayNormal(playerIdx int, validIndices []int) int {
 		return bestIdx
 	}
 
-	// ボイドの場合: ポイントカードを最優先で捨てる、次に高いカード
+	// ボイドの場合: ペナルティカードを最優先で捨てる、次に高いカード
+	// オムニバス時はJ♦を捨てない（有利なカードのため）
 	bestIdx := validIndices[0]
 	for _, idx := range validIndices[1:] {
 		card := player.GetCard(idx)
 		bestCard := player.GetCard(bestIdx)
-		if isPointCard(card) && !isPointCard(bestCard) {
+		cardPenalty := isPenaltyCard(card)
+		bestPenalty := isPenaltyCard(bestCard)
+		if cardPenalty && !bestPenalty {
 			bestIdx = idx
-		} else if isPointCard(card) == isPointCard(bestCard) && card.GetValue() > bestCard.GetValue() {
+		} else if cardPenalty == bestPenalty && card.GetValue() > bestCard.GetValue() {
 			bestIdx = idx
 		}
 	}
@@ -970,7 +1000,7 @@ func (h *Hearts) cpuPlayHard(playerIdx int, validIndices []int) int {
 		if tc.Card.GetDesign() == leadSuit && tc.Card.GetValue() > highestInTrick {
 			highestInTrick = tc.Card.GetValue()
 		}
-		trickPoints += cardPoints(tc.Card)
+		trickPoints += cardPoints(tc.Card, h.config.OmnibusJD)
 	}
 
 	hasLeadSuit := false
@@ -1017,6 +1047,7 @@ func (h *Hearts) cpuPlayHard(playerIdx int, validIndices []int) int {
 	}
 
 	// ディスカード: Q♠を最優先、次にハートの高いカード、次に高いカード
+	// オムニバス時はJ♦を捨てない（有利なカードのため）
 	bestIdx := validIndices[0]
 	bestScore := -1
 	for _, idx := range validIndices {
@@ -1026,6 +1057,10 @@ func (h *Hearts) cpuPlayHard(playerIdx int, validIndices []int) int {
 			score += 200
 		} else if card.GetDesign() == CardDesignHeart {
 			score += 100
+		}
+		// J♦はオムニバス時に有利なので捨てない
+		if h.config.OmnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
+			score = -100
 		}
 		if score > bestScore {
 			bestScore = score

@@ -64,6 +64,57 @@ func TestHearts_startPlayPhase_NotFirstTrick(t *testing.T) {
 	assert.Equal(t, 2, h.currentPlayerIdx)
 }
 
+// --- Omnibus J♦ internal tests ---
+
+func TestCardPoints_OmnibusJD(t *testing.T) {
+	jd := NewCard(CardDesignDiamond, 11, false)
+	// Without omnibus: J♦ = 0 points
+	assert.Equal(t, 0, cardPoints(jd, false))
+	// With omnibus: J♦ = -10 points
+	assert.Equal(t, -10, cardPoints(jd, true))
+
+	// Hearts still 1, Q♠ still 13 regardless of omnibus
+	h3 := NewCard(CardDesignHeart, 3, false)
+	assert.Equal(t, 1, cardPoints(h3, false))
+	assert.Equal(t, 1, cardPoints(h3, true))
+
+	qs := NewCard(CardDesignSpade, 12, false)
+	assert.Equal(t, 13, cardPoints(qs, false))
+	assert.Equal(t, 13, cardPoints(qs, true))
+
+	// Other cards still 0
+	c5 := NewCard(CardDesignClover, 5, false)
+	assert.Equal(t, 0, cardPoints(c5, false))
+	assert.Equal(t, 0, cardPoints(c5, true))
+}
+
+func TestIsPointCard_OmnibusJD(t *testing.T) {
+	jd := NewCard(CardDesignDiamond, 11, false)
+	assert.False(t, isPointCard(jd, false))
+	assert.True(t, isPointCard(jd, true))
+
+	// Hearts always point cards
+	h3 := NewCard(CardDesignHeart, 3, false)
+	assert.True(t, isPointCard(h3, false))
+	assert.True(t, isPointCard(h3, true))
+
+	// Q♠ always point card
+	qs := NewCard(CardDesignSpade, 12, false)
+	assert.True(t, isPointCard(qs, false))
+	assert.True(t, isPointCard(qs, true))
+}
+
+func TestIsPenaltyCard(t *testing.T) {
+	// Hearts are penalty
+	assert.True(t, isPenaltyCard(NewCard(CardDesignHeart, 5, false)))
+	// Q♠ is penalty
+	assert.True(t, isPenaltyCard(NewCard(CardDesignSpade, 12, false)))
+	// J♦ is NOT penalty (even though it's a point card under omnibus)
+	assert.False(t, isPenaltyCard(NewCard(CardDesignDiamond, 11, false)))
+	// Other cards are not penalty
+	assert.False(t, isPenaltyCard(NewCard(CardDesignClover, 5, false)))
+}
+
 func TestHearts_cpuPlayHard_FollowWithNonLeadSuitCards(t *testing.T) {
 	// Exercise the continue branch in cpuPlayHard follow-suit when
 	// validIndices contains non-lead-suit cards (shouldn't happen in practice

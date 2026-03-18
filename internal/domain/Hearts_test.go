@@ -2491,3 +2491,274 @@ func TestHearts_CpuPlay_Normal_Follow_BothAbove_PicksLower(t *testing.T) {
 	// card.GetValue()(7) < bestVal(13), takes fallback branch
 	assert.Equal(t, 7, trick[1].Card.GetValue())
 }
+
+// --- Omnibus Hearts (J♦ = -10) ---
+
+func newTestHeartsOmnibus() *domain.Hearts {
+	players := []*domain.HeartsPlayer{
+		domain.NewHeartsPlayer(true),
+		domain.NewHeartsPlayer(false),
+		domain.NewHeartsPlayer(false),
+		domain.NewHeartsPlayer(false),
+	}
+	cfg := domain.DefaultHeartsConfig()
+	cfg.OmnibusJD = true
+	tc := domain.NewTrumpCards(0)
+	return domain.NewHearts(tc, players, cfg)
+}
+
+func TestHearts_Omnibus_ResolveTrick_JDiamondGivesNegativePoints(t *testing.T) {
+	h := newTestHeartsOmnibus()
+	h.Reset()
+
+	// Setup: trick with J♦ only (no hearts, no Q♠)
+	setupPlayPhase(h, 0, 0, 2)
+	h.SetHeartsBroken(true)
+
+	// Build a trick where player 0 wins and J♦ is in the trick
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignDiamond, 13, false)}, // K♦ leads
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)}, // J♦ (-10 pts)
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignDiamond, 5, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignDiamond, 3, false)},
+	})
+	h.SetPhase(domain.HeartsPhaseTrickEnd)
+	h.SetTrickNumber(2)
+	h.ResolveTrick()
+
+	// Player 0 wins with K♦ and gets -10 points from J♦
+	assert.Equal(t, -10, h.GetPlayer(0).GetRoundScore())
+}
+
+func TestHearts_Omnibus_ResolveTrick_JDiamondPlusHearts(t *testing.T) {
+	h := newTestHeartsOmnibus()
+	h.Reset()
+
+	setupPlayPhase(h, 0, 0, 2)
+	h.SetHeartsBroken(true)
+
+	// Trick with J♦ and a heart: -10 + 1 = -9
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignDiamond, 13, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)}, // J♦
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},    // ♥5
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignDiamond, 3, false)},
+	})
+	h.SetPhase(domain.HeartsPhaseTrickEnd)
+	h.SetTrickNumber(2)
+	h.ResolveTrick()
+
+	assert.Equal(t, -9, h.GetPlayer(0).GetRoundScore())
+}
+
+func TestHearts_Omnibus_ShootTheMoon(t *testing.T) {
+	h := newTestHeartsOmnibus()
+
+	// Setup: player 0 has roundScore = 16 (26 - 10 = all penalties + J♦)
+	h.SetPhase(domain.HeartsPhaseRoundEnd)
+	h.SetRoundNumber(1)
+	h.GetPlayer(0).SetRoundScore(16) // moon threshold with omnibus
+	h.GetPlayer(1).SetRoundScore(0)
+	h.GetPlayer(2).SetRoundScore(0)
+	h.GetPlayer(3).SetRoundScore(0)
+
+	h.ScoreRound()
+
+	// Shooter gets 0, others get 26
+	assert.Equal(t, 0, h.GetPlayer(0).GetRoundScore())
+	assert.Equal(t, 26, h.GetPlayer(1).GetCumulativeScore())
+	assert.Equal(t, 26, h.GetPlayer(2).GetCumulativeScore())
+	assert.Equal(t, 26, h.GetPlayer(3).GetCumulativeScore())
+}
+
+func TestHearts_Omnibus_NoShootTheMoon_At26(t *testing.T) {
+	// With omnibus, 26 points means player took all hearts + Q♠ but NOT J♦
+	// This should NOT trigger shoot-the-moon (threshold is 16)
+	h := newTestHeartsOmnibus()
+	h.SetPhase(domain.HeartsPhaseRoundEnd)
+	h.SetRoundNumber(1)
+	h.GetPlayer(0).SetRoundScore(26) // NOT moon threshold with omnibus
+	h.GetPlayer(1).SetRoundScore(0)
+	h.GetPlayer(2).SetRoundScore(0)
+	h.GetPlayer(3).SetRoundScore(0)
+
+	h.ScoreRound()
+
+	// No moon: player 0 keeps 26
+	assert.Equal(t, 26, h.GetPlayer(0).GetCumulativeScore())
+	assert.Equal(t, 0, h.GetPlayer(1).GetCumulativeScore())
+}
+
+func TestHearts_NoOmnibus_ShootTheMoon_Standard(t *testing.T) {
+	// Without omnibus, 26 still triggers shoot the moon
+	h := newTestHearts()
+	h.SetPhase(domain.HeartsPhaseRoundEnd)
+	h.SetRoundNumber(1)
+	h.GetPlayer(0).SetRoundScore(26)
+	h.GetPlayer(1).SetRoundScore(0)
+	h.GetPlayer(2).SetRoundScore(0)
+	h.GetPlayer(3).SetRoundScore(0)
+
+	h.ScoreRound()
+
+	assert.Equal(t, 0, h.GetPlayer(0).GetRoundScore())
+	assert.Equal(t, 26, h.GetPlayer(1).GetCumulativeScore())
+}
+
+func TestHearts_Omnibus_ValidatePlay_FirstTrick_JDiamondBlocked(t *testing.T) {
+	h := newTestHeartsOmnibus()
+	h.Reset()
+
+	// First trick, player follows with void in lead suit
+	setupPlayPhase(h, 0, 0, 1)
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 2, false)}, // lead: ♣2
+	})
+
+	// Human has J♦ + a non-point card
+	player := h.GetPlayer(0)
+	player.Reset()
+	player.AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false)) // J♦ (point card under omnibus)
+	player.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))    // non-point card
+
+	// J♦ should be blocked on first trick (it's a point card under omnibus)
+	err := h.PlayerPlay(0) // try to play J♦
+	assert.Error(t, err)
+}
+
+func TestHearts_Omnibus_ValidatePlay_FirstTrick_JDiamondAllowed_OnlyPointCards(t *testing.T) {
+	h := newTestHeartsOmnibus()
+	h.Reset()
+
+	// First trick, player is void in lead suit and has only point cards
+	setupPlayPhase(h, 0, 0, 1)
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 2, false)},
+	})
+
+	// Human has only point cards (J♦ + hearts)
+	player := h.GetPlayer(0)
+	player.Reset()
+	player.AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false)) // J♦
+	player.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))    // ♥5
+
+	// Forced to play a point card since no non-point cards exist
+	err := h.PlayerPlay(0)
+	assert.NoError(t, err)
+}
+
+func TestHearts_Omnibus_CpuPassNormal_KeepsJDiamond(t *testing.T) {
+	h := newTestHeartsOmnibus()
+	cfg := h.GetConfig()
+	cfg.CpuDifficulty = domain.HeartsCpuDifficultyNormal
+	h.SetConfig(cfg)
+	h.Reset()
+
+	// Give CPU1 J♦ and other cards
+	cpu := h.GetPlayer(1)
+	cpu.Reset()
+	cpu.AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false)) // J♦ (should be kept)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))   // Q♠ (should be passed)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))   // K♠ (should be passed)
+	cpu.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))   // K♥ (should be passed)
+	cpu.AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+	h.CpuPass()
+
+	// J♦ should still be in CPU1's hand (not passed)
+	passed := h.GetPassedCards()
+	for _, card := range passed[1] {
+		assert.False(t, card.GetDesign() == domain.CardDesignDiamond && card.GetValue() == 11,
+			"CPU should not pass J♦ in omnibus mode")
+	}
+}
+
+func TestHearts_Omnibus_CpuPassHard_KeepsJDiamond(t *testing.T) {
+	h := newTestHeartsOmnibus()
+	cfg := h.GetConfig()
+	cfg.CpuDifficulty = domain.HeartsCpuDifficultyHard
+	h.SetConfig(cfg)
+	h.Reset()
+
+	// Give CPU1 J♦ and other high cards
+	cpu := h.GetPlayer(1)
+	cpu.Reset()
+	cpu.AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false)) // J♦ (should be kept)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))   // Q♠
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))   // K♠
+	cpu.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))   // K♥
+	cpu.AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+
+	h.CpuPass()
+
+	passed := h.GetPassedCards()
+	for _, card := range passed[1] {
+		assert.False(t, card.GetDesign() == domain.CardDesignDiamond && card.GetValue() == 11,
+			"CPU should not pass J♦ in omnibus mode (hard)")
+	}
+}
+
+func TestHearts_Omnibus_CpuPlayHard_DiscardKeepsJDiamond(t *testing.T) {
+	h := newTestHeartsOmnibus()
+	cfg := h.GetConfig()
+	cfg.CpuDifficulty = domain.HeartsCpuDifficultyHard
+	h.SetConfig(cfg)
+	h.Reset()
+
+	setupPlayPhase(h, 1, 0, 2)
+	h.SetHeartsBroken(true)
+
+	// Lead is clover, CPU1 has no clover (void)
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
+	})
+
+	cpu := h.GetPlayer(1)
+	cpu.Reset()
+	cpu.AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false)) // J♦ (should keep)
+	cpu.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))   // K♥ (should discard)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+
+	h.CpuPlay()
+
+	trick := h.GetCurrentTrick()
+	assert.Equal(t, 2, len(trick))
+	// Should discard K♥ (penalty card), not J♦
+	assert.Equal(t, domain.CardDesignHeart, trick[1].Card.GetDesign())
+	assert.Equal(t, 13, trick[1].Card.GetValue())
+}
+
+func TestHearts_Omnibus_CpuPlayNormal_DiscardKeepsJDiamond(t *testing.T) {
+	h := newTestHeartsOmnibus()
+	cfg := h.GetConfig()
+	cfg.CpuDifficulty = domain.HeartsCpuDifficultyNormal
+	h.SetConfig(cfg)
+	h.Reset()
+
+	setupPlayPhase(h, 1, 0, 2)
+	h.SetHeartsBroken(true)
+
+	// Lead is clover, CPU1 is void in clover
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
+	})
+
+	cpu := h.GetPlayer(1)
+	cpu.Reset()
+	cpu.AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false)) // J♦ (should keep - not penalty)
+	cpu.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))   // Q♠ (penalty - should discard)
+	cpu.AddCard(domain.NewCard(domain.CardDesignDiamond, 5, false))
+
+	h.CpuPlay()
+
+	trick := h.GetCurrentTrick()
+	assert.Equal(t, 2, len(trick))
+	// Should discard Q♠ (penalty), not J♦
+	assert.Equal(t, domain.CardDesignSpade, trick[1].Card.GetDesign())
+	assert.Equal(t, 12, trick[1].Card.GetValue())
+}
+
+func TestHearts_Omnibus_DefaultConfigFalse(t *testing.T) {
+	cfg := domain.DefaultHeartsConfig()
+	assert.False(t, cfg.OmnibusJD)
+}

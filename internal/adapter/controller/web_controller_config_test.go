@@ -549,6 +549,7 @@ func TestHeartsWebConfig_ToConfig_Defaults(t *testing.T) {
 	def := domain.DefaultHeartsConfig()
 	assert.Equal(t, def.CpuDifficulty, cfg.CpuDifficulty)
 	assert.Equal(t, def.PointLimit, cfg.PointLimit)
+	assert.False(t, cfg.OmnibusJD)
 }
 
 func TestHeartsWebConfig_ToConfig_ValidCpuDifficulty(t *testing.T) {
@@ -604,6 +605,24 @@ func TestHeartsWebInput_ToConfig_WithConfig(t *testing.T) {
 	}
 	cfg := p.ToConfig()
 	assert.Equal(t, 75, cfg.PointLimit)
+}
+
+func TestHeartsWebConfig_ToConfig_OmnibusJDTrue(t *testing.T) {
+	c := &controller.HeartsWebConfig{OmnibusJD: boolPtr(true)}
+	cfg := c.ToConfig()
+	assert.True(t, cfg.OmnibusJD)
+}
+
+func TestHeartsWebConfig_ToConfig_OmnibusJDFalse(t *testing.T) {
+	c := &controller.HeartsWebConfig{OmnibusJD: boolPtr(false)}
+	cfg := c.ToConfig()
+	assert.False(t, cfg.OmnibusJD)
+}
+
+func TestHeartsWebConfig_ToConfig_OmnibusJDNil(t *testing.T) {
+	c := &controller.HeartsWebConfig{}
+	cfg := c.ToConfig()
+	assert.False(t, cfg.OmnibusJD) // nil → default false
 }
 
 // ---------------------------------------------------------------------------

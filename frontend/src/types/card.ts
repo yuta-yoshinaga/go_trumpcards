@@ -505,6 +505,7 @@ export interface HeartsTrickCard {
 export interface HeartsConfig {
   cpuDifficulty: number;
   pointLimit: number;
+  omnibusJD: boolean;
 }
 
 export interface HeartsResponse {
