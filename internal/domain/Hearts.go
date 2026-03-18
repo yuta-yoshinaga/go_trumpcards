@@ -332,6 +332,11 @@ func (h *Hearts) ScoreRound() {
 	moonShooter := -1
 	for i := 0; i < HeartsPlayerCnt; i++ {
 		if h.players[i].roundScore == moonThreshold {
+			// オムニバス時: スコア16はJ♦なしでも到達できる（例: ハート3枚+Q♠=16）。
+			// J♦を実際に取得したか確認する。J♦がある場合のみスコア16は正当なムーン。
+			if h.config.OmnibusJD && !h.playerTookCard(i, CardDesignDiamond, 11) {
+				continue
+			}
 			moonShooter = i
 			break
 		}
@@ -623,30 +628,38 @@ func (h *Hearts) playerHasNonPointCard(player *HeartsPlayer) bool {
 	return false
 }
 
-// isPointCard ポイントカードかどうか (ハートまたはQ♠、オムニバス時はJ♦も含む)
-func isPointCard(card *Card, omnibusJD bool) bool {
-	if card.GetDesign() == CardDesignHeart {
-		return true
-	}
-	if card.GetDesign() == CardDesignSpade && card.GetValue() == 12 {
-		return true
-	}
-	if omnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
-		return true
+// playerTookCard プレイヤーが獲得したトリックに特定のカードが含まれるか確認する
+func (h *Hearts) playerTookCard(playerIdx, design, value int) bool {
+	for _, trick := range h.players[playerIdx].GetTricksTaken() {
+		for _, card := range trick {
+			if card.GetDesign() == design && card.GetValue() == value {
+				return true
+			}
+		}
 	}
 	return false
 }
 
+// isPointCard ポイントカードかどうか (ハートまたはQ♠、オムニバス時はJ♦も含む)
+func isPointCard(card *Card, omnibusJD bool) bool {
+	return card.GetDesign() == CardDesignHeart ||
+		(card.GetDesign() == CardDesignSpade && card.GetValue() == 12) ||
+		(omnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11)
+}
+
 // cardPoints カードのポイント値
 func cardPoints(card *Card, omnibusJD bool) int {
-	if card.GetDesign() == CardDesignHeart {
+	switch card.GetDesign() {
+	case CardDesignHeart:
 		return 1
-	}
-	if card.GetDesign() == CardDesignSpade && card.GetValue() == 12 {
-		return 13
-	}
-	if omnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
-		return -10
+	case CardDesignSpade:
+		if card.GetValue() == 12 {
+			return 13
+		}
+	case CardDesignDiamond:
+		if omnibusJD && card.GetValue() == 11 {
+			return -10
+		}
 	}
 	return 0
 }
@@ -953,10 +966,21 @@ func (h *Hearts) cpuPlayNormal(playerIdx int, validIndices []int) int {
 
 	// ボイドの場合: ペナルティカードを最優先で捨てる、次に高いカード
 	// オムニバス時はJ♦を捨てない（有利なカードのため）
+	isOmnibusJD := func(c *Card) bool {
+		return h.config.OmnibusJD && c.GetDesign() == CardDesignDiamond && c.GetValue() == 11
+	}
 	bestIdx := validIndices[0]
 	for _, idx := range validIndices[1:] {
 		card := player.GetCard(idx)
 		bestCard := player.GetCard(bestIdx)
+		// J♦はオムニバス時に有利なので最後の選択肢にする
+		if isOmnibusJD(card) {
+			continue
+		}
+		if isOmnibusJD(bestCard) {
+			bestIdx = idx
+			continue
+		}
 		cardPenalty := isPenaltyCard(card)
 		bestPenalty := isPenaltyCard(bestCard)
 		if cardPenalty && !bestPenalty {

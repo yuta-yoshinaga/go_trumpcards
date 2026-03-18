@@ -2554,10 +2554,14 @@ func TestHearts_Omnibus_ResolveTrick_JDiamondPlusHearts(t *testing.T) {
 func TestHearts_Omnibus_ShootTheMoon(t *testing.T) {
 	h := newTestHeartsOmnibus()
 
-	// Setup: player 0 has roundScore = 16 (26 - 10 = all penalties + J♦)
+	// Setup: player 0 has roundScore = 16 (all hearts + Q♠ + J♦ = 26 - 10 = 16)
+	// Player must also have J♦ in tricksTaken, otherwise score 16 is ambiguous.
 	h.SetPhase(domain.HeartsPhaseRoundEnd)
 	h.SetRoundNumber(1)
 	h.GetPlayer(0).SetRoundScore(16) // moon threshold with omnibus
+	h.GetPlayer(0).AddTrick([]*domain.Card{
+		domain.NewCard(domain.CardDesignDiamond, 11, false), // J♦ confirms legitimate moon
+	})
 	h.GetPlayer(1).SetRoundScore(0)
 	h.GetPlayer(2).SetRoundScore(0)
 	h.GetPlayer(3).SetRoundScore(0)
@@ -2569,6 +2573,24 @@ func TestHearts_Omnibus_ShootTheMoon(t *testing.T) {
 	assert.Equal(t, 26, h.GetPlayer(1).GetCumulativeScore())
 	assert.Equal(t, 26, h.GetPlayer(2).GetCumulativeScore())
 	assert.Equal(t, 26, h.GetPlayer(3).GetCumulativeScore())
+}
+
+func TestHearts_Omnibus_NoShootTheMoon_Score16_WithoutJDiamond(t *testing.T) {
+	// Score 16 without J♦ (e.g. 3 hearts + Q♠ = 3 + 13 = 16) should NOT trigger moon
+	h := newTestHeartsOmnibus()
+	h.SetPhase(domain.HeartsPhaseRoundEnd)
+	h.SetRoundNumber(1)
+	h.GetPlayer(0).SetRoundScore(16) // ambiguous score without J♦ in tricks
+	// No J♦ added to tricksTaken
+	h.GetPlayer(1).SetRoundScore(0)
+	h.GetPlayer(2).SetRoundScore(0)
+	h.GetPlayer(3).SetRoundScore(0)
+
+	h.ScoreRound()
+
+	// No moon: player 0 keeps 16, others keep 0
+	assert.Equal(t, 16, h.GetPlayer(0).GetCumulativeScore())
+	assert.Equal(t, 0, h.GetPlayer(1).GetCumulativeScore())
 }
 
 func TestHearts_Omnibus_NoShootTheMoon_At26(t *testing.T) {
@@ -2756,6 +2778,38 @@ func TestHearts_Omnibus_CpuPlayNormal_DiscardKeepsJDiamond(t *testing.T) {
 	// Should discard Q♠ (penalty), not J♦
 	assert.Equal(t, domain.CardDesignSpade, trick[1].Card.GetDesign())
 	assert.Equal(t, 12, trick[1].Card.GetValue())
+}
+
+func TestHearts_Omnibus_CpuPlayNormal_DiscardKeepsJDiamond_NoQSpade(t *testing.T) {
+	// Bug 2 regression: J♦ value (11) > lower non-penalty card value (e.g. 7♣ = 7).
+	// Without the fix, cpuPlayNormal would discard J♦ because it is the highest-value
+	// non-penalty card. With the fix, J♦ must be preserved and the 7♣ discarded instead.
+	h := newTestHeartsOmnibus()
+	cfg := h.GetConfig()
+	cfg.CpuDifficulty = domain.HeartsCpuDifficultyNormal
+	h.SetConfig(cfg)
+	h.Reset()
+
+	setupPlayPhase(h, 1, 0, 2)
+	h.SetHeartsBroken(true)
+
+	// Lead is clover, CPU1 is void in clover
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 10, false)},
+	})
+
+	cpu := h.GetPlayer(1)
+	cpu.Reset()
+	cpu.AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false)) // J♦ (should keep)
+	cpu.AddCard(domain.NewCard(domain.CardDesignClover, 7, false))   // 7♣ (should discard - lower value)
+
+	h.CpuPlay()
+
+	trick := h.GetCurrentTrick()
+	assert.Equal(t, 2, len(trick))
+	// Should discard 7♣, not J♦
+	assert.Equal(t, domain.CardDesignClover, trick[1].Card.GetDesign())
+	assert.Equal(t, 7, trick[1].Card.GetValue())
 }
 
 func TestHearts_Omnibus_DefaultConfigFalse(t *testing.T) {

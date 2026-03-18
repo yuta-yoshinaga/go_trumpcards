@@ -139,3 +139,18 @@ func TestHearts_cpuPlayHard_FollowWithNonLeadSuitCards(t *testing.T) {
 	// Should pick clover 5 (lead suit), skipping heart 8
 	assert.Equal(t, 0, result)
 }
+
+func TestHearts_playerTookCard(t *testing.T) {
+	h := newInternalTestHearts()
+	jd := NewCard(CardDesignDiamond, 11, false)
+	h.players[0].AddTrick([]*Card{jd})
+
+	// Found: J♦ is in player 0's tricksTaken
+	assert.True(t, h.playerTookCard(0, CardDesignDiamond, 11))
+	// Not found: wrong value
+	assert.False(t, h.playerTookCard(0, CardDesignDiamond, 10))
+	// Not found: wrong design
+	assert.False(t, h.playerTookCard(0, CardDesignSpade, 11))
+	// Not found: player 1 has no tricks
+	assert.False(t, h.playerTookCard(1, CardDesignDiamond, 11))
+}
