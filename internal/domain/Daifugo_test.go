@@ -7869,7 +7869,7 @@ func TestDaifugo_BlindExchange(t *testing.T) {
 
 			dg.Reset()
 			actions := dg.GetExchangeActions()
-			if actions == nil || len(actions) < 2 {
+			if len(actions) < 2 {
 				continue
 			}
 
@@ -7879,7 +7879,7 @@ func TestDaifugo_BlindExchange(t *testing.T) {
 			for _, act := range actions {
 				// Upper giving to lower: cards not necessarily the weakest
 				// We can detect non-weakest by checking if any exchanged card is not at the beginning of sorted hand
-				if act.Cards != nil && len(act.Cards) > 0 {
+				if len(act.Cards) > 0 {
 					for _, c := range act.Cards {
 						// If upper gives a card with strength > 5 (i.e., not just the weakest 3s),
 						// that confirms randomness
