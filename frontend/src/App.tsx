@@ -7,6 +7,7 @@ import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
+import { FreeCellPage } from './pages/FreeCellPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
 import { KlondikePage } from './pages/KlondikePage';
@@ -27,6 +28,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/hearts': <HeartsPage />,
   '/memory': <MemoryPage />,
   '/klondike': <KlondikePage />,
+  '/freecell': <FreeCellPage />,
   '/baccarat': <BaccaratPage />,
 };
 

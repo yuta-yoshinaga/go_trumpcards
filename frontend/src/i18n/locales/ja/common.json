@@ -14,6 +14,7 @@
     "hearts": "ハーツ",
     "memory": "神経衰弱",
     "klondike": "クロンダイク",
+    "freecell": "フリーセル",
     "baccarat": "バカラ"
   },
   "player": {
@@ -119,6 +120,11 @@
     "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "klondike.gameOver": "ゲームオーバー",
     "klondike.hintAvailable": "ヒントがあります",
-    "klondike.noHint": "ヒントはありません"
+    "klondike.noHint": "ヒントはありません",
+    "freecell.playing": "プレイ中",
+    "freecell.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "freecell.gameOver": "ゲームオーバー",
+    "freecell.hintAvailable": "ヒントがあります",
+    "freecell.noHint": "ヒントはありません"
   }
 }

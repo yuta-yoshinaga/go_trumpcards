@@ -49,6 +49,7 @@ GAMES:
   hearts       Hearts (ハーツ)
   memory       Memory / Concentration (神経衰弱)
   klondike     Klondike Solitaire (ソリティア)
+  freecell     FreeCell (フリーセル)
   baccarat     Baccarat (バカラ)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
@@ -118,6 +119,7 @@ ENVIRONMENT VARIABLES:
 		"hearts":    func() int { ui.NewHeartsCui().Exec(); return 0 },
 		"memory":    func() int { ui.NewMemoryCui().Exec(); return 0 },
 		"klondike":  func() int { ui.NewKlondikeCui().Exec(); return 0 },
+		"freecell":  func() int { ui.NewFreeCellCui().Exec(); return 0 },
 		"baccarat":  func() int { ui.NewBaccaratCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)

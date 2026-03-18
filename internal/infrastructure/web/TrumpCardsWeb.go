@@ -33,6 +33,7 @@ type TrumpCardsWeb struct {
 	htc *controller.HeartsWebController
 	myc *controller.MemoryWebController
 	klc *controller.KlondikeWebController
+	fcc *controller.FreeCellWebController
 	bcc *controller.BaccaratWebController
 }
 
@@ -129,6 +130,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			klondike := domain.NewKlondike(domain.NewTrumpCards(0))
 			return usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeWebPresenter))
 		}),
+		fcc: controller.NewFreeCellWebController(func() usecase.FreeCellInteractorIF {
+			freeCell := domain.NewFreeCell(domain.NewTrumpCards(0))
+			return usecase.NewFreeCellInteractor(freeCell, new(presenter.FreeCellWebPresenter))
+		}),
 		bcc: controller.NewBaccaratWebController(func() usecase.BaccaratInteractorIF {
 			baccarat := domain.NewDefaultBaccarat()
 			return usecase.NewBaccaratInteractor(baccarat, new(presenter.BaccaratWebPresenter))
@@ -181,6 +186,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/hearts/exec", web.htc.Exec},
 		{"/memory/exec", web.myc.Exec},
 		{"/klondike/exec", web.klc.Exec},
+		{"/freecell/exec", web.fcc.Exec},
 		{"/baccarat/exec", web.bcc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
@@ -255,6 +261,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.htc.Stop()
 	web.myc.Stop()
 	web.klc.Stop()
+	web.fcc.Stop()
 	web.bcc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")

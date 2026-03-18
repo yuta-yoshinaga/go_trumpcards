@@ -19,6 +19,7 @@
 - **ハーツ (Hearts)**: CLI および Web GUIで遊べます（1人 vs CPU×3、トリックテイキング、シュート・ザ・ムーン、3段階CPU難易度） — [CUI版マニュアル](docs/manual/cui/hearts.md) / [Web版マニュアル](docs/manual/web/hearts.md)
 - **神経衰弱 (Memory)**: CLI および Web GUIで遊べます（1人 vs CPU×3、52枚のカードから同ランクのペアを揃える、3段階CPU難易度） — [CUI版マニュアル](docs/manual/cui/memory.md) / [Web版マニュアル](docs/manual/web/memory.md)
 - **クロンダイク (Klondike)**: CLI および Web GUIで遊べます（1人用ソリティア、52枚のカード、7列のタブロー、山札・ウェスト・4つの組札） — [CUI版マニュアル](docs/manual/cui/klondike.md) / [Web版マニュアル](docs/manual/web/klondike.md)
+- **フリーセル (FreeCell)**: CLI および Web GUIで遊べます（1人用ソリティア、52枚のカード、8列のタブロー、4つのフリーセル・4つの組札、スーパームーブ対応） — [CUI版マニュアル](docs/manual/cui/freecell.md) / [Web版マニュアル](docs/manual/web/freecell.md)
 - **バカラ (Baccarat)**: CLI および Web GUIで遊べます（プレイヤー/バンカー/タイベット、第3カードルール、5%バンカーコミッション、チップシステム） — [CUI版マニュアル](docs/manual/cui/baccarat.md) / [Web版マニュアル](docs/manual/web/baccarat.md)
 
 ## Requirements
@@ -94,6 +95,7 @@ go run ./cmd/trumpcards holdem     # テキサスホールデム CLI
 go run ./cmd/trumpcards hearts     # ハーツ CLI
 go run ./cmd/trumpcards memory     # 神経衰弱 CLI
 go run ./cmd/trumpcards klondike   # クロンダイク CLI
+go run ./cmd/trumpcards freecell   # フリーセル CLI
 go run ./cmd/trumpcards baccarat   # バカラ CLI
 go run ./cmd/trumpcards update     # 最新版にセルフアップデート
 go run ./cmd/trumpcards web        # REST API + Web GUI サーバー起動 (CLI経由)

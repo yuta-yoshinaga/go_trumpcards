@@ -596,6 +596,29 @@ export interface KlondikeResponse {
   hint?: KlondikeHint;
 }
 
+// --- FreeCell (フリーセル) ---
+
+export interface FreeCellHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+export interface FreeCellResponse {
+  tableau: (Card | null)[][];
+  freeCells: (Card | null)[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: FreeCellHint;
+}
+
 export interface BaccaratSideBetResult {
   betType: number;
   resultType: number;
