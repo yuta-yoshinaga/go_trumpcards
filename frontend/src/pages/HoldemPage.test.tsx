@@ -1331,4 +1331,62 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
+
+  // ---- Learning mode ----
+  describe('learning mode', () => {
+    const stateWithEquity: HoldemResponse = {
+      ...preFlopState,
+      equity: {
+        winProbability: 0.75,
+        handOdds: [
+          { handRank: 0, handName: 'High Card', probability: 0.1 },
+          { handRank: 1, handName: 'One Pair', probability: 0.9 },
+        ],
+      },
+      potOdds: 33.3,
+    };
+
+    it('shows learning mode toggle', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+    });
+
+    it('does not show equity display when learning mode is off', async () => {
+      mockExec.mockResolvedValue(stateWithEquity);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+      expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+    });
+
+    it('shows equity display when learning mode is on and equity data exists', async () => {
+      mockExec.mockResolvedValue(stateWithEquity);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+    });
+
+    it('hides equity display when learning mode is toggled off', async () => {
+      mockExec.mockResolvedValue(stateWithEquity);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+    });
+
+    it('does not show equity display when equity is not in state', async () => {
+      mockExec.mockResolvedValue(preFlopState);
+      renderWithProviders(<HoldemPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+    });
+  });
 });

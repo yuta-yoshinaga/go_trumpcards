@@ -26,6 +26,7 @@
     "sequence": "階段",
     "nineReverse": "9リバース",
     "numberLock": "数縛り",
+    "sequenceLock": "階段縛り",
     "illegalFinishPenalty": "反則上がり"
   },
   "exchange": {
@@ -62,8 +63,10 @@
     "sandstorm": "砂嵐",
     "emperor": "エンペラー",
     "sequenceRevolution": "階段革命",
+    "sequenceLock": "階段縛り",
     "illegalFinish": "反則上がり",
     "queenBomber": "12ボンバー",
+    "blindExchange": "ブラインド交換",
     "cpuDifficulty": "CPU難易度:",
     "difficultyNormal": "ふつう",
     "difficultyEasy": "よわい",

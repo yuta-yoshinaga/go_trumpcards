@@ -109,7 +109,7 @@ func TestDoubtInteractor_Play(t *testing.T) {
 		gameMock.On("GetGameEndFlag").Return(true)
 
 		di := usecase.NewDoubtInteractor(gameMock, dpMock)
-		result := di.Play([]int{0}, 5)
+		result := di.Play([]int{0}, 5, 0)
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertNotCalled(t, "PlayerPlay")
 	})
@@ -122,7 +122,7 @@ func TestDoubtInteractor_Play(t *testing.T) {
 		gameMock.On("IsHumanTurn").Return(false)
 
 		di := usecase.NewDoubtInteractor(gameMock, dpMock)
-		result := di.Play([]int{0}, 5)
+		result := di.Play([]int{0}, 5, 0)
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertNotCalled(t, "PlayerPlay")
 	})
@@ -133,12 +133,12 @@ func TestDoubtInteractor_Play(t *testing.T) {
 		gameMock := new(interfaces.MockDoubtGame)
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(true)
-		gameMock.On("PlayerPlay", []int{0, 1}, 5).Return(nil)
+		gameMock.On("PlayerPlay", []int{0, 1}, 5, 0).Return(nil)
 
 		di := usecase.NewDoubtInteractor(gameMock, dpMock)
-		result := di.Play([]int{0, 1}, 5)
+		result := di.Play([]int{0, 1}, 5, 0)
 		assert.Equal(t, mockOutput, result)
-		gameMock.AssertCalled(t, "PlayerPlay", []int{0, 1}, 5)
+		gameMock.AssertCalled(t, "PlayerPlay", []int{0, 1}, 5, 0)
 	})
 
 	t.Run("play error is passed to presenter", func(t *testing.T) {
@@ -148,10 +148,10 @@ func TestDoubtInteractor_Play(t *testing.T) {
 		gameMock := new(interfaces.MockDoubtGame)
 		gameMock.On("GetGameEndFlag").Return(false)
 		gameMock.On("IsHumanTurn").Return(true)
-		gameMock.On("PlayerPlay", mock.Anything, mock.Anything).Return(playErr)
+		gameMock.On("PlayerPlay", mock.Anything, mock.Anything, mock.Anything).Return(playErr)
 
 		di := usecase.NewDoubtInteractor(gameMock, dpMock)
-		result := di.Play([]int{0}, 5)
+		result := di.Play([]int{0}, 5, 0)
 		assert.Equal(t, mockOutput, result)
 	})
 }
@@ -318,7 +318,7 @@ func TestDoubtInteractor_WithRealGame(t *testing.T) {
 		game.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
 		di := usecase.NewDoubtInteractor(game, dpMock)
 		// Play with index 0, claimed value 1
-		result := di.Play([]int{0}, 1)
+		result := di.Play([]int{0}, 1, 0)
 		assert.Equal(t, mockOutput, result)
 	})
 }

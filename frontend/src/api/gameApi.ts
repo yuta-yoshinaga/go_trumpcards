@@ -127,12 +127,14 @@ export const doubtApi = {
     claimedValue?: number,
     doubterIndices?: number[],
     config?: DoubtConfig,
+    humanPlayMs?: number,
   ) =>
     gameExec<DoubtResponse>('doubt', {
       command,
       cardIndices,
       claimedValue,
       doubterIndices,
+      humanPlayMs,
       doubtWindowSec: config?.doubtWindowSec,
       cpuMemoryLevel: config?.cpuMemoryLevel,
       penaltyDrawLimit: config?.penaltyDrawLimit,
@@ -216,6 +218,7 @@ export const holdemApi = {
 export interface HeartsConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
+  omnibusJD?: boolean;
 }
 
 export const heartsApi = {
@@ -252,22 +255,34 @@ export interface KlondikeMoveZone {
   cardIndex?: number;
 }
 
+export interface KlondikeConfigInput {
+  drawCount?: number;
+  scoringMode?: number;
+}
+
 export const klondikeApi = {
   exec: (
-    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log',
+    command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
     from?: KlondikeMoveZone,
     to?: KlondikeMoveZone,
+    config?: KlondikeConfigInput,
   ) =>
     gameExec<KlondikeResponse>('klondike', {
       command,
       from,
       to,
+      config,
     }),
 };
 
 export const baccaratApi = {
-  exec: (command: 'reset' | 'bet' | 'log', amount?: number, betType?: number) =>
-    gameExec<BaccaratResponse>('baccarat', { command, amount, betType }),
+  exec: (
+    command: 'reset' | 'bet' | 'log' | 'clearhistory',
+    amount?: number,
+    betType?: number,
+    playerPairBet?: number,
+    bankerPairBet?: number,
+  ) => gameExec<BaccaratResponse>('baccarat', { command, amount, betType, playerPairBet, bankerPairBet }),
 };
 
 const games = [

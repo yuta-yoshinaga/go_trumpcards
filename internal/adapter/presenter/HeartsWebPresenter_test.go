@@ -346,6 +346,23 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 
 		assert.Equal(t, int(domain.HeartsCpuDifficultyNormal), resObj.Config.CpuDifficulty)
 		assert.Equal(t, 100, resObj.Config.PointLimit)
+		assert.False(t, resObj.Config.OmnibusJD)
+	})
+
+	t.Run("omnibus config enabled", func(t *testing.T) {
+		m, _ := setupHeartsWebMockWithPlayers()
+		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetConfig")
+		m.On("GetConfig").Return(domain.HeartsConfig{
+			CpuDifficulty: domain.HeartsCpuDifficultyNormal,
+			PointLimit:    100,
+			OmnibusJD:     true,
+		})
+
+		result := p.Output(m, nil)
+		var resObj controller.HeartsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.True(t, resObj.Config.OmnibusJD)
 	})
 }
 

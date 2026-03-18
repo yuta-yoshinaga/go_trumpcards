@@ -37,7 +37,7 @@ const defaultState: HeartsResponse = {
   winnerIdx: -1,
   leadPlayerIdx: 0,
   message: '',
-  config: { cpuDifficulty: 1, pointLimit: 100 },
+  config: { cpuDifficulty: 1, pointLimit: 100, omnibusJD: false },
 };
 
 beforeEach(() => {
@@ -48,7 +48,11 @@ describe('useHeartsGame', () => {
   it('calls reset on mount', async () => {
     renderHook(() => useHeartsGame(), { wrapper: createWrapper() });
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 100 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 100,
+        omnibusJD: false,
+      }),
     );
   });
 
@@ -168,6 +172,19 @@ describe('useHeartsGame', () => {
     });
 
     expect(result.current.heartsConfig.pointLimit).toBe(100);
+  });
+
+  it('handleToggle updates boolean config', async () => {
+    const { result } = renderHook(() => useHeartsGame(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.state).not.toBeNull());
+
+    expect(result.current.heartsConfig.omnibusJD).toBe(false);
+
+    act(() => {
+      result.current.handleToggle('omnibusJD', true);
+    });
+
+    expect(result.current.heartsConfig.omnibusJD).toBe(true);
   });
 
   it('clears selection on success', async () => {

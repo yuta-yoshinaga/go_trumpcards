@@ -55,8 +55,16 @@ export function DaifugoSettingsPanel({ config, onChange }: DaifugoSettingsPanelP
         checkbox('sandstormEnabled', t('settings.sandstorm')),
         checkbox('emperorEnabled', t('settings.emperor')),
         checkbox('sequenceRevolutionEnabled', t('settings.sequenceRevolution')),
+        {
+          ...checkbox('sequenceLockEnabled', t('settings.sequenceLock')),
+          disabled: !config.sequenceEnabled,
+        },
         checkbox('illegalFinishEnabled', t('settings.illegalFinish')),
         checkbox('queenBomberEnabled', t('settings.queenBomber')),
+        {
+          ...checkbox('blindExchangeEnabled', t('settings.blindExchange')),
+          disabled: !config.cardExchangeEnabled,
+        },
       ],
     },
     {

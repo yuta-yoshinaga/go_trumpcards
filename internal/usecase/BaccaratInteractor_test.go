@@ -46,10 +46,10 @@ func TestBaccaratInteractor_Bet(t *testing.T) {
 		mockPresenter := new(presenter.MockBaccaratPresenter)
 		bi := NewBaccaratInteractor(mockGame, mockPresenter)
 
-		mockGame.On("Bet", 100, 0).Return(nil)
+		mockGame.On("Bet", 100, 0, 10, 20).Return(nil)
 		mockPresenter.On("Output", mockGame, nil).Return("bet output")
 
-		result := bi.Bet(100, 0)
+		result := bi.Bet(100, 0, 10, 20)
 		assert.Equal(t, "bet output", result)
 	})
 
@@ -59,14 +59,27 @@ func TestBaccaratInteractor_Bet(t *testing.T) {
 		bi := NewBaccaratInteractor(mockGame, mockPresenter)
 
 		err := errors.New("test error")
-		mockGame.On("Bet", 100, 0).Return(err)
+		mockGame.On("Bet", 100, 0, 0, 0).Return(err)
 		mockPresenter.On("Output", mockGame, mock.MatchedBy(func(e error) bool {
 			return e != nil && e.Error() == "test error"
 		})).Return("error output")
 
-		result := bi.Bet(100, 0)
+		result := bi.Bet(100, 0, 0, 0)
 		assert.Equal(t, "error output", result)
 	})
+}
+
+func TestBaccaratInteractor_ClearHistory(t *testing.T) {
+	mockGame := new(interfaces.MockBaccaratGame)
+	mockPresenter := new(presenter.MockBaccaratPresenter)
+	bi := NewBaccaratInteractor(mockGame, mockPresenter)
+
+	mockGame.On("ClearHistory").Return()
+	mockPresenter.On("Output", mockGame, nil).Return("clear output")
+
+	result := bi.ClearHistory()
+	assert.Equal(t, "clear output", result)
+	mockGame.AssertCalled(t, "ClearHistory")
 }
 
 func TestBaccaratInteractor_ActionLog(t *testing.T) {

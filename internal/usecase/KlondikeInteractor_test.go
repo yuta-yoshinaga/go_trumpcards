@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -241,4 +242,45 @@ func TestKlondikeInteractorActionLog(t *testing.T) {
 
 	result := ki.ActionLog()
 	assert.Equal(t, "log_output", result)
+}
+
+func TestKlondikeInteractorResetWithConfig(t *testing.T) {
+	kg := newMockKlondikeGame()
+	kp := newMockKlondikePresenter()
+	ki := NewKlondikeInteractor(kg, kp)
+
+	cfg := domain.KlondikeConfig{DrawCount: 3}
+	kg.On("ResetWithConfig", cfg).Return()
+	kp.On("Output", kg, nil).Return("reset_config_output")
+
+	result := ki.ResetWithConfig(cfg)
+	assert.Equal(t, "reset_config_output", result)
+	kg.AssertCalled(t, "ResetWithConfig", cfg)
+}
+
+func TestKlondikeInteractorUndo(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		kg := newMockKlondikeGame()
+		kp := newMockKlondikePresenter()
+		ki := NewKlondikeInteractor(kg, kp)
+
+		kg.On("Undo").Return(nil)
+		kp.On("Output", kg, nil).Return("undo_output")
+
+		result := ki.Undo()
+		assert.Equal(t, "undo_output", result)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		kg := newMockKlondikeGame()
+		kp := newMockKlondikePresenter()
+		ki := NewKlondikeInteractor(kg, kp)
+
+		err := errors.New("nothing to undo")
+		kg.On("Undo").Return(err)
+		kp.On("Output", kg, err).Return("error_output")
+
+		result := ki.Undo()
+		assert.Equal(t, "error_output", result)
+	})
 }

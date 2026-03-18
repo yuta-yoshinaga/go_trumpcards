@@ -12,7 +12,8 @@
     "pointLimit": "Point Limit",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "omnibusJD": "Omnibus (J♦ = -10 pts)"
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",

@@ -20,8 +20,9 @@ type HeartsWebInput struct {
 
 // HeartsWebConfig ハーツWeb設定
 type HeartsWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	PointLimit    *int `json:"pointLimit,omitempty"`
+	CpuDifficulty *int  `json:"cpuDifficulty,omitempty"`
+	PointLimit    *int  `json:"pointLimit,omitempty"`
+	OmnibusJD     *bool `json:"omnibusJD,omitempty"`
 }
 
 // HeartsWebOutputPlayer ハーツWebアウトプットプレイヤー
@@ -60,8 +61,9 @@ type HeartsWebOutput struct {
 
 // HeartsWebOutputConfig ハーツ設定アウトプット
 type HeartsWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	PointLimit    int `json:"pointLimit"`
+	CpuDifficulty int  `json:"cpuDifficulty"`
+	PointLimit    int  `json:"pointLimit"`
+	OmnibusJD     bool `json:"omnibusJD"`
 }
 
 // ToConfig builds a HeartsConfig from the nested web config, applying bounds checking.
@@ -69,6 +71,9 @@ func (c *HeartsWebConfig) ToConfig() domain.HeartsConfig {
 	cfg := domain.DefaultHeartsConfig()
 	cfg.CpuDifficulty = domain.HeartsCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.HeartsCpuDifficultyEasy), int(domain.HeartsCpuDifficultyHard), int(cfg.CpuDifficulty)))
 	cfg.PointLimit = webutil.BoundedIntPtr(c.PointLimit, 1, 1000, cfg.PointLimit)
+	if c.OmnibusJD != nil {
+		cfg.OmnibusJD = *c.OmnibusJD
+	}
 	return cfg
 }
 

@@ -38,23 +38,68 @@ type KlondikeHint struct {
 	ToCol     int
 }
 
+// KlondikeConfig クロンダイクゲーム設定
+type KlondikeConfig struct {
+	DrawCount   int
+	ScoringMode KlondikeScoringMode
+}
+
+// KlondikeScoringMode スコアリングモード
+type KlondikeScoringMode int
+
+const (
+	// KlondikeScoringNone スコアリングなし
+	KlondikeScoringNone KlondikeScoringMode = iota
+	// KlondikeScoringVegas ベガススコアリング
+	KlondikeScoringVegas
+)
+
 // Klondike クロンダイクゲームクラス
 type Klondike struct {
-	trumpCards *TrumpCards
+	trumpCards  *TrumpCards
+	tableau     [KlondikeTableauCnt][]*KlondikeTableauCard
+	stock       []*Card
+	waste       []*Card
+	foundation  [KlondikeFoundationCnt][]*Card
+	phase       KlondikePhase
+	moveCount   int
+	actionLog   []*ActionLogEntry
+	drawCount   int
+	history     []*klondikeSnapshot
+	scoringMode KlondikeScoringMode
+}
+
+// klondikeSnapshot アンドゥ用スナップショット
+type klondikeSnapshot struct {
 	tableau    [KlondikeTableauCnt][]*KlondikeTableauCard
 	stock      []*Card
 	waste      []*Card
 	foundation [KlondikeFoundationCnt][]*Card
 	phase      KlondikePhase
 	moveCount  int
-	actionLog  []*ActionLogEntry
 }
 
 // NewKlondike コンストラクタ
 func NewKlondike(trumpCards *TrumpCards) *Klondike {
 	return &Klondike{
 		trumpCards: trumpCards,
+		drawCount:  1,
 	}
+}
+
+// ResetWithConfig 設定付きリセット
+func (k *Klondike) ResetWithConfig(cfg KlondikeConfig) {
+	if cfg.DrawCount == 3 {
+		k.drawCount = 3
+	} else {
+		k.drawCount = 1
+	}
+	if cfg.ScoringMode == KlondikeScoringVegas {
+		k.scoringMode = KlondikeScoringVegas
+	} else {
+		k.scoringMode = KlondikeScoringNone
+	}
+	k.Reset()
 }
 
 // Reset ゲームリセット
@@ -63,6 +108,7 @@ func (k *Klondike) Reset() {
 	k.phase = KlondikePhasePlaying
 	k.moveCount = 0
 	k.actionLog = nil
+	k.history = nil
 
 	// タブローに配る: 列iにはi+1枚、最後だけ表
 	for i := 0; i < KlondikeTableauCnt; i++ {
@@ -101,6 +147,7 @@ func (k *Klondike) Draw() error {
 		if len(k.waste) == 0 {
 			return errors.New("no cards in stock or waste")
 		}
+		k.takeSnapshot()
 		// ウェイストを逆順でストックに戻す
 		for i := len(k.waste) - 1; i >= 0; i-- {
 			k.stock = append(k.stock, k.waste[i])
@@ -109,12 +156,21 @@ func (k *Klondike) Draw() error {
 		k.appendLog("recycle", "ウェイストをストックに戻しました", nil)
 		return nil
 	}
-	// ストックからウェイストへ
-	card := k.stock[len(k.stock)-1]
-	k.stock = k.stock[:len(k.stock)-1]
-	k.waste = append(k.waste, card)
+	k.takeSnapshot()
+	// ストックからウェイストへ (drawCount枚)
+	count := k.drawCount
+	if count > len(k.stock) {
+		count = len(k.stock)
+	}
+	drawnCards := make([]*Card, 0, count)
+	for i := 0; i < count; i++ {
+		card := k.stock[len(k.stock)-1]
+		k.stock = k.stock[:len(k.stock)-1]
+		k.waste = append(k.waste, card)
+		drawnCards = append(drawnCards, card)
+	}
 	k.moveCount++
-	k.appendLog("draw", "ストックからカードを引きました", []*Card{card})
+	k.appendLog("draw", "ストックからカードを引きました", drawnCards)
 	return nil
 }
 
@@ -133,6 +189,7 @@ func (k *Klondike) MoveWasteToTableau(col int) error {
 	if !k.canPlaceOnTableau(card, col) {
 		return errors.New("cannot place card on tableau")
 	}
+	k.takeSnapshot()
 	k.waste = k.waste[:len(k.waste)-1]
 	k.tableau[col] = append(k.tableau[col], &KlondikeTableauCard{Card: card, FaceUp: true})
 	k.moveCount++
@@ -156,6 +213,7 @@ func (k *Klondike) MoveWasteToFoundation() error {
 	if !k.canPlaceOnFoundation(card, fIdx) {
 		return errors.New("cannot place card on foundation")
 	}
+	k.takeSnapshot()
 	k.waste = k.waste[:len(k.waste)-1]
 	k.foundation[fIdx] = append(k.foundation[fIdx], card)
 	k.moveCount++
@@ -193,6 +251,7 @@ func (k *Klondike) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 		return errors.New("cannot place card on tableau")
 	}
 	// 移動実行
+	k.takeSnapshot()
 	movedCards := make([]*Card, len(movingCards))
 	for i, mc := range movingCards {
 		k.tableau[toCol] = append(k.tableau[toCol], mc)
@@ -227,6 +286,7 @@ func (k *Klondike) MoveTableauToFoundation(col int) error {
 	if !k.canPlaceOnFoundation(card, fIdx) {
 		return errors.New("cannot place card on foundation")
 	}
+	k.takeSnapshot()
 	k.tableau[col] = fromCards[:len(fromCards)-1]
 	k.foundation[fIdx] = append(k.foundation[fIdx], card)
 	// 自動フリップ
@@ -345,6 +405,7 @@ func (k *Klondike) AutoComplete() error {
 	if !k.AllFaceUp() {
 		return errors.New("not all cards are face up")
 	}
+	k.takeSnapshot()
 	for {
 		moved := false
 		// ウェイストからファンデーションへ
@@ -441,6 +502,46 @@ func (k *Klondike) SetFoundation(foundation [KlondikeFoundationCnt][]*Card) {
 	k.foundation = foundation
 }
 
+// GetDrawCount ドローカウント取得
+func (k *Klondike) GetDrawCount() int { return k.drawCount }
+
+// SetDrawCount ドローカウント設定 (テスト用)
+func (k *Klondike) SetDrawCount(n int) { k.drawCount = n }
+
+// Undo 直前の操作を取り消す
+func (k *Klondike) Undo() error {
+	if k.phase != KlondikePhasePlaying {
+		return errors.New("cannot undo: game is not in playing phase")
+	}
+	if len(k.history) == 0 {
+		return errors.New("cannot undo: no history")
+	}
+	snap := k.history[len(k.history)-1]
+	k.history = k.history[:len(k.history)-1]
+	k.restoreSnapshot(snap)
+	return nil
+}
+
+// CanUndo アンドゥ可能かどうか
+func (k *Klondike) CanUndo() bool {
+	return len(k.history) > 0 && k.phase == KlondikePhasePlaying
+}
+
+// GetScore スコア取得 (ベガス式: -52 + 5 * ファンデーション枚数)
+func (k *Klondike) GetScore() int {
+	total := 0
+	for i := 0; i < KlondikeFoundationCnt; i++ {
+		total += len(k.foundation[i])
+	}
+	return -52 + 5*total
+}
+
+// GetScoringMode スコアリングモード取得
+func (k *Klondike) GetScoringMode() KlondikeScoringMode { return k.scoringMode }
+
+// SetScoringMode スコアリングモード設定 (テスト用)
+func (k *Klondike) SetScoringMode(m KlondikeScoringMode) { k.scoringMode = m }
+
 // --- Private helpers ---
 
 // canPlaceOnTableau タブローにカードを置けるか判定
@@ -493,6 +594,43 @@ func (k *Klondike) checkGameClear() {
 		}
 	}
 	k.phase = KlondikePhaseGameClear
+}
+
+// takeSnapshot 現在の状態をスナップショットとして保存
+func (k *Klondike) takeSnapshot() {
+	snap := &klondikeSnapshot{
+		phase:     k.phase,
+		moveCount: k.moveCount,
+	}
+	// deep copy tableau
+	for i := 0; i < KlondikeTableauCnt; i++ {
+		snap.tableau[i] = make([]*KlondikeTableauCard, len(k.tableau[i]))
+		for j, tc := range k.tableau[i] {
+			snap.tableau[i][j] = &KlondikeTableauCard{Card: tc.Card, FaceUp: tc.FaceUp}
+		}
+	}
+	// deep copy stock
+	snap.stock = make([]*Card, len(k.stock))
+	copy(snap.stock, k.stock)
+	// deep copy waste
+	snap.waste = make([]*Card, len(k.waste))
+	copy(snap.waste, k.waste)
+	// deep copy foundation
+	for i := 0; i < KlondikeFoundationCnt; i++ {
+		snap.foundation[i] = make([]*Card, len(k.foundation[i]))
+		copy(snap.foundation[i], k.foundation[i])
+	}
+	k.history = append(k.history, snap)
+}
+
+// restoreSnapshot スナップショットから状態を復元
+func (k *Klondike) restoreSnapshot(snap *klondikeSnapshot) {
+	k.tableau = snap.tableau
+	k.stock = snap.stock
+	k.waste = snap.waste
+	k.foundation = snap.foundation
+	k.phase = snap.phase
+	k.moveCount = snap.moveCount
 }
 
 // appendLog 棋譜エントリを追加

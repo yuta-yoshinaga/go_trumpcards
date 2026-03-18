@@ -841,3 +841,389 @@ func TestKlondike_CanPlaceOnFoundation_WrongSequence(t *testing.T) {
 	err := k.MoveWasteToFoundation()
 	assert.Error(t, err)
 }
+
+// --- Feature 1: 3-Card Draw ---
+
+func TestKlondike_DrawCount(t *testing.T) {
+	t.Run("default drawCount is 1", func(t *testing.T) {
+		k := newTestKlondike()
+		assert.Equal(t, 1, k.GetDrawCount())
+	})
+
+	t.Run("SetDrawCount(3) then Draw draws 3 cards", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		k.SetDrawCount(3)
+		initialStock := k.GetStockCount()
+		err := k.Draw()
+		assert.NoError(t, err)
+		assert.Equal(t, initialStock-3, k.GetStockCount())
+		assert.Equal(t, 3, len(k.GetWaste()))
+	})
+
+	t.Run("Draw with stock < 3 draws remaining", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		k.SetDrawCount(3)
+		// Leave only 2 cards in stock
+		k.SetStock([]*domain.Card{
+			makeCard(domain.CardDesignSpade, 1),
+			makeCard(domain.CardDesignHeart, 2),
+		})
+		k.SetWaste(nil)
+		err := k.Draw()
+		assert.NoError(t, err)
+		assert.Equal(t, 0, k.GetStockCount())
+		assert.Equal(t, 2, len(k.GetWaste()))
+	})
+
+	t.Run("drawCount persists across Reset", func(t *testing.T) {
+		k := newTestKlondike()
+		k.SetDrawCount(3)
+		k.Reset()
+		assert.Equal(t, 3, k.GetDrawCount())
+	})
+
+	t.Run("ResetWithConfig overrides drawCount", func(t *testing.T) {
+		k := newTestKlondike()
+		k.SetDrawCount(3)
+		k.ResetWithConfig(domain.KlondikeConfig{DrawCount: 1})
+		assert.Equal(t, 1, k.GetDrawCount())
+		assert.Equal(t, domain.KlondikePhasePlaying, k.GetPhase())
+	})
+
+	t.Run("ResetWithConfig sets drawCount to 3", func(t *testing.T) {
+		k := newTestKlondike()
+		k.ResetWithConfig(domain.KlondikeConfig{DrawCount: 3})
+		assert.Equal(t, 3, k.GetDrawCount())
+	})
+
+	t.Run("invalid drawCount clamps to 1", func(t *testing.T) {
+		k := newTestKlondike()
+		k.ResetWithConfig(domain.KlondikeConfig{DrawCount: 5})
+		assert.Equal(t, 1, k.GetDrawCount())
+	})
+
+	t.Run("recycle in 3-card mode unchanged", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		k.SetDrawCount(3)
+		// Draw all stock cards
+		for k.GetStockCount() > 0 {
+			_ = k.Draw()
+		}
+		wasteLen := len(k.GetWaste())
+		assert.Greater(t, wasteLen, 0)
+
+		// Recycle
+		err := k.Draw()
+		assert.NoError(t, err)
+		assert.Equal(t, wasteLen, k.GetStockCount())
+		assert.Nil(t, k.GetWaste())
+	})
+}
+
+// --- Feature 2: Undo ---
+
+func TestKlondike_Undo(t *testing.T) {
+	t.Run("Undo after draw restores stock/waste/moveCount", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		initialStock := k.GetStockCount()
+		err := k.Draw()
+		assert.NoError(t, err)
+		assert.Equal(t, initialStock-1, k.GetStockCount())
+		assert.Equal(t, 1, k.GetMoveCount())
+
+		err = k.Undo()
+		assert.NoError(t, err)
+		assert.Equal(t, initialStock, k.GetStockCount())
+		assert.Equal(t, 0, k.GetMoveCount())
+		assert.Equal(t, 0, len(k.GetWaste()))
+	})
+
+	t.Run("Undo after MoveWasteToTableau restores state", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		k.SetWaste([]*domain.Card{makeCard(domain.CardDesignHeart, 6)})
+		var tab [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 7, true)}
+		k.SetTableau(tab)
+
+		err := k.MoveWasteToTableau(0)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, len(k.GetTableau()[0]))
+		assert.Equal(t, 0, len(k.GetWaste()))
+
+		err = k.Undo()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(k.GetTableau()[0]))
+		assert.Equal(t, 1, len(k.GetWaste()))
+	})
+
+	t.Run("Undo after MoveWasteToFoundation", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		k.SetWaste([]*domain.Card{makeCard(domain.CardDesignSpade, 1)})
+
+		err := k.MoveWasteToFoundation()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(k.GetFoundation()[0]))
+
+		err = k.Undo()
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(k.GetFoundation()[0]))
+		assert.Equal(t, 1, len(k.GetWaste()))
+	})
+
+	t.Run("Undo after MoveTableauToTableau", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		var tab [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignHeart, 6, true)}
+		tab[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 7, true)}
+		k.SetTableau(tab)
+
+		err := k.MoveTableauToTableau(0, 0, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(k.GetTableau()[0]))
+		assert.Equal(t, 2, len(k.GetTableau()[1]))
+
+		err = k.Undo()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(k.GetTableau()[0]))
+		assert.Equal(t, 1, len(k.GetTableau()[1]))
+	})
+
+	t.Run("Undo after MoveTableauToFoundation", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		var tab [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 1, true)}
+		k.SetTableau(tab)
+
+		err := k.MoveTableauToFoundation(0)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(k.GetTableau()[0]))
+		assert.Equal(t, 1, len(k.GetFoundation()[0]))
+
+		err = k.Undo()
+		assert.NoError(t, err)
+		assert.Equal(t, 1, len(k.GetTableau()[0]))
+		assert.Equal(t, 0, len(k.GetFoundation()[0]))
+	})
+
+	t.Run("Multiple undos back to initial state", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		initialStock := k.GetStockCount()
+
+		// Perform 3 draws
+		for i := 0; i < 3; i++ {
+			err := k.Draw()
+			assert.NoError(t, err)
+		}
+		assert.Equal(t, 3, k.GetMoveCount())
+
+		// Undo all 3
+		for i := 0; i < 3; i++ {
+			err := k.Undo()
+			assert.NoError(t, err)
+		}
+		assert.Equal(t, 0, k.GetMoveCount())
+		assert.Equal(t, initialStock, k.GetStockCount())
+		assert.Equal(t, 0, len(k.GetWaste()))
+	})
+
+	t.Run("Undo when no history returns error", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		err := k.Undo()
+		assert.Error(t, err)
+		assert.Equal(t, "cannot undo: no history", err.Error())
+	})
+
+	t.Run("Undo when not playing returns error", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		_ = k.Draw()
+		k.SetPhase(domain.KlondikePhaseGameOver)
+		err := k.Undo()
+		assert.Error(t, err)
+		assert.Equal(t, "cannot undo: game is not in playing phase", err.Error())
+	})
+
+	t.Run("Reset clears history", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		_ = k.Draw()
+		assert.True(t, k.CanUndo())
+
+		k.Reset()
+		assert.False(t, k.CanUndo())
+	})
+
+	t.Run("CanUndo true when history exists and playing", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		assert.False(t, k.CanUndo())
+
+		_ = k.Draw()
+		assert.True(t, k.CanUndo())
+	})
+
+	t.Run("CanUndo false when not playing", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		_ = k.Draw()
+		k.SetPhase(domain.KlondikePhaseGameOver)
+		assert.False(t, k.CanUndo())
+	})
+
+	t.Run("Deep copy: mutating original does not affect snapshot", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		var tab [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{
+			makeTableauCard(domain.CardDesignSpade, 10, false),
+			makeTableauCard(domain.CardDesignHeart, 6, true),
+		}
+		tab[1] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 7, true)}
+		k.SetTableau(tab)
+
+		// Draw creates a snapshot
+		_ = k.Draw()
+
+		// Mutate tableau directly after snapshot
+		k.GetTableau()[0][0].FaceUp = true
+
+		// Undo should restore the original FaceUp=false from the snapshot
+		err := k.Undo()
+		assert.NoError(t, err)
+		assert.False(t, k.GetTableau()[0][0].FaceUp, "snapshot should have preserved FaceUp=false")
+	})
+
+	t.Run("Undo after GiveUp fails because phase is GameOver", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		_ = k.Draw() // create some history
+		k.GiveUp()
+		assert.Equal(t, domain.KlondikePhaseGameOver, k.GetPhase())
+
+		err := k.Undo()
+		assert.Error(t, err)
+		assert.Equal(t, "cannot undo: game is not in playing phase", err.Error())
+	})
+
+	t.Run("Undo after AutoComplete", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		// Set up all cards face up with just a few cards
+		var tab [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 1, true)}
+		k.SetTableau(tab)
+		k.SetStock(nil)
+		k.SetWaste(nil)
+
+		// Pre-fill foundation for other suits
+		var f [domain.KlondikeFoundationCnt][]*domain.Card
+		for i := 1; i < domain.KlondikeFoundationCnt; i++ {
+			f[i] = make([]*domain.Card, 0)
+			for v := 1; v <= 13; v++ {
+				f[i] = append(f[i], makeCard(i+1, v))
+			}
+		}
+		// Spade foundation has cards 1-12 already, tab has 13
+		f[0] = make([]*domain.Card, 0)
+		for v := 1; v <= 12; v++ {
+			f[0] = append(f[0], makeCard(domain.CardDesignSpade, v))
+		}
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 13, true)}
+		k.SetTableau(tab)
+		k.SetFoundation(f)
+
+		err := k.AutoComplete()
+		assert.NoError(t, err)
+		assert.Equal(t, domain.KlondikePhaseGameClear, k.GetPhase())
+
+		// Undo should fail because phase is GameClear
+		err = k.Undo()
+		assert.Error(t, err)
+	})
+
+	t.Run("Undo after recycle", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		// Draw all stock cards
+		for k.GetStockCount() > 0 {
+			_ = k.Draw()
+		}
+		wasteLen := len(k.GetWaste())
+
+		// Recycle waste to stock
+		err := k.Draw()
+		assert.NoError(t, err)
+		assert.Equal(t, wasteLen, k.GetStockCount())
+		assert.Nil(t, k.GetWaste())
+
+		// Undo should restore waste and empty stock
+		err = k.Undo()
+		assert.NoError(t, err)
+		assert.Equal(t, 0, k.GetStockCount())
+		assert.Equal(t, wasteLen, len(k.GetWaste()))
+	})
+}
+
+// --- Feature 3: Vegas Scoring ---
+
+func TestKlondike_Score(t *testing.T) {
+	t.Run("GetScore with 0 foundation cards = -52", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		assert.Equal(t, -52, k.GetScore())
+	})
+
+	t.Run("GetScore with partial foundation", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		var f [domain.KlondikeFoundationCnt][]*domain.Card
+		f[0] = []*domain.Card{
+			makeCard(domain.CardDesignSpade, 1),
+			makeCard(domain.CardDesignSpade, 2),
+		}
+		f[1] = []*domain.Card{
+			makeCard(domain.CardDesignClover, 1),
+		}
+		k.SetFoundation(f)
+		// 3 cards in foundation: -52 + 5*3 = -37
+		assert.Equal(t, -37, k.GetScore())
+	})
+
+	t.Run("GetScore with full foundation = 208", func(t *testing.T) {
+		k := setupPlayingKlondike()
+		var f [domain.KlondikeFoundationCnt][]*domain.Card
+		designs := []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond}
+		for i := 0; i < domain.KlondikeFoundationCnt; i++ {
+			f[i] = make([]*domain.Card, 0)
+			for v := 1; v <= 13; v++ {
+				f[i] = append(f[i], makeCard(designs[i], v))
+			}
+		}
+		k.SetFoundation(f)
+		// 52 cards: -52 + 5*52 = 208
+		assert.Equal(t, 208, k.GetScore())
+	})
+
+	t.Run("scoring mode default is None", func(t *testing.T) {
+		k := newTestKlondike()
+		assert.Equal(t, domain.KlondikeScoringNone, k.GetScoringMode())
+	})
+
+	t.Run("SetScoringMode and GetScoringMode", func(t *testing.T) {
+		k := newTestKlondike()
+		k.SetScoringMode(domain.KlondikeScoringVegas)
+		assert.Equal(t, domain.KlondikeScoringVegas, k.GetScoringMode())
+		k.SetScoringMode(domain.KlondikeScoringNone)
+		assert.Equal(t, domain.KlondikeScoringNone, k.GetScoringMode())
+	})
+
+	t.Run("ResetWithConfig sets scoring mode to Vegas", func(t *testing.T) {
+		k := newTestKlondike()
+		k.ResetWithConfig(domain.KlondikeConfig{DrawCount: 1, ScoringMode: domain.KlondikeScoringVegas})
+		assert.Equal(t, domain.KlondikeScoringVegas, k.GetScoringMode())
+	})
+
+	t.Run("ResetWithConfig sets scoring mode to None", func(t *testing.T) {
+		k := newTestKlondike()
+		k.SetScoringMode(domain.KlondikeScoringVegas)
+		k.ResetWithConfig(domain.KlondikeConfig{DrawCount: 1, ScoringMode: domain.KlondikeScoringNone})
+		assert.Equal(t, domain.KlondikeScoringNone, k.GetScoringMode())
+	})
+
+	t.Run("scoring mode persists across Reset", func(t *testing.T) {
+		k := newTestKlondike()
+		k.ResetWithConfig(domain.KlondikeConfig{DrawCount: 1, ScoringMode: domain.KlondikeScoringVegas})
+		k.Reset()
+		assert.Equal(t, domain.KlondikeScoringVegas, k.GetScoringMode())
+	})
+}

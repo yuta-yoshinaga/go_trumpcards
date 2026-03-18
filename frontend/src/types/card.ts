@@ -231,6 +231,7 @@ export interface DaifugoConfig {
   elevenBackEnabled: boolean;
   sequenceEnabled: boolean;
   cardExchangeEnabled: boolean;
+  blindExchangeEnabled: boolean;
   fiveSkipEnabled: boolean;
   fiveSkipCount: number;
   sevenPassEnabled: boolean;
@@ -243,6 +244,7 @@ export interface DaifugoConfig {
   sandstormEnabled: boolean;
   emperorEnabled: boolean;
   sequenceRevolutionEnabled: boolean;
+  sequenceLockEnabled: boolean;
   illegalFinishEnabled: boolean;
   queenBomberEnabled: boolean;
   cpuDifficulty: number;
@@ -278,6 +280,7 @@ export interface DaifugoResponse {
   pendingActionTarget: number;
   reverseDirection: boolean;
   numberLocked: boolean;
+  sequenceLocked: boolean;
   sortMode: number;
 }
 
@@ -388,6 +391,7 @@ export interface DoubtMetaAI {
   gamesPlayed: number;
   bluffRate: number;
   doubtAccuracy: number;
+  hesitationMean: number;
 }
 
 export interface HoldemPlayerData {
@@ -469,6 +473,19 @@ export interface HoldemResponse {
   addonAfterHand: number;
   addonUsed: boolean[];
   muckAvailable: boolean;
+  equity?: HoldemEquity;
+  potOdds?: number;
+}
+
+export interface HoldemEquity {
+  winProbability: number;
+  handOdds: HoldemHandOdds[];
+}
+
+export interface HoldemHandOdds {
+  handRank: number;
+  handName: string;
+  probability: number;
 }
 
 // --- Hearts ---
@@ -491,6 +508,7 @@ export interface HeartsTrickCard {
 export interface HeartsConfig {
   cpuDifficulty: number;
   pointLimit: number;
+  omnibusJD: boolean;
 }
 
 export interface HeartsResponse {
@@ -568,10 +586,22 @@ export interface KlondikeResponse {
   foundation: Card[][];
   phase: number;
   moveCount: number;
+  drawCount: number;
+  canUndo: boolean;
+  score: number;
+  scoringMode: number;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: KlondikeHint;
+}
+
+export interface BaccaratSideBetResult {
+  betType: number;
+  resultType: number;
+  resultName: string;
+  betAmount: number;
+  payout: number;
 }
 
 export interface BaccaratResponse {
@@ -585,6 +615,10 @@ export interface BaccaratResponse {
   betType: number;
   result: number;
   payout: number;
+  history: number[];
+  playerPairBet: number;
+  bankerPairBet: number;
+  sideBetResults: BaccaratSideBetResult[];
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

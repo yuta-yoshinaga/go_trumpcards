@@ -18,6 +18,7 @@ type DoubtWebInput struct {
 	CardIndices          []int `json:"cardIndices,omitempty"`
 	ClaimedValue         int   `json:"claimedValue,omitempty"`
 	DoubterIndices       []int `json:"doubterIndices,omitempty"`
+	HumanPlayMs          int   `json:"humanPlayMs,omitempty"`
 	DoubtWindowSec       *int  `json:"doubtWindowSec,omitempty"`
 	CpuMemoryLevel       *int  `json:"cpuMemoryLevel,omitempty"`
 	PenaltyDrawLimit     *int  `json:"penaltyDrawLimit,omitempty"`
@@ -76,10 +77,11 @@ type DoubtWebOutput struct {
 
 // DoubtWebOutputMetaAI メタAI情報
 type DoubtWebOutputMetaAI struct {
-	Enabled       bool    `json:"enabled"`
-	GamesPlayed   int     `json:"gamesPlayed"`
-	BluffRate     float64 `json:"bluffRate"`
-	DoubtAccuracy float64 `json:"doubtAccuracy"`
+	Enabled        bool    `json:"enabled"`
+	GamesPlayed    int     `json:"gamesPlayed"`
+	BluffRate      float64 `json:"bluffRate"`
+	DoubtAccuracy  float64 `json:"doubtAccuracy"`
+	HesitationMean float64 `json:"hesitationMean"`
 }
 
 // ToConfig builds a DoubtConfig from the web input.
@@ -127,7 +129,7 @@ func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtI
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault(fmt.Sprintf("param error: claimedValue must be between %d and %d.", domain.MinClaimedValue, domain.MaxClaimedValue)))
 			return true
 		}
-		bc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue))
+		bc.writePresenterResponse(w, dgi.Play(param.CardIndices, param.ClaimedValue, param.HumanPlayMs))
 	case "d", "doubt":
 		cpuDoubters := dgi.GetCpuDoubters()
 		humanDoubts := false

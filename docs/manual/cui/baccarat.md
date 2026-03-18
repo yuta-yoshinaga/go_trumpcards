@@ -68,6 +68,7 @@ flowchart TD
 | `reset` | `r` | 新しいゲームを開始 |
 | `bet <amount> <type>` | `b <amount> <type>` | ベットする（金額とタイプを指定） |
 | `log` | `l` | アクションログ（棋譜）を表示 |
+| `clearhistory` | `ch` | Big Road（出目履歴）をクリア |
 | `quit` | `q` | ゲーム終了 |
 | `help` | `?` | コマンド一覧を表示 |
 
@@ -78,6 +79,7 @@ flowchart TD
 - `b 200 1` → 200チップをバンカーにベット
 - `b 50 2` → 50チップをタイにベット
 - `l` → 棋譜を表示
+- `ch` → Big Road（出目履歴）をクリア
 
 ## 画面の見方
 

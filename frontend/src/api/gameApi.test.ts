@@ -1068,6 +1068,23 @@ describe('gameApi', () => {
       );
     });
 
+    it('sends humanPlayMs when provided', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await doubtApi.exec('play', [0], 5, undefined, undefined, 1500);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/doubt/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            cardIndices: [0],
+            claimedValue: 5,
+            humanPlayMs: 1500,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(doubtApi.exec('reset')).rejects.toThrow('HTTP error: 500');
@@ -1866,7 +1883,14 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'reset', amount: undefined, betType: undefined, sessionId }),
+        body: JSON.stringify({
+          command: 'reset',
+          amount: undefined,
+          betType: undefined,
+          playerPairBet: undefined,
+          bankerPairBet: undefined,
+          sessionId,
+        }),
       });
       expect(result).toEqual(mockResponse);
     });
@@ -1877,7 +1901,14 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'bet', amount: 100, betType: 0, sessionId }),
+        body: JSON.stringify({
+          command: 'bet',
+          amount: 100,
+          betType: 0,
+          playerPairBet: undefined,
+          bankerPairBet: undefined,
+          sessionId,
+        }),
       });
     });
 
@@ -1887,7 +1918,31 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'bet', amount: 100, betType: 1, sessionId }),
+        body: JSON.stringify({
+          command: 'bet',
+          amount: 100,
+          betType: 1,
+          playerPairBet: undefined,
+          bankerPairBet: undefined,
+          sessionId,
+        }),
+      });
+    });
+
+    it('sends bet command with side bets', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 2 }));
+      await baccaratApi.exec('bet', 100, 0, 10, 20);
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'bet',
+          amount: 100,
+          betType: 0,
+          playerPairBet: 10,
+          bankerPairBet: 20,
+          sessionId,
+        }),
       });
     });
 
@@ -1897,7 +1952,31 @@ describe('gameApi', () => {
       expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: 'log', amount: undefined, betType: undefined, sessionId }),
+        body: JSON.stringify({
+          command: 'log',
+          amount: undefined,
+          betType: undefined,
+          playerPairBet: undefined,
+          bankerPairBet: undefined,
+          sessionId,
+        }),
+      });
+    });
+
+    it('sends clearhistory command', async () => {
+      mockFetch.mockReturnValue(makeResponse({ phase: 1 }));
+      await baccaratApi.exec('clearhistory');
+      expect(mockFetch).toHaveBeenCalledWith('/baccarat/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'clearhistory',
+          amount: undefined,
+          betType: undefined,
+          playerPairBet: undefined,
+          bankerPairBet: undefined,
+          sessionId,
+        }),
       });
     });
 

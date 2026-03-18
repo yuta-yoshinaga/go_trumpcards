@@ -304,6 +304,35 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.Equal(t, 1, resObj.SortMode)
 	})
 
+	t.Run("success Output sequenceLocked field", func(t *testing.T) {
+		dg, _ := setupDGWebTest()
+		dg.SetSequenceLocked(true)
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.SequenceLocked)
+	})
+
+	t.Run("success Output sequenceLockEnabled and blindExchangeEnabled config fields", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDGPlayers()
+		cfg := domain.DefaultDaifugoConfig()
+		cfg.SequenceLockEnabled = true
+		cfg.BlindExchangeEnabled = true
+		dg := domain.NewDaifugo(tc, players, cfg)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+		result := tdwp.Output(dg, nil)
+		var resObj controller.DaifugoWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.True(t, resObj.Config.SequenceLockEnabled)
+		assert.True(t, resObj.Config.BlindExchangeEnabled)
+	})
+
 	t.Run("success Output new config fields mapped", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDGPlayers()
@@ -478,6 +507,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		m.On("GetHumanAction").Return((*domain.DaifugoCpuAction)(nil))
 		m.On("GetReverseDirection").Return(false)
 		m.On("GetNumberLocked").Return(false)
+		m.On("GetSequenceLocked").Return(false)
 		m.On("GetSortMode").Return(domain.DaifugoSortByStrength)
 		return m
 	}

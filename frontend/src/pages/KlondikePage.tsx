@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -11,8 +11,9 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useKlondikeGame } from '../hooks/useKlondikeGame';
+import { useKlondikeTimer } from '../hooks/useKlondikeTimer';
 import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
-import { KlondikePhase } from '../types/phases';
+import { KlondikePhase, KlondikeScoringMode } from '../types/phases';
 import { cardAlt } from '../utils/cardAlt';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -29,15 +30,21 @@ export function KlondikePage() {
     hint,
     handleDraw,
     handleReset,
+    handleResetWithConfig,
     handleGiveUp,
     handleHint,
     handleAutoComplete,
+    handleUndo,
     handleSelectSource,
     handleSelectTarget,
   } = useKlondikeGame();
   const { cardHeight, cardOverlap, cardWidth } = useCardDimensions();
 
   const isPlayingForKbd = state?.phase === KlondikePhase.PLAYING;
+  const { elapsedSeconds, resetTimer, timeBonus } = useKlondikeTimer(isPlayingForKbd);
+
+  const [drawCountSetting, setDrawCountSetting] = useState(1);
+  const [scoringModeSetting, setScoringModeSetting] = useState(0);
 
   const actionBindings = useMemo(
     () => [
@@ -45,8 +52,9 @@ export function KlondikePage() {
       { key: 'h', action: handleHint },
       { key: 'a', action: handleAutoComplete },
       { key: 'g', action: handleGiveUp },
+      { key: 'z', action: handleUndo },
     ],
-    [handleDraw, handleHint, handleAutoComplete, handleGiveUp],
+    [handleDraw, handleHint, handleAutoComplete, handleGiveUp, handleUndo],
   );
 
   useActionKeyboardNav({
@@ -60,12 +68,22 @@ export function KlondikePage() {
   const isGameClear = state.phase === KlondikePhase.GAME_CLEAR;
   const isGameOver = state.phase === KlondikePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const isVegas = state.scoringMode === KlondikeScoringMode.VEGAS;
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Waste display: in 3-card mode show up to 3 fanned cards, only top clickable
+  const wasteDisplay = state.drawCount === 3 ? state.waste.slice(-3) : state.waste.slice(-1);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-casino" aria-busy={loading}>
@@ -76,6 +94,19 @@ export function KlondikePage() {
         <span>
           {t('moveCount')}: {state.moveCount}
         </span>
+        {isVegas && (
+          <span className="ml-3">
+            {t('score')}: {state.score}
+          </span>
+        )}
+        <span className="ml-3">
+          {t('timer')}: {formatTime(elapsedSeconds)}
+        </span>
+        {isGameClear && (
+          <span className="ml-3">
+            {t('timeBonus')}: {timeBonus(elapsedSeconds)}
+          </span>
+        )}
       </PhaseIndicator>
 
       {/* Scrollable area */}
@@ -105,23 +136,34 @@ export function KlondikePage() {
           {/* Waste */}
           <div className="text-center">
             <div className="text-white/60 text-xs mb-1">{t('waste')}</div>
-            {state.waste.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  if (selectedSource) {
-                    // clicking waste when source selected does nothing for target
-                    return;
-                  }
-                  handleSelectSource({ zone: 'waste' });
-                }}
-                disabled={!isPlaying || loading}
-                aria-label={cardAlt(state.waste[state.waste.length - 1])}
-                aria-pressed={isSourceSelected('waste')}
-                className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
-              >
-                <CardImage card={state.waste[state.waste.length - 1]} width={cardWidth} />
-              </button>
+            {wasteDisplay.length > 0 ? (
+              <div className="relative" style={{ width: cardWidth + (wasteDisplay.length - 1) * 15 }}>
+                {wasteDisplay.map((card, idx) => {
+                  const isTop = idx === wasteDisplay.length - 1;
+                  return (
+                    <div key={`waste-${idx.toString()}`} className="absolute top-0" style={{ left: idx * 15 }}>
+                      {isTop ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (selectedSource) return;
+                            handleSelectSource({ zone: 'waste' });
+                          }}
+                          disabled={!isPlaying || loading}
+                          aria-label={cardAlt(card)}
+                          aria-pressed={isSourceSelected('waste')}
+                          className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
+                        >
+                          <CardImage card={card} width={cardWidth} />
+                        </button>
+                      ) : (
+                        <CardImage card={card} width={cardWidth} />
+                      )}
+                    </div>
+                  );
+                })}
+                <div style={{ height: cardHeight, width: cardWidth + (wasteDisplay.length - 1) * 15 }} />
+              </div>
             ) : (
               <div
                 style={{ width: cardWidth, height: cardHeight }}
@@ -225,6 +267,13 @@ export function KlondikePage() {
           </div>
         )}
 
+        {/* Score display on game clear */}
+        {isGameClear && isVegas && (
+          <div className="text-yellow-300 text-lg mb-2">
+            {t('totalScore')}: {state.score + timeBonus(elapsedSeconds)}
+          </div>
+        )}
+
         {/* Message */}
         <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
@@ -246,6 +295,9 @@ export function KlondikePage() {
               <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
                 {t('draw')}
               </button>
+              <button type="button" className={btnPrimary} onClick={handleUndo} disabled={loading || !state.canUndo}>
+                {t('undo')}
+              </button>
               <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
                 {t('hint')}
               </button>
@@ -257,12 +309,45 @@ export function KlondikePage() {
               </button>
             </>
           )}
+          {/* Draw mode toggle */}
+          <select
+            value={drawCountSetting}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              setDrawCountSetting(n);
+              handleResetWithConfig({ drawCount: n, scoringMode: scoringModeSetting });
+              resetTimer();
+            }}
+            className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+            aria-label={t('drawMode')}
+          >
+            <option value={1}>{t('drawMode1')}</option>
+            <option value={3}>{t('drawMode3')}</option>
+          </select>
+          {/* Scoring mode toggle */}
+          <select
+            value={scoringModeSetting}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              setScoringModeSetting(n);
+              handleResetWithConfig({ drawCount: drawCountSetting, scoringMode: n });
+              resetTimer();
+            }}
+            className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+            aria-label={t('scoringMode')}
+          >
+            <option value={0}>{t('scoringNone')}</option>
+            <option value={1}>{t('scoringVegas')}</option>
+          </select>
           <button
             type="button"
             className={btnWarning}
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
+                resetTimer();
+                setDrawCountSetting(1);
+                setScoringModeSetting(0);
                 return handleReset();
               })
             }

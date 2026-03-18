@@ -22,6 +22,7 @@ function makeState(overrides: Partial<DaifugoResponse> = {}): DaifugoResponse {
       elevenBackEnabled: true,
       sequenceEnabled: true,
       cardExchangeEnabled: true,
+      blindExchangeEnabled: false,
       fiveSkipEnabled: false,
       fiveSkipCount: 1,
       sevenPassEnabled: false,
@@ -34,6 +35,7 @@ function makeState(overrides: Partial<DaifugoResponse> = {}): DaifugoResponse {
       sandstormEnabled: false,
       emperorEnabled: false,
       sequenceRevolutionEnabled: false,
+      sequenceLockEnabled: false,
       illegalFinishEnabled: false,
       queenBomberEnabled: false,
       cpuDifficulty: 1,
@@ -46,6 +48,7 @@ function makeState(overrides: Partial<DaifugoResponse> = {}): DaifugoResponse {
     pendingActionTarget: -1,
     reverseDirection: false,
     numberLocked: false,
+    sequenceLocked: false,
     sortMode: 0,
     ...overrides,
   };
@@ -100,6 +103,11 @@ describe('DaifugoRulesBadges', () => {
   it('shows numberLock badge when numberLocked is true', () => {
     render(<DaifugoRulesBadges state={makeState({ numberLocked: true })} />);
     expect(screen.getByText('数縛り')).toBeInTheDocument();
+  });
+
+  it('shows sequenceLock badge when sequenceLocked is true', () => {
+    render(<DaifugoRulesBadges state={makeState({ sequenceLocked: true })} />);
+    expect(screen.getByText('階段縛り')).toBeInTheDocument();
   });
 
   it('shows multiple badges simultaneously', () => {

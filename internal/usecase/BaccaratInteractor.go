@@ -8,7 +8,8 @@ import (
 // BaccaratInteractorIF バカラインタラクターインタフェース
 type BaccaratInteractorIF interface {
 	Reset() string
-	Bet(amount, betType int) string
+	Bet(amount, betType, ppBet, bpBet int) string
+	ClearHistory() string
 	ActionLog() string
 }
 
@@ -34,9 +35,15 @@ func (bi *BaccaratInteractor) Reset() string {
 }
 
 // Bet ベット
-func (bi *BaccaratInteractor) Bet(amount, betType int) string {
-	err := bi.b.Bet(amount, betType)
+func (bi *BaccaratInteractor) Bet(amount, betType, ppBet, bpBet int) string {
+	err := bi.b.Bet(amount, betType, ppBet, bpBet)
 	return bi.bp.Output(bi.b, err)
+}
+
+// ClearHistory 罫線履歴クリア
+func (bi *BaccaratInteractor) ClearHistory() string {
+	bi.b.ClearHistory()
+	return bi.bp.Output(bi.b, nil)
 }
 
 // ActionLog 棋譜を出力する

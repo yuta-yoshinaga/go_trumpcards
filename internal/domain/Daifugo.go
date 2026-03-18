@@ -106,6 +106,7 @@ type DaifugoConfig struct {
 	ElevenBackEnabled         bool                 // 11バック
 	SequenceEnabled           bool                 // 階段
 	CardExchangeEnabled       bool                 // カード交換
+	BlindExchangeEnabled      bool                 // ブラインドカード交換 (上位が弱い札ではなくランダム)
 	FiveSkipEnabled           bool                 // 5飛び
 	FiveSkipCount             int                  // 5飛びスキップ数 (default: 1, FiveSkipEnabled時のみ有効)
 	SevenPassEnabled          bool                 // 7渡し
@@ -118,6 +119,7 @@ type DaifugoConfig struct {
 	SandstormEnabled          bool                 // 砂嵐 (3枚の3で場をクリア)
 	EmperorEnabled            bool                 // エンペラー (4枚連番・全スート異なる→革命+場クリア)
 	SequenceRevolutionEnabled bool                 // 階段革命 (4枚以上の階段で革命)
+	SequenceLockEnabled       bool                 // 階段縛り (階段に階段を出すと以降階段のみ)
 	IllegalFinishEnabled      bool                 // 反則上がり (8切り/ジョーカー/革命で上がりはペナルティ)
 	QueenBomberEnabled        bool                 // 12ボンバー (Qを出したら数字を選んで全員からその数字を除去)
 	CpuDifficulty             DaifugoCpuDifficulty // CPU難易度 (0=Normal, 1=Easy, 2=Hard)
@@ -160,6 +162,12 @@ func (c DaifugoConfig) Validate() error {
 	if c.FiveSkipCount < 1 || c.FiveSkipCount > DaifugoFiveSkipCountMax {
 		return fmt.Errorf("five skip count must be 1-%d, got %d", DaifugoFiveSkipCountMax, c.FiveSkipCount)
 	}
+	if c.SequenceLockEnabled && !c.SequenceEnabled {
+		return fmt.Errorf("sequence lock requires sequence to be enabled")
+	}
+	if c.BlindExchangeEnabled && !c.CardExchangeEnabled {
+		return fmt.Errorf("blind exchange requires card exchange to be enabled")
+	}
 	return nil
 }
 
@@ -198,6 +206,7 @@ type Daifugo struct {
 	pendingActionTarget int                      // 7渡しの対象プレイヤーインデックス (-1 = なし)
 	reverseDirection    bool                     // 9リバース: ターン方向が逆か
 	numberLocked        bool                     // 激シバ: 連番縛り発動中
+	sequenceLocked      bool                     // 階段縛り: 階段のみ出せる
 	sortMode            DaifugoSortMode          // 手札ソートモード
 	actionLog           []*ActionLogEntry        // 棋譜
 }
@@ -257,6 +266,7 @@ func (d *Daifugo) Reset() {
 	d.pendingActionTarget = -1
 	d.reverseDirection = false
 	d.numberLocked = false
+	d.sequenceLocked = false
 	d.actionLog = nil
 	// sortMode は意図的にリセットしない: ユーザーの好みをラウンド間で維持する
 
@@ -339,12 +349,19 @@ func (d *Daifugo) exchangeCardsBetween(upperIdx, lowerIdx, count int) {
 	}
 	lowerBestCards := lower.RemoveCards(lowerBestIndices)
 
-	// 上位の最弱カード(先頭)をcount枚取得
-	upperWorstIndices := make([]int, count)
-	for i := 0; i < count; i++ {
-		upperWorstIndices[i] = i
+	// 上位のカードをcount枚取得 (ブラインド交換: ランダム、通常: 最弱=先頭)
+	var upperGiveIndices []int
+	if d.config.BlindExchangeEnabled {
+		perm := rand.Perm(upper.GetCardsSize())
+		upperGiveIndices = perm[:count]
+		sort.Ints(upperGiveIndices)
+	} else {
+		upperGiveIndices = make([]int, count)
+		for i := 0; i < count; i++ {
+			upperGiveIndices[i] = i
+		}
 	}
-	upperWorstCards := upper.RemoveCards(upperWorstIndices)
+	upperWorstCards := upper.RemoveCards(upperGiveIndices)
 
 	// カードを交換
 	for _, c := range lowerBestCards {
@@ -537,6 +554,16 @@ func (d *Daifugo) updateSuitLock(cards []*Card) {
 			d.lockedSuit = prevSuit
 			d.updateNumberLock(cards)
 		}
+	}
+}
+
+// updateSequenceLock 階段縛りの更新: 場が階段 && 新しいプレイも階段 → 縛り発動
+func (d *Daifugo) updateSequenceLock(isSeq bool) {
+	if !d.config.SequenceLockEnabled {
+		return
+	}
+	if d.tableIsSequence && isSeq {
+		d.sequenceLocked = true
 	}
 }
 
@@ -772,6 +799,10 @@ func (d *Daifugo) isPlayable(cards []*Card) bool {
 	}
 
 	if d.tableCards == nil {
+		// 階段縛り中は階段またはエンペラーのみ
+		if d.sequenceLocked {
+			return validSeq || validEmperor
+		}
 		// 場がクリアなら何でも出せる
 		return true
 	}
@@ -914,6 +945,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 
 // playCards はカードプレイ後の共通処理を実行する
 func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree bool) {
+	d.updateSequenceLock(isSeq)
 	d.tableCards = cards
 	d.lastPlayPlayerIdx = playerIdx
 	d.passCount = 0
@@ -1300,12 +1332,15 @@ func (d *Daifugo) findBestPlayNormal(player *DaifugoPlayer) []int {
 	return d.findNormalResponsePlay(player)
 }
 
-// findNormalOpeningPlay Normal AIの先手プレイ: エンペラー → 最弱非8非ジョーカー → 8 → ジョーカー
+// findNormalOpeningPlay Normal AIの先手プレイ: エンペラー → 階段縛り時は階段 → 最弱非8非ジョーカー → 8 → ジョーカー
 func (d *Daifugo) findNormalOpeningPlay(player *DaifugoPlayer) []int {
 	if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
 		if !d.wouldCauseIllegalFinish(player, emperorIndices) {
 			return emperorIndices
 		}
+	}
+	if d.sequenceLocked {
+		return d.findOpeningSequencePlay(player)
 	}
 	return d.findOpeningSingleCard(player, []func(*Card) bool{
 		func(c *Card) bool { return !IsJoker(c) && c.GetValue() != 8 },
@@ -1339,6 +1374,10 @@ func (d *Daifugo) findNormalResponsePlay(player *DaifugoPlayer) []int {
 // findBestPlayEasy 簡単難易度: 単純に出せる最弱のカードを出す (8/ジョーカー温存なし、エンペラー探索なし、革命防止なし)
 func (d *Daifugo) findBestPlayEasy(player *DaifugoPlayer) []int {
 	if d.tableCards == nil {
+		// 階段縛り中は階段を探す
+		if d.sequenceLocked {
+			return d.findOpeningSequencePlay(player)
+		}
 		// 場がクリアなら最弱の1枚を出す (温存戦略なし、反則上がりチェックなし: Easy AIは戦略なしで失敗もする)
 		if player.GetCardsSize() > 0 {
 			return []int{0}
@@ -1380,12 +1419,15 @@ func (d *Daifugo) findBestPlayHard(player *DaifugoPlayer) []int {
 	return d.findHardResponsePlay(player)
 }
 
-// findHardOpeningPlay Hard AIの先手プレイ: エンペラー → 緊急時は最強 / 非緊急時はNormal委譲
+// findHardOpeningPlay Hard AIの先手プレイ: エンペラー → 階段縛り時は階段 → 緊急時は最強 / 非緊急時はNormal委譲
 func (d *Daifugo) findHardOpeningPlay(player *DaifugoPlayer) []int {
 	if emperorIndices := d.findEmperorPlay(player); emperorIndices != nil {
 		if !d.wouldCauseIllegalFinish(player, emperorIndices) {
 			return emperorIndices
 		}
+	}
+	if d.sequenceLocked {
+		return d.findOpeningSequencePlay(player)
 	}
 	if d.isUrgent(player) {
 		return d.findOpeningSingleCard(player, []func(*Card) bool{
@@ -1472,6 +1514,41 @@ func (d *Daifugo) findSequencePlay(player *DaifugoPlayer, selectStrongest bool) 
 				if !selectStrongest {
 					return indices
 				}
+				bestIndices = indices
+			}
+		}
+	}
+	return bestIndices
+}
+
+// findOpeningSequencePlay 階段縛り中に場がクリアの先手で出せる最短の階段を探す
+func (d *Daifugo) findOpeningSequencePlay(player *DaifugoPlayer) []int {
+	jokerIndices := d.findJokerIndices(player)
+	const minLen = 3
+
+	var bestIndices []int
+	for startIdx := 0; startIdx < player.GetCardsSize(); startIdx++ {
+		if IsJoker(player.GetCard(startIdx)) {
+			continue
+		}
+		suitCards := d.collectSuitCards(player, startIdx)
+		for si := 0; si < len(suitCards); si++ {
+			indices := tryBuildSequence(suitCards, si, jokerIndices, minLen)
+			if indices == nil {
+				continue
+			}
+			testCards := make([]*Card, len(indices))
+			for i, idx := range indices {
+				testCards[i] = player.GetCard(idx)
+			}
+			if !d.isValidSequence(testCards) {
+				continue
+			}
+			sort.Ints(indices)
+			if !d.wouldCauseIllegalFinish(player, indices) {
+				return indices
+			}
+			if bestIndices == nil {
 				bestIndices = indices
 			}
 		}
@@ -1950,6 +2027,9 @@ func (d *Daifugo) GetReverseDirection() bool { return d.reverseDirection }
 
 // GetNumberLocked 連番縛り発動中か取得
 func (d *Daifugo) GetNumberLocked() bool { return d.numberLocked }
+
+// GetSequenceLocked 階段縛り発動中か取得
+func (d *Daifugo) GetSequenceLocked() bool { return d.sequenceLocked }
 
 // GetSortMode 手札ソートモード取得
 func (d *Daifugo) GetSortMode() DaifugoSortMode { return d.sortMode }

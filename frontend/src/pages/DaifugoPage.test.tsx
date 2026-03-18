@@ -20,6 +20,7 @@ const defaultConfig = {
   elevenBackEnabled: true,
   sequenceEnabled: true,
   cardExchangeEnabled: true,
+  blindExchangeEnabled: false,
   fiveSkipEnabled: false,
   fiveSkipCount: 1,
   sevenPassEnabled: false,
@@ -32,6 +33,7 @@ const defaultConfig = {
   sandstormEnabled: false,
   emperorEnabled: false,
   sequenceRevolutionEnabled: false,
+  sequenceLockEnabled: false,
   illegalFinishEnabled: false,
   queenBomberEnabled: false,
   cpuDifficulty: 0,
@@ -73,6 +75,7 @@ const humanTurnState: DaifugoResponse = {
   pendingActionTarget: -1,
   reverseDirection: false,
   numberLocked: false,
+  sequenceLocked: false,
   sortMode: 0,
 };
 
@@ -1113,6 +1116,34 @@ describe('DaifugoPage', () => {
     fireEvent.keyDown(document, { key: '1' });
     fireEvent.keyDown(document, { key: 'Enter' });
     expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
+  it('shows 階段縛り badge when sequenceLocked is true', async () => {
+    const sequenceLockedState: DaifugoResponse = {
+      ...humanTurnState,
+      sequenceLocked: true,
+    };
+    mockExec.mockResolvedValue(sequenceLockedState);
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => {
+      const badges = screen.getAllByText('階段縛り');
+      expect(badges.length).toBeGreaterThanOrEqual(1);
+      expect(badges[0].tagName).toBe('SPAN');
+    });
+  });
+
+  it('settings panel renders 階段縛り checkbox', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('階段縛り')).toBeInTheDocument();
+    expect(screen.getByLabelText('階段縛り')).not.toBeChecked();
+  });
+
+  it('settings panel renders ブラインド交換 checkbox', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByText('ルール設定')).toBeInTheDocument());
+    expect(screen.getByLabelText('ブラインド交換')).toBeInTheDocument();
+    expect(screen.getByLabelText('ブラインド交換')).not.toBeChecked();
   });
 
   it('number key beyond card count is ignored', async () => {

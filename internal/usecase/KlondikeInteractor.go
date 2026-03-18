@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
@@ -8,6 +9,7 @@ import (
 // KlondikeInteractorIF クロンダイクインタラクターインタフェース
 type KlondikeInteractorIF interface {
 	Reset() string
+	ResetWithConfig(cfg domain.KlondikeConfig) string
 	Draw() string
 	MoveWasteToTableau(col int) string
 	MoveWasteToFoundation() string
@@ -17,6 +19,7 @@ type KlondikeInteractorIF interface {
 	Hint() string
 	AutoComplete() string
 	ActionLog() string
+	Undo() string
 }
 
 // KlondikeInteractor クロンダイクインタラクタークラス
@@ -34,6 +37,12 @@ func NewKlondikeInteractor(k interfaces.KlondikeGame, kp presenter.KlondikePrese
 // Reset ゲーム初期化
 func (ki *KlondikeInteractor) Reset() string {
 	ki.k.Reset()
+	return ki.kp.Output(ki.k, nil)
+}
+
+// ResetWithConfig 設定付きリセット
+func (ki *KlondikeInteractor) ResetWithConfig(cfg domain.KlondikeConfig) string {
+	ki.k.ResetWithConfig(cfg)
 	return ki.kp.Output(ki.k, nil)
 }
 
@@ -87,4 +96,10 @@ func (ki *KlondikeInteractor) AutoComplete() string {
 // ActionLog 棋譜を出力する
 func (ki *KlondikeInteractor) ActionLog() string {
 	return ki.kp.ActionLogOutput(ki.k)
+}
+
+// Undo アンドゥ
+func (ki *KlondikeInteractor) Undo() string {
+	err := ki.k.Undo()
+	return ki.kp.Output(ki.k, err)
 }

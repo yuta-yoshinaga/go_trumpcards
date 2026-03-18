@@ -29,6 +29,7 @@ func (p *HeartsWebPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 	resObj.Config = controller.HeartsWebOutputConfig{
 		CpuDifficulty: int(cfg.CpuDifficulty),
 		PointLimit:    cfg.PointLimit,
+		OmnibusJD:     cfg.OmnibusJD,
 	}
 
 	trick := h.GetCurrentTrick()
