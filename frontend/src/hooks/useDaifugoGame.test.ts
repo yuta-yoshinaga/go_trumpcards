@@ -48,6 +48,7 @@ const baseState: DaifugoResponse = {
   pendingActionTarget: -1,
   reverseDirection: false,
   numberLocked: false,
+  sequenceLocked: false,
   sortMode: 0,
 };
 

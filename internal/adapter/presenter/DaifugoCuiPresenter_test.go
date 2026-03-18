@@ -370,6 +370,19 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "【連番縛り】")
 	})
 
+	t.Run("success Output shows 階段縛り badge", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayersForPresenter()
+		dg := domain.NewDaifugo(tc, players, domain.DaifugoConfig{})
+		dg.SetSequenceLocked(true)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
+		result := tdp.Output(dg, nil)
+		assert.Contains(t, result, "【階段縛り】")
+	})
+
 	t.Run("success Output shows 反則上がり indicator for penalized player", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDaifugoPlayersForPresenter()

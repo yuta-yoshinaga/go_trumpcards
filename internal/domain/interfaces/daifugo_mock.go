@@ -182,6 +182,12 @@ func (_m *MockDaifugoGame) GetNumberLocked() bool {
 	return ret.Bool(0)
 }
 
+// GetSequenceLocked モック
+func (_m *MockDaifugoGame) GetSequenceLocked() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 // SortHumanHand モック
 func (_m *MockDaifugoGame) SortHumanHand(mode domain.DaifugoSortMode) error {
 	ret := _m.Called(mode)

@@ -41,6 +41,9 @@ export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
   if (state.numberLocked) {
     badges.push({ label: t('badge.numberLock'), bg: 'var(--color-daifugo-number-lock)', color: 'white' });
   }
+  if (state.sequenceLocked) {
+    badges.push({ label: t('badge.sequenceLock'), bg: 'var(--color-daifugo-sequence)', color: 'white' });
+  }
   if (badges.length === 0) return null;
   return (
     <div className="my-1 px-1">

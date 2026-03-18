@@ -15,6 +15,7 @@ type DaifugoWebConfig struct {
 	ElevenBackEnabled         bool `json:"elevenBackEnabled"`
 	SequenceEnabled           bool `json:"sequenceEnabled"`
 	CardExchangeEnabled       bool `json:"cardExchangeEnabled"`
+	BlindExchangeEnabled      bool `json:"blindExchangeEnabled"`
 	FiveSkipEnabled           bool `json:"fiveSkipEnabled"`
 	FiveSkipCount             int  `json:"fiveSkipCount"`
 	SevenPassEnabled          bool `json:"sevenPassEnabled"`
@@ -27,6 +28,7 @@ type DaifugoWebConfig struct {
 	SandstormEnabled          bool `json:"sandstormEnabled"`
 	EmperorEnabled            bool `json:"emperorEnabled"`
 	SequenceRevolutionEnabled bool `json:"sequenceRevolutionEnabled"`
+	SequenceLockEnabled       bool `json:"sequenceLockEnabled"`
 	IllegalFinishEnabled      bool `json:"illegalFinishEnabled"`
 	QueenBomberEnabled        bool `json:"queenBomberEnabled"`
 	CpuDifficulty             int  `json:"cpuDifficulty"`
@@ -41,6 +43,7 @@ func (c DaifugoWebConfig) ToConfig() domain.DaifugoConfig {
 		ElevenBackEnabled:         c.ElevenBackEnabled,
 		SequenceEnabled:           c.SequenceEnabled,
 		CardExchangeEnabled:       c.CardExchangeEnabled,
+		BlindExchangeEnabled:      c.BlindExchangeEnabled,
 		FiveSkipEnabled:           c.FiveSkipEnabled,
 		FiveSkipCount:             c.FiveSkipCount,
 		SevenPassEnabled:          c.SevenPassEnabled,
@@ -53,6 +56,7 @@ func (c DaifugoWebConfig) ToConfig() domain.DaifugoConfig {
 		SandstormEnabled:          c.SandstormEnabled,
 		EmperorEnabled:            c.EmperorEnabled,
 		SequenceRevolutionEnabled: c.SequenceRevolutionEnabled,
+		SequenceLockEnabled:       c.SequenceLockEnabled,
 		IllegalFinishEnabled:      c.IllegalFinishEnabled,
 		QueenBomberEnabled:        c.QueenBomberEnabled,
 		CpuDifficulty:             domain.DaifugoCpuDifficulty(c.CpuDifficulty),
@@ -111,6 +115,7 @@ type DaifugoWebOutput struct {
 	PendingActionTarget int                               `json:"pendingActionTarget"` // -1 if none
 	ReverseDirection    bool                              `json:"reverseDirection"`
 	NumberLocked        bool                              `json:"numberLocked"`
+	SequenceLocked      bool                              `json:"sequenceLocked"`
 	SortMode            int                               `json:"sortMode"`
 	WebOutputBase
 }

@@ -747,6 +747,7 @@ func TestDaifugoWebConfig_ToConfig(t *testing.T) {
 		ElevenBackEnabled:         true,
 		SequenceEnabled:           true,
 		CardExchangeEnabled:       true,
+		BlindExchangeEnabled:      true,
 		FiveSkipEnabled:           true,
 		FiveSkipCount:             3,
 		SevenPassEnabled:          true,
@@ -759,6 +760,7 @@ func TestDaifugoWebConfig_ToConfig(t *testing.T) {
 		SandstormEnabled:          true,
 		EmperorEnabled:            true,
 		SequenceRevolutionEnabled: true,
+		SequenceLockEnabled:       true,
 		IllegalFinishEnabled:      true,
 		QueenBomberEnabled:        true,
 		CpuDifficulty:             2,
@@ -771,6 +773,7 @@ func TestDaifugoWebConfig_ToConfig(t *testing.T) {
 	assert.True(t, cfg.ElevenBackEnabled)
 	assert.True(t, cfg.SequenceEnabled)
 	assert.True(t, cfg.CardExchangeEnabled)
+	assert.True(t, cfg.BlindExchangeEnabled)
 	assert.True(t, cfg.FiveSkipEnabled)
 	assert.Equal(t, 3, cfg.FiveSkipCount)
 	assert.True(t, cfg.SevenPassEnabled)
@@ -783,6 +786,7 @@ func TestDaifugoWebConfig_ToConfig(t *testing.T) {
 	assert.True(t, cfg.SandstormEnabled)
 	assert.True(t, cfg.EmperorEnabled)
 	assert.True(t, cfg.SequenceRevolutionEnabled)
+	assert.True(t, cfg.SequenceLockEnabled)
 	assert.True(t, cfg.IllegalFinishEnabled)
 	assert.True(t, cfg.QueenBomberEnabled)
 	assert.Equal(t, domain.DaifugoCpuDifficulty(2), cfg.CpuDifficulty)

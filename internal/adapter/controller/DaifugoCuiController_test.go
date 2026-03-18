@@ -293,8 +293,10 @@ func TestDaifugoCuiController_SetRule_AllKeys(t *testing.T) {
 		{"sandstorm", "1", func(c domain.DaifugoConfig) bool { return c.SandstormEnabled }},
 		{"emperor", "1", func(c domain.DaifugoConfig) bool { return c.EmperorEnabled }},
 		{"seqrev", "1", func(c domain.DaifugoConfig) bool { return c.SequenceRevolutionEnabled }},
+		{"seqlock", "1", func(c domain.DaifugoConfig) bool { return c.SequenceLockEnabled }},
 		{"illegal", "1", func(c domain.DaifugoConfig) bool { return c.IllegalFinishEnabled }},
 		{"12bomber", "1", func(c domain.DaifugoConfig) bool { return c.QueenBomberEnabled }},
+		{"blindexchange", "1", func(c domain.DaifugoConfig) bool { return c.BlindExchangeEnabled }},
 	}
 	for _, tc := range tests {
 		t.Run(tc.rule, func(t *testing.T) {

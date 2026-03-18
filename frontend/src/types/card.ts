@@ -231,6 +231,7 @@ export interface DaifugoConfig {
   elevenBackEnabled: boolean;
   sequenceEnabled: boolean;
   cardExchangeEnabled: boolean;
+  blindExchangeEnabled: boolean;
   fiveSkipEnabled: boolean;
   fiveSkipCount: number;
   sevenPassEnabled: boolean;
@@ -243,6 +244,7 @@ export interface DaifugoConfig {
   sandstormEnabled: boolean;
   emperorEnabled: boolean;
   sequenceRevolutionEnabled: boolean;
+  sequenceLockEnabled: boolean;
   illegalFinishEnabled: boolean;
   queenBomberEnabled: boolean;
   cpuDifficulty: number;
@@ -278,6 +280,7 @@ export interface DaifugoResponse {
   pendingActionTarget: number;
   reverseDirection: boolean;
   numberLocked: boolean;
+  sequenceLocked: boolean;
   sortMode: number;
 }
 
