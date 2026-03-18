@@ -1147,6 +1147,86 @@ paths:
                     moveCount: 0
                     message: param error.
 
+  /freecell/exec:
+    post:
+      tags:
+        - freecell
+      summary: Execute a FreeCell game command
+      description: |
+        Send a command to advance the FreeCell (フリーセル) game session identified by
+        `sessionId`.  FreeCell is a single-player solitaire card game using a
+        standard 52-card deck.  8 tableau columns (first 4 have 7 cards, last 4
+        have 6 cards), all dealt face-up.  4 free cells for temporary single-card
+        storage.  4 foundation piles: build up by suit Ace to King.  Tableau:
+        descending rank, alternating colors; only King on empty column.
+        Supermove: max movable cards = (1 + emptyFreeCells) x 2^(emptyTableauCols).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All foundations completed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `move`         | `m`  | Move card(s) between zones (requires `from` and `to`) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
+        | `undo`         | `u`  | Undo the last action |
+        | `log`          | `l`  | View action log |
+      operationId: freecellExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FreeCellRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move a card
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 6
+                  to:
+                    zone: freecell
+                    cell: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeCellResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeCellResponse'
+              examples:
+                paramError:
+                  value:
+                    tableau: []
+                    freeCells: []
+                    foundation: []
+                    phase: 0
+                    moveCount: 0
+                    canUndo: false
+                    message: param error.
+
   /baccarat/exec:
     post:
       tags:
@@ -4369,6 +4449,124 @@ components:
               $ref: '#/components/schemas/KlondikeZone'
             to:
               $ref: '#/components/schemas/KlondikeZone'
+
+    # -------------------------------------------------------------------------
+    # FreeCell
+    # -------------------------------------------------------------------------
+    FreeCellZone:
+      type: object
+      description: Specifies a zone on the FreeCell board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: tableau, freecell, or foundation"
+          enum: [tableau, freecell, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, used for tableau and foundation zones)
+          example: 3
+        cell:
+          type: integer
+          description: Free cell index (0-based, used for freecell zone)
+          example: 0
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    FreeCellRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `move` (`m`),
+            `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `undo` (`u`), `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/FreeCellZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/FreeCellZone'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    FreeCellResponse:
+      type: object
+      description: Current state of the FreeCell game
+      required:
+        - tableau
+        - freeCells
+        - foundation
+        - phase
+        - moveCount
+        - canUndo
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 8 tableau columns, each containing an array of face-up cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        freeCells:
+          type: array
+          description: The 4 free cells (null or a Card)
+          items:
+            nullable: true
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            from:
+              $ref: '#/components/schemas/FreeCellZone'
+            to:
+              $ref: '#/components/schemas/FreeCellZone'
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
     # Baccarat

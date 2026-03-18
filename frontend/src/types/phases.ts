@@ -7,6 +7,7 @@
  *   - Hearts:     internal/domain/Hearts.go    (HeartsPhasePass, HeartsPhasePlay, HeartsPhaseTrickEnd, HeartsPhaseRoundEnd, HeartsPhaseGameEnd)
  *   - Memory:     internal/domain/Memory.go    (MemoryPhaseFlip1, MemoryPhaseFlip2, MemoryPhaseResult, MemoryPhaseGameEnd)
  *   - Klondike:   internal/domain/Klondike.go  (KlondikePhasePlaying, KlondikePhaseGameClear, KlondikePhaseGameOver)
+ *   - FreeCell:   internal/domain/FreeCell.go  (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
  *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
  */
 
@@ -86,6 +87,13 @@ export const KlondikePhase = {
 export const KlondikeScoringMode = {
   NONE: 0,
   VEGAS: 1,
+} as const;
+
+// FreeCell phase constants (sync: internal/domain/FreeCell.go)
+export const FreeCellPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
 } as const;
 
 // Baccarat bet type constants (sync: internal/domain/Baccarat.go)

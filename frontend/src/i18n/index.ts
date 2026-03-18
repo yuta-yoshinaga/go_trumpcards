@@ -7,6 +7,7 @@ import enBlackjack from './locales/en/blackjack.json';
 import enCommon from './locales/en/common.json';
 import enDaifugo from './locales/en/daifugo.json';
 import enDoubt from './locales/en/doubt.json';
+import enFreecell from './locales/en/freecell.json';
 import enHearts from './locales/en/hearts.json';
 import enHoldem from './locales/en/holdem.json';
 import enKlondike from './locales/en/klondike.json';
@@ -19,6 +20,7 @@ import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
 import jaDaifugo from './locales/ja/daifugo.json';
 import jaDoubt from './locales/ja/doubt.json';
+import jaFreecell from './locales/ja/freecell.json';
 import jaHearts from './locales/ja/hearts.json';
 import jaHoldem from './locales/ja/holdem.json';
 import jaKlondike from './locales/ja/klondike.json';
@@ -44,6 +46,7 @@ i18n
         hearts: jaHearts,
         memory: jaMemory,
         klondike: jaKlondike,
+        freecell: jaFreecell,
         baccarat: jaBaccarat,
       },
       en: {
@@ -58,6 +61,7 @@ i18n
         hearts: enHearts,
         memory: enMemory,
         klondike: enKlondike,
+        freecell: enFreecell,
         baccarat: enBaccarat,
       },
     },
@@ -75,6 +79,7 @@ i18n
       'hearts',
       'memory',
       'klondike',
+      'freecell',
       'baccarat',
     ],
     detection: {

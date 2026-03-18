@@ -14,6 +14,7 @@
     "hearts": "Hearts",
     "memory": "Memory",
     "klondike": "Klondike",
+    "freecell": "FreeCell",
     "baccarat": "Baccarat"
   },
   "player": {
@@ -119,6 +120,11 @@
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",
     "klondike.hintAvailable": "Hint available",
-    "klondike.noHint": "No hint available"
+    "klondike.noHint": "No hint available",
+    "freecell.playing": "Playing",
+    "freecell.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "freecell.gameOver": "Game Over",
+    "freecell.hintAvailable": "Hint available",
+    "freecell.noHint": "No hint available"
   }
 }

@@ -1,0 +1,143 @@
+//go:build test
+
+package presenter
+
+import (
+	"encoding/json"
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+)
+
+func TestFreeCellWebPresenterOutputPlaying(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+
+	result := p.Output(f, nil)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.Equal(t, int(domain.FreeCellPhasePlaying), out.Phase)
+	assert.Equal(t, domain.FreeCellTableauCnt, len(out.Tableau))
+	assert.Equal(t, domain.FreeCellCellCnt, len(out.FreeCells))
+	assert.Equal(t, domain.FreeCellFoundationCnt, len(out.Foundation))
+	assert.Equal(t, 0, out.MoveCount)
+	assert.Equal(t, "freecell.playing", out.MessageCode)
+}
+
+func TestFreeCellWebPresenterOutputGameClear(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhaseGameClear)
+
+	result := p.Output(f, nil)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.Equal(t, "freecell.gameClear", out.MessageCode)
+	assert.NotNil(t, out.MessageParams)
+}
+
+func TestFreeCellWebPresenterOutputGameOver(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhaseGameOver)
+
+	result := p.Output(f, nil)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.Equal(t, "freecell.gameOver", out.MessageCode)
+}
+
+func TestFreeCellWebPresenterOutputError(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+
+	result := p.Output(f, errors.New("test error"))
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.Contains(t, out.Message, "test error")
+}
+
+func TestFreeCellWebPresenterHintOutputWithHint(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+
+	// Place an Ace on a tableau column so hint suggests moving it to foundation
+	var tableau [domain.FreeCellTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+	f.SetTableau(tableau)
+
+	result := p.HintOutput(f)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.Hint)
+	assert.Equal(t, "freecell.hintAvailable", out.MessageCode)
+}
+
+func TestFreeCellWebPresenterHintOutputNoHint(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhaseGameOver)
+
+	result := p.HintOutput(f)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.Equal(t, "freecell.noHint", out.MessageCode)
+}
+
+func TestFreeCellWebPresenterActionLogPlaying(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+
+	result := p.ActionLogOutput(f)
+
+	var out controller.ActionLogWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.Empty(t, out.Entries)
+}
+
+func TestFreeCellWebPresenterActionLogGameOver(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+
+	// Make a move to generate action log
+	var tableau [domain.FreeCellTableauCnt][]*domain.Card
+	tableau[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+	f.SetTableau(tableau)
+	f.SetPhase(domain.FreeCellPhasePlaying)
+	_ = f.MoveTableauToFoundation(0)
+	f.SetPhase(domain.FreeCellPhaseGameOver)
+
+	result := p.ActionLogOutput(f)
+
+	var out controller.ActionLogWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, out.Entries)
+}

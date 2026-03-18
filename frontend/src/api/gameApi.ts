@@ -6,6 +6,7 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  FreeCellResponse,
   HeartsResponse,
   HoldemResponse,
   KlondikeResponse,
@@ -275,6 +276,26 @@ export const klondikeApi = {
     }),
 };
 
+export interface FreeCellMoveZone {
+  zone: string;
+  col?: number;
+  cell?: number;
+  cardIndex?: number;
+}
+
+export const freecellApi = {
+  exec: (
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    from?: FreeCellMoveZone,
+    to?: FreeCellMoveZone,
+  ) =>
+    gameExec<FreeCellResponse>('freecell', {
+      command,
+      from,
+      to,
+    }),
+};
+
 export const baccaratApi = {
   exec: (
     command: 'reset' | 'bet' | 'log' | 'clearhistory',
@@ -296,6 +317,7 @@ const games = [
   'hearts',
   'memory',
   'klondike',
+  'freecell',
   'baccarat',
 ] as const;
 type Game = (typeof games)[number];
