@@ -7,6 +7,7 @@ import { useGameApi } from './useGameApi';
 export const DEFAULT_HEARTS_CONFIG: HeartsConfig = {
   cpuDifficulty: 1,
   pointLimit: 100,
+  omnibusJD: false,
 };
 
 export const CPU_DIFFICULTY_OPTIONS = [
@@ -39,6 +40,10 @@ export function useHeartsGame() {
     }
   }, []);
 
+  const handleToggle = useCallback((key: keyof HeartsConfig, value: boolean) => {
+    setHeartsConfig((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
   const handlePass = useCallback(() => {
     exec('pass', selectedCardIndices);
   }, [exec, selectedCardIndices]);
@@ -66,6 +71,7 @@ export function useHeartsGame() {
     toggleCard,
     clearSelection,
     handleConfigChange,
+    handleToggle,
     handlePass,
     handlePlay,
     handleNextTrick,

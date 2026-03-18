@@ -218,6 +218,7 @@ export const holdemApi = {
 export interface HeartsConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
+  omnibusJD?: boolean;
 }
 
 export const heartsApi = {

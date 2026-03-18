@@ -42,7 +42,7 @@ const playPhaseState: HeartsResponse = {
   winnerIdx: -1,
   leadPlayerIdx: 0,
   message: '',
-  config: { cpuDifficulty: 1, pointLimit: 100 },
+  config: { cpuDifficulty: 1, pointLimit: 100, omnibusJD: false },
 };
 
 const passPhaseState: HeartsResponse = {
@@ -105,7 +105,11 @@ describe('HeartsPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<HeartsPage />);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 100 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 100,
+        omnibusJD: false,
+      }),
     );
   });
 
@@ -233,7 +237,11 @@ describe('HeartsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 100 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 2,
+        pointLimit: 100,
+        omnibusJD: false,
+      }),
     );
   });
 
@@ -251,7 +259,33 @@ describe('HeartsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 200 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 200,
+        omnibusJD: false,
+      }),
+    );
+  });
+
+  it('settings panel toggles omnibusJD', async () => {
+    renderWithProviders(<HeartsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    const checkbox = screen.getByRole('checkbox', { name: 'オムニバス (J♦ = -10点)' });
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 100,
+        omnibusJD: true,
+      }),
     );
   });
 
@@ -290,7 +324,11 @@ describe('HeartsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 100 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 100,
+        omnibusJD: false,
+      }),
     );
   });
 
@@ -503,7 +541,11 @@ describe('HeartsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { cpuDifficulty: 1, pointLimit: 100 }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 100,
+        omnibusJD: false,
+      }),
     );
   });
 

@@ -42,6 +42,7 @@ export function HeartsPage() {
     toggleCard,
     clearSelection,
     handleConfigChange,
+    handleToggle,
     handlePass,
     handlePlay,
     handleNextTrick,
@@ -111,6 +112,13 @@ export function HeartsPage() {
                 value: heartsConfig.pointLimit,
                 options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                 onSelect: (v) => handleConfigChange('pointLimit', v),
+              },
+              {
+                type: 'checkbox',
+                id: 'omnibusJD',
+                label: t('settings.omnibusJD'),
+                checked: heartsConfig.omnibusJD,
+                onToggle: (v) => handleToggle('omnibusJD', v),
               },
             ],
           },
@@ -273,6 +281,7 @@ export function HeartsPage() {
                 return exec('reset', undefined, undefined, {
                   cpuDifficulty: heartsConfig.cpuDifficulty,
                   pointLimit: heartsConfig.pointLimit,
+                  omnibusJD: heartsConfig.omnibusJD,
                 });
               })
             }

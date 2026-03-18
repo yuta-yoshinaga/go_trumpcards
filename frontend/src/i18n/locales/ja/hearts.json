@@ -12,7 +12,8 @@
     "pointLimit": "ポイント上限",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "omnibusJD": "オムニバス (J♦ = -10点)"
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
