@@ -162,6 +162,12 @@ func (c DaifugoConfig) Validate() error {
 	if c.FiveSkipCount < 1 || c.FiveSkipCount > DaifugoFiveSkipCountMax {
 		return fmt.Errorf("five skip count must be 1-%d, got %d", DaifugoFiveSkipCountMax, c.FiveSkipCount)
 	}
+	if c.SequenceLockEnabled && !c.SequenceEnabled {
+		return fmt.Errorf("sequence lock requires sequence to be enabled")
+	}
+	if c.BlindExchangeEnabled && !c.CardExchangeEnabled {
+		return fmt.Errorf("blind exchange requires card exchange to be enabled")
+	}
 	return nil
 }
 

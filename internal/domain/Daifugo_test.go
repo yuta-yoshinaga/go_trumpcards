@@ -7501,6 +7501,30 @@ func TestDaifugoConfig_Validate(t *testing.T) {
 		cfg.FiveSkipCount = 99
 		assert.Error(t, cfg.Validate())
 	})
+	t.Run("sequence lock without sequence returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.SequenceLockEnabled = true
+		cfg.SequenceEnabled = false
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("sequence lock with sequence returns no error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.SequenceLockEnabled = true
+		cfg.SequenceEnabled = true
+		assert.NoError(t, cfg.Validate())
+	})
+	t.Run("blind exchange without card exchange returns error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.BlindExchangeEnabled = true
+		cfg.CardExchangeEnabled = false
+		assert.Error(t, cfg.Validate())
+	})
+	t.Run("blind exchange with card exchange returns no error", func(t *testing.T) {
+		cfg := validCfg()
+		cfg.BlindExchangeEnabled = true
+		cfg.CardExchangeEnabled = true
+		assert.NoError(t, cfg.Validate())
+	})
 }
 
 // --- 階段縛り (Sequence Lock) ---
@@ -7779,6 +7803,32 @@ func TestDaifugo_SequenceLock(t *testing.T) {
 		dg.CpuPlay()
 		actions := dg.GetCpuActions()
 		assert.NotNil(t, actions)
+		assert.NotNil(t, actions[0].PlayedCards)
+		assert.Equal(t, 3, len(actions[0].PlayedCards))
+	})
+
+	t.Run("CPU plays sequence even if illegal finish when no alternative (fallback)", func(t *testing.T) {
+		tc := domain.NewTrumpCards(0)
+		players := makeDaifugoPlayers()
+		config := sequenceLockConfig()
+		config.EightCutEnabled = true
+		config.IllegalFinishEnabled = true
+		dg := domain.NewDaifugo(tc, players, config)
+		dg.SetSequenceLocked(true)
+		dg.SetCurrentTurn(1)
+
+		// CPU1 has exactly 3 cards forming a sequence with an 8 → illegal finish
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
+
+		dg.CpuPlay()
+		actions := dg.GetCpuActions()
+		assert.NotNil(t, actions)
+		// CPU still plays the sequence (fallback path) despite illegal finish
 		assert.NotNil(t, actions[0].PlayedCards)
 		assert.Equal(t, 3, len(actions[0].PlayedCards))
 	})
