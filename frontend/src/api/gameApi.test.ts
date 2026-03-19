@@ -14,6 +14,7 @@ import {
   pokerApi,
   sessionId,
   sevensApi,
+  spadesApi,
 } from './gameApi';
 
 describe('gameApi', () => {
@@ -1872,6 +1873,97 @@ describe('gameApi', () => {
     });
   });
 
+  describe('spadesApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      trickNumber: 1,
+      currentPlayerIdx: 0,
+      bidPlayerIdx: 0,
+      currentTrick: [],
+      spadesBroken: false,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      leadPlayerIdx: 0,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 500, nilBonus: 100, bagPenaltyThreshold: 10 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await spadesApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/spades/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          bid: undefined,
+          cardIndex: undefined,
+          config: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spadesApi.exec('play', undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spades/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            bid: undefined,
+            cardIndex: 3,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with bid command and bid value', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spadesApi.exec('bid', 5);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spades/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'bid',
+            bid: 5,
+            cardIndex: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spadesApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 300 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spades/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            bid: undefined,
+            cardIndex: undefined,
+            config: { cpuDifficulty: 2, pointLimit: 300 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(spadesApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('memoryApi.exec', () => {
     const payload = {
       players: [],
@@ -2224,6 +2316,7 @@ describe('gameApi', () => {
       ['holdem', actionLogApi.holdem],
       ['omaha', actionLogApi.omaha],
       ['hearts', actionLogApi.hearts],
+      ['spades', actionLogApi.spades],
       ['memory', actionLogApi.memory],
       ['klondike', actionLogApi.klondike],
       ['baccarat', actionLogApi.baccarat],

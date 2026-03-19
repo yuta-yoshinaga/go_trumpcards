@@ -16,6 +16,7 @@ import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
+import { SpadesPage } from './pages/SpadesPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
 const pageByPath: Record<GamePath, ReactNode> = {
@@ -28,6 +29,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/holdem': <HoldemPage />,
   '/omaha': <OmahaPage />,
   '/hearts': <HeartsPage />,
+  '/spades': <SpadesPage />,
   '/memory': <MemoryPage />,
   '/klondike': <KlondikePage />,
   '/freecell': <FreeCellPage />,

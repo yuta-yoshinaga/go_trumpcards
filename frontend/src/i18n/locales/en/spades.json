@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "spadesBroken": "Spades Broken",
+  "spadesNotBroken": "Spades Not Broken",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "bags": "Bags: {{count}}",
+  "bid": "Bid {{n}}",
+  "bidNone": "No bid",
+  "currentTrick": "Current Trick",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresBid": "Bid",
+  "scoresTricks": "Tricks",
+  "scoresBags": "Bags",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "bidButton": "Bid",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "bidPhase": "Place your bid (0=Nil, 1-13)",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card"
+  },
+  "trickEnd": "Trick complete",
+  "roundEnd": "Round complete",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  }
+}

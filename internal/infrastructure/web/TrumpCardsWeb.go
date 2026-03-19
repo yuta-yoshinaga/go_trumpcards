@@ -36,6 +36,7 @@ type TrumpCardsWeb struct {
 	klc *controller.KlondikeWebController
 	fcc *controller.FreeCellWebController
 	bcc *controller.BaccaratWebController
+	spc *controller.SpadesWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -144,6 +145,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			baccarat := domain.NewDefaultBaccarat()
 			return usecase.NewBaccaratInteractor(baccarat, new(presenter.BaccaratWebPresenter))
 		}),
+		spc: controller.NewSpadesWebController(func() usecase.SpadesInteractorIF {
+			config := domain.DefaultSpadesConfig()
+			players := []*domain.SpadesPlayer{
+				domain.NewSpadesPlayer(true),
+				domain.NewSpadesPlayer(false),
+				domain.NewSpadesPlayer(false),
+				domain.NewSpadesPlayer(false),
+			}
+			spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
+			return usecase.NewSpadesInteractor(spades, new(presenter.SpadesWebPresenter))
+		}),
 	}
 }
 
@@ -195,6 +207,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/klondike/exec", web.klc.Exec},
 		{"/freecell/exec", web.fcc.Exec},
 		{"/baccarat/exec", web.bcc.Exec},
+		{"/spades/exec", web.spc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -271,6 +284,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.klc.Stop()
 	web.fcc.Stop()
 	web.bcc.Stop()
+	web.spc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

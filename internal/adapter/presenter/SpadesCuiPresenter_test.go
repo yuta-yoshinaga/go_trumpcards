@@ -1,0 +1,274 @@
+package presenter_test
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// setupSpadesCuiMock creates a MockSpadesGame with sensible defaults for CUI tests.
+func setupSpadesCuiMock() *interfaces.MockSpadesGame {
+	m := new(interfaces.MockSpadesGame)
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetTrickNumber").Return(1)
+	m.On("GetSpadesBroken").Return(false)
+	m.On("GetCurrentTrick").Return([]*domain.SpadesTrickCard(nil))
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetPhase").Return(domain.SpadesPhasePlay)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetBidPlayerIdx").Return(0)
+	m.On("GetWinnerIdx").Return(-1)
+	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetConfig").Return(domain.DefaultSpadesConfig())
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	return m
+}
+
+func makeSpadesPlayers() []*domain.SpadesPlayer {
+	return []*domain.SpadesPlayer{
+		domain.NewSpadesPlayer(true),
+		domain.NewSpadesPlayer(false),
+		domain.NewSpadesPlayer(false),
+		domain.NewSpadesPlayer(false),
+	}
+}
+
+func setupSpadesCuiMockWithPlayers() (*interfaces.MockSpadesGame, []*domain.SpadesPlayer) {
+	m := setupSpadesCuiMock()
+	players := makeSpadesPlayers()
+	m.On("GetPlayerCnt").Return(4)
+	m.On("GetPlayer", 0).Return(players[0])
+	m.On("GetPlayer", 1).Return(players[1])
+	m.On("GetPlayer", 2).Return(players[2])
+	m.On("GetPlayer", 3).Return(players[3])
+	return m, players
+}
+
+func TestSpadesCuiPresenter_Output(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SpadesCuiPresenter)
+
+	t.Run("initial state with header and player info", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Spades (スペード)")
+		assert.Contains(t, result, "ラウンド: 1")
+		assert.Contains(t, result, "トリック: 1")
+		assert.Contains(t, result, "スペードブレイク: なし")
+		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック バッグ0 累積0点 ラウンド0点 2枚")
+		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "CPU 1: ビッド=未ビッド 獲得0トリック バッグ0 累積0点 ラウンド0点 1枚")
+		assert.Contains(t, result, "手番: あなた")
+		assert.Contains(t, result, "play <idx>")
+	})
+
+	t.Run("spades broken shows あり", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSpadesBroken")
+		m.On("GetSpadesBroken").Return(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "スペードブレイク: あり")
+	})
+
+	t.Run("player with scores and tricks and bags", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[1].SetCumulativeScore(150)
+		players[1].SetRoundScore(30)
+		players[1].SetBags(3)
+		players[1].SetBid(4)
+		players[1].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1: ビッド=4 獲得1トリック バッグ3 累積150点 ラウンド30点 0枚")
+	})
+
+	t.Run("human with no cards does not print extra cards line", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック バッグ0 累積0点 ラウンド0点 0枚")
+	})
+
+	t.Run("human cards with separator", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[0]SPADE 1  [1]DIAMOND 10")
+	})
+
+	t.Run("current trick shown", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		trick := []*domain.SpadesTrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
+		}
+		m.On("GetCurrentTrick").Return(trick)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+	})
+
+	t.Run("no trick cards hides trick section", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "トリック: あなた")
+		assert.NotContains(t, result, "トリック: CPU")
+	})
+
+	t.Run("error message shown", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		testErr := errors.New("invalid card index")
+
+		result := p.Output(m, testErr)
+		assert.Contains(t, result, "invalid card index")
+	})
+
+	t.Run("game ended shows winner human", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "あなたの勝利です！")
+	})
+
+	t.Run("game ended shows winner CPU", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(2)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "CPU 2の勝利です！")
+	})
+
+	t.Run("bid phase shows bidder and command", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.SpadesPhaseBid)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッドフェーズ: あなたの番")
+		assert.Contains(t, result, "b <n>")
+	})
+
+	t.Run("bid phase CPU bidder", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidPlayerIdx")
+		m.On("GetPhase").Return(domain.SpadesPhaseBid)
+		m.On("GetBidPlayerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッドフェーズ: CPU 1の番")
+	})
+
+	t.Run("play phase shows current player CPU", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "手番: CPU 1")
+		assert.Contains(t, result, "play <idx>")
+	})
+
+	t.Run("trick end phase shows next command", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.SpadesPhaseTrickEnd)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "トリック終了")
+		assert.Contains(t, result, "next・・・次のトリックへ")
+	})
+
+	t.Run("round end phase shows next command", func(t *testing.T) {
+		m, _ := setupSpadesCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.SpadesPhaseRoundEnd)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド終了")
+		assert.Contains(t, result, "next・・・次のラウンドへ")
+	})
+
+	t.Run("nil player at winnerIdx shows UNKNOWN", func(t *testing.T) {
+		m := setupSpadesCuiMock()
+		m.On("GetPlayerCnt").Return(1)
+		players := makeSpadesPlayers()
+		m.On("GetPlayer", 0).Return(players[0])
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerIdx")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerIdx").Return(99)
+		m.On("GetPlayer", 99).Return((*domain.SpadesPlayer)(nil))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "UNKNOWN")
+	})
+}
+
+func TestSpadesCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SpadesCuiPresenter)
+
+	t.Run("with entries", func(t *testing.T) {
+		m := new(interfaces.MockSpadesGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+		}
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "played SPADE 5")
+		m.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		m := new(interfaces.MockSpadesGame)
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜はありません")
+		m.AssertExpectations(t)
+	})
+
+	t.Run("game not ended", func(t *testing.T) {
+		m := new(interfaces.MockSpadesGame)
+		m.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜はありません")
+		m.AssertExpectations(t)
+	})
+}

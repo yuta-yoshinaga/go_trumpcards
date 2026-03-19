@@ -16,6 +16,7 @@ import jaOldmaid from '../i18n/locales/ja/oldmaid.json';
 import jaOmaha from '../i18n/locales/ja/omaha.json';
 import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
+import jaSpades from '../i18n/locales/ja/spades.json';
 
 i18n.use(initReactI18next).init({
   lng: 'ja',
@@ -32,6 +33,7 @@ i18n.use(initReactI18next).init({
     'holdem',
     'omaha',
     'hearts',
+    'spades',
     'memory',
     'baccarat',
   ],
@@ -47,6 +49,7 @@ i18n.use(initReactI18next).init({
       holdem: jaHoldem,
       omaha: jaOmaha,
       hearts: jaHearts,
+      spades: jaSpades,
       memory: jaMemory,
       baccarat: jaBaccarat,
     },

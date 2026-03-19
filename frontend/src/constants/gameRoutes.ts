@@ -8,6 +8,7 @@ export const gameRoutes = [
   { path: '/holdem', labelKey: 'nav.holdem' },
   { path: '/omaha', labelKey: 'nav.omaha' },
   { path: '/hearts', labelKey: 'nav.hearts' },
+  { path: '/spades', labelKey: 'nav.spades' },
   { path: '/memory', labelKey: 'nav.memory' },
   { path: '/klondike', labelKey: 'nav.klondike' },
   { path: '/freecell', labelKey: 'nav.freecell' },
