@@ -2,6 +2,7 @@ import type {
   ActionLogResponse,
   BaccaratResponse,
   BlackJackResponse,
+  CrazyEightsResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DoubtConfig,
@@ -348,6 +349,26 @@ export const freecellApi = {
     }),
 };
 
+export interface CrazyEightsConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+export const crazyeightsApi = {
+  exec: (
+    command: 'reset' | 'play' | 'draw' | 'suit' | 'nextround',
+    cardIndex?: number,
+    suit?: number,
+    config?: CrazyEightsConfigInput,
+  ) =>
+    gameExec<CrazyEightsResponse>('crazyeights', {
+      command,
+      cardIndex,
+      suit,
+      config,
+    }),
+};
+
 export const baccaratApi = {
   exec: (
     command: 'reset' | 'bet' | 'log' | 'clearhistory',
@@ -373,6 +394,7 @@ const games = [
   'klondike',
   'freecell',
   'baccarat',
+  'crazyeights',
 ] as const;
 type Game = (typeof games)[number];
 

@@ -38,6 +38,8 @@ tags:
     description: Baccarat (バカラ) game
   - name: spades
     description: Spades (スペード) game
+  - name: crazyeights
+    description: Crazy Eights (クレイジーエイト) game
 
 paths:
   /blackjack/exec:
@@ -1443,6 +1445,111 @@ paths:
       responses:
         '200':
           description: Command processed successfully
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /crazyeights/exec:
+    post:
+      tags:
+        - crazyeights
+      summary: Execute a Crazy Eights game command
+      description: |
+        Send a command to advance the Crazy Eights (クレイジーエイト) game session
+        identified by `sessionId`.  Crazy Eights is a 4-player shedding card game
+        using a standard 52-card deck.  Players match the top discard by suit or rank,
+        or play an 8 (wild) and choose the next suit.  Cannot play? Draw 1 card.
+        Round ends when a player empties their hand; scoring: 8=50, J/Q/K=10, A=1,
+        others=face value.  Match ends at the point limit (default 200).
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Play         | `0`   | Play a card, draw, or choose suit after playing 8 |
+        | RoundEnd     | `1`   | A player emptied their hand; advance with `nextround` |
+        | GameEnd      | `2`   | A player reached the point limit |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `draw`      | `d`     | Draw a card from the draw pile |
+        | `suit`      | `s`     | Choose next suit after playing 8 (requires `suit`: 1-4) |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `log`       | `l`     | View action log |
+      operationId: crazyeightsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                suit:
+                  type: integer
+                  minimum: 1
+                  maximum: 4
+                  description: "Suit choice after playing an 8 (1=♠, 2=♣, 3=♥, 4=♦)"
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              suit:
+                summary: Choose hearts as next suit
+                value:
+                  command: suit
+                  suit: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: |
+            Command processed successfully.
+
+            Response body includes:
+            - `players` — array of player objects (hand, score, name)
+            - `phase` — current game phase (0=Play, 1=RoundEnd, 2=GameEnd)
+            - `roundNumber` — current round number
+            - `currentPlayerIdx` — index of the player whose turn it is
+            - `discardTop` — the top card of the discard pile
+            - `drawPileCount` — number of cards remaining in the draw pile
+            - `chosenSuit` — suit chosen after playing an 8 (null if not applicable)
+            - `gameEndFlag` — whether the match has ended
+            - `winnerIdx` — index of the match winner (-1 if not ended)
+            - `message` — human-readable status message
+            - `messageCode` — machine-readable message key
+            - `messageParams` — parameters for message interpolation
+            - `config` — current game configuration
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
 

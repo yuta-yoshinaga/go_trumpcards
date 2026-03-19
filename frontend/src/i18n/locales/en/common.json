@@ -17,7 +17,8 @@
     "memory": "Memory",
     "klondike": "Klondike",
     "freecell": "FreeCell",
-    "baccarat": "Baccarat"
+    "baccarat": "Baccarat",
+    "crazyeights": "Crazy Eights"
   },
   "player": {
     "you": "You",
@@ -111,6 +112,11 @@
     "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
     "spades.result.humanWin": "Game over! You win!",
     "spades.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "crazyeights.result.humanWin": "Game over! You win!",
+    "crazyeights.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "crazyeights.playPhase": "Play a card or draw from the pile",
+    "crazyeights.chooseSuitPhase": "Choose the next suit",
+    "crazyeights.roundEnd": "Round over",
     "memory.flip1": "Flip the first card",
     "memory.flip2": "Flip the second card",
     "memory.matched": "It's a match!",

@@ -53,6 +53,7 @@ GAMES:
   freecell     FreeCell (フリーセル)
   baccarat     Baccarat (バカラ)
   spades       Spades (スペード)
+  crazyeights  Crazy Eights (クレイジーエイト)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -111,20 +112,21 @@ ENVIRONMENT VARIABLES:
 		fmt.Fprintf(os.Stderr, "Warning: unsupported language %q, defaulting to ja\n", detectedLang)
 	}
 	commands := map[string]func() int{
-		"blackjack": func() int { ui.NewBlackJackCui().Exec(); return 0 },
-		"poker":     func() int { ui.NewPokerCui().Exec(); return 0 },
-		"oldmaid":   func() int { ui.NewOldMaidCui().Exec(); return 0 },
-		"daifugo":   func() int { ui.NewDaifugoCui().Exec(); return 0 },
-		"sevens":    func() int { ui.NewSevensCui().Exec(); return 0 },
-		"doubt":     func() int { ui.NewDoubtCui().Exec(); return 0 },
-		"holdem":    func() int { ui.NewHoldemCui().Exec(); return 0 },
-		"omaha":     func() int { ui.NewOmahaCui().Exec(); return 0 },
-		"hearts":    func() int { ui.NewHeartsCui().Exec(); return 0 },
-		"memory":    func() int { ui.NewMemoryCui().Exec(); return 0 },
-		"klondike":  func() int { ui.NewKlondikeCui().Exec(); return 0 },
-		"freecell":  func() int { ui.NewFreeCellCui().Exec(); return 0 },
-		"baccarat":  func() int { ui.NewBaccaratCui().Exec(); return 0 },
-		"spades":    func() int { ui.NewSpadesCui().Exec(); return 0 },
+		"blackjack":   func() int { ui.NewBlackJackCui().Exec(); return 0 },
+		"poker":       func() int { ui.NewPokerCui().Exec(); return 0 },
+		"oldmaid":     func() int { ui.NewOldMaidCui().Exec(); return 0 },
+		"daifugo":     func() int { ui.NewDaifugoCui().Exec(); return 0 },
+		"sevens":      func() int { ui.NewSevensCui().Exec(); return 0 },
+		"doubt":       func() int { ui.NewDoubtCui().Exec(); return 0 },
+		"holdem":      func() int { ui.NewHoldemCui().Exec(); return 0 },
+		"omaha":       func() int { ui.NewOmahaCui().Exec(); return 0 },
+		"hearts":      func() int { ui.NewHeartsCui().Exec(); return 0 },
+		"memory":      func() int { ui.NewMemoryCui().Exec(); return 0 },
+		"klondike":    func() int { ui.NewKlondikeCui().Exec(); return 0 },
+		"freecell":    func() int { ui.NewFreeCellCui().Exec(); return 0 },
+		"baccarat":    func() int { ui.NewBaccaratCui().Exec(); return 0 },
+		"spades":      func() int { ui.NewSpadesCui().Exec(); return 0 },
+		"crazyeights": func() int { ui.NewCrazyEightsCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

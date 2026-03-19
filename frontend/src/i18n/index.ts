@@ -2,6 +2,7 @@ import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
+import enCrazyeights from './locales/en/crazyeights.json';
 import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
 import enCommon from './locales/en/common.json';
@@ -17,6 +18,7 @@ import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
 import enSevens from './locales/en/sevens.json';
 import enSpades from './locales/en/spades.json';
+import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
@@ -54,6 +56,7 @@ i18n
         klondike: jaKlondike,
         freecell: jaFreecell,
         baccarat: jaBaccarat,
+        crazyeights: jaCrazyeights,
       },
       en: {
         common: enCommon,
@@ -71,6 +74,7 @@ i18n
         klondike: enKlondike,
         freecell: enFreecell,
         baccarat: enBaccarat,
+        crazyeights: enCrazyeights,
       },
     },
     fallbackLng: 'ja',
@@ -91,6 +95,7 @@ i18n
       'klondike',
       'freecell',
       'baccarat',
+      'crazyeights',
     ],
     detection: {
       order: ['localStorage'],

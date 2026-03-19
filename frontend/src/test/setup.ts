@@ -17,6 +17,7 @@ import jaOmaha from '../i18n/locales/ja/omaha.json';
 import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
 import jaSpades from '../i18n/locales/ja/spades.json';
+import jaCrazyeights from '../i18n/locales/ja/crazyeights.json';
 
 i18n.use(initReactI18next).init({
   lng: 'ja',
@@ -36,6 +37,7 @@ i18n.use(initReactI18next).init({
     'spades',
     'memory',
     'baccarat',
+    'crazyeights',
   ],
   resources: {
     ja: {
@@ -52,6 +54,7 @@ i18n.use(initReactI18next).init({
       spades: jaSpades,
       memory: jaMemory,
       baccarat: jaBaccarat,
+      crazyeights: jaCrazyeights,
     },
   },
   interpolation: { escapeValue: false },

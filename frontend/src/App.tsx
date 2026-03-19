@@ -5,6 +5,7 @@ import { NavBar } from './components/NavBar';
 import { gameRoutes } from './constants/gameRoutes';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
+import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { FreeCellPage } from './pages/FreeCellPage';
@@ -34,6 +35,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/klondike': <KlondikePage />,
   '/freecell': <FreeCellPage />,
   '/baccarat': <BaccaratPage />,
+  '/crazyeights': <CrazyEightsPage />,
 };
 
 export default function App() {

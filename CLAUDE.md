@@ -31,6 +31,7 @@ go run ./cmd/trumpcards klondike   # Klondike (ソリティア) CLI
 go run ./cmd/trumpcards freecell   # FreeCell CLI
 go run ./cmd/trumpcards baccarat   # Baccarat (バカラ) CLI
 go run ./cmd/trumpcards spades     # Spades (スペード) CLI
+go run ./cmd/trumpcards crazyeights   # Crazy Eights CLI
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)

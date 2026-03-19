@@ -23,6 +23,7 @@
 - **フリーセル (FreeCell)**: CLI および Web GUIで遊べます（1人用ソリティア、52枚のカード、8列のタブロー、4つのフリーセル・4つの組札、スーパームーブ対応） — [CUI版マニュアル](docs/manual/cui/freecell.md) / [Web版マニュアル](docs/manual/web/freecell.md)
 - **バカラ (Baccarat)**: CLI および Web GUIで遊べます（プレイヤー/バンカー/タイベット、第3カードルール、5%バンカーコミッション、チップシステム） — [CUI版マニュアル](docs/manual/cui/baccarat.md) / [Web版マニュアル](docs/manual/web/baccarat.md)
 - **スペード (Spades)**: CLI および Web GUIで遊べます（1人 vs CPU×3、トリックテイキング＋ビッド、スペードがトランプ、ニルビッド、バッグペナルティ、3段階CPU難易度） — [CUI版マニュアル](docs/manual/cui/spades.md) / [Web版マニュアル](docs/manual/web/spades.md)
+- **クレイジーエイト (Crazy Eights)**: CLI および Web GUIで遊べます（1人 vs CPU×3、スートまたはランク一致でカードを出す、8はワイルド、ドローパイル補充、ポイント制マッチ） — [CUI版マニュアル](docs/manual/cui/crazyeights.md) / [Web版マニュアル](docs/manual/web/crazyeights.md)
 
 ## Requirements
 
@@ -101,6 +102,7 @@ go run ./cmd/trumpcards klondike   # クロンダイク CLI
 go run ./cmd/trumpcards freecell   # フリーセル CLI
 go run ./cmd/trumpcards baccarat   # バカラ CLI
 go run ./cmd/trumpcards spades     # スペード CLI
+go run ./cmd/trumpcards crazyeights # クレイジーエイト CLI
 go run ./cmd/trumpcards update     # 最新版にセルフアップデート
 go run ./cmd/trumpcards web        # REST API + Web GUI サーバー起動 (CLI経由)
 go run ./cmd/server                # REST API + Web GUI サーバー起動 (直接)

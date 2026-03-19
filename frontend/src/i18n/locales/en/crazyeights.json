@@ -1,0 +1,42 @@
+{
+  "phase": {
+    "play": "Play",
+    "chooseSuit": "Choose Suit",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Draw pile: {{count}} cards",
+  "discardTop": "Discard",
+  "chosenSuit": "Chosen suit",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "playButton": "Play",
+  "drawButton": "Draw",
+  "nextRound": "Next Round",
+  "suitSpade": "♠ Spades",
+  "suitClover": "♣ Clubs",
+  "suitHeart": "♥ Hearts",
+  "suitDiamond": "♦ Diamonds",
+  "chooseSuitPrompt": "Choose a suit",
+  "playPhase": "Play a card or draw from the pile",
+  "chooseSuitPhase": "Choose the next suit",
+  "roundEnd": "Round over",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  }
+}
