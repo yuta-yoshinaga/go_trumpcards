@@ -93,7 +93,7 @@ func (p *SpadesCuiPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 				b.WriteString("next・・・次のトリックへ\n")
 			case domain.SpadesPhaseRoundEnd:
 				b.WriteString("ラウンド終了\n")
-				b.WriteString("next・・・次のラウンドへ\n")
+				b.WriteString("nr / nextround・・・次のラウンドへ\n")
 			}
 		}
 	})

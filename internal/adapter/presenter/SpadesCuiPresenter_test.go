@@ -213,7 +213,7 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ラウンド終了")
-		assert.Contains(t, result, "next・・・次のラウンドへ")
+		assert.Contains(t, result, "nr / nextround・・・次のラウンドへ")
 	})
 
 	t.Run("nil player at winnerIdx shows UNKNOWN", func(t *testing.T) {
