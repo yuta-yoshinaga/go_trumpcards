@@ -24,6 +24,7 @@ go run ./cmd/trumpcards daifugo    # Daifugo CLI
 go run ./cmd/trumpcards sevens     # Sevens (7並べ) CLI
 go run ./cmd/trumpcards doubt      # Doubt (ダウト) CLI
 go run ./cmd/trumpcards holdem     # Texas Hold'em CLI
+go run ./cmd/trumpcards omaha      # Omaha Hold'em CLI
 go run ./cmd/trumpcards hearts     # Hearts CLI
 go run ./cmd/trumpcards memory     # Memory (神経衰弱) CLI
 go run ./cmd/trumpcards klondike   # Klondike (ソリティア) CLI

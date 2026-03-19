@@ -13,6 +13,7 @@ import enHoldem from './locales/en/holdem.json';
 import enKlondike from './locales/en/klondike.json';
 import enMemory from './locales/en/memory.json';
 import enOldmaid from './locales/en/oldmaid.json';
+import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
 import enSevens from './locales/en/sevens.json';
 import jaBaccarat from './locales/ja/baccarat.json';
@@ -26,6 +27,7 @@ import jaHoldem from './locales/ja/holdem.json';
 import jaKlondike from './locales/ja/klondike.json';
 import jaMemory from './locales/ja/memory.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
+import jaOmaha from './locales/ja/omaha.json';
 import jaPoker from './locales/ja/poker.json';
 import jaSevens from './locales/ja/sevens.json';
 
@@ -43,6 +45,7 @@ i18n
         sevens: jaSevens,
         doubt: jaDoubt,
         holdem: jaHoldem,
+        omaha: jaOmaha,
         hearts: jaHearts,
         memory: jaMemory,
         klondike: jaKlondike,
@@ -58,6 +61,7 @@ i18n
         sevens: enSevens,
         doubt: enDoubt,
         holdem: enHoldem,
+        omaha: enOmaha,
         hearts: enHearts,
         memory: enMemory,
         klondike: enKlondike,
@@ -76,6 +80,7 @@ i18n
       'sevens',
       'doubt',
       'holdem',
+      'omaha',
       'hearts',
       'memory',
       'klondike',

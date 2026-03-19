@@ -885,6 +885,51 @@ paths:
                     cpuActions: []
                     message: param error.
 
+  /omaha/exec:
+    post:
+      tags:
+        - omaha
+      summary: Execute an Omaha Hold'em game command
+      description: |
+        Send a command to advance the Omaha Hold'em game session identified by
+        `sessionId`.  Omaha is a variant of Texas Hold'em where each player
+        receives 4 hole cards and must use exactly 2 hole cards + 3 community
+        cards to form the best 5-card hand.
+
+        The game uses the same phases, commands, and configuration options as
+        Texas Hold'em.  See the `/holdem/exec` endpoint for full documentation.
+      operationId: omahaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
   /hearts/exec:
     post:
       tags:

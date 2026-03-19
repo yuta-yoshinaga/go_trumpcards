@@ -13,6 +13,7 @@ import jaHearts from '../i18n/locales/ja/hearts.json';
 import jaHoldem from '../i18n/locales/ja/holdem.json';
 import jaMemory from '../i18n/locales/ja/memory.json';
 import jaOldmaid from '../i18n/locales/ja/oldmaid.json';
+import jaOmaha from '../i18n/locales/ja/omaha.json';
 import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
 
@@ -29,6 +30,7 @@ i18n.use(initReactI18next).init({
     'sevens',
     'doubt',
     'holdem',
+    'omaha',
     'hearts',
     'memory',
     'baccarat',
@@ -43,6 +45,7 @@ i18n.use(initReactI18next).init({
       sevens: jaSevens,
       doubt: jaDoubt,
       holdem: jaHoldem,
+      omaha: jaOmaha,
       hearts: jaHearts,
       memory: jaMemory,
       baccarat: jaBaccarat,

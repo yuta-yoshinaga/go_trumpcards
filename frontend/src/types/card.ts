@@ -488,6 +488,16 @@ export interface HoldemHandOdds {
   probability: number;
 }
 
+// --- Omaha Hold'em ---
+// Omaha shares identical response/player structures with Holdem
+export type OmahaPlayerData = HoldemPlayerData;
+export type OmahaCpuAction = HoldemCpuAction;
+export type OmahaResult = HoldemResult;
+export type OmahaSidePot = HoldemSidePot;
+export type OmahaEquity = HoldemEquity;
+export type OmahaHandOdds = HoldemHandOdds;
+export type OmahaResponse = HoldemResponse;
+
 // --- Hearts ---
 
 export interface HeartsPlayerData {
