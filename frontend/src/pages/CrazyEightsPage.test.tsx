@@ -231,9 +231,7 @@ describe('CrazyEightsPage', () => {
   it('shows next round button on round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<CrazyEightsPage />);
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
   });
 
   it('calls nextround when next round button is clicked', async () => {
@@ -485,9 +483,7 @@ describe('CrazyEightsPage', () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
 
-    const container = screen
-      .getByRole('button', { name: 'リセット' })
-      .closest('[aria-busy]') as HTMLElement;
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-busy]') as HTMLElement;
     expect(container).toHaveAttribute('aria-busy', 'false');
   });
 
@@ -553,17 +549,13 @@ describe('CrazyEightsPage', () => {
 
   it('phase indicator shows your turn when human play turn', async () => {
     renderWithProviders(<CrazyEightsPage />);
-    await waitFor(() =>
-      expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'),
-    );
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
   });
 
   it('phase indicator shows your turn in choose suit phase', async () => {
     mockExec.mockResolvedValue(chooseSuitState);
     renderWithProviders(<CrazyEightsPage />);
-    await waitFor(() =>
-      expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'),
-    );
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
   });
 
   it('phase indicator shows waiting when cpu turn', async () => {

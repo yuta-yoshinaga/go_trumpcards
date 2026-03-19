@@ -7,6 +7,7 @@ import { afterEach } from 'vitest';
 import jaBaccarat from '../i18n/locales/ja/baccarat.json';
 import jaBlackjack from '../i18n/locales/ja/blackjack.json';
 import jaCommon from '../i18n/locales/ja/common.json';
+import jaCrazyeights from '../i18n/locales/ja/crazyeights.json';
 import jaDaifugo from '../i18n/locales/ja/daifugo.json';
 import jaDoubt from '../i18n/locales/ja/doubt.json';
 import jaHearts from '../i18n/locales/ja/hearts.json';
@@ -17,7 +18,6 @@ import jaOmaha from '../i18n/locales/ja/omaha.json';
 import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
 import jaSpades from '../i18n/locales/ja/spades.json';
-import jaCrazyeights from '../i18n/locales/ja/crazyeights.json';
 
 i18n.use(initReactI18next).init({
   lng: 'ja',
