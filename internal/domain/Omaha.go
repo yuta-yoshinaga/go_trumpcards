@@ -916,9 +916,10 @@ func (o *Omaha) evalPreFlopStrength(idx int) int {
 			if gap < 0 {
 				gap = -gap
 			}
-			if gap == 1 {
+			switch gap {
+			case 1:
 				score += 4
-			} else if gap == 2 {
+			case 2:
 				score += 2
 			}
 		}

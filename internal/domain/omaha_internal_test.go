@@ -7,12 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func (o *Omaha) setActedFlags(flags []bool) { o.actedFlags = flags }
-
-func (o *Omaha) setRaiseCount(count int) { o.raiseCount = count }
-
-func (o *Omaha) setStartingChips(chips []int) { o.startingChips = chips }
-
 func newInternalTestOmaha() *Omaha {
 	players := []*OmahaPlayer{
 		NewOmahaPlayer(true, HoldemStyleTAG),
@@ -25,25 +19,6 @@ func newInternalTestOmaha() *Omaha {
 	o := NewOmaha(tc, players, cfg)
 	for _, p := range o.players {
 		p.SetChips(1000)
-	}
-	return o
-}
-
-func setupInternalOmahaForHumanAction(phase int) *Omaha {
-	o := newInternalTestOmaha()
-	o.setStartingChips([]int{1000, 1000, 1000, 1000})
-	o.phase = phase
-	o.currentTurn = 0
-	o.lastBet = 0
-	o.minRaise = 10
-	o.pot = 30
-	o.actedFlags = []bool{false, true, true, true}
-	for _, p := range o.players {
-		p.Reset()
-		p.AddCard(NewCard(CardDesignSpade, 1, false))
-		p.AddCard(NewCard(CardDesignHeart, 13, false))
-		p.AddCard(NewCard(CardDesignClover, 12, false))
-		p.AddCard(NewCard(CardDesignDiamond, 11, false))
 	}
 	return o
 }
