@@ -227,7 +227,7 @@ func (g *CrazyEights) CpuPlay() {
 		g.playCard(g.currentPlayerIdx, played)
 	} else {
 		// ドロー
-		g.drawCard(g.currentPlayerIdx)
+		_ = g.drawCard(g.currentPlayerIdx)
 	}
 }
 
