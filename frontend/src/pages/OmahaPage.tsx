@@ -21,16 +21,16 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
-import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
+import { OmahaPhase, OmahaRebuyPhaseType } from '../types/phases';
 
 const OMAHA_PHASE_KEYS: Readonly<Record<number, string>> = {
-  [HoldemPhase.PRE_FLOP]: 'preFlop',
-  [HoldemPhase.FLOP]: 'flop',
-  [HoldemPhase.TURN]: 'turn',
-  [HoldemPhase.RIVER]: 'river',
-  [HoldemPhase.SHOWDOWN]: 'showdown',
-  [HoldemPhase.END]: 'end',
-  [HoldemPhase.REBUY]: 'rebuy',
+  [OmahaPhase.PRE_FLOP]: 'preFlop',
+  [OmahaPhase.FLOP]: 'flop',
+  [OmahaPhase.TURN]: 'turn',
+  [OmahaPhase.RIVER]: 'river',
+  [OmahaPhase.SHOWDOWN]: 'showdown',
+  [OmahaPhase.END]: 'end',
+  [OmahaPhase.REBUY]: 'rebuy',
 };
 
 function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
@@ -82,18 +82,18 @@ export function OmahaPage() {
     }
   }, [state]);
 
-  const phase = state?.phase ?? HoldemPhase.INIT;
-  const isActive = phase >= HoldemPhase.PRE_FLOP && phase <= HoldemPhase.RIVER;
-  const isShowdown = phase === HoldemPhase.SHOWDOWN || phase === HoldemPhase.END;
+  const phase = state?.phase ?? OmahaPhase.INIT;
+  const isActive = phase >= OmahaPhase.PRE_FLOP && phase <= OmahaPhase.RIVER;
+  const isShowdown = phase === OmahaPhase.SHOWDOWN || phase === OmahaPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
   const humanFolded = humanPlayer?.folded ?? false;
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
   const minRaise = state?.minRaise ?? 0;
-  const isMuckPhase = phase === HoldemPhase.SHOWDOWN && state?.muckAvailable === true;
-  const isRebuyPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.REBUY;
-  const isAddonPhase = phase === HoldemPhase.REBUY && state?.rebuyPhaseType === HoldemRebuyPhaseType.ADDON;
+  const isMuckPhase = phase === OmahaPhase.SHOWDOWN && state?.muckAvailable === true;
+  const isRebuyPhase = phase === OmahaPhase.REBUY && state?.rebuyPhaseType === OmahaRebuyPhaseType.REBUY;
+  const isAddonPhase = phase === OmahaPhase.REBUY && state?.rebuyPhaseType === OmahaRebuyPhaseType.ADDON;
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const humanRebuyCount = state?.rebuyCounts?.[humanIdx] ?? 0;
 
