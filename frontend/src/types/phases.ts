@@ -59,6 +59,10 @@ export const HoldemRebuyPhaseType = {
   ADDON: 2,
 } as const;
 
+// Omaha Hold'em phase constants (same as Holdem - sync: internal/domain/Omaha.go)
+export const OmahaPhase = HoldemPhase;
+export const OmahaRebuyPhaseType = HoldemRebuyPhaseType;
+
 // Hearts phase constants (sync: internal/domain/Hearts.go)
 export const HeartsPhase = {
   PASS: 0,

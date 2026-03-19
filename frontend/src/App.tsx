@@ -13,6 +13,7 @@ import { HoldemPage } from './pages/HoldemPage';
 import { KlondikePage } from './pages/KlondikePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { OldMaidPage } from './pages/OldMaidPage';
+import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
 
@@ -25,6 +26,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/sevens': <SevensPage />,
   '/doubt': <DoubtPage />,
   '/holdem': <HoldemPage />,
+  '/omaha': <OmahaPage />,
   '/hearts': <HeartsPage />,
   '/memory': <MemoryPage />,
   '/klondike': <KlondikePage />,

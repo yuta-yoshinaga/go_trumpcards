@@ -12,6 +12,7 @@ import type {
   KlondikeResponse,
   MemoryResponse,
   OldMaidResponse,
+  OmahaResponse,
   PokerResponse,
   SevensResponse,
 } from '../types/card';
@@ -216,6 +217,34 @@ export const holdemApi = {
     }),
 };
 
+export type OmahaConfigInput = HoldemConfigInput;
+
+export const omahaApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon'
+      | 'muck'
+      | 'show',
+    amount?: number,
+    config?: OmahaConfigInput,
+  ) =>
+    gameExec<OmahaResponse>('omaha', {
+      command,
+      amount,
+      ...config,
+    }),
+};
+
 export interface HeartsConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
@@ -314,6 +343,7 @@ const games = [
   'sevens',
   'doubt',
   'holdem',
+  'omaha',
   'hearts',
   'memory',
   'klondike',

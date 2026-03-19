@@ -1,0 +1,49 @@
+{
+  "phase": {
+    "preFlop": "プリフロップ",
+    "flop": "フロップ",
+    "turn": "ターン",
+    "river": "リバー",
+    "showdown": "ショーダウン",
+    "end": "結果",
+    "init": "初期化中",
+    "rebuy": "リバイ/アドオン"
+  },
+  "communityCards": "コミュニティカード",
+  "yourHand": "あなたの手札",
+  "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "rebuy": {
+    "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
+    "accept": "リバイ",
+    "skip": "スキップ"
+  },
+  "addon": {
+    "prompt": "アドオンしますか? ({{chips}}チップ)",
+    "accept": "アドオン",
+    "skip": "スキップ"
+  },
+  "muck": {
+    "prompt": "マックしますか?",
+    "muck": "マック",
+    "show": "ショー"
+  },
+  "stats": {
+    "vpip": "VPIP",
+    "vpipTooltip": "VPIP（ボランタリー・プット・イン・ポット）: 自発的にポットに参加した割合",
+    "pfr": "PFR",
+    "pfrTooltip": "PFR（プリフロップレイズ）: プリフロップでレイズした割合",
+    "threeBet": "3Bet",
+    "threeBetTooltip": "3Bet（スリーベット）: 相手のレイズに対して再レイズした割合",
+    "af": "AF",
+    "afTooltip": "AF（アグレッションファクター）: ベット・レイズのコールに対する比率"
+  },
+  "learning": {
+    "title": "ラーニングモード",
+    "toggle": "ラーニングモード",
+    "equity": "エクイティ",
+    "potOdds": "ポットオッズ",
+    "plusEV": "+EV (期待値プラス)",
+    "minusEV": "-EV (期待値マイナス)",
+    "handOdds": "ハンドオッズ"
+  }
+}

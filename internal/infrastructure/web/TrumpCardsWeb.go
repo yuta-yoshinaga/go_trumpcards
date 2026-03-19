@@ -30,6 +30,7 @@ type TrumpCardsWeb struct {
 	sgc *controller.SevensWebController
 	dwc *controller.DoubtWebController
 	hmc *controller.HoldemWebController
+	ohc *controller.OmahaWebController
 	htc *controller.HeartsWebController
 	myc *controller.MemoryWebController
 	klc *controller.KlondikeWebController
@@ -103,6 +104,11 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			cfg := domain.DefaultHoldemConfig()
 			holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
 			return usecase.NewHoldemInteractor(holdem, new(presenter.HoldemWebPresenter))
+		}),
+		ohc: controller.NewOmahaWebController(func() usecase.OmahaInteractorIF {
+			cfg := domain.DefaultOmahaConfig()
+			omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewOmahaInteractor(omaha, new(presenter.OmahaWebPresenter))
 		}),
 		htc: controller.NewHeartsWebController(func() usecase.HeartsInteractorIF {
 			config := domain.DefaultHeartsConfig()
@@ -183,6 +189,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/sevens/exec", web.sgc.Exec},
 		{"/doubt/exec", web.dwc.Exec},
 		{"/holdem/exec", web.hmc.Exec},
+		{"/omaha/exec", web.ohc.Exec},
 		{"/hearts/exec", web.htc.Exec},
 		{"/memory/exec", web.myc.Exec},
 		{"/klondike/exec", web.klc.Exec},
@@ -258,6 +265,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.sgc.Stop()
 	web.dwc.Stop()
 	web.hmc.Stop()
+	web.ohc.Stop()
 	web.htc.Stop()
 	web.myc.Stop()
 	web.klc.Stop()
