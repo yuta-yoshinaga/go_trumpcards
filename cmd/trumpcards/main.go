@@ -52,6 +52,7 @@ GAMES:
   klondike     Klondike Solitaire (ソリティア)
   freecell     FreeCell (フリーセル)
   baccarat     Baccarat (バカラ)
+  spades       Spades (スペード)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -123,6 +124,7 @@ ENVIRONMENT VARIABLES:
 		"klondike":  func() int { ui.NewKlondikeCui().Exec(); return 0 },
 		"freecell":  func() int { ui.NewFreeCellCui().Exec(); return 0 },
 		"baccarat":  func() int { ui.NewBaccaratCui().Exec(); return 0 },
+		"spades":    func() int { ui.NewSpadesCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

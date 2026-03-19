@@ -15,6 +15,7 @@ import type {
   OmahaResponse,
   PokerResponse,
   SevensResponse,
+  SpadesResponse,
 } from '../types/card';
 
 export const sessionId: string = crypto.randomUUID();
@@ -266,6 +267,28 @@ export const heartsApi = {
     }),
 };
 
+export interface SpadesConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+  nilBonus?: number;
+  bagPenaltyThreshold?: number;
+}
+
+export const spadesApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround',
+    bid?: number,
+    cardIndex?: number,
+    config?: SpadesConfigInput,
+  ) =>
+    gameExec<SpadesResponse>('spades', {
+      command,
+      bid,
+      cardIndex,
+      config,
+    }),
+};
+
 export interface MemoryConfigInput {
   cpuDifficulty?: number;
 }
@@ -345,6 +368,7 @@ const games = [
   'holdem',
   'omaha',
   'hearts',
+  'spades',
   'memory',
   'klondike',
   'freecell',

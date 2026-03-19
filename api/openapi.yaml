@@ -36,6 +36,8 @@ tags:
     description: Klondike (ソリティア) game
   - name: baccarat
     description: Baccarat (バカラ) game
+  - name: spades
+    description: Spades (スペード) game
 
 paths:
   /blackjack/exec:
@@ -1350,6 +1352,99 @@ paths:
                     result: 0
                     payout: 0
                     message: param error.
+
+  /spades/exec:
+    post:
+      tags:
+        - spades
+      summary: Execute a Spades game command
+      description: |
+        Send a command to advance the Spades (スペード) game session identified by
+        `sessionId`.  Spades is a 4-player trick-taking game where spades are always
+        trump.  Players bid how many tricks they expect to win, then play 13 tricks.
+        Scoring: made bid = bid×10 + overtricks (bags); failed = -bid×10; nil bid
+        (0) success = +100, fail = -100; every 10 bags = -100 penalty.  First to 500
+        wins; drop below -200 and lose.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player declares expected trick wins |
+        | Play      | `1`   | Trick play (follow suit; spades are trump) |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | All 13 tricks played; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the point limit or fell below -200 |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Place a bid (requires `bid` field, 0-13) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `log`       | `l`     | View action log |
+      operationId: spadesExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                sessionId:
+                  type: string
+                bid:
+                  type: integer
+                  minimum: 0
+                  maximum: 13
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000
+                    nilBonus:
+                      type: integer
+                      minimum: 0
+                      maximum: 500
+                    bagPenaltyThreshold:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 3 tricks
+                value:
+                  command: bid
+                  bid: 3
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
 components:
   schemas:

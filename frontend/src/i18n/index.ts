@@ -16,6 +16,7 @@ import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
 import enSevens from './locales/en/sevens.json';
+import enSpades from './locales/en/spades.json';
 import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
@@ -30,6 +31,7 @@ import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
 import jaPoker from './locales/ja/poker.json';
 import jaSevens from './locales/ja/sevens.json';
+import jaSpades from './locales/ja/spades.json';
 
 i18n
   .use(LanguageDetector)
@@ -47,6 +49,7 @@ i18n
         holdem: jaHoldem,
         omaha: jaOmaha,
         hearts: jaHearts,
+        spades: jaSpades,
         memory: jaMemory,
         klondike: jaKlondike,
         freecell: jaFreecell,
@@ -63,6 +66,7 @@ i18n
         holdem: enHoldem,
         omaha: enOmaha,
         hearts: enHearts,
+        spades: enSpades,
         memory: enMemory,
         klondike: enKlondike,
         freecell: enFreecell,
@@ -82,6 +86,7 @@ i18n
       'holdem',
       'omaha',
       'hearts',
+      'spades',
       'memory',
       'klondike',
       'freecell',

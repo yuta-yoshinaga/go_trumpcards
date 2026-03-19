@@ -539,6 +539,50 @@ export interface HeartsResponse {
   config: HeartsConfig;
 }
 
+// --- Spades ---
+
+export interface SpadesPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+  bags: number;
+}
+
+export interface SpadesTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+export interface SpadesConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+  nilBonus: number;
+  bagPenaltyThreshold: number;
+}
+
+export interface SpadesResponse {
+  players: SpadesPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentTrick: SpadesTrickCard[];
+  spadesBroken: boolean;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: SpadesConfig;
+}
+
 // --- Memory (神経衰弱) ---
 
 export interface MemoryPlayerData {
