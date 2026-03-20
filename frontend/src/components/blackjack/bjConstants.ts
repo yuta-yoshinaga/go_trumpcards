@@ -1,40 +1,40 @@
-/** Hi-Lo counting system constant. */
+/** Hi-Lo counting system constant. Must match domain `BJCounting` value. */
 export const BJ_COUNTING_HILO = 0;
-/** KO counting system constant. */
+/** KO counting system constant. Must match domain `BJCounting` value. */
 export const BJ_COUNTING_KO = 1;
-/** Zen counting system constant. */
+/** Zen counting system constant. Must match domain `BJCounting` value. */
 export const BJ_COUNTING_ZEN = 2;
-/** Omega II counting system constant. */
+/** Omega II counting system constant. Must match domain `BJCounting` value. */
 export const BJ_COUNTING_OMEGA2 = 3;
 
-/** Late surrender rule constant. */
+/** Late surrender rule constant. Must match domain `BJSurrender` value. */
 export const BJ_SURRENDER_LATE = 0;
-/** Early surrender rule constant. */
+/** Early surrender rule constant. Must match domain `BJSurrender` value. */
 export const BJ_SURRENDER_EARLY = 1;
-/** No surrender rule constant. */
+/** No surrender rule constant. Must match domain `BJSurrender` value. */
 export const BJ_SURRENDER_NONE = 2;
 
-/** Valid deck penetration percentage options. */
+/** Valid deck penetration percentage options. Must match domain `BJPenetration` values. */
 export const BJ_VALID_PENETRATIONS = [50, 75] as const;
 
-/** Perfect Pairs side bet type constant. */
+/** Perfect Pairs side bet type constant. Must match domain `BJSideBet` value. */
 export const BJ_SIDE_BET_PERFECT_PAIRS = 1;
 
-/** Suggested action: none. */
+/** Suggested action: none. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_NONE = 0;
-/** Suggested action: hit. */
+/** Suggested action: hit. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_HIT = 1;
-/** Suggested action: stand. */
+/** Suggested action: stand. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_STAND = 2;
-/** Suggested action: double down. */
+/** Suggested action: double down. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_DOUBLE = 3;
-/** Suggested action: split. */
+/** Suggested action: split. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_SPLIT = 4;
-/** Suggested action: surrender. */
+/** Suggested action: surrender. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_SURRENDER = 5;
-/** Suggested action: decline insurance. */
+/** Suggested action: decline insurance. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_DECLINE_INSURANCE = 6;
-/** Suggested action: double if allowed, otherwise stand. */
+/** Suggested action: double if allowed, otherwise stand. Must match domain `BJSuggestedAction` value. */
 export const BJ_SUGGEST_DOUBLE_STAND = 7;
 
 /** Return a CSS class with highlight ring when the action is suggested. */

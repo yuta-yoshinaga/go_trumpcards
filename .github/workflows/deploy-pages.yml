@@ -38,8 +38,8 @@ jobs:
       - name: Install Go doc tools
         run: go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
 
-      - name: Install repomix
-        run: npm install -g repomix
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
 
       - name: Install frontend dependencies
         working-directory: frontend
@@ -74,23 +74,23 @@ jobs:
           <!DOCTYPE html>
           <html lang="en">
           <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Go API Documentation</title>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Go API Documentation</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">
           </head>
           <body>
-            <h1>Go API Documentation</h1>
-            <p><a href="../">← Back to top</a></p>
-            <ul>
+          <h1>Go API Documentation</h1>
+          <p><a href="../">← Back to top</a></p>
+          <ul>
           GOINDEX
           find _site/go -name 'index.html' -not -path '_site/go/index.html' | sort | while read -r f; do
             rel="${f#_site/go/}"
             dir="$(dirname "$rel")"
-            echo "      <li><a href=\"$rel\">$dir</a></li>" >> _site/go/index.html
+            echo "<li><a href=\"$rel\">$dir</a></li>" >> _site/go/index.html
           done
           cat >> _site/go/index.html <<'GOINDEX'
-            </ul>
+          </ul>
           </body>
           </html>
           GOINDEX
@@ -105,7 +105,7 @@ jobs:
           cp -r frontend/docs/* _site/ts/
 
       - name: Run repomix
-        run: repomix --output repomix-output.txt --style xml --compress --remove-empty-lines
+        run: bunx repomix --output repomix-output.txt --style xml --compress --remove-empty-lines
 
       - name: Copy repomix output
         run: cp repomix-output.txt _site/repomix-output.txt
