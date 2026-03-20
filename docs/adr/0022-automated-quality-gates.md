@@ -59,7 +59,7 @@ Claude Code hooks（`.claude/settings.json`）を使い、以下の自動品質�
 - PostToolUseフックにより毎回のファイル保存で0.5-1秒のオーバーヘッド
 - PreToolUseのgolangci-lintフックでコミット前に最大2分のブロッキング
 - agentフック（ドキュメント乖離検知）はLLM呼び出しのためコストが発生
-- `.claude/settings.json`のhookコマンドにローカルパス（`/home/yuta/go/bin/goimports`）がハードコードされている
+- hookコマンドはツール（`goimports`, `golangci-lint`, `bun`）がPATHに設定されている前提
 
 **リスク軽減:**
 
