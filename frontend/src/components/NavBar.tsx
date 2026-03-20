@@ -14,7 +14,7 @@ const langToggle = (
       aria-label={t('nav.switchToJa')}
       aria-pressed={currentLang === 'ja'}
       onClick={() => i18n.changeLanguage('ja')}
-      className={`px-1.5 py-0.5 text-xs font-bold rounded-l transition-colors ${currentLang === 'ja' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+      className={`px-3 py-2 text-xs font-bold rounded-l min-h-[44px] transition-colors ${currentLang === 'ja' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
     >
       JA
     </button>
@@ -23,7 +23,7 @@ const langToggle = (
       aria-label={t('nav.switchToEn')}
       aria-pressed={currentLang === 'en'}
       onClick={() => i18n.changeLanguage('en')}
-      className={`px-1.5 py-0.5 text-xs font-bold rounded-r transition-colors ${currentLang === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+      className={`px-3 py-2 text-xs font-bold rounded-r min-h-[44px] transition-colors ${currentLang === 'en' ? 'bg-blue-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
     >
       EN
     </button>
@@ -40,7 +40,11 @@ export function NavBar() {
   return (
     <div className="bg-gray-800">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
-        <Link to="/" className="text-white font-bold" onClick={() => setIsOpen(false)}>
+        <Link
+          to="/"
+          className="text-white font-bold min-h-[44px] inline-flex items-center"
+          onClick={() => setIsOpen(false)}
+        >
           Trump Cards
         </Link>
         <div className="flex items-center gap-2">
@@ -51,7 +55,7 @@ export function NavBar() {
             aria-expanded={isOpen}
             aria-controls="main-nav"
             aria-label={isOpen ? t('nav.closeMenu') : t('nav.openMenu')}
-            className="text-white p-2"
+            className="text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             {isOpen ? '✕' : '☰'}
           </button>
@@ -69,7 +73,7 @@ export function NavBar() {
               to={path}
               aria-current={pathname === path ? 'page' : undefined}
               onClick={() => setIsOpen(false)}
-              className={`inline-block px-2 py-0.5 text-xs font-medium rounded transition-colors${pathname === path ? ' bg-gray-400 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+              className={`inline-flex items-center px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-colors${pathname === path ? ' bg-gray-400 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
             >
               {t(labelKey)}
             </Link>
