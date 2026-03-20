@@ -19,7 +19,7 @@ describe('PhaseIndicator', () => {
     render(<PhaseIndicator phaseName="アクション" isHumanTurn={false} />);
     expect(screen.getByText('待機中')).toBeInTheDocument();
     const turnSpan = screen.getByText('待機中');
-    expect(turnSpan).toHaveClass('text-white/50');
+    expect(turnSpan).toHaveClass('text-game-text-muted');
   });
 
   it('does not render turn indicator when isHumanTurn is undefined', () => {
