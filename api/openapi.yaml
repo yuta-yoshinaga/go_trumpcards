@@ -36,6 +36,12 @@ tags:
     description: Klondike (ソリティア) game
   - name: baccarat
     description: Baccarat (バカラ) game
+  - name: spades
+    description: Spades (スペード) game
+  - name: crazyeights
+    description: Crazy Eights (クレイジーエイト) game
+  - name: ginrummy
+    description: Gin Rummy (ジンラミー) game
 
 paths:
   /blackjack/exec:
@@ -885,6 +891,51 @@ paths:
                     cpuActions: []
                     message: param error.
 
+  /omaha/exec:
+    post:
+      tags:
+        - omaha
+      summary: Execute an Omaha Hold'em game command
+      description: |
+        Send a command to advance the Omaha Hold'em game session identified by
+        `sessionId`.  Omaha is a variant of Texas Hold'em where each player
+        receives 4 hole cards and must use exactly 2 hole cards + 3 community
+        cards to form the best 5-card hand.
+
+        The game uses the same phases, commands, and configuration options as
+        Texas Hold'em.  See the `/holdem/exec` endpoint for full documentation.
+      operationId: omahaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
   /hearts/exec:
     post:
       tags:
@@ -1147,6 +1198,86 @@ paths:
                     moveCount: 0
                     message: param error.
 
+  /freecell/exec:
+    post:
+      tags:
+        - freecell
+      summary: Execute a FreeCell game command
+      description: |
+        Send a command to advance the FreeCell (フリーセル) game session identified by
+        `sessionId`.  FreeCell is a single-player solitaire card game using a
+        standard 52-card deck.  8 tableau columns (first 4 have 7 cards, last 4
+        have 6 cards), all dealt face-up.  4 free cells for temporary single-card
+        storage.  4 foundation piles: build up by suit Ace to King.  Tableau:
+        descending rank, alternating colors; only King on empty column.
+        Supermove: max movable cards = (1 + emptyFreeCells) x 2^(emptyTableauCols).
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All foundations completed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `move`         | `m`  | Move card(s) between zones (requires `from` and `to`) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `autocomplete` | `ac` | Auto-complete remaining moves to foundation |
+        | `undo`         | `u`  | Undo the last action |
+        | `log`          | `l`  | View action log |
+      operationId: freecellExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FreeCellRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move a card
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                    cardIndex: 6
+                  to:
+                    zone: freecell
+                    cell: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeCellResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FreeCellResponse'
+              examples:
+                paramError:
+                  value:
+                    tableau: []
+                    freeCells: []
+                    foundation: []
+                    phase: 0
+                    moveCount: 0
+                    canUndo: false
+                    message: param error.
+
   /baccarat/exec:
     post:
       tags:
@@ -1225,6 +1356,330 @@ paths:
                     result: 0
                     payout: 0
                     message: param error.
+
+  /spades/exec:
+    post:
+      tags:
+        - spades
+      summary: Execute a Spades game command
+      description: |
+        Send a command to advance the Spades (スペード) game session identified by
+        `sessionId`.  Spades is a 4-player trick-taking game where spades are always
+        trump.  Players bid how many tricks they expect to win, then play 13 tricks.
+        Scoring: made bid = bid×10 + overtricks (bags); failed = -bid×10; nil bid
+        (0) success = +100, fail = -100; every 10 bags = -100 penalty.  First to 500
+        wins; drop below -200 and lose.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player declares expected trick wins |
+        | Play      | `1`   | Trick play (follow suit; spades are trump) |
+        | TrickEnd  | `2`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `3`   | All 13 tricks played; advance with `nextround` |
+        | GameEnd   | `4`   | A player reached the point limit or fell below -200 |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `bid`       | `b`     | Place a bid (requires `bid` field, 0-13) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `log`       | `l`     | View action log |
+      operationId: spadesExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                sessionId:
+                  type: string
+                bid:
+                  type: integer
+                  minimum: 0
+                  maximum: 13
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000
+                    nilBonus:
+                      type: integer
+                      minimum: 0
+                      maximum: 500
+                    bagPenaltyThreshold:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 3 tricks
+                value:
+                  command: bid
+                  bid: 3
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /crazyeights/exec:
+    post:
+      tags:
+        - crazyeights
+      summary: Execute a Crazy Eights game command
+      description: |
+        Send a command to advance the Crazy Eights (クレイジーエイト) game session
+        identified by `sessionId`.  Crazy Eights is a 4-player shedding card game
+        using a standard 52-card deck.  Players match the top discard by suit or rank,
+        or play an 8 (wild) and choose the next suit.  Cannot play? Draw 1 card.
+        Round ends when a player empties their hand; scoring: 8=50, J/Q/K=10, A=1,
+        others=face value.  Match ends at the point limit (default 200).
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Play         | `0`   | Play a card or draw |
+        | ChooseSuit   | `1`   | Choose suit after playing an 8 |
+        | RoundEnd     | `2`   | A player emptied their hand; advance with `nextround` |
+        | GameEnd      | `3`   | A player reached the point limit |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `draw`      | `d`     | Draw a card from the draw pile |
+        | `suit`      | `s`     | Choose next suit after playing 8 (requires `suit`: 1-4) |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `log`       | `l`     | View action log |
+      operationId: crazyeightsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                suit:
+                  type: integer
+                  minimum: 1
+                  maximum: 4
+                  description: "Suit choice after playing an 8 (1=♠, 2=♣, 3=♥, 4=♦)"
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+              draw:
+                summary: Draw a card
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              suit:
+                summary: Choose hearts as next suit
+                value:
+                  command: suit
+                  suit: 3
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: |
+            Command processed successfully.
+
+            Response body includes:
+            - `players` — array of player objects (hand, score, name)
+            - `phase` — current game phase (0=Play, 1=ChooseSuit, 2=RoundEnd, 3=GameEnd)
+            - `roundNumber` — current round number
+            - `currentPlayerIdx` — index of the player whose turn it is
+            - `discardTop` — the top card of the discard pile
+            - `drawPileCount` — number of cards remaining in the draw pile
+            - `chosenSuit` — suit chosen after playing an 8 (null if not applicable)
+            - `gameEndFlag` — whether the match has ended
+            - `winnerIdx` — index of the match winner (-1 if not ended)
+            - `message` — human-readable status message
+            - `messageCode` — machine-readable message key
+            - `messageParams` — parameters for message interpolation
+            - `config` — current game configuration
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /ginrummy/exec:
+    post:
+      tags:
+        - ginrummy
+      summary: Execute a Gin Rummy game command
+      description: |
+        Send a command to advance the Gin Rummy (ジンラミー) game session
+        identified by `sessionId`.  Gin Rummy is a 2-player rummy card game
+        using a standard 52-card deck.  10 cards are dealt to each player.
+        Draw from stock or discard pile, then discard or knock.  Melds are
+        sets (3-4 same rank) and runs (3+ consecutive same suit).  Knock when
+        deadwood ≤ 10.  Gin = 0 deadwood (25 bonus).  Undercut = opponent has
+        ≤ knocker's deadwood (25 bonus to opponent).  First to reach point
+        limit wins.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw a card from stock or discard pile |
+        | Discard      | `1`   | Discard a card or knock |
+        | Layoff       | `2`   | Opponent lays off cards on knocker's melds |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Draw the top card from the discard pile |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `knock`        | `k`     | Knock (deadwood ≤ 10) (requires `cardIndex`) |
+        | `layoff`       | `lo`    | Lay off cards on knocker's melds (requires `cardIndices`) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: ginrummyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                cardIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: "Card indices for layoff command"
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Draw from discard pile
+                value:
+                  command: drawdiscard
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+              knock:
+                summary: Knock (discard card at index 2)
+                value:
+                  command: knock
+                  cardIndex: 2
+                  sessionId: my-session-001
+              layoff:
+                summary: Lay off cards at indices 0 and 3
+                value:
+                  command: layoff
+                  cardIndices: [0, 3]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: |
+            Command processed successfully.
+
+            Response body includes:
+            - `players` — array of player objects (hand, score, name)
+            - `phase` — current game phase (0=Draw, 1=Discard, 2=Layoff, 3=RoundEnd, 4=GameEnd)
+            - `roundNumber` — current round number
+            - `currentPlayerIdx` — index of the player whose turn it is
+            - `discardTop` — the top card of the discard pile
+            - `drawPileCount` — number of cards remaining in the stock pile
+            - `gameEndFlag` — whether the match has ended
+            - `winnerIdx` — index of the match winner (-1 if not ended)
+            - `knockerIdx` — index of the player who knocked (-1 if not applicable)
+            - `knockerMelds` — knocker's melds (array of card arrays)
+            - `knockerDeadwood` — knocker's deadwood points
+            - `isGin` — whether the knock was a gin
+            - `message` — human-readable status message
+            - `messageCode` — machine-readable message key
+            - `messageParams` — parameters for message interpolation
+            - `config` — current game configuration
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
 
 components:
   schemas:
@@ -4369,6 +4824,124 @@ components:
               $ref: '#/components/schemas/KlondikeZone'
             to:
               $ref: '#/components/schemas/KlondikeZone'
+
+    # -------------------------------------------------------------------------
+    # FreeCell
+    # -------------------------------------------------------------------------
+    FreeCellZone:
+      type: object
+      description: Specifies a zone on the FreeCell board for move commands
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: tableau, freecell, or foundation"
+          enum: [tableau, freecell, foundation]
+          example: tableau
+        col:
+          type: integer
+          description: Column index (0-based, used for tableau and foundation zones)
+          example: 3
+        cell:
+          type: integer
+          description: Free cell index (0-based, used for freecell zone)
+          example: 0
+        cardIndex:
+          type: integer
+          description: Index of the card within the column (for moving multiple cards from tableau)
+          example: 0
+
+    FreeCellRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `move` (`m`),
+            `giveup` (`g`), `hint` (`h`), `autocomplete` (`ac`),
+            `undo` (`u`), `log` (`l`).
+          enum: [reset, r, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, log, l]
+          example: move
+        from:
+          description: Source zone for a move command
+          $ref: '#/components/schemas/FreeCellZone'
+        to:
+          description: Destination zone for a move command
+          $ref: '#/components/schemas/FreeCellZone'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    FreeCellResponse:
+      type: object
+      description: Current state of the FreeCell game
+      required:
+        - tableau
+        - freeCells
+        - foundation
+        - phase
+        - moveCount
+        - canUndo
+        - message
+      properties:
+        tableau:
+          type: array
+          description: The 8 tableau columns, each containing an array of face-up cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        freeCells:
+          type: array
+          description: The 4 free cells (null or a Card)
+          items:
+            nullable: true
+            $ref: '#/components/schemas/Card'
+        foundation:
+          type: array
+          description: The 4 foundation piles (one per suit), each containing an array of cards
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            from:
+              $ref: '#/components/schemas/FreeCellZone'
+            to:
+              $ref: '#/components/schemas/FreeCellZone'
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
     # Baccarat

@@ -1,0 +1,50 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "spadesBroken": "スペードブレイク済",
+  "spadesNotBroken": "スペード未ブレイク",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "bags": "バッグ: {{count}}",
+  "bid": "ビッド {{n}}",
+  "bidNone": "未ビッド",
+  "currentTrick": "現在のトリック",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresBid": "ビッド",
+  "scoresTricks": "トリック",
+  "scoresBags": "バッグ",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "bidButton": "ビッド",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "bidPhase": "ビッドを宣言してください (0=ニル, 1-13)",
+  "playPhase": {
+    "lead": "リードしてください",
+    "follow": "カードを出してください"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  }
+}

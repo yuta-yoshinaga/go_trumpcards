@@ -5,15 +5,20 @@ import { NavBar } from './components/NavBar';
 import { gameRoutes } from './constants/gameRoutes';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
+import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
+import { FreeCellPage } from './pages/FreeCellPage';
+import { GinRummyPage } from './pages/GinRummyPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
 import { KlondikePage } from './pages/KlondikePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { OldMaidPage } from './pages/OldMaidPage';
+import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
+import { SpadesPage } from './pages/SpadesPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
 const pageByPath: Record<GamePath, ReactNode> = {
@@ -24,10 +29,15 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/sevens': <SevensPage />,
   '/doubt': <DoubtPage />,
   '/holdem': <HoldemPage />,
+  '/omaha': <OmahaPage />,
   '/hearts': <HeartsPage />,
+  '/spades': <SpadesPage />,
   '/memory': <MemoryPage />,
   '/klondike': <KlondikePage />,
+  '/freecell': <FreeCellPage />,
   '/baccarat': <BaccaratPage />,
+  '/crazyeights': <CrazyEightsPage />,
+  '/ginrummy': <GinRummyPage />,
 };
 
 export default function App() {

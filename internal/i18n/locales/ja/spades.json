@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Spades (スペード)",
+  "helpBid": "  b <n>                bid (0=Nil, 1-13)",
+  "helpPlay": "  p <idx>              play a card",
+  "helpNext": "  n                    next trick",
+  "helpNextRound": "  nr                   next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               point limit"
+}

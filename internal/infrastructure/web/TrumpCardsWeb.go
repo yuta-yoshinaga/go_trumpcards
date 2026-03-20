@@ -30,10 +30,15 @@ type TrumpCardsWeb struct {
 	sgc *controller.SevensWebController
 	dwc *controller.DoubtWebController
 	hmc *controller.HoldemWebController
+	ohc *controller.OmahaWebController
 	htc *controller.HeartsWebController
 	myc *controller.MemoryWebController
 	klc *controller.KlondikeWebController
+	fcc *controller.FreeCellWebController
 	bcc *controller.BaccaratWebController
+	spc *controller.SpadesWebController
+	cec *controller.CrazyEightsWebController
+	grc *controller.GinRummyWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -103,6 +108,11 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			holdem := domain.NewHoldem(domain.NewTrumpCards(0), domain.NewPlayersForTable(cfg.TableSize), cfg)
 			return usecase.NewHoldemInteractor(holdem, new(presenter.HoldemWebPresenter))
 		}),
+		ohc: controller.NewOmahaWebController(func() usecase.OmahaInteractorIF {
+			cfg := domain.DefaultOmahaConfig()
+			omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewOmahaInteractor(omaha, new(presenter.OmahaWebPresenter))
+		}),
 		htc: controller.NewHeartsWebController(func() usecase.HeartsInteractorIF {
 			config := domain.DefaultHeartsConfig()
 			players := []*domain.HeartsPlayer{
@@ -129,9 +139,44 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			klondike := domain.NewKlondike(domain.NewTrumpCards(0))
 			return usecase.NewKlondikeInteractor(klondike, new(presenter.KlondikeWebPresenter))
 		}),
+		fcc: controller.NewFreeCellWebController(func() usecase.FreeCellInteractorIF {
+			freeCell := domain.NewFreeCell(domain.NewTrumpCards(0))
+			return usecase.NewFreeCellInteractor(freeCell, new(presenter.FreeCellWebPresenter))
+		}),
 		bcc: controller.NewBaccaratWebController(func() usecase.BaccaratInteractorIF {
 			baccarat := domain.NewDefaultBaccarat()
 			return usecase.NewBaccaratInteractor(baccarat, new(presenter.BaccaratWebPresenter))
+		}),
+		spc: controller.NewSpadesWebController(func() usecase.SpadesInteractorIF {
+			config := domain.DefaultSpadesConfig()
+			players := []*domain.SpadesPlayer{
+				domain.NewSpadesPlayer(true),
+				domain.NewSpadesPlayer(false),
+				domain.NewSpadesPlayer(false),
+				domain.NewSpadesPlayer(false),
+			}
+			spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
+			return usecase.NewSpadesInteractor(spades, new(presenter.SpadesWebPresenter))
+		}),
+		cec: controller.NewCrazyEightsWebController(func() usecase.CrazyEightsInteractorIF {
+			config := domain.DefaultCrazyEightsConfig()
+			players := []*domain.CrazyEightsPlayer{
+				domain.NewCrazyEightsPlayer(true),
+				domain.NewCrazyEightsPlayer(false),
+				domain.NewCrazyEightsPlayer(false),
+				domain.NewCrazyEightsPlayer(false),
+			}
+			ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
+			return usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsWebPresenter))
+		}),
+		grc: controller.NewGinRummyWebController(func() usecase.GinRummyInteractorIF {
+			config := domain.DefaultGinRummyConfig()
+			players := []*domain.GinRummyPlayer{
+				domain.NewGinRummyPlayer(true),
+				domain.NewGinRummyPlayer(false),
+			}
+			gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
+			return usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyWebPresenter))
 		}),
 	}
 }
@@ -178,10 +223,15 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/sevens/exec", web.sgc.Exec},
 		{"/doubt/exec", web.dwc.Exec},
 		{"/holdem/exec", web.hmc.Exec},
+		{"/omaha/exec", web.ohc.Exec},
 		{"/hearts/exec", web.htc.Exec},
 		{"/memory/exec", web.myc.Exec},
 		{"/klondike/exec", web.klc.Exec},
+		{"/freecell/exec", web.fcc.Exec},
 		{"/baccarat/exec", web.bcc.Exec},
+		{"/spades/exec", web.spc.Exec},
+		{"/crazyeights/exec", web.cec.Exec},
+		{"/ginrummy/exec", web.grc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -252,10 +302,15 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.sgc.Stop()
 	web.dwc.Stop()
 	web.hmc.Stop()
+	web.ohc.Stop()
 	web.htc.Stop()
 	web.myc.Stop()
 	web.klc.Stop()
+	web.fcc.Stop()
 	web.bcc.Stop()
+	web.spc.Stop()
+	web.cec.Stop()
+	web.grc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

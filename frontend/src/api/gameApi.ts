@@ -2,17 +2,22 @@ import type {
   ActionLogResponse,
   BaccaratResponse,
   BlackJackResponse,
+  CrazyEightsResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  FreeCellResponse,
+  GinRummyResponse,
   HeartsResponse,
   HoldemResponse,
   KlondikeResponse,
   MemoryResponse,
   OldMaidResponse,
+  OmahaResponse,
   PokerResponse,
   SevensResponse,
+  SpadesResponse,
 } from '../types/card';
 
 export const sessionId: string = crypto.randomUUID();
@@ -215,6 +220,34 @@ export const holdemApi = {
     }),
 };
 
+export type OmahaConfigInput = HoldemConfigInput;
+
+export const omahaApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon'
+      | 'muck'
+      | 'show',
+    amount?: number,
+    config?: OmahaConfigInput,
+  ) =>
+    gameExec<OmahaResponse>('omaha', {
+      command,
+      amount,
+      ...config,
+    }),
+};
+
 export interface HeartsConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
@@ -231,6 +264,28 @@ export const heartsApi = {
     gameExec<HeartsResponse>('hearts', {
       command,
       cardIndices,
+      cardIndex,
+      config,
+    }),
+};
+
+export interface SpadesConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+  nilBonus?: number;
+  bagPenaltyThreshold?: number;
+}
+
+export const spadesApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround',
+    bid?: number,
+    cardIndex?: number,
+    config?: SpadesConfigInput,
+  ) =>
+    gameExec<SpadesResponse>('spades', {
+      command,
+      bid,
       cardIndex,
       config,
     }),
@@ -275,6 +330,66 @@ export const klondikeApi = {
     }),
 };
 
+export interface FreeCellMoveZone {
+  zone: string;
+  col?: number;
+  cell?: number;
+  cardIndex?: number;
+}
+
+export const freecellApi = {
+  exec: (
+    command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    from?: FreeCellMoveZone,
+    to?: FreeCellMoveZone,
+  ) =>
+    gameExec<FreeCellResponse>('freecell', {
+      command,
+      from,
+      to,
+    }),
+};
+
+export interface CrazyEightsConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+export const crazyeightsApi = {
+  exec: (
+    command: 'reset' | 'play' | 'draw' | 'suit' | 'nextround',
+    cardIndex?: number,
+    suit?: number,
+    config?: CrazyEightsConfigInput,
+  ) =>
+    gameExec<CrazyEightsResponse>('crazyeights', {
+      command,
+      cardIndex,
+      suit,
+      config,
+    }),
+};
+
+export interface GinRummyConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+export const ginrummyApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'layoff' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: GinRummyConfigInput,
+    cardIndices?: number[],
+  ) =>
+    gameExec<GinRummyResponse>('ginrummy', {
+      command,
+      cardIndex,
+      cardIndices,
+      config,
+    }),
+};
+
 export const baccaratApi = {
   exec: (
     command: 'reset' | 'bet' | 'log' | 'clearhistory',
@@ -293,10 +408,15 @@ const games = [
   'sevens',
   'doubt',
   'holdem',
+  'omaha',
   'hearts',
+  'spades',
   'memory',
   'klondike',
+  'freecell',
   'baccarat',
+  'crazyeights',
+  'ginrummy',
 ] as const;
 type Game = (typeof games)[number];
 

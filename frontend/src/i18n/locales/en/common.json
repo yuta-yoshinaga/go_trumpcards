@@ -11,10 +11,15 @@
     "sevens": "Sevens",
     "doubt": "Doubt",
     "holdem": "Texas Hold'em",
+    "omaha": "Omaha Hold'em",
     "hearts": "Hearts",
+    "spades": "Spades",
     "memory": "Memory",
     "klondike": "Klondike",
-    "baccarat": "Baccarat"
+    "freecell": "FreeCell",
+    "baccarat": "Baccarat",
+    "crazyeights": "Crazy Eights",
+    "ginrummy": "Gin Rummy"
   },
   "player": {
     "you": "You",
@@ -106,6 +111,19 @@
     "holdem.muck.prompt": "Muck or show your hand.",
     "hearts.result.humanWin": "Game over! You win!",
     "hearts.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "spades.result.humanWin": "Game over! You win!",
+    "spades.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "crazyeights.result.humanWin": "Game over! You win!",
+    "crazyeights.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "crazyeights.playPhase": "Play a card or draw from the pile",
+    "crazyeights.chooseSuitPhase": "Choose the next suit",
+    "crazyeights.roundEnd": "Round over",
+    "ginrummy.result.humanWin": "Game over! You win!",
+    "ginrummy.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "ginrummy.drawPhase": "Draw a card from the stock or discard pile",
+    "ginrummy.discardPhase": "Discard a card or knock",
+    "ginrummy.layoffPhase": "Lay off cards onto the knocker's melds",
+    "ginrummy.roundEnd": "Round over",
     "memory.flip1": "Flip the first card",
     "memory.flip2": "Flip the second card",
     "memory.matched": "It's a match!",
@@ -119,6 +137,11 @@
     "klondike.gameClear": "Game Clear! Moves: {{moveCount}}",
     "klondike.gameOver": "Game Over",
     "klondike.hintAvailable": "Hint available",
-    "klondike.noHint": "No hint available"
+    "klondike.noHint": "No hint available",
+    "freecell.playing": "Playing",
+    "freecell.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "freecell.gameOver": "Game Over",
+    "freecell.hintAvailable": "Hint available",
+    "freecell.noHint": "No hint available"
   }
 }

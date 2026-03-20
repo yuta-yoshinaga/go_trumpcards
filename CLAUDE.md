@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Hearts, Memory, Klondike, Baccarat. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -9,6 +9,10 @@ Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Do
 | [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
+
+## Package Manager Rule
+
+**Always use `bun` instead of `npm`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript package manager and script runner.
 
 ## Commands
 
@@ -24,10 +28,15 @@ go run ./cmd/trumpcards daifugo    # Daifugo CLI
 go run ./cmd/trumpcards sevens     # Sevens (7並べ) CLI
 go run ./cmd/trumpcards doubt      # Doubt (ダウト) CLI
 go run ./cmd/trumpcards holdem     # Texas Hold'em CLI
+go run ./cmd/trumpcards omaha      # Omaha Hold'em CLI
 go run ./cmd/trumpcards hearts     # Hearts CLI
 go run ./cmd/trumpcards memory     # Memory (神経衰弱) CLI
 go run ./cmd/trumpcards klondike   # Klondike (ソリティア) CLI
+go run ./cmd/trumpcards freecell   # FreeCell CLI
 go run ./cmd/trumpcards baccarat   # Baccarat (バカラ) CLI
+go run ./cmd/trumpcards spades     # Spades (スペード) CLI
+go run ./cmd/trumpcards crazyeights   # Crazy Eights CLI
+go run ./cmd/trumpcards ginrummy   # Gin Rummy (ジンラミー) CLI
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)

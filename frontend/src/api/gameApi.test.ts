@@ -3,16 +3,20 @@ import {
   actionLogApi,
   baccaratApi,
   blackjackApi,
+  crazyeightsApi,
   daifugoApi,
   doubtApi,
+  ginrummyApi,
   heartsApi,
   holdemApi,
   klondikeApi,
   memoryApi,
   oldmaidApi,
+  omahaApi,
   pokerApi,
   sessionId,
   sevensApi,
+  spadesApi,
 } from './gameApi';
 
 describe('gameApi', () => {
@@ -1556,6 +1560,230 @@ describe('gameApi', () => {
     });
   });
 
+  describe('omahaApi', () => {
+    const payload = {
+      players: [],
+      communityCards: [],
+      pot: 0,
+      sidePots: [],
+      dealerIdx: 0,
+      currentTurn: 0,
+      phase: 1,
+      gameEndFlag: false,
+      lastBet: 0,
+      minRaise: 0,
+      roundResults: [],
+      cpuActions: [],
+      message: '',
+      handCount: 0,
+      smallBlind: 5,
+      bigBlind: 10,
+      tournamentMode: false,
+      blindLevelHands: 10,
+      blindMultiplier: 200,
+      tableSize: 4,
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await omahaApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/omaha/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          amount: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with fold command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('fold');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'fold',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with bet command and amount', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('bet', 50);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'bet',
+            amount: 50,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and custom blinds', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('reset', undefined, { smallBlind: 10, bigBlind: 20 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            smallBlind: 10,
+            bigBlind: 20,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and tournament config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('reset', undefined, {
+        tournamentMode: true,
+        blindLevelHands: 5,
+        blindMultiplier: 200,
+      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            tournamentMode: true,
+            blindLevelHands: 5,
+            blindMultiplier: 200,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and bettingLimit config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('reset', undefined, { bettingLimit: 2 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            bettingLimit: 2,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and tableSize config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('reset', undefined, { tableSize: 6 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            tableSize: 6,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with rebuy command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('rebuy');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'rebuy',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with skipaddon command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('skipaddon');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'skipaddon',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and rebuy/addon config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('reset', undefined, { rebuyEnabled: true, addonEnabled: true, rebuyMaxCount: 5 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            rebuyEnabled: true,
+            addonEnabled: true,
+            rebuyMaxCount: 5,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with muck command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('muck');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'muck',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with show command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('show');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'show',
+            amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(omahaApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('heartsApi.exec', () => {
     const payload = {
       players: [],
@@ -1644,6 +1872,97 @@ describe('gameApi', () => {
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(heartsApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('spadesApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      trickNumber: 1,
+      currentPlayerIdx: 0,
+      bidPlayerIdx: 0,
+      currentTrick: [],
+      spadesBroken: false,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      leadPlayerIdx: 0,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 500, nilBonus: 100, bagPenaltyThreshold: 10 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await spadesApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/spades/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          bid: undefined,
+          cardIndex: undefined,
+          config: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spadesApi.exec('play', undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spades/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            bid: undefined,
+            cardIndex: 3,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with bid command and bid value', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spadesApi.exec('bid', 5);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spades/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'bid',
+            bid: 5,
+            cardIndex: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spadesApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 300 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spades/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            bid: undefined,
+            cardIndex: undefined,
+            config: { cpuDifficulty: 2, pointLimit: 300 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(spadesApi.exec('reset')).rejects.toThrow('HTTP error: 500');
     });
   });
 
@@ -1875,6 +2194,187 @@ describe('gameApi', () => {
     });
   });
 
+  describe('crazyeightsApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      currentPlayerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      chosenSuit: -1,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 200 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await crazyeightsApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/crazyeights/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          suit: undefined,
+          config: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await crazyeightsApi.exec('play', 2);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/crazyeights/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            cardIndex: 2,
+            suit: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with suit command and suit value', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await crazyeightsApi.exec('suit', undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/crazyeights/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'suit',
+            cardIndex: undefined,
+            suit: 3,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await crazyeightsApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 100 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/crazyeights/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            cardIndex: undefined,
+            suit: undefined,
+            config: { cpuDifficulty: 2, pointLimit: 100 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(crazyeightsApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
+  describe('ginrummyApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      currentPlayerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      knockerIdx: -1,
+      knockerMelds: [],
+      knockerDeadwood: [],
+      isGin: false,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 100 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await ginrummyApi.exec('reset', undefined, { cpuDifficulty: 1, pointLimit: 100 });
+      expect(mockFetch).toHaveBeenCalledWith('/ginrummy/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          cardIndices: undefined,
+          config: { cpuDifficulty: 1, pointLimit: 100 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with discard command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await ginrummyApi.exec('discard', 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/ginrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'discard',
+            cardIndex: 3,
+            cardIndices: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with layoff command and cardIndices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await ginrummyApi.exec('layoff', undefined, undefined, [0, 2]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/ginrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'layoff',
+            cardIndex: undefined,
+            cardIndices: [0, 2],
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await ginrummyApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/ginrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'log',
+            cardIndex: undefined,
+            cardIndices: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(ginrummyApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('baccaratApi.exec', () => {
     it('sends reset command', async () => {
       const mockResponse = { phase: 1, chips: 1000 };
@@ -1997,10 +2497,14 @@ describe('gameApi', () => {
       ['sevens', actionLogApi.sevens],
       ['doubt', actionLogApi.doubt],
       ['holdem', actionLogApi.holdem],
+      ['omaha', actionLogApi.omaha],
       ['hearts', actionLogApi.hearts],
+      ['spades', actionLogApi.spades],
       ['memory', actionLogApi.memory],
       ['klondike', actionLogApi.klondike],
       ['baccarat', actionLogApi.baccarat],
+      ['crazyeights', actionLogApi.crazyeights],
+      ['ginrummy', actionLogApi.ginrummy],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));

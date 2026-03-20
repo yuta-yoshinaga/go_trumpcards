@@ -5,8 +5,12 @@
  *   - BlackJack:  internal/domain/BlackJack.go (BJPhaseBet, BJPhaseDeal, BJPhaseInsurance, BJPhaseAction, BJPhaseEnd)
  *   - Poker:      internal/domain/Poker.go     (PokerPhaseInit, PokerPhaseDeal, PokerPhaseExchange, PokerPhaseSecondBet, PokerPhaseEnd)
  *   - Hearts:     internal/domain/Hearts.go    (HeartsPhasePass, HeartsPhasePlay, HeartsPhaseTrickEnd, HeartsPhaseRoundEnd, HeartsPhaseGameEnd)
+ *   - Spades:     internal/domain/Spades.go    (SpadesPhaseBid, SpadesPhasePlay, SpadesPhaseTrickEnd, SpadesPhaseRoundEnd, SpadesPhaseGameEnd)
  *   - Memory:     internal/domain/Memory.go    (MemoryPhaseFlip1, MemoryPhaseFlip2, MemoryPhaseResult, MemoryPhaseGameEnd)
  *   - Klondike:   internal/domain/Klondike.go  (KlondikePhasePlaying, KlondikePhaseGameClear, KlondikePhaseGameOver)
+ *   - FreeCell:   internal/domain/FreeCell.go  (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
+ *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
+ *   - GinRummy:  internal/domain/GinRummy.go   (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
  *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
  */
 
@@ -58,6 +62,10 @@ export const HoldemRebuyPhaseType = {
   ADDON: 2,
 } as const;
 
+// Omaha Hold'em phase constants (same as Holdem - sync: internal/domain/Omaha.go)
+export const OmahaPhase = HoldemPhase;
+export const OmahaRebuyPhaseType = HoldemRebuyPhaseType;
+
 // Hearts phase constants (sync: internal/domain/Hearts.go)
 export const HeartsPhase = {
   PASS: 0,
@@ -86,6 +94,47 @@ export const KlondikePhase = {
 export const KlondikeScoringMode = {
   NONE: 0,
   VEGAS: 1,
+} as const;
+
+// FreeCell phase constants (sync: internal/domain/FreeCell.go)
+export const FreeCellPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+// Spades phase constants (sync: internal/domain/Spades.go)
+export const SpadesPhase = {
+  BID: 0,
+  PLAY: 1,
+  TRICK_END: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
+} as const;
+
+// Crazy Eights phase constants (sync: internal/domain/CrazyEights.go)
+export const CrazyEightsPhase = {
+  PLAY: 0,
+  CHOOSE_SUIT: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+// Crazy Eights suit constants (sync: internal/domain/Card.go)
+export const CrazyEightsSuit = {
+  SPADE: 1,
+  CLOVER: 2,
+  HEART: 3,
+  DIAMOND: 4,
+} as const;
+
+// Gin Rummy phase constants (sync: internal/domain/GinRummy.go)
+export const GinRummyPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  LAYOFF: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
 } as const;
 
 // Baccarat bet type constants (sync: internal/domain/Baccarat.go)

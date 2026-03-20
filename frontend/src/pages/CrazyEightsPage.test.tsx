@@ -1,0 +1,632 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { actionLogApi, crazyeightsApi } from '../api/gameApi';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { renderWithProviders } from '../test/renderWithProviders';
+import type { CrazyEightsResponse } from '../types/card';
+import { CrazyEightsPage } from './CrazyEightsPage';
+
+vi.mock('../api/gameApi', () => ({
+  crazyeightsApi: { exec: vi.fn() },
+  actionLogApi: { crazyeights: vi.fn() },
+}));
+
+const mockExec = vi.mocked(crazyeightsApi.exec);
+
+const playPhaseState: CrazyEightsResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 5,
+      cards: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 11 },
+      ],
+      roundScore: 0,
+      cumulativeScore: 0,
+    },
+    { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 3, cumulativeScore: 10 },
+    { id: 2, isHuman: false, cardCount: 5, cards: [], roundScore: 5, cumulativeScore: 20 },
+    { id: 3, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 5 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  currentPlayerIdx: 0,
+  discardTop: { design: 'HEART', value: 7 },
+  drawPileCount: 30,
+  chosenSuit: 0,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 200 },
+};
+
+const chooseSuitState: CrazyEightsResponse = {
+  ...playPhaseState,
+  phase: 1,
+};
+
+const roundEndState: CrazyEightsResponse = {
+  ...playPhaseState,
+  phase: 2,
+};
+
+const gameEndState: CrazyEightsResponse = {
+  ...playPhaseState,
+  phase: 3,
+  gameEndFlag: true,
+  winnerIdx: 0,
+  message: 'Game end!',
+};
+
+const gameEndByFlagState: CrazyEightsResponse = {
+  ...playPhaseState,
+  phase: 0,
+  gameEndFlag: true,
+  winnerIdx: 0,
+  message: 'Game end!',
+};
+
+const cpuTurnState: CrazyEightsResponse = {
+  ...playPhaseState,
+  currentPlayerIdx: 1,
+};
+
+const chosenSuitState: CrazyEightsResponse = {
+  ...playPhaseState,
+  chosenSuit: 1,
+};
+
+const noDiscardState: CrazyEightsResponse = {
+  ...playPhaseState,
+  discardTop: null,
+};
+
+const unknownSuitState: CrazyEightsResponse = {
+  ...playPhaseState,
+  chosenSuit: 99,
+};
+
+beforeEach(() => {
+  mockExec.mockResolvedValue(playPhaseState);
+});
+
+describe('CrazyEightsPage', () => {
+  it('renders skeleton when no state', () => {
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    renderWithProviders(<CrazyEightsPage />);
+    expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('calls reset on mount', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 200,
+      }),
+    );
+  });
+
+  it('renders play phase with human cards', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByAltText('\u2660 A')).toBeInTheDocument();
+      expect(screen.getByAltText('\u2665 J')).toBeInTheDocument();
+    });
+  });
+
+  it('renders play and draw buttons when human turn', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument();
+    });
+  });
+
+  it('play button disabled when not 1 card selected', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
+  });
+
+  it('play button enabled when 1 card selected', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement);
+    expect(screen.getByRole('button', { name: '出す' })).not.toBeDisabled();
+  });
+
+  it('calls play command when play button is clicked', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement);
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+  });
+
+  it('calls draw command when draw button is clicked', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('does not show play/draw buttons when not human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '引く' })).not.toBeInTheDocument();
+  });
+
+  it('renders choose suit phase with 4 suit buttons', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '♠ スペード' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♣ クローバー' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♥ ハート' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '♦ ダイヤ' })).toBeInTheDocument();
+    });
+  });
+
+  it('calls suit command when suit button is clicked', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ スペード' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '♠ スペード' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('suit', undefined, 1));
+  });
+
+  it('calls suit command for clover', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♣ クローバー' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '♣ クローバー' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('suit', undefined, 2));
+  });
+
+  it('calls suit command for heart', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ ハート' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '♥ ハート' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('suit', undefined, 3));
+  });
+
+  it('calls suit command for diamond', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♦ ダイヤ' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '♦ ダイヤ' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('suit', undefined, 4));
+  });
+
+  it('shows next round button on round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+  });
+
+  it('calls nextround when next round button is clicked', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('shows game end with action log button', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Game end!')).toBeInTheDocument();
+      expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+    });
+  });
+
+  it('shows game end via gameEndFlag with non-3 phase', async () => {
+    mockExec.mockResolvedValue(gameEndByFlagState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('Game end!')).toBeInTheDocument();
+      expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+    });
+  });
+
+  it('shows error alert', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockReset();
+    mockExec.mockRejectedValue(new Error('network error'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
+  });
+
+  it('shows CPU player areas', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/CPU 1.*5枚/)).toBeInTheDocument();
+      expect(screen.getByText(/CPU 2.*5枚/)).toBeInTheDocument();
+      expect(screen.getByText(/CPU 3.*5枚/)).toBeInTheDocument();
+    });
+  });
+
+  it('score table shows all players', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('スコア')).toBeInTheDocument();
+      expect(screen.getByText('あなた')).toBeInTheDocument();
+      expect(screen.getByText('CPU 1')).toBeInTheDocument();
+      expect(screen.getByText('CPU 2')).toBeInTheDocument();
+      expect(screen.getByText('CPU 3')).toBeInTheDocument();
+    });
+  });
+
+  it('score table headers have scope="col" for accessibility', async () => {
+    const { container } = renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('あなた')).toBeInTheDocument());
+    const ths = container.querySelectorAll('th');
+    ths.forEach((th) => {
+      expect(th).toHaveAttribute('scope', 'col');
+    });
+  });
+
+  it('shows discard top card', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('捨て札')).toBeInTheDocument();
+      expect(screen.getByAltText('\u2665 7')).toBeInTheDocument();
+    });
+  });
+
+  it('does not show discard top when null', async () => {
+    mockExec.mockResolvedValue(noDiscardState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByText('捨て札')).not.toBeInTheDocument();
+  });
+
+  it('shows chosen suit when chosenSuit > 0', async () => {
+    mockExec.mockResolvedValue(chosenSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/指定スート/)).toBeInTheDocument();
+      expect(screen.getByText(/♠/)).toBeInTheDocument();
+    });
+  });
+
+  it('does not show chosen suit when chosenSuit is 0', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('捨て札')).toBeInTheDocument());
+    expect(screen.queryByText('指定スート')).not.toBeInTheDocument();
+  });
+
+  it('shows fallback ? for unknown suit value', async () => {
+    mockExec.mockResolvedValue(unknownSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/指定スート/)).toBeInTheDocument();
+      expect(screen.getByText(/\?/)).toBeInTheDocument();
+    });
+  });
+
+  it('card selection toggle via aria-pressed', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(cardBtn);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('card buttons have aria-label with card name', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-label', '\u2660 A');
+
+    const cardBtn2 = screen.getByAltText('\u2665 J').closest('button') as HTMLButtonElement;
+    expect(cardBtn2).toHaveAttribute('aria-label', '\u2665 J');
+  });
+
+  it('reset button calls exec with confirm', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 200,
+      }),
+    );
+  });
+
+  it('shows confirm dialog when reset button is clicked', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('dismisses confirm dialog on cancel', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+  });
+
+  it('settings panel changes cpuDifficulty', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[0], { target: { value: '2' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 2,
+        pointLimit: 200,
+      }),
+    );
+  });
+
+  it('settings panel changes pointLimit', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText('設定'));
+    const selects = screen.getAllByRole('combobox');
+    fireEvent.change(selects[1], { target: { value: '300' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        cpuDifficulty: 1,
+        pointLimit: 300,
+      }),
+    );
+  });
+
+  it('round info displayed', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => {
+      expect(screen.getByText('ラウンド 1')).toBeInTheDocument();
+      expect(screen.getByText('山札: 30枚')).toBeInTheDocument();
+    });
+  });
+
+  it('does not show message when empty', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByText('Game end!')).not.toBeInTheDocument();
+  });
+
+  it('shows loading state', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    let resolve!: (value: CrazyEightsResponse) => void;
+    const slow = new Promise<CrazyEightsResponse>((r) => {
+      resolve = r;
+    });
+    mockExec.mockReturnValueOnce(slow);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+
+    resolve(playPhaseState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+  });
+
+  it('sets aria-busy on container', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    const container = screen.getByRole('button', { name: 'リセット' }).closest('[aria-busy]') as HTMLElement;
+    expect(container).toHaveAttribute('aria-busy', 'false');
+  });
+
+  it('no human cards renders empty hand area', async () => {
+    const noHuman: CrazyEightsResponse = {
+      ...playPhaseState,
+      players: playPhaseState.players.map((p) => ({ ...p, isHuman: false })),
+    };
+    mockExec.mockResolvedValue(noHuman);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByAltText('\u2660 A')).not.toBeInTheDocument();
+  });
+
+  it('isHumanTurn false when currentPlayerIdx points to cpu', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  it('handles action log visibility and API fetch', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.crazyeights).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+
+    await waitFor(() => expect(actionLogApi.crazyeights).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('棋譜')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('閉じる'));
+    await waitFor(() => expect(screen.queryByText(/^棋譜$/)).not.toBeInTheDocument());
+    expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
+  });
+
+  it('does not show action log button when not game end', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('スコア')).toBeInTheDocument());
+    expect(screen.queryByText('棋譜を見る')).not.toBeInTheDocument();
+  });
+
+  it('disables buttons while loading', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+
+    let resolve!: (value: CrazyEightsResponse) => void;
+    const slow = new Promise<CrazyEightsResponse>((r) => {
+      resolve = r;
+    });
+    mockExec.mockReturnValueOnce(slow);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    expect(screen.getByRole('button', { name: 'リセット' })).toBeDisabled();
+
+    resolve(playPhaseState);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).not.toBeDisabled());
+  });
+
+  // -- PhaseIndicator coverage --
+
+  it('phase indicator shows your turn when human play turn', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows your turn in choose suit phase', async () => {
+    mockExec.mockResolvedValue(chooseSuitState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
+  });
+
+  it('phase indicator shows waiting when cpu turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('待機中'));
+  });
+
+  // -- Keyboard navigation --
+
+  it('pressing number key toggles card in play phase', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement;
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('Enter key triggers play in play phase', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: '1' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+  });
+
+  it('Escape key clears selection', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByAltText('\u2660 A')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement;
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('keyboard nav disabled when not human turn', async () => {
+    mockExec.mockResolvedValue(cpuTurnState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('CPU 1')).toBeInTheDocument());
+
+    const cardBtn = screen.getByAltText('\u2660 A').closest('button') as HTMLButtonElement;
+    fireEvent.keyDown(document, { key: '1' });
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('reset hides the action log panel if open', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
+
+    vi.mocked(actionLogApi.crazyeights).mockResolvedValueOnce({ entries: [] });
+    fireEvent.click(screen.getByText('棋譜を見る'));
+    await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+  });
+});

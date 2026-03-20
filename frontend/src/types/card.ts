@@ -488,6 +488,16 @@ export interface HoldemHandOdds {
   probability: number;
 }
 
+// --- Omaha Hold'em ---
+// Omaha shares identical response/player structures with Holdem
+export type OmahaPlayerData = HoldemPlayerData;
+export type OmahaCpuAction = HoldemCpuAction;
+export type OmahaResult = HoldemResult;
+export type OmahaSidePot = HoldemSidePot;
+export type OmahaEquity = HoldemEquity;
+export type OmahaHandOdds = HoldemHandOdds;
+export type OmahaResponse = HoldemResponse;
+
 // --- Hearts ---
 
 export interface HeartsPlayerData {
@@ -527,6 +537,121 @@ export interface HeartsResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   config: HeartsConfig;
+}
+
+// --- Spades ---
+
+export interface SpadesPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+  bags: number;
+}
+
+export interface SpadesTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+export interface SpadesConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+  nilBonus: number;
+  bagPenaltyThreshold: number;
+}
+
+export interface SpadesResponse {
+  players: SpadesPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentTrick: SpadesTrickCard[];
+  spadesBroken: boolean;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: SpadesConfig;
+}
+
+// --- Crazy Eights (クレイジーエイト) ---
+
+export interface CrazyEightsPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+export interface CrazyEightsConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+export interface CrazyEightsResponse {
+  players: CrazyEightsPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  chosenSuit: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: CrazyEightsConfig;
+}
+
+// --- Gin Rummy (ジンラミー) ---
+
+export interface GinRummyPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+export interface GinRummyMeld {
+  cards: Card[];
+}
+
+export interface GinRummyConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+export interface GinRummyResponse {
+  players: GinRummyPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  knockerIdx: number;
+  knockerMelds: GinRummyMeld[];
+  knockerDeadwood: Card[];
+  isGin: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: GinRummyConfig;
 }
 
 // --- Memory (神経衰弱) ---
@@ -594,6 +719,29 @@ export interface KlondikeResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   hint?: KlondikeHint;
+}
+
+// --- FreeCell (フリーセル) ---
+
+export interface FreeCellHint {
+  fromZone: string;
+  fromCol: number;
+  cardIndex: number;
+  toZone: string;
+  toCol: number;
+}
+
+export interface FreeCellResponse {
+  tableau: (Card | null)[][];
+  freeCells: (Card | null)[];
+  foundation: Card[][];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: FreeCellHint;
 }
 
 export interface BaccaratSideBetResult {

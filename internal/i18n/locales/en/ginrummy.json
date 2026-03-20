@@ -1,0 +1,11 @@
+{
+  "helpTitle": "Gin Rummy",
+  "helpDrawStock": "  ds                   draw from stock",
+  "helpDrawDiscard": "  dd                   draw from discard",
+  "helpDiscard": "  d <idx>              discard a card",
+  "helpKnock": "  k <idx>              knock (discard and knock)",
+  "helpLayoff": "  lo <idx,idx,...>     lay off cards",
+  "helpNextRound": "  nr                   next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               point limit"
+}

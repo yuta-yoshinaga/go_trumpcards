@@ -11,10 +11,15 @@
     "sevens": "7並べ",
     "doubt": "ダウト",
     "holdem": "テキサスホールデム",
+    "omaha": "オマハホールデム",
     "hearts": "ハーツ",
+    "spades": "スペード",
     "memory": "神経衰弱",
     "klondike": "クロンダイク",
-    "baccarat": "バカラ"
+    "freecell": "フリーセル",
+    "baccarat": "バカラ",
+    "crazyeights": "クレイジーエイト",
+    "ginrummy": "ジンラミー"
   },
   "player": {
     "you": "あなた",
@@ -106,6 +111,19 @@
     "holdem.muck.prompt": "マックしますか?",
     "hearts.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "spades.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "spades.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "crazyeights.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "crazyeights.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "crazyeights.playPhase": "カードを出すか、山札から引いてください",
+    "crazyeights.chooseSuitPhase": "スートを選択してください",
+    "crazyeights.roundEnd": "ラウンド終了",
+    "ginrummy.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "ginrummy.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "ginrummy.drawPhase": "山札または捨て札から1枚引いてください",
+    "ginrummy.discardPhase": "手札から1枚捨てるか、ノックしてください",
+    "ginrummy.layoffPhase": "ノッカーのメルドにカードをレイオフできます",
+    "ginrummy.roundEnd": "ラウンド終了",
     "memory.flip1": "1枚目をめくってください",
     "memory.flip2": "2枚目をめくってください",
     "memory.matched": "ペアが揃いました！",
@@ -119,6 +137,11 @@
     "klondike.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "klondike.gameOver": "ゲームオーバー",
     "klondike.hintAvailable": "ヒントがあります",
-    "klondike.noHint": "ヒントはありません"
+    "klondike.noHint": "ヒントはありません",
+    "freecell.playing": "プレイ中",
+    "freecell.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+    "freecell.gameOver": "ゲームオーバー",
+    "freecell.hintAvailable": "ヒントがあります",
+    "freecell.noHint": "ヒントはありません"
   }
 }
