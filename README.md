@@ -123,7 +123,7 @@ go test -tags test ./...  # 全テスト実行
 
 - **Go API Docs** — Domain, Use Case, Adapter, Infrastructure パッケージのドキュメント
 - **TypeScript API Docs** — React コンポーネント、フック、ユーティリティ、API クライアントのドキュメント
-- **Repomix Output** — AI コンテキスト用のリポジトリ圧縮スナップショット
+- **Repomix Output** — AI コンテキスト用のリポジトリ圧縮スナップショット (デプロイの詳細は [GitHub Pages (Repomix)](#github-pages-repomix) を参照)
 
 ### Deploy
 [render live](https://go-trumpcards.onrender.com/)
