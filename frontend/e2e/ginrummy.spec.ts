@@ -16,7 +16,7 @@ test.describe('Gin Rummy E2E', () => {
     await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
 
     // Verify score table is visible
-    await expect(page.getByText('スコア')).toBeVisible();
+    await expect(page.getByText('スコア').first()).toBeVisible();
 
     const drawStockButton = page.getByRole('button', { name: '山札から引く' });
     const drawDiscardButton = page.getByRole('button', { name: '捨て札から引く' });

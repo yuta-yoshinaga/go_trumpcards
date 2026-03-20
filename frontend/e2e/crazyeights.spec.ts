@@ -16,7 +16,7 @@ test.describe('Crazy Eights E2E', () => {
     await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
 
     // Verify score table is visible
-    await expect(page.getByText('スコア')).toBeVisible();
+    await expect(page.getByText('スコア').first()).toBeVisible();
 
     const playButton = page.getByRole('button', { name: '出す' });
     const drawButton = page.getByRole('button', { name: '引く' });
