@@ -29,20 +29,16 @@ test.describe('Omaha E2E', () => {
       }
 
       // Try check first, then call
-      if (await checkButton.isVisible({ timeout: 3_000 }).catch(() => false)) {
-        if (await checkButton.isEnabled()) {
-          await checkButton.click();
-          await waitForLoaded(page);
-          continue;
-        }
+      if ((await checkButton.isVisible({ timeout: 3_000 }).catch(() => false)) && (await checkButton.isEnabled())) {
+        await checkButton.click();
+        await waitForLoaded(page);
+        continue;
       }
 
-      if (await callButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
-        if (await callButton.isEnabled()) {
-          await callButton.click();
-          await waitForLoaded(page);
-          continue;
-        }
+      if ((await callButton.isVisible({ timeout: 2_000 }).catch(() => false)) && (await callButton.isEnabled())) {
+        await callButton.click();
+        await waitForLoaded(page);
+        continue;
       }
 
       await waitForLoaded(page);

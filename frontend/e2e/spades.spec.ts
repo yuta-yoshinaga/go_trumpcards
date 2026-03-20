@@ -62,7 +62,7 @@ test.describe('Spades E2E', () => {
         if (cardCount > 0) {
           await handCards.first().click();
         }
-        if (await playButton.isEnabled()) {
+        if ((await playButton.isVisible().catch(() => false)) && (await playButton.isEnabled())) {
           await playButton.click();
           await waitForLoaded(page);
         }

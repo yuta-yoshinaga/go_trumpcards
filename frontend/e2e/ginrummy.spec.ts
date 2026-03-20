@@ -73,9 +73,21 @@ test.describe('Gin Rummy E2E', () => {
         continue;
       }
 
-      // Layoff phase: skip layoff
+      // Layoff phase: lay off a card or skip
       if (layoffVisible || skipVisible) {
-        if (skipVisible) {
+        if (layoffVisible) {
+          const cardCount = await handCards.count();
+          if (cardCount > 0) {
+            await handCards.first().click();
+          }
+          if ((await layoffButton.isVisible().catch(() => false)) && (await layoffButton.isEnabled())) {
+            await layoffButton.click();
+            await waitForLoaded(page);
+          } else if (skipVisible) {
+            await skipButton.click();
+            await waitForLoaded(page);
+          }
+        } else {
           await skipButton.click();
           await waitForLoaded(page);
         }

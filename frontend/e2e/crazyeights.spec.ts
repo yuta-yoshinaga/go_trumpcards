@@ -54,19 +54,15 @@ test.describe('Crazy Eights E2E', () => {
         if (cardCount > 0) {
           await handCards.first().click();
         }
-        if (await playButton.isVisible().catch(() => false)) {
-          if (await playButton.isEnabled()) {
-            await playButton.click();
-            await waitForLoaded(page);
-            continue;
-          }
+        if ((await playButton.isVisible().catch(() => false)) && (await playButton.isEnabled())) {
+          await playButton.click();
+          await waitForLoaded(page);
+          continue;
         }
         // If play not possible, draw
-        if (await drawButton.isVisible().catch(() => false)) {
-          if (await drawButton.isEnabled()) {
-            await drawButton.click();
-            await waitForLoaded(page);
-          }
+        if ((await drawButton.isVisible().catch(() => false)) && (await drawButton.isEnabled())) {
+          await drawButton.click();
+          await waitForLoaded(page);
         }
         continue;
       }
