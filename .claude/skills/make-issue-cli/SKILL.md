@@ -47,7 +47,7 @@ Step 2で作成した内容をもとに、`gh` コマンドを使用して対象
 1. コマンドラインツールを使用し、Issueの本文を `_temp_issue_body.md` という一時ファイルに書き出してください。
 2. 以下の `gh` コマンドを実行してIssueを作成してください。
    `gh issue create --title "[CLI UX] <簡潔な課題のタイトル>" --body-file _temp_issue_body.md`
-   ※必要に応じて `--label "cli-ux", "enhancement"` などのオプションを付与しても構いません。
+   ※必要に応じて `--label "cli-ux,enhancement"` などのオプションを付与しても構いません。
 3. Issueの作成が成功したことを確認した後、一時ファイル `_temp_issue_body.md` を削除してください。
 
 # 制約事項・ルール
