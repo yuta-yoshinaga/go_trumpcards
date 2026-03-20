@@ -2,6 +2,10 @@
 
 This directory contains the React frontend (Vite + React + TypeScript).
 
+## Package Manager Rule
+
+**Always use `bun` instead of `npm`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript package manager and script runner.
+
 ## Testing
 
 **TDD cycle (Red-Green-Refactor):**
