@@ -138,11 +138,6 @@ func (g *CrazyEights) dealInitialCards() {
 		firstCard := g.drawPile[len(g.drawPile)-1]
 		g.drawPile = g.drawPile[:len(g.drawPile)-1]
 		g.discardPile = append(g.discardPile, firstCard)
-
-		// 最初のカードが8の場合、chosenSuit は -1 のまま (何でも出せる)
-		if firstCard.GetValue() != CrazyEightsWildValue {
-			g.chosenSuit = -1
-		}
 	}
 }
 

@@ -1465,9 +1465,10 @@ paths:
 
         | Phase        | Value | Description |
         |--------------|-------|-------------|
-        | Play         | `0`   | Play a card, draw, or choose suit after playing 8 |
-        | RoundEnd     | `1`   | A player emptied their hand; advance with `nextround` |
-        | GameEnd      | `2`   | A player reached the point limit |
+        | Play         | `0`   | Play a card or draw |
+        | ChooseSuit   | `1`   | Choose suit after playing an 8 |
+        | RoundEnd     | `2`   | A player emptied their hand; advance with `nextround` |
+        | GameEnd      | `3`   | A player reached the point limit |
 
         | Command     | Aliases | Description |
         |-------------|---------|-------------|
@@ -1538,7 +1539,7 @@ paths:
 
             Response body includes:
             - `players` — array of player objects (hand, score, name)
-            - `phase` — current game phase (0=Play, 1=RoundEnd, 2=GameEnd)
+            - `phase` — current game phase (0=Play, 1=ChooseSuit, 2=RoundEnd, 3=GameEnd)
             - `roundNumber` — current round number
             - `currentPlayerIdx` — index of the player whose turn it is
             - `discardTop` — the top card of the discard pile
