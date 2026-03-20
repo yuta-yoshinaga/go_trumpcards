@@ -29,7 +29,7 @@ export function useGinRummyGame() {
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
   useEffect(() => {
-    exec('reset', undefined, undefined, DEFAULT_GINRUMMY_CONFIG);
+    exec('reset', undefined, DEFAULT_GINRUMMY_CONFIG);
   }, [exec]);
 
   const handleConfigChange = useCallback((key: keyof GinRummyConfig, value: string) => {
@@ -58,11 +58,11 @@ export function useGinRummyGame() {
   }, [exec, selectedCardIndices]);
 
   const handleLayoff = useCallback(() => {
-    exec('layoff', undefined, undefined, undefined, selectedCardIndices);
+    exec('layoff', undefined, undefined, selectedCardIndices);
   }, [exec, selectedCardIndices]);
 
   const handleSkipLayoff = useCallback(() => {
-    exec('layoff', undefined, undefined, undefined, []);
+    exec('layoff', undefined, undefined, []);
   }, [exec]);
 
   const handleNextRound = useCallback(() => {

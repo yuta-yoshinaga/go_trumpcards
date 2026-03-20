@@ -47,7 +47,7 @@ describe('useGinRummyGame', () => {
   it('calls reset on mount with default config', async () => {
     renderHook(() => useGinRummyGame(), { wrapper: createWrapper() });
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         cpuDifficulty: 1,
         pointLimit: 100,
       }),
@@ -192,7 +192,7 @@ describe('useGinRummyGame', () => {
       result.current.handleLayoff();
     });
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, undefined, [0, 2]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, [0, 2]));
   });
 
   it('handleSkipLayoff dispatches layoff with empty array', async () => {
@@ -205,7 +205,7 @@ describe('useGinRummyGame', () => {
       result.current.handleSkipLayoff();
     });
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, undefined, []));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, []));
   });
 
   it('handleNextRound dispatches nextround command', async () => {

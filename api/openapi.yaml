@@ -1587,7 +1587,7 @@ paths:
         | `drawstock`    | `ds`    | Draw a card from the stock pile |
         | `drawdiscard`  | `dd`    | Draw the top card from the discard pile |
         | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
-        | `knock`        | `k`     | Knock (deadwood ≤ 10) |
+        | `knock`        | `k`     | Knock (deadwood ≤ 10) (requires `cardIndex`) |
         | `layoff`       | `lo`    | Lay off cards on knocker's melds (requires `cardIndices`) |
         | `nextround`    | `nr`    | Score the round and start the next |
         | `log`          | `l`     | View action log |
@@ -1645,9 +1645,10 @@ paths:
                   cardIndex: 2
                   sessionId: my-session-001
               knock:
-                summary: Knock
+                summary: Knock (discard card at index 2)
                 value:
                   command: knock
+                  cardIndex: 2
                   sessionId: my-session-001
               layoff:
                 summary: Lay off cards at indices 0 and 3

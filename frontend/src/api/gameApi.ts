@@ -377,9 +377,8 @@ export interface GinRummyConfigInput {
 
 export const ginrummyApi = {
   exec: (
-    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'layoff' | 'nextround',
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'layoff' | 'nextround' | 'log',
     cardIndex?: number,
-    _unused1?: number,
     config?: GinRummyConfigInput,
     cardIndices?: number[],
   ) =>
