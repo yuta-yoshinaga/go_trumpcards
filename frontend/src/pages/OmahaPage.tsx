@@ -152,10 +152,7 @@ export function OmahaPage() {
                     style={{ border: '3px solid transparent' }}
                   />
                 ))
-              : Array.from({ length: 5 }).map((_, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: placeholder
-                  <CardBack key={i} width={cardWidth} />
-                ))}
+              : Array.from({ length: 5 }).map((_, i) => <CardBack key={i} width={cardWidth} />)}
           </div>
         </div>
 
@@ -250,10 +247,7 @@ export function OmahaPage() {
                     />
                   ))
                 : !humanPlayer.folded &&
-                  Array.from({ length: 4 }).map((_, i) => (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: placeholder
-                    <CardBack key={i} width={cardWidth} />
-                  ))}
+                  Array.from({ length: 4 }).map((_, i) => <CardBack key={i} width={cardWidth} />)}
             </div>
           </div>
         )}

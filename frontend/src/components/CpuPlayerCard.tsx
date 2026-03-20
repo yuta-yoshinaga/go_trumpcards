@@ -54,10 +54,7 @@ export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, 
                 style={{ border: '3px solid transparent' }}
               />
             ))
-          : Array.from({ length: faceDownCount }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: placeholder
-              <CardBack key={i} width={50} />
-            ))}
+          : Array.from({ length: faceDownCount }).map((_, i) => <CardBack key={i} width={50} />)}
       </div>
     </div>
   );

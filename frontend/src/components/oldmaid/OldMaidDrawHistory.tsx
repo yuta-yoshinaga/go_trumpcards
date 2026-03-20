@@ -33,10 +33,7 @@ export function OldMaidDrawHistory({
           if (entry.discardedPairs > 0) line += ` ${t('history.discarded', { count: entry.discardedPairs })}`;
           if (entry.drawerFinished) line += ` ${t('history.finished', { name: from })}`;
           if (entry.targetFinished) line += ` ${t('history.finished', { name: target })}`;
-          return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: history entries are append-only with stable order
-            <div key={i}>{line}</div>
-          );
+          return <div key={i}>{line}</div>;
         })}
       </div>
     </div>

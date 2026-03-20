@@ -53,7 +53,7 @@ export function OldMaidPlayerArea({
     const max = player.cards.length - 1;
 
     const swapAndReorder = (index1: number, index2: number) => {
-      const indices = Array.from(player.cards!.keys());
+      const indices = Array.from(player.cards?.keys() ?? []);
       [indices[index1], indices[index2]] = [indices[index2], indices[index1]];
       onReorder(indices);
       setFocusedCardIdx(index2);
@@ -168,7 +168,6 @@ export function OldMaidPlayerArea({
               };
               return (
                 <CardBack
-                  // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
                   key={i}
                   width={cardWidth}
                   style={cardStyle}
@@ -184,7 +183,6 @@ export function OldMaidPlayerArea({
         ) : (
           <>
             {Array.from({ length: showCount }).map((_, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: placeholder array with no card identity
               <CardBack key={i} width={cardWidth} />
             ))}
             {player.cardCount > 10 && (
