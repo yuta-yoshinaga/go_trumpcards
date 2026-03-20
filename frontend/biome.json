@@ -18,12 +18,21 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "a11y": {},
-      "suspicious": {
-        "noArrayIndexKey": "off"
-      }
+      "a11y": {}
     }
   },
+  "overrides": [
+    {
+      "includes": ["src/components/**", "src/pages/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    }
+  ],
   "css": {
     "parser": {
       "tailwindDirectives": true

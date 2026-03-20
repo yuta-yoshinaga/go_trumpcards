@@ -53,7 +53,8 @@ export function OldMaidPlayerArea({
     const max = player.cards.length - 1;
 
     const swapAndReorder = (index1: number, index2: number) => {
-      const indices = Array.from(player.cards?.keys() ?? []);
+      // biome-ignore lint/style/noNonNullAssertion: guard on line 52 ensures player.cards is non-null
+      const indices = Array.from(player.cards!.keys());
       [indices[index1], indices[index2]] = [indices[index2], indices[index1]];
       onReorder(indices);
       setFocusedCardIdx(index2);
