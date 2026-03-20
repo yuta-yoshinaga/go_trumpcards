@@ -40,6 +40,8 @@ tags:
     description: Spades (スペード) game
   - name: crazyeights
     description: Crazy Eights (クレイジーエイト) game
+  - name: ginrummy
+    description: Gin Rummy (ジンラミー) game
 
 paths:
   /blackjack/exec:
@@ -1547,6 +1549,130 @@ paths:
             - `chosenSuit` — suit chosen after playing an 8 (null if not applicable)
             - `gameEndFlag` — whether the match has ended
             - `winnerIdx` — index of the match winner (-1 if not ended)
+            - `message` — human-readable status message
+            - `messageCode` — machine-readable message key
+            - `messageParams` — parameters for message interpolation
+            - `config` — current game configuration
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+
+  /ginrummy/exec:
+    post:
+      tags:
+        - ginrummy
+      summary: Execute a Gin Rummy game command
+      description: |
+        Send a command to advance the Gin Rummy (ジンラミー) game session
+        identified by `sessionId`.  Gin Rummy is a 2-player rummy card game
+        using a standard 52-card deck.  10 cards are dealt to each player.
+        Draw from stock or discard pile, then discard or knock.  Melds are
+        sets (3-4 same rank) and runs (3+ consecutive same suit).  Knock when
+        deadwood ≤ 10.  Gin = 0 deadwood (25 bonus).  Undercut = opponent has
+        ≤ knocker's deadwood (25 bonus to opponent).  First to reach point
+        limit wins.
+
+        The game proceeds through these phases:
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw a card from stock or discard pile |
+        | Discard      | `1`   | Discard a card or knock |
+        | Layoff       | `2`   | Opponent lays off cards on knocker's melds |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Draw the top card from the discard pile |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `knock`        | `k`     | Knock (deadwood ≤ 10) |
+        | `layoff`       | `lo`    | Lay off cards on knocker's melds (requires `cardIndices`) |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `log`          | `l`     | View action log |
+      operationId: ginrummyExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, sessionId]
+              properties:
+                command:
+                  type: string
+                sessionId:
+                  type: string
+                cardIndex:
+                  type: integer
+                cardIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: "Card indices for layoff command"
+                config:
+                  type: object
+                  properties:
+                    cpuDifficulty:
+                      type: integer
+                      minimum: 0
+                      maximum: 2
+                    pointLimit:
+                      type: integer
+                      minimum: 1
+                      maximum: 1000
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              drawstock:
+                summary: Draw from stock pile
+                value:
+                  command: drawstock
+                  sessionId: my-session-001
+              drawdiscard:
+                summary: Draw from discard pile
+                value:
+                  command: drawdiscard
+                  sessionId: my-session-001
+              discard:
+                summary: Discard card at index 2
+                value:
+                  command: discard
+                  cardIndex: 2
+                  sessionId: my-session-001
+              knock:
+                summary: Knock
+                value:
+                  command: knock
+                  sessionId: my-session-001
+              layoff:
+                summary: Lay off cards at indices 0 and 3
+                value:
+                  command: layoff
+                  cardIndices: [0, 3]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: |
+            Command processed successfully.
+
+            Response body includes:
+            - `players` — array of player objects (hand, score, name)
+            - `phase` — current game phase (0=Draw, 1=Discard, 2=Layoff, 3=RoundEnd, 4=GameEnd)
+            - `roundNumber` — current round number
+            - `currentPlayerIdx` — index of the player whose turn it is
+            - `discardTop` — the top card of the discard pile
+            - `drawPileCount` — number of cards remaining in the stock pile
+            - `gameEndFlag` — whether the match has ended
+            - `winnerIdx` — index of the match winner (-1 if not ended)
+            - `knockerIdx` — index of the player who knocked (-1 if not applicable)
+            - `knockerMelds` — knocker's melds (array of card arrays)
+            - `knockerDeadwood` — knocker's deadwood points
+            - `isGin` — whether the knock was a gin
             - `message` — human-readable status message
             - `messageCode` — machine-readable message key
             - `messageParams` — parameters for message interpolation

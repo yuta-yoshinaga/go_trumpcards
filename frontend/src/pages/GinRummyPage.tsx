@@ -1,0 +1,323 @@
+import { useCallback } from 'react';
+import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { SettingsPanel } from '../components/common/SettingsPanel';
+import { ErrorAlert } from '../components/ErrorAlert';
+import { GameFooter } from '../components/GameFooter';
+import { GameMessageBox } from '../components/GameMessageBox';
+import { PhaseIndicator } from '../components/PhaseIndicator';
+import { GinRummySkeleton } from '../components/skeleton/GinRummySkeleton';
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
+import { usePhaseNames } from '../hooks/usePhaseNames';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { selectedCardStyle } from '../styles/cardStyles';
+import { GinRummyPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
+import { playerName } from '../utils/playerUtils';
+
+const GINRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
+  [GinRummyPhase.DRAW]: 'draw',
+  [GinRummyPhase.DISCARD]: 'discard',
+  [GinRummyPhase.LAYOFF]: 'layoff',
+  [GinRummyPhase.ROUND_END]: 'roundEnd',
+  [GinRummyPhase.GAME_END]: 'gameEnd',
+};
+
+export function GinRummyPage() {
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
+    useGamePageSetup('ginrummy');
+  const {
+    state,
+    loading,
+    error,
+    exec: gameExec,
+    ginRummyConfig,
+    selectedCardIndices,
+    toggleCard,
+    clearSelection,
+    handleConfigChange,
+    handleDrawStock,
+    handleDrawDiscard,
+    handleDiscard,
+    handleKnock,
+    handleLayoff,
+    handleSkipLayoff,
+    handleNextRound,
+  } = useGinRummyGame();
+  const { cardWidth } = useCardDimensions();
+
+  const isDiscardPhaseForKbd = state?.phase === GinRummyPhase.DISCARD;
+  const isLayoffPhaseForKbd = state?.phase === GinRummyPhase.LAYOFF;
+  const isHumanTurnForKbd =
+    (isDiscardPhaseForKbd || isLayoffPhaseForKbd) && state?.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+
+  const confirmAction = useCallback(() => {
+    if (isDiscardPhaseForKbd) {
+      handleDiscard();
+    } else if (isLayoffPhaseForKbd) {
+      handleLayoff();
+    }
+  }, [isDiscardPhaseForKbd, isLayoffPhaseForKbd, handleDiscard, handleLayoff]);
+
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: confirmAction,
+    onClear: clearSelection,
+    enabled: !!isHumanTurnForKbd && !loading,
+  });
+
+  const phaseNames = usePhaseNames('ginrummy', GINRUMMY_PHASE_KEYS);
+
+  if (!state) return <GinRummySkeleton />;
+
+  const humanPlayer = state.players.find((p) => p.isHuman);
+  const isDrawPhase = state.phase === GinRummyPhase.DRAW;
+  const isDiscardPhase = state.phase === GinRummyPhase.DISCARD;
+  const isLayoffPhase = state.phase === GinRummyPhase.LAYOFF;
+  const isRoundEnd = state.phase === GinRummyPhase.ROUND_END;
+  const isGameEnd = state.phase === GinRummyPhase.GAME_END || state.gameEndFlag;
+  const isHumanTurn =
+    (isDrawPhase || isDiscardPhase || isLayoffPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn} />
+
+      <SettingsPanel
+        title={t('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'cpuDifficulty',
+                label: t('settings.cpuDifficulty'),
+                value: ginRummyConfig.cpuDifficulty,
+                options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
+                  value: o.value,
+                  label: t(`settings.${o.label.toLowerCase()}`),
+                })),
+                onSelect: (v) => handleConfigChange('cpuDifficulty', v),
+              },
+              {
+                type: 'select',
+                id: 'pointLimit',
+                label: t('settings.pointLimit'),
+                value: ginRummyConfig.pointLimit,
+                options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                onSelect: (v) => handleConfigChange('pointLimit', v),
+              },
+            ],
+          },
+        ]}
+      />
+
+      <div className="flex-1 overflow-y-auto pt-3 px-4">
+        <div className="text-white text-center mb-2">
+          <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
+          <span>{t('drawPile', { count: state.drawPileCount })}</span>
+        </div>
+
+        {/* Discard pile top */}
+        {state.discardTop && (
+          <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
+            <CardImage card={state.discardTop} width={cardWidth} />
+            <div className="text-white/70 text-sm">
+              <div>{t('discardTop')}</div>
+            </div>
+          </div>
+        )}
+
+        {/* CPU player */}
+        {state.players
+          .filter((p) => !p.isHuman)
+          .map((p) => (
+            <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
+              <div className="text-white/70 text-sm">
+                {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                {t('cumulativeScore', { score: p.cumulativeScore })} | {t('roundScore', { score: p.roundScore })}
+              </div>
+              {/* Show CPU cards during layoff/round end/game end */}
+              {(isLayoffPhase || isRoundEnd || isGameEnd) && p.cards.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {p.cards.map((card, idx) => (
+                    <CardImage key={`cpu-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+        {/* Knocker melds */}
+        {state.knockerMelds.length > 0 && (
+          <div className="my-3 p-2 rounded bg-black/30">
+            <div className="text-white/70 text-sm mb-1">{t('knockerMelds')}</div>
+            {state.knockerMelds.map((meld, meldIdx) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: melds have no natural unique id
+              <div key={`meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
+                {meld.cards.map((card, cardIdx) => (
+                  <CardImage
+                    key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
+                    card={card}
+                    width={cardWidth * 0.7}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Score table */}
+        <div className="my-3 p-2 rounded bg-black/30">
+          <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
+          <table className="w-full text-sm text-white/70">
+            <thead>
+              <tr>
+                <th scope="col" className="text-left">
+                  {t('scoresPlayer')}
+                </th>
+                <th scope="col">{t('scoresRound')}</th>
+                <th scope="col">{t('scoresTotal')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {state.players.map((p) => (
+                <tr key={p.id} className={p.isHuman ? 'text-yellow-300' : ''}>
+                  <td>{playerName(p.id, p.isHuman)}</td>
+                  <td className="text-center">{p.roundScore}</td>
+                  <td className="text-center">{p.cumulativeScore}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+
+        <ActionLogSection
+          isEndPhase={isGameEnd}
+          actionLog={actionLog}
+          showActionLog={showActionLog}
+          hideActionLog={hideActionLog}
+        />
+      </div>
+
+      <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
+        {humanPlayer && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {humanPlayer.cards.map((card, idx) => (
+              <button
+                type="button"
+                key={`${card.design}-${card.value}-${idx}`}
+                onClick={() => toggleCard(idx)}
+                aria-label={cardAlt(card)}
+                aria-pressed={selectedCardIndices.includes(idx)}
+                className="transition-transform"
+                style={{
+                  background: 'none',
+                  padding: 0,
+                  borderRadius: 8,
+                  ...selectedCardStyle(selectedCardIndices.includes(idx)),
+                  boxSizing: 'border-box',
+                }}
+              >
+                <CardImage card={card} width={cardWidth} />
+              </button>
+            ))}
+          </div>
+        )}
+
+        <ErrorAlert message={error} />
+
+        <div className="flex gap-2 items-center flex-wrap">
+          {isDrawPhase && isHumanTurn && (
+            <>
+              <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                {t('drawStockButton')}
+              </button>
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleDrawDiscard}
+                disabled={loading || !state.discardTop}
+              >
+                {t('drawDiscardButton')}
+              </button>
+            </>
+          )}
+          {isDiscardPhase && isHumanTurn && (
+            <>
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleDiscard}
+                disabled={loading || selectedCardIndices.length !== 1}
+              >
+                {t('discardButton')}
+              </button>
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleKnock}
+                disabled={loading || selectedCardIndices.length !== 1}
+              >
+                {t('knockButton')}
+              </button>
+            </>
+          )}
+          {isLayoffPhase && isHumanTurn && (
+            <>
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={handleLayoff}
+                disabled={loading || selectedCardIndices.length === 0}
+              >
+                {t('layoffButton')}
+              </button>
+              <button type="button" className={btnPrimary} onClick={handleSkipLayoff} disabled={loading}>
+                {t('skipLayoffButton')}
+              </button>
+            </>
+          )}
+          {isRoundEnd && (
+            <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
+              {t('nextRound')}
+            </button>
+          )}
+          <button
+            type="button"
+            className={btnWarning}
+            onClick={() =>
+              requestConfirm(() => {
+                hideActionLog();
+                return gameExec('reset', undefined, undefined, {
+                  cpuDifficulty: ginRummyConfig.cpuDifficulty,
+                  pointLimit: ginRummyConfig.pointLimit,
+                });
+              })
+            }
+            disabled={loading}
+          >
+            {tc('button.reset')}
+          </button>
+        </div>
+      </GameFooter>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={tc('button.confirmReset')}
+        message={tc('button.confirmResetMessage')}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmReset}
+        onCancel={cancelReset}
+      />
+    </div>
+  );
+}

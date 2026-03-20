@@ -1,0 +1,45 @@
+{
+  "phase": {
+    "draw": "Draw",
+    "discard": "Discard",
+    "layoff": "Lay Off",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "drawPile": "Draw pile: {{count}} cards",
+  "discardTop": "Discard",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "drawStockButton": "Draw Stock",
+  "drawDiscardButton": "Draw Discard",
+  "discardButton": "Discard",
+  "knockButton": "Knock",
+  "layoffButton": "Lay Off",
+  "skipLayoffButton": "Skip",
+  "nextRound": "Next Round",
+  "drawPhase": "Draw a card from the stock or discard pile",
+  "discardPhase": "Discard a card or knock",
+  "layoffPhase": "Lay off cards onto the knocker's melds",
+  "roundEnd": "Round over",
+  "knockerMelds": "Knocker's Melds",
+  "knockerDeadwood": "Knocker's Deadwood",
+  "gin": "Gin!",
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  }
+}

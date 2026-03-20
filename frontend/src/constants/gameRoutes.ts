@@ -14,4 +14,5 @@ export const gameRoutes = [
   { path: '/freecell', labelKey: 'nav.freecell' },
   { path: '/baccarat', labelKey: 'nav.baccarat' },
   { path: '/crazyeights', labelKey: 'nav.crazyeights' },
+  { path: '/ginrummy', labelKey: 'nav.ginrummy' },
 ] as const;

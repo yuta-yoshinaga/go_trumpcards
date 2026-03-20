@@ -38,6 +38,7 @@ type TrumpCardsWeb struct {
 	bcc *controller.BaccaratWebController
 	spc *controller.SpadesWebController
 	cec *controller.CrazyEightsWebController
+	grc *controller.GinRummyWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -168,6 +169,15 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
 			return usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsWebPresenter))
 		}),
+		grc: controller.NewGinRummyWebController(func() usecase.GinRummyInteractorIF {
+			config := domain.DefaultGinRummyConfig()
+			players := []*domain.GinRummyPlayer{
+				domain.NewGinRummyPlayer(true),
+				domain.NewGinRummyPlayer(false),
+			}
+			gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
+			return usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyWebPresenter))
+		}),
 	}
 }
 
@@ -221,6 +231,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/baccarat/exec", web.bcc.Exec},
 		{"/spades/exec", web.spc.Exec},
 		{"/crazyeights/exec", web.cec.Exec},
+		{"/ginrummy/exec", web.grc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -299,6 +310,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.bcc.Stop()
 	web.spc.Stop()
 	web.cec.Stop()
+	web.grc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

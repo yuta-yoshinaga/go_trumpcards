@@ -18,7 +18,8 @@
     "klondike": "Klondike",
     "freecell": "FreeCell",
     "baccarat": "Baccarat",
-    "crazyeights": "Crazy Eights"
+    "crazyeights": "Crazy Eights",
+    "ginrummy": "Gin Rummy"
   },
   "player": {
     "you": "You",
@@ -117,6 +118,12 @@
     "crazyeights.playPhase": "Play a card or draw from the pile",
     "crazyeights.chooseSuitPhase": "Choose the next suit",
     "crazyeights.roundEnd": "Round over",
+    "ginrummy.result.humanWin": "Game over! You win!",
+    "ginrummy.result.cpuWin": "Game over! CPU {{cpuId}} wins!",
+    "ginrummy.drawPhase": "Draw a card from the stock or discard pile",
+    "ginrummy.discardPhase": "Discard a card or knock",
+    "ginrummy.layoffPhase": "Lay off cards onto the knocker's melds",
+    "ginrummy.roundEnd": "Round over",
     "memory.flip1": "Flip the first card",
     "memory.flip2": "Flip the second card",
     "memory.matched": "It's a match!",

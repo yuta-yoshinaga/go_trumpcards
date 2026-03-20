@@ -615,6 +615,45 @@ export interface CrazyEightsResponse {
   config: CrazyEightsConfig;
 }
 
+// --- Gin Rummy (ジンラミー) ---
+
+export interface GinRummyPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+export interface GinRummyMeld {
+  cards: Card[];
+}
+
+export interface GinRummyConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+export interface GinRummyResponse {
+  players: GinRummyPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  knockerIdx: number;
+  knockerMelds: GinRummyMeld[];
+  knockerDeadwood: Card[];
+  isGin: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: GinRummyConfig;
+}
+
 // --- Memory (神経衰弱) ---
 
 export interface MemoryPlayerData {
