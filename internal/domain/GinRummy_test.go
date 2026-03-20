@@ -1199,8 +1199,8 @@ func TestGinRummy_CalcDeadwoodValue(t *testing.T) {
 
 	t.Run("mixed values", func(t *testing.T) {
 		cards := []*domain.Card{
-			domain.NewCard(domain.CardDesignSpade, 1, false),  // 1
-			domain.NewCard(domain.CardDesignHeart, 5, false),  // 5
+			domain.NewCard(domain.CardDesignSpade, 1, false),    // 1
+			domain.NewCard(domain.CardDesignHeart, 5, false),    // 5
 			domain.NewCard(domain.CardDesignDiamond, 10, false), // 10
 			domain.NewCard(domain.CardDesignClover, 13, false),  // 10
 		}
@@ -1403,7 +1403,7 @@ func TestGinRummy_ScoreRound_Normal(t *testing.T) {
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 1, false))
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 2, false))
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignDiamond, 3, false))
-	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 7, false)) // deadwood=7 (no set possible)
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 7, false))  // deadwood=7 (no set possible)
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignClover, 13, false)) // discard
 
 	// CPU has high deadwood (no melds possible, scattered cards)
