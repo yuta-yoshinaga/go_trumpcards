@@ -12,6 +12,7 @@ interface UseActionKeyboardNavOptions {
   enabled: boolean;
 }
 
+/** Hook that binds keyboard shortcuts to game actions. */
 export function useActionKeyboardNav({ bindings, enabled }: UseActionKeyboardNavOptions): void {
   useEffect(() => {
     if (!enabled) return;

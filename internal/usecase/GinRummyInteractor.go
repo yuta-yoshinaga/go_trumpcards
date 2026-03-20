@@ -8,15 +8,25 @@ import (
 
 // GinRummyInteractorIF ジンラミーインタラクターインタフェース
 type GinRummyInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.GinRummyConfig) string
+	// DrawFromStock 山札からカードを引く
 	DrawFromStock() string
+	// DrawFromDiscard 捨て札からカードを引く
 	DrawFromDiscard() string
+	// Discard カードを捨てる
 	Discard(cardIndex int) string
+	// Knock ノックする
 	Knock(cardIndex int) string
+	// Layoff レイオフする
 	Layoff(cardIndices []int) string
+	// NextRound 次のラウンドへ進む
 	NextRound() string
+	// GetConfig 現在の設定を取得
 	GetConfig() domain.GinRummyConfig
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

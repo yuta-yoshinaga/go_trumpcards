@@ -131,6 +131,7 @@ function SideBetResultsDisplay({
   );
 }
 
+/** Renders the Baccarat game page with betting and result display. */
 export function BaccaratPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('baccarat');

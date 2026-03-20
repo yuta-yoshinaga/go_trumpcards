@@ -7,16 +7,27 @@ import (
 
 // FreeCellInteractorIF フリーセルインタラクターインタフェース
 type FreeCellInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// MoveTableauToTableau タブローからタブローにカードを移動
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) string
+	// MoveTableauToFoundation タブローからファンデーションにカードを移動
 	MoveTableauToFoundation(col int) string
+	// MoveTableauToFreeCell タブローからフリーセルにカードを移動
 	MoveTableauToFreeCell(col, cell int) string
+	// MoveFreeCellToTableau フリーセルからタブローにカードを移動
 	MoveFreeCellToTableau(cell, col int) string
+	// MoveFreeCellToFoundation フリーセルからファンデーションにカードを移動
 	MoveFreeCellToFoundation(cell int) string
+	// GiveUp ギブアップ
 	GiveUp() string
+	// Hint ヒント取得
 	Hint() string
+	// AutoComplete オートコンプリート
 	AutoComplete() string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Undo アンドゥ
 	Undo() string
 }
 

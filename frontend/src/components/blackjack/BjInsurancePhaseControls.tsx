@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { btnDanger, btnWarning } from '../../styles/buttonStyles';
 import { BJ_SUGGEST_DECLINE_INSURANCE, highlightClass } from './bjConstants';
 
+/** Props for BlackJack insurance phase controls. */
 export interface BjInsurancePhaseControlsProps {
   loading: boolean;
   hintEnabled: boolean;
@@ -10,6 +11,7 @@ export interface BjInsurancePhaseControlsProps {
   onDecline: () => void;
 }
 
+/** Renders insurance and decline buttons for BlackJack insurance phase. */
 export function BjInsurancePhaseControls(props: BjInsurancePhaseControlsProps) {
   const { t } = useTranslation('blackjack');
   return (

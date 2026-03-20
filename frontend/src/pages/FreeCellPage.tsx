@@ -18,6 +18,7 @@ import { cardAlt } from '../utils/cardAlt';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
+/** Renders the FreeCell solitaire game page with tableau, free cells, and foundation. */
 export function FreeCellPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('freecell');

@@ -40,6 +40,7 @@ const SUIT_SYMBOLS: Record<number, string> = {
   [CrazyEightsSuit.DIAMOND]: '♦',
 };
 
+/** Renders the Crazy Eights game page with card play and suit selection. */
 export function CrazyEightsPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('crazyeights');

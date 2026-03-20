@@ -3,6 +3,7 @@ package domain
 // MemoryCpuDifficulty CPU の難易度レベル
 type MemoryCpuDifficulty int
 
+// MemoryのCPU難易度定数
 const (
 	// MemoryCpuDifficultyEasy 低難易度
 	MemoryCpuDifficultyEasy MemoryCpuDifficulty = iota

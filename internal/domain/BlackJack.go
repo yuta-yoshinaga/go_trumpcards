@@ -5,9 +5,13 @@ import "fmt"
 // GameResult ゲーム勝敗結果
 type GameResult int
 
+// GameResult定数
 const (
-	GameResultWin  GameResult = 1
+	// GameResultWin 勝利
+	GameResultWin GameResult = 1
+	// GameResultDraw 引き分け
 	GameResultDraw GameResult = 0
+	// GameResultLose 敗北
 	GameResultLose GameResult = -1
 )
 

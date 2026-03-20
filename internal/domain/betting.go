@@ -5,10 +5,14 @@ import "sort"
 // BettingLimitType ベッティングリミットタイプ
 type BettingLimitType int
 
+// BettingLimitType定数
 const (
-	BettingLimitFixed    BettingLimitType = iota // Fixed limit (max 4 raises)
-	BettingLimitPotLimit                         // Pot limit (bet/raise ≤ pot)
-	BettingLimitNoLimit                          // No limit
+	// BettingLimitFixed 固定リミット (最大4回レイズ)
+	BettingLimitFixed BettingLimitType = iota
+	// BettingLimitPotLimit ポットリミット (ベット/レイズ ≤ ポット)
+	BettingLimitPotLimit
+	// BettingLimitNoLimit ノーリミット
+	BettingLimitNoLimit
 )
 
 // BettingLimitNames リミットタイプ名

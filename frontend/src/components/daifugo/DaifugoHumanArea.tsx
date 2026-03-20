@@ -15,6 +15,7 @@ interface HumanPlayerAreaProps {
   onDragCard: (idx: number) => void;
 }
 
+/** Renders the human player's hand area for Daifugo with card selection and drag support. */
 export function DaifugoHumanArea({
   player,
   selectedIndices,

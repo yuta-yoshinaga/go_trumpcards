@@ -4,6 +4,7 @@ import { SkeletonBar } from './SkeletonBar';
 import { SkeletonGrid } from './SkeletonGrid';
 import { SkeletonHand } from './SkeletonHand';
 
+/** Renders a loading skeleton placeholder for the Sevens page. */
 export function SevensSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (

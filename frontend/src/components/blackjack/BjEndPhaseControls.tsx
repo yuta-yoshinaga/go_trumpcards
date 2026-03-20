@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { btnPrimary } from '../../styles/buttonStyles';
 
+/** Props for BlackJack end phase controls. */
 export interface BjEndPhaseControlsProps {
   loading: boolean;
   onReset: () => void;
@@ -9,6 +10,7 @@ export interface BjEndPhaseControlsProps {
   autoAdvanceSeconds?: number;
 }
 
+/** Renders the reset button with optional auto-advance countdown for BlackJack end phase. */
 export function BjEndPhaseControls(props: BjEndPhaseControlsProps) {
   const { t } = useTranslation('common');
   const [countdown, setCountdown] = useState<number | null>(null);

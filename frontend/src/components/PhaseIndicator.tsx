@@ -7,6 +7,7 @@ interface PhaseIndicatorProps {
   children?: ReactNode;
 }
 
+/** Renders the current game phase name and turn indicator. */
 export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndicatorProps) {
   const { t } = useTranslation('common');
 

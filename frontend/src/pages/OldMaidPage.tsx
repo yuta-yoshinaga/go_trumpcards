@@ -19,6 +19,7 @@ import type { CpuAction } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName } from '../utils/playerUtils';
 
+/** Renders the Old Maid game page with setup screen, player areas, and draw history. */
 export function OldMaidPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('oldmaid');

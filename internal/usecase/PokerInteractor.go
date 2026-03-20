@@ -8,13 +8,21 @@ import (
 
 // PokerInteractorIF ポーカーインタラクターインタフェース
 type PokerInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.PokerConfig) string
+	// GetConfig 現在の設定を取得
 	GetConfig() domain.PokerConfig
+	// Action プレイヤーアクション実行
 	Action(action int, amount int) string
+	// Exchange カード交換
 	Exchange(indices []int) string
+	// Stand カード交換なし
 	Stand() string
+	// Odds ドローオッズ計算
 	Odds(indices []int) string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

@@ -5,6 +5,7 @@ import "fmt"
 // HoldemPlayStyle CPUプレイスタイル
 type HoldemPlayStyle int
 
+// Holdemのプレイスタイル定数
 const (
 	HoldemStyleTAG HoldemPlayStyle = iota // Tight-Aggressive
 	HoldemStyleLAP                        // Loose-Passive

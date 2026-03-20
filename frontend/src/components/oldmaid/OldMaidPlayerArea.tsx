@@ -7,6 +7,7 @@ import { playerName } from '../../utils/playerUtils';
 import { CardBack, CardImage } from '../CardImage';
 import { StatusBadge } from '../StatusBadge';
 
+/** CSS class for Old Maid player area layout. */
 export const playerAreaClass = `${playerAreaBase} p-2 flex-[1_1_140px] min-w-[120px]`;
 
 interface PlayerAreaProps {
@@ -22,6 +23,7 @@ interface PlayerAreaProps {
   onReorder?: (indices: number[]) => void;
 }
 
+/** Renders a player area for Old Maid with draw targets, hand display, and reorder support. */
 export function OldMaidPlayerArea({
   player,
   isTarget,

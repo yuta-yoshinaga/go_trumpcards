@@ -3,6 +3,7 @@ interface GameFooterProps {
   children: React.ReactNode;
 }
 
+/** Renders a sticky footer area for game action buttons with safe-area padding. */
 export function GameFooter({ className, children }: GameFooterProps) {
   return (
     <div

@@ -8,12 +8,19 @@ import (
 
 // OldMaidInteractorIF ババ抜きインタラクターインタフェース
 type OldMaidInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset(config domain.OldMaidConfig) string
+	// GetConfig 現在の設定を返す
 	GetConfig() domain.OldMaidConfig
+	// Draw 人間プレイヤーがカードを引く
 	Draw(cardIdx int) string
+	// Shuffle 人間プレイヤーの手札をシャッフルする
 	Shuffle() string
+	// Reorder 人間プレイヤーの手札を並び替える
 	Reorder(indices []int) string
+	// ResetProfile メタAIプロファイルをリセット
 	ResetProfile() string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

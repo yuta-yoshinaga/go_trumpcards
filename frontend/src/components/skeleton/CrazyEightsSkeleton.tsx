@@ -3,6 +3,7 @@ import { GameFooter } from '../GameFooter';
 import { SkeletonBar } from './SkeletonBar';
 import { SkeletonHand } from './SkeletonHand';
 
+/** Renders a loading skeleton placeholder for the Crazy Eights page. */
 export function CrazyEightsSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (

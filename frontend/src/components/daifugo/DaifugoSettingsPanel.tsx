@@ -8,6 +8,7 @@ interface DaifugoSettingsPanelProps {
   onChange: (key: keyof DaifugoConfigInput, value: boolean | number) => void;
 }
 
+/** Renders the Daifugo game rule settings panel. */
 export function DaifugoSettingsPanel({ config, onChange }: DaifugoSettingsPanelProps) {
   const { t } = useTranslation('daifugo');
 

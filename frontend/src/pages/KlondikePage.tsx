@@ -18,6 +18,7 @@ import { cardAlt } from '../utils/cardAlt';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
+/** Renders the Klondike solitaire game page with tableau, stock/waste, and foundation. */
 export function KlondikePage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('klondike');

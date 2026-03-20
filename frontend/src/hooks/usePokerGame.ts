@@ -6,6 +6,7 @@ import { toggleArrayItem } from '../utils/arrayUtils';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 
+/** Hook that manages Poker game state, card exchange, and odds calculation. */
 export function usePokerGame() {
   const { selected, setSelected, clear: clearSelection } = useCardSelection();
   const [odds, setOdds] = useState<PokerOdds[] | null>(null);

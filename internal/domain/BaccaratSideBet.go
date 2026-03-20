@@ -12,7 +12,7 @@ const (
 	BacPairMatch = 1
 )
 
-// バカラペア配当倍率
+// BacPairPayoutRate バカラペア配当倍率
 const BacPairPayoutRate = 11
 
 // BacSideBetResult バカラサイドベット結果

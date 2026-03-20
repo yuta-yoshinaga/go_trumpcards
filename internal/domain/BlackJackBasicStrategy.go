@@ -3,15 +3,24 @@ package domain
 // BJSuggestedAction ベーシックストラテジー推奨アクション
 type BJSuggestedAction int
 
+// BJSuggestedAction定数
 const (
-	BJSuggestNone             BJSuggestedAction = 0
-	BJSuggestHit              BJSuggestedAction = 1
-	BJSuggestStand            BJSuggestedAction = 2
-	BJSuggestDouble           BJSuggestedAction = 3
-	BJSuggestSplit            BJSuggestedAction = 4
-	BJSuggestSurrender        BJSuggestedAction = 5
+	// BJSuggestNone 推奨なし
+	BJSuggestNone BJSuggestedAction = 0
+	// BJSuggestHit ヒット推奨
+	BJSuggestHit BJSuggestedAction = 1
+	// BJSuggestStand スタンド推奨
+	BJSuggestStand BJSuggestedAction = 2
+	// BJSuggestDouble ダブルダウン推奨
+	BJSuggestDouble BJSuggestedAction = 3
+	// BJSuggestSplit スプリット推奨
+	BJSuggestSplit BJSuggestedAction = 4
+	// BJSuggestSurrender サレンダー推奨
+	BJSuggestSurrender BJSuggestedAction = 5
+	// BJSuggestDeclineInsurance インシュランス辞退推奨
 	BJSuggestDeclineInsurance BJSuggestedAction = 6
-	BJSuggestDoubleStand      BJSuggestedAction = 7 // double if possible, otherwise stand
+	// BJSuggestDoubleStand ダブルダウン推奨（不可ならスタンド）
+	BJSuggestDoubleStand BJSuggestedAction = 7
 )
 
 // dealerIdx ディーラーのアップカードをインデックスに変換

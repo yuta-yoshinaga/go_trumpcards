@@ -8,27 +8,49 @@ import (
 
 // BlackJackInteractorIF ブラックジャックインタラクターインタフェース
 type BlackJackInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// Hit ヒット
 	Hit() string
+	// Stand スタンド
 	Stand() string
+	// Bet ベット
 	Bet(amount, ppBet, t3Bet, handCount int) string
+	// DoubleDown ダブルダウン
 	DoubleDown() string
+	// Split スプリット
 	Split() string
+	// Insurance インシュランス
 	Insurance() string
+	// DeclineInsurance インシュランス辞退
 	DeclineInsurance() string
+	// Surrender サレンダー
 	Surrender() string
+	// EarlySurrender アーリーサレンダー
 	EarlySurrender() string
+	// DeclineEarlySurrender アーリーサレンダー辞退
 	DeclineEarlySurrender() string
+	// SetDeckCount デッキ数設定
 	SetDeckCount(count int) string
+	// ToggleHint ヒント表示切り替え
 	ToggleHint() string
+	// ToggleSoft17 ソフト17ルール切り替え
 	ToggleSoft17() string
+	// ToggleCounting カウンティング表示切り替え
 	ToggleCounting() string
+	// ToggleDAS スプリット後ダブルダウン許可切り替え
 	ToggleDAS() string
+	// SetCountingSystem カウンティングシステム変更
 	SetCountingSystem(system int) string
+	// SetDeckPenetration デッキペネトレーション率設定
 	SetDeckPenetration(penetration int) string
+	// SetCpuPlayerCount CPUプレイヤー数変更
 	SetCpuPlayerCount(count int) string
+	// SetSurrenderRule サレンダールール変更
 	SetSurrenderRule(rule int) string
+	// ResetWithConfig 設定付きリセット
 	ResetWithConfig(cfg domain.BlackJackConfig) string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

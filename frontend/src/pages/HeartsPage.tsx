@@ -29,6 +29,7 @@ const HEARTS_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
+/** Renders the Hearts game page with card passing, trick play, and scoring. */
 export function HeartsPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('hearts');

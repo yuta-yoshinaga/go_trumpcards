@@ -9,6 +9,7 @@ import (
 // MemoryPhase 神経衰弱ゲームフェーズ
 type MemoryPhase int
 
+// Memoryのフェーズ定数
 const (
 	// MemoryPhaseFlip1 1枚目を選択するフェーズ
 	MemoryPhaseFlip1 MemoryPhase = iota

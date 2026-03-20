@@ -4,42 +4,80 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // OmahaGame オマハホールデムゲームインタフェース
 type OmahaGame interface {
+	// Reset ゲームを初期化する
 	Reset() error
+	// PlayerAction プレイヤーのベッティングアクションを実行する
 	PlayerAction(action, amount int) error
+	// GetPhase 現在のフェーズを取得する
 	GetPhase() int
+	// GetPlayers プレイヤー一覧を取得する
 	GetPlayers() []*domain.OmahaPlayer
+	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.OmahaPlayer
+	// GetPlayerCnt プレイヤー数を取得する
 	GetPlayerCnt() int
+	// GetCommunityCards コミュニティカードを取得する
 	GetCommunityCards() []*domain.Card
+	// GetPot ポット額を取得する
 	GetPot() int
+	// GetSidePots サイドポット一覧を取得する
 	GetSidePots() []domain.OmahaSidePot
+	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
+	// GetCurrentTurn 現在のターンを取得する
 	GetCurrentTurn() int
+	// GetGameEndFlag ゲーム終了フラグを取得する
 	GetGameEndFlag() bool
+	// GetLastBet 最後のベット額を取得する
 	GetLastBet() int
+	// GetMinRaise 最小レイズ額を取得する
 	GetMinRaise() int
+	// GetRaiseCount 現在のレイズ回数を取得する
 	GetRaiseCount() int
+	// GetRoundResults ラウンド結果を取得する
 	GetRoundResults() []domain.OmahaResult
+	// GetCpuActions CPU行動記録を取得する
 	GetCpuActions() []domain.OmahaCpuAction
+	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.OmahaConfig
+	// SetConfig ゲーム設定を変更する
 	SetConfig(cfg domain.OmahaConfig)
+	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
+	// GetActedFlags 各プレイヤーのアクション済みフラグを取得する
 	GetActedFlags() []bool
+	// GetHandCount ハンド数を取得する
 	GetHandCount() int
+	// Resize プレイヤー数を変更する
 	Resize(players []*domain.OmahaPlayer)
+	// Rebuy リバイを実行する
 	Rebuy() error
+	// SkipRebuy リバイをスキップする
 	SkipRebuy() error
+	// Addon アドオンを実行する
 	Addon() error
+	// SkipAddon アドオンをスキップする
 	SkipAddon() error
+	// IsRebuyAvailable リバイが可能かを返す
 	IsRebuyAvailable() bool
+	// IsAddonAvailable アドオンが可能かを返す
 	IsAddonAvailable() bool
+	// GetRebuyCounts 各プレイヤーのリバイ回数を取得する
 	GetRebuyCounts() []int
+	// GetAddonUsed 各プレイヤーのアドオン使用状態を取得する
 	GetAddonUsed() []bool
+	// GetRebuyPhaseType リバイフェーズ種別を取得する
 	GetRebuyPhaseType() int
+	// Muck ハンドをマックする
 	Muck() error
+	// ShowHand ハンドを公開する
 	ShowHand() error
+	// IsMuckAvailable マックが可能かを返す
 	IsMuckAvailable() bool
+	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
+	// GetEquity エクイティ計算結果を取得する
 	GetEquity() *domain.HoldemEquityResult
+	// GetPotOdds ポットオッズを取得する
 	GetPotOdds() float64
 }

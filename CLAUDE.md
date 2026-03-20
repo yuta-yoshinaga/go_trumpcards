@@ -57,6 +57,7 @@ cd frontend && bun run build # Build React app
 cd frontend && bun run check # Biome lint + format check
 cd frontend && bun run test  # Run Vitest unit tests
 cd frontend && bun run e2e   # Run Playwright E2E tests
+cd frontend && bun run docs:generate  # Generate TypeDoc documentation
 
 # Docker
 docker build -t go_trumpcards .
@@ -94,6 +95,7 @@ Before marking any task complete:
 3. Go files formatted: `goimports -w` on modified files
 4. Frontend checks pass (if applicable): `cd frontend && bun run build && bun run check && bun run test`
 5. Branch coverage is 100% for modified packages
+6. GoDoc/TSDoc comments present on all new/modified exported symbols
 
 ### Detailed rules by layer
 
@@ -119,6 +121,8 @@ Before marking any task complete:
 | Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Make an architectural decision (new technology, pattern, or structural change) | Add or update an ADR in [`docs/adr/`](docs/adr/) |
+| Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |
+| Add/modify exported TS symbol | Ensure TSDoc comment (`/** description */`) is present |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 

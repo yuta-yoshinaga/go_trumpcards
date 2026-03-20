@@ -3,6 +3,7 @@ interface SkeletonBarProps {
   className?: string;
 }
 
+/** Renders an animated skeleton loading bar placeholder. */
 export function SkeletonBar({ height = 'h-9', className }: SkeletonBarProps) {
   return (
     <div

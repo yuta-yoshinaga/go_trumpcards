@@ -27,6 +27,7 @@ interface CardImageProps {
   onDrop?: (e: React.DragEvent) => void;
 }
 
+/** Renders a face-up playing card image. */
 export function CardImage({
   card,
   width,
@@ -60,6 +61,7 @@ interface CardBackProps {
   ariaLabel?: string;
 }
 
+/** Renders a face-down card back image, optionally as a clickable button. */
 export function CardBack({ width, style, className, onClick, ariaLabel }: CardBackProps) {
   const { t } = useTranslation('common');
   const effectiveAriaLabel = onClick ? ariaLabel || t('card.back') : undefined;

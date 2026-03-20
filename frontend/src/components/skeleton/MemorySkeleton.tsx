@@ -2,6 +2,7 @@ import { GameFooter } from '../GameFooter';
 import { SkeletonBar } from './SkeletonBar';
 import { SkeletonGrid } from './SkeletonGrid';
 
+/** Renders a loading skeleton placeholder for the Memory page. */
 export function MemorySkeleton() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy="true" data-testid="skeleton">

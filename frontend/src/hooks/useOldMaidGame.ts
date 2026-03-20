@@ -5,6 +5,7 @@ import { buildHumanActionState, buildReplayStates } from '../utils/replayBuilder
 import { REPLAY_DELAY_MS, runReplay, shouldSkipReplay } from './gameReplay';
 import { useGameApi } from './useGameApi';
 
+/** Old Maid game mode constants (Normal or JijiNuki). */
 export const OldMaidMode = {
   Normal: 0,
   JijiNuki: 1,
@@ -93,6 +94,7 @@ function buildHumanDrawState(finalState: OldMaidResponse): OldMaidResponse | nul
   });
 }
 
+/** Hook that manages Old Maid game state, setup, CPU replay, and card reveal. */
 export function useOldMaidGame() {
   const [displayState, setDisplayState] = useState<OldMaidResponse | null>(null);
   const [setupMode, setSetupMode] = useState<number>(OldMaidMode.Normal);

@@ -27,6 +27,7 @@ const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SpadesPhase.GAME_END]: 'gameEnd',
 };
 
+/** Renders the Spades game page with bidding, trick play, and scoring. */
 export function SpadesPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spades');

@@ -30,6 +30,7 @@ const langToggle = (
   </div>
 );
 
+/** Renders the top navigation bar with game links and language toggle. */
 export function NavBar() {
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation('common');

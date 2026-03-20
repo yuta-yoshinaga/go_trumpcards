@@ -6,6 +6,7 @@
  *  pattern so each game only provides the game-specific callbacks.
  */
 
+/** Configuration for building replay animation states from CPU actions. */
 export interface ReplayBuilderConfig<TResponse, TAction, TCtx> {
   actions: TAction[];
   finalState: TResponse;
@@ -21,6 +22,7 @@ export interface ReplayBuilderConfig<TResponse, TAction, TCtx> {
   ) => TResponse;
 }
 
+/** Build intermediate display states by reversing then replaying CPU actions. */
 export function buildReplayStates<TResponse, TAction, TCtx>(
   config: ReplayBuilderConfig<TResponse, TAction, TCtx>,
 ): TResponse[] {
@@ -41,6 +43,7 @@ export function buildReplayStates<TResponse, TAction, TCtx>(
   return states;
 }
 
+/** Configuration for building the pre-CPU-action state after a human action. */
 export interface HumanActionStateConfig<TResponse, TAction, TCtx> {
   actions: TAction[];
   finalState: TResponse;
@@ -49,6 +52,7 @@ export interface HumanActionStateConfig<TResponse, TAction, TCtx> {
   buildState: (finalState: TResponse, ctx: TCtx) => TResponse;
 }
 
+/** Build the display state showing the human action before CPU replay begins. */
 export function buildHumanActionState<TResponse, TAction, TCtx>(
   config: HumanActionStateConfig<TResponse, TAction, TCtx>,
 ): TResponse | null {

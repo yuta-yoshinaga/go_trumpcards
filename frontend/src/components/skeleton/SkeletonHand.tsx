@@ -7,6 +7,7 @@ interface SkeletonHandProps {
   className?: string;
 }
 
+/** Renders an animated skeleton hand of card placeholders. */
 export function SkeletonHand({ cardWidth, cardHeight, count = 5, className }: SkeletonHandProps) {
   return (
     <div className={`flex flex-wrap gap-1.5${className ? ` ${className}` : ''}`} aria-hidden="true">

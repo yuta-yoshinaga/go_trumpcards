@@ -4,30 +4,51 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // KlondikeGame クロンダイクゲームインタフェース
 type KlondikeGame interface {
-	// interactor が呼ぶメソッド
+	// Reset ゲームを初期化する
 	Reset()
+	// ResetWithConfig 指定設定でゲームを初期化する
 	ResetWithConfig(cfg domain.KlondikeConfig)
+	// Draw 山札からカードをめくる
 	Draw() error
+	// MoveWasteToTableau ウェイストからタブローにカードを移動する
 	MoveWasteToTableau(col int) error
+	// MoveWasteToFoundation ウェイストからファンデーションにカードを移動する
 	MoveWasteToFoundation() error
+	// MoveTableauToTableau タブロー間でカードを移動する
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) error
+	// MoveTableauToFoundation タブローからファンデーションにカードを移動する
 	MoveTableauToFoundation(col int) error
+	// GiveUp ギブアップする
 	GiveUp()
+	// GetHint ヒントを取得する
 	GetHint() *domain.KlondikeHint
+	// AutoComplete 自動完了を実行する
 	AutoComplete() error
+	// Undo 操作を元に戻す
 	Undo() error
 
-	// state readers
+	// CanUndo 元に戻す操作が可能かを返す
 	CanUndo() bool
+	// GetPhase 現在のフェーズを取得する
 	GetPhase() domain.KlondikePhase
+	// GetMoveCount 移動回数を取得する
 	GetMoveCount() int
+	// GetStockCount 山札の残り枚数を取得する
 	GetStockCount() int
+	// GetWaste ウェイストのカード一覧を取得する
 	GetWaste() []*domain.Card
+	// GetTableau タブローを取得する
 	GetTableau() [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
+	// GetFoundation ファンデーションを取得する
 	GetFoundation() [domain.KlondikeFoundationCnt][]*domain.Card
+	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
+	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
+	// GetDrawCount ドロー枚数設定を取得する
 	GetDrawCount() int
+	// GetScore 現在のスコアを取得する
 	GetScore() int
+	// GetScoringMode スコアリングモードを取得する
 	GetScoringMode() domain.KlondikeScoringMode
 }

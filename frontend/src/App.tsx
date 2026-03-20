@@ -40,6 +40,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/ginrummy': <GinRummyPage />,
 };
 
+/** Root application component with router and game page routes. */
 export default function App() {
   return (
     <HashRouter>

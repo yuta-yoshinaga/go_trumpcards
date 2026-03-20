@@ -51,29 +51,42 @@ const (
 // DaifugoPendingAction ペンディングアクションの種類
 type DaifugoPendingAction int
 
+// DaifugoPendingAction定数
 const (
-	DaifugoPendingNone        DaifugoPendingAction = 0 // ペンディングなし
-	DaifugoPendingSevenPass   DaifugoPendingAction = 1 // 7渡し待ち
-	DaifugoPendingTenDiscard  DaifugoPendingAction = 2 // 10捨て待ち
-	DaifugoPendingQueenBomber DaifugoPendingAction = 3 // 12ボンバー待ち
+	// DaifugoPendingNone ペンディングなし
+	DaifugoPendingNone DaifugoPendingAction = 0
+	// DaifugoPendingSevenPass 7渡し待ち
+	DaifugoPendingSevenPass DaifugoPendingAction = 1
+	// DaifugoPendingTenDiscard 10捨て待ち
+	DaifugoPendingTenDiscard DaifugoPendingAction = 2
+	// DaifugoPendingQueenBomber 12ボンバー待ち
+	DaifugoPendingQueenBomber DaifugoPendingAction = 3
 )
 
 // DaifugoSuitLockMode スート縛りモード
 type DaifugoSuitLockMode int
 
+// DaifugoSuitLockMode定数
 const (
-	DaifugoSuitLockNone    DaifugoSuitLockMode = 0 // なし
-	DaifugoSuitLockPartial DaifugoSuitLockMode = 1 // 片縛り (少なくとも1枚がスート一致)
-	DaifugoSuitLockFull    DaifugoSuitLockMode = 2 // 両縛り (全てスート一致)
+	// DaifugoSuitLockNone スート縛りなし
+	DaifugoSuitLockNone DaifugoSuitLockMode = 0
+	// DaifugoSuitLockPartial 片縛り (少なくとも1枚がスート一致)
+	DaifugoSuitLockPartial DaifugoSuitLockMode = 1
+	// DaifugoSuitLockFull 両縛り (全てスート一致)
+	DaifugoSuitLockFull DaifugoSuitLockMode = 2
 )
 
 // DaifugoSortMode 手札ソートモード
 type DaifugoSortMode int
 
+// DaifugoSortMode定数
 const (
-	DaifugoSortByStrength DaifugoSortMode = 0 // 強さ順 (デフォルト)
-	DaifugoSortBySuit     DaifugoSortMode = 1 // スート順
-	DaifugoSortByNumber   DaifugoSortMode = 2 // 数字順
+	// DaifugoSortByStrength 強さ順 (デフォルト)
+	DaifugoSortByStrength DaifugoSortMode = 0
+	// DaifugoSortBySuit スート順
+	DaifugoSortBySuit DaifugoSortMode = 1
+	// DaifugoSortByNumber 数字順
+	DaifugoSortByNumber DaifugoSortMode = 2
 
 	// jokerSortWeight ジョーカーをソート末尾に配置するための重み (最大値 4*100+13=413 を十分超える)
 	jokerSortWeight = 10000
@@ -82,10 +95,14 @@ const (
 // DaifugoCpuDifficulty CPU難易度レベル
 type DaifugoCpuDifficulty int
 
+// DaifugoCpuDifficulty定数
 const (
-	DaifugoDifficultyNormal DaifugoCpuDifficulty = 0 // 通常 (デフォルト、既存ロジック)
-	DaifugoDifficultyEasy   DaifugoCpuDifficulty = 1 // 簡単 (単純なグリーディ)
-	DaifugoDifficultyHard   DaifugoCpuDifficulty = 2 // 難しい (ヒューリスティックAI)
+	// DaifugoDifficultyNormal 通常難易度 (デフォルト)
+	DaifugoDifficultyNormal DaifugoCpuDifficulty = 0
+	// DaifugoDifficultyEasy 簡単 (単純なグリーディ)
+	DaifugoDifficultyEasy DaifugoCpuDifficulty = 1
+	// DaifugoDifficultyHard 難しい (ヒューリスティックAI)
+	DaifugoDifficultyHard DaifugoCpuDifficulty = 2
 )
 
 // DaifugoFiveSkipCountMax 5飛びスキップ数最大

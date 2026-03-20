@@ -10,6 +10,7 @@ interface ActionLogSectionProps {
   hideActionLog: () => void;
 }
 
+/** Renders the action log view button and panel, shown at end phase. */
 export function ActionLogSection({ isEndPhase, actionLog, showActionLog, hideActionLog }: ActionLogSectionProps) {
   const { t: tc } = useTranslation('common');
   return (

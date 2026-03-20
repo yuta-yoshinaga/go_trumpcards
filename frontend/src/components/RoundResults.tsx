@@ -13,6 +13,7 @@ interface RoundResultsProps {
   players: { isHuman: boolean }[];
 }
 
+/** Renders round result summary showing each player's hand and winnings. */
 export function RoundResults({ results, players }: RoundResultsProps) {
   const { t } = useTranslation('common');
   if (!results || results.length === 0) return null;

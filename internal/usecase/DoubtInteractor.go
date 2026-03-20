@@ -8,14 +8,23 @@ import (
 
 // DoubtInteractorIF ダウトインタラクターインタフェース
 type DoubtInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.DoubtConfig) string
+	// Play 人間プレイヤーがカードを出す
 	Play(cardIndices []int, claimedValue int, humanPlayMs int) string
+	// ResolveDoubt ダウト解決
 	ResolveDoubt(doubterIndices []int) string
+	// SkipDoubt ダウトをスキップ
 	SkipDoubt() string
+	// GetCpuDoubters CPUダウターインデックスリスト取得
 	GetCpuDoubters() []int
+	// GetConfig 現在の設定を取得
 	GetConfig() domain.DoubtConfig
+	// ResetProfile メタAIプロファイルをリセット
 	ResetProfile() string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

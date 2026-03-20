@@ -8,10 +8,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// CrazyEightsCui クレイジーエイトCUIクラス
 type CrazyEightsCui struct {
 	cc *controller.CrazyEightsCuiController
 }
 
+// NewCrazyEightsCui コンストラクタ
 func NewCrazyEightsCui() *CrazyEightsCui {
 	config := domain.DefaultCrazyEightsConfig()
 	players := []*domain.CrazyEightsPlayer{
@@ -26,8 +28,10 @@ func NewCrazyEightsCui() *CrazyEightsCui {
 	}
 }
 
+// Controller returns the game controller.
 func (cui *CrazyEightsCui) Controller() CuiExecer { return cui.cc }
 
+// HelpLines returns the game's help lines.
 func (cui *CrazyEightsCui) HelpLines() []string {
 	return []string{
 		i18n.T("crazyeights.helpTitle"),
@@ -50,6 +54,7 @@ func (cui *CrazyEightsCui) HelpLines() []string {
 	}
 }
 
+// Exec ゲーム実行
 func (cui *CrazyEightsCui) Exec() {
 	RunCuiLoop(cui.cc, cui.HelpLines())
 }
