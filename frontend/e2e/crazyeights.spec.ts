@@ -28,7 +28,7 @@ test.describe('Crazy Eights E2E', () => {
     const MAX_TURNS = 80;
     let sawPlay = false;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
-      await expect(playButton.or(drawButton).or(nextRoundButton).or(suitSpade).or(resetButton).first()).toBeVisible({
+      await expect(playButton.or(drawButton).or(nextRoundButton).or(suitSpade).first()).toBeVisible({
         timeout: 10_000,
       });
 
