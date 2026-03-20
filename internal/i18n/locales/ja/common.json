@@ -29,7 +29,7 @@
   "updateNoAsset": "お使いの環境({{os}}/{{arch}})に対応するバイナリが見つかりませんでした",
   "updateApplyError": "アップデートの適用に失敗しました: {{error}}",
   "inputReadError": "入力の読み取り中にエラーが発生しました: {{error}}",
-  "cliUnknownGame": "エラー: 不明なゲーム {{name}}",
-  "cliDidYouMean": "\n  もしかして {{name}} ですか？",
-  "cliUnsupportedLang": "警告: サポートされていない言語 {{lang}} です。ja をデフォルトとして使用します"
+  "cliUnknownGame": "エラー: 不明なゲーム「{{name}}」",
+  "cliDidYouMean": "\n  もしかして「{{name}}」ですか？",
+  "cliUnsupportedLang": "警告: サポートされていない言語「{{lang}}」です。ja をデフォルトとして使用します"
 }

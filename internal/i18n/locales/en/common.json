@@ -29,7 +29,7 @@
   "updateNoAsset": "No binary found for your platform ({{os}}/{{arch}})",
   "updateApplyError": "Failed to apply update: {{error}}",
   "inputReadError": "Error reading input: {{error}}",
-  "cliUnknownGame": "Error: unknown game {{name}}",
-  "cliDidYouMean": "\n  Did you mean {{name}}?",
-  "cliUnsupportedLang": "Warning: unsupported language {{lang}}, defaulting to ja"
+  "cliUnknownGame": "Error: unknown game \"{{name}}\"",
+  "cliDidYouMean": "\n  Did you mean \"{{name}}\"?",
+  "cliUnsupportedLang": "Warning: unsupported language \"{{lang}}\", defaulting to ja"
 }
