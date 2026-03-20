@@ -76,8 +76,17 @@ All exported symbols (types, interfaces, functions, components, constants, hooks
 
 ## Pre-commit checks
 
+**Always run these sequentially** (RAM is limited — parallel execution causes SWAP thrashing).
+
+Kill residual processes first, then run sequentially:
+
 ```sh
-bun run build        # Build React app
-bun run check        # Biome lint + format check
-bun run test         # Run Vitest unit tests
+pkill -f vitest || true; pkill -f 'bun run' || true
+bun run build && bun run check && bun run test
+```
+
+To reduce memory usage during tests, limit worker threads:
+
+```sh
+bun run test -- --pool-options.threads.maxThreads=2
 ```

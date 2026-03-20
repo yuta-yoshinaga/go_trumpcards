@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Omaha Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat, Spades, Crazy Eights, Gin Rummy. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -9,6 +9,38 @@ Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Do
 | [Go](https://go.dev/) | 1.26.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
+
+## Resource Constraints
+
+This development environment runs on WSL2 with **limited RAM (~2 GB) and 4 CPU cores**. Heavy tasks (frontend tests, Go tests, builds, linting) must NOT be launched in parallel — doing so causes SWAP thrashing and dramatically slows overall execution.
+
+### Rules
+
+1. **Kill residual processes before launching heavy tasks.** Previous processes may not have fully exited. Always run `pkill` first to ensure no leftover processes compete for memory:
+   ```sh
+   pkill -f vitest || true; pkill -f 'bun run' || true; pkill -f 'go test' || true; pkill -f golangci-lint || true
+   ```
+   Run this before every heavy task invocation (build, test, lint).
+
+2. **Run heavy tasks sequentially, not in parallel.** Chain with `&&`:
+   ```sh
+   cd frontend && bun run build && bun run check && bun run test
+   ```
+   Do NOT launch `bun run build`, `bun run check`, and `bun run test` as separate parallel tool calls or background tasks.
+
+3. **Limit Vitest worker threads** when running tests on their own:
+   ```sh
+   cd frontend && bun run test -- --pool-options.threads.maxThreads=2
+   ```
+
+4. **Limit Go test parallelism**:
+   ```sh
+   go test -tags test -p 2 ./...
+   ```
+
+5. **Never launch frontend and Go tasks simultaneously** (e.g., `bun run test` and `go test` at the same time).
+
+6. **Avoid multiple background tasks** (`run_in_background`) for resource-heavy commands. Use background only for lightweight commands (e.g., `git`, `ls`, `gh`).
 
 ## Package Manager Rule
 
@@ -42,8 +74,8 @@ go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
 
 # Test
-go test -tags test ./...                                              # Run all Go tests
-go test -tags test -coverprofile=coverage.out -covermode=atomic ./... # Coverage report
+go test -tags test -p 2 ./...                                              # Run all Go tests
+go test -tags test -p 2 -coverprofile=coverage.out -covermode=atomic ./... # Coverage report
 
 # Format
 goimports -w ./...           # Format and organize imports (use goimports, not gofmt)
@@ -210,50 +242,6 @@ All commit messages must follow [Conventional Commits](https://www.conventionalc
 - If something goes sideways, STOP and re-plan immediately -- don't keep pushing
 - Use plan mode for verification steps, not just building
 - Write detailed specs upfront to reduce ambiguity
-
-### Subagent Strategy
-
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
-- One task per subagent for focused execution
-
-### Self-Improvement Loop
-
-- After ANY correction from the user: update `tasks/lessons.md` (create on demand; not committed) with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
-
-### Verification Before Done
-
-- Never mark a task complete without proving it works
-- Diff behavior between main and your changes when relevant
-- Ask yourself: "Would a staff engineer approve this?"
-- Run tests, check logs, demonstrate correctness
-
-### Demand Elegance (Balanced)
-
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- Skip this for simple, obvious fixes -- don't over-engineer
-- Challenge your own work before presenting it
-
-### Autonomous Bug Fixing
-
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests -- then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
-
-### Task Management
-
-1. **Plan First**: Write plan to `tasks/todo.md` (create on demand; not committed) with checkable items
-2. **Verify Plan**: Check in before starting implementation
-3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section to `tasks/todo.md`
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
 
 ### Core Principles
 
