@@ -119,7 +119,7 @@ ENVIRONMENT VARIABLES:
 	}
 	i18n.SetLang(detectedLang)
 	if i18n.Lang() != detectedLang && detectedLang != "" {
-		fmt.Fprintf(os.Stderr, "Warning: unsupported language %q, defaulting to ja\n", detectedLang)
+		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnsupportedLang", "lang", detectedLang))
 	}
 	commands := map[string]func() int{
 		"blackjack":   func() int { ui.NewBlackJackCui().Exec(); return 0 },
@@ -162,9 +162,9 @@ ENVIRONMENT VARIABLES:
 	}
 
 	if arg != "" {
-		fmt.Fprintf(os.Stderr, "Error: unknown game %q\n", arg)
+		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnknownGame", "name", arg))
 		if suggestion := cuiutil.SuggestCommand(arg, mapKeys(commands), 2); suggestion != "" {
-			fmt.Fprintf(os.Stderr, "\n  Did you mean %q?\n", suggestion)
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliDidYouMean", "name", suggestion))
 		}
 		fmt.Fprintln(os.Stderr)
 		flag.Usage()
