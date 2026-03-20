@@ -22,7 +22,7 @@ test.describe('Spades E2E', () => {
     await expect(spadesBroken.or(spadesNotBroken)).toBeVisible();
 
     // Verify score table is visible
-    await expect(page.getByText('スコア').first()).toBeVisible();
+    await expect(page.getByText('スコア', { exact: true }).first()).toBeVisible();
 
     const bidButton = page.getByRole('button', { name: 'ビッド' });
     const playButton = page.getByRole('button', { name: '出す' });
