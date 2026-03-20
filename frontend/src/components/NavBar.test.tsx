@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
-import { gameRoutes } from '../constants/gameRoutes';
+import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { NavBar } from './NavBar';
 
 function renderNavBar(initialPath = '/') {
@@ -27,6 +27,13 @@ describe('NavBar', () => {
     const links = screen.getAllByRole('link');
     // game links + brand link
     expect(links.length).toBeGreaterThanOrEqual(gameRoutes.length);
+  });
+
+  it('renders category labels for all categories', () => {
+    renderNavBar();
+    for (const { labelKey } of gameCategories) {
+      expect(screen.getAllByText(labelFor(labelKey)).length).toBeGreaterThanOrEqual(1);
+    }
   });
 
   for (const { path, labelKey } of gameRoutes) {

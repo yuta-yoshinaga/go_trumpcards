@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
-import { gameRoutes } from '../constants/gameRoutes';
+import { gameCategories } from '../constants/gameRoutes';
 
 const langToggle = (
   currentLang: string,
@@ -30,7 +30,7 @@ const langToggle = (
   </div>
 );
 
-/** Renders the top navigation bar with game links and language toggle. */
+/** Renders the top navigation bar with game links grouped by category and language toggle. */
 export function NavBar() {
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation('common');
@@ -64,19 +64,26 @@ export function NavBar() {
 
       <nav
         id="main-nav"
-        className={`${isOpen ? 'flex' : 'hidden'} flex-col gap-2 mx-2.5 mb-2 sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:my-2`}
+        className={`${isOpen ? 'flex' : 'hidden'} flex-col gap-2 mx-2.5 mb-2 sm:flex sm:flex-row sm:flex-wrap sm:items-start sm:justify-end sm:my-2`}
       >
-        <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end">
-          {gameRoutes.map(({ path, labelKey }) => (
-            <Link
-              key={path}
-              to={path}
-              aria-current={pathname === path ? 'page' : undefined}
-              onClick={() => setIsOpen(false)}
-              className={`inline-flex items-center px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-colors${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
-            >
-              {t(labelKey)}
-            </Link>
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
+          {gameCategories.map(({ labelKey, routes }) => (
+            <div key={labelKey} className="flex flex-col gap-1 sm:flex-row sm:items-center">
+              <span className="text-gray-400 text-[10px] uppercase tracking-wider px-1 shrink-0">{t(labelKey)}</span>
+              <div className="flex flex-col gap-1 sm:flex-row">
+                {routes.map(({ path, labelKey: routeLabel }) => (
+                  <Link
+                    key={path}
+                    to={path}
+                    aria-current={pathname === path ? 'page' : undefined}
+                    onClick={() => setIsOpen(false)}
+                    className={`inline-flex items-center px-3 py-2 text-xs font-medium rounded min-h-[44px] transition-colors${pathname === path ? ' bg-blue-600 text-white' : ' bg-gray-600 text-gray-200 hover:bg-gray-500'}`}
+                  >
+                    {t(routeLabel)}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
         <div className="hidden sm:flex">{langToggle(currentLang, i18n, t)}</div>
