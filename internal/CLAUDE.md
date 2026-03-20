@@ -17,7 +17,7 @@ This directory contains all Go backend code following Clean Architecture.
 
 **TDD cycle (Red-Green-Refactor):**
 
-1. **Red** -- Write a failing test (`go test -tags test ./pkg -run TestName` confirms failure)
+1. **Red** -- Write a failing test (`go test -tags test ./internal/domain -run TestName` confirms failure)
 2. **Green** -- Write the minimum code to pass the test
 3. **Refactor** -- Clean up while keeping all tests green (`go test -tags test ./...`)
 
@@ -56,6 +56,13 @@ Card games involve shuffling, so tests must not depend on random outcomes:
 
 ## Run tests
 
+**Run sequentially with frontend tasks** (RAM is limited — see root `CLAUDE.md` Resource Constraints).
+
+Kill residual processes first, then run with limited parallelism:
+
 ```sh
-go test -tags test ./...
+pkill -f 'go test' || true; pkill -f golangci-lint || true
+go test -tags test -p 2 ./...
 ```
+
+The `-p 2` flag limits parallel package tests to reduce memory usage.
