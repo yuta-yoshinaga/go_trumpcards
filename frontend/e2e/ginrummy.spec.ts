@@ -31,7 +31,14 @@ test.describe('Gin Rummy E2E', () => {
     let sawDraw = false;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       await expect(
-        drawStockButton.or(discardButton).or(layoffButton).or(skipButton).or(nextRoundButton).or(resetButton).first(),
+        drawStockButton
+          .or(drawDiscardButton)
+          .or(discardButton)
+          .or(layoffButton)
+          .or(skipButton)
+          .or(nextRoundButton)
+          .or(resetButton)
+          .first(),
       ).toBeVisible({ timeout: 10_000 });
 
       const drawStockVisible = await drawStockButton.isVisible().catch(() => false);
@@ -53,9 +60,13 @@ test.describe('Gin Rummy E2E', () => {
         break;
 
       // Draw phase: draw from stock or discard pile
-      if (drawStockVisible) {
+      if (drawStockVisible || drawDiscardVisible) {
         sawDraw = true;
-        await drawStockButton.click();
+        if (drawStockVisible) {
+          await drawStockButton.click();
+        } else {
+          await drawDiscardButton.click();
+        }
         await waitForLoaded(page);
         continue;
       }
@@ -77,17 +88,15 @@ test.describe('Gin Rummy E2E', () => {
       if (layoffVisible || skipVisible) {
         if (layoffVisible) {
           const cardCount = await handCards.count();
-          if (cardCount > 0) {
-            await handCards.first().click();
-          }
+          if (cardCount > 0) await handCards.first().click();
           if ((await layoffButton.isVisible().catch(() => false)) && (await layoffButton.isEnabled())) {
             await layoffButton.click();
             await waitForLoaded(page);
-          } else if (skipVisible) {
-            await skipButton.click();
-            await waitForLoaded(page);
+            continue;
           }
-        } else {
+        }
+        // Fall through to skip if layoff is not possible
+        if (skipVisible || (await skipButton.isVisible().catch(() => false))) {
           await skipButton.click();
           await waitForLoaded(page);
         }

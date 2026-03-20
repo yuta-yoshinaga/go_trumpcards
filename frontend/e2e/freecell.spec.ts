@@ -23,6 +23,8 @@ test.describe('FreeCell E2E', () => {
     // Click undo button
     const undoButton = page.getByRole('button', { name: '元に戻す' });
     await expect(undoButton).toBeVisible();
+    await undoButton.click();
+    await waitForLoaded(page);
 
     // Click reset
     const resetButton = page.getByRole('button', { name: 'リセット' });
