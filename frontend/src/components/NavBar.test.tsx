@@ -143,11 +143,9 @@ describe('NavBar', () => {
       renderNavBar();
       const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
       fireEvent.click(btn);
-      const firstLink = screen
-        .getAllByRole('link')
-        .find((link) => gameRoutes.some(({ path }) => link.getAttribute('href') === path));
-      expect(firstLink).toBeDefined();
-      fireEvent.click(firstLink as HTMLElement);
+      // Click a non-home link to cover onClick in a different category iteration
+      const pokerLink = screen.getByRole('link', { name: labelFor('nav.poker') });
+      fireEvent.click(pokerLink);
       const nav = screen.getByRole('navigation');
       expect(nav).toHaveClass('hidden');
       expect(screen.getByRole('button', { name: i18n.t('nav.openMenu') })).toHaveAttribute('aria-expanded', 'false');

@@ -33,7 +33,7 @@ describe('gameCategories', () => {
   });
 
   it('gameRoutes is the flat list of all category routes', () => {
-    const flat = gameCategories.flatMap((c) => [...c.routes]);
+    const flat = gameCategories.flatMap((c) => c.routes);
     expect(gameRoutes).toEqual(flat);
   });
 });
