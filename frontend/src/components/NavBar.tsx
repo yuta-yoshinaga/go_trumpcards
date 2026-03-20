@@ -40,7 +40,11 @@ export function NavBar() {
   return (
     <div className="bg-gray-800">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
-        <Link to="/" className="text-white font-bold" onClick={() => setIsOpen(false)}>
+        <Link
+          to="/"
+          className="text-white font-bold min-h-[44px] inline-flex items-center"
+          onClick={() => setIsOpen(false)}
+        >
           Trump Cards
         </Link>
         <div className="flex items-center gap-2">
@@ -51,7 +55,7 @@ export function NavBar() {
             aria-expanded={isOpen}
             aria-controls="main-nav"
             aria-label={isOpen ? t('nav.closeMenu') : t('nav.openMenu')}
-            className="text-white p-2"
+            className="text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             {isOpen ? '✕' : '☰'}
           </button>
