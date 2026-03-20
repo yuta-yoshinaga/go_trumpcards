@@ -21,7 +21,7 @@ export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndica
         <strong>{phaseName}</strong>
       </span>
       {isHumanTurn !== undefined && (
-        <span className={isHumanTurn ? 'text-green-400 animate-pulse' : 'text-white/50'}>
+        <span className={isHumanTurn ? 'text-green-400 animate-pulse' : 'text-game-text-muted'}>
           {isHumanTurn ? t('turnIndicator.yourTurn') : t('turnIndicator.waiting')}
         </span>
       )}

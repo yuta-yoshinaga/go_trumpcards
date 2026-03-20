@@ -116,7 +116,7 @@ export function KlondikePage() {
         <div className="flex gap-2 mb-3 items-start flex-wrap">
           {/* Stock */}
           <div className="text-center">
-            <div className="text-white/60 text-xs mb-1">
+            <div className="text-game-text-muted text-xs mb-1">
               {t('stock')} ({state.stockCount})
             </div>
             {state.stockCount > 0 ? (
@@ -127,7 +127,7 @@ export function KlondikePage() {
                 onClick={handleDraw}
                 disabled={!isPlaying || loading}
                 style={{ width: cardWidth, height: cardHeight }}
-                className={`rounded border-2 border-dashed border-white/30 text-white/40 text-xs flex items-center justify-center ${focusRingWhite}`}
+                className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
               >
                 {t('draw')}
               </button>
@@ -136,7 +136,7 @@ export function KlondikePage() {
 
           {/* Waste */}
           <div className="text-center">
-            <div className="text-white/60 text-xs mb-1">{t('waste')}</div>
+            <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
             {wasteDisplay.length > 0 ? (
               <div className="relative" style={{ width: cardWidth + (wasteDisplay.length - 1) * 15 }}>
                 {wasteDisplay.map((card, idx) => {
@@ -168,7 +168,7 @@ export function KlondikePage() {
             ) : (
               <div
                 style={{ width: cardWidth, height: cardHeight }}
-                className="rounded border border-white/20 flex items-center justify-center text-white/30 text-xs"
+                className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
               >
                 {t('empty')}
               </div>
@@ -180,7 +180,7 @@ export function KlondikePage() {
           {/* Foundation piles */}
           {state.foundation.map((pile, idx) => (
             <div key={`f-${idx.toString()}`} className="text-center">
-              <div className="text-white/60 text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+              <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
               {pile.length > 0 ? (
                 <button
                   type="button"
@@ -198,7 +198,7 @@ export function KlondikePage() {
                   disabled={!isPlaying || loading || !selectedSource}
                   aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                   style={{ width: cardWidth, height: cardHeight }}
-                  className={`rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center ${focusRingWhite}`}
+                  className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                 >
                   A
                 </button>
@@ -211,7 +211,7 @@ export function KlondikePage() {
         <div className="flex gap-2 mb-3">
           {state.tableau.map((col, colIdx) => (
             <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
-              <div className="text-white/40 text-xs text-center mb-1">{colIdx}</div>
+              <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
               <div className="relative" style={{ minHeight: cardHeight }}>
                 {col.length === 0 ? (
                   <button
@@ -219,7 +219,7 @@ export function KlondikePage() {
                     onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
                     disabled={!isPlaying || loading || !selectedSource}
                     style={{ height: cardHeight }}
-                    className={`w-full rounded border-2 border-dashed border-white/20 text-white/20 text-xs flex items-center justify-center ${focusRingWhite}`}
+                    className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
                     K
                   </button>

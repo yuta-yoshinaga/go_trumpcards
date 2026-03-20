@@ -9,7 +9,7 @@ export function OldMaidDiscardedArea({ cards }: { cards: Card[] | undefined }) {
   const { cardWidth, cardHeight } = useCardDimensions();
   if (!cards || cards.length === 0) {
     return (
-      <div className="h-[90px] flex items-center justify-center border-2 border-dashed border-white/15 rounded-[10px] my-2 text-white/30 text-sm">
+      <div className="h-[90px] flex items-center justify-center border-2 border-dashed border-white/15 rounded-[10px] my-2 text-game-text-muted text-sm">
         {t('discardArea')}
       </div>
     );

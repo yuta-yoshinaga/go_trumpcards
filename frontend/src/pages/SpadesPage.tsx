@@ -146,7 +146,7 @@ export function SpadesPage() {
               {state.currentTrick.map((trickCard) => (
                 <div key={`trick-${trickCard.playerIdx}`} className="text-center">
                   <CardImage card={trickCard.card} width={cardWidth} />
-                  <div className="text-white/50 text-xs mt-1">
+                  <div className="text-game-text-muted text-xs mt-1">
                     {playerName(
                       state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
                       state.players[trickCard.playerIdx]?.isHuman ?? false,

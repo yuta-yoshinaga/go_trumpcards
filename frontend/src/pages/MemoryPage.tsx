@@ -130,7 +130,7 @@ export function MemoryPage() {
                 } transition-all`}
               >
                 {bc.faceUp && bc.card && <CardImage card={bc.card} width={cardWidth} />}
-                {!bc.taken && !bc.faceUp && <span className="text-white/40 text-xs">{idx}</span>}
+                {!bc.taken && !bc.faceUp && <span className="text-game-text-muted text-xs">{idx}</span>}
               </button>
             ))}
           </div>
