@@ -7,6 +7,7 @@ import { afterEach } from 'vitest';
 import jaBaccarat from '../i18n/locales/ja/baccarat.json';
 import jaBlackjack from '../i18n/locales/ja/blackjack.json';
 import jaCommon from '../i18n/locales/ja/common.json';
+import jaCrazyeights from '../i18n/locales/ja/crazyeights.json';
 import jaDaifugo from '../i18n/locales/ja/daifugo.json';
 import jaDoubt from '../i18n/locales/ja/doubt.json';
 import jaHearts from '../i18n/locales/ja/hearts.json';
@@ -36,6 +37,7 @@ i18n.use(initReactI18next).init({
     'spades',
     'memory',
     'baccarat',
+    'crazyeights',
   ],
   resources: {
     ja: {
@@ -52,6 +54,7 @@ i18n.use(initReactI18next).init({
       spades: jaSpades,
       memory: jaMemory,
       baccarat: jaBaccarat,
+      crazyeights: jaCrazyeights,
     },
   },
   interpolation: { escapeValue: false },

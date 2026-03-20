@@ -1,0 +1,42 @@
+{
+  "phase": {
+    "play": "プレイ",
+    "chooseSuit": "スート選択",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "chosenSuit": "指定スート",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "playButton": "出す",
+  "drawButton": "引く",
+  "nextRound": "次のラウンド",
+  "suitSpade": "♠ スペード",
+  "suitClover": "♣ クローバー",
+  "suitHeart": "♥ ハート",
+  "suitDiamond": "♦ ダイヤ",
+  "chooseSuitPrompt": "スートを選択してください",
+  "playPhase": "カードを出すか、山札から引いてください",
+  "chooseSuitPhase": "スートを選択してください",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  }
+}

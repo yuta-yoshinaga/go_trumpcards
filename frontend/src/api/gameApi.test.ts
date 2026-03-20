@@ -3,6 +3,7 @@ import {
   actionLogApi,
   baccaratApi,
   blackjackApi,
+  crazyeightsApi,
   daifugoApi,
   doubtApi,
   heartsApi,
@@ -2192,6 +2193,95 @@ describe('gameApi', () => {
     });
   });
 
+  describe('crazyeightsApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      currentPlayerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      chosenSuit: -1,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 200 },
+    };
+
+    it('calls the correct URL with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await crazyeightsApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/crazyeights/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          suit: undefined,
+          config: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with play command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await crazyeightsApi.exec('play', 2);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/crazyeights/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'play',
+            cardIndex: 2,
+            suit: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with suit command and suit value', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await crazyeightsApi.exec('suit', undefined, 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/crazyeights/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'suit',
+            cardIndex: undefined,
+            suit: 3,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await crazyeightsApi.exec('reset', undefined, undefined, { cpuDifficulty: 2, pointLimit: 100 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/crazyeights/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            cardIndex: undefined,
+            suit: undefined,
+            config: { cpuDifficulty: 2, pointLimit: 100 },
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(crazyeightsApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('baccaratApi.exec', () => {
     it('sends reset command', async () => {
       const mockResponse = { phase: 1, chips: 1000 };
@@ -2320,6 +2410,7 @@ describe('gameApi', () => {
       ['memory', actionLogApi.memory],
       ['klondike', actionLogApi.klondike],
       ['baccarat', actionLogApi.baccarat],
+      ['crazyeights', actionLogApi.crazyeights],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));

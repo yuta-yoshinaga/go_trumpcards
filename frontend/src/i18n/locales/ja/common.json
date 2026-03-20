@@ -17,7 +17,8 @@
     "memory": "神経衰弱",
     "klondike": "クロンダイク",
     "freecell": "フリーセル",
-    "baccarat": "バカラ"
+    "baccarat": "バカラ",
+    "crazyeights": "クレイジーエイト"
   },
   "player": {
     "you": "あなた",
@@ -111,6 +112,11 @@
     "hearts.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
     "spades.result.humanWin": "ゲーム終了！ あなたの勝ち！",
     "spades.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "crazyeights.result.humanWin": "ゲーム終了！ あなたの勝ち！",
+    "crazyeights.result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
+    "crazyeights.playPhase": "カードを出すか、山札から引いてください",
+    "crazyeights.chooseSuitPhase": "スートを選択してください",
+    "crazyeights.roundEnd": "ラウンド終了",
     "memory.flip1": "1枚目をめくってください",
     "memory.flip2": "2枚目をめくってください",
     "memory.matched": "ペアが揃いました！",

@@ -37,6 +37,7 @@ type TrumpCardsWeb struct {
 	fcc *controller.FreeCellWebController
 	bcc *controller.BaccaratWebController
 	spc *controller.SpadesWebController
+	cec *controller.CrazyEightsWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -156,6 +157,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			spades := domain.NewSpades(domain.NewTrumpCards(0), players, config)
 			return usecase.NewSpadesInteractor(spades, new(presenter.SpadesWebPresenter))
 		}),
+		cec: controller.NewCrazyEightsWebController(func() usecase.CrazyEightsInteractorIF {
+			config := domain.DefaultCrazyEightsConfig()
+			players := []*domain.CrazyEightsPlayer{
+				domain.NewCrazyEightsPlayer(true),
+				domain.NewCrazyEightsPlayer(false),
+				domain.NewCrazyEightsPlayer(false),
+				domain.NewCrazyEightsPlayer(false),
+			}
+			ce := domain.NewCrazyEights(domain.NewTrumpCards(0), players, config)
+			return usecase.NewCrazyEightsInteractor(ce, new(presenter.CrazyEightsWebPresenter))
+		}),
 	}
 }
 
@@ -208,6 +220,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/freecell/exec", web.fcc.Exec},
 		{"/baccarat/exec", web.bcc.Exec},
 		{"/spades/exec", web.spc.Exec},
+		{"/crazyeights/exec", web.cec.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -285,6 +298,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.fcc.Stop()
 	web.bcc.Stop()
 	web.spc.Stop()
+	web.cec.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

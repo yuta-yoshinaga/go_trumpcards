@@ -9,6 +9,7 @@
  *   - Memory:     internal/domain/Memory.go    (MemoryPhaseFlip1, MemoryPhaseFlip2, MemoryPhaseResult, MemoryPhaseGameEnd)
  *   - Klondike:   internal/domain/Klondike.go  (KlondikePhasePlaying, KlondikePhaseGameClear, KlondikePhaseGameOver)
  *   - FreeCell:   internal/domain/FreeCell.go  (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
+ *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
  *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
  */
 
@@ -108,6 +109,22 @@ export const SpadesPhase = {
   TRICK_END: 2,
   ROUND_END: 3,
   GAME_END: 4,
+} as const;
+
+// Crazy Eights phase constants (sync: internal/domain/CrazyEights.go)
+export const CrazyEightsPhase = {
+  PLAY: 0,
+  CHOOSE_SUIT: 1,
+  ROUND_END: 2,
+  GAME_END: 3,
+} as const;
+
+// Crazy Eights suit constants (sync: internal/domain/Card.go)
+export const CrazyEightsSuit = {
+  SPADE: 1,
+  CLOVER: 2,
+  HEART: 3,
+  DIAMOND: 4,
 } as const;
 
 // Baccarat bet type constants (sync: internal/domain/Baccarat.go)

@@ -1,0 +1,9 @@
+{
+  "helpTitle": "Crazy Eights (クレイジーエイト)",
+  "helpPlay": "  p <idx>              カードを出す",
+  "helpDraw": "  d                    カードを引く",
+  "helpSuit": "  s <1-4>              スート選択 (1=♠, 2=♣, 3=♥, 4=♦)",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               ポイント上限"
+}

@@ -5,6 +5,7 @@ import { initReactI18next } from 'react-i18next';
 import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
 import enCommon from './locales/en/common.json';
+import enCrazyeights from './locales/en/crazyeights.json';
 import enDaifugo from './locales/en/daifugo.json';
 import enDoubt from './locales/en/doubt.json';
 import enFreecell from './locales/en/freecell.json';
@@ -20,6 +21,7 @@ import enSpades from './locales/en/spades.json';
 import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
+import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaDaifugo from './locales/ja/daifugo.json';
 import jaDoubt from './locales/ja/doubt.json';
 import jaFreecell from './locales/ja/freecell.json';
@@ -54,6 +56,7 @@ i18n
         klondike: jaKlondike,
         freecell: jaFreecell,
         baccarat: jaBaccarat,
+        crazyeights: jaCrazyeights,
       },
       en: {
         common: enCommon,
@@ -71,6 +74,7 @@ i18n
         klondike: enKlondike,
         freecell: enFreecell,
         baccarat: enBaccarat,
+        crazyeights: enCrazyeights,
       },
     },
     fallbackLng: 'ja',
@@ -91,6 +95,7 @@ i18n
       'klondike',
       'freecell',
       'baccarat',
+      'crazyeights',
     ],
     detection: {
       order: ['localStorage'],

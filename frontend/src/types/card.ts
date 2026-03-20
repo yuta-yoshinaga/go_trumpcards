@@ -583,6 +583,38 @@ export interface SpadesResponse {
   config: SpadesConfig;
 }
 
+// --- Crazy Eights (クレイジーエイト) ---
+
+export interface CrazyEightsPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+export interface CrazyEightsConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+export interface CrazyEightsResponse {
+  players: CrazyEightsPlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  discardTop: Card | null;
+  drawPileCount: number;
+  chosenSuit: number;
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: CrazyEightsConfig;
+}
+
 // --- Memory (神経衰弱) ---
 
 export interface MemoryPlayerData {
