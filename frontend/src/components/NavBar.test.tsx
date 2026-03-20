@@ -171,5 +171,42 @@ describe('NavBar', () => {
       const jaBtns = screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') });
       expect(jaBtns.length).toBeGreaterThanOrEqual(2);
     });
+
+    it('moves focus to first game link when menu opens', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const nav = screen.getByRole('navigation');
+      const firstLink = nav.querySelector('a');
+      expect(document.activeElement).toBe(firstLink);
+    });
+
+    it('returns focus to hamburger button when menu closes', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const closeBtn = screen.getByRole('button', { name: i18n.t('nav.closeMenu') });
+      fireEvent.click(closeBtn);
+      expect(document.activeElement).toBe(closeBtn);
+    });
+
+    it('closes menu and returns focus to hamburger button on Escape key', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const nav = screen.getByRole('navigation');
+      fireEvent.keyDown(nav, { key: 'Escape' });
+      expect(nav).toHaveClass('hidden');
+      expect(document.activeElement).toBe(btn);
+    });
+
+    it('does not close menu on non-Escape key', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const nav = screen.getByRole('navigation');
+      fireEvent.keyDown(nav, { key: 'Tab' });
+      expect(nav).not.toHaveClass('hidden');
+    });
   });
 });
