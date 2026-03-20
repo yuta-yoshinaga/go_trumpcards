@@ -13,6 +13,23 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; case \"$f\" in *.go) /home/yuta/go/bin/goimports -w \"$f\" 2>/dev/null ;; esac; } || true",
+            "statusMessage": "Running goimports..."
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; case \"$f\" in *.ts|*.tsx) cd /home/yuta/work/go_trumpcards/frontend && bunx biome check --write \"$f\" 2>/dev/null ;; esac; } || true",
+            "statusMessage": "Running biome check..."
+          }
+        ]
+      }
     ]
   }
 }
