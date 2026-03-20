@@ -181,7 +181,8 @@ func TestFreeCellMoveTableauToTableauErrors(t *testing.T) {
 
 	t.Run("invalid card index negative", func(t *testing.T) {
 		f := setupPlayingFreeCell()
-		err := f.MoveTableauToTableau(0, -1, 1)
+		// -1 is a valid shortcut for "last card"; use -2 for truly invalid negative index
+		err := f.MoveTableauToTableau(0, -2, 1)
 		assert.Error(t, err)
 	})
 
