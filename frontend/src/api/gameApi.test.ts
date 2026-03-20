@@ -6,6 +6,7 @@ import {
   crazyeightsApi,
   daifugoApi,
   doubtApi,
+  ginrummyApi,
   heartsApi,
   holdemApi,
   klondikeApi,
@@ -2282,6 +2283,98 @@ describe('gameApi', () => {
     });
   });
 
+  describe('ginrummyApi.exec', () => {
+    const payload = {
+      players: [],
+      phase: 0,
+      roundNumber: 1,
+      currentPlayerIdx: 0,
+      discardTop: null,
+      drawPileCount: 0,
+      gameEndFlag: false,
+      winnerIdx: -1,
+      knockerIdx: -1,
+      knockerMelds: [],
+      knockerDeadwood: [],
+      isGin: false,
+      message: '',
+      config: { cpuDifficulty: 1, pointLimit: 100 },
+    };
+
+    it('calls the correct URL with reset command and config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await ginrummyApi.exec('reset', undefined, { cpuDifficulty: 1, pointLimit: 100 });
+      expect(mockFetch).toHaveBeenCalledWith('/ginrummy/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          cardIndex: undefined,
+          cardIndices: undefined,
+          config: { cpuDifficulty: 1, pointLimit: 100 },
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with discard command and cardIndex', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await ginrummyApi.exec('discard', 3);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/ginrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'discard',
+            cardIndex: 3,
+            cardIndices: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with layoff command and cardIndices', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await ginrummyApi.exec('layoff', undefined, undefined, [0, 2]);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/ginrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'layoff',
+            cardIndex: undefined,
+            cardIndices: [0, 2],
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with log command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await ginrummyApi.exec('log');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/ginrummy/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'log',
+            cardIndex: undefined,
+            cardIndices: undefined,
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('throws on HTTP error', async () => {
+      mockFetch.mockReturnValue(makeResponse(null, false, 500));
+      await expect(ginrummyApi.exec('reset')).rejects.toThrow('HTTP error: 500');
+    });
+  });
+
   describe('baccaratApi.exec', () => {
     it('sends reset command', async () => {
       const mockResponse = { phase: 1, chips: 1000 };
@@ -2411,6 +2504,7 @@ describe('gameApi', () => {
       ['klondike', actionLogApi.klondike],
       ['baccarat', actionLogApi.baccarat],
       ['crazyeights', actionLogApi.crazyeights],
+      ['ginrummy', actionLogApi.ginrummy],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));

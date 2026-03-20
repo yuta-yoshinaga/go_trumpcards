@@ -9,6 +9,7 @@ import { CrazyEightsPage } from './pages/CrazyEightsPage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { FreeCellPage } from './pages/FreeCellPage';
+import { GinRummyPage } from './pages/GinRummyPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
 import { KlondikePage } from './pages/KlondikePage';
@@ -36,6 +37,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/freecell': <FreeCellPage />,
   '/baccarat': <BaccaratPage />,
   '/crazyeights': <CrazyEightsPage />,
+  '/ginrummy': <GinRummyPage />,
 };
 
 export default function App() {

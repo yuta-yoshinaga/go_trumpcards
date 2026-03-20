@@ -8,6 +8,7 @@ import type {
   DoubtConfig,
   DoubtResponse,
   FreeCellResponse,
+  GinRummyResponse,
   HeartsResponse,
   HoldemResponse,
   KlondikeResponse,
@@ -369,6 +370,26 @@ export const crazyeightsApi = {
     }),
 };
 
+export interface GinRummyConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+export const ginrummyApi = {
+  exec: (
+    command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'layoff' | 'nextround' | 'log',
+    cardIndex?: number,
+    config?: GinRummyConfigInput,
+    cardIndices?: number[],
+  ) =>
+    gameExec<GinRummyResponse>('ginrummy', {
+      command,
+      cardIndex,
+      cardIndices,
+      config,
+    }),
+};
+
 export const baccaratApi = {
   exec: (
     command: 'reset' | 'bet' | 'log' | 'clearhistory',
@@ -395,6 +416,7 @@ const games = [
   'freecell',
   'baccarat',
   'crazyeights',
+  'ginrummy',
 ] as const;
 type Game = (typeof games)[number];
 

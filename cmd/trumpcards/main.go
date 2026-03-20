@@ -54,6 +54,7 @@ GAMES:
   baccarat     Baccarat (バカラ)
   spades       Spades (スペード)
   crazyeights  Crazy Eights (クレイジーエイト)
+  ginrummy     Gin Rummy (ジンラミー)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -127,6 +128,7 @@ ENVIRONMENT VARIABLES:
 		"baccarat":    func() int { ui.NewBaccaratCui().Exec(); return 0 },
 		"spades":      func() int { ui.NewSpadesCui().Exec(); return 0 },
 		"crazyeights": func() int { ui.NewCrazyEightsCui().Exec(); return 0 },
+		"ginrummy":    func() int { ui.NewGinRummyCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

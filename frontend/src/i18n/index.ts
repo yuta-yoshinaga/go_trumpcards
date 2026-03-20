@@ -9,6 +9,7 @@ import enCrazyeights from './locales/en/crazyeights.json';
 import enDaifugo from './locales/en/daifugo.json';
 import enDoubt from './locales/en/doubt.json';
 import enFreecell from './locales/en/freecell.json';
+import enGinrummy from './locales/en/ginrummy.json';
 import enHearts from './locales/en/hearts.json';
 import enHoldem from './locales/en/holdem.json';
 import enKlondike from './locales/en/klondike.json';
@@ -25,6 +26,7 @@ import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaDaifugo from './locales/ja/daifugo.json';
 import jaDoubt from './locales/ja/doubt.json';
 import jaFreecell from './locales/ja/freecell.json';
+import jaGinrummy from './locales/ja/ginrummy.json';
 import jaHearts from './locales/ja/hearts.json';
 import jaHoldem from './locales/ja/holdem.json';
 import jaKlondike from './locales/ja/klondike.json';
@@ -57,6 +59,7 @@ i18n
         freecell: jaFreecell,
         baccarat: jaBaccarat,
         crazyeights: jaCrazyeights,
+        ginrummy: jaGinrummy,
       },
       en: {
         common: enCommon,
@@ -75,6 +78,7 @@ i18n
         freecell: enFreecell,
         baccarat: enBaccarat,
         crazyeights: enCrazyeights,
+        ginrummy: enGinrummy,
       },
     },
     fallbackLng: 'ja',
@@ -96,6 +100,7 @@ i18n
       'freecell',
       'baccarat',
       'crazyeights',
+      'ginrummy',
     ],
     detection: {
       order: ['localStorage'],

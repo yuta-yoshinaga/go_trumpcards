@@ -10,6 +10,7 @@
  *   - Klondike:   internal/domain/Klondike.go  (KlondikePhasePlaying, KlondikePhaseGameClear, KlondikePhaseGameOver)
  *   - FreeCell:   internal/domain/FreeCell.go  (FreeCellPhasePlaying, FreeCellPhaseGameClear, FreeCellPhaseGameOver)
  *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
+ *   - GinRummy:  internal/domain/GinRummy.go   (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
  *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
  */
 
@@ -125,6 +126,15 @@ export const CrazyEightsSuit = {
   CLOVER: 2,
   HEART: 3,
   DIAMOND: 4,
+} as const;
+
+// Gin Rummy phase constants (sync: internal/domain/GinRummy.go)
+export const GinRummyPhase = {
+  DRAW: 0,
+  DISCARD: 1,
+  LAYOFF: 2,
+  ROUND_END: 3,
+  GAME_END: 4,
 } as const;
 
 // Baccarat bet type constants (sync: internal/domain/Baccarat.go)
