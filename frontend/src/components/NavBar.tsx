@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories } from '../constants/gameRoutes';
@@ -36,6 +36,26 @@ export function NavBar() {
   const { t, i18n } = useTranslation('common');
   const currentLang = i18n.language;
   const [isOpen, setIsOpen] = useState(false);
+  const navRef = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  useEffect(() => {
+    if (isOpen && navRef.current) {
+      const firstLink = navRef.current.querySelector<HTMLElement>('a');
+      firstLink?.focus();
+    }
+    if (!isOpen && wasOpen.current && toggleRef.current) {
+      toggleRef.current.focus();
+    }
+    wasOpen.current = isOpen;
+  }, [isOpen]);
+
+  const handleNavKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
 
   return (
     <div className="bg-gray-800">
@@ -50,6 +70,7 @@ export function NavBar() {
         <div className="flex items-center gap-2">
           {langToggle(currentLang, i18n, t)}
           <button
+            ref={toggleRef}
             type="button"
             onClick={() => setIsOpen(!isOpen)}
             aria-expanded={isOpen}
@@ -63,7 +84,9 @@ export function NavBar() {
       </div>
 
       <nav
+        ref={navRef}
         id="main-nav"
+        onKeyDown={handleNavKeyDown}
         className={`${isOpen ? 'flex' : 'hidden'} flex-col gap-2 mx-2.5 mb-2 sm:flex sm:flex-row sm:flex-wrap sm:items-start sm:justify-end sm:my-2`}
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
