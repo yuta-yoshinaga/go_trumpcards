@@ -42,7 +42,15 @@ bun run e2e:headed   # Run E2E tests in headed browser
 bun run e2e:ui       # Run with Playwright UI
 ```
 
-E2E tests should not assert on specific card values (randomness). Instead, verify flow: button visibility, phase transitions, and reset behavior.
+### E2E test guidelines (avoiding flaky tests)
+
+- **Never assert on specific card values** -- card games involve shuffling; assertions on card content will be flaky
+- **Verify phase transitions** -- check that buttons appear/disappear and the game progresses through phases
+- **Verify reset behavior** -- ensure the game can be reset and restarted
+- **Avoid cumulative timeouts** -- use `waitFor` with reasonable timeouts; don't chain multiple long waits
+- **Use `.first()` on `.or()` chains** -- Playwright strict mode requires a single element; use `.first()` when combining locators
+- **Scope selectors carefully** -- e.g., scope card selectors to exclude NavBar elements to avoid false matches
+- **Handle confirm dialogs** -- if the game has a reset confirmation dialog, click it in the test after reset
 
 ## i18n (Internationalization)
 
