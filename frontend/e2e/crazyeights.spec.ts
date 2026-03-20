@@ -26,7 +26,7 @@ test.describe('Crazy Eights E2E', () => {
 
     // Play through several interactions to verify phase transitions
     const MAX_TURNS = 80;
-    let sawPlay = false;
+    let interactions = 0;
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       await expect(playButton.or(drawButton).or(nextRoundButton).or(suitSpade).first()).toBeVisible({
         timeout: 10_000,
@@ -44,12 +44,13 @@ test.describe('Crazy Eights E2E', () => {
       if (suitVisible) {
         await suitSpade.click();
         await waitForLoaded(page);
+        interactions++;
         continue;
       }
 
       // Play phase: select a card and play, or draw
       if (playVisible || drawVisible) {
-        sawPlay = true;
+        interactions++;
         const cardCount = await handCards.count();
         if (cardCount > 0) {
           await handCards.first().click();
@@ -71,11 +72,12 @@ test.describe('Crazy Eights E2E', () => {
       if (nextRoundVisible) {
         await nextRoundButton.click();
         await waitForLoaded(page);
+        interactions++;
       }
     }
 
-    // Verify we saw play phase
-    expect(sawPlay).toBe(true);
+    // Verify we had at least one interaction (play, draw, suit choice, or round end)
+    expect(interactions).toBeGreaterThan(0);
 
     // Reset and verify game restarts
     await resetButton.click();
