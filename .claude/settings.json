@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "The user is about to run a Bash command. Check if it is a `git commit` command (look at $ARGUMENTS for the command field). If it is NOT a git commit command, respond with {\"decision\": \"allow\"} and nothing else.\n\nIf it IS a git commit, check for documentation drift by running `git diff --cached --name-only` to see what files are staged. Then apply these rules from CLAUDE.md's Documentation Maintenance table:\n\n1. If any game domain file (internal/domain/<Game>.go) or game interactor/controller/presenter is added or removed → check that README.md, CLAUDE.md (Commands), docs/games.md, and docs/manual/ have corresponding entries\n2. If any Web API endpoint is added or removed (internal/infrastructure/web/TrumpCardsWeb.go routes changed) → check docs/architecture.md and api/openapi.yaml\n3. If any frontend page/component is added or removed → check frontend/CLAUDE.md i18n translation file list\n4. If any ADR file is added in docs/adr/ → check docs/adr/README.md index table\n5. If request/response schema changes in a controller → check api/openapi.yaml\n\nOnly check rules relevant to the staged files. If no documentation updates are needed, or all required docs are already updated in the staged files, allow the commit. If documentation is missing, block with a clear message listing what needs to be updated.",
+            "timeout": 120,
+            "model": "claude-haiku-4-5-20251001",
+            "statusMessage": "Checking for documentation drift..."
+          }
+        ]
+      }
+    ]
+  }
+}
