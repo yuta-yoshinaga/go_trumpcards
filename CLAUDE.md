@@ -166,7 +166,8 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 21. `go test -tags test ./...` -- all tests pass
 22. `golangci-lint run ./...` -- no warnings
 23. `cd frontend && bun run build && bun run check && bun run test` -- all pass
-24. `cd frontend && bun run e2e` -- E2E tests pass (if applicable)
+24. **E2E test**: Create `frontend/e2e/<game>.spec.ts` with basic game flow test
+25. `cd frontend && bun run e2e` -- all E2E tests pass
 
 ## Git Workflow
 
