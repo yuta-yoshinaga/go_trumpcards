@@ -115,7 +115,8 @@ Before marking any task complete:
 | Modify anything under `frontend/` | Run `cd frontend && bun run build`, `cd frontend && bun run check`, and `cd frontend && bun run test` and ensure all three pass before committing |
 | Add/remove frontend source files or change testing approach | Update Testing section in [`CLAUDE.md`](CLAUDE.md) (Frontend testing) and [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
 | Change frontend tooling or scripts | [`frontend/README.md`](frontend/README.md) (Scripts, Tooling) |
-| Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game |
+| Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game (follow `docs/manual/cui_template.md` / `docs/manual/web_template.md` format) |
+| Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Make an architectural decision (new technology, pattern, or structural change) | Add or update an ADR in [`docs/adr/`](docs/adr/) |
 
