@@ -30,11 +30,14 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
     if (!props.open) return;
     triggerRef.current = document.activeElement;
 
+    // Safe assertion: useEffect runs after render, so ref is always attached when open=true
     const dialog = dialogRef.current as HTMLElement;
     const focusable = getFocusableElements(dialog);
-    focusable[0].focus();
+    if (focusable.length === 0) return;
+
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
+    first.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;

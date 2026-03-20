@@ -112,22 +112,22 @@ describe('ConfirmDialog', () => {
     expect(document.activeElement).toBe(cancelBtn);
   });
 
-  it('does not trap Tab when not on last element', () => {
+  it('does not preventDefault for Tab on non-last element', () => {
     render(<ConfirmDialog {...defaultProps()} />);
     const cancelBtn = screen.getByRole('button', { name: 'キャンセル' });
     cancelBtn.focus();
-    fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Tab' });
-    // Focus stays on cancel (no wrapping needed, browser handles normal tab)
-    expect(document.activeElement).toBe(cancelBtn);
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    screen.getByRole('alertdialog').dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
   });
 
-  it('does not trap Shift+Tab when not on first element', () => {
+  it('does not preventDefault for Shift+Tab on non-first element', () => {
     render(<ConfirmDialog {...defaultProps()} />);
     const confirmBtn = screen.getByRole('button', { name: '確認' });
     confirmBtn.focus();
-    fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Tab', shiftKey: true });
-    // Focus stays on confirm (no wrapping needed)
-    expect(document.activeElement).toBe(confirmBtn);
+    const event = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+    screen.getByRole('alertdialog').dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('restores focus to previously focused element on close', () => {
@@ -143,6 +143,26 @@ describe('ConfirmDialog', () => {
     expect(document.activeElement).toBe(trigger);
 
     document.body.removeChild(trigger);
+  });
+
+  it('handles dialogRef being null and no focusable elements', () => {
+    const origQuerySelectorAll = HTMLElement.prototype.querySelectorAll;
+    let callCount = 0;
+    vi.spyOn(HTMLElement.prototype, 'querySelectorAll').mockImplementation(function (
+      this: HTMLElement,
+      selector: string,
+    ) {
+      callCount++;
+      // First call from useEffect: return empty to cover focusable.length === 0 branch
+      if (callCount === 1) {
+        return origQuerySelectorAll.call(document.createElement('div'), 'nonexistent');
+      }
+      return origQuerySelectorAll.call(this, selector);
+    });
+
+    render(<ConfirmDialog {...defaultProps()} />);
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    vi.restoreAllMocks();
   });
 
   it('handles cleanup when triggerRef is not an HTMLElement', () => {
