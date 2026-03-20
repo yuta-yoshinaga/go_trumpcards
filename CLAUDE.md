@@ -44,7 +44,7 @@ This development environment runs on WSL2 with **limited RAM (~2 GB) and 4 CPU c
 
 ## Package Manager Rule
 
-**Always use `bun` instead of `npm`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript package manager and script runner.
+**Always use `bun` instead of `npm`/`node`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript runtime, package manager, and script runner. Never invoke `node ./node_modules/...` directly — use `bun` or `bunx` instead, as Node.js consumes significantly more memory.
 
 ## Commands
 
