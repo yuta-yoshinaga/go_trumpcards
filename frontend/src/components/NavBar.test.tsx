@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it } from 'vitest';
-import { gameRoutes } from '../constants/gameRoutes';
+import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { NavBar } from './NavBar';
 
 function renderNavBar(initialPath = '/') {
@@ -27,6 +27,13 @@ describe('NavBar', () => {
     const links = screen.getAllByRole('link');
     // game links + brand link
     expect(links.length).toBeGreaterThanOrEqual(gameRoutes.length);
+  });
+
+  it('renders category labels for all categories', () => {
+    renderNavBar();
+    for (const { labelKey } of gameCategories) {
+      expect(screen.getAllByText(labelFor(labelKey)).length).toBeGreaterThanOrEqual(1);
+    }
   });
 
   for (const { path, labelKey } of gameRoutes) {
@@ -136,11 +143,9 @@ describe('NavBar', () => {
       renderNavBar();
       const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
       fireEvent.click(btn);
-      const firstLink = screen
-        .getAllByRole('link')
-        .find((link) => gameRoutes.some(({ path }) => link.getAttribute('href') === path));
-      expect(firstLink).toBeDefined();
-      fireEvent.click(firstLink as HTMLElement);
+      // Click a non-home link to cover onClick in a different category iteration
+      const pokerLink = screen.getByRole('link', { name: labelFor('nav.poker') });
+      fireEvent.click(pokerLink);
       const nav = screen.getByRole('navigation');
       expect(nav).toHaveClass('hidden');
       expect(screen.getByRole('button', { name: i18n.t('nav.openMenu') })).toHaveAttribute('aria-expanded', 'false');
