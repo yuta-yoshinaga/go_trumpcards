@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -21,6 +21,18 @@
       "a11y": {}
     }
   },
+  "overrides": [
+    {
+      "includes": ["src/components/**", "src/pages/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    }
+  ],
   "css": {
     "parser": {
       "tailwindDirectives": true

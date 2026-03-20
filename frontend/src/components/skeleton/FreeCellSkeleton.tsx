@@ -13,14 +13,12 @@ export function FreeCellSkeleton() {
         {/* FreeCells + Foundation row */}
         <div className="flex gap-2 mb-3 items-start flex-wrap">
           {Array.from({ length: 8 }, (_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
             <SkeletonCard key={i} width={cardWidth} height={cardHeight} />
           ))}
         </div>
         {/* Tableau columns */}
         <div className="flex gap-2 mb-3">
           {Array.from({ length: 8 }, (_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
             <div key={i} className="flex-1 min-w-0">
               <SkeletonCard width={cardWidth} height={cardHeight} />
             </div>

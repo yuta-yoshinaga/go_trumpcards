@@ -221,7 +221,7 @@ export function PokerPage() {
         )}
 
         {/* Draw odds panel */}
-        {canExchange && odds && odds.some((o) => o.probability > 0) && (
+        {canExchange && odds?.some((o) => o.probability > 0) && (
           <div className="bg-black/40 rounded-lg px-4 py-2 mb-2 text-white text-xs" data-testid="odds-panel">
             <div className="font-bold mb-1">{t('drawOdds')}</div>
             {odds

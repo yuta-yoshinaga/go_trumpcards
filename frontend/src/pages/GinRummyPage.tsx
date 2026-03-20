@@ -160,7 +160,6 @@ export function GinRummyPage() {
           <div className="my-3 p-2 rounded bg-black/30">
             <div className="text-white/70 text-sm mb-1">{t('knockerMelds')}</div>
             {state.knockerMelds.map((meld, meldIdx) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: melds have no natural unique id
               <div key={`meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
                 {meld.cards.map((card, cardIdx) => (
                   <CardImage

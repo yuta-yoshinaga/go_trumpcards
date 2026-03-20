@@ -209,7 +209,6 @@ export function BlackJackPage() {
         {phase !== BjPhase.BET && cpuPlayers.length > 0 && (
           <div className="mt-4">
             {cpuPlayers.map((cpu, cpuIdx) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: CPU seats have fixed order
               <div key={cpuIdx} className="mb-3">
                 <h3 className="text-yellow-200 mt-0 mb-1">
                   {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} chips)
@@ -220,7 +219,6 @@ export function BlackJackPage() {
                   )}
                 </h3>
                 {cpu.hands.map((hand, handIdx) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: CPU hands have fixed order
                   <div key={handIdx} className="mb-1">
                     <div className="text-yellow-100 text-sm">
                       {cpu.hands.length > 1 ? `${t('hand', { idx: handIdx + 1 })} ` : ''}
@@ -255,7 +253,6 @@ export function BlackJackPage() {
         {phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
             {hands.map((hand, handIndex) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: player hands have fixed order per round
               <div key={`hand-${handIndex}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
                   {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
