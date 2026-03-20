@@ -297,7 +297,7 @@ export function GinRummyPage() {
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
-                return gameExec('reset', undefined, undefined, {
+                return gameExec('reset', undefined, {
                   cpuDifficulty: ginRummyConfig.cpuDifficulty,
                   pointLimit: ginRummyConfig.pointLimit,
                 });

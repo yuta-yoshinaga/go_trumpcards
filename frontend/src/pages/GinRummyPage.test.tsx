@@ -149,7 +149,7 @@ describe('GinRummyPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<GinRummyPage />);
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         cpuDifficulty: 1,
         pointLimit: 100,
       }),
@@ -281,7 +281,7 @@ describe('GinRummyPage', () => {
     mockExec.mockResolvedValue(roundEndState);
     fireEvent.click(screen.getByRole('button', { name: 'レイオフ' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, undefined, [0]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, [0]));
   });
 
   it('calls layoff with empty array when skip button is clicked', async () => {
@@ -293,7 +293,7 @@ describe('GinRummyPage', () => {
     mockExec.mockResolvedValue(roundEndState);
     fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
 
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, undefined, []));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, []));
   });
 
   it('does not show draw buttons when not human turn', async () => {
@@ -441,7 +441,7 @@ describe('GinRummyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         cpuDifficulty: 1,
         pointLimit: 100,
       }),
@@ -481,7 +481,7 @@ describe('GinRummyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         cpuDifficulty: 2,
         pointLimit: 100,
       }),
@@ -502,7 +502,7 @@ describe('GinRummyPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         cpuDifficulty: 1,
         pointLimit: 150,
       }),
@@ -672,7 +672,7 @@ describe('GinRummyPage', () => {
     mockExec.mockResolvedValue(roundEndState);
 
     fireEvent.keyDown(document, { key: 'Enter' });
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, undefined, [0]));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('layoff', undefined, undefined, [0]));
   });
 
   it('Escape key clears selection', async () => {
