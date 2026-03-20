@@ -51,7 +51,7 @@ export default function App() {
         <div className="flex flex-col h-full">
           <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
           <NavBar />
-          <main id="main-content" className="flex-1 flex flex-col min-h-0">
+          <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
             <Routes>
               {gameRoutes.map(({ path }) => (
                 <Route key={path} path={path} element={pageByPath[path]} />

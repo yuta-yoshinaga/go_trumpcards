@@ -14,4 +14,12 @@ describe('SkipNavLink', () => {
     const link = screen.getByRole('link', { name: 'Skip' });
     expect(link.className).toContain('sr-only');
   });
+
+  it('receives focus when focused programmatically', () => {
+    render(<SkipNavLink targetId="content" label="Skip" />);
+    const link = screen.getByRole('link', { name: 'Skip' });
+
+    link.focus();
+    expect(link).toHaveFocus();
+  });
 });
