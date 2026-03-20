@@ -8,5 +8,6 @@ import (
 // PokerPresenter ポーカープレゼンターインタフェース
 type PokerPresenter interface {
 	GamePresenter[interfaces.PokerGame]
+	// OutputWithOdds ドローオッズ付きでゲーム状態を出力する
 	OutputWithOdds(p interfaces.PokerGame, lastErr error, odds []domain.PokerDrawOdds) string
 }

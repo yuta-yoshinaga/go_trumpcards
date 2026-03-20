@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { DrawHistoryEntry, OldMaidPlayerData } from '../../types/card';
 import { findPlayerName } from '../../utils/playerUtils';
 
+/** Renders a scrollable timeline of draw history entries for Old Maid. */
 export function OldMaidDrawHistory({
   entries,
   players,

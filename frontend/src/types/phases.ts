@@ -14,7 +14,7 @@
  *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
  */
 
-// BlackJack phase constants (sync: internal/domain/BlackJack.go)
+/** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
 export const BjPhase = {
   BET: 1,
   DEAL: 2,
@@ -24,7 +24,7 @@ export const BjPhase = {
   EARLY_SURRENDER: 6,
 } as const;
 
-// Poker phase constants (sync: internal/domain/Poker.go)
+/** Poker phase constants (sync: internal/domain/Poker.go). */
 export const PokerPhase = {
   INIT: 0,
   DEAL: 1,
@@ -33,7 +33,7 @@ export const PokerPhase = {
   END: 4,
 } as const;
 
-// Poker action constants (sync: internal/domain/Poker.go)
+/** Poker action constants (sync: internal/domain/Poker.go). */
 export const PokerAction = {
   FOLD: 0,
   CHECK: 1,
@@ -43,7 +43,7 @@ export const PokerAction = {
   ALL_IN: 5,
 } as const;
 
-// Texas Hold'em phase constants (sync: internal/domain/Holdem.go)
+/** Texas Hold'em phase constants (sync: internal/domain/Holdem.go). */
 export const HoldemPhase = {
   INIT: 0,
   PRE_FLOP: 1,
@@ -55,18 +55,19 @@ export const HoldemPhase = {
   REBUY: 7,
 } as const;
 
-// Texas Hold'em rebuy phase type constants (sync: internal/domain/Holdem.go)
+/** Texas Hold'em rebuy phase type constants (sync: internal/domain/Holdem.go). */
 export const HoldemRebuyPhaseType = {
   NONE: 0,
   REBUY: 1,
   ADDON: 2,
 } as const;
 
-// Omaha Hold'em phase constants (same as Holdem - sync: internal/domain/Omaha.go)
+/** Omaha Hold'em phase constants (same as Holdem). */
 export const OmahaPhase = HoldemPhase;
+/** Omaha Hold'em rebuy phase type constants (same as Holdem). */
 export const OmahaRebuyPhaseType = HoldemRebuyPhaseType;
 
-// Hearts phase constants (sync: internal/domain/Hearts.go)
+/** Hearts phase constants (sync: internal/domain/Hearts.go). */
 export const HeartsPhase = {
   PASS: 0,
   PLAY: 1,
@@ -75,7 +76,7 @@ export const HeartsPhase = {
   GAME_END: 4,
 } as const;
 
-// Memory phase constants (sync: internal/domain/Memory.go)
+/** Memory phase constants (sync: internal/domain/Memory.go). */
 export const MemoryPhase = {
   FLIP1: 0,
   FLIP2: 1,
@@ -83,27 +84,27 @@ export const MemoryPhase = {
   GAME_END: 3,
 } as const;
 
-// Klondike phase constants (sync: internal/domain/Klondike.go)
+/** Klondike phase constants (sync: internal/domain/Klondike.go). */
 export const KlondikePhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
 
-// Klondike scoring mode constants (sync: internal/domain/Klondike.go)
+/** Klondike scoring mode constants (sync: internal/domain/Klondike.go). */
 export const KlondikeScoringMode = {
   NONE: 0,
   VEGAS: 1,
 } as const;
 
-// FreeCell phase constants (sync: internal/domain/FreeCell.go)
+/** FreeCell phase constants (sync: internal/domain/FreeCell.go). */
 export const FreeCellPhase = {
   PLAYING: 0,
   GAME_CLEAR: 1,
   GAME_OVER: 2,
 } as const;
 
-// Spades phase constants (sync: internal/domain/Spades.go)
+/** Spades phase constants (sync: internal/domain/Spades.go). */
 export const SpadesPhase = {
   BID: 0,
   PLAY: 1,
@@ -112,7 +113,7 @@ export const SpadesPhase = {
   GAME_END: 4,
 } as const;
 
-// Crazy Eights phase constants (sync: internal/domain/CrazyEights.go)
+/** Crazy Eights phase constants (sync: internal/domain/CrazyEights.go). */
 export const CrazyEightsPhase = {
   PLAY: 0,
   CHOOSE_SUIT: 1,
@@ -120,7 +121,7 @@ export const CrazyEightsPhase = {
   GAME_END: 3,
 } as const;
 
-// Crazy Eights suit constants (sync: internal/domain/Card.go)
+/** Crazy Eights suit constants (sync: internal/domain/Card.go). */
 export const CrazyEightsSuit = {
   SPADE: 1,
   CLOVER: 2,
@@ -128,7 +129,7 @@ export const CrazyEightsSuit = {
   DIAMOND: 4,
 } as const;
 
-// Gin Rummy phase constants (sync: internal/domain/GinRummy.go)
+/** Gin Rummy phase constants (sync: internal/domain/GinRummy.go). */
 export const GinRummyPhase = {
   DRAW: 0,
   DISCARD: 1,
@@ -137,14 +138,14 @@ export const GinRummyPhase = {
   GAME_END: 4,
 } as const;
 
-// Baccarat bet type constants (sync: internal/domain/Baccarat.go)
+/** Baccarat bet type constants (sync: internal/domain/Baccarat.go). */
 export const BaccaratBetType = {
   PLAYER: 0,
   BANKER: 1,
   TIE: 2,
 } as const;
 
-// Baccarat phase constants (sync: internal/domain/Baccarat.go)
+/** Baccarat phase constants (sync: internal/domain/Baccarat.go). */
 export const BaccaratPhase = {
   BET: 1,
   END: 2,

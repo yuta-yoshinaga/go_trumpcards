@@ -20,6 +20,7 @@ interface CpuPlayerCardProps {
   extraInfo?: React.ReactNode;
 }
 
+/** Renders a CPU player's info area with cards (face-up or face-down) and status. */
 export function CpuPlayerCard({ player, showCards, faceDownCount, showHandName, extraInfo }: CpuPlayerCardProps) {
   const { t } = useTranslation('common');
   return (

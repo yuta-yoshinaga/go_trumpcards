@@ -8,17 +8,29 @@ import (
 
 // KlondikeInteractorIF クロンダイクインタラクターインタフェース
 type KlondikeInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定付きリセット
 	ResetWithConfig(cfg domain.KlondikeConfig) string
+	// Draw ストックからウェイストにカードを引く
 	Draw() string
+	// MoveWasteToTableau ウェイストからタブローにカードを移動
 	MoveWasteToTableau(col int) string
+	// MoveWasteToFoundation ウェイストからファンデーションにカードを移動
 	MoveWasteToFoundation() string
+	// MoveTableauToTableau タブローからタブローにカードを移動
 	MoveTableauToTableau(fromCol, cardIndex, toCol int) string
+	// MoveTableauToFoundation タブローからファンデーションにカードを移動
 	MoveTableauToFoundation(col int) string
+	// GiveUp ギブアップ
 	GiveUp() string
+	// Hint ヒント取得
 	Hint() string
+	// AutoComplete オートコンプリート
 	AutoComplete() string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Undo アンドゥ
 	Undo() string
 }
 

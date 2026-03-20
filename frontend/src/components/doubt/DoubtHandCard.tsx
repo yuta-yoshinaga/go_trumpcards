@@ -11,6 +11,7 @@ interface HandCardProps {
   onToggle: (idx: number) => void;
 }
 
+/** Renders a selectable hand card for Doubt with selection highlight. */
 export function DoubtHandCard({ card, index, selected, selectable, onToggle }: HandCardProps) {
   const { cardWidth } = useCardDimensions();
   return (

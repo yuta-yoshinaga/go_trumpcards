@@ -25,6 +25,7 @@ import type { DoubtCpuAction } from '../types/card';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 
+/** Renders the Doubt game page with card play, doubt window countdown, and config. */
 export function DoubtPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('doubt');

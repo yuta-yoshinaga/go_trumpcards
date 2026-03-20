@@ -49,4 +49,5 @@ class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryStat
   }
 }
 
+/** Error boundary component that catches render errors and shows a retry screen. */
 export const ErrorBoundary = withTranslation()(ErrorBoundaryInner);

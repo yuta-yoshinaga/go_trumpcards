@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useCallback, useRef, useState } from 'react';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 
+/** Hook that wraps a game API function with loading, error, and state management. */
 export function useGameApi<TState, TArgs extends unknown[]>(
   apiFn: (...args: TArgs) => Promise<TState>,
   options?: { onSuccess?: (res: TState) => void | Promise<void> },

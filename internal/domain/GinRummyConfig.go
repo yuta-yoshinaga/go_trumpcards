@@ -5,6 +5,7 @@ import "fmt"
 // GinRummyCpuDifficulty CPU の難易度レベル
 type GinRummyCpuDifficulty int
 
+// GinRummyのCPU難易度定数
 const (
 	// GinRummyCpuDifficultyEasy 低難易度
 	GinRummyCpuDifficultyEasy GinRummyCpuDifficulty = iota

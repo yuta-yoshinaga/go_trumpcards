@@ -1,3 +1,4 @@
+/** Route definitions for all game pages with navigation label i18n keys. */
 export const gameRoutes = [
   { path: '/', labelKey: 'nav.blackjack' },
   { path: '/poker', labelKey: 'nav.poker' },

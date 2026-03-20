@@ -8,10 +8,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// SpadesCui スペードCUIクラス
 type SpadesCui struct {
 	sc *controller.SpadesCuiController
 }
 
+// NewSpadesCui コンストラクタ
 func NewSpadesCui() *SpadesCui {
 	config := domain.DefaultSpadesConfig()
 	players := []*domain.SpadesPlayer{
@@ -26,8 +28,10 @@ func NewSpadesCui() *SpadesCui {
 	}
 }
 
+// Controller returns the game controller.
 func (cui *SpadesCui) Controller() CuiExecer { return cui.sc }
 
+// HelpLines returns the game's help lines.
 func (cui *SpadesCui) HelpLines() []string {
 	return []string{
 		i18n.T("spades.helpTitle"),
@@ -50,6 +54,7 @@ func (cui *SpadesCui) HelpLines() []string {
 	}
 }
 
+// Exec ゲーム実行
 func (cui *SpadesCui) Exec() {
 	RunCuiLoop(cui.sc, cui.HelpLines())
 }

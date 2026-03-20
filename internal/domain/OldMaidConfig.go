@@ -5,6 +5,7 @@ import "fmt"
 // OldMaidMode ババ抜きモード
 type OldMaidMode int
 
+// OldMaidのゲームモード定数
 const (
 	OldMaidModeNormal   OldMaidMode = iota // ババ抜き: ジョーカーが奇数カード
 	OldMaidModeJijiNuki                    // ジジ抜き: ランダム1枚除外

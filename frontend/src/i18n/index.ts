@@ -112,4 +112,5 @@ i18n
     },
   });
 
+/** Configured i18next instance with ja/en translations and language detection. */
 export default i18n;

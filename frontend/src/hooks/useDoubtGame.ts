@@ -6,6 +6,7 @@ import { playerName } from '../utils/playerUtils';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 
+/** Default Doubt game configuration. */
 export const DEFAULT_DOUBT_CONFIG: DoubtConfig = {
   doubtWindowSec: 10,
   cpuMemoryLevel: 1,
@@ -14,16 +15,20 @@ export const DEFAULT_DOUBT_CONFIG: DoubtConfig = {
   cpuMetaAI: false,
 };
 
+/** Available doubt window duration options in seconds. */
 export const DOUBT_WINDOW_OPTIONS = [3, 5, 10] as const;
 
+/** CPU memory level options for Doubt. */
 export const CPU_MEMORY_OPTIONS = [
   { value: 0, label: 'Easy' },
   { value: 1, label: 'Normal' },
   { value: 2, label: 'Hard' },
 ] as const;
 
+/** Available penalty draw limit options for Doubt (0 = unlimited). */
 export const PENALTY_DRAW_LIMIT_OPTIONS = [0, 3, 5, 10] as const;
 
+/** Build a human-readable description of a Doubt play action. */
 export function actionDesc(
   action: DoubtCpuAction,
   players: DoubtPlayerData[],
@@ -34,6 +39,7 @@ export function actionDesc(
   return t('actionDesc', { name, count: action.cardCount, value: valueName(action.claimedValue) });
 }
 
+/** Hook that manages Doubt game state, countdown timer, and player actions. */
 export function useDoubtGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const [claimedValue, setClaimedValue] = useState(1);

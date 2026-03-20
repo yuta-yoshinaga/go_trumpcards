@@ -8,6 +8,7 @@ import (
 // KlondikePhase クロンダイクゲームフェーズ
 type KlondikePhase int
 
+// Klondikeのフェーズ定数
 const (
 	// KlondikePhasePlaying プレイ中
 	KlondikePhasePlaying KlondikePhase = iota
@@ -47,6 +48,7 @@ type KlondikeConfig struct {
 // KlondikeScoringMode スコアリングモード
 type KlondikeScoringMode int
 
+// Klondikeのスコアリング方式定数
 const (
 	// KlondikeScoringNone スコアリングなし
 	KlondikeScoringNone KlondikeScoringMode = iota

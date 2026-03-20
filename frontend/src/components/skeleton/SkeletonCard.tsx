@@ -4,6 +4,7 @@ interface SkeletonCardProps {
   className?: string;
 }
 
+/** Renders an animated skeleton card placeholder. */
 export function SkeletonCard({ width, height, className }: SkeletonCardProps) {
   return (
     <div

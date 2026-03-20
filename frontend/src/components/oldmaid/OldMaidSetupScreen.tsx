@@ -16,6 +16,7 @@ interface SetupScreenProps {
   onStart: () => void;
 }
 
+/** Renders the Old Maid game setup screen with mode and CPU settings. */
 export function OldMaidSetupScreen({
   mode,
   cpuPlacementStrategy,

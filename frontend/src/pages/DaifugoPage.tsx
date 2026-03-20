@@ -20,6 +20,7 @@ import type { DaifugoAction } from '../types/card';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
+/** Renders the Daifugo game page with card play, revolution, and rule settings. */
 export function DaifugoPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('daifugo');

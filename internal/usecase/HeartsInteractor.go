@@ -8,13 +8,21 @@ import (
 
 // HeartsInteractorIF ハーツインタラクターインタフェース
 type HeartsInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.HeartsConfig) string
+	// Pass カード交換
 	Pass(cardIndices []int) string
+	// Play カードをプレイ
 	Play(cardIndex int) string
+	// NextTrick 次のトリックへ進む
 	NextTrick() string
+	// NextRound ラウンドをスコアリングして次のラウンドへ進む
 	NextRound() string
+	// GetConfig 現在の設定を取得
 	GetConfig() domain.HeartsConfig
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

@@ -8,11 +8,17 @@ import (
 
 // DaifugoInteractorIF 大富豪インタラクターインタフェース
 type DaifugoInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// Play 人間プレイヤーがカードを出す (または パスする)
 	Play(indices []int) string
+	// ResetWithConfig 設定を変更してゲームを初期化
 	ResetWithConfig(config domain.DaifugoConfig) string
+	// GetConfig 現在の設定を返す
 	GetConfig() domain.DaifugoConfig
+	// Sort 手札ソートモードを変更
 	Sort(mode domain.DaifugoSortMode) string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

@@ -20,6 +20,7 @@ import type {
   SpadesResponse,
 } from '../types/card';
 
+/** Unique session identifier for correlating API requests. */
 export const sessionId: string = crypto.randomUUID();
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
@@ -36,6 +37,7 @@ function gameExec<T>(game: string, body: Record<string, unknown>): Promise<T> {
   return postJson<T>(`/${game}/exec`, { ...body, sessionId });
 }
 
+/** Configuration options for BlackJack game settings. */
 export interface BlackJackConfigInput {
   dealerHitsSoft17?: boolean;
   cpuPlayerCount?: number;
@@ -46,12 +48,14 @@ export interface BlackJackConfigInput {
   surrenderRule?: number;
 }
 
+/** Side bet and multi-hand options for BlackJack. */
 export interface BlackJackBetOptions {
   perfectPairsBet?: number;
   twentyOnePlus3Bet?: number;
   handCount?: number;
 }
 
+/** API client for the BlackJack /blackjack/exec endpoint. */
 export const blackjackApi = {
   exec: (
     command:
@@ -81,6 +85,7 @@ export const blackjackApi = {
   ) => gameExec<BlackJackResponse>('blackjack', { command, amount, ...config, ...betOptions }),
 };
 
+/** Configuration options for Poker game settings. */
 export interface PokerConfigInput {
   cpuCount?: number;
   jokerCount?: number;
@@ -88,6 +93,7 @@ export interface PokerConfigInput {
   isLowball?: boolean;
 }
 
+/** API client for the Poker /poker/exec endpoint. */
 export const pokerApi = {
   exec: (
     command: 'reset' | 'exchange' | 'stand' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin' | 'odds',
@@ -97,6 +103,7 @@ export const pokerApi = {
   ) => gameExec<PokerResponse>('poker', { command, indices, amount, ...config }),
 };
 
+/** API client for the Old Maid /oldmaid/exec endpoint. */
 export const oldmaidApi = {
   exec: (
     command: 'reset' | 'draw' | 'shuffle' | 'reorder',
@@ -120,11 +127,13 @@ export const oldmaidApi = {
     }),
 };
 
+/** API client for the Daifugo /daifugo/exec endpoint. */
 export const daifugoApi = {
   exec: (command: 'reset' | 'play' | 'sort', indices?: number[], config?: DaifugoConfigInput, sortMode?: number) =>
     gameExec<DaifugoResponse>('daifugo', { command, indices, config, sortMode }),
 };
 
+/** API client for the Doubt /doubt/exec endpoint. */
 export const doubtApi = {
   exec: (
     command: 'reset' | 'play' | 'doubt' | 'skip',
@@ -148,6 +157,7 @@ export const doubtApi = {
     }),
 };
 
+/** Configuration options for Sevens game settings. */
 export interface SevensConfigInput {
   tunnelEnabled?: boolean;
   tunnelSkipWidth?: number;
@@ -160,6 +170,7 @@ export interface SevensConfigInput {
   jokerConsecutiveBanned?: boolean;
 }
 
+/** API client for the Sevens /sevens/exec endpoint. */
 export const sevensApi = {
   exec: (
     command: 'reset' | 'play' | 'joker',
@@ -177,6 +188,7 @@ export const sevensApi = {
     }),
 };
 
+/** Configuration options for Texas Hold'em game settings. */
 export interface HoldemConfigInput {
   smallBlind?: number;
   bigBlind?: number;
@@ -194,6 +206,7 @@ export interface HoldemConfigInput {
   addonAfterHand?: number;
 }
 
+/** API client for the Texas Hold'em /holdem/exec endpoint. */
 export const holdemApi = {
   exec: (
     command:
@@ -220,8 +233,10 @@ export const holdemApi = {
     }),
 };
 
+/** Configuration options for Omaha Hold'em (same as Hold'em). */
 export type OmahaConfigInput = HoldemConfigInput;
 
+/** API client for the Omaha Hold'em /omaha/exec endpoint. */
 export const omahaApi = {
   exec: (
     command:
@@ -248,12 +263,14 @@ export const omahaApi = {
     }),
 };
 
+/** Configuration options for Hearts game settings. */
 export interface HeartsConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
   omnibusJD?: boolean;
 }
 
+/** API client for the Hearts /hearts/exec endpoint. */
 export const heartsApi = {
   exec: (
     command: 'reset' | 'pass' | 'play' | 'next' | 'nextround',
@@ -269,6 +286,7 @@ export const heartsApi = {
     }),
 };
 
+/** Configuration options for Spades game settings. */
 export interface SpadesConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
@@ -276,6 +294,7 @@ export interface SpadesConfigInput {
   bagPenaltyThreshold?: number;
 }
 
+/** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = {
   exec: (
     command: 'reset' | 'bid' | 'play' | 'next' | 'nextround',
@@ -291,10 +310,12 @@ export const spadesApi = {
     }),
 };
 
+/** Configuration options for Memory game settings. */
 export interface MemoryConfigInput {
   cpuDifficulty?: number;
 }
 
+/** API client for the Memory /memory/exec endpoint. */
 export const memoryApi = {
   exec: (command: 'reset' | 'flip' | 'next' | 'log', position?: number, config?: MemoryConfigInput) =>
     gameExec<MemoryResponse>('memory', {
@@ -304,17 +325,20 @@ export const memoryApi = {
     }),
 };
 
+/** Source or target zone for a Klondike card move. */
 export interface KlondikeMoveZone {
   zone: string;
   col?: number;
   cardIndex?: number;
 }
 
+/** Configuration options for Klondike game settings. */
 export interface KlondikeConfigInput {
   drawCount?: number;
   scoringMode?: number;
 }
 
+/** API client for the Klondike /klondike/exec endpoint. */
 export const klondikeApi = {
   exec: (
     command: 'reset' | 'draw' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
@@ -330,6 +354,7 @@ export const klondikeApi = {
     }),
 };
 
+/** Source or target zone for a FreeCell card move. */
 export interface FreeCellMoveZone {
   zone: string;
   col?: number;
@@ -337,6 +362,7 @@ export interface FreeCellMoveZone {
   cardIndex?: number;
 }
 
+/** API client for the FreeCell /freecell/exec endpoint. */
 export const freecellApi = {
   exec: (
     command: 'reset' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
@@ -350,11 +376,13 @@ export const freecellApi = {
     }),
 };
 
+/** Configuration options for Crazy Eights game settings. */
 export interface CrazyEightsConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
 }
 
+/** API client for the Crazy Eights /crazyeights/exec endpoint. */
 export const crazyeightsApi = {
   exec: (
     command: 'reset' | 'play' | 'draw' | 'suit' | 'nextround',
@@ -370,11 +398,13 @@ export const crazyeightsApi = {
     }),
 };
 
+/** Configuration options for Gin Rummy game settings. */
 export interface GinRummyConfigInput {
   cpuDifficulty?: number;
   pointLimit?: number;
 }
 
+/** API client for the Gin Rummy /ginrummy/exec endpoint. */
 export const ginrummyApi = {
   exec: (
     command: 'reset' | 'drawstock' | 'drawdiscard' | 'discard' | 'knock' | 'layoff' | 'nextround' | 'log',
@@ -390,6 +420,7 @@ export const ginrummyApi = {
     }),
 };
 
+/** API client for the Baccarat /baccarat/exec endpoint. */
 export const baccaratApi = {
   exec: (
     command: 'reset' | 'bet' | 'log' | 'clearhistory',
@@ -420,6 +451,7 @@ const games = [
 ] as const;
 type Game = (typeof games)[number];
 
+/** API clients for fetching action logs from each game's /log endpoint. */
 export const actionLogApi: { [K in Game]: () => Promise<ActionLogResponse> } = games.reduce(
   (acc, game) => {
     acc[game] = () => gameExec<ActionLogResponse>(game, { command: 'log' });

@@ -1,0 +1,134 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+# Allow only one concurrent deployment, skipping runs queued between the
+# run in-progress and latest queued. However, do NOT cancel in-progress runs
+# as we want to allow these production deployments to complete.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.10'
+
+      - name: Install Go doc tools
+        run: go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
+
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: bun install --frozen-lockfile
+
+      - name: Generate Go docs (Markdown)
+        run: |
+          mkdir -p _site/go
+          for pkg in $(go list ./internal/...); do
+            # Convert package path to directory structure
+            rel="${pkg#github.com/yuta-yoshinaga/go_trumpcards/}"
+            dir="_site/go/${rel}"
+            mkdir -p "$dir"
+            gomarkdoc "$pkg" > "$dir/index.md" 2>/dev/null || true
+          done
+
+      - name: Convert Go docs to HTML
+        run: |
+          find _site/go -name '*.md' | while read -r mdfile; do
+            htmlfile="${mdfile%.md}.html"
+            pandoc "$mdfile" \
+              --standalone \
+              --metadata title="$(basename "$(dirname "$mdfile")")" \
+              --css="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css" \
+              -o "$htmlfile"
+            rm "$mdfile"
+          done
+
+      - name: Generate Go package index
+        run: |
+          cat > _site/go/index.html <<'GOINDEX'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Go API Documentation</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">
+          </head>
+          <body>
+          <h1>Go API Documentation</h1>
+          <p><a href="../">← Back to top</a></p>
+          <ul>
+          GOINDEX
+          find _site/go -name 'index.html' -not -path '_site/go/index.html' | sort | while read -r f; do
+            rel="${f#_site/go/}"
+            dir="$(dirname "$rel")"
+            echo "<li><a href=\"$rel\">$dir</a></li>" >> _site/go/index.html
+          done
+          cat >> _site/go/index.html <<'GOINDEX'
+          </ul>
+          </body>
+          </html>
+          GOINDEX
+
+      - name: Generate TypeScript docs
+        working-directory: frontend
+        run: bunx typedoc
+
+      - name: Copy TypeScript docs
+        run: |
+          mkdir -p _site/ts
+          cp -r frontend/docs/* _site/ts/
+
+      - name: Run repomix
+        run: bunx repomix --output repomix-output.txt --style xml --compress --remove-empty-lines
+
+      - name: Copy repomix output
+        run: cp repomix-output.txt _site/repomix-output.txt
+
+      - name: Copy landing page
+        run: cp docs/pages/index.html _site/index.html
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

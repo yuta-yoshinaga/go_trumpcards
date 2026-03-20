@@ -57,6 +57,7 @@ cd frontend && bun run build # Build React app
 cd frontend && bun run check # Biome lint + format check
 cd frontend && bun run test  # Run Vitest unit tests
 cd frontend && bun run e2e   # Run Playwright E2E tests
+cd frontend && bun run docs:generate  # Generate TypeDoc documentation
 
 # Docker
 docker build -t go_trumpcards .
@@ -94,6 +95,7 @@ Before marking any task complete:
 3. Go files formatted: `goimports -w` on modified files
 4. Frontend checks pass (if applicable): `cd frontend && bun run build && bun run check && bun run test`
 5. Branch coverage is 100% for modified packages
+6. GoDoc/TSDoc comments present on all new/modified exported symbols
 
 ### Detailed rules by layer
 
@@ -115,9 +117,12 @@ Before marking any task complete:
 | Modify anything under `frontend/` | Run `cd frontend && bun run build`, `cd frontend && bun run check`, and `cd frontend && bun run test` and ensure all three pass before committing |
 | Add/remove frontend source files or change testing approach | Update Testing section in [`CLAUDE.md`](CLAUDE.md) (Frontend testing) and [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |
 | Change frontend tooling or scripts | [`frontend/README.md`](frontend/README.md) (Scripts, Tooling) |
-| Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game |
+| Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game (follow `docs/manual/cui_template.md` / `docs/manual/web_template.md` format) |
+| Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Make an architectural decision (new technology, pattern, or structural change) | Add or update an ADR in [`docs/adr/`](docs/adr/) |
+| Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |
+| Add/modify exported TS symbol | Ensure TSDoc comment (`/** description */`) is present |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
@@ -127,6 +132,47 @@ Use commit type `docs` (or include doc changes in the same commit as the code ch
 
 - **Design specs and brainstorming output**: Post as a comment on the relevant GitHub issue
 - **Architecture Decision Records (ADRs)**: These ARE worth committing to `docs/adr/` — they capture the *why* behind decisions and remain valuable long-term
+
+## New Game Addition Checklist
+
+When adding a new game, follow this checklist to avoid post-feat fix commits. Complete ALL items before creating the PR.
+
+### Backend (Go)
+
+1. **Domain**: Create `internal/domain/<Game>.go`, `<Game>Player.go`, `<Game>Config.go` (if configurable)
+2. **Reuse shared helpers**: `deal_helper.go` (dealAllCards), `hand_eval.go` (hand evaluation), `betting.go` (chip/betting), `play_style_helper.go` (CPU styles), `player_helpers.go` (resetPlayers), `hesitation.go` (CPU delay), `memory_manager.go`/`memory_decay.go` (CPU memory AI), `GamePlayer.go` (base player struct), `ChipHolder.go` (chip system), `kicker.go` (kicker comparison)
+3. **Interactor**: `internal/usecase/<Game>Interactor.go` with presenter interface in `internal/usecase/presenter/`
+4. **Controller**: CUI controller in `internal/adapter/controller/`, Web controller in `internal/adapter/controller/`, reuse `cuiutil` package for input parsing and `ClampIntPtr` for config validation
+5. **Presenter**: CUI and Web presenters in `internal/adapter/presenter/`, reuse `buildCuiOutput`, `cuiCardListStr`, `ActionLogOutput` helpers, `WebOutputBase` for common web output fields
+6. **Infrastructure**: Register in `cmd/trumpcards/main.go` (CLI) and `internal/infrastructure/web/TrumpCardsWeb.go` (API route)
+7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
+8. **100% branch coverage** for all new packages
+
+### Frontend (React)
+
+9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `useGameReplay`, `useCardDimensions`, `gameExec` API helper
+10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `CardBack`, `LoadingSpinner`, `ErrorBoundary`
+11. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files
+12. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry
+13. **Run `bun run build && bun run check && bun run test`**
+
+### Documentation (same commit)
+
+14. **`README.md`**: Add game description and CLI command
+15. **`CLAUDE.md`**: Add CLI command to Commands section
+16. **`docs/games.md`**: Add game entity description
+17. **`docs/architecture.md`**: Update endpoint count and list
+18. **`api/openapi.yaml`**: Add endpoint path, tag definition, and request/response schemas in components
+19. **`frontend/CLAUDE.md`**: Update i18n translation file list
+20. **`docs/manual/cui/<game>.md`** and **`docs/manual/web/<game>.md`**: Add game manuals
+
+### Final verification
+
+21. `go test -tags test ./...` -- all tests pass
+22. `golangci-lint run ./...` -- no warnings
+23. `cd frontend && bun run build && bun run check && bun run test` -- all pass
+24. **E2E test**: Create `frontend/e2e/<game>.spec.ts` with basic game flow test
+25. `cd frontend && bun run e2e` -- all E2E tests pass
 
 ## Git Workflow
 

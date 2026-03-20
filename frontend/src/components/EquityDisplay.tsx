@@ -7,6 +7,7 @@ interface EquityDisplayProps {
   potOdds: number;
 }
 
+/** Renders a Hold'em equity display with win probability, pot odds, and hand odds table. */
 export function EquityDisplay({ equity, potOdds }: EquityDisplayProps) {
   const { t } = useTranslation('holdem');
   const [showHandOdds, setShowHandOdds] = useState(false);

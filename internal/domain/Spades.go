@@ -15,6 +15,7 @@ const SpadesHandSize = 13
 // SpadesPhase ゲームフェーズ
 type SpadesPhase int
 
+// Spadesのフェーズ定数
 const (
 	// SpadesPhaseBid ビッドフェーズ
 	SpadesPhaseBid SpadesPhase = 0

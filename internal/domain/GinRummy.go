@@ -27,6 +27,7 @@ const GinRummyUndercutBonus = 25
 // GinRummyPhase ゲームフェーズ
 type GinRummyPhase int
 
+// GinRummyのフェーズ定数
 const (
 	// GinRummyPhaseDraw ドローフェーズ (山札または捨て札から引く)
 	GinRummyPhaseDraw GinRummyPhase = 0

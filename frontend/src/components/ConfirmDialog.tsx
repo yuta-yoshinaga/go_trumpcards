@@ -1,5 +1,6 @@
 import { btnDanger, btnSecondary } from '../styles/buttonStyles';
 
+/** Props for the ConfirmDialog component. */
 export interface ConfirmDialogProps {
   open: boolean;
   title: string;
@@ -10,6 +11,7 @@ export interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
+/** Renders a modal confirmation dialog with confirm and cancel buttons. */
 export function ConfirmDialog(props: ConfirmDialogProps) {
   if (!props.open) return null;
 

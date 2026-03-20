@@ -3,6 +3,7 @@ import { useCardDimensions } from '../../hooks/useCardDimensions';
 import type { Card } from '../../types/card';
 import { CardImage } from '../CardImage';
 
+/** Renders the discarded pairs area for Old Maid. */
 export function OldMaidDiscardedArea({ cards }: { cards: Card[] | undefined }) {
   const { t } = useTranslation('oldmaid');
   const { cardWidth, cardHeight } = useCardDimensions();

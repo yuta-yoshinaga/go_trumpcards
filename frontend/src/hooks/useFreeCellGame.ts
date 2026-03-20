@@ -4,6 +4,7 @@ import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { FreeCellHint } from '../types/card';
 import { useGameApi } from './useGameApi';
 
+/** Hook that manages FreeCell game state, source selection, hints, and moves. */
 export function useFreeCellGame() {
   const { state, loading, error, exec: rawExec } = useGameApi(freecellApi.exec);
   const [selectedSource, setSelectedSource] = useState<FreeCellMoveZone | null>(null);

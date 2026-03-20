@@ -4,19 +4,23 @@ import type { GinRummyConfig } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 
+/** Default Gin Rummy game configuration. */
 export const DEFAULT_GINRUMMY_CONFIG: GinRummyConfig = {
   cpuDifficulty: 1,
   pointLimit: 100,
 };
 
+/** CPU difficulty level options for Gin Rummy. */
 export const CPU_DIFFICULTY_OPTIONS = [
   { value: 0, label: 'Easy' },
   { value: 1, label: 'Normal' },
   { value: 2, label: 'Hard' },
 ] as const;
 
+/** Available point limit options for Gin Rummy. */
 export const POINT_LIMIT_OPTIONS = [50, 100, 150, 200] as const;
 
+/** Hook that manages Gin Rummy game state and player actions. */
 export function useGinRummyGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const [ginRummyConfig, setGinRummyConfig] = useState<GinRummyConfig>(DEFAULT_GINRUMMY_CONFIG);

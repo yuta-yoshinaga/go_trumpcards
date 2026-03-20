@@ -8,10 +8,12 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// GinRummyCui ジンラミーCUIクラス
 type GinRummyCui struct {
 	cc *controller.GinRummyCuiController
 }
 
+// NewGinRummyCui コンストラクタ
 func NewGinRummyCui() *GinRummyCui {
 	config := domain.DefaultGinRummyConfig()
 	players := []*domain.GinRummyPlayer{
@@ -24,8 +26,10 @@ func NewGinRummyCui() *GinRummyCui {
 	}
 }
 
+// Controller returns the game controller.
 func (cui *GinRummyCui) Controller() CuiExecer { return cui.cc }
 
+// HelpLines returns the game's help lines.
 func (cui *GinRummyCui) HelpLines() []string {
 	return []string{
 		i18n.T("ginrummy.helpTitle"),
@@ -50,6 +54,7 @@ func (cui *GinRummyCui) HelpLines() []string {
 	}
 }
 
+// Exec ゲーム実行
 func (cui *GinRummyCui) Exec() {
 	RunCuiLoop(cui.cc, cui.HelpLines())
 }

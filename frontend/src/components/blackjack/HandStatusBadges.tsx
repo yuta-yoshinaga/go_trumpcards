@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+/** Props for BlackJack hand status badges. */
 export interface HandStatusBadgesProps {
   busted: boolean;
   doubled: boolean;
@@ -7,6 +8,7 @@ export interface HandStatusBadgesProps {
   surrendered: boolean;
 }
 
+/** Renders status badges (bust, double-down, blackjack, surrender) for a hand. */
 export function HandStatusBadges({ busted, doubled, isBlackJack, surrendered }: HandStatusBadgesProps) {
   const { t } = useTranslation('blackjack');
   return (

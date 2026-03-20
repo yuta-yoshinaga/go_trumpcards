@@ -4,20 +4,24 @@ import type { HeartsConfig } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 
+/** Default Hearts game configuration. */
 export const DEFAULT_HEARTS_CONFIG: HeartsConfig = {
   cpuDifficulty: 1,
   pointLimit: 100,
   omnibusJD: false,
 };
 
+/** CPU difficulty level options for Hearts. */
 export const CPU_DIFFICULTY_OPTIONS = [
   { value: 0, label: 'Easy' },
   { value: 1, label: 'Normal' },
   { value: 2, label: 'Hard' },
 ] as const;
 
+/** Available point limit options for Hearts. */
 export const POINT_LIMIT_OPTIONS = [50, 100, 150, 200] as const;
 
+/** Hook that manages Hearts game state and player actions. */
 export function useHeartsGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const [heartsConfig, setHeartsConfig] = useState<HeartsConfig>(DEFAULT_HEARTS_CONFIG);

@@ -102,4 +102,5 @@ function HumanArea({
   );
 }
 
+/** Renders the human player area for Sevens with playable card highlighting. */
 export { HumanArea as SevensHumanArea };

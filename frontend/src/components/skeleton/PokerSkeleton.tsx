@@ -3,6 +3,7 @@ import { GameFooter } from '../GameFooter';
 import { SkeletonBar } from './SkeletonBar';
 import { SkeletonHand } from './SkeletonHand';
 
+/** Renders a loading skeleton placeholder for the Poker page. */
 export function PokerSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (

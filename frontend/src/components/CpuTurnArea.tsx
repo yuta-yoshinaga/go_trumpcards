@@ -16,6 +16,7 @@ interface CpuTurnAreaProps {
   children?: React.ReactNode;
 }
 
+/** Renders a player area with name, turn indicator, and optional children. */
 export function CpuTurnArea({
   id,
   playerId,

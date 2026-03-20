@@ -7,6 +7,7 @@ interface GameMessageBoxProps {
   alwaysVisible?: boolean;
 }
 
+/** Renders a game message box with i18n translation support via messageCode. */
 export function GameMessageBox({ message, messageCode, messageParams, alwaysVisible = false }: GameMessageBoxProps) {
   const { t } = useTranslation('common');
   let displayMessage = message ?? '';

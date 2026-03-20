@@ -1,7 +1,10 @@
+/** Default delay in milliseconds between replay animation steps. */
 export const REPLAY_DELAY_MS = 800;
 
+/** Return a promise that resolves after the given milliseconds. */
 export const delay = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
+/** Configuration for the replay animation runner. */
 export interface ReplayConfig<TState> {
   buildReplayStates: (finalState: TState) => TState[];
   buildHumanActionState?: (finalState: TState) => TState | null;
@@ -26,6 +29,7 @@ export function shouldSkipReplay<TState>(
   return false;
 }
 
+/** Run a step-by-step replay animation of CPU actions. */
 export async function runReplay<TState>(
   finalState: TState,
   setDisplayState: (state: TState) => void,

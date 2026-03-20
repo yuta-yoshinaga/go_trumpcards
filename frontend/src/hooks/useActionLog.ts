@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { actionLogApi } from '../api/gameApi';
 import type { ActionLogEntry } from '../types/card';
 
+/** Hook that provides action log fetching and display state for a game. */
 export function useActionLog(game: keyof typeof actionLogApi) {
   const [actionLog, setActionLog] = useState<ActionLogEntry[] | null>(null);
 

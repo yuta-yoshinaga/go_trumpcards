@@ -3,6 +3,7 @@ import { GameFooter } from '../GameFooter';
 import { SkeletonBar } from './SkeletonBar';
 import { SkeletonCard } from './SkeletonCard';
 
+/** Renders a loading skeleton placeholder for the FreeCell page. */
 export function FreeCellSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (

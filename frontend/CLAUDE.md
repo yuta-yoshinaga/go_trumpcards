@@ -42,18 +42,37 @@ bun run e2e:headed   # Run E2E tests in headed browser
 bun run e2e:ui       # Run with Playwright UI
 ```
 
-E2E tests should not assert on specific card values (randomness). Instead, verify flow: button visibility, phase transitions, and reset behavior.
+### E2E test guidelines (avoiding flaky tests)
+
+- **Never assert on specific card values** -- card games involve shuffling; assertions on card content will be flaky
+- **Verify phase transitions** -- check that buttons appear/disappear and the game progresses through phases
+- **Verify reset behavior** -- ensure the game can be reset and restarted
+- **Avoid cumulative timeouts** -- use `waitFor` with reasonable timeouts; don't chain multiple long waits
+- **Use `.first()` on `.or()` chains** -- Playwright strict mode requires a single element; use `.first()` when combining locators
+- **Scope selectors carefully** -- e.g., scope card selectors to exclude NavBar elements to avoid false matches
+- **Handle confirm dialogs** -- if the game has a reset confirmation dialog, click it in the test after reset
 
 ## i18n (Internationalization)
 
 The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with **i18next-browser-languagedetector**.
 
 - **Config**: `src/i18n/index.ts`
-- **Translation files**: `src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem,hearts,memory,klondike,freecell,baccarat,spades}.json`
+- **Translation files**: `src/i18n/locales/{ja,en}/{common,blackjack,poker,oldmaid,daifugo,sevens,doubt,holdem,omaha,hearts,memory,klondike,freecell,baccarat,spades,crazyeights,ginrummy}.json`
 - **In components**: use the `useTranslation()` hook
 - **In non-component files** (e.g., `playerUtils.ts`, `messages.ts`, `gameConstants.ts`): import the `i18n` instance directly
 - **Tests**: i18n is initialized in `src/test/setup.ts` with ja translations loaded
 - **Server responses**: Web presenters send `messageCode` and `messageParams` alongside `message` for i18n-ready frontend rendering
+
+## TSDoc Comments
+
+All exported symbols (types, interfaces, functions, components, constants, hooks) must have TSDoc comments.
+
+- **Comment style**: `/** Brief description */`
+- **React components**: describe what the component renders
+- **Hooks**: describe what the hook provides
+- **API functions**: describe what API endpoint is called
+- **Utility functions**: describe what the function does
+- **Generated docs**: run `bun run docs:generate` to produce HTML documentation in `docs/` (gitignored)
 
 ## Pre-commit checks
 

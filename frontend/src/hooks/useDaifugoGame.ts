@@ -104,6 +104,7 @@ function buildDaifugoReplayStates(finalState: DaifugoResponse): DaifugoResponse[
   });
 }
 
+/** Hook that manages Daifugo game state, card selection, and CPU replay. */
 export function useDaifugoGame() {
   const {
     selected: selectedIndices,

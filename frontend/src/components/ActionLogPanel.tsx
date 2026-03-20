@@ -26,6 +26,7 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   ).filter((el) => !el.hasAttribute('disabled'));
 }
 
+/** Renders a panel displaying game action log entries with copy and download. */
 export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
   const { t } = useTranslation('common');
   const [copied, setCopied] = useState(false);

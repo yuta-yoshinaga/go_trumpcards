@@ -2,6 +2,7 @@ interface ErrorAlertProps {
   message: string | null;
 }
 
+/** Renders an error alert banner, hidden when message is null. */
 export function ErrorAlert({ message }: ErrorAlertProps) {
   if (!message) return null;
   return (

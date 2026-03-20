@@ -18,6 +18,7 @@ const CrazyEightsWildValue = 8
 // CrazyEightsPhase ゲームフェーズ
 type CrazyEightsPhase int
 
+// CrazyEightsのフェーズ定数
 const (
 	// CrazyEightsPhasePlay 通常プレイフェーズ
 	CrazyEightsPhasePlay CrazyEightsPhase = 0

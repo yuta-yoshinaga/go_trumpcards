@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
+/** Hook that manages confirm dialog open/close state with callback. */
 export function useConfirmDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const callbackRef = useRef<(() => void) | null>(null);

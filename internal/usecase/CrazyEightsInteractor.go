@@ -8,13 +8,21 @@ import (
 
 // CrazyEightsInteractorIF クレイジーエイトインタラクターインタフェース
 type CrazyEightsInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.CrazyEightsConfig) string
+	// Play カードをプレイ
 	Play(cardIndex int) string
+	// ChooseSuit スートを選択 (8を出した後)
 	ChooseSuit(suit int) string
+	// Draw カードを引く
 	Draw() string
+	// NextRound ラウンドをスコアリングして次のラウンドへ進む
 	NextRound() string
+	// GetConfig 現在の設定を取得
 	GetConfig() domain.CrazyEightsConfig
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 
@@ -130,8 +138,9 @@ func (ci *CrazyEightsInteractor) runCpuTurns() {
 	}
 }
 
-// CrazyEightsPhaseRoundEnd is imported from domain for convenience in this file.
 const (
+	// CrazyEightsPhaseRoundEnd ラウンド終了フェーズ (domain からの再エクスポート)
 	CrazyEightsPhaseRoundEnd = domain.CrazyEightsPhaseRoundEnd
-	CrazyEightsPhaseGameEnd  = domain.CrazyEightsPhaseGameEnd
+	// CrazyEightsPhaseGameEnd ゲーム終了フェーズ (domain からの再エクスポート)
+	CrazyEightsPhaseGameEnd = domain.CrazyEightsPhaseGameEnd
 )
