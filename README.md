@@ -114,7 +114,7 @@ PORT=3000 go run ./cmd/server          # カスタムポートで起動 (直接)
 
 ### Test
 ```sh
-go test ./...  # 全テスト実行
+go test -tags test ./...  # 全テスト実行
 ```
 
 ### Deploy

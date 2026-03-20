@@ -28,12 +28,16 @@ tags:
     description: Doubt (ダウト) game
   - name: holdem
     description: Texas Hold'em game
+  - name: omaha
+    description: Omaha Hold'em game
   - name: hearts
     description: Hearts game
   - name: memory
     description: Memory (神経衰弱) game
   - name: klondike
     description: Klondike (ソリティア) game
+  - name: freecell
+    description: FreeCell (フリーセル) game
   - name: baccarat
     description: Baccarat (バカラ) game
   - name: spades
@@ -1394,38 +1398,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [command, sessionId]
-              properties:
-                command:
-                  type: string
-                sessionId:
-                  type: string
-                bid:
-                  type: integer
-                  minimum: 0
-                  maximum: 13
-                cardIndex:
-                  type: integer
-                config:
-                  type: object
-                  properties:
-                    cpuDifficulty:
-                      type: integer
-                      minimum: 0
-                      maximum: 2
-                    pointLimit:
-                      type: integer
-                      minimum: 1
-                      maximum: 1000
-                    nilBonus:
-                      type: integer
-                      minimum: 0
-                      maximum: 500
-                    bagPenaltyThreshold:
-                      type: integer
-                      minimum: 1
-                      maximum: 100
+              $ref: '#/components/schemas/SpadesRequest'
             examples:
               reset:
                 summary: Start a new game
@@ -1447,8 +1420,16 @@ paths:
       responses:
         '200':
           description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpadesResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpadesResponse'
 
   /crazyeights/exec:
     post:
@@ -1486,31 +1467,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [command, sessionId]
-              properties:
-                command:
-                  type: string
-                sessionId:
-                  type: string
-                cardIndex:
-                  type: integer
-                suit:
-                  type: integer
-                  minimum: 1
-                  maximum: 4
-                  description: "Suit choice after playing an 8 (1=♠, 2=♣, 3=♥, 4=♦)"
-                config:
-                  type: object
-                  properties:
-                    cpuDifficulty:
-                      type: integer
-                      minimum: 0
-                      maximum: 2
-                    pointLimit:
-                      type: integer
-                      minimum: 1
-                      maximum: 1000
+              $ref: '#/components/schemas/CrazyEightsRequest'
             examples:
               reset:
                 summary: Start a new game
@@ -1536,25 +1493,17 @@ paths:
                   sessionId: my-session-001
       responses:
         '200':
-          description: |
-            Command processed successfully.
-
-            Response body includes:
-            - `players` — array of player objects (hand, score, name)
-            - `phase` — current game phase (0=Play, 1=ChooseSuit, 2=RoundEnd, 3=GameEnd)
-            - `roundNumber` — current round number
-            - `currentPlayerIdx` — index of the player whose turn it is
-            - `discardTop` — the top card of the discard pile
-            - `drawPileCount` — number of cards remaining in the draw pile
-            - `chosenSuit` — suit chosen after playing an 8 (null if not applicable)
-            - `gameEndFlag` — whether the match has ended
-            - `winnerIdx` — index of the match winner (-1 if not ended)
-            - `message` — human-readable status message
-            - `messageCode` — machine-readable message key
-            - `messageParams` — parameters for message interpolation
-            - `config` — current game configuration
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrazyEightsResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CrazyEightsResponse'
 
   /ginrummy/exec:
     post:
@@ -1597,31 +1546,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [command, sessionId]
-              properties:
-                command:
-                  type: string
-                sessionId:
-                  type: string
-                cardIndex:
-                  type: integer
-                cardIndices:
-                  type: array
-                  items:
-                    type: integer
-                  description: "Card indices for layoff command"
-                config:
-                  type: object
-                  properties:
-                    cpuDifficulty:
-                      type: integer
-                      minimum: 0
-                      maximum: 2
-                    pointLimit:
-                      type: integer
-                      minimum: 1
-                      maximum: 1000
+              $ref: '#/components/schemas/GinRummyRequest'
             examples:
               reset:
                 summary: Start a new game
@@ -1658,28 +1583,17 @@ paths:
                   sessionId: my-session-001
       responses:
         '200':
-          description: |
-            Command processed successfully.
-
-            Response body includes:
-            - `players` — array of player objects (hand, score, name)
-            - `phase` — current game phase (0=Draw, 1=Discard, 2=Layoff, 3=RoundEnd, 4=GameEnd)
-            - `roundNumber` — current round number
-            - `currentPlayerIdx` — index of the player whose turn it is
-            - `discardTop` — the top card of the discard pile
-            - `drawPileCount` — number of cards remaining in the stock pile
-            - `gameEndFlag` — whether the match has ended
-            - `winnerIdx` — index of the match winner (-1 if not ended)
-            - `knockerIdx` — index of the player who knocked (-1 if not applicable)
-            - `knockerMelds` — knocker's melds (array of card arrays)
-            - `knockerDeadwood` — knocker's deadwood points
-            - `isGin` — whether the knock was a gin
-            - `message` — human-readable status message
-            - `messageCode` — machine-readable message key
-            - `messageParams` — parameters for message interpolation
-            - `config` — current game configuration
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GinRummyResponse'
         '400':
           description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GinRummyResponse'
 
 components:
   schemas:
@@ -5094,6 +5008,395 @@ components:
         message:
           type: string
           description: Game result or error message. Empty during bet phase.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Spades
+    # -------------------------------------------------------------------------
+    SpadesRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `play` (`p`), `next` (`n`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, bid, b, play, p, next, n, nextround, nr, log, l]
+          example: reset
+        bid:
+          type: integer
+          description: Bid value (0-13).  Required for `bid` command.
+          minimum: 0
+          maximum: 13
+          example: 3
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+            nilBonus:
+              type: integer
+              minimum: 0
+              maximum: 500
+            bagPenaltyThreshold:
+              type: integer
+              minimum: 1
+              maximum: 100
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    SpadesResponse:
+      type: object
+      description: Current state of the Spades game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              trickCount:
+                type: integer
+              bags:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        trickNumber:
+          type: integer
+          description: Current trick number within the round
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        bidPlayerIdx:
+          type: integer
+          description: Index of the player currently bidding
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        spadesBroken:
+          type: boolean
+          description: Whether spades have been broken (played as a non-lead card)
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (-1 if not ended)
+        leadPlayerIdx:
+          type: integer
+          description: Index of the player who leads the current trick
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+            nilBonus:
+              type: integer
+            bagPenaltyThreshold:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Crazy Eights
+    # -------------------------------------------------------------------------
+    CrazyEightsRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `play` (`p`),
+            `draw` (`d`), `suit` (`s`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, play, p, draw, d, suit, s, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        suit:
+          type: integer
+          description: "Suit choice after playing an 8 (1=♠, 2=♣, 3=♥, 4=♦).  Required for `suit` command."
+          minimum: 1
+          maximum: 4
+          example: 3
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CrazyEightsResponse:
+      type: object
+      description: Current state of the Crazy Eights game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Play, 1 = ChooseSuit, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the draw pile
+        chosenSuit:
+          type: integer
+          description: "Suit chosen after playing an 8 (0 if not applicable; 1=♠, 2=♣, 3=♥, 4=♦)"
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Gin Rummy
+    # -------------------------------------------------------------------------
+    GinRummyRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `drawstock` (`ds`),
+            `drawdiscard` (`dd`), `discard` (`d`), `knock` (`k`),
+            `layoff` (`lo`), `nextround` (`nr`), `log` (`l`).
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, knock, k, layoff, lo, nextround, nr, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to discard or knock with.  Required for `discard` and `knock` commands.
+          example: 2
+        cardIndices:
+          type: array
+          description: Card indices for `layoff` command.
+          items:
+            type: integer
+          example: [0, 3]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    GinRummyResponse:
+      type: object
+      description: Current state of the Gin Rummy game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0 = Draw, 1 = Discard, 2 = Layoff, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        discardTop:
+          description: The top card of the discard pile
+          $ref: '#/components/schemas/Card'
+        drawPileCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+        gameEndFlag:
+          type: boolean
+          description: Whether the match has ended
+        winnerIdx:
+          type: integer
+          description: Index of the match winner (-1 if not ended)
+        knockerIdx:
+          type: integer
+          description: Index of the player who knocked (-1 if not applicable)
+        knockerMelds:
+          type: array
+          description: "Knocker's melds (array of card groups)"
+          items:
+            type: object
+            properties:
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+        knockerDeadwood:
+          type: array
+          description: "Knocker's deadwood cards"
+          items:
+            $ref: '#/components/schemas/Card'
+        isGin:
+          type: boolean
+          description: Whether the knock was a gin (0 deadwood)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
           example: ""
         messageCode:
           type: string
