@@ -35,3 +35,5 @@ Each ADR follows the format:
 | [ADR-0018](0018-ansi-color-output.md) | ANSI color output for CLI with TTY auto-detection | Accepted | 2026-03-14 |
 | [ADR-0019](0019-ci-cd-pipeline.md) | CI/CD pipeline (CodeQL, golangci-lint, auto-tagging) | Accepted | 2021-04-15 |
 | [ADR-0020](0020-domain-helper-extraction.md) | Domain helper extraction and DRY refactoring | Accepted | 2026-03-14 |
+| [ADR-0021](0021-bun-package-manager.md) | Migrate package manager from npm to bun | Accepted | 2026-03-15 |
+| [ADR-0022](0022-automated-quality-gates.md) | Automated quality gates via Claude Code hooks | Accepted | 2026-03-20 |
