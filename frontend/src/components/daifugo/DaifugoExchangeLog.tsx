@@ -3,6 +3,7 @@ import type { DaifugoExchangeAction } from '../../types/card';
 import { cardLabel } from '../../utils/cardUtils';
 import { findPlayerName } from '../../utils/playerUtils';
 
+/** Renders the card exchange log between ranked players in Daifugo. */
 export function DaifugoExchangeLog({
   players,
   actions,

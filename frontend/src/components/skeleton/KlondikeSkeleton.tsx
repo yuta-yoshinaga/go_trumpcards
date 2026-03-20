@@ -3,6 +3,7 @@ import { GameFooter } from '../GameFooter';
 import { SkeletonBar } from './SkeletonBar';
 import { SkeletonCard } from './SkeletonCard';
 
+/** Renders a loading skeleton placeholder for the Klondike page. */
 export function KlondikeSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (

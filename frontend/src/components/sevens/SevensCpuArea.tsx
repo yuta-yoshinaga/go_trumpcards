@@ -28,4 +28,5 @@ function SevCpuArea({ player, isCurrentTurn }: { player: SevensPlayerData; isCur
   );
 }
 
+/** Renders a CPU player area for Sevens with card count and pass info. */
 export { SevCpuArea as SevensCpuArea };

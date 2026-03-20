@@ -27,6 +27,7 @@ const GINRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [GinRummyPhase.GAME_END]: 'gameEnd',
 };
 
+/** Renders the Gin Rummy game page with draw, discard, knock, and layoff phases. */
 export function GinRummyPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ginrummy');

@@ -13,6 +13,7 @@ const VALID_CPU_COUNTS = [0, 1, 2, 3] as const;
 const VALID_HAND_COUNTS = [1, 2, 3] as const;
 const COUNTING_SYSTEMS = [BJ_COUNTING_HILO, BJ_COUNTING_KO, BJ_COUNTING_ZEN, BJ_COUNTING_OMEGA2] as const;
 
+/** Props for BlackJack bet phase controls. */
 export interface BjBetPhaseControlsProps {
   betAmount: number;
   onBetAmountChange: (v: number) => void;
@@ -44,6 +45,7 @@ export interface BjBetPhaseControlsProps {
   onTwentyOnePlus3BetChange: (v: number) => void;
 }
 
+/** Renders BlackJack bet phase controls with bet amount, deck/CPU settings, and side bets. */
 export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
   const { t } = useTranslation('blackjack');
   return (

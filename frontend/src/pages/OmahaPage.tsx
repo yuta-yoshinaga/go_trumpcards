@@ -61,6 +61,7 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
   );
 }
 
+/** Renders the Omaha Hold'em game page with community cards, betting, and showdown. */
 export function OmahaPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('omaha');

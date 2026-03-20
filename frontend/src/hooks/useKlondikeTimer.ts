@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/** Hook that provides an elapsed-seconds timer and Vegas time bonus calculation. */
 export function useKlondikeTimer(isPlaying: boolean) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

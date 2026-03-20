@@ -24,6 +24,7 @@ const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [MemoryPhase.GAME_END]: 'gameEnd',
 };
 
+/** Renders the Memory card matching game page with board grid and scores. */
 export function MemoryPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('memory');

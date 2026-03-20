@@ -56,6 +56,7 @@ function useSuggestionLabels(t: (key: string) => string): Record<number, string>
   };
 }
 
+/** Renders the BlackJack game page with betting, action, and end phases. */
 export function BlackJackPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('blackjack');

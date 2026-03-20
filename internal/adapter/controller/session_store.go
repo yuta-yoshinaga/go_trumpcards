@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// セッションストアの設定定数
 const (
 	// SessionMaxIDLen is the maximum allowed length of a session ID.
 	SessionMaxIDLen = 256

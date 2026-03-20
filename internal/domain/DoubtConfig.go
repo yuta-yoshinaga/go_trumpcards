@@ -3,6 +3,7 @@ package domain
 // DoubtMemoryLevel CPU の記憶力レベル
 type DoubtMemoryLevel int
 
+// Doubtの記憶レベル定数
 const (
 	// DoubtMemoryLevelEasy 低記憶力 (約30%の確率で記憶)
 	DoubtMemoryLevelEasy DoubtMemoryLevel = iota

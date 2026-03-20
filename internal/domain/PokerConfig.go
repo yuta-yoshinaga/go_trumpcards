@@ -14,6 +14,7 @@ const PokerJokerCountMax = 2
 // PokerPlayStyle CPUプレイスタイル
 type PokerPlayStyle int
 
+// Pokerのプレイスタイル定数
 const (
 	PokerStyleConservative PokerPlayStyle = iota // 保守的
 	PokerStyleBalanced                           // バランス

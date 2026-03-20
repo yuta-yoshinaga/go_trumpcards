@@ -1,3 +1,4 @@
+/** A single setting item (checkbox or select) in the settings panel. */
 export interface SettingsItem {
   type: 'checkbox' | 'select';
   id: string;
@@ -13,6 +14,7 @@ export interface SettingsItem {
   disabled?: boolean;
 }
 
+/** A group of related settings items with optional title. */
 export interface SettingsGroup {
   id?: string;
   title?: string;
@@ -24,6 +26,7 @@ interface SettingsPanelProps {
   groups: SettingsGroup[];
 }
 
+/** Renders a collapsible settings panel with grouped checkboxes and selects. */
 export function SettingsPanel({ title, groups }: SettingsPanelProps) {
   return (
     <details className="px-4 pt-2">

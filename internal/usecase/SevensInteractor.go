@@ -8,10 +8,15 @@ import (
 
 // SevensInteractorIF 7並べインタラクターインタフェース
 type SevensInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定付きゲーム初期化
 	ResetWithConfig(cfg domain.SevensConfig) string
+	// Play 人間プレイヤーがカードを出す (または パスする)
 	Play(idx int) string
+	// PlayJoker 人間プレイヤーがジョーカーを指定ポジションに出す
 	PlayJoker(cardIdx, targetSuit, targetValue int) string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

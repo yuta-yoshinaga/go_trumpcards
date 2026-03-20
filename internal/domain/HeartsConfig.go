@@ -5,6 +5,7 @@ import "fmt"
 // HeartsCpuDifficulty CPU の難易度レベル
 type HeartsCpuDifficulty int
 
+// HeartsのCPU難易度定数
 const (
 	// HeartsCpuDifficultyEasy 低難易度
 	HeartsCpuDifficultyEasy HeartsCpuDifficulty = iota

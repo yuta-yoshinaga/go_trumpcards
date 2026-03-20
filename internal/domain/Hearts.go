@@ -18,6 +18,7 @@ const HeartsMaxPoints = 26
 // HeartsPhase ゲームフェーズ
 type HeartsPhase int
 
+// Heartsのフェーズ定数
 const (
 	// HeartsPhasePass カード交換フェーズ
 	HeartsPhasePass HeartsPhase = 0
@@ -34,6 +35,7 @@ const (
 // HeartsPassDirection カード交換方向
 type HeartsPassDirection int
 
+// Heartsのカードパス方向定数
 const (
 	// HeartsPassLeft 左へ渡す
 	HeartsPassLeft HeartsPassDirection = 0

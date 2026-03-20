@@ -4,8 +4,10 @@ import type { DaifugoPlayerData } from '../../types/card';
 import { CpuTurnArea } from '../CpuTurnArea';
 import { StatusBadge } from '../StatusBadge';
 
+/** CSS class for Daifugo player area layout. */
 export const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_180px] min-w-[150px]`;
 
+/** Renders a CPU player area for Daifugo with card count and rank. */
 export function DaifugoCpuArea({ player, isCurrentTurn }: { player: DaifugoPlayerData; isCurrentTurn: boolean }) {
   const { t } = useTranslation('daifugo');
   const finishedLabel = player.isFinished ? t('finishedWithRank', { rank: t(`rank.${player.rank}`) }) : undefined;

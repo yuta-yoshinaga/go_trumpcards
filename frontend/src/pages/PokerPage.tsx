@@ -30,6 +30,7 @@ const POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerPhase.END]: 'end',
 };
 
+/** Renders the 5-card Draw Poker game page with betting and card exchange. */
 export function PokerPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('poker');

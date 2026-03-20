@@ -63,6 +63,17 @@ The Web GUI supports Japanese (ja) and English (en) via **react-i18next** with *
 - **Tests**: i18n is initialized in `src/test/setup.ts` with ja translations loaded
 - **Server responses**: Web presenters send `messageCode` and `messageParams` alongside `message` for i18n-ready frontend rendering
 
+## TSDoc Comments
+
+All exported symbols (types, interfaces, functions, components, constants, hooks) must have TSDoc comments.
+
+- **Comment style**: `/** Brief description */`
+- **React components**: describe what the component renders
+- **Hooks**: describe what the hook provides
+- **API functions**: describe what API endpoint is called
+- **Utility functions**: describe what the function does
+- **Generated docs**: run `bun run docs:generate` to produce HTML documentation in `docs/` (gitignored)
+
 ## Pre-commit checks
 
 ```sh

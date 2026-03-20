@@ -5,6 +5,7 @@ interface CpuActionLogProps {
   actions: { playerIdx: number; action: number; amount: number }[] | undefined;
 }
 
+/** Renders a log of CPU betting actions. */
 export function CpuActionLog({ actions }: CpuActionLogProps) {
   const { t } = useTranslation('common');
   if (!actions || actions.length === 0) return null;

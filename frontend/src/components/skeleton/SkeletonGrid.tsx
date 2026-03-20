@@ -4,6 +4,7 @@ interface SkeletonGridProps {
   aspectRatio?: string;
 }
 
+/** Renders an animated skeleton grid of card placeholders. */
 export function SkeletonGrid({ count, cols, aspectRatio = 'aspect-[2/3]' }: SkeletonGridProps) {
   return (
     <div className={`grid ${cols} gap-1`} aria-hidden="true">

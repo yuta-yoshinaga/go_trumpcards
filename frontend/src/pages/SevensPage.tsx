@@ -17,6 +17,7 @@ import { btnPrimary, btnWarning } from '../styles/buttonStyles';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
 
+/** Renders the Sevens game page with board, player areas, and joker placement. */
 export function SevensPage() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevens');

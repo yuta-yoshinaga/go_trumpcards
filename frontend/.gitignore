@@ -16,6 +16,9 @@ dist-ssr
 # Coverage reports
 coverage
 
+# Generated documentation
+docs
+
 # Playwright
 /playwright-report/
 /test-results/

@@ -71,6 +71,7 @@ function buildSevensReplayStates(finalState: SevensResponse): SevensResponse[] {
   });
 }
 
+/** Hook that manages Sevens game state, joker placement, configuration, and CPU replay. */
 export function useSevensGame() {
   const [jokerCardIdx, setJokerCardIdx] = useState<number | null>(null);
   const [cfgTunnel, setCfgTunnel] = useState(false);

@@ -5,6 +5,7 @@ import "fmt"
 // CrazyEightsCpuDifficulty CPU の難易度レベル
 type CrazyEightsCpuDifficulty int
 
+// CrazyEightsのCPU難易度定数
 const (
 	// CrazyEightsCpuDifficultyEasy 低難易度
 	CrazyEightsCpuDifficultyEasy CrazyEightsCpuDifficulty = iota

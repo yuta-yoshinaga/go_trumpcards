@@ -11,6 +11,7 @@ const badgeStyle: React.CSSProperties = {
   fontWeight: 'bold',
 };
 
+/** Renders active rule badges (revolution, suit lock, eleven back, etc.) for Daifugo. */
 export function DaifugoRulesBadges({ state }: { state: DaifugoResponse }) {
   const { t } = useTranslation('daifugo');
   const badges: { label: string; bg: string; color: string }[] = [];

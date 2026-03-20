@@ -3,6 +3,7 @@ import type { Card, CardDesign, SevensAction } from '../types/card';
 import { suitName, valueName } from './cardUtils';
 import { findPlayerName } from './playerUtils';
 
+/** Map from card design name to numeric suit index. */
 export const designToSuit: Record<CardDesign, number> = {
   SPADE: 1,
   CLOVER: 2,
@@ -11,6 +12,7 @@ export const designToSuit: Record<CardDesign, number> = {
   JOKER: 0,
 };
 
+/** Suit display metadata for the Sevens board. */
 export const SUITS = [
   { idx: 1, name: 'SPADE', label: '♠', color: '#e0e0e0' },
   { idx: 2, name: 'CLOVER', label: '♣', color: '#e0e0e0' },
@@ -18,10 +20,12 @@ export const SUITS = [
   { idx: 4, name: 'DIAMOND', label: '♦', color: '#f87171' },
 ];
 
+/** Check if a card position is already placed on the Sevens board. */
 export function isPositionPlaced(tablePlaced: number[], suit: number, value: number): boolean {
   return (tablePlaced[suit] & (1 << value)) !== 0;
 }
 
+/** Check if a position is blocked by the end-stop rule. */
 export function isEndStopped(tablePlaced: number[], suit: number, value: number, endStopEnabled: boolean): boolean {
   if (!endStopEnabled) return false;
   if (value === 7) return false;
@@ -30,12 +34,14 @@ export function isEndStopped(tablePlaced: number[], suit: number, value: number,
   return false;
 }
 
+/** Wrap a card value to the 1-13 range for tunnel mode. */
 export function wrapValue(v: number): number {
   v = ((v - 1) % 13) + 1;
   if (v <= 0) v += 13;
   return v;
 }
 
+/** Check if a board position can accept a card placement. */
 export function isPositionPlayable(
   tablePlaced: number[],
   suit: number,
@@ -65,6 +71,7 @@ export function isPositionPlayable(
   return false;
 }
 
+/** Check if any position on the board can accept a card placement. */
 export function hasAnyPlayablePosition(
   tablePlaced: number[],
   tunnelEnabled: boolean,
@@ -79,10 +86,12 @@ export function hasAnyPlayablePosition(
   return false;
 }
 
+/** Check if a hand contains only joker cards. */
 export function hasOnlyJokers(cards: Card[]): boolean {
   return cards.length > 0 && cards.every((c) => c.design === 'JOKER');
 }
 
+/** Check if a specific card can be played in Sevens. */
 export function isCardPlayable(
   card: Card,
   tablePlaced: number[],
@@ -103,6 +112,7 @@ export function isCardPlayable(
   return isPositionPlayable(tablePlaced, suit, card.value, tunnelEnabled, endStopEnabled, tunnelSkipWidth);
 }
 
+/** Build a human-readable description of a Sevens action. */
 export function actionDesc(
   players: { id: number; isHuman: boolean }[],
   action: SevensAction,
@@ -129,4 +139,5 @@ export function actionDesc(
   });
 }
 
+/** CSS class for Sevens player area layout. */
 export const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_180px] min-w-[150px]`;

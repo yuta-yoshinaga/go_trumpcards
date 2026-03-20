@@ -99,4 +99,5 @@ function Board({
   );
 }
 
+/** Renders the Sevens game board showing placed cards and playable positions. */
 export { Board as SevensBoard };

@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { btnDanger, btnPrimary } from '../../styles/buttonStyles';
 import { BJ_SUGGEST_STAND, BJ_SUGGEST_SURRENDER, highlightClass } from './bjConstants';
 
+/** Props for BlackJack early surrender phase controls. */
 export interface BjEarlySurrenderPhaseControlsProps {
   loading: boolean;
   hintEnabled: boolean;
@@ -10,6 +11,7 @@ export interface BjEarlySurrenderPhaseControlsProps {
   onContinue: () => void;
 }
 
+/** Renders early surrender and continue buttons for BlackJack. */
 export function BjEarlySurrenderPhaseControls(props: BjEarlySurrenderPhaseControlsProps) {
   const { t } = useTranslation('blackjack');
   const surHighlight = props.hintEnabled && props.suggestedAction === BJ_SUGGEST_SURRENDER;

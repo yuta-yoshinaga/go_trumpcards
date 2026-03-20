@@ -61,6 +61,7 @@ const (
 // DoubtPhase ゲームフェーズ
 type DoubtPhase int
 
+// Doubtのフェーズ定数
 const (
 	// DoubtPhasePlay プレイフェーズ (カードを出す番)
 	DoubtPhasePlay DoubtPhase = 0

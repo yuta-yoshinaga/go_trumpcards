@@ -8,16 +8,27 @@ import (
 
 // OmahaInteractorIF オマハホールデムインタラクターインタフェース
 type OmahaInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.OmahaConfig) string
+	// Action プレイヤーアクション実行
 	Action(action int, amount int) string
+	// GetConfig 現在の設定を取得
 	GetConfig() domain.OmahaConfig
+	// Rebuy リバイ実行
 	Rebuy() string
+	// SkipRebuy リバイ辞退
 	SkipRebuy() string
+	// Addon アドオン実行
 	Addon() string
+	// SkipAddon アドオン辞退
 	SkipAddon() string
+	// Muck マック
 	Muck() string
+	// ShowHand ハンドを公開する
 	ShowHand() string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

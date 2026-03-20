@@ -15,6 +15,8 @@ This project uses [Vite](https://vitejs.dev/) with [React](https://react.dev/) a
 - `bun run e2e:ui`: Run Playwright E2E tests with UI
 - `bun run e2e:headed`: Run Playwright E2E tests in headed mode
 
+- `bun run docs:generate`: Generate [TypeDoc](https://typedoc.org/) API documentation into `docs/`
+
 ## Tooling
 
 - **Build**: Vite
@@ -25,3 +27,4 @@ This project uses [Vite](https://vitejs.dev/) with [React](https://react.dev/) a
 - **Unit Testing**: Vitest + React Testing Library
 - **E2E Testing**: Playwright
 - **Styling**: Tailwind CSS (v4)
+- **API Docs**: TypeDoc

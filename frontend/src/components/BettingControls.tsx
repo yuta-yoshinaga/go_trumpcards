@@ -17,6 +17,7 @@ interface BettingControlsProps {
   onAllIn: () => void;
 }
 
+/** Renders betting action buttons (call/raise/bet/check/fold/all-in) with amount input. */
 export function BettingControls({
   inputId,
   betAmount,

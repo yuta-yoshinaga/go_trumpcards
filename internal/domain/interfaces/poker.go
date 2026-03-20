@@ -4,29 +4,49 @@ import "github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 // PokerGame ポーカーゲームインタフェース (マルチプレイヤー)
 type PokerGame interface {
-	// interactor が呼ぶメソッド
+	// Reset ゲームを初期化する
 	Reset() error
+	// PlayerAction プレイヤーのベッティングアクションを実行する
 	PlayerAction(action, amount int) error
+	// PlayerExchange プレイヤーのカード交換を実行する
 	PlayerExchange(indices []int) error
+	// PlayerStand カード交換なしで続行する
 	PlayerStand() error
+	// CalcDrawOdds 交換候補に基づくドローオッズを計算する
 	CalcDrawOdds(indices []int) ([]domain.PokerDrawOdds, error)
 
-	// presenter が呼ぶメソッド
+	// GetPlayers プレイヤー一覧を取得する
 	GetPlayers() []*domain.PokerPlayer
+	// GetPhase 現在のフェーズを取得する
 	GetPhase() int
+	// GetPot ポット額を取得する
 	GetPot() int
+	// GetSidePots サイドポット一覧を取得する
 	GetSidePots() []domain.PokerSidePot
+	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
+	// GetCurrentTurn 現在のターンを取得する
 	GetCurrentTurn() int
+	// GetGameEndFlag ゲーム終了フラグを取得する
 	GetGameEndFlag() bool
+	// GetLastBet 最後のベット額を取得する
 	GetLastBet() int
+	// GetMinRaise 最小レイズ額を取得する
 	GetMinRaise() int
+	// GetRaiseCount 現在のレイズ回数を取得する
 	GetRaiseCount() int
+	// GetAnte アンティ額を取得する
 	GetAnte() int
+	// GetRoundResults ラウンド結果を取得する
 	GetRoundResults() []domain.PokerResult
+	// GetCpuActions CPU行動記録を取得する
 	GetCpuActions() []domain.PokerCpuAction
+	// GetCpuExchanges CPU交換記録を取得する
 	GetCpuExchanges() []domain.PokerCpuExchange
+	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.PokerConfig
+	// SetConfig ゲーム設定を変更する
 	SetConfig(cfg domain.PokerConfig)
+	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
 }

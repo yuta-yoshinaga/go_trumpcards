@@ -1,10 +1,13 @@
+/** Card suit design identifier. */
 export type CardDesign = 'SPADE' | 'CLOVER' | 'HEART' | 'DIAMOND' | 'JOKER';
 
+/** A playing card with suit design and numeric value. */
 export interface Card {
   design: CardDesign;
   value: number;
 }
 
+/** A single entry in the game action log. */
 export interface ActionLogEntry {
   turnNumber: number;
   playerIdx: number;
@@ -13,10 +16,12 @@ export interface ActionLogEntry {
   cards?: Card[];
 }
 
+/** Response containing action log entries. */
 export interface ActionLogResponse {
   entries: ActionLogEntry[];
 }
 
+/** A single BlackJack hand with score, cards, and status flags. */
 export interface BlackJackHand {
   score: number;
   cards: Card[];
@@ -30,20 +35,24 @@ export interface BlackJackHand {
   canSurrender: boolean;
 }
 
+/** BlackJack player (dealer or human) with chips and cards. */
 export interface BlackJackPlayer {
   score?: number;
   cards?: Card[];
   chips: number;
 }
 
+/** BlackJack game phase (1=Bet, 2=Deal, 3=Insurance, 4=Action, 5=End, 6=EarlySurrender). */
 export type BlackJackPhase = 1 | 2 | 3 | 4 | 5 | 6;
 
+/** CPU player seat in BlackJack with chips and hands. */
 export interface BlackJackCpuSeat {
   chips: number;
   hands: BlackJackHand[];
   insuranceBet: number;
 }
 
+/** Result of a BlackJack side bet (Perfect Pairs, 21+3). */
 export interface BlackJackSideBetResult {
   betType: number;
   resultType: number;
@@ -52,6 +61,7 @@ export interface BlackJackSideBetResult {
   payout: number;
 }
 
+/** Full BlackJack game state returned from the API. */
 export interface BlackJackResponse {
   dealer: BlackJackPlayer;
   player: BlackJackPlayer;
@@ -82,6 +92,7 @@ export interface BlackJackResponse {
   surrenderRule: number;
 }
 
+/** Poker player data including hand, chips, and status. */
 export interface PokerPlayerData {
   id: number;
   isHuman: boolean;
@@ -96,17 +107,20 @@ export interface PokerPlayerData {
   playStyleName: string;
 }
 
+/** CPU betting action in Poker. */
 export interface PokerCpuAction {
   playerIdx: number;
   action: number;
   amount: number;
 }
 
+/** CPU card exchange result in Poker. */
 export interface PokerCpuExchange {
   playerIdx: number;
   exchangeCount: number;
 }
 
+/** Poker round result for a single player. */
 export interface PokerResult {
   playerIdx: number;
   handRank: number;
@@ -115,11 +129,13 @@ export interface PokerResult {
   wonAmount: number;
 }
 
+/** Side pot in Poker with eligible players. */
 export interface PokerSidePot {
   amount: number;
   eligiblePlayers: number[];
 }
 
+/** Probability of achieving a specific poker hand rank. */
 export interface PokerOdds {
   handRank: number;
   handName: string;
@@ -128,8 +144,10 @@ export interface PokerOdds {
   total: number;
 }
 
+/** Poker game phase (0=Init, 1=Deal, 2=Exchange, 3=SecondBet, 4=End). */
 export type PokerPhase = 0 | 1 | 2 | 3 | 4;
 
+/** Full Poker game state returned from the API. */
 export interface PokerResponse {
   players: PokerPlayerData[];
   pot: number;
@@ -155,6 +173,7 @@ export interface PokerResponse {
   messageParams?: Record<string, string>;
 }
 
+/** Old Maid player data with hand and finish status. */
 export interface OldMaidPlayerData {
   id: number;
   isHuman: boolean;
@@ -163,6 +182,7 @@ export interface OldMaidPlayerData {
   cards: Card[];
 }
 
+/** CPU draw/discard action in Old Maid. */
 export interface CpuAction {
   drawPlayerIdx: number;
   drawFromIdx: number;
@@ -172,6 +192,7 @@ export interface CpuAction {
   hesitationMs?: number;
 }
 
+/** History entry for a card draw in Old Maid. */
 export interface DrawHistoryEntry {
   drawPlayerIdx: number;
   drawFromIdx: number;
@@ -180,12 +201,14 @@ export interface DrawHistoryEntry {
   targetFinished: boolean;
 }
 
+/** Meta-AI statistics for Old Maid CPU adaptation. */
 export interface OldMaidMetaAI {
   enabled: boolean;
   gamesPlayed: number;
   edgePickRate: number;
 }
 
+/** Full Old Maid game state returned from the API. */
 export interface OldMaidResponse {
   players: OldMaidPlayerData[];
   currentTurn: number;
@@ -209,6 +232,7 @@ export interface OldMaidResponse {
   metaAI?: OldMaidMetaAI;
 }
 
+/** Daifugo player data with rank and card count. */
 export interface DaifugoPlayerData {
   id: number;
   isHuman: boolean;
@@ -219,11 +243,13 @@ export interface DaifugoPlayerData {
   illegalFinishPenalty?: boolean;
 }
 
+/** A play or pass action in Daifugo. */
 export interface DaifugoAction {
   playerIdx: number;
   playedCards: Card[] | null; // null = pass
 }
 
+/** Daifugo game rule configuration. */
 export interface DaifugoConfig {
   jokerCount: number;
   eightCutEnabled: boolean;
@@ -250,14 +276,17 @@ export interface DaifugoConfig {
   cpuDifficulty: number;
 }
 
+/** Input type alias for Daifugo configuration. */
 export type DaifugoConfigInput = DaifugoConfig;
 
+/** Card exchange action between ranked players in Daifugo. */
 export interface DaifugoExchangeAction {
   fromPlayerIdx: number;
   toPlayerIdx: number;
   cards: Card[];
 }
 
+/** Full Daifugo game state returned from the API. */
 export interface DaifugoResponse {
   players: DaifugoPlayerData[];
   currentTurn: number;
@@ -284,6 +313,7 @@ export interface DaifugoResponse {
   sortMode: number;
 }
 
+/** Sevens player data with pass count and card info. */
 export interface SevensPlayerData {
   id: number;
   isHuman: boolean;
@@ -296,6 +326,7 @@ export interface SevensPlayerData {
   lastPlayedJoker: boolean;
 }
 
+/** A play or pass action in Sevens. */
 export interface SevensAction {
   playerIdx: number;
   playedCard: Card | null; // null = pass
@@ -304,6 +335,7 @@ export interface SevensAction {
   forcedPass: boolean;
 }
 
+/** Sevens game rule configuration. */
 export interface SevensConfig {
   tunnelEnabled: boolean;
   tunnelSkipWidth: number;
@@ -316,6 +348,7 @@ export interface SevensConfig {
   jokerConsecutiveBanned: boolean;
 }
 
+/** Full Sevens game state returned from the API. */
 export interface SevensResponse {
   players: SevensPlayerData[];
   currentTurn: number;
@@ -331,6 +364,7 @@ export interface SevensResponse {
   messageParams?: Record<string, string>;
 }
 
+/** Doubt player data with card count and finish status. */
 export interface DoubtPlayerData {
   id: number;
   isHuman: boolean;
@@ -339,6 +373,7 @@ export interface DoubtPlayerData {
   cards: Card[];
 }
 
+/** CPU play action in Doubt with bluff information. */
 export interface DoubtCpuAction {
   playerIdx: number;
   claimedValue: number;
@@ -348,6 +383,7 @@ export interface DoubtCpuAction {
   hesitationMs?: number;
 }
 
+/** Result of a doubt challenge in Doubt. */
 export interface DoubtDoubtResult {
   doubterIdx: number;
   cardPlayerIdx: number;
@@ -358,6 +394,7 @@ export interface DoubtDoubtResult {
   revealedCards: Card[];
 }
 
+/** Doubt game configuration options. */
 export interface DoubtConfig {
   doubtWindowSec: number;
   cpuMemoryLevel: number; // 0=Easy, 1=Normal, 2=Hard
@@ -366,6 +403,7 @@ export interface DoubtConfig {
   cpuMetaAI: boolean;
 }
 
+/** Full Doubt game state returned from the API. */
 export interface DoubtResponse {
   players: DoubtPlayerData[];
   currentTurn: number;
@@ -386,6 +424,7 @@ export interface DoubtResponse {
   metaAI?: DoubtMetaAI;
 }
 
+/** Meta-AI statistics for Doubt CPU adaptation. */
 export interface DoubtMetaAI {
   enabled: boolean;
   gamesPlayed: number;
@@ -394,6 +433,7 @@ export interface DoubtMetaAI {
   hesitationMean: number;
 }
 
+/** Texas Hold'em player data with stats and hand info. */
 export interface HoldemPlayerData {
   id: number;
   isHuman: boolean;
@@ -413,12 +453,14 @@ export interface HoldemPlayerData {
   af: string;
 }
 
+/** CPU betting action in Texas Hold'em. */
 export interface HoldemCpuAction {
   playerIdx: number;
   action: number;
   amount: number;
 }
 
+/** Hold'em round result for a single player. */
 export interface HoldemResult {
   playerIdx: number;
   handRank: number;
@@ -429,11 +471,13 @@ export interface HoldemResult {
   mucked: boolean;
 }
 
+/** Side pot in Hold'em with eligible players. */
 export interface HoldemSidePot {
   amount: number;
   eligiblePlayers: number[];
 }
 
+/** Full Texas Hold'em game state returned from the API. */
 export interface HoldemResponse {
   players: HoldemPlayerData[];
   communityCards: Card[];
@@ -477,11 +521,13 @@ export interface HoldemResponse {
   potOdds?: number;
 }
 
+/** Equity calculation result for Hold'em hand. */
 export interface HoldemEquity {
   winProbability: number;
   handOdds: HoldemHandOdds[];
 }
 
+/** Probability of achieving a specific hand rank in Hold'em. */
 export interface HoldemHandOdds {
   handRank: number;
   handName: string;
@@ -490,16 +536,24 @@ export interface HoldemHandOdds {
 
 // --- Omaha Hold'em ---
 // Omaha shares identical response/player structures with Holdem
+/** Omaha player data (same structure as Hold'em). */
 export type OmahaPlayerData = HoldemPlayerData;
+/** Omaha CPU action (same structure as Hold'em). */
 export type OmahaCpuAction = HoldemCpuAction;
+/** Omaha round result (same structure as Hold'em). */
 export type OmahaResult = HoldemResult;
+/** Omaha side pot (same structure as Hold'em). */
 export type OmahaSidePot = HoldemSidePot;
+/** Omaha equity (same structure as Hold'em). */
 export type OmahaEquity = HoldemEquity;
+/** Omaha hand odds (same structure as Hold'em). */
 export type OmahaHandOdds = HoldemHandOdds;
+/** Omaha response (same structure as Hold'em). */
 export type OmahaResponse = HoldemResponse;
 
 // --- Hearts ---
 
+/** Hearts player data with scores and trick count. */
 export interface HeartsPlayerData {
   id: number;
   isHuman: boolean;
@@ -510,17 +564,20 @@ export interface HeartsPlayerData {
   trickCount: number;
 }
 
+/** A card played in a Hearts trick. */
 export interface HeartsTrickCard {
   playerIdx: number;
   card: Card;
 }
 
+/** Hearts game configuration. */
 export interface HeartsConfig {
   cpuDifficulty: number;
   pointLimit: number;
   omnibusJD: boolean;
 }
 
+/** Full Hearts game state returned from the API. */
 export interface HeartsResponse {
   players: HeartsPlayerData[];
   phase: number;
@@ -541,6 +598,7 @@ export interface HeartsResponse {
 
 // --- Spades ---
 
+/** Spades player data with bid, scores, and bags. */
 export interface SpadesPlayerData {
   id: number;
   isHuman: boolean;
@@ -553,11 +611,13 @@ export interface SpadesPlayerData {
   bags: number;
 }
 
+/** A card played in a Spades trick. */
 export interface SpadesTrickCard {
   playerIdx: number;
   card: Card;
 }
 
+/** Spades game configuration. */
 export interface SpadesConfig {
   cpuDifficulty: number;
   pointLimit: number;
@@ -565,6 +625,7 @@ export interface SpadesConfig {
   bagPenaltyThreshold: number;
 }
 
+/** Full Spades game state returned from the API. */
 export interface SpadesResponse {
   players: SpadesPlayerData[];
   phase: number;
@@ -585,6 +646,7 @@ export interface SpadesResponse {
 
 // --- Crazy Eights (クレイジーエイト) ---
 
+/** Crazy Eights player data with scores. */
 export interface CrazyEightsPlayerData {
   id: number;
   isHuman: boolean;
@@ -594,11 +656,13 @@ export interface CrazyEightsPlayerData {
   cumulativeScore: number;
 }
 
+/** Crazy Eights game configuration. */
 export interface CrazyEightsConfig {
   cpuDifficulty: number;
   pointLimit: number;
 }
 
+/** Full Crazy Eights game state returned from the API. */
 export interface CrazyEightsResponse {
   players: CrazyEightsPlayerData[];
   phase: number;
@@ -617,6 +681,7 @@ export interface CrazyEightsResponse {
 
 // --- Gin Rummy (ジンラミー) ---
 
+/** Gin Rummy player data with scores. */
 export interface GinRummyPlayerData {
   id: number;
   isHuman: boolean;
@@ -626,15 +691,18 @@ export interface GinRummyPlayerData {
   cumulativeScore: number;
 }
 
+/** A meld (set or run) in Gin Rummy. */
 export interface GinRummyMeld {
   cards: Card[];
 }
 
+/** Gin Rummy game configuration. */
 export interface GinRummyConfig {
   cpuDifficulty: number;
   pointLimit: number;
 }
 
+/** Full Gin Rummy game state returned from the API. */
 export interface GinRummyResponse {
   players: GinRummyPlayerData[];
   phase: number;
@@ -656,22 +724,26 @@ export interface GinRummyResponse {
 
 // --- Memory (神経衰弱) ---
 
+/** Memory player data with pair count. */
 export interface MemoryPlayerData {
   id: number;
   isHuman: boolean;
   pairCount: number;
 }
 
+/** A card on the Memory game board. */
 export interface MemoryBoardCard {
   card: Card | null;
   faceUp: boolean;
   taken: boolean;
 }
 
+/** Memory game configuration. */
 export interface MemoryConfig {
   cpuDifficulty: number;
 }
 
+/** Full Memory game state returned from the API. */
 export interface MemoryResponse {
   players: MemoryPlayerData[];
   board: MemoryBoardCard[];
@@ -691,11 +763,13 @@ export interface MemoryResponse {
 
 // --- Klondike (ソリティア) ---
 
+/** A card in a Klondike tableau column with face-up status. */
 export interface KlondikeTableauCard {
   card: Card | null;
   faceUp: boolean;
 }
 
+/** A suggested move hint in Klondike. */
 export interface KlondikeHint {
   fromZone: string;
   fromCol: number;
@@ -704,6 +778,7 @@ export interface KlondikeHint {
   toCol: number;
 }
 
+/** Full Klondike game state returned from the API. */
 export interface KlondikeResponse {
   tableau: KlondikeTableauCard[][];
   stockCount: number;
@@ -723,6 +798,7 @@ export interface KlondikeResponse {
 
 // --- FreeCell (フリーセル) ---
 
+/** A suggested move hint in FreeCell. */
 export interface FreeCellHint {
   fromZone: string;
   fromCol: number;
@@ -731,6 +807,7 @@ export interface FreeCellHint {
   toCol: number;
 }
 
+/** Full FreeCell game state returned from the API. */
 export interface FreeCellResponse {
   tableau: (Card | null)[][];
   freeCells: (Card | null)[];
@@ -744,6 +821,7 @@ export interface FreeCellResponse {
   hint?: FreeCellHint;
 }
 
+/** Result of a Baccarat side bet (player pair, banker pair). */
 export interface BaccaratSideBetResult {
   betType: number;
   resultType: number;
@@ -752,6 +830,7 @@ export interface BaccaratSideBetResult {
   payout: number;
 }
 
+/** Full Baccarat game state returned from the API. */
 export interface BaccaratResponse {
   playerHand: Card[];
   bankerHand: Card[];

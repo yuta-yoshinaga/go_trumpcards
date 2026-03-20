@@ -8,11 +8,17 @@ import (
 
 // MemoryInteractorIF 神経衰弱インタラクターインタフェース
 type MemoryInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.MemoryConfig) string
+	// Flip カードをめくる
 	Flip(pos int) string
+	// Next 結果を解決し、CPUターンを実行する
 	Next() string
+	// GetConfig 現在の設定を取得
 	GetConfig() domain.MemoryConfig
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

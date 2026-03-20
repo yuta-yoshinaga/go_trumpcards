@@ -3,8 +3,10 @@ import { playerAreaBase } from '../../styles/gameStyles';
 import type { DoubtPlayerData } from '../../types/card';
 import { CpuTurnArea } from '../CpuTurnArea';
 
+/** CSS class for Doubt player area layout. */
 export const playerAreaClass = `${playerAreaBase} p-[10px] flex-[1_1_150px] min-w-[120px]`;
 
+/** Renders a CPU player area for Doubt with card count and tell indicator. */
 export function DoubtCpuArea({
   player,
   isCurrentTurn,

@@ -7,6 +7,7 @@ const queryClient = new QueryClient({
   },
 });
 
+/** Provides React Query client context to the application. */
 export function QueryProvider({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

@@ -10,6 +10,7 @@ interface UseCardKeyboardNavOptions {
   onDirectPlay?: (index: number) => void;
 }
 
+/** Hook that binds number keys to card selection and Enter/Escape to confirm/clear. */
 export function useCardKeyboardNav({
   cardCount,
   onToggle,

@@ -8,6 +8,7 @@ import (
 // FreeCellPhase フリーセルゲームフェーズ
 type FreeCellPhase int
 
+// FreeCellのフェーズ定数
 const (
 	// FreeCellPhasePlaying プレイ中
 	FreeCellPhasePlaying FreeCellPhase = iota

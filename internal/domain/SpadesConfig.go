@@ -5,6 +5,7 @@ import "fmt"
 // SpadesCpuDifficulty CPU の難易度レベル
 type SpadesCpuDifficulty int
 
+// SpadesのCPU難易度定数
 const (
 	// SpadesCpuDifficultyEasy 低難易度
 	SpadesCpuDifficultyEasy SpadesCpuDifficulty = iota

@@ -3,6 +3,7 @@ import { GameFooter } from '../GameFooter';
 import { SkeletonBar } from './SkeletonBar';
 import { SkeletonHand } from './SkeletonHand';
 
+/** Renders a loading skeleton placeholder for the Spades page. */
 export function SpadesSkeleton() {
   const { cardWidth, cardHeight } = useCardDimensions();
   return (

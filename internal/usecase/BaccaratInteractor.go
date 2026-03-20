@@ -7,9 +7,13 @@ import (
 
 // BaccaratInteractorIF バカラインタラクターインタフェース
 type BaccaratInteractorIF interface {
+	// Reset ゲーム初期化
 	Reset() string
+	// Bet ベット
 	Bet(amount, betType, ppBet, bpBet int) string
+	// ClearHistory 罫線履歴クリア
 	ClearHistory() string
+	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
 

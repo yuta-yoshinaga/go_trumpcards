@@ -10,6 +10,7 @@ import {
   highlightClass,
 } from './bjConstants';
 
+/** Props for BlackJack action phase control buttons. */
 export interface BjActionPhaseControlsProps {
   loading: boolean;
   hintEnabled: boolean;
@@ -24,6 +25,7 @@ export interface BjActionPhaseControlsProps {
   onSurrender: () => void;
 }
 
+/** Renders BlackJack action phase buttons (hit, stand, double, split, surrender). */
 export function BjActionPhaseControls(props: BjActionPhaseControlsProps) {
   const { t } = useTranslation('blackjack');
   return (

@@ -4,6 +4,7 @@ import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import type { KlondikeHint } from '../types/card';
 import { useGameApi } from './useGameApi';
 
+/** Hook that manages Klondike game state, source selection, hints, and moves. */
 export function useKlondikeGame() {
   const { state, loading, error, exec: rawExec } = useGameApi(klondikeApi.exec);
   const [selectedSource, setSelectedSource] = useState<KlondikeMoveZone | null>(null);
