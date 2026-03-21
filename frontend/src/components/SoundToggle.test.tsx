@@ -1,17 +1,18 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { describe, expect, it, vi } from 'vitest';
 import { SoundToggle } from './SoundToggle';
 
 describe('SoundToggle', () => {
   it('renders unmute label when muted', () => {
     render(<SoundToggle muted={true} onToggle={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'サウンドをオンにする' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('sound.unmute') })).toBeInTheDocument();
     expect(screen.getByText('🔇')).toBeInTheDocument();
   });
 
   it('renders mute label when unmuted', () => {
     render(<SoundToggle muted={false} onToggle={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'サウンドをオフにする' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('sound.mute') })).toBeInTheDocument();
     expect(screen.getByText('🔊')).toBeInTheDocument();
   });
 
