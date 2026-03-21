@@ -98,7 +98,8 @@ func cuiSuitName(suit int) string {
 
 // cuiPlayerName returns "あなた" for human players, "CPU N" for CPU players,
 // or "UNKNOWN" if the player is nil/zero.
-// Used by OldMaid, Daifugo, Sevens, and Doubt CUI presenters.
+// Used by OldMaid, Daifugo, Sevens, Doubt, Poker, Holdem, Omaha, Hearts,
+// Spades, CrazyEights, GinRummy, and Memory CUI presenters.
 func cuiPlayerName[P cuiPlayer](player P, idx int) string {
 	var zero P
 	if player == zero {

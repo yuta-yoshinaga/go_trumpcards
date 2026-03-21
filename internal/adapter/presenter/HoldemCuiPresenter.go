@@ -66,11 +66,11 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 	b.WriteString("----------\n")
 	for i := 0; i < h.GetPlayerCnt(); i++ {
 		player := h.GetPlayer(i)
-		if player.GetIsHuman() {
-			b.WriteString(color.Bold("[You]"))
-		} else {
-			fmt.Fprintf(&b, "%s (%s)", color.Bold(fmt.Sprintf("CPU %d", i)), player.GetPlayStyleName())
+		name := cuiPlayerName(player, i)
+		if !player.GetIsHuman() {
+			name = fmt.Sprintf("%s (%s)", name, player.GetPlayStyleName())
 		}
+		b.WriteString(name)
 
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
 

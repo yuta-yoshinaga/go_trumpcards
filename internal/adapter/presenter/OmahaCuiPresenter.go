@@ -58,11 +58,11 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 	b.WriteString("----------\n")
 	for i := 0; i < o.GetPlayerCnt(); i++ {
 		player := o.GetPlayer(i)
-		if player.GetIsHuman() {
-			b.WriteString(color.Bold("[You]"))
-		} else {
-			fmt.Fprintf(&b, "%s (%s)", color.Bold(fmt.Sprintf("CPU %d", i)), player.GetPlayStyleName())
+		name := cuiPlayerName(player, i)
+		if !player.GetIsHuman() {
+			name = fmt.Sprintf("%s (%s)", name, player.GetPlayStyleName())
 		}
+		b.WriteString(name)
 
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
 

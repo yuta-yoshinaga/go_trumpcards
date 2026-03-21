@@ -41,7 +41,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ディーラー:")
 		assert.Contains(t, result, "(なし)")
 		assert.Contains(t, result, "ポット:")
-		assert.Contains(t, result, "[You]")
+		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
 	})

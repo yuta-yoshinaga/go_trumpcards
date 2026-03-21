@@ -48,7 +48,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "Sevens (7並べ)")
-		assert.Contains(t, result, "[You]: 2枚")
+		assert.Contains(t, result, "あなた: 2枚")
 		assert.Contains(t, result, "[0]SPADE 6")
 		assert.Contains(t, result, "CPU 1: 1枚")
 		assert.Contains(t, result, "ボード:")

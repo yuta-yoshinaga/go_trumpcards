@@ -41,7 +41,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "5-Card Draw Poker")
 		assert.Contains(t, result, "ディーラー: Player 0")
 		assert.Contains(t, result, "ポット:")
-		assert.Contains(t, result, "[You]")
+		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
 	})
