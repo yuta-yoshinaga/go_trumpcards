@@ -58,7 +58,7 @@ export function NavBar() {
   };
 
   return (
-    <div className="glass-panel bg-gray-800/80">
+    <div className="glass-panel--dark">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
         <Link
           to="/"
