@@ -12,9 +12,10 @@ import (
 func TestExecAndPresent(t *testing.T) {
 	t.Run("action returns nil error", func(t *testing.T) {
 		g := &mockGameEndChecker{}
-		p := &mockPresenter[*mockGameEndChecker]{output: "ok"}
+		p := &recordingPresenter[*mockGameEndChecker]{successOutput: "ok"}
 		out := execAndPresent(g, p, func() error { return nil })
 		assert.Equal(t, "ok", out)
+		assert.NoError(t, p.lastErr)
 	})
 
 	t.Run("action returns error", func(t *testing.T) {
@@ -45,7 +46,8 @@ func TestRunAndPresent(t *testing.T) {
 
 // recordingPresenter records the last error passed to Output.
 type recordingPresenter[G any] struct {
-	lastErr error
+	lastErr       error
+	successOutput string
 }
 
 func (r *recordingPresenter[G]) Output(_ G, err error) string {
@@ -53,5 +55,5 @@ func (r *recordingPresenter[G]) Output(_ G, err error) string {
 	if err != nil {
 		return err.Error()
 	}
-	return ""
+	return r.successOutput
 }
