@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
 import { DaifugoHumanArea } from '../components/daifugo/DaifugoHumanArea';
@@ -9,6 +8,7 @@ import { DaifugoSettingsPanel } from '../components/daifugo/DaifugoSettingsPanel
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
@@ -259,15 +259,7 @@ export function DaifugoPage() {
         </div>
       </GameFooter>
       <WinCelebration show={!!state?.gameEndFlag} />
-      <ConfirmDialog
-        open={confirmOpen}
-        title={tc('button.confirmReset')}
-        message={tc('button.confirmResetMessage')}
-        confirmLabel={tc('button.confirm')}
-        cancelLabel={tc('button.cancel')}
-        onConfirm={confirmReset}
-        onCancel={cancelReset}
-      />
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
 }
