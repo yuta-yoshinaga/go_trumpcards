@@ -81,16 +81,9 @@ jobs:
         working-directory: frontend
         run: bun install --frozen-lockfile
 
-      - name: Run frontend tests with coverage
+      - name: Run frontend tests
         working-directory: frontend
-        run: bun run test:coverage
-
-      - name: Upload frontend coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: frontend/coverage/lcov.info
-          flags: frontend
-          token: ${{ secrets.CODECOV_TOKEN }}
+        run: bun run test
 
   test-e2e:
     name: E2E Tests (Playwright)
