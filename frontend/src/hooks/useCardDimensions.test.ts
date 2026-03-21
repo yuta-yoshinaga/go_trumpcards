@@ -22,6 +22,7 @@ describe('useCardDimensions', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 0 });
     const { result } = renderHook(() => useCardDimensions());
     expect(result.current).toEqual(CARD_DIMENSIONS.mobile);
+    expect(result.current.footerCardWidth).toBe(36);
   });
 
   it('returns mobile dimensions when width is below breakpoint (375px)', () => {
@@ -40,6 +41,7 @@ describe('useCardDimensions', () => {
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 640 });
     const { result } = renderHook(() => useCardDimensions());
     expect(result.current).toEqual(CARD_DIMENSIONS.desktop);
+    expect(result.current.footerCardWidth).toBe(54);
   });
 
   it('returns desktop dimensions when width is above breakpoint (1024px)', () => {

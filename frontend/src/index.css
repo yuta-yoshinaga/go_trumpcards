@@ -58,6 +58,15 @@ body {
   }
 }
 
+.footer-hand {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
+}
+
 @keyframes shake {
   0%,
   100% {
