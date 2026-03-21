@@ -3,7 +3,14 @@
     "switchToJa": "日本語に切り替え",
     "switchToEn": "Switch to English",
     "openMenu": "メニューを開く",
+    "skipToContent": "メインコンテンツへスキップ",
     "closeMenu": "メニューを閉じる",
+    "category.table": "テーブルゲーム",
+    "category.poker": "ポーカー系",
+    "category.trickTaking": "トリックテイキング",
+    "category.matching": "マッチング/パス系",
+    "category.solitaire": "ソリティア",
+    "category.rummy": "ラミー系",
     "blackjack": "ブラックジャック",
     "poker": "ポーカー",
     "oldmaid": "ババ抜き",
@@ -20,6 +27,10 @@
     "baccarat": "バカラ",
     "crazyeights": "クレイジーエイト",
     "ginrummy": "ジンラミー"
+  },
+  "sound": {
+    "mute": "サウンドをオフにする",
+    "unmute": "サウンドをオンにする"
   },
   "player": {
     "you": "あなた",

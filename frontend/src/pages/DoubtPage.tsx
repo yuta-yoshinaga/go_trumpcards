@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
@@ -8,6 +7,8 @@ import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { DoubtSkeleton } from '../components/skeleton/DoubtSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -230,7 +231,7 @@ export function DoubtPage() {
             {state.lastDoubtResult.revealedCards.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {state.lastDoubtResult.revealedCards.map((card, i) => (
-                  <CardImage key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                  <AnimatedCard key={`${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                 ))}
               </div>
             )}
@@ -359,6 +360,7 @@ export function DoubtPage() {
           )}
         </div>
       </GameFooter>
+      <WinCelebration show={!!state?.gameEndFlag} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

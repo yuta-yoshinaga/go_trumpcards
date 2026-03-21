@@ -1,14 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { MemoryRouter } from 'react-router-dom';
-import { afterEach, describe, expect, it } from 'vitest';
-import { gameRoutes } from '../constants/gameRoutes';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { NavBar } from './NavBar';
 
-function renderNavBar(initialPath = '/') {
+function renderNavBar(initialPath = '/', props?: { soundMuted?: boolean; onSoundToggle?: () => void }) {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
-      <NavBar />
+      <NavBar {...props} />
     </MemoryRouter>,
   );
 }
@@ -27,6 +27,13 @@ describe('NavBar', () => {
     const links = screen.getAllByRole('link');
     // game links + brand link
     expect(links.length).toBeGreaterThanOrEqual(gameRoutes.length);
+  });
+
+  it('renders category labels for all categories', () => {
+    renderNavBar();
+    for (const { labelKey } of gameCategories) {
+      expect(screen.getAllByText(labelFor(labelKey)).length).toBeGreaterThanOrEqual(1);
+    }
   });
 
   for (const { path, labelKey } of gameRoutes) {
@@ -136,11 +143,9 @@ describe('NavBar', () => {
       renderNavBar();
       const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
       fireEvent.click(btn);
-      const firstLink = screen
-        .getAllByRole('link')
-        .find((link) => gameRoutes.some(({ path }) => link.getAttribute('href') === path));
-      expect(firstLink).toBeDefined();
-      fireEvent.click(firstLink as HTMLElement);
+      // Click a non-home link to cover onClick in a different category iteration
+      const pokerLink = screen.getByRole('link', { name: labelFor('nav.poker') });
+      fireEvent.click(pokerLink);
       const nav = screen.getByRole('navigation');
       expect(nav).toHaveClass('hidden');
       expect(screen.getByRole('button', { name: i18n.t('nav.openMenu') })).toHaveAttribute('aria-expanded', 'false');
@@ -165,6 +170,64 @@ describe('NavBar', () => {
       // Language buttons exist even when nav is hidden (mobile header has its own)
       const jaBtns = screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') });
       expect(jaBtns.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('moves focus to first game link when menu opens', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const nav = screen.getByRole('navigation');
+      const firstLink = nav.querySelector('a');
+      expect(document.activeElement).toBe(firstLink);
+    });
+
+    it('returns focus to hamburger button when menu closes', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const closeBtn = screen.getByRole('button', { name: i18n.t('nav.closeMenu') });
+      fireEvent.click(closeBtn);
+      expect(document.activeElement).toBe(closeBtn);
+    });
+
+    it('closes menu and returns focus to hamburger button on Escape key', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const nav = screen.getByRole('navigation');
+      fireEvent.keyDown(nav, { key: 'Escape' });
+      expect(nav).toHaveClass('hidden');
+      expect(document.activeElement).toBe(btn);
+    });
+
+    it('does not close menu on non-Escape key', () => {
+      renderNavBar();
+      const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(btn);
+      const nav = screen.getByRole('navigation');
+      fireEvent.keyDown(nav, { key: 'Tab' });
+      expect(nav).not.toHaveClass('hidden');
+    });
+  });
+
+  describe('SoundToggle', () => {
+    it('does not render SoundToggle when props not provided', () => {
+      renderNavBar();
+      expect(screen.queryByRole('button', { name: 'サウンドをオフにする' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'サウンドをオンにする' })).not.toBeInTheDocument();
+    });
+
+    it('renders SoundToggle when soundMuted and onSoundToggle are provided', () => {
+      renderNavBar('/', { soundMuted: false, onSoundToggle: vi.fn() });
+      expect(screen.getAllByRole('button', { name: 'サウンドをオフにする' }).length).toBeGreaterThan(0);
+    });
+
+    it('calls onSoundToggle when SoundToggle is clicked', () => {
+      const onSoundToggle = vi.fn();
+      renderNavBar('/', { soundMuted: false, onSoundToggle });
+      const buttons = screen.getAllByRole('button', { name: 'サウンドをオフにする' });
+      fireEvent.click(buttons[0]);
+      expect(onSoundToggle).toHaveBeenCalledTimes(1);
     });
   });
 });

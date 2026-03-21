@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SpadesSkeleton } from '../components/skeleton/SpadesSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -145,8 +146,8 @@ export function SpadesPage() {
             <div className="flex gap-2">
               {state.currentTrick.map((trickCard) => (
                 <div key={`trick-${trickCard.playerIdx}`} className="text-center">
-                  <CardImage card={trickCard.card} width={cardWidth} />
-                  <div className="text-white/50 text-xs mt-1">
+                  <AnimatedCard card={trickCard.card} width={cardWidth} />
+                  <div className="text-game-text-muted text-xs mt-1">
                     {playerName(
                       state.players[trickCard.playerIdx]?.id ?? trickCard.playerIdx,
                       state.players[trickCard.playerIdx]?.isHuman ?? false,
@@ -222,7 +223,7 @@ export function SpadesPage() {
                   boxSizing: 'border-box',
                 }}
               >
-                <CardImage card={card} width={cardWidth} />
+                <AnimatedCard card={card} width={cardWidth} />
               </button>
             ))}
           </div>
@@ -287,6 +288,7 @@ export function SpadesPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={!!state?.gameEndFlag} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

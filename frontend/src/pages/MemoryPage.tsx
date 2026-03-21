@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { MemorySkeleton } from '../components/skeleton/MemorySkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -129,8 +130,8 @@ export function MemoryPage() {
                       : 'bg-blue-800 border-blue-600 hover:border-yellow-400'
                 } transition-all`}
               >
-                {bc.faceUp && bc.card && <CardImage card={bc.card} width={cardWidth} />}
-                {!bc.taken && !bc.faceUp && <span className="text-white/40 text-xs">{idx}</span>}
+                {bc.faceUp && bc.card && <AnimatedCard card={bc.card} width={cardWidth} />}
+                {!bc.taken && !bc.faceUp && <span className="text-game-text-muted text-xs">{idx}</span>}
               </button>
             ))}
           </div>
@@ -172,6 +173,7 @@ export function MemoryPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={!!state?.gameEndFlag} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

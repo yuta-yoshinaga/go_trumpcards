@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -86,7 +87,7 @@ export function FreeCellPage() {
           {/* Free cells */}
           {state.freeCells.map((card: Card | null, idx: number) => (
             <div key={`fc-${idx.toString()}`} className="text-center">
-              <div className="text-white/60 text-xs mb-1">
+              <div className="text-game-text-muted text-xs mb-1">
                 {t('freecell')} {idx}
               </div>
               {card ? (
@@ -98,7 +99,7 @@ export function FreeCellPage() {
                   aria-pressed={isSourceSelected('freecell', undefined, idx)}
                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-yellow-400' : ''}`}
                 >
-                  <CardImage card={card} width={cardWidth} />
+                  <AnimatedCard card={card} width={cardWidth} />
                 </button>
               ) : (
                 <button
@@ -107,7 +108,7 @@ export function FreeCellPage() {
                   disabled={!isPlaying || loading || !selectedSource}
                   aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                   style={{ width: cardWidth, height: cardHeight }}
-                  className={`rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center ${focusRingWhite}`}
+                  className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                 >
                   {t('empty')}
                 </button>
@@ -120,7 +121,7 @@ export function FreeCellPage() {
           {/* Foundation piles */}
           {state.foundation.map((pile: Card[], idx: number) => (
             <div key={`f-${idx.toString()}`} className="text-center">
-              <div className="text-white/60 text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+              <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
               {pile.length > 0 ? (
                 <button
                   type="button"
@@ -129,7 +130,7 @@ export function FreeCellPage() {
                   aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], cardCount: String(pile.length) })}
                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                 >
-                  <CardImage card={pile[pile.length - 1]} width={cardWidth} />
+                  <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
                 </button>
               ) : (
                 <button
@@ -138,7 +139,7 @@ export function FreeCellPage() {
                   disabled={!isPlaying || loading || !selectedSource}
                   aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                   style={{ width: cardWidth, height: cardHeight }}
-                  className={`rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center ${focusRingWhite}`}
+                  className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                 >
                   A
                 </button>
@@ -151,7 +152,7 @@ export function FreeCellPage() {
         <div className="flex gap-2 mb-3">
           {state.tableau.map((col: (Card | null)[], colIdx: number) => (
             <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
-              <div className="text-white/40 text-xs text-center mb-1">{colIdx}</div>
+              <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
               <div className="relative" style={{ minHeight: cardHeight }}>
                 {col.length === 0 ? (
                   <button
@@ -159,7 +160,7 @@ export function FreeCellPage() {
                     onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
                     disabled={!isPlaying || loading || !selectedSource}
                     style={{ height: cardHeight }}
-                    className={`w-full rounded border-2 border-dashed border-white/20 text-white/20 text-xs flex items-center justify-center ${focusRingWhite}`}
+                    className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
                     K
                   </button>
@@ -185,7 +186,7 @@ export function FreeCellPage() {
                           aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                         >
-                          <CardImage card={card} width={cardWidth} style={{ width: '100%' }} />
+                          <AnimatedCard card={card} width={cardWidth} style={{ width: '100%' }} />
                         </button>
                       ) : (
                         <div style={{ width: cardWidth, height: cardHeight }} />
@@ -252,6 +253,7 @@ export function FreeCellPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={state.phase === FreeCellPhase.GAME_CLEAR} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

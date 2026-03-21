@@ -117,6 +117,14 @@ PORT=3000 go run ./cmd/server          # カスタムポートで起動 (直接)
 go test -tags test ./...  # 全テスト実行
 ```
 
+### Documentation
+
+📚 **[API Documentation](https://yuta-yoshinaga.github.io/go_trumpcards/)** — Go と TypeScript の自動生成 API ドキュメント、アーキテクチャガイド、リポジトリスナップショット
+
+- **Go API Docs** — Domain, Use Case, Adapter, Infrastructure パッケージのドキュメント
+- **TypeScript API Docs** — React コンポーネント、フック、ユーティリティ、API クライアントのドキュメント
+- **Repomix Output** — AI コンテキスト用のリポジトリ圧縮スナップショット (デプロイの詳細は [GitHub Pages (Repomix)](#github-pages-repomix) を参照)
+
 ### Deploy
 [render live](https://go-trumpcards.onrender.com/)
 [render dev](https://go-trumpcards-dev.onrender.com/)

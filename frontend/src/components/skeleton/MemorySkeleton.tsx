@@ -11,7 +11,6 @@ export function MemorySkeleton() {
         <div className="my-2 p-2 rounded bg-black/30">
           <div className="h-4 w-16 rounded bg-white/10 animate-pulse mb-2" />
           {Array.from({ length: 4 }, (_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
             <div key={i} className="h-4 w-full rounded bg-white/10 animate-pulse mb-1" />
           ))}
         </div>

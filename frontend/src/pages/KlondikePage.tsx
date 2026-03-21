@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -116,18 +118,18 @@ export function KlondikePage() {
         <div className="flex gap-2 mb-3 items-start flex-wrap">
           {/* Stock */}
           <div className="text-center">
-            <div className="text-white/60 text-xs mb-1">
+            <div className="text-game-text-muted text-xs mb-1">
               {t('stock')} ({state.stockCount})
             </div>
             {state.stockCount > 0 ? (
-              <CardBack width={cardWidth} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
+              <AnimatedCardBack width={cardWidth} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
             ) : (
               <button
                 type="button"
                 onClick={handleDraw}
                 disabled={!isPlaying || loading}
                 style={{ width: cardWidth, height: cardHeight }}
-                className={`rounded border-2 border-dashed border-white/30 text-white/40 text-xs flex items-center justify-center ${focusRingWhite}`}
+                className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
               >
                 {t('draw')}
               </button>
@@ -136,7 +138,7 @@ export function KlondikePage() {
 
           {/* Waste */}
           <div className="text-center">
-            <div className="text-white/60 text-xs mb-1">{t('waste')}</div>
+            <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
             {wasteDisplay.length > 0 ? (
               <div className="relative" style={{ width: cardWidth + (wasteDisplay.length - 1) * 15 }}>
                 {wasteDisplay.map((card, idx) => {
@@ -155,10 +157,10 @@ export function KlondikePage() {
                           aria-pressed={isSourceSelected('waste')}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
                         >
-                          <CardImage card={card} width={cardWidth} />
+                          <AnimatedCard card={card} width={cardWidth} />
                         </button>
                       ) : (
-                        <CardImage card={card} width={cardWidth} />
+                        <AnimatedCard card={card} width={cardWidth} />
                       )}
                     </div>
                   );
@@ -168,7 +170,7 @@ export function KlondikePage() {
             ) : (
               <div
                 style={{ width: cardWidth, height: cardHeight }}
-                className="rounded border border-white/20 flex items-center justify-center text-white/30 text-xs"
+                className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
               >
                 {t('empty')}
               </div>
@@ -180,7 +182,7 @@ export function KlondikePage() {
           {/* Foundation piles */}
           {state.foundation.map((pile, idx) => (
             <div key={`f-${idx.toString()}`} className="text-center">
-              <div className="text-white/60 text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+              <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
               {pile.length > 0 ? (
                 <button
                   type="button"
@@ -189,7 +191,7 @@ export function KlondikePage() {
                   aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                 >
-                  <CardImage card={pile[pile.length - 1]} width={cardWidth} />
+                  <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
                 </button>
               ) : (
                 <button
@@ -198,7 +200,7 @@ export function KlondikePage() {
                   disabled={!isPlaying || loading || !selectedSource}
                   aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                   style={{ width: cardWidth, height: cardHeight }}
-                  className={`rounded border-2 border-dashed border-white/30 text-white/30 text-xs flex items-center justify-center ${focusRingWhite}`}
+                  className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                 >
                   A
                 </button>
@@ -211,7 +213,7 @@ export function KlondikePage() {
         <div className="flex gap-2 mb-3">
           {state.tableau.map((col, colIdx) => (
             <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
-              <div className="text-white/40 text-xs text-center mb-1">{colIdx}</div>
+              <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
               <div className="relative" style={{ minHeight: cardHeight }}>
                 {col.length === 0 ? (
                   <button
@@ -219,7 +221,7 @@ export function KlondikePage() {
                     onClick={() => handleSelectTarget({ zone: 'tableau', col: colIdx })}
                     disabled={!isPlaying || loading || !selectedSource}
                     style={{ height: cardHeight }}
-                    className={`w-full rounded border-2 border-dashed border-white/20 text-white/20 text-xs flex items-center justify-center ${focusRingWhite}`}
+                    className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
                     K
                   </button>
@@ -245,10 +247,10 @@ export function KlondikePage() {
                           aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                         >
-                          <CardImage card={tc.card} width={cardWidth} style={{ width: '100%' }} />
+                          <AnimatedCard card={tc.card} width={cardWidth} style={{ width: '100%' }} />
                         </button>
                       ) : (
-                        <CardBack width={cardWidth} className="w-full" />
+                        <AnimatedCardBack width={cardWidth} className="w-full" />
                       )}
                     </div>
                   ))
@@ -358,6 +360,7 @@ export function KlondikePage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={state.phase === KlondikePhase.GAME_CLEAR} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

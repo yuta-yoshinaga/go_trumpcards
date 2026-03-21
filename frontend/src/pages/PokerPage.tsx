@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
@@ -175,7 +176,7 @@ export function PokerPage() {
                       boxSizing: 'border-box',
                     }}
                   >
-                    <CardImage card={card} width={cardWidth} />
+                    <AnimatedCard card={card} width={cardWidth} />
                   </button>
                 );
               })}
@@ -221,7 +222,7 @@ export function PokerPage() {
         )}
 
         {/* Draw odds panel */}
-        {canExchange && odds && odds.some((o) => o.probability > 0) && (
+        {canExchange && odds?.some((o) => o.probability > 0) && (
           <div className="bg-black/40 rounded-lg px-4 py-2 mb-2 text-white text-xs" data-testid="odds-panel">
             <div className="font-bold mb-1">{t('drawOdds')}</div>
             {odds
@@ -290,6 +291,7 @@ export function PokerPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={phase === PokerPhase.END} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

@@ -3,7 +3,14 @@
     "switchToJa": "Switch to Japanese",
     "switchToEn": "Switch to English",
     "openMenu": "Open menu",
+    "skipToContent": "Skip to main content",
     "closeMenu": "Close menu",
+    "category.table": "Table Games",
+    "category.poker": "Poker",
+    "category.trickTaking": "Trick-Taking",
+    "category.matching": "Matching / Pass",
+    "category.solitaire": "Solitaire",
+    "category.rummy": "Rummy",
     "blackjack": "Blackjack",
     "poker": "Poker",
     "oldmaid": "Old Maid",
@@ -20,6 +27,10 @@
     "baccarat": "Baccarat",
     "crazyeights": "Crazy Eights",
     "ginrummy": "Gin Rummy"
+  },
+  "sound": {
+    "mute": "Mute sound",
+    "unmute": "Unmute sound"
   },
   "player": {
     "you": "You",

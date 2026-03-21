@@ -14,15 +14,11 @@ test.describe('FreeCell E2E', () => {
     // Verify move count is displayed
     await expect(page.getByText(/手数/)).toBeVisible();
 
-    // Click hint button
+    // Verify playing buttons are visible
     const hintButton = page.getByRole('button', { name: 'ヒント' });
     await expect(hintButton).toBeVisible();
-    await hintButton.click();
-    await waitForLoaded(page);
-
-    // Verify undo button is visible
-    const undoButton = page.getByRole('button', { name: '元に戻す' });
-    await expect(undoButton).toBeVisible();
+    await expect(page.getByRole('button', { name: 'オートコンプリート' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'ギブアップ' })).toBeVisible();
 
     // Click reset
     const resetButton = page.getByRole('button', { name: 'リセット' });

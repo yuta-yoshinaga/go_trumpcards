@@ -12,7 +12,6 @@ export function SpadesSkeleton() {
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         <div className="h-5 w-48 rounded bg-white/10 animate-pulse mx-auto mb-2" />
         {Array.from({ length: 3 }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
           <div key={i} className="mb-2 p-2 rounded bg-black/30">
             <div className="h-4 w-32 rounded bg-white/10 animate-pulse" />
           </div>

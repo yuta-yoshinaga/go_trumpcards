@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavBar } from './components/NavBar';
+import { SkipNavLink } from './components/SkipNavLink';
 import { gameRoutes } from './constants/gameRoutes';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
@@ -42,18 +44,20 @@ const pageByPath: Record<GamePath, ReactNode> = {
 
 /** Root application component with router and game page routes. */
 export default function App() {
+  const { t } = useTranslation();
   return (
     <HashRouter>
       <ErrorBoundary>
         <div className="flex flex-col h-full">
+          <SkipNavLink targetId="main-content" label={t('nav.skipToContent')} />
           <NavBar />
-          <div className="flex-1 flex flex-col min-h-0">
+          <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col min-h-0">
             <Routes>
               {gameRoutes.map(({ path }) => (
                 <Route key={path} path={path} element={pageByPath[path]} />
               ))}
             </Routes>
-          </div>
+          </main>
         </div>
       </ErrorBoundary>
     </HashRouter>

@@ -5,8 +5,8 @@ export function selectedCardStyle(isSelected: boolean): React.CSSProperties {
   return {
     border: isSelected ? '3px solid var(--color-game-card-selected)' : '3px solid transparent',
     transform: isSelected ? 'translateY(-8px)' : 'none',
-    transition: 'transform 0.15s, border 0.15s',
-    boxShadow: isSelected ? '0 4px 12px rgba(59, 130, 246, 0.4)' : 'none',
+    transition: 'transform 0.15s, border 0.15s, box-shadow 0.15s',
+    boxShadow: isSelected ? '0 4px 12px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.15)' : 'none',
   };
 }
 
@@ -14,5 +14,15 @@ export function selectedCardStyle(isSelected: boolean): React.CSSProperties {
 export function playableCardStyle(isPlayable: boolean): React.CSSProperties {
   return {
     border: isPlayable ? '3px solid var(--color-game-status-active)' : '3px solid transparent',
+    boxShadow: isPlayable ? '0 0 8px rgba(92, 184, 92, 0.3)' : 'none',
+  };
+}
+
+/** Return inline styles combining playable border + enhanced glow for thumb-zone visibility. */
+export function smartHighlightStyle(isPlayable: boolean): React.CSSProperties {
+  return {
+    border: isPlayable ? '3px solid var(--color-game-status-active)' : '3px solid transparent',
+    boxShadow: isPlayable ? '0 0 10px rgba(92, 184, 92, 0.4), 0 0 20px rgba(92, 184, 92, 0.15)' : 'none',
+    transition: 'border 0.15s, box-shadow 0.15s',
   };
 }

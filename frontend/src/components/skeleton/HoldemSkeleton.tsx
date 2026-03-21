@@ -15,7 +15,6 @@ export function HoldemSkeleton() {
           <SkeletonHand cardWidth={cardWidth} cardHeight={cardHeight} count={5} />
         </div>
         {Array.from({ length: 3 }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
           <div key={i} className="mb-3 p-2 rounded bg-black/30">
             <div className="h-4 w-20 rounded bg-white/10 animate-pulse mb-2" />
             <SkeletonHand cardWidth={cardWidth} cardHeight={cardHeight} count={2} />

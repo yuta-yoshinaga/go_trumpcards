@@ -11,7 +11,6 @@ export function BaccaratSkeleton() {
       <SkeletonBar />
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {Array.from({ length: 2 }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
           <div key={i} className="mb-4">
             <div className="h-5 w-24 rounded bg-white/10 animate-pulse mx-auto mb-1" />
             <div className="flex justify-center gap-2">

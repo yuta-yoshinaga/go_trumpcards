@@ -20,11 +20,13 @@ import {
   BJ_SUGGEST_SURRENDER,
 } from '../components/blackjack/bjConstants';
 import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
-import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -198,9 +200,9 @@ export function BlackJackPage() {
             </h3>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card, idx) => (
-                <CardImage key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
+                <AnimatedCard key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
               ))}
-              {!state.dealer.score && <CardBack width={cardWidth} />}
+              {!state.dealer.score && <AnimatedCardBack width={cardWidth} />}
             </div>
           </div>
         )}
@@ -209,7 +211,6 @@ export function BlackJackPage() {
         {phase !== BjPhase.BET && cpuPlayers.length > 0 && (
           <div className="mt-4">
             {cpuPlayers.map((cpu, cpuIdx) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: CPU seats have fixed order
               <div key={cpuIdx} className="mb-3">
                 <h3 className="text-yellow-200 mt-0 mb-1">
                   {tc('player.cpu', { id: cpuIdx + 1 })} ({cpu.chips} chips)
@@ -220,7 +221,6 @@ export function BlackJackPage() {
                   )}
                 </h3>
                 {cpu.hands.map((hand, handIdx) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: CPU hands have fixed order
                   <div key={handIdx} className="mb-1">
                     <div className="text-yellow-100 text-sm">
                       {cpu.hands.length > 1 ? `${t('hand', { idx: handIdx + 1 })} ` : ''}
@@ -234,7 +234,7 @@ export function BlackJackPage() {
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {hand.cards.map((card, cardIdx) => (
-                        <CardImage
+                        <AnimatedCard
                           key={`cpu${cpuIdx}-hand${handIdx}-${cardIdx}-${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
@@ -255,7 +255,6 @@ export function BlackJackPage() {
         {phase !== BjPhase.BET && hands.length > 0 && (
           <div className="mb-2">
             {hands.map((hand, handIndex) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: player hands have fixed order per round
               <div key={`hand-${handIndex}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
                   {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
@@ -274,7 +273,7 @@ export function BlackJackPage() {
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {hand.cards.map((card, cardIdx) => (
-                    <CardImage
+                    <AnimatedCard
                       key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
                       card={card}
                       width={cardWidth}
@@ -435,6 +434,7 @@ export function BlackJackPage() {
           )}
         </div>
       </GameFooter>
+      <WinCelebration show={phase === BjPhase.END} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

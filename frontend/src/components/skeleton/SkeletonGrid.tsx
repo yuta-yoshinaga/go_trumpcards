@@ -9,7 +9,6 @@ export function SkeletonGrid({ count, cols, aspectRatio = 'aspect-[2/3]' }: Skel
   return (
     <div className={`grid ${cols} gap-1`} aria-hidden="true">
       {Array.from({ length: count }, (_, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
         <div key={i} className={`rounded bg-white/20 animate-pulse ${aspectRatio}`} />
       ))}
     </div>

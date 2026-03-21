@@ -12,7 +12,6 @@ export function OldMaidSkeleton() {
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         <div className="flex gap-2 flex-wrap mb-2 justify-center">
           {Array.from({ length: 3 }, (_, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholders never reorder
             <div key={i} className="p-2 rounded bg-black/30">
               <div className="h-4 w-16 rounded bg-white/10 animate-pulse mb-2" />
               <SkeletonHand cardWidth={cardWidth} cardHeight={cardHeight} count={3} />
