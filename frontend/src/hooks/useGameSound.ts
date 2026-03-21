@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const SOUND_MUTED_KEY = 'trumpcards-sound-muted';
 
-/** Hook providing game sound effects with global mute toggle persisted to localStorage. */
+/**
+ * Hook providing game sound effects with global mute toggle persisted to localStorage.
+ * Audio elements are created once via useMemo for the app lifetime.
+ * Do not use this hook in components that mount/unmount frequently.
+ */
 export function useGameSound() {
   const [muted, setMuted] = useState(() => {
     try {
