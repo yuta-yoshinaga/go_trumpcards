@@ -8,17 +8,18 @@ describe('useGameSound', () => {
   beforeEach(() => {
     localStorage.clear();
     mockPlay = vi.fn().mockResolvedValue(undefined);
-    vi.spyOn(globalThis, 'Audio').mockImplementation(
-      function () {
-        return {
-          play: mockPlay,
-          volume: 0,
-        } as unknown as HTMLAudioElement;
-      } as unknown as typeof Audio,
+    vi.stubGlobal(
+      'Audio',
+      class MockAudio {
+        play = mockPlay;
+        volume = 0;
+        currentTime = 0;
+      },
     );
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -80,14 +81,17 @@ describe('useGameSound', () => {
   });
 
   it('handles Audio constructor failure gracefully', () => {
-    vi.spyOn(globalThis, 'Audio').mockImplementation(
-      function () {
-        throw new Error('Audio not supported');
-      } as unknown as typeof Audio,
+    vi.stubGlobal(
+      'Audio',
+      class FailAudio {
+        constructor() {
+          throw new Error('Audio not supported');
+        }
+      },
     );
     const { result } = renderHook(() => useGameSound());
     act(() => result.current.playCardDeal());
-    // No error thrown
+    // No error thrown — sounds is null, playSound returns early
   });
 
   it('handles play rejection gracefully', () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const SOUND_MUTED_KEY = 'trumpcards-sound-muted';
 
@@ -22,26 +22,38 @@ export function useGameSound() {
 
   const toggleMute = useCallback(() => setMuted((prev) => !prev), []);
 
-  const playSound = useCallback(
-    (src: string) => {
-      if (muted) return;
-      try {
-        const audio = new Audio(src);
+  const sounds = useMemo(() => {
+    try {
+      const audioMap = {
+        cardDeal: new Audio('/sounds/card-deal.ogg'),
+        cardFlip: new Audio('/sounds/card-flip.ogg'),
+        select: new Audio('/sounds/card-select.ogg'),
+        win: new Audio('/sounds/win.ogg'),
+      };
+      for (const audio of Object.values(audioMap)) {
         audio.volume = 0.3;
-        audio.play().catch(() => {
-          // Autoplay blocked — ignore
-        });
-      } catch {
-        // Audio unavailable
       }
+      return audioMap;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const playSound = useCallback(
+    (audio: HTMLAudioElement | undefined) => {
+      if (muted || !audio) return;
+      audio.currentTime = 0;
+      audio.play().catch(() => {
+        // Autoplay blocked — ignore
+      });
     },
     [muted],
   );
 
-  const playCardDeal = useCallback(() => playSound('/sounds/card-deal.ogg'), [playSound]);
-  const playCardFlip = useCallback(() => playSound('/sounds/card-flip.ogg'), [playSound]);
-  const playSelect = useCallback(() => playSound('/sounds/card-select.ogg'), [playSound]);
-  const playWin = useCallback(() => playSound('/sounds/win.ogg'), [playSound]);
+  const playCardDeal = useCallback(() => playSound(sounds?.cardDeal), [playSound, sounds]);
+  const playCardFlip = useCallback(() => playSound(sounds?.cardFlip), [playSound, sounds]);
+  const playSelect = useCallback(() => playSound(sounds?.select), [playSound, sounds]);
+  const playWin = useCallback(() => playSound(sounds?.win), [playSound, sounds]);
 
   return { muted, toggleMute, playCardDeal, playCardFlip, playSelect, playWin };
 }

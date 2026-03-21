@@ -14,6 +14,7 @@ interface GestureBindHandlers {
   onClick: () => void;
   onPointerUp: (e: React.PointerEvent) => void;
   onPointerDown: (e: React.PointerEvent) => void;
+  onPointerCancel: () => void;
 }
 
 const SWIPE_THRESHOLD = 30;
@@ -22,9 +23,10 @@ const SWIPE_THRESHOLD = 30;
 export function useCardGesture({ onTap, onSwipeUp, disabled = false }: CardGestureOptions): GestureBindHandlers {
   const reduced = useReducedMotion();
   const startYRef = useRef(0);
+  const swipedRef = useRef(false);
 
   const onClick = useCallback(() => {
-    if (disabled) return;
+    if (disabled || swipedRef.current) return;
     onTap?.();
   }, [onTap, disabled]);
 
@@ -32,6 +34,7 @@ export function useCardGesture({ onTap, onSwipeUp, disabled = false }: CardGestu
     (e: React.PointerEvent) => {
       if (disabled || reduced) return;
       startYRef.current = e.clientY;
+      swipedRef.current = false;
     },
     [disabled, reduced],
   );
@@ -41,11 +44,17 @@ export function useCardGesture({ onTap, onSwipeUp, disabled = false }: CardGestu
       if (disabled || reduced) return;
       const deltaY = startYRef.current - e.clientY;
       if (deltaY > SWIPE_THRESHOLD && onSwipeUp) {
+        swipedRef.current = true;
         onSwipeUp();
       }
     },
     [onSwipeUp, disabled, reduced],
   );
 
-  return { onClick, onPointerDown, onPointerUp };
+  const onPointerCancel = useCallback(() => {
+    startYRef.current = 0;
+    swipedRef.current = false;
+  }, []);
+
+  return { onClick, onPointerDown, onPointerUp, onPointerCancel };
 }
