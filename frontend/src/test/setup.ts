@@ -55,8 +55,11 @@ import jaCommon from '../i18n/locales/ja/common.json';
 import jaCrazyeights from '../i18n/locales/ja/crazyeights.json';
 import jaDaifugo from '../i18n/locales/ja/daifugo.json';
 import jaDoubt from '../i18n/locales/ja/doubt.json';
+import jaFreecell from '../i18n/locales/ja/freecell.json';
+import jaGinrummy from '../i18n/locales/ja/ginrummy.json';
 import jaHearts from '../i18n/locales/ja/hearts.json';
 import jaHoldem from '../i18n/locales/ja/holdem.json';
+import jaKlondike from '../i18n/locales/ja/klondike.json';
 import jaMemory from '../i18n/locales/ja/memory.json';
 import jaOldmaid from '../i18n/locales/ja/oldmaid.json';
 import jaOmaha from '../i18n/locales/ja/omaha.json';
@@ -83,6 +86,9 @@ i18n.use(initReactI18next).init({
     'memory',
     'baccarat',
     'crazyeights',
+    'klondike',
+    'freecell',
+    'ginrummy',
   ],
   resources: {
     ja: {
@@ -100,6 +106,9 @@ i18n.use(initReactI18next).init({
       memory: jaMemory,
       baccarat: jaBaccarat,
       crazyeights: jaCrazyeights,
+      klondike: jaKlondike,
+      freecell: jaFreecell,
+      ginrummy: jaGinrummy,
     },
   },
   interpolation: { escapeValue: false },
