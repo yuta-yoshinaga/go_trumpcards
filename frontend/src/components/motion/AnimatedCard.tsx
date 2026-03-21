@@ -1,17 +1,8 @@
 import { motion } from 'framer-motion';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
-import type { Card } from '../../types/card';
 import { CardImage } from '../CardImage';
 
-interface AnimatedCardProps {
-  card: Card;
-  width?: number;
-  style?: React.CSSProperties;
-  className?: string;
-  draggable?: boolean;
-  onDragStart?: (e: React.DragEvent) => void;
-  onDragOver?: (e: React.DragEvent) => void;
-  onDrop?: (e: React.DragEvent) => void;
+interface AnimatedCardProps extends React.ComponentProps<typeof CardImage> {
   /** Stagger delay in seconds for deal animation. */
   dealDelay?: number;
   /** Whether this card is selected (lift + glow). */
@@ -21,34 +12,11 @@ interface AnimatedCardProps {
 }
 
 /** Renders an animated face-up playing card with deal and select animations. */
-export function AnimatedCard({
-  card,
-  width,
-  style,
-  className,
-  draggable,
-  onDragStart,
-  onDragOver,
-  onDrop,
-  dealDelay = 0,
-  isSelected = false,
-  layoutId,
-}: AnimatedCardProps) {
+export function AnimatedCard({ dealDelay = 0, isSelected = false, layoutId, ...rest }: AnimatedCardProps) {
   const reduced = useReducedMotion();
 
   if (reduced) {
-    return (
-      <CardImage
-        card={card}
-        width={width}
-        style={style}
-        className={className}
-        draggable={draggable}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-      />
-    );
+    return <CardImage {...rest} />;
   }
 
   return (
@@ -69,16 +37,7 @@ export function AnimatedCard({
       style={{ display: 'inline-block' }}
       data-testid="animated-card"
     >
-      <CardImage
-        card={card}
-        width={width}
-        style={style}
-        className={className}
-        draggable={draggable}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
-      />
+      <CardImage {...rest} />
     </motion.div>
   );
 }
