@@ -25,9 +25,13 @@ export function GameSkeleton({
   footer,
 }: GameSkeletonProps) {
   return (
-    <div className={`flex-1 flex flex-col min-h-0 ${bgClass}`} aria-busy="true" data-testid="skeleton">
+    <div
+      className={['flex-1', 'flex', 'flex-col', 'min-h-0', bgClass].join(' ')}
+      aria-busy={true}
+      data-testid="skeleton"
+    >
       <SkeletonBar />
-      <div className={`flex-1 overflow-y-auto ${bodyClassName}`}>{children}</div>
+      <div className={['flex-1', 'overflow-y-auto', bodyClassName].join(' ')}>{children}</div>
       <GameFooter className={footerClassName}>{footer}</GameFooter>
     </div>
   );
