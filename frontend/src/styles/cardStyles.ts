@@ -18,7 +18,7 @@ export function playableCardStyle(isPlayable: boolean): React.CSSProperties {
   };
 }
 
-/** Return inline styles combining playable border + subtle pulse for thumb-zone visibility. */
+/** Return inline styles combining playable border + enhanced glow for thumb-zone visibility. */
 export function smartHighlightStyle(isPlayable: boolean): React.CSSProperties {
   return {
     border: isPlayable ? '3px solid var(--color-game-status-active)' : '3px solid transparent',
