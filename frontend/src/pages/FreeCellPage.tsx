@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { FreeCellSkeleton } from '../components/skeleton/FreeCellSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -98,7 +99,7 @@ export function FreeCellPage() {
                   aria-pressed={isSourceSelected('freecell', undefined, idx)}
                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-yellow-400' : ''}`}
                 >
-                  <CardImage card={card} width={cardWidth} />
+                  <AnimatedCard card={card} width={cardWidth} />
                 </button>
               ) : (
                 <button
@@ -129,7 +130,7 @@ export function FreeCellPage() {
                   aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], cardCount: String(pile.length) })}
                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                 >
-                  <CardImage card={pile[pile.length - 1]} width={cardWidth} />
+                  <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
                 </button>
               ) : (
                 <button
@@ -185,7 +186,7 @@ export function FreeCellPage() {
                           aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, undefined, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                         >
-                          <CardImage card={card} width={cardWidth} style={{ width: '100%' }} />
+                          <AnimatedCard card={card} width={cardWidth} style={{ width: '100%' }} />
                         </button>
                       ) : (
                         <div style={{ width: cardWidth, height: cardHeight }} />
@@ -252,6 +253,7 @@ export function FreeCellPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={state.phase === FreeCellPhase.GAME_CLEAR} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

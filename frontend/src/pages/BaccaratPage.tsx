@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BaccaratSkeleton } from '../components/skeleton/BaccaratSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -200,7 +201,7 @@ export function BaccaratPage() {
             </div>
             <div className="flex justify-center gap-2">
               {state.playerHand.map((card, i) => (
-                <CardImage key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
           </div>
@@ -214,7 +215,7 @@ export function BaccaratPage() {
             </div>
             <div className="flex justify-center gap-2">
               {state.bankerHand.map((card, i) => (
-                <CardImage key={`b-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
+                <AnimatedCard key={`b-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
               ))}
             </div>
           </div>
@@ -332,6 +333,7 @@ export function BaccaratPage() {
           </div>
         )}
       </GameFooter>
+      <WinCelebration show={state.phase === BaccaratPhase.END} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

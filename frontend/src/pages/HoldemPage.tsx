@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { holdemApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
-import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
@@ -11,6 +10,9 @@ import { EquityDisplay } from '../components/EquityDisplay';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { RoundResults } from '../components/RoundResults';
 import { HoldemSkeleton } from '../components/skeleton/HoldemSkeleton';
@@ -145,14 +147,14 @@ export function HoldemPage() {
           <div className="flex flex-wrap gap-2">
             {state?.communityCards?.length
               ? state.communityCards.map((card) => (
-                  <CardImage
+                  <AnimatedCard
                     key={`${card.design}-${card.value}`}
                     card={card}
                     width={cardWidth}
                     style={{ border: '3px solid transparent' }}
                   />
                 ))
-              : Array.from({ length: 5 }).map((_, i) => <CardBack key={i} width={cardWidth} />)}
+              : Array.from({ length: 5 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
           </div>
         </div>
 
@@ -239,7 +241,7 @@ export function HoldemPage() {
             <div className="flex flex-wrap gap-1.5 mb-2">
               {humanPlayer.cards?.length
                 ? humanPlayer.cards.map((card) => (
-                    <CardImage
+                    <AnimatedCard
                       key={`${card.design}-${card.value}`}
                       card={card}
                       width={cardWidth}
@@ -247,7 +249,7 @@ export function HoldemPage() {
                     />
                   ))
                 : !humanPlayer.folded &&
-                  Array.from({ length: 2 }).map((_, i) => <CardBack key={i} width={cardWidth} />)}
+                  Array.from({ length: 2 }).map((_, i) => <AnimatedCardBack key={i} width={cardWidth} />)}
             </div>
           </div>
         )}
@@ -372,6 +374,7 @@ export function HoldemPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={phase === HoldemPhase.END} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

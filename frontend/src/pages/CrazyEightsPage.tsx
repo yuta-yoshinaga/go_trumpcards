@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { CrazyEightsSkeleton } from '../components/skeleton/CrazyEightsSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -130,7 +131,7 @@ export function CrazyEightsPage() {
         {/* Discard pile top */}
         {state.discardTop && (
           <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-            <CardImage card={state.discardTop} width={cardWidth} />
+            <AnimatedCard card={state.discardTop} width={cardWidth} />
             <div className="text-white/70 text-sm">
               <div>{t('discardTop')}</div>
               {state.chosenSuit > 0 && (
@@ -208,7 +209,7 @@ export function CrazyEightsPage() {
                   boxSizing: 'border-box',
                 }}
               >
-                <CardImage card={card} width={cardWidth} />
+                <AnimatedCard card={card} width={cardWidth} />
               </button>
             ))}
           </div>
@@ -270,6 +271,7 @@ export function CrazyEightsPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={!!state?.gameEndFlag} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
@@ -10,6 +9,8 @@ import { DaifugoSettingsPanel } from '../components/daifugo/DaifugoSettingsPanel
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { DaifugoSkeleton } from '../components/skeleton/DaifugoSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
@@ -115,7 +116,7 @@ export function DaifugoPage() {
               <span className="text-gray-400">{t('tableEmpty')}</span>
             ) : (
               state.tableCards.map((card) => (
-                <CardImage key={`${card.design}-${card.value}`} card={card} width={cardWidth} />
+                <AnimatedCard key={`${card.design}-${card.value}`} card={card} width={cardWidth} />
               ))
             )}
           </div>
@@ -257,6 +258,7 @@ export function DaifugoPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={!!state?.gameEndFlag} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}
