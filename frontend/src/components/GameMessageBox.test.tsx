@@ -23,7 +23,7 @@ describe('GameMessageBox', () => {
     const div = container.firstChild as HTMLElement;
     expect(div).toBeInTheDocument();
     expect(div.textContent).toBe('');
-    expect(div.className).toContain('bg-black/55');
+    expect(div.className).toContain('glass-panel');
   });
 
   it('renders message text when alwaysVisible is true and message is provided', () => {

@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { GinRummySkeleton } from '../components/skeleton/GinRummySkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
@@ -128,7 +129,7 @@ export function GinRummyPage() {
         {/* Discard pile top */}
         {state.discardTop && (
           <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
-            <CardImage card={state.discardTop} width={cardWidth} />
+            <AnimatedCard card={state.discardTop} width={cardWidth} />
             <div className="text-white/70 text-sm">
               <div>{t('discardTop')}</div>
             </div>
@@ -148,7 +149,7 @@ export function GinRummyPage() {
               {(isLayoffPhase || isRoundEnd || isGameEnd) && p.cards.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {p.cards.map((card, idx) => (
-                    <CardImage key={`cpu-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
+                    <AnimatedCard key={`cpu-${card.design}-${card.value}-${idx}`} card={card} width={cardWidth * 0.8} />
                   ))}
                 </div>
               )}
@@ -162,7 +163,7 @@ export function GinRummyPage() {
             {state.knockerMelds.map((meld, meldIdx) => (
               <div key={`meld-${meldIdx}`} className="flex flex-wrap gap-1 mb-1">
                 {meld.cards.map((card, cardIdx) => (
-                  <CardImage
+                  <AnimatedCard
                     key={`meld-${meldIdx}-${card.design}-${card.value}-${cardIdx}`}
                     card={card}
                     width={cardWidth * 0.7}
@@ -227,7 +228,7 @@ export function GinRummyPage() {
                   boxSizing: 'border-box',
                 }}
               >
-                <CardImage card={card} width={cardWidth} />
+                <AnimatedCard card={card} width={cardWidth} />
               </button>
             ))}
           </div>
@@ -309,6 +310,7 @@ export function GinRummyPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={!!state?.gameEndFlag} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

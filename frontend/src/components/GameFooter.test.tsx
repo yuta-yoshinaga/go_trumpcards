@@ -65,4 +65,28 @@ describe('GameFooter', () => {
     expect(footer.className).toContain('px-4');
     expect(footer.className).toContain('py-3');
   });
+
+  it('applies floating classes when floating is true', () => {
+    render(
+      <GameFooter floating>
+        <span>content</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).toContain('glass-panel');
+    expect(footer.className).toContain('rounded-t-xl');
+    expect(footer.className).toContain('max-h-[60vh]');
+    expect(footer.className).toContain('overflow-y-auto');
+  });
+
+  it('does not apply floating classes when floating is false', () => {
+    render(
+      <GameFooter floating={false}>
+        <span>content</span>
+      </GameFooter>,
+    );
+    const footer = screen.getByRole('contentinfo');
+    expect(footer.className).not.toContain('glass-panel');
+    expect(footer.className).not.toContain('rounded-t-xl');
+  });
 });

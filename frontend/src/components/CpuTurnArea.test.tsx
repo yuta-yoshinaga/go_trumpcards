@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { CpuTurnArea } from './CpuTurnArea';
 
-const baseClass = 'bg-black/35 rounded-[10px] border-2 border-transparent p-[10px]';
+const baseClass = 'glass-panel rounded-[10px] p-[10px]';
 
 describe('CpuTurnArea', () => {
   it('renders player name for CPU', () => {

@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { OldMaidDiscardedArea } from '../components/oldmaid/OldMaidDiscardedArea';
 import { OldMaidDrawHistory } from '../components/oldmaid/OldMaidDrawHistory';
 import { OldMaidPlayerArea } from '../components/oldmaid/OldMaidPlayerArea';
@@ -160,10 +162,10 @@ export function OldMaidPage() {
           <div className="flex justify-center my-2" data-testid="card-reveal-area">
             {revealedCard ? (
               <div className="animate-flipIn">
-                <CardImage card={revealedCard} width={cardWidth} />
+                <AnimatedCard card={revealedCard} width={cardWidth} />
               </div>
             ) : (
-              <CardBack width={cardWidth} />
+              <AnimatedCardBack width={cardWidth} />
             )}
           </div>
         )}
@@ -278,6 +280,7 @@ export function OldMaidPage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={!!state?.gameEndFlag} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}
