@@ -25,6 +25,12 @@ describe('useCardGesture', () => {
     expect(onTap).not.toHaveBeenCalled();
   });
 
+  it('onClick does nothing when onTap is not provided', () => {
+    vi.mocked(useReducedMotion).mockReturnValue(false);
+    const { result } = renderHook(() => useCardGesture({}));
+    result.current.onClick(); // must not throw
+  });
+
   it('swipe up calls onSwipeUp when threshold exceeded', () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
     const onSwipeUp = vi.fn();
