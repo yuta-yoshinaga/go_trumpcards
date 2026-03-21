@@ -31,7 +31,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
   return (
     <details className="px-4 pt-2">
       <summary className="text-white/70 text-xs cursor-pointer select-none">{title}</summary>
-      <div className="bg-black/30 rounded-lg p-3 mt-1 text-xs text-white">
+      <div className="glass-panel rounded-lg p-3 mt-1 text-xs text-white">
         {groups.map((group, gi) => {
           const content = (
             <div className="flex flex-wrap gap-x-4 gap-y-1">

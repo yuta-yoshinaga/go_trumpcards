@@ -77,16 +77,16 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
-        className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4"
+        className="glass-panel rounded-lg shadow-xl p-6 max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === 'Escape') props.onCancel();
         }}
       >
-        <h2 id="confirm-dialog-title" className="text-lg font-bold text-gray-900 mb-2">
+        <h2 id="confirm-dialog-title" className="text-lg font-bold text-white mb-2">
           {props.title}
         </h2>
-        <p className="text-gray-700 mb-4">{props.message}</p>
+        <p className="text-gray-200 mb-4">{props.message}</p>
         <div className="flex justify-end gap-2">
           <button type="button" className={btnSecondary} onClick={props.onCancel}>
             {props.cancelLabel}

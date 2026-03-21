@@ -100,7 +100,7 @@ export function ActionLogPanel({ entries, onClose }: ActionLogPanelProps) {
     <section
       ref={dialogRef}
       aria-labelledby={titleId}
-      className="bg-black/60 rounded-lg p-4 my-2 max-h-[60vh] flex flex-col"
+      className="glass-panel rounded-lg p-4 my-2 max-h-[60vh] flex flex-col"
     >
       <div className="flex items-center justify-between mb-2">
         <h3 id={titleId} className="text-white font-bold text-sm">

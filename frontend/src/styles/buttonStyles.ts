@@ -1,5 +1,5 @@
 const base =
-  'px-3 py-1.5 text-sm font-medium rounded disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale mx-1.5';
+  'px-3 py-1.5 text-sm font-medium rounded disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale mx-1.5 transition-all duration-150 active:scale-95';
 
 /** Primary (blue) button style. */
 export const btnPrimary = `${base} text-white bg-blue-600 hover:bg-blue-700`;
