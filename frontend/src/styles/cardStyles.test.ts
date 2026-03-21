@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { playableCardStyle, selectedCardStyle } from './cardStyles';
+import { playableCardStyle, selectedCardStyle, smartHighlightStyle } from './cardStyles';
 
 describe('selectedCardStyle', () => {
   it('returns selected styles when true', () => {
@@ -29,5 +29,21 @@ describe('playableCardStyle', () => {
     const style = playableCardStyle(false);
     expect(style.border).toBe('3px solid transparent');
     expect(style.boxShadow).toBe('none');
+  });
+});
+
+describe('smartHighlightStyle', () => {
+  it('returns highlighted styles when true', () => {
+    const style = smartHighlightStyle(true);
+    expect(style.border).toBe('3px solid var(--color-game-status-active)');
+    expect(style.boxShadow).toBe('0 0 10px rgba(92, 184, 92, 0.4), 0 0 20px rgba(92, 184, 92, 0.15)');
+    expect(style.transition).toBe('border 0.15s, box-shadow 0.15s');
+  });
+
+  it('returns non-highlighted styles when false', () => {
+    const style = smartHighlightStyle(false);
+    expect(style.border).toBe('3px solid transparent');
+    expect(style.boxShadow).toBe('none');
+    expect(style.transition).toBe('border 0.15s, box-shadow 0.15s');
   });
 });

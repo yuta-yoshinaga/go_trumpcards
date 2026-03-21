@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories } from '../constants/gameRoutes';
+import { SoundToggle } from './SoundToggle';
 
 const langToggle = (
   currentLang: string,
@@ -30,8 +31,13 @@ const langToggle = (
   </div>
 );
 
+interface NavBarProps {
+  soundMuted?: boolean;
+  onSoundToggle?: () => void;
+}
+
 /** Renders the top navigation bar with game links grouped by category and language toggle. */
-export function NavBar() {
+export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation('common');
   const currentLang = i18n.language;
@@ -58,7 +64,7 @@ export function NavBar() {
   };
 
   return (
-    <div className="glass-panel bg-gray-800/80">
+    <div className="glass-panel--dark">
       <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
         <Link
           to="/"
@@ -68,6 +74,7 @@ export function NavBar() {
           Trump Cards
         </Link>
         <div className="flex items-center gap-2">
+          {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
           {langToggle(currentLang, i18n, t)}
           <button
             ref={toggleRef}
@@ -109,7 +116,10 @@ export function NavBar() {
             </div>
           ))}
         </div>
-        <div className="hidden sm:flex">{langToggle(currentLang, i18n, t)}</div>
+        <div className="hidden sm:flex sm:items-center sm:gap-2">
+          {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
+          {langToggle(currentLang, i18n, t)}
+        </div>
       </nav>
     </div>
   );

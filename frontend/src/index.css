@@ -16,6 +16,7 @@
   --color-game-card-selected: #3b82f6;
   /* Glassmorphism */
   --color-glass-bg: rgba(255, 255, 255, 0.08);
+  --color-glass-bg-dark: rgba(31, 41, 55, 0.8);
   --color-glass-border: rgba(255, 255, 255, 0.15);
   /* Game background colors */
   --color-game-bg-green: #1a5c1a;
@@ -28,7 +29,7 @@
   --color-game-bg-casino-dark: #0a3a10;
   --color-game-bg-blue: #1a2c5c;
   --color-game-bg-blue-dark: #101c3a;
-  /* Typography */
+  /* Typography: identical now, separated for future differentiation (e.g., display font for headings) */
   --font-display:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-body:
@@ -52,10 +53,29 @@ body {
   border: 1px solid var(--color-glass-border);
 }
 
+.glass-panel--dark {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: var(--color-glass-bg-dark);
+  border: 1px solid var(--color-glass-border);
+}
+
 @supports not (backdrop-filter: blur(1px)) {
   .glass-panel {
     background: rgba(0, 0, 0, 0.5);
   }
+
+  .glass-panel--dark {
+    background: rgba(31, 41, 55, 0.95);
+  }
+}
+
+.footer-hand {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 4px;
 }
 
 @keyframes shake {
