@@ -28,6 +28,10 @@
     "crazyeights": "クレイジーエイト",
     "ginrummy": "ジンラミー"
   },
+  "sound": {
+    "mute": "サウンドをオフにする",
+    "unmute": "サウンドをオンにする"
+  },
   "player": {
     "you": "あなた",
     "cpu": "CPU {{id}}",
