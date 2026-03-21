@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"fmt"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -60,15 +58,11 @@ func (p *MemoryWebPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if m.GetGameEndFlag() {
-		resObj.Message = p.buildResultMessage(m)
 		winnerIdx := m.GetWinnerIdx()
 		player := m.GetPlayer(winnerIdx)
-		if player != nil && player.GetIsHuman() {
-			resObj.MessageCode = "memory.result.humanWin"
-		} else {
-			resObj.MessageCode = "memory.result.cpuWin"
-			resObj.MessageParams = map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
-		}
+		isHuman := player != nil && player.GetIsHuman()
+		resObj.Message, resObj.MessageCode, resObj.MessageParams = buildWinnerWebMessage(
+			buildWinnerResultMessage(winnerIdx, isHuman), "memory", winnerIdx, isHuman)
 	} else {
 		phase := m.GetPhase()
 		switch phase {
@@ -86,22 +80,6 @@ func (p *MemoryWebPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 	}
 
 	return marshalOrError(resObj)
-}
-
-// buildResultMessage ゲーム終了メッセージを生成
-func (p *MemoryWebPresenter) buildResultMessage(m interfaces.MemoryGame) string {
-	winnerIdx := m.GetWinnerIdx()
-	player := m.GetPlayer(winnerIdx)
-	if player == nil {
-		return fmt.Sprintf("ゲーム終了！ CPU %dの勝ち！", winnerIdx)
-	}
-	var name string
-	if player.GetIsHuman() {
-		name = "あなた"
-	} else {
-		name = fmt.Sprintf("CPU %d", winnerIdx)
-	}
-	return fmt.Sprintf("ゲーム終了！ %sの勝ち！", name)
 }
 
 // ActionLogOutput 棋譜をJSON出力

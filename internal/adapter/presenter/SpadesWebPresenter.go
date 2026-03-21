@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"fmt"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -81,13 +79,10 @@ func (p *SpadesWebPresenter) buildMessage(s interfaces.SpadesGame, trick []*doma
 	}
 	if s.GetGameEndFlag() {
 		winnerIdx := s.GetWinnerIdx()
-		msg := p.buildResultMessage(s)
 		player := s.GetPlayer(winnerIdx)
-		if player != nil && player.GetIsHuman() {
-			return msg, "spades.result.humanWin", nil
-		}
-		params := map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
-		return msg, "spades.result.cpuWin", params
+		isHuman := player != nil && player.GetIsHuman()
+		msg := buildWinnerResultMessage(winnerIdx, isHuman)
+		return buildWinnerWebMessage(msg, "spades", winnerIdx, isHuman)
 	}
 	switch s.GetPhase() {
 	case domain.SpadesPhaseBid:
@@ -103,22 +98,6 @@ func (p *SpadesWebPresenter) buildMessage(s interfaces.SpadesGame, trick []*doma
 		return "", "spades.roundEnd", nil
 	}
 	return "", "", nil
-}
-
-// buildResultMessage ゲーム終了メッセージを生成
-func (p *SpadesWebPresenter) buildResultMessage(s interfaces.SpadesGame) string {
-	winnerIdx := s.GetWinnerIdx()
-	player := s.GetPlayer(winnerIdx)
-	if player == nil {
-		return fmt.Sprintf("ゲーム終了！ CPU %dの勝ち！", winnerIdx)
-	}
-	var name string
-	if player.GetIsHuman() {
-		name = "あなた"
-	} else {
-		name = fmt.Sprintf("CPU %d", winnerIdx)
-	}
-	return fmt.Sprintf("ゲーム終了！ %sの勝ち！", name)
 }
 
 // ActionLogOutput 棋譜をJSON出力

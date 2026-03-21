@@ -348,11 +348,7 @@ func TestMemoryWebPresenterActionLog(t *testing.T) {
 }
 
 func TestMemoryWebPresenterBuildResultMessageNilPlayer(t *testing.T) {
-	mg := newMockMemoryGame()
-	mg.On("GetWinnerIdx").Return(5)
-	mg.On("GetPlayer", 5).Return((*domain.MemoryPlayer)(nil))
-
-	p := new(MemoryWebPresenter)
-	result := p.buildResultMessage(mg)
+	// nil player maps to isHuman=false → CPU message
+	result := buildWinnerResultMessage(5, false)
 	assert.Contains(t, result, "CPU 5")
 }
