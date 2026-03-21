@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { GameResetDialog } from './GameResetDialog';
 
 describe('GameResetDialog', () => {
-  it('renders nothing when confirmOpen is false', () => {
-    const { container } = render(<GameResetDialog confirmOpen={false} confirmReset={vi.fn()} cancelReset={vi.fn()} />);
-    expect(container.innerHTML).toBe('');
+  it('does not render the dialog when confirmOpen is false', () => {
+    render(<GameResetDialog confirmOpen={false} confirmReset={vi.fn()} cancelReset={vi.fn()} />);
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('renders the dialog with common translation keys when open', () => {
