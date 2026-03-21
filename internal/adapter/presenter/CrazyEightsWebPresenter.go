@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"fmt"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -64,13 +62,9 @@ func (p *CrazyEightsWebPresenter) buildMessage(g interfaces.CrazyEightsGame, las
 	}
 	if g.GetGameEndFlag() {
 		winnerIdx := g.GetWinnerIdx()
-		msg := p.buildResultMessage(g)
 		player := g.GetPlayer(winnerIdx)
-		if player != nil && player.GetIsHuman() {
-			return msg, "crazyeights.result.humanWin", nil
-		}
-		params := map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
-		return msg, "crazyeights.result.cpuWin", params
+		isHuman := player != nil && player.GetIsHuman()
+		return buildWinnerWebMessage("crazyeights", winnerIdx, isHuman)
 	}
 	switch g.GetPhase() {
 	case domain.CrazyEightsPhasePlay:
@@ -81,22 +75,6 @@ func (p *CrazyEightsWebPresenter) buildMessage(g interfaces.CrazyEightsGame, las
 		return "", "crazyeights.roundEnd", nil
 	}
 	return "", "", nil
-}
-
-// buildResultMessage ゲーム終了メッセージを生成
-func (p *CrazyEightsWebPresenter) buildResultMessage(g interfaces.CrazyEightsGame) string {
-	winnerIdx := g.GetWinnerIdx()
-	player := g.GetPlayer(winnerIdx)
-	if player == nil {
-		return fmt.Sprintf("ゲーム終了！ CPU %dの勝ち！", winnerIdx)
-	}
-	var name string
-	if player.GetIsHuman() {
-		name = "あなた"
-	} else {
-		name = fmt.Sprintf("CPU %d", winnerIdx)
-	}
-	return fmt.Sprintf("ゲーム終了！ %sの勝ち！", name)
 }
 
 // ActionLogOutput 棋譜をJSON出力
