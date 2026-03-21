@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 interface WinCelebrationProps {
@@ -31,7 +31,11 @@ function generateParticles(): Particle[] {
 /** Renders a lightweight particle burst celebration animation on win. */
 export function WinCelebration({ show }: WinCelebrationProps) {
   const reduced = useReducedMotion();
-  const particles = useMemo(() => generateParticles(), []);
+  const [particles, setParticles] = useState<Particle[]>([]);
+
+  useEffect(() => {
+    if (show) setParticles(generateParticles());
+  }, [show]);
 
   if (!show || reduced) return null;
 

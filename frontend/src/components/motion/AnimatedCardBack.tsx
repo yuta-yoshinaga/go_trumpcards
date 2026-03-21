@@ -2,12 +2,7 @@ import { motion } from 'framer-motion';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { CardBack } from '../CardImage';
 
-interface AnimatedCardBackProps {
-  width?: number;
-  style?: React.CSSProperties;
-  className?: string;
-  onClick?: () => void;
-  ariaLabel?: string;
+interface AnimatedCardBackProps extends React.ComponentProps<typeof CardBack> {
   /** Stagger delay in seconds for deal animation. */
   dealDelay?: number;
   /** Shared layout animation ID. */
@@ -15,19 +10,11 @@ interface AnimatedCardBackProps {
 }
 
 /** Renders an animated face-down card back with deal and optional flip animation. */
-export function AnimatedCardBack({
-  width,
-  style,
-  className,
-  onClick,
-  ariaLabel,
-  dealDelay = 0,
-  layoutId,
-}: AnimatedCardBackProps) {
+export function AnimatedCardBack({ dealDelay = 0, layoutId, ...rest }: AnimatedCardBackProps) {
   const reduced = useReducedMotion();
 
   if (reduced) {
-    return <CardBack width={width} style={style} className={className} onClick={onClick} ariaLabel={ariaLabel} />;
+    return <CardBack {...rest} />;
   }
 
   return (
@@ -41,10 +28,10 @@ export function AnimatedCardBack({
         damping: 25,
         delay: dealDelay,
       }}
-      style={{ display: 'inline-block' }}
+      style={{ display: 'inline-block', perspective: 1000 }}
       data-testid="animated-card-back"
     >
-      <CardBack width={width} style={style} className={className} onClick={onClick} ariaLabel={ariaLabel} />
+      <CardBack {...rest} />
     </motion.div>
   );
 }

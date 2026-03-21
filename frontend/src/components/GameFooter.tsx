@@ -12,7 +12,7 @@ export function GameFooter({ className, children, floating = false }: GameFooter
     : '';
   return (
     <footer
-      className={`shrink-0 border-t ${floatingClass} ${className ?? ''}`.trim()}
+      className={['shrink-0', 'border-t', floatingClass, className].filter(Boolean).join(' ')}
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
     >
       {children}

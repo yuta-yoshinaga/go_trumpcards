@@ -24,18 +24,18 @@ We will implement the redesign in 4 incremental PRs:
 
 3. **Ergonomic Mobile Layout (#786)**: Restructure game pages to place player hand cards in a floating footer within the thumb zone. No new dependencies.
 
-4. **Gesture & Haptics/Sound (#787)**: Add `@use-gesture/react` (~3KB) for swipe/tap gestures and `use-sound`+`howler` (~11KB) for audio feedback. Small OGG sound assets (~25KB total). `navigator.vibrate()` for haptic feedback with graceful degradation.
+4. **Gesture & Haptics/Sound (#787)**: Native pointer events for swipe/tap gestures, `HTMLAudioElement` for sound effects, and `navigator.vibrate()` for haptic feedback. Small OGG sound assets (~25KB total). All with graceful degradation — no new JS dependencies.
 
 ### Technology choices
 
 - **framer-motion** over CSS animations: Spring physics, `AnimatePresence` for exit animations, `layoutId` for shared layout transitions — capabilities not achievable with CSS alone.
-- **@use-gesture/react** over raw pointer events: Declarative gesture API that pairs naturally with framer-motion's spring system.
-- **use-sound/howler** over Web Audio API: Simple API for fire-and-forget sound effects with format fallback and mobile compatibility.
+- **Native pointer events** over `@use-gesture/react`: Simpler implementation for tap/swipe detection with zero bundle cost. `useCardGesture` hook handles pointer down/up/cancel with swipe threshold detection.
+- **Native `HTMLAudioElement`** over `use-sound`/`howler`: Cached Audio objects via `useMemo` provide fire-and-forget sound effects without additional dependencies. Handles autoplay blocking gracefully.
 - **No external fonts**: System font stacks avoid additional network requests and FOIT/FOUT.
 
 ### Bundle budget
 
-Total addition: ~72KB gzipped (33 + 3 + 11 + 25 for assets). All libraries are tree-shakeable.
+Total addition: ~58KB gzipped (33KB framer-motion + ~25KB sound assets). Phase 4 adds no new JS dependencies.
 
 ## Consequences
 
@@ -48,7 +48,7 @@ Total addition: ~72KB gzipped (33 + 3 + 11 + 25 for assets). All libraries are t
 
 ### Negative
 
-- ~72KB bundle size increase (acceptable for a game application)
+- ~58KB bundle size increase (acceptable for a game application)
 - framer-motion becomes a significant dependency; future removal would require substantial refactoring
-- Sound assets require CC0-licensed source files to be sourced and committed
+- Sound assets require CC0-licensed source files to be sourced and committed (placeholder files included initially)
 - Glass panels require `@supports` fallback testing for older browsers

@@ -75,6 +75,12 @@ describe('useCardGesture', () => {
     // No error thrown
   });
 
+  it('onClick does nothing when onTap is not provided', () => {
+    vi.mocked(useReducedMotion).mockReturnValue(false);
+    const { result } = renderHook(() => useCardGesture({}));
+    result.current.onClick(); // must not throw
+  });
+
   it('does not call onTap after a swipe (prevents double-trigger)', () => {
     vi.mocked(useReducedMotion).mockReturnValue(false);
     const onTap = vi.fn();
