@@ -14,11 +14,11 @@ describe('useConfirmDialog', () => {
     expect(result.current.isOpen).toBe(true);
   });
 
-  it('confirm closes and calls callback', () => {
+  it('confirm closes and calls callback', async () => {
     const callback = vi.fn();
     const { result } = renderHook(() => useConfirmDialog());
     act(() => result.current.requestConfirm(callback));
-    act(() => result.current.confirm());
+    await act(async () => result.current.confirm());
     expect(result.current.isOpen).toBe(false);
     expect(callback).toHaveBeenCalledTimes(1);
   });
@@ -32,12 +32,12 @@ describe('useConfirmDialog', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 
-  it('confirm does not call callback after cancel', () => {
+  it('confirm does not call callback after cancel', async () => {
     const callback = vi.fn();
     const { result } = renderHook(() => useConfirmDialog());
     act(() => result.current.requestConfirm(callback));
     act(() => result.current.cancel());
-    act(() => result.current.confirm());
+    await act(async () => result.current.confirm());
     expect(callback).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,6 @@
+import { describe, expect, it, vi } from 'bun:test';
 import { fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
-import { describe, expect, it, vi } from 'vitest';
 import { SoundToggle } from './SoundToggle';
 
 describe('SoundToggle', () => {

@@ -1,5 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ActionLogEntry } from '../types/card';
 import { ActionLogPanel } from './ActionLogPanel';
 
@@ -60,7 +60,8 @@ describe('ActionLogPanel', () => {
   it('download button creates and clicks a download link', () => {
     const createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/fake');
     const revokeObjectURL = vi.fn();
-    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
+    const originalURL = globalThis.URL;
+    globalThis.URL = { createObjectURL, revokeObjectURL } as unknown as typeof URL;
 
     const clickSpy = vi.fn();
     const originalCreateElement = document.createElement.bind(document);
@@ -84,7 +85,7 @@ describe('ActionLogPanel', () => {
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:http://localhost/fake');
 
     createElementSpy.mockRestore();
-    vi.unstubAllGlobals();
+    globalThis.URL = originalURL;
   });
 
   it('close button calls onClose', () => {

@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
 import { RoundResults } from './RoundResults';
 
 const players = [{ isHuman: true }, { isHuman: false }, { isHuman: false }];

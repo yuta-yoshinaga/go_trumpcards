@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
 import type { HoldemEquity } from '../types/card';
 import { EquityDisplay } from './EquityDisplay';
 

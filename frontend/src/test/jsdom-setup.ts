@@ -57,8 +57,8 @@ for (const key of Object.getOwnPropertyNames(win)) {
   if (skipKeys.has(key)) continue;
   try {
     g[key] = win[key];
-  } catch (e) {
-    console.debug(`[jsdom-setup] skipped readonly property: ${key}`, e);
+  } catch {
+    // readonly property — safe to skip
   }
 }
 
@@ -93,8 +93,8 @@ for (const [key, value] of Object.entries(overrides)) {
   } catch {
     try {
       Object.defineProperty(g, key, { value, writable: true, configurable: true });
-    } catch (e2) {
-      console.debug(`[jsdom-setup] failed to override: ${key}`, e2);
+    } catch {
+      // truly immutable — safe to skip
     }
   }
 }

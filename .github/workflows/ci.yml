@@ -83,6 +83,7 @@ jobs:
 
       - name: Run frontend tests
         working-directory: frontend
+        timeout-minutes: 10
         run: bun run test
 
   test-e2e:

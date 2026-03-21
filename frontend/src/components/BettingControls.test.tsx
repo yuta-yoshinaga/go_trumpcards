@@ -1,5 +1,5 @@
+import { describe, expect, it, vi } from 'bun:test';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
 import { BettingControls } from './BettingControls';
 
 function makeProps(overrides: Partial<Parameters<typeof BettingControls>[0]> = {}) {

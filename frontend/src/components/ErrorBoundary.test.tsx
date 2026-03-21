@@ -1,6 +1,6 @@
+import { describe, expect, it, vi } from 'bun:test';
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
 import jaCommon from '../i18n/locales/ja/common.json';
 import { ErrorBoundary } from './ErrorBoundary';
 

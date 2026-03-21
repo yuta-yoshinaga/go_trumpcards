@@ -1,22 +1,35 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
 import type { ActionLogEntry } from '../types/card';
+import * as ActionLogPanelModule from './ActionLogPanel';
 import { ActionLogSection } from './ActionLogSection';
 
-vi.mock('./ActionLogPanel', () => ({
-  ActionLogPanel: ({ entries, onClose }: { entries: ActionLogEntry[]; onClose: () => void }) => (
-    <div data-testid="action-log-panel">
-      <span>{entries.length} entries</span>
-      <button type="button" onClick={onClose}>
-        close
-      </button>
-    </div>
-  ),
-}));
-
-const entry: ActionLogEntry = { turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'test' };
-
 describe('ActionLogSection', () => {
+  let spy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    spy = vi.spyOn(ActionLogPanelModule, 'ActionLogPanel').mockImplementation((({
+      entries,
+      onClose,
+    }: {
+      entries: ActionLogEntry[];
+      onClose: () => void;
+    }) => (
+      <div data-testid="action-log-panel">
+        <span>{entries.length} entries</span>
+        <button type="button" onClick={onClose}>
+          close
+        </button>
+      </div>
+    )) as unknown as typeof ActionLogPanelModule.ActionLogPanel);
+  });
+
+  afterEach(() => {
+    spy.mockRestore();
+  });
+
+  const entry: ActionLogEntry = { turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'test' };
+
   it('renders nothing when isEndPhase=false and actionLog=null', () => {
     const { container } = render(
       <ActionLogSection isEndPhase={false} actionLog={null} showActionLog={vi.fn()} hideActionLog={vi.fn()} />,

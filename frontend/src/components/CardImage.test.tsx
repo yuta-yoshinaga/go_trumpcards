@@ -1,5 +1,5 @@
+import { describe, expect, it, vi } from 'bun:test';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
 import { CardBack, CardImage } from './CardImage';
 

@@ -1,5 +1,5 @@
+import { describe, expect, it, vi } from 'bun:test';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
 import type { ConfirmDialogProps } from './ConfirmDialog';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -38,14 +38,14 @@ describe('ConfirmDialog', () => {
     const onConfirm = vi.fn();
     render(<ConfirmDialog {...defaultProps({ onConfirm })} />);
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    expect(onConfirm).toHaveBeenCalledOnce();
+    expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
   it('calls onCancel when cancel button is clicked', () => {
     const onCancel = vi.fn();
     render(<ConfirmDialog {...defaultProps({ onCancel })} />);
     fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
-    expect(onCancel).toHaveBeenCalledOnce();
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it('calls onCancel when overlay is clicked', () => {
@@ -53,7 +53,7 @@ describe('ConfirmDialog', () => {
     render(<ConfirmDialog {...defaultProps({ onCancel })} />);
     // Click the overlay (presentation element)
     fireEvent.click(screen.getByRole('presentation'));
-    expect(onCancel).toHaveBeenCalledOnce();
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it('does not call onCancel when dialog content is clicked', () => {
@@ -67,7 +67,7 @@ describe('ConfirmDialog', () => {
     const onCancel = vi.fn();
     render(<ConfirmDialog {...defaultProps({ onCancel })} />);
     fireEvent.keyDown(screen.getByRole('alertdialog'), { key: 'Escape' });
-    expect(onCancel).toHaveBeenCalledOnce();
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it('does not call onCancel for non-Escape key on dialog', () => {
@@ -166,21 +166,12 @@ describe('ConfirmDialog', () => {
   });
 
   it('handles cleanup when triggerRef is not an HTMLElement', () => {
-    // Simulate document.activeElement being null by setting it before render
-    const originalDescriptor = Object.getOwnPropertyDescriptor(document, 'activeElement');
-    Object.defineProperty(document, 'activeElement', {
-      get: () => null,
-      configurable: true,
-    });
+    // Blur everything so document.activeElement is body (or null), making triggerRef capture a non-HTMLElement
+    (document.activeElement as HTMLElement | null)?.blur?.();
 
     const { rerender } = render(<ConfirmDialog {...defaultProps()} />);
 
-    // Restore real activeElement before rerender so DOM operations work
-    if (originalDescriptor) {
-      Object.defineProperty(document, 'activeElement', originalDescriptor);
-    }
-
-    // Closing dialog: triggerRef.current is null, instanceof HTMLElement is false
+    // Closing dialog: triggerRef.current is body or null, instanceof HTMLElement branch tested
     rerender(<ConfirmDialog {...defaultProps({ open: false })} />);
     expect(screen.queryByRole('alertdialog')).toBeNull();
   });
