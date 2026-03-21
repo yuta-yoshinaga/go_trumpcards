@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { KlondikeSkeleton } from '../components/skeleton/KlondikeSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -120,7 +122,7 @@ export function KlondikePage() {
               {t('stock')} ({state.stockCount})
             </div>
             {state.stockCount > 0 ? (
-              <CardBack width={cardWidth} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
+              <AnimatedCardBack width={cardWidth} onClick={isPlaying ? handleDraw : undefined} ariaLabel={t('draw')} />
             ) : (
               <button
                 type="button"
@@ -155,10 +157,10 @@ export function KlondikePage() {
                           aria-pressed={isSourceSelected('waste')}
                           className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste') ? 'ring-2 ring-yellow-400' : ''}`}
                         >
-                          <CardImage card={card} width={cardWidth} />
+                          <AnimatedCard card={card} width={cardWidth} />
                         </button>
                       ) : (
-                        <CardImage card={card} width={cardWidth} />
+                        <AnimatedCard card={card} width={cardWidth} />
                       )}
                     </div>
                   );
@@ -189,7 +191,7 @@ export function KlondikePage() {
                   aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], count: pile.length })}
                   className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                 >
-                  <CardImage card={pile[pile.length - 1]} width={cardWidth} />
+                  <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
                 </button>
               ) : (
                 <button
@@ -245,10 +247,10 @@ export function KlondikePage() {
                           aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                           className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected('tableau', colIdx, cardIdx) ? 'ring-2 ring-yellow-400' : ''}`}
                         >
-                          <CardImage card={tc.card} width={cardWidth} style={{ width: '100%' }} />
+                          <AnimatedCard card={tc.card} width={cardWidth} style={{ width: '100%' }} />
                         </button>
                       ) : (
-                        <CardBack width={cardWidth} className="w-full" />
+                        <AnimatedCardBack width={cardWidth} className="w-full" />
                       )}
                     </div>
                   ))
@@ -358,6 +360,7 @@ export function KlondikePage() {
           </button>
         </div>
       </GameFooter>
+      <WinCelebration show={state.phase === KlondikePhase.GAME_CLEAR} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}

@@ -20,11 +20,13 @@ import {
   BJ_SUGGEST_SURRENDER,
 } from '../components/blackjack/bjConstants';
 import { HandStatusBadges } from '../components/blackjack/HandStatusBadges';
-import { CardBack, CardImage } from '../components/CardImage';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
+import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -198,9 +200,9 @@ export function BlackJackPage() {
             </h3>
             <div className="flex flex-wrap gap-2">
               {state.dealer.cards?.map((card, idx) => (
-                <CardImage key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
+                <AnimatedCard key={`dealer-${idx}-${card.design}-${card.value}`} card={card} width={cardWidth} />
               ))}
-              {!state.dealer.score && <CardBack width={cardWidth} />}
+              {!state.dealer.score && <AnimatedCardBack width={cardWidth} />}
             </div>
           </div>
         )}
@@ -232,7 +234,7 @@ export function BlackJackPage() {
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {hand.cards.map((card, cardIdx) => (
-                        <CardImage
+                        <AnimatedCard
                           key={`cpu${cpuIdx}-hand${handIdx}-${cardIdx}-${card.design}-${card.value}`}
                           card={card}
                           width={cardWidth}
@@ -271,7 +273,7 @@ export function BlackJackPage() {
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
                   {hand.cards.map((card, cardIdx) => (
-                    <CardImage
+                    <AnimatedCard
                       key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
                       card={card}
                       width={cardWidth}
@@ -432,6 +434,7 @@ export function BlackJackPage() {
           )}
         </div>
       </GameFooter>
+      <WinCelebration show={phase === BjPhase.END} />
       <ConfirmDialog
         open={confirmOpen}
         title={tc('button.confirmReset')}
