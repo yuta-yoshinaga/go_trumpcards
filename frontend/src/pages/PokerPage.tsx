@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
-import { ConfirmDialog } from '../components/ConfirmDialog';
 import { CpuActionLog } from '../components/CpuActionLog';
 import { CpuPlayerCard } from '../components/CpuPlayerCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -292,15 +292,7 @@ export function PokerPage() {
         </div>
       </GameFooter>
       <WinCelebration show={phase === PokerPhase.END} />
-      <ConfirmDialog
-        open={confirmOpen}
-        title={tc('button.confirmReset')}
-        message={tc('button.confirmResetMessage')}
-        confirmLabel={tc('button.confirm')}
-        cancelLabel={tc('button.cancel')}
-        onConfirm={confirmReset}
-        onCancel={cancelReset}
-      />
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
 }

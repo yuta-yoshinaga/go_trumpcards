@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
-import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -334,15 +334,7 @@ export function BaccaratPage() {
         )}
       </GameFooter>
       <WinCelebration show={state.phase === BaccaratPhase.END} />
-      <ConfirmDialog
-        open={confirmOpen}
-        title={tc('button.confirmReset')}
-        message={tc('button.confirmResetMessage')}
-        confirmLabel={tc('button.confirm')}
-        cancelLabel={tc('button.cancel')}
-        onConfirm={confirmReset}
-        onCancel={cancelReset}
-      />
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
 }
