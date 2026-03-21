@@ -1,17 +1,12 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, baccaratApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { BaccaratResponse, Card, CardDesign } from '../types/card';
 import { BaccaratPage } from './BaccaratPage';
 
-vi.mock('../api/gameApi', () => ({
-  baccaratApi: { exec: vi.fn() },
-  actionLogApi: { baccarat: vi.fn() },
-}));
-
-const mockExec = vi.mocked(baccaratApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const betPhaseState: BaccaratResponse = {
@@ -107,6 +102,13 @@ const endPhaseWithOnlyTies: BaccaratResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.spyOn(baccaratApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'baccarat').mockImplementation(vi.fn());
+  mockExec = asMocked(baccaratApi.exec);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('BaccaratPage', () => {
@@ -262,7 +264,7 @@ describe('BaccaratPage', () => {
 
   it('shows action log', async () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
-    vi.mocked(actionLogApi.baccarat).mockResolvedValue({ entries: [] as never[] });
+    asMocked(actionLogApi.baccarat).mockResolvedValue({ entries: [] as never[] });
     renderWithProviders(<BaccaratPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 

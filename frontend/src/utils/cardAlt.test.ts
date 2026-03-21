@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import type { CardDesign } from '../types/card';
 import { cardAlt } from './cardAlt';
 

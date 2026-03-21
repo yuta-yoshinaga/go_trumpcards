@@ -18,7 +18,7 @@ This development environment runs on WSL2 with **limited RAM (~2 GB) and 4 CPU c
 
 1. **Kill residual processes before launching heavy tasks.** Previous processes may not have fully exited. Always run `pkill` first to ensure no leftover processes compete for memory:
    ```sh
-   pkill -f vitest || true; pkill -f 'bun run' || true; pkill -f 'go test' || true; pkill -f golangci-lint || true
+   pkill -f 'bun test' || true; pkill -f 'bun run' || true; pkill -f 'go test' || true; pkill -f golangci-lint || true
    ```
    Run this before every heavy task invocation (build, test, lint).
 
@@ -28,19 +28,14 @@ This development environment runs on WSL2 with **limited RAM (~2 GB) and 4 CPU c
    ```
    Do NOT launch `bun run build`, `bun run check`, and `bun run test` as separate parallel tool calls or background tasks.
 
-3. **Limit Vitest worker threads** when running tests on their own:
-   ```sh
-   cd frontend && bun run test -- --pool-options.threads.maxThreads=2
-   ```
-
-4. **Limit Go test parallelism**:
+3. **Limit Go test parallelism**:
    ```sh
    go test -tags test -p 2 ./...
    ```
 
-5. **Never launch frontend and Go tasks simultaneously** (e.g., `bun run test` and `go test` at the same time).
+4. **Never launch frontend and Go tasks simultaneously** (e.g., `bun run test` and `go test` at the same time).
 
-6. **Avoid multiple background tasks** (`run_in_background`) for resource-heavy commands. Use background only for lightweight commands (e.g., `git`, `ls`, `gh`).
+5. **Avoid multiple background tasks** (`run_in_background`) for resource-heavy commands. Use background only for lightweight commands (e.g., `git`, `ls`, `gh`).
 
 ## Package Manager Rule
 
@@ -87,7 +82,7 @@ golangci-lint run ./...      # Run Go linter (must pass before commit)
 cd frontend && bun install   # Install dependencies
 cd frontend && bun run build # Build React app
 cd frontend && bun run check # Biome lint + format check
-cd frontend && bun run test  # Run Vitest unit tests
+cd frontend && bun run test  # Run bun:test unit tests
 cd frontend && bun run e2e   # Run Playwright E2E tests
 cd frontend && bun run docs:generate  # Generate TypeDoc documentation
 

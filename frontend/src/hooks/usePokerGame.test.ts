@@ -1,19 +1,15 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pokerApi } from '../api/gameApi';
+import { asMocked } from '../test/viCompat';
 import type { PokerResponse } from '../types/card';
 import { PokerPhase } from '../types/phases';
 import { usePokerGame } from './usePokerGame';
 
-vi.mock('../api/gameApi', () => ({
-  pokerApi: { exec: vi.fn() },
-}));
-
-const mockExec = vi.mocked(pokerApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return ({ children }: { children: ReactNode }) =>
@@ -66,10 +62,13 @@ const exchangeState: PokerResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(pokerApi, 'exec').mockImplementation(vi.fn());
+  mockExec = asMocked(pokerApi.exec);
   mockExec.mockResolvedValue(baseState);
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   vi.useRealTimers();
 });
 

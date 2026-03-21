@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { type ReplayConfig, runReplay, shouldSkipReplay } from './gameReplay';
 
 describe('runReplay', () => {
@@ -11,7 +11,7 @@ describe('runReplay', () => {
   });
 
   const flushDelays = async () => {
-    await vi.runAllTimersAsync();
+    vi.runAllTimers();
   };
 
   it('sets final state immediately when no human action and no replay states', async () => {

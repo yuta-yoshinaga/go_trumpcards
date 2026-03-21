@@ -41,3 +41,4 @@ Each ADR follows the format:
 | [ADR-0022](0022-automated-quality-gates.md) | Automated quality gates via Claude Code hooks | Accepted | 2026-03-20 |
 | [ADR-0023](0023-api-documentation.md) | GoDoc/TSDoc + GitHub PagesによるAPIドキュメント自動生成 | Accepted | 2026-03-20 |
 | [ADR-0024](0024-fluid-tactile-ui-redesign.md) | Fluid & Tactile UIリデザイン | Accepted | 2026-03-21 |
+| [ADR-0025](0025-buntest-migration.md) | Migrate frontend test runner from Vitest to bun:test | Accepted | 2026-03-21 |

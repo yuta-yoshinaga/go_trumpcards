@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { DoubtConfig, DoubtResponse } from '../types/card';
 import { DoubtPage } from './DoubtPage';
 
-vi.mock('../api/gameApi', () => ({
-  doubtApi: { exec: vi.fn() },
-  actionLogApi: { doubt: vi.fn() },
-}));
-
-const mockExec = vi.mocked(doubtApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const defaultConfig: DoubtConfig = {
   doubtWindowSec: 10,
   cpuMemoryLevel: 1,
@@ -87,7 +82,14 @@ const gameEndState: DoubtResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(doubtApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'doubt').mockImplementation(vi.fn());
+  mockExec = asMocked(doubtApi.exec);
   mockExec.mockResolvedValue(humanTurnState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('DoubtPage', () => {
@@ -1169,7 +1171,7 @@ describe('DoubtPage', () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.doubt).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.doubt).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.doubt).toHaveBeenCalledTimes(1));

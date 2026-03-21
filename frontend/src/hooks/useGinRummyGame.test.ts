@@ -1,18 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ginrummyApi } from '../api/gameApi';
+import { asMocked } from '../test/viCompat';
 import type { GinRummyResponse } from '../types/card';
 import { useGinRummyGame } from './useGinRummyGame';
 
-vi.mock('../api/gameApi', () => ({
-  ginrummyApi: { exec: vi.fn() },
-}));
-
-const mockExec = vi.mocked(ginrummyApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return ({ children }: { children: ReactNode }) =>
@@ -40,7 +36,13 @@ const defaultState: GinRummyResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(ginrummyApi, 'exec').mockImplementation(vi.fn());
+  mockExec = asMocked(ginrummyApi.exec);
   mockExec.mockResolvedValue(defaultState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('useGinRummyGame', () => {

@@ -1,0 +1,3 @@
+[test]
+preload = ["./src/test/jsdom-setup.ts", "./src/test/setup.ts"]
+timeout = 30000

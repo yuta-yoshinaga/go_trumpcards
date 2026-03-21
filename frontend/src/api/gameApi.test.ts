@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import {
   actionLogApi,
   baccaratApi,
@@ -21,13 +21,14 @@ import {
 
 describe('gameApi', () => {
   const mockFetch = vi.fn();
+  const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
-    vi.stubGlobal('fetch', mockFetch);
+    globalThis.fetch = mockFetch as unknown as typeof fetch;
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    globalThis.fetch = originalFetch;
     vi.clearAllMocks();
   });
 

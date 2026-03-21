@@ -1,5 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BjEndPhaseControls, type BjEndPhaseControlsProps } from './BjEndPhaseControls';
 
 function defaultProps(overrides?: Partial<BjEndPhaseControlsProps>): BjEndPhaseControlsProps {

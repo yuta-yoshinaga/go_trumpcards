@@ -1,5 +1,5 @@
+import { describe, expect, it, vi } from 'bun:test';
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
 import { useReducedMotion } from './useReducedMotion';
 
 function mockMatchMedia(matches: boolean) {

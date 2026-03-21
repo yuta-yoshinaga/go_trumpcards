@@ -29,4 +29,4 @@ Accepted
 - インストール速度の向上（npm比で10-25倍高速）
 - Docker imageサイズの縮小（`oven/bun:alpine` ~60-70MB vs `node:alpine` ~170MB）
 - bunのバージョンアップは手動で行う必要がある（パッチバージョン固定のため）
-- `bun test` はbun独自のテストランナーを起動するため、Vitestの実行には `bun run test` を使う必要がある
+- ~~`bun test` はbun独自のテストランナーを起動するため、Vitestの実行には `bun run test` を使う必要がある~~ → ADR-0025でVitestからbun:testに移行済み

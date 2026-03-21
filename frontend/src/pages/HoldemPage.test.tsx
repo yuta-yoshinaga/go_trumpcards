@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, holdemApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { HoldemResponse } from '../types/card';
 import { HoldemPage } from './HoldemPage';
 
-vi.mock('../api/gameApi', () => ({
-  holdemApi: { exec: vi.fn() },
-  actionLogApi: { holdem: vi.fn() },
-}));
-
-const mockExec = vi.mocked(holdemApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').HoldemPlayerData> = {}) => ({
   id: 0,
@@ -227,7 +222,14 @@ const endState: HoldemResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(holdemApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'holdem').mockImplementation(vi.fn());
+  mockExec = asMocked(holdemApi.exec);
   mockExec.mockResolvedValue(initState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('HoldemPage', () => {
@@ -1321,7 +1323,7 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.holdem).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.holdem).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.holdem).toHaveBeenCalledTimes(1));

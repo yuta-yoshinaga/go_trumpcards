@@ -9,7 +9,7 @@ This project uses [Vite](https://vitejs.dev/) with [React](https://react.dev/) a
 - `bun run preview`: Preview the production build
 - `bun run check`: Run [Biome](https://biomejs.dev/) to check for linting and formatting errors
 - `bun run check:write`: Run Biome and automatically fix linting/formatting errors
-- `bun run test`: Run tests with [Vitest](https://vitest.dev/)
+- `bun run test`: Run tests with [bun:test](https://bun.sh/docs/cli/test)
 - `bun run test:coverage`: Run tests with coverage
 - `bun run e2e`: Run [Playwright](https://playwright.dev/) E2E tests (auto-starts Go server)
 - `bun run e2e:ui`: Run Playwright E2E tests with UI
@@ -24,7 +24,7 @@ This project uses [Vite](https://vitejs.dev/) with [React](https://react.dev/) a
 - **Language**: TypeScript
 - **Server State**: TanStack React Query
 - **Linting & Formatting**: Biome
-- **Unit Testing**: Vitest + React Testing Library
+- **Unit Testing**: bun:test + React Testing Library
 - **E2E Testing**: Playwright
 - **Styling**: Tailwind CSS (v4)
 - **API Docs**: TypeDoc

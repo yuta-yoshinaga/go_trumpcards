@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, oldmaidApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { OldMaidResponse } from '../types/card';
 import { OldMaidPage } from './OldMaidPage';
 
-vi.mock('../api/gameApi', () => ({
-  oldmaidApi: { exec: vi.fn() },
-  actionLogApi: { oldmaid: vi.fn() },
-}));
-
-const mockExec = vi.mocked(oldmaidApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const humanTurnState: OldMaidResponse = {
   players: [
     {
@@ -64,7 +59,14 @@ const gameEndState: OldMaidResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(oldmaidApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'oldmaid').mockImplementation(vi.fn());
+  mockExec = asMocked(oldmaidApi.exec);
   mockExec.mockResolvedValue(humanTurnState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 async function startGame() {
@@ -441,7 +443,7 @@ describe('OldMaidPage', () => {
     // After all replay delays, final state CPU log should be visible
     // Each delay is 800ms; humanAction + 1 cpuAction = 2 delays = 1600ms max
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
-      timeout: 4000,
+      timeout: 10000,
     });
   }, 10000);
 
@@ -509,7 +511,7 @@ describe('OldMaidPage', () => {
     // After all replay delays, the final state (currentTurn=0) must be applied
     // so the button is re-enabled for the human's next turn
     await waitFor(() => expect(screen.getByText('ランダムに引く')).not.toBeDisabled(), {
-      timeout: 4000,
+      timeout: 10000,
     });
   }, 10000);
 
@@ -689,7 +691,7 @@ describe('OldMaidPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
 
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
-      timeout: 4000,
+      timeout: 10000,
     });
   }, 10000);
 
@@ -742,7 +744,7 @@ describe('OldMaidPage', () => {
 
     // Should show the game end message without crashing
     await waitFor(() => expect(screen.getByText(humanActionNoCpuState.message)).toBeInTheDocument(), {
-      timeout: 4000,
+      timeout: 10000,
     });
   }, 10000);
 
@@ -1156,7 +1158,7 @@ describe('OldMaidPage', () => {
 
     // After CPU replay, the CPU action log should appear
     await waitFor(() => expect(screen.getByText(/\[CPUの行動\]/)).toBeInTheDocument(), {
-      timeout: 4000,
+      timeout: 10000,
     });
   }, 10000);
 
@@ -1171,7 +1173,7 @@ describe('OldMaidPage', () => {
     fireEvent.click(screen.getByText('ゲーム開始'));
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.oldmaid).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.oldmaid).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.oldmaid).toHaveBeenCalledTimes(1));

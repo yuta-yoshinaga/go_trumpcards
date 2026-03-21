@@ -1,47 +1,56 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as reactI18next from 'react-i18next';
+import * as useActionLogModule from './useActionLog';
+import * as useConfirmDialogModule from './useConfirmDialog';
 import { useGamePageSetup } from './useGamePageSetup';
 
-const mockT = vi.fn((key: string) => key);
-const mockTc = vi.fn((key: string) => key);
-
-vi.mock('react-i18next', () => ({
-  useTranslation: vi.fn((ns: string) => (ns === 'common' ? { t: mockTc } : { t: mockT })),
-}));
-
-const mockActionLog = { actionLog: null, showActionLog: vi.fn(), hideActionLog: vi.fn() };
-vi.mock('./useActionLog', () => ({
-  useActionLog: vi.fn(() => mockActionLog),
-}));
-
-const mockConfirmDialog = { isOpen: false, requestConfirm: vi.fn(), confirm: vi.fn(), cancel: vi.fn() };
-vi.mock('./useConfirmDialog', () => ({
-  useConfirmDialog: vi.fn(() => mockConfirmDialog),
-}));
-
-import { useTranslation } from 'react-i18next';
-import { useActionLog } from './useActionLog';
-import { useConfirmDialog } from './useConfirmDialog';
-
 describe('useGamePageSetup', () => {
+  const mockT = vi.fn((key: string) => key);
+  const mockTc = vi.fn((key: string) => key);
+  const mockActionLog = { actionLog: null, showActionLog: vi.fn(), hideActionLog: vi.fn() };
+  const mockConfirmDialog = { isOpen: false, requestConfirm: vi.fn(), confirm: vi.fn(), cancel: vi.fn() };
+
+  let useTranslationSpy: ReturnType<typeof vi.spyOn>;
+  let useActionLogSpy: ReturnType<typeof vi.spyOn>;
+  let useConfirmDialogSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    useTranslationSpy = vi
+      .spyOn(reactI18next, 'useTranslation')
+      .mockImplementation(
+        (ns?: string) =>
+          (ns === 'common' ? { t: mockTc } : { t: mockT }) as unknown as ReturnType<typeof reactI18next.useTranslation>,
+      );
+    useActionLogSpy = vi
+      .spyOn(useActionLogModule, 'useActionLog')
+      .mockReturnValue(mockActionLog as unknown as ReturnType<typeof useActionLogModule.useActionLog>);
+    useConfirmDialogSpy = vi
+      .spyOn(useConfirmDialogModule, 'useConfirmDialog')
+      .mockReturnValue(mockConfirmDialog as unknown as ReturnType<typeof useConfirmDialogModule.useConfirmDialog>);
+  });
+
+  afterEach(() => {
+    useTranslationSpy.mockRestore();
+    useActionLogSpy.mockRestore();
+    useConfirmDialogSpy.mockRestore();
   });
 
   it('calls useTranslation with game name and common', () => {
     renderHook(() => useGamePageSetup('blackjack'));
-    expect(useTranslation).toHaveBeenCalledWith('blackjack');
-    expect(useTranslation).toHaveBeenCalledWith('common');
+    expect(useTranslationSpy).toHaveBeenCalledWith('blackjack');
+    expect(useTranslationSpy).toHaveBeenCalledWith('common');
   });
 
   it('calls useActionLog with game name', () => {
     renderHook(() => useGamePageSetup('poker'));
-    expect(useActionLog).toHaveBeenCalledWith('poker');
+    expect(useActionLogSpy).toHaveBeenCalledWith('poker');
   });
 
   it('calls useConfirmDialog', () => {
     renderHook(() => useGamePageSetup('blackjack'));
-    expect(useConfirmDialog).toHaveBeenCalled();
+    expect(useConfirmDialogSpy).toHaveBeenCalled();
   });
 
   it('returns t and tc from useTranslation', () => {

@@ -1,19 +1,15 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { oldmaidApi } from '../api/gameApi';
+import { asMocked } from '../test/viCompat';
 import type { OldMaidResponse } from '../types/card';
 import * as gameReplay from './gameReplay';
 import { useOldMaidGame } from './useOldMaidGame';
 
-vi.mock('../api/gameApi', () => ({
-  oldmaidApi: { exec: vi.fn() },
-}));
-
-const mockExec = vi.mocked(oldmaidApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return ({ children }: { children: ReactNode }) =>
@@ -55,8 +51,14 @@ describe('useOldMaidGame onSuccess replay skip', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(oldmaidApi, 'exec').mockImplementation(vi.fn());
+    mockExec = asMocked(oldmaidApi.exec);
     runReplaySpy = vi.spyOn(gameReplay, 'runReplay').mockResolvedValue(undefined);
     mockExec.mockResolvedValue(baseState);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('calls runReplay on first success', async () => {

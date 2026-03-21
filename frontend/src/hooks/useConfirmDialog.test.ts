@@ -1,5 +1,5 @@
+import { describe, expect, it, vi } from 'bun:test';
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
 import { useConfirmDialog } from './useConfirmDialog';
 
 describe('useConfirmDialog', () => {
@@ -20,7 +20,7 @@ describe('useConfirmDialog', () => {
     act(() => result.current.requestConfirm(callback));
     act(() => result.current.confirm());
     expect(result.current.isOpen).toBe(false);
-    expect(callback).toHaveBeenCalledOnce();
+    expect(callback).toHaveBeenCalledTimes(1);
   });
 
   it('cancel closes without calling callback', () => {

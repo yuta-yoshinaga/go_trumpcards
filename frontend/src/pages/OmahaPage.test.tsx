@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, omahaApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { OmahaResponse } from '../types/card';
 import { OmahaPage } from './OmahaPage';
 
-vi.mock('../api/gameApi', () => ({
-  omahaApi: { exec: vi.fn() },
-  actionLogApi: { omaha: vi.fn() },
-}));
-
-const mockExec = vi.mocked(omahaApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').OmahaPlayerData> = {}) => ({
   id: 0,
@@ -249,7 +244,14 @@ const endState: OmahaResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(omahaApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'omaha').mockImplementation(vi.fn());
+  mockExec = asMocked(omahaApi.exec);
   mockExec.mockResolvedValue(initState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('OmahaPage', () => {
@@ -1335,7 +1337,7 @@ describe('OmahaPage', () => {
     renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.omaha).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.omaha).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.omaha).toHaveBeenCalledTimes(1));

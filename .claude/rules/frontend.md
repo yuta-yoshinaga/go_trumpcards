@@ -13,12 +13,12 @@ globs: ["frontend/**/*.ts", "frontend/**/*.tsx"]
 ```sh
 cd frontend && bun run build   # Reactビルド
 cd frontend && bun run check   # Biome lint + フォーマットチェック
-cd frontend && bun run test    # Vitestユニットテスト
+cd frontend && bun run test    # bun:testユニットテスト
 ```
 
 ## テスト
 
-**ユニットテストは必須**。実装と同じコミットに含める。テストスタック: **Vitest + React Testing Library + jest-dom**
+**ユニットテストは必須**。実装と同じコミットに含める。テストスタック: **bun:test + React Testing Library + jest-dom**
 
 ### TDDサイクル (Red → Green → Refactor)
 
@@ -58,7 +58,7 @@ if/else・三項演算子・`??`・`&&`/`||` 短絡評価・switchのすべて�
 
 ### テストパターン
 
-- **APIモック**: `vi.mock('../api/gameApi', ...)` でAPIモジュールをモック; `vi.mocked(api.exec)` でアクセス
+- **APIモック**: `vi.spyOn(gameApi.blackjackApi, 'exec')` で個別APIメソッドをスパイ; `asMocked(api.exec)`（`src/test/viCompat`）で型付きモックにアクセス
 - **ルーター依存コンポーネント**: `NavBar` など `useLocation` を使うコンポーネントは `<MemoryRouter initialEntries={['/path']}>` でラップ
 - **非同期エフェクト待機**: `useEffect` でAPIを呼ぶコンポーネントは `waitFor(() => expect(...))` で待つ
 - **ボタンのクエリ**: テキストが複数要素に存在する場合は `screen.getByRole('button', { name: '...' })` を使う

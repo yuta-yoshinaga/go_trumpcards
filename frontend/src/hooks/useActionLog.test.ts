@@ -1,17 +1,17 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi } from '../api/gameApi';
+import { asMocked } from '../test/viCompat';
 import { useActionLog } from './useActionLog';
-
-vi.mock('../api/gameApi', () => ({
-  actionLogApi: {
-    blackjack: vi.fn(),
-  },
-}));
 
 describe('useActionLog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(actionLogApi, 'blackjack').mockImplementation(vi.fn());
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('initializes with null actionLog', () => {
@@ -21,7 +21,7 @@ describe('useActionLog', () => {
 
   it('fetches and sets actionLog on showActionLog', async () => {
     const mockEntries = [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'test', cards: [] }];
-    vi.mocked(actionLogApi.blackjack).mockResolvedValueOnce({ entries: mockEntries });
+    asMocked(actionLogApi.blackjack).mockResolvedValueOnce({ entries: mockEntries });
 
     const { result } = renderHook(() => useActionLog('blackjack'));
 
@@ -35,7 +35,7 @@ describe('useActionLog', () => {
 
   it('clears actionLog on hideActionLog', async () => {
     const mockEntries = [{ turnNumber: 1, playerIdx: 0, actionType: 'hit', detail: 'test', cards: [] }];
-    vi.mocked(actionLogApi.blackjack).mockResolvedValueOnce({ entries: mockEntries });
+    asMocked(actionLogApi.blackjack).mockResolvedValueOnce({ entries: mockEntries });
 
     const { result } = renderHook(() => useActionLog('blackjack'));
 

@@ -1,16 +1,20 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
 import { useCardGesture } from './useCardGesture';
-
-vi.mock('./useReducedMotion', () => ({
-  useReducedMotion: vi.fn(() => false),
-}));
-
-import { useReducedMotion } from './useReducedMotion';
+import * as useReducedMotionModule from './useReducedMotion';
 
 describe('useCardGesture', () => {
+  let spy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    spy = vi.spyOn(useReducedMotionModule, 'useReducedMotion').mockReturnValue(false);
+  });
+
+  afterEach(() => {
+    spy.mockRestore();
+  });
+
   it('onClick calls onTap', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const onTap = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onTap }));
     result.current.onClick();
@@ -18,7 +22,6 @@ describe('useCardGesture', () => {
   });
 
   it('onClick does nothing when disabled', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const onTap = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onTap, disabled: true }));
     result.current.onClick();
@@ -26,13 +29,11 @@ describe('useCardGesture', () => {
   });
 
   it('onClick does nothing when onTap is not provided', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const { result } = renderHook(() => useCardGesture({}));
     result.current.onClick(); // must not throw
   });
 
   it('swipe up calls onSwipeUp when threshold exceeded', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const onSwipeUp = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onSwipeUp }));
     result.current.onPointerDown({ clientY: 200 } as React.PointerEvent);
@@ -41,7 +42,6 @@ describe('useCardGesture', () => {
   });
 
   it('does not call onSwipeUp when threshold not exceeded', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const onSwipeUp = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onSwipeUp }));
     result.current.onPointerDown({ clientY: 200 } as React.PointerEvent);
@@ -50,7 +50,6 @@ describe('useCardGesture', () => {
   });
 
   it('does not call swipe handlers when disabled', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const onSwipeUp = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onSwipeUp, disabled: true }));
     result.current.onPointerDown({ clientY: 200 } as React.PointerEvent);
@@ -59,7 +58,7 @@ describe('useCardGesture', () => {
   });
 
   it('does not call swipe handlers when reduced motion is preferred', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(true);
+    spy.mockReturnValue(true);
     const onSwipeUp = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onSwipeUp }));
     result.current.onPointerDown({ clientY: 200 } as React.PointerEvent);
@@ -68,21 +67,18 @@ describe('useCardGesture', () => {
   });
 
   it('does not call onSwipeUp when onSwipeUp is not provided', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const { result } = renderHook(() => useCardGesture({}));
     result.current.onPointerDown({ clientY: 200 } as React.PointerEvent);
     result.current.onPointerUp({ clientY: 150 } as React.PointerEvent);
     // No error thrown
   });
 
-  it('onClick does nothing when onTap is not provided', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
+  it('onClick does nothing when onTap is not provided (second)', () => {
     const { result } = renderHook(() => useCardGesture({}));
     result.current.onClick(); // must not throw
   });
 
   it('does not call onTap after a swipe (prevents double-trigger)', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const onTap = vi.fn();
     const onSwipeUp = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onTap, onSwipeUp }));
@@ -94,7 +90,6 @@ describe('useCardGesture', () => {
   });
 
   it('resets swipe state on pointerCancel', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const onTap = vi.fn();
     const onSwipeUp = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onTap, onSwipeUp }));
@@ -105,7 +100,6 @@ describe('useCardGesture', () => {
   });
 
   it('allows tap after a new pointerDown resets swipe state', () => {
-    vi.mocked(useReducedMotion).mockReturnValue(false);
     const onTap = vi.fn();
     const onSwipeUp = vi.fn();
     const { result } = renderHook(() => useCardGesture({ onTap, onSwipeUp }));

@@ -1,5 +1,5 @@
+import { describe, expect, it } from 'bun:test';
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
 import type { DaifugoExchangeAction } from '../../types/card';
 import { DaifugoExchangeLog } from './DaifugoExchangeLog';
 

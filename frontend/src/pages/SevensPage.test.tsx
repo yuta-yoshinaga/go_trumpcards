@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, sevensApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { SevensResponse } from '../types/card';
 import { SevensPage } from './SevensPage';
 
-vi.mock('../api/gameApi', () => ({
-  sevensApi: { exec: vi.fn() },
-  actionLogApi: { sevens: vi.fn() },
-}));
-
-const mockExec = vi.mocked(sevensApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 // tableMinVals/tableMaxVals: index 0 unused; 1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND
 // tablePlaced: bitmask per suit; bit i = value i placed. 7 placed = 1<<7 = 128
 // With all 7s placed: value 6 or 8 of any suit is playable
@@ -154,7 +149,14 @@ const passesExhaustedState: SevensResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(sevensApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'sevens').mockImplementation(vi.fn());
+  mockExec = asMocked(sevensApi.exec);
   mockExec.mockResolvedValue(humanTurnState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('SevensPage', () => {
@@ -304,7 +306,7 @@ describe('SevensPage', () => {
         expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument();
         expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument();
       },
-      { timeout: 4000 },
+      { timeout: 10000 },
     );
   }, 10000);
 
@@ -324,7 +326,7 @@ describe('SevensPage', () => {
     // First intermediate state (CPU 1's action) appears immediately
     await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument());
     // After second animation step, CPU 2's action also appears
-    await waitFor(() => expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument(), { timeout: 10000 });
   }, 10000);
 
   it('enables pass button after CPU replay animation completes', async () => {
@@ -350,7 +352,7 @@ describe('SevensPage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
 
     // After replay delay, human turn is restored and buttons re-enable
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled(), { timeout: 10000 });
   }, 10000);
 
   it('shows game result message when game ends', async () => {
@@ -1539,7 +1541,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.sevens).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.sevens).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.sevens).toHaveBeenCalledTimes(1));

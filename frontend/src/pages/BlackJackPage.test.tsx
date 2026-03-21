@@ -1,19 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, blackjackApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { BlackJackCpuSeat, BlackJackHand, BlackJackResponse } from '../types/card';
 import { BlackJackPage } from './BlackJackPage';
 
-vi.mock('../api/gameApi', () => ({
-  blackjackApi: { exec: vi.fn() },
-  actionLogApi: { blackjack: vi.fn() },
-}));
-
-const mockExec = vi.mocked(blackjackApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const betPhaseState: BlackJackResponse = {
   dealer: { chips: 1000 },
   player: { chips: 1000 },
@@ -157,7 +152,14 @@ const endPhaseState: BlackJackResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(blackjackApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'blackjack').mockImplementation(vi.fn());
+  mockExec = asMocked(blackjackApi.exec);
   mockExec.mockResolvedValue(betPhaseState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('BlackJackPage', () => {
@@ -1412,7 +1414,7 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.blackjack).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.blackjack).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.blackjack).toHaveBeenCalledTimes(1));

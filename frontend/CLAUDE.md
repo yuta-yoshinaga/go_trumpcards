@@ -14,7 +14,7 @@ This directory contains the React frontend (Vite + React + TypeScript).
 2. **Green** -- Write the minimum code to pass the test
 3. **Refactor** -- Clean up while keeping all tests green (`bun run test`)
 
-The test stack is **Vitest + React Testing Library + jest-dom**.
+The test stack is **bun:test + React Testing Library + jest-dom**.
 
 | Layer | Location | What to test |
 |-------|----------|--------------|
@@ -26,7 +26,7 @@ The test stack is **Vitest + React Testing Library + jest-dom**.
 
 ### Patterns
 
-- **Mock the API module**: use `vi.mock('../api/gameApi', ...)` inside page test files; access the typed mock with `vi.mocked(api.exec)`
+- **Mock the API module**: use `vi.spyOn(gameApi.blackjackApi, 'exec')` to spy on individual API methods; access the typed mock with `asMocked(api.exec)` from `src/test/viCompat`
 - **Wrap router-dependent components**: render `NavBar` (and any component using `useLocation`) inside `<MemoryRouter initialEntries={['/path']}>`
 - **Wait for async effects**: use `waitFor(() => expect(...))` after render when the component fires an API call in `useEffect`
 - **Query buttons by role**: when a text string appears in multiple elements (e.g., "交換" appears on both cards and a button), use `screen.getByRole('button', { name: '交換' })` instead of `getByText`
@@ -81,12 +81,6 @@ All exported symbols (types, interfaces, functions, components, constants, hooks
 Kill residual processes first, then run sequentially:
 
 ```sh
-pkill -f vitest || true; pkill -f 'bun run' || true
+pkill -f 'bun test' || true; pkill -f 'bun run' || true
 bun run build && bun run check && bun run test
-```
-
-To reduce memory usage during tests, limit worker threads:
-
-```sh
-bun run test -- --pool-options.threads.maxThreads=2
 ```

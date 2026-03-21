@@ -1,18 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { freecellApi } from '../api/gameApi';
+import { asMocked } from '../test/viCompat';
 import type { FreeCellResponse } from '../types/card';
 import { useFreeCellGame } from './useFreeCellGame';
 
-vi.mock('../api/gameApi', () => ({
-  freecellApi: { exec: vi.fn() },
-}));
-
-const mockExec = vi.mocked(freecellApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return ({ children }: { children: ReactNode }) =>
@@ -30,7 +26,13 @@ const defaultState: FreeCellResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(freecellApi, 'exec').mockImplementation(vi.fn());
+  mockExec = asMocked(freecellApi.exec);
   mockExec.mockResolvedValue(defaultState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('useFreeCellGame', () => {

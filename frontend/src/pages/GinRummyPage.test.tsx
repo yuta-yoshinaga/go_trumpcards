@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, ginrummyApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { GinRummyResponse } from '../types/card';
 import { GinRummyPage } from './GinRummyPage';
 
-vi.mock('../api/gameApi', () => ({
-  ginrummyApi: { exec: vi.fn() },
-  actionLogApi: { ginrummy: vi.fn() },
-}));
-
-const mockExec = vi.mocked(ginrummyApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const drawPhaseState: GinRummyResponse = {
   players: [
     {
@@ -136,7 +131,14 @@ const roundEndCpuCardsState: GinRummyResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(ginrummyApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'ginrummy').mockImplementation(vi.fn());
+  mockExec = asMocked(ginrummyApi.exec);
   mockExec.mockResolvedValue(drawPhaseState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('GinRummyPage', () => {
@@ -572,7 +574,7 @@ describe('GinRummyPage', () => {
     renderWithProviders(<GinRummyPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.ginrummy).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.ginrummy).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.ginrummy).toHaveBeenCalledTimes(1));
@@ -713,7 +715,7 @@ describe('GinRummyPage', () => {
     renderWithProviders(<GinRummyPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.ginrummy).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.ginrummy).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
     await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
 

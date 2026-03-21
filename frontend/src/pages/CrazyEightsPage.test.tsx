@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, crazyeightsApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { CrazyEightsResponse } from '../types/card';
 import { CrazyEightsPage } from './CrazyEightsPage';
 
-vi.mock('../api/gameApi', () => ({
-  crazyeightsApi: { exec: vi.fn() },
-  actionLogApi: { crazyeights: vi.fn() },
-}));
-
-const mockExec = vi.mocked(crazyeightsApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const playPhaseState: CrazyEightsResponse = {
   players: [
     {
@@ -89,7 +84,14 @@ const unknownSuitState: CrazyEightsResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(crazyeightsApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'crazyeights').mockImplementation(vi.fn());
+  mockExec = asMocked(crazyeightsApi.exec);
   mockExec.mockResolvedValue(playPhaseState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('CrazyEightsPage', () => {
@@ -510,7 +512,7 @@ describe('CrazyEightsPage', () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.crazyeights).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.crazyeights).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.crazyeights).toHaveBeenCalledTimes(1));
@@ -619,7 +621,7 @@ describe('CrazyEightsPage', () => {
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.crazyeights).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.crazyeights).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
     await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
 

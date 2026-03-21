@@ -1,18 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { heartsApi } from '../api/gameApi';
+import { asMocked } from '../test/viCompat';
 import type { HeartsResponse } from '../types/card';
 import { useHeartsGame } from './useHeartsGame';
 
-vi.mock('../api/gameApi', () => ({
-  heartsApi: { exec: vi.fn() },
-}));
-
-const mockExec = vi.mocked(heartsApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return ({ children }: { children: ReactNode }) =>
@@ -41,7 +37,13 @@ const defaultState: HeartsResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(heartsApi, 'exec').mockImplementation(vi.fn());
+  mockExec = asMocked(heartsApi.exec);
   mockExec.mockResolvedValue(defaultState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('useHeartsGame', () => {

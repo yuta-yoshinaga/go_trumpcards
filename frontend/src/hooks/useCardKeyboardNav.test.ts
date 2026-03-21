@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it, vi } from 'bun:test';
 import { renderHook } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useCardKeyboardNav } from './useCardKeyboardNav';
 
 function fire(key: string, target?: Partial<HTMLElement>) {

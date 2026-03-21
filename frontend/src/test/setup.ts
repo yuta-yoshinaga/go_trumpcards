@@ -1,8 +1,10 @@
-import '@testing-library/jest-dom/vitest';
+import { afterEach, expect, vi } from 'bun:test';
+import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup, configure } from '@testing-library/react';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { afterEach, vi } from 'vitest';
+
+expect.extend(matchers);
 
 // Mock matchMedia for jsdom (needed by useReducedMotion)
 Object.defineProperty(window, 'matchMedia', {

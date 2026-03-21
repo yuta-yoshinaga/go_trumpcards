@@ -1,17 +1,12 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, klondikeApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { Card, CardDesign, KlondikeResponse, KlondikeTableauCard } from '../types/card';
 import { KlondikePage } from './KlondikePage';
 
-vi.mock('../api/gameApi', () => ({
-  klondikeApi: { exec: vi.fn() },
-  actionLogApi: { klondike: vi.fn() },
-}));
-
-const mockExec = vi.mocked(klondikeApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function makeTableau(cols: KlondikeTableauCard[][]): KlondikeTableauCard[][] {
   const result: KlondikeTableauCard[][] = [];
   for (let i = 0; i < 7; i++) {
@@ -88,7 +83,14 @@ const withHintTableauState: KlondikeResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(klondikeApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'klondike').mockImplementation(vi.fn());
+  mockExec = asMocked(klondikeApi.exec);
   mockExec.mockResolvedValue(playingState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('KlondikePage', () => {
@@ -467,7 +469,7 @@ describe('KlondikePage', () => {
 
   it('action log button fetches and shows log', async () => {
     mockExec.mockResolvedValue(gameClearState);
-    const mockLogApi = vi.mocked(actionLogApi.klondike);
+    const mockLogApi = asMocked(actionLogApi.klondike);
     mockLogApi.mockResolvedValue({
       entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: 'waste→tableau' }],
     });
@@ -595,7 +597,7 @@ describe('KlondikePage', () => {
 
   it('reset hides the action log panel if open', async () => {
     mockExec.mockResolvedValue(gameClearState);
-    vi.mocked(actionLogApi.klondike).mockResolvedValueOnce({
+    asMocked(actionLogApi.klondike).mockResolvedValueOnce({
       entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: 'waste→tableau' }],
     });
 

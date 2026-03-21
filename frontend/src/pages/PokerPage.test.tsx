@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, pokerApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { PokerResponse } from '../types/card';
 import { PokerPage } from './PokerPage';
 
-vi.mock('../api/gameApi', () => ({
-  pokerApi: { exec: vi.fn() },
-  actionLogApi: { poker: vi.fn() },
-}));
-
-const mockExec = vi.mocked(pokerApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 /** Helper: base human player */
 const humanPlayer = (overrides: Partial<import('../types/card').PokerPlayerData> = {}) => ({
   id: 0,
@@ -169,7 +164,14 @@ const endState: PokerResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(pokerApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'poker').mockImplementation(vi.fn());
+  mockExec = asMocked(pokerApi.exec);
   mockExec.mockResolvedValue(initState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('PokerPage', () => {
@@ -1061,7 +1063,9 @@ describe('PokerPage', () => {
 
     // Exchange clears odds via onSuccess
     mockExec.mockResolvedValue({ ...exchangeState, phase: 3 });
-    fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '交換' }));
+    });
     await waitFor(() => expect(screen.queryByTestId('odds-panel')).not.toBeInTheDocument());
   });
 
@@ -1207,7 +1211,7 @@ describe('PokerPage', () => {
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.poker).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.poker).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.poker).toHaveBeenCalledTimes(1));

@@ -1,25 +1,23 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useGameSound } from './useGameSound';
 
 describe('useGameSound', () => {
   let mockPlay: ReturnType<typeof vi.fn>;
+  const originalAudio = globalThis.Audio;
 
   beforeEach(() => {
     localStorage.clear();
     mockPlay = vi.fn().mockResolvedValue(undefined);
-    vi.stubGlobal(
-      'Audio',
-      class MockAudio {
-        play = mockPlay;
-        volume = 0;
-        currentTime = 0;
-      },
-    );
+    globalThis.Audio = class MockAudio {
+      play = mockPlay;
+      volume = 0;
+      currentTime = 0;
+    } as unknown as typeof Audio;
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    globalThis.Audio = originalAudio;
     vi.restoreAllMocks();
   });
 
@@ -81,14 +79,11 @@ describe('useGameSound', () => {
   });
 
   it('handles Audio constructor failure gracefully', () => {
-    vi.stubGlobal(
-      'Audio',
-      class FailAudio {
-        constructor() {
-          throw new Error('Audio not supported');
-        }
-      },
-    );
+    globalThis.Audio = class FailAudio {
+      constructor() {
+        throw new Error('Audio not supported');
+      }
+    } as unknown as typeof Audio;
     const { result } = renderHook(() => useGameSound());
     act(() => result.current.playCardDeal());
     // No error thrown — sounds is null, playSound returns early

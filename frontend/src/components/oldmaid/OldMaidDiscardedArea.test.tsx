@@ -1,5 +1,5 @@
+import { afterEach, describe, expect, it } from 'bun:test';
 import { render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
 import type { Card } from '../../types/card';
 import { OldMaidDiscardedArea } from './OldMaidDiscardedArea';
 

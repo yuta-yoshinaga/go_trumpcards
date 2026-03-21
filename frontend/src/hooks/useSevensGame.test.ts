@@ -1,19 +1,15 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sevensApi } from '../api/gameApi';
+import { asMocked } from '../test/viCompat';
 import type { SevensResponse } from '../types/card';
 import * as gameReplay from './gameReplay';
 import { useSevensGame } from './useSevensGame';
 
-vi.mock('../api/gameApi', () => ({
-  sevensApi: { exec: vi.fn() },
-}));
-
-const mockExec = vi.mocked(sevensApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return ({ children }: { children: ReactNode }) =>
@@ -79,8 +75,14 @@ describe('useSevensGame onSuccess replay skip', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.spyOn(sevensApi, 'exec').mockImplementation(vi.fn());
+    mockExec = asMocked(sevensApi.exec);
     runReplaySpy = vi.spyOn(gameReplay, 'runReplay').mockResolvedValue(undefined);
     mockExec.mockResolvedValue(baseState);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('calls runReplay on first success (mount reset)', async () => {

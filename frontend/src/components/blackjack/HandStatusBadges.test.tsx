@@ -1,6 +1,6 @@
+import { describe, expect, it } from 'bun:test';
 import { render, screen } from '@testing-library/react';
 import i18n from 'i18next';
-import { describe, expect, it } from 'vitest';
 import { HandStatusBadges } from './HandStatusBadges';
 
 const noBadges = { busted: false, doubled: false, isBlackJack: false, surrendered: false };

@@ -15,9 +15,9 @@
     "check": "biome check .",
     "check:write": "biome check --write .",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest",
+    "test": "bun test src/utils src/constants src/styles src/api src/providers src/hooks src/components && for f in src/pages/*.test.tsx; do bun test \"$f\" || exit 1; done",
+    "test:coverage": "bun test --coverage src/",
+    "test:watch": "bun test --watch src/",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
@@ -43,12 +43,11 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
-    "@vitest/coverage-v8": "^4.0.18",
+    "bun-types": "^1.3.11",
     "jsdom": "^28.1.0",
     "tailwindcss": "^4.2.0",
-    "typescript": "~5.9.3",
-    "vite": "^7.3.1",
     "typedoc": "^0.28.4",
-    "vitest": "^4.0.18"
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1"
   }
 }

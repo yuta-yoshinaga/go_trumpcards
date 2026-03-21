@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { NETWORK_ERROR_MESSAGE } from './messages';
 
 describe('NETWORK_ERROR_MESSAGE', () => {

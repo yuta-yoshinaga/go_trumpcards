@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'bun:test';
 import { PokerAction } from '../types/phases';
 import { activeTurnClass, bettingActionName, finishedPlayerClass, handNameBadgeClass } from './gameConstants';
 

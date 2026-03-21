@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, heartsApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { HeartsResponse } from '../types/card';
 import { HeartsPage } from './HeartsPage';
 
-vi.mock('../api/gameApi', () => ({
-  heartsApi: { exec: vi.fn() },
-  actionLogApi: { hearts: vi.fn() },
-}));
-
-const mockExec = vi.mocked(heartsApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const playPhaseState: HeartsResponse = {
   players: [
     {
@@ -92,7 +87,14 @@ const cpuTurnState: HeartsResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(heartsApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'hearts').mockImplementation(vi.fn());
+  mockExec = asMocked(heartsApi.exec);
   mockExec.mockResolvedValue(playPhaseState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('HeartsPage', () => {
@@ -554,7 +556,7 @@ describe('HeartsPage', () => {
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.hearts).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.hearts).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.hearts).toHaveBeenCalledTimes(1));
@@ -749,7 +751,7 @@ describe('HeartsPage', () => {
     renderWithProviders(<HeartsPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.hearts).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.hearts).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
     await waitFor(() => expect(screen.getByText('棋譜')).toBeInTheDocument());
 

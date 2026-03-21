@@ -1,17 +1,12 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, memoryApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { Card, MemoryBoardCard, MemoryResponse } from '../types/card';
 import { MemoryPage } from './MemoryPage';
 
-vi.mock('../api/gameApi', () => ({
-  memoryApi: { exec: vi.fn() },
-  actionLogApi: { memory: vi.fn() },
-}));
-
-const mockExec = vi.mocked(memoryApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function makeBoard(
   overrides?: Partial<Record<number, { faceUp?: boolean; taken?: boolean; card?: Card | null }>>,
 ): MemoryBoardCard[] {
@@ -83,7 +78,14 @@ const cpuTurnState: MemoryResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(memoryApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'memory').mockImplementation(vi.fn());
+  mockExec = asMocked(memoryApi.exec);
   mockExec.mockResolvedValue(flip1State);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('MemoryPage', () => {
@@ -185,7 +187,7 @@ describe('MemoryPage', () => {
 
   it('action log button fetches and shows log', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    const mockLogApi = vi.mocked(actionLogApi.memory);
+    const mockLogApi = asMocked(actionLogApi.memory);
     mockLogApi.mockResolvedValue({ entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'match', detail: 'test' }] });
 
     renderWithProviders(<MemoryPage />);
@@ -345,7 +347,7 @@ describe('MemoryPage', () => {
 
   it('reset hides the action log panel if open', async () => {
     mockExec.mockResolvedValue(gameEndState);
-    vi.mocked(actionLogApi.memory).mockResolvedValueOnce({
+    asMocked(actionLogApi.memory).mockResolvedValueOnce({
       entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'match', detail: 'test' }],
     });
 

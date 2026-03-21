@@ -1,17 +1,12 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, freecellApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { Card, CardDesign, FreeCellResponse } from '../types/card';
 import { FreeCellPage } from './FreeCellPage';
 
-vi.mock('../api/gameApi', () => ({
-  freecellApi: { exec: vi.fn() },
-  actionLogApi: { freecell: vi.fn() },
-}));
-
-const mockExec = vi.mocked(freecellApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 
 const playingState: FreeCellResponse = {
@@ -56,7 +51,14 @@ const withFreeCellCardState: FreeCellResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(freecellApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'freecell').mockImplementation(vi.fn());
+  mockExec = asMocked(freecellApi.exec);
   mockExec.mockResolvedValue(playingState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('FreeCellPage', () => {
@@ -441,7 +443,7 @@ describe('FreeCellPage', () => {
 
   it('action log button fetches and shows log', async () => {
     mockExec.mockResolvedValue(gameClearState);
-    const mockLogApi = vi.mocked(actionLogApi.freecell);
+    const mockLogApi = asMocked(actionLogApi.freecell);
     mockLogApi.mockResolvedValue({
       entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: 'tableau→foundation' }],
     });
@@ -455,7 +457,7 @@ describe('FreeCellPage', () => {
 
   it('reset hides the action log panel if open', async () => {
     mockExec.mockResolvedValue(gameClearState);
-    vi.mocked(actionLogApi.freecell).mockResolvedValueOnce({
+    asMocked(actionLogApi.freecell).mockResolvedValueOnce({
       entries: [{ turnNumber: 1, playerIdx: 0, actionType: 'move', detail: 'tableau→foundation' }],
     });
 

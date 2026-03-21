@@ -1,18 +1,13 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, daifugoApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { asMocked } from '../test/viCompat';
 import type { DaifugoResponse } from '../types/card';
 import { DaifugoPage } from './DaifugoPage';
 
-vi.mock('../api/gameApi', () => ({
-  daifugoApi: { exec: vi.fn() },
-  actionLogApi: { daifugo: vi.fn() },
-}));
-
-const mockExec = vi.mocked(daifugoApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 const defaultConfig = {
   jokerCount: 2,
   eightCutEnabled: true,
@@ -109,7 +104,14 @@ const gameEndState: DaifugoResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(daifugoApi, 'exec').mockImplementation(vi.fn());
+  vi.spyOn(actionLogApi, 'daifugo').mockImplementation(vi.fn());
+  mockExec = asMocked(daifugoApi.exec);
   mockExec.mockResolvedValue(humanTurnState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('DaifugoPage', () => {
@@ -250,7 +252,7 @@ describe('DaifugoPage', () => {
         expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument();
         expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument();
       },
-      { timeout: 4000 },
+      { timeout: 10000 },
     );
   }, 10000);
 
@@ -269,7 +271,7 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(stateWithHumanAndCpu);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument(), { timeout: 10000 });
   }, 10000);
 
   it('shows intermediate human action state before CPU replay (humanAction with empty playedCards)', async () => {
@@ -289,7 +291,7 @@ describe('DaifugoPage', () => {
     };
     mockExec.mockResolvedValue(stateWithPassAndCpu);
     renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument(), { timeout: 10000 });
   }, 10000);
 
   it('shows intermediate CPU action during replay animation', async () => {
@@ -305,7 +307,7 @@ describe('DaifugoPage', () => {
     // First intermediate state (CPU 1's action) appears before the second
     await waitFor(() => expect(screen.getByText(/CPU 1が出しました/)).toBeInTheDocument());
     // After all animation steps, CPU 2's action also appears
-    await waitFor(() => expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByText(/CPU 2がパスしました/)).toBeInTheDocument(), { timeout: 10000 });
   }, 10000);
 
   it('enables play button after CPU replay animation completes', async () => {
@@ -326,7 +328,7 @@ describe('DaifugoPage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled();
 
     // After replay delay, human turn is restored and buttons re-enable
-    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled(), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).not.toBeDisabled(), { timeout: 10000 });
   }, 10000);
 
   it('shows game result message when game ends', async () => {
@@ -1024,7 +1026,7 @@ describe('DaifugoPage', () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByText('棋譜を見る')).toBeInTheDocument());
 
-    vi.mocked(actionLogApi.daifugo).mockResolvedValueOnce({ entries: [] });
+    asMocked(actionLogApi.daifugo).mockResolvedValueOnce({ entries: [] });
     fireEvent.click(screen.getByText('棋譜を見る'));
 
     await waitFor(() => expect(actionLogApi.daifugo).toHaveBeenCalledTimes(1));

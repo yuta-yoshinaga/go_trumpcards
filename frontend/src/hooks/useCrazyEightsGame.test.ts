@@ -1,18 +1,14 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'bun:test';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { createElement } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyeightsApi } from '../api/gameApi';
+import { asMocked } from '../test/viCompat';
 import type { CrazyEightsResponse } from '../types/card';
 import { useCrazyEightsGame } from './useCrazyEightsGame';
 
-vi.mock('../api/gameApi', () => ({
-  crazyeightsApi: { exec: vi.fn() },
-}));
-
-const mockExec = vi.mocked(crazyeightsApi.exec);
-
+let mockExec: ReturnType<typeof vi.fn>;
 function createWrapper() {
   const queryClient = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   return ({ children }: { children: ReactNode }) =>
@@ -39,7 +35,13 @@ const defaultState: CrazyEightsResponse = {
 };
 
 beforeEach(() => {
+  vi.spyOn(crazyeightsApi, 'exec').mockImplementation(vi.fn());
+  mockExec = asMocked(crazyeightsApi.exec);
   mockExec.mockResolvedValue(defaultState);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('useCrazyEightsGame', () => {
