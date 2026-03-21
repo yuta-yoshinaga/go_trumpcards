@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { ginrummyApi } from '../api/gameApi';
 import type { GinRummyConfig } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useGameConfig } from './useGameConfig';
 
 /** Default Gin Rummy game configuration. */
 export const DEFAULT_GINRUMMY_CONFIG: GinRummyConfig = {
@@ -23,7 +24,7 @@ export const POINT_LIMIT_OPTIONS = [50, 100, 150, 200] as const;
 /** Hook that manages Gin Rummy game state and player actions. */
 export function useGinRummyGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
-  const [ginRummyConfig, setGinRummyConfig] = useState<GinRummyConfig>(DEFAULT_GINRUMMY_CONFIG);
+  const { config: ginRummyConfig, handleConfigChange } = useGameConfig<GinRummyConfig>(DEFAULT_GINRUMMY_CONFIG);
 
   const onSuccess = useCallback(() => {
     clearSelection();
@@ -35,13 +36,6 @@ export function useGinRummyGame() {
   useEffect(() => {
     exec('reset', undefined, DEFAULT_GINRUMMY_CONFIG);
   }, [exec]);
-
-  const handleConfigChange = useCallback((key: keyof GinRummyConfig, value: string) => {
-    const parsed = Number(value);
-    if (!Number.isNaN(parsed)) {
-      setGinRummyConfig((prev) => ({ ...prev, [key]: parsed }));
-    }
-  }, []);
 
   const handleDrawStock = useCallback(() => {
     exec('drawstock');
