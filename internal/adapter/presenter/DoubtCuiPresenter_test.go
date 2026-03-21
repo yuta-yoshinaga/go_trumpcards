@@ -37,7 +37,7 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(game, nil)
 		assert.Contains(t, result, "Doubt (ダウト)")
-		assert.Contains(t, result, "[You]: 2枚")
+		assert.Contains(t, result, "あなた: 2枚")
 		assert.Contains(t, result, "[0]SPADE 1")
 		assert.Contains(t, result, "CPU 1: 1枚")
 		assert.Contains(t, result, "テーブル: 0枚")

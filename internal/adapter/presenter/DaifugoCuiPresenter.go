@@ -12,11 +12,7 @@ import (
 // daifugoPlayerStr returns the display string for a single Daifugo player.
 func daifugoPlayerStr(player *domain.DaifugoPlayer, i int) string {
 	var b strings.Builder
-	if player.GetIsHuman() {
-		b.WriteString("[You]")
-	} else {
-		fmt.Fprintf(&b, "CPU %d", i)
-	}
+	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
 		fmt.Fprintf(&b, ": 上がり (ランク: %s)\n", daifugoRankName(player.GetRank()))
 	} else {

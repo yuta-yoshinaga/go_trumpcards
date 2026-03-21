@@ -53,7 +53,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[2].SetIsFinished(true)
 		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
 		expected := "==========\nOld Maid (ババ抜き)\n==========\n" +
-			"[You]: 2枚\n[0]SPADE 1  [1]CLOVER 2\n" +
+			"あなた: 2枚\n[0]SPADE 1  [1]CLOVER 2\n" +
 			"CPU 1: 1枚\n" +
 			"CPU 2: 上がり\n" +
 			"CPU 3: 1枚\n" +
@@ -84,7 +84,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		_ = om.PlayerDraw(0)
 		result := top.Output(om, nil)
 		// Card display order in player's hand is non-deterministic due to ShuffleCards
-		assert.Contains(t, result, "[You]: 2枚")
+		assert.Contains(t, result, "あなた: 2枚")
 		assert.Contains(t, result, "JOKER")
 		assert.Contains(t, result, "HEART 7")
 		assert.Contains(t, result, "CPU 1: 上がり")
@@ -110,7 +110,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[3].SetIsFinished(true)
 		_ = om.PlayerDraw(0)
 		expected := "==========\nOld Maid (ババ抜き)\n==========\n" +
-			"[You]: 上がり\n" +
+			"あなた: 上がり\n" +
 			"CPU 1: 上がり\n" +
 			"CPU 2: 1枚\n" +
 			"CPU 3: 上がり\n" +
@@ -132,7 +132,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[2].SetIsFinished(true)
 		players[3].SetIsFinished(true)
 		result := top.Output(om, nil)
-		assert.Contains(t, result, "[You]: 0枚")
+		assert.Contains(t, result, "あなた: 0枚")
 		assert.Contains(t, result, "CPU 1: 1枚")
 		assert.Contains(t, result, "CPU 2: 上がり")
 		assert.Contains(t, result, "CPU 3: 上がり")

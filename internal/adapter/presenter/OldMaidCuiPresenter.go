@@ -12,11 +12,7 @@ import (
 // oldMaidPlayerStr returns the display string for a single OldMaid player.
 func oldMaidPlayerStr(player *domain.OldMaidPlayer, i int) string {
 	var b strings.Builder
-	if player.GetIsHuman() {
-		b.WriteString("[You]")
-	} else {
-		fmt.Fprintf(&b, "CPU %d", i)
-	}
+	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
 		b.WriteString(": 上がり\n")
 	} else {
