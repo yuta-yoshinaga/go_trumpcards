@@ -152,7 +152,7 @@ Before marking any task complete:
 | Change game rules or game flow logic | `docs/manual/cui/<game>.md` and `docs/manual/web/<game>.md` for the affected game (follow `docs/manual/cui_template.md` / `docs/manual/web_template.md` format) |
 | Add a new game manual | Copy `docs/manual/cui_template.md` → `docs/manual/cui/<game>.md`, `docs/manual/web_template.md` → `docs/manual/web/<game>.md` and fill in game-specific content |
 | Change Go testing policy or mock patterns | Update Testing section in [`CLAUDE.md`](CLAUDE.md) and [`internal/CLAUDE.md`](internal/CLAUDE.md) |
-| Make an architectural decision (new technology, pattern, or structural change) | Add or update an ADR in [`docs/adr/`](docs/adr/) |
+| Make an architectural decision (new technology, pattern, or structural change) | Add or update an ADR in [`docs/adr/`](docs/adr/) (日本語で記述) and update the index in [`docs/adr/README.md`](docs/adr/README.md) |
 | Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |
 | Add/modify exported TS symbol | Ensure TSDoc comment (`/** description */`) is present |
 

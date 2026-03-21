@@ -1,4 +1,4 @@
-# ADR 0024: Fluid & Tactile UI Redesign
+# ADR-0024: Fluid & Tactile UIリデザイン
 
 ## Status
 
@@ -10,45 +10,45 @@ Accepted
 
 ## Context
 
-The frontend uses pure Tailwind CSS v4 with only 3 CSS keyframe animations and no animation, gesture, or sound libraries. While functional, the UI feels plain and lacks the polish expected of a modern card game application. Users on mobile devices have limited tactile feedback and the visual design does not convey the premium feel of a card game.
+フロントエンドはTailwind CSS v4のみを使用しており、CSSキーフレームアニメーションは3つだけで、アニメーション・ジェスチャー・サウンドのライブラリは導入されていなかった。機能的には問題ないが、UIは素朴で、モダンなカードゲームアプリケーションに期待される洗練さに欠けていた。モバイルデバイスのユーザーは触覚フィードバックが限られ、ビジュアルデザインがカードゲームのプレミアム感を伝えられていなかった。
 
-Epic #788 proposes a phased UI redesign across 4 sub-issues (#784–#787) to transform the UI into a "Fluid & Tactile" experience.
+Epic #788は4つのサブissue（#784〜#787）にわたる段階的なUIリデザインを提案し、UIを「Fluid & Tactile」な体験に変革することを目指す。
 
 ## Decision
 
-We will implement the redesign in 4 incremental PRs:
+リデザインを4つの段階的なPRで実装する:
 
-1. **Design System & Theme (#784)**: Glassmorphism design tokens and utility classes using pure CSS (no new dependencies). Glass panels replace opaque backgrounds for a modern, layered look. System font stacks via CSS variables for typography. `@supports` fallback for browsers without `backdrop-filter`.
+1. **デザインシステム＆テーマ（#784）**: グラスモーフィズムのデザイントークンとユーティリティクラスを純粋なCSS（新規依存なし）で実装。不透明な背景をガラスパネルに置き換え、モダンでレイヤード感のある外観に。CSSカスタムプロパティによるシステムフォントスタック。`backdrop-filter`非対応ブラウザ向けに`@supports`フォールバック。
 
-2. **Physics-based Fluid Animation (#785)**: Add `framer-motion` (~33KB gzipped) for spring-based card deal/select animations, phase transitions, and win celebrations. All animations respect `prefers-reduced-motion`. Globally mocked in tests.
+2. **物理ベースの流体アニメーション（#785）**: `framer-motion`（gzip後約33KB）を追加し、スプリングベースのカード配り/選択アニメーション、フェーズ遷移、勝利演出を実装。すべてのアニメーションが`prefers-reduced-motion`を尊重。テストではグローバルモック。
 
-3. **Ergonomic Mobile Layout (#786)**: Restructure game pages to place player hand cards in a floating footer within the thumb zone. No new dependencies.
+3. **人間工学的モバイルレイアウト（#786）**: ゲームページを再構成し、プレイヤーの手札をサムゾーン内のフローティングフッターに配置。新規依存なし。
 
-4. **Gesture & Haptics/Sound (#787)**: Native pointer events for swipe/tap gestures, `HTMLAudioElement` for sound effects, and `navigator.vibrate()` for haptic feedback. Small OGG sound assets (~25KB total). All with graceful degradation — no new JS dependencies.
+4. **ジェスチャー＆触覚/サウンド（#787）**: スワイプ/タップジェスチャーにネイティブポインターイベント、効果音に`HTMLAudioElement`、触覚フィードバックに`navigator.vibrate()`を使用。小さなOGGサウンドアセット（合計約25KB）。すべてグレースフルデグラデーション対応で、新規JS依存なし。
 
-### Technology choices
+### 技術選択
 
-- **framer-motion** over CSS animations: Spring physics, `AnimatePresence` for exit animations, `layoutId` for shared layout transitions — capabilities not achievable with CSS alone.
-- **Native pointer events** over `@use-gesture/react`: Simpler implementation for tap/swipe detection with zero bundle cost. `useCardGesture` hook handles pointer down/up/cancel with swipe threshold detection.
-- **Native `HTMLAudioElement`** over `use-sound`/`howler`: Cached Audio objects via `useMemo` provide fire-and-forget sound effects without additional dependencies. Handles autoplay blocking gracefully.
-- **No external fonts**: System font stacks avoid additional network requests and FOIT/FOUT.
+- **framer-motion**（CSSアニメーションではなく）: スプリング物理、`AnimatePresence`による退出アニメーション、`layoutId`による共有レイアウトトランジション — CSSだけでは実現できない機能
+- **ネイティブポインターイベント**（`@use-gesture/react`ではなく）: バンドルコストゼロで、タップ/スワイプ検出のシンプルな実装。`useCardGesture`フックがpointer down/up/cancelをスワイプ閾値検出で処理
+- **ネイティブ`HTMLAudioElement`**（`use-sound`/`howler`ではなく）: `useMemo`経由のキャッシュされたAudioオブジェクトで、追加依存なしのfire-and-forget効果音。オートプレイブロッキングにグレースフル対応
+- **外部フォントなし**: システムフォントスタックで追加ネットワークリクエストとFOIT/FOUTを回避
 
-### Bundle budget
+### バンドルバジェット
 
-Total addition: ~58KB gzipped (33KB framer-motion + ~25KB sound assets). Phase 4 adds no new JS dependencies.
+追加合計: gzip後約58KB（framer-motion 33KB + サウンドアセット約25KB）。フェーズ4は新規JS依存なし。
 
 ## Consequences
 
-### Positive
+**メリット:**
 
-- Modern, polished card game experience with glassmorphism, smooth animations, and tactile feedback
-- Improved mobile usability with thumb-zone optimized layout and gesture support
-- Accessible by default: `prefers-reduced-motion` respected, button/keyboard alternatives for all gestures
-- Incremental delivery: each PR is independently shippable and testable
+- グラスモーフィズム、スムーズなアニメーション、触覚フィードバックによるモダンで洗練されたカードゲーム体験
+- サムゾーン最適化レイアウトとジェスチャーサポートによるモバイルユーザビリティの向上
+- デフォルトでアクセシブル: `prefers-reduced-motion`を尊重、すべてのジェスチャーにボタン/キーボード代替手段
+- 段階的デリバリー: 各PRが独立してシップ＆テスト可能
 
-### Negative
+**デメリット:**
 
-- ~58KB bundle size increase (acceptable for a game application)
-- framer-motion becomes a significant dependency; future removal would require substantial refactoring
-- Sound assets require CC0-licensed source files to be sourced and committed (placeholder files included initially)
-- Glass panels require `@supports` fallback testing for older browsers
+- バンドルサイズが約58KB増加（ゲームアプリケーションとしては許容範囲）
+- framer-motionが重要な依存関係となり、将来の除去には大幅なリファクタリングが必要
+- サウンドアセットにCC0ライセンスのソースファイルの調達とコミットが必要（初期はプレースホルダーファイルを含む）
+- ガラスパネルは古いブラウザ向けに`@supports`フォールバックテストが必要
