@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { crazyeightsApi } from '../api/gameApi';
 import type { CrazyEightsConfig } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useGameConfig } from './useGameConfig';
 
 /** Default Crazy Eights game configuration. */
 export const DEFAULT_CRAZYEIGHTS_CONFIG: CrazyEightsConfig = {
@@ -23,7 +24,8 @@ export const POINT_LIMIT_OPTIONS = [100, 200, 300, 500] as const;
 /** Hook that manages Crazy Eights game state and player actions. */
 export function useCrazyEightsGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
-  const [crazyEightsConfig, setCrazyEightsConfig] = useState<CrazyEightsConfig>(DEFAULT_CRAZYEIGHTS_CONFIG);
+  const { config: crazyEightsConfig, handleConfigChange } =
+    useGameConfig<CrazyEightsConfig>(DEFAULT_CRAZYEIGHTS_CONFIG);
 
   const onSuccess = useCallback(() => {
     clearSelection();
@@ -35,13 +37,6 @@ export function useCrazyEightsGame() {
   useEffect(() => {
     exec('reset', undefined, undefined, DEFAULT_CRAZYEIGHTS_CONFIG);
   }, [exec]);
-
-  const handleConfigChange = useCallback((key: keyof CrazyEightsConfig, value: string) => {
-    const parsed = Number(value);
-    if (!Number.isNaN(parsed)) {
-      setCrazyEightsConfig((prev) => ({ ...prev, [key]: parsed }));
-    }
-  }, []);
 
   const handlePlay = useCallback(() => {
     if (selectedCardIndices.length !== 1) return;

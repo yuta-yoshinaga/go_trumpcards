@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { heartsApi } from '../api/gameApi';
 import type { HeartsConfig } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useGameConfig } from './useGameConfig';
 
 /** Default Hearts game configuration. */
 export const DEFAULT_HEARTS_CONFIG: HeartsConfig = {
@@ -24,7 +25,7 @@ export const POINT_LIMIT_OPTIONS = [50, 100, 150, 200] as const;
 /** Hook that manages Hearts game state and player actions. */
 export function useHeartsGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
-  const [heartsConfig, setHeartsConfig] = useState<HeartsConfig>(DEFAULT_HEARTS_CONFIG);
+  const { config: heartsConfig, handleConfigChange, handleToggle } = useGameConfig<HeartsConfig>(DEFAULT_HEARTS_CONFIG);
 
   const onSuccess = useCallback(() => {
     clearSelection();
@@ -36,17 +37,6 @@ export function useHeartsGame() {
   useEffect(() => {
     exec('reset', undefined, undefined, DEFAULT_HEARTS_CONFIG);
   }, [exec]);
-
-  const handleConfigChange = useCallback((key: keyof HeartsConfig, value: string) => {
-    const parsed = Number(value);
-    if (!Number.isNaN(parsed)) {
-      setHeartsConfig((prev) => ({ ...prev, [key]: parsed }));
-    }
-  }, []);
-
-  const handleToggle = useCallback((key: keyof HeartsConfig, value: boolean) => {
-    setHeartsConfig((prev) => ({ ...prev, [key]: value }));
-  }, []);
 
   const handlePass = useCallback(() => {
     exec('pass', selectedCardIndices);
