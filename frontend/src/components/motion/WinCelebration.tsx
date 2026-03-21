@@ -11,6 +11,7 @@ const PARTICLE_COUNT = 15;
 const COLORS = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'];
 
 interface Particle {
+  id: number;
   x: number;
   y: number;
   color: string;
@@ -19,7 +20,8 @@ interface Particle {
 }
 
 function generateParticles(): Particle[] {
-  return Array.from({ length: PARTICLE_COUNT }, () => ({
+  return Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
+    id: i,
     x: (Math.random() - 0.5) * 300,
     y: -(Math.random() * 200 + 50),
     color: COLORS[Math.floor(Math.random() * COLORS.length)],
@@ -45,9 +47,9 @@ export function WinCelebration({ show }: WinCelebrationProps) {
       aria-hidden="true"
       data-testid="win-celebration"
     >
-      {particles.map((p, i) => (
+      {particles.map((p) => (
         <motion.div
-          key={i}
+          key={p.id}
           initial={{ opacity: 1, x: 0, y: 0, scale: 0 }}
           animate={{ opacity: 0, x: p.x, y: p.y, scale: 1 }}
           transition={{ duration: 1, delay: p.delay, ease: 'easeOut' }}
