@@ -94,7 +94,7 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 		player := d.GetPlayer(winnerIdx)
 		isHuman := player != nil && player.GetIsHuman()
 		resObj.Message, resObj.MessageCode, resObj.MessageParams = buildWinnerWebMessage(
-			buildWinnerResultMessage(winnerIdx, isHuman), "doubt", winnerIdx, isHuman)
+			"doubt", winnerIdx, isHuman)
 	}
 
 	return marshalOrError(resObj)

@@ -64,8 +64,7 @@ func (p *CrazyEightsWebPresenter) buildMessage(g interfaces.CrazyEightsGame, las
 		winnerIdx := g.GetWinnerIdx()
 		player := g.GetPlayer(winnerIdx)
 		isHuman := player != nil && player.GetIsHuman()
-		msg := buildWinnerResultMessage(winnerIdx, isHuman)
-		return buildWinnerWebMessage(msg, "crazyeights", winnerIdx, isHuman)
+		return buildWinnerWebMessage("crazyeights", winnerIdx, isHuman)
 	}
 	switch g.GetPhase() {
 	case domain.CrazyEightsPhasePlay:

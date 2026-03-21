@@ -81,8 +81,7 @@ func (p *SpadesWebPresenter) buildMessage(s interfaces.SpadesGame, trick []*doma
 		winnerIdx := s.GetWinnerIdx()
 		player := s.GetPlayer(winnerIdx)
 		isHuman := player != nil && player.GetIsHuman()
-		msg := buildWinnerResultMessage(winnerIdx, isHuman)
-		return buildWinnerWebMessage(msg, "spades", winnerIdx, isHuman)
+		return buildWinnerWebMessage("spades", winnerIdx, isHuman)
 	}
 	switch s.GetPhase() {
 	case domain.SpadesPhaseBid:

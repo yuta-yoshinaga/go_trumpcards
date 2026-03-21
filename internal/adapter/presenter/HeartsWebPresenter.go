@@ -78,8 +78,7 @@ func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*doma
 		winnerIdx := h.GetWinnerIdx()
 		player := h.GetPlayer(winnerIdx)
 		isHuman := player != nil && player.GetIsHuman()
-		msg := buildWinnerResultMessage(winnerIdx, isHuman)
-		return buildWinnerWebMessage(msg, "hearts", winnerIdx, isHuman)
+		return buildWinnerWebMessage("hearts", winnerIdx, isHuman)
 	}
 	switch h.GetPhase() {
 	case domain.HeartsPhasePass:

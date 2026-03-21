@@ -62,7 +62,7 @@ func (p *MemoryWebPresenter) Output(m interfaces.MemoryGame, lastErr error) stri
 		player := m.GetPlayer(winnerIdx)
 		isHuman := player != nil && player.GetIsHuman()
 		resObj.Message, resObj.MessageCode, resObj.MessageParams = buildWinnerWebMessage(
-			buildWinnerResultMessage(winnerIdx, isHuman), "memory", winnerIdx, isHuman)
+			"memory", winnerIdx, isHuman)
 	} else {
 		phase := m.GetPhase()
 		switch phase {

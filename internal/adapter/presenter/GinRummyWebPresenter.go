@@ -91,8 +91,7 @@ func (p *GinRummyWebPresenter) buildMessage(g interfaces.GinRummyGame, lastErr e
 		winnerIdx := g.GetWinnerIdx()
 		player := g.GetPlayer(winnerIdx)
 		isHuman := player != nil && player.GetIsHuman()
-		msg := buildWinnerResultMessage(winnerIdx, isHuman)
-		return buildWinnerWebMessage(msg, "ginrummy", winnerIdx, isHuman)
+		return buildWinnerWebMessage("ginrummy", winnerIdx, isHuman)
 	}
 	switch g.GetPhase() {
 	case domain.GinRummyPhaseDraw:

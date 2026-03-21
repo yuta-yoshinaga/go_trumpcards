@@ -16,7 +16,9 @@ func buildWinnerResultMessage(winnerIdx int, isHuman bool) string {
 
 // buildWinnerWebMessage はゲーム終了時の message, messageCode, messageParams を構築する。
 // humanWin/cpuWin パターンを持つゲームで共通利用する。
-func buildWinnerWebMessage(resultMsg, gamePrefix string, winnerIdx int, isHuman bool) (string, string, map[string]string) {
+// 内部で buildWinnerResultMessage を呼び出してメッセージを生成する。
+func buildWinnerWebMessage(gamePrefix string, winnerIdx int, isHuman bool) (string, string, map[string]string) {
+	resultMsg := buildWinnerResultMessage(winnerIdx, isHuman)
 	if isHuman {
 		return resultMsg, gamePrefix + ".result.humanWin", nil
 	}

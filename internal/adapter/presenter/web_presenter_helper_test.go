@@ -19,14 +19,14 @@ func TestBuildWinnerResultMessage_CPU(t *testing.T) {
 }
 
 func TestBuildWinnerWebMessage_Human(t *testing.T) {
-	resultMsg, code, params := buildWinnerWebMessage("ゲーム終了！ あなたの勝ち！", "hearts", 0, true)
+	resultMsg, code, params := buildWinnerWebMessage("hearts", 0, true)
 	assert.Equal(t, "ゲーム終了！ あなたの勝ち！", resultMsg)
 	assert.Equal(t, "hearts.result.humanWin", code)
 	assert.Nil(t, params)
 }
 
 func TestBuildWinnerWebMessage_CPU(t *testing.T) {
-	resultMsg, code, params := buildWinnerWebMessage("ゲーム終了！ CPU 2の勝ち！", "spades", 2, false)
+	resultMsg, code, params := buildWinnerWebMessage("spades", 2, false)
 	assert.Equal(t, "ゲーム終了！ CPU 2の勝ち！", resultMsg)
 	assert.Equal(t, "spades.result.cpuWin", code)
 	assert.Equal(t, map[string]string{"cpuId": "2"}, params)
