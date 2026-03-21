@@ -320,7 +320,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "You: Flush")
+		assert.Contains(t, result, "あなた: Flush")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -332,7 +332,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := pres.Output(p, nil)
-		assert.Contains(t, result, "You: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "あなた: One Pair (キッカー: A, Q, 10)")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -344,7 +344,7 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := pres.Output(p, nil)
-		assert.Contains(t, result, "You: Flush")
+		assert.Contains(t, result, "あなた: Flush")
 		assert.NotContains(t, result, "キッカー")
 	})
 

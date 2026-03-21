@@ -111,6 +111,22 @@ func cuiPlayerName[P cuiPlayer](player P, idx int) string {
 	return color.Bold(fmt.Sprintf("CPU %d", idx))
 }
 
+// cuiPlayerWithStyle is the type constraint for players that have a play style.
+type cuiPlayerWithStyle interface {
+	cuiPlayer
+	GetPlayStyleName() string
+}
+
+// cuiPlayerNameWithStyle returns cuiPlayerName with play style suffix for CPU.
+// Used by Poker, Holdem, and Omaha CUI presenters.
+func cuiPlayerNameWithStyle[P cuiPlayerWithStyle](player P, idx int) string {
+	name := cuiPlayerName(player, idx)
+	if !player.GetIsHuman() {
+		name = fmt.Sprintf("%s (%s)", name, player.GetPlayStyleName())
+	}
+	return name
+}
+
 // cuiBettingActionName returns the Japanese action name for betting actions.
 // Used by Poker and Holdem CUI presenters.
 func cuiBettingActionName(action int) string {
