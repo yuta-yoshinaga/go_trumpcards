@@ -46,8 +46,7 @@ func NewHoldemInteractor(h interfaces.HoldemGame, hp presenter.HoldemPresenter) 
 
 // Reset ゲーム初期化
 func (hi *HoldemInteractor) Reset() string {
-	err := hi.h.Reset()
-	return hi.hp.Output(hi.h, err)
+	return execAndPresent(hi.h, hi.hp, hi.h.Reset)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
@@ -66,8 +65,7 @@ func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
 
 // Action プレイヤーアクション実行
 func (hi *HoldemInteractor) Action(action int, amount int) string {
-	err := hi.h.PlayerAction(action, amount)
-	return hi.hp.Output(hi.h, err)
+	return execAndPresent(hi.h, hi.hp, func() error { return hi.h.PlayerAction(action, amount) })
 }
 
 // GetConfig 現在の設定を取得
@@ -77,38 +75,32 @@ func (hi *HoldemInteractor) GetConfig() domain.HoldemConfig {
 
 // Rebuy リバイ実行
 func (hi *HoldemInteractor) Rebuy() string {
-	err := hi.h.Rebuy()
-	return hi.hp.Output(hi.h, err)
+	return execAndPresent(hi.h, hi.hp, hi.h.Rebuy)
 }
 
 // SkipRebuy リバイ辞退
 func (hi *HoldemInteractor) SkipRebuy() string {
-	err := hi.h.SkipRebuy()
-	return hi.hp.Output(hi.h, err)
+	return execAndPresent(hi.h, hi.hp, hi.h.SkipRebuy)
 }
 
 // Addon アドオン実行
 func (hi *HoldemInteractor) Addon() string {
-	err := hi.h.Addon()
-	return hi.hp.Output(hi.h, err)
+	return execAndPresent(hi.h, hi.hp, hi.h.Addon)
 }
 
 // SkipAddon アドオン辞退
 func (hi *HoldemInteractor) SkipAddon() string {
-	err := hi.h.SkipAddon()
-	return hi.hp.Output(hi.h, err)
+	return execAndPresent(hi.h, hi.hp, hi.h.SkipAddon)
 }
 
 // Muck マック (ハンドを伏せる)
 func (hi *HoldemInteractor) Muck() string {
-	err := hi.h.Muck()
-	return hi.hp.Output(hi.h, err)
+	return execAndPresent(hi.h, hi.hp, hi.h.Muck)
 }
 
 // ShowHand ハンドを公開する
 func (hi *HoldemInteractor) ShowHand() string {
-	err := hi.h.ShowHand()
-	return hi.hp.Output(hi.h, err)
+	return execAndPresent(hi.h, hi.hp, hi.h.ShowHand)
 }
 
 // ActionLog 棋譜を出力する

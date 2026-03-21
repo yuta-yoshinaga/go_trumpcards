@@ -36,8 +36,7 @@ func NewMemoryInteractor(m interfaces.MemoryGame, mp presenter.MemoryPresenter) 
 
 // Reset ゲーム初期化
 func (mi *MemoryInteractor) Reset() string {
-	mi.m.Reset()
-	return mi.mp.Output(mi.m, nil)
+	return runAndPresent(mi.m, mi.mp, mi.m.Reset)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化

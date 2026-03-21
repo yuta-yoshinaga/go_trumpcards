@@ -42,8 +42,7 @@ func NewDoubtInteractor(d interfaces.DoubtGame, dp presenter.DoubtPresenter) *Do
 
 // Reset ゲーム初期化
 func (di *DoubtInteractor) Reset() string {
-	di.d.Reset()
-	return di.dp.Output(di.d, nil)
+	return runAndPresent(di.d, di.dp, di.d.Reset)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
@@ -88,8 +87,7 @@ func (di *DoubtInteractor) GetConfig() domain.DoubtConfig {
 
 // ResetProfile メタAIプロファイルをリセット
 func (di *DoubtInteractor) ResetProfile() string {
-	di.d.ResetProfile()
-	return di.dp.Output(di.d, nil)
+	return runAndPresent(di.d, di.dp, di.d.ResetProfile)
 }
 
 // ActionLog 棋譜を出力する

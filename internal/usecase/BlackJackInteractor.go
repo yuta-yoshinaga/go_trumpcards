@@ -71,80 +71,67 @@ func NewBlackJackInteractor(bj interfaces.BlackJackGame, bjp presenter.BlackJack
 
 // Reset ゲーム初期化
 func (bi *BlackJackInteractor) Reset() string {
-	bi.bj.Reset()
-	return bi.bjp.Output(bi.bj, nil)
+	return runAndPresent(bi.bj, bi.bjp, bi.bj.Reset)
 }
 
 // Hit ヒット
 func (bi *BlackJackInteractor) Hit() string {
-	err := bi.bj.PlayerHit()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerHit)
 }
 
 // Stand スタンド
 func (bi *BlackJackInteractor) Stand() string {
-	err := bi.bj.PlayerStand()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerStand)
 }
 
 // Bet ベット
 func (bi *BlackJackInteractor) Bet(amount, ppBet, t3Bet, handCount int) string {
-	err := bi.bj.PlayerBet(amount, ppBet, t3Bet, handCount)
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, func() error { return bi.bj.PlayerBet(amount, ppBet, t3Bet, handCount) })
 }
 
 // DoubleDown ダブルダウン
 func (bi *BlackJackInteractor) DoubleDown() string {
-	err := bi.bj.PlayerDoubleDown()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerDoubleDown)
 }
 
 // Split スプリット
 func (bi *BlackJackInteractor) Split() string {
-	err := bi.bj.PlayerSplit()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerSplit)
 }
 
 // Insurance インシュランス
 func (bi *BlackJackInteractor) Insurance() string {
-	err := bi.bj.PlayerInsurance()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerInsurance)
 }
 
 // DeclineInsurance インシュランス辞退
 func (bi *BlackJackInteractor) DeclineInsurance() string {
-	err := bi.bj.PlayerDeclineInsurance()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerDeclineInsurance)
 }
 
 // Surrender サレンダー
 func (bi *BlackJackInteractor) Surrender() string {
-	err := bi.bj.PlayerSurrender()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerSurrender)
 }
 
 // EarlySurrender アーリーサレンダー
 func (bi *BlackJackInteractor) EarlySurrender() string {
-	err := bi.bj.PlayerEarlySurrender()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerEarlySurrender)
 }
 
 // DeclineEarlySurrender アーリーサレンダー辞退
 func (bi *BlackJackInteractor) DeclineEarlySurrender() string {
-	err := bi.bj.PlayerDeclineEarlySurrender()
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, bi.bj.PlayerDeclineEarlySurrender)
 }
 
 // SetDeckCount デッキ数設定
 func (bi *BlackJackInteractor) SetDeckCount(count int) string {
-	err := bi.bj.SetDeckCount(count)
-	return bi.bjp.Output(bi.bj, err)
+	return execAndPresent(bi.bj, bi.bjp, func() error { return bi.bj.SetDeckCount(count) })
 }
 
 // ToggleHint ヒント表示切り替え
 func (bi *BlackJackInteractor) ToggleHint() string {
-	bi.bj.ToggleHint()
-	return bi.bjp.Output(bi.bj, nil)
+	return runAndPresent(bi.bj, bi.bjp, bi.bj.ToggleHint)
 }
 
 // applyConfig は設定の取得・変更・保存・表示を行う共通ヘルパー

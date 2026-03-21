@@ -75,8 +75,7 @@ func (di *DaifugoInteractor) ResetWithConfig(config domain.DaifugoConfig) string
 
 // Sort 手札ソートモードを変更
 func (di *DaifugoInteractor) Sort(mode domain.DaifugoSortMode) string {
-	err := di.dg.SortHumanHand(mode)
-	return di.dgp.Output(di.dg, err)
+	return execAndPresent(di.dg, di.dgp, func() error { return di.dg.SortHumanHand(mode) })
 }
 
 // ActionLog 棋譜を出力する

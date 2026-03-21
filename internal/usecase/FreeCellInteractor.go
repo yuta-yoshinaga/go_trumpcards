@@ -45,44 +45,37 @@ func NewFreeCellInteractor(f interfaces.FreeCellGame, fp presenter.FreeCellPrese
 
 // Reset ゲーム初期化
 func (fi *FreeCellInteractor) Reset() string {
-	fi.f.Reset()
-	return fi.fp.Output(fi.f, nil)
+	return runAndPresent(fi.f, fi.fp, fi.f.Reset)
 }
 
 // MoveTableauToTableau タブローからタブローにカードを移動
 func (fi *FreeCellInteractor) MoveTableauToTableau(fromCol, cardIndex, toCol int) string {
-	err := fi.f.MoveTableauToTableau(fromCol, cardIndex, toCol)
-	return fi.fp.Output(fi.f, err)
+	return execAndPresent(fi.f, fi.fp, func() error { return fi.f.MoveTableauToTableau(fromCol, cardIndex, toCol) })
 }
 
 // MoveTableauToFoundation タブローからファンデーションにカードを移動
 func (fi *FreeCellInteractor) MoveTableauToFoundation(col int) string {
-	err := fi.f.MoveTableauToFoundation(col)
-	return fi.fp.Output(fi.f, err)
+	return execAndPresent(fi.f, fi.fp, func() error { return fi.f.MoveTableauToFoundation(col) })
 }
 
 // MoveTableauToFreeCell タブローからフリーセルにカードを移動
 func (fi *FreeCellInteractor) MoveTableauToFreeCell(col, cell int) string {
-	err := fi.f.MoveTableauToFreeCell(col, cell)
-	return fi.fp.Output(fi.f, err)
+	return execAndPresent(fi.f, fi.fp, func() error { return fi.f.MoveTableauToFreeCell(col, cell) })
 }
 
 // MoveFreeCellToTableau フリーセルからタブローにカードを移動
 func (fi *FreeCellInteractor) MoveFreeCellToTableau(cell, col int) string {
-	err := fi.f.MoveFreeCellToTableau(cell, col)
-	return fi.fp.Output(fi.f, err)
+	return execAndPresent(fi.f, fi.fp, func() error { return fi.f.MoveFreeCellToTableau(cell, col) })
 }
 
 // MoveFreeCellToFoundation フリーセルからファンデーションにカードを移動
 func (fi *FreeCellInteractor) MoveFreeCellToFoundation(cell int) string {
-	err := fi.f.MoveFreeCellToFoundation(cell)
-	return fi.fp.Output(fi.f, err)
+	return execAndPresent(fi.f, fi.fp, func() error { return fi.f.MoveFreeCellToFoundation(cell) })
 }
 
 // GiveUp ギブアップ
 func (fi *FreeCellInteractor) GiveUp() string {
-	fi.f.GiveUp()
-	return fi.fp.Output(fi.f, nil)
+	return runAndPresent(fi.f, fi.fp, fi.f.GiveUp)
 }
 
 // Hint ヒント取得
@@ -92,8 +85,7 @@ func (fi *FreeCellInteractor) Hint() string {
 
 // AutoComplete オートコンプリート
 func (fi *FreeCellInteractor) AutoComplete() string {
-	err := fi.f.AutoComplete()
-	return fi.fp.Output(fi.f, err)
+	return execAndPresent(fi.f, fi.fp, fi.f.AutoComplete)
 }
 
 // ActionLog 棋譜を出力する
@@ -103,6 +95,5 @@ func (fi *FreeCellInteractor) ActionLog() string {
 
 // Undo アンドゥ
 func (fi *FreeCellInteractor) Undo() string {
-	err := fi.f.Undo()
-	return fi.fp.Output(fi.f, err)
+	return execAndPresent(fi.f, fi.fp, fi.f.Undo)
 }
