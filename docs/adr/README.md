@@ -39,5 +39,5 @@ Each ADR follows the format:
 | [ADR-0020](0020-domain-helper-extraction.md) | Domain helper extraction and DRY refactoring | Accepted | 2026-03-14 |
 | [ADR-0021](0021-bun-package-manager.md) | Migrate package manager from npm to bun | Accepted | 2026-03-15 |
 | [ADR-0022](0022-automated-quality-gates.md) | Automated quality gates via Claude Code hooks | Accepted | 2026-03-20 |
-| [ADR-0023](0023-api-documentation.md) | API Documentation with GoDoc/TSDoc and GitHub Pages | Accepted | 2026-03-20 |
-| [ADR-0024](0024-fluid-tactile-ui-redesign.md) | Fluid & Tactile UI Redesign | Accepted | 2026-03-21 |
+| [ADR-0023](0023-api-documentation.md) | GoDoc/TSDoc + GitHub PagesによるAPIドキュメント自動生成 | Accepted | 2026-03-20 |
+| [ADR-0024](0024-fluid-tactile-ui-redesign.md) | Fluid & Tactile UIリデザイン | Accepted | 2026-03-21 |
