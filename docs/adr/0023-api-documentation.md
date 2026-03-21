@@ -1,4 +1,4 @@
-# ADR 0023: API Documentation with GoDoc/TSDoc and GitHub Pages
+# ADR-0023: GoDoc/TSDoc + GitHub PagesによるAPIドキュメント自動生成
 
 ## Status
 
@@ -10,45 +10,48 @@ Accepted
 
 ## Context
 
-Source code documentation and browsable API references were disconnected. Developers and AI assistants had no centralized, auto-generated documentation for Go packages or TypeScript modules. Manual documentation maintenance does not scale with 16+ game implementations across backend and frontend.
+ソースコードのドキュメントと閲覧可能なAPIリファレンスが分離していた。開発者やAIアシスタントがGoパッケージやTypeScriptモジュールの一元的な自動生成ドキュメントを参照する手段がなかった。16以上のゲーム実装を持つバックエンド・フロントエンドにおいて、手動でのドキュメント保守はスケールしない。
 
-We needed:
-1. Inline documentation comments on all exported symbols (GoDoc for Go, TSDoc for TypeScript)
-2. Automated generation of browsable HTML documentation
-3. Deployment to a publicly accessible site on every release
+必要だったもの:
+1. すべてのエクスポートされたシンボルへのインラインドキュメントコメント（GoはGoDoc、TypeScriptはTSDoc）
+2. 閲覧可能なHTMLドキュメントの自動生成
+3. リリースごとに公開サイトへの自動デプロイ
 
 ## Decision
 
-We adopt the following documentation stack:
+以下のドキュメントスタックを採用する:
 
-- **GoDoc comments** (`// SymbolName description`) on all exported Go symbols under `internal/`
-- **TSDoc comments** (`/** description */`) on all exported TypeScript symbols under `frontend/src/`
-- **gomarkdoc** to generate Markdown from Go packages, converted to HTML with **pandoc**
-- **TypeDoc** to generate HTML documentation from TypeScript sources
-- **GitHub Pages** deployment via GitHub Actions on push to `master`, unified with the existing repomix deployment
+- **GoDocコメント**（`// SymbolName description`）を`internal/`配下のすべてのエクスポートされたGoシンボルに付与
+- **TSDocコメント**（`/** description */`）を`frontend/src/`配下のすべてのエクスポートされたTypeScriptシンボルに付与
+- **gomarkdoc**でGoパッケージからMarkdownを生成し、**pandoc**でHTMLに変換
+- **TypeDoc**でTypeScriptソースからHTMLドキュメントを生成
+- **GitHub Pages**デプロイをGitHub Actionsで`master`へのpush時に実行（既存のrepomixデプロイと統合）
 
-The generated site structure:
+生成されるサイト構成:
 ```
 _site/
-  index.html          # Landing page with links
-  repomix-output.txt  # Compressed repo snapshot
-  go/                  # Go API docs (HTML per package)
-  ts/                  # TypeScript API docs (HTML)
+  index.html          # リンク付きランディングページ
+  repomix-output.txt  # 圧縮リポジトリスナップショット
+  go/                  # Go APIドキュメント（パッケージごとのHTML）
+  ts/                  # TypeScript APIドキュメント（HTML）
 ```
 
 ## Consequences
 
-### Positive
-- All exported symbols have inline documentation, improving IDE hover information and code readability
-- Auto-generated docs stay in sync with code — no manual HTML maintenance
-- Single workflow replaces the previous repomix-only deployment
-- Developers and AI assistants can browse API docs at the GitHub Pages URL
+**メリット:**
 
-### Negative
-- Adding GoDoc/TSDoc to ~400 files is a large initial investment
-- CI build time increases slightly (gomarkdoc + pandoc + TypeDoc generation)
-- TypeDoc is added as a dev dependency, increasing `node_modules` size marginally
+- すべてのエクスポートされたシンボルにインラインドキュメントが付き、IDEホバー情報とコードの可読性が向上
+- 自動生成ドキュメントがコードと同期し続ける（手動でのHTML保守が不要）
+- 単一のワークフローが以前のrepomix専用デプロイを置き換え
+- 開発者とAIアシスタントがGitHub PagesのURLでAPIドキュメントを閲覧可能
 
-### Neutral
-- Documentation quality depends on comment quality — automated generation does not validate accuracy
-- The `deploy-repomix.yml` workflow is removed in favor of the unified `deploy-pages.yml`
+**デメリット:**
+
+- 約400ファイルへのGoDoc/TSDoc追加は大きな初期投資
+- CIビルド時間がわずかに増加（gomarkdoc + pandoc + TypeDoc生成）
+- TypeDocがdev dependencyとして追加され、`node_modules`サイズがわずかに増加
+
+**その他:**
+
+- ドキュメント品質はコメント品質に依存する（自動生成は正確性を検証しない）
+- `deploy-repomix.yml`ワークフローは統合された`deploy-pages.yml`に置き換えられ削除
