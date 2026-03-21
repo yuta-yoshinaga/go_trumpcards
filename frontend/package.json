@@ -16,7 +16,7 @@
     "check:write": "biome check --write .",
     "preview": "vite preview",
     "test": "bun test src/utils src/constants src/styles src/api src/providers src/hooks src/components && for f in src/pages/*.test.tsx; do bun test \"$f\" || exit 1; done",
-    "test:coverage": "bun test --coverage src/",
+    "test:coverage": "bun test --coverage src/utils src/constants src/styles src/api src/providers src/hooks src/components && for f in src/pages/*.test.tsx; do bun test --coverage \"$f\" || exit 1; done",
     "test:watch": "bun test --watch src/",
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
