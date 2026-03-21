@@ -19,7 +19,11 @@ interface GestureBindHandlers {
 
 const SWIPE_THRESHOLD = 30;
 
-/** Hook providing tap and swipe-up gesture handlers for card interactions. */
+/**
+ * Hook providing tap and swipe-up gesture handlers for card interactions.
+ * NOTE: The consuming element should set `touch-action: none` via CSS
+ * to prevent the browser from intercepting pointer events for scrolling.
+ */
 export function useCardGesture({ onTap, onSwipeUp, disabled = false }: CardGestureOptions): GestureBindHandlers {
   const reduced = useReducedMotion();
   const startYRef = useRef(0);
