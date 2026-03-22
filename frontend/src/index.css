@@ -165,10 +165,7 @@ input[type="text"] {
 
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  .animate-pulse {
-    animation: none;
-  }
-
+  .animate-pulse,
   .animate-shake,
   .animate-flipIn,
   .animate-sweat-drop {

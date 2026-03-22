@@ -156,6 +156,7 @@
     "freecell.gameOver": "ゲームオーバー",
     "freecell.hintAvailable": "ヒントがあります",
     "freecell.noHint": "ヒントはありません",
-    "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
+    "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
+    "button.retry": "再試行"
   }
 }

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { actionLogApi } from '../api/gameApi';
+import { SITE_NAME } from '../constants/site';
 import { useActionLog } from './useActionLog';
 import { useConfirmDialog } from './useConfirmDialog';
 
@@ -13,7 +14,7 @@ export function useGamePageSetup(gameName: keyof typeof actionLogApi) {
 
   const pageTitle = tc(`nav.${gameName}`);
   useEffect(() => {
-    document.title = `${pageTitle} - Trump Cards`;
+    document.title = `${pageTitle} - ${SITE_NAME}`;
   }, [pageTitle]);
 
   return { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset };

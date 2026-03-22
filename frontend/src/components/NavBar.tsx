@@ -2,7 +2,50 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories } from '../constants/gameRoutes';
+import { SITE_NAME } from '../constants/site';
 import { SoundToggle } from './SoundToggle';
+
+/** SVG icon for the hamburger menu (open state). */
+function MenuIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="4" x2="20" y1="12" y2="12" />
+      <line x1="4" x2="20" y1="6" y2="6" />
+      <line x1="4" x2="20" y1="18" y2="18" />
+    </svg>
+  );
+}
+
+/** SVG icon for the close button (menu dismiss). */
+function CloseIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
 
 const langToggle = (
   currentLang: string,
@@ -71,7 +114,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
           className="text-white font-bold min-h-[44px] inline-flex items-center"
           onClick={() => setIsOpen(false)}
         >
-          Trump Cards
+          {SITE_NAME}
         </Link>
         <div className="flex items-center gap-2">
           {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
@@ -85,39 +128,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
             aria-label={isOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             className="text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
-            {isOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M18 6 6 18M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <line x1="4" x2="20" y1="12" y2="12" />
-                <line x1="4" x2="20" y1="6" y2="6" />
-                <line x1="4" x2="20" y1="18" y2="18" />
-              </svg>
-            )}
+            {isOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
         </div>
       </div>
