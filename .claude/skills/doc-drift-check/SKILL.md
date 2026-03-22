@@ -31,16 +31,26 @@ Check the following documents against the actual code:
 - Actual translation files: `frontend/src/i18n/locales/{ja,en}/*.json`
 - Actual pages: `frontend/src/pages/*Page.tsx`
 
-### 4. ADRs
+### 4. UML design documents
+- `docs/design/backend.md` — class, sequence, state machine diagrams for Go backend
+  - Domain structs/interfaces vs actual code in `internal/domain/` and `internal/domain/interfaces/`
+  - Game list in diagrams vs actual games
+  - Phase constants in state machine diagrams vs actual phase definitions
+- `docs/design/frontend.md` — class, sequence, state machine diagrams for React frontend
+  - Component/hook/API type names vs actual files in `frontend/src/`
+  - Phase enums vs actual definitions in `frontend/src/types/phases.ts`
+  - Game route categories vs `frontend/src/constants/gameRoutes.ts`
+
+### 5. ADRs
 - `docs/adr/README.md` index table — must list all ADR files in `docs/adr/`
 - ADR status consistency
 
-### 5. Version info
+### 6. Version info
 - `CLAUDE.md` Requirements table (Go, Node.js, Bun versions)
 - `go.mod` Go version
 - Actual installed versions
 
-### 6. Auto-memory (MEMORY.md)
+### 7. Auto-memory (MEMORY.md)
 - Game list and endpoint count in MEMORY.md vs actual
 
 ## Procedure
