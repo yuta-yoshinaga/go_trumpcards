@@ -764,63 +764,6 @@ func TestSpiderIsValidSequence(t *testing.T) {
 	})
 }
 
-func TestSpiderFindLongestSequenceStart(t *testing.T) {
-	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
-	s := NewSpider(tc)
-	s.Reset()
-
-	t.Run("empty column", func(t *testing.T) {
-		var tableau [SpiderTableauCnt][]*SpiderTableauCard
-		for i := range SpiderTableauCnt {
-			tableau[i] = nil
-		}
-		s.SetTableau(tableau)
-		assert.Equal(t, 0, s.findLongestSequenceStart(0))
-	})
-
-	t.Run("face down breaks sequence", func(t *testing.T) {
-		var tableau [SpiderTableauCnt][]*SpiderTableauCard
-		tableau[0] = []*SpiderTableauCard{
-			{Card: NewCard(CardDesignSpade, 7, false), FaceUp: false},
-			{Card: NewCard(CardDesignSpade, 5, false), FaceUp: true},
-			{Card: NewCard(CardDesignSpade, 4, false), FaceUp: true},
-		}
-		for i := 1; i < SpiderTableauCnt; i++ {
-			tableau[i] = nil
-		}
-		s.SetTableau(tableau)
-		assert.Equal(t, 1, s.findLongestSequenceStart(0))
-	})
-
-	t.Run("different suit breaks sequence", func(t *testing.T) {
-		var tableau [SpiderTableauCnt][]*SpiderTableauCard
-		tableau[0] = []*SpiderTableauCard{
-			{Card: NewCard(CardDesignHeart, 6, false), FaceUp: true},
-			{Card: NewCard(CardDesignSpade, 5, false), FaceUp: true},
-			{Card: NewCard(CardDesignSpade, 4, false), FaceUp: true},
-		}
-		for i := 1; i < SpiderTableauCnt; i++ {
-			tableau[i] = nil
-		}
-		s.SetTableau(tableau)
-		assert.Equal(t, 1, s.findLongestSequenceStart(0))
-	})
-
-	t.Run("non-descending breaks sequence", func(t *testing.T) {
-		var tableau [SpiderTableauCnt][]*SpiderTableauCard
-		tableau[0] = []*SpiderTableauCard{
-			{Card: NewCard(CardDesignSpade, 3, false), FaceUp: true},
-			{Card: NewCard(CardDesignSpade, 5, false), FaceUp: true},
-			{Card: NewCard(CardDesignSpade, 4, false), FaceUp: true},
-		}
-		for i := 1; i < SpiderTableauCnt; i++ {
-			tableau[i] = nil
-		}
-		s.SetTableau(tableau)
-		assert.Equal(t, 1, s.findLongestSequenceStart(0))
-	})
-}
-
 func TestSpiderStalemateWithEmptyColAndStock(t *testing.T) {
 	tc := NewTrumpCardsWithSuits(SpiderTotalCards, []int{CardDesignSpade})
 	s := NewSpider(tc)

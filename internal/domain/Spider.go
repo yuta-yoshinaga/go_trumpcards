@@ -443,30 +443,6 @@ func (s *Spider) isValidSpiderSequence(cards []*SpiderTableauCard) bool {
 	return true
 }
 
-// findLongestSequenceStart 列の末尾から始まる最長の同スート降順シーケンスの開始位置を返す
-func (s *Spider) findLongestSequenceStart(col int) int {
-	cards := s.tableau[col]
-	if len(cards) == 0 {
-		return 0
-	}
-	start := len(cards) - 1
-	for start > 0 {
-		prev := cards[start-1]
-		curr := cards[start]
-		if !prev.FaceUp {
-			break
-		}
-		if prev.Card.GetDesign() != curr.Card.GetDesign() {
-			break
-		}
-		if prev.Card.GetValue() != curr.Card.GetValue()+1 {
-			break
-		}
-		start--
-	}
-	return start
-}
-
 // checkAndRemoveCompletedSuit K-Aの同スート完成シーケンスをチェックし除去する
 func (s *Spider) checkAndRemoveCompletedSuit(col int) bool {
 	cards := s.tableau[col]
