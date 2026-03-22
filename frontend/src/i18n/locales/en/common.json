@@ -62,7 +62,8 @@
     "confirmReset": "Confirm Reset",
     "confirmResetMessage": "Are you sure you want to reset the game?",
     "confirm": "Confirm",
-    "hint": "Hint"
+    "hint": "Hint",
+    "retry": "Retry"
   },
   "status": {
     "folded": "Folded",
@@ -156,7 +157,6 @@
     "freecell.gameOver": "Game Over",
     "freecell.hintAvailable": "Hint available",
     "freecell.noHint": "No hint available",
-    "freecell.stalemate": "No moves can lead to a win. Please undo or give up.",
-    "button.retry": "Retry"
+    "freecell.stalemate": "No moves can lead to a win. Please undo or give up."
   }
 }

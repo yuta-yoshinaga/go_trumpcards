@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
+import { focusRingWhite } from '../styles/buttonStyles';
 import { SoundToggle } from './SoundToggle';
 
 /** SVG icon for the hamburger menu (open state). */
@@ -126,7 +127,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
             aria-expanded={isOpen}
             aria-controls="main-nav"
             aria-label={isOpen ? t('nav.closeMenu') : t('nav.openMenu')}
-            className="text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className={`text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center ${focusRingWhite}`}
           >
             {isOpen ? <CloseIcon /> : <MenuIcon />}
           </button>

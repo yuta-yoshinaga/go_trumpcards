@@ -62,7 +62,8 @@
     "confirmReset": "リセット確認",
     "confirmResetMessage": "本当にゲームをリセットしますか？",
     "confirm": "確認",
-    "hint": "ヒント"
+    "hint": "ヒント",
+    "retry": "再試行"
   },
   "status": {
     "folded": "フォールド",
@@ -156,7 +157,6 @@
     "freecell.gameOver": "ゲームオーバー",
     "freecell.hintAvailable": "ヒントがあります",
     "freecell.noHint": "ヒントはありません",
-    "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
-    "button.retry": "再試行"
+    "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
   }
 }

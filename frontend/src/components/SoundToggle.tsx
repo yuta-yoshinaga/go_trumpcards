@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { focusRingWhite } from '../styles/buttonStyles';
 
 interface SoundToggleProps {
   muted: boolean;
@@ -54,7 +55,7 @@ export function SoundToggle({ muted, onToggle }: SoundToggleProps) {
       type="button"
       onClick={onToggle}
       aria-label={muted ? t('sound.unmute') : t('sound.mute')}
-      className="px-3 py-2 text-xs font-bold rounded min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors bg-gray-600 text-gray-200 hover:bg-gray-500"
+      className={`px-3 py-2 text-xs font-bold rounded min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors bg-gray-600 text-gray-200 hover:bg-gray-500 ${focusRingWhite}`}
     >
       {muted ? <VolumeMutedIcon /> : <VolumeOnIcon />}
     </button>

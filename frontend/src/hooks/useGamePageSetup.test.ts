@@ -69,4 +69,11 @@ describe('useGamePageSetup', () => {
     renderHook(() => useGamePageSetup('blackjack'));
     expect(document.title).toBe('nav.blackjack - Trump Cards');
   });
+
+  it('restores document.title on unmount', () => {
+    const { unmount } = renderHook(() => useGamePageSetup('blackjack'));
+    expect(document.title).toBe('nav.blackjack - Trump Cards');
+    unmount();
+    expect(document.title).toBe('Trump Cards');
+  });
 });

@@ -15,6 +15,9 @@ export function useGamePageSetup(gameName: keyof typeof actionLogApi) {
   const pageTitle = tc(`nav.${gameName}`);
   useEffect(() => {
     document.title = `${pageTitle} - ${SITE_NAME}`;
+    return () => {
+      document.title = SITE_NAME;
+    };
   }, [pageTitle]);
 
   return { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset };
