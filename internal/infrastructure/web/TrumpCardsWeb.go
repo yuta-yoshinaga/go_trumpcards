@@ -254,6 +254,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	for _, r := range routes {
 		mux.Handle(r.path, apiHandler)
 	}
+	RegisterSwaggerRoutes(mux)
 	mux.Handle("/", http.FileServer(http.Dir("public")))
 	const (
 		readTimeout     = 10 * time.Second
