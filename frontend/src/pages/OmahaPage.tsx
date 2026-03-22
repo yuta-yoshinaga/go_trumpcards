@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { omahaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -72,6 +72,8 @@ export function OmahaPage() {
   const { state, loading, error, exec: execApi } = useGameApi(omahaApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
+  const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  const turnStartRef = useRef(0);
 
   useEffect(() => {
     execApi('reset');
@@ -84,6 +86,19 @@ export function OmahaPage() {
       setBetAmount(20);
     }
   }, [state]);
+
+  useEffect(() => {
+    if (state && state.currentTurn === state.players?.find((p) => p.isHuman)?.id) {
+      turnStartRef.current = Date.now();
+    }
+  }, [state]);
+
+  const getElapsed = useCallback(() => {
+    if (!cpuMetaAI || turnStartRef.current === 0) return 0;
+    const elapsed = Date.now() - turnStartRef.current;
+    turnStartRef.current = 0;
+    return elapsed;
+  }, [cpuMetaAI]);
 
   const phase = state?.phase ?? OmahaPhase.INIT;
   const isActive = phase >= OmahaPhase.PRE_FLOP && phase <= OmahaPhase.RIVER;
@@ -102,13 +117,19 @@ export function OmahaPage() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => execApi('call'), enabled: hasOutstandingBet },
-      { key: 'r', action: () => (hasOutstandingBet ? execApi('raise', betAmount) : execApi('bet', betAmount)) },
-      { key: 'k', action: () => execApi('check'), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => execApi('fold') },
-      { key: 'a', action: () => execApi('allin') },
+      { key: 'c', action: () => execApi('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'r',
+        action: () =>
+          hasOutstandingBet
+            ? execApi('raise', betAmount, undefined, getElapsed())
+            : execApi('bet', betAmount, undefined, getElapsed()),
+      },
+      { key: 'k', action: () => execApi('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
+      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()) },
+      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()) },
     ],
-    [execApi, hasOutstandingBet, betAmount],
+    [execApi, hasOutstandingBet, betAmount, getElapsed],
   );
 
   useActionKeyboardNav({
@@ -348,17 +369,21 @@ export function OmahaPage() {
             maxBetAmount={state?.maxBetAmount}
             hasOutstandingBet={hasOutstandingBet}
             loading={loading}
-            onCall={() => execApi('call')}
-            onRaise={() => execApi('raise', betAmount)}
-            onBet={() => execApi('bet', betAmount)}
-            onCheck={() => execApi('check')}
-            onFold={() => execApi('fold')}
-            onAllIn={() => execApi('allin')}
+            onCall={() => execApi('call', undefined, undefined, getElapsed())}
+            onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+            onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+            onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+            onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+            onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
           />
         )}
 
-        {/* Reset */}
-        <div className="text-center">
+        {/* Settings + Reset */}
+        <div className="text-center flex items-center justify-center gap-3">
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+            {t('settings.cpuMetaAI')}
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
@@ -366,7 +391,7 @@ export function OmahaPage() {
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
-                execApi('reset');
+                execApi('reset', undefined, { cpuMetaAI });
               })
             }
           >

@@ -1316,14 +1316,14 @@ func TestOmaha_PlayerAction_Errors(t *testing.T) {
 		o := newInternalTestOmaha()
 		o.gameEndFlag = true
 		o.phase = OmahaPhaseFlop
-		err := o.PlayerAction(OmahaActionCheck, 0)
+		err := o.PlayerAction(OmahaActionCheck, 0, 0)
 		assert.Error(t, err)
 	})
 
 	t.Run("wrong phase error", func(t *testing.T) {
 		o := newInternalTestOmaha()
 		o.phase = OmahaPhaseShowdown
-		err := o.PlayerAction(OmahaActionCheck, 0)
+		err := o.PlayerAction(OmahaActionCheck, 0, 0)
 		assert.Error(t, err)
 	})
 
@@ -1331,7 +1331,7 @@ func TestOmaha_PlayerAction_Errors(t *testing.T) {
 		o := newInternalTestOmaha()
 		o.phase = OmahaPhaseFlop
 		o.currentTurn = 1 // CPU player
-		err := o.PlayerAction(OmahaActionCheck, 0)
+		err := o.PlayerAction(OmahaActionCheck, 0, 0)
 		assert.Error(t, err)
 	})
 }
@@ -1359,7 +1359,7 @@ func TestOmaha_PlayerAction_ExecuteActionError(t *testing.T) {
 	}
 
 	// Invalid action: raise with 0 bet (should error)
-	err := o.PlayerAction(OmahaActionRaise, 0)
+	err := o.PlayerAction(OmahaActionRaise, 0, 0)
 	assert.Error(t, err)
 }
 

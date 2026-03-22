@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -41,6 +41,8 @@ export function PokerPage() {
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
   const [isLowball, setIsLowball] = useState(false);
+  const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  const turnStartRef = useRef(0);
 
   useEffect(() => {
     if (state?.minRaise && state.minRaise > 0) {
@@ -49,6 +51,19 @@ export function PokerPage() {
       setBetAmount(10);
     }
   }, [state]);
+
+  useEffect(() => {
+    if (state && state.currentTurn === state.players?.find((p) => p.isHuman)?.id) {
+      turnStartRef.current = Date.now();
+    }
+  }, [state]);
+
+  const getElapsed = useCallback(() => {
+    if (!cpuMetaAI || turnStartRef.current === 0) return 0;
+    const elapsed = Date.now() - turnStartRef.current;
+    turnStartRef.current = 0;
+    return elapsed;
+  }, [cpuMetaAI]);
 
   const phase = state?.phase ?? PokerPhase.INIT;
   const isBettingPhase = phase === PokerPhase.DEAL || phase === PokerPhase.SECOND_BET;
@@ -212,12 +227,12 @@ export function PokerPage() {
             maxBetAmount={state?.maxBetAmount}
             hasOutstandingBet={hasOutstandingBet}
             loading={loading}
-            onCall={() => exec('call')}
-            onRaise={() => exec('raise', undefined, betAmount)}
-            onBet={() => exec('bet', undefined, betAmount)}
-            onCheck={() => exec('check')}
-            onFold={() => exec('fold')}
-            onAllIn={() => exec('allin')}
+            onCall={() => exec('call', undefined, undefined, undefined, getElapsed())}
+            onRaise={() => exec('raise', undefined, betAmount, undefined, getElapsed())}
+            onBet={() => exec('bet', undefined, betAmount, undefined, getElapsed())}
+            onCheck={() => exec('check', undefined, undefined, undefined, getElapsed())}
+            onFold={() => exec('fold', undefined, undefined, undefined, getElapsed())}
+            onAllIn={() => exec('allin', undefined, undefined, undefined, getElapsed())}
           />
         )}
 
@@ -276,6 +291,10 @@ export function PokerPage() {
             <input type="checkbox" checked={isLowball} onChange={(e) => setIsLowball(e.target.checked)} />
             {t('lowball')}
           </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+            {t('settings.cpuMetaAI')}
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
@@ -283,7 +302,7 @@ export function PokerPage() {
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
-                exec('reset', undefined, undefined, { bettingLimit, isLowball });
+                exec('reset', undefined, undefined, { bettingLimit, isLowball, cpuMetaAI });
               })
             }
           >

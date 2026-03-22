@@ -109,12 +109,12 @@ func TestPokerInteractor_Action(t *testing.T) {
 	mp := new(presenter.MockPokerPresenter)
 	pi := usecase.NewPokerInteractor(mg, mp)
 
-	mg.On("PlayerAction", domain.PokerActionCheck, 0).Return(nil)
+	mg.On("PlayerAction", domain.PokerActionCheck, 0, 0).Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("action output")
 
-	result := pi.Action(domain.PokerActionCheck, 0)
+	result := pi.Action(domain.PokerActionCheck, 0, 0)
 	assert.Equal(t, "action output", result)
-	mg.AssertCalled(t, "PlayerAction", domain.PokerActionCheck, 0)
+	mg.AssertCalled(t, "PlayerAction", domain.PokerActionCheck, 0, 0)
 }
 
 func TestPokerInteractor_Action_Error(t *testing.T) {
@@ -123,10 +123,10 @@ func TestPokerInteractor_Action_Error(t *testing.T) {
 	pi := usecase.NewPokerInteractor(mg, mp)
 
 	err := errors.New("action failed")
-	mg.On("PlayerAction", domain.PokerActionBet, 50).Return(err)
+	mg.On("PlayerAction", domain.PokerActionBet, 50, 0).Return(err)
 	mp.On("Output", mg, err).Return("error output")
 
-	result := pi.Action(domain.PokerActionBet, 50)
+	result := pi.Action(domain.PokerActionBet, 50, 0)
 	assert.Equal(t, "error output", result)
 }
 

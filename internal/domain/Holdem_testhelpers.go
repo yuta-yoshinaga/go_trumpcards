@@ -50,3 +50,9 @@ func (h *Holdem) SetAddonUsed(used []bool) { h.addonUsed = used }
 
 // SetRebuyPhaseType リバイフェーズ種別設定（テスト用）
 func (h *Holdem) SetRebuyPhaseType(t int) { h.rebuyPhaseType = t }
+
+// SetHumanProfile メタAIプロファイル設定（テスト用）
+func (h *Holdem) SetHumanProfile(profile *BettingHumanProfile) { h.humanProfile = profile }
+
+// GetLastHumanPlayMs 最後の人間プレイ時間取得（テスト用）
+func (h *Holdem) GetLastHumanPlayMs() int { return h.lastHumanPlayMs }

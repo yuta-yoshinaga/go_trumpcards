@@ -106,7 +106,7 @@ func TestPokerCuiController_Stand(t *testing.T) {
 func TestPokerCuiController_Bet_WithValidAmount(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionBet, 50).Return("bet ok")
+	mi.On("Action", domain.PokerActionBet, 50, 0).Return("bet ok")
 	assert.Equal(t, "bet ok", c.Exec("b 50"))
 	assert.Equal(t, "bet ok", c.Exec("bet 50"))
 }
@@ -115,7 +115,7 @@ func TestPokerCuiController_Bet_NoAmount(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// No amount => amount stays 0
-	mi.On("Action", domain.PokerActionBet, 0).Return("bet zero")
+	mi.On("Action", domain.PokerActionBet, 0, 0).Return("bet zero")
 	assert.Equal(t, "bet zero", c.Exec("b"))
 }
 
@@ -123,7 +123,7 @@ func TestPokerCuiController_Bet_InvalidAmount_NonNumeric(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// "abc" fails strconv.Atoi => amount stays 0
-	mi.On("Action", domain.PokerActionBet, 0).Return("bet zero")
+	mi.On("Action", domain.PokerActionBet, 0, 0).Return("bet zero")
 	assert.Equal(t, "bet zero", c.Exec("b abc"))
 }
 
@@ -131,7 +131,7 @@ func TestPokerCuiController_Bet_InvalidAmount_Negative(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// -20 succeeds Atoi but fails a > 0 check => amount stays 0
-	mi.On("Action", domain.PokerActionBet, 0).Return("bet zero")
+	mi.On("Action", domain.PokerActionBet, 0, 0).Return("bet zero")
 	assert.Equal(t, "bet zero", c.Exec("b -20"))
 }
 
@@ -139,7 +139,7 @@ func TestPokerCuiController_Bet_InvalidAmount_Zero(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
 	// 0 succeeds Atoi but fails a > 0 check => amount stays 0
-	mi.On("Action", domain.PokerActionBet, 0).Return("bet zero")
+	mi.On("Action", domain.PokerActionBet, 0, 0).Return("bet zero")
 	assert.Equal(t, "bet zero", c.Exec("b 0"))
 }
 
@@ -148,7 +148,7 @@ func TestPokerCuiController_Bet_InvalidAmount_Zero(t *testing.T) {
 func TestPokerCuiController_Call(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionCall, 0).Return("call ok")
+	mi.On("Action", domain.PokerActionCall, 0, 0).Return("call ok")
 	assert.Equal(t, "call ok", c.Exec("c"))
 	assert.Equal(t, "call ok", c.Exec("call"))
 }
@@ -158,7 +158,7 @@ func TestPokerCuiController_Call(t *testing.T) {
 func TestPokerCuiController_Raise_WithValidAmount(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionRaise, 30).Return("raise ok")
+	mi.On("Action", domain.PokerActionRaise, 30, 0).Return("raise ok")
 	assert.Equal(t, "raise ok", c.Exec("ra 30"))
 	assert.Equal(t, "raise ok", c.Exec("raise 30"))
 }
@@ -166,28 +166,28 @@ func TestPokerCuiController_Raise_WithValidAmount(t *testing.T) {
 func TestPokerCuiController_Raise_NoAmount(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionRaise, 0).Return("raise zero")
+	mi.On("Action", domain.PokerActionRaise, 0, 0).Return("raise zero")
 	assert.Equal(t, "raise zero", c.Exec("ra"))
 }
 
 func TestPokerCuiController_Raise_InvalidAmount_NonNumeric(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionRaise, 0).Return("raise zero")
+	mi.On("Action", domain.PokerActionRaise, 0, 0).Return("raise zero")
 	assert.Equal(t, "raise zero", c.Exec("ra abc"))
 }
 
 func TestPokerCuiController_Raise_InvalidAmount_Negative(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionRaise, 0).Return("raise zero")
+	mi.On("Action", domain.PokerActionRaise, 0, 0).Return("raise zero")
 	assert.Equal(t, "raise zero", c.Exec("ra -30"))
 }
 
 func TestPokerCuiController_Raise_InvalidAmount_Zero(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionRaise, 0).Return("raise zero")
+	mi.On("Action", domain.PokerActionRaise, 0, 0).Return("raise zero")
 	assert.Equal(t, "raise zero", c.Exec("ra 0"))
 }
 
@@ -196,7 +196,7 @@ func TestPokerCuiController_Raise_InvalidAmount_Zero(t *testing.T) {
 func TestPokerCuiController_Fold(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionFold, 0).Return("fold ok")
+	mi.On("Action", domain.PokerActionFold, 0, 0).Return("fold ok")
 	assert.Equal(t, "fold ok", c.Exec("f"))
 	assert.Equal(t, "fold ok", c.Exec("fold"))
 }
@@ -206,7 +206,7 @@ func TestPokerCuiController_Fold(t *testing.T) {
 func TestPokerCuiController_Check(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionCheck, 0).Return("check ok")
+	mi.On("Action", domain.PokerActionCheck, 0, 0).Return("check ok")
 	assert.Equal(t, "check ok", c.Exec("ck"))
 	assert.Equal(t, "check ok", c.Exec("check"))
 }
@@ -216,7 +216,7 @@ func TestPokerCuiController_Check(t *testing.T) {
 func TestPokerCuiController_AllIn(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	mi.On("Action", domain.PokerActionAllIn, 0).Return("allin ok")
+	mi.On("Action", domain.PokerActionAllIn, 0, 0).Return("allin ok")
 	assert.Equal(t, "allin ok", c.Exec("a"))
 	assert.Equal(t, "allin ok", c.Exec("allin"))
 }
@@ -433,4 +433,40 @@ func TestPokerCuiController_Odds_AllInvalid(t *testing.T) {
 	result := c.Exec("o abc -1 5 99")
 	assert.Contains(t, result, "'abc'")
 	assert.Contains(t, result, "odds empty")
+}
+
+// --- metaai ---
+
+func TestPokerCuiController_MetaAI_On(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	mi.On("GetConfig").Return(cfg)
+	expected := domain.DefaultPokerConfig()
+	expected.CpuMetaAI = true
+	mi.On("ResetWithConfig", expected).Return("mai ok")
+	assert.Equal(t, "mai ok", c.Exec("mai 1"))
+}
+
+func TestPokerCuiController_MetaAI_Off(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	cfg := domain.DefaultPokerConfig()
+	mi.On("GetConfig").Return(cfg)
+	expected := domain.DefaultPokerConfig()
+	expected.CpuMetaAI = false
+	mi.On("ResetWithConfig", expected).Return("mai off")
+	assert.Equal(t, "mai off", c.Exec("metaai 0"))
+}
+
+func TestPokerCuiController_MetaAI_MissingArg(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	assert.Equal(t, "メタAI設定が必要です (0=オフ, 1=オン)。", c.Exec("mai"))
+}
+
+func TestPokerCuiController_MetaAI_InvalidArg(t *testing.T) {
+	mi := new(mockUsecase.MockPokerInteractor)
+	c := NewPokerCuiController(mi)
+	assert.Equal(t, "無効な値です: abc。0 または 1 を入力してください。", c.Exec("mai abc"))
 }

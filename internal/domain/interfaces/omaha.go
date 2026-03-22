@@ -7,7 +7,8 @@ type OmahaGame interface {
 	// Reset ゲームを初期化する
 	Reset() error
 	// PlayerAction プレイヤーのベッティングアクションを実行する
-	PlayerAction(action, amount int) error
+	// humanPlayMs: 迷い時間(ms, 0=計測なし)
+	PlayerAction(action, amount, humanPlayMs int) error
 	// GetPhase 現在のフェーズを取得する
 	GetPhase() int
 	// GetPlayers プレイヤー一覧を取得する

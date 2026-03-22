@@ -13,10 +13,12 @@ type PokerWebInput struct {
 	BaseWebInput
 	Indices      []int `json:"indices,omitempty"`
 	Amount       int   `json:"amount,omitempty"`
+	HumanPlayMs  int   `json:"humanPlayMs,omitempty"`
 	CpuCount     *int  `json:"cpuCount,omitempty"`
 	JokerCount   *int  `json:"jokerCount,omitempty"`
 	BettingLimit *int  `json:"bettingLimit,omitempty"`
 	IsLowball    *bool `json:"isLowball,omitempty"`
+	CpuMetaAI    bool  `json:"cpuMetaAI,omitempty"`
 }
 
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
@@ -104,6 +106,7 @@ func (p PokerWebInput) ToConfig() domain.PokerConfig {
 	if p.IsLowball != nil {
 		cfg.IsLowball = *p.IsLowball
 	}
+	cfg.CpuMetaAI = p.CpuMetaAI
 	return cfg
 }
 
@@ -139,17 +142,17 @@ func pokerDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PokerIn
 	case "s", "stand":
 		bc.writePresenterResponse(w, pi.Stand())
 	case "f", "fold":
-		bc.writePresenterResponse(w, pi.Action(domain.PokerActionFold, 0))
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionFold, 0, param.HumanPlayMs))
 	case "ck", "check":
-		bc.writePresenterResponse(w, pi.Action(domain.PokerActionCheck, 0))
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionCheck, 0, param.HumanPlayMs))
 	case "c", "call":
-		bc.writePresenterResponse(w, pi.Action(domain.PokerActionCall, 0))
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionCall, 0, param.HumanPlayMs))
 	case "b", "bet":
-		bc.writePresenterResponse(w, pi.Action(domain.PokerActionBet, param.Amount))
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionBet, param.Amount, param.HumanPlayMs))
 	case "ra", "raise":
-		bc.writePresenterResponse(w, pi.Action(domain.PokerActionRaise, param.Amount))
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionRaise, param.Amount, param.HumanPlayMs))
 	case "a", "allin":
-		bc.writePresenterResponse(w, pi.Action(domain.PokerActionAllIn, 0))
+		bc.writePresenterResponse(w, pi.Action(domain.PokerActionAllIn, 0, param.HumanPlayMs))
 	case "o", "odds":
 		indices := param.Indices
 		if indices == nil {

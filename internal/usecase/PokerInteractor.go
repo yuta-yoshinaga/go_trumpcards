@@ -15,7 +15,7 @@ type PokerInteractorIF interface {
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.PokerConfig
 	// Action プレイヤーアクション実行
-	Action(action int, amount int) string
+	Action(action int, amount int, humanPlayMs int) string
 	// Exchange カード交換
 	Exchange(indices []int) string
 	// Stand カード交換なし
@@ -62,8 +62,8 @@ func (pi *PokerInteractor) ResetWithConfig(cfg domain.PokerConfig) string {
 }
 
 // Action プレイヤーアクション実行
-func (pi *PokerInteractor) Action(action int, amount int) string {
-	return execAndPresent(pi.p, pi.pp, func() error { return pi.p.PlayerAction(action, amount) })
+func (pi *PokerInteractor) Action(action int, amount int, humanPlayMs int) string {
+	return execAndPresent(pi.p, pi.pp, func() error { return pi.p.PlayerAction(action, amount, humanPlayMs) })
 }
 
 // Exchange カード交換

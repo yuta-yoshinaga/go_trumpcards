@@ -38,3 +38,9 @@ func (p *Poker) SetCpuExchanges(exchanges []PokerCpuExchange) { p.cpuExchanges =
 
 // SetSidePots サイドポット設定（テスト用）
 func (p *Poker) SetSidePots(pots []PokerSidePot) { p.sidePots = pots }
+
+// SetHumanProfile メタAIプロファイル設定（テスト用）
+func (p *Poker) SetHumanProfile(profile *BettingHumanProfile) { p.humanProfile = profile }
+
+// GetLastHumanPlayMs 最後の人間プレイ時間取得（テスト用）
+func (p *Poker) GetLastHumanPlayMs() int { return p.lastHumanPlayMs }

@@ -2136,6 +2136,17 @@ components:
             straights and flushes count against the player, and jokers
             are forced to rank 0. Best hand is 2-3-4-5-7 off-suit.
           example: false
+        cpuMetaAI:
+          type: boolean
+          description: |
+            When true, CPUs adaptively adjust bluff and call behavior based on
+            session-scoped game history (Meta-AI). Defaults to false.
+          default: false
+          example: false
+        humanPlayMs:
+          type: integer
+          description: Human play hesitation time in milliseconds (0=not measured)
+          example: 1200
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -3755,6 +3766,17 @@ components:
             Defaults to 10 when omitted.
           minimum: 1
           example: 10
+        cpuMetaAI:
+          type: boolean
+          description: |
+            When true, CPUs adaptively adjust bluff and call behavior based on
+            session-scoped game history (Meta-AI). Defaults to false.
+          default: false
+          example: false
+        humanPlayMs:
+          type: integer
+          description: Human play hesitation time in milliseconds (0=not measured)
+          example: 1200
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)

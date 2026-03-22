@@ -27,7 +27,7 @@ func TestOmahaCuiController_Reset(t *testing.T) {
 func TestOmahaCuiController_Fold(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	mi.On("Action", domain.OmahaActionFold, 0).Return("fold ok")
+	mi.On("Action", domain.OmahaActionFold, 0, 0).Return("fold ok")
 	assert.Equal(t, "fold ok", c.Exec("f"))
 	assert.Equal(t, "fold ok", c.Exec("fold"))
 }
@@ -35,7 +35,7 @@ func TestOmahaCuiController_Fold(t *testing.T) {
 func TestOmahaCuiController_Check(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	mi.On("Action", domain.OmahaActionCheck, 0).Return("check ok")
+	mi.On("Action", domain.OmahaActionCheck, 0, 0).Return("check ok")
 	assert.Equal(t, "check ok", c.Exec("ck"))
 	assert.Equal(t, "check ok", c.Exec("check"))
 }
@@ -43,7 +43,7 @@ func TestOmahaCuiController_Check(t *testing.T) {
 func TestOmahaCuiController_Call(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	mi.On("Action", domain.OmahaActionCall, 0).Return("call ok")
+	mi.On("Action", domain.OmahaActionCall, 0, 0).Return("call ok")
 	assert.Equal(t, "call ok", c.Exec("c"))
 	assert.Equal(t, "call ok", c.Exec("call"))
 }
@@ -51,7 +51,7 @@ func TestOmahaCuiController_Call(t *testing.T) {
 func TestOmahaCuiController_Bet(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	mi.On("Action", domain.OmahaActionBet, 50).Return("bet ok")
+	mi.On("Action", domain.OmahaActionBet, 50, 0).Return("bet ok")
 	assert.Equal(t, "bet ok", c.Exec("b 50"))
 	assert.Equal(t, "bet ok", c.Exec("bet 50"))
 }
@@ -72,7 +72,7 @@ func TestOmahaCuiController_Bet_InvalidAmount(t *testing.T) {
 func TestOmahaCuiController_Raise(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	mi.On("Action", domain.OmahaActionRaise, 30).Return("raise ok")
+	mi.On("Action", domain.OmahaActionRaise, 30, 0).Return("raise ok")
 	assert.Equal(t, "raise ok", c.Exec("ra 30"))
 	assert.Equal(t, "raise ok", c.Exec("raise 30"))
 }
@@ -107,7 +107,7 @@ func TestOmahaCuiController_Raise_NonPositiveAmount(t *testing.T) {
 func TestOmahaCuiController_AllIn(t *testing.T) {
 	mi := new(usecase.MockOmahaInteractor)
 	c := NewOmahaCuiController(mi)
-	mi.On("Action", domain.OmahaActionAllIn, 0).Return("allin ok")
+	mi.On("Action", domain.OmahaActionAllIn, 0, 0).Return("allin ok")
 	assert.Equal(t, "allin ok", c.Exec("a"))
 	assert.Equal(t, "allin ok", c.Exec("allin"))
 }
@@ -467,4 +467,40 @@ func TestOmahaCuiController_ShowHand(t *testing.T) {
 	mi.On("ShowHand").Return("show ok")
 	assert.Equal(t, "show ok", c.Exec("sh"))
 	assert.Equal(t, "show ok", c.Exec("show"))
+}
+
+// --- metaai ---
+
+func TestOmahaCuiController_MetaAI_On(t *testing.T) {
+	mi := new(usecase.MockOmahaInteractor)
+	c := NewOmahaCuiController(mi)
+	cfg := domain.DefaultOmahaConfig()
+	mi.On("GetConfig").Return(cfg)
+	expected := domain.DefaultOmahaConfig()
+	expected.CpuMetaAI = true
+	mi.On("ResetWithConfig", expected).Return("mai ok")
+	assert.Equal(t, "mai ok", c.Exec("mai 1"))
+}
+
+func TestOmahaCuiController_MetaAI_Off(t *testing.T) {
+	mi := new(usecase.MockOmahaInteractor)
+	c := NewOmahaCuiController(mi)
+	cfg := domain.DefaultOmahaConfig()
+	mi.On("GetConfig").Return(cfg)
+	expected := domain.DefaultOmahaConfig()
+	expected.CpuMetaAI = false
+	mi.On("ResetWithConfig", expected).Return("mai off")
+	assert.Equal(t, "mai off", c.Exec("metaai 0"))
+}
+
+func TestOmahaCuiController_MetaAI_MissingArg(t *testing.T) {
+	mi := new(usecase.MockOmahaInteractor)
+	c := NewOmahaCuiController(mi)
+	assert.Equal(t, "メタAI設定が必要です (0=オフ, 1=オン)。", c.Exec("mai"))
+}
+
+func TestOmahaCuiController_MetaAI_InvalidArg(t *testing.T) {
+	mi := new(usecase.MockOmahaInteractor)
+	c := NewOmahaCuiController(mi)
+	assert.Equal(t, "無効な値です: abc。0 または 1 を入力してください。", c.Exec("mai abc"))
 }

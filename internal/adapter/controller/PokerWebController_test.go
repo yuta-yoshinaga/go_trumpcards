@@ -290,7 +290,7 @@ func TestPokerWebController_Fold(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionFold, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionFold, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -306,7 +306,7 @@ func TestPokerWebController_Fold_ShortCommand(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionFold, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionFold, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -324,7 +324,7 @@ func TestPokerWebController_Check(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionCheck, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionCheck, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -340,7 +340,7 @@ func TestPokerWebController_Check_ShortCommand(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionCheck, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionCheck, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -358,7 +358,7 @@ func TestPokerWebController_Call(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionCall, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionCall, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -374,7 +374,7 @@ func TestPokerWebController_Call_ShortCommand(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionCall, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionCall, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -392,7 +392,7 @@ func TestPokerWebController_Bet_ValidAmount(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionBet, 20).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionBet, 20, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -409,7 +409,7 @@ func TestPokerWebController_Bet_ShortCommand(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionBet, 10).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionBet, 10, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -427,7 +427,7 @@ func TestPokerWebController_Bet_AmountZero(t *testing.T) {
 	defer pwc.Stop()
 
 	// amount=0 passes through to domain which validates
-	mi.On("Action", domain.PokerActionBet, 0).Return(`{"phase":1,"message":"error"}`)
+	mi.On("Action", domain.PokerActionBet, 0, 0).Return(`{"phase":1,"message":"error"}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -445,7 +445,7 @@ func TestPokerWebController_Bet_AmountMissing(t *testing.T) {
 	defer pwc.Stop()
 
 	// No amount field => defaults to 0, passes through to domain
-	mi.On("Action", domain.PokerActionBet, 0).Return(`{"phase":1,"message":"error"}`)
+	mi.On("Action", domain.PokerActionBet, 0, 0).Return(`{"phase":1,"message":"error"}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -463,7 +463,7 @@ func TestPokerWebController_Raise_ValidAmount(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionRaise, 30).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionRaise, 30, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -480,7 +480,7 @@ func TestPokerWebController_Raise_ShortCommand(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionRaise, 10).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionRaise, 10, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -498,7 +498,7 @@ func TestPokerWebController_Raise_AmountZero(t *testing.T) {
 	defer pwc.Stop()
 
 	// amount=0 passes through to domain which validates
-	mi.On("Action", domain.PokerActionRaise, 0).Return(`{"phase":1,"message":"error"}`)
+	mi.On("Action", domain.PokerActionRaise, 0, 0).Return(`{"phase":1,"message":"error"}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -516,7 +516,7 @@ func TestPokerWebController_Raise_AmountMissing(t *testing.T) {
 	defer pwc.Stop()
 
 	// No amount => defaults to 0, passes through to domain
-	mi.On("Action", domain.PokerActionRaise, 0).Return(`{"phase":1,"message":"error"}`)
+	mi.On("Action", domain.PokerActionRaise, 0, 0).Return(`{"phase":1,"message":"error"}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -534,7 +534,7 @@ func TestPokerWebController_AllIn(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionAllIn, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionAllIn, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -550,7 +550,7 @@ func TestPokerWebController_AllIn_ShortCommand(t *testing.T) {
 	api, pwc := newPokerTestHandler(mi)
 	defer pwc.Stop()
 
-	mi.On("Action", domain.PokerActionAllIn, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionAllIn, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -822,10 +822,10 @@ func TestPokerWebController_AllShortCommands(t *testing.T) {
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
 	mi.On("Exchange", mock.Anything).Return(`{"phase":2}`)
 	mi.On("Stand").Return(`{"phase":3}`)
-	mi.On("Action", domain.PokerActionFold, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.PokerActionCheck, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.PokerActionCall, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.PokerActionAllIn, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionFold, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionCheck, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionCall, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.PokerActionAllIn, 0, 0).Return(`{"phase":1}`)
 	mi.On("Odds", mock.Anything).Return(`{"phase":2}`)
 
 	commands := []string{"r", "e", "s", "f", "ck", "c", "a", "o"}

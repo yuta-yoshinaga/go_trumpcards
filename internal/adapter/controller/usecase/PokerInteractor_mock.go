@@ -30,8 +30,8 @@ func (_m *MockPokerInteractor) ResetWithConfig(cfg domain.PokerConfig) string {
 }
 
 // Action モック
-func (_m *MockPokerInteractor) Action(action int, amount int) string {
-	ret := _m.Called(action, amount)
+func (_m *MockPokerInteractor) Action(action int, amount int, humanPlayMs int) string {
+	ret := _m.Called(action, amount, humanPlayMs)
 	return ret.Get(0).(string)
 }
 

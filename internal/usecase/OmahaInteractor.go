@@ -13,7 +13,7 @@ type OmahaInteractorIF interface {
 	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.OmahaConfig) string
 	// Action プレイヤーアクション実行
-	Action(action int, amount int) string
+	Action(action int, amount int, humanPlayMs int) string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.OmahaConfig
 	// Rebuy リバイ実行
@@ -63,8 +63,8 @@ func (oi *OmahaInteractor) ResetWithConfig(cfg domain.OmahaConfig) string {
 }
 
 // Action プレイヤーアクション実行
-func (oi *OmahaInteractor) Action(action int, amount int) string {
-	return execAndPresent(oi.o, oi.op, func() error { return oi.o.PlayerAction(action, amount) })
+func (oi *OmahaInteractor) Action(action int, amount int, humanPlayMs int) string {
+	return execAndPresent(oi.o, oi.op, func() error { return oi.o.PlayerAction(action, amount, humanPlayMs) })
 }
 
 // GetConfig 現在の設定を取得

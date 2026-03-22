@@ -7,7 +7,8 @@ type PokerGame interface {
 	// Reset ゲームを初期化する
 	Reset() error
 	// PlayerAction プレイヤーのベッティングアクションを実行する
-	PlayerAction(action, amount int) error
+	// humanPlayMs: 迷い時間(ms, 0=計測なし)
+	PlayerAction(action, amount, humanPlayMs int) error
 	// PlayerExchange プレイヤーのカード交換を実行する
 	PlayerExchange(indices []int) error
 	// PlayerStand カード交換なしで続行する

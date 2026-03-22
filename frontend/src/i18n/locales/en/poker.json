@@ -17,5 +17,8 @@
   "exchangeCount": "Exchanged: {{count}}",
   "lowball": "2-7 Lowball",
   "lowballMode": "2-7 Lowball Mode",
-  "cardSelected": "(selected for exchange)"
+  "cardSelected": "(selected for exchange)",
+  "settings": {
+    "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  }
 }

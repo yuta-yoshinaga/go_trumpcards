@@ -18,8 +18,8 @@ func (_m *MockOmahaGame) Reset() error {
 }
 
 // PlayerAction モック
-func (_m *MockOmahaGame) PlayerAction(action, amount int) error {
-	ret := _m.Called(action, amount)
+func (_m *MockOmahaGame) PlayerAction(action, amount, humanPlayMs int) error {
+	ret := _m.Called(action, amount, humanPlayMs)
 	return ret.Error(0)
 }
 

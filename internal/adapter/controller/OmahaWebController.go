@@ -42,17 +42,17 @@ func omahaDispatch(bc *baseController, w rest.ResponseWriter, ogi usecase.OmahaI
 		}
 		bc.writePresenterResponse(w, ogi.ResetWithConfig(cfg))
 	case "f", "fold":
-		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionFold, 0))
+		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionFold, 0, param.HumanPlayMs))
 	case "ck", "check":
-		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionCheck, 0))
+		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionCheck, 0, param.HumanPlayMs))
 	case "c", "call":
-		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionCall, 0))
+		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionCall, 0, param.HumanPlayMs))
 	case "b", "bet":
-		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionBet, param.Amount))
+		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionBet, param.Amount, param.HumanPlayMs))
 	case "ra", "raise":
-		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionRaise, param.Amount))
+		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionRaise, param.Amount, param.HumanPlayMs))
 	case "a", "allin":
-		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionAllIn, 0))
+		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionAllIn, 0, param.HumanPlayMs))
 	case "rb", "rebuy":
 		bc.writePresenterResponse(w, ogi.Rebuy())
 	case "sr", "skiprebuy":

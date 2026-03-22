@@ -85,6 +85,8 @@ type Holdem struct {
 	addonUsed       []bool // プレイヤーごとのアドオン使用フラグ
 	rebuyPhaseType  int    // 0=none, 1=rebuy pending, 2=addon pending
 	actionLog       []*ActionLogEntry
+	humanProfile    *BettingHumanProfile
+	lastHumanPlayMs int
 }
 
 // NewHoldem コンストラクタ
@@ -123,6 +125,16 @@ func (h *Holdem) Reset() error {
 	h.cpuActions = make([]HoldemCpuAction, 0)
 	h.rebuyPhaseType = HoldemRebuyPhaseNone
 	h.actionLog = nil
+	h.lastHumanPlayMs = 0
+
+	// メタAI: プロファイル初期化
+	if h.config.CpuMetaAI {
+		if h.humanProfile != nil {
+			h.humanProfile.GamesPlayed++
+		} else {
+			h.humanProfile = &BettingHumanProfile{}
+		}
+	}
 
 	h.trumpCards.Shuffle()
 	for _, p := range h.players {
@@ -255,7 +267,8 @@ func (h *Holdem) postBlinds() {
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
-func (h *Holdem) PlayerAction(action, amount int) error {
+// humanPlayMs: 迷い時間(ms, 0=計測なし)
+func (h *Holdem) PlayerAction(action, amount, humanPlayMs int) error {
 	if h.gameEndFlag {
 		return NewDomainError(ErrGameEnded, "Game has already ended.")
 	}
@@ -264,6 +277,18 @@ func (h *Holdem) PlayerAction(action, amount int) error {
 	}
 	if !h.players[h.currentTurn].GetIsHuman() {
 		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
+	}
+
+	// メタAI: 人間アクション記録
+	h.lastHumanPlayMs = humanPlayMs
+	if h.config.CpuMetaAI && h.humanProfile != nil {
+		pl := h.players[h.currentTurn]
+		handRank := pl.EvalBestHand(h.communityCards)
+		h.humanProfile.RecordAction(handRank, action)
+		h.humanProfile.RecordHesitation(humanPlayMs)
+		if h.lastBet > pl.GetCurrentBet() {
+			h.humanProfile.RecordFoldToBet(action == HoldemActionFold)
+		}
 	}
 
 	err := h.executeAction(h.currentTurn, action, amount)
@@ -648,6 +673,12 @@ func (h *Holdem) GetCpuActions() []HoldemCpuAction { return h.cpuActions }
 
 // GetLastCpuError 最後のCPUアクションエラー取得 (テスト・デバッグ用)
 func (h *Holdem) GetLastCpuError() error { return h.lastCpuError }
+
+// GetHumanProfile メタAIプロファイル取得
+func (h *Holdem) GetHumanProfile() *BettingHumanProfile { return h.humanProfile }
+
+// ResetProfile メタAIプロファイルをリセットする
+func (h *Holdem) ResetProfile() { h.humanProfile = nil }
 
 // GetConfig 設定取得
 func (h *Holdem) GetConfig() HoldemConfig { return h.config }

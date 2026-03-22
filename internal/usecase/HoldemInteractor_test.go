@@ -107,12 +107,12 @@ func TestHoldemInteractor_Action(t *testing.T) {
 	mp := new(presenter.MockHoldemPresenter)
 	hi := NewHoldemInteractor(mg, mp)
 
-	mg.On("PlayerAction", domain.HoldemActionCheck, 0).Return(nil)
+	mg.On("PlayerAction", domain.HoldemActionCheck, 0, 0).Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("action output")
 
-	result := hi.Action(domain.HoldemActionCheck, 0)
+	result := hi.Action(domain.HoldemActionCheck, 0, 0)
 	assert.Equal(t, "action output", result)
-	mg.AssertCalled(t, "PlayerAction", domain.HoldemActionCheck, 0)
+	mg.AssertCalled(t, "PlayerAction", domain.HoldemActionCheck, 0, 0)
 }
 
 func TestHoldemInteractor_GetConfig(t *testing.T) {
@@ -198,10 +198,10 @@ func TestHoldemInteractor_Action_Error(t *testing.T) {
 	hi := NewHoldemInteractor(mg, mp)
 
 	err := errors.New("test error")
-	mg.On("PlayerAction", domain.HoldemActionBet, 50).Return(err)
+	mg.On("PlayerAction", domain.HoldemActionBet, 50, 0).Return(err)
 	mp.On("Output", mg, err).Return("error output")
 
-	result := hi.Action(domain.HoldemActionBet, 50)
+	result := hi.Action(domain.HoldemActionBet, 50, 0)
 	assert.Equal(t, "error output", result)
 }
 
