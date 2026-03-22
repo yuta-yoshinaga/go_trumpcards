@@ -55,6 +55,7 @@ type KlondikeWebOutput struct {
 	MoveCount   int                               `json:"moveCount"`
 	DrawCount   int                               `json:"drawCount"`
 	CanUndo     bool                              `json:"canUndo"`
+	IsStalemate bool                              `json:"isStalemate"`
 	Score       int                               `json:"score"`
 	ScoringMode int                               `json:"scoringMode"`
 	Hint        *KlondikeWebOutputHint            `json:"hint,omitempty"`

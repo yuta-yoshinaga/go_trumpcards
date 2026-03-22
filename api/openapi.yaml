@@ -4686,6 +4686,7 @@ components:
         - moveCount
         - drawCount
         - canUndo
+        - isStalemate
         - score
         - scoringMode
         - message
@@ -4730,6 +4731,10 @@ components:
         canUndo:
           type: boolean
           description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
         score:
           type: integer
@@ -4823,6 +4828,7 @@ components:
         - phase
         - moveCount
         - canUndo
+        - isStalemate
         - message
       properties:
         tableau:
@@ -4857,6 +4863,10 @@ components:
         canUndo:
           type: boolean
           description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
         hint:
           type: object

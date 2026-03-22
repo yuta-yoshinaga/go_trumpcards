@@ -75,6 +75,9 @@ func (p *FreeCellCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 		phase := f.GetPhase()
 		switch phase {
 		case domain.FreeCellPhasePlaying:
+			if f.IsStalemate() {
+				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+			}
 			fmt.Fprintf(b, "手数: %d\n", f.GetMoveCount())
 		case domain.FreeCellPhaseGameClear:
 			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), f.GetMoveCount())

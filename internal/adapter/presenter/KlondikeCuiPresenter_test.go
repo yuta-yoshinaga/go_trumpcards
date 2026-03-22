@@ -18,6 +18,7 @@ func setupKlondikeCuiMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("GetMoveCount").Return(0).Maybe()
 	kg.On("GetStockCount").Return(24).Maybe()
 	kg.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
+	kg.On("IsStalemate").Return(false).Maybe()
 
 	var tableau [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
 	for i := 0; i < domain.KlondikeTableauCnt; i++ {
@@ -95,6 +96,17 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
+	})
+
+	t.Run("stalemate", func(t *testing.T) {
+		kg := new(interfaces.MockKlondikeGame)
+		setupKlondikeCuiMockDefaults(kg)
+		kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
+		kg.On("IsStalemate").Return(true)
+
+		p := new(KlondikeCuiPresenter)
+		result := p.Output(kg, nil)
+		assert.Contains(t, result, "手詰まりです")
 	})
 
 	t.Run("empty tableau column", func(t *testing.T) {

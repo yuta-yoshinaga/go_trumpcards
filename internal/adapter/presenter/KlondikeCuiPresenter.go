@@ -81,6 +81,9 @@ func (p *KlondikeCuiPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 		phase := k.GetPhase()
 		switch phase {
 		case domain.KlondikePhasePlaying:
+			if k.IsStalemate() {
+				fmt.Fprintf(b, "%s\n", color.Red("手詰まりです"))
+			}
 			fmt.Fprintf(b, "手数: %d\n", k.GetMoveCount())
 		case domain.KlondikePhaseGameClear:
 			fmt.Fprintf(b, "%s 手数: %d\n", color.Green("ゲームクリア！"), k.GetMoveCount())
