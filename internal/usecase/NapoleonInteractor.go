@@ -128,6 +128,9 @@ func (ni *NapoleonInteractor) Play(cardIndex int) string {
 
 // NextTrick 次のトリックへ進む
 func (ni *NapoleonInteractor) NextTrick() string {
+	if out, blocked := guardGameEnd(ni.n, ni.np); blocked {
+		return out
+	}
 	ni.n.NextTrick()
 	ni.runCpuTurns()
 	return ni.np.Output(ni.n, nil)
