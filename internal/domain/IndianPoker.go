@@ -585,8 +585,8 @@ func (ip *IndianPoker) estimateOwnStrength(idx int) int {
 		visibleRanks[indianPokerCardRank(c)]++
 	}
 
-	// 残りの49枚 (52 - 自分の1枚 - 見えている他プレイヤーのカード)
-	// 自分のカードは不明なので、見えている3枚を除く49枚が候補
+	// 残りのカード (52 - 見えている他プレイヤーのカード枚数)
+	// 自分のカードは不明なので候補に含まれる
 	totalRemaining := 52 - len(visibleCards)
 
 	// 各ランクのカードは4枚 (2-14の13種 × 4枚 = 52枚)

@@ -39,8 +39,8 @@ export function IndianPokerPage() {
   const { state, loading, error, exec: execApi } = useGameApi(indianpokerApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [ante] = useState(10);
-  const [bettingLimit, setBettingLimit] = useState(0);
-  const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  const [bettingLimit, setBettingLimit] = useState(2);
+  const [cpuMetaAI, setCpuMetaAI] = useState(true);
   const turnStartRef = useRef(0);
 
   useEffect(() => {
@@ -238,9 +238,9 @@ export function IndianPokerPage() {
                   label: t('settings.bettingLimit'),
                   value: bettingLimit,
                   options: [
-                    { value: 0, label: tc('betting.noLimit') },
+                    { value: 0, label: tc('betting.fixed') },
                     { value: 1, label: tc('betting.potLimit') },
-                    { value: 2, label: tc('betting.fixed') },
+                    { value: 2, label: tc('betting.noLimit') },
                   ],
                   onSelect: (v: string) => setBettingLimit(Number(v)),
                 },

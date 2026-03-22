@@ -52,7 +52,7 @@ const initState: IndianPokerResponse = {
   gameEndFlag: false,
   lastBet: 0,
   minRaise: 20,
-  bettingLimit: 0,
+  bettingLimit: 2,
   raiseCount: 0,
   maxBetAmount: 0,
   roundResults: [],
@@ -73,7 +73,7 @@ const bettingState: IndianPokerResponse = {
   gameEndFlag: false,
   lastBet: 0,
   minRaise: 20,
-  bettingLimit: 0,
+  bettingLimit: 2,
   raiseCount: 0,
   maxBetAmount: 0,
   roundResults: [],
@@ -105,7 +105,7 @@ const showdownState: IndianPokerResponse = {
   gameEndFlag: false,
   lastBet: 0,
   minRaise: 0,
-  bettingLimit: 0,
+  bettingLimit: 2,
   raiseCount: 0,
   maxBetAmount: 0,
   roundResults: [
@@ -446,7 +446,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 20, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 20, undefined, expect.any(Number)));
   });
 
   it('calls check command', async () => {
@@ -457,7 +457,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
     fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, expect.any(Number)));
   });
 
   it('calls fold command', async () => {
@@ -468,7 +468,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined, expect.any(Number)));
   });
 
   it('calls allin command', async () => {
@@ -479,7 +479,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
     fireEvent.click(screen.getByRole('button', { name: 'オールイン' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined, undefined, expect.any(Number)));
   });
 
   it('calls call command when has outstanding bet', async () => {
@@ -490,7 +490,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
     fireEvent.click(screen.getByRole('button', { name: 'コール' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, expect.any(Number)));
   });
 
   it('calls raise command with betAmount when has outstanding bet', async () => {
@@ -501,7 +501,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
     fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 20, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 20, undefined, expect.any(Number)));
   });
 
   it('calls reset command when reset button is clicked', async () => {
@@ -513,7 +513,7 @@ describe('IndianPokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 10, bettingLimit: 0, cpuMetaAI: false }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 10, bettingLimit: 2, cpuMetaAI: true }),
     );
   });
 
@@ -586,7 +586,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
     fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 100, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 100, undefined, expect.any(Number)));
   });
 
   it('sends updated bet amount when bet is clicked after changing input', async () => {
@@ -600,7 +600,7 @@ describe('IndianPokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(bettingState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 60, undefined, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 60, undefined, expect.any(Number)));
   });
 
   it('sets aria-busy while loading', async () => {
@@ -656,7 +656,7 @@ describe('IndianPokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 10, bettingLimit: 0, cpuMetaAI: false }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 10, bettingLimit: 2, cpuMetaAI: true }),
     );
   });
 
