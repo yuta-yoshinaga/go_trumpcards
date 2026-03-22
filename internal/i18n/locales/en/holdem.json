@@ -21,7 +21,5 @@
   "levelHandRequired": "Level-up hands is required (>=1).",
   "invalidLevelHand": "Invalid level-up hands: {{val}}. Please enter 1 or more.",
   "tableSizeRequired": "Table size is required (4, 6, or 9).",
-  "invalidTableSize": "Invalid table size: {{val}}. Please enter 4, 6, or 9.",
-  "metaAIRequired": "Meta-AI setting is required (0=off, 1=on).",
-  "invalidMetaAI": "Invalid value: {{val}}. Please enter 0 or 1."
+  "invalidTableSize": "Invalid table size: {{val}}. Please enter 4, 6, or 9."
 }

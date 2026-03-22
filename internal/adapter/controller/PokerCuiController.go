@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -95,9 +96,12 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				cfg.IsLowball = !cfg.IsLowball
 				return pcc.pi.ResetWithConfig(cfg), true
 			case "mai", "metaai":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "Meta-AI setting is required (0=off, 1=on).", "Invalid value: %s. Please enter 0 or 1.", 0, 1)
-				if !ok {
-					return errMsg, true
+				if len(args) < 1 {
+					return i18n.T("metaAIRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return i18n.Tf("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.CpuMetaAI = v == 1

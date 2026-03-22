@@ -462,11 +462,11 @@ func TestPokerCuiController_MetaAI_Off(t *testing.T) {
 func TestPokerCuiController_MetaAI_MissingArg(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Equal(t, "Meta-AI setting is required (0=off, 1=on).", c.Exec("mai"))
+	assert.Equal(t, "メタAI設定が必要です (0=オフ, 1=オン)。", c.Exec("mai"))
 }
 
 func TestPokerCuiController_MetaAI_InvalidArg(t *testing.T) {
 	mi := new(mockUsecase.MockPokerInteractor)
 	c := NewPokerCuiController(mi)
-	assert.Equal(t, "Invalid value: abc. Please enter 0 or 1.", c.Exec("mai abc"))
+	assert.Equal(t, "無効な値です: abc。0 または 1 を入力してください。", c.Exec("mai abc"))
 }

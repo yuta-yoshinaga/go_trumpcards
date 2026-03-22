@@ -133,11 +133,11 @@ func (c *HoldemCuiController) Exec(command string) string {
 				return c.hi.ShowHand(), true
 			case "mai", "metaai":
 				if len(args) < 1 {
-					return i18n.T("holdem.metaAIRequired"), true
+					return i18n.T("metaAIRequired"), true
 				}
 				v, err := strconv.Atoi(args[0])
 				if err != nil || v < 0 || v > 1 {
-					return i18n.Tf("holdem.invalidMetaAI", "val", args[0]), true
+					return i18n.Tf("invalidMetaAI", "val", args[0]), true
 				}
 				cfg := c.hi.GetConfig()
 				cfg.CpuMetaAI = v == 1
