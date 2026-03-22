@@ -48,6 +48,7 @@ export function SpadesPage() {
     handleNextRound,
     hint,
     hintError,
+    hintLoading,
     handleHint,
   } = useSpadesGame();
   const { cardWidth } = useCardDimensions();
@@ -244,7 +245,7 @@ export function SpadesPage() {
 
         <div className="flex gap-2 items-center">
           {(isHumanBidTurn || isHumanTurn) && (
-            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
               {tc('button.hint')}
             </button>
           )}

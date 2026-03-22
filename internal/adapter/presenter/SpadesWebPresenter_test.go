@@ -416,7 +416,7 @@ func TestSpadesWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, &idx, resObj.Hint.CardIndex)
 		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
-		assert.Equal(t, "spades.hintAvailable", resObj.MessageCode)
+		assert.Empty(t, resObj.MessageCode)
 	})
 
 	t.Run("hint available with bid", func(t *testing.T) {
@@ -434,7 +434,7 @@ func TestSpadesWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, &bid, resObj.Hint.Bid)
 		assert.Equal(t, "strategic_bid", resObj.Hint.Reason)
-		assert.Equal(t, "spades.hintAvailable", resObj.MessageCode)
+		assert.Empty(t, resObj.MessageCode)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -446,6 +446,6 @@ func TestSpadesWebPresenter_HintOutput(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Nil(t, resObj.Hint)
-		assert.Equal(t, "spades.noHint", resObj.MessageCode)
+		assert.Empty(t, resObj.MessageCode)
 	})
 }

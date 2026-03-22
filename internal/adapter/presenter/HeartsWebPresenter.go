@@ -124,9 +124,6 @@ func (p *HeartsWebPresenter) HintOutput(h interfaces.HeartsGame) string {
 			CardIndices: hint.CardIndices,
 			Reason:      hint.Reason,
 		}
-		resObj.MessageCode = "hearts.hintAvailable"
-	} else {
-		resObj.MessageCode = "hearts.noHint"
 	}
 	return marshalOrError(resObj)
 }

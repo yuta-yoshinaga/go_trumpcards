@@ -29,6 +29,7 @@ export function useHeartsGame() {
   const { config: heartsConfig, handleConfigChange, handleToggle } = useGameConfig<HeartsConfig>(DEFAULT_HEARTS_CONFIG);
   const [hint, setHint] = useState<HeartsHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
 
   const onSuccess = useCallback(() => {
     clearSelection();
@@ -60,12 +61,15 @@ export function useHeartsGame() {
   }, [exec]);
 
   const handleHint = useCallback(async () => {
+    setHintLoading(true);
     try {
       const res = await heartsApi.exec('hint');
       setHint(res.hint ?? null);
       setHintError(null);
     } catch {
       setHintError(NETWORK_ERROR_MESSAGE());
+    } finally {
+      setHintLoading(false);
     }
   }, []);
 
@@ -75,6 +79,7 @@ export function useHeartsGame() {
     error,
     hint,
     hintError,
+    hintLoading,
     exec,
     heartsConfig,
     selectedCardIndices,

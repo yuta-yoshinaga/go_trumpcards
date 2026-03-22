@@ -30,6 +30,7 @@ export function useSpadesGame() {
   const { config: spadesConfig, handleConfigChange } = useGameConfig<SpadesConfig>(DEFAULT_SPADES_CONFIG);
   const [hint, setHint] = useState<SpadesHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
+  const [hintLoading, setHintLoading] = useState(false);
 
   const onSuccess = useCallback(() => {
     clearSelection();
@@ -64,12 +65,15 @@ export function useSpadesGame() {
   }, [exec]);
 
   const handleHint = useCallback(async () => {
+    setHintLoading(true);
     try {
       const res = await spadesApi.exec('hint');
       setHint(res.hint ?? null);
       setHintError(null);
     } catch {
       setHintError(NETWORK_ERROR_MESSAGE());
+    } finally {
+      setHintLoading(false);
     }
   }, []);
 
@@ -79,6 +83,7 @@ export function useSpadesGame() {
     error,
     hint,
     hintError,
+    hintLoading,
     exec,
     spadesConfig,
     selectedCardIndices,

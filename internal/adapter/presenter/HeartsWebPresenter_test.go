@@ -422,7 +422,7 @@ func TestHeartsWebPresenter_HintOutput(t *testing.T) {
 		assert.NotNil(t, resObj.Hint)
 		assert.Equal(t, []int{2}, resObj.Hint.CardIndices)
 		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
-		assert.Equal(t, "hearts.hintAvailable", resObj.MessageCode)
+		assert.Empty(t, resObj.MessageCode)
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -434,6 +434,6 @@ func TestHeartsWebPresenter_HintOutput(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Nil(t, resObj.Hint)
-		assert.Equal(t, "hearts.noHint", resObj.MessageCode)
+		assert.Empty(t, resObj.MessageCode)
 	})
 }

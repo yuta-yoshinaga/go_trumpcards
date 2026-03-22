@@ -129,9 +129,6 @@ func (p *SpadesWebPresenter) HintOutput(s interfaces.SpadesGame) string {
 			Bid:       hint.Bid,
 			Reason:    hint.Reason,
 		}
-		resObj.MessageCode = "spades.hintAvailable"
-	} else {
-		resObj.MessageCode = "spades.noHint"
 	}
 	return marshalOrError(resObj)
 }

@@ -792,7 +792,12 @@ func (h *Hearts) GetHint() *HeartsHint {
 
 // getPassHint パスフェーズのヒントを生成する
 func (h *Hearts) getPassHint() *HeartsHint {
-	player := h.players[0]
+	indices := h.scorePassIndices(h.players[0])
+	return &HeartsHint{CardIndices: indices, Reason: "pass_high_risk_cards"}
+}
+
+// scorePassIndices パス対象カードのインデックスをスコア順に返す
+func (h *Hearts) scorePassIndices(player *HeartsPlayer) []int {
 	suitCounts := map[int]int{}
 	for i := 0; i < player.GetCardsSize(); i++ {
 		suitCounts[player.GetCard(i).GetDesign()]++
@@ -829,7 +834,7 @@ func (h *Hearts) getPassHint() *HeartsHint {
 	for i := 0; i < HeartsPassCardCount; i++ {
 		indices[i] = scores[i].idx
 	}
-	return &HeartsHint{CardIndices: indices, Reason: "pass_high_risk_cards"}
+	return indices
 }
 
 // playHintReason プレイヒントの理由を判定する
@@ -920,45 +925,7 @@ func (h *Hearts) cpuPassNormal(player *HeartsPlayer) []*Card {
 
 // cpuPassHard 戦略的なパス (ボイド作成を意識)
 func (h *Hearts) cpuPassHard(player *HeartsPlayer) []*Card {
-	// スート別に分類
-	suitCounts := map[int]int{}
-	for i := 0; i < player.GetCardsSize(); i++ {
-		suitCounts[player.GetCard(i).GetDesign()]++
-	}
-
-	type cardScore struct {
-		idx   int
-		score int
-	}
-	scores := make([]cardScore, player.GetCardsSize())
-	for i := 0; i < player.GetCardsSize(); i++ {
-		card := player.GetCard(i)
-		score := card.GetValue()
-		if card.GetDesign() == CardDesignSpade && card.GetValue() == 12 {
-			score += 100
-		}
-		if card.GetDesign() == CardDesignSpade && card.GetValue() >= 11 {
-			score += 50
-		}
-		if card.GetDesign() == CardDesignHeart {
-			score += 20
-		}
-		// ボイド作成: 枚数が少ないスートの高いカードを優先
-		if suitCounts[card.GetDesign()] <= 3 && card.GetDesign() != CardDesignHeart {
-			score += 30
-		}
-		// オムニバス時はJ♦を渡さない（有利なカード）
-		if h.config.OmnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
-			score = -100
-		}
-		scores[i] = cardScore{idx: i, score: score}
-	}
-	sort.Slice(scores, func(i, j int) bool { return scores[i].score > scores[j].score })
-
-	indices := make([]int, HeartsPassCardCount)
-	for i := 0; i < HeartsPassCardCount; i++ {
-		indices[i] = scores[i].idx
-	}
+	indices := h.scorePassIndices(player)
 	return player.RemoveCards(indices)
 }
 

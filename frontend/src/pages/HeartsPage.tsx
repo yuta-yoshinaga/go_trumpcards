@@ -51,6 +51,7 @@ export function HeartsPage() {
     handleNextRound,
     hint,
     hintError,
+    hintLoading,
     handleHint,
   } = useHeartsGame();
   const { cardWidth } = useCardDimensions();
@@ -254,7 +255,7 @@ export function HeartsPage() {
 
         <div className="flex gap-2 items-center">
           {(isPassPhase || isHumanTurn) && (
-            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading}>
+            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
               {tc('button.hint')}
             </button>
           )}
