@@ -788,6 +788,7 @@ export interface KlondikeResponse {
   moveCount: number;
   drawCount: number;
   canUndo: boolean;
+  isStalemate: boolean;
   score: number;
   scoringMode: number;
   message: string;
@@ -815,6 +816,7 @@ export interface FreeCellResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  isStalemate: boolean;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;

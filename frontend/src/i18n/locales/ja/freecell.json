@@ -16,5 +16,6 @@
   "hintAvailable": "ヒント",
   "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",
   "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
-  "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)"
+  "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
+  "stalemate": "手詰まりです。元に戻すかギブアップしてください。"
 }

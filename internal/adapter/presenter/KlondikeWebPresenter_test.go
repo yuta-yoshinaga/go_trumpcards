@@ -22,6 +22,7 @@ func setupKlondikeWebMockDefaults(kg *interfaces.MockKlondikeGame) {
 	kg.On("CanUndo").Return(false).Maybe()
 	kg.On("GetScore").Return(-52).Maybe()
 	kg.On("GetScoringMode").Return(domain.KlondikeScoringNone).Maybe()
+	kg.On("IsStalemate").Return(false).Maybe()
 
 	var tableau [domain.KlondikeTableauCnt][]*domain.KlondikeTableauCard
 	for i := 0; i < domain.KlondikeTableauCnt; i++ {
@@ -137,6 +138,18 @@ func TestKlondikeWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "klondike.gameOver", result.MessageCode)
 		assert.Contains(t, result.Message, "ゲームオーバー")
 	})
+}
+
+func TestKlondikeWebPresenter_Output_Stalemate(t *testing.T) {
+	kg := new(interfaces.MockKlondikeGame)
+	setupKlondikeWebMockDefaults(kg)
+	kg.ExpectedCalls = filterCalls(kg.ExpectedCalls, "IsStalemate")
+	kg.On("IsStalemate").Return(true)
+
+	p := new(KlondikeWebPresenter)
+	result := parseKlondikeOutput(t, p.Output(kg, nil))
+	assert.True(t, result.IsStalemate)
+	assert.Equal(t, "klondike.stalemate", result.MessageCode)
 }
 
 func TestKlondikeWebPresenter_HintOutput(t *testing.T) {

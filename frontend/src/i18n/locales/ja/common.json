@@ -149,10 +149,12 @@
     "klondike.gameOver": "ゲームオーバー",
     "klondike.hintAvailable": "ヒントがあります",
     "klondike.noHint": "ヒントはありません",
+    "klondike.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "freecell.playing": "プレイ中",
     "freecell.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "freecell.gameOver": "ゲームオーバー",
     "freecell.hintAvailable": "ヒントがあります",
-    "freecell.noHint": "ヒントはありません"
+    "freecell.noHint": "ヒントはありません",
+    "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
   }
 }

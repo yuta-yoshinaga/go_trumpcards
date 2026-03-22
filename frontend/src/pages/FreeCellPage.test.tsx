@@ -21,6 +21,7 @@ const playingState: FreeCellResponse = {
   phase: 0,
   moveCount: 5,
   canUndo: true,
+  isStalemate: false,
   message: '',
   messageCode: 'freecell.playing',
 };

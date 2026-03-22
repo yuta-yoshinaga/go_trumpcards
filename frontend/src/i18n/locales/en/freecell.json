@@ -16,5 +16,6 @@
   "hintAvailable": "Hint",
   "foundationAriaLabel": "{{suit}} Foundation ({{cardCount}} cards)",
   "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
-  "emptyFreecellAriaLabel": "Free Cell {{idx}} (empty)"
+  "emptyFreecellAriaLabel": "Free Cell {{idx}} (empty)",
+  "stalemate": "No moves can lead to a win. Please undo or give up."
 }

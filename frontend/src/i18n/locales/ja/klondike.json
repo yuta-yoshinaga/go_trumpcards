@@ -32,5 +32,6 @@
   "totalScore": "合計スコア",
   "scoringMode": "スコアモード",
   "scoringNone": "なし",
-  "scoringVegas": "ベガス"
+  "scoringVegas": "ベガス",
+  "stalemate": "手詰まりです。元に戻すかギブアップしてください。"
 }

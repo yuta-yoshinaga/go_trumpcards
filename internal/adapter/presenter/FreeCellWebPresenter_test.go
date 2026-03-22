@@ -61,6 +61,22 @@ func TestFreeCellWebPresenterOutputGameOver(t *testing.T) {
 	assert.Equal(t, "freecell.gameOver", out.MessageCode)
 }
 
+func TestFreeCellWebPresenterOutputStalemate(t *testing.T) {
+	p := new(FreeCellWebPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+	f.SetIsStalemate(true)
+
+	result := p.Output(f, nil)
+
+	var out controller.FreeCellWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.True(t, out.IsStalemate)
+	assert.Equal(t, "freecell.stalemate", out.MessageCode)
+}
+
 func TestFreeCellWebPresenterOutputError(t *testing.T) {
 	p := new(FreeCellWebPresenter)
 	f := domain.NewFreeCell(domain.NewTrumpCards(0))

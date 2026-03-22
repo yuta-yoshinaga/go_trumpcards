@@ -47,6 +47,18 @@ func TestFreeCellCuiPresenterOutputGameOver(t *testing.T) {
 	assert.Contains(t, result, "ゲームオーバー")
 }
 
+func TestFreeCellCuiPresenterOutputStalemate(t *testing.T) {
+	p := new(FreeCellCuiPresenter)
+	f := domain.NewFreeCell(domain.NewTrumpCards(0))
+	f.Reset()
+	f.SetPhase(domain.FreeCellPhasePlaying)
+	f.SetIsStalemate(true)
+
+	result := p.Output(f, nil)
+
+	assert.Contains(t, result, "手詰まりです")
+}
+
 func TestFreeCellCuiPresenterOutputError(t *testing.T) {
 	p := new(FreeCellCuiPresenter)
 	f := domain.NewFreeCell(domain.NewTrumpCards(0))

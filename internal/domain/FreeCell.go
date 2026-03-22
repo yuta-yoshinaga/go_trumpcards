@@ -38,23 +38,25 @@ type FreeCellHint struct {
 
 // FreeCell フリーセルゲームクラス
 type FreeCell struct {
-	trumpCards *TrumpCards
-	tableau    [FreeCellTableauCnt][]*Card
-	freeCells  [FreeCellCellCnt]*Card
-	foundation [FreeCellFoundationCnt][]*Card
-	phase      FreeCellPhase
-	moveCount  int
-	actionLog  []*ActionLogEntry
-	history    []*freeCellSnapshot
+	trumpCards  *TrumpCards
+	tableau     [FreeCellTableauCnt][]*Card
+	freeCells   [FreeCellCellCnt]*Card
+	foundation  [FreeCellFoundationCnt][]*Card
+	phase       FreeCellPhase
+	moveCount   int
+	actionLog   []*ActionLogEntry
+	history     []*freeCellSnapshot
+	isStalemate bool
 }
 
 // freeCellSnapshot アンドゥ用スナップショット
 type freeCellSnapshot struct {
-	tableau    [FreeCellTableauCnt][]*Card
-	freeCells  [FreeCellCellCnt]*Card
-	foundation [FreeCellFoundationCnt][]*Card
-	phase      FreeCellPhase
-	moveCount  int
+	tableau     [FreeCellTableauCnt][]*Card
+	freeCells   [FreeCellCellCnt]*Card
+	foundation  [FreeCellFoundationCnt][]*Card
+	phase       FreeCellPhase
+	moveCount   int
+	isStalemate bool
 }
 
 // NewFreeCell コンストラクタ
@@ -71,6 +73,7 @@ func (f *FreeCell) Reset() {
 	f.moveCount = 0
 	f.actionLog = nil
 	f.history = nil
+	f.isStalemate = false
 
 	// フリーセル初期化
 	for i := 0; i < FreeCellCellCnt; i++ {
@@ -143,6 +146,7 @@ func (f *FreeCell) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	movedCards := make([]*Card, len(movingCards))
 	copy(movedCards, movingCards)
 	f.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	f.checkStalemate()
 	return nil
 }
 
@@ -199,6 +203,7 @@ func (f *FreeCell) MoveTableauToFreeCell(col, cell int) error {
 	f.freeCells[cell] = card
 	f.moveCount++
 	f.appendLog("move", fmt.Sprintf("タブロー列%d→フリーセル%d", col, cell), []*Card{card})
+	f.checkStalemate()
 	return nil
 }
 
@@ -225,6 +230,7 @@ func (f *FreeCell) MoveFreeCellToTableau(cell, col int) error {
 	f.tableau[col] = append(f.tableau[col], card)
 	f.moveCount++
 	f.appendLog("move", fmt.Sprintf("フリーセル%d→タブロー列%d", cell, col), []*Card{card})
+	f.checkStalemate()
 	return nil
 }
 
@@ -429,6 +435,7 @@ func (f *FreeCell) AutoComplete() error {
 	}
 	f.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
 	f.checkGameClear()
+	f.checkStalemate()
 	return nil
 }
 
@@ -473,6 +480,12 @@ func (f *FreeCell) GetFoundation() [FreeCellFoundationCnt][]*Card { return f.fou
 
 // GetActionLog 棋譜取得
 func (f *FreeCell) GetActionLog() []*ActionLogEntry { return f.actionLog }
+
+// IsStalemate 手詰まり状態取得
+func (f *FreeCell) IsStalemate() bool { return f.isStalemate }
+
+// SetIsStalemate 手詰まり状態設定 (テスト用)
+func (f *FreeCell) SetIsStalemate(v bool) { f.isStalemate = v }
 
 // SetTableau タブロー設定 (テスト用)
 func (f *FreeCell) SetTableau(tableau [FreeCellTableauCnt][]*Card) { f.tableau = tableau }
@@ -559,8 +572,9 @@ func (f *FreeCell) checkGameClear() {
 // takeSnapshot 現在の状態をスナップショットとして保存
 func (f *FreeCell) takeSnapshot() {
 	snap := &freeCellSnapshot{
-		phase:     f.phase,
-		moveCount: f.moveCount,
+		phase:       f.phase,
+		moveCount:   f.moveCount,
+		isStalemate: f.isStalemate,
 	}
 	// deep copy tableau
 	for i := 0; i < FreeCellTableauCnt; i++ {
@@ -584,6 +598,16 @@ func (f *FreeCell) restoreSnapshot(snap *freeCellSnapshot) {
 	f.foundation = snap.foundation
 	f.phase = snap.phase
 	f.moveCount = snap.moveCount
+	f.isStalemate = snap.isStalemate
+}
+
+// checkStalemate ソルバーで手詰まり判定
+func (f *FreeCell) checkStalemate() {
+	if f.phase != FreeCellPhasePlaying {
+		return
+	}
+	solver := newFreeCellSolver(f)
+	f.isStalemate = !solver.isSolvable()
 }
 
 // appendLog 棋譜エントリを追加
