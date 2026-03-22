@@ -50,6 +50,8 @@ tags:
     description: Spider Solitaire (スパイダーソリティア) game
   - name: napoleon
     description: Napoleon (ナポレオン) game
+  - name: indianpoker
+    description: Indian Poker (インディアンポーカー) game
 
 paths:
   /blackjack/exec:
@@ -1773,6 +1775,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NapoleonResponse'
+
+  /indianpoker/exec:
+    post:
+      tags:
+        - indianpoker
+      summary: Execute an Indian Poker game command
+      description: |
+        Send a command to advance the Indian Poker (インディアンポーカー) game session
+        identified by `sessionId`.  Indian Poker is a 4-player betting card game where
+        each player can see everyone else's card but not their own.  Each round, one card
+        is dealt to each player and held on their forehead (visible to others).  Players
+        bet based on the strength they infer from opponents' cards and their own betting
+        behavior.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Init      | `0`   | Initial state before first reset |
+        | Ante      | `1`   | Ante posted; cards dealt |
+        | Betting   | `2`   | Betting round (fold/check/call/bet/raise/all-in) |
+        | Showdown  | `3`   | Cards revealed; winner determined |
+        | End       | `4`   | A player is eliminated (0 chips) |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `fold`    | `f`     | Fold the current hand |
+        | `check`   | `ck`    | Check (no bet, when no outstanding bet) |
+        | `call`    | `c`     | Call the current bet |
+        | `bet`     | `b`     | Place a bet (requires `amount`) |
+        | `raise`   | `ra`    | Raise (requires `amount`) |
+        | `allin`   | `a`     | Go all-in |
+        | `log`     | `l`     | View action log |
+      operationId: indianPokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndianPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold the current hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 50
+                value:
+                  command: bet
+                  amount: 50
+                  sessionId: my-session-001
+              call:
+                summary: Call the current bet
+                value:
+                  command: call
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndianPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndianPokerResponse'
 
 components:
   schemas:
@@ -5933,3 +6011,167 @@ components:
             reason:
               type: string
               description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Indian Poker
+    # -------------------------------------------------------------------------
+    IndianPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `fold` (`f`),
+            `check` (`ck`), `call` (`c`), `bet` (`b`), `raise` (`ra`),
+            `allin` (`a`), `log` (`l`).
+          enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, log, l]
+          example: reset
+        amount:
+          type: integer
+          description: Bet/raise amount.  Required for `bet` and `raise` commands.
+          minimum: 1
+          example: 50
+        humanPlayMs:
+          type: integer
+          description: Time in milliseconds the human took to decide (used for Meta-AI hesitation tracking).
+          example: 3000
+        ante:
+          type: integer
+          description: Ante amount (only used with `reset`).
+          minimum: 1
+          example: 10
+        bettingLimit:
+          type: integer
+          description: "Betting limit type (0=Fixed, 1=Pot Limit, 2=No Limit).  Only used with `reset`."
+          minimum: 0
+          maximum: 2
+          example: 2
+        cpuMetaAI:
+          type: boolean
+          description: "Whether CPU Meta-AI is enabled.  Only used with `reset`."
+          example: true
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    IndianPokerResponse:
+      type: object
+      description: Current state of the Indian Poker game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              card:
+                $ref: '#/components/schemas/Card'
+                nullable: true
+                description: "Player's card (null for human during betting, visible for CPUs)"
+              chips:
+                type: integer
+              currentBet:
+                type: integer
+              folded:
+                type: boolean
+              allIn:
+                type: boolean
+              playStyleName:
+                type: string
+        pot:
+          type: integer
+          description: Current pot size
+        sidePots:
+          type: array
+          description: Side pots (when players are all-in with different amounts)
+          items:
+            type: object
+            properties:
+              amount:
+                type: integer
+              eligiblePlayers:
+                type: array
+                items:
+                  type: integer
+        dealerIdx:
+          type: integer
+          description: Index of the current dealer
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        phase:
+          type: integer
+          description: "Game phase: 0 = Init, 1 = Ante, 2 = Betting, 3 = Showdown, 4 = End"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        lastBet:
+          type: integer
+          description: The last bet amount in the current round
+        minRaise:
+          type: integer
+          description: Minimum raise amount
+        raiseCount:
+          type: integer
+          description: Number of raises in the current round
+        maxBetAmount:
+          type: integer
+          description: Maximum allowed bet amount (based on betting limit)
+        bettingLimit:
+          type: integer
+          description: "Current betting limit (0=Fixed, 1=Pot Limit, 2=No Limit)"
+        ante:
+          type: integer
+          description: Current ante amount
+        handCount:
+          type: integer
+          description: Number of hands played
+        roundResults:
+          type: array
+          description: Results from the showdown
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+              cardRank:
+                type: integer
+                description: "Card rank (2-14, Ace=14)"
+              wonAmount:
+                type: integer
+        cpuActions:
+          type: array
+          description: CPU actions taken during the betting round
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              action:
+                type: integer
+              amount:
+                type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.

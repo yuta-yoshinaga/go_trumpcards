@@ -142,6 +142,7 @@ ENVIRONMENT VARIABLES:
 		"ginrummy":    func() int { ui.NewGinRummyCui().Exec(); return 0 },
 		"spider":      func() int { ui.NewSpiderCui().Exec(); return 0 },
 		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
+		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

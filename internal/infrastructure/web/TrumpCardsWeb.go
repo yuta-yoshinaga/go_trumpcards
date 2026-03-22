@@ -41,6 +41,7 @@ type TrumpCardsWeb struct {
 	grc *controller.GinRummyWebController
 	sdc *controller.SpiderWebController
 	npc *controller.NapoleonWebController
+	ipc *controller.IndianPokerWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -195,6 +196,11 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
 			return usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonWebPresenter))
 		}),
+		ipc: controller.NewIndianPokerWebController(func() usecase.IndianPokerInteractorIF {
+			cfg := domain.DefaultIndianPokerConfig()
+			ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
+			return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
+		}),
 	}
 }
 
@@ -251,6 +257,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/ginrummy/exec", web.grc.Exec},
 		{"/spider/exec", web.sdc.Exec},
 		{"/napoleon/exec", web.npc.Exec},
+		{"/indianpoker/exec", web.ipc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -332,6 +339,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.cec.Stop()
 	web.grc.Stop()
 	web.sdc.Stop()
+	web.npc.Stop()
+	web.ipc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

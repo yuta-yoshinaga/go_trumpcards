@@ -12,6 +12,7 @@ import enFreecell from './locales/en/freecell.json';
 import enGinrummy from './locales/en/ginrummy.json';
 import enHearts from './locales/en/hearts.json';
 import enHoldem from './locales/en/holdem.json';
+import enIndianpoker from './locales/en/indianpoker.json';
 import enKlondike from './locales/en/klondike.json';
 import enMemory from './locales/en/memory.json';
 import enNapoleon from './locales/en/napoleon.json';
@@ -31,6 +32,7 @@ import jaFreecell from './locales/ja/freecell.json';
 import jaGinrummy from './locales/ja/ginrummy.json';
 import jaHearts from './locales/ja/hearts.json';
 import jaHoldem from './locales/ja/holdem.json';
+import jaIndianpoker from './locales/ja/indianpoker.json';
 import jaKlondike from './locales/ja/klondike.json';
 import jaMemory from './locales/ja/memory.json';
 import jaNapoleon from './locales/ja/napoleon.json';
@@ -66,6 +68,7 @@ i18n
         crazyeights: jaCrazyeights,
         ginrummy: jaGinrummy,
         spider: jaSpider,
+        indianpoker: jaIndianpoker,
       },
       en: {
         common: enCommon,
@@ -87,6 +90,7 @@ i18n
         crazyeights: enCrazyeights,
         ginrummy: enGinrummy,
         spider: enSpider,
+        indianpoker: enIndianpoker,
       },
     },
     fallbackLng: 'ja',
@@ -111,6 +115,7 @@ i18n
       'crazyeights',
       'ginrummy',
       'spider',
+      'indianpoker',
     ],
     detection: {
       order: ['localStorage'],

@@ -14,6 +14,7 @@ import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
+import { IndianPokerPage } from './pages/IndianPokerPage';
 import { KlondikePage } from './pages/KlondikePage';
 import { MemoryPage } from './pages/MemoryPage';
 import { NapoleonPage } from './pages/NapoleonPage';
@@ -44,6 +45,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/crazyeights': <CrazyEightsPage />,
   '/ginrummy': <GinRummyPage />,
   '/spider': <SpiderPage />,
+  '/indianpoker': <IndianPokerPage />,
 };
 
 /** Root application component with router and game page routes. */

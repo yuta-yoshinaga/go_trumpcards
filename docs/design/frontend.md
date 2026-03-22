@@ -86,7 +86,7 @@ classDiagram
         +object messageParams
     }
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全18ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全19ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -189,6 +189,15 @@ classDiagram
         TRICK_END = 4
         ROUND_END = 5
         GAME_END = 6
+    }
+
+    class IndianPokerPhase {
+        <<enumeration>>
+        INIT = 0
+        ANTE = 1
+        BETTING = 2
+        SHOWDOWN = 3
+        END = 4
     }
 
     note for KlondikePhase "FreeCellPhase, SpiderPhase も\n同一の値を持つ別定数として存在"
@@ -524,12 +533,21 @@ classDiagram
         +ヒントシステム
     }
 
+    class IndianPokerPage {
+        +他プレイヤーカード表示
+        +自分カード非表示（???）
+        +ベッティングアクションボタン
+        +ポット・サイドポット表示
+        +ショーダウン結果表示
+    }
+
     BlackJackPage --|> GamePage : follows pattern
     HeartsPage --|> GamePage : follows pattern
     KlondikePage --|> GamePage : follows pattern
     MemoryPage --|> GamePage : follows pattern
     DoubtPage --|> GamePage : follows pattern
     NapoleonPage --|> GamePage : follows pattern
+    IndianPokerPage --|> GamePage : follows pattern
 
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
@@ -539,7 +557,7 @@ classDiagram
     GamePage --> ConfirmDialog : renders
     GamePage --> ErrorAlert : renders
 
-    note for GamePage "全18ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全19ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -562,12 +580,12 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (18ゲーム)
+        +Routes (19ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat]
-        +poker: [Poker, Holdem, Omaha]
+        +poker: [Poker, Holdem, Omaha, IndianPoker]
         +trickTaking: [Hearts, Spades, Napoleon]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights]
         +solitaire: [Klondike, FreeCell, Spider, Memory]

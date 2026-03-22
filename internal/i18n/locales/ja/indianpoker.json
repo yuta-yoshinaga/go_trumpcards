@@ -1,0 +1,18 @@
+{
+  "helpTitle": "Indian Poker (インディアンポーカー)",
+  "helpFold": "  f                    フォールド",
+  "helpCheck": "  ck                   チェック",
+  "helpCall": "  c                    コール",
+  "helpBet": "  b <amount>           ベット",
+  "helpRaise": "  ra <amount>          レイズ",
+  "helpAllIn": "  a                    オールイン",
+  "helpAnte": "  an <amount>          アンティ (>=1)",
+  "helpBettingLimit": "  bl [0-2]             ベッティングリミット (0=Fixed, 1=PotLimit, 2=NoLimit)",
+  "helpMetaAI": "  mai [0-1]            メタAI (0=OFF, 1=ON)",
+  "amountRequired": "ベット/レイズには金額の指定が必要です。",
+  "invalidAmount": "無効な金額です: {{val}}",
+  "anteRequired": "アンティの金額が必要です (>=1)。",
+  "invalidAnte": "無効なアンティです: {{val}}。1以上の数値を入力してください。",
+  "bettingLimitRequired": "ベッティングリミットの種類が必要です (0=Fixed, 1=PotLimit, 2=NoLimit)。",
+  "invalidBettingLimit": "無効なベッティングリミットです: {{val}}。0〜2を入力してください。"
+}
