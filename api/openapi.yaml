@@ -10,8 +10,8 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:80
-    description: Local development server (default port; override with PORT env var)
+  - url: /
+    description: Current server (resolves to the host serving the Swagger UI page)
 
 tags:
   - name: blackjack
