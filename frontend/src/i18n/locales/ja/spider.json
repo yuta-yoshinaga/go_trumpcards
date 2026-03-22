@@ -1,0 +1,30 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "スパイダーソリティア",
+  "stock": "山札",
+  "completed": "完成",
+  "tableau": "場札",
+  "moveCount": "手数",
+  "deal": "配る",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "autoComplete": "自動完成",
+  "undo": "元に戻す",
+  "empty": "空",
+  "score": "スコア",
+  "difficulty": "難易度",
+  "difficulty1": "1スート",
+  "difficulty2": "2スート",
+  "difficulty4": "4スート",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}} スコア: {{score}}",
+  "gameOver": "ゲームオーバー",
+  "playing": "プレイ中",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "stalemate": "手詰まりです",
+  "dealsRemaining": "残り{{count}}回配れます"
+}

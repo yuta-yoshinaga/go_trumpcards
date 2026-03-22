@@ -867,3 +867,35 @@ export interface BaccaratResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+// --- Spider Solitaire (スパイダーソリティア) ---
+
+/** A suggested move hint in Spider Solitaire. */
+export interface SpiderHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** Tableau card with face-up state in Spider. */
+export interface SpiderTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Full Spider Solitaire game state returned from the API. */
+export interface SpiderResponse {
+  tableau: SpiderTableauCard[][];
+  stockCount: number;
+  completedSuits: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  score: number;
+  difficulty: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: SpiderHint;
+}

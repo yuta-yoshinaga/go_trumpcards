@@ -1,0 +1,79 @@
+package controller
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// SpiderCuiController スパイダーソリティアCUIコントローラークラス
+type SpiderCuiController struct {
+	si usecase.SpiderInteractorIF
+}
+
+// NewSpiderCuiController コンストラクタ
+func NewSpiderCuiController(si usecase.SpiderInteractorIF) *SpiderCuiController {
+	return &SpiderCuiController{si: si}
+}
+
+// Exec コマンド実行
+func (c *SpiderCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(args []string) string {
+			if len(args) > 0 {
+				n, err := strconv.Atoi(args[0])
+				if err == nil && (n == 1 || n == 2 || n == 4) {
+					return c.si.ResetWithConfig(domain.SpiderConfig{Difficulty: domain.SpiderDifficulty(n)})
+				}
+			}
+			return c.si.Reset()
+		},
+		[]string{"d", "deal", "m", "move", "g", "giveup", "h", "hint", "ac", "autocomplete", "log", "l", "u", "undo"},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "d", "deal":
+				return c.si.Deal(), true
+			case "m", "move":
+				return c.handleMove(args), true
+			case "g", "giveup":
+				return c.si.GiveUp(), true
+			case "h", "hint":
+				return c.si.Hint(), true
+			case "ac", "autocomplete":
+				return c.si.AutoComplete(), true
+			case "log", "l":
+				return c.si.ActionLog(), true
+			case "u", "undo":
+				return c.si.Undo(), true
+			}
+			return "", false
+		},
+	)
+}
+
+// handleMove 移動コマンドを処理
+// Format: m t <fromCol> <cardIdx> t <toCol>
+func (c *SpiderCuiController) handleMove(args []string) string {
+	if len(args) < 2 || args[0] != "t" {
+		return "Usage: m t <fromCol> <cardIdx> t <toCol>"
+	}
+	fromCol, err := strconv.Atoi(args[1])
+	if err != nil {
+		return fmt.Sprintf("Invalid from column: %s.", args[1])
+	}
+	if len(args) != 5 || args[3] != "t" {
+		return "Usage: m t <fromCol> <cardIdx> t <toCol>"
+	}
+	cardIdx, err := strconv.Atoi(args[2])
+	if err != nil {
+		return fmt.Sprintf("Invalid card index: %s.", args[2])
+	}
+	toCol, err := strconv.Atoi(args[4])
+	if err != nil {
+		return fmt.Sprintf("Invalid to column: %s.", args[4])
+	}
+	return c.si.MoveTableauToTableau(fromCol, cardIdx, toCol)
+}

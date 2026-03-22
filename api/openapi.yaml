@@ -46,6 +46,8 @@ tags:
     description: Crazy Eights (クレイジーエイト) game
   - name: ginrummy
     description: Gin Rummy (ジンラミー) game
+  - name: spider
+    description: Spider Solitaire (スパイダーソリティア) game
 
 paths:
   /blackjack/exec:
@@ -1594,6 +1596,86 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GinRummyResponse'
+
+  /spider/exec:
+    post:
+      tags:
+        - spider
+      summary: Execute a Spider Solitaire game command
+      description: |
+        Send a command to advance the Spider Solitaire game session
+        identified by `sessionId`.  Spider Solitaire is a single-player
+        solitaire game using 2 decks (104 cards) with 10 tableau columns.
+        Move same-suit descending sequences between columns.  Complete
+        K-through-A same-suit sequences are automatically removed.
+        8 completed suits = game clear.  Difficulty: 1/2/4 suits.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Playing     | `0`   | Game in progress |
+        | GameClear   | `1`   | All 8 suits completed |
+        | GameOver    | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `deal`         | `d`     | Deal 1 card to each column from stock |
+        | `move`         | `m`     | Move cards between tableau columns |
+        | `giveup`       | `g`     | Give up |
+        | `hint`         | `h`     | Get a move suggestion |
+        | `autocomplete` | `ac`    | Auto-complete (when all face up) |
+        | `undo`         | `u`     | Undo last move |
+        | `log`          | `l`     | View action log |
+      operationId: spiderExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpiderRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              resetWithDifficulty:
+                summary: Start a new game with 2-suit difficulty
+                value:
+                  command: reset
+                  config:
+                    difficulty: 2
+                  sessionId: my-session-001
+              deal:
+                summary: Deal cards from stock
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              move:
+                summary: Move card(s) from column 3, index 2 to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 3
+                    cardIndex: 2
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpiderResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpiderResponse'
 
 components:
   schemas:
@@ -5467,3 +5549,112 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Spider Solitaire types
+    # -------------------------------------------------------------------------
+    SpiderRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, deal, move, giveup, hint, autocomplete, undo, log]
+        sessionId:
+          type: string
+        from:
+          $ref: '#/components/schemas/SpiderZone'
+        to:
+          $ref: '#/components/schemas/SpiderZone'
+        config:
+          type: object
+          properties:
+            difficulty:
+              type: integer
+              enum: [1, 2, 4]
+              description: "1=1-suit, 2=2-suit, 4=4-suit"
+
+    SpiderZone:
+      type: object
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          enum: [tableau]
+        col:
+          type: integer
+        cardIndex:
+          type: integer
+
+    SpiderTableauCard:
+      type: object
+      required:
+        - faceUp
+      properties:
+        card:
+          $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+
+    SpiderHint:
+      type: object
+      properties:
+        fromCol:
+          type: integer
+        cardIndex:
+          type: integer
+        toCol:
+          type: integer
+
+    SpiderResponse:
+      type: object
+      required:
+        - tableau
+        - stockCount
+        - completedSuits
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - score
+        - difficulty
+        - message
+      properties:
+        tableau:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/SpiderTableauCard'
+        stockCount:
+          type: integer
+        completedSuits:
+          type: integer
+        phase:
+          type: integer
+          enum: [0, 1, 2]
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        score:
+          type: integer
+        difficulty:
+          type: integer
+          enum: [1, 2, 4]
+        hint:
+          $ref: '#/components/schemas/SpiderHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string

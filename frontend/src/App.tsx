@@ -21,6 +21,7 @@ import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
 import { SpadesPage } from './pages/SpadesPage';
+import { SpiderPage } from './pages/SpiderPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
 const pageByPath: Record<GamePath, ReactNode> = {
@@ -40,6 +41,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/baccarat': <BaccaratPage />,
   '/crazyeights': <CrazyEightsPage />,
   '/ginrummy': <GinRummyPage />,
+  '/spider': <SpiderPage />,
 };
 
 /** Root application component with router and game page routes. */

@@ -39,6 +39,7 @@ type TrumpCardsWeb struct {
 	spc *controller.SpadesWebController
 	cec *controller.CrazyEightsWebController
 	grc *controller.GinRummyWebController
+	sdc *controller.SpiderWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -178,6 +179,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
 			return usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyWebPresenter))
 		}),
+		sdc: controller.NewSpiderWebController(func() usecase.SpiderInteractorIF {
+			spider := domain.NewSpider(domain.NewTrumpCardsWithSuits(domain.SpiderTotalCards, []int{domain.CardDesignSpade}))
+			return usecase.NewSpiderInteractor(spider, new(presenter.SpiderWebPresenter))
+		}),
 	}
 }
 
@@ -232,6 +237,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/spades/exec", web.spc.Exec},
 		{"/crazyeights/exec", web.cec.Exec},
 		{"/ginrummy/exec", web.grc.Exec},
+		{"/spider/exec", web.sdc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -311,6 +317,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.spc.Stop()
 	web.cec.Stop()
 	web.grc.Stop()
+	web.sdc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

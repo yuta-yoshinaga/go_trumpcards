@@ -26,7 +26,8 @@
     "freecell": "FreeCell",
     "baccarat": "Baccarat",
     "crazyeights": "Crazy Eights",
-    "ginrummy": "Gin Rummy"
+    "ginrummy": "Gin Rummy",
+    "spider": "Spider"
   },
   "sound": {
     "mute": "Mute sound",

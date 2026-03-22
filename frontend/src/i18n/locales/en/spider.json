@@ -1,0 +1,30 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Spider Solitaire",
+  "stock": "Stock",
+  "completed": "Completed",
+  "tableau": "Tableau",
+  "moveCount": "Moves",
+  "deal": "Deal",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "autoComplete": "Auto Complete",
+  "undo": "Undo",
+  "empty": "Empty",
+  "score": "Score",
+  "difficulty": "Difficulty",
+  "difficulty1": "1 Suit",
+  "difficulty2": "2 Suits",
+  "difficulty4": "4 Suits",
+  "gameClear": "Game Clear! Moves: {{moveCount}} Score: {{score}}",
+  "gameOver": "Game Over",
+  "playing": "Playing",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "stalemate": "No more moves",
+  "dealsRemaining": "{{count}} deals remaining"
+}

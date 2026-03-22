@@ -19,6 +19,7 @@ import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
 import enSevens from './locales/en/sevens.json';
 import enSpades from './locales/en/spades.json';
+import enSpider from './locales/en/spider.json';
 import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
@@ -36,6 +37,7 @@ import jaOmaha from './locales/ja/omaha.json';
 import jaPoker from './locales/ja/poker.json';
 import jaSevens from './locales/ja/sevens.json';
 import jaSpades from './locales/ja/spades.json';
+import jaSpider from './locales/ja/spider.json';
 
 i18n
   .use(LanguageDetector)
@@ -60,6 +62,7 @@ i18n
         baccarat: jaBaccarat,
         crazyeights: jaCrazyeights,
         ginrummy: jaGinrummy,
+        spider: jaSpider,
       },
       en: {
         common: enCommon,
@@ -79,6 +82,7 @@ i18n
         baccarat: enBaccarat,
         crazyeights: enCrazyeights,
         ginrummy: enGinrummy,
+        spider: enSpider,
       },
     },
     fallbackLng: 'ja',
@@ -101,6 +105,7 @@ i18n
       'baccarat',
       'crazyeights',
       'ginrummy',
+      'spider',
     ],
     detection: {
       order: ['localStorage'],
