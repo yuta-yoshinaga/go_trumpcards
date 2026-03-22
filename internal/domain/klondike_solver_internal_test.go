@@ -156,25 +156,33 @@ func TestKlondike_StalemateRestoredByUndo(t *testing.T) {
 	k := NewKlondike(NewTrumpCards(0))
 	k.phase = KlondikePhasePlaying
 	k.isStalemate = false
-	k.noProgressCycles = 0
+	k.noProgressCycles = 1 // Already cycled once without progress
 
-	// Set up a state where draw leads to stalemate
-	k.stock = []*Card{NewCard(CardDesignSpade, 10, false)}
-	k.waste = nil
+	// Set up: stock empty, waste has one card, no valid moves on tableau
+	k.stock = nil
+	k.waste = []*Card{NewCard(CardDesignSpade, 10, false)}
 	var tableau [KlondikeTableauCnt][]*KlondikeTableauCard
-	// Only non-matching cards on tableau
 	tableau[0] = []*KlondikeTableauCard{
 		{Card: NewCard(CardDesignSpade, 5, false), FaceUp: true},
 	}
 	k.tableau = tableau
 	var foundation [KlondikeFoundationCnt][]*Card
 	k.foundation = foundation
+	k.progressSinceRecycle = false
 
-	// Draw the card
+	// Recycle waste->stock (Draw when stock empty, no progress)
 	err := k.Draw()
 	assert.NoError(t, err)
+	// noProgressCycles incremented to 2, stock now has 1 card
+	// checkKlondikeStalemate: stock not empty after recycle, so not stalemate yet
 
-	// Undo should restore previous stalemate state
+	// Draw the card from stock to waste
+	err = k.Draw()
+	assert.NoError(t, err)
+	// Now stock is empty, noProgressCycles=2, no hint -> stalemate
+	assert.True(t, k.isStalemate)
+
+	// Undo should restore the non-stalemate state
 	err = k.Undo()
 	assert.NoError(t, err)
 	assert.False(t, k.isStalemate)

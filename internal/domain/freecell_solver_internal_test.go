@@ -226,6 +226,69 @@ func TestFreeCellSolver_StateKeyDifferentStates(t *testing.T) {
 	assert.NotEqual(t, key1, key2)
 }
 
+func TestFreeCellSolver_GameClearSkipsStalemate(t *testing.T) {
+	f := NewFreeCell(NewTrumpCards(0))
+	f.Reset()
+
+	// Set up: all cards on foundation except one King on tableau
+	var tableau [FreeCellTableauCnt][]*Card
+	tableau[0] = []*Card{NewCard(CardDesignSpade, CardValueMax, false)}
+	f.SetTableau(tableau)
+	var cells [FreeCellCellCnt]*Card
+	f.SetFreeCells(cells)
+
+	var foundation [FreeCellFoundationCnt][]*Card
+	for i := 0; i < FreeCellFoundationCnt; i++ {
+		foundation[i] = make([]*Card, 0)
+		maxV := CardValueMax
+		if i+1 == CardDesignSpade {
+			maxV = CardValueMax - 1 // Spade missing King
+		}
+		for v := 1; v <= maxV; v++ {
+			foundation[i] = append(foundation[i], NewCard(i+1, v, false))
+		}
+	}
+	f.SetFoundation(foundation)
+	f.SetPhase(FreeCellPhasePlaying)
+
+	// Move the last card to foundation — triggers checkGameClear then checkStalemate
+	err := f.MoveTableauToFoundation(0)
+	assert.NoError(t, err)
+	assert.Equal(t, FreeCellPhaseGameClear, f.GetPhase())
+	assert.False(t, f.IsStalemate()) // checkStalemate should early-return on non-playing phase
+}
+
+func TestFreeCellSolver_GameClearViaFreeCellSkipsStalemate(t *testing.T) {
+	f := NewFreeCell(NewTrumpCards(0))
+	f.Reset()
+
+	// All cards on foundation except one King in free cell
+	var tableau [FreeCellTableauCnt][]*Card
+	f.SetTableau(tableau)
+	var cells [FreeCellCellCnt]*Card
+	cells[0] = NewCard(CardDesignSpade, CardValueMax, false)
+	f.SetFreeCells(cells)
+
+	var foundation [FreeCellFoundationCnt][]*Card
+	for i := 0; i < FreeCellFoundationCnt; i++ {
+		foundation[i] = make([]*Card, 0)
+		maxV := CardValueMax
+		if i+1 == CardDesignSpade {
+			maxV = CardValueMax - 1
+		}
+		for v := 1; v <= maxV; v++ {
+			foundation[i] = append(foundation[i], NewCard(i+1, v, false))
+		}
+	}
+	f.SetFoundation(foundation)
+	f.SetPhase(FreeCellPhasePlaying)
+
+	err := f.MoveFreeCellToFoundation(0)
+	assert.NoError(t, err)
+	assert.Equal(t, FreeCellPhaseGameClear, f.GetPhase())
+	assert.False(t, f.IsStalemate())
+}
+
 func TestFreeCellSolver_MemoizationPreventsRevisit(t *testing.T) {
 	f := NewFreeCell(NewTrumpCards(0))
 	f.Reset()
