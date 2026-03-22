@@ -98,7 +98,8 @@ func cuiSuitName(suit int) string {
 
 // cuiPlayerName returns "あなた" for human players, "CPU N" for CPU players,
 // or "UNKNOWN" if the player is nil/zero.
-// Used by OldMaid, Daifugo, Sevens, and Doubt CUI presenters.
+// Used by OldMaid, Daifugo, Sevens, Doubt, Poker, Holdem, Omaha, Hearts,
+// Spades, CrazyEights, GinRummy, and Memory CUI presenters.
 func cuiPlayerName[P cuiPlayer](player P, idx int) string {
 	var zero P
 	if player == zero {
@@ -108,6 +109,22 @@ func cuiPlayerName[P cuiPlayer](player P, idx int) string {
 		return color.Bold("あなた")
 	}
 	return color.Bold(fmt.Sprintf("CPU %d", idx))
+}
+
+// cuiPlayerWithStyle is the type constraint for players that have a play style.
+type cuiPlayerWithStyle interface {
+	cuiPlayer
+	GetPlayStyleName() string
+}
+
+// cuiPlayerNameWithStyle returns cuiPlayerName with play style suffix for CPU.
+// Used by Poker, Holdem, and Omaha CUI presenters.
+func cuiPlayerNameWithStyle[P cuiPlayerWithStyle](player P, idx int) string {
+	name := cuiPlayerName(player, idx)
+	if !player.GetIsHuman() {
+		name = fmt.Sprintf("%s (%s)", name, player.GetPlayStyleName())
+	}
+	return name
 }
 
 // cuiBettingActionName returns the Japanese action name for betting actions.

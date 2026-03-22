@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { ConfirmDialog } from '../components/ConfirmDialog';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -254,15 +254,7 @@ export function FreeCellPage() {
         </div>
       </GameFooter>
       <WinCelebration show={state.phase === FreeCellPhase.GAME_CLEAR} />
-      <ConfirmDialog
-        open={confirmOpen}
-        title={tc('button.confirmReset')}
-        message={tc('button.confirmResetMessage')}
-        confirmLabel={tc('button.confirm')}
-        cancelLabel={tc('button.cancel')}
-        onConfirm={confirmReset}
-        onCancel={cancelReset}
-      />
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
 }

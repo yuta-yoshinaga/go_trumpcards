@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
-import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
 import { DoubtHandCard } from '../components/doubt/DoubtHandCard';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
+import { GameResetDialog } from '../components/GameResetDialog';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -361,15 +361,7 @@ export function DoubtPage() {
         </div>
       </GameFooter>
       <WinCelebration show={!!state?.gameEndFlag} />
-      <ConfirmDialog
-        open={confirmOpen}
-        title={tc('button.confirmReset')}
-        message={tc('button.confirmResetMessage')}
-        confirmLabel={tc('button.confirm')}
-        cancelLabel={tc('button.cancel')}
-        onConfirm={confirmReset}
-        onCancel={cancelReset}
-      />
+      <GameResetDialog confirmOpen={confirmOpen} confirmReset={confirmReset} cancelReset={cancelReset} />
     </div>
   );
 }

@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"fmt"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -93,33 +91,13 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 		resObj.Message = lastErr.Error()
 	} else if d.GetGameEndFlag() {
 		winnerIdx := d.GetWinnerIdx()
-		resObj.Message = dwp.buildResultMessage(d)
 		player := d.GetPlayer(winnerIdx)
-		if player != nil && player.GetIsHuman() {
-			resObj.MessageCode = "doubt.result.humanWin"
-		} else {
-			resObj.MessageCode = "doubt.result.cpuWin"
-			resObj.MessageParams = map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
-		}
+		isHuman := player != nil && player.GetIsHuman()
+		resObj.Message, resObj.MessageCode, resObj.MessageParams = buildWinnerWebMessage(
+			"doubt", winnerIdx, isHuman)
 	}
 
 	return marshalOrError(resObj)
-}
-
-// buildResultMessage ゲーム終了メッセージを生成
-func (dwp *DoubtWebPresenter) buildResultMessage(d interfaces.DoubtGame) string {
-	winnerIdx := d.GetWinnerIdx()
-	player := d.GetPlayer(winnerIdx)
-	if player == nil {
-		return fmt.Sprintf("ゲーム終了！ CPU %dの勝ち！", winnerIdx)
-	}
-	var name string
-	if player.GetIsHuman() {
-		name = "あなた"
-	} else {
-		name = fmt.Sprintf("CPU %d", winnerIdx)
-	}
-	return fmt.Sprintf("ゲーム終了！ %sの勝ち！", name)
 }
 
 // ActionLogOutput 棋譜をJSON出力

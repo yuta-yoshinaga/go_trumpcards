@@ -72,20 +72,17 @@ func (oi *OldMaidInteractor) Draw(cardIdx int) string {
 
 // Shuffle 人間プレイヤーの手札をシャッフルする
 func (oi *OldMaidInteractor) Shuffle() string {
-	err := oi.om.ShuffleHumanHand()
-	return oi.omp.Output(oi.om, err)
+	return execAndPresent(oi.om, oi.omp, oi.om.ShuffleHumanHand)
 }
 
 // Reorder 人間プレイヤーの手札を並び替える
 func (oi *OldMaidInteractor) Reorder(indices []int) string {
-	err := oi.om.ReorderHumanHand(indices)
-	return oi.omp.Output(oi.om, err)
+	return execAndPresent(oi.om, oi.omp, func() error { return oi.om.ReorderHumanHand(indices) })
 }
 
 // ResetProfile メタAIプロファイルをリセット
 func (oi *OldMaidInteractor) ResetProfile() string {
-	oi.om.ResetProfile()
-	return oi.omp.Output(oi.om, nil)
+	return runAndPresent(oi.om, oi.omp, oi.om.ResetProfile)
 }
 
 // ActionLog 棋譜を出力する

@@ -5,6 +5,7 @@ import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
+import { useGameConfig } from './useGameConfig';
 
 /** Default Doubt game configuration. */
 export const DEFAULT_DOUBT_CONFIG: DoubtConfig = {
@@ -44,7 +45,11 @@ export function useDoubtGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const [claimedValue, setClaimedValue] = useState(1);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [doubtConfig, setDoubtConfig] = useState<DoubtConfig>(DEFAULT_DOUBT_CONFIG);
+  const {
+    config: doubtConfig,
+    handleConfigChange,
+    handleToggle: handleConfigToggle,
+  } = useGameConfig<DoubtConfig>(DEFAULT_DOUBT_CONFIG);
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoSkipRef = useRef(false);
   const cpuDoubtersRef = useRef<number[]>([]);
@@ -96,17 +101,6 @@ export function useDoubtGame() {
     },
     [rawExec, stopCountdown],
   );
-
-  const handleConfigChange = useCallback((key: keyof DoubtConfig, value: string) => {
-    const parsed = Number(value);
-    if (!Number.isNaN(parsed)) {
-      setDoubtConfig((prev) => ({ ...prev, [key]: parsed }));
-    }
-  }, []);
-
-  const handleConfigToggle = useCallback((key: keyof DoubtConfig, checked: boolean) => {
-    setDoubtConfig((prev) => ({ ...prev, [key]: checked }));
-  }, []);
 
   useEffect(() => {
     exec('reset', undefined, undefined, undefined, DEFAULT_DOUBT_CONFIG);

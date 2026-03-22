@@ -41,7 +41,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ディーラー:")
 		assert.Contains(t, result, "(なし)")
 		assert.Contains(t, result, "ポット:")
-		assert.Contains(t, result, "[You]")
+		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
 	})
@@ -198,7 +198,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		_ = players[0]
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "You: Flush")
+		assert.Contains(t, result, "あなた: Flush")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -210,7 +210,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "You: One Pair (キッカー: A, Q, 10)")
+		assert.Contains(t, result, "あなた: One Pair (キッカー: A, Q, 10)")
 		assert.Contains(t, result, "100チップ獲得")
 	})
 
@@ -222,7 +222,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "You: Flush")
+		assert.Contains(t, result, "あなた: Flush")
 		assert.NotContains(t, result, "キッカー")
 	})
 
@@ -605,8 +605,8 @@ func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
 		})
 
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "You: マック")
-		assert.NotContains(t, result, "You: One Pair")
+		assert.Contains(t, result, "あなた: マック")
+		assert.NotContains(t, result, "あなた: One Pair")
 	})
 
 	t.Run("results shown in showdown phase", func(t *testing.T) {
@@ -618,7 +618,7 @@ func TestHoldemCuiPresenter_Output_Muck(t *testing.T) {
 
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "[結果]")
-		assert.Contains(t, result, "You: Flush")
+		assert.Contains(t, result, "あなた: Flush")
 	})
 }
 

@@ -34,20 +34,17 @@ func NewBaccaratInteractor(b interfaces.BaccaratGame, bp presenter.BaccaratPrese
 
 // Reset ゲーム初期化
 func (bi *BaccaratInteractor) Reset() string {
-	bi.b.Reset()
-	return bi.bp.Output(bi.b, nil)
+	return runAndPresent(bi.b, bi.bp, bi.b.Reset)
 }
 
 // Bet ベット
 func (bi *BaccaratInteractor) Bet(amount, betType, ppBet, bpBet int) string {
-	err := bi.b.Bet(amount, betType, ppBet, bpBet)
-	return bi.bp.Output(bi.b, err)
+	return execAndPresent(bi.b, bi.bp, func() error { return bi.b.Bet(amount, betType, ppBet, bpBet) })
 }
 
 // ClearHistory 罫線履歴クリア
 func (bi *BaccaratInteractor) ClearHistory() string {
-	bi.b.ClearHistory()
-	return bi.bp.Output(bi.b, nil)
+	return runAndPresent(bi.b, bi.bp, bi.b.ClearHistory)
 }
 
 // ActionLog 棋譜を出力する

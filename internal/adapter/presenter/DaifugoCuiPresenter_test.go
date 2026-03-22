@@ -51,7 +51,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "Daifugo (大富豪)")
-		assert.Contains(t, result, "[You]: 2枚")
+		assert.Contains(t, result, "あなた: 2枚")
 		assert.Contains(t, result, "[0]SPADE 3")
 		assert.Contains(t, result, "CPU 1: 1枚")
 		assert.Contains(t, result, "場: なし")

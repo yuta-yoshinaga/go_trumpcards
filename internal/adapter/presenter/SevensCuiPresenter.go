@@ -12,11 +12,7 @@ import (
 // sevensPlayerStr returns the display string for a single Sevens player.
 func sevensPlayerStr(player *domain.SevensPlayer, i int) string {
 	var b strings.Builder
-	if player.GetIsHuman() {
-		b.WriteString("[You]")
-	} else {
-		fmt.Fprintf(&b, "CPU %d", i)
-	}
+	b.WriteString(cuiPlayerName(player, i))
 	if player.GetIsFinished() {
 		fmt.Fprintf(&b, ": 上がり/失格 (ランク: %d位)\n", player.GetRank())
 	} else {

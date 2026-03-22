@@ -43,8 +43,7 @@ func NewPokerInteractor(p interfaces.PokerGame, pp presenter.PokerPresenter) *Po
 
 // Reset ゲーム初期化
 func (pi *PokerInteractor) Reset() string {
-	err := pi.p.Reset()
-	return pi.pp.Output(pi.p, err)
+	return execAndPresent(pi.p, pi.pp, pi.p.Reset)
 }
 
 // GetConfig 現在の設定を取得
@@ -64,20 +63,17 @@ func (pi *PokerInteractor) ResetWithConfig(cfg domain.PokerConfig) string {
 
 // Action プレイヤーアクション実行
 func (pi *PokerInteractor) Action(action int, amount int) string {
-	err := pi.p.PlayerAction(action, amount)
-	return pi.pp.Output(pi.p, err)
+	return execAndPresent(pi.p, pi.pp, func() error { return pi.p.PlayerAction(action, amount) })
 }
 
 // Exchange カード交換
 func (pi *PokerInteractor) Exchange(indices []int) string {
-	err := pi.p.PlayerExchange(indices)
-	return pi.pp.Output(pi.p, err)
+	return execAndPresent(pi.p, pi.pp, func() error { return pi.p.PlayerExchange(indices) })
 }
 
 // Stand カード交換なし
 func (pi *PokerInteractor) Stand() string {
-	err := pi.p.PlayerStand()
-	return pi.pp.Output(pi.p, err)
+	return execAndPresent(pi.p, pi.pp, pi.p.PlayerStand)
 }
 
 // ActionLog 棋譜を出力する

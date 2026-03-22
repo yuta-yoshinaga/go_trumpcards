@@ -58,11 +58,7 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 	b.WriteString("----------\n")
 	for i := 0; i < o.GetPlayerCnt(); i++ {
 		player := o.GetPlayer(i)
-		if player.GetIsHuman() {
-			b.WriteString(color.Bold("[You]"))
-		} else {
-			fmt.Fprintf(&b, "%s (%s)", color.Bold(fmt.Sprintf("CPU %d", i)), player.GetPlayStyleName())
-		}
+		b.WriteString(cuiPlayerNameWithStyle(player, i))
 
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
 
@@ -104,10 +100,7 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 		b.WriteString("==========\n")
 		b.WriteString(color.Bold("[結果]") + "\n")
 		for _, r := range results {
-			name := "You"
-			if !o.GetPlayer(r.PlayerIdx).GetIsHuman() {
-				name = fmt.Sprintf("CPU %d", r.PlayerIdx)
-			}
+			name := cuiPlayerName(o.GetPlayer(r.PlayerIdx), r.PlayerIdx)
 			kickers := ""
 			if ks := domain.FormatKickers(r.Kickers); ks != "" {
 				kickers = " (キッカー: " + ks + ")"

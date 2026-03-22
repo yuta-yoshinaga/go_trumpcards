@@ -46,8 +46,7 @@ func NewOmahaInteractor(o interfaces.OmahaGame, op presenter.OmahaPresenter) *Om
 
 // Reset ゲーム初期化
 func (oi *OmahaInteractor) Reset() string {
-	err := oi.o.Reset()
-	return oi.op.Output(oi.o, err)
+	return execAndPresent(oi.o, oi.op, oi.o.Reset)
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
@@ -65,8 +64,7 @@ func (oi *OmahaInteractor) ResetWithConfig(cfg domain.OmahaConfig) string {
 
 // Action プレイヤーアクション実行
 func (oi *OmahaInteractor) Action(action int, amount int) string {
-	err := oi.o.PlayerAction(action, amount)
-	return oi.op.Output(oi.o, err)
+	return execAndPresent(oi.o, oi.op, func() error { return oi.o.PlayerAction(action, amount) })
 }
 
 // GetConfig 現在の設定を取得
@@ -76,38 +74,32 @@ func (oi *OmahaInteractor) GetConfig() domain.OmahaConfig {
 
 // Rebuy リバイ実行
 func (oi *OmahaInteractor) Rebuy() string {
-	err := oi.o.Rebuy()
-	return oi.op.Output(oi.o, err)
+	return execAndPresent(oi.o, oi.op, oi.o.Rebuy)
 }
 
 // SkipRebuy リバイ辞退
 func (oi *OmahaInteractor) SkipRebuy() string {
-	err := oi.o.SkipRebuy()
-	return oi.op.Output(oi.o, err)
+	return execAndPresent(oi.o, oi.op, oi.o.SkipRebuy)
 }
 
 // Addon アドオン実行
 func (oi *OmahaInteractor) Addon() string {
-	err := oi.o.Addon()
-	return oi.op.Output(oi.o, err)
+	return execAndPresent(oi.o, oi.op, oi.o.Addon)
 }
 
 // SkipAddon アドオン辞退
 func (oi *OmahaInteractor) SkipAddon() string {
-	err := oi.o.SkipAddon()
-	return oi.op.Output(oi.o, err)
+	return execAndPresent(oi.o, oi.op, oi.o.SkipAddon)
 }
 
 // Muck マック
 func (oi *OmahaInteractor) Muck() string {
-	err := oi.o.Muck()
-	return oi.op.Output(oi.o, err)
+	return execAndPresent(oi.o, oi.op, oi.o.Muck)
 }
 
 // ShowHand ハンドを公開する
 func (oi *OmahaInteractor) ShowHand() string {
-	err := oi.o.ShowHand()
-	return oi.op.Output(oi.o, err)
+	return execAndPresent(oi.o, oi.op, oi.o.ShowHand)
 }
 
 // ActionLog 棋譜を出力する

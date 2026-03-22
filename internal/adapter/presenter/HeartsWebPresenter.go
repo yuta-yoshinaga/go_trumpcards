@@ -1,8 +1,6 @@
 package presenter
 
 import (
-	"fmt"
-
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -78,13 +76,9 @@ func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*doma
 	}
 	if h.GetGameEndFlag() {
 		winnerIdx := h.GetWinnerIdx()
-		msg := p.buildResultMessage(h)
 		player := h.GetPlayer(winnerIdx)
-		if player != nil && player.GetIsHuman() {
-			return msg, "hearts.result.humanWin", nil
-		}
-		params := map[string]string{"cpuId": fmt.Sprintf("%d", winnerIdx)}
-		return msg, "hearts.result.cpuWin", params
+		isHuman := player != nil && player.GetIsHuman()
+		return buildWinnerWebMessage("hearts", winnerIdx, isHuman)
 	}
 	switch h.GetPhase() {
 	case domain.HeartsPhasePass:
@@ -100,22 +94,6 @@ func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*doma
 		return "", "hearts.roundEnd", nil
 	}
 	return "", "", nil
-}
-
-// buildResultMessage ゲーム終了メッセージを生成
-func (p *HeartsWebPresenter) buildResultMessage(h interfaces.HeartsGame) string {
-	winnerIdx := h.GetWinnerIdx()
-	player := h.GetPlayer(winnerIdx)
-	if player == nil {
-		return fmt.Sprintf("ゲーム終了！ CPU %dの勝ち！", winnerIdx)
-	}
-	var name string
-	if player.GetIsHuman() {
-		name = "あなた"
-	} else {
-		name = fmt.Sprintf("CPU %d", winnerIdx)
-	}
-	return fmt.Sprintf("ゲーム終了！ %sの勝ち！", name)
 }
 
 // ActionLogOutput 棋譜をJSON出力

@@ -46,11 +46,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 	b.WriteString("----------\n")
 	isEnd := p.GetPhase() == domain.PokerPhaseEnd
 	for i, player := range players {
-		if player.GetIsHuman() {
-			b.WriteString(color.Bold("[You]"))
-		} else {
-			fmt.Fprintf(&b, "%s (%s)", color.Bold(fmt.Sprintf("CPU %d", i)), player.GetPlayStyleName())
-		}
+		b.WriteString(cuiPlayerNameWithStyle(player, i))
 
 		fmt.Fprintf(&b, " チップ:%d", player.GetChips())
 
@@ -115,10 +111,7 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 		b.WriteString("==========\n")
 		b.WriteString(color.Bold("[結果]") + "\n")
 		for _, r := range results {
-			name := "You"
-			if !players[r.PlayerIdx].GetIsHuman() {
-				name = fmt.Sprintf("CPU %d", r.PlayerIdx)
-			}
+			name := cuiPlayerName(players[r.PlayerIdx], r.PlayerIdx)
 			kickers := ""
 			if ks := domain.FormatKickers(r.Kickers); ks != "" {
 				kickers = " (キッカー: " + ks + ")"
