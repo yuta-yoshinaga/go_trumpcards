@@ -192,6 +192,8 @@ public/               # ビルド済みアセット
 
 ## Contributing
 
+コントリビューション歓迎です！詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
+
 1. Fork it
 2. Create your feature branch (`git checkout -b feat/amazing-feature`)
 3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
