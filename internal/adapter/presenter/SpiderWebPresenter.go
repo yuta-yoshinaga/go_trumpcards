@@ -77,6 +77,7 @@ func (p *SpiderWebPresenter) HintOutput(s interfaces.SpiderGame) string {
 	resObj.CanUndo = s.CanUndo()
 	resObj.Score = s.GetScore()
 	resObj.Difficulty = int(s.GetDifficulty())
+	resObj.IsStalemate = s.IsStalemate()
 	resObj.Tableau = make([][]*controller.SpiderWebOutputTableauCard, 0)
 
 	if hint != nil {

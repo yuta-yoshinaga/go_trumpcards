@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -42,7 +42,7 @@ export function SpiderPage() {
 
   const isPlayingForKbd = state?.phase === SpiderPhase.PLAYING;
 
-  const [difficultySetting, setDifficultySetting] = useState(1);
+  const currentDifficulty = state?.difficulty ?? 1;
 
   const actionBindings = useMemo(
     () => [
@@ -145,7 +145,13 @@ export function SpiderPage() {
                           type="button"
                           onClick={() => {
                             if (selectedSource) {
-                              handleSelectTarget({ zone: 'tableau', col: colIdx });
+                              // If clicking a different column, treat as move target
+                              // If clicking the same column, switch source selection
+                              if (selectedSource.col !== colIdx) {
+                                handleSelectTarget({ zone: 'tableau', col: colIdx });
+                              } else {
+                                handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
+                              }
                             } else {
                               handleSelectSource({ zone: 'tableau', col: colIdx, cardIndex: cardIdx });
                             }
@@ -213,11 +219,9 @@ export function SpiderPage() {
           )}
           {/* Difficulty selector */}
           <select
-            value={difficultySetting}
+            value={currentDifficulty}
             onChange={(e) => {
-              const n = Number(e.target.value);
-              setDifficultySetting(n);
-              handleResetWithConfig({ difficulty: n });
+              handleResetWithConfig({ difficulty: Number(e.target.value) });
             }}
             className="bg-gray-700 text-white text-sm rounded px-2 py-1"
             aria-label={t('difficulty')}
@@ -232,7 +236,6 @@ export function SpiderPage() {
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
-                setDifficultySetting(1);
                 return handleReset();
               })
             }

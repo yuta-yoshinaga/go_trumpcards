@@ -159,6 +159,7 @@ func TestSpiderWebPresenter_HintOutput(t *testing.T) {
 		sg.On("CanUndo").Return(false)
 		sg.On("GetScore").Return(450)
 		sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
+		sg.On("IsStalemate").Return(false)
 
 		p := new(SpiderWebPresenter)
 		result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -179,6 +180,7 @@ func TestSpiderWebPresenter_HintOutput(t *testing.T) {
 		sg.On("CanUndo").Return(false)
 		sg.On("GetScore").Return(500)
 		sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
+		sg.On("IsStalemate").Return(false)
 
 		p := new(SpiderWebPresenter)
 		result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -197,6 +199,7 @@ func TestSpiderWebPresenter_HintOutput_CanUndo(t *testing.T) {
 	sg.On("CanUndo").Return(true)
 	sg.On("GetScore").Return(500)
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
+	sg.On("IsStalemate").Return(false)
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -213,6 +216,7 @@ func TestSpiderWebPresenter_HintOutput_Score(t *testing.T) {
 	sg.On("CanUndo").Return(false)
 	sg.On("GetScore").Return(200)
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty1Suit)
+	sg.On("IsStalemate").Return(false)
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))
@@ -229,6 +233,7 @@ func TestSpiderWebPresenter_HintOutput_Difficulty(t *testing.T) {
 	sg.On("CanUndo").Return(false)
 	sg.On("GetScore").Return(500)
 	sg.On("GetDifficulty").Return(domain.SpiderDifficulty4Suit)
+	sg.On("IsStalemate").Return(false)
 
 	p := new(SpiderWebPresenter)
 	result := parseSpiderOutput(t, p.HintOutput(sg))

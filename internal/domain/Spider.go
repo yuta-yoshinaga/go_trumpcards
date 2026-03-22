@@ -143,8 +143,8 @@ func (s *Spider) Deal() error {
 	if s.phase != SpiderPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
-	if len(s.stock) == 0 {
-		return errors.New("no cards in stock")
+	if len(s.stock) < SpiderTableauCnt {
+		return errors.New("not enough cards in stock")
 	}
 	// 空列がある場合は配れない
 	for i := range SpiderTableauCnt {
@@ -238,78 +238,60 @@ func (s *Spider) GetHint() *SpiderHint {
 		return nil
 	}
 
-	// 優先度1: 完成スートに近づく移動（同スート列を長くする移動）
-	// 優先度2: 裏カードを開ける移動
-	// 優先度3: その他の有効な移動
-
-	// まず裏カードを開ける移動を探す
-	for fromCol := range SpiderTableauCnt {
-		fromCards := s.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		// 表向きの最初のカードを探す
-		firstFaceUp := -1
-		for i, tc := range fromCards {
-			if tc.FaceUp {
-				firstFaceUp = i
-				break
-			}
-		}
-		if firstFaceUp < 0 || firstFaceUp == 0 {
-			// 裏カードがない列はスキップ
-			continue
-		}
-		// firstFaceUpから始まる有効シーケンスを探す
-		seqStart := s.findLongestSequenceStart(fromCol)
-		if seqStart > firstFaceUp {
-			continue
-		}
-		// この列の表向きカード全体を移動できるか
-		movingCards := fromCards[seqStart:]
-		if !s.isValidSpiderSequence(movingCards) {
-			continue
-		}
-		bottomCard := movingCards[0].Card
-		for toCol := range SpiderTableauCnt {
-			if toCol == fromCol {
+	// 各列の全表向きカード位置から有効なシーケンスを試す
+	// 優先度1: 裏カードを開ける移動
+	// 優先度2: その他の有効な移動
+	for _, exposeOnly := range []bool{true, false} {
+		for fromCol := range SpiderTableauCnt {
+			fromCards := s.tableau[fromCol]
+			if len(fromCards) == 0 {
 				continue
 			}
-			if s.canPlaceOnTableau(bottomCard, toCol) {
-				return &SpiderHint{
-					FromCol:   fromCol,
-					CardIndex: seqStart,
-					ToCol:     toCol,
+
+			// 表向きの最初のカードを探す
+			firstFaceUp := -1
+			for i, tc := range fromCards {
+				if tc.FaceUp {
+					firstFaceUp = i
+					break
 				}
 			}
-		}
-	}
-
-	// その他の有効な移動を探す
-	for fromCol := range SpiderTableauCnt {
-		fromCards := s.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		seqStart := s.findLongestSequenceStart(fromCol)
-		movingCards := fromCards[seqStart:]
-		if !s.isValidSpiderSequence(movingCards) {
-			continue
-		}
-		bottomCard := movingCards[0].Card
-		for toCol := range SpiderTableauCnt {
-			if toCol == fromCol {
+			if firstFaceUp < 0 {
 				continue
 			}
-			if s.canPlaceOnTableau(bottomCard, toCol) {
-				// 空列への移動で他にカードがない列からは無意味
-				if len(s.tableau[toCol]) == 0 && seqStart == 0 {
+
+			// 裏カード開け優先のパス: 裏カードがない列はスキップ
+			if exposeOnly && firstFaceUp == 0 {
+				continue
+			}
+
+			// 各表向きカード位置から有効シーケンスを試す
+			for startIdx := firstFaceUp; startIdx < len(fromCards); startIdx++ {
+				movingCards := fromCards[startIdx:]
+				if !s.isValidSpiderSequence(movingCards) {
 					continue
 				}
-				return &SpiderHint{
-					FromCol:   fromCol,
-					CardIndex: seqStart,
-					ToCol:     toCol,
+				bottomCard := movingCards[0].Card
+				for toCol := range SpiderTableauCnt {
+					if toCol == fromCol {
+						continue
+					}
+					if !s.canPlaceOnTableau(bottomCard, toCol) {
+						continue
+					}
+					// 空列への移動で列全体を移すのは無意味
+					if len(s.tableau[toCol]) == 0 && startIdx == 0 {
+						continue
+					}
+					// 裏カード開けパスでは裏カードを開ける移動のみ
+					if exposeOnly && startIdx != firstFaceUp {
+						continue
+					}
+					return &SpiderHint{
+						FromCol:   fromCol,
+						CardIndex: startIdx,
+						ToCol:     toCol,
+					}
 				}
 			}
 		}

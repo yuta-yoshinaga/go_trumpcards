@@ -121,7 +121,7 @@ func TestSpiderDeal_NoStock(t *testing.T) {
 	s.SetStock(nil)
 	err := s.Deal()
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "no cards in stock")
+	assert.Contains(t, err.Error(), "not enough cards in stock")
 }
 
 func TestSpiderDeal_EmptyColumn(t *testing.T) {
