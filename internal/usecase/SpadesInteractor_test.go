@@ -298,6 +298,17 @@ func TestSpadesInteractor_GetConfig(t *testing.T) {
 	})
 }
 
+func TestSpadesInteractor_Hint(t *testing.T) {
+	spMock := new(presenter.MockSpadesPresenter)
+	gameMock := new(interfaces.MockSpadesGame)
+	spMock.On("HintOutput", gameMock).Return(`{"hint":{"cardIndex":0}}`)
+
+	si := usecase.NewSpadesInteractor(gameMock, spMock)
+	result := si.Hint()
+	assert.Equal(t, `{"hint":{"cardIndex":0}}`, result)
+	spMock.AssertExpectations(t)
+}
+
 func TestSpadesInteractor_ActionLog(t *testing.T) {
 	spMock := new(presenter.MockSpadesPresenter)
 	gameMock := new(interfaces.MockSpadesGame)

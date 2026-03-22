@@ -61,7 +61,8 @@
     "cancel": "キャンセル",
     "confirmReset": "リセット確認",
     "confirmResetMessage": "本当にゲームをリセットしますか？",
-    "confirm": "確認"
+    "confirm": "確認",
+    "hint": "ヒント"
   },
   "status": {
     "folded": "フォールド",

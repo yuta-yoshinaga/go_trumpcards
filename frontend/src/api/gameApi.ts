@@ -280,7 +280,7 @@ export interface HeartsConfigInput {
 /** API client for the Hearts /hearts/exec endpoint. */
 export const heartsApi = {
   exec: (
-    command: 'reset' | 'pass' | 'play' | 'next' | 'nextround',
+    command: 'reset' | 'pass' | 'play' | 'next' | 'nextround' | 'hint',
     cardIndices?: number[],
     cardIndex?: number,
     config?: HeartsConfigInput,
@@ -304,7 +304,7 @@ export interface SpadesConfigInput {
 /** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = {
   exec: (
-    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround',
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
     bid?: number,
     cardIndex?: number,
     config?: SpadesConfigInput,

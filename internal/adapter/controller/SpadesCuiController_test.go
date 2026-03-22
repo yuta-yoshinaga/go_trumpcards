@@ -24,6 +24,7 @@ func TestSpadesCuiController_Exec(t *testing.T) {
 		m.On("Play", mock.Anything).Return(mockOutput)
 		m.On("NextTrick").Return(mockOutput)
 		m.On("NextRound").Return(mockOutput)
+		m.On("Hint").Return(mockOutput)
 		m.On("ActionLog").Return(mockOutput)
 		return m
 	}
@@ -267,6 +268,23 @@ func TestSpadesCuiController_Exec(t *testing.T) {
 		result := c.Exec("l")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "ActionLog")
+	})
+
+	// hint
+	t.Run("hint command h", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSpadesCuiController(m)
+		result := c.Exec("h")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Hint")
+	})
+
+	t.Run("hint command hint", func(t *testing.T) {
+		m := newMock()
+		c := controller.NewSpadesCuiController(m)
+		result := c.Exec("hint")
+		assert.Equal(t, mockOutput, result)
+		m.AssertCalled(t, "Hint")
 	})
 
 	// unknown / empty

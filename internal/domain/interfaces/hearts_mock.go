@@ -170,6 +170,15 @@ func (_m *MockHeartsGame) GetPassedCards() [domain.HeartsPlayerCnt][]*domain.Car
 	return ret.Get(0).([domain.HeartsPlayerCnt][]*domain.Card)
 }
 
+// GetHint モック
+func (_m *MockHeartsGame) GetHint() *domain.HeartsHint {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.HeartsHint); ok {
+		return val
+	}
+	return nil
+}
+
 // GetActionLog モック
 func (_m *MockHeartsGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()

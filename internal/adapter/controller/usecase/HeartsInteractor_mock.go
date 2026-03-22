@@ -53,6 +53,12 @@ func (_m *MockHeartsInteractor) GetConfig() domain.HeartsConfig {
 	return ret.Get(0).(domain.HeartsConfig)
 }
 
+// Hint モック
+func (_m *MockHeartsInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog モック
 func (_m *MockHeartsInteractor) ActionLog() string {
 	ret := _m.Called()

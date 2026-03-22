@@ -317,3 +317,81 @@ func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+func TestHeartsCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	t.Run("no hint", func(t *testing.T) {
+		m := new(interfaces.MockHeartsGame)
+		m.On("GetHint").Return((*domain.HeartsHint)(nil))
+
+		p := new(presenter.HeartsCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("play hint", func(t *testing.T) {
+		m := new(interfaces.MockHeartsGame)
+		m.On("GetHint").Return(&domain.HeartsHint{
+			CardIndices: []int{2},
+			Reason:      "follow_suit",
+		})
+		player := domain.NewHeartsPlayer(true)
+		player.Reset()
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+		m.On("GetPlayer", 0).Return(player)
+
+		p := new(presenter.HeartsCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "リードスートに追随")
+	})
+
+	t.Run("pass hint", func(t *testing.T) {
+		m := new(interfaces.MockHeartsGame)
+		m.On("GetHint").Return(&domain.HeartsHint{
+			CardIndices: []int{0, 1, 2},
+			Reason:      "pass_high_risk_cards",
+		})
+		player := domain.NewHeartsPlayer(true)
+		player.Reset()
+		player.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		player.AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+		m.On("GetPlayer", 0).Return(player)
+
+		p := new(presenter.HeartsCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "リスクの高いカードを渡す")
+	})
+
+	t.Run("hint reason strings", func(t *testing.T) {
+		reasons := map[string]string{
+			"lead_low":             "低いカードでリード",
+			"discard_queen_spades": "Q♠を捨てるチャンス",
+			"discard_hearts":       "ハートを捨てる",
+			"discard_high":         "高いカードを捨てる",
+			"unknown_reason":       "unknown_reason",
+		}
+		for key, expected := range reasons {
+			m := new(interfaces.MockHeartsGame)
+			m.On("GetHint").Return(&domain.HeartsHint{
+				CardIndices: []int{0},
+				Reason:      key,
+			})
+			player := domain.NewHeartsPlayer(true)
+			player.Reset()
+			player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+			m.On("GetPlayer", 0).Return(player)
+
+			p := new(presenter.HeartsCuiPresenter)
+			result := p.HintOutput(m)
+			assert.Contains(t, result, expected, "reason: "+key)
+		}
+	})
+}

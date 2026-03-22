@@ -29,6 +29,7 @@ func NewSpadesCuiController(si usecase.SpadesInteractorIF) *SpadesCuiController 
 //	nr / nextround   → 次のラウンドへ (スコアリング)
 //	sd / setdifficulty <0-2> → CPU難易度設定
 //	sl / setlimit <n> → ポイント上限設定
+//	h / hint         → ヒント表示
 //	log / l          → 棋譜表示
 func (c *SpadesCuiController) Exec(command string) string {
 	return execCuiCommand(
@@ -39,7 +40,7 @@ func (c *SpadesCuiController) Exec(command string) string {
 		},
 		[]string{
 			"b", "bid", "p", "play", "n", "next", "nr", "nextround",
-			"sd", "setdifficulty", "sl", "setlimit", "log", "l",
+			"sd", "setdifficulty", "sl", "setlimit", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -75,6 +76,8 @@ func (c *SpadesCuiController) Exec(command string) string {
 				cfg := c.si.GetConfig()
 				cfg.PointLimit = v
 				return c.si.ResetWithConfig(cfg), true
+			case "h", "hint":
+				return c.si.Hint(), true
 			case "log", "l":
 				return c.si.ActionLog(), true
 			}

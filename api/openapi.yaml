@@ -4439,6 +4439,19 @@ components:
               type: boolean
               description: "Omnibus Hearts variant: J♦ awards -10 points"
               example: false
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play hint (only present when hint command is used)
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+              description: Recommended card indices (1 for play, 3 for pass)
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
 
     # -------------------------------------------------------------------------
     # Memory
@@ -5193,6 +5206,22 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play or bid hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index (null during bid phase)
+            bid:
+              type: integer
+              nullable: true
+              description: Recommended bid value (null during play phase)
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
 
     # -------------------------------------------------------------------------
     # Crazy Eights

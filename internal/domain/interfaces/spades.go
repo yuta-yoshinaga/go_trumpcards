@@ -56,6 +56,8 @@ type SpadesGame interface {
 	GetPlayerCnt() int
 	// GetPlayer 指定インデックスのプレイヤーを取得する
 	GetPlayer(i int) *domain.SpadesPlayer
+	// GetHint ヒントを取得する
+	GetHint() *domain.SpadesHint
 	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
 }
