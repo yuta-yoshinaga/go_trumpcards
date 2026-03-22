@@ -34,13 +34,14 @@ type FreeCellWebOutputHint struct {
 
 // FreeCellWebOutput フリーセルWebアウトプット
 type FreeCellWebOutput struct {
-	Tableau    [][]*WebOutputCard     `json:"tableau"`
-	FreeCells  []*WebOutputCard       `json:"freeCells"`
-	Foundation [][]*WebOutputCard     `json:"foundation"`
-	Phase      int                    `json:"phase"`
-	MoveCount  int                    `json:"moveCount"`
-	CanUndo    bool                   `json:"canUndo"`
-	Hint       *FreeCellWebOutputHint `json:"hint,omitempty"`
+	Tableau     [][]*WebOutputCard     `json:"tableau"`
+	FreeCells   []*WebOutputCard       `json:"freeCells"`
+	Foundation  [][]*WebOutputCard     `json:"foundation"`
+	Phase       int                    `json:"phase"`
+	MoveCount   int                    `json:"moveCount"`
+	CanUndo     bool                   `json:"canUndo"`
+	IsStalemate bool                   `json:"isStalemate"`
+	Hint        *FreeCellWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
 }
 

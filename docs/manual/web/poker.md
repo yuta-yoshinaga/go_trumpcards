@@ -316,6 +316,8 @@ Web版ではリセットコマンド実行時にJSON リクエストで CPU 人�
 | `jokerCount` | int | 0〜2 | 0 | ジョーカー枚数 |
 | `bettingLimit` | int | 0〜2 | 0 | ベッティングリミット（0=Fixed, 1=PotLimit, 2=NoLimit） |
 | `isLowball` | bool | — | false | 2-7 ローボールモード（最弱の手が勝利） |
+| `cpuMetaAI` | bool | — | false | メタAI有効化（CPUが人間のブラフ率・フォールド率・思考時間を学習して戦略を適応） |
+| `humanPlayMs` | int | — | — | 人間のアクションにかかった時間（ミリ秒）。メタAI有効時に送信 |
 
 ### レスポンスのベッティングリミット関連フィールド
 

@@ -134,3 +134,8 @@ func (_m *MockKlondikeGame) GetScoringMode() domain.KlondikeScoringMode {
 	ret := _m.Called()
 	return ret.Get(0).(domain.KlondikeScoringMode)
 }
+
+func (_m *MockKlondikeGame) IsStalemate() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}

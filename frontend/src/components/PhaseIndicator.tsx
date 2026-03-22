@@ -13,7 +13,7 @@ export function PhaseIndicator({ phaseName, isHumanTurn, children }: PhaseIndica
 
   return (
     <div
-      className="shrink-0 glass-panel text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1 items-center"
+      className="shrink-0 glass-panel text-white text-sm px-5 py-2 flex flex-wrap gap-x-6 gap-y-1 items-center tabular-nums"
       aria-live="polite"
       data-testid="phase-indicator"
     >

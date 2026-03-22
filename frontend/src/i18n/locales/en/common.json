@@ -26,7 +26,10 @@
     "freecell": "FreeCell",
     "baccarat": "Baccarat",
     "crazyeights": "Crazy Eights",
-    "ginrummy": "Gin Rummy"
+    "ginrummy": "Gin Rummy",
+    "spider": "Spider",
+    "napoleon": "Napoleon",
+    "indianpoker": "Indian Poker"
   },
   "sound": {
     "mute": "Mute sound",
@@ -61,7 +64,9 @@
     "cancel": "Cancel",
     "confirmReset": "Confirm Reset",
     "confirmResetMessage": "Are you sure you want to reset the game?",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "hint": "Hint",
+    "retry": "Retry"
   },
   "status": {
     "folded": "Folded",
@@ -135,6 +140,15 @@
     "ginrummy.discardPhase": "Discard a card or knock",
     "ginrummy.layoffPhase": "Lay off cards onto the knocker's melds",
     "ginrummy.roundEnd": "Round over",
+    "napoleon.result.napoleonWins": "Napoleon's team wins!",
+    "napoleon.result.alliedWins": "Allied team wins!",
+    "napoleon.bidPhase": "Place your bid",
+    "napoleon.trumpDeclaration": "Declare trump suit and adjutant",
+    "napoleon.kittyExchange": "Exchange kitty cards",
+    "napoleon.playPhase.lead": "Lead a card",
+    "napoleon.playPhase.follow": "Play a card",
+    "napoleon.trickEnd": "Trick complete",
+    "napoleon.roundEnd": "Round complete",
     "memory.flip1": "Flip the first card",
     "memory.flip2": "Flip the second card",
     "memory.matched": "It's a match!",
@@ -149,10 +163,12 @@
     "klondike.gameOver": "Game Over",
     "klondike.hintAvailable": "Hint available",
     "klondike.noHint": "No hint available",
+    "klondike.stalemate": "No moves can lead to a win. Please undo or give up.",
     "freecell.playing": "Playing",
     "freecell.gameClear": "Game Clear! Moves: {{moveCount}}",
     "freecell.gameOver": "Game Over",
     "freecell.hintAvailable": "Hint available",
-    "freecell.noHint": "No hint available"
+    "freecell.noHint": "No hint available",
+    "freecell.stalemate": "No moves can lead to a win. Please undo or give up."
   }
 }

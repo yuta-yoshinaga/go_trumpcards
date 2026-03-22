@@ -17,6 +17,7 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 	resObj.Phase = int(f.GetPhase())
 	resObj.MoveCount = f.GetMoveCount()
 	resObj.CanUndo = f.CanUndo()
+	resObj.IsStalemate = f.IsStalemate()
 
 	// タブロー
 	tableau := f.GetTableau()
@@ -54,7 +55,11 @@ func (p *FreeCellWebPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 		phase := f.GetPhase()
 		switch phase {
 		case domain.FreeCellPhasePlaying:
-			resObj.MessageCode = "freecell.playing"
+			if f.IsStalemate() {
+				resObj.MessageCode = "freecell.stalemate"
+			} else {
+				resObj.MessageCode = "freecell.playing"
+			}
 		case domain.FreeCellPhaseGameClear:
 			resObj.MessageCode = "freecell.gameClear"
 			resObj.MessageParams = map[string]string{"moveCount": fmt.Sprintf("%d", f.GetMoveCount())}

@@ -42,6 +42,12 @@ type HeartsWebOutputTrickCard struct {
 	Card      *WebOutputCard `json:"card"`
 }
 
+// HeartsWebOutputHint ヒント出力
+type HeartsWebOutputHint struct {
+	CardIndices []int  `json:"cardIndices"`
+	Reason      string `json:"reason"`
+}
+
 // HeartsWebOutput ハーツWebアウトプット
 type HeartsWebOutput struct {
 	Players          []*HeartsWebOutputPlayer    `json:"players"`
@@ -55,6 +61,7 @@ type HeartsWebOutput struct {
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerIdx        int                         `json:"winnerIdx"`
 	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
+	Hint             *HeartsWebOutputHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config HeartsWebOutputConfig `json:"config"`
 }
@@ -122,6 +129,8 @@ func heartsDispatch(bc *baseController, w rest.ResponseWriter, hi usecase.Hearts
 		bc.writePresenterResponse(w, hi.NextTrick())
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, hi.NextRound())
+	case "h", "hint":
+		bc.writePresenterResponse(w, hi.Hint())
 	case "log", "l":
 		bc.writePresenterResponse(w, hi.ActionLog())
 	default:

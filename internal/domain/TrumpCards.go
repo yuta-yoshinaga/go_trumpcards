@@ -36,7 +36,7 @@ func (t *TrumpCards) cardsInit(deckCount, jokerCnt int) {
 	}
 
 	// 通常カード (deckCount デッキ分)
-	for d := 0; d < deckCount; d++ {
+	for range deckCount {
 		for _, design := range designs {
 			for val := 1; val <= CardValueMax; val++ {
 				card := NewCard(design, val, false)
@@ -83,6 +83,30 @@ func (t *TrumpCards) GetRemainingCount() int {
 // GetTotalCount 山札の総枚数
 func (t *TrumpCards) GetTotalCount() int {
 	return t.deckCnt
+}
+
+// NewTrumpCardsWithSuits スート指定マルチデッキコンストラクタ
+// suits で指定されたスートのみを使い、合計 totalCards 枚のデッキを作成する。
+// 各スートの13枚をラウンドロビンで繰り返し追加し、totalCards 枚に達したら停止する。
+func NewTrumpCardsWithSuits(totalCards int, suits []int) *TrumpCards {
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for len(t.deck) < totalCards {
+		for _, suit := range suits {
+			for val := 1; val <= CardValueMax; val++ {
+				if len(t.deck) >= totalCards {
+					break
+				}
+				t.deck = append(t.deck, NewCard(suit, val, false))
+			}
+			if len(t.deck) >= totalCards {
+				break
+			}
+		}
+	}
+	t.deckInit()
+	return t
 }
 
 // DrawCard 山札配る

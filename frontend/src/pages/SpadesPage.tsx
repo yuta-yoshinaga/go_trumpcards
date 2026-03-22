@@ -46,6 +46,10 @@ export function SpadesPage() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    hint,
+    hintError,
+    hintLoading,
+    handleHint,
   } = useSpadesGame();
   const { cardWidth } = useCardDimensions();
   const [bidValue, setBidValue] = useState(1);
@@ -229,9 +233,22 @@ export function SpadesPage() {
           </div>
         )}
 
-        <ErrorAlert message={error} />
+        <ErrorAlert message={error ?? hintError} />
+
+        {hint && (
+          <div className="text-yellow-300 text-sm mb-2">
+            {hint.bid != null
+              ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
+              : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
+          </div>
+        )}
 
         <div className="flex gap-2 items-center">
+          {(isHumanBidTurn || isHumanTurn) && (
+            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+              {tc('button.hint')}
+            </button>
+          )}
           {isHumanBidTurn && (
             <>
               <input

@@ -5,6 +5,7 @@ import (
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -30,6 +31,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 			"e", "exchange", "s", "stand", "b", "bet", "c", "call", "ra", "raise",
 			"f", "fold", "ck", "check", "a", "allin", "bl", "bettinglimit",
 			"scc", "setcpucount", "sjc", "setjokercount", "o", "odds", "lw", "lowball",
+			"mai", "metaai",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -45,9 +47,9 @@ func (pcc *PokerCuiController) Exec(command string) string {
 						amount = a
 					}
 				}
-				return pcc.pi.Action(domain.PokerActionBet, amount), true
+				return pcc.pi.Action(domain.PokerActionBet, amount, 0), true
 			case "c", "call":
-				return pcc.pi.Action(domain.PokerActionCall, 0), true
+				return pcc.pi.Action(domain.PokerActionCall, 0, 0), true
 			case "ra", "raise":
 				amount := 0
 				if len(args) > 0 {
@@ -55,13 +57,13 @@ func (pcc *PokerCuiController) Exec(command string) string {
 						amount = a
 					}
 				}
-				return pcc.pi.Action(domain.PokerActionRaise, amount), true
+				return pcc.pi.Action(domain.PokerActionRaise, amount, 0), true
 			case "f", "fold":
-				return pcc.pi.Action(domain.PokerActionFold, 0), true
+				return pcc.pi.Action(domain.PokerActionFold, 0, 0), true
 			case "ck", "check":
-				return pcc.pi.Action(domain.PokerActionCheck, 0), true
+				return pcc.pi.Action(domain.PokerActionCheck, 0, 0), true
 			case "a", "allin":
-				return pcc.pi.Action(domain.PokerActionAllIn, 0), true
+				return pcc.pi.Action(domain.PokerActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
 				bl, errMsg, ok := cuiutil.ParseIntArg(args, "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", "Invalid betting limit: %s. Please enter 0-2.", 0, 2)
 				if !ok {
@@ -92,6 +94,17 @@ func (pcc *PokerCuiController) Exec(command string) string {
 			case "lw", "lowball":
 				cfg := pcc.pi.GetConfig()
 				cfg.IsLowball = !cfg.IsLowball
+				return pcc.pi.ResetWithConfig(cfg), true
+			case "mai", "metaai":
+				if len(args) < 1 {
+					return i18n.T("metaAIRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return i18n.Tf("invalidMetaAI", "val", args[0]), true
+				}
+				cfg := pcc.pi.GetConfig()
+				cfg.CpuMetaAI = v == 1
 				return pcc.pi.ResetWithConfig(cfg), true
 			}
 			return "", false

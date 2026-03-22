@@ -774,7 +774,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(dealState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 10, undefined, 0));
   });
 
   it('calls check command', async () => {
@@ -785,7 +785,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(dealState);
     fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, undefined, 0));
   });
 
   it('calls fold command', async () => {
@@ -796,7 +796,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(endState);
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined, undefined, 0));
   });
 
   it('calls allin command', async () => {
@@ -807,7 +807,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(dealState);
     fireEvent.click(screen.getByRole('button', { name: 'オールイン' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined, undefined, undefined, 0));
   });
 
   it('calls call command when has outstanding bet', async () => {
@@ -818,7 +818,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(dealState);
     fireEvent.click(screen.getByRole('button', { name: 'コール' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, undefined, 0));
   });
 
   it('calls raise command with betAmount when has outstanding bet', async () => {
@@ -829,7 +829,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(dealState);
     fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, 10));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, 10, undefined, 0));
   });
 
   it('sends updated bet amount when bet is clicked after changing input', async () => {
@@ -843,7 +843,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(dealState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 60));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 60, undefined, 0));
   });
 
   it('sends updated bet amount when raise is clicked after changing input', async () => {
@@ -857,7 +857,7 @@ describe('PokerPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(dealState);
     fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, 100));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', undefined, 100, undefined, 0));
   });
 
   it('calls reset command when reset button is clicked', async () => {
@@ -869,7 +869,11 @@ describe('PokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0, isLowball: false }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        bettingLimit: 0,
+        isLowball: false,
+        cpuMetaAI: false,
+      }),
     );
   });
 
@@ -885,7 +889,11 @@ describe('PokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 1, isLowball: false }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        bettingLimit: 1,
+        isLowball: false,
+        cpuMetaAI: false,
+      }),
     );
   });
 
@@ -901,7 +909,31 @@ describe('PokerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, { bettingLimit: 0, isLowball: true }),
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        bettingLimit: 0,
+        isLowball: true,
+        cpuMetaAI: false,
+      }),
+    );
+  });
+
+  it('sends cpuMetaAI true when checkbox is checked before reset', async () => {
+    renderWithProviders(<PokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const checkbox = screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, {
+        bettingLimit: 0,
+        isLowball: false,
+        cpuMetaAI: true,
+      }),
     );
   });
 

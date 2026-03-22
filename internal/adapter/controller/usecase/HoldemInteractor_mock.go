@@ -24,8 +24,8 @@ func (_m *MockHoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string 
 }
 
 // Action モック
-func (_m *MockHoldemInteractor) Action(action int, amount int) string {
-	ret := _m.Called(action, amount)
+func (_m *MockHoldemInteractor) Action(action int, amount int, humanPlayMs int) string {
+	ret := _m.Called(action, amount, humanPlayMs)
 	return ret.Get(0).(string)
 }
 

@@ -1,0 +1,63 @@
+package usecase
+
+import (
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
+)
+
+// IndianPokerInteractorIF インディアンポーカーインタラクターインタフェース
+type IndianPokerInteractorIF interface {
+	// Reset ゲーム初期化
+	Reset() string
+	// ResetWithConfig 設定を変更してゲーム初期化
+	ResetWithConfig(cfg domain.IndianPokerConfig) string
+	// Action プレイヤーアクション実行
+	Action(action int, amount int, humanPlayMs int) string
+	// GetConfig 現在の設定を取得
+	GetConfig() domain.IndianPokerConfig
+	// ActionLog 棋譜を出力する
+	ActionLog() string
+}
+
+// IndianPokerInteractor インディアンポーカーインタラクタークラス
+type IndianPokerInteractor struct {
+	ip  interfaces.IndianPokerGame
+	ipp presenter.IndianPokerPresenter
+}
+
+// NewIndianPokerInteractor コンストラクタ
+func NewIndianPokerInteractor(ip interfaces.IndianPokerGame, ipp presenter.IndianPokerPresenter) *IndianPokerInteractor {
+	mustNotNil("IndianPokerInteractor", map[string]any{"ip": ip, "ipp": ipp})
+	return &IndianPokerInteractor{ip: ip, ipp: ipp}
+}
+
+// Reset ゲーム初期化
+func (ipi *IndianPokerInteractor) Reset() string {
+	return execAndPresent(ipi.ip, ipi.ipp, ipi.ip.Reset)
+}
+
+// ResetWithConfig 設定を変更してゲーム初期化
+func (ipi *IndianPokerInteractor) ResetWithConfig(cfg domain.IndianPokerConfig) string {
+	if err := cfg.Validate(); err != nil {
+		return ipi.ipp.Output(ipi.ip, err)
+	}
+	ipi.ip.SetConfig(cfg)
+	err := ipi.ip.Reset()
+	return ipi.ipp.Output(ipi.ip, err)
+}
+
+// Action プレイヤーアクション実行
+func (ipi *IndianPokerInteractor) Action(action int, amount int, humanPlayMs int) string {
+	return execAndPresent(ipi.ip, ipi.ipp, func() error { return ipi.ip.PlayerAction(action, amount, humanPlayMs) })
+}
+
+// GetConfig 現在の設定を取得
+func (ipi *IndianPokerInteractor) GetConfig() domain.IndianPokerConfig {
+	return ipi.ip.GetConfig()
+}
+
+// ActionLog 棋譜を出力する
+func (ipi *IndianPokerInteractor) ActionLog() string {
+	return ipi.ipp.ActionLogOutput(ipi.ip)
+}

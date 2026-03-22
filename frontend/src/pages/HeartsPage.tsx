@@ -49,6 +49,10 @@ export function HeartsPage() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    hint,
+    hintError,
+    hintLoading,
+    handleHint,
   } = useHeartsGame();
   const { cardWidth } = useCardDimensions();
 
@@ -241,9 +245,20 @@ export function HeartsPage() {
           </div>
         )}
 
-        <ErrorAlert message={error} />
+        <ErrorAlert message={error ?? hintError} />
+
+        {hint && (
+          <div className="text-yellow-300 text-sm mb-2">
+            {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} ({t(`hintReason.${hint.reason}`)})
+          </div>
+        )}
 
         <div className="flex gap-2 items-center">
+          {(isPassPhase || isHumanTurn) && (
+            <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
+              {tc('button.hint')}
+            </button>
+          )}
           {isPassPhase && (
             <button
               type="button"

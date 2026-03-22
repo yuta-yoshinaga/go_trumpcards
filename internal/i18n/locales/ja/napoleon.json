@@ -1,0 +1,12 @@
+{
+  "helpTitle": "Napoleon (ナポレオン)",
+  "helpBid": "  b <n>                bid (0=pass, 12-17)",
+  "helpTrump": "  t <suit> <aS> <aV>   declare trump & adjutant",
+  "helpExchange": "  e <idx>              exchange kitty card",
+  "helpPlay": "  p <idx>              play a card",
+  "helpNext": "  n                    next trick",
+  "helpNextRound": "  nr                   next round",
+  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               point limit",
+  "helpSetMinBid": "  sm <n>               min bid (1-17)"
+}

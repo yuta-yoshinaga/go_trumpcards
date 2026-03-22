@@ -42,6 +42,7 @@ func TestSpadesWebController_Method(t *testing.T) {
 	siMock.On("Play", 3).Return(mockOutput)
 	siMock.On("NextTrick").Return(mockOutput)
 	siMock.On("NextRound").Return(mockOutput)
+	siMock.On("Hint").Return(mockOutput)
 	siMock.On("ActionLog").Return(mockOutput)
 
 	factory := func() uc.SpadesInteractorIF { return siMock }
@@ -208,6 +209,28 @@ func TestSpadesWebController_Method(t *testing.T) {
 	t.Run("success Exec l shorthand", func(t *testing.T) {
 		var input controller.SpadesWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"test-session-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("success Exec h hint", func(t *testing.T) {
+		var input controller.SpadesWebInput
+		_ = json.Unmarshal([]byte(`{"command":"h","sessionId":"test-session-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("success Exec hint", func(t *testing.T) {
+		var input controller.SpadesWebInput
+		_ = json.Unmarshal([]byte(`{"command":"hint","sessionId":"test-session-1"}`), &input)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/spades/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)

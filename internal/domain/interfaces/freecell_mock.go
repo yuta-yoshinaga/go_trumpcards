@@ -101,3 +101,8 @@ func (_m *MockFreeCellGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return v.([]*domain.ActionLogEntry)
 }
+
+func (_m *MockFreeCellGame) IsStalemate() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}

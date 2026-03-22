@@ -37,5 +37,14 @@
   "passButton": "パス",
   "playButton": "出す",
   "nextTrick": "次のトリック",
-  "nextRound": "次のラウンド"
+  "nextRound": "次のラウンド",
+  "hintAvailable": "ヒント",
+  "hintReason": {
+    "pass_high_risk_cards": "リスクの高いカードを渡す",
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "discard_queen_spades": "Q♠を捨てるチャンス",
+    "discard_hearts": "ハートを捨てる",
+    "discard_high": "高いカードを捨てる"
+  }
 }

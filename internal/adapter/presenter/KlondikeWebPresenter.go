@@ -21,6 +21,7 @@ func (p *KlondikeWebPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 	resObj.CanUndo = k.CanUndo()
 	resObj.Score = k.GetScore()
 	resObj.ScoringMode = int(k.GetScoringMode())
+	resObj.IsStalemate = k.IsStalemate()
 
 	// ウェイスト
 	waste := k.GetWaste()
@@ -66,7 +67,11 @@ func (p *KlondikeWebPresenter) Output(k interfaces.KlondikeGame, lastErr error) 
 		phase := k.GetPhase()
 		switch phase {
 		case domain.KlondikePhasePlaying:
-			resObj.MessageCode = "klondike.playing"
+			if k.IsStalemate() {
+				resObj.MessageCode = "klondike.stalemate"
+			} else {
+				resObj.MessageCode = "klondike.playing"
+			}
 		case domain.KlondikePhaseGameClear:
 			resObj.Message = fmt.Sprintf("ゲームクリア！ 手数: %d", k.GetMoveCount())
 			resObj.MessageCode = "klondike.gameClear"

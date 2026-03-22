@@ -51,4 +51,6 @@ type KlondikeGame interface {
 	GetScore() int
 	// GetScoringMode スコアリングモードを取得する
 	GetScoringMode() domain.KlondikeScoringMode
+	// IsStalemate 手詰まり状態を取得する
+	IsStalemate() bool
 }

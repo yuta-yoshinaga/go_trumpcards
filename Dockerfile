@@ -31,6 +31,7 @@ RUN go mod download
 # Copy only Go source files for better layer cache efficiency
 COPY cmd/ ./cmd/
 COPY internal/ ./internal/
+COPY api/ ./api/
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o go_trumpcards ./cmd/server
 
 # Stage 3: Final production image

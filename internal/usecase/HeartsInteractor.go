@@ -22,6 +22,8 @@ type HeartsInteractorIF interface {
 	NextRound() string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.HeartsConfig
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -104,6 +106,11 @@ func (hi *HeartsInteractor) NextRound() string {
 // GetConfig 現在の設定を取得
 func (hi *HeartsInteractor) GetConfig() domain.HeartsConfig {
 	return hi.h.GetConfig()
+}
+
+// Hint ヒント取得
+func (hi *HeartsInteractor) Hint() string {
+	return hi.hp.HintOutput(hi.h)
 }
 
 // ActionLog 棋譜を出力する

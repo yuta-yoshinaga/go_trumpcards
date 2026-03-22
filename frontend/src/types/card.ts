@@ -577,6 +577,12 @@ export interface HeartsConfig {
   omnibusJD: boolean;
 }
 
+/** A suggested hint for Hearts. */
+export interface HeartsHint {
+  cardIndices: number[];
+  reason: string;
+}
+
 /** Full Hearts game state returned from the API. */
 export interface HeartsResponse {
   players: HeartsPlayerData[];
@@ -594,6 +600,7 @@ export interface HeartsResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   config: HeartsConfig;
+  hint?: HeartsHint;
 }
 
 // --- Spades ---
@@ -625,6 +632,13 @@ export interface SpadesConfig {
   bagPenaltyThreshold: number;
 }
 
+/** A suggested hint for Spades. */
+export interface SpadesHint {
+  cardIndex?: number;
+  bid?: number;
+  reason: string;
+}
+
 /** Full Spades game state returned from the API. */
 export interface SpadesResponse {
   players: SpadesPlayerData[];
@@ -642,6 +656,7 @@ export interface SpadesResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   config: SpadesConfig;
+  hint?: SpadesHint;
 }
 
 // --- Crazy Eights (クレイジーエイト) ---
@@ -788,6 +803,7 @@ export interface KlondikeResponse {
   moveCount: number;
   drawCount: number;
   canUndo: boolean;
+  isStalemate: boolean;
   score: number;
   scoringMode: number;
   message: string;
@@ -815,6 +831,7 @@ export interface FreeCellResponse {
   phase: number;
   moveCount: number;
   canUndo: boolean;
+  isStalemate: boolean;
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
@@ -849,4 +866,164 @@ export interface BaccaratResponse {
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
+}
+
+// --- Napoleon (ナポレオン) ---
+
+/** Napoleon player data with bid, roles, scores, and picture card count. */
+export interface NapoleonPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  isNapoleon: boolean;
+  isAdjutant: boolean;
+  adjutantRevealed: boolean;
+  pictureCards: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Napoleon trick. */
+export interface NapoleonTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Napoleon game configuration. */
+export interface NapoleonConfig {
+  cpuDifficulty: number;
+  minBid: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Napoleon. */
+export interface NapoleonHint {
+  cardIndex?: number;
+  bid?: number;
+  trumpSuit?: number;
+  adjutantSuit?: number;
+  adjutantValue?: number;
+  discardIndex?: number;
+  reason: string;
+}
+
+/** Full Napoleon game state returned from the API. */
+export interface NapoleonResponse {
+  players: NapoleonPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentTrick: NapoleonTrickCard[];
+  trumpSuit: number;
+  adjutantCard: Card | null;
+  napoleonIdx: number;
+  adjutantIdx: number;
+  adjutantRevealed: boolean;
+  highestBid: number;
+  highestBidder: number;
+  kitty: Card[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: NapoleonConfig;
+  hint?: NapoleonHint;
+}
+
+// --- Spider Solitaire (スパイダーソリティア) ---
+
+/** A suggested move hint in Spider Solitaire. */
+export interface SpiderHint {
+  fromCol: number;
+  cardIndex: number;
+  toCol: number;
+}
+
+/** Tableau card with face-up state in Spider. */
+export interface SpiderTableauCard {
+  card: Card | null;
+  faceUp: boolean;
+}
+
+/** Full Spider Solitaire game state returned from the API. */
+export interface SpiderResponse {
+  tableau: SpiderTableauCard[][];
+  stockCount: number;
+  completedSuits: number;
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  score: number;
+  difficulty: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: SpiderHint;
+}
+
+// --- Indian Poker (インディアンポーカー) ---
+
+/** Indian Poker player data with card, chips, and betting status. */
+export interface IndianPokerPlayerOutput {
+  id: number;
+  isHuman: boolean;
+  card: Card | null;
+  chips: number;
+  currentBet: number;
+  folded: boolean;
+  allIn: boolean;
+  cardRank: number;
+  playStyleName: string;
+}
+
+/** Indian Poker round result for a single player. */
+export interface IndianPokerResultOutput {
+  playerIdx: number;
+  card: Card | null;
+  cardRank: number;
+  wonAmount: number;
+}
+
+/** CPU betting action in Indian Poker. */
+export interface IndianPokerCpuActionOutput {
+  playerIdx: number;
+  action: number;
+  amount: number;
+}
+
+/** Side pot in Indian Poker with eligible players. */
+export interface IndianPokerSidePot {
+  amount: number;
+  eligiblePlayers: number[];
+}
+
+/** Full Indian Poker game state returned from the API. */
+export interface IndianPokerResponse {
+  players: IndianPokerPlayerOutput[];
+  pot: number;
+  sidePots: IndianPokerSidePot[];
+  dealerIdx: number;
+  currentTurn: number;
+  phase: number;
+  gameEndFlag: boolean;
+  lastBet: number;
+  minRaise: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
+  roundResults: IndianPokerResultOutput[];
+  cpuActions: IndianPokerCpuActionOutput[];
+  handCount: number;
+  ante: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  actionLog?: ActionLogEntry[];
 }

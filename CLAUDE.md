@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Omaha Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat, Spades, Crazy Eights, Gin Rummy. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Omaha Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat, Spades, Crazy Eights, Gin Rummy, Napoleon, Indian Poker. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -69,6 +69,9 @@ go run ./cmd/trumpcards baccarat   # Baccarat (バカラ) CLI
 go run ./cmd/trumpcards spades     # Spades (スペード) CLI
 go run ./cmd/trumpcards crazyeights   # Crazy Eights CLI
 go run ./cmd/trumpcards ginrummy   # Gin Rummy (ジンラミー) CLI
+go run ./cmd/trumpcards spider     # Spider Solitaire (スパイダーソリティア) CLI
+go run ./cmd/trumpcards napoleon   # Napoleon (ナポレオン) CLI
+go run ./cmd/trumpcards indianpoker   # Indian Poker (インディアンポーカー) CLI
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)
@@ -155,6 +158,8 @@ Before marking any task complete:
 | Make an architectural decision (new technology, pattern, or structural change) | Add or update an ADR in [`docs/adr/`](docs/adr/) (日本語で記述) and update the index in [`docs/adr/README.md`](docs/adr/README.md) |
 | Add/modify exported Go symbol | Ensure GoDoc comment (`// SymbolName description`) is present |
 | Add/modify exported TS symbol | Ensure TSDoc comment (`/** description */`) is present |
+| Change backend struct/interface/domain logic | Update corresponding UML diagrams in [`docs/design/backend.md`](docs/design/backend.md) (class, sequence, state machine) |
+| Change frontend component/hook/API/type | Update corresponding UML diagrams in [`docs/design/frontend.md`](docs/design/frontend.md) (class, sequence, state machine) |
 
 Use commit type `docs` (or include doc changes in the same commit as the code change) following the Conventional Commits format.
 
@@ -257,5 +262,7 @@ All commit messages must follow [Conventional Commits](https://www.conventionalc
 | Architecture & key patterns | [`docs/architecture.md`](docs/architecture.md) |
 | Architecture Decision Records | [`docs/adr/`](docs/adr/) |
 | Game descriptions & entities | [`docs/games.md`](docs/games.md) |
+| Backend UML design (class, sequence, state machine) | [`docs/design/backend.md`](docs/design/backend.md) |
+| Frontend UML design (class, sequence, state machine) | [`docs/design/frontend.md`](docs/design/frontend.md) |
 | Go backend rules | [`internal/CLAUDE.md`](internal/CLAUDE.md) |
 | Frontend rules | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) |

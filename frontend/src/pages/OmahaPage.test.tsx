@@ -690,7 +690,7 @@ describe('OmahaPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 20));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 20, undefined, 0));
   });
 
   it('calls check command', async () => {
@@ -701,7 +701,7 @@ describe('OmahaPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, 0));
   });
 
   it('calls fold command', async () => {
@@ -712,7 +712,7 @@ describe('OmahaPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined, 0));
   });
 
   it('calls allin command', async () => {
@@ -723,7 +723,7 @@ describe('OmahaPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'オールイン' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined, undefined, 0));
   });
 
   it('calls call command when has outstanding bet', async () => {
@@ -734,7 +734,7 @@ describe('OmahaPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'コール' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
   });
 
   it('calls raise command with betAmount when has outstanding bet', async () => {
@@ -745,7 +745,7 @@ describe('OmahaPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 20));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 20, undefined, 0));
   });
 
   it('calls reset command when reset button is clicked', async () => {
@@ -756,7 +756,7 @@ describe('OmahaPage', () => {
     mockExec.mockResolvedValue(initState);
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
   });
 
   // ---- loading / disabled state ----
@@ -845,7 +845,7 @@ describe('OmahaPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'レイズ' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 100));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 100, undefined, 0));
   });
 
   it('sends updated bet amount when bet is clicked after changing input', async () => {
@@ -859,7 +859,7 @@ describe('OmahaPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(preFlopState);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 60));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 60, undefined, 0));
   });
 
   it('sets aria-busy while loading', async () => {
@@ -1190,7 +1190,21 @@ describe('OmahaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: false }));
+  });
+
+  it('sends cpuMetaAI true when checkbox is checked before reset', async () => {
+    renderWithProviders(<OmahaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const checkbox = screen.getByLabelText('メタAI（CPUがプレイスタイルを学習）');
+    fireEvent.click(checkbox);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuMetaAI: true }));
   });
 
   // ---- Keyboard navigation ----
@@ -1206,7 +1220,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'c' });
       });
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call'));
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', undefined, undefined, 0));
     });
 
     it('pressing k triggers check when canAct and !hasOutstandingBet', async () => {
@@ -1220,7 +1234,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'k' });
       });
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check'));
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('check', undefined, undefined, 0));
     });
 
     it('pressing f triggers fold when canAct', async () => {
@@ -1234,7 +1248,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'f' });
       });
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold'));
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('fold', undefined, undefined, 0));
     });
 
     it('pressing a triggers allin when canAct', async () => {
@@ -1248,7 +1262,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'a' });
       });
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin'));
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('allin', undefined, undefined, 0));
     });
 
     it('pressing r triggers raise when hasOutstandingBet', async () => {
@@ -1262,7 +1276,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'r' });
       });
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 20));
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('raise', 20, undefined, 0));
     });
 
     it('pressing r triggers bet when !hasOutstandingBet', async () => {
@@ -1276,7 +1290,7 @@ describe('OmahaPage', () => {
       await act(async () => {
         fireEvent.keyDown(document, { key: 'r' });
       });
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 20));
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 20, undefined, 0));
     });
 
     it('keyboard is disabled when not canAct', async () => {

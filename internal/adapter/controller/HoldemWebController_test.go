@@ -70,7 +70,7 @@ func TestHoldemWebController_Fold(t *testing.T) {
 	api, hwc := newHoldemTestHandler(mi)
 	defer hwc.Stop()
 
-	mi.On("Action", domain.HoldemActionFold, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionFold, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -85,7 +85,7 @@ func TestHoldemWebController_Check(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)
 	defer hwc.Stop()
-	mi.On("Action", domain.HoldemActionCheck, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionCheck, 0, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "check", "sessionId": "s1"}))
@@ -96,7 +96,7 @@ func TestHoldemWebController_Call(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)
 	defer hwc.Stop()
-	mi.On("Action", domain.HoldemActionCall, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionCall, 0, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "call", "sessionId": "s1"}))
@@ -107,7 +107,7 @@ func TestHoldemWebController_Bet(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)
 	defer hwc.Stop()
-	mi.On("Action", domain.HoldemActionBet, 50).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionBet, 50, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "bet", "sessionId": "s1", "amount": 50}))
@@ -118,7 +118,7 @@ func TestHoldemWebController_Raise(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)
 	defer hwc.Stop()
-	mi.On("Action", domain.HoldemActionRaise, 30).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionRaise, 30, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "raise", "sessionId": "s1", "amount": 30}))
@@ -129,7 +129,7 @@ func TestHoldemWebController_AllIn(t *testing.T) {
 	mi := new(mockUsecase.MockHoldemInteractor)
 	api, hwc := newHoldemTestHandler(mi)
 	defer hwc.Stop()
-	mi.On("Action", domain.HoldemActionAllIn, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionAllIn, 0, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "allin", "sessionId": "s1"}))
@@ -209,12 +209,12 @@ func TestHoldemWebController_ShortCommands(t *testing.T) {
 
 	cfg := domain.DefaultHoldemConfig()
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
-	mi.On("Action", domain.HoldemActionFold, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.HoldemActionCheck, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.HoldemActionCall, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.HoldemActionBet, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.HoldemActionRaise, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.HoldemActionAllIn, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionFold, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionCheck, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionCall, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionBet, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionRaise, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.HoldemActionAllIn, 0, 0).Return(`{"phase":1}`)
 
 	commands := []string{"r", "f", "ck", "c", "b", "ra", "a"}
 	for _, cmd := range commands {

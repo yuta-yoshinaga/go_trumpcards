@@ -92,6 +92,40 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 	})
 }
 
+// HintOutput ヒント情報を出力する
+func (p *HeartsCuiPresenter) HintOutput(h interfaces.HeartsGame) string {
+	hint := h.GetHint()
+	if hint == nil {
+		return "ヒントはありません。\n"
+	}
+	player := h.GetPlayer(0)
+	cards := make([]string, len(hint.CardIndices))
+	for i, idx := range hint.CardIndices {
+		cards[i] = fmt.Sprintf("[%d]%s", idx, cuiCardStr(player.GetCard(idx)))
+	}
+	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: %s (%s)]", strings.Join(cards, ", "), heartsHintReasonStr(hint.Reason))))
+}
+
+// heartsHintReasonStr ヒント理由を日本語に変換する
+func heartsHintReasonStr(reason string) string {
+	switch reason {
+	case "pass_high_risk_cards":
+		return "リスクの高いカードを渡す"
+	case "lead_low":
+		return "低いカードでリード"
+	case "follow_suit":
+		return "リードスートに追随"
+	case "discard_queen_spades":
+		return "Q♠を捨てるチャンス"
+	case "discard_hearts":
+		return "ハートを捨てる"
+	case "discard_high":
+		return "高いカードを捨てる"
+	default:
+		return reason
+	}
+}
+
 // ActionLogOutput 棋譜をテキスト出力
 func (p *HeartsCuiPresenter) ActionLogOutput(h interfaces.HeartsGame) string {
 	return actionLogOutputText(h)

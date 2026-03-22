@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"sort"
 )
@@ -87,25 +88,27 @@ func findOpenEndedDraw(cards []straightDrawCardInfo, check func(remaining []int)
 
 // Poker ポーカークラス (5枚ドローポーカー・マルチプレイヤー)
 type Poker struct {
-	trumpCards    *TrumpCards
-	players       []*PokerPlayer
-	config        PokerConfig
-	phase         int
-	pot           int
-	dealerIdx     int
-	currentTurn   int
-	lastBet       int
-	minRaise      int
-	raiseCount    int
-	actedFlags    []bool
-	sidePots      []PokerSidePot
-	startingChips []int
-	roundResults  []PokerResult
-	cpuActions    []PokerCpuAction
-	cpuExchanges  []PokerCpuExchange
-	actionLog     []*ActionLogEntry
-	gameEndFlag   bool
-	lastCpuError  error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
+	trumpCards      *TrumpCards
+	players         []*PokerPlayer
+	config          PokerConfig
+	phase           int
+	pot             int
+	dealerIdx       int
+	currentTurn     int
+	lastBet         int
+	minRaise        int
+	raiseCount      int
+	actedFlags      []bool
+	sidePots        []PokerSidePot
+	startingChips   []int
+	roundResults    []PokerResult
+	cpuActions      []PokerCpuAction
+	cpuExchanges    []PokerCpuExchange
+	actionLog       []*ActionLogEntry
+	gameEndFlag     bool
+	lastCpuError    error // CPU行動エラーの最後のフォールバック記録 (テスト検出用)
+	humanProfile    *BettingHumanProfile
+	lastHumanPlayMs int
 }
 
 // NewPoker コンストラクタ
@@ -138,6 +141,16 @@ func (p *Poker) Reset() error {
 	p.cpuActions = make([]PokerCpuAction, 0)
 	p.cpuExchanges = make([]PokerCpuExchange, 0)
 	p.actionLog = nil
+	p.lastHumanPlayMs = 0
+
+	// メタAI: プロファイル初期化
+	if p.config.CpuMetaAI {
+		if p.humanProfile != nil {
+			p.humanProfile.GamesPlayed++
+		} else {
+			p.humanProfile = &BettingHumanProfile{}
+		}
+	}
 
 	// Lowballモードではジョーカーを強制的に0にする
 	if p.config.IsLowball {
@@ -222,7 +235,8 @@ func (p *Poker) collectAntes() {
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
-func (p *Poker) PlayerAction(action, amount int) error {
+// humanPlayMs: 迷い時間(ms, 0=計測なし)
+func (p *Poker) PlayerAction(action, amount, humanPlayMs int) error {
 	if p.gameEndFlag {
 		return NewDomainError(ErrGameEnded, "Game has already ended.")
 	}
@@ -231,6 +245,19 @@ func (p *Poker) PlayerAction(action, amount int) error {
 	}
 	if !p.players[p.currentTurn].GetIsHuman() {
 		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
+	}
+
+	// メタAI: 人間アクション記録
+	p.lastHumanPlayMs = humanPlayMs
+	if p.config.CpuMetaAI && p.humanProfile != nil {
+		pl := p.players[p.currentTurn]
+		pl.EvalHand()
+		handRank := pl.GetHandRank()
+		p.humanProfile.RecordAction(handRank, action)
+		p.humanProfile.RecordHesitation(humanPlayMs)
+		if p.lastBet > pl.GetCurrentBet() {
+			p.humanProfile.RecordFoldToBet(action == PokerActionFold)
+		}
 	}
 
 	err := p.executeAction(p.currentTurn, action, amount)
@@ -634,6 +661,12 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 		return p.cpuCallOrCheck(callAmount)
 	}
 
+	// メタAI: ブラフ率を調整
+	if p.config.CpuMetaAI && p.humanProfile != nil {
+		adjusted := p.humanProfile.AdjustedBluffChance(float64(params.bluffRate))
+		params.bluffRate = int(math.Round(adjusted))
+	}
+
 	pl.EvalHand()
 	handRank := pl.GetHandRank()
 
@@ -650,6 +683,18 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 		action, amount = p.cpuDecideFirstBet(idx, params, callAmount, handRank)
 	} else {
 		action, amount = p.cpuDecideSecondBet(idx, params, callAmount, handRank, exchangeWarning)
+	}
+
+	// メタAI: 人間のベット/レイズに対してコール確率を調整
+	if p.config.CpuMetaAI && p.humanProfile != nil && p.lastHumanPlayMs > 0 {
+		if action == PokerActionFold && callAmount > 0 {
+			bracket := bettingHandBracket(handRank)
+			adjustedCall := p.humanProfile.AdjustedCallChance(0.0, bracket, p.lastHumanPlayMs)
+			if adjustedCall > 0 && rand.Float64() < adjustedCall {
+				action = PokerActionCall
+				amount = 0
+			}
+		}
 	}
 
 	maxRaises, maxBetAmount := p.bettingLimits()
@@ -1016,6 +1061,12 @@ func (p *Poker) SetConfig(cfg PokerConfig) { p.config = cfg }
 
 // GetLastCpuError 最後のCPUアクションエラー取得 (テスト・デバッグ用)
 func (p *Poker) GetLastCpuError() error { return p.lastCpuError }
+
+// GetHumanProfile メタAIプロファイル取得
+func (p *Poker) GetHumanProfile() *BettingHumanProfile { return p.humanProfile }
+
+// ResetProfile メタAIプロファイルをリセットする
+func (p *Poker) ResetProfile() { p.humanProfile = nil }
 
 // GetActionLog 棋譜を取得する
 func (p *Poker) GetActionLog() []*ActionLogEntry { return p.actionLog }

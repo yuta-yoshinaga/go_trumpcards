@@ -26,7 +26,10 @@
     "freecell": "フリーセル",
     "baccarat": "バカラ",
     "crazyeights": "クレイジーエイト",
-    "ginrummy": "ジンラミー"
+    "ginrummy": "ジンラミー",
+    "spider": "スパイダー",
+    "napoleon": "ナポレオン",
+    "indianpoker": "インディアンポーカー"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -61,7 +64,9 @@
     "cancel": "キャンセル",
     "confirmReset": "リセット確認",
     "confirmResetMessage": "本当にゲームをリセットしますか？",
-    "confirm": "確認"
+    "confirm": "確認",
+    "hint": "ヒント",
+    "retry": "再試行"
   },
   "status": {
     "folded": "フォールド",
@@ -135,6 +140,15 @@
     "ginrummy.discardPhase": "手札から1枚捨てるか、ノックしてください",
     "ginrummy.layoffPhase": "ノッカーのメルドにカードをレイオフできます",
     "ginrummy.roundEnd": "ラウンド終了",
+    "napoleon.result.napoleonWins": "ナポレオン軍の勝利！",
+    "napoleon.result.alliedWins": "連合軍の勝利！",
+    "napoleon.bidPhase": "ビッドしてください",
+    "napoleon.trumpDeclaration": "切り札と副官を宣言してください",
+    "napoleon.kittyExchange": "場札を交換してください",
+    "napoleon.playPhase.lead": "リードしてください",
+    "napoleon.playPhase.follow": "カードを出してください",
+    "napoleon.trickEnd": "トリック終了",
+    "napoleon.roundEnd": "ラウンド終了",
     "memory.flip1": "1枚目をめくってください",
     "memory.flip2": "2枚目をめくってください",
     "memory.matched": "ペアが揃いました！",
@@ -149,10 +163,12 @@
     "klondike.gameOver": "ゲームオーバー",
     "klondike.hintAvailable": "ヒントがあります",
     "klondike.noHint": "ヒントはありません",
+    "klondike.stalemate": "手詰まりです。元に戻すかギブアップしてください。",
     "freecell.playing": "プレイ中",
     "freecell.gameClear": "ゲームクリア！ 手数: {{moveCount}}",
     "freecell.gameOver": "ゲームオーバー",
     "freecell.hintAvailable": "ヒントがあります",
-    "freecell.noHint": "ヒントはありません"
+    "freecell.noHint": "ヒントはありません",
+    "freecell.stalemate": "手詰まりです。元に戻すかギブアップしてください。"
   }
 }

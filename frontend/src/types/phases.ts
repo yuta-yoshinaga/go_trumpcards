@@ -145,8 +145,35 @@ export const BaccaratBetType = {
   TIE: 2,
 } as const;
 
+/** Spider phase constants (sync: internal/domain/Spider.go). */
+export const SpiderPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Napoleon phase constants (sync: internal/domain/Napoleon.go). */
+export const NapoleonPhase = {
+  BID: 0,
+  TRUMP_DECLARATION: 1,
+  KITTY_EXCHANGE: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
+} as const;
+
 /** Baccarat phase constants (sync: internal/domain/Baccarat.go). */
 export const BaccaratPhase = {
   BET: 1,
   END: 2,
+} as const;
+
+/** Indian Poker phase constants (sync: internal/domain/IndianPoker.go). */
+export const IndianPokerPhase = {
+  INIT: 0,
+  ANTE: 1,
+  BETTING: 2,
+  SHOWDOWN: 3,
+  END: 4,
 } as const;

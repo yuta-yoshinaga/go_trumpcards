@@ -27,6 +27,10 @@ interface CardImageProps {
   onDrop?: (e: React.DragEvent) => void;
 }
 
+/** Natural card image dimensions (200x300 PNG assets, 2:3 aspect ratio). */
+const CARD_NATURAL_WIDTH = 200;
+const CARD_NATURAL_HEIGHT = 300;
+
 /** Renders a face-up playing card image. */
 export function CardImage({
   card,
@@ -38,11 +42,15 @@ export function CardImage({
   onDragOver,
   onDrop,
 }: CardImageProps) {
+  const w = width ?? 80;
   return (
     <img
       src={getImagePath(card)}
       alt={cardAlt(card)}
-      style={{ width: width ?? 80, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
+      width={CARD_NATURAL_WIDTH}
+      height={CARD_NATURAL_HEIGHT}
+      loading="lazy"
+      style={{ width: w, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
       className={className}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -65,11 +73,15 @@ interface CardBackProps {
 export function CardBack({ width, style, className, onClick, ariaLabel }: CardBackProps) {
   const { t } = useTranslation('common');
   const effectiveAriaLabel = onClick ? ariaLabel || t('card.back') : undefined;
+  const w = width ?? 80;
   const img = (
     <img
       src="/images/z01.png"
       alt={onClick ? '' : t('card.back')}
-      style={{ width: width ?? 80, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
+      width={CARD_NATURAL_WIDTH}
+      height={CARD_NATURAL_HEIGHT}
+      loading="lazy"
+      style={{ width: w, maxWidth: '100%', borderRadius: 6, display: 'block', ...style }}
       className={className}
     />
   );

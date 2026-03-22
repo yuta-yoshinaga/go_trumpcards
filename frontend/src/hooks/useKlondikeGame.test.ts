@@ -34,6 +34,7 @@ const defaultState: KlondikeResponse = {
   moveCount: 0,
   drawCount: 1,
   canUndo: false,
+  isStalemate: false,
   score: -52,
   scoringMode: 0,
   message: '',

@@ -58,27 +58,33 @@ const (
 
 // Klondike クロンダイクゲームクラス
 type Klondike struct {
-	trumpCards  *TrumpCards
-	tableau     [KlondikeTableauCnt][]*KlondikeTableauCard
-	stock       []*Card
-	waste       []*Card
-	foundation  [KlondikeFoundationCnt][]*Card
-	phase       KlondikePhase
-	moveCount   int
-	actionLog   []*ActionLogEntry
-	drawCount   int
-	history     []*klondikeSnapshot
-	scoringMode KlondikeScoringMode
+	trumpCards           *TrumpCards
+	tableau              [KlondikeTableauCnt][]*KlondikeTableauCard
+	stock                []*Card
+	waste                []*Card
+	foundation           [KlondikeFoundationCnt][]*Card
+	phase                KlondikePhase
+	moveCount            int
+	actionLog            []*ActionLogEntry
+	drawCount            int
+	history              []*klondikeSnapshot
+	scoringMode          KlondikeScoringMode
+	isStalemate          bool
+	noProgressCycles     int
+	progressSinceRecycle bool
 }
 
 // klondikeSnapshot アンドゥ用スナップショット
 type klondikeSnapshot struct {
-	tableau    [KlondikeTableauCnt][]*KlondikeTableauCard
-	stock      []*Card
-	waste      []*Card
-	foundation [KlondikeFoundationCnt][]*Card
-	phase      KlondikePhase
-	moveCount  int
+	tableau              [KlondikeTableauCnt][]*KlondikeTableauCard
+	stock                []*Card
+	waste                []*Card
+	foundation           [KlondikeFoundationCnt][]*Card
+	phase                KlondikePhase
+	moveCount            int
+	isStalemate          bool
+	noProgressCycles     int
+	progressSinceRecycle bool
 }
 
 // NewKlondike コンストラクタ
@@ -111,6 +117,9 @@ func (k *Klondike) Reset() {
 	k.moveCount = 0
 	k.actionLog = nil
 	k.history = nil
+	k.isStalemate = false
+	k.noProgressCycles = 0
+	k.progressSinceRecycle = false
 
 	// タブローに配る: 列iにはi+1枚、最後だけ表
 	for i := 0; i < KlondikeTableauCnt; i++ {
@@ -155,7 +164,12 @@ func (k *Klondike) Draw() error {
 			k.stock = append(k.stock, k.waste[i])
 		}
 		k.waste = nil
+		if !k.progressSinceRecycle {
+			k.noProgressCycles++
+		}
+		k.progressSinceRecycle = false
 		k.appendLog("recycle", "ウェイストをストックに戻しました", nil)
+		k.checkKlondikeStalemate()
 		return nil
 	}
 	k.takeSnapshot()
@@ -173,6 +187,7 @@ func (k *Klondike) Draw() error {
 	}
 	k.moveCount++
 	k.appendLog("draw", "ストックからカードを引きました", drawnCards)
+	k.checkKlondikeStalemate()
 	return nil
 }
 
@@ -195,7 +210,9 @@ func (k *Klondike) MoveWasteToTableau(col int) error {
 	k.waste = k.waste[:len(k.waste)-1]
 	k.tableau[col] = append(k.tableau[col], &KlondikeTableauCard{Card: card, FaceUp: true})
 	k.moveCount++
+	k.progressSinceRecycle = true
 	k.appendLog("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), []*Card{card})
+	k.checkKlondikeStalemate()
 	return nil
 }
 
@@ -219,8 +236,10 @@ func (k *Klondike) MoveWasteToFoundation() error {
 	k.waste = k.waste[:len(k.waste)-1]
 	k.foundation[fIdx] = append(k.foundation[fIdx], card)
 	k.moveCount++
+	k.progressSinceRecycle = true
 	k.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
 	k.checkGameClear()
+	k.checkKlondikeStalemate()
 	return nil
 }
 
@@ -263,7 +282,9 @@ func (k *Klondike) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	// 自動フリップ
 	k.autoFlipTableau(fromCol)
 	k.moveCount++
+	k.progressSinceRecycle = true
 	k.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	k.checkKlondikeStalemate()
 	return nil
 }
 
@@ -294,8 +315,10 @@ func (k *Klondike) MoveTableauToFoundation(col int) error {
 	// 自動フリップ
 	k.autoFlipTableau(col)
 	k.moveCount++
+	k.progressSinceRecycle = true
 	k.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
 	k.checkGameClear()
+	k.checkKlondikeStalemate()
 	return nil
 }
 
@@ -488,6 +511,12 @@ func (k *Klondike) GetFoundation() [KlondikeFoundationCnt][]*Card { return k.fou
 // GetActionLog 棋譜取得
 func (k *Klondike) GetActionLog() []*ActionLogEntry { return k.actionLog }
 
+// IsStalemate 手詰まり状態取得
+func (k *Klondike) IsStalemate() bool { return k.isStalemate }
+
+// SetIsStalemate 手詰まり状態設定 (テスト用)
+func (k *Klondike) SetIsStalemate(v bool) { k.isStalemate = v }
+
 // SetTableau タブロー設定 (テスト用)
 func (k *Klondike) SetTableau(tableau [KlondikeTableauCnt][]*KlondikeTableauCard) {
 	k.tableau = tableau
@@ -601,8 +630,11 @@ func (k *Klondike) checkGameClear() {
 // takeSnapshot 現在の状態をスナップショットとして保存
 func (k *Klondike) takeSnapshot() {
 	snap := &klondikeSnapshot{
-		phase:     k.phase,
-		moveCount: k.moveCount,
+		phase:                k.phase,
+		moveCount:            k.moveCount,
+		isStalemate:          k.isStalemate,
+		noProgressCycles:     k.noProgressCycles,
+		progressSinceRecycle: k.progressSinceRecycle,
 	}
 	// deep copy tableau
 	for i := 0; i < KlondikeTableauCnt; i++ {
@@ -633,6 +665,9 @@ func (k *Klondike) restoreSnapshot(snap *klondikeSnapshot) {
 	k.foundation = snap.foundation
 	k.phase = snap.phase
 	k.moveCount = snap.moveCount
+	k.isStalemate = snap.isStalemate
+	k.noProgressCycles = snap.noProgressCycles
+	k.progressSinceRecycle = snap.progressSinceRecycle
 }
 
 // appendLog 棋譜エントリを追加

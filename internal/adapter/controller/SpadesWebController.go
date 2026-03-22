@@ -45,6 +45,13 @@ type SpadesWebOutputTrickCard struct {
 	Card      *WebOutputCard `json:"card"`
 }
 
+// SpadesWebOutputHint ヒント出力
+type SpadesWebOutputHint struct {
+	CardIndex *int   `json:"cardIndex,omitempty"`
+	Bid       *int   `json:"bid,omitempty"`
+	Reason    string `json:"reason"`
+}
+
 // SpadesWebOutput スペードWebアウトプット
 type SpadesWebOutput struct {
 	Players          []*SpadesWebOutputPlayer    `json:"players"`
@@ -58,6 +65,7 @@ type SpadesWebOutput struct {
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerIdx        int                         `json:"winnerIdx"`
 	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
+	Hint             *SpadesWebOutputHint        `json:"hint,omitempty"`
 	WebOutputBase
 	Config SpadesWebOutputConfig `json:"config"`
 }
@@ -125,6 +133,8 @@ func spadesDispatch(bc *baseController, w rest.ResponseWriter, si usecase.Spades
 		bc.writePresenterResponse(w, si.NextTrick())
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, si.NextRound())
+	case "h", "hint":
+		bc.writePresenterResponse(w, si.Hint())
 	case "log", "l":
 		bc.writePresenterResponse(w, si.ActionLog())
 	default:

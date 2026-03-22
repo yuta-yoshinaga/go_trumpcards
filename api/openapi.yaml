@@ -10,8 +10,8 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:80
-    description: Local development server (default port; override with PORT env var)
+  - url: /
+    description: Current server (resolves to the host serving the Swagger UI page)
 
 tags:
   - name: blackjack
@@ -46,6 +46,12 @@ tags:
     description: Crazy Eights (クレイジーエイト) game
   - name: ginrummy
     description: Gin Rummy (ジンラミー) game
+  - name: spider
+    description: Spider Solitaire (スパイダーソリティア) game
+  - name: napoleon
+    description: Napoleon (ナポレオン) game
+  - name: indianpoker
+    description: Indian Poker (インディアンポーカー) game
 
 paths:
   /blackjack/exec:
@@ -1595,6 +1601,257 @@ paths:
               schema:
                 $ref: '#/components/schemas/GinRummyResponse'
 
+  /spider/exec:
+    post:
+      tags:
+        - spider
+      summary: Execute a Spider Solitaire game command
+      description: |
+        Send a command to advance the Spider Solitaire game session
+        identified by `sessionId`.  Spider Solitaire is a single-player
+        solitaire game using 2 decks (104 cards) with 10 tableau columns.
+        Move same-suit descending sequences between columns.  Complete
+        K-through-A same-suit sequences are automatically removed.
+        8 completed suits = game clear.  Difficulty: 1/2/4 suits.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | Playing     | `0`   | Game in progress |
+        | GameClear   | `1`   | All 8 suits completed |
+        | GameOver    | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `deal`         | `d`     | Deal 1 card to each column from stock |
+        | `move`         | `m`     | Move cards between tableau columns |
+        | `giveup`       | `g`     | Give up |
+        | `hint`         | `h`     | Get a move suggestion |
+        | `autocomplete` | `ac`    | Auto-complete (when all face up) |
+        | `undo`         | `u`     | Undo last move |
+        | `log`          | `l`     | View action log |
+      operationId: spiderExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpiderRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              resetWithDifficulty:
+                summary: Start a new game with 2-suit difficulty
+                value:
+                  command: reset
+                  config:
+                    difficulty: 2
+                  sessionId: my-session-001
+              deal:
+                summary: Deal cards from stock
+                value:
+                  command: deal
+                  sessionId: my-session-001
+              move:
+                summary: Move card(s) from column 3, index 2 to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 3
+                    cardIndex: 2
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpiderResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpiderResponse'
+
+  /napoleon/exec:
+    post:
+      tags:
+        - napoleon
+      summary: Execute a Napoleon game command
+      description: |
+        Send a command to advance the Napoleon (ナポレオン) game session identified by
+        `sessionId`.  Napoleon is a 4-player trick-taking card game using 52 cards + 1
+        Joker (53 total).  Players bid the number of picture cards (J/Q/K/A + Joker = 17
+        max) they expect to capture.  The highest bidder becomes Napoleon, declares a trump
+        suit, and names an adjutant card (hidden ally).  Hidden teams: Napoleon's Army
+        (Napoleon + adjutant holder) vs Allied Forces.  Special cards: Joker (mighty --
+        strongest card), Spade 3 (joker killer -- beats mighty).  Napoleon's team must
+        capture >= bid number of picture cards to win.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player bids picture card count or passes |
+        | Trump     | `1`   | Napoleon declares the trump suit |
+        | Exchange  | `2`   | Napoleon exchanges cards with the kitty |
+        | Play      | `3`   | Trick play (follow suit; trump is declared suit) |
+        | TrickEnd  | `4`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `5`   | All 13 tricks played; advance with `nextround` |
+        | GameEnd   | `6`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `bid`          | `b`     | Place a bid (requires `bid` field) or pass (bid = 0) |
+        | `trump`        | `t`     | Declare trump suit (requires `suit` field: 1-4) |
+        | `exchange`     | `e`     | Exchange cards with kitty (requires `cardIndices`) |
+        | `play`         | `p`     | Play a card (requires `cardIndex`) |
+        | `next`         | `n`     | Advance to the next trick |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a play suggestion |
+        | `log`          | `l`     | View action log |
+      operationId: napoleonExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NapoleonRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 12 picture cards
+                value:
+                  command: bid
+                  bid: 12
+                  sessionId: my-session-001
+              pass:
+                summary: Pass on bidding
+                value:
+                  command: bid
+                  bid: 0
+                  sessionId: my-session-001
+              trump:
+                summary: Declare spades as trump
+                value:
+                  command: trump
+                  suit: 1
+                  sessionId: my-session-001
+              exchange:
+                summary: Exchange cards at indices 0 and 3 with kitty
+                value:
+                  command: exchange
+                  cardIndices: [0, 3]
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NapoleonResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NapoleonResponse'
+
+  /indianpoker/exec:
+    post:
+      tags:
+        - indianpoker
+      summary: Execute an Indian Poker game command
+      description: |
+        Send a command to advance the Indian Poker (インディアンポーカー) game session
+        identified by `sessionId`.  Indian Poker is a 4-player betting card game where
+        each player can see everyone else's card but not their own.  Each round, one card
+        is dealt to each player and held on their forehead (visible to others).  Players
+        bet based on the strength they infer from opponents' cards and their own betting
+        behavior.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Init      | `0`   | Initial state before first reset |
+        | Ante      | `1`   | Ante posted; cards dealt |
+        | Betting   | `2`   | Betting round (fold/check/call/bet/raise/all-in) |
+        | Showdown  | `3`   | Cards revealed; winner determined |
+        | End       | `4`   | A player is eliminated (0 chips) |
+
+        | Command   | Aliases | Description |
+        |-----------|---------|-------------|
+        | `reset`   | `r`     | Start / restart a game |
+        | `fold`    | `f`     | Fold the current hand |
+        | `check`   | `ck`    | Check (no bet, when no outstanding bet) |
+        | `call`    | `c`     | Call the current bet |
+        | `bet`     | `b`     | Place a bet (requires `amount`) |
+        | `raise`   | `ra`    | Raise (requires `amount`) |
+        | `allin`   | `a`     | Go all-in |
+        | `log`     | `l`     | View action log |
+      operationId: indianPokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndianPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold the current hand
+                value:
+                  command: fold
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet of 50
+                value:
+                  command: bet
+                  amount: 50
+                  sessionId: my-session-001
+              call:
+                summary: Call the current bet
+                value:
+                  command: call
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndianPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndianPokerResponse'
+
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -2136,6 +2393,17 @@ components:
             straights and flushes count against the player, and jokers
             are forced to rank 0. Best hand is 2-3-4-5-7 off-suit.
           example: false
+        cpuMetaAI:
+          type: boolean
+          description: |
+            When true, CPUs adaptively adjust bluff and call behavior based on
+            session-scoped game history (Meta-AI). Defaults to false.
+          default: false
+          example: false
+        humanPlayMs:
+          type: integer
+          description: Human play hesitation time in milliseconds (0=not measured)
+          example: 1200
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -3755,6 +4023,17 @@ components:
             Defaults to 10 when omitted.
           minimum: 1
           example: 10
+        cpuMetaAI:
+          type: boolean
+          description: |
+            When true, CPUs adaptively adjust bluff and call behavior based on
+            session-scoped game history (Meta-AI). Defaults to false.
+          default: false
+          example: false
+        humanPlayMs:
+          type: integer
+          description: Human play hesitation time in milliseconds (0=not measured)
+          example: 1200
         sessionId:
           type: string
           description: Unique session identifier (max 256 characters)
@@ -4417,6 +4696,19 @@ components:
               type: boolean
               description: "Omnibus Hearts variant: J♦ awards -10 points"
               example: false
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play hint (only present when hint command is used)
+          properties:
+            cardIndices:
+              type: array
+              items:
+                type: integer
+              description: Recommended card indices (1 for play, 3 for pass)
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
 
     # -------------------------------------------------------------------------
     # Memory
@@ -4664,6 +4956,7 @@ components:
         - moveCount
         - drawCount
         - canUndo
+        - isStalemate
         - score
         - scoringMode
         - message
@@ -4708,6 +5001,10 @@ components:
         canUndo:
           type: boolean
           description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
         score:
           type: integer
@@ -4801,6 +5098,7 @@ components:
         - phase
         - moveCount
         - canUndo
+        - isStalemate
         - message
       properties:
         tableau:
@@ -4835,6 +5133,10 @@ components:
         canUndo:
           type: boolean
           description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
           example: false
         hint:
           type: object
@@ -5161,6 +5463,22 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play or bid hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index (null during bid phase)
+            bid:
+              type: integer
+              nullable: true
+              description: Recommended bid value (null during play phase)
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
 
     # -------------------------------------------------------------------------
     # Crazy Eights
@@ -5394,6 +5712,457 @@ components:
               type: integer
             pointLimit:
               type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Spider Solitaire types
+    # -------------------------------------------------------------------------
+    SpiderRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          enum: [reset, deal, move, giveup, hint, autocomplete, undo, log]
+        sessionId:
+          type: string
+        from:
+          $ref: '#/components/schemas/SpiderZone'
+        to:
+          $ref: '#/components/schemas/SpiderZone'
+        config:
+          type: object
+          properties:
+            difficulty:
+              type: integer
+              enum: [1, 2, 4]
+              description: "1=1-suit, 2=2-suit, 4=4-suit"
+
+    SpiderZone:
+      type: object
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          enum: [tableau]
+        col:
+          type: integer
+        cardIndex:
+          type: integer
+
+    SpiderTableauCard:
+      type: object
+      required:
+        - faceUp
+      properties:
+        card:
+          $ref: '#/components/schemas/Card'
+        faceUp:
+          type: boolean
+
+    SpiderHint:
+      type: object
+      properties:
+        fromCol:
+          type: integer
+        cardIndex:
+          type: integer
+        toCol:
+          type: integer
+
+    SpiderResponse:
+      type: object
+      required:
+        - tableau
+        - stockCount
+        - completedSuits
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - score
+        - difficulty
+        - message
+      properties:
+        tableau:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/SpiderTableauCard'
+        stockCount:
+          type: integer
+        completedSuits:
+          type: integer
+        phase:
+          type: integer
+          enum: [0, 1, 2]
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        score:
+          type: integer
+        difficulty:
+          type: integer
+          enum: [1, 2, 4]
+        hint:
+          $ref: '#/components/schemas/SpiderHint'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    # -------------------------------------------------------------------------
+    # Napoleon
+    # -------------------------------------------------------------------------
+    NapoleonRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `trump` (`t`), `exchange` (`e`), `play` (`p`), `next` (`n`),
+            `nextround` (`nr`), `hint` (`h`), `log` (`l`),
+            `setdifficulty` (`sd`), `setlimit` (`sl`), `setminbid` (`sm`).
+          enum: [reset, r, bid, b, trump, t, exchange, e, play, p, next, n, nextround, nr, hint, h, log, l, setdifficulty, sd, setlimit, sl, setminbid, sm]
+          example: reset
+        bid:
+          type: integer
+          description: Bid value (number of picture cards, or 0 to pass).  Required for `bid` command.
+          minimum: 0
+          maximum: 17
+          example: 12
+        suit:
+          type: integer
+          description: "Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond).  Required for `trump` command."
+          minimum: 1
+          maximum: 4
+          example: 1
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of cards to exchange with kitty.  Required for `exchange` command.
+          example: [0, 3]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+            minBid:
+              type: integer
+              minimum: 1
+              maximum: 17
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    NapoleonResponse:
+      type: object
+      description: Current state of the Napoleon game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              picCards:
+                type: integer
+                description: Number of picture cards captured
+              cumulativeScore:
+                type: integer
+              isNapoleon:
+                type: boolean
+              isAdjutant:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = Bid, 1 = Trump, 2 = Exchange, 3 = Play, 4 = TrickEnd, 5 = RoundEnd, 6 = GameEnd"
+          enum: [0, 1, 2, 3, 4, 5, 6]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        trickNumber:
+          type: integer
+          description: Current trick number within the round
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        bidPlayerIdx:
+          type: integer
+          description: Index of the player currently bidding
+        napoleonIdx:
+          type: integer
+          description: Index of the Napoleon player (-1 if not yet decided)
+        adjutantCard:
+          $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Declared trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond, 0=not yet declared)"
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        kitty:
+          type: array
+          description: Kitty cards (visible to Napoleon during exchange phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        napoleonBid:
+          type: integer
+          description: Napoleon's winning bid
+        napoleonPicCards:
+          type: integer
+          description: Total picture cards captured by Napoleon's team
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+            minBid:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Indian Poker
+    # -------------------------------------------------------------------------
+    IndianPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `fold` (`f`),
+            `check` (`ck`), `call` (`c`), `bet` (`b`), `raise` (`ra`),
+            `allin` (`a`), `log` (`l`).
+          enum: [reset, r, fold, f, check, ck, call, c, bet, b, raise, ra, allin, a, log, l]
+          example: reset
+        amount:
+          type: integer
+          description: Bet/raise amount.  Required for `bet` and `raise` commands.
+          minimum: 1
+          example: 50
+        humanPlayMs:
+          type: integer
+          description: Time in milliseconds the human took to decide (used for Meta-AI hesitation tracking).
+          example: 3000
+        ante:
+          type: integer
+          description: Ante amount (only used with `reset`).
+          minimum: 1
+          example: 10
+        bettingLimit:
+          type: integer
+          description: "Betting limit type (0=Fixed, 1=Pot Limit, 2=No Limit).  Only used with `reset`."
+          minimum: 0
+          maximum: 2
+          example: 2
+        cpuMetaAI:
+          type: boolean
+          description: "Whether CPU Meta-AI is enabled.  Only used with `reset`."
+          example: true
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    IndianPokerResponse:
+      type: object
+      description: Current state of the Indian Poker game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              card:
+                $ref: '#/components/schemas/Card'
+                nullable: true
+                description: "Player's card (null for human during betting, visible for CPUs)"
+              chips:
+                type: integer
+              currentBet:
+                type: integer
+              folded:
+                type: boolean
+              allIn:
+                type: boolean
+              playStyleName:
+                type: string
+        pot:
+          type: integer
+          description: Current pot size
+        sidePots:
+          type: array
+          description: Side pots (when players are all-in with different amounts)
+          items:
+            type: object
+            properties:
+              amount:
+                type: integer
+              eligiblePlayers:
+                type: array
+                items:
+                  type: integer
+        dealerIdx:
+          type: integer
+          description: Index of the current dealer
+        currentTurn:
+          type: integer
+          description: Index of the player whose turn it is
+        phase:
+          type: integer
+          description: "Game phase: 0 = Init, 1 = Ante, 2 = Betting, 3 = Showdown, 4 = End"
+          enum: [0, 1, 2, 3, 4]
+          example: 0
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        lastBet:
+          type: integer
+          description: The last bet amount in the current round
+        minRaise:
+          type: integer
+          description: Minimum raise amount
+        raiseCount:
+          type: integer
+          description: Number of raises in the current round
+        maxBetAmount:
+          type: integer
+          description: Maximum allowed bet amount (based on betting limit)
+        bettingLimit:
+          type: integer
+          description: "Current betting limit (0=Fixed, 1=Pot Limit, 2=No Limit)"
+        ante:
+          type: integer
+          description: Current ante amount
+        handCount:
+          type: integer
+          description: Number of hands played
+        roundResults:
+          type: array
+          description: Results from the showdown
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+              cardRank:
+                type: integer
+                description: "Card rank (2-14, Ace=14)"
+              wonAmount:
+                type: integer
+        cpuActions:
+          type: array
+          description: CPU actions taken during the betting round
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              action:
+                type: integer
+              amount:
+                type: integer
         message:
           type: string
           description: Game status message

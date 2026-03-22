@@ -103,7 +103,7 @@ func TestOmaha_PlayerAction_Fold(t *testing.T) {
 	o.lastBet = 50
 	o.players[0].SetCurrentBet(0)
 
-	err := o.PlayerAction(OmahaActionFold, 0)
+	err := o.PlayerAction(OmahaActionFold, 0, 0)
 	assert.NoError(t, err)
 }
 
@@ -115,7 +115,7 @@ func TestOmaha_PlayerAction_Check(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	}
 
-	err := o.PlayerAction(OmahaActionCheck, 0)
+	err := o.PlayerAction(OmahaActionCheck, 0, 0)
 	assert.NoError(t, err)
 }
 
@@ -127,20 +127,20 @@ func TestOmaha_PlayerAction_Bet(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	}
 
-	err := o.PlayerAction(OmahaActionBet, 20)
+	err := o.PlayerAction(OmahaActionBet, 20, 0)
 	assert.NoError(t, err)
 }
 
 func TestOmaha_PlayerAction_GameEnded(t *testing.T) {
 	o := setupOmahaForHumanAction(OmahaPhaseFlop)
 	o.gameEndFlag = true
-	err := o.PlayerAction(OmahaActionCheck, 0)
+	err := o.PlayerAction(OmahaActionCheck, 0, 0)
 	assert.Error(t, err)
 }
 
 func TestOmaha_PlayerAction_WrongPhase(t *testing.T) {
 	o := setupOmahaForHumanAction(OmahaPhaseShowdown)
-	err := o.PlayerAction(OmahaActionCheck, 0)
+	err := o.PlayerAction(OmahaActionCheck, 0, 0)
 	assert.Error(t, err)
 }
 
@@ -152,7 +152,7 @@ func TestOmaha_PlayerAction_NotHumanTurn(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	}
 	o.currentTurn = 1 // CPU
-	err := o.PlayerAction(OmahaActionCheck, 0)
+	err := o.PlayerAction(OmahaActionCheck, 0, 0)
 	assert.Error(t, err)
 }
 
@@ -346,4 +346,122 @@ func TestOmaha_FullGame(t *testing.T) {
 			assert.Equal(t, 4, o.GetPlayer(j).GetCardsSize())
 		}
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Meta-AI integration tests
+// ---------------------------------------------------------------------------
+
+func TestOmaha_MetaAI_ProfileSurvivesReset(t *testing.T) {
+	o := newTestOmaha()
+	cfg := o.GetConfig()
+	cfg.CpuMetaAI = true
+	o.SetConfig(cfg)
+
+	_ = o.Reset()
+	profile := o.GetHumanProfile()
+	assert.NotNil(t, profile, "profile should be created on first Reset with CpuMetaAI=true")
+	assert.Equal(t, 0, profile.GamesPlayed)
+
+	_ = o.Reset()
+	profile2 := o.GetHumanProfile()
+	assert.NotNil(t, profile2)
+	assert.Equal(t, 1, profile2.GamesPlayed)
+}
+
+func TestOmaha_MetaAI_ProfileNotCreatedWhenDisabled(t *testing.T) {
+	o := newTestOmaha()
+	_ = o.Reset()
+	assert.Nil(t, o.GetHumanProfile())
+}
+
+func TestOmaha_MetaAI_ResetProfileClearsProfile(t *testing.T) {
+	o := newTestOmaha()
+	cfg := o.GetConfig()
+	cfg.CpuMetaAI = true
+	o.SetConfig(cfg)
+	_ = o.Reset()
+	assert.NotNil(t, o.GetHumanProfile())
+
+	o.ResetProfile()
+	assert.Nil(t, o.GetHumanProfile())
+}
+
+func TestOmaha_MetaAI_LastHumanPlayMsResetOnReset(t *testing.T) {
+	o := setupOmahaForHumanAction(OmahaPhaseFlop)
+	cfg := o.GetConfig()
+	cfg.CpuMetaAI = true
+	o.SetConfig(cfg)
+	o.SetHumanProfile(&BettingHumanProfile{})
+	o.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignDiamond, 9, false),
+	})
+	_ = o.PlayerAction(OmahaActionBet, 20, 800)
+	assert.Equal(t, 800, o.GetLastHumanPlayMs(), "lastHumanPlayMs should be set after PlayerAction")
+
+	_ = o.Reset()
+	assert.Equal(t, 0, o.GetLastHumanPlayMs(), "lastHumanPlayMs should be reset to 0 on Reset")
+}
+
+func TestOmaha_MetaAI_PlayerActionRecordsAction(t *testing.T) {
+	t.Run("aggressive action is recorded", func(t *testing.T) {
+		o := setupOmahaForHumanAction(OmahaPhaseFlop)
+		cfg := o.GetConfig()
+		cfg.CpuMetaAI = true
+		o.SetConfig(cfg)
+		o.SetHumanProfile(&BettingHumanProfile{})
+		o.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 7, false),
+			NewCard(CardDesignDiamond, 9, false),
+		})
+
+		err := o.PlayerAction(OmahaActionBet, 20, 800)
+		assert.NoError(t, err)
+
+		profile := o.GetHumanProfile()
+		assert.NotNil(t, profile)
+		assert.Equal(t, 1, profile.HesitationCount)
+		total := 0
+		for i := 0; i < 3; i++ {
+			total += profile.AggressiveByBracket[i].Total
+		}
+		assert.Equal(t, 1, total)
+	})
+
+	t.Run("fold on bet records fold-to-bet", func(t *testing.T) {
+		o := setupOmahaForHumanAction(OmahaPhaseFlop)
+		cfg := o.GetConfig()
+		cfg.CpuMetaAI = true
+		o.SetConfig(cfg)
+		o.SetHumanProfile(&BettingHumanProfile{})
+		o.SetLastBet(40)
+		o.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 7, false),
+			NewCard(CardDesignDiamond, 9, false),
+		})
+
+		err := o.PlayerAction(OmahaActionFold, 0, 0)
+		assert.NoError(t, err)
+
+		profile := o.GetHumanProfile()
+		assert.Equal(t, 1, profile.FoldToBetCount)
+		assert.Equal(t, 1, profile.FoldToBetTotal)
+	})
+
+	t.Run("no recording when CpuMetaAI is disabled", func(t *testing.T) {
+		o := setupOmahaForHumanAction(OmahaPhaseFlop)
+		o.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 7, false),
+			NewCard(CardDesignDiamond, 9, false),
+		})
+
+		err := o.PlayerAction(OmahaActionBet, 20, 500)
+		assert.NoError(t, err)
+		assert.Nil(t, o.GetHumanProfile())
+	})
 }

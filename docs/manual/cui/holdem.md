@@ -121,6 +121,7 @@ flowchart TD
 | `skipaddon` | `sa` | アドオンをスキップ |
 | `muck` | `m` | マック（手札を伏せる） |
 | `show` | `sh` | ショー（手札を公開する） |
+| `metaai` | `mai` | メタAIの ON/OFF を切り替え（CPUが人間のプレイスタイルを学習） |
 | `quit` | `q` | ゲーム終了 |
 | `help` | `?` | コマンド一覧を表示 |
 

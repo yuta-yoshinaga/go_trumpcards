@@ -11,13 +11,16 @@ import type {
   GinRummyResponse,
   HeartsResponse,
   HoldemResponse,
+  IndianPokerResponse,
   KlondikeResponse,
   MemoryResponse,
+  NapoleonResponse,
   OldMaidResponse,
   OmahaResponse,
   PokerResponse,
   SevensResponse,
   SpadesResponse,
+  SpiderResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -91,6 +94,7 @@ export interface PokerConfigInput {
   jokerCount?: number;
   bettingLimit?: number;
   isLowball?: boolean;
+  cpuMetaAI?: boolean;
 }
 
 /** API client for the Poker /poker/exec endpoint. */
@@ -100,7 +104,8 @@ export const pokerApi = {
     indices?: number[],
     amount?: number,
     config?: PokerConfigInput,
-  ) => gameExec<PokerResponse>('poker', { command, indices, amount, ...config }),
+    humanPlayMs?: number,
+  ) => gameExec<PokerResponse>('poker', { command, indices, amount, humanPlayMs, ...config }),
 };
 
 /** API client for the Old Maid /oldmaid/exec endpoint. */
@@ -204,6 +209,7 @@ export interface HoldemConfigInput {
   addonEnabled?: boolean;
   addonChips?: number;
   addonAfterHand?: number;
+  cpuMetaAI?: boolean;
 }
 
 /** API client for the Texas Hold'em /holdem/exec endpoint. */
@@ -225,10 +231,12 @@ export const holdemApi = {
       | 'show',
     amount?: number,
     config?: HoldemConfigInput,
+    humanPlayMs?: number,
   ) =>
     gameExec<HoldemResponse>('holdem', {
       command,
       amount,
+      humanPlayMs,
       ...config,
     }),
 };
@@ -255,10 +263,12 @@ export const omahaApi = {
       | 'show',
     amount?: number,
     config?: OmahaConfigInput,
+    humanPlayMs?: number,
   ) =>
     gameExec<OmahaResponse>('omaha', {
       command,
       amount,
+      humanPlayMs,
       ...config,
     }),
 };
@@ -273,7 +283,7 @@ export interface HeartsConfigInput {
 /** API client for the Hearts /hearts/exec endpoint. */
 export const heartsApi = {
   exec: (
-    command: 'reset' | 'pass' | 'play' | 'next' | 'nextround',
+    command: 'reset' | 'pass' | 'play' | 'next' | 'nextround' | 'hint',
     cardIndices?: number[],
     cardIndex?: number,
     config?: HeartsConfigInput,
@@ -297,7 +307,7 @@ export interface SpadesConfigInput {
 /** API client for the Spades /spades/exec endpoint. */
 export const spadesApi = {
   exec: (
-    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround',
+    command: 'reset' | 'bid' | 'play' | 'next' | 'nextround' | 'hint',
     bid?: number,
     cardIndex?: number,
     config?: SpadesConfigInput,
@@ -431,6 +441,100 @@ export const baccaratApi = {
   ) => gameExec<BaccaratResponse>('baccarat', { command, amount, betType, playerPairBet, bankerPairBet }),
 };
 
+/** Source or target zone for a Spider card move. */
+export interface SpiderMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** Configuration options for Spider game settings. */
+export interface SpiderConfigInput {
+  difficulty?: number;
+}
+
+/** API client for the Spider /spider/exec endpoint. */
+export const spiderApi = {
+  exec: (
+    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    from?: SpiderMoveZone,
+    to?: SpiderMoveZone,
+    config?: SpiderConfigInput,
+  ) =>
+    gameExec<SpiderResponse>('spider', {
+      command,
+      from,
+      to,
+      config,
+    }),
+};
+
+/** Configuration options for Napoleon game settings. */
+export interface NapoleonConfigInput {
+  cpuDifficulty?: number;
+  minBid?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Napoleon /napoleon/exec endpoint. */
+export const napoleonApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'bid'
+      | 'trump'
+      | 'exchange'
+      | 'play'
+      | 'next'
+      | 'nextround'
+      | 'hint'
+      | 'log'
+      | 'setdifficulty'
+      | 'setlimit'
+      | 'setminbid',
+    bid?: number,
+    trumpSuit?: number,
+    adjutantSuit?: number,
+    adjutantValue?: number,
+    discardIndex?: number,
+    cardIndex?: number,
+    config?: NapoleonConfigInput,
+  ) =>
+    gameExec<NapoleonResponse>('napoleon', {
+      command,
+      bid,
+      trumpSuit,
+      adjutantSuit,
+      adjutantValue,
+      discardIndex,
+      cardIndex,
+      config,
+    }),
+};
+
+/** Configuration options for Indian Poker game settings. */
+export interface IndianPokerConfigInput {
+  ante?: number;
+  bettingLimit?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the Indian Poker /indianpoker/exec endpoint. */
+export const indianpokerApi = {
+  exec: (
+    command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin' | 'log',
+    amount?: number,
+    config?: IndianPokerConfigInput,
+    humanPlayMs?: number,
+  ) =>
+    gameExec<IndianPokerResponse>('indianpoker', {
+      command,
+      amount,
+      humanPlayMs,
+      ...config,
+    }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -442,12 +546,15 @@ const games = [
   'omaha',
   'hearts',
   'spades',
+  'napoleon',
   'memory',
   'klondike',
   'freecell',
   'baccarat',
   'crazyeights',
   'ginrummy',
+  'spider',
+  'indianpoker',
 ] as const;
 type Game = (typeof games)[number];
 

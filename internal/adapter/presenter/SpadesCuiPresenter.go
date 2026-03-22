@@ -99,6 +99,43 @@ func (p *SpadesCuiPresenter) Output(s interfaces.SpadesGame, lastErr error) stri
 	})
 }
 
+// HintOutput ヒント情報を出力する
+func (p *SpadesCuiPresenter) HintOutput(s interfaces.SpadesGame) string {
+	hint := s.GetHint()
+	if hint == nil {
+		return "ヒントはありません。\n"
+	}
+	if hint.Bid != nil {
+		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: ビッド %d を推奨 (%s)]", *hint.Bid, spadesHintReasonStr(hint.Reason))))
+	}
+	if hint.CardIndex == nil {
+		return "ヒントはありません。\n"
+	}
+	player := s.GetPlayer(0)
+	card := player.GetCard(*hint.CardIndex)
+	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), spadesHintReasonStr(hint.Reason))))
+}
+
+// spadesHintReasonStr ヒント理由を日本語に変換する
+func spadesHintReasonStr(reason string) string {
+	switch reason {
+	case "strategic_bid":
+		return "戦略的なビッド"
+	case "lead_strong":
+		return "強いカードでリード"
+	case "lead_low":
+		return "低いカードでリード"
+	case "follow_suit":
+		return "リードスートに追随"
+	case "trump_cut":
+		return "スペードでカット"
+	case "discard_high":
+		return "高いカードを捨てる"
+	default:
+		return reason
+	}
+}
+
 // ActionLogOutput 棋譜をテキスト出力
 func (p *SpadesCuiPresenter) ActionLogOutput(s interfaces.SpadesGame) string {
 	return actionLogOutputText(s)

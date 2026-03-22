@@ -128,6 +128,15 @@ func (m *MockSpadesGame) GetPlayer(i int) *domain.SpadesPlayer {
 	return args.Get(0).(*domain.SpadesPlayer)
 }
 
+// GetHint モック
+func (m *MockSpadesGame) GetHint() *domain.SpadesHint {
+	args := m.Called()
+	if val, ok := args.Get(0).(*domain.SpadesHint); ok {
+		return val
+	}
+	return nil
+}
+
 func (m *MockSpadesGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	return args.Get(0).([]*domain.ActionLogEntry)

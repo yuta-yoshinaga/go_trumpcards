@@ -14,13 +14,16 @@ import { FreeCellPage } from './pages/FreeCellPage';
 import { GinRummyPage } from './pages/GinRummyPage';
 import { HeartsPage } from './pages/HeartsPage';
 import { HoldemPage } from './pages/HoldemPage';
+import { IndianPokerPage } from './pages/IndianPokerPage';
 import { KlondikePage } from './pages/KlondikePage';
 import { MemoryPage } from './pages/MemoryPage';
+import { NapoleonPage } from './pages/NapoleonPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
 import { SevensPage } from './pages/SevensPage';
 import { SpadesPage } from './pages/SpadesPage';
+import { SpiderPage } from './pages/SpiderPage';
 
 type GamePath = (typeof gameRoutes)[number]['path'];
 const pageByPath: Record<GamePath, ReactNode> = {
@@ -34,12 +37,15 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/omaha': <OmahaPage />,
   '/hearts': <HeartsPage />,
   '/spades': <SpadesPage />,
+  '/napoleon': <NapoleonPage />,
   '/memory': <MemoryPage />,
   '/klondike': <KlondikePage />,
   '/freecell': <FreeCellPage />,
   '/baccarat': <BaccaratPage />,
   '/crazyeights': <CrazyEightsPage />,
   '/ginrummy': <GinRummyPage />,
+  '/spider': <SpiderPage />,
+  '/indianpoker': <IndianPokerPage />,
 };
 
 /** Root application component with router and game page routes. */

@@ -52,6 +52,7 @@ type HoldemConfig struct {
 	AddonEnabled     bool             // アドオン有効
 	AddonChips       int              // アドオン時の補充チップ
 	AddonAfterHand   int              // アドオン提供ハンド番号
+	CpuMetaAI        bool             // メタAI: セッション内学習
 }
 
 // DefaultHoldemConfig デフォルト設定

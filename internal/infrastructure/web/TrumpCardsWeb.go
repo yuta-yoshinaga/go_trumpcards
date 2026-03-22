@@ -39,6 +39,9 @@ type TrumpCardsWeb struct {
 	spc *controller.SpadesWebController
 	cec *controller.CrazyEightsWebController
 	grc *controller.GinRummyWebController
+	sdc *controller.SpiderWebController
+	npc *controller.NapoleonWebController
+	ipc *controller.IndianPokerWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -178,6 +181,26 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			gr := domain.NewGinRummy(domain.NewTrumpCards(0), players, config)
 			return usecase.NewGinRummyInteractor(gr, new(presenter.GinRummyWebPresenter))
 		}),
+		sdc: controller.NewSpiderWebController(func() usecase.SpiderInteractorIF {
+			spider := domain.NewSpider(domain.NewTrumpCardsWithSuits(domain.SpiderTotalCards, []int{domain.CardDesignSpade}))
+			return usecase.NewSpiderInteractor(spider, new(presenter.SpiderWebPresenter))
+		}),
+		npc: controller.NewNapoleonWebController(func() usecase.NapoleonInteractorIF {
+			config := domain.DefaultNapoleonConfig()
+			players := []*domain.NapoleonPlayer{
+				domain.NewNapoleonPlayer(true),
+				domain.NewNapoleonPlayer(false),
+				domain.NewNapoleonPlayer(false),
+				domain.NewNapoleonPlayer(false),
+			}
+			napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
+			return usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonWebPresenter))
+		}),
+		ipc: controller.NewIndianPokerWebController(func() usecase.IndianPokerInteractorIF {
+			cfg := domain.DefaultIndianPokerConfig()
+			ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
+			return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
+		}),
 	}
 }
 
@@ -232,6 +255,9 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/spades/exec", web.spc.Exec},
 		{"/crazyeights/exec", web.cec.Exec},
 		{"/ginrummy/exec", web.grc.Exec},
+		{"/spider/exec", web.sdc.Exec},
+		{"/napoleon/exec", web.npc.Exec},
+		{"/indianpoker/exec", web.ipc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -248,6 +274,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	for _, r := range routes {
 		mux.Handle(r.path, apiHandler)
 	}
+	RegisterSwaggerRoutes(mux)
 	mux.Handle("/", http.FileServer(http.Dir("public")))
 	const (
 		readTimeout     = 10 * time.Second
@@ -311,6 +338,9 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.spc.Stop()
 	web.cec.Stop()
 	web.grc.Stop()
+	web.sdc.Stop()
+	web.npc.Stop()
+	web.ipc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr
