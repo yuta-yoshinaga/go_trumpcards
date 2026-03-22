@@ -6,14 +6,16 @@ import { SoundToggle } from './SoundToggle';
 describe('SoundToggle', () => {
   it('renders unmute label when muted', () => {
     render(<SoundToggle muted={true} onToggle={vi.fn()} />);
-    expect(screen.getByRole('button', { name: i18n.t('sound.unmute') })).toBeInTheDocument();
-    expect(screen.getByText('🔇')).toBeInTheDocument();
+    const btn = screen.getByRole('button', { name: i18n.t('sound.unmute') });
+    expect(btn).toBeInTheDocument();
+    expect(btn.querySelector('svg')).toBeInTheDocument();
   });
 
   it('renders mute label when unmuted', () => {
     render(<SoundToggle muted={false} onToggle={vi.fn()} />);
-    expect(screen.getByRole('button', { name: i18n.t('sound.mute') })).toBeInTheDocument();
-    expect(screen.getByText('🔊')).toBeInTheDocument();
+    const btn = screen.getByRole('button', { name: i18n.t('sound.mute') });
+    expect(btn).toBeInTheDocument();
+    expect(btn.querySelector('svg')).toBeInTheDocument();
   });
 
   it('calls onToggle when clicked', () => {

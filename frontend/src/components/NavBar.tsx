@@ -85,7 +85,39 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
             aria-label={isOpen ? t('nav.closeMenu') : t('nav.openMenu')}
             className="text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
-            {isOpen ? '✕' : '☰'}
+            {isOpen ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="4" x2="20" y1="12" y2="12" />
+                <line x1="4" x2="20" y1="6" y2="6" />
+                <line x1="4" x2="20" y1="18" y2="18" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
@@ -99,7 +131,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
           {gameCategories.map(({ labelKey, routes }) => (
             <div key={labelKey} className="flex flex-col gap-1 sm:flex-row sm:items-center">
-              <span className="text-gray-400 text-[10px] uppercase tracking-wider px-1 shrink-0">{t(labelKey)}</span>
+              <span className="text-gray-400 text-xs uppercase tracking-wider px-1 shrink-0">{t(labelKey)}</span>
               <div className="flex flex-col gap-1 sm:flex-row">
                 {routes.map(({ path, labelKey: routeLabel }) => (
                   <Link

@@ -64,4 +64,9 @@ describe('useGamePageSetup', () => {
     expect(result.current.confirmReset).toBe(mockConfirmDialog.confirm);
     expect(result.current.cancelReset).toBe(mockConfirmDialog.cancel);
   });
+
+  it('sets document.title with game name', () => {
+    renderHook(() => useGamePageSetup('blackjack'));
+    expect(document.title).toBe('nav.blackjack - Trump Cards');
+  });
 });
