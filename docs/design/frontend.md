@@ -695,8 +695,8 @@ stateDiagram-v2
     Selected --> Empty : clear()
     Selected --> Empty : confirm() → アクション実行後クリア
 
-    note right of Selected : selected: number[]\n選択中のカードインデックス配列
-    note right of Empty : selected: []\n何も選択されていない
+    note right of Selected : selected = number[]\n選択中のカードインデックス配列
+    note right of Empty : selected = []\n何も選択されていない
 ```
 
 ### 3.3 確認ダイアログ状態 (useConfirmDialog)
