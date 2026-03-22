@@ -59,6 +59,8 @@ classDiagram
         +number[][] scores
         +number phase
         +string message
+        +string messageCode
+        +object messageParams
     }
 
     class KlondikeResponse {
@@ -69,6 +71,9 @@ classDiagram
         +number phase
         +number moves
         +number score
+        +string message
+        +string messageCode
+        +object messageParams
     }
 
     class MemoryResponse {
@@ -76,6 +81,9 @@ classDiagram
         +object[] players
         +number phase
         +number currentPlayer
+        +string message
+        +string messageCode
+        +object messageParams
     }
 
     note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全17ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
@@ -147,13 +155,6 @@ classDiagram
         PLAYING = 0
         GAME_CLEAR = 1
         GAME_OVER = 2
-    }
-
-    class DoubtPhase {
-        <<enumeration>>
-        PLAY = 0
-        DOUBT = 1
-        END = 2
     }
 
     class CrazyEightsPhase {

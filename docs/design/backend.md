@@ -36,9 +36,9 @@
 ```mermaid
 classDiagram
     class Card {
-        +int Design
-        +int Value
-        +bool Draw
+        +int design
+        +int value
+        +bool draw
     }
 
     class TrumpCards {
@@ -90,7 +90,7 @@ classDiagram
     Player --> "*" Card : holds
     GamePlayer --|> Player : extends
     RankedGamePlayer --|> GamePlayer : extends
-    ChipHolder --* GamePlayer : mixin
+    GamePlayer *-- ChipHolder : mixin
 ```
 
 ### 1.2 ゲームドメイン (全17ゲーム)
@@ -378,7 +378,7 @@ classDiagram
     Doubt --> "*" DoubtPlayer
     CrazyEights --> "*" CrazyEightsPlayer
     GinRummy --> "2" GinRummyPlayer
-    OldMaidPlayer --|> RankedGamePlayer
+    OldMaidPlayer --|> GamePlayer
     DaifugoPlayer --|> RankedGamePlayer
     SevensPlayer --|> RankedGamePlayer
     DoubtPlayer --|> GamePlayer
