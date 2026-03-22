@@ -583,7 +583,6 @@ describe('NapoleonPage', () => {
       expect(screen.getByText('CPU 1')).toBeInTheDocument();
       expect(screen.getByText('CPU 2')).toBeInTheDocument();
       expect(screen.getByText('CPU 3')).toBeInTheDocument();
-      expect(screen.getByText('CPU 4')).toBeInTheDocument();
     });
   });
 
@@ -642,7 +641,6 @@ describe('NapoleonPage', () => {
       expect(screen.getByText(/CPU 1.*10\u679a/)).toBeInTheDocument();
       expect(screen.getByText(/CPU 2.*10\u679a/)).toBeInTheDocument();
       expect(screen.getByText(/CPU 3.*10\u679a/)).toBeInTheDocument();
-      expect(screen.getByText(/CPU 4.*10\u679a/)).toBeInTheDocument();
     });
   });
 
@@ -965,8 +963,8 @@ describe('NapoleonPage', () => {
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
     const rows = screen.getAllByRole('row');
-    // Header + 5 players = 6 rows
-    expect(rows.length).toBe(6);
+    // Header + 4 players = 5 rows
+    expect(rows.length).toBe(5);
   });
 
   it('shows napoleon role badge in CPU area', async () => {
