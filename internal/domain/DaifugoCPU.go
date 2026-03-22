@@ -201,29 +201,26 @@ func tryBuildSequence(suitCards []suitCardEntry, si int, jokerIndices []int, nee
 	lastStr := suitCards[si].strength
 	jokersUsed := 0
 	sci := si + 1
+
 	for len(indices) < needed {
 		targetStr := lastStr + 1
-		found := false
-		// suitCards は強さ昇順なので、sci 位置が targetStr と一致するかだけ確認すればよい
+
 		if sci < len(suitCards) && suitCards[sci].strength == targetStr {
+			// 連続したカードが見つかった
 			indices = append(indices, suitCards[sci].idx)
 			lastStr = targetStr
 			sci++
-			found = true
-		}
-		if !found {
-			if jokersUsed < len(jokerIndices) {
-				indices = append(indices, jokerIndices[jokersUsed])
-				jokersUsed++
-				lastStr = targetStr
-			} else {
-				break
-			}
+		} else if jokersUsed < len(jokerIndices) {
+			// ギャップがあるか suitCards の末尾に達した → ジョーカーで埋める
+			indices = append(indices, jokerIndices[jokersUsed])
+			jokersUsed++
+			lastStr = targetStr
+		} else {
+			// ジョーカーが足りない
+			return nil
 		}
 	}
-	if len(indices) != needed {
-		return nil
-	}
+
 	return indices
 }
 
