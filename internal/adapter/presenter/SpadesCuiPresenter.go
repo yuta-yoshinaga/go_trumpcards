@@ -108,6 +108,9 @@ func (p *SpadesCuiPresenter) HintOutput(s interfaces.SpadesGame) string {
 	if hint.Bid != nil {
 		return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: ビッド %d を推奨 (%s)]", *hint.Bid, spadesHintReasonStr(hint.Reason))))
 	}
+	if hint.CardIndex == nil {
+		return "ヒントはありません。\n"
+	}
 	player := s.GetPlayer(0)
 	card := player.GetCard(*hint.CardIndex)
 	return fmt.Sprintf("%s\n", color.Yellow(fmt.Sprintf("[HINT: [%d]%s (%s)]", *hint.CardIndex, cuiCardStr(card), spadesHintReasonStr(hint.Reason))))

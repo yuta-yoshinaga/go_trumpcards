@@ -302,6 +302,17 @@ func TestSpadesCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, result, "戦略的なビッド")
 	})
 
+	t.Run("hint with nil bid and nil card index", func(t *testing.T) {
+		m := new(interfaces.MockSpadesGame)
+		m.On("GetHint").Return(&domain.SpadesHint{
+			Reason: "unknown",
+		})
+
+		p := new(presenter.SpadesCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
 	t.Run("play hint", func(t *testing.T) {
 		idx := 1
 		m := new(interfaces.MockSpadesGame)
