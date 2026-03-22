@@ -9,6 +9,7 @@ import {
   ginrummyApi,
   heartsApi,
   holdemApi,
+  indianpokerApi,
   klondikeApi,
   memoryApi,
   oldmaidApi,
@@ -2617,6 +2618,7 @@ describe('gameApi', () => {
       ['crazyeights', actionLogApi.crazyeights],
       ['ginrummy', actionLogApi.ginrummy],
       ['spider', actionLogApi.spider],
+      ['indianpoker', actionLogApi.indianpoker],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));
@@ -2699,6 +2701,100 @@ describe('gameApi', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('indianpokerApi.exec', () => {
+    const payload = {
+      players: [],
+      pot: 0,
+      sidePots: [],
+      dealerIdx: 0,
+      currentTurn: 0,
+      phase: 0,
+      gameEndFlag: false,
+      lastBet: 0,
+      minRaise: 20,
+      bettingLimit: 2,
+      raiseCount: 0,
+      maxBetAmount: 0,
+      roundResults: [],
+      cpuActions: [],
+      handCount: 0,
+      ante: 10,
+      message: '',
+    };
+
+    it('calls /indianpoker/exec with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+
+      const result = await indianpokerApi.exec('reset');
+
+      expect(mockFetch).toHaveBeenCalledWith('/indianpoker/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          amount: undefined,
+          humanPlayMs: undefined,
+          sessionId,
+        }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls /indianpoker/exec with bet command and amount', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+
+      await indianpokerApi.exec('bet', 40);
+
+      expect(mockFetch).toHaveBeenCalledWith('/indianpoker/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'bet',
+          amount: 40,
+          humanPlayMs: undefined,
+          sessionId,
+        }),
+      });
+    });
+
+    it('calls /indianpoker/exec with config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+
+      await indianpokerApi.exec('reset', undefined, { ante: 20, bettingLimit: 1, cpuMetaAI: false });
+
+      expect(mockFetch).toHaveBeenCalledWith('/indianpoker/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'reset',
+          amount: undefined,
+          humanPlayMs: undefined,
+          ante: 20,
+          bettingLimit: 1,
+          cpuMetaAI: false,
+          sessionId,
+        }),
+      });
+    });
+
+    it('calls /indianpoker/exec with humanPlayMs', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+
+      await indianpokerApi.exec('call', undefined, undefined, 1500);
+
+      expect(mockFetch).toHaveBeenCalledWith('/indianpoker/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          command: 'call',
+          amount: undefined,
+          humanPlayMs: 1500,
+          sessionId,
+        }),
+      });
     });
   });
 });

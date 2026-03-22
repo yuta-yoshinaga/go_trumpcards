@@ -694,4 +694,54 @@ describe('IndianPokerPage', () => {
     // Action log section should render (button to view log)
     expect(screen.getByText('棋譜を見る')).toBeInTheDocument();
   });
+
+  // ---- roundResultsForDisplay with null card ----
+  it('shows empty handName when roundResult card is null', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      roundResults: [
+        { playerIdx: 0, card: null, cardRank: 0, wonAmount: 100 },
+        { playerIdx: 1, card: { design: 'SPADE' as const, value: 10 }, cardRank: 10, wonAmount: 0 },
+      ],
+    });
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
+    expect(screen.getByText(/\+100チップ/)).toBeInTheDocument();
+  });
+
+  // ---- cpuMetaAI toggle ----
+  it('sends cpuMetaAI: false when meta AI checkbox is unchecked before reset', async () => {
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const metaAiCheckbox = screen.getByRole('checkbox', { name: 'メタAI' });
+    expect((metaAiCheckbox as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(metaAiCheckbox);
+    expect((metaAiCheckbox as HTMLInputElement).checked).toBe(false);
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 10, bettingLimit: 2, cpuMetaAI: false }),
+    );
+  });
+
+  // ---- bettingLimit select ----
+  it('sends updated bettingLimit when select changes before reset', async () => {
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const select = screen.getByRole('combobox', { name: 'ベッティングリミット' });
+    fireEvent.change(select, { target: { value: '0' } });
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(initState);
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', undefined, { ante: 10, bettingLimit: 0, cpuMetaAI: true }),
+    );
+  });
 });
