@@ -131,28 +131,28 @@ func TestPoker_collectAntes_normalAndLow(t *testing.T) {
 func TestPoker_PlayerAction_GameEnded(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetGameEndFlag(true)
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrGameEnded)
 }
 
 func TestPoker_PlayerAction_WrongPhase_Init(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseInit)
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrWrongPhase)
 }
 
 func TestPoker_PlayerAction_WrongPhase_Exchange(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseExchange)
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrWrongPhase)
 }
 
 func TestPoker_PlayerAction_WrongPhase_End(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseEnd)
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrWrongPhase)
 }
@@ -160,7 +160,7 @@ func TestPoker_PlayerAction_WrongPhase_End(t *testing.T) {
 func TestPoker_PlayerAction_NotHumanTurn(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetCurrentTurn(1) // CPU
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrNotHumanTurn)
 }
@@ -171,7 +171,7 @@ func TestPoker_PlayerAction_NotHumanTurn(t *testing.T) {
 
 func TestPoker_PlayerAction_Fold(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	err := pk.PlayerAction(PokerActionFold, 0)
+	err := pk.PlayerAction(PokerActionFold, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetFolded())
 }
@@ -182,7 +182,7 @@ func TestPoker_Fold_LastPlayerWins(t *testing.T) {
 	players[2].SetFolded(true)
 	pk.setActedFlags([]bool{false, true, true, true})
 	// Only p0 and p3 active; p0 folds → p3 wins
-	err := pk.PlayerAction(PokerActionFold, 0)
+	err := pk.PlayerAction(PokerActionFold, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, pk.GetGameEndFlag())
 	assert.Equal(t, PokerPhaseEnd, pk.GetPhase())
@@ -196,14 +196,14 @@ func TestPoker_Fold_LastPlayerWins(t *testing.T) {
 
 func TestPoker_PlayerAction_Check(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.NoError(t, err)
 }
 
 func TestPoker_PlayerAction_Check_WithOutstandingBet(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(20)
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 }
@@ -216,7 +216,7 @@ func TestPoker_PlayerAction_Call(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(20)
 	chipsBefore := players[0].GetChips()
-	err := pk.PlayerAction(PokerActionCall, 0)
+	err := pk.PlayerAction(PokerActionCall, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetChips() < chipsBefore)
 }
@@ -224,7 +224,7 @@ func TestPoker_PlayerAction_Call(t *testing.T) {
 func TestPoker_PlayerAction_Call_NothingToCall(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(0)
-	err := pk.PlayerAction(PokerActionCall, 0)
+	err := pk.PlayerAction(PokerActionCall, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 }
@@ -232,7 +232,7 @@ func TestPoker_PlayerAction_Call_NothingToCall(t *testing.T) {
 func TestPoker_PlayerAction_Call_AllIn(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(2000) // more than chips
-	err := pk.PlayerAction(PokerActionCall, 0)
+	err := pk.PlayerAction(PokerActionCall, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 }
@@ -243,14 +243,14 @@ func TestPoker_PlayerAction_Call_AllIn(t *testing.T) {
 
 func TestPoker_PlayerAction_Bet(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
-	err := pk.PlayerAction(PokerActionBet, 50)
+	err := pk.PlayerAction(PokerActionBet, 50, 0)
 	assert.NoError(t, err)
 }
 
 func TestPoker_PlayerAction_Bet_MaxRaises(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.setRaiseCount(4)
-	err := pk.PlayerAction(PokerActionBet, 50)
+	err := pk.PlayerAction(PokerActionBet, 50, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 }
@@ -258,21 +258,21 @@ func TestPoker_PlayerAction_Bet_MaxRaises(t *testing.T) {
 func TestPoker_PlayerAction_Bet_OutstandingBet(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(20)
-	err := pk.PlayerAction(PokerActionBet, 50)
+	err := pk.PlayerAction(PokerActionBet, 50, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 }
 
 func TestPoker_PlayerAction_Bet_BelowMin(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
-	err := pk.PlayerAction(PokerActionBet, 1)
+	err := pk.PlayerAction(PokerActionBet, 1, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidAmount)
 }
 
 func TestPoker_PlayerAction_Bet_InsufficientChips(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
-	err := pk.PlayerAction(PokerActionBet, 99999)
+	err := pk.PlayerAction(PokerActionBet, 99999, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInsufficientChips)
 }
@@ -280,7 +280,7 @@ func TestPoker_PlayerAction_Bet_InsufficientChips(t *testing.T) {
 func TestPoker_PlayerAction_Bet_ExactChips_AllIn(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	players[0].SetChips(50)
-	err := pk.PlayerAction(PokerActionBet, 50)
+	err := pk.PlayerAction(PokerActionBet, 50, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 }
@@ -293,7 +293,7 @@ func TestPoker_PlayerAction_Raise(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(20)
 	pk.SetMinRaise(10)
-	err := pk.PlayerAction(PokerActionRaise, 20)
+	err := pk.PlayerAction(PokerActionRaise, 20, 0)
 	assert.NoError(t, err)
 }
 
@@ -301,7 +301,7 @@ func TestPoker_PlayerAction_Raise_MaxRaises(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(20)
 	pk.setRaiseCount(4)
-	err := pk.PlayerAction(PokerActionRaise, 20)
+	err := pk.PlayerAction(PokerActionRaise, 20, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 }
@@ -310,7 +310,7 @@ func TestPoker_PlayerAction_Raise_BelowMinRaise(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(20)
 	pk.SetMinRaise(30)
-	err := pk.PlayerAction(PokerActionRaise, 10)
+	err := pk.PlayerAction(PokerActionRaise, 10, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidAmount)
 }
@@ -320,7 +320,7 @@ func TestPoker_PlayerAction_Raise_AutoAllIn(t *testing.T) {
 	pk.SetLastBet(20)
 	pk.SetMinRaise(10)
 	players[0].SetChips(25) // diff=20, amount=10, total=30 >= 25
-	err := pk.PlayerAction(PokerActionRaise, 10)
+	err := pk.PlayerAction(PokerActionRaise, 10, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 }
@@ -330,7 +330,7 @@ func TestPoker_PlayerAction_Raise_ExactChips_AllIn(t *testing.T) {
 	pk.SetLastBet(20)
 	pk.SetMinRaise(10)
 	players[0].SetChips(31) // diff=20, amount=10, total=30 < 31 → normal raise, then 31-30=1 chip left → not allIn
-	err := pk.PlayerAction(PokerActionRaise, 10)
+	err := pk.PlayerAction(PokerActionRaise, 10, 0)
 	assert.NoError(t, err)
 	assert.False(t, players[0].GetAllIn())
 	assert.Equal(t, 1, players[0].GetChips())
@@ -342,7 +342,7 @@ func TestPoker_PlayerAction_Raise_ChipsExactlyZero(t *testing.T) {
 	pk.SetMinRaise(10)
 	players[0].SetCurrentBet(0)
 	players[0].SetChips(10) // diff=0, amount=10, total=10 >= 10 → auto allIn
-	err := pk.PlayerAction(PokerActionRaise, 10)
+	err := pk.PlayerAction(PokerActionRaise, 10, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 }
@@ -353,7 +353,7 @@ func TestPoker_PlayerAction_Raise_NegativeDiff(t *testing.T) {
 	players[0].SetCurrentBet(10) // currentBet > lastBet → diff < 0 → clamped to 0
 	pk.SetMinRaise(10)
 	players[0].SetChips(100)
-	err := pk.PlayerAction(PokerActionRaise, 10)
+	err := pk.PlayerAction(PokerActionRaise, 10, 0)
 	assert.NoError(t, err)
 }
 
@@ -363,7 +363,7 @@ func TestPoker_PlayerAction_Raise_NegativeDiff(t *testing.T) {
 
 func TestPoker_PlayerAction_AllIn(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
-	err := pk.PlayerAction(PokerActionAllIn, 0)
+	err := pk.PlayerAction(PokerActionAllIn, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 }
@@ -371,7 +371,7 @@ func TestPoker_PlayerAction_AllIn(t *testing.T) {
 func TestPoker_PlayerAction_AllIn_NoChips(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	players[0].SetChips(0)
-	err := pk.PlayerAction(PokerActionAllIn, 0)
+	err := pk.PlayerAction(PokerActionAllIn, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInsufficientChips)
 }
@@ -381,7 +381,7 @@ func TestPoker_PlayerAction_AllIn_AboveLastBet_LargeRaise(t *testing.T) {
 	pk.SetLastBet(50)
 	pk.SetMinRaise(10)
 	players[0].SetChips(200) // newBet = 0+200 = 200 > 50, raiseAmt=150 >= minRaise=10 → resetActedExcept
-	err := pk.PlayerAction(PokerActionAllIn, 0)
+	err := pk.PlayerAction(PokerActionAllIn, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 }
@@ -391,7 +391,7 @@ func TestPoker_PlayerAction_AllIn_AboveLastBet_SmallRaise(t *testing.T) {
 	pk.SetLastBet(50)
 	pk.SetMinRaise(200)
 	players[0].SetChips(55) // newBet = 55 > 50, raiseAmt=5 < minRaise=200 → actedFlags[0]=true only
-	err := pk.PlayerAction(PokerActionAllIn, 0)
+	err := pk.PlayerAction(PokerActionAllIn, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 }
@@ -400,7 +400,7 @@ func TestPoker_PlayerAction_AllIn_BelowLastBet(t *testing.T) {
 	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
 	pk.SetLastBet(2000)
 	players[0].SetChips(100) // newBet = 100 <= 2000 → actedFlags[0]=true
-	err := pk.PlayerAction(PokerActionAllIn, 0)
+	err := pk.PlayerAction(PokerActionAllIn, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, players[0].GetAllIn())
 }
@@ -411,7 +411,7 @@ func TestPoker_PlayerAction_AllIn_BelowLastBet(t *testing.T) {
 
 func TestPoker_PlayerAction_Unknown(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseDeal)
-	err := pk.PlayerAction(99, 0)
+	err := pk.PlayerAction(99, 0, 0)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, ErrInvalidPlay)
 }
@@ -422,13 +422,13 @@ func TestPoker_PlayerAction_Unknown(t *testing.T) {
 
 func TestPoker_PlayerAction_SecondBet_Check(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseSecondBet)
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.NoError(t, err)
 }
 
 func TestPoker_PlayerAction_SecondBet_Bet(t *testing.T) {
 	pk, _ := setupPokerForHumanAction(PokerPhaseSecondBet)
-	err := pk.PlayerAction(PokerActionBet, 20)
+	err := pk.PlayerAction(PokerActionBet, 20, 0)
 	assert.NoError(t, err)
 }
 
@@ -1890,9 +1890,9 @@ func TestPoker_FullGame_Showdown(t *testing.T) {
 	// First betting: Check or Call (only if it is human turn)
 	if pk.GetPhase() == PokerPhaseDeal && pk.GetPlayers()[pk.GetCurrentTurn()].GetIsHuman() {
 		if pk.GetLastBet() > 0 {
-			err = pk.PlayerAction(PokerActionCall, 0)
+			err = pk.PlayerAction(PokerActionCall, 0, 0)
 		} else {
-			err = pk.PlayerAction(PokerActionCheck, 0)
+			err = pk.PlayerAction(PokerActionCheck, 0, 0)
 		}
 		assert.NoError(t, err)
 	}
@@ -1914,9 +1914,9 @@ func TestPoker_FullGame_Showdown(t *testing.T) {
 	// Second betting
 	if pk.GetPhase() == PokerPhaseSecondBet && pk.GetPlayers()[pk.GetCurrentTurn()].GetIsHuman() {
 		if pk.GetLastBet() > 0 {
-			err = pk.PlayerAction(PokerActionCall, 0)
+			err = pk.PlayerAction(PokerActionCall, 0, 0)
 		} else {
-			err = pk.PlayerAction(PokerActionCheck, 0)
+			err = pk.PlayerAction(PokerActionCheck, 0, 0)
 		}
 		assert.NoError(t, err)
 	}
@@ -1932,7 +1932,7 @@ func TestPoker_FullGame_PlayerFold(t *testing.T) {
 	}
 
 	if pk.GetPhase() == PokerPhaseDeal {
-		err = pk.PlayerAction(PokerActionFold, 0)
+		err = pk.PlayerAction(PokerActionFold, 0, 0)
 		assert.NoError(t, err)
 	}
 
@@ -2048,7 +2048,7 @@ func TestPoker_PlayerAction_SecondBet_AdvancesToEnd(t *testing.T) {
 	players[2].SetFolded(true)
 	players[3].SetFolded(true)
 	pk.setActedFlags([]bool{false, true, true, true})
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, PokerPhaseEnd, pk.GetPhase())
 }
@@ -2277,9 +2277,9 @@ func TestPoker_MultipleRounds(t *testing.T) {
 		}
 		if pk.GetPhase() == PokerPhaseDeal {
 			if pk.GetLastBet() > 0 {
-				_ = pk.PlayerAction(PokerActionCall, 0)
+				_ = pk.PlayerAction(PokerActionCall, 0, 0)
 			} else {
-				_ = pk.PlayerAction(PokerActionCheck, 0)
+				_ = pk.PlayerAction(PokerActionCheck, 0, 0)
 			}
 		}
 		if pk.GetGameEndFlag() {
@@ -2293,9 +2293,9 @@ func TestPoker_MultipleRounds(t *testing.T) {
 		}
 		if pk.GetPhase() == PokerPhaseSecondBet {
 			if pk.GetLastBet() > 0 {
-				_ = pk.PlayerAction(PokerActionCall, 0)
+				_ = pk.PlayerAction(PokerActionCall, 0, 0)
 			} else {
-				_ = pk.PlayerAction(PokerActionCheck, 0)
+				_ = pk.PlayerAction(PokerActionCheck, 0, 0)
 			}
 		}
 	}
@@ -2854,7 +2854,7 @@ func TestPoker_BettingLimits_PotLimit(t *testing.T) {
 		pk.SetPot(100)
 		pk.SetLastBet(0)
 		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 130 > 100
-		err := pk.PlayerAction(PokerActionBet, 130)
+		err := pk.PlayerAction(PokerActionBet, 130, 0)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrInvalidAmount)
 	})
@@ -2864,7 +2864,7 @@ func TestPoker_BettingLimits_PotLimit(t *testing.T) {
 		pk.SetPot(100)
 		pk.SetLastBet(0)
 		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 100 is within limit
-		err := pk.PlayerAction(PokerActionBet, 100)
+		err := pk.PlayerAction(PokerActionBet, 100, 0)
 		assert.NoError(t, err)
 	})
 }
@@ -2894,7 +2894,7 @@ func TestPoker_BettingLimits_NoLimit(t *testing.T) {
 		pk, _ := makePokerWithConfig(PokerPhaseDeal, BettingLimitNoLimit)
 		pk.setRaiseCount(10) // well past fixed limit of 4
 		// NoLimit has maxRaises=0, so no raise cap
-		err := pk.PlayerAction(PokerActionBet, 20)
+		err := pk.PlayerAction(PokerActionBet, 20, 0)
 		assert.NoError(t, err)
 	})
 }
@@ -2970,7 +2970,7 @@ func TestPoker_Showdown_LowballWinner(t *testing.T) {
 	players[3].SetFolded(true)
 
 	// Player 0 checks → advances; all CPUs already acted → showdown
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.NoError(t, err)
 	assert.Equal(t, PokerPhaseEnd, pk.GetPhase())
 
@@ -3170,7 +3170,7 @@ func TestPoker_ActionLog_Actions(t *testing.T) {
 	pk.SetPot(40)
 
 	// Human checks
-	err := pk.PlayerAction(PokerActionCheck, 0)
+	err := pk.PlayerAction(PokerActionCheck, 0, 0)
 	assert.NoError(t, err)
 
 	log := pk.GetActionLog()
@@ -3218,7 +3218,7 @@ func TestPoker_ActionLog_Reset(t *testing.T) {
 		pl.SetCurrentBet(0)
 	}
 	pk.SetLastBet(0)
-	_ = pk.PlayerAction(PokerActionCheck, 0)
+	_ = pk.PlayerAction(PokerActionCheck, 0, 0)
 
 	beforeLen := len(pk.GetActionLog())
 	assert.Greater(t, beforeLen, 0, "expected log entries before reset")
@@ -3230,4 +3230,120 @@ func TestPoker_ActionLog_Reset(t *testing.T) {
 	log := pk.GetActionLog()
 	assert.NotEmpty(t, log)
 	assert.Equal(t, 1, log[0].TurnNumber, "first entry after reset should have TurnNumber 1")
+}
+
+// ---------------------------------------------------------------------------
+// Meta-AI integration tests
+// ---------------------------------------------------------------------------
+
+func TestPoker_MetaAI_ProfileSurvivesReset(t *testing.T) {
+	pk, _ := newTestPoker()
+	cfg := pk.GetConfig()
+	cfg.CpuMetaAI = true
+	pk.SetConfig(cfg)
+
+	_ = pk.Reset()
+	profile := pk.GetHumanProfile()
+	assert.NotNil(t, profile, "profile should be created on first Reset with CpuMetaAI=true")
+	assert.Equal(t, 0, profile.GamesPlayed, "GamesPlayed should be 0 on first Reset")
+
+	_ = pk.Reset()
+	profile2 := pk.GetHumanProfile()
+	assert.NotNil(t, profile2, "profile should survive Reset")
+	assert.Equal(t, 1, profile2.GamesPlayed, "GamesPlayed should be incremented on second Reset")
+}
+
+func TestPoker_MetaAI_ProfileNotCreatedWhenDisabled(t *testing.T) {
+	pk, _ := newTestPoker()
+	// CpuMetaAI defaults to false
+	_ = pk.Reset()
+	assert.Nil(t, pk.GetHumanProfile(), "profile should be nil when CpuMetaAI is disabled")
+}
+
+func TestPoker_MetaAI_ResetProfileClearsProfile(t *testing.T) {
+	pk, _ := newTestPoker()
+	cfg := pk.GetConfig()
+	cfg.CpuMetaAI = true
+	pk.SetConfig(cfg)
+	_ = pk.Reset()
+	assert.NotNil(t, pk.GetHumanProfile())
+
+	pk.ResetProfile()
+	assert.Nil(t, pk.GetHumanProfile(), "profile should be nil after ResetProfile")
+}
+
+func TestPoker_MetaAI_PlayerActionRecordsAction(t *testing.T) {
+	t.Run("aggressive action on weak hand is recorded", func(t *testing.T) {
+		pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+		pk.SetConfig(PokerConfig{InitChips: 1000, Ante: 10, MinBet: 10, CpuCount: 3, CpuMetaAI: true})
+		pk.SetHumanProfile(&BettingHumanProfile{})
+		// Give human a weak hand (HighCard)
+		players[0].AddCard(NewCard(CardDesignSpade, 2, false))
+		players[0].AddCard(NewCard(CardDesignHeart, 5, false))
+		players[0].AddCard(NewCard(CardDesignDiamond, 8, false))
+		players[0].AddCard(NewCard(CardDesignClover, 10, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 12, false))
+
+		err := pk.PlayerAction(PokerActionBet, 10, 500)
+		assert.NoError(t, err)
+
+		profile := pk.GetHumanProfile()
+		assert.NotNil(t, profile)
+		// HighCard → bracket 0
+		assert.Equal(t, 1, profile.AggressiveByBracket[0].Aggressive)
+		assert.Equal(t, 1, profile.AggressiveByBracket[0].Total)
+		assert.Equal(t, 1, profile.HesitationCount)
+	})
+
+	t.Run("fold on bet records fold-to-bet", func(t *testing.T) {
+		pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+		pk.SetConfig(PokerConfig{InitChips: 1000, Ante: 10, MinBet: 10, CpuCount: 3, CpuMetaAI: true})
+		pk.SetHumanProfile(&BettingHumanProfile{})
+		pk.SetLastBet(20)
+		// Give human cards
+		players[0].AddCard(NewCard(CardDesignSpade, 2, false))
+		players[0].AddCard(NewCard(CardDesignHeart, 5, false))
+		players[0].AddCard(NewCard(CardDesignDiamond, 8, false))
+		players[0].AddCard(NewCard(CardDesignClover, 10, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 12, false))
+
+		err := pk.PlayerAction(PokerActionFold, 0, 0)
+		assert.NoError(t, err)
+
+		profile := pk.GetHumanProfile()
+		assert.Equal(t, 1, profile.FoldToBetCount)
+		assert.Equal(t, 1, profile.FoldToBetTotal)
+	})
+
+	t.Run("no fold-to-bet recorded when lastBet is 0", func(t *testing.T) {
+		pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+		pk.SetConfig(PokerConfig{InitChips: 1000, Ante: 10, MinBet: 10, CpuCount: 3, CpuMetaAI: true})
+		pk.SetHumanProfile(&BettingHumanProfile{})
+		pk.SetLastBet(0)
+		players[0].AddCard(NewCard(CardDesignSpade, 2, false))
+		players[0].AddCard(NewCard(CardDesignHeart, 5, false))
+		players[0].AddCard(NewCard(CardDesignDiamond, 8, false))
+		players[0].AddCard(NewCard(CardDesignClover, 10, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 12, false))
+
+		err := pk.PlayerAction(PokerActionCheck, 0, 0)
+		assert.NoError(t, err)
+
+		profile := pk.GetHumanProfile()
+		assert.Equal(t, 0, profile.FoldToBetTotal, "no fold-to-bet opportunity when lastBet is 0")
+	})
+
+	t.Run("no recording when CpuMetaAI is disabled", func(t *testing.T) {
+		pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+		pk.SetConfig(PokerConfig{InitChips: 1000, Ante: 10, MinBet: 10, CpuCount: 3, CpuMetaAI: false})
+		players[0].AddCard(NewCard(CardDesignSpade, 2, false))
+		players[0].AddCard(NewCard(CardDesignHeart, 5, false))
+		players[0].AddCard(NewCard(CardDesignDiamond, 8, false))
+		players[0].AddCard(NewCard(CardDesignClover, 10, false))
+		players[0].AddCard(NewCard(CardDesignSpade, 12, false))
+
+		err := pk.PlayerAction(PokerActionBet, 10, 500)
+		assert.NoError(t, err)
+		assert.Nil(t, pk.GetHumanProfile())
+	})
 }

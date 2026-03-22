@@ -304,11 +304,30 @@ func (h *Holdem) cpuDecide(idx int) (int, int) {
 		return h.cpuCallOrCheck(callAmount)
 	}
 
+	// メタAI: ブラフ率を調整
+	if h.config.CpuMetaAI && h.humanProfile != nil {
+		adjusted := h.humanProfile.AdjustedBluffChance(float64(params.bluffRate))
+		params.bluffRate = int(adjusted)
+	}
+
 	var action, amount int
 	if h.phase == HoldemPhasePreFlop {
 		action, amount = h.cpuDecidePreFlop(idx, params, callAmount)
 	} else {
 		action, amount = h.cpuDecidePostFlop(idx, params, callAmount)
+	}
+
+	// メタAI: 人間のベット/レイズに対してコール確率を調整
+	if h.config.CpuMetaAI && h.humanProfile != nil && h.lastHumanPlayMs > 0 {
+		if action == HoldemActionFold && callAmount > 0 {
+			handRank := p.EvalBestHand(h.communityCards)
+			bracket := bettingHandBracket(handRank)
+			adjustedCall := h.humanProfile.AdjustedCallChance(0.0, bracket, h.lastHumanPlayMs)
+			if adjustedCall > 0 && rand.Float64() < adjustedCall { //nolint:gosec // non-crypto random for game AI
+				action = HoldemActionCall
+				amount = 0
+			}
+		}
 	}
 
 	maxRaises, maxBetAmount := h.bettingLimits()

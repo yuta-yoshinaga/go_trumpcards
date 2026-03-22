@@ -50,3 +50,6 @@ func (o *Omaha) SetAddonUsed(used []bool) { o.addonUsed = used }
 
 // SetRebuyPhaseType リバイフェーズ種別設定（テスト用）
 func (o *Omaha) SetRebuyPhaseType(t int) { o.rebuyPhaseType = t }
+
+// SetHumanProfile メタAIプロファイル設定（テスト用）
+func (o *Omaha) SetHumanProfile(profile *BettingHumanProfile) { o.humanProfile = profile }

@@ -45,5 +45,8 @@
     "plusEV": "+EV (期待値プラス)",
     "minusEV": "-EV (期待値マイナス)",
     "handOdds": "ハンドオッズ"
+  },
+  "settings": {
+    "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
   }
 }

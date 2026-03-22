@@ -13,7 +13,7 @@ type HoldemInteractorIF interface {
 	// ResetWithConfig 設定を変更してゲーム初期化
 	ResetWithConfig(cfg domain.HoldemConfig) string
 	// Action プレイヤーアクション実行
-	Action(action int, amount int) string
+	Action(action int, amount int, humanPlayMs int) string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.HoldemConfig
 	// Rebuy リバイ実行
@@ -64,8 +64,8 @@ func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
 }
 
 // Action プレイヤーアクション実行
-func (hi *HoldemInteractor) Action(action int, amount int) string {
-	return execAndPresent(hi.h, hi.hp, func() error { return hi.h.PlayerAction(action, amount) })
+func (hi *HoldemInteractor) Action(action int, amount int, humanPlayMs int) string {
+	return execAndPresent(hi.h, hi.hp, func() error { return hi.h.PlayerAction(action, amount, humanPlayMs) })
 }
 
 // GetConfig 現在の設定を取得

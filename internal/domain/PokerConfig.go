@@ -39,6 +39,7 @@ type PokerConfig struct {
 	JokerCount   int              // ジョーカー枚数 (0-2)
 	BettingLimit BettingLimitType // ベッティングリミット
 	IsLowball    bool             // 2-7 Lowball モード
+	CpuMetaAI    bool             // メタAI: セッション内学習
 }
 
 // DefaultPokerConfig デフォルト設定

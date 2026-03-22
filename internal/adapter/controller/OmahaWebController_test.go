@@ -70,7 +70,7 @@ func TestOmahaWebController_Fold(t *testing.T) {
 	api, owc := newOmahaTestHandler(mi)
 	defer owc.Stop()
 
-	mi.On("Action", domain.OmahaActionFold, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionFold, 0, 0).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/omaha/exec",
@@ -85,7 +85,7 @@ func TestOmahaWebController_Check(t *testing.T) {
 	mi := new(mockUsecase.MockOmahaInteractor)
 	api, owc := newOmahaTestHandler(mi)
 	defer owc.Stop()
-	mi.On("Action", domain.OmahaActionCheck, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionCheck, 0, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/omaha/exec",
 			map[string]interface{}{"command": "check", "sessionId": "s1"}))
@@ -96,7 +96,7 @@ func TestOmahaWebController_Call(t *testing.T) {
 	mi := new(mockUsecase.MockOmahaInteractor)
 	api, owc := newOmahaTestHandler(mi)
 	defer owc.Stop()
-	mi.On("Action", domain.OmahaActionCall, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionCall, 0, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/omaha/exec",
 			map[string]interface{}{"command": "call", "sessionId": "s1"}))
@@ -107,7 +107,7 @@ func TestOmahaWebController_Bet(t *testing.T) {
 	mi := new(mockUsecase.MockOmahaInteractor)
 	api, owc := newOmahaTestHandler(mi)
 	defer owc.Stop()
-	mi.On("Action", domain.OmahaActionBet, 50).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionBet, 50, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/omaha/exec",
 			map[string]interface{}{"command": "bet", "sessionId": "s1", "amount": 50}))
@@ -118,7 +118,7 @@ func TestOmahaWebController_Raise(t *testing.T) {
 	mi := new(mockUsecase.MockOmahaInteractor)
 	api, owc := newOmahaTestHandler(mi)
 	defer owc.Stop()
-	mi.On("Action", domain.OmahaActionRaise, 30).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionRaise, 30, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/omaha/exec",
 			map[string]interface{}{"command": "raise", "sessionId": "s1", "amount": 30}))
@@ -129,7 +129,7 @@ func TestOmahaWebController_AllIn(t *testing.T) {
 	mi := new(mockUsecase.MockOmahaInteractor)
 	api, owc := newOmahaTestHandler(mi)
 	defer owc.Stop()
-	mi.On("Action", domain.OmahaActionAllIn, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionAllIn, 0, 0).Return(`{"phase":1}`)
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/omaha/exec",
 			map[string]interface{}{"command": "allin", "sessionId": "s1"}))
@@ -209,12 +209,12 @@ func TestOmahaWebController_ShortCommands(t *testing.T) {
 
 	cfg := domain.DefaultOmahaConfig()
 	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
-	mi.On("Action", domain.OmahaActionFold, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.OmahaActionCheck, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.OmahaActionCall, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.OmahaActionBet, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.OmahaActionRaise, 0).Return(`{"phase":1}`)
-	mi.On("Action", domain.OmahaActionAllIn, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionFold, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionCheck, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionCall, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionBet, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionRaise, 0, 0).Return(`{"phase":1}`)
+	mi.On("Action", domain.OmahaActionAllIn, 0, 0).Return(`{"phase":1}`)
 
 	commands := []string{"r", "f", "ck", "c", "b", "ra", "a"}
 	for _, cmd := range commands {

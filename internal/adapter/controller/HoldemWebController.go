@@ -14,6 +14,7 @@ import (
 type HoldemWebInput struct {
 	BaseWebInput
 	Amount           int   `json:"amount,omitempty"`
+	HumanPlayMs      int   `json:"humanPlayMs,omitempty"`
 	SmallBlind       *int  `json:"smallBlind,omitempty"`
 	BigBlind         *int  `json:"bigBlind,omitempty"`
 	TournamentMode   *bool `json:"tournamentMode,omitempty"`
@@ -28,6 +29,7 @@ type HoldemWebInput struct {
 	AddonEnabled     *bool `json:"addonEnabled,omitempty"`
 	AddonChips       *int  `json:"addonChips,omitempty"`
 	AddonAfterHand   *int  `json:"addonAfterHand,omitempty"`
+	CpuMetaAI        bool  `json:"cpuMetaAI,omitempty"`
 }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
@@ -199,6 +201,7 @@ func (p HoldemWebInput) ToConfig() (domain.HoldemConfig, error) {
 	if p.AddonAfterHand != nil && *p.AddonAfterHand >= 1 {
 		cfg.AddonAfterHand = *p.AddonAfterHand
 	}
+	cfg.CpuMetaAI = p.CpuMetaAI
 	return cfg, nil
 }
 
@@ -231,17 +234,17 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 		}
 		bc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
 	case "f", "fold":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0))
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0, param.HumanPlayMs))
 	case "ck", "check":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0))
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCheck, 0, param.HumanPlayMs))
 	case "c", "call":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0))
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionCall, 0, param.HumanPlayMs))
 	case "b", "bet":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount))
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionBet, param.Amount, param.HumanPlayMs))
 	case "ra", "raise":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount))
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionRaise, param.Amount, param.HumanPlayMs))
 	case "a", "allin":
-		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0))
+		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionAllIn, 0, param.HumanPlayMs))
 	case "rb", "rebuy":
 		bc.writePresenterResponse(w, hgi.Rebuy())
 	case "sr", "skiprebuy":

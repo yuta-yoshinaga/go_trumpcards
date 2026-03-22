@@ -71,6 +71,8 @@ type Omaha struct {
 	addonUsed       []bool
 	rebuyPhaseType  int
 	actionLog       []*ActionLogEntry
+	humanProfile    *BettingHumanProfile
+	lastHumanPlayMs int
 }
 
 // NewOmaha コンストラクタ
@@ -109,6 +111,15 @@ func (o *Omaha) Reset() error {
 	o.cpuActions = make([]OmahaCpuAction, 0)
 	o.rebuyPhaseType = OmahaRebuyPhaseNone
 	o.actionLog = nil
+
+	// メタAI: プロファイル初期化
+	if o.config.CpuMetaAI {
+		if o.humanProfile != nil {
+			o.humanProfile.GamesPlayed++
+		} else {
+			o.humanProfile = &BettingHumanProfile{}
+		}
+	}
 
 	o.trumpCards.Shuffle()
 	for _, p := range o.players {
@@ -231,7 +242,8 @@ func (o *Omaha) postBlinds() {
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
-func (o *Omaha) PlayerAction(action, amount int) error {
+// humanPlayMs: 迷い時間(ms, 0=計測なし)
+func (o *Omaha) PlayerAction(action, amount, humanPlayMs int) error {
 	if o.gameEndFlag {
 		return NewDomainError(ErrGameEnded, "Game has already ended.")
 	}
@@ -240,6 +252,18 @@ func (o *Omaha) PlayerAction(action, amount int) error {
 	}
 	if !o.players[o.currentTurn].GetIsHuman() {
 		return NewDomainError(ErrNotHumanTurn, "It is not your turn.")
+	}
+
+	// メタAI: 人間アクション記録
+	o.lastHumanPlayMs = humanPlayMs
+	if o.config.CpuMetaAI && o.humanProfile != nil {
+		pl := o.players[o.currentTurn]
+		handRank := pl.EvalBestHand(o.communityCards)
+		o.humanProfile.RecordAction(handRank, action)
+		o.humanProfile.RecordHesitation(humanPlayMs)
+		if o.lastBet > pl.GetCurrentBet() {
+			o.humanProfile.RecordFoldToBet(action == OmahaActionFold)
+		}
 	}
 
 	err := o.executeAction(o.currentTurn, action, amount)
@@ -664,11 +688,30 @@ func (o *Omaha) cpuDecide(idx int) (int, int) {
 		return o.cpuCallOrCheck(callAmount)
 	}
 
+	// メタAI: ブラフ率を調整
+	if o.config.CpuMetaAI && o.humanProfile != nil {
+		adjusted := o.humanProfile.AdjustedBluffChance(float64(params.bluffRate))
+		params.bluffRate = int(adjusted)
+	}
+
 	var action, amount int
 	if o.phase == OmahaPhasePreFlop {
 		action, amount = o.cpuDecidePreFlop(idx, params, callAmount)
 	} else {
 		action, amount = o.cpuDecidePostFlop(idx, params, callAmount)
+	}
+
+	// メタAI: 人間のベット/レイズに対してコール確率を調整
+	if o.config.CpuMetaAI && o.humanProfile != nil && o.lastHumanPlayMs > 0 {
+		if action == OmahaActionFold && callAmount > 0 {
+			handRank := p.EvalBestHand(o.communityCards)
+			bracket := bettingHandBracket(handRank)
+			adjustedCall := o.humanProfile.AdjustedCallChance(0.0, bracket, o.lastHumanPlayMs)
+			if adjustedCall > 0 && rand.Float64() < adjustedCall {
+				action = OmahaActionCall
+				amount = 0
+			}
+		}
 	}
 
 	maxRaises, maxBetAmount := o.bettingLimits()
@@ -1177,6 +1220,12 @@ func (o *Omaha) GetCpuActions() []OmahaCpuAction { return o.cpuActions }
 
 // GetLastCpuError 最後のCPUアクションエラー取得
 func (o *Omaha) GetLastCpuError() error { return o.lastCpuError }
+
+// GetHumanProfile メタAIプロファイル取得
+func (o *Omaha) GetHumanProfile() *BettingHumanProfile { return o.humanProfile }
+
+// ResetProfile メタAIプロファイルをリセットする
+func (o *Omaha) ResetProfile() { o.humanProfile = nil }
 
 // GetConfig 設定取得
 func (o *Omaha) GetConfig() OmahaConfig { return o.config }

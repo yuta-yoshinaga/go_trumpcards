@@ -28,29 +28,30 @@ func (c *OmahaCuiController) Exec(command string) string {
 			"a", "allin", "bl", "bettinglimit", "tm", "tournament",
 			"sb", "smallblind", "bb", "bigblind", "lh", "levelhand", "ts", "tablesize",
 			"rb", "rebuy", "sr", "skiprebuy", "ad", "addon", "sa", "skipaddon", "m", "muck", "sh", "show",
+			"mai", "metaai",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "fold":
-				return c.oi.Action(domain.OmahaActionFold, 0), true
+				return c.oi.Action(domain.OmahaActionFold, 0, 0), true
 			case "ck", "check":
-				return c.oi.Action(domain.OmahaActionCheck, 0), true
+				return c.oi.Action(domain.OmahaActionCheck, 0, 0), true
 			case "c", "call":
-				return c.oi.Action(domain.OmahaActionCall, 0), true
+				return c.oi.Action(domain.OmahaActionCall, 0, 0), true
 			case "b", "bet":
 				amount, err := parseAmount(args)
 				if err != nil {
 					return err.Error(), true
 				}
-				return c.oi.Action(domain.OmahaActionBet, amount), true
+				return c.oi.Action(domain.OmahaActionBet, amount, 0), true
 			case "ra", "raise":
 				amount, err := parseAmount(args)
 				if err != nil {
 					return err.Error(), true
 				}
-				return c.oi.Action(domain.OmahaActionRaise, amount), true
+				return c.oi.Action(domain.OmahaActionRaise, amount, 0), true
 			case "a", "allin":
-				return c.oi.Action(domain.OmahaActionAllIn, 0), true
+				return c.oi.Action(domain.OmahaActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
 				if len(args) < 1 {
 					return i18n.T("holdem.bettingLimitRequired"), true
@@ -129,6 +130,17 @@ func (c *OmahaCuiController) Exec(command string) string {
 				return c.oi.Muck(), true
 			case "sh", "show":
 				return c.oi.ShowHand(), true
+			case "mai", "metaai":
+				if len(args) < 1 {
+					return i18n.T("holdem.metaAIRequired"), true
+				}
+				v, err := strconv.Atoi(args[0])
+				if err != nil || v < 0 || v > 1 {
+					return i18n.Tf("holdem.invalidMetaAI", "val", args[0]), true
+				}
+				cfg := c.oi.GetConfig()
+				cfg.CpuMetaAI = v == 1
+				return c.oi.ResetWithConfig(cfg), true
 			}
 			return "", false
 		},

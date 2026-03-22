@@ -118,7 +118,7 @@ func TestHoldem_PlayerAction_GameEnded(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
 	h.SetGameEndFlag(true)
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "already ended")
 }
@@ -126,7 +126,7 @@ func TestHoldem_PlayerAction_GameEnded(t *testing.T) {
 func TestHoldem_PlayerAction_WrongPhase_Init(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseInit)
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not allowed")
 }
@@ -134,7 +134,7 @@ func TestHoldem_PlayerAction_WrongPhase_Init(t *testing.T) {
 func TestHoldem_PlayerAction_WrongPhase_Showdown(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhaseShowdown)
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.Error(t, err)
 }
 
@@ -142,7 +142,7 @@ func TestHoldem_PlayerAction_NotHumanTurn(t *testing.T) {
 	h := setupHoldemForHumanAction(HoldemPhasePreFlop)
 	h.SetCurrentTurn(1)
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "not your turn")
 }
@@ -155,7 +155,7 @@ func TestHoldem_PlayerAction_Fold(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionFold, 0)
+	err := h.PlayerAction(HoldemActionFold, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetFolded())
 }
@@ -168,7 +168,7 @@ func TestHoldem_PlayerAction_Check(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.NoError(t, err)
 }
 
@@ -181,7 +181,7 @@ func TestHoldem_PlayerAction_Check_WithOutstandingBet(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Cannot check")
 }
@@ -195,7 +195,7 @@ func TestHoldem_PlayerAction_Call(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionCall, 0)
+	err := h.PlayerAction(HoldemActionCall, 0, 0)
 	assert.NoError(t, err)
 }
 
@@ -208,7 +208,7 @@ func TestHoldem_PlayerAction_Call_NothingToCall(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionCall, 0)
+	err := h.PlayerAction(HoldemActionCall, 0, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Nothing to call")
 }
@@ -223,7 +223,7 @@ func TestHoldem_PlayerAction_Call_AllIn(t *testing.T) {
 	})
 
 	initialChips := h.players[0].GetChips()
-	err := h.PlayerAction(HoldemActionCall, 0)
+	err := h.PlayerAction(HoldemActionCall, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
 	// チップはオールイン時に全額投入されるが、ゲーム進行後にショーダウンで
@@ -239,7 +239,7 @@ func TestHoldem_PlayerAction_Bet(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionBet, 50)
+	err := h.PlayerAction(HoldemActionBet, 50, 0)
 	assert.NoError(t, err)
 	// After bet, CPUs act and game may advance; just verify no error
 }
@@ -253,7 +253,7 @@ func TestHoldem_PlayerAction_Bet_WithOutstandingBet(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionBet, 50)
+	err := h.PlayerAction(HoldemActionBet, 50, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Cannot bet")
 }
@@ -266,7 +266,7 @@ func TestHoldem_PlayerAction_Bet_TooSmall(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionBet, 5)
+	err := h.PlayerAction(HoldemActionBet, 5, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "minimum bet")
 }
@@ -279,7 +279,7 @@ func TestHoldem_PlayerAction_Bet_InsufficientChips(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionBet, 2000)
+	err := h.PlayerAction(HoldemActionBet, 2000, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Insufficient")
 }
@@ -293,7 +293,7 @@ func TestHoldem_PlayerAction_Bet_ExactChips(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionBet, 100)
+	err := h.PlayerAction(HoldemActionBet, 100, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
 }
@@ -308,7 +308,7 @@ func TestHoldem_PlayerAction_Raise(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionRaise, 30)
+	err := h.PlayerAction(HoldemActionRaise, 30, 0)
 	assert.NoError(t, err)
 }
 
@@ -322,7 +322,7 @@ func TestHoldem_PlayerAction_Raise_TooSmall(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionRaise, 10)
+	err := h.PlayerAction(HoldemActionRaise, 10, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "minimum raise")
 }
@@ -339,7 +339,7 @@ func TestHoldem_PlayerAction_Raise_InsufficientChips_AutoAllIn(t *testing.T) {
 	})
 
 	chipsBefore := h.players[0].GetChips()
-	err := h.PlayerAction(HoldemActionRaise, 10)
+	err := h.PlayerAction(HoldemActionRaise, 10, 0)
 	assert.NoError(t, err)
 	// Player went all-in with 25 chips (auto-converted from raise)
 	// Game may have progressed to showdown and redistributed chips
@@ -358,7 +358,7 @@ func TestHoldem_PlayerAction_Raise_ExactChips(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionRaise, 10)
+	err := h.PlayerAction(HoldemActionRaise, 10, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
 }
@@ -374,7 +374,7 @@ func TestHoldem_PlayerAction_Raise_MaxRaisesReached(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionRaise, 10)
+	err := h.PlayerAction(HoldemActionRaise, 10, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Maximum number of raises")
 }
@@ -390,7 +390,7 @@ func TestHoldem_PlayerAction_Bet_MaxRaisesReached(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionBet, 20)
+	err := h.PlayerAction(HoldemActionBet, 20, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Maximum number of raises")
 }
@@ -404,7 +404,7 @@ func TestHoldem_PlayerAction_AllIn(t *testing.T) {
 	})
 
 	chipsBefore := h.players[0].GetChips()
-	err := h.PlayerAction(HoldemActionAllIn, 0)
+	err := h.PlayerAction(HoldemActionAllIn, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
 	// After all-in, player's chips were added to pot; they may have won the pot in showdown
@@ -421,7 +421,7 @@ func TestHoldem_PlayerAction_AllIn_NoChips(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionAllIn, 0)
+	err := h.PlayerAction(HoldemActionAllIn, 0, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "No chips")
 }
@@ -436,7 +436,7 @@ func TestHoldem_PlayerAction_AllIn_BelowLastBet(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionAllIn, 0)
+	err := h.PlayerAction(HoldemActionAllIn, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
 }
@@ -449,7 +449,7 @@ func TestHoldem_PlayerAction_UnknownAction(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(99, 0)
+	err := h.PlayerAction(99, 0, 0)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Unknown")
 }
@@ -474,7 +474,7 @@ func TestHoldem_EveryoneFolds(t *testing.T) {
 	h.players[3].SetFolded(true)
 
 	// Now fold player 0
-	err := h.PlayerAction(HoldemActionFold, 0)
+	err := h.PlayerAction(HoldemActionFold, 0, 0)
 	assert.NoError(t, err)
 	// Player 1 should win
 	assert.True(t, h.GetGameEndFlag())
@@ -587,7 +587,7 @@ func TestHoldem_Showdown(t *testing.T) {
 		NewCard(CardDesignClover, 7, false),
 	})
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.NoError(t, err)
 
 	// Human lost (player 3 has straight) → muck choice available
@@ -642,7 +642,7 @@ func TestHoldem_Showdown_Kickers(t *testing.T) {
 		NewCard(CardDesignSpade, 9, false),
 	})
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.NoError(t, err)
 	// Human lost → stays at SHOWDOWN for muck choice
 	assert.False(t, h.GetGameEndFlag())
@@ -815,7 +815,7 @@ func TestHoldem_SplitPot(t *testing.T) {
 		NewCard(CardDesignSpade, 12, false),
 	})
 
-	err := h.PlayerAction(HoldemActionCheck, 0)
+	err := h.PlayerAction(HoldemActionCheck, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.GetGameEndFlag())
 
@@ -834,7 +834,7 @@ func TestHoldem_FullGame_AllFold(t *testing.T) {
 	// Player 3 is still active
 	h.setActedFlags([]bool{false, true, true, false})
 
-	err := h.PlayerAction(HoldemActionFold, 0)
+	err := h.PlayerAction(HoldemActionFold, 0, 0)
 	assert.NoError(t, err)
 	// Player 3 should win
 	assert.True(t, h.GetGameEndFlag())
@@ -852,7 +852,7 @@ func TestHoldem_Raise_NegativeDiff(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionRaise, 10)
+	err := h.PlayerAction(HoldemActionRaise, 10, 0)
 	assert.NoError(t, err)
 }
 
@@ -1439,7 +1439,7 @@ func TestHoldem_AllIn_AboveLastBet(t *testing.T) {
 		NewCard(CardDesignClover, 4, false),
 	})
 
-	err := h.PlayerAction(HoldemActionAllIn, 0)
+	err := h.PlayerAction(HoldemActionAllIn, 0, 0)
 	assert.NoError(t, err)
 	assert.True(t, h.players[0].GetAllIn())
 }
@@ -1489,7 +1489,7 @@ func TestHoldem_BettingLimits_PotLimit(t *testing.T) {
 		h.SetPot(100)
 		h.SetLastBet(0)
 		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 130 > 100
-		err := h.PlayerAction(HoldemActionBet, 130)
+		err := h.PlayerAction(HoldemActionBet, 130, 0)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, ErrInvalidAmount)
 	})
@@ -1504,7 +1504,7 @@ func TestHoldem_BettingLimits_PotLimit(t *testing.T) {
 		h.SetPot(100)
 		h.SetLastBet(0)
 		// maxBetAmount = pot + lastBet = 100 + 0 = 100; bet 100 is within limit
-		err := h.PlayerAction(HoldemActionBet, 100)
+		err := h.PlayerAction(HoldemActionBet, 100, 0)
 		assert.NoError(t, err)
 	})
 }
@@ -1519,7 +1519,7 @@ func TestHoldem_BettingLimits_NoLimit(t *testing.T) {
 		})
 		h.setRaiseCount(10) // well past fixed limit of 4
 		// NoLimit has maxRaises=0, so no raise cap
-		err := h.PlayerAction(HoldemActionBet, 20)
+		err := h.PlayerAction(HoldemActionBet, 20, 0)
 		assert.NoError(t, err)
 	})
 }
@@ -2297,7 +2297,7 @@ func TestHoldem_ActionLog_Actions(t *testing.T) {
 	if !h.GetGameEndFlag() && h.GetPhase() >= HoldemPhasePreFlop && h.GetPhase() <= HoldemPhaseRiver {
 		if h.players[h.currentTurn].GetIsHuman() {
 			beforeLen := len(h.GetActionLog())
-			err = h.PlayerAction(HoldemActionFold, 0)
+			err = h.PlayerAction(HoldemActionFold, 0, 0)
 			assert.NoError(t, err)
 			log = h.GetActionLog()
 			assert.Greater(t, len(log), beforeLen, "expected new log entries after fold")
@@ -2330,4 +2330,106 @@ func TestHoldem_ActionLog_Reset(t *testing.T) {
 	assert.Equal(t, 1, log[0].TurnNumber, "first entry after reset should have TurnNumber 1")
 	// Verify that entries are not accumulated across resets
 	assert.LessOrEqual(t, len(log), firstLogLen+4, "log should not grow unboundedly across resets")
+}
+
+// ---------------------------------------------------------------------------
+// Meta-AI integration tests
+// ---------------------------------------------------------------------------
+
+func TestHoldem_MetaAI_ProfileSurvivesReset(t *testing.T) {
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.CpuMetaAI = true
+	h.SetConfig(cfg)
+
+	_ = h.Reset()
+	profile := h.GetHumanProfile()
+	assert.NotNil(t, profile, "profile should be created on first Reset with CpuMetaAI=true")
+	assert.Equal(t, 0, profile.GamesPlayed, "GamesPlayed should be 0 on first Reset")
+
+	_ = h.Reset()
+	profile2 := h.GetHumanProfile()
+	assert.NotNil(t, profile2, "profile should survive Reset")
+	assert.Equal(t, 1, profile2.GamesPlayed, "GamesPlayed should be incremented on second Reset")
+}
+
+func TestHoldem_MetaAI_ProfileNotCreatedWhenDisabled(t *testing.T) {
+	h := newTestHoldem()
+	_ = h.Reset()
+	assert.Nil(t, h.GetHumanProfile(), "profile should be nil when CpuMetaAI is disabled")
+}
+
+func TestHoldem_MetaAI_ResetProfileClearsProfile(t *testing.T) {
+	h := newTestHoldem()
+	cfg := h.GetConfig()
+	cfg.CpuMetaAI = true
+	h.SetConfig(cfg)
+	_ = h.Reset()
+	assert.NotNil(t, h.GetHumanProfile())
+
+	h.ResetProfile()
+	assert.Nil(t, h.GetHumanProfile(), "profile should be nil after ResetProfile")
+}
+
+func TestHoldem_MetaAI_PlayerActionRecordsAction(t *testing.T) {
+	t.Run("aggressive action is recorded", func(t *testing.T) {
+		h := setupHoldemForHumanAction(HoldemPhaseFlop)
+		cfg := h.GetConfig()
+		cfg.CpuMetaAI = true
+		h.SetConfig(cfg)
+		h.SetHumanProfile(&BettingHumanProfile{})
+		// Community cards for hand evaluation
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 7, false),
+			NewCard(CardDesignDiamond, 9, false),
+		})
+
+		err := h.PlayerAction(HoldemActionBet, 20, 800)
+		assert.NoError(t, err)
+
+		profile := h.GetHumanProfile()
+		assert.NotNil(t, profile)
+		assert.Equal(t, 1, profile.HesitationCount)
+		// Total across all brackets should be 1
+		total := 0
+		for i := 0; i < 3; i++ {
+			total += profile.AggressiveByBracket[i].Total
+		}
+		assert.Equal(t, 1, total, "one action should be recorded")
+	})
+
+	t.Run("fold on bet records fold-to-bet", func(t *testing.T) {
+		h := setupHoldemForHumanAction(HoldemPhaseFlop)
+		cfg := h.GetConfig()
+		cfg.CpuMetaAI = true
+		h.SetConfig(cfg)
+		h.SetHumanProfile(&BettingHumanProfile{})
+		h.SetLastBet(40)
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 7, false),
+			NewCard(CardDesignDiamond, 9, false),
+		})
+
+		err := h.PlayerAction(HoldemActionFold, 0, 0)
+		assert.NoError(t, err)
+
+		profile := h.GetHumanProfile()
+		assert.Equal(t, 1, profile.FoldToBetCount)
+		assert.Equal(t, 1, profile.FoldToBetTotal)
+	})
+
+	t.Run("no recording when CpuMetaAI is disabled", func(t *testing.T) {
+		h := setupHoldemForHumanAction(HoldemPhaseFlop)
+		h.SetCommunityCards([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 7, false),
+			NewCard(CardDesignDiamond, 9, false),
+		})
+
+		err := h.PlayerAction(HoldemActionBet, 20, 500)
+		assert.NoError(t, err)
+		assert.Nil(t, h.GetHumanProfile())
+	})
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { holdemApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -72,6 +72,8 @@ export function HoldemPage() {
   const { state, loading, error, exec } = useGameApi(holdemApi.exec);
   const [betAmount, setBetAmount] = useState(20);
   const [learningMode, setLearningMode] = useState(false);
+  const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  const turnStartRef = useRef(0);
 
   useEffect(() => {
     exec('reset');
@@ -84,6 +86,19 @@ export function HoldemPage() {
       setBetAmount(20);
     }
   }, [state]);
+
+  useEffect(() => {
+    if (state && state.currentTurn === state.players?.find((p) => p.isHuman)?.id) {
+      turnStartRef.current = Date.now();
+    }
+  }, [state]);
+
+  const getElapsed = useCallback(() => {
+    if (!cpuMetaAI || turnStartRef.current === 0) return 0;
+    const elapsed = Date.now() - turnStartRef.current;
+    turnStartRef.current = 0;
+    return elapsed;
+  }, [cpuMetaAI]);
 
   const phase = state?.phase ?? HoldemPhase.INIT;
   const isActive = phase >= HoldemPhase.PRE_FLOP && phase <= HoldemPhase.RIVER;
@@ -102,13 +117,19 @@ export function HoldemPage() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => exec('call'), enabled: hasOutstandingBet },
-      { key: 'r', action: () => (hasOutstandingBet ? exec('raise', betAmount) : exec('bet', betAmount)) },
-      { key: 'k', action: () => exec('check'), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => exec('fold') },
-      { key: 'a', action: () => exec('allin') },
+      { key: 'c', action: () => exec('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'r',
+        action: () =>
+          hasOutstandingBet
+            ? exec('raise', betAmount, undefined, getElapsed())
+            : exec('bet', betAmount, undefined, getElapsed()),
+      },
+      { key: 'k', action: () => exec('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
+      { key: 'f', action: () => exec('fold', undefined, undefined, getElapsed()) },
+      { key: 'a', action: () => exec('allin', undefined, undefined, getElapsed()) },
     ],
-    [exec, hasOutstandingBet, betAmount],
+    [exec, hasOutstandingBet, betAmount, getElapsed],
   );
 
   useActionKeyboardNav({
@@ -348,17 +369,21 @@ export function HoldemPage() {
             maxBetAmount={state?.maxBetAmount}
             hasOutstandingBet={hasOutstandingBet}
             loading={loading}
-            onCall={() => exec('call')}
-            onRaise={() => exec('raise', betAmount)}
-            onBet={() => exec('bet', betAmount)}
-            onCheck={() => exec('check')}
-            onFold={() => exec('fold')}
-            onAllIn={() => exec('allin')}
+            onCall={() => exec('call', undefined, undefined, getElapsed())}
+            onRaise={() => exec('raise', betAmount, undefined, getElapsed())}
+            onBet={() => exec('bet', betAmount, undefined, getElapsed())}
+            onCheck={() => exec('check', undefined, undefined, getElapsed())}
+            onFold={() => exec('fold', undefined, undefined, getElapsed())}
+            onAllIn={() => exec('allin', undefined, undefined, getElapsed())}
           />
         )}
 
-        {/* Reset */}
-        <div className="text-center">
+        {/* Settings + Reset */}
+        <div className="text-center flex items-center justify-center gap-3">
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
+            {t('settings.cpuMetaAI')}
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
@@ -366,7 +391,7 @@ export function HoldemPage() {
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
-                exec('reset');
+                exec('reset', undefined, { cpuMetaAI });
               })
             }
           >

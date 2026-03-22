@@ -677,6 +677,52 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with bet command and humanPlayMs', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          phase: 2,
+          player: { cards: [], handRank: 0, handName: '', chips: 970, bet: 20 },
+          dealer: { cards: [], handRank: 0, handName: '', chips: 970, bet: 20 },
+          message: '',
+          pot: 60,
+          ante: 10,
+        }),
+      );
+      await pokerApi.exec('bet', undefined, 20, undefined, 500);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/poker/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'bet', indices: undefined, amount: 20, humanPlayMs: 500, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with reset command and cpuMetaAI config', async () => {
+      mockFetch.mockReturnValue(
+        makeResponse({
+          phase: 0,
+          player: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+          dealer: { cards: [], handRank: 0, handName: '', chips: 1000, bet: 0 },
+          message: '',
+          pot: 0,
+          ante: 10,
+        }),
+      );
+      await pokerApi.exec('reset', undefined, undefined, { cpuMetaAI: true });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/poker/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            indices: undefined,
+            amount: undefined,
+            cpuMetaAI: true,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 503));
       await expect(pokerApi.exec('reset')).rejects.toThrow('HTTP error: 503');
@@ -1554,6 +1600,38 @@ describe('gameApi', () => {
       );
     });
 
+    it('calls with fold command and humanPlayMs', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('fold', undefined, undefined, 300);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'fold',
+            amount: undefined,
+            humanPlayMs: 300,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and cpuMetaAI config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await holdemApi.exec('reset', undefined, { cpuMetaAI: true });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/holdem/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            cpuMetaAI: true,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
     it('throws on HTTP error', async () => {
       mockFetch.mockReturnValue(makeResponse(null, false, 500));
       await expect(holdemApi.exec('reset')).rejects.toThrow('HTTP error: 500');
@@ -1772,6 +1850,38 @@ describe('gameApi', () => {
           body: JSON.stringify({
             command: 'show',
             amount: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with fold command and humanPlayMs', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('fold', undefined, undefined, 300);
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'fold',
+            amount: undefined,
+            humanPlayMs: 300,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with reset and cpuMetaAI config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await omahaApi.exec('reset', undefined, { cpuMetaAI: true });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/omaha/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            amount: undefined,
+            cpuMetaAI: true,
             sessionId,
           }),
         }),

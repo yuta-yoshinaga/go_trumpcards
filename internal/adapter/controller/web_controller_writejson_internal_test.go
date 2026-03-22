@@ -100,8 +100,8 @@ func (m *mockPokerIF) Reset() string { return m.Called().String(0) }
 func (m *mockPokerIF) ResetWithConfig(cfg domain.PokerConfig) string {
 	return m.Called(cfg).String(0)
 }
-func (m *mockPokerIF) Action(action int, amount int) string {
-	return m.Called(action, amount).String(0)
+func (m *mockPokerIF) Action(action int, amount int, humanPlayMs int) string {
+	return m.Called(action, amount, humanPlayMs).String(0)
 }
 func (m *mockPokerIF) GetConfig() domain.PokerConfig {
 	return m.Called().Get(0).(domain.PokerConfig)
@@ -383,8 +383,8 @@ func (m *mockHoldemIF) Reset() string { return m.Called().String(0) }
 func (m *mockHoldemIF) ResetWithConfig(cfg domain.HoldemConfig) string {
 	return m.Called(cfg).String(0)
 }
-func (m *mockHoldemIF) Action(action int, amount int) string {
-	return m.Called(action, amount).String(0)
+func (m *mockHoldemIF) Action(action int, amount int, humanPlayMs int) string {
+	return m.Called(action, amount, humanPlayMs).String(0)
 }
 func (m *mockHoldemIF) GetConfig() domain.HoldemConfig {
 	return m.Called().Get(0).(domain.HoldemConfig)

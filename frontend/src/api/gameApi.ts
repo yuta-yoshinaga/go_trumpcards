@@ -91,6 +91,7 @@ export interface PokerConfigInput {
   jokerCount?: number;
   bettingLimit?: number;
   isLowball?: boolean;
+  cpuMetaAI?: boolean;
 }
 
 /** API client for the Poker /poker/exec endpoint. */
@@ -100,7 +101,8 @@ export const pokerApi = {
     indices?: number[],
     amount?: number,
     config?: PokerConfigInput,
-  ) => gameExec<PokerResponse>('poker', { command, indices, amount, ...config }),
+    humanPlayMs?: number,
+  ) => gameExec<PokerResponse>('poker', { command, indices, amount, humanPlayMs, ...config }),
 };
 
 /** API client for the Old Maid /oldmaid/exec endpoint. */
@@ -204,6 +206,7 @@ export interface HoldemConfigInput {
   addonEnabled?: boolean;
   addonChips?: number;
   addonAfterHand?: number;
+  cpuMetaAI?: boolean;
 }
 
 /** API client for the Texas Hold'em /holdem/exec endpoint. */
@@ -225,10 +228,12 @@ export const holdemApi = {
       | 'show',
     amount?: number,
     config?: HoldemConfigInput,
+    humanPlayMs?: number,
   ) =>
     gameExec<HoldemResponse>('holdem', {
       command,
       amount,
+      humanPlayMs,
       ...config,
     }),
 };
@@ -255,10 +260,12 @@ export const omahaApi = {
       | 'show',
     amount?: number,
     config?: OmahaConfigInput,
+    humanPlayMs?: number,
   ) =>
     gameExec<OmahaResponse>('omaha', {
       command,
       amount,
+      humanPlayMs,
       ...config,
     }),
 };
