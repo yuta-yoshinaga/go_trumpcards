@@ -478,7 +478,19 @@ export interface NapoleonConfigInput {
 /** API client for the Napoleon /napoleon/exec endpoint. */
 export const napoleonApi = {
   exec: (
-    command: 'reset' | 'bid' | 'trump' | 'exchange' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    command:
+      | 'reset'
+      | 'bid'
+      | 'trump'
+      | 'exchange'
+      | 'play'
+      | 'next'
+      | 'nextround'
+      | 'hint'
+      | 'log'
+      | 'setdifficulty'
+      | 'setlimit'
+      | 'setminbid',
     bid?: number,
     trumpSuit?: number,
     adjutantSuit?: number,
