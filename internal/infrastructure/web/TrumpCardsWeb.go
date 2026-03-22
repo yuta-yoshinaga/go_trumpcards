@@ -40,6 +40,7 @@ type TrumpCardsWeb struct {
 	cec *controller.CrazyEightsWebController
 	grc *controller.GinRummyWebController
 	sdc *controller.SpiderWebController
+	npc *controller.NapoleonWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -183,6 +184,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			spider := domain.NewSpider(domain.NewTrumpCardsWithSuits(domain.SpiderTotalCards, []int{domain.CardDesignSpade}))
 			return usecase.NewSpiderInteractor(spider, new(presenter.SpiderWebPresenter))
 		}),
+		npc: controller.NewNapoleonWebController(func() usecase.NapoleonInteractorIF {
+			config := domain.DefaultNapoleonConfig()
+			players := []*domain.NapoleonPlayer{
+				domain.NewNapoleonPlayer(true),
+				domain.NewNapoleonPlayer(false),
+				domain.NewNapoleonPlayer(false),
+				domain.NewNapoleonPlayer(false),
+			}
+			napoleon := domain.NewNapoleon(domain.NewTrumpCards(1), players, config)
+			return usecase.NewNapoleonInteractor(napoleon, new(presenter.NapoleonWebPresenter))
+		}),
 	}
 }
 
@@ -238,6 +250,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/crazyeights/exec", web.cec.Exec},
 		{"/ginrummy/exec", web.grc.Exec},
 		{"/spider/exec", web.sdc.Exec},
+		{"/napoleon/exec", web.npc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {

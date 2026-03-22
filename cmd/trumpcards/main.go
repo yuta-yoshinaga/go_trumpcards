@@ -51,6 +51,7 @@ GAMES:
   crazyeights  Crazy Eights (クレイジーエイト)
   ginrummy     Gin Rummy (ジンラミー)
   spider       Spider Solitaire (スパイダーソリティア)
+  napoleon     Napoleon (ナポレオン)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -140,6 +141,7 @@ ENVIRONMENT VARIABLES:
 		"crazyeights": func() int { ui.NewCrazyEightsCui().Exec(); return 0 },
 		"ginrummy":    func() int { ui.NewGinRummyCui().Exec(); return 0 },
 		"spider":      func() int { ui.NewSpiderCui().Exec(); return 0 },
+		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

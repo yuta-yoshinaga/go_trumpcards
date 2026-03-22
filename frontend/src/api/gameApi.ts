@@ -13,6 +13,7 @@ import type {
   HoldemResponse,
   KlondikeResponse,
   MemoryResponse,
+  NapoleonResponse,
   OldMaidResponse,
   OmahaResponse,
   PokerResponse,
@@ -467,6 +468,37 @@ export const spiderApi = {
     }),
 };
 
+/** Configuration options for Napoleon game settings. */
+export interface NapoleonConfigInput {
+  cpuDifficulty?: number;
+  minBid?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Napoleon /napoleon/exec endpoint. */
+export const napoleonApi = {
+  exec: (
+    command: 'reset' | 'bid' | 'trump' | 'exchange' | 'play' | 'next' | 'nextround' | 'hint' | 'log',
+    bid?: number,
+    trumpSuit?: number,
+    adjutantSuit?: number,
+    adjutantValue?: number,
+    discardIndex?: number,
+    cardIndex?: number,
+    config?: NapoleonConfigInput,
+  ) =>
+    gameExec<NapoleonResponse>('napoleon', {
+      command,
+      bid,
+      trumpSuit,
+      adjutantSuit,
+      adjutantValue,
+      discardIndex,
+      cardIndex,
+      config,
+    }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -478,6 +510,7 @@ const games = [
   'omaha',
   'hearts',
   'spades',
+  'napoleon',
   'memory',
   'klondike',
   'freecell',

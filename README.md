@@ -34,6 +34,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 - **クレイジーエイト (Crazy Eights)**: CLI および Web GUIで遊べます（1人 vs CPU×3、スートまたはランク一致でカードを出す、8はワイルド、ドローパイル補充、ポイント制マッチ） — [CUI版マニュアル](docs/manual/cui/crazyeights.md) / [Web版マニュアル](docs/manual/web/crazyeights.md)
 - **ジンラミー (Gin Rummy)**: CLI および Web GUIで遊べます（1人 vs CPU×1、2人対戦ラミー、10枚の手札、セットとランでメルド、ノック・ジン・アンダーカット、ポイント制マッチ） — [CUI版マニュアル](docs/manual/cui/ginrummy.md) / [Web版マニュアル](docs/manual/web/ginrummy.md)
 - **スパイダーソリティア (Spider Solitaire)**: CLI および Web GUIで遊べます（1人用ソリティア、2デッキ104枚、10列のタブロー、難易度3段階（1/2/4スート）、同スート降順シーケンス、完成スート自動除去） — [CUI版マニュアル](docs/manual/cui/spider.md) / [Web版マニュアル](docs/manual/web/spider.md)
+- **ナポレオン (Napoleon)**: CLI および Web GUIで遊べます（4人対戦トリックテイキング、52枚+ジョーカー1枚=53枚、絵札ビッド制、ナポレオン軍 vs 連合軍の隠しチーム戦、切り札宣言、副官指名、特殊カード（マイティ・ジョーカーキラー）、3段階CPU難易度） — [CUI版マニュアル](docs/manual/cui/napoleon.md) / [Web版マニュアル](docs/manual/web/napoleon.md)
 
 ## Requirements
 
@@ -115,6 +116,7 @@ go run ./cmd/trumpcards spades     # スペード CLI
 go run ./cmd/trumpcards crazyeights # クレイジーエイト CLI
 go run ./cmd/trumpcards ginrummy   # ジンラミー CLI
 go run ./cmd/trumpcards spider     # スパイダーソリティア CLI
+go run ./cmd/trumpcards napoleon   # ナポレオン CLI
 go run ./cmd/trumpcards update     # 最新版にセルフアップデート
 go run ./cmd/trumpcards web        # REST API + Web GUI サーバー起動 (CLI経由)
 go run ./cmd/server                # REST API + Web GUI サーバー起動 (直接)

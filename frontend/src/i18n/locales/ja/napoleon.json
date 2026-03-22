@@ -1,0 +1,90 @@
+{
+  "phase": {
+    "bid": "ビッド",
+    "trumpDeclaration": "切り札宣言",
+    "kittyExchange": "場札交換",
+    "play": "プレイ",
+    "trickEnd": "トリック終了",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "minBid": "最低ビッド",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "trick": "トリック {{n}}",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "pictureCards": "絵札: {{count}}",
+  "trickCount": "トリック: {{count}}",
+  "bid": "ビッド {{n}}",
+  "bidNone": "未ビッド",
+  "bidPass": "パス",
+  "currentTrick": "現在のトリック",
+  "trumpSuit": "切り札",
+  "adjutantCard": "副官カード",
+  "adjutantNone": "なし",
+  "role": {
+    "napoleon": "ナポレオン",
+    "adjutant": "副官"
+  },
+  "suitName": {
+    "spade": "スペード",
+    "club": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresBid": "ビッド",
+  "scoresPictureCards": "絵札",
+  "scoresTricks": "トリック",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "scoresRole": "役割",
+  "bidButton": "ビッド",
+  "passButton": "パス",
+  "declareButton": "宣言",
+  "exchangeButton": "交換",
+  "playButton": "出す",
+  "nextTrick": "次のトリック",
+  "nextRound": "次のラウンド",
+  "bidPhase": "ビッドを宣言してください (パスまたは {{min}}-17)",
+  "trumpDeclarationPhase": "切り札スートと副官カードを選択してください",
+  "kittyExchangePhase": "手札から1枚捨ててください",
+  "kittyLabel": "場札",
+  "playPhase": {
+    "lead": "リードしてください",
+    "follow": "カードを出してください"
+  },
+  "trickEnd": "トリック終了",
+  "roundEnd": "ラウンド終了",
+  "result": {
+    "napoleonWins": "ナポレオン軍の勝利！",
+    "alliedWins": "連合軍の勝利！"
+  },
+  "highestBid": "最高ビッド: {{bid}}",
+  "highestBidder": "最高ビッダー",
+  "hintBid": "推奨ビッド",
+  "hintTrump": "推奨切り札",
+  "hintDiscard": "推奨捨て札",
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "strategic_bid": "戦略的なビッド",
+    "strategic_declare": "戦略的な宣言",
+    "strategic_discard": "戦略的な捨て札",
+    "lead_strong": "強いカードでリード",
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "切り札でカット",
+    "play_joker": "ジョーカーを使用",
+    "discard_low": "低いカードを捨てる"
+  }
+}

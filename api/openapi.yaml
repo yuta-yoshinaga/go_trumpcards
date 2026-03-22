@@ -48,6 +48,8 @@ tags:
     description: Gin Rummy (ジンラミー) game
   - name: spider
     description: Spider Solitaire (スパイダーソリティア) game
+  - name: napoleon
+    description: Napoleon (ナポレオン) game
 
 paths:
   /blackjack/exec:
@@ -1676,6 +1678,101 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SpiderResponse'
+
+  /napoleon/exec:
+    post:
+      tags:
+        - napoleon
+      summary: Execute a Napoleon game command
+      description: |
+        Send a command to advance the Napoleon (ナポレオン) game session identified by
+        `sessionId`.  Napoleon is a 4-player trick-taking card game using 52 cards + 1
+        Joker (53 total).  Players bid the number of picture cards (J/Q/K/A + Joker = 17
+        max) they expect to capture.  The highest bidder becomes Napoleon, declares a trump
+        suit, and names an adjutant card (hidden ally).  Hidden teams: Napoleon's Army
+        (Napoleon + adjutant holder) vs Allied Forces.  Special cards: Joker (mighty --
+        strongest card), Spade 3 (joker killer -- beats mighty).  Napoleon's team must
+        capture >= bid number of picture cards to win.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Each player bids picture card count or passes |
+        | Trump     | `1`   | Napoleon declares the trump suit |
+        | Exchange  | `2`   | Napoleon exchanges cards with the kitty |
+        | Play      | `3`   | Trick play (follow suit; trump is declared suit) |
+        | TrickEnd  | `4`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `5`   | All 13 tricks played; advance with `nextround` |
+        | GameEnd   | `6`   | A player reached the point limit |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `bid`          | `b`     | Place a bid (requires `bid` field) or pass (bid = 0) |
+        | `trump`        | `t`     | Declare trump suit (requires `suit` field: 1-4) |
+        | `exchange`     | `e`     | Exchange cards with kitty (requires `cardIndices`) |
+        | `play`         | `p`     | Play a card (requires `cardIndex`) |
+        | `next`         | `n`     | Advance to the next trick |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a play suggestion |
+        | `log`          | `l`     | View action log |
+      operationId: napoleonExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NapoleonRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 12 picture cards
+                value:
+                  command: bid
+                  bid: 12
+                  sessionId: my-session-001
+              pass:
+                summary: Pass on bidding
+                value:
+                  command: bid
+                  bid: 0
+                  sessionId: my-session-001
+              trump:
+                summary: Declare spades as trump
+                value:
+                  command: trump
+                  suit: 1
+                  sessionId: my-session-001
+              exchange:
+                summary: Exchange cards at indices 0 and 3 with kitty
+                value:
+                  command: exchange
+                  cardIndices: [0, 3]
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NapoleonResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NapoleonResponse'
 
 components:
   schemas:
@@ -5658,3 +5755,181 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    # -------------------------------------------------------------------------
+    # Napoleon
+    # -------------------------------------------------------------------------
+    NapoleonRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bid` (`b`),
+            `trump` (`t`), `exchange` (`e`), `play` (`p`), `next` (`n`),
+            `nextround` (`nr`), `hint` (`h`), `log` (`l`),
+            `setdifficulty` (`sd`), `setlimit` (`sl`), `setminbid` (`sm`).
+          enum: [reset, r, bid, b, trump, t, exchange, e, play, p, next, n, nextround, nr, hint, h, log, l, setdifficulty, sd, setlimit, sl, setminbid, sm]
+          example: reset
+        bid:
+          type: integer
+          description: Bid value (number of picture cards, or 0 to pass).  Required for `bid` command.
+          minimum: 0
+          maximum: 17
+          example: 12
+        suit:
+          type: integer
+          description: "Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond).  Required for `trump` command."
+          minimum: 1
+          maximum: 4
+          example: 1
+        cardIndex:
+          type: integer
+          description: Index of the card to play.  Required for `play` command.
+          example: 2
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Indices of cards to exchange with kitty.  Required for `exchange` command.
+          example: [0, 3]
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+            minBid:
+              type: integer
+              minimum: 1
+              maximum: 17
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    NapoleonResponse:
+      type: object
+      description: Current state of the Napoleon game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              picCards:
+                type: integer
+                description: Number of picture cards captured
+              cumulativeScore:
+                type: integer
+              isNapoleon:
+                type: boolean
+              isAdjutant:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = Bid, 1 = Trump, 2 = Exchange, 3 = Play, 4 = TrickEnd, 5 = RoundEnd, 6 = GameEnd"
+          enum: [0, 1, 2, 3, 4, 5, 6]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        trickNumber:
+          type: integer
+          description: Current trick number within the round
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        bidPlayerIdx:
+          type: integer
+          description: Index of the player currently bidding
+        napoleonIdx:
+          type: integer
+          description: Index of the Napoleon player (-1 if not yet decided)
+        adjutantCard:
+          $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Declared trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond, 0=not yet declared)"
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        kitty:
+          type: array
+          description: Kitty cards (visible to Napoleon during exchange phase)
+          items:
+            $ref: '#/components/schemas/Card'
+        napoleonBid:
+          type: integer
+          description: Napoleon's winning bid
+        napoleonPicCards:
+          type: integer
+          description: Total picture cards captured by Napoleon's team
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerIdx:
+          type: integer
+          description: Index of the winning player (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+            minBid:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint

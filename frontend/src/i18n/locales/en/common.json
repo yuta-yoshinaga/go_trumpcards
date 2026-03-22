@@ -27,7 +27,8 @@
     "baccarat": "Baccarat",
     "crazyeights": "Crazy Eights",
     "ginrummy": "Gin Rummy",
-    "spider": "Spider"
+    "spider": "Spider",
+    "napoleon": "Napoleon"
   },
   "sound": {
     "mute": "Mute sound",
@@ -138,6 +139,15 @@
     "ginrummy.discardPhase": "Discard a card or knock",
     "ginrummy.layoffPhase": "Lay off cards onto the knocker's melds",
     "ginrummy.roundEnd": "Round over",
+    "napoleon.result.napoleonWins": "Napoleon's team wins!",
+    "napoleon.result.alliedWins": "Allied team wins!",
+    "napoleon.bidPhase": "Place your bid",
+    "napoleon.trumpDeclaration": "Declare trump suit and adjutant",
+    "napoleon.kittyExchange": "Exchange kitty cards",
+    "napoleon.playPhase.lead": "Lead a card",
+    "napoleon.playPhase.follow": "Play a card",
+    "napoleon.trickEnd": "Trick complete",
+    "napoleon.roundEnd": "Round complete",
     "memory.flip1": "Flip the first card",
     "memory.flip2": "Flip the second card",
     "memory.matched": "It's a match!",

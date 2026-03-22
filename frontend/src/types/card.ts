@@ -868,6 +868,74 @@ export interface BaccaratResponse {
   messageParams?: Record<string, string>;
 }
 
+// --- Napoleon (ナポレオン) ---
+
+/** Napoleon player data with bid, roles, scores, and picture card count. */
+export interface NapoleonPlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  bid: number;
+  isNapoleon: boolean;
+  isAdjutant: boolean;
+  adjutantRevealed: boolean;
+  pictureCards: number;
+  roundScore: number;
+  cumulativeScore: number;
+  trickCount: number;
+}
+
+/** A card played in a Napoleon trick. */
+export interface NapoleonTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Napoleon game configuration. */
+export interface NapoleonConfig {
+  cpuDifficulty: number;
+  minBid: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Napoleon. */
+export interface NapoleonHint {
+  cardIndex?: number;
+  bid?: number;
+  trumpSuit?: number;
+  adjutantSuit?: number;
+  adjutantValue?: number;
+  discardIndex?: number;
+  reason: string;
+}
+
+/** Full Napoleon game state returned from the API. */
+export interface NapoleonResponse {
+  players: NapoleonPlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  currentTrick: NapoleonTrickCard[];
+  trumpSuit: number;
+  adjutantCard: Card | null;
+  napoleonIdx: number;
+  adjutantIdx: number;
+  adjutantRevealed: boolean;
+  highestBid: number;
+  highestBidder: number;
+  kitty: Card[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: NapoleonConfig;
+  hint?: NapoleonHint;
+}
+
 // --- Spider Solitaire (スパイダーソリティア) ---
 
 /** A suggested move hint in Spider Solitaire. */

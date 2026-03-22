@@ -1,0 +1,480 @@
+//go:build test
+
+package presenter_test
+
+import (
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// setupNapoleonCuiMock creates a MockNapoleonGame with sensible defaults for CUI tests.
+func setupNapoleonCuiMock() *interfaces.MockNapoleonGame {
+	m := new(interfaces.MockNapoleonGame)
+	m.On("GetRoundNumber").Return(1)
+	m.On("GetTrickNumber").Return(1)
+	m.On("GetTrumpSuit").Return(0)
+	m.On("GetAdjutantCard").Return((*domain.Card)(nil))
+	m.On("GetAdjutantRevealed").Return(false)
+	m.On("GetHighestBid").Return(0)
+	m.On("GetCurrentTrick").Return([]*domain.NapoleonTrickCard(nil))
+	m.On("GetGameEndFlag").Return(false)
+	m.On("GetPhase").Return(domain.NapoleonPhasePlay)
+	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("GetBidPlayerIdx").Return(0)
+	m.On("GetWinnerTeam").Return(domain.NapoleonWinnerUndecided)
+	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetConfig").Return(domain.DefaultNapoleonConfig())
+	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	return m
+}
+
+func makeNapoleonPlayers() []*domain.NapoleonPlayer {
+	return []*domain.NapoleonPlayer{
+		domain.NewNapoleonPlayer(true),
+		domain.NewNapoleonPlayer(false),
+		domain.NewNapoleonPlayer(false),
+		domain.NewNapoleonPlayer(false),
+		domain.NewNapoleonPlayer(false),
+	}
+}
+
+func setupNapoleonCuiMockWithPlayers() (*interfaces.MockNapoleonGame, []*domain.NapoleonPlayer) {
+	m := setupNapoleonCuiMock()
+	players := makeNapoleonPlayers()
+	m.On("GetPlayerCnt").Return(5)
+	m.On("GetPlayer", 0).Return(players[0])
+	m.On("GetPlayer", 1).Return(players[1])
+	m.On("GetPlayer", 2).Return(players[2])
+	m.On("GetPlayer", 3).Return(players[3])
+	m.On("GetPlayer", 4).Return(players[4])
+	return m, players
+}
+
+func TestNapoleonCuiPresenter_Output(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.NapoleonCuiPresenter)
+
+	t.Run("initial state with header and player info", func(t *testing.T) {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Napoleon (ナポレオン)")
+		assert.Contains(t, result, "ラウンド: 1")
+		assert.Contains(t, result, "トリック: 1")
+		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック 絵札0枚 累積0点 ラウンド0点 2枚")
+		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "CPU 1: ビッド=未ビッド 獲得0トリック 絵札0枚 累積0点 ラウンド0点 1枚")
+		assert.Contains(t, result, "手番: あなた")
+		assert.Contains(t, result, "p <idx>")
+	})
+
+	t.Run("trump suit shown when set", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+		m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "切り札: ♠")
+	})
+
+	t.Run("adjutant card shown when set, not revealed", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetAdjutantCard")
+		m.On("GetAdjutantCard").Return(domain.NewCard(domain.CardDesignHeart, 13, false))
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "副官カード: HEART 13")
+		assert.Contains(t, result, "(非公開)")
+	})
+
+	t.Run("adjutant card shown when revealed", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetAdjutantCard")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetAdjutantRevealed")
+		m.On("GetAdjutantCard").Return(domain.NewCard(domain.CardDesignDiamond, 1, false))
+		m.On("GetAdjutantRevealed").Return(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "副官カード: DIAMOND 1")
+		assert.Contains(t, result, "(公開済み)")
+	})
+
+	t.Run("highest bid shown when greater than zero", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHighestBid")
+		m.On("GetHighestBid").Return(14)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "最高ビッド: 14")
+	})
+
+	t.Run("player with scores and tricks and pictureCards", func(t *testing.T) {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		players[1].SetCumulativeScore(50)
+		players[1].SetRoundScore(10)
+		players[1].SetPictureCards(3)
+		players[1].SetBid(14)
+		players[1].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1: ビッド=14 獲得1トリック 絵札3枚 累積50点 ラウンド10点 0枚")
+	})
+
+	t.Run("player bid pass shown", func(t *testing.T) {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		players[1].SetBid(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 1: ビッド=パス")
+	})
+
+	t.Run("napoleon role shown", func(t *testing.T) {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		players[0].SetIsNapoleon(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[ナポレオン]")
+	})
+
+	t.Run("adjutant role shown when revealed", func(t *testing.T) {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetAdjutantRevealed")
+		m.On("GetAdjutantRevealed").Return(true)
+		players[1].SetIsAdjutant(true)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "[副官]")
+	})
+
+	t.Run("adjutant role hidden when not revealed", func(t *testing.T) {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		players[1].SetIsAdjutant(true)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "[副官]")
+	})
+
+	t.Run("human with no cards does not print extra cards line", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック 絵札0枚 累積0点 ラウンド0点 0枚")
+	})
+
+	t.Run("current trick shown", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		trick := []*domain.NapoleonTrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignClover, 3, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
+		}
+		m.On("GetCurrentTrick").Return(trick)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+	})
+
+	t.Run("no trick cards hides trick section", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "トリック: あなた")
+		assert.NotContains(t, result, "トリック: CPU")
+	})
+
+	t.Run("error message shown", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		testErr := errors.New("invalid card index")
+
+		result := p.Output(m, testErr)
+		assert.Contains(t, result, "invalid card index")
+	})
+
+	t.Run("game ended napoleon wins", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerTeam")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerTeam").Return(domain.NapoleonWinnerNapoleon)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "ナポレオン軍の勝利です！")
+	})
+
+	t.Run("game ended allied wins", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerTeam")
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetWinnerTeam").Return(domain.NapoleonWinnerAllied)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ゲーム終了！")
+		assert.Contains(t, result, "連合軍の勝利です！")
+	})
+
+	t.Run("bid phase shows bidder and command", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NapoleonPhaseBid)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッドフェーズ: あなたの番")
+		assert.Contains(t, result, "b <n>")
+	})
+
+	t.Run("bid phase CPU bidder", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBidPlayerIdx")
+		m.On("GetPhase").Return(domain.NapoleonPhaseBid)
+		m.On("GetBidPlayerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッドフェーズ: CPU 1の番")
+	})
+
+	t.Run("trump declaration phase", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NapoleonPhaseTrumpDeclaration)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "切り札宣言フェーズ")
+		assert.Contains(t, result, "t <suit> <adjSuit> <adjVal>")
+	})
+
+	t.Run("kitty exchange phase", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NapoleonPhaseKittyExchange)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "場札交換フェーズ")
+		assert.Contains(t, result, "e <idx>")
+	})
+
+	t.Run("play phase shows current player CPU", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetCurrentPlayerIdx").Return(1)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "手番: CPU 1")
+		assert.Contains(t, result, "p <idx>")
+	})
+
+	t.Run("trick end phase shows next command", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NapoleonPhaseTrickEnd)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "トリック終了")
+		assert.Contains(t, result, "n / next・・・次のトリックへ")
+	})
+
+	t.Run("round end phase shows next command", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.NapoleonPhaseRoundEnd)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド終了")
+		assert.Contains(t, result, "nr / nextround・・・次のラウンドへ")
+	})
+
+	t.Run("joker card in trick shown as Joker", func(t *testing.T) {
+		m, _ := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		trick := []*domain.NapoleonTrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignJoker, 1, false)},
+		}
+		m.On("GetCurrentTrick").Return(trick)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "トリック: あなた=Joker")
+	})
+}
+
+func TestNapoleonCuiPresenter_ActionLogOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.NapoleonCuiPresenter)
+
+	t.Run("with entries", func(t *testing.T) {
+		m := new(interfaces.MockNapoleonGame)
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+		}
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetActionLog").Return(entries)
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜")
+		assert.Contains(t, result, "play")
+		assert.Contains(t, result, "played SPADE 5")
+		m.AssertExpectations(t)
+	})
+
+	t.Run("nil entries", func(t *testing.T) {
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetGameEndFlag").Return(true)
+		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜はありません")
+		m.AssertExpectations(t)
+	})
+
+	t.Run("game not ended", func(t *testing.T) {
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetGameEndFlag").Return(false)
+
+		result := p.ActionLogOutput(m)
+		assert.Contains(t, result, "棋譜はありません")
+		m.AssertExpectations(t)
+	})
+}
+
+func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	t.Run("no hint", func(t *testing.T) {
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetHint").Return((*domain.NapoleonHint)(nil))
+
+		p := new(presenter.NapoleonCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("bid hint", func(t *testing.T) {
+		bid := 14
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetHint").Return(&domain.NapoleonHint{
+			Bid:    &bid,
+			Reason: "strategic_bid",
+		})
+
+		p := new(presenter.NapoleonCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ビッド 14")
+		assert.Contains(t, result, "戦略的なビッド")
+	})
+
+	t.Run("trump suit hint", func(t *testing.T) {
+		suit := 1
+		adjSuit := 3
+		adjVal := 13
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetHint").Return(&domain.NapoleonHint{
+			TrumpSuit:     &suit,
+			AdjutantSuit:  &adjSuit,
+			AdjutantValue: &adjVal,
+			Reason:        "strategic_declare",
+		})
+
+		p := new(presenter.NapoleonCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "切り札 ♠")
+		assert.Contains(t, result, "戦略的な宣言")
+	})
+
+	t.Run("discard hint", func(t *testing.T) {
+		idx := 2
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetHint").Return(&domain.NapoleonHint{
+			DiscardIndex: &idx,
+			Reason:       "strategic_discard",
+		})
+		player := domain.NewNapoleonPlayer(true)
+		player.Reset()
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		player.AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		m.On("GetPlayer", 0).Return(player)
+
+		p := new(presenter.NapoleonCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "を捨てる")
+		assert.Contains(t, result, "戦略的な捨て")
+	})
+
+	t.Run("play hint", func(t *testing.T) {
+		idx := 1
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetHint").Return(&domain.NapoleonHint{
+			CardIndex: &idx,
+			Reason:    "follow_suit",
+		})
+		player := domain.NewNapoleonPlayer(true)
+		player.Reset()
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		m.On("GetPlayer", 0).Return(player)
+
+		p := new(presenter.NapoleonCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "リードスートに追随")
+	})
+
+	t.Run("hint with nil bid and nil card index and nil trump and nil discard", func(t *testing.T) {
+		m := new(interfaces.MockNapoleonGame)
+		m.On("GetHint").Return(&domain.NapoleonHint{
+			Reason: "unknown",
+		})
+
+		p := new(presenter.NapoleonCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("hint reason strings", func(t *testing.T) {
+		reasons := map[string]string{
+			"lead_strong":    "強いカードでリード",
+			"lead_low":       "低いカードでリード",
+			"trump_cut":      "切り札でカット",
+			"play_joker":     "ジョーカーをプレイ",
+			"discard_low":    "低いカードを捨てる",
+			"unknown_reason": "unknown_reason",
+		}
+		for key, expected := range reasons {
+			idx := 0
+			m := new(interfaces.MockNapoleonGame)
+			m.On("GetHint").Return(&domain.NapoleonHint{
+				CardIndex: &idx,
+				Reason:    key,
+			})
+			player := domain.NewNapoleonPlayer(true)
+			player.Reset()
+			player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+			m.On("GetPlayer", 0).Return(player)
+
+			p := new(presenter.NapoleonCuiPresenter)
+			result := p.HintOutput(m)
+			assert.Contains(t, result, expected, "reason: "+key)
+		}
+	})
+}
