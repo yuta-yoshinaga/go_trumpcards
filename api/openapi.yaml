@@ -10,7 +10,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:80
+  - url: http://localhost:8080
     description: Local development server (default port; override with PORT env var)
 
 tags:
