@@ -272,3 +272,78 @@ func TestSpadesCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+func TestSpadesCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	t.Run("no hint", func(t *testing.T) {
+		m := new(interfaces.MockSpadesGame)
+		m.On("GetHint").Return((*domain.SpadesHint)(nil))
+
+		p := new(presenter.SpadesCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "ヒントはありません")
+	})
+
+	t.Run("bid hint", func(t *testing.T) {
+		bid := 3
+		m := new(interfaces.MockSpadesGame)
+		m.On("GetHint").Return(&domain.SpadesHint{
+			Bid:    &bid,
+			Reason: "strategic_bid",
+		})
+
+		p := new(presenter.SpadesCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ビッド 3")
+		assert.Contains(t, result, "戦略的なビッド")
+	})
+
+	t.Run("play hint", func(t *testing.T) {
+		idx := 1
+		m := new(interfaces.MockSpadesGame)
+		m.On("GetHint").Return(&domain.SpadesHint{
+			CardIndex: &idx,
+			Reason:    "follow_suit",
+		})
+		player := domain.NewSpadesPlayer(true)
+		player.Reset()
+		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		player.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+		m.On("GetPlayer", 0).Return(player)
+
+		p := new(presenter.SpadesCuiPresenter)
+		result := p.HintOutput(m)
+		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "リードスートに追随")
+	})
+
+	t.Run("hint reason strings", func(t *testing.T) {
+		reasons := map[string]string{
+			"lead_strong":    "強いカードでリード",
+			"lead_low":       "低いカードでリード",
+			"trump_cut":      "スペードでカット",
+			"discard_high":   "高いカードを捨てる",
+			"unknown_reason": "unknown_reason",
+		}
+		for key, expected := range reasons {
+			idx := 0
+			m := new(interfaces.MockSpadesGame)
+			m.On("GetHint").Return(&domain.SpadesHint{
+				CardIndex: &idx,
+				Reason:    key,
+			})
+			player := domain.NewSpadesPlayer(true)
+			player.Reset()
+			player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+			m.On("GetPlayer", 0).Return(player)
+
+			p := new(presenter.SpadesCuiPresenter)
+			result := p.HintOutput(m)
+			assert.Contains(t, result, expected, "reason: "+key)
+		}
+	})
+}

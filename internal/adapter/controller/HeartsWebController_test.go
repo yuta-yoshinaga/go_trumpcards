@@ -42,6 +42,7 @@ func TestHeartsWebController_Method(t *testing.T) {
 	hiMock.On("Play", 3).Return(mockOutput)
 	hiMock.On("NextTrick").Return(mockOutput)
 	hiMock.On("NextRound").Return(mockOutput)
+	hiMock.On("Hint").Return(mockOutput)
 	hiMock.On("ActionLog").Return(mockOutput)
 
 	factory := func() uc.HeartsInteractorIF { return hiMock }
@@ -193,6 +194,28 @@ func TestHeartsWebController_Method(t *testing.T) {
 	t.Run("success Exec l shorthand", func(t *testing.T) {
 		var input controller.HeartsWebInput
 		_ = json.Unmarshal([]byte(`{"command":"l","sessionId":"test-session-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/hearts/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("success Exec h hint", func(t *testing.T) {
+		var input controller.HeartsWebInput
+		_ = json.Unmarshal([]byte(`{"command":"h","sessionId":"test-session-1"}`), &input)
+		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/hearts/exec", &input)
+		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+		recorded := test.RunRequest(t, api.MakeHandler(), req)
+		recorded.CodeIs(http.StatusOK)
+		recorded.ContentTypeIsJson()
+		recorded.BodyIs(expectedBody)
+	})
+
+	t.Run("success Exec hint", func(t *testing.T) {
+		var input controller.HeartsWebInput
+		_ = json.Unmarshal([]byte(`{"command":"hint","sessionId":"test-session-1"}`), &input)
 		req := test.MakeSimpleRequest("POST", "http://1.2.3.4/hearts/exec", &input)
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)

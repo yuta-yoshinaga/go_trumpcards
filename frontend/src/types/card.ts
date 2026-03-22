@@ -577,6 +577,12 @@ export interface HeartsConfig {
   omnibusJD: boolean;
 }
 
+/** A suggested hint for Hearts. */
+export interface HeartsHint {
+  cardIndices: number[];
+  reason: string;
+}
+
 /** Full Hearts game state returned from the API. */
 export interface HeartsResponse {
   players: HeartsPlayerData[];
@@ -594,6 +600,7 @@ export interface HeartsResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   config: HeartsConfig;
+  hint?: HeartsHint;
 }
 
 // --- Spades ---
@@ -625,6 +632,13 @@ export interface SpadesConfig {
   bagPenaltyThreshold: number;
 }
 
+/** A suggested hint for Spades. */
+export interface SpadesHint {
+  cardIndex?: number;
+  bid?: number;
+  reason: string;
+}
+
 /** Full Spades game state returned from the API. */
 export interface SpadesResponse {
   players: SpadesPlayerData[];
@@ -642,6 +656,7 @@ export interface SpadesResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   config: SpadesConfig;
+  hint?: SpadesHint;
 }
 
 // --- Crazy Eights (クレイジーエイト) ---

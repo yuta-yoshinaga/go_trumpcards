@@ -1,6 +1,7 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { spadesApi } from '../api/gameApi';
-import type { SpadesConfig } from '../types/card';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import type { SpadesConfig, SpadesHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
@@ -27,9 +28,12 @@ export const POINT_LIMIT_OPTIONS = [200, 300, 500, 750, 1000] as const;
 export function useSpadesGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const { config: spadesConfig, handleConfigChange } = useGameConfig<SpadesConfig>(DEFAULT_SPADES_CONFIG);
+  const [hint, setHint] = useState<SpadesHint | null>(null);
+  const [hintError, setHintError] = useState<string | null>(null);
 
   const onSuccess = useCallback(() => {
     clearSelection();
+    setHint(null);
   }, [clearSelection]);
   const { state, loading, error, exec: rawExec } = useGameApi(spadesApi.exec, { onSuccess });
 
@@ -59,10 +63,22 @@ export function useSpadesGame() {
     exec('nextround');
   }, [exec]);
 
+  const handleHint = useCallback(async () => {
+    try {
+      const res = await spadesApi.exec('hint');
+      setHint(res.hint ?? null);
+      setHintError(null);
+    } catch {
+      setHintError(NETWORK_ERROR_MESSAGE());
+    }
+  }, []);
+
   return {
     state,
     loading,
     error,
+    hint,
+    hintError,
     exec,
     spadesConfig,
     selectedCardIndices,
@@ -73,5 +89,6 @@ export function useSpadesGame() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    handleHint,
   };
 }

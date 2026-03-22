@@ -99,6 +99,43 @@ func (p *SpadesWebPresenter) buildMessage(s interfaces.SpadesGame, trick []*doma
 	return "", "", nil
 }
 
+// HintOutput ヒント情報をJSON出力する
+func (p *SpadesWebPresenter) HintOutput(s interfaces.SpadesGame) string {
+	hint := s.GetHint()
+	resObj := new(controller.SpadesWebOutput)
+	resObj.Phase = int(s.GetPhase())
+	resObj.RoundNumber = s.GetRoundNumber()
+	resObj.TrickNumber = s.GetTrickNumber()
+	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
+	resObj.BidPlayerIdx = s.GetBidPlayerIdx()
+	resObj.SpadesBroken = s.GetSpadesBroken()
+	resObj.GameEndFlag = s.GetGameEndFlag()
+	resObj.WinnerIdx = s.GetWinnerIdx()
+	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
+	cfg := s.GetConfig()
+	resObj.Config = controller.SpadesWebOutputConfig{
+		CpuDifficulty:       int(cfg.CpuDifficulty),
+		PointLimit:          cfg.PointLimit,
+		NilBonus:            cfg.NilBonus,
+		BagPenaltyThreshold: cfg.BagPenaltyThreshold,
+	}
+	trick := s.GetCurrentTrick()
+	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.Players = p.buildPlayersOutput(s)
+
+	if hint != nil {
+		resObj.Hint = &controller.SpadesWebOutputHint{
+			CardIndex: hint.CardIndex,
+			Bid:       hint.Bid,
+			Reason:    hint.Reason,
+		}
+		resObj.MessageCode = "spades.hintAvailable"
+	} else {
+		resObj.MessageCode = "spades.noHint"
+	}
+	return marshalOrError(resObj)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *SpadesWebPresenter) ActionLogOutput(s interfaces.SpadesGame) string {
 	return actionLogOutputJSON(s)

@@ -37,5 +37,14 @@
   "passButton": "Pass",
   "playButton": "Play",
   "nextTrick": "Next Trick",
-  "nextRound": "Next Round"
+  "nextRound": "Next Round",
+  "hintAvailable": "Hint",
+  "hintReason": {
+    "pass_high_risk_cards": "Pass high-risk cards",
+    "lead_low": "Lead with a low card",
+    "follow_suit": "Follow the lead suit",
+    "discard_queen_spades": "Chance to discard Q♠",
+    "discard_hearts": "Discard hearts",
+    "discard_high": "Discard a high card"
+  }
 }

@@ -96,6 +96,41 @@ func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*doma
 	return "", "", nil
 }
 
+// HintOutput ヒント情報をJSON出力する
+func (p *HeartsWebPresenter) HintOutput(h interfaces.HeartsGame) string {
+	hint := h.GetHint()
+	resObj := new(controller.HeartsWebOutput)
+	resObj.Phase = int(h.GetPhase())
+	resObj.RoundNumber = h.GetRoundNumber()
+	resObj.TrickNumber = h.GetTrickNumber()
+	resObj.CurrentPlayerIdx = h.GetCurrentPlayerIdx()
+	resObj.HeartsBroken = h.GetHeartsBroken()
+	resObj.PassDirection = int(h.GetPassDirection())
+	resObj.GameEndFlag = h.GetGameEndFlag()
+	resObj.WinnerIdx = h.GetWinnerIdx()
+	resObj.LeadPlayerIdx = h.GetLeadPlayerIdx()
+	cfg := h.GetConfig()
+	resObj.Config = controller.HeartsWebOutputConfig{
+		CpuDifficulty: int(cfg.CpuDifficulty),
+		PointLimit:    cfg.PointLimit,
+		OmnibusJD:     cfg.OmnibusJD,
+	}
+	trick := h.GetCurrentTrick()
+	resObj.CurrentTrick = p.buildTrickOutput(trick)
+	resObj.Players = p.buildPlayersOutput(h)
+
+	if hint != nil {
+		resObj.Hint = &controller.HeartsWebOutputHint{
+			CardIndices: hint.CardIndices,
+			Reason:      hint.Reason,
+		}
+		resObj.MessageCode = "hearts.hintAvailable"
+	} else {
+		resObj.MessageCode = "hearts.noHint"
+	}
+	return marshalOrError(resObj)
+}
+
 // ActionLogOutput 棋譜をJSON出力
 func (p *HeartsWebPresenter) ActionLogOutput(h interfaces.HeartsGame) string {
 	return actionLogOutputJSON(h)

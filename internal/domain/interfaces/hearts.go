@@ -60,6 +60,8 @@ type HeartsGame interface {
 	GetPassReady() [domain.HeartsPlayerCnt]bool
 	// GetPassedCards 各プレイヤーのパスしたカードを取得する
 	GetPassedCards() [domain.HeartsPlayerCnt][]*domain.Card
+	// GetHint ヒントを取得する
+	GetHint() *domain.HeartsHint
 	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
 }

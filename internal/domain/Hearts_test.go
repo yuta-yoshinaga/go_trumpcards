@@ -2816,3 +2816,138 @@ func TestHearts_Omnibus_DefaultConfigFalse(t *testing.T) {
 	cfg := domain.DefaultHeartsConfig()
 	assert.False(t, cfg.OmnibusJD)
 }
+
+// --- GetHint ---
+
+func TestHearts_GetHint_PassPhase(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	assert.Equal(t, domain.HeartsPhasePass, h.GetPhase())
+	hint := h.GetHint()
+	assert.NotNil(t, hint)
+	assert.Len(t, hint.CardIndices, 3)
+	assert.Equal(t, "pass_high_risk_cards", hint.Reason)
+}
+
+func TestHearts_GetHint_PlayPhase_Lead(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	setupPlayPhase(h, 0, 0, 1)
+	h.SetCurrentTrick(nil)
+	p := h.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	p.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+
+	hint := h.GetHint()
+	assert.NotNil(t, hint)
+	assert.Len(t, hint.CardIndices, 1)
+	assert.Equal(t, "lead_low", hint.Reason)
+}
+
+func TestHearts_GetHint_PlayPhase_FollowSuit(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	setupPlayPhase(h, 0, 1, 1)
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
+	})
+	p := h.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	p.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+
+	hint := h.GetHint()
+	assert.NotNil(t, hint)
+	assert.Len(t, hint.CardIndices, 1)
+	assert.Equal(t, "follow_suit", hint.Reason)
+}
+
+func TestHearts_GetHint_PlayPhase_DiscardQueenSpades(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	setupPlayPhase(h, 0, 1, 2)
+	h.SetHeartsBroken(true)
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
+	})
+	p := h.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+	hint := h.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "discard_queen_spades", hint.Reason)
+}
+
+func TestHearts_GetHint_PlayPhase_DiscardHearts(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	setupPlayPhase(h, 0, 1, 2)
+	h.SetHeartsBroken(true)
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
+	})
+	p := h.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignHeart, 10, false))
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+	hint := h.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "discard_hearts", hint.Reason)
+}
+
+func TestHearts_GetHint_PlayPhase_DiscardHigh(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	setupPlayPhase(h, 0, 1, 2)
+	h.SetHeartsBroken(true)
+	h.SetCurrentTrick([]*domain.HeartsTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
+	})
+	p := h.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 13, false))
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+	hint := h.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "discard_high", hint.Reason)
+}
+
+func TestHearts_GetHint_NotHumanTurn(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	setupPlayPhase(h, 1, 1, 1)
+	hint := h.GetHint()
+	assert.Nil(t, hint)
+}
+
+func TestHearts_GetHint_WrongPhase(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	h.SetPhase(domain.HeartsPhaseTrickEnd)
+	hint := h.GetHint()
+	assert.Nil(t, hint)
+}
+
+func TestHearts_GetHint_GameEnd(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	h.SetPhase(domain.HeartsPhaseGameEnd)
+	hint := h.GetHint()
+	assert.Nil(t, hint)
+}
+
+func TestHearts_GetHint_PlayPhase_NoValidCards(t *testing.T) {
+	h := newTestHearts()
+	h.Reset()
+	setupPlayPhase(h, 0, 0, 1)
+	p := h.GetPlayer(0)
+	p.Reset()
+
+	hint := h.GetHint()
+	assert.Nil(t, hint)
+}

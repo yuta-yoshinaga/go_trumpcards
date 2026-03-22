@@ -29,6 +29,7 @@ func NewHeartsCuiController(hi usecase.HeartsInteractorIF) *HeartsCuiController 
 //	nr / nextround   → 次のラウンドへ (スコアリング)
 //	sd / setdifficulty <0-2> → CPU難易度設定
 //	sl / setlimit <n> → ポイント上限設定
+//	h / hint         → ヒント表示
 //	log / l          → 棋譜表示
 func (c *HeartsCuiController) Exec(command string) string {
 	return execCuiCommand(
@@ -39,7 +40,7 @@ func (c *HeartsCuiController) Exec(command string) string {
 		},
 		[]string{
 			"pass", "p", "play", "n", "next", "nr", "nextround",
-			"sd", "setdifficulty", "sl", "setlimit", "log", "l",
+			"sd", "setdifficulty", "sl", "setlimit", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -78,6 +79,8 @@ func (c *HeartsCuiController) Exec(command string) string {
 				cfg := c.hi.GetConfig()
 				cfg.PointLimit = v
 				return c.hi.ResetWithConfig(cfg), true
+			case "h", "hint":
+				return c.hi.Hint(), true
 			case "log", "l":
 				return c.hi.ActionLog(), true
 			}

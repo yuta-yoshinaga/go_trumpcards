@@ -276,6 +276,17 @@ func TestHeartsInteractor_GetConfig(t *testing.T) {
 	})
 }
 
+func TestHeartsInteractor_Hint(t *testing.T) {
+	hpMock := new(presenter.MockHeartsPresenter)
+	gameMock := new(interfaces.MockHeartsGame)
+	hpMock.On("HintOutput", gameMock).Return(`{"hint":{"cardIndices":[0]}}`)
+
+	hi := usecase.NewHeartsInteractor(gameMock, hpMock)
+	result := hi.Hint()
+	assert.Equal(t, `{"hint":{"cardIndices":[0]}}`, result)
+	hpMock.AssertExpectations(t)
+}
+
 func TestHeartsInteractor_ActionLog(t *testing.T) {
 	hpMock := new(presenter.MockHeartsPresenter)
 	gameMock := new(interfaces.MockHeartsGame)

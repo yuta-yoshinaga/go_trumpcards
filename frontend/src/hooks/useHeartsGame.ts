@@ -1,6 +1,7 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { heartsApi } from '../api/gameApi';
-import type { HeartsConfig } from '../types/card';
+import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import type { HeartsConfig, HeartsHint } from '../types/card';
 import { useCardSelection } from './useCardSelection';
 import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
@@ -26,9 +27,12 @@ export const POINT_LIMIT_OPTIONS = [50, 100, 150, 200] as const;
 export function useHeartsGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const { config: heartsConfig, handleConfigChange, handleToggle } = useGameConfig<HeartsConfig>(DEFAULT_HEARTS_CONFIG);
+  const [hint, setHint] = useState<HeartsHint | null>(null);
+  const [hintError, setHintError] = useState<string | null>(null);
 
   const onSuccess = useCallback(() => {
     clearSelection();
+    setHint(null);
   }, [clearSelection]);
   const { state, loading, error, exec: rawExec } = useGameApi(heartsApi.exec, { onSuccess });
 
@@ -55,10 +59,22 @@ export function useHeartsGame() {
     exec('nextround');
   }, [exec]);
 
+  const handleHint = useCallback(async () => {
+    try {
+      const res = await heartsApi.exec('hint');
+      setHint(res.hint ?? null);
+      setHintError(null);
+    } catch {
+      setHintError(NETWORK_ERROR_MESSAGE());
+    }
+  }, []);
+
   return {
     state,
     loading,
     error,
+    hint,
+    hintError,
     exec,
     heartsConfig,
     selectedCardIndices,
@@ -70,5 +86,6 @@ export function useHeartsGame() {
     handlePlay,
     handleNextTrick,
     handleNextRound,
+    handleHint,
   };
 }

@@ -53,6 +53,12 @@ func (_m *MockSpadesInteractor) GetConfig() domain.SpadesConfig {
 	return ret.Get(0).(domain.SpadesConfig)
 }
 
+// Hint モック
+func (_m *MockSpadesInteractor) Hint() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // ActionLog モック
 func (_m *MockSpadesInteractor) ActionLog() string {
 	ret := _m.Called()

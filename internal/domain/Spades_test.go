@@ -946,3 +946,151 @@ func TestSpades_CpuPlay_AllDifficulties(t *testing.T) {
 		})
 	}
 }
+
+// --- GetHint ---
+
+func TestSpades_GetHint_BidPhase(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesBidPhase(s, 0)
+	// Give human cards for bid evaluation
+	p := s.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+	p.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+
+	hint := s.GetHint()
+	assert.NotNil(t, hint)
+	assert.NotNil(t, hint.Bid)
+	assert.Nil(t, hint.CardIndex)
+	assert.Equal(t, "strategic_bid", hint.Reason)
+}
+
+func TestSpades_GetHint_PlayPhase_LeadStrong(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesPlayPhase(s, 0, 0, 1)
+	s.SetCurrentTrick(nil)
+	p := s.GetPlayer(0)
+	p.Reset()
+	p.SetBid(3)
+	// tricks < bid → lead_strong
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+
+	hint := s.GetHint()
+	assert.NotNil(t, hint)
+	assert.NotNil(t, hint.CardIndex)
+	assert.Nil(t, hint.Bid)
+	assert.Equal(t, "lead_strong", hint.Reason)
+}
+
+func TestSpades_GetHint_PlayPhase_LeadLow(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesPlayPhase(s, 0, 0, 1)
+	s.SetCurrentTrick(nil)
+	p := s.GetPlayer(0)
+	p.Reset()
+	p.SetBid(0)
+	// tricks >= bid → lead_low
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+	p.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+
+	hint := s.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "lead_low", hint.Reason)
+}
+
+func TestSpades_GetHint_PlayPhase_FollowSuit(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesPlayPhase(s, 0, 1, 1)
+	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 7, false)},
+	})
+	p := s.GetPlayer(0)
+	p.Reset()
+	p.SetBid(3)
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+	p.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
+
+	hint := s.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "follow_suit", hint.Reason)
+}
+
+func TestSpades_GetHint_PlayPhase_TrumpCut(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesPlayPhase(s, 0, 1, 2)
+	s.SetSpadesBroken(true)
+	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
+	})
+	p := s.GetPlayer(0)
+	p.Reset()
+	p.SetBid(3)
+	// No diamonds → void, has spades → trump_cut
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+	hint := s.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "trump_cut", hint.Reason)
+}
+
+func TestSpades_GetHint_PlayPhase_DiscardHigh(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesPlayPhase(s, 0, 1, 2)
+	s.SetSpadesBroken(true)
+	s.SetCurrentTrick([]*domain.SpadesTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 7, false)},
+	})
+	p := s.GetPlayer(0)
+	p.Reset()
+	p.SetBid(0)
+	// No diamonds → void, bid already met, no spade cutting needed → discard_high
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 13, false))
+	p.AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
+
+	hint := s.GetHint()
+	assert.NotNil(t, hint)
+	assert.Equal(t, "discard_high", hint.Reason)
+}
+
+func TestSpades_GetHint_NotHumanTurn(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesPlayPhase(s, 1, 1, 1) // CPU's turn
+	hint := s.GetHint()
+	assert.Nil(t, hint)
+}
+
+func TestSpades_GetHint_WrongPhase(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	s.SetPhase(domain.SpadesPhaseTrickEnd)
+	hint := s.GetHint()
+	assert.Nil(t, hint)
+}
+
+func TestSpades_GetHint_BidPhase_NotHumanBid(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesBidPhase(s, 1) // CPU's bid turn
+	hint := s.GetHint()
+	assert.Nil(t, hint)
+}
+
+func TestSpades_GetHint_PlayPhase_NoValidCards(t *testing.T) {
+	s := newTestSpades()
+	s.Reset()
+	setupSpadesPlayPhase(s, 0, 0, 1)
+	p := s.GetPlayer(0)
+	p.Reset()
+	hint := s.GetHint()
+	assert.Nil(t, hint)
+}

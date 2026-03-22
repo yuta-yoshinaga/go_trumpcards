@@ -22,6 +22,8 @@ type SpadesInteractorIF interface {
 	NextRound() string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.SpadesConfig
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -107,6 +109,11 @@ func (si *SpadesInteractor) NextRound() string {
 // GetConfig 現在の設定を取得
 func (si *SpadesInteractor) GetConfig() domain.SpadesConfig {
 	return si.s.GetConfig()
+}
+
+// Hint ヒント取得
+func (si *SpadesInteractor) Hint() string {
+	return si.sp.HintOutput(si.s)
 }
 
 // ActionLog 棋譜を出力する

@@ -46,5 +46,15 @@
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "hintBid": "推奨ビッド",
+  "hintPlay": "推奨カード",
+  "hintReason": {
+    "strategic_bid": "戦略的なビッド",
+    "lead_strong": "強いカードでリード",
+    "lead_low": "低いカードでリード",
+    "follow_suit": "リードスートに追随",
+    "trump_cut": "スペードでカット",
+    "discard_high": "高いカードを捨てる"
   }
 }

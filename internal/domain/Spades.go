@@ -29,6 +29,13 @@ const (
 	SpadesPhaseGameEnd SpadesPhase = 4
 )
 
+// SpadesHint ヒント情報
+type SpadesHint struct {
+	CardIndex *int   // 推奨カードインデックス (ビッド時nil)
+	Bid       *int   // 推奨ビッド値 (プレイ時nil)
+	Reason    string // ヒント理由キー
+}
+
 // SpadesTrickCard トリック中の1枚
 type SpadesTrickCard struct {
 	PlayerIdx int
@@ -661,6 +668,45 @@ func (s *Spades) appendLog(playerIdx int, actionType, detail string, cards []*Ca
 		Detail:     detail,
 		Cards:      cards,
 	})
+}
+
+// GetHint ヒントを取得する
+func (s *Spades) GetHint() *SpadesHint {
+	if s.phase == SpadesPhaseBid && s.bidPlayerIdx == 0 {
+		bid := s.cpuBidHard(0)
+		return &SpadesHint{Bid: &bid, Reason: "strategic_bid"}
+	}
+	if s.phase == SpadesPhasePlay && s.currentPlayerIdx == 0 {
+		validIndices := s.getValidPlayIndices(0)
+		if len(validIndices) == 0 {
+			return nil
+		}
+		idx := s.cpuPlayHard(0, validIndices)
+		return &SpadesHint{CardIndex: &idx, Reason: s.playHintReason(idx)}
+	}
+	return nil
+}
+
+// playHintReason プレイヒントの理由を判定する
+func (s *Spades) playHintReason(chosenIdx int) string {
+	player := s.players[0]
+	card := player.GetCard(chosenIdx)
+
+	if len(s.currentTrick) == 0 {
+		if player.GetTrickCount() < player.GetBid() {
+			return "lead_strong"
+		}
+		return "lead_low"
+	}
+
+	leadSuit := s.currentTrick[0].Card.GetDesign()
+	if card.GetDesign() == leadSuit {
+		return "follow_suit"
+	}
+	if card.GetDesign() == CardDesignSpade {
+		return "trump_cut"
+	}
+	return "discard_high"
 }
 
 // --- CPU AI ---

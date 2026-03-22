@@ -50,6 +50,12 @@ const (
 // HeartsPassCardCount パスで渡すカード枚数
 const HeartsPassCardCount = 3
 
+// HeartsHint ヒント情報
+type HeartsHint struct {
+	CardIndices []int  // 推奨カードインデックス (プレイ時1枚, パス時3枚)
+	Reason      string // ヒント理由キー
+}
+
 // HeartsTrickCard トリック中の1枚
 type HeartsTrickCard struct {
 	PlayerIdx int
@@ -766,6 +772,87 @@ func cardStr(card *Card) string {
 		v = "?"
 	}
 	return s + v
+}
+
+// GetHint ヒントを取得する
+func (h *Hearts) GetHint() *HeartsHint {
+	if h.phase == HeartsPhasePass && !h.passReady[0] {
+		return h.getPassHint()
+	}
+	if h.phase == HeartsPhasePlay && h.currentPlayerIdx == 0 {
+		validIndices := h.getValidPlayIndices(0)
+		if len(validIndices) == 0 {
+			return nil
+		}
+		idx := h.cpuPlayHard(0, validIndices)
+		return &HeartsHint{CardIndices: []int{idx}, Reason: h.playHintReason(idx, validIndices)}
+	}
+	return nil
+}
+
+// getPassHint パスフェーズのヒントを生成する
+func (h *Hearts) getPassHint() *HeartsHint {
+	player := h.players[0]
+	suitCounts := map[int]int{}
+	for i := 0; i < player.GetCardsSize(); i++ {
+		suitCounts[player.GetCard(i).GetDesign()]++
+	}
+
+	type cardScore struct {
+		idx   int
+		score int
+	}
+	scores := make([]cardScore, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		card := player.GetCard(i)
+		score := card.GetValue()
+		if card.GetDesign() == CardDesignSpade && card.GetValue() == 12 {
+			score += 100
+		}
+		if card.GetDesign() == CardDesignSpade && card.GetValue() >= 11 {
+			score += 50
+		}
+		if card.GetDesign() == CardDesignHeart {
+			score += 20
+		}
+		if suitCounts[card.GetDesign()] <= 3 && card.GetDesign() != CardDesignHeart {
+			score += 30
+		}
+		if h.config.OmnibusJD && card.GetDesign() == CardDesignDiamond && card.GetValue() == 11 {
+			score = -100
+		}
+		scores[i] = cardScore{idx: i, score: score}
+	}
+	sort.Slice(scores, func(i, j int) bool { return scores[i].score > scores[j].score })
+
+	indices := make([]int, HeartsPassCardCount)
+	for i := 0; i < HeartsPassCardCount; i++ {
+		indices[i] = scores[i].idx
+	}
+	return &HeartsHint{CardIndices: indices, Reason: "pass_high_risk_cards"}
+}
+
+// playHintReason プレイヒントの理由を判定する
+func (h *Hearts) playHintReason(chosenIdx int, validIndices []int) string {
+	player := h.players[0]
+	card := player.GetCard(chosenIdx)
+
+	if len(h.currentTrick) == 0 {
+		return "lead_low"
+	}
+
+	leadSuit := h.currentTrick[0].Card.GetDesign()
+	if card.GetDesign() == leadSuit {
+		return "follow_suit"
+	}
+
+	if card.GetDesign() == CardDesignSpade && card.GetValue() == 12 {
+		return "discard_queen_spades"
+	}
+	if card.GetDesign() == CardDesignHeart {
+		return "discard_hearts"
+	}
+	return "discard_high"
 }
 
 // --- CPU AI ---

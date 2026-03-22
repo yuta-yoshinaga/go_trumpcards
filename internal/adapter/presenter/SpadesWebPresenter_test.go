@@ -397,3 +397,55 @@ func TestSpadesWebPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+func TestSpadesWebPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.SpadesWebPresenter)
+
+	t.Run("hint available with card", func(t *testing.T) {
+		idx := 2
+		m, _ := setupSpadesWebMockWithPlayers()
+		m.On("GetHint").Return(&domain.SpadesHint{
+			CardIndex: &idx,
+			Reason:    "follow_suit",
+		})
+
+		result := p.HintOutput(m)
+		var resObj controller.SpadesWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.Hint)
+		assert.Equal(t, &idx, resObj.Hint.CardIndex)
+		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
+		assert.Equal(t, "spades.hintAvailable", resObj.MessageCode)
+	})
+
+	t.Run("hint available with bid", func(t *testing.T) {
+		bid := 3
+		m, _ := setupSpadesWebMockWithPlayers()
+		m.On("GetHint").Return(&domain.SpadesHint{
+			Bid:    &bid,
+			Reason: "strategic_bid",
+		})
+
+		result := p.HintOutput(m)
+		var resObj controller.SpadesWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.Hint)
+		assert.Equal(t, &bid, resObj.Hint.Bid)
+		assert.Equal(t, "strategic_bid", resObj.Hint.Reason)
+		assert.Equal(t, "spades.hintAvailable", resObj.MessageCode)
+	})
+
+	t.Run("no hint", func(t *testing.T) {
+		m, _ := setupSpadesWebMockWithPlayers()
+		m.On("GetHint").Return((*domain.SpadesHint)(nil))
+
+		result := p.HintOutput(m)
+		var resObj controller.SpadesWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Nil(t, resObj.Hint)
+		assert.Equal(t, "spades.noHint", resObj.MessageCode)
+	})
+}

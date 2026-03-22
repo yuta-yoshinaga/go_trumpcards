@@ -404,3 +404,36 @@ func TestHeartsWebPresenter_ActionLogOutput(t *testing.T) {
 		m.AssertExpectations(t)
 	})
 }
+
+func TestHeartsWebPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.HeartsWebPresenter)
+
+	t.Run("hint available", func(t *testing.T) {
+		m, _ := setupHeartsWebMockWithPlayers()
+		m.On("GetHint").Return(&domain.HeartsHint{
+			CardIndices: []int{2},
+			Reason:      "follow_suit",
+		})
+
+		result := p.HintOutput(m)
+		var resObj controller.HeartsWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.NotNil(t, resObj.Hint)
+		assert.Equal(t, []int{2}, resObj.Hint.CardIndices)
+		assert.Equal(t, "follow_suit", resObj.Hint.Reason)
+		assert.Equal(t, "hearts.hintAvailable", resObj.MessageCode)
+	})
+
+	t.Run("no hint", func(t *testing.T) {
+		m, _ := setupHeartsWebMockWithPlayers()
+		m.On("GetHint").Return((*domain.HeartsHint)(nil))
+
+		result := p.HintOutput(m)
+		var resObj controller.HeartsWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Nil(t, resObj.Hint)
+		assert.Equal(t, "hearts.noHint", resObj.MessageCode)
+	})
+}
