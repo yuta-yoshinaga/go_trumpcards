@@ -150,7 +150,7 @@ classDiagram
         GAME_END = 3
     }
 
-    class SolitairePhase {
+    class KlondikePhase {
         <<enumeration>>
         PLAYING = 0
         GAME_CLEAR = 1
@@ -180,7 +180,7 @@ classDiagram
         END = 2
     }
 
-    note for SolitairePhase "Klondike, FreeCell, Spider\nで共通のフェーズ定義"
+    note for KlondikePhase "FreeCellPhase, SpiderPhase も\n同一の値を持つ別定数として存在"
 ```
 
 ### 1.2 API クライアント層

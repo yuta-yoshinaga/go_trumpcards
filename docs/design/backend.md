@@ -36,9 +36,9 @@
 ```mermaid
 classDiagram
     class Card {
-        +int design
-        +int value
-        +bool draw
+        -int design
+        -int value
+        -bool draw
     }
 
     class TrumpCards {
