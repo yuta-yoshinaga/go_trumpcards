@@ -4,6 +4,14 @@
 [![Backend Coverage](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards/graph/badge.svg?flag=backend)](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards)
 [![Frontend Coverage](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards/graph/badge.svg?flag=frontend)](https://codecov.io/gh/yuta-yoshinaga/go_trumpcards)
 
+## Vision
+
+**世界中のあらゆるトランプゲームを、誰でも無料で遊べるようにする。**
+
+このプロジェクトは、人間とAIコーディングエージェントが共にソフトウェアを創り上げる **「共創のリファレンスモデル」** です。AIエージェントが正確にコンテキストを理解し、高品質なコードを生成できる開発環境を整備することで、人間とAIの協調開発のベストプラクティスを示し続けます。
+
+go_trumpcardsが目指す未来は、**あらゆる人がクリエイターとなり、自分が欲しいものを生成AIコーディングエージェントとの共創で実現できる世の中** です。
+
 ## Description
 トランプカードのアルゴリズムをGo+Clean Architectureで実装したプロジェクトです。Web GUIは日本語/英語の多言語対応（react-i18next）をサポートしています。
 
