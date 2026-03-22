@@ -26,7 +26,8 @@
     "freecell": "フリーセル",
     "baccarat": "バカラ",
     "crazyeights": "クレイジーエイト",
-    "ginrummy": "ジンラミー"
+    "ginrummy": "ジンラミー",
+    "spider": "スパイダー"
   },
   "sound": {
     "mute": "サウンドをオフにする",

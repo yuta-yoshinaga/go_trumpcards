@@ -17,6 +17,7 @@ import {
   sessionId,
   sevensApi,
   spadesApi,
+  spiderApi,
 } from './gameApi';
 
 describe('gameApi', () => {
@@ -2615,6 +2616,7 @@ describe('gameApi', () => {
       ['baccarat', actionLogApi.baccarat],
       ['crazyeights', actionLogApi.crazyeights],
       ['ginrummy', actionLogApi.ginrummy],
+      ['spider', actionLogApi.spider],
     ])('actionLogApi.%s', (gameName, apiFn) => {
       it(`calls /${gameName}/exec with log command`, async () => {
         mockFetch.mockReturnValue(makeResponse(logPayload));
@@ -2626,6 +2628,77 @@ describe('gameApi', () => {
         });
         expect(result).toEqual(logPayload);
       });
+    });
+  });
+
+  describe('spiderApi.exec', () => {
+    const payload = {
+      tableau: [[{ card: { design: 'SPADE', value: 5 }, faceUp: true }]],
+      stockCount: 50,
+      completedSuits: 0,
+      phase: 0,
+      moveCount: 0,
+      score: 500,
+      difficulty: 1,
+      canUndo: false,
+      isStalemate: false,
+      message: '',
+    };
+
+    it('calls with reset command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      const result = await spiderApi.exec('reset');
+      expect(mockFetch).toHaveBeenCalledWith('/spider/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: 'reset', from: undefined, to: undefined, config: undefined, sessionId }),
+      });
+      expect(result).toEqual(payload);
+    });
+
+    it('calls with deal command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spiderApi.exec('deal');
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spider/exec',
+        expect.objectContaining({
+          body: JSON.stringify({ command: 'deal', from: undefined, to: undefined, config: undefined, sessionId }),
+        }),
+      );
+    });
+
+    it('calls with move command', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spiderApi.exec('move', { zone: 'tableau', col: 0, cardIndex: 2 }, { zone: 'tableau', col: 3 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spider/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'move',
+            from: { zone: 'tableau', col: 0, cardIndex: 2 },
+            to: { zone: 'tableau', col: 3 },
+            config: undefined,
+            sessionId,
+          }),
+        }),
+      );
+    });
+
+    it('calls with config', async () => {
+      mockFetch.mockReturnValue(makeResponse(payload));
+      await spiderApi.exec('reset', undefined, undefined, { difficulty: 2 });
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/spider/exec',
+        expect.objectContaining({
+          body: JSON.stringify({
+            command: 'reset',
+            from: undefined,
+            to: undefined,
+            config: { difficulty: 2 },
+            sessionId,
+          }),
+        }),
+      );
     });
   });
 });

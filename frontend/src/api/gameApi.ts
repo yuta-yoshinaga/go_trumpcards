@@ -18,6 +18,7 @@ import type {
   PokerResponse,
   SevensResponse,
   SpadesResponse,
+  SpiderResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -438,6 +439,34 @@ export const baccaratApi = {
   ) => gameExec<BaccaratResponse>('baccarat', { command, amount, betType, playerPairBet, bankerPairBet }),
 };
 
+/** Source or target zone for a Spider card move. */
+export interface SpiderMoveZone {
+  zone: string;
+  col?: number;
+  cardIndex?: number;
+}
+
+/** Configuration options for Spider game settings. */
+export interface SpiderConfigInput {
+  difficulty?: number;
+}
+
+/** API client for the Spider /spider/exec endpoint. */
+export const spiderApi = {
+  exec: (
+    command: 'reset' | 'deal' | 'move' | 'giveup' | 'hint' | 'autocomplete' | 'log' | 'undo',
+    from?: SpiderMoveZone,
+    to?: SpiderMoveZone,
+    config?: SpiderConfigInput,
+  ) =>
+    gameExec<SpiderResponse>('spider', {
+      command,
+      from,
+      to,
+      config,
+    }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -455,6 +484,7 @@ const games = [
   'baccarat',
   'crazyeights',
   'ginrummy',
+  'spider',
 ] as const;
 type Game = (typeof games)[number];
 

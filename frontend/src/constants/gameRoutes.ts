@@ -49,6 +49,7 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/klondike', labelKey: 'nav.klondike' },
       { path: '/freecell', labelKey: 'nav.freecell' },
+      { path: '/spider', labelKey: 'nav.spider' },
       { path: '/memory', labelKey: 'nav.memory' },
     ],
   },

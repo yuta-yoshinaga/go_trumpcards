@@ -145,6 +145,13 @@ export const BaccaratBetType = {
   TIE: 2,
 } as const;
 
+/** Spider phase constants (sync: internal/domain/Spider.go). */
+export const SpiderPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
 /** Baccarat phase constants (sync: internal/domain/Baccarat.go). */
 export const BaccaratPhase = {
   BET: 1,
