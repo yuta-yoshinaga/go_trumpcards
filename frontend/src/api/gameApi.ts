@@ -11,6 +11,7 @@ import type {
   GinRummyResponse,
   HeartsResponse,
   HoldemResponse,
+  IndianPokerResponse,
   KlondikeResponse,
   MemoryResponse,
   NapoleonResponse,
@@ -511,6 +512,29 @@ export const napoleonApi = {
     }),
 };
 
+/** Configuration options for Indian Poker game settings. */
+export interface IndianPokerConfigInput {
+  ante?: number;
+  bettingLimit?: number;
+  cpuMetaAI?: boolean;
+}
+
+/** API client for the Indian Poker /indianpoker/exec endpoint. */
+export const indianpokerApi = {
+  exec: (
+    command: 'reset' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allin' | 'log',
+    amount?: number,
+    config?: IndianPokerConfigInput,
+    humanPlayMs?: number,
+  ) =>
+    gameExec<IndianPokerResponse>('indianpoker', {
+      command,
+      amount,
+      humanPlayMs,
+      ...config,
+    }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -530,6 +554,7 @@ const games = [
   'crazyeights',
   'ginrummy',
   'spider',
+  'indianpoker',
 ] as const;
 type Game = (typeof games)[number];
 

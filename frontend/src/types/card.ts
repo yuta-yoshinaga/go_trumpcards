@@ -967,3 +967,63 @@ export interface SpiderResponse {
   messageParams?: Record<string, string>;
   hint?: SpiderHint;
 }
+
+// --- Indian Poker (インディアンポーカー) ---
+
+/** Indian Poker player data with card, chips, and betting status. */
+export interface IndianPokerPlayerOutput {
+  id: number;
+  isHuman: boolean;
+  card: Card | null;
+  chips: number;
+  currentBet: number;
+  folded: boolean;
+  allIn: boolean;
+  cardRank: number;
+  playStyleName: string;
+}
+
+/** Indian Poker round result for a single player. */
+export interface IndianPokerResultOutput {
+  playerIdx: number;
+  card: Card | null;
+  cardRank: number;
+  wonAmount: number;
+}
+
+/** CPU betting action in Indian Poker. */
+export interface IndianPokerCpuActionOutput {
+  playerIdx: number;
+  action: number;
+  amount: number;
+}
+
+/** Side pot in Indian Poker with eligible players. */
+export interface IndianPokerSidePot {
+  amount: number;
+  eligiblePlayers: number[];
+}
+
+/** Full Indian Poker game state returned from the API. */
+export interface IndianPokerResponse {
+  players: IndianPokerPlayerOutput[];
+  pot: number;
+  sidePots: IndianPokerSidePot[];
+  dealerIdx: number;
+  currentTurn: number;
+  phase: number;
+  gameEndFlag: boolean;
+  lastBet: number;
+  minRaise: number;
+  bettingLimit: number;
+  raiseCount: number;
+  maxBetAmount: number;
+  roundResults: IndianPokerResultOutput[];
+  cpuActions: IndianPokerCpuActionOutput[];
+  handCount: number;
+  ante: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  actionLog?: ActionLogEntry[];
+}

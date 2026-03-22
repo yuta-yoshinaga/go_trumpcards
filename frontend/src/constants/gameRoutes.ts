@@ -25,6 +25,7 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/poker', labelKey: 'nav.poker' },
       { path: '/holdem', labelKey: 'nav.holdem' },
       { path: '/omaha', labelKey: 'nav.omaha' },
+      { path: '/indianpoker', labelKey: 'nav.indianpoker' },
     ],
   },
   {

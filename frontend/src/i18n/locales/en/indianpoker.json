@@ -1,0 +1,18 @@
+{
+  "title": "Indian Poker",
+  "phase": {
+    "init": "Init",
+    "ante": "Ante",
+    "betting": "Betting",
+    "showdown": "Showdown",
+    "end": "End"
+  },
+  "yourCard": "Your Card",
+  "hidden": "???",
+  "ante": "Ante",
+  "settings": {
+    "ante": "Ante",
+    "bettingLimit": "Betting Limit",
+    "metaAI": "Meta AI"
+  }
+}

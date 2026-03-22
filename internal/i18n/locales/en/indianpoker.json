@@ -1,0 +1,18 @@
+{
+  "helpTitle": "Indian Poker",
+  "helpFold": "  f                    fold",
+  "helpCheck": "  ck                   check",
+  "helpCall": "  c                    call",
+  "helpBet": "  b <amount>           bet",
+  "helpRaise": "  ra <amount>          raise",
+  "helpAllIn": "  a                    all-in",
+  "helpAnte": "  an <amount>          ante (>=1)",
+  "helpBettingLimit": "  bl [0-2]             betting limit (0=Fixed, 1=PotLimit, 2=NoLimit)",
+  "helpMetaAI": "  mai [0-1]            meta AI (0=OFF, 1=ON)",
+  "amountRequired": "Amount is required for bet/raise.",
+  "invalidAmount": "Invalid amount: {{val}}",
+  "anteRequired": "Ante amount is required (>=1).",
+  "invalidAnte": "Invalid ante: {{val}}. Please enter a number >= 1.",
+  "bettingLimitRequired": "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).",
+  "invalidBettingLimit": "Invalid betting limit: {{val}}. Please enter 0-2."
+}

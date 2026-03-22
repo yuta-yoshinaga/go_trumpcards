@@ -59,13 +59,16 @@ import jaFreecell from '../i18n/locales/ja/freecell.json';
 import jaGinrummy from '../i18n/locales/ja/ginrummy.json';
 import jaHearts from '../i18n/locales/ja/hearts.json';
 import jaHoldem from '../i18n/locales/ja/holdem.json';
+import jaIndianpoker from '../i18n/locales/ja/indianpoker.json';
 import jaKlondike from '../i18n/locales/ja/klondike.json';
 import jaMemory from '../i18n/locales/ja/memory.json';
+import jaNapoleon from '../i18n/locales/ja/napoleon.json';
 import jaOldmaid from '../i18n/locales/ja/oldmaid.json';
 import jaOmaha from '../i18n/locales/ja/omaha.json';
 import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
 import jaSpades from '../i18n/locales/ja/spades.json';
+import jaSpider from '../i18n/locales/ja/spider.json';
 
 i18n.use(initReactI18next).init({
   lng: 'ja',
@@ -89,6 +92,9 @@ i18n.use(initReactI18next).init({
     'klondike',
     'freecell',
     'ginrummy',
+    'napoleon',
+    'spider',
+    'indianpoker',
   ],
   resources: {
     ja: {
@@ -109,6 +115,9 @@ i18n.use(initReactI18next).init({
       klondike: jaKlondike,
       freecell: jaFreecell,
       ginrummy: jaGinrummy,
+      napoleon: jaNapoleon,
+      spider: jaSpider,
+      indianpoker: jaIndianpoker,
     },
   },
   interpolation: { escapeValue: false },

@@ -27,6 +27,7 @@
   - [3.10 GinRummy フェーズ遷移](#310-ginrummy-フェーズ遷移)
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
   - [3.12 Napoleon フェーズ遷移](#312-napoleon-フェーズ遷移)
+  - [3.13 IndianPoker フェーズ遷移](#313-indianpoker-フェーズ遷移)
 
 ---
 
@@ -94,7 +95,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全18ゲーム)
+### 1.2 ゲームドメイン (全19ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -317,6 +318,59 @@ classDiagram
     HoldemPlayer --> "1" ChipHolder
     Omaha --> "*" OmahaPlayer
     OmahaPlayer --|> GamePlayer
+```
+
+#### インディアンポーカー
+
+```mermaid
+classDiagram
+    class IndianPoker {
+        -trumpCards *TrumpCards
+        -players []*IndianPokerPlayer
+        -config IndianPokerConfig
+        -pot int
+        -sidePots []SidePot
+        -dealerIdx int
+        -currentTurn int
+        -phase int
+        -lastBet int
+        -minRaise int
+        -raiseCount int
+        -humanProfile *IndianPokerHumanProfile
+        +Reset()
+        +ResetWithConfig(config IndianPokerConfig)
+        +Action(action int, amount int, humanPlayMs int) error
+        +Phase() int
+    }
+
+    class IndianPokerPlayer {
+        -isHuman bool
+        -playStyle HoldemPlayStyle
+        +GetIsHuman() bool
+        +GetPlayStyle() HoldemPlayStyle
+        +GetComparisonCards() []*Card
+    }
+
+    class IndianPokerConfig {
+        +int Ante
+        +int InitChips
+        +BettingLimitType BettingLimit
+        +bool CpuMetaAI
+        +Validate() error
+    }
+
+    class IndianPokerHumanProfile {
+        +float64 BluffRate
+        +float64 FoldRate
+        +int AvgHesitationMs
+    }
+
+    IndianPoker --> "4" IndianPokerPlayer
+    IndianPoker --> "1" IndianPokerConfig
+    IndianPoker --> "*" SidePot
+    IndianPoker --> "1" IndianPokerHumanProfile
+    IndianPokerPlayer --|> Player
+    IndianPokerPlayer --> "1" ChipHolder
 ```
 
 #### 手札系ゲーム
@@ -659,6 +713,7 @@ classDiagram
         -ginrummy *GinRummyWebController
         -spider *SpiderWebController
         -napoleon *NapoleonWebController
+        -indianpoker *IndianPokerWebController
         +Exec()
     }
 
@@ -970,6 +1025,20 @@ stateDiagram-v2
     RoundEnd --> Bid : 次ラウンド開始
     RoundEnd --> GameEnd : 目標点到達
     GameEnd --> [*]
+```
+
+### 3.13 IndianPoker フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Init : 初期状態
+    Init --> Ante : Reset()
+    Ante --> Betting : アンティ投入・カード配布
+    Betting --> Showdown : 全員アクション完了
+    Betting --> Showdown : 1人以外全員フォールド
+    Showdown --> Ante : 次ハンド開始
+    Showdown --> End : プレイヤーのチップが0
+    End --> [*]
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

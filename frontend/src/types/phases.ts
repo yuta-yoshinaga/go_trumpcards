@@ -168,3 +168,12 @@ export const BaccaratPhase = {
   BET: 1,
   END: 2,
 } as const;
+
+/** Indian Poker phase constants (sync: internal/domain/IndianPoker.go). */
+export const IndianPokerPhase = {
+  INIT: 0,
+  ANTE: 1,
+  BETTING: 2,
+  SHOWDOWN: 3,
+  END: 4,
+} as const;
