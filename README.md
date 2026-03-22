@@ -61,6 +61,7 @@ Go + Clean Architecture で実装した19種類のトランプゲーム。CLI �
 
 ```sh
 go install github.com/yuta-yoshinaga/go_trumpcards/cmd/trumpcards@latest
+trumpcards  # or: trumpcards blackjack
 ```
 
 #### GitHub Releases
@@ -71,7 +72,8 @@ Linux/macOS/Windows 向けのビルド済みバイナリは [GitHub Releases](ht
 <summary>Linux / macOS</summary>
 
 ```sh
-VERSION=v3.12.0
+# 最新バージョンを https://github.com/yuta-yoshinaga/go_trumpcards/releases から取得して設定
+VERSION=vX.Y.Z
 
 # Linux amd64:
 curl -fsSL "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/${VERSION}/trumpcards_${VERSION#v}_linux_amd64.tar.gz" | tar xz
@@ -92,7 +94,8 @@ trumpcards --version
 <summary>Windows (PowerShell)</summary>
 
 ```powershell
-$VERSION = "v3.12.0"
+# 最新バージョンを https://github.com/yuta-yoshinaga/go_trumpcards/releases から取得して設定
+$VERSION = "vX.Y.Z"
 $VER = $VERSION.TrimStart("v")
 
 Invoke-WebRequest -Uri "https://github.com/yuta-yoshinaga/go_trumpcards/releases/download/$VERSION/trumpcards_${VER}_windows_amd64.zip" -OutFile "trumpcards.zip"
