@@ -106,7 +106,7 @@ describe('NavBar', () => {
       expect(btn).toBeInTheDocument();
       expect(btn).toHaveAttribute('aria-expanded', 'false');
       expect(btn).toHaveAttribute('aria-controls', 'main-nav');
-      expect(btn).toHaveTextContent('☰');
+      expect(btn.querySelector('svg')).toBeInTheDocument();
     });
 
     it('nav has id matching aria-controls and hidden class by default', () => {
@@ -121,7 +121,7 @@ describe('NavBar', () => {
       const btn = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
       fireEvent.click(btn);
       expect(btn).toHaveAttribute('aria-expanded', 'true');
-      expect(btn).toHaveTextContent('✕');
+      expect(btn.querySelector('svg')).toBeInTheDocument();
       const nav = screen.getByRole('navigation');
       expect(nav).not.toHaveClass('hidden');
     });

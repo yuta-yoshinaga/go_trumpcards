@@ -14,8 +14,16 @@
   --color-daifugo-nine-reverse: #e67e22;
   --color-daifugo-number-lock: #1abc9c;
   --color-game-card-selected: #3b82f6;
+  /* Semantic UI colors */
+  --color-game-cpu-label: #fef08a;
+  --color-game-cpu-label-light: #fef9c3;
+  --color-game-hint-bg: rgba(253, 224, 71, 0.9);
+  --color-game-hint-text: #1c1917;
+  --color-game-insurance: #fde047;
+  --color-game-sideBet-win-bg: rgba(250, 204, 21, 0.9);
+  --color-game-sideBet-lose-bg: rgba(107, 114, 128, 0.7);
   /* Glassmorphism */
-  --color-glass-bg: rgba(255, 255, 255, 0.08);
+  --color-glass-bg: rgba(255, 255, 255, 0.12);
   --color-glass-bg-dark: rgba(31, 41, 55, 0.8);
   --color-glass-border: rgba(255, 255, 255, 0.15);
   /* Game background colors */
@@ -44,6 +52,26 @@ body {
 
 #root {
   height: 100%;
+}
+
+/* Dark-themed select elements for game UI */
+select {
+  background-color: rgb(55, 65, 81);
+  color: white;
+  border: 1px solid rgb(75, 85, 99);
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dark-themed number/text inputs for game UI */
+input[type="number"],
+input[type="text"] {
+  background-color: rgb(55, 65, 81);
+  color: white;
+  border: 1px solid rgb(75, 85, 99);
 }
 
 .glass-panel {
@@ -133,4 +161,14 @@ body {
 }
 .animate-sweat-drop {
   animation: sweat-drop 2s ease-in-out;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-shake,
+  .animate-flipIn,
+  .animate-sweat-drop {
+    animation: none;
+  }
 }

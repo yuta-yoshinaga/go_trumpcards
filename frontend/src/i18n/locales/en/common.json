@@ -62,7 +62,8 @@
     "confirmReset": "Confirm Reset",
     "confirmResetMessage": "Are you sure you want to reset the game?",
     "confirm": "Confirm",
-    "hint": "Hint"
+    "hint": "Hint",
+    "retry": "Retry"
   },
   "status": {
     "folded": "Folded",
