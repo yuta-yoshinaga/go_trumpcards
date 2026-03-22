@@ -176,6 +176,7 @@ func (f *FreeCell) MoveTableauToFoundation(col int) error {
 	f.moveCount++
 	f.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
 	f.checkGameClear()
+	f.checkStalemate()
 	return nil
 }
 
@@ -259,6 +260,7 @@ func (f *FreeCell) MoveFreeCellToFoundation(cell int) error {
 	f.moveCount++
 	f.appendLog("move", fmt.Sprintf("フリーセル%d→ファンデーション", cell), []*Card{card})
 	f.checkGameClear()
+	f.checkStalemate()
 	return nil
 }
 

@@ -125,18 +125,17 @@ func TestFreeCellSolver_AlreadySolved(t *testing.T) {
 }
 
 func TestFreeCellSolver_IterationLimitReturnsTrue(t *testing.T) {
-	// A complex board that would take many iterations
 	f := NewFreeCell(NewTrumpCards(0))
-	f.Reset() // Full random board
+	f.Reset() // Full random board — many states to explore
 
 	solver := newFreeCellSolver(f)
-	// Force iteration limit by setting it very low
-	origMax := FreeCellSolverMaxIterations
-	_ = origMax // just to document the original value
+	// Set a very low iteration limit to guarantee the limit is hit
+	solver.maxIterations = 1
 
-	// We can't easily modify the const, but we can verify behavior by
-	// checking that a full board returns true (either solvable or iteration limit hit)
+	// When the iteration limit is exceeded, solver returns true (unknown = not stalemate)
 	assert.True(t, solver.isSolvable())
+	// Verify we actually hit the limit (iterations > 1)
+	assert.Greater(t, solver.iterations, 1)
 }
 
 func TestFreeCellSolver_FreeCellToFoundation(t *testing.T) {

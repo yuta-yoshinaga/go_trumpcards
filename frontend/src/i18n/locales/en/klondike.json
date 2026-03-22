@@ -32,6 +32,5 @@
   "totalScore": "Total Score",
   "scoringMode": "Scoring Mode",
   "scoringNone": "None",
-  "scoringVegas": "Vegas",
-  "stalemate": "No moves can lead to a win. Please undo or give up."
+  "scoringVegas": "Vegas"
 }

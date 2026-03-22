@@ -6,16 +6,18 @@ const FreeCellSolverMaxIterations = 100000
 
 // freeCellSolver performs DFS with memoization to determine if a FreeCell board is solvable.
 type freeCellSolver struct {
-	tableau    [FreeCellTableauCnt][]*Card
-	freeCells  [FreeCellCellCnt]*Card
-	foundation [FreeCellFoundationCnt]int // track only count per suit (cards are ordered)
-	visited    map[[52]byte]struct{}
-	iterations int
+	tableau       [FreeCellTableauCnt][]*Card
+	freeCells     [FreeCellCellCnt]*Card
+	foundation    [FreeCellFoundationCnt]int // track only count per suit (cards are ordered)
+	visited       map[[52]uint16]struct{}
+	iterations    int
+	maxIterations int
 }
 
 func newFreeCellSolver(f *FreeCell) *freeCellSolver {
 	s := &freeCellSolver{
-		visited: make(map[[52]byte]struct{}),
+		visited:       make(map[[52]uint16]struct{}),
+		maxIterations: FreeCellSolverMaxIterations,
 	}
 	// Deep copy tableau
 	for i := 0; i < FreeCellTableauCnt; i++ {
@@ -45,7 +47,7 @@ func (s *freeCellSolver) dfs() bool {
 
 	// Iteration limit
 	s.iterations++
-	if s.iterations > FreeCellSolverMaxIterations {
+	if s.iterations > s.maxIterations {
 		return true // unknown = not stalemate
 	}
 
@@ -68,13 +70,12 @@ func (s *freeCellSolver) dfs() bool {
 		if fIdx >= 0 && fIdx < FreeCellFoundationCnt && s.canPlaceOnFoundation(card, fIdx) {
 			s.tableau[col] = s.tableau[col][:len(s.tableau[col])-1]
 			s.foundation[fIdx]++
-			if s.dfs() {
-				s.foundation[fIdx]--
-				s.tableau[col] = append(s.tableau[col], card)
-				return true
-			}
+			solved := s.dfs()
 			s.foundation[fIdx]--
 			s.tableau[col] = append(s.tableau[col], card)
+			if solved {
+				return true
+			}
 		}
 	}
 
@@ -88,13 +89,12 @@ func (s *freeCellSolver) dfs() bool {
 		if fIdx >= 0 && fIdx < FreeCellFoundationCnt && s.canPlaceOnFoundation(card, fIdx) {
 			s.freeCells[cell] = nil
 			s.foundation[fIdx]++
-			if s.dfs() {
-				s.foundation[fIdx]--
-				s.freeCells[cell] = card
-				return true
-			}
+			solved := s.dfs()
 			s.foundation[fIdx]--
 			s.freeCells[cell] = card
+			if solved {
+				return true
+			}
 		}
 	}
 
@@ -108,20 +108,18 @@ func (s *freeCellSolver) dfs() bool {
 			if toCol == fromCol {
 				continue
 			}
-			// Skip moving to empty column if card is not King (usually not useful)
 			if len(s.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
 				continue
 			}
 			if s.canPlaceOnTableau(card, toCol) {
 				s.tableau[fromCol] = s.tableau[fromCol][:len(s.tableau[fromCol])-1]
 				s.tableau[toCol] = append(s.tableau[toCol], card)
-				if s.dfs() {
-					s.tableau[toCol] = s.tableau[toCol][:len(s.tableau[toCol])-1]
-					s.tableau[fromCol] = append(s.tableau[fromCol], card)
-					return true
-				}
+				solved := s.dfs()
 				s.tableau[toCol] = s.tableau[toCol][:len(s.tableau[toCol])-1]
 				s.tableau[fromCol] = append(s.tableau[fromCol], card)
+				if solved {
+					return true
+				}
 			}
 		}
 	}
@@ -139,13 +137,12 @@ func (s *freeCellSolver) dfs() bool {
 			if s.canPlaceOnTableau(card, toCol) {
 				s.freeCells[cell] = nil
 				s.tableau[toCol] = append(s.tableau[toCol], card)
-				if s.dfs() {
-					s.tableau[toCol] = s.tableau[toCol][:len(s.tableau[toCol])-1]
-					s.freeCells[cell] = card
-					return true
-				}
+				solved := s.dfs()
 				s.tableau[toCol] = s.tableau[toCol][:len(s.tableau[toCol])-1]
 				s.freeCells[cell] = card
+				if solved {
+					return true
+				}
 			}
 		}
 	}
@@ -160,13 +157,12 @@ func (s *freeCellSolver) dfs() bool {
 			if s.freeCells[cell] == nil {
 				s.tableau[col] = s.tableau[col][:len(s.tableau[col])-1]
 				s.freeCells[cell] = card
-				if s.dfs() {
-					s.freeCells[cell] = nil
-					s.tableau[col] = append(s.tableau[col], card)
-					return true
-				}
+				solved := s.dfs()
 				s.freeCells[cell] = nil
 				s.tableau[col] = append(s.tableau[col], card)
+				if solved {
+					return true
+				}
 				break // Only try one empty free cell (equivalent moves)
 			}
 		}
@@ -211,11 +207,12 @@ func (s *freeCellSolver) isBlack(card *Card) bool {
 }
 
 // stateKey encodes the board state into a compact key for memoization.
-// Each card (identified by (design-1)*13+value-1) maps to a location byte.
-// Jokers (design=0) are skipped since FreeCell normally uses only 52 standard cards.
-func (s *freeCellSolver) stateKey() [52]byte {
-	var key [52]byte
-	// Tableau cards: location = col*16 + position + 1
+// Each card (identified by (design-1)*13+value-1) maps to a uint16 location.
+// Tableau: col*64 + pos + 1 (supports up to 63 cards per column).
+// FreeCell: 512 + cell. Foundation: 0 (default).
+// Jokers (design=0) are skipped since FreeCell uses only 52 standard cards.
+func (s *freeCellSolver) stateKey() [52]uint16 {
+	var key [52]uint16
 	for col := 0; col < FreeCellTableauCnt; col++ {
 		for pos, card := range s.tableau[col] {
 			if card.GetDesign() < 1 || card.GetValue() < 1 {
@@ -223,11 +220,10 @@ func (s *freeCellSolver) stateKey() [52]byte {
 			}
 			idx := (card.GetDesign()-1)*CardValueMax + card.GetValue() - 1
 			if idx >= 0 && idx < 52 {
-				key[idx] = byte(col*16 + pos + 1)
+				key[idx] = uint16(col*64 + pos + 1)
 			}
 		}
 	}
-	// FreeCell cards: location = 128 + cell
 	for cell := 0; cell < FreeCellCellCnt; cell++ {
 		if s.freeCells[cell] != nil {
 			card := s.freeCells[cell]
@@ -236,10 +232,9 @@ func (s *freeCellSolver) stateKey() [52]byte {
 			}
 			idx := (card.GetDesign()-1)*CardValueMax + card.GetValue() - 1
 			if idx >= 0 && idx < 52 {
-				key[idx] = byte(128 + cell)
+				key[idx] = uint16(512 + cell)
 			}
 		}
 	}
-	// Foundation cards have location 0 (default)
 	return key
 }
