@@ -14,6 +14,7 @@ import enHearts from './locales/en/hearts.json';
 import enHoldem from './locales/en/holdem.json';
 import enKlondike from './locales/en/klondike.json';
 import enMemory from './locales/en/memory.json';
+import enNapoleon from './locales/en/napoleon.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
@@ -32,6 +33,7 @@ import jaHearts from './locales/ja/hearts.json';
 import jaHoldem from './locales/ja/holdem.json';
 import jaKlondike from './locales/ja/klondike.json';
 import jaMemory from './locales/ja/memory.json';
+import jaNapoleon from './locales/ja/napoleon.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
 import jaPoker from './locales/ja/poker.json';
@@ -56,6 +58,7 @@ i18n
         omaha: jaOmaha,
         hearts: jaHearts,
         spades: jaSpades,
+        napoleon: jaNapoleon,
         memory: jaMemory,
         klondike: jaKlondike,
         freecell: jaFreecell,
@@ -76,6 +79,7 @@ i18n
         omaha: enOmaha,
         hearts: enHearts,
         spades: enSpades,
+        napoleon: enNapoleon,
         memory: enMemory,
         klondike: enKlondike,
         freecell: enFreecell,
@@ -99,6 +103,7 @@ i18n
       'omaha',
       'hearts',
       'spades',
+      'napoleon',
       'memory',
       'klondike',
       'freecell',

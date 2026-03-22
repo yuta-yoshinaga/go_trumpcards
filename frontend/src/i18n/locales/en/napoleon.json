@@ -1,0 +1,90 @@
+{
+  "phase": {
+    "bid": "Bid",
+    "trumpDeclaration": "Trump Declaration",
+    "kittyExchange": "Kitty Exchange",
+    "play": "Play",
+    "trickEnd": "Trick End",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "minBid": "Minimum Bid",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "trick": "Trick {{n}}",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "pictureCards": "Picture: {{count}}",
+  "trickCount": "Tricks: {{count}}",
+  "bid": "Bid {{n}}",
+  "bidNone": "No bid",
+  "bidPass": "Pass",
+  "currentTrick": "Current Trick",
+  "trumpSuit": "Trump",
+  "adjutantCard": "Adjutant Card",
+  "adjutantNone": "None",
+  "role": {
+    "napoleon": "Napoleon",
+    "adjutant": "Adjutant"
+  },
+  "suitName": {
+    "spade": "Spades",
+    "club": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds"
+  },
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresBid": "Bid",
+  "scoresPictureCards": "Picture",
+  "scoresTricks": "Tricks",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "scoresRole": "Role",
+  "bidButton": "Bid",
+  "passButton": "Pass",
+  "declareButton": "Declare",
+  "exchangeButton": "Discard",
+  "playButton": "Play",
+  "nextTrick": "Next Trick",
+  "nextRound": "Next Round",
+  "bidPhase": "Place your bid (pass or {{min}}-17)",
+  "trumpDeclarationPhase": "Choose trump suit and adjutant card",
+  "kittyExchangePhase": "Discard a card from your hand",
+  "kittyLabel": "Kitty",
+  "playPhase": {
+    "lead": "Lead a card",
+    "follow": "Play a card"
+  },
+  "trickEnd": "Trick complete",
+  "roundEnd": "Round complete",
+  "result": {
+    "napoleonWins": "Napoleon's team wins!",
+    "alliedWins": "Allied team wins!"
+  },
+  "highestBid": "Highest bid: {{bid}}",
+  "highestBidder": "Highest bidder",
+  "hintBid": "Recommended bid",
+  "hintTrump": "Recommended trump",
+  "hintDiscard": "Recommended discard",
+  "hintPlay": "Recommended card",
+  "hintReason": {
+    "strategic_bid": "Strategic bid",
+    "strategic_declare": "Strategic declaration",
+    "strategic_discard": "Strategic discard",
+    "lead_strong": "Lead with a strong card",
+    "lead_low": "Lead with a low card",
+    "follow_suit": "Follow the lead suit",
+    "trump_cut": "Cut with trump",
+    "play_joker": "Play joker",
+    "discard_low": "Discard a low card"
+  }
+}

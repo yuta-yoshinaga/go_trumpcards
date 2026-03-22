@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全17ゲーム)](#12-ゲームドメイン-全17ゲーム)
+  - [1.2 ゲームドメイン (全18ゲーム)](#12-ゲームドメイン-全18ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -26,6 +26,7 @@
   - [3.9 CrazyEights フェーズ遷移](#39-crazyeights-フェーズ遷移)
   - [3.10 GinRummy フェーズ遷移](#310-ginrummy-フェーズ遷移)
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
+  - [3.12 Napoleon フェーズ遷移](#312-napoleon-フェーズ遷移)
 
 ---
 
@@ -93,7 +94,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全17ゲーム)
+### 1.2 ゲームドメイン (全18ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -216,12 +217,41 @@ classDiagram
         +*Card Card
     }
 
+    class Napoleon {
+        -trumpCards *TrumpCards
+        -players []*NapoleonPlayer
+        -config NapoleonConfig
+        -phase NapoleonPhase
+        -trickCards []*NapoleonTrickCard
+        -kitty []*Card
+        -napoleonIdx int
+        -adjutantCard *Card
+        -trumpSuit int
+        +Reset()
+        +Bid(amount int) error
+        +DeclareTrump(suit int) error
+        +Exchange(indices []int) error
+        +PlayCard(index int) error
+        +NextTrick() error
+        +NextRound() error
+        +Hint() *NapoleonHint
+        +Phase() NapoleonPhase
+    }
+
+    class NapoleonTrickCard {
+        +int PlayerIdx
+        +*Card Card
+    }
+
     Hearts --> "4" HeartsPlayer
     Hearts --> "*" HeartsTrickCard
     Spades --> "4" SpadesPlayer
     Spades --> "*" SpadesTrickCard
+    Napoleon --> "4" NapoleonPlayer
+    Napoleon --> "*" NapoleonTrickCard
     HeartsPlayer --|> GamePlayer
     SpadesPlayer --|> GamePlayer
+    NapoleonPlayer --|> GamePlayer
 ```
 
 #### ホールデム系ゲーム
@@ -530,7 +560,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全17ゲーム共通)**
+**Interactor パターン (全18ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -602,8 +632,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "17ゲーム × CUI/Web = 34 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "17ゲーム × CUI/Web = 34 Presenter 実装"
+    note for GameCuiController "18ゲーム × CUI/Web = 34 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "18ゲーム × CUI/Web = 34 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -628,6 +658,7 @@ classDiagram
         -crazyeights *CrazyEightsWebController
         -ginrummy *GinRummyWebController
         -spider *SpiderWebController
+        -napoleon *NapoleonWebController
         +Exec()
     }
 
@@ -649,8 +680,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 17 controllers
-    GameManager --> "*" CuiExecer : holds 17 games
+    TrumpCardsWeb --> "*" GameWebController : holds 18 controllers
+    GameManager --> "*" CuiExecer : holds 18 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -923,6 +954,22 @@ stateDiagram-v2
     Bet --> End : ベット → 自動カード配布 → 結果判定
     End --> Bet : 次ラウンド (Reset)
     End --> [*] : チップ0 (ゲーム終了)
+```
+
+### 3.12 Napoleon フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bid : Reset()
+    Bid --> Trump : ナポレオン決定
+    Trump --> Exchange : 切り札宣言 + 副官指名
+    Exchange --> Play : キティ交換完了
+    Play --> TrickEnd : 4人全員カード出し完了
+    TrickEnd --> Play : 次トリック開始
+    TrickEnd --> RoundEnd : 13トリック完了
+    RoundEnd --> Bid : 次ラウンド開始
+    RoundEnd --> GameEnd : 目標点到達
+    GameEnd --> [*]
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

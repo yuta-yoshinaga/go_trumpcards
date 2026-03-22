@@ -27,7 +27,8 @@
     "baccarat": "バカラ",
     "crazyeights": "クレイジーエイト",
     "ginrummy": "ジンラミー",
-    "spider": "スパイダー"
+    "spider": "スパイダー",
+    "napoleon": "ナポレオン"
   },
   "sound": {
     "mute": "サウンドをオフにする",
@@ -138,6 +139,15 @@
     "ginrummy.discardPhase": "手札から1枚捨てるか、ノックしてください",
     "ginrummy.layoffPhase": "ノッカーのメルドにカードをレイオフできます",
     "ginrummy.roundEnd": "ラウンド終了",
+    "napoleon.result.napoleonWins": "ナポレオン軍の勝利！",
+    "napoleon.result.alliedWins": "連合軍の勝利！",
+    "napoleon.bidPhase": "ビッドしてください",
+    "napoleon.trumpDeclaration": "切り札と副官を宣言してください",
+    "napoleon.kittyExchange": "場札を交換してください",
+    "napoleon.playPhase.lead": "リードしてください",
+    "napoleon.playPhase.follow": "カードを出してください",
+    "napoleon.trickEnd": "トリック終了",
+    "napoleon.roundEnd": "ラウンド終了",
     "memory.flip1": "1枚目をめくってください",
     "memory.flip2": "2枚目をめくってください",
     "memory.matched": "ペアが揃いました！",
