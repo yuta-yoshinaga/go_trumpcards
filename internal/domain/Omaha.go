@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 )
 
@@ -111,6 +112,7 @@ func (o *Omaha) Reset() error {
 	o.cpuActions = make([]OmahaCpuAction, 0)
 	o.rebuyPhaseType = OmahaRebuyPhaseNone
 	o.actionLog = nil
+	o.lastHumanPlayMs = 0
 
 	// メタAI: プロファイル初期化
 	if o.config.CpuMetaAI {
@@ -691,7 +693,7 @@ func (o *Omaha) cpuDecide(idx int) (int, int) {
 	// メタAI: ブラフ率を調整
 	if o.config.CpuMetaAI && o.humanProfile != nil {
 		adjusted := o.humanProfile.AdjustedBluffChance(float64(params.bluffRate))
-		params.bluffRate = int(adjusted)
+		params.bluffRate = int(math.Round(adjusted))
 	}
 
 	var action, amount int

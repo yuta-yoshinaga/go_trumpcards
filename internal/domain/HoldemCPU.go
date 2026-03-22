@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 )
 
@@ -307,7 +308,7 @@ func (h *Holdem) cpuDecide(idx int) (int, int) {
 	// メタAI: ブラフ率を調整
 	if h.config.CpuMetaAI && h.humanProfile != nil {
 		adjusted := h.humanProfile.AdjustedBluffChance(float64(params.bluffRate))
-		params.bluffRate = int(adjusted)
+		params.bluffRate = int(math.Round(adjusted))
 	}
 
 	var action, amount int

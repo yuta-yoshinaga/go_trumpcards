@@ -3272,6 +3272,22 @@ func TestPoker_MetaAI_ResetProfileClearsProfile(t *testing.T) {
 	assert.Nil(t, pk.GetHumanProfile(), "profile should be nil after ResetProfile")
 }
 
+func TestPoker_MetaAI_LastHumanPlayMsResetOnReset(t *testing.T) {
+	pk, players := setupPokerForHumanAction(PokerPhaseDeal)
+	pk.SetConfig(PokerConfig{InitChips: 1000, Ante: 10, MinBet: 10, CpuCount: 3, CpuMetaAI: true})
+	pk.SetHumanProfile(&BettingHumanProfile{})
+	players[0].AddCard(NewCard(CardDesignSpade, 2, false))
+	players[0].AddCard(NewCard(CardDesignHeart, 5, false))
+	players[0].AddCard(NewCard(CardDesignDiamond, 8, false))
+	players[0].AddCard(NewCard(CardDesignClover, 10, false))
+	players[0].AddCard(NewCard(CardDesignSpade, 12, false))
+	_ = pk.PlayerAction(PokerActionBet, 10, 600)
+	assert.Equal(t, 600, pk.GetLastHumanPlayMs(), "lastHumanPlayMs should be set after PlayerAction")
+
+	_ = pk.Reset()
+	assert.Equal(t, 0, pk.GetLastHumanPlayMs(), "lastHumanPlayMs should be reset to 0 on Reset")
+}
+
 func TestPoker_MetaAI_PlayerActionRecordsAction(t *testing.T) {
 	t.Run("aggressive action on weak hand is recorded", func(t *testing.T) {
 		pk, players := setupPokerForHumanAction(PokerPhaseDeal)

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"sort"
 )
@@ -140,6 +141,7 @@ func (p *Poker) Reset() error {
 	p.cpuActions = make([]PokerCpuAction, 0)
 	p.cpuExchanges = make([]PokerCpuExchange, 0)
 	p.actionLog = nil
+	p.lastHumanPlayMs = 0
 
 	// メタAI: プロファイル初期化
 	if p.config.CpuMetaAI {
@@ -662,7 +664,7 @@ func (p *Poker) cpuDecide(idx int) (int, int) {
 	// メタAI: ブラフ率を調整
 	if p.config.CpuMetaAI && p.humanProfile != nil {
 		adjusted := p.humanProfile.AdjustedBluffChance(float64(params.bluffRate))
-		params.bluffRate = int(adjusted)
+		params.bluffRate = int(math.Round(adjusted))
 	}
 
 	pl.EvalHand()

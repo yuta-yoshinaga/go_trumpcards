@@ -2371,6 +2371,24 @@ func TestHoldem_MetaAI_ResetProfileClearsProfile(t *testing.T) {
 	assert.Nil(t, h.GetHumanProfile(), "profile should be nil after ResetProfile")
 }
 
+func TestHoldem_MetaAI_LastHumanPlayMsResetOnReset(t *testing.T) {
+	h := setupHoldemForHumanAction(HoldemPhaseFlop)
+	cfg := h.GetConfig()
+	cfg.CpuMetaAI = true
+	h.SetConfig(cfg)
+	h.SetHumanProfile(&BettingHumanProfile{})
+	h.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignDiamond, 9, false),
+	})
+	_ = h.PlayerAction(HoldemActionBet, 20, 800)
+	assert.Equal(t, 800, h.GetLastHumanPlayMs(), "lastHumanPlayMs should be set after PlayerAction")
+
+	_ = h.Reset()
+	assert.Equal(t, 0, h.GetLastHumanPlayMs(), "lastHumanPlayMs should be reset to 0 on Reset")
+}
+
 func TestHoldem_MetaAI_PlayerActionRecordsAction(t *testing.T) {
 	t.Run("aggressive action is recorded", func(t *testing.T) {
 		h := setupHoldemForHumanAction(HoldemPhaseFlop)

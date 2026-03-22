@@ -387,6 +387,24 @@ func TestOmaha_MetaAI_ResetProfileClearsProfile(t *testing.T) {
 	assert.Nil(t, o.GetHumanProfile())
 }
 
+func TestOmaha_MetaAI_LastHumanPlayMsResetOnReset(t *testing.T) {
+	o := setupOmahaForHumanAction(OmahaPhaseFlop)
+	cfg := o.GetConfig()
+	cfg.CpuMetaAI = true
+	o.SetConfig(cfg)
+	o.SetHumanProfile(&BettingHumanProfile{})
+	o.SetCommunityCards([]*Card{
+		NewCard(CardDesignSpade, 3, false),
+		NewCard(CardDesignHeart, 7, false),
+		NewCard(CardDesignDiamond, 9, false),
+	})
+	_ = o.PlayerAction(OmahaActionBet, 20, 800)
+	assert.Equal(t, 800, o.GetLastHumanPlayMs(), "lastHumanPlayMs should be set after PlayerAction")
+
+	_ = o.Reset()
+	assert.Equal(t, 0, o.GetLastHumanPlayMs(), "lastHumanPlayMs should be reset to 0 on Reset")
+}
+
 func TestOmaha_MetaAI_PlayerActionRecordsAction(t *testing.T) {
 	t.Run("aggressive action is recorded", func(t *testing.T) {
 		o := setupOmahaForHumanAction(OmahaPhaseFlop)

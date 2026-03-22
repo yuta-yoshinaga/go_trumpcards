@@ -125,6 +125,7 @@ func (h *Holdem) Reset() error {
 	h.cpuActions = make([]HoldemCpuAction, 0)
 	h.rebuyPhaseType = HoldemRebuyPhaseNone
 	h.actionLog = nil
+	h.lastHumanPlayMs = 0
 
 	// メタAI: プロファイル初期化
 	if h.config.CpuMetaAI {
