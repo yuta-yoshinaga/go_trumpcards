@@ -141,7 +141,7 @@ Before marking any task complete:
 | Change type | Documents to update |
 |-------------|---------------------|
 | Add/remove a game | [`README.md`](README.md) (Description, Run section), [`CLAUDE.md`](CLAUDE.md) (Commands), [`docs/games.md`](docs/games.md) |
-| Add/remove a CLI command (`cmd/cli/main.go`) | [`README.md`](README.md) (Run section), [`CLAUDE.md`](CLAUDE.md) (Commands) |
+| Add/remove a CLI command (`cmd/trumpcards/main.go`) | [`README.md`](README.md) (Run section), [`CLAUDE.md`](CLAUDE.md) (Commands) |
 | Add/remove a Web API endpoint | [`docs/architecture.md`](docs/architecture.md) (Web API in Key patterns), [`api/openapi.yaml`](api/openapi.yaml) |
 | Change request/response schema of a Web API endpoint | [`api/openapi.yaml`](api/openapi.yaml) |
 | Change architecture or layer structure | [`README.md`](README.md) (Architecture), [`CLAUDE.md`](CLAUDE.md) (Architecture), [`docs/architecture.md`](docs/architecture.md) |
@@ -182,8 +182,8 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 
 ### Frontend (React)
 
-9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `useGameReplay`, `useCardDimensions`, `gameExec` API helper
-10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `CardBack`, `LoadingSpinner`, `ErrorBoundary`
+9. **Page**: `frontend/src/pages/<Game>Page.tsx` with test file, reuse `useGamePageSetup` hook, `usePhaseNames`, `gameReplay`, `useCardDimensions`, `gameExec` API helper
+10. **Shared components**: Use `PhaseIndicator`, `SettingsPanel`, `ConfirmDialog`, `ActionLogSection`, `GameFooter`, `GameMessageBox`, `AnimatedCardBack`, `ErrorBoundary`
 11. **i18n**: Add `frontend/src/i18n/locales/{ja,en}/<game>.json` translation files
 12. **Router**: Add route in `frontend/src/App.tsx` and NavBar entry
 13. **Run `bun run build && bun run check && bun run test`**
