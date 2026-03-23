@@ -127,11 +127,71 @@ describe('TutorialOverlay', () => {
     document.body.appendChild(targetEl);
   });
 
-  it('traps focus within the dialog', () => {
+  it('traps focus forward: Tab on last button wraps to first', () => {
     render(<TutorialOverlay {...defaultProps} />);
     const dialog = screen.getByRole('dialog');
-    const buttons = dialog.querySelectorAll('button');
-    // Focus should stay within dialog
-    expect(buttons.length).toBeGreaterThan(0);
+    const buttons = Array.from(dialog.querySelectorAll('button'));
+    expect(buttons.length).toBeGreaterThan(1);
+    const first = buttons[0];
+    const last = buttons[buttons.length - 1];
+    last.focus();
+    fireEvent.keyDown(dialog, { key: 'Tab' });
+    expect(document.activeElement).toBe(first);
+  });
+
+  it('traps focus backward: Shift+Tab on first button wraps to last', () => {
+    render(<TutorialOverlay {...defaultProps} />);
+    const dialog = screen.getByRole('dialog');
+    const buttons = Array.from(dialog.querySelectorAll('button'));
+    const first = buttons[0];
+    const last = buttons[buttons.length - 1];
+    first.focus();
+    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(last);
+  });
+
+  it('positions tooltip on top placement', () => {
+    const topStep: TutorialStep = { ...step, placement: 'top' };
+    render(<TutorialOverlay {...defaultProps} step={topStep} />);
+    expect(screen.getByText('テスト説明')).toBeInTheDocument();
+  });
+
+  it('positions tooltip on left placement', () => {
+    const leftStep: TutorialStep = { ...step, placement: 'left' };
+    render(<TutorialOverlay {...defaultProps} step={leftStep} />);
+    expect(screen.getByText('テスト説明')).toBeInTheDocument();
+  });
+
+  it('positions tooltip on right placement', () => {
+    const rightStep: TutorialStep = { ...step, placement: 'right' };
+    render(<TutorialOverlay {...defaultProps} step={rightStep} />);
+    expect(screen.getByText('テスト説明')).toBeInTheDocument();
+  });
+
+  it('does not fire click listener for next advanceOn', async () => {
+    const onNext = vi.fn();
+    render(<TutorialOverlay {...defaultProps} onNext={onNext} />);
+    fireEvent.click(targetEl);
+    // onNext should not be called from target click since advanceOn is 'next'
+    expect(onNext).not.toHaveBeenCalled();
+  });
+
+  it('ignores non-Tab key in focus trap handler', () => {
+    render(<TutorialOverlay {...defaultProps} />);
+    const dialog = screen.getByRole('dialog');
+    const buttons = Array.from(dialog.querySelectorAll('button'));
+    buttons[0].focus();
+    fireEvent.keyDown(dialog, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(buttons[0]);
+  });
+
+  it('restores focus on unmount', () => {
+    const triggerButton = document.createElement('button');
+    document.body.appendChild(triggerButton);
+    triggerButton.focus();
+    const { unmount } = render(<TutorialOverlay {...defaultProps} />);
+    unmount();
+    expect(document.activeElement).toBe(triggerButton);
+    document.body.removeChild(triggerButton);
   });
 });

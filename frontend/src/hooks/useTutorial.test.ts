@@ -123,12 +123,12 @@ describe('useTutorial', () => {
     expect(result.current.isCompleted).toBe(true);
   });
 
-  it('resets completed state and restarts', () => {
+  it('preserves completed state on restart', () => {
     localStorage.setItem('tutorial_completed_testgame', 'true');
     const { result } = renderHook(() => useTutorial(config));
     expect(result.current.isCompleted).toBe(true);
     act(() => result.current.start());
     expect(result.current.isActive).toBe(true);
-    expect(result.current.isCompleted).toBe(false);
+    expect(result.current.isCompleted).toBe(true);
   });
 });

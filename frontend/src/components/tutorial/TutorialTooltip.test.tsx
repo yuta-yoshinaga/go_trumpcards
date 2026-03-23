@@ -5,7 +5,6 @@ import { TutorialTooltip } from './TutorialTooltip';
 describe('TutorialTooltip', () => {
   const defaultProps = {
     message: 'ここをクリックしてください',
-    placement: 'bottom' as const,
     stepIndex: 0,
     totalSteps: 5,
     onNext: vi.fn(),

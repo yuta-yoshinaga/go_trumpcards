@@ -231,7 +231,13 @@ export function BjBetPhaseControls(props: BjBetPhaseControlsProps) {
           ))}
         </select>
       </div>
-      <button type="button" className={btnPrimary} disabled={props.loading} onClick={props.onBet}>
+      <button
+        type="button"
+        className={btnPrimary}
+        disabled={props.loading}
+        onClick={props.onBet}
+        data-tutorial="bj-bet-button"
+      >
         {t('button.bet')}
       </button>
     </>

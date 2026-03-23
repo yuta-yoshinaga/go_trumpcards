@@ -1,13 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSecondary } from '../../styles/buttonStyles';
-import type { TutorialAdvanceOn, TutorialPlacement } from '../../types/tutorial';
+import type { TutorialAdvanceOn } from '../../types/tutorial';
 
 /** Props for the TutorialTooltip component. */
 export interface TutorialTooltipProps {
   /** The message to display in the tooltip. */
   message: string;
-  /** Tooltip placement relative to the target element. */
-  placement: TutorialPlacement;
   /** Zero-based index of the current step. */
   stepIndex: number;
   /** Total number of steps. */

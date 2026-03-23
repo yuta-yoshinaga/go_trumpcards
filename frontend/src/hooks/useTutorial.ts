@@ -36,13 +36,13 @@ export function useTutorial(config: TutorialConfig): UseTutorialReturn {
 
   const currentStep = isActive ? (config.steps[currentStepIndex] ?? null) : null;
 
+  /** Starts or restarts the tutorial. Does not clear localStorage completion flag — once completed, isCompleted remains true until the tutorial is finished again. */
   const start = useCallback(() => {
     if (totalSteps === 0) {
       setIsCompleted(true);
       localStorage.setItem(storageKey, 'true');
       return;
     }
-    setIsCompleted(false);
     setCurrentStepIndex(0);
     setIsActive(true);
     config.steps[0]?.onEnter?.();

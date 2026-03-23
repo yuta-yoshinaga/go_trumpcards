@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import type { TutorialStep } from '../../types/tutorial';
 import { getFocusableElements } from '../ConfirmDialog';
 import { TutorialTooltip } from './TutorialTooltip';
@@ -63,6 +63,7 @@ function getTooltipStyle(rect: SpotlightRect | null, placement: TutorialStep['pl
 
 /** Renders a full-screen overlay with a spotlight cutout and tooltip for the tutorial. */
 export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, reducedMotion }: TutorialOverlayProps) {
+  const maskId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
   const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
@@ -156,7 +157,7 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
       {/* SVG overlay with spotlight cutout */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
         <defs>
-          <mask id={`tutorial-mask-${stepIndex}`}>
+          <mask id={`tutorial-mask-${maskId}`}>
             <rect width="100%" height="100%" fill="white" />
             {spotlightRect && (
               <rect
@@ -171,14 +172,13 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
             )}
           </mask>
         </defs>
-        <rect width="100%" height="100%" fill="rgba(0,0,0,0.6)" mask={`url(#tutorial-mask-${stepIndex})`} />
+        <rect width="100%" height="100%" fill="rgba(0,0,0,0.6)" mask={`url(#tutorial-mask-${maskId})`} />
       </svg>
 
       {/* Tooltip positioned relative to spotlight */}
       <div className="absolute z-10" style={tooltipStyle}>
         <TutorialTooltip
           message={step.messageKey}
-          placement={step.placement}
           stepIndex={stepIndex}
           totalSteps={totalSteps}
           onNext={onNext}
