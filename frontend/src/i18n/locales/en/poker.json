@@ -27,5 +27,12 @@
     "betControls": "Choose your betting action: Call, Raise, Fold, or All In.",
     "resultMessage": "The game result is displayed here. The best hand wins.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "keepHand": "Good hand — keep your cards",
+    "exchangeWeak": "Weak hand — exchange recommended",
+    "strongHand": "Strong hand — raise recommended",
+    "decentHand": "Decent hand — call recommended",
+    "weakHand": "Weak hand — fold recommended"
   }
 }

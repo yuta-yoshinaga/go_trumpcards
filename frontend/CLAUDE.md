@@ -102,8 +102,18 @@ Interactive step-by-step tutorial system for guiding new players through game me
 | `TutorialProvider` | `src/providers/TutorialProvider.tsx` | Context provider; wraps game page, renders overlay when active |
 | `TutorialOverlay` | `src/components/tutorial/TutorialOverlay.tsx` | Full-screen overlay with SVG mask spotlight and focus trap |
 | `TutorialTooltip` | `src/components/tutorial/TutorialTooltip.tsx` | Glass-panel tooltip with step indicator and nav buttons |
-| `useTutorial` | `src/hooks/useTutorial.ts` | State management hook (step progression, localStorage persistence) |
+| `useTutorial` | `src/hooks/useTutorial.ts` | State management hook (step progression, localStorage persistence, resume/restart) |
 | Tutorial types | `src/types/tutorial.ts` | `TutorialStep`, `TutorialConfig` type definitions |
+| `TutorialSuggestDialog` | `src/components/tutorial/TutorialSuggestDialog.tsx` | First-visit dialog suggesting tutorial start |
+| `TutorialProgressPanel` | `src/components/tutorial/TutorialProgressPanel.tsx` | Progress overview panel in NavBar |
+| `useFirstVisit` | `src/hooks/useFirstVisit.ts` | First-visit detection hook (localStorage-based) |
+| `useTutorialProgress` | `src/hooks/useTutorialProgress.ts` | Aggregates tutorial completion across all games |
+| `HintPulse` | `src/components/hint/HintPulse.tsx` | Pulse animation wrapper for hint-targeted buttons |
+| `HintTooltip` | `src/components/hint/HintTooltip.tsx` | Tooltip showing hint reasoning and confidence |
+| `useGameHint` | `src/hooks/useGameHint.ts` | Frontend hint computation hook (BlackJack, Poker, Hearts, Spades) |
+| Hint logic | `src/utils/hints/{blackjack,poker,hearts,spades}Hint.ts` | Pure functions computing `HintResult` from game state |
+| Hint types | `src/types/hint.ts` | `HintResult`, `HintConfidence` type definitions |
+| `useLocalStorageToggle` | `src/hooks/useLocalStorageToggle.ts` | Reusable boolean toggle persisted in localStorage |
 
 ### Adding a tutorial to a new game
 
@@ -111,3 +121,10 @@ Interactive step-by-step tutorial system for guiding new players through game me
 2. Add `data-tutorial="<step-name>"` attributes to the game page's key UI elements
 3. Add tutorial step text to `src/i18n/locales/{ja,en}/<game>.json` under a `tutorial` key
 4. Wrap the page content with `<TutorialProvider config={config} translateMessage={t}>` and add a `TutorialButton` component
+
+### Phase 3 features
+
+- **Hint display**: `useGameHint` hook provides frontend-only hints for BlackJack, Poker, Hearts, Spades. Toggle via SettingsPanel checkbox. `HintTooltip` shows reasoning with confidence indicator.
+- **First-visit suggestion**: `TutorialSuggestDialog` automatically shown on first visit to any game page. Controlled by `useFirstVisit` hook. Users can dismiss permanently.
+- **Progress tracking**: `TutorialProgressPanel` in NavBar shows completion icons for all 19 games with a progress bar.
+- **Resume/restart**: `useTutorial` hook supports `canResume`, `start()` (resumes from saved step), and `restart()` (always step 0). Progress saved to localStorage on skip.

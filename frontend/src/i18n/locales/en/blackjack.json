@@ -86,5 +86,14 @@
     "actionButtons": "Choose Hit (draw a card) or Stand (keep your hand). The goal is to get close to 21.",
     "resultMessage": "The game result is displayed here. Check the outcome and chips won or lost.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "hintReason": {
+    "hitReason": "Your total is low — hit recommended",
+    "standReason": "You have a good chance of winning — stand recommended",
+    "doubleReason": "Favorable situation — double down recommended",
+    "doubleStandReason": "Double if allowed, otherwise stand",
+    "splitReason": "Matching cards — split recommended",
+    "surrenderReason": "Unfavorable situation — surrender recommended",
+    "declineReason": "Insurance has negative expected value — decline recommended"
   }
 }

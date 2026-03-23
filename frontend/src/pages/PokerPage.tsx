@@ -8,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -15,6 +16,7 @@ import { RoundResults } from '../components/RoundResults';
 import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
@@ -108,6 +110,7 @@ function PokerPageContent() {
   const phaseNames = usePhaseNames('poker', POKER_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec, selected, toggleCard, clearSelection, odds, canExchange } = usePokerGame();
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('poker', state);
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
   const [isLowball, setIsLowball] = useState(false);
@@ -290,6 +293,9 @@ function PokerPageContent() {
 
         <ErrorAlert message={error} />
 
+        {/* Hint display */}
+        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
         {/* Betting controls */}
         {canAct && (
           <div data-tutorial="pk-bet-controls">
@@ -369,6 +375,10 @@ function PokerPageContent() {
           <label className="text-white text-sm flex items-center gap-1">
             <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
             {t('settings.cpuMetaAI')}
+          </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+            {tc('hint.toggle', { ns: 'tutorial' })}
           </label>
           <button
             type="button"

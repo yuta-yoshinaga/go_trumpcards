@@ -25,6 +25,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { WinCelebration } from '../components/motion/WinCelebration';
@@ -40,6 +41,7 @@ import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+import { getBlackjackHint } from '../utils/hints/blackjackHint';
 
 const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BjPhase.BET]: 'bet',
@@ -390,8 +392,15 @@ function BlackJackPageContent() {
 
         {/* Hint banner */}
         {hintEnabled && suggestedAction !== BJ_SUGGEST_NONE && (
-          <div className="bg-yellow-300/90 text-gray-900 text-center text-sm font-bold px-3 py-1 rounded mb-2">
-            {t('suggestion')} {suggestionLabels[suggestedAction]}
+          <div className="mb-2">
+            <div className="bg-yellow-300/90 text-gray-900 text-center text-sm font-bold px-3 py-1 rounded">
+              {t('suggestion')} {suggestionLabels[suggestedAction]}
+            </div>
+            {state &&
+              (() => {
+                const h = getBlackjackHint(state);
+                return h ? <HintTooltip reason={t(h.reason)} confidence={h.confidence} /> : null;
+              })()}
           </div>
         )}
 

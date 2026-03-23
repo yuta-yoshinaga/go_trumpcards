@@ -6,12 +6,14 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { SpadesSkeleton } from '../components/skeleton/SpadesSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
@@ -133,6 +135,11 @@ function SpadesPageContent() {
     hintLoading,
     handleHint,
   } = useSpadesGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('spades', state);
   const { cardWidth } = useCardDimensions();
   const [bidValue, setBidValue] = useState(1);
 
@@ -196,6 +203,13 @@ function SpadesPageContent() {
                 value: spadesConfig.pointLimit,
                 options: POINT_LIMIT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                 onSelect: (v) => handleConfigChange('pointLimit', v),
+              },
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
               },
             ],
           },
@@ -331,6 +345,9 @@ function SpadesPageContent() {
               ? `${t('hintBid')}: ${hint.bid} (${t(`hintReason.${hint.reason}`)})`
               : `${t('hintPlay')}: [${hint.cardIndex}] (${t(`hintReason.${hint.reason}`)})`}
           </div>
+        )}
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
         )}
 
         <div className="flex gap-2 items-center" data-tutorial="sp-play-button">

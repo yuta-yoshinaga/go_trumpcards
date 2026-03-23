@@ -131,4 +131,84 @@ describe('useTutorial', () => {
     expect(result.current.isActive).toBe(true);
     expect(result.current.isCompleted).toBe(true);
   });
+
+  // --- Resume / Restart / canResume (Phase 3) ---
+
+  it('canResume is false initially', () => {
+    const { result } = renderHook(() => useTutorial(config));
+    expect(result.current.canResume).toBe(false);
+  });
+
+  it('skip saves progress and sets canResume', () => {
+    const { result } = renderHook(() => useTutorial(config));
+    act(() => result.current.start());
+    act(() => result.current.next()); // step 1
+    act(() => result.current.skip());
+    expect(result.current.canResume).toBe(true);
+    expect(localStorage.getItem('tutorial_progress_testgame')).toBe('1');
+  });
+
+  it('skip at step 0 does not save progress (nothing to resume)', () => {
+    const { result } = renderHook(() => useTutorial(config));
+    act(() => result.current.start());
+    act(() => result.current.skip());
+    expect(result.current.canResume).toBe(false);
+    expect(localStorage.getItem('tutorial_progress_testgame')).toBeNull();
+  });
+
+  it('start resumes from saved progress', () => {
+    localStorage.setItem('tutorial_progress_testgame', '2');
+    const { result } = renderHook(() => useTutorial(config));
+    expect(result.current.canResume).toBe(true);
+    act(() => result.current.start());
+    expect(result.current.isActive).toBe(true);
+    expect(result.current.currentStepIndex).toBe(2);
+    expect(result.current.currentStep).toEqual(config.steps[2]);
+  });
+
+  it('completing tutorial clears progress key', () => {
+    localStorage.setItem('tutorial_progress_testgame', '1');
+    const { result } = renderHook(() => useTutorial(config));
+    act(() => result.current.start()); // resumes at step 1
+    act(() => result.current.next()); // step 2
+    act(() => result.current.next()); // completes
+    expect(result.current.isCompleted).toBe(true);
+    expect(localStorage.getItem('tutorial_progress_testgame')).toBeNull();
+    expect(result.current.canResume).toBe(false);
+  });
+
+  it('restart always starts from step 0 regardless of saved progress', () => {
+    localStorage.setItem('tutorial_progress_testgame', '2');
+    const { result } = renderHook(() => useTutorial(config));
+    act(() => result.current.restart());
+    expect(result.current.isActive).toBe(true);
+    expect(result.current.currentStepIndex).toBe(0);
+    expect(result.current.currentStep).toEqual(config.steps[0]);
+    // progress key should be cleared
+    expect(localStorage.getItem('tutorial_progress_testgame')).toBeNull();
+  });
+
+  it('restart clears progress and calls onEnter for first step', () => {
+    const onEnter = vi.fn();
+    const configWithEnter: TutorialConfig = {
+      gameName: 'testgame',
+      steps: [
+        { target: '[data-tutorial="s1"]', messageKey: 's1', placement: 'bottom', advanceOn: 'next', onEnter },
+        { target: '[data-tutorial="s2"]', messageKey: 's2', placement: 'top', advanceOn: 'next' },
+      ],
+    };
+    localStorage.setItem('tutorial_progress_testgame', '1');
+    const { result } = renderHook(() => useTutorial(configWithEnter));
+    act(() => result.current.restart());
+    expect(onEnter).toHaveBeenCalledTimes(1);
+  });
+
+  it('resume with invalid progress index starts from 0', () => {
+    localStorage.setItem('tutorial_progress_testgame', '99');
+    const { result } = renderHook(() => useTutorial(config));
+    // canResume should be false for out-of-bounds index
+    expect(result.current.canResume).toBe(false);
+    act(() => result.current.start());
+    expect(result.current.currentStepIndex).toBe(0);
+  });
 });

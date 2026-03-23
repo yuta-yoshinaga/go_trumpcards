@@ -1,5 +1,7 @@
-import { createContext, type ReactNode, useContext } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useState } from 'react';
 import { TutorialOverlay } from '../components/tutorial/TutorialOverlay';
+import { TutorialSuggestDialog } from '../components/tutorial/TutorialSuggestDialog';
+import { useFirstVisit } from '../hooks/useFirstVisit';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { type UseTutorialReturn, useTutorial } from '../hooks/useTutorial';
 import type { TutorialConfig } from '../types/tutorial';
@@ -26,10 +28,29 @@ export interface TutorialProviderProps {
 /** Identity function used as default translateMessage. */
 const identity = (key: string) => key;
 
-/** Provides tutorial state and renders the overlay when the tutorial is active. */
+/** Provides tutorial state, first-visit suggestion, and renders the overlay when active. */
 export function TutorialProvider({ config, translateMessage = identity, children }: TutorialProviderProps) {
   const tutorial = useTutorial(config);
   const reducedMotion = useReducedMotion();
+  const { shouldShowDialog, dismiss, dismissPermanently } = useFirstVisit(config.gameName);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+
+  const handleStartTutorial = useCallback(() => {
+    if (dontShowAgain) {
+      dismissPermanently();
+    } else {
+      dismiss();
+    }
+    tutorial.start();
+  }, [dontShowAgain, dismiss, dismissPermanently, tutorial]);
+
+  const handleSkip = useCallback(() => {
+    if (dontShowAgain) {
+      dismissPermanently();
+    } else {
+      dismiss();
+    }
+  }, [dontShowAgain, dismiss, dismissPermanently]);
 
   const currentStep = tutorial.currentStep;
   const translatedStep = currentStep ? { ...currentStep, messageKey: translateMessage(currentStep.messageKey) } : null;
@@ -45,6 +66,15 @@ export function TutorialProvider({ config, translateMessage = identity, children
           onNext={tutorial.next}
           onSkip={tutorial.skip}
           reducedMotion={reducedMotion}
+        />
+      )}
+      {shouldShowDialog && !tutorial.isActive && (
+        <TutorialSuggestDialog
+          open={true}
+          onStartTutorial={handleStartTutorial}
+          onSkip={handleSkip}
+          dontShowAgain={dontShowAgain}
+          onDontShowAgainChange={setDontShowAgain}
         />
       )}
     </TutorialContext.Provider>

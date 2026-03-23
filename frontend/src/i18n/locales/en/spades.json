@@ -65,5 +65,13 @@
     "scoreTable": "Score table. Meeting your bid earns points; failing costs points.",
     "bagsInfo": "Accumulating 10 bags (overtricks) results in a 100-point penalty. Nil bids are also possible.",
     "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "bidEstimate": "Bid based on high cards and spades",
+    "leadNonSpade": "Lead with a non-spade card",
+    "leadStrategic": "Lead strategically",
+    "followSuit": "Follow the led suit",
+    "trumpWithSpade": "Trump with a spade",
+    "discardLowest": "Discard your lowest card"
   }
 }

@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, configure } from '@testing-library/react';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeAll, vi } from 'vitest';
 
 // Mock ResizeObserver for happy-dom (needed by TutorialOverlay)
 if (typeof globalThis.ResizeObserver === 'undefined') {
@@ -136,6 +136,12 @@ i18n.use(initReactI18next).init({
 });
 
 configure({ asyncUtilTimeout: 5000 });
+
+// Suppress first-visit tutorial suggestion dialog in all tests by default.
+// Individual tests (e.g., useFirstVisit.test.ts) clear localStorage before running.
+beforeAll(() => {
+  localStorage.setItem('tutorial_no_suggest', 'true');
+});
 
 afterEach(() => {
   cleanup();
