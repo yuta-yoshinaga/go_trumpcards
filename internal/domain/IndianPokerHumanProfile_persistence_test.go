@@ -14,14 +14,14 @@ func TestIndianPokerHumanProfile_ExportImport_RoundTrip(t *testing.T) {
 	p := &IndianPokerHumanProfile{
 		FoldToBetCount:  2,
 		FoldToBetTotal:  8,
-		GamesPlayed:     3,
-		HesitationCount: 5,
-		HesitationMean:  1200.0,
-		HesitationM2:    180000.0,
+		GamesPlayed:     4,
+		HesitationCount: 3,
+		HesitationMean:  1100.0,
+		HesitationM2:    150000.0,
 	}
 	p.AggressiveByBracket[0] = struct{ Aggressive, Total int }{1, 4}
 	p.AggressiveByBracket[1] = struct{ Aggressive, Total int }{3, 6}
-	p.AggressiveByBracket[2] = struct{ Aggressive, Total int }{2, 3}
+	p.AggressiveByBracket[2] = struct{ Aggressive, Total int }{2, 5}
 
 	data := p.Export()
 	p2 := &IndianPokerHumanProfile{}
@@ -37,8 +37,7 @@ func TestIndianPokerHumanProfile_ExportImport_RoundTrip(t *testing.T) {
 }
 
 func TestIndianPokerHumanProfile_ExportImport_JSON_RoundTrip(t *testing.T) {
-	p := &IndianPokerHumanProfile{GamesPlayed: 2, FoldToBetCount: 1, FoldToBetTotal: 4}
-
+	p := &IndianPokerHumanProfile{GamesPlayed: 3, FoldToBetCount: 2, FoldToBetTotal: 5}
 	data := p.Export()
 	jsonBytes, err := json.Marshal(data)
 	require.NoError(t, err)
@@ -58,28 +57,36 @@ func TestImportIndianPokerHumanProfileJSON_InvalidJSON(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestIndianPoker_ExportProfile_NilWhenNoProfile(t *testing.T) {
+func newIndianPokerForMetaAITest(metaAI bool) *IndianPoker {
+	tc := NewTrumpCards(0)
+	players := []*IndianPokerPlayer{
+		NewIndianPokerPlayer(true, HoldemStyleTAG),
+		NewIndianPokerPlayer(false, HoldemStyleLAP),
+		NewIndianPokerPlayer(false, HoldemStyleTAP),
+		NewIndianPokerPlayer(false, HoldemStyleLAG),
+	}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
 	cfg := DefaultIndianPokerConfig()
-	cfg.CpuMetaAI = false
-	ip := NewIndianPoker(cfg)
+	cfg.CpuMetaAI = metaAI
+	ip := NewIndianPoker(tc, players, cfg)
 	_ = ip.Reset()
+	return ip
+}
+
+func TestIndianPoker_ExportProfile_NilWhenNoProfile(t *testing.T) {
+	ip := newIndianPokerForMetaAITest(false)
 	assert.Nil(t, ip.ExportProfile())
 }
 
 func TestIndianPoker_ExportProfile_ReturnsData(t *testing.T) {
-	cfg := DefaultIndianPokerConfig()
-	cfg.CpuMetaAI = true
-	ip := NewIndianPoker(cfg)
-	_ = ip.Reset()
+	ip := newIndianPokerForMetaAITest(true)
 	assert.NotNil(t, ip.ExportProfile())
 }
 
 func TestIndianPoker_ImportProfile_ValidJSON(t *testing.T) {
-	cfg := DefaultIndianPokerConfig()
-	cfg.CpuMetaAI = true
-	ip := NewIndianPoker(cfg)
-	_ = ip.Reset()
-
+	ip := newIndianPokerForMetaAITest(true)
 	profileData := IndianPokerHumanProfileData{GamesPlayed: 4, FoldToBetCount: 3, FoldToBetTotal: 7}
 	jsonBytes, _ := json.Marshal(profileData)
 
@@ -89,12 +96,12 @@ func TestIndianPoker_ImportProfile_ValidJSON(t *testing.T) {
 }
 
 func TestIndianPoker_ImportProfile_EmptyBytes(t *testing.T) {
-	ip := NewIndianPoker(DefaultIndianPokerConfig())
+	ip := newIndianPokerForMetaAITest(false)
 	assert.NoError(t, ip.ImportProfile(nil))
 	assert.NoError(t, ip.ImportProfile([]byte{}))
 }
 
 func TestIndianPoker_ImportProfile_InvalidJSON(t *testing.T) {
-	ip := NewIndianPoker(DefaultIndianPokerConfig())
+	ip := newIndianPokerForMetaAITest(false)
 	assert.Error(t, ip.ImportProfile([]byte("invalid")))
 }

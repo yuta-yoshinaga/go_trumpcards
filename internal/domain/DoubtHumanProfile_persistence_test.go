@@ -16,8 +16,8 @@ func TestDoubtHumanProfile_ExportImport_RoundTrip(t *testing.T) {
 		DoubtTotal:      7,
 		GamesPlayed:     5,
 		HesitationCount: 4,
-		HesitationMean:  2000.0,
-		HesitationM2:    300000.0,
+		HesitationMean:  1200.0,
+		HesitationM2:    180000.0,
 	}
 	p.BluffsByBracket[0] = struct{ Bluffs, Total int }{2, 5}
 	p.BluffsByBracket[1] = struct{ Bluffs, Total int }{3, 8}
@@ -37,8 +37,7 @@ func TestDoubtHumanProfile_ExportImport_RoundTrip(t *testing.T) {
 }
 
 func TestDoubtHumanProfile_ExportImport_JSON_RoundTrip(t *testing.T) {
-	p := &DoubtHumanProfile{GamesPlayed: 4, DoubtCorrect: 2, DoubtTotal: 6}
-
+	p := &DoubtHumanProfile{GamesPlayed: 3, DoubtCorrect: 2, DoubtTotal: 5}
 	data := p.Export()
 	jsonBytes, err := json.Marshal(data)
 	require.NoError(t, err)
@@ -58,29 +57,35 @@ func TestImportDoubtHumanProfileJSON_InvalidJSON(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestDoubt_ExportProfile_NilWhenNoProfile(t *testing.T) {
+func newDoubtForMetaAITest(metaAI bool) *Doubt {
+	tc := NewTrumpCards(0)
+	players := []*DoubtPlayer{
+		NewDoubtPlayer(true),
+		NewDoubtPlayer(false),
+		NewDoubtPlayer(false),
+		NewDoubtPlayer(false),
+	}
+	game := NewDoubt(tc, players)
 	cfg := DefaultDoubtConfig()
-	cfg.CpuMetaAI = false
-	game := NewDoubt(cfg)
+	cfg.CpuMetaAI = metaAI
+	game.SetConfig(cfg)
 	game.Reset()
+	return game
+}
+
+func TestDoubt_ExportProfile_NilWhenNoProfile(t *testing.T) {
+	game := newDoubtForMetaAITest(false)
 	assert.Nil(t, game.ExportProfile())
 }
 
 func TestDoubt_ExportProfile_ReturnsData(t *testing.T) {
-	cfg := DefaultDoubtConfig()
-	cfg.CpuMetaAI = true
-	game := NewDoubt(cfg)
-	game.Reset()
+	game := newDoubtForMetaAITest(true)
 	profile := game.ExportProfile()
 	assert.NotNil(t, profile)
 }
 
 func TestDoubt_ImportProfile_ValidJSON(t *testing.T) {
-	cfg := DefaultDoubtConfig()
-	cfg.CpuMetaAI = true
-	game := NewDoubt(cfg)
-	game.Reset()
-
+	game := newDoubtForMetaAITest(true)
 	profileData := DoubtHumanProfileData{GamesPlayed: 3, DoubtCorrect: 2, DoubtTotal: 5}
 	jsonBytes, _ := json.Marshal(profileData)
 
@@ -90,13 +95,12 @@ func TestDoubt_ImportProfile_ValidJSON(t *testing.T) {
 }
 
 func TestDoubt_ImportProfile_EmptyBytes(t *testing.T) {
-	cfg := DefaultDoubtConfig()
-	game := NewDoubt(cfg)
+	game := newDoubtForMetaAITest(false)
 	assert.NoError(t, game.ImportProfile(nil))
 	assert.NoError(t, game.ImportProfile([]byte{}))
 }
 
 func TestDoubt_ImportProfile_InvalidJSON(t *testing.T) {
-	game := NewDoubt(DefaultDoubtConfig())
+	game := newDoubtForMetaAITest(false)
 	assert.Error(t, game.ImportProfile([]byte("invalid")))
 }

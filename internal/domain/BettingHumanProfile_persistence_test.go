@@ -101,9 +101,19 @@ func TestPoker_ImportProfile_InvalidJSON(t *testing.T) {
 }
 
 func newPokerForMetaAITest(metaAI bool) *Poker {
+	tc := NewTrumpCards(0)
+	players := []*PokerPlayer{
+		NewPokerPlayer(true, PokerStyleBalanced),
+		NewPokerPlayer(false, PokerStyleConservative),
+		NewPokerPlayer(false, PokerStyleAggressive),
+		NewPokerPlayer(false, PokerStyleBluffer),
+	}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
 	cfg := DefaultPokerConfig()
 	cfg.CpuMetaAI = metaAI
-	pk := NewPoker(cfg)
+	pk := NewPoker(tc, players, cfg)
 	_ = pk.Reset()
 	return pk
 }

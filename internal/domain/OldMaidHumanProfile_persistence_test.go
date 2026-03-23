@@ -52,22 +52,34 @@ func TestImportOldMaidHumanProfileJSON_InvalidJSON(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestOldMaid_ExportProfile_NilWhenNoProfile(t *testing.T) {
-	om := NewOldMaid(OldMaidConfig{CpuMetaAI: false})
+func newOldMaidForMetaAITest(metaAI bool) *OldMaid {
+	tc := NewTrumpCards(0)
+	players := []*OldMaidPlayer{
+		NewOldMaidPlayer(true),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+		NewOldMaidPlayer(false),
+	}
+	om := NewOldMaid(tc, players)
+	cfg := DefaultOldMaidConfig()
+	cfg.CpuMetaAI = metaAI
+	om.SetConfig(cfg)
 	om.Reset()
+	return om
+}
+
+func TestOldMaid_ExportProfile_NilWhenNoProfile(t *testing.T) {
+	om := newOldMaidForMetaAITest(false)
 	assert.Nil(t, om.ExportProfile())
 }
 
 func TestOldMaid_ExportProfile_ReturnsData(t *testing.T) {
-	om := NewOldMaid(OldMaidConfig{CpuMetaAI: true})
-	om.Reset()
+	om := newOldMaidForMetaAITest(true)
 	assert.NotNil(t, om.ExportProfile())
 }
 
 func TestOldMaid_ImportProfile_ValidJSON(t *testing.T) {
-	om := NewOldMaid(OldMaidConfig{CpuMetaAI: true})
-	om.Reset()
-
+	om := newOldMaidForMetaAITest(true)
 	profileData := OldMaidHumanProfileData{GamesPlayed: 3, TotalPicks: 10}
 	jsonBytes, _ := json.Marshal(profileData)
 
@@ -77,12 +89,12 @@ func TestOldMaid_ImportProfile_ValidJSON(t *testing.T) {
 }
 
 func TestOldMaid_ImportProfile_EmptyBytes(t *testing.T) {
-	om := NewOldMaid(OldMaidConfig{})
+	om := newOldMaidForMetaAITest(false)
 	assert.NoError(t, om.ImportProfile(nil))
 	assert.NoError(t, om.ImportProfile([]byte{}))
 }
 
 func TestOldMaid_ImportProfile_InvalidJSON(t *testing.T) {
-	om := NewOldMaid(OldMaidConfig{})
+	om := newOldMaidForMetaAITest(false)
 	assert.Error(t, om.ImportProfile([]byte("invalid")))
 }
