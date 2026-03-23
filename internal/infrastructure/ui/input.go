@@ -17,7 +17,7 @@ func readInput(scanner *bufio.Scanner) (text string, exit bool) {
 			fmt.Fprintln(os.Stderr, i18n.Tf("inputReadError", "error", err.Error()))
 		} else {
 			// EOF: pipe input exhausted or Ctrl+D
-			fmt.Fprintln(os.Stderr, i18n.T("bye"))
+			fmt.Println(i18n.T("bye"))
 		}
 		return "", true
 	}
