@@ -54,6 +54,15 @@ export function DoubtPage() {
 
   const claimInputRef = useRef<HTMLInputElement>(null);
   const [valWarning, setValWarning] = useState(false);
+  const warningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (warningTimeoutRef.current) {
+        clearTimeout(warningTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const isHumanTurn = !state?.gameEndFlag && state?.players[state.currentTurn]?.isHuman === true;
   const showClaimInput = selectedCardIndices.length > 0 && isHumanTurn && state?.phase === 0;
@@ -328,8 +337,11 @@ export function DoubtPage() {
                     const clamped = Math.max(1, Math.min(13, num));
                     setClaimedValue(clamped);
                     if (num !== clamped) {
+                      if (warningTimeoutRef.current) {
+                        clearTimeout(warningTimeoutRef.current);
+                      }
                       setValWarning(true);
-                      setTimeout(() => setValWarning(false), 2000);
+                      warningTimeoutRef.current = setTimeout(() => setValWarning(false), 2000);
                     }
                   }}
                   className={`bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30 ${focusRingBlue}`}
