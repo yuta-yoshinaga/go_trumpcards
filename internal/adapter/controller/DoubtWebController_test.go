@@ -311,7 +311,7 @@ func TestDoubtWebController_SessionIsolation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		mockA.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig())
+		mockA.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig(), mock.Anything)
 		mockB.AssertNotCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig())
 	})
 
@@ -322,7 +322,7 @@ func TestDoubtWebController_SessionIsolation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		mockB.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig())
+		mockB.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig(), mock.Anything)
 	})
 
 	t.Run("session-A second call reuses mockA without creating new interactor", func(t *testing.T) {
@@ -364,7 +364,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("doubtWindowSec below min (0) is ignored, uses default", func(t *testing.T) {
@@ -390,7 +390,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("cpuMemoryLevel above max (3) is ignored, uses default", func(t *testing.T) {
@@ -416,7 +416,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("cpuMemoryLevel below min (-1) is ignored, uses default", func(t *testing.T) {
@@ -442,7 +442,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("penaltyDrawLimit config values", func(t *testing.T) {
@@ -490,7 +490,7 @@ func TestDoubtWebController_ResetWithConfig(t *testing.T) {
 				req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 				recorded := test.RunRequest(t, api.MakeHandler(), req)
 				recorded.CodeIs(http.StatusOK)
-				dgiMock.AssertCalled(t, "ResetWithConfig", tc.expectedCfg)
+				dgiMock.AssertCalled(t, "ResetWithConfig", tc.expectedCfg, mock.Anything)
 			})
 		}
 	})
@@ -521,7 +521,7 @@ func TestDoubtWebController_ResetWithCpuHesitation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("cpuHesitationEnabled omitted uses default (false)", func(t *testing.T) {
@@ -544,7 +544,7 @@ func TestDoubtWebController_ResetWithCpuHesitation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 }
 
@@ -619,7 +619,7 @@ func TestDoubtWebController_ResetWithCpuMetaAI(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("cpuMetaAI omitted uses default (false)", func(t *testing.T) {
@@ -642,7 +642,7 @@ func TestDoubtWebController_ResetWithCpuMetaAI(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		dgiMock.AssertCalled(t, "ResetWithConfig", expected)
+		dgiMock.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 }
 

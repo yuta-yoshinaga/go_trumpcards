@@ -286,7 +286,7 @@ func TestPokerCuiController_Lowball(t *testing.T) {
 	mi.On("ResetWithConfig", expectedCfg, mock.Anything).Return("lw ok")
 	assert.Equal(t, "lw ok", c.Exec("lw"))
 	mi.AssertCalled(t, "GetConfig")
-	mi.AssertCalled(t, "ResetWithConfig", expectedCfg)
+	mi.AssertCalled(t, "ResetWithConfig", expectedCfg, mock.Anything)
 }
 
 // --- set cpu count ---

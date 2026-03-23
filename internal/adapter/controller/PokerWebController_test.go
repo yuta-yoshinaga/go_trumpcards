@@ -791,14 +791,14 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
 			map[string]interface{}{"command": "reset", "sessionId": "session-A"}))
 	recorded.CodeIs(200)
-	mockA.AssertCalled(t, "ResetWithConfig", cfgA)
+	mockA.AssertCalled(t, "ResetWithConfig", cfgA, mock.Anything)
 
 	// session-B creates mockB
 	recorded = test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
 			map[string]interface{}{"command": "reset", "sessionId": "session-B"}))
 	recorded.CodeIs(200)
-	mockB.AssertCalled(t, "ResetWithConfig", cfgB)
+	mockB.AssertCalled(t, "ResetWithConfig", cfgB, mock.Anything)
 
 	// session-A reuses mockA (no new factory call)
 	recorded = test.RunRequest(t, api.MakeHandler(),
@@ -856,7 +856,7 @@ func TestPokerWebController_Reset_IsLowball(t *testing.T) {
 				"isLowball": true,
 			}))
 	recorded.CodeIs(200)
-	mi.AssertCalled(t, "ResetWithConfig", cfg)
+	mi.AssertCalled(t, "ResetWithConfig", cfg, mock.Anything)
 }
 
 func TestPokerWebController_Reset_WithBettingLimit_Valid(t *testing.T) {

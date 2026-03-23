@@ -312,7 +312,7 @@ func TestOldMaidWebController_ResetWithCpuMetaAI(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		omiMock.AssertCalled(t, "Reset", expectedCfg)
+		omiMock.AssertCalled(t, "Reset", expectedCfg, mock.Anything)
 	})
 
 	t.Run("cpuMetaAI omitted uses default (false)", func(t *testing.T) {
@@ -334,7 +334,7 @@ func TestOldMaidWebController_ResetWithCpuMetaAI(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		omiMock.AssertCalled(t, "Reset", expectedCfg)
+		omiMock.AssertCalled(t, "Reset", expectedCfg, mock.Anything)
 	})
 }
 
@@ -368,7 +368,7 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		mockA.AssertCalled(t, "Reset", mock.Anything)
+		mockA.AssertCalled(t, "Reset", mock.Anything, mock.Anything)
 		mockB.AssertNotCalled(t, "Reset", mock.Anything)
 	})
 
@@ -379,7 +379,7 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		mockB.AssertCalled(t, "Reset", mock.Anything)
+		mockB.AssertCalled(t, "Reset", mock.Anything, mock.Anything)
 	})
 
 	t.Run("session-A second call reuses mockA", func(t *testing.T) {
