@@ -181,6 +181,23 @@ func TestOmahaInteractor_ResetWithConfig_TableSizeZero(t *testing.T) {
 	mg.AssertNotCalled(t, "Resize", mock.Anything)
 }
 
+func TestOmahaInteractor_ResetWithConfig_WithProfile(t *testing.T) {
+	mg := new(interfaces.MockOmahaGame)
+	mp := new(presenter.MockOmahaPresenter)
+	hi := NewOmahaInteractor(mg, mp)
+
+	cfg := domain.OmahaConfig{SmallBlind: 10, BigBlind: 20, InitChips: 2000, BlindLevelHands: 10}
+	profileData := []byte(`{"gamesPlayed":3}`)
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(nil)
+	mg.On("ImportProfile", profileData).Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("with profile output")
+
+	result := hi.ResetWithConfig(cfg, profileData)
+	assert.Equal(t, "with profile output", result)
+	mg.AssertCalled(t, "ImportProfile", profileData)
+}
+
 func TestOmahaInteractor_ActionLog(t *testing.T) {
 	mg := new(interfaces.MockOmahaGame)
 	mp := new(presenter.MockOmahaPresenter)

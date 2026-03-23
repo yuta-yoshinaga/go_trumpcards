@@ -951,3 +951,29 @@ func TestOmahaWebPresenter_Equity(t *testing.T) {
 		assert.Nil(t, out.PotOdds)
 	})
 }
+
+func TestOmahaWebPresenter_Output_WithMetaAIProfile(t *testing.T) {
+	p := new(presenter.OmahaWebPresenter)
+	tc := domain.NewTrumpCards(0)
+	players := []*domain.OmahaPlayer{
+		domain.NewOmahaPlayer(true, domain.HoldemStyleTAG),
+		domain.NewOmahaPlayer(false, domain.HoldemStyleLAP),
+		domain.NewOmahaPlayer(false, domain.HoldemStyleTAP),
+		domain.NewOmahaPlayer(false, domain.HoldemStyleGTO),
+	}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
+	cfg := domain.DefaultOmahaConfig()
+	cfg.CpuMetaAI = true
+	o := domain.NewOmaha(tc, players, cfg)
+	_ = o.Reset()
+
+	result := p.Output(o, nil)
+	var out controller.OmahaWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.MetaAI)
+	assert.True(t, out.MetaAI.Enabled)
+	assert.NotNil(t, out.Profile)
+}

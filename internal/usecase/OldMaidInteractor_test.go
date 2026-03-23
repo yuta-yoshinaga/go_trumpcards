@@ -84,6 +84,25 @@ func TestOldMaidInteractor_MockGame(t *testing.T) {
 	})
 }
 
+func TestOldMaidInteractor_Reset_WithProfile(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	ompMock := new(presenter.MockOldMaidPresenter)
+	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+	gameMock := new(interfaces.MockOldMaidGame)
+	profileData := []byte(`{"gamesPlayed":4}`)
+	gameMock.On("SetConfig", mock.Anything).Return()
+	gameMock.On("Reset").Return()
+	gameMock.On("ImportProfile", profileData).Return(nil)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("IsHumanTurn").Return(true)
+	gameMock.On("ArrangeTargetForHumanDraw").Return()
+
+	oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+	result := oi.Reset(domain.DefaultOldMaidConfig(), profileData)
+	assert.Equal(t, mockOutput, result)
+	gameMock.AssertCalled(t, "ImportProfile", profileData)
+}
+
 func TestOldMaidInteractor_Draw_GameEnded(t *testing.T) {
 	mockOutput := `{"players":[]}`
 	ompMock := new(presenter.MockOldMaidPresenter)
