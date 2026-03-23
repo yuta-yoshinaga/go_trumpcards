@@ -182,9 +182,6 @@ func (s *freeCellSolver) generateSuccessors(st *freeCellState) []*freeCellState 
 			if toCol == fromCol {
 				continue
 			}
-			if len(st.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
-				continue
-			}
 			if canPlaceOnTableau(card, toCol, st.tableau) {
 				next := copyState(st)
 				next.tableau[fromCol] = next.tableau[fromCol][:len(next.tableau[fromCol])-1]
@@ -203,9 +200,6 @@ func (s *freeCellSolver) generateSuccessors(st *freeCellState) []*freeCellState 
 		}
 		card := st.freeCells[cell]
 		for toCol := range FreeCellTableauCnt {
-			if len(st.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
-				continue
-			}
 			if canPlaceOnTableau(card, toCol, st.tableau) {
 				next := copyState(st)
 				next.freeCells[cell] = nil
@@ -240,6 +234,7 @@ func (s *freeCellSolver) generateSuccessors(st *freeCellState) []*freeCellState 
 }
 
 // copyState creates a deep copy of a freeCellState.
+// The caller is responsible for setting g and h on the returned state.
 func copyState(st *freeCellState) *freeCellState {
 	next := &freeCellState{}
 	for i := range FreeCellTableauCnt {
