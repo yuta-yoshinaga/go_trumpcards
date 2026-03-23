@@ -647,11 +647,15 @@ describe('KlondikePage', () => {
 
   // --- Feature 1: 3-card draw mode ---
 
-  it('renders draw mode selector', async () => {
+  it('renders draw mode selector with visible label', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByLabelText('ドローモード')).toBeInTheDocument());
     expect(screen.getByText('1枚引き')).toBeInTheDocument();
     expect(screen.getByText('3枚引き')).toBeInTheDocument();
+    const select = screen.getByLabelText('ドローモード');
+    expect(select).toHaveAttribute('id', 'draw-mode-select');
+    const label = document.querySelector('label[for="draw-mode-select"]');
+    expect(label).toBeInTheDocument();
   });
 
   it('changing draw mode resets game with config', async () => {

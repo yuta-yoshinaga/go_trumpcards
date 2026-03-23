@@ -313,7 +313,11 @@ export function KlondikePage() {
             </>
           )}
           {/* Draw mode toggle */}
+          <label htmlFor="draw-mode-select" className="text-sm text-gray-300">
+            {t('drawMode')}
+          </label>
           <select
+            id="draw-mode-select"
             value={drawCountSetting}
             onChange={(e) => {
               const n = Number(e.target.value);
@@ -328,7 +332,11 @@ export function KlondikePage() {
             <option value={3}>{t('drawMode3')}</option>
           </select>
           {/* Scoring mode toggle */}
+          <label htmlFor="scoring-mode-select" className="text-sm text-gray-300">
+            {t('scoringMode')}
+          </label>
           <select
+            id="scoring-mode-select"
             value={scoringModeSetting}
             onChange={(e) => {
               const n = Number(e.target.value);

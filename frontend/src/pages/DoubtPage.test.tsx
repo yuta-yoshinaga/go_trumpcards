@@ -247,6 +247,42 @@ describe('DoubtPage', () => {
     expect(input).toHaveValue(1);
   });
 
+  it('claim input has aria-describedby linked to range hint', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const input = screen.getByRole('spinbutton');
+    expect(input).toHaveAttribute('aria-describedby', 'claim-range-hint');
+    expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument();
+  });
+
+  it('shows warning when value is clamped out of range', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const input = screen.getByRole('spinbutton');
+
+    fireEvent.change(input, { target: { value: '15' } });
+    expect(screen.getByText('1〜13の範囲に調整されました')).toBeInTheDocument();
+
+    // Warning clears after 2 seconds
+    await waitFor(() => expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument(), { timeout: 3000 });
+  });
+
+  it('does not show warning when value is within range', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const input = screen.getByRole('spinbutton');
+
+    fireEvent.change(input, { target: { value: '7' } });
+    expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument();
+    expect(screen.queryByText('1〜13の範囲に調整されました')).not.toBeInTheDocument();
+  });
+
   it('calls play command with selected cards when 出す clicked', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
@@ -504,6 +540,15 @@ describe('DoubtPage', () => {
       renderWithProviders(<DoubtPage />);
       // Wait directly for countdown text (appears after 2nd render: state→doubt phase, effect→countdown)
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+    });
+
+    it('countdown has aria-live assertive and aria-atomic true', async () => {
+      mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+      const countdownEl = screen.getByText(/残り 10 秒/);
+      expect(countdownEl).toHaveAttribute('aria-live', 'assertive');
+      expect(countdownEl).toHaveAttribute('aria-atomic', 'true');
     });
 
     it('decrements countdown each second', async () => {

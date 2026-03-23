@@ -63,7 +63,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       id={item.id}
                       value={item.value}
                       onChange={(e) => item.onSelect?.(e.target.value)}
-                      className="bg-black/50 text-white rounded px-1 py-0.5"
+                      className="bg-black/50 text-white disabled:text-gray-300 disabled:opacity-70 rounded px-1 py-0.5"
                       disabled={item.disabled}
                     >
                       {item.options?.map((opt) => (

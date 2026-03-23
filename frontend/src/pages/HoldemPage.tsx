@@ -37,8 +37,11 @@ const HOLDEM_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
   return (
-    // biome-ignore lint/a11y/noNoninteractiveTabindex: tabIndex needed for keyboard tooltip access
-    <span className="group relative cursor-help" tabIndex={0} aria-describedby={id}>
+    <button
+      type="button"
+      className="group relative cursor-help bg-transparent border-none p-0 font-inherit text-inherit inline"
+      aria-describedby={id}
+    >
       {label}
       <span
         id={id}
@@ -47,7 +50,7 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
       >
         {tooltipText}
       </span>
-    </span>
+    </button>
   );
 }
 

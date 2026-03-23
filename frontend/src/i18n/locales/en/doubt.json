@@ -26,6 +26,8 @@
   "yourCards": "You ({{count}} cards)",
   "selectPrompt": "Select cards to play",
   "claimedValue": "Claimed Value:",
+  "claimRangeHint": "Enter 1-13",
+  "claimRangeWarning": "Adjusted to range 1-13",
   "playButton": "Play",
   "tell": "Tell",
   "settings": {
