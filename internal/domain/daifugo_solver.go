@@ -11,18 +11,20 @@ const DaifugoSolverMaxCards = 8
 // It searches for a guaranteed winning sequence of plays, where each intermediate
 // play is either an 8-cut or unbeatable by all opponents.
 type daifugoSolver struct {
-	oppHands   [][]*Card     // Each active opponent's hand
-	revolution bool          // Current revolution state
-	elevenBack bool          // Current eleven back state
-	config     DaifugoConfig // Game config (for local rules)
+	oppHands       [][]*Card     // Each active opponent's hand
+	revolution     bool          // Current revolution state
+	elevenBack     bool          // Current eleven back state
+	sequenceLocked bool          // Only sequence plays allowed
+	config         DaifugoConfig // Game config (for local rules)
 }
 
 func newDaifugoSolver(d *Daifugo, oppHands [][]*Card) *daifugoSolver {
 	return &daifugoSolver{
-		oppHands:   oppHands,
-		revolution: d.revolutionActive,
-		elevenBack: d.elevenBackActive,
-		config:     d.config,
+		oppHands:       oppHands,
+		revolution:     d.revolutionActive,
+		elevenBack:     d.elevenBackActive,
+		sequenceLocked: d.sequenceLocked,
+		config:         d.config,
 	}
 }
 
@@ -118,40 +120,44 @@ func (s *daifugoSolver) trySolveWithClearTable(remaining []*Card, moveCards []*C
 // generateOpeningMoves generates all valid plays from a clear table
 func (s *daifugoSolver) generateOpeningMoves(hand []*Card) []solverPlay {
 	var moves []solverPlay
-	groups := s.groupByValue(hand)
-	jokers := s.getJokers(hand)
 
-	// Sorted values for deterministic order (strongest first for better pruning)
-	values := s.sortedValuesByStrength(groups)
+	// When sequenceLocked, only sequence plays are allowed
+	if !s.sequenceLocked {
+		groups := s.groupByValue(hand)
+		jokers := s.getJokers(hand)
 
-	for _, v := range values {
-		group := groups[v]
-		// Generate plays of size 1..len(group)
-		for size := 1; size <= len(group); size++ {
-			play := make([]*Card, size)
-			copy(play, group[:size])
-			moves = append(moves, solverPlay{cards: play})
-		}
-		// Augment with jokers for larger groups
-		if len(jokers) > 0 {
-			maxAug := len(group) + len(jokers)
-			for augSize := len(group) + 1; augSize <= maxAug; augSize++ {
-				jokersNeeded := augSize - len(group)
-				play := make([]*Card, augSize)
-				copy(play, group)
-				for ji := 0; ji < jokersNeeded; ji++ {
-					play[len(group)+ji] = jokers[ji]
-				}
+		// Sorted values for deterministic order (strongest first for better pruning)
+		values := s.sortedValuesByStrength(groups)
+
+		for _, v := range values {
+			group := groups[v]
+			// Generate plays of size 1..len(group)
+			for size := 1; size <= len(group); size++ {
+				play := make([]*Card, size)
+				copy(play, group[:size])
 				moves = append(moves, solverPlay{cards: play})
 			}
+			// Augment with jokers for larger groups
+			if len(jokers) > 0 {
+				maxAug := len(group) + len(jokers)
+				for augSize := len(group) + 1; augSize <= maxAug; augSize++ {
+					jokersNeeded := augSize - len(group)
+					play := make([]*Card, augSize)
+					copy(play, group)
+					for ji := 0; ji < jokersNeeded; ji++ {
+						play[len(group)+ji] = jokers[ji]
+					}
+					moves = append(moves, solverPlay{cards: play})
+				}
+			}
 		}
-	}
 
-	// Pure joker plays
-	for i := 1; i <= len(jokers); i++ {
-		play := make([]*Card, i)
-		copy(play, jokers[:i])
-		moves = append(moves, solverPlay{cards: play})
+		// Pure joker plays
+		for i := 1; i <= len(jokers); i++ {
+			play := make([]*Card, i)
+			copy(play, jokers[:i])
+			moves = append(moves, solverPlay{cards: play})
+		}
 	}
 
 	// Sequence plays (階段)
