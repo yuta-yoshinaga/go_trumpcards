@@ -6,22 +6,28 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
+var signalHandlerOnce sync.Once
+
 // setupSignalHandler registers a handler for SIGINT and SIGTERM that prints
 // a goodbye message and exits gracefully. Call this at the start of any CUI loop.
+// It is safe to call multiple times; only the first call has an effect.
 func setupSignalHandler() {
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-sigCh
-		signal.Stop(sigCh)
-		fmt.Fprintln(os.Stderr, "\n"+i18n.T("bye"))
-		os.Exit(0)
-	}()
+	signalHandlerOnce.Do(func() {
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+		go func() {
+			<-sigCh
+			signal.Stop(sigCh)
+			fmt.Println("\n" + i18n.T("bye"))
+			os.Exit(0)
+		}()
+	})
 }
 
 // CuiExecer CUIコントローラの共通インタフェース
