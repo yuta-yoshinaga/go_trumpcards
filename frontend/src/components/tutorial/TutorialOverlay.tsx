@@ -89,7 +89,9 @@ export function TutorialOverlay({ step, stepIndex, totalSteps, onNext, onSkip, r
     };
   }, [step.target]);
 
-  // Listen for click on target when advanceOn is 'click'
+  // Listen for click on target when advanceOn is 'click'.
+  // Note: the target must be within the spotlight cutout for clicks to reach it,
+  // as the overlay dialog intercepts clicks outside the cutout area.
   useEffect(() => {
     if (step.advanceOn !== 'click') return;
     const targetEl = document.querySelector(step.target);
