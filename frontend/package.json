@@ -45,7 +45,6 @@
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "^4.0.18",
     "happy-dom": "^20.8.4",
-    "jsdom": "^28.1.0",
     "tailwindcss": "^4.2.0",
     "typedoc": "^0.28.4",
     "typescript": "~5.9.3",
