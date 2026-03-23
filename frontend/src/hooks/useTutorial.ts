@@ -1,11 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
+import { TUTORIAL_COMPLETED_PREFIX, TUTORIAL_PROGRESS_PREFIX } from '../constants/tutorialKeys';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
-
-/** Storage key prefix for tutorial completion flags. */
-const STORAGE_PREFIX = 'tutorial_completed_';
-
-/** Storage key prefix for tutorial progress (step index on skip). */
-const PROGRESS_PREFIX = 'tutorial_progress_';
 
 /** Reads a valid progress index from localStorage, or returns -1 if absent/invalid. */
 function readProgress(key: string, totalSteps: number): number {
@@ -42,8 +37,8 @@ export interface UseTutorialReturn {
 
 /** Manages tutorial state: step progression, completion persistence, resume, and lifecycle callbacks. */
 export function useTutorial(config: TutorialConfig): UseTutorialReturn {
-  const storageKey = `${STORAGE_PREFIX}${config.gameName}`;
-  const progressKey = `${PROGRESS_PREFIX}${config.gameName}`;
+  const storageKey = `${TUTORIAL_COMPLETED_PREFIX}${config.gameName}`;
+  const progressKey = `${TUTORIAL_PROGRESS_PREFIX}${config.gameName}`;
 
   const [isActive, setIsActive] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);

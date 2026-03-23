@@ -1,18 +1,15 @@
 import { useCallback, useState } from 'react';
-
-const VISITED_PREFIX = 'game_visited_';
-const NO_SUGGEST_KEY = 'tutorial_no_suggest';
-const COMPLETED_PREFIX = 'tutorial_completed_';
+import { GAME_VISITED_PREFIX, TUTORIAL_COMPLETED_PREFIX, TUTORIAL_NO_SUGGEST_KEY } from '../constants/tutorialKeys';
 
 /** Manages first-visit detection for a game, controlling whether to show a tutorial suggestion dialog. */
 export function useFirstVisit(gameName: string) {
-  const visitedKey = `${VISITED_PREFIX}${gameName}`;
-  const completedKey = `${COMPLETED_PREFIX}${gameName}`;
+  const visitedKey = `${GAME_VISITED_PREFIX}${gameName}`;
+  const completedKey = `${TUTORIAL_COMPLETED_PREFIX}${gameName}`;
 
   const [shouldShowDialog, setShouldShowDialog] = useState(() => {
     if (localStorage.getItem(visitedKey) === 'true') return false;
     if (localStorage.getItem(completedKey) === 'true') return false;
-    if (localStorage.getItem(NO_SUGGEST_KEY) === 'true') return false;
+    if (localStorage.getItem(TUTORIAL_NO_SUGGEST_KEY) === 'true') return false;
     return true;
   });
 
@@ -25,7 +22,7 @@ export function useFirstVisit(gameName: string) {
   /** Mark the game as visited and suppress the dialog for all future games. */
   const dismissPermanently = useCallback(() => {
     localStorage.setItem(visitedKey, 'true');
-    localStorage.setItem(NO_SUGGEST_KEY, 'true');
+    localStorage.setItem(TUTORIAL_NO_SUGGEST_KEY, 'true');
     setShouldShowDialog(false);
   }, [visitedKey]);
 

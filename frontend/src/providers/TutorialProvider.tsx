@@ -35,22 +35,22 @@ export function TutorialProvider({ config, translateMessage = identity, children
   const { shouldShowDialog, dismiss, dismissPermanently } = useFirstVisit(config.gameName);
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
-  const handleStartTutorial = useCallback(() => {
-    if (dontShowAgain) {
-      dismissPermanently();
-    } else {
-      dismiss();
-    }
-    tutorial.start();
-  }, [dontShowAgain, dismiss, dismissPermanently, tutorial]);
-
-  const handleSkip = useCallback(() => {
+  const dismissDialog = useCallback(() => {
     if (dontShowAgain) {
       dismissPermanently();
     } else {
       dismiss();
     }
   }, [dontShowAgain, dismiss, dismissPermanently]);
+
+  const handleStartTutorial = useCallback(() => {
+    dismissDialog();
+    tutorial.start();
+  }, [dismissDialog, tutorial]);
+
+  const handleSkip = useCallback(() => {
+    dismissDialog();
+  }, [dismissDialog]);
 
   const currentStep = tutorial.currentStep;
   const translatedStep = currentStep ? { ...currentStep, messageKey: translateMessage(currentStep.messageKey) } : null;

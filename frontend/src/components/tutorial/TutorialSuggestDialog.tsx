@@ -79,6 +79,7 @@ export function TutorialSuggestDialog({
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="suggest-dialog-title"
+        aria-describedby="suggest-dialog-desc"
         className="glass-panel rounded-lg shadow-xl p-6 max-w-sm mx-4"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
@@ -88,7 +89,9 @@ export function TutorialSuggestDialog({
         <h2 id="suggest-dialog-title" className="text-lg font-bold text-white mb-2">
           {t('firstVisit.title')}
         </h2>
-        <p className="text-gray-200 mb-4">{t('firstVisit.message')}</p>
+        <p id="suggest-dialog-desc" className="text-gray-200 mb-4">
+          {t('firstVisit.message')}
+        </p>
         <label className="flex items-center gap-2 text-sm text-gray-300 mb-4 cursor-pointer">
           <input
             type="checkbox"

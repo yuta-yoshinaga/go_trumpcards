@@ -20,6 +20,7 @@ export function TutorialProgressPanel() {
         <div
           className="w-full bg-gray-700 rounded-full h-2 mb-2"
           role="progressbar"
+          aria-label={t('progress.title', { defaultValue: 'Tutorial Progress' })}
           aria-valuenow={percentage}
           aria-valuemin={0}
           aria-valuemax={100}

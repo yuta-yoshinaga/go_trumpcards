@@ -34,6 +34,7 @@ import { BlackJackSkeleton } from '../components/skeleton/BlackJackSkeleton';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
@@ -41,7 +42,6 @@ import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 import type { TutorialConfig, TutorialStep } from '../types/tutorial';
-import { getBlackjackHint } from '../utils/hints/blackjackHint';
 
 const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BjPhase.BET]: 'bet',
@@ -183,6 +183,7 @@ function BlackJackPageContent() {
   const playerChips = state?.player?.chips ?? 0;
   const hintEnabled = state?.hintEnabled ?? false;
   const suggestedAction = state?.suggestedAction ?? BJ_SUGGEST_NONE;
+  const { hint: frontendHint } = useGameHint('blackjack', state);
   const cpuPlayers = state?.cpuPlayers ?? [];
   const sideBetResults = state?.sideBetResults ?? [];
 
@@ -396,11 +397,7 @@ function BlackJackPageContent() {
             <div className="bg-yellow-300/90 text-gray-900 text-center text-sm font-bold px-3 py-1 rounded">
               {t('suggestion')} {suggestionLabels[suggestedAction]}
             </div>
-            {state &&
-              (() => {
-                const h = getBlackjackHint(state);
-                return h ? <HintTooltip reason={t(h.reason)} confidence={h.confidence} /> : null;
-              })()}
+            {frontendHint && <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />}
           </div>
         )}
 
