@@ -862,5 +862,5 @@ stateDiagram-v2
     Completed --> Active : start() (再開)
 
     note right of Completed : localStorage に完了フラグ保存\ntutorial_completed_{gameName} = true
-    note right of Active : advanceOn: click → 対象クリックで next()\nadvanceOn: next → 次へボタンで next()
+    note right of Active : advanceOn=click → 対象クリックで next()\nadvanceOn=next → 次へボタンで next()
 ```
