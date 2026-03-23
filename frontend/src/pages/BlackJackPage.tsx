@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -34,8 +35,11 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnSecondary } from '../styles/buttonStyles';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 
 const BJ_PHASE_KEYS: Readonly<Record<number, string>> = {
   [BjPhase.BET]: 'bet',
@@ -58,8 +62,82 @@ function useSuggestionLabels(t: (key: string) => string): Record<number, string>
   };
 }
 
+/** BlackJack tutorial step definitions. */
+const BJ_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="bj-bet-controls"]',
+    messageKey: 'tutorial.betControls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="bj-bet-button"]', messageKey: 'tutorial.betButton', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="bj-dealer-hand"]',
+    messageKey: 'tutorial.dealerHand',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="bj-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="bj-action-buttons"]',
+    messageKey: 'tutorial.actionButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="bj-result-message"]',
+    messageKey: 'tutorial.resultMessage',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="bj-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Tutorial button that starts the BlackJack tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
+/** BlackJack tutorial configuration. */
+const BJ_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'blackjack',
+  steps: BJ_TUTORIAL_STEPS,
+};
+
 /** Renders the BlackJack game page with betting, action, and end phases. */
 export function BlackJackPage() {
+  const { t: tBj } = useTranslation('blackjack');
+  return (
+    <TutorialProvider config={BJ_TUTORIAL_CONFIG} translateMessage={tBj}>
+      <BlackJackPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the BlackJack page, wrapped by TutorialProvider. */
+function BlackJackPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('blackjack');
   const phaseNames = usePhaseNames('blackjack', BJ_PHASE_KEYS);
@@ -172,6 +250,7 @@ export function BlackJackPage() {
         <span>
           {t('player')} {state.player.chips} chips
         </span>
+        <TutorialButton />
         <span>
           {t('deck')} {state.deckCount}
           {t('deckUnit')}
@@ -190,7 +269,7 @@ export function BlackJackPage() {
       {/* Scrollable: dealer area + CPU players */}
       <div className="flex-1 overflow-y-auto p-4">
         {phase !== BjPhase.BET && (
-          <div>
+          <div data-tutorial="bj-dealer-hand">
             <h3 className="text-white">
               {t('dealerHand')}
               {dealerHitsSoft17 ? ' (H17)' : ' (S17)'}
@@ -253,7 +332,7 @@ export function BlackJackPage() {
       <GameFooter className="bg-game-bg-green-bright-dark border-white/15 px-4 py-3">
         {/* Player hands */}
         {phase !== BjPhase.BET && hands.length > 0 && (
-          <div className="mb-2">
+          <div className="mb-2" data-tutorial="bj-player-hand">
             {hands.map((hand, handIndex) => (
               <div key={`hand-${handIndex}`} className="mb-2">
                 <h3 className="text-white mt-0 mb-0.5">
@@ -317,7 +396,9 @@ export function BlackJackPage() {
         )}
 
         {/* Result message */}
-        <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+        <div data-tutorial="bj-result-message">
+          <GameMessageBox message={message} messageCode={state?.messageCode} messageParams={state?.messageParams} />
+        </div>
 
         {/* Action log */}
         <ActionLogSection
@@ -333,42 +414,44 @@ export function BlackJackPage() {
         <div className="text-center">
           {phase === BjPhase.BET && (
             <>
-              <BjBetPhaseControls
-                betAmount={betAmount}
-                onBetAmountChange={setBetAmount}
-                deckCount={state?.deckCount ?? 1}
-                onDeckCountChange={(v) => exec('setdeckcount', v)}
-                cpuPlayerCount={cpuPlayerCount}
-                onCpuPlayerCountChange={(v) => exec('setcpucount', v)}
-                hintEnabled={hintEnabled}
-                onToggleHint={() => exec('togglehint')}
-                dealerHitsSoft17={dealerHitsSoft17}
-                onToggleSoft17={() => exec('togglesoft17')}
-                countingEnabled={countingEnabled}
-                onToggleCounting={() => exec('togglecounting')}
-                doubleAfterSplit={doubleAfterSplit}
-                onToggleDAS={() => exec('toggledas')}
-                countingSystem={countingSystem}
-                onCountingSystemChange={(v) => exec('setcountingsystem', v)}
-                deckPenetration={deckPenetration}
-                onDeckPenetrationChange={(v) => exec('setpenetration', v)}
-                surrenderRule={surrenderRule}
-                onSurrenderRuleChange={(v) => exec('setsurrenderrule', v)}
-                handCount={handCount}
-                onHandCountChange={setHandCount}
-                loading={loading}
-                onBet={() => {
-                  const betOptions: BlackJackBetOptions = {};
-                  if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
-                  if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
-                  if (handCount > 1) betOptions.handCount = handCount;
-                  exec('bet', betAmount, undefined, betOptions);
-                }}
-                perfectPairsBet={perfectPairsBet}
-                onPerfectPairsBetChange={setPerfectPairsBet}
-                twentyOnePlus3Bet={twentyOnePlus3Bet}
-                onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
-              />
+              <div data-tutorial="bj-bet-controls">
+                <BjBetPhaseControls
+                  betAmount={betAmount}
+                  onBetAmountChange={setBetAmount}
+                  deckCount={state?.deckCount ?? 1}
+                  onDeckCountChange={(v) => exec('setdeckcount', v)}
+                  cpuPlayerCount={cpuPlayerCount}
+                  onCpuPlayerCountChange={(v) => exec('setcpucount', v)}
+                  hintEnabled={hintEnabled}
+                  onToggleHint={() => exec('togglehint')}
+                  dealerHitsSoft17={dealerHitsSoft17}
+                  onToggleSoft17={() => exec('togglesoft17')}
+                  countingEnabled={countingEnabled}
+                  onToggleCounting={() => exec('togglecounting')}
+                  doubleAfterSplit={doubleAfterSplit}
+                  onToggleDAS={() => exec('toggledas')}
+                  countingSystem={countingSystem}
+                  onCountingSystemChange={(v) => exec('setcountingsystem', v)}
+                  deckPenetration={deckPenetration}
+                  onDeckPenetrationChange={(v) => exec('setpenetration', v)}
+                  surrenderRule={surrenderRule}
+                  onSurrenderRuleChange={(v) => exec('setsurrenderrule', v)}
+                  handCount={handCount}
+                  onHandCountChange={setHandCount}
+                  loading={loading}
+                  onBet={() => {
+                    const betOptions: BlackJackBetOptions = {};
+                    if (perfectPairsBet > 0) betOptions.perfectPairsBet = perfectPairsBet;
+                    if (twentyOnePlus3Bet > 0) betOptions.twentyOnePlus3Bet = twentyOnePlus3Bet;
+                    if (handCount > 1) betOptions.handCount = handCount;
+                    exec('bet', betAmount, undefined, betOptions);
+                  }}
+                  perfectPairsBet={perfectPairsBet}
+                  onPerfectPairsBetChange={setPerfectPairsBet}
+                  twentyOnePlus3Bet={twentyOnePlus3Bet}
+                  onTwentyOnePlus3BetChange={setTwentyOnePlus3Bet}
+                />
+              </div>
               <div className="flex items-center justify-center gap-2 mt-2">
                 <label htmlFor="bj-auto-advance" className="text-white text-sm">
                   {t('autoAdvance')}
@@ -399,19 +482,21 @@ export function BlackJackPage() {
           )}
 
           {phase === BjPhase.ACTION && (
-            <BjActionPhaseControls
-              loading={loading}
-              hintEnabled={hintEnabled}
-              suggestedAction={suggestedAction}
-              showDoubleDown={showDoubleDown}
-              showSplit={showSplit}
-              showSurrender={showSurrender}
-              onHit={() => exec('hit')}
-              onStand={() => exec('stand')}
-              onDoubleDown={() => exec('doubledown')}
-              onSplit={() => exec('split')}
-              onSurrender={() => exec('surrender')}
-            />
+            <div data-tutorial="bj-action-buttons">
+              <BjActionPhaseControls
+                loading={loading}
+                hintEnabled={hintEnabled}
+                suggestedAction={suggestedAction}
+                showDoubleDown={showDoubleDown}
+                showSplit={showSplit}
+                showSurrender={showSurrender}
+                onHit={() => exec('hit')}
+                onStand={() => exec('stand')}
+                onDoubleDown={() => exec('doubledown')}
+                onSplit={() => exec('split')}
+                onSurrender={() => exec('surrender')}
+              />
+            </div>
           )}
 
           {phase === BjPhase.EARLY_SURRENDER && (
@@ -425,12 +510,14 @@ export function BlackJackPage() {
           )}
 
           {phase === BjPhase.END && (
-            <BjEndPhaseControls
-              loading={loading}
-              onReset={handleReset}
-              onManualReset={() => requestConfirm(handleReset)}
-              autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
-            />
+            <div data-tutorial="bj-reset-button">
+              <BjEndPhaseControls
+                loading={loading}
+                onReset={handleReset}
+                onManualReset={() => requestConfirm(handleReset)}
+                autoAdvanceSeconds={autoAdvance > 0 ? autoAdvance : undefined}
+              />
+            </div>
           )}
         </div>
       </GameFooter>

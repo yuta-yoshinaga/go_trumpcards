@@ -4,6 +4,16 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { afterEach, vi } from 'vitest';
 
+// Mock ResizeObserver for jsdom (needed by TutorialOverlay)
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+    constructor(_callback: ResizeObserverCallback) {}
+  } as unknown as typeof globalThis.ResizeObserver;
+}
+
 // Mock matchMedia for jsdom (needed by useReducedMotion)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -69,6 +79,7 @@ import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
 import jaSpades from '../i18n/locales/ja/spades.json';
 import jaSpider from '../i18n/locales/ja/spider.json';
+import jaTutorial from '../i18n/locales/ja/tutorial.json';
 
 i18n.use(initReactI18next).init({
   lng: 'ja',
@@ -95,6 +106,7 @@ i18n.use(initReactI18next).init({
     'napoleon',
     'spider',
     'indianpoker',
+    'tutorial',
   ],
   resources: {
     ja: {
@@ -118,6 +130,7 @@ i18n.use(initReactI18next).init({
       napoleon: jaNapoleon,
       spider: jaSpider,
       indianpoker: jaIndianpoker,
+      tutorial: jaTutorial,
     },
   },
   interpolation: { escapeValue: false },

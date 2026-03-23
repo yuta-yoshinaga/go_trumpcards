@@ -22,6 +22,7 @@
   - [3.3 確認ダイアログ状態 (useConfirmDialog)](#33-確認ダイアログ状態-useconfirmdialog)
   - [3.4 アクションログ状態 (useActionLog)](#34-アクションログ状態-useactionlog)
   - [3.5 ゲーム設定パネル状態](#35-ゲーム設定パネル状態)
+  - [3.6 チュートリアル状態 (useTutorial)](#36-チュートリアル状態-usetutorial)
 
 ---
 
@@ -85,6 +86,21 @@ classDiagram
         +string messageCode
         +object messageParams
     }
+
+    class TutorialStep {
+        +string target
+        +string messageKey
+        +TutorialPlacement placement
+        +TutorialAdvanceOn advanceOn
+        +Function onEnter
+    }
+
+    class TutorialConfig {
+        +string gameName
+        +TutorialStep[] steps
+    }
+
+    TutorialConfig --> TutorialStep : contains
 
     note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全19ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
@@ -321,8 +337,20 @@ classDiagram
         +boolean prefersReducedMotion
     }
 
+    class useTutorial {
+        +boolean isActive
+        +number currentStepIndex
+        +TutorialStep currentStep
+        +number totalSteps
+        +boolean isCompleted
+        +Function start
+        +Function next
+        +Function skip
+    }
+
     useGamePageSetup --> useActionLog : composes
     useGamePageSetup --> useConfirmDialog : composes
+    useTutorial ..> useReducedMotion : optional
 ```
 
 ### 1.4 Hook 層 (ゲーム固有Hook)
@@ -477,6 +505,30 @@ classDiagram
     class SkipNavLink {
         +アクセシビリティ スキップリンク
     }
+
+    class TutorialOverlay {
+        +TutorialStep step
+        +number stepIndex
+        +number totalSteps
+        +Function onNext
+        +Function onSkip
+        +SVG mask スポットライト
+        +ResizeObserver 追従
+        +フォーカストラップ
+    }
+
+    class TutorialTooltip {
+        +string message
+        +TutorialPlacement placement
+        +number stepIndex
+        +number totalSteps
+        +Function onNext
+        +Function onSkip
+        +glass-panel ツールチップ
+    }
+
+    TutorialOverlay --> TutorialTooltip : renders
+    TutorialOverlay --> ConfirmDialog : reuses getFocusableElements
 ```
 
 ### 1.6 ページコンポーネント層
@@ -592,13 +644,22 @@ classDiagram
         +rummy: [GinRummy]
     }
 
+    class TutorialProvider {
+        +TutorialConfig config
+        +Function translateMessage
+        +useTutorial 状態管理
+        +TutorialOverlay 自動レンダリング
+    }
+
     App --> QueryProvider : wrapped by
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
     App --> GamePage : routes to 18 pages
+    GamePage --> TutorialProvider : wraps (per-game)
+    TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "19名前空間: common + 18ゲーム固有\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "20名前空間: common + 18ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -779,4 +840,27 @@ stateDiagram-v2
     }
 
     note right of Expanded : 設定変更時は自動的にゲームリセット\nhandleConfigChange → exec reset with newConfig
+```
+
+### 3.6 チュートリアル状態 (useTutorial)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Inactive : 初期化
+
+    Inactive --> Active : start()
+    Inactive --> Inactive : next()/skip() (何もしない)
+
+    state Active {
+        [*] --> Step_0 : onEnter呼出し
+        Step_0 --> Step_N : next() / onEnter呼出し
+        Step_N --> Step_N : next() (次ステップ)
+    }
+
+    Active --> Completed : next() (最終ステップ)
+    Active --> Inactive : skip()
+    Completed --> Active : start() (再開)
+
+    note right of Completed : localStorage に完了フラグ保存\ntutorial_completed_{gameName} = true
+    note right of Active : advanceOn: click → 対象クリックで next()\nadvanceOn: next → 次へボタンで next()
 ```
