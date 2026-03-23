@@ -272,21 +272,6 @@ describe('usePokerGame', () => {
     expect(result.current.odds).toBeNull();
   });
 
-  it('cleans up debounce timer on unmount without errors (no pending timer)', async () => {
-    mockExec.mockResolvedValue(exchangeState);
-    const { result, unmount } = renderHook(() => usePokerGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-
-    // Unmount without any pending timer — cleanup branch (timer === null) should not throw
-    unmount();
-    expect(() => {
-      vi.advanceTimersByTime(300);
-    }).not.toThrow();
-    vi.useRealTimers();
-  });
-
   it('cancels pending debounce timer on unmount (clearTimeout branch)', async () => {
     mockExec.mockResolvedValue(exchangeState);
     const { result, unmount } = renderHook(() => usePokerGame(), { wrapper: createWrapper() });

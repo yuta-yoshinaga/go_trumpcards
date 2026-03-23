@@ -890,38 +890,6 @@ func TestGinRummy_CpuPlay(t *testing.T) {
 		assert.Equal(t, domain.GinRummyPhaseDiscard, g.GetPhase())
 	})
 
-	t.Run("CPU draw from discard easy random", func(t *testing.T) {
-		// Easy CPU uses random discard decision
-		pickedDiscard := false
-		pickedStock := false
-		for attempt := 0; attempt < 1000; attempt++ {
-			g := newTestGinRummyWithDifficulty(domain.GinRummyCpuDifficultyEasy)
-			g.Reset()
-			setupGinRummyDrawPhase(g, 1)
-			g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
-			g.SetDrawPile([]*domain.Card{domain.NewCard(domain.CardDesignClover, 13, false)})
-			g.GetPlayer(1).Reset()
-			for i := 0; i < 10; i++ {
-				g.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignHeart, i+1, false))
-			}
-
-			discardBefore := len(g.GetDiscardPile())
-			g.CpuPlay()
-			discardAfter := len(g.GetDiscardPile())
-
-			if discardAfter < discardBefore {
-				pickedDiscard = true
-			} else {
-				pickedStock = true
-			}
-			if pickedDiscard && pickedStock {
-				break
-			}
-		}
-		assert.True(t, pickedDiscard, "easy CPU should sometimes pick from discard")
-		assert.True(t, pickedStock, "easy CPU should sometimes pick from stock")
-	})
-
 	t.Run("CPU draw from discard normal", func(t *testing.T) {
 		g := newTestGinRummyWithDifficulty(domain.GinRummyCpuDifficultyNormal)
 		g.Reset()

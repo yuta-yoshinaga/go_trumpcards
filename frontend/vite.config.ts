@@ -10,9 +10,9 @@ export default defineConfig({
     emptyOutDir: false,
   },
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: './src/test/setup.ts',
-    testTimeout: 30000,
+    testTimeout: 10000,
     exclude: ['e2e/**', 'node_modules/**'],
     coverage: {
       provider: 'v8',

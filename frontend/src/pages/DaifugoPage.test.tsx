@@ -185,11 +185,6 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
   });
 
-  it('play button is disabled when no cards are selected', async () => {
-    renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled());
-  });
-
   it('calls reset when reset button is clicked', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());

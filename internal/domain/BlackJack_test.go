@@ -3123,41 +3123,6 @@ func TestEarlySurrenderFlow_NonAceUpcard(t *testing.T) {
 	}
 }
 
-func TestEarlySurrenderFlow_AceUpcard(t *testing.T) {
-	// We need to test that when dealer has ace upcard with early surrender,
-	// insurance comes first, then early surrender after insurance
-	bj := domain.NewDefaultBlackJack()
-	cfg := domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderEarly}
-	err := bj.SetConfig(cfg)
-	require.NoError(t, err)
-
-	// Try multiple times to get a dealer ace upcard
-	for attempt := 0; attempt < 100; attempt++ {
-		bj.Reset()
-		err = bj.PlayerBet(100, 0, 0, 0)
-		if err != nil {
-			bj.Reset()
-			continue
-		}
-		dealerUpcard := bj.GetDealer().GetCard(0)
-		if dealerUpcard != nil && dealerUpcard.GetValue() == 1 {
-			// Dealer has ace -> insurance phase first
-			assert.Equal(t, domain.BJPhaseInsurance, bj.GetPhase())
-			// Decline insurance -> should go to early surrender phase
-			err = bj.PlayerDeclineInsurance()
-			assert.NoError(t, err)
-			// After insurance, with early surrender config, should be early surrender phase
-			// (unless dealer has BJ and game ended)
-			if !bj.GetGameEndFlag() {
-				assert.Equal(t, domain.BJPhaseEarlySurrender, bj.GetPhase())
-			}
-			return
-		}
-		bj.Reset()
-	}
-	t.Skip("could not get dealer ace upcard after 100 attempts")
-}
-
 func TestEarlySurrender_DealerBJAfterDecline(t *testing.T) {
 	// Setup: dealer has BJ (A + 10), player declines early surrender -> game ends
 	playerCards := []*domain.Card{

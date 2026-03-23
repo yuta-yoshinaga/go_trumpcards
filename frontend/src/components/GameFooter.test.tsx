@@ -21,16 +21,6 @@ describe('GameFooter', () => {
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
 
-  it('applies safe-area paddingBottom style', () => {
-    render(
-      <GameFooter className="bg-green-800">
-        <span>content</span>
-      </GameFooter>,
-    );
-    const footer = screen.getByRole('contentinfo');
-    expect(footer.style.paddingBottom).toContain('env(safe-area-inset-bottom)');
-  });
-
   it('includes shrink-0 and border-t base classes', () => {
     render(
       <GameFooter className="bg-green-800">

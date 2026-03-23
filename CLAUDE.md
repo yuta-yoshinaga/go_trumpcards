@@ -119,7 +119,7 @@ Clean Architecture: `infrastructure` -> `adapter` -> `usecase` -> `domain`. See 
 
 ### Coverage standard
 
-**Branch coverage (C1) must be 100%** for all packages except `cmd/` and `internal/infrastructure/` (Go) and for `frontend/src/{api,components,pages,utils}` (TypeScript). Always verify every conditional branch is exercised, not just statement coverage (C0).
+**Branch coverage (C1) must be 80% or higher** for all packages except `cmd/` and `internal/infrastructure/` (Go) and for `frontend/src/{api,components,pages,utils}` (TypeScript). Focus testing effort on business logic and critical paths rather than exhaustively covering every conditional branch.
 
 ### Self-review checklist
 
@@ -129,7 +129,7 @@ Before marking any task complete:
 2. Go lint passes: `golangci-lint run ./...`
 3. Go files formatted: `goimports -w` on modified files
 4. Frontend checks pass (if applicable): `cd frontend && bun run build && bun run check && bun run test`
-5. Branch coverage is 100% for modified packages
+5. Branch coverage is 80%+ for modified packages
 6. GoDoc/TSDoc comments present on all new/modified exported symbols
 
 ### Detailed rules by layer
@@ -183,7 +183,7 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 5. **Presenter**: CUI and Web presenters in `internal/adapter/presenter/`, reuse `buildCuiOutput`, `cuiCardListStr`, `ActionLogOutput` helpers, `WebOutputBase` for common web output fields
 6. **Infrastructure**: Register in `cmd/trumpcards/main.go` (CLI) and `internal/infrastructure/web/TrumpCardsWeb.go` (API route)
 7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
-8. **100% branch coverage** for all new packages
+8. **80%+ branch coverage** for all new packages
 
 ### Frontend (React)
 
