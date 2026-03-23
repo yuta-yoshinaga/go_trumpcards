@@ -1,9 +1,14 @@
 package domain
 
-import "math/rand"
+import (
+	"math/rand"
+	"runtime"
+	"sync"
+	"time"
+)
 
 // holdemEquitySimulations デフォルトのモンテカルロシミュレーション回数
-const holdemEquitySimulations = 5000
+const holdemEquitySimulations = 50000
 
 // HoldemEquityResult エクイティ計算結果
 type HoldemEquityResult struct {
@@ -58,67 +63,58 @@ func CalcEquity(humanCards, communityCards []*Card, activePlayers, simulations i
 	remainingCommunity := 5 - len(communityCards)
 	neededCards := remainingCommunity + activePlayers*2
 
-	wins := 0.0
-	handCounts := make([]int, len(PokerHandNames))
+	totalWins, totalHandCounts := runParallelSimulations(simulations, rng,
+		func(sims int, localRng *rand.Rand) (float64, []int) {
+			wins := 0.0
+			handCounts := make([]int, len(PokerHandNames))
+			shufflePool := make([]*Card, len(pool))
+			simCommunity := make([]*Card, 0, 5)
 
-	shufflePool := make([]*Card, len(pool))
+			for i := 0; i < sims; i++ {
+				copy(shufflePool, pool)
+				shuffleCards(shufflePool, localRng)
 
-	for i := 0; i < simulations; i++ {
-		copy(shufflePool, pool)
-		shuffleCards(shufflePool, rng)
+				if neededCards > len(shufflePool) {
+					continue
+				}
 
-		if neededCards > len(shufflePool) {
-			continue
-		}
+				// シミュレーション用コミュニティカードを構築
+				simCommunity = simCommunity[:0]
+				simCommunity = append(simCommunity, communityCards...)
+				idx := 0
+				for j := 0; j < remainingCommunity; j++ {
+					simCommunity = append(simCommunity, shufflePool[idx])
+					idx++
+				}
 
-		// シミュレーション用コミュニティカードを構築
-		simCommunity := make([]*Card, 0, 5)
-		simCommunity = append(simCommunity, communityCards...)
-		idx := 0
-		for j := 0; j < remainingCommunity; j++ {
-			simCommunity = append(simCommunity, shufflePool[idx])
-			idx++
-		}
+				// 人間のハンド評価
+				humanAll := make([]*Card, 0, 7)
+				humanAll = append(humanAll, humanCards...)
+				humanAll = append(humanAll, simCommunity...)
+				humanRank, humanBest := evalBestFromSeven(humanAll)
+				handCounts[humanRank]++
 
-		// 人間のハンド評価
-		humanAll := make([]*Card, 0, 7)
-		humanAll = append(humanAll, humanCards...)
-		humanAll = append(humanAll, simCommunity...)
-		humanRank, humanBest := evalBestFromSeven(humanAll)
-		handCounts[humanRank]++
-
-		// 相手のハンド評価
-		humanWins := true
-		for o := 0; o < activePlayers; o++ {
-			oppCards := make([]*Card, 0, 7)
-			oppCards = append(oppCards, shufflePool[idx], shufflePool[idx+1])
-			idx += 2
-			oppCards = append(oppCards, simCommunity...)
-			oppRank, oppBest := evalBestFromSeven(oppCards)
-			if oppRank > humanRank || (oppRank == humanRank && compareHighCardsSlice(oppBest, humanBest) > 0) {
-				humanWins = false
-				break
+				// 相手のハンド評価
+				humanWins := true
+				for o := 0; o < activePlayers; o++ {
+					oppCards := make([]*Card, 0, 7)
+					oppCards = append(oppCards, shufflePool[idx], shufflePool[idx+1])
+					idx += 2
+					oppCards = append(oppCards, simCommunity...)
+					oppRank, oppBest := evalBestFromSeven(oppCards)
+					if oppRank > humanRank || (oppRank == humanRank && compareHighCardsSlice(oppBest, humanBest) > 0) {
+						humanWins = false
+						break
+					}
+				}
+				if humanWins {
+					wins++
+				}
 			}
-		}
-		if humanWins {
-			wins++
-		}
-	}
+			return wins, handCounts
+		})
 
-	// ハンドオッズ構築
-	handOdds := make([]HoldemHandOdds, len(PokerHandNames))
-	for i := 0; i < len(PokerHandNames); i++ {
-		handOdds[i] = HoldemHandOdds{
-			HandRank:    i,
-			HandName:    PokerHandNames[i],
-			Probability: float64(handCounts[i]) / float64(simulations),
-		}
-	}
-
-	return HoldemEquityResult{
-		Equity:   wins / float64(simulations),
-		HandOdds: handOdds,
-	}
+	return buildEquityResult(totalWins, totalHandCounts, simulations)
 }
 
 // CalcPotOdds ポットオッズを計算 (パーセンテージ 0-100)
@@ -159,6 +155,77 @@ func evalBestFromSeven(cards []*Card) (int, []*Card) {
 		}
 	}
 	return bestRank, bestCards
+}
+
+// equityWorkerFn シミュレーションワーカー関数の型
+type equityWorkerFn func(sims int, rng *rand.Rand) (wins float64, handCounts []int)
+
+// runParallelSimulations モンテカルロシミュレーションを複数ワーカーで並列実行
+func runParallelSimulations(totalSims int, rng *rand.Rand, worker equityWorkerFn) (float64, []int) {
+	numWorkers := runtime.NumCPU()
+	if numWorkers > totalSims {
+		numWorkers = totalSims
+	}
+	simsPerWorker := totalSims / numWorkers
+
+	// rng が nil の場合、一度だけ新しい RNG を生成してシード源とする
+	if rng == nil {
+		rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+	}
+	workerSeeds := make([]int64, numWorkers)
+	for i := range numWorkers {
+		workerSeeds[i] = rng.Int63()
+	}
+
+	type workerResult struct {
+		wins       float64
+		handCounts []int
+	}
+	results := make([]workerResult, numWorkers)
+
+	var wg sync.WaitGroup
+	for w := range numWorkers {
+		wg.Add(1)
+		go func(workerIdx int) {
+			defer wg.Done()
+
+			localRng := rand.New(rand.NewSource(workerSeeds[workerIdx]))
+			localSims := simsPerWorker
+			if workerIdx == numWorkers-1 {
+				localSims = totalSims - simsPerWorker*(numWorkers-1)
+			}
+
+			wins, handCounts := worker(localSims, localRng)
+			results[workerIdx] = workerResult{wins: wins, handCounts: handCounts}
+		}(w)
+	}
+	wg.Wait()
+
+	totalWins := 0.0
+	totalHandCounts := make([]int, len(PokerHandNames))
+	for _, r := range results {
+		totalWins += r.wins
+		for i, c := range r.handCounts {
+			totalHandCounts[i] += c
+		}
+	}
+	return totalWins, totalHandCounts
+}
+
+// buildEquityResult 集約結果からHoldemEquityResultを構築
+func buildEquityResult(totalWins float64, totalHandCounts []int, simulations int) HoldemEquityResult {
+	handOdds := make([]HoldemHandOdds, len(PokerHandNames))
+	for i := range PokerHandNames {
+		handOdds[i] = HoldemHandOdds{
+			HandRank:    i,
+			HandName:    PokerHandNames[i],
+			Probability: float64(totalHandCounts[i]) / float64(simulations),
+		}
+	}
+	return HoldemEquityResult{
+		Equity:   totalWins / float64(simulations),
+		HandOdds: handOdds,
+	}
 }
 
 // buildEmptyHandOdds 空のハンドオッズを構築

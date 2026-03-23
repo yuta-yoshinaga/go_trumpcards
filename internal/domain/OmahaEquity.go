@@ -1,9 +1,11 @@
 package domain
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 // omahaEquitySimulations デフォルトのモンテカルロシミュレーション回数
-const omahaEquitySimulations = 5000
+const omahaEquitySimulations = 50000
 
 // CalcOmahaEquity モンテカルロシミュレーションによるオマハエクイティ計算
 // humanCards: 人間の手札(4枚), communityCards: コミュニティカード,
@@ -45,62 +47,53 @@ func CalcOmahaEquity(humanCards, communityCards []*Card, activePlayers, simulati
 	remainingCommunity := 5 - len(communityCards)
 	neededCards := remainingCommunity + activePlayers*4
 
-	wins := 0.0
-	handCounts := make([]int, len(PokerHandNames))
+	totalWins, totalHandCounts := runParallelSimulations(simulations, rng,
+		func(sims int, localRng *rand.Rand) (float64, []int) {
+			wins := 0.0
+			handCounts := make([]int, len(PokerHandNames))
+			shufflePool := make([]*Card, len(pool))
+			simCommunity := make([]*Card, 0, 5)
 
-	shufflePool := make([]*Card, len(pool))
+			for i := 0; i < sims; i++ {
+				copy(shufflePool, pool)
+				shuffleCards(shufflePool, localRng)
 
-	for i := 0; i < simulations; i++ {
-		copy(shufflePool, pool)
-		shuffleCards(shufflePool, rng)
+				if neededCards > len(shufflePool) {
+					continue
+				}
 
-		if neededCards > len(shufflePool) {
-			continue
-		}
+				// シミュレーション用コミュニティカードを構築
+				simCommunity = simCommunity[:0]
+				simCommunity = append(simCommunity, communityCards...)
+				idx := 0
+				for j := 0; j < remainingCommunity; j++ {
+					simCommunity = append(simCommunity, shufflePool[idx])
+					idx++
+				}
 
-		// シミュレーション用コミュニティカードを構築
-		simCommunity := make([]*Card, 0, 5)
-		simCommunity = append(simCommunity, communityCards...)
-		idx := 0
-		for j := 0; j < remainingCommunity; j++ {
-			simCommunity = append(simCommunity, shufflePool[idx])
-			idx++
-		}
+				// 人間のハンド評価 (オマハルール: 2枚+3枚)
+				humanRank, humanBest := evalBestFromOmaha(humanCards, simCommunity)
+				handCounts[humanRank]++
 
-		// 人間のハンド評価 (オマハルール: 2枚+3枚)
-		humanRank, humanBest := evalBestFromOmaha(humanCards, simCommunity)
-		handCounts[humanRank]++
-
-		// 相手のハンド評価
-		humanWins := true
-		for o := 0; o < activePlayers; o++ {
-			oppHole := shufflePool[idx : idx+4]
-			idx += 4
-			oppRank, oppBest := evalBestFromOmaha(oppHole, simCommunity)
-			if oppRank > humanRank || (oppRank == humanRank && compareHighCardsSlice(oppBest, humanBest) > 0) {
-				humanWins = false
-				break
+				// 相手のハンド評価
+				humanWins := true
+				for o := 0; o < activePlayers; o++ {
+					oppHole := shufflePool[idx : idx+4]
+					idx += 4
+					oppRank, oppBest := evalBestFromOmaha(oppHole, simCommunity)
+					if oppRank > humanRank || (oppRank == humanRank && compareHighCardsSlice(oppBest, humanBest) > 0) {
+						humanWins = false
+						break
+					}
+				}
+				if humanWins {
+					wins++
+				}
 			}
-		}
-		if humanWins {
-			wins++
-		}
-	}
+			return wins, handCounts
+		})
 
-	// ハンドオッズ構築
-	handOdds := make([]HoldemHandOdds, len(PokerHandNames))
-	for i := 0; i < len(PokerHandNames); i++ {
-		handOdds[i] = HoldemHandOdds{
-			HandRank:    i,
-			HandName:    PokerHandNames[i],
-			Probability: float64(handCounts[i]) / float64(simulations),
-		}
-	}
-
-	return HoldemEquityResult{
-		Equity:   wins / float64(simulations),
-		HandOdds: handOdds,
-	}
+	return buildEquityResult(totalWins, totalHandCounts, simulations)
 }
 
 // evalBestFromOmaha オマハルールでベスト5枚のハンドランクと手を評価

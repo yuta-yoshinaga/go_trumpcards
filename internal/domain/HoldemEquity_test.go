@@ -181,3 +181,65 @@ func TestCalcPotOdds_NegativeCallAmount(t *testing.T) {
 	result := CalcPotOdds(100, -10)
 	assert.Equal(t, 0.0, result)
 }
+
+func TestCalcEquity_ParallelResultsInExpectedRange(t *testing.T) {
+	t.Run("parallel execution produces statistically valid results", func(t *testing.T) {
+		humanCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 1, false),
+		}
+		communityCards := []*Card{
+			NewCard(CardDesignClover, 2, false),
+			NewCard(CardDesignDiamond, 7, false),
+			NewCard(CardDesignSpade, 9, false),
+		}
+		rng := rand.New(rand.NewSource(42))
+		result := CalcEquity(humanCards, communityCards, 1, 50000, rng)
+		// Pocket aces on a low flop should have ~80-95% equity
+		assert.Greater(t, result.Equity, 0.70)
+		assert.Less(t, result.Equity, 0.99)
+
+		// HandOdds probabilities should sum to ~1.0
+		sum := 0.0
+		for _, h := range result.HandOdds {
+			sum += h.Probability
+		}
+		assert.InDelta(t, 1.0, sum, 0.01)
+	})
+}
+
+func TestCalcEquity_DeterministicWithSeededRng(t *testing.T) {
+	t.Run("same seed produces same result", func(t *testing.T) {
+		humanCards := []*Card{
+			NewCard(CardDesignSpade, 1, false),
+			NewCard(CardDesignHeart, 1, false),
+		}
+		rng1 := rand.New(rand.NewSource(123))
+		result1 := CalcEquity(humanCards, nil, 1, 1000, rng1)
+
+		rng2 := rand.New(rand.NewSource(123))
+		result2 := CalcEquity(humanCards, nil, 1, 1000, rng2)
+
+		assert.Equal(t, result1.Equity, result2.Equity)
+		for i := range result1.HandOdds {
+			assert.Equal(t, result1.HandOdds[i].Probability, result2.HandOdds[i].Probability)
+		}
+	})
+}
+
+func BenchmarkCalcEquity(b *testing.B) {
+	humanCards := []*Card{
+		NewCard(CardDesignSpade, 1, false),
+		NewCard(CardDesignHeart, 1, false),
+	}
+	communityCards := []*Card{
+		NewCard(CardDesignClover, 2, false),
+		NewCard(CardDesignDiamond, 7, false),
+		NewCard(CardDesignSpade, 9, false),
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rng := rand.New(rand.NewSource(int64(i)))
+		CalcEquity(humanCards, communityCards, 1, 50000, rng)
+	}
+}
