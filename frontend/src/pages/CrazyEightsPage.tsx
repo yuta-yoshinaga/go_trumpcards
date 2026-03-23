@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -14,9 +15,11 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useCrazyEightsGame } from '../hooks/useCrazyEightsGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { CrazyEightsPhase, CrazyEightsSuit } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
@@ -41,8 +44,70 @@ const SUIT_SYMBOLS: Record<number, string> = {
   [CrazyEightsSuit.DIAMOND]: '♦',
 };
 
+/** Crazy Eights tutorial step definitions. */
+const CE_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="ce-discard-pile"]',
+    messageKey: 'tutorial.discardPile',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ce-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="ce-play-draw"]', messageKey: 'tutorial.playDraw', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="ce-suit-choice"]',
+    messageKey: 'tutorial.suitChoice',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ce-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Crazy Eights tutorial configuration. */
+const CE_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'crazyeights',
+  steps: CE_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Crazy Eights tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
 /** Renders the Crazy Eights game page with card play and suit selection. */
 export function CrazyEightsPage() {
+  const { t: tCe } = useTranslation('crazyeights');
+  return (
+    <TutorialProvider config={CE_TUTORIAL_CONFIG} translateMessage={tCe}>
+      <CrazyEightsPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Crazy Eights page, wrapped by TutorialProvider. */
+function CrazyEightsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('crazyeights');
   const {
@@ -91,7 +156,9 @@ export function CrazyEightsPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isChooseSuit} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn || isChooseSuit}>
+        <TutorialButton />
+      </PhaseIndicator>
 
       <SettingsPanel
         title={t('settings.title')}
@@ -130,7 +197,7 @@ export function CrazyEightsPage() {
 
         {/* Discard pile top */}
         {state.discardTop && (
-          <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3">
+          <div className="my-3 p-3 rounded bg-black/40 flex items-center gap-3" data-tutorial="ce-discard-pile">
             <AnimatedCard card={state.discardTop} width={cardWidth} />
             <div className="text-white/70 text-sm">
               <div>{t('discardTop')}</div>
@@ -192,7 +259,7 @@ export function CrazyEightsPage() {
 
       <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {humanPlayer && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ce-player-hand">
             {humanPlayer.cards.map((card, idx) => (
               <button
                 type="button"
@@ -219,7 +286,7 @@ export function CrazyEightsPage() {
 
         <div className="flex gap-2 items-center flex-wrap">
           {isHumanTurn && (
-            <>
+            <div className="flex gap-2" data-tutorial="ce-play-draw">
               <button
                 type="button"
                 className={btnPrimary}
@@ -231,10 +298,10 @@ export function CrazyEightsPage() {
               <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
                 {t('drawButton')}
               </button>
-            </>
+            </div>
           )}
           {isChooseSuit && (
-            <div className="flex gap-1">
+            <div className="flex gap-1" data-tutorial="ce-suit-choice">
               {SUIT_BUTTONS.map(({ suit, key }) => (
                 <button
                   key={suit}
@@ -256,6 +323,7 @@ export function CrazyEightsPage() {
           <button
             type="button"
             className={btnWarning}
+            data-tutorial="ce-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();

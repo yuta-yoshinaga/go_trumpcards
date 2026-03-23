@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -14,11 +15,82 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useSpadesGame } from '../hooks/useSpadesGame';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { SpadesPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
+
+/** Spades tutorial step definitions. */
+const SP_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="sp-bid-controls"]',
+    messageKey: 'tutorial.bidControls',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="sp-trick-display"]',
+    messageKey: 'tutorial.trickDisplay',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="sp-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="sp-play-button"]',
+    messageKey: 'tutorial.playButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="sp-score-table"]',
+    messageKey: 'tutorial.scoreTable',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="sp-bags-info"]',
+    messageKey: 'tutorial.bagsInfo',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="sp-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Tutorial button that starts the Spades tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
+/** Spades tutorial configuration. */
+const SP_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'spades',
+  steps: SP_TUTORIAL_STEPS,
+};
 
 const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SpadesPhase.BID]: 'bid',
@@ -30,6 +102,16 @@ const SPADES_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Spades game page with bidding, trick play, and scoring. */
 export function SpadesPage() {
+  const { t: tSpades } = useTranslation('spades');
+  return (
+    <TutorialProvider config={SP_TUTORIAL_CONFIG} translateMessage={tSpades}>
+      <SpadesPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Spades page, wrapped by TutorialProvider. */
+function SpadesPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spades');
   const {
@@ -86,7 +168,9 @@ export function SpadesPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanBidTurn || isHumanTurn}>
+        <TutorialButton />
+      </PhaseIndicator>
 
       {/* Settings */}
       <SettingsPanel
@@ -128,7 +212,11 @@ export function SpadesPage() {
         </div>
 
         {/* Bid phase instruction */}
-        {isHumanBidTurn && <div className="text-yellow-300 text-center mb-2">{t('bidPhase')}</div>}
+        {isHumanBidTurn && (
+          <div className="text-yellow-300 text-center mb-2" data-tutorial="sp-bid-controls">
+            {t('bidPhase')}
+          </div>
+        )}
 
         {/* CPU players */}
         {state.players
@@ -145,7 +233,7 @@ export function SpadesPage() {
 
         {/* Current trick */}
         {state.currentTrick.length > 0 && (
-          <div className="my-3 p-3 rounded bg-black/40">
+          <div className="my-3 p-3 rounded bg-black/40" data-tutorial="sp-trick-display">
             <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
             <div className="flex gap-2">
               {state.currentTrick.map((trickCard) => (
@@ -164,7 +252,7 @@ export function SpadesPage() {
         )}
 
         {/* Score table */}
-        <div className="my-3 p-2 rounded bg-black/30">
+        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="sp-score-table">
           <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
           <table className="w-full text-sm text-white/70">
             <thead>
@@ -195,7 +283,9 @@ export function SpadesPage() {
         </div>
 
         {/* Message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <div data-tutorial="sp-bags-info">
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        </div>
 
         {/* Action log */}
         <ActionLogSection
@@ -210,7 +300,7 @@ export function SpadesPage() {
       <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {/* Human cards */}
         {humanPlayer && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="flex flex-wrap gap-1 mb-2" data-tutorial="sp-player-hand">
             {humanPlayer.cards.map((card, idx) => (
               <button
                 type="button"
@@ -243,7 +333,7 @@ export function SpadesPage() {
           </div>
         )}
 
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center" data-tutorial="sp-play-button">
           {(isHumanBidTurn || isHumanTurn) && (
             <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
               {tc('button.hint')}
@@ -288,6 +378,7 @@ export function SpadesPage() {
           <button
             type="button"
             className={btnWarning}
+            data-tutorial="sp-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();

@@ -730,4 +730,25 @@ describe('SpadesPage', () => {
     // Header + 4 players = 5 rows
     expect(rows.length).toBe(5);
   });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<SpadesPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
 });

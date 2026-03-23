@@ -14,5 +14,11 @@
     "ante": "Ante",
     "bettingLimit": "Betting Limit",
     "metaAI": "Meta AI"
+  },
+  "tutorial": {
+    "cpuCards": "You can see your opponents' cards. Use this information to decide your action.",
+    "playerCard": "Your card is hidden from you. It will be revealed at showdown.",
+    "actionButtons": "Choose an action: Bet, Call, Raise, or Fold. Make your decision based on opponents' cards.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

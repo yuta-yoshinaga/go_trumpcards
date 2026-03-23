@@ -1014,4 +1014,25 @@ describe('NapoleonPage', () => {
     await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
     expect(screen.queryByText('\u5834\u672d')).not.toBeInTheDocument();
   });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
 });

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { baccaratApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -13,15 +14,68 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import type { BaccaratSideBetResult } from '../types/card';
 import { BaccaratBetType, BaccaratPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 
 const BET_TYPE_LABELS: Record<number, string> = {
   [BaccaratBetType.PLAYER]: 'betType.player',
   [BaccaratBetType.BANKER]: 'betType.banker',
   [BaccaratBetType.TIE]: 'betType.tie',
 };
+
+/** Baccarat tutorial step definitions. */
+const BAC_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="bac-bet-controls"]',
+    messageKey: 'tutorial.betControls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="bac-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="bac-banker-hand"]',
+    messageKey: 'tutorial.bankerHand',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="bac-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Baccarat tutorial configuration. */
+const BAC_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'baccarat',
+  steps: BAC_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Baccarat tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
 
 const ROAD_PLAYER = 0;
 const ROAD_BANKER = 1;
@@ -134,6 +188,16 @@ function SideBetResultsDisplay({
 
 /** Renders the Baccarat game page with betting and result display. */
 export function BaccaratPage() {
+  const { t: tBac } = useTranslation('baccarat');
+  return (
+    <TutorialProvider config={BAC_TUTORIAL_CONFIG} translateMessage={tBac}>
+      <BaccaratPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Baccarat page, wrapped by TutorialProvider. */
+function BaccaratPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('baccarat');
 
@@ -188,6 +252,7 @@ export function BaccaratPage() {
       {/* Phase indicator */}
       <PhaseIndicator phaseName={isBetPhase ? t('phase.bet') : t('phase.end')}>
         <span>{t('label.chips', { chips: state.chips })}</span>
+        <TutorialButton />
       </PhaseIndicator>
 
       <div className="flex-1 overflow-y-auto pt-3 px-4">
@@ -195,7 +260,7 @@ export function BaccaratPage() {
 
         {/* Player Hand */}
         {state.playerHand.length > 0 && (
-          <div className="mb-4">
+          <div className="mb-4" data-tutorial="bac-player-hand">
             <div className="text-yellow-300 font-bold text-center mb-1">
               <span aria-hidden="true">🟡</span> {t('player')} {t('label.value', { value: state.playerHandValue })}
             </div>
@@ -209,7 +274,7 @@ export function BaccaratPage() {
 
         {/* Banker Hand */}
         {state.bankerHand.length > 0 && (
-          <div className="mb-4">
+          <div className="mb-4" data-tutorial="bac-banker-hand">
             <div className="text-red-300 font-bold text-center mb-1">
               <span aria-hidden="true">🔴</span> {t('banker')} {t('label.value', { value: state.bankerHandValue })}
             </div>
@@ -255,7 +320,7 @@ export function BaccaratPage() {
       <GameFooter className="bg-gray-800 px-4 pt-3">
         <ErrorAlert message={error} />
         {isBetPhase && (
-          <div className="flex flex-col items-center gap-2 pb-2">
+          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="bac-bet-controls">
             <div className="flex items-center gap-2">
               <label htmlFor="baccarat-bet-amount" className="text-white text-sm">
                 {t('label.betAmount')}
@@ -324,9 +389,16 @@ export function BaccaratPage() {
         )}
         {isEndPhase && (
           <div className="flex justify-center gap-2 pb-2">
-            <button type="button" className={btnPrimary} onClick={() => requestConfirm(handleReset)} disabled={loading}>
-              {t('button.reset')}
-            </button>
+            <div data-tutorial="bac-reset-button">
+              <button
+                type="button"
+                className={btnPrimary}
+                onClick={() => requestConfirm(handleReset)}
+                disabled={loading}
+              >
+                {t('button.reset')}
+              </button>
+            </div>
             <button type="button" className={btnSecondary} onClick={showActionLog} disabled={loading}>
               {tc('actionLog.view')}
             </button>

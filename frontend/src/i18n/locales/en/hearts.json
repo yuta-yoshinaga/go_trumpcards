@@ -46,5 +46,14 @@
     "discard_queen_spades": "Chance to discard Q♠",
     "discard_hearts": "Discard hearts",
     "discard_high": "Discard a high card"
+  },
+  "tutorial": {
+    "passArea": "In the pass phase, select 3 cards to pass to another player.",
+    "trickDisplay": "The current trick. Each player plays one card.",
+    "playerHand": "Your hand. Click a card to select it for play.",
+    "playButton": "Press this button to play the selected card.",
+    "scoreTable": "Player scores. Hearts and Queen of Spades are penalty points.",
+    "penaltyInfo": "Hearts (1 point each) and Queen of Spades (13 points) are penalties. You can also shoot the moon.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }
