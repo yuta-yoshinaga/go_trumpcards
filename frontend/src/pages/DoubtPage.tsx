@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
@@ -53,6 +53,7 @@ export function DoubtPage() {
   const { cardWidth } = useCardDimensions();
 
   const claimInputRef = useRef<HTMLInputElement>(null);
+  const [valWarning, setValWarning] = useState(false);
 
   const isHumanTurn = !state?.gameEndFlag && state?.players[state.currentTurn]?.isHuman === true;
   const showClaimInput = selectedCardIndices.length > 0 && isHumanTurn && state?.phase === 0;
@@ -175,7 +176,9 @@ export function DoubtPage() {
               <>
                 <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
                 {countdown !== null && (
-                  <div className="text-yellow-300 text-lg font-bold mb-2">{t('countdown', { sec: countdown })}</div>
+                  <div className="text-yellow-300 text-lg font-bold mb-2" aria-live="assertive" aria-atomic="true">
+                    {t('countdown', { sec: countdown })}
+                  </div>
                 )}
                 {state.cpuDoubters.length > 0 && (
                   <div className="text-game-text-muted text-xs mb-2">
@@ -319,13 +322,22 @@ export function DoubtPage() {
                   max={13}
                   value={claimedValue}
                   id="claim-input"
+                  aria-describedby="claim-range-hint"
                   onChange={(e) => {
                     const num = Number(e.target.value);
-                    setClaimedValue(Math.max(1, Math.min(13, num)));
+                    const clamped = Math.max(1, Math.min(13, num));
+                    setClaimedValue(clamped);
+                    if (num !== clamped) {
+                      setValWarning(true);
+                      setTimeout(() => setValWarning(false), 2000);
+                    }
                   }}
                   className={`bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30 ${focusRingBlue}`}
                 />
                 <span className="text-game-text-muted text-xs">({valueName(claimedValue)})</span>
+                <span id="claim-range-hint" className={`text-xs ${valWarning ? 'text-yellow-400' : 'text-gray-400'}`}>
+                  {valWarning ? t('claimRangeWarning') : t('claimRangeHint')}
+                </span>
               </div>
             )}
           </div>

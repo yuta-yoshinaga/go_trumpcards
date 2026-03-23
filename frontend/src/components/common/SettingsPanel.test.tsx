@@ -115,6 +115,31 @@ describe('SettingsPanel', () => {
     expect(screen.getByLabelText('Disabled')).toBeDisabled();
   });
 
+  it('disabled select has opacity-70 class for readability', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'sel1',
+                label: 'Disabled',
+                value: '1',
+                options: [{ value: '1', label: 'One' }],
+                disabled: true,
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+    const select = screen.getByLabelText('Disabled');
+    expect(select.className).toContain('disabled:opacity-70');
+    expect(select.className).toContain('disabled:text-gray-300');
+  });
+
   it('renders enabled select when disabled is false', () => {
     render(
       <SettingsPanel
