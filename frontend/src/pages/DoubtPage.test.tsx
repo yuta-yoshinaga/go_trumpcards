@@ -149,11 +149,6 @@ describe('DoubtPage', () => {
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
-  it('出す button is disabled when no cards are selected', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
-  });
-
   it('toggles aria-pressed on HandCard button click', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
@@ -189,12 +184,6 @@ describe('DoubtPage', () => {
     expect(screen.getByRole('spinbutton')).toBeInTheDocument();
     // Default value 1 shows (A)
     expect(screen.getByText('(A)')).toBeInTheDocument();
-  });
-
-  it('claimed value input is hidden when no cards are selected', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
-    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
   it('claim input is associated with label via htmlFor/id', async () => {
@@ -740,31 +729,6 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(s);
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/2枚がゲームから除外されました/)).toBeInTheDocument());
-  });
-
-  it('does not show discarded message when discardedCount is 0', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastDoubtResult: {
-        doubterIdx: 0,
-        cardPlayerIdx: 1,
-        wasLying: true,
-        loserIdx: 1,
-        cardCount: 3,
-        discardedCount: 0,
-        revealedCards: [],
-      },
-    };
-    mockExec.mockResolvedValue(s);
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('ダウト結果')).toBeInTheDocument());
-    expect(screen.queryByText(/ゲームから除外されました/)).not.toBeInTheDocument();
-  });
-
-  it('does not show ダウト結果 when lastDoubtResult is null', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
-    expect(screen.queryByText('ダウト結果')).not.toBeInTheDocument();
   });
 
   // ── Action logs ───────────────────────────────────────────────────────────

@@ -7,7 +7,11 @@ describe('ActionLogPanel', () => {
   const writeText = vi.fn().mockResolvedValue(undefined);
 
   beforeEach(() => {
-    Object.assign(navigator, { clipboard: { writeText } });
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      writable: true,
+      configurable: true,
+    });
   });
 
   afterEach(() => {

@@ -168,7 +168,7 @@ describe('DaifugoHumanArea', () => {
       />,
     );
     const buttons = screen.getAllByRole('button');
-    expect(buttons[0].style.border).toBe('3px solid var(--color-game-card-selected)');
+    expect(buttons[0].getAttribute('style')).toContain('border-color: var(--color-game-card-selected)');
   });
 
   it('unselected card has transparent border', () => {

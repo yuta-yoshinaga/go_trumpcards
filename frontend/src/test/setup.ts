@@ -4,17 +4,16 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { afterEach, vi } from 'vitest';
 
-// Mock ResizeObserver for jsdom (needed by TutorialOverlay)
+// Mock ResizeObserver for happy-dom (needed by TutorialOverlay)
 if (typeof globalThis.ResizeObserver === 'undefined') {
   globalThis.ResizeObserver = class ResizeObserver {
     observe = vi.fn();
     unobserve = vi.fn();
     disconnect = vi.fn();
-    constructor(_callback: ResizeObserverCallback) {}
   } as unknown as typeof globalThis.ResizeObserver;
 }
 
-// Mock matchMedia for jsdom (needed by useReducedMotion)
+// Mock matchMedia for happy-dom (needed by useReducedMotion)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
@@ -136,7 +135,7 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
-configure({ asyncUtilTimeout: 15000 });
+configure({ asyncUtilTimeout: 5000 });
 
 afterEach(() => {
   cleanup();

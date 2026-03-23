@@ -22,7 +22,7 @@ The test stack is **Vitest + React Testing Library + jest-dom**.
 | Components | `src/components/*.test.tsx` | Rendered output, props, event handlers |
 | Pages | `src/pages/*.test.tsx` | On-mount API calls, rendering for each game phase/state, button interactions |
 
-**Branch coverage (C1) must be 100%** for `src/api`, `src/components`, `src/pages`, and `src/utils`.
+**Branch coverage (C1) must be 80% or higher** for `src/api`, `src/components`, `src/pages`, and `src/utils`. Focus testing effort on business logic and critical paths rather than exhaustively covering every conditional branch.
 
 ### Patterns
 

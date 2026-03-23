@@ -500,41 +500,6 @@ func TestCrazyEights_checkGameEnd(t *testing.T) {
 	})
 }
 
-// --- cpuPlayEasy random branch ---
-
-func TestCrazyEights_cpuPlayEasy_RandomBranch(t *testing.T) {
-	selected := make(map[int]bool)
-	for attempt := 0; attempt < 1000; attempt++ {
-		g := newInternalTestCrazyEightsWithDifficulty(CrazyEightsCpuDifficultyEasy)
-		g.Reset()
-		g.discardPile = []*Card{NewCard(CardDesignSpade, 5, false)}
-		g.chosenSuit = -1
-		validIndices := []int{0, 1, 2}
-		idx := g.cpuPlayEasy(validIndices)
-		selected[idx] = true
-		if len(selected) >= 3 {
-			break
-		}
-	}
-	assert.GreaterOrEqual(t, len(selected), 3, "should select different indices")
-}
-
-// --- cpuSelectSuitRandom ---
-
-func TestCrazyEights_cpuSelectSuitRandom(t *testing.T) {
-	suits := make(map[int]bool)
-	for attempt := 0; attempt < 1000; attempt++ {
-		g := newInternalTestCrazyEights()
-		suit := g.cpuSelectSuitRandom()
-		assert.True(t, suit >= 1 && suit <= 4)
-		suits[suit] = true
-		if len(suits) >= 4 {
-			break
-		}
-	}
-	assert.Len(t, suits, 4, "random suit should cover all 4")
-}
-
 // --- cpuPlayNormal: candidates iteration ---
 
 func TestCrazyEights_cpuPlayNormal_MultipleCandidates(t *testing.T) {

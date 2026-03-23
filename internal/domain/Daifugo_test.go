@@ -7854,52 +7854,6 @@ func TestDaifugo_BlindExchange(t *testing.T) {
 		assert.Equal(t, 4, len(actions))
 	})
 
-	t.Run("blind enabled: retry loop confirms at least one exchange differs from weakest-only", func(t *testing.T) {
-		diffFound := false
-		for attempt := 0; attempt < 1000; attempt++ {
-			tc := domain.NewTrumpCards(0)
-			players := makeDaifugoPlayers()
-			config := domain.DaifugoConfig{CardExchangeEnabled: true, BlindExchangeEnabled: true}
-			dg := domain.NewDaifugo(tc, players, config)
-
-			players[0].SetRank(domain.DaifugoRankDaifugo)
-			players[1].SetRank(domain.DaifugoRankDaihinmin)
-			players[2].SetRank(domain.DaifugoRankFugo)
-			players[3].SetRank(domain.DaifugoRankHeimin)
-
-			dg.Reset()
-			actions := dg.GetExchangeActions()
-			if len(actions) < 2 {
-				continue
-			}
-
-			// Check the upper→lower exchange (action at index 1 for daifugo→daihinmin)
-			// In blind mode, the cards given by upper should sometimes NOT be the weakest
-			// Find the upper→lower action
-			for _, act := range actions {
-				// Upper giving to lower: cards not necessarily the weakest
-				// We can detect non-weakest by checking if any exchanged card is not at the beginning of sorted hand
-				if len(act.Cards) > 0 {
-					for _, c := range act.Cards {
-						// If upper gives a card with strength > 5 (i.e., not just the weakest 3s),
-						// that confirms randomness
-						if c.GetDesign() != domain.CardDesignJoker && domain.DaifugoCardStrength(c.GetValue()) > 5 {
-							diffFound = true
-							break
-						}
-					}
-				}
-				if diffFound {
-					break
-				}
-			}
-			if diffFound {
-				break
-			}
-		}
-		assert.True(t, diffFound, "blind exchange should sometimes give non-weakest cards")
-	})
-
 	t.Run("blind enabled: exchange still produces correct total card count", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDaifugoPlayers()

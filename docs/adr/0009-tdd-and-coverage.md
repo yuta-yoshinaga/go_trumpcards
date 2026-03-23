@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR-0026](0026-relax-coverage-target.md)
 
 ## Date
 
