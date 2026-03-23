@@ -173,10 +173,11 @@ ENVIRONMENT VARIABLES:
 		}
 		fmt.Fprintln(os.Stderr)
 		flag.Usage()
-		return 2
+		return 1
 	}
 
 	// No argument: start interactive multi-game mode (defaults to blackjack).
+	fmt.Printf("trumpcards %s - Interactive Mode\n", version)
 	manager := ui.NewGameManager("blackjack")
 	ui.RunInteractiveCuiLoop(manager)
 	return 0
