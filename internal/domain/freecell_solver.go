@@ -234,7 +234,7 @@ func (s *freeCellSolver) generateSuccessors(st *freeCellState) []*freeCellState 
 }
 
 // copyState creates a deep copy of a freeCellState.
-// The caller is responsible for setting g and h on the returned state.
+// NOTE: g and h are left at 0 in the copy; the caller must set them before pushing to the priority queue.
 func copyState(st *freeCellState) *freeCellState {
 	next := &freeCellState{}
 	for i := range FreeCellTableauCnt {

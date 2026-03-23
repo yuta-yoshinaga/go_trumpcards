@@ -167,7 +167,7 @@ func TestFreeCellSolver_FreeCellToFoundation(t *testing.T) {
 	assert.True(t, solver.isSolvable())
 }
 
-func TestFreeCellSolver_FreeCellToTableau(t *testing.T) {
+func TestFreeCellSolver_FreeCellKingToFoundation(t *testing.T) {
 	f := NewFreeCell(NewTrumpCards(0))
 	f.Reset()
 
