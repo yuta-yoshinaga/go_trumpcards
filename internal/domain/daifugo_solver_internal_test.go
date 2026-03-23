@@ -1116,14 +1116,26 @@ func TestDaifugoSolver_helpers(t *testing.T) {
 		assert.Equal(t, 5, solver.sequenceMinStrength(cards))
 	})
 
-	t.Run("sequenceMinStrength with joker", func(t *testing.T) {
+	t.Run("sequenceMinStrength with joker in middle", func(t *testing.T) {
 		solver := &daifugoSolver{config: DaifugoConfig{}}
+		// [5♠, Joker(fills 6), 7♠] → min strength = 5
 		cards := []*Card{
-			NewCard(CardDesignSpade, 5, false), // strength 5
-			NewCard(CardDesignJoker, 0, false), // strength 16
-			NewCard(CardDesignSpade, 7, false), // strength 7
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignJoker, 0, false),
+			NewCard(CardDesignSpade, 7, false),
 		}
 		assert.Equal(t, 5, solver.sequenceMinStrength(cards))
+	})
+
+	t.Run("sequenceMinStrength with joker at start", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{}}
+		// [Joker(represents 4), 5♠, 6♠] → min strength = 4
+		cards := []*Card{
+			NewCard(CardDesignJoker, 0, false),
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignSpade, 6, false),
+		}
+		assert.Equal(t, 4, solver.sequenceMinStrength(cards))
 	})
 
 	t.Run("generateSequencePlays finds valid sequences", func(t *testing.T) {

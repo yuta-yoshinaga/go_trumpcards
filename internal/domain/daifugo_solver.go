@@ -419,20 +419,36 @@ func (s *daifugoSolver) canFormSequenceFromStrengths(strengths []int, si int, jo
 }
 
 // sequenceMinStrength returns the minimum card strength in a sequence play.
+// Jokers may represent cards below the minimum real card, so the true minimum
+// is computed by deducting leftover jokers (after filling interior gaps) from
+// the minimum real card strength.
 func (s *daifugoSolver) sequenceMinStrength(cards []*Card) int {
-	minStr := DaifugoJokerStrength + 1
+	var realStrengths []int
+	jokerCount := 0
 	for _, c := range cards {
-		var str int
 		if IsJoker(c) {
-			str = DaifugoJokerStrength
+			jokerCount++
 		} else {
-			str = s.cardStrength(c.GetValue())
-		}
-		if str < minStr {
-			minStr = str
+			realStrengths = append(realStrengths, s.cardStrength(c.GetValue()))
 		}
 	}
-	return minStr
+	if len(realStrengths) == 0 {
+		return DaifugoJokerStrength
+	}
+	sort.Ints(realStrengths)
+	minReal := realStrengths[0]
+	maxReal := realStrengths[len(realStrengths)-1]
+	// Interior gaps that jokers fill between real cards
+	interiorGaps := (maxReal - minReal + 1) - len(realStrengths)
+	if interiorGaps < 0 {
+		interiorGaps = 0
+	}
+	// Remaining jokers extend the sequence below the minimum real card
+	extendBelow := jokerCount - interiorGaps
+	if extendBelow < 0 {
+		extendBelow = 0
+	}
+	return minReal - extendBelow
 }
 
 // generateSequencePlays generates all valid sequence plays (3+ cards, same suit, consecutive)
@@ -486,9 +502,10 @@ func (s *daifugoSolver) generateSequenceResponsePlays(hand []*Card, needed int, 
 		sort.Slice(cards, func(i, j int) bool {
 			return s.cardStrength(cards[i].GetValue()) < s.cardStrength(cards[j].GetValue())
 		})
-		seqs := s.findAllSequences(cards, jokers, needed)
-		for _, seq := range seqs {
-			if len(seq) == needed && s.sequenceMinStrength(seq) > tableMinStr {
+		// Build exact-length sequences directly (no need for findAllSequences)
+		for si := range cards {
+			seq := s.tryBuildSolverSequence(cards, si, jokers, needed)
+			if seq != nil && s.sequenceMinStrength(seq) > tableMinStr {
 				moves = append(moves, solverPlay{cards: seq, isSequence: true})
 			}
 		}
