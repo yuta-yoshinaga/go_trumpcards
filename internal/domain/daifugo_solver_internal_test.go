@@ -349,7 +349,7 @@ func TestDaifugoSolver_solve(t *testing.T) {
 
 	t.Run("sequence response beats table sequence", func(t *testing.T) {
 		// Table: 3♠-4♠-5♠ sequence (min strength 3)
-		// CPU has: 6♠-7♠-8♠ (min strength 6, beats 3)
+		// CPU has: 9♠-10♠-J♠ (min strength 9, beats 3, no 8 for illegal finish)
 		// No opponents → should win
 		tableCards := []*Card{
 			NewCard(CardDesignSpade, 3, false),
@@ -357,9 +357,9 @@ func TestDaifugoSolver_solve(t *testing.T) {
 			NewCard(CardDesignSpade, 5, false),
 		}
 		cpuHand := []*Card{
-			NewCard(CardDesignSpade, 6, false),
-			NewCard(CardDesignSpade, 7, false),
-			NewCard(CardDesignSpade, 8, false),
+			NewCard(CardDesignSpade, 9, false),
+			NewCard(CardDesignSpade, 10, false),
+			NewCard(CardDesignSpade, 11, false),
 		}
 		cfg := solverConfig()
 		cfg.SequenceEnabled = true
@@ -484,18 +484,16 @@ func TestDaifugoSolver_solve(t *testing.T) {
 	})
 
 	t.Run("sequence play as opening wins", func(t *testing.T) {
-		// CPU has: A♠, 2♠, 3♠ — forms a sequence (strengths 14,15,3 — no, wait)
-		// In normal order: 3→3, 4→4, ..., A→14, 2→15
-		// So 3♠-4♠-5♠ would be a valid sequence with strengths 3,4,5
-		// CPU has: Q♠, K♠, A♠ (strengths 12,13,14) — valid sequence
-		// Opponent has: 5♠ (strength 5) — cannot form a 3-card sequence
+		// CPU has: 5♠, 6♠, 7♠ (strengths 5,6,7) — valid sequence
+		// Opponent has: K♠ (strength 13) — beats all singles, cannot form 3-card sequence
+		// Only winning path: play full sequence (empties hand)
 		cpuHand := []*Card{
-			NewCard(CardDesignSpade, 12, false), // Q
-			NewCard(CardDesignSpade, 13, false), // K
-			NewCard(CardDesignSpade, 1, false),  // A
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignSpade, 6, false),
+			NewCard(CardDesignSpade, 7, false),
 		}
 		oppHands := [][]*Card{
-			{NewCard(CardDesignSpade, 5, false)},
+			{NewCard(CardDesignSpade, 13, false)},
 		}
 		cfg := solverConfig()
 		cfg.SequenceEnabled = true
@@ -507,18 +505,26 @@ func TestDaifugoSolver_solve(t *testing.T) {
 
 	t.Run("sequence with joker gap-filling wins", func(t *testing.T) {
 		// CPU has: 4♠, Joker, 6♠ — sequence 4-5(joker)-6 (strengths 4,5,6)
-		// Opponent has: 3♠ — cannot beat this sequence
+		// Opponent has: K♥, K♠, ♠3 — K-pair beats augmented pairs, ♠3 counters joker
+		// Singles: 4(4), 6(6) beaten by K(13). Joker countered by ♠3.
+		// Pairs: {4,Joker}(4), {6,Joker}(6) beaten by K-pair(13).
+		// Only winning path: play full sequence 4-5(joker)-6 (empties hand)
 		cpuHand := []*Card{
 			NewCard(CardDesignSpade, 4, false),
 			NewCard(CardDesignJoker, 0, false),
 			NewCard(CardDesignSpade, 6, false),
 		}
 		oppHands := [][]*Card{
-			{NewCard(CardDesignHeart, 3, false)},
+			{
+				NewCard(CardDesignHeart, 13, false),
+				NewCard(CardDesignSpade, 13, false),
+				NewCard(CardDesignSpade, 3, false),
+			},
 		}
 		cfg := solverConfig()
 		cfg.SequenceEnabled = true
-		cfg.IllegalFinishEnabled = false // joker in sequence is not a finish
+		cfg.SpadeThreeEnabled = true
+		cfg.IllegalFinishEnabled = false // joker in sequence is not an illegal finish
 		solver := &daifugoSolver{oppHands: oppHands, config: cfg}
 		result := solver.solve(cpuHand, nil, false, false, 0, false)
 		assert.NotNil(t, result)
@@ -596,14 +602,16 @@ func TestDaifugoSolver_solve(t *testing.T) {
 	})
 
 	t.Run("sequence beatable by opponent sequence prevents win", func(t *testing.T) {
-		// CPU has: 5♠-6♠-7♠ (strengths 5,6,7, min=5) — only option is sequence
-		// Opponent has: 8♥-9♥-10♥ (strengths 8,9,10, min=8 > 5) — can beat
-		// Singles: 5,6,7 all beatable by 8,9,10
+		// CPU has: 5♠-6♠-7♠ (strengths 5,6,7, min=5) + 3♥ (weak extra card)
+		// Opponent has: 8♥-9♥-10♥ (strengths 8,9,10, min=8 > 5) — can beat sequence
+		// Singles: 5,6,7,3 all beatable by 8,9,10
+		// Sequence 5-6-7 is beatable by 8-9-10, and remaining 3♥ is beatable
 		// No winning path
 		cpuHand := []*Card{
 			NewCard(CardDesignSpade, 5, false),
 			NewCard(CardDesignSpade, 6, false),
 			NewCard(CardDesignSpade, 7, false),
+			NewCard(CardDesignHeart, 3, false),
 		}
 		oppHands := [][]*Card{
 			{

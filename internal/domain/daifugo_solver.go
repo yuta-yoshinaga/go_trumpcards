@@ -185,6 +185,14 @@ func (s *daifugoSolver) generateResponseMoves(hand []*Card, tableCards []*Card,
 			seqMoves := s.generateSequenceResponsePlays(hand, needed, tableMinStr)
 			moves = append(moves, seqMoves...)
 		}
+		// Mark 8-cut plays in sequence responses
+		if s.config.EightCutEnabled {
+			for i := range moves {
+				if s.containsNonJokerValue(moves[i].cards, 8) {
+					moves[i].is8Cut = true
+				}
+			}
+		}
 		return moves
 	}
 
