@@ -15,7 +15,7 @@ func TestOldMaidCuiController_Method(t *testing.T) {
 	mockOutput := "==========\nOld Maid (ババ抜き)\n==========\n[You]: 0枚\n\nCPU 1: 0枚\nCPU 2: 0枚\nCPU 3: 0枚\n----------\n手番: あなた\n==========\n"
 	omiMock := new(usecase.MockOldMaidInteractor)
 	omiMock.On("GetConfig").Return(domain.DefaultOldMaidConfig())
-	omiMock.On("Reset", mock.Anything).Return(mockOutput)
+	omiMock.On("Reset", mock.Anything, mock.Anything).Return(mockOutput)
 	omiMock.On("Draw", -1).Return(mockOutput)
 	omiMock.On("Draw", 0).Return(mockOutput)
 	omiMock.On("Draw", 2).Return(mockOutput)
@@ -105,7 +105,7 @@ func TestOldMaidCuiController_SetMode_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
 	cfg := domain.DefaultOldMaidConfig()
 	cfg.Mode = domain.OldMaidModeJijiNuki
-	mi.On("Reset", cfg).Return("sm ok")
+	mi.On("Reset", cfg, mock.Anything).Return("sm ok")
 	assert.Equal(t, "sm ok", c.Exec("sm 1"))
 }
 
@@ -115,7 +115,7 @@ func TestOldMaidCuiController_SetMode_LongCommand(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
 	cfg := domain.DefaultOldMaidConfig()
 	cfg.Mode = domain.OldMaidModeNormal
-	mi.On("Reset", cfg).Return("sm ok")
+	mi.On("Reset", cfg, mock.Anything).Return("sm ok")
 	assert.Equal(t, "sm ok", c.Exec("setmode 0"))
 }
 
@@ -143,7 +143,7 @@ func TestOldMaidCuiController_SetPlacementStrategy_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
 	cfg := domain.DefaultOldMaidConfig()
 	cfg.CpuPlacementStrategy = true
-	mi.On("Reset", cfg).Return("sps ok")
+	mi.On("Reset", cfg, mock.Anything).Return("sps ok")
 	assert.Equal(t, "sps ok", c.Exec("sps 1"))
 }
 
@@ -153,7 +153,7 @@ func TestOldMaidCuiController_SetPlacementStrategy_LongCommand(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
 	cfg := domain.DefaultOldMaidConfig()
 	cfg.CpuPlacementStrategy = false
-	mi.On("Reset", cfg).Return("sps ok")
+	mi.On("Reset", cfg, mock.Anything).Return("sps ok")
 	assert.Equal(t, "sps ok", c.Exec("setplacementstrategy 0"))
 }
 
@@ -179,7 +179,7 @@ func TestOldMaidCuiController_SetMemoryAI_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
 	cfg := domain.DefaultOldMaidConfig()
 	cfg.CpuMemoryAI = true
-	mi.On("Reset", cfg).Return("sma ok")
+	mi.On("Reset", cfg, mock.Anything).Return("sma ok")
 	assert.Equal(t, "sma ok", c.Exec("sma 1"))
 }
 
@@ -189,7 +189,7 @@ func TestOldMaidCuiController_SetMemoryAI_LongCommand(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
 	cfg := domain.DefaultOldMaidConfig()
 	cfg.CpuMemoryAI = false
-	mi.On("Reset", cfg).Return("sma ok")
+	mi.On("Reset", cfg, mock.Anything).Return("sma ok")
 	assert.Equal(t, "sma ok", c.Exec("setmemoryai 0"))
 }
 
@@ -215,7 +215,7 @@ func TestOldMaidCuiController_SetMetaAI_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
 	cfg := domain.DefaultOldMaidConfig()
 	cfg.CpuMetaAI = true
-	mi.On("Reset", cfg).Return("smai ok")
+	mi.On("Reset", cfg, mock.Anything).Return("smai ok")
 	assert.Equal(t, "smai ok", c.Exec("smai 1"))
 }
 
@@ -225,7 +225,7 @@ func TestOldMaidCuiController_SetMetaAI_LongCommand(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultOldMaidConfig())
 	cfg := domain.DefaultOldMaidConfig()
 	cfg.CpuMetaAI = false
-	mi.On("Reset", cfg).Return("smai ok")
+	mi.On("Reset", cfg, mock.Anything).Return("smai ok")
 	assert.Equal(t, "smai ok", c.Exec("smetaai 0"))
 }
 

@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
@@ -10,11 +12,12 @@ import (
 // IndianPokerWebInput インディアンポーカーWebインプット
 type IndianPokerWebInput struct {
 	BaseWebInput
-	Amount       int   `json:"amount,omitempty"`
-	HumanPlayMs  int   `json:"humanPlayMs,omitempty"`
-	Ante         *int  `json:"ante,omitempty"`
-	BettingLimit *int  `json:"bettingLimit,omitempty"`
-	CpuMetaAI    *bool `json:"cpuMetaAI,omitempty"`
+	Amount       int             `json:"amount,omitempty"`
+	HumanPlayMs  int             `json:"humanPlayMs,omitempty"`
+	Ante         *int            `json:"ante,omitempty"`
+	BettingLimit *int            `json:"bettingLimit,omitempty"`
+	CpuMetaAI    *bool           `json:"cpuMetaAI,omitempty"`
+	Profile      json.RawMessage `json:"profile,omitempty"`
 }
 
 // IndianPokerWebOutputPlayer インディアンポーカーWebアウトプットプレイヤー
@@ -50,24 +53,35 @@ type IndianPokerWebOutputSidePot struct {
 	EligiblePlayers []int `json:"eligiblePlayers"`
 }
 
+// IndianPokerWebOutputMetaAI メタAI情報
+type IndianPokerWebOutputMetaAI struct {
+	Enabled        bool    `json:"enabled"`
+	GamesPlayed    int     `json:"gamesPlayed"`
+	BluffRate      float64 `json:"bluffRate"`
+	FoldRate       float64 `json:"foldRate"`
+	HesitationMean float64 `json:"hesitationMean"`
+}
+
 // IndianPokerWebOutput インディアンポーカーWebアウトプット
 type IndianPokerWebOutput struct {
-	Players      []*IndianPokerWebOutputPlayer    `json:"players"`
-	Pot          int                              `json:"pot"`
-	SidePots     []*IndianPokerWebOutputSidePot   `json:"sidePots"`
-	DealerIdx    int                              `json:"dealerIdx"`
-	CurrentTurn  int                              `json:"currentTurn"`
-	Phase        int                              `json:"phase"`
-	GameEndFlag  bool                             `json:"gameEndFlag"`
-	LastBet      int                              `json:"lastBet"`
-	MinRaise     int                              `json:"minRaise"`
-	BettingLimit int                              `json:"bettingLimit"`
-	RaiseCount   int                              `json:"raiseCount"`
-	MaxBetAmount int                              `json:"maxBetAmount"`
-	RoundResults []*IndianPokerWebOutputResult    `json:"roundResults"`
-	CpuActions   []*IndianPokerWebOutputCpuAction `json:"cpuActions"`
-	HandCount    int                              `json:"handCount"`
-	Ante         int                              `json:"ante"`
+	Players      []*IndianPokerWebOutputPlayer       `json:"players"`
+	Pot          int                                 `json:"pot"`
+	SidePots     []*IndianPokerWebOutputSidePot      `json:"sidePots"`
+	DealerIdx    int                                 `json:"dealerIdx"`
+	CurrentTurn  int                                 `json:"currentTurn"`
+	Phase        int                                 `json:"phase"`
+	GameEndFlag  bool                                `json:"gameEndFlag"`
+	LastBet      int                                 `json:"lastBet"`
+	MinRaise     int                                 `json:"minRaise"`
+	BettingLimit int                                 `json:"bettingLimit"`
+	RaiseCount   int                                 `json:"raiseCount"`
+	MaxBetAmount int                                 `json:"maxBetAmount"`
+	RoundResults []*IndianPokerWebOutputResult       `json:"roundResults"`
+	CpuActions   []*IndianPokerWebOutputCpuAction    `json:"cpuActions"`
+	HandCount    int                                 `json:"handCount"`
+	Ante         int                                 `json:"ante"`
+	MetaAI       *IndianPokerWebOutputMetaAI         `json:"metaAI,omitempty"`
+	Profile      *domain.IndianPokerHumanProfileData `json:"profile,omitempty"`
 	WebOutputBase
 }
 
@@ -114,7 +128,7 @@ func indianPokerDispatch(bc *baseController, w rest.ResponseWriter, ipi usecase.
 	switch param.Command {
 	case "r", "reset":
 		cfg := param.ToConfig()
-		bc.writePresenterResponse(w, ipi.ResetWithConfig(cfg))
+		bc.writePresenterResponse(w, ipi.ResetWithConfig(cfg, param.Profile))
 	case "f", "fold":
 		bc.writePresenterResponse(w, ipi.Action(domain.IndianPokerActionFold, 0, param.HumanPlayMs))
 	case "ck", "check":

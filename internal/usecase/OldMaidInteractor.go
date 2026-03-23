@@ -8,8 +8,8 @@ import (
 
 // OldMaidInteractorIF ババ抜きインタラクターインタフェース
 type OldMaidInteractorIF interface {
-	// Reset ゲーム初期化
-	Reset(config domain.OldMaidConfig) string
+	// Reset ゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
+	Reset(config domain.OldMaidConfig, profileData []byte) string
 	// GetConfig 現在の設定を返す
 	GetConfig() domain.OldMaidConfig
 	// Draw 人間プレイヤーがカードを引く
@@ -45,12 +45,15 @@ func (oi *OldMaidInteractor) GetConfig() domain.OldMaidConfig {
 }
 
 // Reset ゲーム初期化
-func (oi *OldMaidInteractor) Reset(config domain.OldMaidConfig) string {
+func (oi *OldMaidInteractor) Reset(config domain.OldMaidConfig, profileData []byte) string {
 	if err := config.Validate(); err != nil {
 		return oi.omp.Output(oi.om, err)
 	}
 	oi.om.SetConfig(config)
 	oi.om.Reset()
+	if len(profileData) > 0 {
+		_ = oi.om.ImportProfile(profileData)
+	}
 	oi.runCpuTurns()
 	oi.om.ArrangeTargetForHumanDraw()
 	return oi.omp.Output(oi.om, nil)

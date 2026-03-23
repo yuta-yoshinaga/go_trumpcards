@@ -48,6 +48,14 @@ type PokerGame interface {
 	GetConfig() domain.PokerConfig
 	// SetConfig ゲーム設定を変更する
 	SetConfig(cfg domain.PokerConfig)
+	// GetHumanProfile メタAIプロファイルを取得する
+	GetHumanProfile() *domain.BettingHumanProfile
+	// ResetProfile メタAIプロファイルをリセットする
+	ResetProfile()
+	// ExportProfile メタAIプロファイルをエクスポートする
+	ExportProfile() interface{}
+	// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+	ImportProfile(data []byte) error
 	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
 }

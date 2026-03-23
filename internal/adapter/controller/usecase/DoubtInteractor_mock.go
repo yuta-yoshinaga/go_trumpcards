@@ -18,8 +18,8 @@ func (_m *MockDoubtInteractor) Reset() string {
 }
 
 // ResetWithConfig モック
-func (_m *MockDoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig) string {
-	ret := _m.Called(cfg)
+func (_m *MockDoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig, profileData []byte) string {
+	ret := _m.Called(cfg, profileData)
 	return ret.Get(0).(string)
 }
 

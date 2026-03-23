@@ -187,6 +187,18 @@ func (_m *MockOldMaidGame) ResetProfile() {
 	_m.Called()
 }
 
+// ExportProfile モック
+func (_m *MockOldMaidGame) ExportProfile() interface{} {
+	ret := _m.Called()
+	return ret.Get(0)
+}
+
+// ImportProfile モック
+func (_m *MockOldMaidGame) ImportProfile(data []byte) error {
+	ret := _m.Called(data)
+	return ret.Error(0)
+}
+
 // ShuffleHumanHand モック
 func (_m *MockOldMaidGame) ShuffleHumanHand() error {
 	ret := _m.Called()

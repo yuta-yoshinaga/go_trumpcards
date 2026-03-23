@@ -27,6 +27,10 @@ type OldMaidGame interface {
 	GetHumanProfile() *domain.OldMaidHumanProfile
 	// ResetProfile メタAIプロファイルをリセットする
 	ResetProfile()
+	// ExportProfile メタAIプロファイルをエクスポートする
+	ExportProfile() interface{}
+	// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+	ImportProfile(data []byte) error
 
 	// GetPlayerCnt プレイヤー数を取得する
 	GetPlayerCnt() int

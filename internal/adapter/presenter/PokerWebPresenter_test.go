@@ -633,3 +633,29 @@ func TestPokerWebPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 }
+
+func TestPokerWebPresenter_Output_WithMetaAIProfile(t *testing.T) {
+	pres := new(presenter.PokerWebPresenter)
+	tc := domain.NewTrumpCards(0)
+	players := []*domain.PokerPlayer{
+		domain.NewPokerPlayer(true, domain.PokerStyleBalanced),
+		domain.NewPokerPlayer(false, domain.PokerStyleConservative),
+		domain.NewPokerPlayer(false, domain.PokerStyleAggressive),
+		domain.NewPokerPlayer(false, domain.PokerStyleBluffer),
+	}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
+	cfg := domain.DefaultPokerConfig()
+	cfg.CpuMetaAI = true
+	pk := domain.NewPoker(tc, players, cfg)
+	_ = pk.Reset()
+
+	result := pres.Output(pk, nil)
+	var out controller.PokerWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.MetaAI)
+	assert.True(t, out.MetaAI.Enabled)
+	assert.NotNil(t, out.Profile)
+}

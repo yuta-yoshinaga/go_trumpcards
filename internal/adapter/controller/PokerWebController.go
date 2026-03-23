@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"encoding/json"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
@@ -11,14 +13,15 @@ import (
 // PokerWebInput ポーカーWebインプット
 type PokerWebInput struct {
 	BaseWebInput
-	Indices      []int `json:"indices,omitempty"`
-	Amount       int   `json:"amount,omitempty"`
-	HumanPlayMs  int   `json:"humanPlayMs,omitempty"`
-	CpuCount     *int  `json:"cpuCount,omitempty"`
-	JokerCount   *int  `json:"jokerCount,omitempty"`
-	BettingLimit *int  `json:"bettingLimit,omitempty"`
-	IsLowball    *bool `json:"isLowball,omitempty"`
-	CpuMetaAI    bool  `json:"cpuMetaAI,omitempty"`
+	Indices      []int           `json:"indices,omitempty"`
+	Amount       int             `json:"amount,omitempty"`
+	HumanPlayMs  int             `json:"humanPlayMs,omitempty"`
+	CpuCount     *int            `json:"cpuCount,omitempty"`
+	JokerCount   *int            `json:"jokerCount,omitempty"`
+	BettingLimit *int            `json:"bettingLimit,omitempty"`
+	IsLowball    *bool           `json:"isLowball,omitempty"`
+	CpuMetaAI    bool            `json:"cpuMetaAI,omitempty"`
+	Profile      json.RawMessage `json:"profile,omitempty"`
 }
 
 // PokerWebOutputPlayer ポーカーWebアウトプットプレイヤー
@@ -73,27 +76,38 @@ type PokerWebOutputOdds struct {
 	Total       int     `json:"total"`
 }
 
+// PokerWebOutputMetaAI メタAI情報
+type PokerWebOutputMetaAI struct {
+	Enabled        bool    `json:"enabled"`
+	GamesPlayed    int     `json:"gamesPlayed"`
+	BluffRate      float64 `json:"bluffRate"`
+	FoldRate       float64 `json:"foldRate"`
+	HesitationMean float64 `json:"hesitationMean"`
+}
+
 // PokerWebOutput ポーカーWebアウトプット
 type PokerWebOutput struct {
-	Players      []*PokerWebOutputPlayer      `json:"players"`
-	Pot          int                          `json:"pot"`
-	SidePots     []*PokerWebOutputSidePot     `json:"sidePots"`
-	DealerIdx    int                          `json:"dealerIdx"`
-	CurrentTurn  int                          `json:"currentTurn"`
-	Phase        int                          `json:"phase"`
-	GameEndFlag  bool                         `json:"gameEndFlag"`
-	LastBet      int                          `json:"lastBet"`
-	MinRaise     int                          `json:"minRaise"`
-	Ante         int                          `json:"ante"`
-	JokerCount   int                          `json:"jokerCount"`
-	BettingLimit int                          `json:"bettingLimit"`
-	RaiseCount   int                          `json:"raiseCount"`
-	MaxBetAmount int                          `json:"maxBetAmount"`
-	RoundResults []*PokerWebOutputResult      `json:"roundResults"`
-	CpuActions   []*PokerWebOutputCpuAction   `json:"cpuActions"`
-	CpuExchanges []*PokerWebOutputCpuExchange `json:"cpuExchanges"`
-	Odds         []*PokerWebOutputOdds        `json:"odds,omitempty"`
-	IsLowball    bool                         `json:"isLowball"`
+	Players      []*PokerWebOutputPlayer         `json:"players"`
+	Pot          int                             `json:"pot"`
+	SidePots     []*PokerWebOutputSidePot        `json:"sidePots"`
+	DealerIdx    int                             `json:"dealerIdx"`
+	CurrentTurn  int                             `json:"currentTurn"`
+	Phase        int                             `json:"phase"`
+	GameEndFlag  bool                            `json:"gameEndFlag"`
+	LastBet      int                             `json:"lastBet"`
+	MinRaise     int                             `json:"minRaise"`
+	Ante         int                             `json:"ante"`
+	JokerCount   int                             `json:"jokerCount"`
+	BettingLimit int                             `json:"bettingLimit"`
+	RaiseCount   int                             `json:"raiseCount"`
+	MaxBetAmount int                             `json:"maxBetAmount"`
+	RoundResults []*PokerWebOutputResult         `json:"roundResults"`
+	CpuActions   []*PokerWebOutputCpuAction      `json:"cpuActions"`
+	CpuExchanges []*PokerWebOutputCpuExchange    `json:"cpuExchanges"`
+	Odds         []*PokerWebOutputOdds           `json:"odds,omitempty"`
+	IsLowball    bool                            `json:"isLowball"`
+	MetaAI       *PokerWebOutputMetaAI           `json:"metaAI,omitempty"`
+	Profile      *domain.BettingHumanProfileData `json:"profile,omitempty"`
 	WebOutputBase
 }
 
@@ -132,7 +146,7 @@ func newPokerDefaultOutput(msg string) *PokerWebOutput {
 func pokerDispatch(bc *baseController, w rest.ResponseWriter, pi usecase.PokerInteractorIF, param PokerWebInput, _ func(string) *PokerWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		bc.writePresenterResponse(w, pi.ResetWithConfig(param.ToConfig()))
+		bc.writePresenterResponse(w, pi.ResetWithConfig(param.ToConfig(), param.Profile))
 	case "e", "exchange":
 		indices := param.Indices
 		if indices == nil {

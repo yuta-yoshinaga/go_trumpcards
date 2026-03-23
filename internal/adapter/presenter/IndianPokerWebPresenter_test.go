@@ -405,3 +405,29 @@ func TestIndianPokerWebPresenter_ActionLogOutput(t *testing.T) {
 		mockGame.AssertExpectations(t)
 	})
 }
+
+func TestIndianPokerWebPresenter_Output_WithMetaAIProfile(t *testing.T) {
+	p := new(presenter.IndianPokerWebPresenter)
+	tc := domain.NewTrumpCards(0)
+	players := []*domain.IndianPokerPlayer{
+		domain.NewIndianPokerPlayer(true, domain.HoldemStyleTAG),
+		domain.NewIndianPokerPlayer(false, domain.HoldemStyleLAP),
+		domain.NewIndianPokerPlayer(false, domain.HoldemStyleTAP),
+		domain.NewIndianPokerPlayer(false, domain.HoldemStyleGTO),
+	}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
+	cfg := domain.DefaultIndianPokerConfig()
+	cfg.CpuMetaAI = true
+	ip := domain.NewIndianPoker(tc, players, cfg)
+	_ = ip.Reset()
+
+	result := p.Output(ip, nil)
+	var out controller.IndianPokerWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.MetaAI)
+	assert.True(t, out.MetaAI.Enabled)
+	assert.NotNil(t, out.Profile)
+}

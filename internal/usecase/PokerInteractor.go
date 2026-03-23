@@ -10,8 +10,8 @@ import (
 type PokerInteractorIF interface {
 	// Reset ゲーム初期化
 	Reset() string
-	// ResetWithConfig 設定を変更してゲーム初期化
-	ResetWithConfig(cfg domain.PokerConfig) string
+	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
+	ResetWithConfig(cfg domain.PokerConfig, profileData []byte) string
 	// GetConfig 現在の設定を取得
 	GetConfig() domain.PokerConfig
 	// Action プレイヤーアクション実行
@@ -52,8 +52,16 @@ func (pi *PokerInteractor) GetConfig() domain.PokerConfig {
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
-func (pi *PokerInteractor) ResetWithConfig(cfg domain.PokerConfig) string {
-	return resetWithValidatedConfig(pi.p, pi.pp, cfg, pi.p.SetConfig, pi.Reset)
+func (pi *PokerInteractor) ResetWithConfig(cfg domain.PokerConfig, profileData []byte) string {
+	if err := cfg.Validate(); err != nil {
+		return pi.pp.Output(pi.p, err)
+	}
+	pi.p.SetConfig(cfg)
+	err := pi.p.Reset()
+	if len(profileData) > 0 {
+		_ = pi.p.ImportProfile(profileData)
+	}
+	return pi.pp.Output(pi.p, err)
 }
 
 // Action プレイヤーアクション実行

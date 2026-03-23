@@ -24,8 +24,8 @@ func (_m *MockPokerInteractor) GetConfig() domain.PokerConfig {
 }
 
 // ResetWithConfig モック
-func (_m *MockPokerInteractor) ResetWithConfig(cfg domain.PokerConfig) string {
-	ret := _m.Called(cfg)
+func (_m *MockPokerInteractor) ResetWithConfig(cfg domain.PokerConfig, profileData []byte) string {
+	ret := _m.Called(cfg, profileData)
 	return ret.Get(0).(string)
 }
 

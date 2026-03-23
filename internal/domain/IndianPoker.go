@@ -693,6 +693,29 @@ func (ip *IndianPoker) GetHumanProfile() *IndianPokerHumanProfile { return ip.hu
 // ResetProfile メタAIプロファイルをリセットする
 func (ip *IndianPoker) ResetProfile() { ip.humanProfile = nil }
 
+// ExportProfile メタAIプロファイルをエクスポートする (プロファイルがない場合はnil)
+func (ip *IndianPoker) ExportProfile() interface{} {
+	if ip.humanProfile == nil {
+		return nil
+	}
+	d := ip.humanProfile.Export()
+	return &d
+}
+
+// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+func (ip *IndianPoker) ImportProfile(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	d, err := ImportIndianPokerHumanProfileJSON(data)
+	if err != nil {
+		return err
+	}
+	ip.humanProfile = &IndianPokerHumanProfile{}
+	ip.humanProfile.Import(d)
+	return nil
+}
+
 // GetConfig 設定取得
 func (ip *IndianPoker) GetConfig() IndianPokerConfig { return ip.config }
 

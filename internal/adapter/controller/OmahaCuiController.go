@@ -62,7 +62,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
-				return c.oi.ResetWithConfig(cfg), true
+				return c.oi.ResetWithConfig(cfg, nil), true
 			case "tm", "tournament":
 				if len(args) < 1 {
 					return i18n.T("holdem.tournamentModeRequired"), true
@@ -73,7 +73,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				cfg := c.oi.GetConfig()
 				cfg.TournamentMode = v == 1
-				return c.oi.ResetWithConfig(cfg), true
+				return c.oi.ResetWithConfig(cfg, nil), true
 			case "sb", "smallblind":
 				if len(args) < 1 {
 					return i18n.T("holdem.smallBlindRequired"), true
@@ -84,7 +84,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				cfg := c.oi.GetConfig()
 				cfg.SmallBlind = v
-				return c.oi.ResetWithConfig(cfg), true
+				return c.oi.ResetWithConfig(cfg, nil), true
 			case "bb", "bigblind":
 				if len(args) < 1 {
 					return i18n.T("holdem.bigBlindRequired"), true
@@ -95,7 +95,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BigBlind = v
-				return c.oi.ResetWithConfig(cfg), true
+				return c.oi.ResetWithConfig(cfg, nil), true
 			case "lh", "levelhand":
 				if len(args) < 1 {
 					return i18n.T("holdem.levelHandRequired"), true
@@ -106,7 +106,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				cfg := c.oi.GetConfig()
 				cfg.BlindLevelHands = v
-				return c.oi.ResetWithConfig(cfg), true
+				return c.oi.ResetWithConfig(cfg, nil), true
 			case "ts", "tablesize":
 				if len(args) < 1 {
 					return i18n.T("holdem.tableSizeRequired"), true
@@ -117,7 +117,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				cfg := c.oi.GetConfig()
 				cfg.TableSize = v
-				return c.oi.ResetWithConfig(cfg), true
+				return c.oi.ResetWithConfig(cfg, nil), true
 			case "rb", "rebuy":
 				return c.oi.Rebuy(), true
 			case "sr", "skiprebuy":
@@ -140,7 +140,7 @@ func (c *OmahaCuiController) Exec(command string) string {
 				}
 				cfg := c.oi.GetConfig()
 				cfg.CpuMetaAI = v == 1
-				return c.oi.ResetWithConfig(cfg), true
+				return c.oi.ResetWithConfig(cfg, nil), true
 			}
 			return "", false
 		},

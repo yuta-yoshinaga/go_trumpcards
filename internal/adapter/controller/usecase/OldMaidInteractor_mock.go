@@ -12,8 +12,8 @@ type MockOldMaidInteractor struct {
 }
 
 // Reset モック
-func (_m *MockOldMaidInteractor) Reset(config domain.OldMaidConfig) string {
-	ret := _m.Called(config)
+func (_m *MockOldMaidInteractor) Reset(config domain.OldMaidConfig, profileData []byte) string {
+	ret := _m.Called(config, profileData)
 	return ret.Get(0).(string)
 }
 

@@ -423,6 +423,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("IsMuckAvailable").Return(false)
 		gameMock.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
 		gameMock.On("GetPotOdds").Return(0.0)
+		gameMock.On("GetHumanProfile").Return((*domain.BettingHumanProfile)(nil))
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(99) // out of range
@@ -460,6 +461,7 @@ func TestHoldemWebPresenter_Output(t *testing.T) {
 		gameMock.On("IsMuckAvailable").Return(false)
 		gameMock.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
 		gameMock.On("GetPotOdds").Return(0.0)
+		gameMock.On("GetHumanProfile").Return((*domain.BettingHumanProfile)(nil))
 
 		player := domain.NewHoldemPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(-1) // negative
@@ -948,4 +950,30 @@ func TestHoldemWebPresenter_Equity(t *testing.T) {
 		assert.Nil(t, out.Equity)
 		assert.Nil(t, out.PotOdds)
 	})
+}
+
+func TestHoldemWebPresenter_Output_WithMetaAIProfile(t *testing.T) {
+	p := new(presenter.HoldemWebPresenter)
+	tc := domain.NewTrumpCards(0)
+	players := []*domain.HoldemPlayer{
+		domain.NewHoldemPlayer(true, domain.HoldemStyleTAG),
+		domain.NewHoldemPlayer(false, domain.HoldemStyleLAP),
+		domain.NewHoldemPlayer(false, domain.HoldemStyleTAP),
+		domain.NewHoldemPlayer(false, domain.HoldemStyleGTO),
+	}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
+	cfg := domain.DefaultHoldemConfig()
+	cfg.CpuMetaAI = true
+	h := domain.NewHoldem(tc, players, cfg)
+	_ = h.Reset()
+
+	result := p.Output(h, nil)
+	var out controller.HoldemWebOutput
+	err := json.Unmarshal([]byte(result), &out)
+	assert.NoError(t, err)
+	assert.NotNil(t, out.MetaAI)
+	assert.True(t, out.MetaAI.Enabled)
+	assert.NotNil(t, out.Profile)
 }

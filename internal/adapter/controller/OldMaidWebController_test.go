@@ -19,7 +19,7 @@ import (
 func TestOldMaidWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
 	omiMock := new(usecase.MockOldMaidInteractor)
-	omiMock.On("Reset", mock.Anything).Return(mockOutput).Times(5)
+	omiMock.On("Reset", mock.Anything, mock.Anything).Return(mockOutput).Times(5)
 	omiMock.On("Draw", -1).Return(mockOutput)
 	omiMock.On("Draw", 2).Return(mockOutput)
 	omiMock.On("Shuffle").Return(mockOutput)
@@ -295,7 +295,7 @@ func TestOldMaidWebController_ResetWithCpuMetaAI(t *testing.T) {
 	t.Run("cpuMetaAI true is passed", func(t *testing.T) {
 		omiMock := new(usecase.MockOldMaidInteractor)
 		expectedCfg := domain.OldMaidConfig{CpuMetaAI: true}
-		omiMock.On("Reset", expectedCfg).Return(mockOutput)
+		omiMock.On("Reset", expectedCfg, mock.Anything).Return(mockOutput)
 
 		factory := func() uc.OldMaidInteractorIF { return omiMock }
 		ctrl := controller.NewOldMaidWebController(factory)
@@ -312,13 +312,13 @@ func TestOldMaidWebController_ResetWithCpuMetaAI(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		omiMock.AssertCalled(t, "Reset", expectedCfg)
+		omiMock.AssertCalled(t, "Reset", expectedCfg, mock.Anything)
 	})
 
 	t.Run("cpuMetaAI omitted uses default (false)", func(t *testing.T) {
 		omiMock := new(usecase.MockOldMaidInteractor)
 		expectedCfg := domain.OldMaidConfig{}
-		omiMock.On("Reset", expectedCfg).Return(mockOutput)
+		omiMock.On("Reset", expectedCfg, mock.Anything).Return(mockOutput)
 
 		factory := func() uc.OldMaidInteractorIF { return omiMock }
 		ctrl := controller.NewOldMaidWebController(factory)
@@ -334,16 +334,16 @@ func TestOldMaidWebController_ResetWithCpuMetaAI(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		omiMock.AssertCalled(t, "Reset", expectedCfg)
+		omiMock.AssertCalled(t, "Reset", expectedCfg, mock.Anything)
 	})
 }
 
 func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 	mockOutput := `{"players":[],"currentTurn":0,"nextDrawTargetIdx":1,"gameEndFlag":false,"loserIdx":-1,"lastDrawPlayerIdx":-1,"lastDrawFromIdx":-1,"lastDiscardedPairs":0,"hasDrawn":false,"message":""}`
 	mockA := new(usecase.MockOldMaidInteractor)
-	mockA.On("Reset", mock.Anything).Return(mockOutput)
+	mockA.On("Reset", mock.Anything, mock.Anything).Return(mockOutput)
 	mockB := new(usecase.MockOldMaidInteractor)
-	mockB.On("Reset", mock.Anything).Return(mockOutput)
+	mockB.On("Reset", mock.Anything, mock.Anything).Return(mockOutput)
 
 	callCount := 0
 	isoController := controller.NewOldMaidWebController(func() uc.OldMaidInteractorIF {
@@ -368,7 +368,7 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		mockA.AssertCalled(t, "Reset", mock.Anything)
+		mockA.AssertCalled(t, "Reset", mock.Anything, mock.Anything)
 		mockB.AssertNotCalled(t, "Reset", mock.Anything)
 	})
 
@@ -379,7 +379,7 @@ func TestOldMaidWebController_SessionIsolation(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 		recorded := test.RunRequest(t, api.MakeHandler(), req)
 		recorded.CodeIs(http.StatusOK)
-		mockB.AssertCalled(t, "Reset", mock.Anything)
+		mockB.AssertCalled(t, "Reset", mock.Anything, mock.Anything)
 	})
 
 	t.Run("session-A second call reuses mockA", func(t *testing.T) {

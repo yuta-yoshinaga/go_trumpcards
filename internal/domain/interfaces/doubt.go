@@ -24,6 +24,10 @@ type DoubtGame interface {
 	GetHumanProfile() *domain.DoubtHumanProfile
 	// ResetProfile メタAIプロファイルをリセットする
 	ResetProfile()
+	// ExportProfile メタAIプロファイルをエクスポートする
+	ExportProfile() interface{}
+	// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+	ImportProfile(data []byte) error
 
 	// GetGameEndFlag ゲーム終了フラグを取得する
 	GetGameEndFlag() bool

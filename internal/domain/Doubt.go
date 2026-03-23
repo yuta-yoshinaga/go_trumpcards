@@ -588,6 +588,29 @@ func (d *Doubt) GetHumanProfile() *DoubtHumanProfile { return d.humanProfile }
 // ResetProfile メタAIプロファイルをリセットする
 func (d *Doubt) ResetProfile() { d.humanProfile = nil }
 
+// ExportProfile メタAIプロファイルをエクスポートする (プロファイルがない場合はnil)
+func (d *Doubt) ExportProfile() interface{} {
+	if d.humanProfile == nil {
+		return nil
+	}
+	data := d.humanProfile.Export()
+	return &data
+}
+
+// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+func (d *Doubt) ImportProfile(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	pd, err := ImportDoubtHumanProfileJSON(data)
+	if err != nil {
+		return err
+	}
+	d.humanProfile = &DoubtHumanProfile{}
+	d.humanProfile.Import(pd)
+	return nil
+}
+
 // GetActionLog 棋譜を取得する
 func (d *Doubt) GetActionLog() []*ActionLogEntry { return d.actionLog }
 

@@ -105,7 +105,8 @@ export const pokerApi = {
     amount?: number,
     config?: PokerConfigInput,
     humanPlayMs?: number,
-  ) => gameExec<PokerResponse>('poker', { command, indices, amount, humanPlayMs, ...config }),
+    profile?: unknown,
+  ) => gameExec<PokerResponse>('poker', { command, indices, amount, humanPlayMs, profile, ...config }),
 };
 
 /** API client for the Old Maid /oldmaid/exec endpoint. */
@@ -119,6 +120,7 @@ export const oldmaidApi = {
     cpuMemoryAI?: boolean,
     cpuHesitationEnabled?: boolean,
     cpuMetaAI?: boolean,
+    profile?: unknown,
   ) =>
     gameExec<OldMaidResponse>('oldmaid', {
       command,
@@ -129,6 +131,7 @@ export const oldmaidApi = {
       cpuMemoryAI,
       cpuHesitationEnabled,
       cpuMetaAI,
+      profile,
     }),
 };
 
@@ -147,6 +150,7 @@ export const doubtApi = {
     doubterIndices?: number[],
     config?: DoubtConfig,
     humanPlayMs?: number,
+    profile?: unknown,
   ) =>
     gameExec<DoubtResponse>('doubt', {
       command,
@@ -154,6 +158,7 @@ export const doubtApi = {
       claimedValue,
       doubterIndices,
       humanPlayMs,
+      profile,
       doubtWindowSec: config?.doubtWindowSec,
       cpuMemoryLevel: config?.cpuMemoryLevel,
       penaltyDrawLimit: config?.penaltyDrawLimit,
@@ -232,11 +237,13 @@ export const holdemApi = {
     amount?: number,
     config?: HoldemConfigInput,
     humanPlayMs?: number,
+    profile?: unknown,
   ) =>
     gameExec<HoldemResponse>('holdem', {
       command,
       amount,
       humanPlayMs,
+      profile,
       ...config,
     }),
 };
@@ -264,11 +271,13 @@ export const omahaApi = {
     amount?: number,
     config?: OmahaConfigInput,
     humanPlayMs?: number,
+    profile?: unknown,
   ) =>
     gameExec<OmahaResponse>('omaha', {
       command,
       amount,
       humanPlayMs,
+      profile,
       ...config,
     }),
 };
@@ -526,11 +535,13 @@ export const indianpokerApi = {
     amount?: number,
     config?: IndianPokerConfigInput,
     humanPlayMs?: number,
+    profile?: unknown,
   ) =>
     gameExec<IndianPokerResponse>('indianpoker', {
       command,
       amount,
       humanPlayMs,
+      profile,
       ...config,
     }),
 };

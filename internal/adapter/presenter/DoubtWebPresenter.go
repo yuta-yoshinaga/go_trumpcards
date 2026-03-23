@@ -84,6 +84,8 @@ func (dwp *DoubtWebPresenter) Output(d interfaces.DoubtGame, lastErr error) stri
 			DoubtAccuracy:  profile.DoubtAccuracy(),
 			HesitationMean: profile.HesitationMean,
 		}
+		pd := profile.Export()
+		resObj.Profile = &pd
 	}
 
 	// メッセージ

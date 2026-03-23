@@ -61,7 +61,7 @@ func (c *IndianPokerCuiController) Exec(command string) string {
 				}
 				cfg := c.ipi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
-				return c.ipi.ResetWithConfig(cfg), true
+				return c.ipi.ResetWithConfig(cfg, nil), true
 			case "mai", "metaai":
 				if len(args) < 1 {
 					return i18n.T("metaAIRequired"), true
@@ -72,7 +72,7 @@ func (c *IndianPokerCuiController) Exec(command string) string {
 				}
 				cfg := c.ipi.GetConfig()
 				cfg.CpuMetaAI = v == 1
-				return c.ipi.ResetWithConfig(cfg), true
+				return c.ipi.ResetWithConfig(cfg, nil), true
 			case "an", "ante":
 				if len(args) < 1 {
 					return i18n.T("indianpoker.anteRequired"), true
@@ -83,7 +83,7 @@ func (c *IndianPokerCuiController) Exec(command string) string {
 				}
 				cfg := c.ipi.GetConfig()
 				cfg.Ante = v
-				return c.ipi.ResetWithConfig(cfg), true
+				return c.ipi.ResetWithConfig(cfg, nil), true
 			case "log":
 				return c.ipi.ActionLog(), true
 			}

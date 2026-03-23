@@ -63,7 +63,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				cfg := c.hi.GetConfig()
 				cfg.BettingLimit = domain.BettingLimitType(bl)
-				return c.hi.ResetWithConfig(cfg), true
+				return c.hi.ResetWithConfig(cfg, nil), true
 			case "tm", "tournament":
 				if len(args) < 1 {
 					return i18n.T("holdem.tournamentModeRequired"), true
@@ -74,7 +74,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				cfg := c.hi.GetConfig()
 				cfg.TournamentMode = v == 1
-				return c.hi.ResetWithConfig(cfg), true
+				return c.hi.ResetWithConfig(cfg, nil), true
 			case "sb", "smallblind":
 				if len(args) < 1 {
 					return i18n.T("holdem.smallBlindRequired"), true
@@ -85,7 +85,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				cfg := c.hi.GetConfig()
 				cfg.SmallBlind = v
-				return c.hi.ResetWithConfig(cfg), true
+				return c.hi.ResetWithConfig(cfg, nil), true
 			case "bb", "bigblind":
 				if len(args) < 1 {
 					return i18n.T("holdem.bigBlindRequired"), true
@@ -96,7 +96,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				cfg := c.hi.GetConfig()
 				cfg.BigBlind = v
-				return c.hi.ResetWithConfig(cfg), true
+				return c.hi.ResetWithConfig(cfg, nil), true
 			case "lh", "levelhand":
 				if len(args) < 1 {
 					return i18n.T("holdem.levelHandRequired"), true
@@ -107,7 +107,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				cfg := c.hi.GetConfig()
 				cfg.BlindLevelHands = v
-				return c.hi.ResetWithConfig(cfg), true
+				return c.hi.ResetWithConfig(cfg, nil), true
 			case "ts", "tablesize":
 				if len(args) < 1 {
 					return i18n.T("holdem.tableSizeRequired"), true
@@ -118,7 +118,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				cfg := c.hi.GetConfig()
 				cfg.TableSize = v
-				return c.hi.ResetWithConfig(cfg), true
+				return c.hi.ResetWithConfig(cfg, nil), true
 			case "rb", "rebuy":
 				return c.hi.Rebuy(), true
 			case "sr", "skiprebuy":
@@ -141,7 +141,7 @@ func (c *HoldemCuiController) Exec(command string) string {
 				}
 				cfg := c.hi.GetConfig()
 				cfg.CpuMetaAI = v == 1
-				return c.hi.ResetWithConfig(cfg), true
+				return c.hi.ResetWithConfig(cfg, nil), true
 			}
 			return "", false
 		},

@@ -10,8 +10,8 @@ import (
 type OmahaInteractorIF interface {
 	// Reset ゲーム初期化
 	Reset() string
-	// ResetWithConfig 設定を変更してゲーム初期化
-	ResetWithConfig(cfg domain.OmahaConfig) string
+	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
+	ResetWithConfig(cfg domain.OmahaConfig, profileData []byte) string
 	// Action プレイヤーアクション実行
 	Action(action int, amount int, humanPlayMs int) string
 	// GetConfig 現在の設定を取得
@@ -50,7 +50,7 @@ func (oi *OmahaInteractor) Reset() string {
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
-func (oi *OmahaInteractor) ResetWithConfig(cfg domain.OmahaConfig) string {
+func (oi *OmahaInteractor) ResetWithConfig(cfg domain.OmahaConfig, profileData []byte) string {
 	if err := cfg.Validate(); err != nil {
 		return oi.op.Output(oi.o, err)
 	}
@@ -59,6 +59,9 @@ func (oi *OmahaInteractor) ResetWithConfig(cfg domain.OmahaConfig) string {
 	}
 	oi.o.SetConfig(cfg)
 	err := oi.o.Reset()
+	if len(profileData) > 0 {
+		_ = oi.o.ImportProfile(profileData)
+	}
 	return oi.op.Output(oi.o, err)
 }
 

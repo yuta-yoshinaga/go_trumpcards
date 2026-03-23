@@ -7,6 +7,84 @@ export interface Card {
   value: number;
 }
 
+/** Bracket data for betting profile export. */
+export interface BettingProfileBracketData {
+  aggressive: number;
+  total: number;
+}
+
+/** Exported betting human profile data (Poker/Holdem/Omaha). */
+export interface BettingHumanProfileData {
+  aggressiveByBracket: [BettingProfileBracketData, BettingProfileBracketData, BettingProfileBracketData];
+  foldToBetCount: number;
+  foldToBetTotal: number;
+  gamesPlayed: number;
+  hesitationCount: number;
+  hesitationMean: number;
+  hesitationM2: number;
+}
+
+/** Bracket data for doubt profile export. */
+export interface DoubtProfileBracketData {
+  bluffs: number;
+  total: number;
+}
+
+/** Exported doubt human profile data. */
+export interface DoubtHumanProfileData {
+  bluffsByBracket: [DoubtProfileBracketData, DoubtProfileBracketData, DoubtProfileBracketData];
+  doubtCorrect: number;
+  doubtTotal: number;
+  gamesPlayed: number;
+  hesitationCount: number;
+  hesitationMean: number;
+  hesitationM2: number;
+}
+
+/** Exported old maid human profile data. */
+export interface OldMaidHumanProfileData {
+  positionBuckets: [number, number, number];
+  totalPicks: number;
+  shuffleCount: number;
+  drawCount: number;
+  gamesPlayed: number;
+}
+
+/** Bracket data for Indian Poker profile export. */
+export interface IndianPokerProfileBracketData {
+  aggressive: number;
+  total: number;
+}
+
+/** Exported Indian Poker human profile data. */
+export interface IndianPokerHumanProfileData {
+  aggressiveByBracket: [IndianPokerProfileBracketData, IndianPokerProfileBracketData, IndianPokerProfileBracketData];
+  foldToBetCount: number;
+  foldToBetTotal: number;
+  gamesPlayed: number;
+  hesitationCount: number;
+  hesitationMean: number;
+  hesitationM2: number;
+}
+
+/** Meta-AI statistics for betting games (Poker/Holdem/Omaha). */
+export interface BettingMetaAI {
+  enabled: boolean;
+  gamesPlayed: number;
+  bluffRate: number;
+  foldRate: number;
+  hesitationMean: number;
+}
+
+/** Meta-AI statistics for Indian Poker CPU adaptation. */
+export interface IndianPokerMetaAI {
+  enabled: boolean;
+  gamesPlayed: number;
+  bluffRate: number;
+  foldRate: number;
+  hesitationMean: number;
+}
+
 /** A single entry in the game action log. */
 export interface ActionLogEntry {
   turnNumber: number;
@@ -171,6 +249,8 @@ export interface PokerResponse {
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
+  metaAI?: BettingMetaAI;
+  profile?: BettingHumanProfileData;
 }
 
 /** Old Maid player data with hand and finish status. */
@@ -230,6 +310,7 @@ export interface OldMaidResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   metaAI?: OldMaidMetaAI;
+  profile?: OldMaidHumanProfileData;
 }
 
 /** Daifugo player data with rank and card count. */
@@ -422,6 +503,7 @@ export interface DoubtResponse {
   doubtWindowSec: number;
   penaltyDrawLimit: number;
   metaAI?: DoubtMetaAI;
+  profile?: DoubtHumanProfileData;
 }
 
 /** Meta-AI statistics for Doubt CPU adaptation. */
@@ -519,6 +601,8 @@ export interface HoldemResponse {
   muckAvailable: boolean;
   equity?: HoldemEquity;
   potOdds?: number;
+  metaAI?: BettingMetaAI;
+  profile?: BettingHumanProfileData;
 }
 
 /** Equity calculation result for Hold'em hand. */
@@ -1026,4 +1110,6 @@ export interface IndianPokerResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   actionLog?: ActionLogEntry[];
+  metaAI?: IndianPokerMetaAI;
+  profile?: IndianPokerHumanProfileData;
 }

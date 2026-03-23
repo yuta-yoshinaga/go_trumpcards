@@ -18,8 +18,8 @@ func (_m *MockOmahaInteractor) Reset() string {
 }
 
 // ResetWithConfig モック
-func (_m *MockOmahaInteractor) ResetWithConfig(cfg domain.OmahaConfig) string {
-	ret := _m.Called(cfg)
+func (_m *MockOmahaInteractor) ResetWithConfig(cfg domain.OmahaConfig, profileData []byte) string {
+	ret := _m.Called(cfg, profileData)
 	return ret.Get(0).(string)
 }
 

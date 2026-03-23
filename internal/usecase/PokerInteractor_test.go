@@ -83,7 +83,7 @@ func TestPokerInteractor_ResetWithConfig(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("reset with config output")
 
-	result := pi.ResetWithConfig(cfg)
+	result := pi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "reset with config output", result)
 	mg.AssertCalled(t, "SetConfig", cfg)
 	mg.AssertCalled(t, "Reset")
@@ -100,8 +100,25 @@ func TestPokerInteractor_ResetWithConfig_Error(t *testing.T) {
 	mg.On("Reset").Return(err)
 	mp.On("Output", mg, err).Return("error output")
 
-	result := pi.ResetWithConfig(cfg)
+	result := pi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "error output", result)
+}
+
+func TestPokerInteractor_ResetWithConfig_WithProfile(t *testing.T) {
+	mg := new(interfaces.MockPokerGame)
+	mp := new(presenter.MockPokerPresenter)
+	pi := usecase.NewPokerInteractor(mg, mp)
+
+	cfg := domain.PokerConfig{InitChips: 2000, Ante: 20, MinBet: 20, CpuCount: 2, JokerCount: 1}
+	profileData := []byte(`{"gamesPlayed":3}`)
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(nil)
+	mg.On("ImportProfile", profileData).Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("with profile output")
+
+	result := pi.ResetWithConfig(cfg, profileData)
+	assert.Equal(t, "with profile output", result)
+	mg.AssertCalled(t, "ImportProfile", profileData)
 }
 
 func TestPokerInteractor_Action(t *testing.T) {
@@ -234,7 +251,7 @@ func TestPokerInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 	pi := usecase.NewPokerInteractor(gameMock, ppMock)
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 0
-	result := pi.ResetWithConfig(cfg)
+	result := pi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "validation error", result)
 	gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
 }
