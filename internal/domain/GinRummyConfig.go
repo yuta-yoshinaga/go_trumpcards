@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // GinRummyCpuDifficulty CPU の難易度レベル
 type GinRummyCpuDifficulty int
 
@@ -31,11 +29,11 @@ func DefaultGinRummyConfig() GinRummyConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c GinRummyConfig) Validate() error {
-	if c.CpuDifficulty < GinRummyCpuDifficultyEasy || c.CpuDifficulty > GinRummyCpuDifficultyHard {
-		return fmt.Errorf("CPU difficulty must be %d-%d, got %d", int(GinRummyCpuDifficultyEasy), int(GinRummyCpuDifficultyHard), int(c.CpuDifficulty))
+	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(GinRummyCpuDifficultyEasy), int(GinRummyCpuDifficultyHard)); err != nil {
+		return err
 	}
-	if c.PointLimit < 1 {
-		return fmt.Errorf("point limit must be >= 1, got %d", c.PointLimit)
+	if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
+		return err
 	}
 	return nil
 }

@@ -64,17 +64,17 @@ func DefaultDaifugoConfig() DaifugoConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c DaifugoConfig) Validate() error {
-	if c.CpuDifficulty < DaifugoDifficultyNormal || c.CpuDifficulty > DaifugoDifficultyHard {
-		return fmt.Errorf("CPU difficulty must be %d-%d, got %d", int(DaifugoDifficultyNormal), int(DaifugoDifficultyHard), int(c.CpuDifficulty))
+	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(DaifugoDifficultyNormal), int(DaifugoDifficultyHard)); err != nil {
+		return err
 	}
-	if c.JokerCount < 0 || c.JokerCount > DaifugoJokerCount {
-		return fmt.Errorf("joker count must be 0-%d, got %d", DaifugoJokerCount, c.JokerCount)
+	if err := ValidateRange("joker count", c.JokerCount, 0, DaifugoJokerCount); err != nil {
+		return err
 	}
-	if c.SuitLockMode < DaifugoSuitLockNone || c.SuitLockMode > DaifugoSuitLockFull {
-		return fmt.Errorf("suit lock mode must be %d-%d, got %d", int(DaifugoSuitLockNone), int(DaifugoSuitLockFull), int(c.SuitLockMode))
+	if err := ValidateRange("suit lock mode", int(c.SuitLockMode), int(DaifugoSuitLockNone), int(DaifugoSuitLockFull)); err != nil {
+		return err
 	}
-	if c.FiveSkipCount < 1 || c.FiveSkipCount > DaifugoFiveSkipCountMax {
-		return fmt.Errorf("five skip count must be 1-%d, got %d", DaifugoFiveSkipCountMax, c.FiveSkipCount)
+	if err := ValidateRange("five skip count", c.FiveSkipCount, 1, DaifugoFiveSkipCountMax); err != nil {
+		return err
 	}
 	if c.SequenceLockEnabled && !c.SequenceEnabled {
 		return fmt.Errorf("sequence lock requires sequence to be enabled")

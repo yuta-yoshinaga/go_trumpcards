@@ -86,10 +86,7 @@ func (c *HeartsWebConfig) ToConfig() domain.HeartsConfig {
 
 // ToConfig builds a HeartsConfig from the web input.
 func (p HeartsWebInput) ToConfig() domain.HeartsConfig {
-	if p.Config != nil {
-		return p.Config.ToConfig()
-	}
-	return domain.DefaultHeartsConfig()
+	return configOrDefault(p.Config, (*HeartsWebConfig).ToConfig, domain.DefaultHeartsConfig())
 }
 
 // HeartsWebController ハーツWebコントローラークラス

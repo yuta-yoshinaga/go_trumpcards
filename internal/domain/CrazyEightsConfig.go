@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // CrazyEightsCpuDifficulty CPU の難易度レベル
 type CrazyEightsCpuDifficulty int
 
@@ -31,11 +29,11 @@ func DefaultCrazyEightsConfig() CrazyEightsConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c CrazyEightsConfig) Validate() error {
-	if c.CpuDifficulty < CrazyEightsCpuDifficultyEasy || c.CpuDifficulty > CrazyEightsCpuDifficultyHard {
-		return fmt.Errorf("CPU difficulty must be %d-%d, got %d", int(CrazyEightsCpuDifficultyEasy), int(CrazyEightsCpuDifficultyHard), int(c.CpuDifficulty))
+	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(CrazyEightsCpuDifficultyEasy), int(CrazyEightsCpuDifficultyHard)); err != nil {
+		return err
 	}
-	if c.PointLimit < 1 {
-		return fmt.Errorf("point limit must be >= 1, got %d", c.PointLimit)
+	if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
+		return err
 	}
 	return nil
 }

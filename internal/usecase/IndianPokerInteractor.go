@@ -39,12 +39,7 @@ func (ipi *IndianPokerInteractor) Reset() string {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (ipi *IndianPokerInteractor) ResetWithConfig(cfg domain.IndianPokerConfig) string {
-	if err := cfg.Validate(); err != nil {
-		return ipi.ipp.Output(ipi.ip, err)
-	}
-	ipi.ip.SetConfig(cfg)
-	err := ipi.ip.Reset()
-	return ipi.ipp.Output(ipi.ip, err)
+	return resetWithValidatedConfig(ipi.ip, ipi.ipp, cfg, ipi.ip.SetConfig, ipi.Reset)
 }
 
 // Action プレイヤーアクション実行

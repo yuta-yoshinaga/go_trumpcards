@@ -8,6 +8,36 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
+// bjNoArgCommands 引数なしのブラックジャックコマンドマップ
+var bjNoArgCommands = map[string]func(usecase.BlackJackInteractorIF) string{
+	"h":                     usecase.BlackJackInteractorIF.Hit,
+	"hit":                   usecase.BlackJackInteractorIF.Hit,
+	"s":                     usecase.BlackJackInteractorIF.Stand,
+	"stand":                 usecase.BlackJackInteractorIF.Stand,
+	"d":                     usecase.BlackJackInteractorIF.DoubleDown,
+	"doubledown":            usecase.BlackJackInteractorIF.DoubleDown,
+	"sp":                    usecase.BlackJackInteractorIF.Split,
+	"split":                 usecase.BlackJackInteractorIF.Split,
+	"i":                     usecase.BlackJackInteractorIF.Insurance,
+	"insurance":             usecase.BlackJackInteractorIF.Insurance,
+	"di":                    usecase.BlackJackInteractorIF.DeclineInsurance,
+	"declineinsurance":      usecase.BlackJackInteractorIF.DeclineInsurance,
+	"sur":                   usecase.BlackJackInteractorIF.Surrender,
+	"surrender":             usecase.BlackJackInteractorIF.Surrender,
+	"es":                    usecase.BlackJackInteractorIF.EarlySurrender,
+	"earlysurrender":        usecase.BlackJackInteractorIF.EarlySurrender,
+	"des":                   usecase.BlackJackInteractorIF.DeclineEarlySurrender,
+	"declineearlysurrender": usecase.BlackJackInteractorIF.DeclineEarlySurrender,
+	"hint":                  usecase.BlackJackInteractorIF.ToggleHint,
+	"togglehint":            usecase.BlackJackInteractorIF.ToggleHint,
+	"soft17":                usecase.BlackJackInteractorIF.ToggleSoft17,
+	"togglesoft17":          usecase.BlackJackInteractorIF.ToggleSoft17,
+	"counting":              usecase.BlackJackInteractorIF.ToggleCounting,
+	"togglecounting":        usecase.BlackJackInteractorIF.ToggleCounting,
+	"das":                   usecase.BlackJackInteractorIF.ToggleDAS,
+	"toggledas":             usecase.BlackJackInteractorIF.ToggleDAS,
+}
+
 // BlackJackCuiController ブラックジャックCUIコントローラークラス
 type BlackJackCuiController struct {
 	bji usecase.BlackJackInteractorIF
@@ -35,11 +65,10 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 			"sd", "setdeckcount", "scc", "setcpucount", "scs", "setcountingsystem", "pen", "setpenetration",
 		},
 		func(cmd string, args []string) (string, bool) {
+			if fn, ok := bjNoArgCommands[cmd]; ok {
+				return fn(bcc.bji), true
+			}
 			switch cmd {
-			case "h", "hit":
-				return bcc.bji.Hit(), true
-			case "s", "stand":
-				return bcc.bji.Stand(), true
 			case "b", "bet":
 				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required.", "Invalid bet amount. Please enter a number.", 1, math.MaxInt)
 				if !ok {
@@ -49,58 +78,16 @@ func (bcc *BlackJackCuiController) Exec(command string) string {
 				t3Bet := cuiutil.ParseOptionalInt(args, 2, 0)
 				handCount := cuiutil.ParseOptionalInt(args, 3, 0)
 				return bcc.bji.Bet(amount, ppBet, t3Bet, handCount), true
-			case "d", "doubledown":
-				return bcc.bji.DoubleDown(), true
-			case "sp", "split":
-				return bcc.bji.Split(), true
-			case "i", "insurance":
-				return bcc.bji.Insurance(), true
-			case "di", "declineinsurance":
-				return bcc.bji.DeclineInsurance(), true
-			case "sur", "surrender":
-				return bcc.bji.Surrender(), true
-			case "es", "earlysurrender":
-				return bcc.bji.EarlySurrender(), true
-			case "des", "declineearlysurrender":
-				return bcc.bji.DeclineEarlySurrender(), true
 			case "ssr", "setsurrenderrule":
-				rule, errMsg, ok := cuiutil.ParseIntArg(args, "Surrender rule is required.", "Invalid surrender rule: %s. Please enter a number (0-2).", 0, domain.BJSurrenderMax)
-				if !ok {
-					return errMsg, true
-				}
-				return bcc.bji.SetSurrenderRule(rule), true
-			case "hint", "togglehint":
-				return bcc.bji.ToggleHint(), true
-			case "soft17", "togglesoft17":
-				return bcc.bji.ToggleSoft17(), true
-			case "counting", "togglecounting":
-				return bcc.bji.ToggleCounting(), true
-			case "das", "toggledas":
-				return bcc.bji.ToggleDAS(), true
+				return cuiutil.WithParsedInt(args, "Surrender rule is required.", "Invalid surrender rule: %s. Please enter a number (0-2).", 0, domain.BJSurrenderMax, bcc.bji.SetSurrenderRule)
 			case "sd", "setdeckcount":
-				count, errMsg, ok := cuiutil.ParseIntArg(args, "Deck count is required.", "Invalid deck count. Please enter a number.", 1, math.MaxInt)
-				if !ok {
-					return errMsg, true
-				}
-				return bcc.bji.SetDeckCount(count), true
+				return cuiutil.WithParsedInt(args, "Deck count is required.", "Invalid deck count. Please enter a number.", 1, math.MaxInt, bcc.bji.SetDeckCount)
 			case "scc", "setcpucount":
-				count, errMsg, ok := cuiutil.ParseIntArg(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter a number (0-3).", 0, domain.BJMaxCpuPlayers)
-				if !ok {
-					return errMsg, true
-				}
-				return bcc.bji.SetCpuPlayerCount(count), true
+				return cuiutil.WithParsedInt(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter a number (0-3).", 0, domain.BJMaxCpuPlayers, bcc.bji.SetCpuPlayerCount)
 			case "scs", "setcountingsystem":
-				system, errMsg, ok := cuiutil.ParseIntArg(args, "Counting system is required.", "Invalid counting system: %s. Please enter a number (0-3).", 0, domain.BJCountingMax)
-				if !ok {
-					return errMsg, true
-				}
-				return bcc.bji.SetCountingSystem(system), true
+				return cuiutil.WithParsedInt(args, "Counting system is required.", "Invalid counting system: %s. Please enter a number (0-3).", 0, domain.BJCountingMax, bcc.bji.SetCountingSystem)
 			case "pen", "setpenetration":
-				pen, errMsg, ok := cuiutil.ParseIntArg(args, "Penetration rate is required.", "Invalid penetration rate. Please enter a number.", cuiutil.NoMin, cuiutil.NoMax)
-				if !ok {
-					return errMsg, true
-				}
-				return bcc.bji.SetDeckPenetration(pen), true
+				return cuiutil.WithParsedInt(args, "Penetration rate is required.", "Invalid penetration rate. Please enter a number.", cuiutil.NoMin, cuiutil.NoMax, bcc.bji.SetDeckPenetration)
 			}
 			return "", false
 		},

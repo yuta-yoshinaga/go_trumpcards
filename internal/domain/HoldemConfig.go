@@ -96,20 +96,20 @@ func DefaultCpuStyles(tableSize int) []HoldemPlayStyle {
 
 // Validate 設定値のドメインバリデーション
 func (c HoldemConfig) Validate() error {
-	if c.BettingLimit < BettingLimitFixed || c.BettingLimit > BettingLimitNoLimit {
-		return fmt.Errorf("betting limit must be %d-%d, got %d", int(BettingLimitFixed), int(BettingLimitNoLimit), int(c.BettingLimit))
+	if err := ValidateRange("betting limit", int(c.BettingLimit), int(BettingLimitFixed), int(BettingLimitNoLimit)); err != nil {
+		return err
 	}
-	if c.SmallBlind < 1 {
-		return fmt.Errorf("small blind must be >= 1, got %d", c.SmallBlind)
+	if err := ValidateMin("small blind", c.SmallBlind, 1); err != nil {
+		return err
 	}
-	if c.BigBlind < 2 {
-		return fmt.Errorf("big blind must be >= 2, got %d", c.BigBlind)
+	if err := ValidateMin("big blind", c.BigBlind, 2); err != nil {
+		return err
 	}
 	if c.SmallBlind >= c.BigBlind {
 		return fmt.Errorf("small blind (%d) must be less than big blind (%d)", c.SmallBlind, c.BigBlind)
 	}
-	if c.BlindLevelHands < 1 {
-		return fmt.Errorf("blind level hands must be >= 1, got %d", c.BlindLevelHands)
+	if err := ValidateMin("blind level hands", c.BlindLevelHands, 1); err != nil {
+		return err
 	}
 	// TableSize == 0 means "keep current size / no change"; only validate non-zero values.
 	if c.TableSize != 0 && !IsValidHoldemTableSize(c.TableSize) {

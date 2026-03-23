@@ -51,11 +51,7 @@ func (hi *HeartsInteractor) Reset() string {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (hi *HeartsInteractor) ResetWithConfig(cfg domain.HeartsConfig) string {
-	if err := cfg.Validate(); err != nil {
-		return hi.hp.Output(hi.h, err)
-	}
-	hi.h.SetConfig(cfg)
-	return hi.Reset()
+	return resetWithValidatedConfig(hi.h, hi.hp, cfg, hi.h.SetConfig, hi.Reset)
 }
 
 // Pass カード交換

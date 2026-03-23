@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // NapoleonCpuDifficulty CPU の難易度レベル
 type NapoleonCpuDifficulty int
 
@@ -33,14 +31,14 @@ func DefaultNapoleonConfig() NapoleonConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c NapoleonConfig) Validate() error {
-	if c.CpuDifficulty < NapoleonCpuDifficultyEasy || c.CpuDifficulty > NapoleonCpuDifficultyHard {
-		return fmt.Errorf("CPU difficulty must be %d-%d, got %d", int(NapoleonCpuDifficultyEasy), int(NapoleonCpuDifficultyHard), int(c.CpuDifficulty))
+	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(NapoleonCpuDifficultyEasy), int(NapoleonCpuDifficultyHard)); err != nil {
+		return err
 	}
-	if c.MinBid < 1 || c.MinBid > NapoleonMaxPictureCards {
-		return fmt.Errorf("min bid must be 1-%d, got %d", NapoleonMaxPictureCards, c.MinBid)
+	if err := ValidateRange("min bid", c.MinBid, 1, NapoleonMaxPictureCards); err != nil {
+		return err
 	}
-	if c.PointLimit < 1 {
-		return fmt.Errorf("point limit must be >= 1, got %d", c.PointLimit)
+	if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
+		return err
 	}
 	return nil
 }

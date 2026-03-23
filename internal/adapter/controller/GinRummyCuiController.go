@@ -41,38 +41,26 @@ func (c *GinRummyCuiController) Exec(command string) string {
 			case "dd", "drawdiscard":
 				return c.ci.DrawFromDiscard(), true
 			case "d", "discard":
-				idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
-				if !ok {
-					return errMsg, true
-				}
-				return c.ci.Discard(idx), true
+				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Discard)
 			case "k", "knock":
-				idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
-				if !ok {
-					return errMsg, true
-				}
-				return c.ci.Knock(idx), true
+				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.ci.Knock)
 			case "lo", "layoff":
 				indices := parseIntList(args)
 				return c.ci.Layoff(indices), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
 			case "sd", "setdifficulty":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.ci.GetConfig()
-				cfg.CpuDifficulty = domain.GinRummyCpuDifficulty(v)
-				return c.ci.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.ci.GetConfig()
+					cfg.CpuDifficulty = domain.GinRummyCpuDifficulty(v)
+					return c.ci.ResetWithConfig(cfg)
+				})
 			case "sl", "setlimit":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.ci.GetConfig()
-				cfg.PointLimit = v
-				return c.ci.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+					cfg := c.ci.GetConfig()
+					cfg.PointLimit = v
+					return c.ci.ResetWithConfig(cfg)
+				})
 			case "log", "l":
 				return c.ci.ActionLog(), true
 			}

@@ -65,10 +65,7 @@ func (c *CrazyEightsWebConfig) ToConfig() domain.CrazyEightsConfig {
 
 // ToConfig builds a CrazyEightsConfig from the web input.
 func (p CrazyEightsWebInput) ToConfig() domain.CrazyEightsConfig {
-	if p.Config != nil {
-		return p.Config.ToConfig()
-	}
-	return domain.DefaultCrazyEightsConfig()
+	return configOrDefault(p.Config, (*CrazyEightsWebConfig).ToConfig, domain.DefaultCrazyEightsConfig())
 }
 
 // CrazyEightsWebController クレイジーエイトWebコントローラークラス

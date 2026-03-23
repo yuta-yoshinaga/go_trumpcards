@@ -73,10 +73,7 @@ func (c *GinRummyWebConfig) ToConfig() domain.GinRummyConfig {
 
 // ToConfig builds a GinRummyConfig from the web input.
 func (p GinRummyWebInput) ToConfig() domain.GinRummyConfig {
-	if p.Config != nil {
-		return p.Config.ToConfig()
-	}
-	return domain.DefaultGinRummyConfig()
+	return configOrDefault(p.Config, (*GinRummyWebConfig).ToConfig, domain.DefaultGinRummyConfig())
 }
 
 // GinRummyWebController ジンラミーWebコントローラークラス

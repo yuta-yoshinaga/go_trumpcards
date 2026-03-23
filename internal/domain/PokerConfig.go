@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // PokerCpuCountMin PokerCpuCountMax CPU プレイヤー数の有効範囲
 const (
 	PokerCpuCountMin = 1 // CPU プレイヤー最小数
@@ -55,14 +53,14 @@ func DefaultPokerConfig() PokerConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c PokerConfig) Validate() error {
-	if c.BettingLimit < BettingLimitFixed || c.BettingLimit > BettingLimitNoLimit {
-		return fmt.Errorf("betting limit must be %d-%d, got %d", int(BettingLimitFixed), int(BettingLimitNoLimit), int(c.BettingLimit))
+	if err := ValidateRange("betting limit", int(c.BettingLimit), int(BettingLimitFixed), int(BettingLimitNoLimit)); err != nil {
+		return err
 	}
-	if c.CpuCount < PokerCpuCountMin || c.CpuCount > PokerCpuCountMax {
-		return fmt.Errorf("CPU player count must be %d-%d, got %d", PokerCpuCountMin, PokerCpuCountMax, c.CpuCount)
+	if err := ValidateRange("CPU player count", c.CpuCount, PokerCpuCountMin, PokerCpuCountMax); err != nil {
+		return err
 	}
-	if c.JokerCount < 0 || c.JokerCount > PokerJokerCountMax {
-		return fmt.Errorf("joker count must be 0-%d, got %d", PokerJokerCountMax, c.JokerCount)
+	if err := ValidateRange("joker count", c.JokerCount, 0, PokerJokerCountMax); err != nil {
+		return err
 	}
 	return nil
 }
