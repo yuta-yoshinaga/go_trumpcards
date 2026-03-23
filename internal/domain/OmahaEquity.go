@@ -2,9 +2,6 @@ package domain
 
 import (
 	"math/rand"
-	"runtime"
-	"sync"
-	"time"
 )
 
 // omahaEquitySimulations デフォルトのモンテカルロシミュレーション回数
@@ -50,48 +47,14 @@ func CalcOmahaEquity(humanCards, communityCards []*Card, activePlayers, simulati
 	remainingCommunity := 5 - len(communityCards)
 	neededCards := remainingCommunity + activePlayers*4
 
-	// ワーカー数を決定しシミュレーションを分割
-	numWorkers := runtime.NumCPU()
-	if numWorkers > simulations {
-		numWorkers = simulations
-	}
-	simsPerWorker := simulations / numWorkers
-
-	// ワーカーごとのシードを事前に生成
-	workerSeeds := make([]int64, numWorkers)
-	for i := 0; i < numWorkers; i++ {
-		if rng != nil {
-			workerSeeds[i] = rng.Int63()
-		} else {
-			workerSeeds[i] = time.Now().UnixNano() + int64(i)
-		}
-	}
-
-	// ワーカーごとの結果格納
-	type workerResult struct {
-		wins       float64
-		handCounts []int
-	}
-	results := make([]workerResult, numWorkers)
-
-	var wg sync.WaitGroup
-	for w := 0; w < numWorkers; w++ {
-		wg.Add(1)
-		go func(workerIdx int) {
-			defer wg.Done()
-
-			localRng := rand.New(rand.NewSource(workerSeeds[workerIdx]))
-			localSims := simsPerWorker
-			// 最後のワーカーに余りを割り当て
-			if workerIdx == numWorkers-1 {
-				localSims = simulations - simsPerWorker*(numWorkers-1)
-			}
-
-			localWins := 0.0
-			localHandCounts := make([]int, len(PokerHandNames))
+	totalWins, totalHandCounts := runParallelSimulations(simulations, rng,
+		func(sims int, localRng *rand.Rand) (float64, []int) {
+			wins := 0.0
+			handCounts := make([]int, len(PokerHandNames))
 			shufflePool := make([]*Card, len(pool))
+			simCommunity := make([]*Card, 0, 5)
 
-			for i := 0; i < localSims; i++ {
+			for i := 0; i < sims; i++ {
 				copy(shufflePool, pool)
 				shuffleCards(shufflePool, localRng)
 
@@ -100,7 +63,7 @@ func CalcOmahaEquity(humanCards, communityCards []*Card, activePlayers, simulati
 				}
 
 				// シミュレーション用コミュニティカードを構築
-				simCommunity := make([]*Card, 0, 5)
+				simCommunity = simCommunity[:0]
 				simCommunity = append(simCommunity, communityCards...)
 				idx := 0
 				for j := 0; j < remainingCommunity; j++ {
@@ -110,7 +73,7 @@ func CalcOmahaEquity(humanCards, communityCards []*Card, activePlayers, simulati
 
 				// 人間のハンド評価 (オマハルール: 2枚+3枚)
 				humanRank, humanBest := evalBestFromOmaha(humanCards, simCommunity)
-				localHandCounts[humanRank]++
+				handCounts[humanRank]++
 
 				// 相手のハンド評価
 				humanWins := true
@@ -124,42 +87,13 @@ func CalcOmahaEquity(humanCards, communityCards []*Card, activePlayers, simulati
 					}
 				}
 				if humanWins {
-					localWins++
+					wins++
 				}
 			}
+			return wins, handCounts
+		})
 
-			results[workerIdx] = workerResult{
-				wins:       localWins,
-				handCounts: localHandCounts,
-			}
-		}(w)
-	}
-	wg.Wait()
-
-	// 結果を集約
-	totalWins := 0.0
-	totalHandCounts := make([]int, len(PokerHandNames))
-	for _, r := range results {
-		totalWins += r.wins
-		for i, c := range r.handCounts {
-			totalHandCounts[i] += c
-		}
-	}
-
-	// ハンドオッズ構築
-	handOdds := make([]HoldemHandOdds, len(PokerHandNames))
-	for i := 0; i < len(PokerHandNames); i++ {
-		handOdds[i] = HoldemHandOdds{
-			HandRank:    i,
-			HandName:    PokerHandNames[i],
-			Probability: float64(totalHandCounts[i]) / float64(simulations),
-		}
-	}
-
-	return HoldemEquityResult{
-		Equity:   totalWins / float64(simulations),
-		HandOdds: handOdds,
-	}
+	return buildEquityResult(totalWins, totalHandCounts, simulations)
 }
 
 // evalBestFromOmaha オマハルールでベスト5枚のハンドランクと手を評価
