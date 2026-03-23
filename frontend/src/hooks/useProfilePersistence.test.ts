@@ -45,6 +45,12 @@ describe('useProfilePersistence', () => {
     expect(localStorage.getItem('metaai_holdem')).toBeNull();
   });
 
+  it('loadProfile returns undefined for malformed JSON', () => {
+    localStorage.setItem('metaai_poker', 'not-valid-json{{{');
+    const { result } = renderHook(() => useProfilePersistence('poker'));
+    expect(result.current.loadProfile()).toBeUndefined();
+  });
+
   it('uses correct key prefix for different games', () => {
     const { result: r1 } = renderHook(() => useProfilePersistence('poker'));
     const { result: r2 } = renderHook(() => useProfilePersistence('holdem'));

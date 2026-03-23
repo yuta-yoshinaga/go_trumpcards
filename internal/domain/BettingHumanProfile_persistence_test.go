@@ -100,6 +100,36 @@ func TestPoker_ImportProfile_InvalidJSON(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestHoldem_ExportImportProfile(t *testing.T) {
+	h := newHoldemForMetaAITest(true)
+	assert.NotNil(t, h.ExportProfile())
+
+	profileData := BettingHumanProfileData{GamesPlayed: 5, FoldToBetCount: 3, FoldToBetTotal: 8}
+	jsonBytes, _ := json.Marshal(profileData)
+	assert.NoError(t, h.ImportProfile(jsonBytes))
+	assert.Equal(t, 5, h.GetHumanProfile().GamesPlayed)
+}
+
+func TestHoldem_ExportProfile_NilWhenDisabled(t *testing.T) {
+	h := newHoldemForMetaAITest(false)
+	assert.Nil(t, h.ExportProfile())
+}
+
+func TestOmaha_ExportImportProfile(t *testing.T) {
+	o := newOmahaForMetaAITest(true)
+	assert.NotNil(t, o.ExportProfile())
+
+	profileData := BettingHumanProfileData{GamesPlayed: 4, FoldToBetCount: 2, FoldToBetTotal: 6}
+	jsonBytes, _ := json.Marshal(profileData)
+	assert.NoError(t, o.ImportProfile(jsonBytes))
+	assert.Equal(t, 4, o.GetHumanProfile().GamesPlayed)
+}
+
+func TestOmaha_ExportProfile_NilWhenDisabled(t *testing.T) {
+	o := newOmahaForMetaAITest(false)
+	assert.Nil(t, o.ExportProfile())
+}
+
 func newPokerForMetaAITest(metaAI bool) *Poker {
 	tc := NewTrumpCards(0)
 	players := []*PokerPlayer{
@@ -116,4 +146,40 @@ func newPokerForMetaAITest(metaAI bool) *Poker {
 	pk := NewPoker(tc, players, cfg)
 	_ = pk.Reset()
 	return pk
+}
+
+func newHoldemForMetaAITest(metaAI bool) *Holdem {
+	tc := NewTrumpCards(0)
+	players := []*HoldemPlayer{
+		NewHoldemPlayer(true, HoldemStyleTAG),
+		NewHoldemPlayer(false, HoldemStyleLAP),
+		NewHoldemPlayer(false, HoldemStyleTAP),
+		NewHoldemPlayer(false, HoldemStyleLAG),
+	}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
+	cfg := DefaultHoldemConfig()
+	cfg.CpuMetaAI = metaAI
+	h := NewHoldem(tc, players, cfg)
+	_ = h.Reset()
+	return h
+}
+
+func newOmahaForMetaAITest(metaAI bool) *Omaha {
+	tc := NewTrumpCards(0)
+	players := []*OmahaPlayer{
+		NewOmahaPlayer(true, HoldemStyleTAG),
+		NewOmahaPlayer(false, HoldemStyleLAP),
+		NewOmahaPlayer(false, HoldemStyleTAP),
+		NewOmahaPlayer(false, HoldemStyleLAG),
+	}
+	for _, pl := range players {
+		pl.SetChips(1000)
+	}
+	cfg := DefaultOmahaConfig()
+	cfg.CpuMetaAI = metaAI
+	o := NewOmaha(tc, players, cfg)
+	_ = o.Reset()
+	return o
 }

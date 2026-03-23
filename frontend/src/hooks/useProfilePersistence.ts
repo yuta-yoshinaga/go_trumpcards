@@ -20,10 +20,15 @@ export function useProfilePersistence(gameKey: string) {
     [storageKey],
   );
 
-  /** Load profile data from localStorage. Returns undefined if not found. */
+  /** Load profile data from localStorage. Returns undefined if not found or malformed. */
   const loadProfile = useCallback((): unknown | undefined => {
     const data = localStorage.getItem(storageKey);
-    return data ? JSON.parse(data) : undefined;
+    if (!data) return undefined;
+    try {
+      return JSON.parse(data);
+    } catch {
+      return undefined;
+    }
   }, [storageKey]);
 
   /** Remove profile data from localStorage. */
