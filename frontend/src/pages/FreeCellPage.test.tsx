@@ -51,6 +51,11 @@ const withHintState: FreeCellResponse = {
   hint: { fromZone: 'freecell', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
 };
 
+const withHintFromColState: FreeCellResponse = {
+  ...playingState,
+  hint: { fromZone: 'tableau', fromCol: 2, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+};
+
 const withFreeCellCardState: FreeCellResponse = {
   ...playingState,
   freeCells: [card('DIAMOND', 7), null, null, null],
@@ -315,6 +320,16 @@ describe('FreeCellPage', () => {
     await waitFor(() => expect(screen.getByText(/ヒント/)).toBeInTheDocument());
   });
 
+  it('hint display shows fromCol when fromCol is non-negative', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(withHintFromColState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByText(/tableau 2/)).toBeInTheDocument());
+  });
+
   // --- Keyboard shortcuts ---
 
   it('pressing h triggers hint in PLAYING phase', async () => {
@@ -559,5 +574,26 @@ describe('FreeCellPage', () => {
       const button = btn.closest('button') as HTMLButtonElement;
       expect(button).toBeDisabled();
     }
+  });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<FreeCellPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

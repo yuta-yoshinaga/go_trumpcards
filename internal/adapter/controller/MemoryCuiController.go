@@ -28,21 +28,15 @@ func (c *MemoryCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "flip":
-				pos, errMsg, ok := cuiutil.ParseIntArg(args, "Position is required.", "Invalid position: %s.", cuiutil.NoMin, cuiutil.NoMax)
-				if !ok {
-					return errMsg, true
-				}
-				return c.mi.Flip(pos), true
+				return cuiutil.WithParsedInt(args, "Position is required.", "Invalid position: %s.", cuiutil.NoMin, cuiutil.NoMax, c.mi.Flip)
 			case "n", "next":
 				return c.mi.Next(), true
 			case "sd", "setdifficulty":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.mi.GetConfig()
-				cfg.CpuDifficulty = domain.MemoryCpuDifficulty(v)
-				return c.mi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.mi.GetConfig()
+					cfg.CpuDifficulty = domain.MemoryCpuDifficulty(v)
+					return c.mi.ResetWithConfig(cfg)
+				})
 			case "log", "l":
 				return c.mi.ActionLog(), true
 			}

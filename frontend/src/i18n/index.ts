@@ -22,6 +22,7 @@ import enPoker from './locales/en/poker.json';
 import enSevens from './locales/en/sevens.json';
 import enSpades from './locales/en/spades.json';
 import enSpider from './locales/en/spider.json';
+import enTutorial from './locales/en/tutorial.json';
 import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
@@ -42,6 +43,7 @@ import jaPoker from './locales/ja/poker.json';
 import jaSevens from './locales/ja/sevens.json';
 import jaSpades from './locales/ja/spades.json';
 import jaSpider from './locales/ja/spider.json';
+import jaTutorial from './locales/ja/tutorial.json';
 
 i18n
   .use(LanguageDetector)
@@ -69,6 +71,7 @@ i18n
         ginrummy: jaGinrummy,
         spider: jaSpider,
         indianpoker: jaIndianpoker,
+        tutorial: jaTutorial,
       },
       en: {
         common: enCommon,
@@ -91,6 +94,7 @@ i18n
         ginrummy: enGinrummy,
         spider: enSpider,
         indianpoker: enIndianpoker,
+        tutorial: enTutorial,
       },
     },
     fallbackLng: 'ja',
@@ -116,6 +120,7 @@ i18n
       'ginrummy',
       'spider',
       'indianpoker',
+      'tutorial',
     ],
     detection: {
       order: ['localStorage'],

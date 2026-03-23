@@ -647,11 +647,15 @@ describe('KlondikePage', () => {
 
   // --- Feature 1: 3-card draw mode ---
 
-  it('renders draw mode selector', async () => {
+  it('renders draw mode selector with visible label', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByLabelText('ドローモード')).toBeInTheDocument());
     expect(screen.getByText('1枚引き')).toBeInTheDocument();
     expect(screen.getByText('3枚引き')).toBeInTheDocument();
+    const select = screen.getByLabelText('ドローモード');
+    expect(select).toHaveAttribute('id', 'draw-mode-select');
+    const label = document.querySelector('label[for="draw-mode-select"]');
+    expect(label).toBeInTheDocument();
   });
 
   it('changing draw mode resets game with config', async () => {
@@ -761,5 +765,26 @@ describe('KlondikePage', () => {
     mockExec.mockResolvedValue({ ...gameClearState, scoringMode: 1, score: 208 });
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText(/合計スコア:/)).toBeInTheDocument());
+  });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<KlondikePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

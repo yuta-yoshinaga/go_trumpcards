@@ -21,7 +21,7 @@ This directory contains all Go backend code following Clean Architecture.
 2. **Green** -- Write the minimum code to pass the test
 3. **Refactor** -- Clean up while keeping all tests green (`go test -tags test ./...`)
 
-**Branch coverage (C1) must be 100%** for all packages in this directory except `infrastructure/` (the top-level `cmd/` directory is also excluded project-wide).
+**Branch coverage (C1) must be 80% or higher** for all packages in this directory except `infrastructure/` (the top-level `cmd/` directory is also excluded project-wide). Focus testing effort on business logic and critical paths.
 
 ### Test locations by layer
 

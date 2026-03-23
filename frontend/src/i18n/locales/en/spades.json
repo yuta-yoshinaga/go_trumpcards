@@ -56,5 +56,22 @@
     "follow_suit": "Follow the lead suit",
     "trump_cut": "Cut with spades",
     "discard_high": "Discard a high card"
+  },
+  "tutorial": {
+    "bidControls": "In the bid phase, declare how many tricks you expect to win.",
+    "trickDisplay": "The current trick. Spades are always trump.",
+    "playerHand": "Your hand. You must follow the lead suit.",
+    "playButton": "Press this button to play the selected card.",
+    "scoreTable": "Score table. Meeting your bid earns points; failing costs points.",
+    "bagsInfo": "Accumulating 10 bags (overtricks) results in a 100-point penalty. Nil bids are also possible.",
+    "resetButton": "Press the reset button to start a new game."
+  },
+  "hint": {
+    "bidEstimate": "Bid based on high cards and spades",
+    "leadNonSpade": "Lead with a non-spade card",
+    "leadStrategic": "Lead strategically",
+    "followSuit": "Follow the led suit",
+    "trumpWithSpade": "Trump with a spade",
+    "discardLowest": "Discard your lowest card"
   }
 }

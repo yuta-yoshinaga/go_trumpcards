@@ -30,8 +30,17 @@ describe('buttonStyles', () => {
     expect(btnSecondary).toContain('bg-gray-600');
   });
 
-  it('base includes disabled:grayscale', () => {
-    expect(btnPrimary).toContain('disabled:grayscale');
+  it('base includes disabled:saturate-50', () => {
+    expect(btnPrimary).toContain('disabled:saturate-50');
+  });
+
+  it('base includes disabled:opacity-70', () => {
+    expect(btnPrimary).toContain('disabled:opacity-70');
+  });
+
+  it('base includes focusRingBlue styles', () => {
+    expect(btnPrimary).toContain('focus-visible:ring-blue-400');
+    expect(btnPrimary).toContain('focus-visible:ring-offset-2');
   });
 
   it('focusRingWhite includes focus-visible:ring-white/80', () => {

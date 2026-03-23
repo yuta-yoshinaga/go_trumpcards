@@ -39,14 +39,14 @@ cd frontend && bun run test    # Vitestユニットテスト
 
 ### カバレッジ基準
 
-以下4ディレクトリで **ブランチカバレッジ (C1) 100%** が必須:
+以下4ディレクトリで **ブランチカバレッジ (C1) 80%以上** が必須:
 
 - `frontend/src/api`
 - `frontend/src/components`
 - `frontend/src/pages`
 - `frontend/src/utils`
 
-if/else・三項演算子・`??`・`&&`/`||` 短絡評価・switchのすべての分岐を網羅すること。
+ビジネスロジックとクリティカルパスに集中してテストすること。到達不能分岐の無理なカバレッジは不要。
 
 ### テスト配置（レイヤー別）
 

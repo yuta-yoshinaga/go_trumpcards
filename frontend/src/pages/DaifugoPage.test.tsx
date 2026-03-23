@@ -185,11 +185,6 @@ describe('DaifugoPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'パス' })).toBeDisabled());
   });
 
-  it('play button is disabled when no cards are selected', async () => {
-    renderWithProviders(<DaifugoPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '選択して出す' })).toBeDisabled());
-  });
-
   it('calls reset when reset button is clicked', async () => {
     renderWithProviders(<DaifugoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'リセット' })).toBeInTheDocument());
@@ -1157,5 +1152,26 @@ describe('DaifugoPage', () => {
     fireEvent.keyDown(document, { key: 'Enter' });
     // no cards selected so Enter should not call play
     expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<DaifugoPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

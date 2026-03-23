@@ -20,5 +20,19 @@
   "cardSelected": "(交換選択中)",
   "settings": {
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "playerHand": "あなたの手札です。カードをクリックして交換するカードを選びます。",
+    "exchangeButton": "選んだカードを交換できます。交換しない場合はスタンドを押します。",
+    "betControls": "ベットアクションを選びます。コール・レイズ・フォールドなどが可能です。",
+    "resultMessage": "ゲームの結果が表示されます。役の強さで勝敗が決まります。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "keepHand": "良い手役なのでそのまま維持推奨",
+    "exchangeWeak": "手札が弱いので交換推奨",
+    "strongHand": "強い手役なのでレイズ推奨",
+    "decentHand": "そこそこの手役なのでコール推奨",
+    "weakHand": "弱い手札なのでフォールド推奨"
   }
 }

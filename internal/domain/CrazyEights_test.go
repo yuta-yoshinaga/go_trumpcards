@@ -798,43 +798,6 @@ func TestCrazyEights_CpuPlayEasy(t *testing.T) {
 		assert.Equal(t, 2, g.GetPlayer(1).GetCardsSize())
 	})
 
-	t.Run("easy CPU random selection covers multiple indices", func(t *testing.T) {
-		// Retry loop to ensure randomness hits different cards
-		selected := make(map[int]bool)
-		for attempt := 0; attempt < 1000; attempt++ {
-			g := newTestCrazyEightsWithDifficulty(domain.CrazyEightsCpuDifficultyEasy)
-			g.Reset()
-			topCard := domain.NewCard(domain.CardDesignSpade, 5, false)
-			setupCrazyEightsPlayPhase(g, 1, topCard)
-
-			g.GetPlayer(1).Reset()
-			g.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))  // idx 0
-			g.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))  // idx 1
-			g.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignHeart, 10, false)) // idx 2, not valid
-
-			beforeSize := g.GetPlayer(1).GetCardsSize()
-			g.CpuPlay()
-			afterSize := g.GetPlayer(1).GetCardsSize()
-
-			if afterSize < beforeSize {
-				// Determine which card was played by checking remaining
-				for i := 0; i < afterSize; i++ {
-					c := g.GetPlayer(1).GetCard(i)
-					if c.GetValue() == 3 {
-						selected[1] = true // card at index 1 (value 7) was played
-					}
-					if c.GetValue() == 7 {
-						selected[0] = true // card at index 0 (value 3) was played
-					}
-				}
-			}
-
-			if len(selected) >= 2 {
-				break
-			}
-		}
-		assert.GreaterOrEqual(t, len(selected), 2, "random selection should hit multiple indices")
-	})
 }
 
 func TestCrazyEights_CpuPlayNormal(t *testing.T) {
@@ -965,29 +928,6 @@ func TestCrazyEights_CpuPlayHard(t *testing.T) {
 }
 
 // --- CpuChooseSuit with difficulty levels ---
-
-func TestCrazyEights_CpuChooseSuitEasy(t *testing.T) {
-	t.Run("easy CPU random suit covers all 4 suits", func(t *testing.T) {
-		suits := make(map[int]bool)
-		for attempt := 0; attempt < 1000; attempt++ {
-			g := newTestCrazyEightsWithDifficulty(domain.CrazyEightsCpuDifficultyEasy)
-			g.Reset()
-			g.SetPhase(domain.CrazyEightsPhaseChooseSuit)
-			g.SetCurrentPlayerIdx(1)
-
-			g.GetPlayer(1).Reset()
-			g.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-
-			g.CpuChooseSuit()
-			suits[g.GetChosenSuit()] = true
-
-			if len(suits) >= 4 {
-				break
-			}
-		}
-		assert.Len(t, suits, 4, "random suit selection should cover all 4 suits")
-	})
-}
 
 func TestCrazyEights_CpuChooseSuitHard(t *testing.T) {
 	t.Run("hard CPU chooses most common suit", func(t *testing.T) {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -7,6 +8,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
@@ -14,13 +16,16 @@ import { RoundResults } from '../components/RoundResults';
 import { PokerSkeleton } from '../components/skeleton/PokerSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { usePokerGame } from '../hooks/usePokerGame';
-import { btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { PokerPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 
 const POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
@@ -31,13 +36,81 @@ const POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
   [PokerPhase.END]: 'end',
 };
 
+/** Poker tutorial step definitions. */
+const PK_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="pk-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pk-exchange-button"]',
+    messageKey: 'tutorial.exchangeButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pk-bet-controls"]',
+    messageKey: 'tutorial.betControls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pk-result-message"]',
+    messageKey: 'tutorial.resultMessage',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="pk-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Poker tutorial configuration. */
+const PK_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'poker',
+  steps: PK_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Poker tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
 /** Renders the 5-card Draw Poker game page with betting and card exchange. */
 export function PokerPage() {
+  const { t: tPk } = useTranslation('poker');
+  return (
+    <TutorialProvider config={PK_TUTORIAL_CONFIG} translateMessage={tPk}>
+      <PokerPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Poker page, wrapped by TutorialProvider. */
+function PokerPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('poker');
   const phaseNames = usePhaseNames('poker', POKER_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec, selected, toggleCard, clearSelection, odds, canExchange } = usePokerGame();
+  const { hint, hintEnabled, setHintEnabled } = useGameHint('poker', state);
   const [betAmount, setBetAmount] = useState(10);
   const [bettingLimit, setBettingLimit] = useState(0);
   const [isLowball, setIsLowball] = useState(false);
@@ -95,6 +168,7 @@ export function PokerPage() {
         <span>
           {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
         </span>
+        <TutorialButton />
         <span>
           {tc('label.dealer')} <strong>Player {state?.dealerIdx ?? 0}</strong>
         </span>
@@ -151,7 +225,7 @@ export function PokerPage() {
       <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
         {/* Human player */}
         {humanPlayer && (
-          <div className="mb-2">
+          <div className="mb-2" data-tutorial="pk-player-hand">
             <div className="text-white text-lg mb-1">
               {t('yourHand')}
               <span className="ml-3 text-xs">
@@ -200,12 +274,14 @@ export function PokerPage() {
         )}
 
         {/* Message */}
-        <GameMessageBox
-          message={state?.message}
-          messageCode={state?.messageCode}
-          messageParams={state?.messageParams}
-          alwaysVisible
-        />
+        <div data-tutorial="pk-result-message">
+          <GameMessageBox
+            message={state?.message}
+            messageCode={state?.messageCode}
+            messageParams={state?.messageParams}
+            alwaysVisible
+          />
+        </div>
 
         {/* Action log */}
         <ActionLogSection
@@ -217,23 +293,28 @@ export function PokerPage() {
 
         <ErrorAlert message={error} />
 
+        {/* Hint display */}
+        {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+
         {/* Betting controls */}
         {canAct && (
-          <BettingControls
-            inputId="pokerBetAmount"
-            betAmount={betAmount}
-            onBetAmountChange={setBetAmount}
-            minRaise={minRaise}
-            maxBetAmount={state?.maxBetAmount}
-            hasOutstandingBet={hasOutstandingBet}
-            loading={loading}
-            onCall={() => exec('call', undefined, undefined, undefined, getElapsed())}
-            onRaise={() => exec('raise', undefined, betAmount, undefined, getElapsed())}
-            onBet={() => exec('bet', undefined, betAmount, undefined, getElapsed())}
-            onCheck={() => exec('check', undefined, undefined, undefined, getElapsed())}
-            onFold={() => exec('fold', undefined, undefined, undefined, getElapsed())}
-            onAllIn={() => exec('allin', undefined, undefined, undefined, getElapsed())}
-          />
+          <div data-tutorial="pk-bet-controls">
+            <BettingControls
+              inputId="pokerBetAmount"
+              betAmount={betAmount}
+              onBetAmountChange={setBetAmount}
+              minRaise={minRaise}
+              maxBetAmount={state?.maxBetAmount}
+              hasOutstandingBet={hasOutstandingBet}
+              loading={loading}
+              onCall={() => exec('call', undefined, undefined, undefined, getElapsed())}
+              onRaise={() => exec('raise', undefined, betAmount, undefined, getElapsed())}
+              onBet={() => exec('bet', undefined, betAmount, undefined, getElapsed())}
+              onCheck={() => exec('check', undefined, undefined, undefined, getElapsed())}
+              onFold={() => exec('fold', undefined, undefined, undefined, getElapsed())}
+              onAllIn={() => exec('allin', undefined, undefined, undefined, getElapsed())}
+            />
+          </div>
         )}
 
         {/* Draw odds panel */}
@@ -253,7 +334,7 @@ export function PokerPage() {
 
         {/* Exchange controls */}
         {canExchange && (
-          <div className="text-center mb-2">
+          <div className="text-center mb-2" data-tutorial="pk-exchange-button">
             <button
               type="button"
               className={`${btnWarning} min-w-[90px]`}
@@ -295,10 +376,15 @@ export function PokerPage() {
             <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
             {t('settings.cpuMetaAI')}
           </label>
+          <label className="text-white text-sm flex items-center gap-1">
+            <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
+            {tc('hint.toggle', { ns: 'tutorial' })}
+          </label>
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
+            data-tutorial="pk-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();

@@ -54,31 +54,23 @@ func (c *HeartsCuiController) Exec(command string) string {
 				}
 				return cuiutil.PrependSkippedWarning(result, skipped), true
 			case "p", "play":
-				idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
-				if !ok {
-					return errMsg, true
-				}
-				return c.hi.Play(idx), true
+				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.hi.Play)
 			case "n", "next":
 				return c.hi.NextTrick(), true
 			case "nr", "nextround":
 				return c.hi.NextRound(), true
 			case "sd", "setdifficulty":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.hi.GetConfig()
-				cfg.CpuDifficulty = domain.HeartsCpuDifficulty(v)
-				return c.hi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.hi.GetConfig()
+					cfg.CpuDifficulty = domain.HeartsCpuDifficulty(v)
+					return c.hi.ResetWithConfig(cfg)
+				})
 			case "sl", "setlimit":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.hi.GetConfig()
-				cfg.PointLimit = v
-				return c.hi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+					cfg := c.hi.GetConfig()
+					cfg.PointLimit = v
+					return c.hi.ResetWithConfig(cfg)
+				})
 			case "h", "hint":
 				return c.hi.Hint(), true
 			case "log", "l":

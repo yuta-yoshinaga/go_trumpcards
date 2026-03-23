@@ -105,10 +105,7 @@ func (c *NapoleonWebConfig) ToConfig() domain.NapoleonConfig {
 
 // ToConfig builds a NapoleonConfig from the web input.
 func (p NapoleonWebInput) ToConfig() domain.NapoleonConfig {
-	if p.Config != nil {
-		return p.Config.ToConfig()
-	}
-	return domain.DefaultNapoleonConfig()
+	return configOrDefault(p.Config, (*NapoleonWebConfig).ToConfig, domain.DefaultNapoleonConfig())
 }
 
 // NapoleonWebController ナポレオンWebコントローラークラス

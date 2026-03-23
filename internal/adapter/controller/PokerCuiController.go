@@ -65,29 +65,23 @@ func (pcc *PokerCuiController) Exec(command string) string {
 			case "a", "allin":
 				return pcc.pi.Action(domain.PokerActionAllIn, 0, 0), true
 			case "bl", "bettinglimit":
-				bl, errMsg, ok := cuiutil.ParseIntArg(args, "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", "Invalid betting limit: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := pcc.pi.GetConfig()
-				cfg.BettingLimit = domain.BettingLimitType(bl)
-				return pcc.pi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", "Invalid betting limit: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := pcc.pi.GetConfig()
+					cfg.BettingLimit = domain.BettingLimitType(v)
+					return pcc.pi.ResetWithConfig(cfg)
+				})
 			case "scc", "setcpucount":
-				count, errMsg, ok := cuiutil.ParseIntArg(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter 1-3.", 1, 3)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := pcc.pi.GetConfig()
-				cfg.CpuCount = count
-				return pcc.pi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter 1-3.", 1, 3, func(v int) string {
+					cfg := pcc.pi.GetConfig()
+					cfg.CpuCount = v
+					return pcc.pi.ResetWithConfig(cfg)
+				})
 			case "sjc", "setjokercount":
-				count, errMsg, ok := cuiutil.ParseIntArg(args, "Joker count is required.", "Invalid joker count: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := pcc.pi.GetConfig()
-				cfg.JokerCount = count
-				return pcc.pi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "Joker count is required.", "Invalid joker count: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := pcc.pi.GetConfig()
+					cfg.JokerCount = v
+					return pcc.pi.ResetWithConfig(cfg)
+				})
 			case "o", "odds":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
 				return cuiutil.PrependSkippedWarning(pcc.pi.Odds(indices), skipped), true

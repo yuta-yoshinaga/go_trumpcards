@@ -57,11 +57,7 @@ func (ni *NapoleonInteractor) Reset() string {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (ni *NapoleonInteractor) ResetWithConfig(cfg domain.NapoleonConfig) string {
-	if err := cfg.Validate(); err != nil {
-		return ni.np.Output(ni.n, err)
-	}
-	ni.n.SetConfig(cfg)
-	return ni.Reset()
+	return resetWithValidatedConfig(ni.n, ni.np, cfg, ni.n.SetConfig, ni.Reset)
 }
 
 // Bid ビッドを宣言

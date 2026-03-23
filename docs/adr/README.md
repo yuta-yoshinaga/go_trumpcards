@@ -25,7 +25,7 @@ Each ADR follows the format:
 | [ADR-0006](0006-openapi-specification.md) | OpenAPI specification as API contract | Accepted | 2026-02-21 |
 | [ADR-0007](0007-tailwind-css.md) | Tailwind CSS (replacing Bootstrap) | Accepted | 2026-02-21 |
 | [ADR-0008](0008-biome-linter.md) | Biome for linting and formatting (replacing ESLint) | Accepted | 2026-02-21 |
-| [ADR-0009](0009-tdd-and-coverage.md) | TDD cycle and 100% branch coverage requirement | Accepted | 2026-02-19 |
+| [ADR-0009](0009-tdd-and-coverage.md) | TDD cycle and 100% branch coverage requirement | Superseded by ADR-0026 | 2026-02-19 |
 | [ADR-0010](0010-tanstack-react-query.md) | TanStack React Query for API state management | Accepted | 2026-03-04 |
 | [ADR-0011](0011-i18n-react-i18next.md) | i18n with react-i18next and browser language detection | Accepted | 2026-03-05 |
 | [ADR-0012](0012-playwright-e2e.md) | Playwright for E2E testing | Accepted | 2026-03-04 |
@@ -41,3 +41,5 @@ Each ADR follows the format:
 | [ADR-0022](0022-automated-quality-gates.md) | Automated quality gates via Claude Code hooks | Accepted | 2026-03-20 |
 | [ADR-0023](0023-api-documentation.md) | GoDoc/TSDoc + GitHub PagesによるAPIドキュメント自動生成 | Accepted | 2026-03-20 |
 | [ADR-0024](0024-fluid-tactile-ui-redesign.md) | Fluid & Tactile UIリデザイン | Accepted | 2026-03-21 |
+| [ADR-0025](0025-tutorial-system.md) | インタラクティブチュートリアルシステム | Accepted | 2026-03-23 |
+| [ADR-0026](0026-relax-coverage-target.md) | ブランチカバレッジ基準を100%から80%に緩和 | Accepted | 2026-03-23 |

@@ -339,8 +339,7 @@ describe('CrazyEightsPage', () => {
     mockExec.mockResolvedValue(unknownSuitState);
     renderWithProviders(<CrazyEightsPage />);
     await waitFor(() => {
-      expect(screen.getByText(/指定スート/)).toBeInTheDocument();
-      expect(screen.getByText(/\?/)).toBeInTheDocument();
+      expect(screen.getByText(/指定スート: \?/)).toBeInTheDocument();
     });
   });
 
@@ -628,5 +627,26 @@ describe('CrazyEightsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
 
     await waitFor(() => expect(screen.queryByText('棋譜')).not.toBeInTheDocument());
+  });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

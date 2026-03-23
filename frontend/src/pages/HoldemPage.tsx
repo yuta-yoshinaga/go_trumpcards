@@ -21,9 +21,80 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+
+/** Texas Hold'em tutorial step definitions. */
+const HE_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="he-community-cards"]',
+    messageKey: 'tutorial.communityCards',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="he-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="he-action-buttons"]',
+    messageKey: 'tutorial.actionButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="he-pot-display"]',
+    messageKey: 'tutorial.potDisplay',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="he-cpu-area"]',
+    messageKey: 'tutorial.cpuArea',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="he-learning-mode"]',
+    messageKey: 'tutorial.learningMode',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="he-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Tutorial button that starts the Texas Hold'em tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
+/** Texas Hold'em tutorial configuration. */
+const HE_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'holdem',
+  steps: HE_TUTORIAL_STEPS,
+};
 
 const HOLDEM_PHASE_KEYS: Readonly<Record<number, string>> = {
   [HoldemPhase.PRE_FLOP]: 'preFlop',
@@ -37,8 +108,11 @@ const HOLDEM_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 function StatTooltip({ id, label, tooltipText }: { id: string; label: string; tooltipText: string }) {
   return (
-    // biome-ignore lint/a11y/noNoninteractiveTabindex: tabIndex needed for keyboard tooltip access
-    <span className="group relative cursor-help" tabIndex={0} aria-describedby={id}>
+    <button
+      type="button"
+      className="group relative cursor-help bg-transparent border-none p-0 font-inherit text-inherit inline"
+      aria-describedby={id}
+    >
       {label}
       <span
         id={id}
@@ -47,7 +121,7 @@ function StatTooltip({ id, label, tooltipText }: { id: string; label: string; to
       >
         {tooltipText}
       </span>
-    </span>
+    </button>
   );
 }
 
@@ -65,6 +139,16 @@ function HudStats({ vpip, pfr, threeBet, af }: { vpip: number; pfr: number; thre
 
 /** Renders the Texas Hold'em game page with community cards, betting, and showdown. */
 export function HoldemPage() {
+  const { t: tHoldem } = useTranslation('holdem');
+  return (
+    <TutorialProvider config={HE_TUTORIAL_CONFIG} translateMessage={tHoldem}>
+      <HoldemPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Texas Hold'em page, wrapped by TutorialProvider. */
+function HoldemPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('holdem');
   const phaseNames = usePhaseNames('holdem', HOLDEM_PHASE_KEYS);
@@ -143,7 +227,7 @@ export function HoldemPage() {
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green-poker" aria-busy={loading} aria-live="polite">
       {/* Phase indicator + info bar */}
       <PhaseIndicator phaseName={phaseNames[phase] ?? t('phase.init')} isHumanTurn={canAct}>
-        <span>
+        <span data-tutorial="he-pot-display">
           {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
         </span>
         <span>
@@ -158,12 +242,13 @@ export function HoldemPage() {
         {state?.tournamentMode && (
           <span>{t('handNumber', { count: state.handCount, level: state.blindLevelHands })}</span>
         )}
+        <TutorialButton />
       </PhaseIndicator>
 
       {/* Scrollable: community cards + CPU players */}
       <div className="flex-1 overflow-y-auto pt-4 px-5">
         {/* Community cards */}
-        <div className="mb-4">
+        <div className="mb-4" data-tutorial="he-community-cards">
           <div className="text-white text-lg mb-1.5">{t('communityCards')}</div>
           <div className="flex flex-wrap gap-2">
             {state?.communityCards?.length
@@ -180,20 +265,22 @@ export function HoldemPage() {
         </div>
 
         {/* CPU players */}
-        {state?.players
-          ?.filter((p) => !p.isHuman)
-          .map((p) => (
-            <CpuPlayerCard
-              key={p.id}
-              player={p}
-              showCards={isShowdown}
-              faceDownCount={2}
-              showHandName={isShowdown}
-              extraInfo={
-                p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
-              }
-            />
-          ))}
+        <div data-tutorial="he-cpu-area">
+          {state?.players
+            ?.filter((p) => !p.isHuman)
+            .map((p) => (
+              <CpuPlayerCard
+                key={p.id}
+                player={p}
+                showCards={isShowdown}
+                faceDownCount={2}
+                showHandName={isShowdown}
+                extraInfo={
+                  p.totalHands > 0 ? <HudStats vpip={p.vpip} pfr={p.pfr} threeBet={p.threeBet} af={p.af} /> : undefined
+                }
+              />
+            ))}
+        </div>
 
         {/* CPU actions log */}
         <CpuActionLog actions={state?.cpuActions} />
@@ -213,7 +300,11 @@ export function HoldemPage() {
       {/* Sticky footer: player hand + buttons */}
       <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
         {/* Learning mode toggle */}
-        <div className="flex items-center gap-2 mb-2" data-testid="learning-mode-toggle">
+        <div
+          className="flex items-center gap-2 mb-2"
+          data-testid="learning-mode-toggle"
+          data-tutorial="he-learning-mode"
+        >
           <label htmlFor="learningModeCheckbox" className="text-white text-sm cursor-pointer">
             {t('learning.toggle')}
           </label>
@@ -232,7 +323,7 @@ export function HoldemPage() {
 
         {/* Human player */}
         {humanPlayer && (
-          <div className="mb-2">
+          <div className="mb-2" data-tutorial="he-player-hand">
             <div className="text-white text-lg mb-1">
               {t('yourHand')}
               <span className="ml-3 text-xs">
@@ -361,25 +452,27 @@ export function HoldemPage() {
 
         {/* Betting controls */}
         {canAct && (
-          <BettingControls
-            inputId="holdemBetAmount"
-            betAmount={betAmount}
-            onBetAmountChange={setBetAmount}
-            minRaise={minRaise}
-            maxBetAmount={state?.maxBetAmount}
-            hasOutstandingBet={hasOutstandingBet}
-            loading={loading}
-            onCall={() => exec('call', undefined, undefined, getElapsed())}
-            onRaise={() => exec('raise', betAmount, undefined, getElapsed())}
-            onBet={() => exec('bet', betAmount, undefined, getElapsed())}
-            onCheck={() => exec('check', undefined, undefined, getElapsed())}
-            onFold={() => exec('fold', undefined, undefined, getElapsed())}
-            onAllIn={() => exec('allin', undefined, undefined, getElapsed())}
-          />
+          <div data-tutorial="he-action-buttons">
+            <BettingControls
+              inputId="holdemBetAmount"
+              betAmount={betAmount}
+              onBetAmountChange={setBetAmount}
+              minRaise={minRaise}
+              maxBetAmount={state?.maxBetAmount}
+              hasOutstandingBet={hasOutstandingBet}
+              loading={loading}
+              onCall={() => exec('call', undefined, undefined, getElapsed())}
+              onRaise={() => exec('raise', betAmount, undefined, getElapsed())}
+              onBet={() => exec('bet', betAmount, undefined, getElapsed())}
+              onCheck={() => exec('check', undefined, undefined, getElapsed())}
+              onFold={() => exec('fold', undefined, undefined, getElapsed())}
+              onAllIn={() => exec('allin', undefined, undefined, getElapsed())}
+            />
+          </div>
         )}
 
         {/* Settings + Reset */}
-        <div className="text-center flex items-center justify-center gap-3">
+        <div className="text-center flex items-center justify-center gap-3" data-tutorial="he-reset-button">
           <label className="text-white text-sm flex items-center gap-1">
             <input type="checkbox" checked={cpuMetaAI} onChange={(e) => setCpuMetaAI(e.target.checked)} />
             {t('settings.cpuMetaAI')}

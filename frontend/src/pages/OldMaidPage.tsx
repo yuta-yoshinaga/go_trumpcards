@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -16,13 +17,76 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { OldMaidMode, useOldMaidGame } from '../hooks/useOldMaidGame';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import type { CpuAction } from '../types/card';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName } from '../utils/playerUtils';
 
+/** Old Maid tutorial step definitions. */
+const OM_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="om-cpu-area"]',
+    messageKey: 'tutorial.cpuArea',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="om-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="om-draw-button"]',
+    messageKey: 'tutorial.drawButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="om-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Old Maid tutorial configuration. */
+const OM_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'oldmaid',
+  steps: OM_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Old Maid tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
 /** Renders the Old Maid game page with setup screen, player areas, and draw history. */
 export function OldMaidPage() {
+  const { t: tOm } = useTranslation('oldmaid');
+  return (
+    <TutorialProvider config={OM_TUTORIAL_CONFIG} translateMessage={tOm}>
+      <OldMaidPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Old Maid page, wrapped by TutorialProvider. */
+function OldMaidPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('oldmaid');
   const {
@@ -127,7 +191,7 @@ export function OldMaidPage() {
         )}
 
         {/* CPU row */}
-        <div className="flex gap-2 flex-wrap mb-2 justify-center">
+        <div className="flex gap-2 flex-wrap mb-2 justify-center" data-tutorial="om-cpu-area">
           {cpuPlayers.map((player) => (
             <OldMaidPlayerArea
               key={player.id}
@@ -220,7 +284,7 @@ export function OldMaidPage() {
       <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         {/* Human player */}
         {humanPlayer && (
-          <div className="mb-2">
+          <div className="mb-2" data-tutorial="om-player-hand">
             <OldMaidPlayerArea
               player={humanPlayer}
               isTarget={false}
@@ -238,6 +302,7 @@ export function OldMaidPage() {
 
         {/* Buttons */}
         <div className="text-center">
+          <TutorialButton />
           <button
             type="button"
             className={`${btnSecondary} min-w-[80px]`}
@@ -249,27 +314,31 @@ export function OldMaidPage() {
           >
             {t('button.settings')}
           </button>
-          <button
-            type="button"
-            className={`${btnPrimary} min-w-[80px]`}
-            disabled={loading}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                handleReset();
-              })
-            }
-          >
-            {tc('button.reset')}
-          </button>
-          <button
-            type="button"
-            className={`${btnWarning} min-w-[110px]`}
-            disabled={loading || !isHumanTurn || state.gameEndFlag}
-            onClick={() => exec('draw')}
-          >
-            {t('button.drawRandom')}
-          </button>
+          <span data-tutorial="om-reset-button">
+            <button
+              type="button"
+              className={`${btnPrimary} min-w-[80px]`}
+              disabled={loading}
+              onClick={() =>
+                requestConfirm(() => {
+                  hideActionLog();
+                  handleReset();
+                })
+              }
+            >
+              {tc('button.reset')}
+            </button>
+          </span>
+          <span data-tutorial="om-draw-button">
+            <button
+              type="button"
+              className={`${btnWarning} min-w-[110px]`}
+              disabled={loading || !isHumanTurn || state.gameEndFlag}
+              onClick={() => exec('draw')}
+            >
+              {t('button.drawRandom')}
+            </button>
+          </span>
           <button
             type="button"
             className={`${btnSecondary} min-w-[110px]`}

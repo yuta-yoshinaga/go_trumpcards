@@ -70,21 +70,17 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				}
 				return c.dgi.Sort(mode), true
 			case "sd", "setdifficulty":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.dgi.GetConfig()
-				cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(v)
-				return c.dgi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Normal, 1=Easy, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.dgi.GetConfig()
+					cfg.CpuDifficulty = domain.DaifugoCpuDifficulty(v)
+					return c.dgi.ResetWithConfig(cfg)
+				})
 			case "sj", "setjoker":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "Joker count is required (0-2).", "Invalid joker count: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.dgi.GetConfig()
-				cfg.JokerCount = v
-				return c.dgi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "Joker count is required (0-2).", "Invalid joker count: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.dgi.GetConfig()
+					cfg.JokerCount = v
+					return c.dgi.ResetWithConfig(cfg)
+				})
 			case "sr", "setrule":
 				if len(args) < 2 {
 					return "Usage: sr <rule> <0|1>. Rules: 8cut, 11back, seq, exchange, 5skip, 7pass, 10discard, spade3, capital, 9reverse, coupdetat, numberlock, sandstorm, emperor, seqrev, illegal, 12bomber. Use 'suitlockmode' for suit lock (0-2), '5skipcount' for skip count.", true
@@ -101,21 +97,17 @@ func (c *DaifugoCuiController) Exec(command string) string {
 				setter(&cfg, v == 1)
 				return c.dgi.ResetWithConfig(cfg), true
 			case "suitlockmode":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "Suit lock mode is required (0=none, 1=partial, 2=full).", "Invalid suit lock mode: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.dgi.GetConfig()
-				cfg.SuitLockMode = domain.DaifugoSuitLockMode(v)
-				return c.dgi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "Suit lock mode is required (0=none, 1=partial, 2=full).", "Invalid suit lock mode: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.dgi.GetConfig()
+					cfg.SuitLockMode = domain.DaifugoSuitLockMode(v)
+					return c.dgi.ResetWithConfig(cfg)
+				})
 			case "5skipcount":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "Five skip count is required (1-5).", "Invalid five skip count: %s. Please enter 1-5.", 1, 5)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.dgi.GetConfig()
-				cfg.FiveSkipCount = v
-				return c.dgi.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "Five skip count is required (1-5).", "Invalid five skip count: %s. Please enter 1-5.", 1, 5, func(v int) string {
+					cfg := c.dgi.GetConfig()
+					cfg.FiveSkipCount = v
+					return c.dgi.ResetWithConfig(cfg)
+				})
 			}
 			return "", false
 		},

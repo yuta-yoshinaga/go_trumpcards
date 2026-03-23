@@ -53,7 +53,9 @@ describe('DoubtHandCard', () => {
 
   it('has selected border when selected', () => {
     render(<DoubtHandCard card={card} index={0} selected={true} selectable={true} onToggle={vi.fn()} />);
-    expect(screen.getByTestId('hand-card').style.border).toBe('3px solid var(--color-game-card-selected)');
+    expect(screen.getByTestId('hand-card').getAttribute('style')).toContain(
+      'border-color: var(--color-game-card-selected)',
+    );
   });
 
   it('has transparent border when not selected', () => {

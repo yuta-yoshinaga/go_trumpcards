@@ -41,5 +41,13 @@
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "drawArea": "Draw a card from the stock pile or discard pile.",
+    "playerHand": "This is your hand. Form melds (sets of 3+ cards) to reduce deadwood.",
+    "discardButton": "Discard one card from your hand.",
+    "knockButton": "Knock when your deadwood is low. Gin means zero deadwood.",
+    "scoreTable": "Player scores are shown here.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

@@ -52,11 +52,7 @@ func (si *SpadesInteractor) Reset() string {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (si *SpadesInteractor) ResetWithConfig(cfg domain.SpadesConfig) string {
-	if err := cfg.Validate(); err != nil {
-		return si.sp.Output(si.s, err)
-	}
-	si.s.SetConfig(cfg)
-	return si.Reset()
+	return resetWithValidatedConfig(si.s, si.sp, cfg, si.s.SetConfig, si.Reset)
 }
 
 // Bid ビッドを宣言

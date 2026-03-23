@@ -30,5 +30,11 @@
   "road": {
     "title": "Big Road",
     "clear": "Clear History"
+  },
+  "tutorial": {
+    "betControls": "Set your bet amount and target (Player, Banker, or Tie) here. You can also place side bets.",
+    "playerHand": "This is the Player's hand. The hand closest to 9 wins.",
+    "bankerHand": "This is the Banker's hand. Compare values to determine the winner.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

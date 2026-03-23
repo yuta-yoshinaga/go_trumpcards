@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DoubtCpuArea } from '../components/doubt/DoubtCpuArea';
@@ -21,13 +22,88 @@ import {
   useDoubtGame,
 } from '../hooks/useDoubtGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingBlue } from '../styles/buttonStyles';
 import type { DoubtCpuAction } from '../types/card';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
 
+/** Doubt tutorial step definitions. */
+const DT_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="dt-table-area"]',
+    messageKey: 'tutorial.tableArea',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="dt-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="dt-claim-input"]',
+    messageKey: 'tutorial.claimInput',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="dt-play-button"]',
+    messageKey: 'tutorial.playButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="dt-doubt-window"]',
+    messageKey: 'tutorial.doubtWindow',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="dt-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Doubt tutorial configuration. */
+const DT_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'doubt',
+  steps: DT_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Doubt tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
 /** Renders the Doubt game page with card play, doubt window countdown, and config. */
 export function DoubtPage() {
+  const { t: tDt } = useTranslation('doubt');
+  return (
+    <TutorialProvider config={DT_TUTORIAL_CONFIG} translateMessage={tDt}>
+      <DoubtPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Doubt page, wrapped by TutorialProvider. */
+function DoubtPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('doubt');
   const {
@@ -53,6 +129,16 @@ export function DoubtPage() {
   const { cardWidth } = useCardDimensions();
 
   const claimInputRef = useRef<HTMLInputElement>(null);
+  const [valWarning, setValWarning] = useState(false);
+  const warningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (warningTimeoutRef.current) {
+        clearTimeout(warningTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const isHumanTurn = !state?.gameEndFlag && state?.players[state.currentTurn]?.isHuman === true;
   const showClaimInput = selectedCardIndices.length > 0 && isHumanTurn && state?.phase === 0;
@@ -92,7 +178,9 @@ export function DoubtPage() {
       <PhaseIndicator
         phaseName={state.gameEndFlag ? t('phase.end') : state.phase === 1 ? t('phase.doubt') : t('phase.play')}
         isHumanTurn={isHumanTurn}
-      />
+      >
+        <TutorialButton />
+      </PhaseIndicator>
       {/* Settings panel */}
       <SettingsPanel
         title={t('settings.title')}
@@ -160,7 +248,7 @@ export function DoubtPage() {
         </div>
 
         {/* Table area */}
-        <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2">
+        <div className="bg-black/30 rounded-[10px] py-2.5 px-3.5 my-2" data-tutorial="dt-table-area">
           <div className="text-white font-bold mb-1">{t('table')}</div>
           <div className="text-game-text-muted text-sm">{t('tableCards', { count: state.tableCardCount })}</div>
           {state.lastAction && (
@@ -170,12 +258,14 @@ export function DoubtPage() {
 
         {/* Doubt/Skip UI */}
         {isDoubtPhase && !state.gameEndFlag && (
-          <div className="bg-black/40 rounded-[10px] py-3 px-4 my-2">
+          <div className="bg-black/40 rounded-[10px] py-3 px-4 my-2" data-tutorial="dt-doubt-window">
             {cpuPlayed ? (
               <>
                 <div className="text-white font-bold mb-2">{t('doubtQuestion')}</div>
                 {countdown !== null && (
-                  <div className="text-yellow-300 text-lg font-bold mb-2">{t('countdown', { sec: countdown })}</div>
+                  <div className="text-yellow-300 text-lg font-bold mb-2" aria-live="assertive" aria-atomic="true">
+                    {t('countdown', { sec: countdown })}
+                  </div>
                 )}
                 {state.cpuDoubters.length > 0 && (
                   <div className="text-game-text-muted text-xs mb-2">
@@ -285,7 +375,7 @@ export function DoubtPage() {
       <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {/* Human player info */}
         {humanPlayer && (
-          <div className="mb-2">
+          <div className="mb-2" data-tutorial="dt-player-hand">
             <div className="text-white font-bold text-sm mb-1">
               {t('yourCards', { count: humanPlayer.cardCount })}
               {isHumanTurn && state.phase === 0 && (
@@ -308,7 +398,7 @@ export function DoubtPage() {
 
             {/* Claimed value input (shown when cards are selected) */}
             {showClaimInput && (
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-2" data-tutorial="dt-claim-input">
                 <label htmlFor="claim-input" className="text-white text-sm">
                   {t('claimedValue')}
                 </label>
@@ -319,13 +409,25 @@ export function DoubtPage() {
                   max={13}
                   value={claimedValue}
                   id="claim-input"
+                  aria-describedby="claim-range-hint"
                   onChange={(e) => {
                     const num = Number(e.target.value);
-                    setClaimedValue(Math.max(1, Math.min(13, num)));
+                    const clamped = Math.max(1, Math.min(13, num));
+                    setClaimedValue(clamped);
+                    if (num !== clamped) {
+                      if (warningTimeoutRef.current) {
+                        clearTimeout(warningTimeoutRef.current);
+                      }
+                      setValWarning(true);
+                      warningTimeoutRef.current = setTimeout(() => setValWarning(false), 2000);
+                    }
                   }}
                   className={`bg-black/50 text-white rounded px-2 py-1 w-16 text-sm border border-white/30 ${focusRingBlue}`}
                 />
                 <span className="text-game-text-muted text-xs">({valueName(claimedValue)})</span>
+                <span id="claim-range-hint" className={`text-xs ${valWarning ? 'text-yellow-400' : 'text-gray-400'}`}>
+                  {valWarning ? t('claimRangeWarning') : t('claimRangeHint')}
+                </span>
               </div>
             )}
           </div>
@@ -339,6 +441,7 @@ export function DoubtPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
+            data-tutorial="dt-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
@@ -354,6 +457,7 @@ export function DoubtPage() {
               className={`${btnSuccess} min-w-[90px]`}
               disabled={loading || selectedCardIndices.length === 0}
               onClick={handlePlay}
+              data-tutorial="dt-play-button"
             >
               {t('playButton')}
             </button>

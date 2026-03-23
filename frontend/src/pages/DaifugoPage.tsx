@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { DaifugoCpuArea } from '../components/daifugo/DaifugoCpuArea';
 import { DaifugoExchangeLog } from '../components/daifugo/DaifugoExchangeLog';
@@ -16,13 +17,94 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useDaifugoGame } from '../hooks/useDaifugoGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
 import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import type { DaifugoAction } from '../types/card';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardLabel } from '../utils/cardUtils';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 
+/** Daifugo tutorial step definitions. */
+const DF_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="df-table-cards"]',
+    messageKey: 'tutorial.tableCards',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="df-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="df-play-pass"]',
+    messageKey: 'tutorial.playPass',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="df-rules-badges"]',
+    messageKey: 'tutorial.rulesBadges',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="df-sort-buttons"]',
+    messageKey: 'tutorial.sortButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="df-special-actions"]',
+    messageKey: 'tutorial.specialActions',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="df-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Tutorial button that starts the Daifugo tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
+/** Daifugo tutorial configuration. */
+const DF_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'daifugo',
+  steps: DF_TUTORIAL_STEPS,
+};
+
 /** Renders the Daifugo game page with card play, revolution, and rule settings. */
 export function DaifugoPage() {
+  const { t: tDaifugo } = useTranslation('daifugo');
+  return (
+    <TutorialProvider config={DF_TUTORIAL_CONFIG} translateMessage={tDaifugo}>
+      <DaifugoPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Daifugo page, wrapped by TutorialProvider. */
+function DaifugoPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('daifugo');
   const {
@@ -97,6 +179,9 @@ export function DaifugoPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-green" aria-busy={loading} aria-live="polite">
+      <div className="flex items-center justify-end px-4 pt-2">
+        <TutorialButton />
+      </div>
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         <div className="flex gap-2.5 flex-wrap mb-2.5">
           {cpuPlayers.map((player) => (
@@ -107,6 +192,7 @@ export function DaifugoPage() {
         {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-and-drop target; keyboard play uses select+button */}
         <div
           className="bg-black/30 rounded-[10px] p-2.5 my-2"
+          data-tutorial="df-table-cards"
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
         >
@@ -123,7 +209,10 @@ export function DaifugoPage() {
         </div>
 
         {pendingBanner && (
-          <div className="bg-yellow-700/80 rounded-[10px] text-white text-center py-2 px-4 text-sm font-bold my-2">
+          <div
+            className="bg-yellow-700/80 rounded-[10px] text-white text-center py-2 px-4 text-sm font-bold my-2"
+            data-tutorial="df-special-actions"
+          >
             {pendingBanner}
             {pendingAction === 'queenBomber' && isHumanTurn && (
               <div className="flex flex-wrap justify-center gap-1 mt-2">
@@ -143,7 +232,9 @@ export function DaifugoPage() {
           </div>
         )}
 
-        <DaifugoRulesBadges state={state} />
+        <div data-tutorial="df-rules-badges">
+          <DaifugoRulesBadges state={state} />
+        </div>
 
         {state.exchangeActions && state.exchangeActions.length > 0 && (
           <DaifugoExchangeLog players={state.players} actions={state.exchangeActions} />
@@ -187,7 +278,7 @@ export function DaifugoPage() {
       <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         <DaifugoSettingsPanel config={configInput} onChange={handleConfigChange} />
 
-        <div className="text-center mb-1">
+        <div className="text-center mb-1" data-tutorial="df-sort-buttons">
           {sortModes.map(({ mode, label }) => (
             <button
               key={mode}
@@ -202,7 +293,7 @@ export function DaifugoPage() {
         </div>
 
         {humanPlayer && (
-          <div className="mb-2">
+          <div className="mb-2" data-tutorial="df-player-hand">
             <DaifugoHumanArea
               player={humanPlayer}
               selectedIndices={selectedIndices}
@@ -215,10 +306,11 @@ export function DaifugoPage() {
 
         <ErrorAlert message={error} />
 
-        <div className="text-center">
+        <div className="text-center" data-tutorial="df-play-pass">
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
+            data-tutorial="df-reset-button"
             disabled={loading}
             onClick={() =>
               requestConfirm(() => {

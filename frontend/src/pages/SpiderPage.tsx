@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -13,12 +14,87 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSpiderGame } from '../hooks/useSpiderGame';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { SpiderPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+
+/** Spider Solitaire tutorial step definitions. */
+const SPD_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="spd-stock-pile"]',
+    messageKey: 'tutorial.stockPile',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="spd-tableau"]',
+    messageKey: 'tutorial.tableau',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="spd-completed-suits"]',
+    messageKey: 'tutorial.completedSuits',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="spd-controls"]',
+    messageKey: 'tutorial.controls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="spd-difficulty"]',
+    messageKey: 'tutorial.difficulty',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="spd-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Spider Solitaire tutorial configuration. */
+const SPD_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'spider',
+  steps: SPD_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Spider Solitaire tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
 
 /** Renders the Spider Solitaire game page with 10 tableau columns and stock. */
 export function SpiderPage() {
+  const { t: tSpd } = useTranslation('spider');
+  return (
+    <TutorialProvider config={SPD_TUTORIAL_CONFIG} translateMessage={tSpd}>
+      <SpiderPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Spider page, wrapped by TutorialProvider. */
+function SpiderPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spider');
   const {
@@ -87,7 +163,8 @@ export function SpiderPage() {
         <span className="ml-3">
           {t('score')}: {state.score}
         </span>
-        <span className="ml-3">
+        <TutorialButton />
+        <span className="ml-3" data-tutorial="spd-completed-suits">
           {t('completed')}: {state.completedSuits}/8
         </span>
       </PhaseIndicator>
@@ -97,7 +174,7 @@ export function SpiderPage() {
         {/* Stock row */}
         <div className="flex gap-2 mb-3 items-start">
           {/* Stock */}
-          <div className="text-center">
+          <div className="text-center" data-tutorial="spd-stock-pile">
             <div className="text-game-text-muted text-xs mb-1">
               {t('stock')} ({state.stockCount})
             </div>
@@ -118,7 +195,7 @@ export function SpiderPage() {
         </div>
 
         {/* Tableau (10 columns) */}
-        <div className="flex gap-1 mb-3">
+        <div className="flex gap-1 mb-3" data-tutorial="spd-tableau">
           {state.tableau.map((col, colIdx) => (
             <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
               <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
@@ -199,7 +276,7 @@ export function SpiderPage() {
         <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
-            <>
+            <div data-tutorial="spd-controls">
               <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
                 {t('deal')}
               </button>
@@ -215,34 +292,38 @@ export function SpiderPage() {
               <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
                 {t('giveup')}
               </button>
-            </>
+            </div>
           )}
           {/* Difficulty selector */}
-          <select
-            value={currentDifficulty}
-            onChange={(e) => {
-              handleResetWithConfig({ difficulty: Number(e.target.value) });
-            }}
-            className="bg-gray-700 text-white text-sm rounded px-2 py-1"
-            aria-label={t('difficulty')}
-          >
-            <option value={1}>{t('difficulty1')}</option>
-            <option value={2}>{t('difficulty2')}</option>
-            <option value={4}>{t('difficulty4')}</option>
-          </select>
-          <button
-            type="button"
-            className={btnWarning}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                return handleReset();
-              })
-            }
-            disabled={loading}
-          >
-            {tc('button.reset')}
-          </button>
+          <div data-tutorial="spd-difficulty">
+            <select
+              value={currentDifficulty}
+              onChange={(e) => {
+                handleResetWithConfig({ difficulty: Number(e.target.value) });
+              }}
+              className="bg-gray-700 text-white text-sm rounded px-2 py-1"
+              aria-label={t('difficulty')}
+            >
+              <option value={1}>{t('difficulty1')}</option>
+              <option value={2}>{t('difficulty2')}</option>
+              <option value={4}>{t('difficulty4')}</option>
+            </select>
+          </div>
+          <div data-tutorial="spd-reset-button">
+            <button
+              type="button"
+              className={btnWarning}
+              onClick={() =>
+                requestConfirm(() => {
+                  hideActionLog();
+                  return handleReset();
+                })
+              }
+              disabled={loading}
+            >
+              {tc('button.reset')}
+            </button>
+          </div>
         </div>
       </GameFooter>
       <WinCelebration show={state.phase === SpiderPhase.GAME_CLEAR} />

@@ -88,7 +88,8 @@ func (u *Updater) Exec() error {
 	_, _ = fmt.Fprint(u.writer, i18n.Tf("updateAvailable", "version", release.TagName)+" ")
 	var answer string
 	_, _ = fmt.Fscanln(u.reader, &answer)
-	if strings.ToLower(strings.TrimSpace(answer)) != "y" {
+	ans := strings.ToLower(strings.TrimSpace(answer))
+	if ans != "y" && ans != "yes" {
 		_, _ = fmt.Fprintln(u.writer, i18n.T("updateCancelled"))
 		return nil
 	}

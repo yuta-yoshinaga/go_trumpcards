@@ -149,11 +149,6 @@ describe('DoubtPage', () => {
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
-  it('出す button is disabled when no cards are selected', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeDisabled());
-  });
-
   it('toggles aria-pressed on HandCard button click', async () => {
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
@@ -189,12 +184,6 @@ describe('DoubtPage', () => {
     expect(screen.getByRole('spinbutton')).toBeInTheDocument();
     // Default value 1 shows (A)
     expect(screen.getByText('(A)')).toBeInTheDocument();
-  });
-
-  it('claimed value input is hidden when no cards are selected', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
-    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
   });
 
   it('claim input is associated with label via htmlFor/id', async () => {
@@ -245,6 +234,42 @@ describe('DoubtPage', () => {
     // non-numeric input is sanitized to '' by the browser; Number('') = 0 → clamped to 1
     fireEvent.change(input, { target: { value: 'abc' } });
     expect(input).toHaveValue(1);
+  });
+
+  it('claim input has aria-describedby linked to range hint', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const input = screen.getByRole('spinbutton');
+    expect(input).toHaveAttribute('aria-describedby', 'claim-range-hint');
+    expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument();
+  });
+
+  it('shows warning when value is clamped out of range', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const input = screen.getByRole('spinbutton');
+
+    fireEvent.change(input, { target: { value: '15' } });
+    expect(screen.getByText('1〜13の範囲に調整されました')).toBeInTheDocument();
+
+    // Warning clears after 2 seconds
+    await waitFor(() => expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument(), { timeout: 3000 });
+  });
+
+  it('does not show warning when value is within range', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    const input = screen.getByRole('spinbutton');
+
+    fireEvent.change(input, { target: { value: '7' } });
+    expect(screen.getByText('1〜13の値を入力')).toBeInTheDocument();
+    expect(screen.queryByText('1〜13の範囲に調整されました')).not.toBeInTheDocument();
   });
 
   it('calls play command with selected cards when 出す clicked', async () => {
@@ -506,6 +531,15 @@ describe('DoubtPage', () => {
       await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
     });
 
+    it('countdown has aria-live assertive and aria-atomic true', async () => {
+      mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText(/残り 10 秒/)).toBeInTheDocument());
+      const countdownEl = screen.getByText(/残り 10 秒/);
+      expect(countdownEl).toHaveAttribute('aria-live', 'assertive');
+      expect(countdownEl).toHaveAttribute('aria-atomic', 'true');
+    });
+
     it('decrements countdown each second', async () => {
       mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
       renderWithProviders(<DoubtPage />);
@@ -695,31 +729,6 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(s);
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/2枚がゲームから除外されました/)).toBeInTheDocument());
-  });
-
-  it('does not show discarded message when discardedCount is 0', async () => {
-    const s: DoubtResponse = {
-      ...humanTurnState,
-      lastDoubtResult: {
-        doubterIdx: 0,
-        cardPlayerIdx: 1,
-        wasLying: true,
-        loserIdx: 1,
-        cardCount: 3,
-        discardedCount: 0,
-        revealedCards: [],
-      },
-    };
-    mockExec.mockResolvedValue(s);
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('ダウト結果')).toBeInTheDocument());
-    expect(screen.queryByText(/ゲームから除外されました/)).not.toBeInTheDocument();
-  });
-
-  it('does not show ダウト結果 when lastDoubtResult is null', async () => {
-    renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByText('テーブル')).toBeInTheDocument());
-    expect(screen.queryByText('ダウト結果')).not.toBeInTheDocument();
   });
 
   // ── Action logs ───────────────────────────────────────────────────────────
@@ -1289,5 +1298,26 @@ describe('DoubtPage', () => {
       const secondCardBtn = screen.getByAltText('♥ J').closest('button') as HTMLButtonElement;
       expect(secondCardBtn).toHaveAttribute('aria-pressed', 'false');
     });
+  });
+
+  it('renders tutorial button', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

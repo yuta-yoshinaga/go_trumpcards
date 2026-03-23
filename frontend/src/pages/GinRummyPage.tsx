@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -14,9 +15,11 @@ import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useGinRummyGame } from '../hooks/useGinRummyGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { GinRummyPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
 
@@ -28,8 +31,76 @@ const GINRUMMY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [GinRummyPhase.GAME_END]: 'gameEnd',
 };
 
+/** Gin Rummy tutorial step definitions. */
+const GR_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="gr-draw-area"]', messageKey: 'tutorial.drawArea', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="gr-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="gr-discard-button"]',
+    messageKey: 'tutorial.discardButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="gr-knock-button"]',
+    messageKey: 'tutorial.knockButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="gr-score-table"]',
+    messageKey: 'tutorial.scoreTable',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="gr-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Gin Rummy tutorial configuration. */
+const GR_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'ginrummy',
+  steps: GR_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Gin Rummy tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
 /** Renders the Gin Rummy game page with draw, discard, knock, and layoff phases. */
 export function GinRummyPage() {
+  const { t: tGr } = useTranslation('ginrummy');
+  return (
+    <TutorialProvider config={GR_TUTORIAL_CONFIG} translateMessage={tGr}>
+      <GinRummyPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Gin Rummy page, wrapped by TutorialProvider. */
+function GinRummyPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('ginrummy');
   const {
@@ -89,7 +160,9 @@ export function GinRummyPage() {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
+        <TutorialButton />
+      </PhaseIndicator>
 
       <SettingsPanel
         title={t('settings.title')}
@@ -175,7 +248,7 @@ export function GinRummyPage() {
         )}
 
         {/* Score table */}
-        <div className="my-3 p-2 rounded bg-black/30">
+        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="gr-score-table">
           <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
           <table className="w-full text-sm text-white/70">
             <thead>
@@ -211,7 +284,7 @@ export function GinRummyPage() {
 
       <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {humanPlayer && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="flex flex-wrap gap-1 mb-2" data-tutorial="gr-player-hand">
             {humanPlayer.cards.map((card, idx) => (
               <button
                 type="button"
@@ -238,7 +311,7 @@ export function GinRummyPage() {
 
         <div className="flex gap-2 items-center flex-wrap">
           {isDrawPhase && isHumanTurn && (
-            <>
+            <div className="flex gap-2" data-tutorial="gr-draw-area">
               <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
                 {t('drawStockButton')}
               </button>
@@ -250,7 +323,7 @@ export function GinRummyPage() {
               >
                 {t('drawDiscardButton')}
               </button>
-            </>
+            </div>
           )}
           {isDiscardPhase && isHumanTurn && (
             <>
@@ -259,6 +332,7 @@ export function GinRummyPage() {
                 className={btnPrimary}
                 onClick={handleDiscard}
                 disabled={loading || selectedCardIndices.length !== 1}
+                data-tutorial="gr-discard-button"
               >
                 {t('discardButton')}
               </button>
@@ -267,6 +341,7 @@ export function GinRummyPage() {
                 className={btnPrimary}
                 onClick={handleKnock}
                 disabled={loading || selectedCardIndices.length !== 1}
+                data-tutorial="gr-knock-button"
               >
                 {t('knockButton')}
               </button>
@@ -295,6 +370,7 @@ export function GinRummyPage() {
           <button
             type="button"
             className={btnWarning}
+            data-tutorial="gr-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();

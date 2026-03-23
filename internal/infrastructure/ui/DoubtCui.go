@@ -87,6 +87,7 @@ func (cui *DoubtCui) drainInput() {
 
 // Exec ゲームメインループ
 func (cui *DoubtCui) Exec() {
+	setupSignalHandler()
 	go cui.inputReader()
 	fmt.Println(cui.dc.Exec("r"))
 	fmt.Println(i18n.T("typeHelp"))

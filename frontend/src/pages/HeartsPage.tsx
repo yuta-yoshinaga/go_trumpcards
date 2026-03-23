@@ -1,24 +1,98 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { HeartsPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
+
+/** Hearts tutorial step definitions. */
+const HT_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="ht-pass-area"]',
+    messageKey: 'tutorial.passArea',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ht-trick-display"]',
+    messageKey: 'tutorial.trickDisplay',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ht-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ht-play-button"]',
+    messageKey: 'tutorial.playButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ht-score-table"]',
+    messageKey: 'tutorial.scoreTable',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ht-penalty-info"]',
+    messageKey: 'tutorial.penaltyInfo',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ht-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Tutorial button that starts the Hearts tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
+/** Hearts tutorial configuration. */
+const HT_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'hearts',
+  steps: HT_TUTORIAL_STEPS,
+};
 
 const HEARTS_PHASE_KEYS: Readonly<Record<number, string>> = {
   [HeartsPhase.PASS]: 'pass',
@@ -32,6 +106,16 @@ const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
 /** Renders the Hearts game page with card passing, trick play, and scoring. */
 export function HeartsPage() {
+  const { t: tHearts } = useTranslation('hearts');
+  return (
+    <TutorialProvider config={HT_TUTORIAL_CONFIG} translateMessage={tHearts}>
+      <HeartsPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Hearts page, wrapped by TutorialProvider. */
+function HeartsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('hearts');
   const {
@@ -54,6 +138,11 @@ export function HeartsPage() {
     hintLoading,
     handleHint,
   } = useHeartsGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('hearts', state);
   const { cardWidth } = useCardDimensions();
 
   const isPassPhaseForKbd = state?.phase === HeartsPhase.PASS;
@@ -92,7 +181,9 @@ export function HeartsPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isPassPhase || isHumanTurn} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isPassPhase || isHumanTurn}>
+        <TutorialButton />
+      </PhaseIndicator>
 
       {/* Settings */}
       <SettingsPanel
@@ -126,6 +217,13 @@ export function HeartsPage() {
                 checked: heartsConfig.omnibusJD,
                 onToggle: (v) => handleToggle('omnibusJD', v),
               },
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
+              },
             ],
           },
         ]}
@@ -142,7 +240,7 @@ export function HeartsPage() {
 
         {/* Pass direction (pass phase) */}
         {isPassPhase && (
-          <div className="text-yellow-300 text-center mb-2">
+          <div className="text-yellow-300 text-center mb-2" data-tutorial="ht-pass-area">
             {t(`passDirection.${passDirectionKeys[state.passDirection]}`)}
           </div>
         )}
@@ -161,7 +259,7 @@ export function HeartsPage() {
 
         {/* Current trick */}
         {state.currentTrick.length > 0 && (
-          <div className="my-3 p-3 rounded bg-black/40">
+          <div className="my-3 p-3 rounded bg-black/40" data-tutorial="ht-trick-display">
             <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
             <div className="flex gap-2">
               {state.currentTrick.map((trickCard) => (
@@ -180,7 +278,7 @@ export function HeartsPage() {
         )}
 
         {/* Score table */}
-        <div className="my-3 p-2 rounded bg-black/30">
+        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="ht-score-table">
           <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
           <table className="w-full text-sm text-white/70">
             <thead>
@@ -207,7 +305,9 @@ export function HeartsPage() {
         </div>
 
         {/* Message */}
-        <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        <div data-tutorial="ht-penalty-info">
+          <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
+        </div>
 
         {/* Action log */}
         <ActionLogSection
@@ -222,7 +322,7 @@ export function HeartsPage() {
       <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {/* Human cards */}
         {humanPlayer && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="flex flex-wrap gap-1 mb-2" data-tutorial="ht-player-hand">
             {humanPlayer.cards.map((card, idx) => (
               <button
                 type="button"
@@ -252,8 +352,11 @@ export function HeartsPage() {
             {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} ({t(`hintReason.${hint.reason}`)})
           </div>
         )}
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
+        )}
 
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center" data-tutorial="ht-play-button">
           {(isPassPhase || isHumanTurn) && (
             <button type="button" className={btnSuccess} onClick={handleHint} disabled={loading || hintLoading}>
               {tc('button.hint')}
@@ -292,6 +395,7 @@ export function HeartsPage() {
           <button
             type="button"
             className={btnWarning}
+            data-tutorial="ht-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();

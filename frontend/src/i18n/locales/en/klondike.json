@@ -32,5 +32,13 @@
   "totalScore": "Total Score",
   "scoringMode": "Scoring Mode",
   "scoringNone": "None",
-  "scoringVegas": "Vegas"
+  "scoringVegas": "Vegas",
+  "tutorial": {
+    "stockWaste": "Click the stock pile to draw cards. Drawn cards can be moved to the tableau or foundation.",
+    "foundation": "Foundation piles. Build each suit from Ace to King. Complete all four to win.",
+    "tableau": "Tableau columns. Stack cards in alternating colors in descending order. Kings start new columns.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete, and more.",
+    "hintDisplay": "Press the Hint button to see available moves.",
+    "resetButton": "Press the reset button to start a new game."
+  }
 }

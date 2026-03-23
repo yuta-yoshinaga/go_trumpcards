@@ -2,9 +2,18 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, configure } from '@testing-library/react';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeAll, vi } from 'vitest';
 
-// Mock matchMedia for jsdom (needed by useReducedMotion)
+// Mock ResizeObserver for happy-dom (needed by TutorialOverlay)
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  } as unknown as typeof globalThis.ResizeObserver;
+}
+
+// Mock matchMedia for happy-dom (needed by useReducedMotion)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
@@ -69,6 +78,7 @@ import jaPoker from '../i18n/locales/ja/poker.json';
 import jaSevens from '../i18n/locales/ja/sevens.json';
 import jaSpades from '../i18n/locales/ja/spades.json';
 import jaSpider from '../i18n/locales/ja/spider.json';
+import jaTutorial from '../i18n/locales/ja/tutorial.json';
 
 i18n.use(initReactI18next).init({
   lng: 'ja',
@@ -95,6 +105,7 @@ i18n.use(initReactI18next).init({
     'napoleon',
     'spider',
     'indianpoker',
+    'tutorial',
   ],
   resources: {
     ja: {
@@ -118,12 +129,19 @@ i18n.use(initReactI18next).init({
       napoleon: jaNapoleon,
       spider: jaSpider,
       indianpoker: jaIndianpoker,
+      tutorial: jaTutorial,
     },
   },
   interpolation: { escapeValue: false },
 });
 
-configure({ asyncUtilTimeout: 15000 });
+configure({ asyncUtilTimeout: 5000 });
+
+// Suppress first-visit tutorial suggestion dialog in all tests by default.
+// Individual tests (e.g., useFirstVisit.test.ts) clear localStorage before running.
+beforeAll(() => {
+  localStorage.setItem('tutorial_no_suggest', 'true');
+});
 
 afterEach(() => {
   cleanup();

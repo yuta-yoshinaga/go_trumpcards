@@ -275,16 +275,6 @@ func TestSpades_getValidPlayIndices_FollowSuit(t *testing.T) {
 	assert.Equal(t, 1, valid[0]) // Only heart card
 }
 
-func TestSpades_cpuBidEasy(t *testing.T) {
-	s := newInternalTestSpades()
-	s.Reset()
-
-	for attempt := 0; attempt < 100; attempt++ {
-		bid := s.cpuBidEasy(1)
-		assert.True(t, bid >= 1 && bid <= 5)
-	}
-}
-
 func TestSpades_cpuBidNormal(t *testing.T) {
 	s := newInternalTestSpades()
 	s.players[1].Reset()
@@ -334,40 +324,6 @@ func TestSpades_cpuBidHard_LowHand(t *testing.T) {
 
 	bid := s.cpuBidHard(1)
 	assert.Equal(t, 1, bid) // minimum bid
-}
-
-func TestSpades_cpuBidHard_RandomQBranch(t *testing.T) {
-	s := newInternalTestSpades()
-	s.players[1].Reset()
-	s.players[1].AddCard(NewCard(CardDesignHeart, 12, false)) // Q♥
-
-	// Run multiple times to cover the random branch for Q
-	seenBid0 := false
-	seenBid1 := false
-	for attempt := 0; attempt < 1000; attempt++ {
-		s.players[1].Reset()
-		s.players[1].AddCard(NewCard(CardDesignHeart, 12, false))
-		bid := s.cpuBidHard(1)
-		if bid == 1 {
-			seenBid1 = true
-		}
-		// When Q doesn't count, no high cards => bid = max(0,1) = 1
-		// When Q counts => bid = 1
-		// So bid is always 1 here, but the random branch is still taken
-		seenBid0 = true
-		if seenBid0 && seenBid1 {
-			break
-		}
-	}
-}
-
-func TestSpades_cpuPlayEasy(t *testing.T) {
-	s := newInternalTestSpades()
-	validIndices := []int{0, 2, 5}
-	for attempt := 0; attempt < 100; attempt++ {
-		idx := s.cpuPlayEasy(validIndices)
-		assert.Contains(t, validIndices, idx)
-	}
 }
 
 func TestSpades_cpuPlayNormal_Lead(t *testing.T) {

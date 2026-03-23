@@ -1,0 +1,25 @@
+{
+  "next": "次へ",
+  "skip": "スキップ",
+  "complete": "完了",
+  "tutorialButton": "チュートリアル",
+  "resume": "続きから再開",
+  "restart": "最初から",
+  "resumePrompt": "前回の続きから再開しますか？",
+  "hint": {
+    "toggle": "ヒント表示",
+    "label": "推奨アクション"
+  },
+  "progress": {
+    "title": "チュートリアル進捗",
+    "completed": "完了",
+    "summary": "{{count}}/{{total}} ゲーム完了"
+  },
+  "firstVisit": {
+    "title": "チュートリアル",
+    "message": "このゲームは初めてですか？チュートリアルで遊び方を確認しましょう。",
+    "start": "チュートリアルを開始",
+    "skip": "スキップ",
+    "dontShowAgain": "今後表示しない"
+  }
+}

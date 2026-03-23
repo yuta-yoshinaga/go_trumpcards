@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // HeartsCpuDifficulty CPU の難易度レベル
 type HeartsCpuDifficulty int
 
@@ -29,11 +27,11 @@ func DefaultHeartsConfig() HeartsConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c HeartsConfig) Validate() error {
-	if c.CpuDifficulty < HeartsCpuDifficultyEasy || c.CpuDifficulty > HeartsCpuDifficultyHard {
-		return fmt.Errorf("CPU difficulty must be %d-%d, got %d", int(HeartsCpuDifficultyEasy), int(HeartsCpuDifficultyHard), int(c.CpuDifficulty))
+	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(HeartsCpuDifficultyEasy), int(HeartsCpuDifficultyHard)); err != nil {
+		return err
 	}
-	if c.PointLimit < 1 {
-		return fmt.Errorf("point limit must be >= 1, got %d", c.PointLimit)
+	if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
+		return err
 	}
 	return nil
 }

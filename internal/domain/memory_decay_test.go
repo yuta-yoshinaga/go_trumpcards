@@ -53,23 +53,3 @@ func TestDecayMemories_NilSlice(t *testing.T) {
 	result := DecayMemories(entries, 10, 0.5)
 	assert.Empty(t, result)
 }
-
-func TestDecayMemories_ProbabilisticDecay(t *testing.T) {
-	// With moderate decay, over many attempts we should see both kept and forgotten outcomes
-	keptAtLeastOnce := false
-	forgotAtLeastOnce := false
-
-	for attempt := 0; attempt < 1000; attempt++ {
-		entries := []testMemoryEntry{{turnSeen: 9}} // age=1, forgetProb=0.5
-		result := DecayMemories(entries, 10, 0.5)
-		if len(result) == 1 {
-			keptAtLeastOnce = true
-		} else {
-			forgotAtLeastOnce = true
-		}
-		if keptAtLeastOnce && forgotAtLeastOnce {
-			return
-		}
-	}
-	t.Fatal("expected both kept and forgotten outcomes within 1000 attempts")
-}

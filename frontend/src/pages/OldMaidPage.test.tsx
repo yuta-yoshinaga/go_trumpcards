@@ -1243,4 +1243,23 @@ describe('OldMaidPage', () => {
     fireEvent.keyDown(document, { key: 's' });
     expect(mockExec).not.toHaveBeenCalled();
   });
+
+  it('renders tutorial button', async () => {
+    await startGame();
+    expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument();
+  });
+
+  it('starts tutorial when tutorial button is clicked', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+  });
+
+  it('tutorial can be skipped', async () => {
+    await startGame();
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
 });

@@ -45,37 +45,25 @@ func (c *SpadesCuiController) Exec(command string) string {
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "b", "bid":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "Bid value is required (0-13).", "Invalid bid value: %s.", 0, 13)
-				if !ok {
-					return errMsg, true
-				}
-				return c.si.Bid(v), true
+				return cuiutil.WithParsedInt(args, "Bid value is required (0-13).", "Invalid bid value: %s.", 0, 13, c.si.Bid)
 			case "p", "play":
-				idx, errMsg, ok := cuiutil.ParseIntArg(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax)
-				if !ok {
-					return errMsg, true
-				}
-				return c.si.Play(idx), true
+				return cuiutil.WithParsedInt(args, "Card index is required.", "Invalid card index: %s.", cuiutil.NoMin, cuiutil.NoMax, c.si.Play)
 			case "n", "next":
 				return c.si.NextTrick(), true
 			case "nr", "nextround":
 				return c.si.NextRound(), true
 			case "sd", "setdifficulty":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.si.GetConfig()
-				cfg.CpuDifficulty = domain.SpadesCpuDifficulty(v)
-				return c.si.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU difficulty: %s. Please enter 0-2.", 0, 2, func(v int) string {
+					cfg := c.si.GetConfig()
+					cfg.CpuDifficulty = domain.SpadesCpuDifficulty(v)
+					return c.si.ResetWithConfig(cfg)
+				})
 			case "sl", "setlimit":
-				v, errMsg, ok := cuiutil.ParseIntArg(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt)
-				if !ok {
-					return errMsg, true
-				}
-				cfg := c.si.GetConfig()
-				cfg.PointLimit = v
-				return c.si.ResetWithConfig(cfg), true
+				return cuiutil.WithParsedInt(args, "Point limit is required.", "Invalid point limit: %s. Please enter 1 or more.", 1, math.MaxInt, func(v int) string {
+					cfg := c.si.GetConfig()
+					cfg.PointLimit = v
+					return c.si.ResetWithConfig(cfg)
+				})
 			case "h", "hint":
 				return c.si.Hint(), true
 			case "log", "l":

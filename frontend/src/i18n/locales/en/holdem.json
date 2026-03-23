@@ -48,5 +48,14 @@
   },
   "settings": {
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "communityCards": "Community cards shared by all players. Five cards are revealed progressively.",
+    "playerHand": "Your hole cards (2 cards). Combine with community cards to make the best 5-card hand.",
+    "actionButtons": "Choose your action: Bet, Call, Raise, Fold, or All In.",
+    "potDisplay": "Shows the current pot size and blind levels.",
+    "cpuArea": "CPU opponent information. Cards are revealed at showdown.",
+    "learningMode": "Learning mode shows equity and pot odds to help your decisions.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

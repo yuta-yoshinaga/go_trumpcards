@@ -26,5 +26,13 @@
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
   "stalemate": "No more moves",
-  "dealsRemaining": "{{count}} deals remaining"
+  "dealsRemaining": "{{count}} deals remaining",
+  "tutorial": {
+    "stockPile": "Stock pile. Click to deal one card to each column. All columns must have cards.",
+    "tableau": "Tableau columns. Arrange cards in same-suit descending order. Ace-to-King sequences are removed.",
+    "completedSuits": "Number of completed suits. Complete all 8 to win.",
+    "controls": "Control buttons: Undo, Hint, Auto-complete.",
+    "difficulty": "Choose difficulty: 1 suit (easy), 2 suits (medium), 4 suits (hard).",
+    "resetButton": "Press the reset button to start a new game."
+  }
 }

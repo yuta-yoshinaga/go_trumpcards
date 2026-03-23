@@ -86,5 +86,15 @@
     "trump_cut": "Cut with trump",
     "play_joker": "Play joker",
     "discard_low": "Discard a low card"
+  },
+  "tutorial": {
+    "bidControls": "Bid phase: declare how many tricks you can win. The highest bidder becomes Napoleon.",
+    "trumpDeclaration": "Napoleon chooses the trump suit and adjutant card.",
+    "adjutantInfo": "Adjutant card information. The adjutant becomes Napoleon's ally.",
+    "kittyCards": "View the kitty cards and exchange with your hand.",
+    "trickDisplay": "The current trick. Trump suit cards are the strongest.",
+    "playerHand": "Your hand. Select a card to play.",
+    "scoreTable": "Score table showing Napoleon team vs. Allied forces.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

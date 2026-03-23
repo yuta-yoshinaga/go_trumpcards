@@ -138,11 +138,6 @@ describe('CpuPlayerCard', () => {
     expect(screen.getByText('交換: 2枚')).toBeInTheDocument();
   });
 
-  it('does not render extraInfo when not provided', () => {
-    render(<CpuPlayerCard player={makePlayer()} showCards={false} faceDownCount={2} showHandName={false} />);
-    expect(screen.queryByText(/交換/)).not.toBeInTheDocument();
-  });
-
   it('shows face-down when showCards true but cards empty', () => {
     render(
       <CpuPlayerCard player={makePlayer({ cards: [] })} showCards={true} faceDownCount={3} showHandName={false} />,

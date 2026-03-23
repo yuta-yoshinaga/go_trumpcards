@@ -5,6 +5,7 @@ import { gameCategories } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
 import { focusRingWhite } from '../styles/buttonStyles';
 import { SoundToggle } from './SoundToggle';
+import { TutorialProgressPanel } from './tutorial/TutorialProgressPanel';
 
 /** SVG icon for the hamburger menu (open state). */
 function MenuIcon() {
@@ -160,6 +161,7 @@ export function NavBar({ soundMuted, onSoundToggle }: NavBarProps = {}) {
             </div>
           ))}
         </div>
+        <TutorialProgressPanel />
         <div className="hidden sm:flex sm:items-center sm:gap-2">
           {soundMuted !== undefined && onSoundToggle && <SoundToggle muted={soundMuted} onToggle={onSoundToggle} />}
           {langToggle(currentLang, i18n, t)}

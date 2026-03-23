@@ -49,5 +49,12 @@
     "jokerConsecutiveBanned": "No Consecutive Joker",
     "groupRules": "Rules",
     "groupGame": "Game Settings"
+  },
+  "tutorial": {
+    "board": "The board centered on 7s. Place cards adjacent in rank within the same suit.",
+    "playerHand": "This is your hand. Playable cards are highlighted.",
+    "playPass": "Pass if you have no playable cards. Pass count may be limited.",
+    "settings": "Change rules and settings. Variations include tunnel and joker rules.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

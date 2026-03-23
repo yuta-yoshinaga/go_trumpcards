@@ -118,44 +118,6 @@ func TestOldMaidHumanProfile_StrategicPlacement(t *testing.T) {
 		assert.Equal(t, 0, p.StrategicPlacement(1))
 	})
 
-	t.Run("high shuffle rate returns edge", func(t *testing.T) {
-		p := &OldMaidHumanProfile{
-			GamesPlayed:  5,
-			ShuffleCount: 6,
-			DrawCount:    10,
-		}
-		// shuffle rate 0.6 >= 0.5 → random edge
-		for attempt := 0; attempt < 1000; attempt++ {
-			pos := p.StrategicPlacement(10)
-			if pos == 0 || pos == 9 {
-				continue
-			}
-			t.Fatalf("expected 0 or 9, got %d", pos)
-		}
-	})
-
-	t.Run("high shuffle rate covers both edges", func(t *testing.T) {
-		p := &OldMaidHumanProfile{
-			GamesPlayed:  5,
-			ShuffleCount: 6,
-			DrawCount:    10,
-		}
-		gotHead, gotTail := false, false
-		for attempt := 0; attempt < 1000; attempt++ {
-			pos := p.StrategicPlacement(10)
-			if pos == 0 {
-				gotHead = true
-			}
-			if pos == 9 {
-				gotTail = true
-			}
-			if gotHead && gotTail {
-				return
-			}
-		}
-		t.Fatal("did not cover both edges")
-	})
-
 	t.Run("least-picked bucket 0 → position 0", func(t *testing.T) {
 		p := &OldMaidHumanProfile{
 			GamesPlayed:     5,

@@ -26,6 +26,8 @@
   "yourCards": "You ({{count}} cards)",
   "selectPrompt": "Select cards to play",
   "claimedValue": "Claimed Value:",
+  "claimRangeHint": "Enter 1-13",
+  "claimRangeWarning": "Adjusted to range 1-13",
   "playButton": "Play",
   "tell": "Tell",
   "settings": {
@@ -45,5 +47,13 @@
     "bluffRate": "Bluff Rate: {{rate}}",
     "doubtAccuracy": "Doubt Accuracy: {{rate}}",
     "hesitationMean": "Avg Hesitation: {{ms}}ms"
+  },
+  "tutorial": {
+    "tableArea": "Shows the number of cards on the table and the last play's declaration.",
+    "playerHand": "This is your hand. Click cards to select them for playing.",
+    "claimInput": "Enter the claimed value (1-13) for your cards. You can bluff.",
+    "playButton": "After selecting cards and setting the claim, press this to play.",
+    "doubtWindow": "Decide whether to doubt. Press Doubt if you think the opponent is bluffing.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }
