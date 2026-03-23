@@ -38,5 +38,12 @@
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "discardPile": "The top card of the discard pile. Play a card matching its suit or rank.",
+    "playerHand": "This is your hand. Click a card to select it for playing.",
+    "playDraw": "Play a card or draw from the stock pile.",
+    "suitChoice": "When you play an 8, choose the next suit.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

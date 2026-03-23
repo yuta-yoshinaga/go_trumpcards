@@ -48,5 +48,14 @@
   },
   "settings": {
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
+  },
+  "tutorial": {
+    "communityCards": "コミュニティカードです。5枚が順次公開されます。",
+    "playerHand": "あなたのホールカード（4枚）です。必ず2枚を使います。",
+    "combinationRule": "オマハでは手札から必ず2枚、コミュニティから必ず3枚を使って役を作ります。",
+    "actionButtons": "ベットアクションを選びます。",
+    "potDisplay": "ポットとブラインドレベルが表示されます。",
+    "cpuArea": "CPU対戦相手の情報です。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
   }
 }

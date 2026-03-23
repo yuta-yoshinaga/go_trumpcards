@@ -74,5 +74,14 @@
     "groupBasic": "Basic Rules",
     "groupSpecial": "Special Rules",
     "groupGame": "Game Settings"
+  },
+  "tutorial": {
+    "tableCards": "Cards on the table. You must play stronger cards.",
+    "playerHand": "Your hand. Click cards to select them for play.",
+    "playPass": "Play cards or pass your turn.",
+    "rulesBadges": "Shows active rules like revolution.",
+    "sortButtons": "Sort your hand by different criteria.",
+    "specialActions": "Special actions (ten discard, queen bomber, etc.) may trigger.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

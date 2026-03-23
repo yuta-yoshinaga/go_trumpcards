@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -12,15 +13,84 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useFreeCellGame } from '../hooks/useFreeCellGame';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import { btnDanger, btnPrimary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import type { Card } from '../types/card';
 import { FreeCellPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
+/** FreeCell tutorial step definitions. */
+const FC_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="fc-free-cells"]',
+    messageKey: 'tutorial.freeCells',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="fc-foundation"]',
+    messageKey: 'tutorial.foundation',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="fc-tableau"]',
+    messageKey: 'tutorial.tableau',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="fc-controls"]',
+    messageKey: 'tutorial.controls',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="fc-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** FreeCell tutorial configuration. */
+const FC_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'freecell',
+  steps: FC_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the FreeCell tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
 /** Renders the FreeCell solitaire game page with tableau, free cells, and foundation. */
 export function FreeCellPage() {
+  const { t: tFc } = useTranslation('freecell');
+  return (
+    <TutorialProvider config={FC_TUTORIAL_CONFIG} translateMessage={tFc}>
+      <FreeCellPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the FreeCell page, wrapped by TutorialProvider. */
+function FreeCellPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('freecell');
   const {
@@ -79,77 +149,85 @@ export function FreeCellPage() {
         <span>
           {t('moveCount')}: {state.moveCount}
         </span>
+        <TutorialButton />
       </PhaseIndicator>
 
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Free cells + Foundation row */}
         <div className="flex gap-2 mb-3 items-start flex-wrap">
           {/* Free cells */}
-          {state.freeCells.map((card: Card | null, idx: number) => (
-            <div key={`fc-${idx.toString()}`} className="text-center">
-              <div className="text-game-text-muted text-xs mb-1">
-                {t('freecell')} {idx}
+          <div className="flex gap-2" data-tutorial="fc-free-cells">
+            {state.freeCells.map((card: Card | null, idx: number) => (
+              <div key={`fc-${idx.toString()}`} className="text-center">
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('freecell')} {idx}
+                </div>
+                {card ? (
+                  <button
+                    type="button"
+                    onClick={() => handleSelectSource({ zone: 'freecell', cell: idx })}
+                    disabled={!isPlaying || loading}
+                    aria-label={cardAlt(card)}
+                    aria-pressed={isSourceSelected('freecell', undefined, idx)}
+                    className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-yellow-400' : ''}`}
+                  >
+                    <AnimatedCard card={card} width={cardWidth} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleSelectTarget({ zone: 'freecell', cell: idx })}
+                    disabled={!isPlaying || loading || !selectedSource}
+                    aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
+                    style={{ width: cardWidth, height: cardHeight }}
+                    className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                  >
+                    {t('empty')}
+                  </button>
+                )}
               </div>
-              {card ? (
-                <button
-                  type="button"
-                  onClick={() => handleSelectSource({ zone: 'freecell', cell: idx })}
-                  disabled={!isPlaying || loading}
-                  aria-label={cardAlt(card)}
-                  aria-pressed={isSourceSelected('freecell', undefined, idx)}
-                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('freecell', undefined, idx) ? 'ring-2 ring-yellow-400' : ''}`}
-                >
-                  <AnimatedCard card={card} width={cardWidth} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleSelectTarget({ zone: 'freecell', cell: idx })}
-                  disabled={!isPlaying || loading || !selectedSource}
-                  aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
-                  style={{ width: cardWidth, height: cardHeight }}
-                  className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                >
-                  {t('empty')}
-                </button>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
 
           <div className="w-4" />
 
           {/* Foundation piles */}
-          {state.foundation.map((pile: Card[], idx: number) => (
-            <div key={`f-${idx.toString()}`} className="text-center">
-              <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
-              {pile.length > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                  disabled={!isPlaying || loading || !selectedSource}
-                  aria-label={t('foundationAriaLabel', { suit: FOUNDATION_SUITS[idx], cardCount: String(pile.length) })}
-                  className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                >
-                  <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
-                  disabled={!isPlaying || loading || !selectedSource}
-                  aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
-                  style={{ width: cardWidth, height: cardHeight }}
-                  className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
-                >
-                  A
-                </button>
-              )}
-            </div>
-          ))}
+          <div className="flex gap-2" data-tutorial="fc-foundation">
+            {state.foundation.map((pile: Card[], idx: number) => (
+              <div key={`f-${idx.toString()}`} className="text-center">
+                <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
+                {pile.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
+                    disabled={!isPlaying || loading || !selectedSource}
+                    aria-label={t('foundationAriaLabel', {
+                      suit: FOUNDATION_SUITS[idx],
+                      cardCount: String(pile.length),
+                    })}
+                    className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                  >
+                    <AnimatedCard card={pile[pile.length - 1]} width={cardWidth} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleSelectTarget({ zone: 'foundation', col: idx })}
+                    disabled={!isPlaying || loading || !selectedSource}
+                    aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                    style={{ width: cardWidth, height: cardHeight }}
+                    className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                  >
+                    A
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Tableau */}
-        <div className="flex gap-2 mb-3">
+        <div className="flex gap-2 mb-3" data-tutorial="fc-tableau">
           {state.tableau.map((col: (Card | null)[], colIdx: number) => (
             <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
               <div className="text-game-text-muted text-xs text-center mb-1">{colIdx}</div>
@@ -223,7 +301,7 @@ export function FreeCellPage() {
         <ErrorAlert message={error ?? hintError} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
-            <>
+            <div data-tutorial="fc-controls">
               <button type="button" className={btnPrimary} onClick={handleUndo} disabled={loading || !state.canUndo}>
                 {t('undo')}
               </button>
@@ -236,21 +314,23 @@ export function FreeCellPage() {
               <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
                 {t('giveup')}
               </button>
-            </>
+            </div>
           )}
-          <button
-            type="button"
-            className={btnWarning}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                return handleReset();
-              })
-            }
-            disabled={loading}
-          >
-            {tc('button.reset')}
-          </button>
+          <div data-tutorial="fc-reset-button">
+            <button
+              type="button"
+              className={btnWarning}
+              onClick={() =>
+                requestConfirm(() => {
+                  hideActionLog();
+                  return handleReset();
+                })
+              }
+              disabled={loading}
+            >
+              {tc('button.reset')}
+            </button>
+          </div>
         </div>
       </GameFooter>
       <WinCelebration show={state.phase === FreeCellPhase.GAME_CLEAR} />

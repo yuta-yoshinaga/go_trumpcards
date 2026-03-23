@@ -20,5 +20,11 @@
   "flipPrompt2": "Flip the second card",
   "matched": "It's a match!",
   "mismatched": "No match",
-  "landscapeBanner": "Rotate to landscape for a better experience"
+  "landscapeBanner": "Rotate to landscape for a better experience",
+  "tutorial": {
+    "scoreTable": "Each player's pair count is shown here. The player with the most pairs wins.",
+    "board": "This is the card board. Click cards on your turn to flip them. Match two cards to collect a pair.",
+    "nextButton": "After a match result, press this button to proceed to the next turn.",
+    "resetButton": "Press the reset button to start a new game."
+  }
 }

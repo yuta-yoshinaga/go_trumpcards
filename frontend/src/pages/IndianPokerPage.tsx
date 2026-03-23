@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { indianpokerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { BettingControls } from '../components/BettingControls';
@@ -19,8 +20,61 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { btnPrimary } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { IndianPokerPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
+
+/** Indian Poker tutorial step definitions. */
+const IP_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="ip-cpu-cards"]',
+    messageKey: 'tutorial.cpuCards',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ip-player-card"]',
+    messageKey: 'tutorial.playerCard',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ip-action-buttons"]',
+    messageKey: 'tutorial.actionButtons',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="ip-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Indian Poker tutorial configuration. */
+const IP_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'indianpoker',
+  steps: IP_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Indian Poker tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
 
 const INDIAN_POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
   [IndianPokerPhase.INIT]: 'init',
@@ -32,6 +86,16 @@ const INDIAN_POKER_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Indian Poker game page with opponent cards visible and human card hidden. */
 export function IndianPokerPage() {
+  const { t: tIp } = useTranslation('indianpoker');
+  return (
+    <TutorialProvider config={IP_TUTORIAL_CONFIG} translateMessage={tIp}>
+      <IndianPokerPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Indian Poker page, wrapped by TutorialProvider. */
+function IndianPokerPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('indianpoker');
   const phaseNames = usePhaseNames('indianpoker', INDIAN_POKER_PHASE_KEYS);
@@ -119,6 +183,7 @@ export function IndianPokerPage() {
         <span>
           {t('ante')} <strong>{state.ante ?? 0}</strong>
         </span>
+        <TutorialButton />
         <span>
           {tc('label.dealer')} <strong>Player {state.dealerIdx ?? 0}</strong>
         </span>
@@ -127,32 +192,34 @@ export function IndianPokerPage() {
       {/* Scrollable: opponent cards + CPU players */}
       <div className="flex-1 overflow-y-auto pt-4 px-5">
         {/* CPU players - show cards face-up (opponents can see each other's cards) */}
-        {state.players
-          ?.filter((p) => !p.isHuman)
-          .map((p) => (
-            <div key={p.id} className="mb-3">
-              <div className="text-white text-sm mb-1">
-                {tc('player.cpu', { id: p.id })} <span className="text-gray-300 text-xs">({p.playStyleName})</span>
-                <span className="ml-2 text-xs">
-                  {tc('betting.chips')} {p.chips}
-                </span>
-                {p.currentBet > 0 && (
+        <div data-tutorial="ip-cpu-cards">
+          {state.players
+            ?.filter((p) => !p.isHuman)
+            .map((p) => (
+              <div key={p.id} className="mb-3">
+                <div className="text-white text-sm mb-1">
+                  {tc('player.cpu', { id: p.id })} <span className="text-gray-300 text-xs">({p.playStyleName})</span>
                   <span className="ml-2 text-xs">
-                    {tc('betting.currentBet')} {p.currentBet}
+                    {tc('betting.chips')} {p.chips}
                   </span>
-                )}
-                {p.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
-                {p.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                  {p.currentBet > 0 && (
+                    <span className="ml-2 text-xs">
+                      {tc('betting.currentBet')} {p.currentBet}
+                    </span>
+                  )}
+                  {p.folded && <span className="ml-2 text-red-300 text-xs">[{tc('status.folded')}]</span>}
+                  {p.allIn && <span className="ml-2 text-yellow-300 text-xs">[{tc('status.allIn')}]</span>}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {p.card ? (
+                    <AnimatedCard card={p.card} width={cardWidth} style={{ border: '3px solid transparent' }} />
+                  ) : (
+                    <AnimatedCardBack width={cardWidth} />
+                  )}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-1">
-                {p.card ? (
-                  <AnimatedCard card={p.card} width={cardWidth} style={{ border: '3px solid transparent' }} />
-                ) : (
-                  <AnimatedCardBack width={cardWidth} />
-                )}
-              </div>
-            </div>
-          ))}
+            ))}
+        </div>
 
         {/* CPU actions log */}
         <CpuActionLog actions={state.cpuActions} />
@@ -173,7 +240,7 @@ export function IndianPokerPage() {
       <GameFooter className="bg-game-bg-green-poker-dark border-white/20 px-5 py-3">
         {/* Human player */}
         {humanPlayer && (
-          <div className="mb-2">
+          <div className="mb-2" data-tutorial="ip-player-card">
             <div className="text-white text-lg mb-1">
               {t('yourCard')}
               <span className="ml-3 text-xs">
@@ -209,21 +276,23 @@ export function IndianPokerPage() {
 
         {/* Betting controls */}
         {canAct && (
-          <BettingControls
-            inputId="indianPokerBetAmount"
-            betAmount={betAmount}
-            onBetAmountChange={setBetAmount}
-            minRaise={minRaise}
-            maxBetAmount={state.maxBetAmount}
-            hasOutstandingBet={hasOutstandingBet}
-            loading={loading}
-            onCall={() => execApi('call', undefined, undefined, getElapsed())}
-            onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
-            onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
-            onCheck={() => execApi('check', undefined, undefined, getElapsed())}
-            onFold={() => execApi('fold', undefined, undefined, getElapsed())}
-            onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
-          />
+          <div data-tutorial="ip-action-buttons">
+            <BettingControls
+              inputId="indianPokerBetAmount"
+              betAmount={betAmount}
+              onBetAmountChange={setBetAmount}
+              minRaise={minRaise}
+              maxBetAmount={state.maxBetAmount}
+              hasOutstandingBet={hasOutstandingBet}
+              loading={loading}
+              onCall={() => execApi('call', undefined, undefined, getElapsed())}
+              onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}
+              onBet={() => execApi('bet', betAmount, undefined, getElapsed())}
+              onCheck={() => execApi('check', undefined, undefined, getElapsed())}
+              onFold={() => execApi('fold', undefined, undefined, getElapsed())}
+              onAllIn={() => execApi('allin', undefined, undefined, getElapsed())}
+            />
+          </div>
         )}
 
         {/* Settings */}
@@ -257,7 +326,7 @@ export function IndianPokerPage() {
         />
 
         {/* Reset */}
-        <div className="text-center flex items-center justify-center gap-3">
+        <div className="text-center flex items-center justify-center gap-3" data-tutorial="ip-reset-button">
           <button
             type="button"
             className={`${btnPrimary} min-w-[90px]`}

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -14,9 +15,62 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, useMemoryGame } from '../hooks/useMemoryGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnSecondary, btnSuccess, btnWarning, focusRingWhite } from '../styles/buttonStyles';
 import { MemoryPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
+
+/** Memory tutorial step definitions. */
+const MEM_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="mem-score-table"]',
+    messageKey: 'tutorial.scoreTable',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="mem-board"]',
+    messageKey: 'tutorial.board',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="mem-next-button"]',
+    messageKey: 'tutorial.nextButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="mem-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Memory tutorial configuration. */
+const MEM_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'memory',
+  steps: MEM_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Memory tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
 
 const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
   [MemoryPhase.FLIP1]: 'flip1',
@@ -27,6 +81,16 @@ const MEMORY_PHASE_KEYS: Readonly<Record<number, string>> = {
 
 /** Renders the Memory card matching game page with board grid and scores. */
 export function MemoryPage() {
+  const { t: tMem } = useTranslation('memory');
+  return (
+    <TutorialProvider config={MEM_TUTORIAL_CONFIG} translateMessage={tMem}>
+      <MemoryPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Memory page, wrapped by TutorialProvider. */
+function MemoryPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('memory');
   const { cardWidth } = useCardDimensions();
@@ -57,7 +121,9 @@ export function MemoryPage() {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-game-bg-blue" aria-busy={loading}>
       {/* Phase indicator */}
-      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn} />
+      <PhaseIndicator phaseName={phaseNames[state.phase]} isHumanTurn={isHumanTurn}>
+        <TutorialButton />
+      </PhaseIndicator>
 
       {/* Landscape orientation banner (visible on small portrait screens) */}
       <div className="hidden portrait:flex sm:hidden items-center gap-2 px-4 py-2 bg-yellow-500/90 text-black text-sm font-medium">
@@ -90,7 +156,7 @@ export function MemoryPage() {
       {/* Scrollable area */}
       <div className="flex-1 overflow-y-auto pt-3 px-4">
         {/* Player scores */}
-        <div className="my-2 p-2 rounded bg-black/30 text-white text-sm">
+        <div className="my-2 p-2 rounded bg-black/30 text-white text-sm" data-tutorial="mem-score-table">
           <div className="mb-1">{t('scores')}</div>
           <table className="w-full">
             <thead>
@@ -113,7 +179,7 @@ export function MemoryPage() {
         </div>
 
         {/* Board: responsive grid (4/6/8/13 columns by breakpoint) */}
-        <div className="my-3 p-2 rounded bg-black/40">
+        <div className="my-3 p-2 rounded bg-black/40" data-tutorial="mem-board">
           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1">
             {state.board.map((bc, idx) => (
               <button
@@ -154,23 +220,27 @@ export function MemoryPage() {
         <ErrorAlert message={error} />
         <div className="flex gap-2 items-center">
           {isResult && (
-            <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
-              {t('nextButton')}
-            </button>
+            <div data-tutorial="mem-next-button">
+              <button type="button" className={btnSuccess} onClick={handleNext} disabled={loading}>
+                {t('nextButton')}
+              </button>
+            </div>
           )}
-          <button
-            type="button"
-            className={btnWarning}
-            onClick={() =>
-              requestConfirm(() => {
-                hideActionLog();
-                return exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
-              })
-            }
-            disabled={loading}
-          >
-            {tc('button.reset')}
-          </button>
+          <div data-tutorial="mem-reset-button">
+            <button
+              type="button"
+              className={btnWarning}
+              onClick={() =>
+                requestConfirm(() => {
+                  hideActionLog();
+                  return exec('reset', undefined, { cpuDifficulty: memoryConfig.cpuDifficulty });
+                })
+              }
+              disabled={loading}
+            >
+              {tc('button.reset')}
+            </button>
+          </div>
         </div>
       </GameFooter>
       <WinCelebration show={!!state?.gameEndFlag} />

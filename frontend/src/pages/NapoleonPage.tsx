@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -19,12 +20,89 @@ import {
   useNapoleonGame,
 } from '../hooks/useNapoleonGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { selectedCardStyle } from '../styles/cardStyles';
 import { NapoleonPhase } from '../types/phases';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { playerName } from '../utils/playerUtils';
+
+/** Napoleon tutorial step definitions. */
+const NP_TUTORIAL_STEPS: TutorialStep[] = [
+  {
+    target: '[data-tutorial="np-bid-controls"]',
+    messageKey: 'tutorial.bidControls',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="np-trump-declaration"]',
+    messageKey: 'tutorial.trumpDeclaration',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="np-adjutant-info"]',
+    messageKey: 'tutorial.adjutantInfo',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="np-kitty-cards"]',
+    messageKey: 'tutorial.kittyCards',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="np-trick-display"]',
+    messageKey: 'tutorial.trickDisplay',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="np-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="np-score-table"]',
+    messageKey: 'tutorial.scoreTable',
+    placement: 'bottom',
+    advanceOn: 'next',
+  },
+  {
+    target: '[data-tutorial="np-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Tutorial button that starts the Napoleon tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
+/** Napoleon tutorial configuration. */
+const NP_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'napoleon',
+  steps: NP_TUTORIAL_STEPS,
+};
 
 const NAPOLEON_PHASE_KEYS: Readonly<Record<number, string>> = {
   [NapoleonPhase.BID]: 'bid',
@@ -40,6 +118,16 @@ const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4
 
 /** Renders the Napoleon game page with bidding, trump declaration, kitty exchange, trick play, and scoring. */
 export function NapoleonPage() {
+  const { t: tNapoleon } = useTranslation('napoleon');
+  return (
+    <TutorialProvider config={NP_TUTORIAL_CONFIG} translateMessage={tNapoleon}>
+      <NapoleonPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Napoleon page, wrapped by TutorialProvider. */
+function NapoleonPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('napoleon');
   const {
@@ -118,7 +206,9 @@ export function NapoleonPage() {
       <PhaseIndicator
         phaseName={phaseNames[state.phase]}
         isHumanTurn={isHumanBidTurn || isHumanTurn || isHumanNapoleon || isHumanExchange}
-      />
+      >
+        <TutorialButton />
+      </PhaseIndicator>
 
       {/* Settings */}
       <SettingsPanel
@@ -173,7 +263,7 @@ export function NapoleonPage() {
 
         {/* Adjutant card info */}
         {state.adjutantCard && (
-          <div className="text-white/70 text-center text-sm mb-2">
+          <div className="text-white/70 text-center text-sm mb-2" data-tutorial="np-adjutant-info">
             {t('adjutantCard')}: <AnimatedCard card={state.adjutantCard} width={cardWidth * 0.6} />
           </div>
         )}
@@ -185,18 +275,24 @@ export function NapoleonPage() {
 
         {/* Bid phase instruction */}
         {isHumanBidTurn && (
-          <div className="text-yellow-300 text-center mb-2">{t('bidPhase', { min: napoleonConfig.minBid })}</div>
+          <div className="text-yellow-300 text-center mb-2" data-tutorial="np-bid-controls">
+            {t('bidPhase', { min: napoleonConfig.minBid })}
+          </div>
         )}
 
         {/* Trump declaration instruction */}
-        {isHumanNapoleon && <div className="text-yellow-300 text-center mb-2">{t('trumpDeclarationPhase')}</div>}
+        {isHumanNapoleon && (
+          <div className="text-yellow-300 text-center mb-2" data-tutorial="np-trump-declaration">
+            {t('trumpDeclarationPhase')}
+          </div>
+        )}
 
         {/* Kitty exchange instruction */}
         {isHumanExchange && <div className="text-yellow-300 text-center mb-2">{t('kittyExchangePhase')}</div>}
 
         {/* Kitty cards (during exchange phase) */}
         {isKittyExchange && state.kitty.length > 0 && (
-          <div className="my-2 p-2 rounded bg-black/40">
+          <div className="my-2 p-2 rounded bg-black/40" data-tutorial="np-kitty-cards">
             <div className="text-white/70 text-sm mb-1">{t('kittyLabel')}</div>
             <div className="flex gap-2">
               {state.kitty.map((card, idx) => (
@@ -222,7 +318,7 @@ export function NapoleonPage() {
 
         {/* Current trick */}
         {state.currentTrick.length > 0 && (
-          <div className="my-3 p-3 rounded bg-black/40">
+          <div className="my-3 p-3 rounded bg-black/40" data-tutorial="np-trick-display">
             <div className="text-white/70 text-sm mb-1">{t('currentTrick')}</div>
             <div className="flex gap-2">
               {state.currentTrick.map((trickCard) => (
@@ -241,7 +337,7 @@ export function NapoleonPage() {
         )}
 
         {/* Score table */}
-        <div className="my-3 p-2 rounded bg-black/30">
+        <div className="my-3 p-2 rounded bg-black/30" data-tutorial="np-score-table">
           <div className="text-white/70 text-sm mb-1">{t('scores')}</div>
           <table className="w-full text-sm text-white/70">
             <thead>
@@ -295,7 +391,7 @@ export function NapoleonPage() {
       <GameFooter className="bg-game-bg-blue-dark border-white/20 px-4 py-2.5">
         {/* Human cards */}
         {humanPlayer && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="flex flex-wrap gap-1 mb-2" data-tutorial="np-player-hand">
             {humanPlayer.cards.map((card, idx) => (
               <button
                 type="button"
@@ -459,6 +555,7 @@ export function NapoleonPage() {
           <button
             type="button"
             className={btnWarning}
+            data-tutorial="np-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();

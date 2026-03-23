@@ -20,5 +20,12 @@
   "cardSelected": "(selected for exchange)",
   "settings": {
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "playerHand": "This is your hand. Click cards to select them for exchange.",
+    "exchangeButton": "Exchange selected cards or stand to keep your hand.",
+    "betControls": "Choose your betting action: Call, Raise, Fold, or All In.",
+    "resultMessage": "The game result is displayed here. The best hand wins.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

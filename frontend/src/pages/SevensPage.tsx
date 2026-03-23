@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActionLogSection } from '../components/ActionLogSection';
 import type { SettingsGroup } from '../components/common/SettingsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,12 +15,66 @@ import { SevensSkeleton } from '../components/skeleton/SevensSkeleton';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSevensGame } from '../hooks/useSevensGame';
-import { btnPrimary, btnWarning } from '../styles/buttonStyles';
+import { TutorialProvider, useTutorialContext } from '../providers/TutorialProvider';
+import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
+import type { TutorialConfig, TutorialStep } from '../types/tutorial';
 import { playerName } from '../utils/playerUtils';
 import { actionDesc } from '../utils/sevensUtils';
 
+/** Sevens tutorial step definitions. */
+const SV_TUTORIAL_STEPS: TutorialStep[] = [
+  { target: '[data-tutorial="sv-board"]', messageKey: 'tutorial.board', placement: 'bottom', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="sv-player-hand"]',
+    messageKey: 'tutorial.playerHand',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="sv-play-pass"]', messageKey: 'tutorial.playPass', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="sv-settings"]', messageKey: 'tutorial.settings', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="sv-reset-button"]',
+    messageKey: 'tutorial.resetButton',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+];
+
+/** Sevens tutorial configuration. */
+const SV_TUTORIAL_CONFIG: TutorialConfig = {
+  gameName: 'sevens',
+  steps: SV_TUTORIAL_STEPS,
+};
+
+/** Tutorial button that starts the Sevens tutorial. */
+function TutorialButton() {
+  const { t } = useTranslation('tutorial');
+  const { start } = useTutorialContext();
+  return (
+    <button
+      type="button"
+      className={`${btnSecondary} text-xs`}
+      onClick={start}
+      aria-label={t('tutorialButton')}
+      title={t('tutorialButton')}
+    >
+      ?
+    </button>
+  );
+}
+
 /** Renders the Sevens game page with board, player areas, and joker placement. */
 export function SevensPage() {
+  const { t: tSv } = useTranslation('sevens');
+  return (
+    <TutorialProvider config={SV_TUTORIAL_CONFIG} translateMessage={tSv}>
+      <SevensPageContent />
+    </TutorialProvider>
+  );
+}
+
+/** Inner content of the Sevens page, wrapped by TutorialProvider. */
+function SevensPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('sevens');
   const {
@@ -220,14 +275,16 @@ export function SevensPage() {
           ))}
         </div>
 
-        <SevensBoard
-          tablePlaced={tablePlaced}
-          tunnelEnabled={tunnelEnabled}
-          tunnelSkipWidth={state.config.tunnelSkipWidth}
-          endStopEnabled={state.config.endStopEnabled}
-          jokerSelecting={jokerCardIdx !== null}
-          onJokerPlace={handleJokerPlace}
-        />
+        <div data-tutorial="sv-board">
+          <SevensBoard
+            tablePlaced={tablePlaced}
+            tunnelEnabled={tunnelEnabled}
+            tunnelSkipWidth={state.config.tunnelSkipWidth}
+            endStopEnabled={state.config.endStopEnabled}
+            jokerSelecting={jokerCardIdx !== null}
+            onJokerPlace={handleJokerPlace}
+          />
+        </div>
 
         {state.humanAction && (
           <div
@@ -279,7 +336,7 @@ export function SevensPage() {
 
       <GameFooter className="bg-game-bg-green-dark border-white/20 px-4 py-2.5">
         {humanPlayer && (
-          <div className="mb-2">
+          <div className="mb-2" data-tutorial="sv-player-hand">
             <SevensHumanArea
               player={humanPlayer}
               isCurrentTurn={isHumanTurn}
@@ -295,7 +352,9 @@ export function SevensPage() {
           </div>
         )}
 
-        <SettingsPanel title={t('config.title')} groups={settingsGroups} />
+        <div data-tutorial="sv-settings">
+          <SettingsPanel title={t('config.title')} groups={settingsGroups} />
+        </div>
 
         <ErrorAlert message={error} />
 
@@ -304,6 +363,7 @@ export function SevensPage() {
             type="button"
             className={`${btnPrimary} min-w-[90px]`}
             disabled={loading}
+            data-tutorial="sv-reset-button"
             onClick={() =>
               requestConfirm(() => {
                 hideActionLog();
@@ -328,9 +388,11 @@ export function SevensPage() {
             className={`${btnWarning} min-w-[90px]`}
             disabled={loading || !canPass}
             onClick={() => exec('play', -1)}
+            data-tutorial="sv-play-pass"
           >
             {tc('button.pass')}
           </button>
+          <TutorialButton />
           {jokerCardIdx !== null && (
             <button type="button" className={`${btnWarning} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
               {tc('button.cancel')}

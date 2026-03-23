@@ -48,5 +48,14 @@
   },
   "settings": {
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
+  },
+  "tutorial": {
+    "communityCards": "Community cards revealed progressively.",
+    "playerHand": "Your 4 hole cards. You must use exactly 2 of them.",
+    "combinationRule": "In Omaha, you must use exactly 2 hole cards and 3 community cards to form your hand.",
+    "actionButtons": "Choose your betting action.",
+    "potDisplay": "Shows pot size and blind levels.",
+    "cpuArea": "CPU opponent information.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }
