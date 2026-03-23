@@ -77,5 +77,14 @@
     "bjTooltip": "BlackJack: Ace and a 10-value card on first two cards",
     "sur": "SUR",
     "surTooltip": "Surrender: forfeit hand and reclaim half the bet"
+  },
+  "tutorial": {
+    "betControls": "Set your bet amount here. Adjust the slider to choose how much to wager.",
+    "betButton": "Once you've set your bet, press this button to start the game.",
+    "dealerHand": "This is the dealer's hand. One card is face down, and one is face up.",
+    "playerHand": "This is your hand. Check the total point value of your cards.",
+    "actionButtons": "Choose Hit (draw a card) or Stand (keep your hand). The goal is to get close to 21.",
+    "resultMessage": "The game result is displayed here. Check the outcome and chips won or lost.",
+    "resetButton": "Press the reset button to start a new game."
   }
 }

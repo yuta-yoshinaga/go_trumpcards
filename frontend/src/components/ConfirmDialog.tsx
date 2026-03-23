@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { btnDanger, btnSecondary } from '../styles/buttonStyles';
 
 /** Returns all focusable elements within the given container. */
-function getFocusableElements(container: HTMLElement): HTMLElement[] {
+export function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(
     container.querySelectorAll<HTMLElement>(
       'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
