@@ -347,7 +347,10 @@ func TestDaifugoSolver_solve(t *testing.T) {
 		assert.Equal(t, 8, result[0].GetValue())
 	})
 
-	t.Run("sequence table falls back (not implemented)", func(t *testing.T) {
+	t.Run("sequence response beats table sequence", func(t *testing.T) {
+		// Table: 3♠-4♠-5♠ sequence (min strength 3)
+		// CPU has: 6♠-7♠-8♠ (min strength 6, beats 3)
+		// No opponents → should win
 		tableCards := []*Card{
 			NewCard(CardDesignSpade, 3, false),
 			NewCard(CardDesignSpade, 4, false),
@@ -358,9 +361,12 @@ func TestDaifugoSolver_solve(t *testing.T) {
 			NewCard(CardDesignSpade, 7, false),
 			NewCard(CardDesignSpade, 8, false),
 		}
-		solver := &daifugoSolver{oppHands: nil, config: solverConfig()}
+		cfg := solverConfig()
+		cfg.SequenceEnabled = true
+		solver := &daifugoSolver{oppHands: nil, config: cfg}
 		result := solver.solve(cpuHand, tableCards, true, false, 0, false)
-		assert.Nil(t, result)
+		assert.NotNil(t, result)
+		assert.Equal(t, 3, len(result))
 	})
 
 	t.Run("last play can be beatable", func(t *testing.T) {
@@ -475,6 +481,142 @@ func TestDaifugoSolver_solve(t *testing.T) {
 		assert.NotNil(t, result)
 		assert.Equal(t, CardDesignSpade, result[0].GetDesign())
 		assert.Equal(t, 3, result[0].GetValue())
+	})
+
+	t.Run("sequence play as opening wins", func(t *testing.T) {
+		// CPU has: A♠, 2♠, 3♠ — forms a sequence (strengths 14,15,3 — no, wait)
+		// In normal order: 3→3, 4→4, ..., A→14, 2→15
+		// So 3♠-4♠-5♠ would be a valid sequence with strengths 3,4,5
+		// CPU has: Q♠, K♠, A♠ (strengths 12,13,14) — valid sequence
+		// Opponent has: 5♠ (strength 5) — cannot form a 3-card sequence
+		cpuHand := []*Card{
+			NewCard(CardDesignSpade, 12, false), // Q
+			NewCard(CardDesignSpade, 13, false), // K
+			NewCard(CardDesignSpade, 1, false),  // A
+		}
+		oppHands := [][]*Card{
+			{NewCard(CardDesignSpade, 5, false)},
+		}
+		cfg := solverConfig()
+		cfg.SequenceEnabled = true
+		solver := &daifugoSolver{oppHands: oppHands, config: cfg}
+		result := solver.solve(cpuHand, nil, false, false, 0, false)
+		assert.NotNil(t, result)
+		assert.Equal(t, 3, len(result))
+	})
+
+	t.Run("sequence with joker gap-filling wins", func(t *testing.T) {
+		// CPU has: 4♠, Joker, 6♠ — sequence 4-5(joker)-6 (strengths 4,5,6)
+		// Opponent has: 3♠ — cannot beat this sequence
+		cpuHand := []*Card{
+			NewCard(CardDesignSpade, 4, false),
+			NewCard(CardDesignJoker, 0, false),
+			NewCard(CardDesignSpade, 6, false),
+		}
+		oppHands := [][]*Card{
+			{NewCard(CardDesignHeart, 3, false)},
+		}
+		cfg := solverConfig()
+		cfg.SequenceEnabled = true
+		cfg.IllegalFinishEnabled = false // joker in sequence is not a finish
+		solver := &daifugoSolver{oppHands: oppHands, config: cfg}
+		result := solver.solve(cpuHand, nil, false, false, 0, false)
+		assert.NotNil(t, result)
+		assert.Equal(t, 3, len(result))
+	})
+
+	t.Run("sequence is only winning path", func(t *testing.T) {
+		// CPU has: 10♠, J♠, Q♠ (strengths 10,11,12) — valid sequence
+		// Opponent has: 2♠, A♠ (strengths 15,14) — beats any single card
+		// Singles: 10 beatable by A, J beatable by A, Q beatable by A
+		// Pairs: can't form pairs
+		// Sequence: 10-J-Q unbeatable (opponent has 2♠+A♠, different values, same suit
+		//   but A-2 are not consecutive in strength: 14,15 — only 2 cards, need 3)
+		cpuHand := []*Card{
+			NewCard(CardDesignSpade, 10, false),
+			NewCard(CardDesignSpade, 11, false),
+			NewCard(CardDesignSpade, 12, false),
+		}
+		oppHands := [][]*Card{
+			{NewCard(CardDesignSpade, 2, false), NewCard(CardDesignSpade, 1, false)},
+		}
+		cfg := solverConfig()
+		cfg.SequenceEnabled = true
+		solver := &daifugoSolver{oppHands: oppHands, config: cfg}
+		result := solver.solve(cpuHand, nil, false, false, 0, false)
+		assert.NotNil(t, result)
+		assert.Equal(t, 3, len(result))
+	})
+
+	t.Run("sequence response with remaining cards wins", func(t *testing.T) {
+		// Table: 3♥-4♥-5♥ sequence (min strength 3)
+		// CPU has: 6♥-7♥-8♥ (beats table) + 2♠ (unbeatable single)
+		// Opponent has: 9♠ (can't form 3-card sequence, single 9 strength 9)
+		// CPU plays 6-7-8 (sequence response, 8-cut triggers since 8♥ present)
+		// After 8-cut, table clears → play 2♠ as last card → win
+		tableCards := []*Card{
+			NewCard(CardDesignHeart, 3, false),
+			NewCard(CardDesignHeart, 4, false),
+			NewCard(CardDesignHeart, 5, false),
+		}
+		cpuHand := []*Card{
+			NewCard(CardDesignHeart, 6, false),
+			NewCard(CardDesignHeart, 7, false),
+			NewCard(CardDesignHeart, 8, false),
+			NewCard(CardDesignSpade, 2, false),
+		}
+		oppHands := [][]*Card{
+			{NewCard(CardDesignSpade, 9, false)},
+		}
+		cfg := solverConfig()
+		cfg.SequenceEnabled = true
+		solver := &daifugoSolver{oppHands: oppHands, config: cfg}
+		result := solver.solve(cpuHand, tableCards, true, false, 0, false)
+		assert.NotNil(t, result)
+		assert.Equal(t, 3, len(result))
+	})
+
+	t.Run("sequence disabled returns nil for sequence table", func(t *testing.T) {
+		// SequenceEnabled = false → no sequence moves generated
+		tableCards := []*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignSpade, 4, false),
+			NewCard(CardDesignSpade, 5, false),
+		}
+		cpuHand := []*Card{
+			NewCard(CardDesignSpade, 6, false),
+			NewCard(CardDesignSpade, 7, false),
+			NewCard(CardDesignSpade, 8, false),
+		}
+		cfg := solverConfig()
+		cfg.SequenceEnabled = false
+		solver := &daifugoSolver{oppHands: nil, config: cfg}
+		result := solver.solve(cpuHand, tableCards, true, false, 0, false)
+		assert.Nil(t, result)
+	})
+
+	t.Run("sequence beatable by opponent sequence prevents win", func(t *testing.T) {
+		// CPU has: 5♠-6♠-7♠ (strengths 5,6,7, min=5) — only option is sequence
+		// Opponent has: 8♥-9♥-10♥ (strengths 8,9,10, min=8 > 5) — can beat
+		// Singles: 5,6,7 all beatable by 8,9,10
+		// No winning path
+		cpuHand := []*Card{
+			NewCard(CardDesignSpade, 5, false),
+			NewCard(CardDesignSpade, 6, false),
+			NewCard(CardDesignSpade, 7, false),
+		}
+		oppHands := [][]*Card{
+			{
+				NewCard(CardDesignHeart, 8, false),
+				NewCard(CardDesignHeart, 9, false),
+				NewCard(CardDesignHeart, 10, false),
+			},
+		}
+		cfg := solverConfig()
+		cfg.SequenceEnabled = true
+		solver := &daifugoSolver{oppHands: oppHands, config: cfg}
+		result := solver.solve(cpuHand, nil, false, false, 0, false)
+		assert.Nil(t, result)
 	})
 }
 
@@ -955,6 +1097,128 @@ func TestDaifugoSolver_helpers(t *testing.T) {
 		solver.applyRevolution(cards)
 		assert.False(t, solver.revolution)
 	})
+
+	t.Run("sequenceMinStrength returns minimum card strength", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{}}
+		cards := []*Card{
+			NewCard(CardDesignSpade, 5, false), // strength 5
+			NewCard(CardDesignSpade, 6, false), // strength 6
+			NewCard(CardDesignSpade, 7, false), // strength 7
+		}
+		assert.Equal(t, 5, solver.sequenceMinStrength(cards))
+	})
+
+	t.Run("sequenceMinStrength with joker", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{}}
+		cards := []*Card{
+			NewCard(CardDesignSpade, 5, false), // strength 5
+			NewCard(CardDesignJoker, 0, false), // strength 16
+			NewCard(CardDesignSpade, 7, false), // strength 7
+		}
+		assert.Equal(t, 5, solver.sequenceMinStrength(cards))
+	})
+
+	t.Run("generateSequencePlays finds valid sequences", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{SequenceEnabled: true}}
+		hand := []*Card{
+			NewCard(CardDesignSpade, 3, false), // strength 3
+			NewCard(CardDesignSpade, 4, false), // strength 4
+			NewCard(CardDesignSpade, 5, false), // strength 5
+		}
+		moves := solver.generateSequencePlays(hand)
+		assert.Greater(t, len(moves), 0)
+		assert.True(t, moves[0].isSequence)
+		assert.Equal(t, 3, len(moves[0].cards))
+	})
+
+	t.Run("generateSequencePlays with mixed suits", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{SequenceEnabled: true}}
+		hand := []*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignHeart, 4, false), // different suit
+			NewCard(CardDesignSpade, 5, false),
+		}
+		// No valid 3-card sequence of same suit
+		moves := solver.generateSequencePlays(hand)
+		assert.Equal(t, 0, len(moves))
+	})
+
+	t.Run("generateSequenceResponsePlays beats table", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{SequenceEnabled: true}}
+		hand := []*Card{
+			NewCard(CardDesignSpade, 6, false), // strength 6
+			NewCard(CardDesignSpade, 7, false), // strength 7
+			NewCard(CardDesignSpade, 8, false), // strength 8
+		}
+		moves := solver.generateSequenceResponsePlays(hand, 3, 3) // table min strength 3
+		assert.Greater(t, len(moves), 0)
+		assert.True(t, moves[0].isSequence)
+	})
+
+	t.Run("generateSequenceResponsePlays rejects weaker sequence", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{SequenceEnabled: true}}
+		hand := []*Card{
+			NewCard(CardDesignSpade, 3, false), // strength 3
+			NewCard(CardDesignSpade, 4, false), // strength 4
+			NewCard(CardDesignSpade, 5, false), // strength 5
+		}
+		moves := solver.generateSequenceResponsePlays(hand, 3, 6) // table min strength 6
+		assert.Equal(t, 0, len(moves))
+	})
+
+	t.Run("canBeatSequence with stronger sequence", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{}}
+		oppHand := []*Card{
+			NewCard(CardDesignSpade, 8, false),  // strength 8
+			NewCard(CardDesignSpade, 9, false),  // strength 9
+			NewCard(CardDesignSpade, 10, false), // strength 10
+		}
+		// Can form 8-9-10 sequence (min strength 8 > 5)
+		assert.True(t, solver.canBeatSequence(oppHand, 3, 5))
+	})
+
+	t.Run("canBeatSequence fails with weaker cards", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{}}
+		oppHand := []*Card{
+			NewCard(CardDesignSpade, 3, false), // strength 3
+			NewCard(CardDesignSpade, 4, false), // strength 4
+			NewCard(CardDesignSpade, 5, false), // strength 5
+		}
+		// Cannot beat sequence with min strength 8
+		assert.False(t, solver.canBeatSequence(oppHand, 3, 8))
+	})
+
+	t.Run("canBeatSequence with joker fills gap", func(t *testing.T) {
+		solver := &daifugoSolver{config: DaifugoConfig{}}
+		oppHand := []*Card{
+			NewCard(CardDesignSpade, 8, false),  // strength 8
+			NewCard(CardDesignJoker, 0, false),  // fills 9
+			NewCard(CardDesignSpade, 10, false), // strength 10
+		}
+		// Can form 8-Joker-10 sequence (min strength 8 > 5)
+		assert.True(t, solver.canBeatSequence(oppHand, 3, 5))
+	})
+
+	t.Run("isUnbeatableSequence no opponents", func(t *testing.T) {
+		solver := &daifugoSolver{oppHands: nil, config: DaifugoConfig{}}
+		play := []*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignSpade, 4, false),
+			NewCard(CardDesignSpade, 5, false),
+		}
+		assert.True(t, solver.isUnbeatableSequence(play))
+	})
+
+	t.Run("isUnbeatablePlay dispatches to sequence check", func(t *testing.T) {
+		solver := &daifugoSolver{oppHands: nil, config: DaifugoConfig{}}
+		move := solverPlay{
+			cards:      []*Card{NewCard(CardDesignSpade, 3, false)},
+			isSequence: true,
+		}
+		assert.True(t, solver.isUnbeatablePlay(move))
+		move.isSequence = false
+		assert.True(t, solver.isUnbeatablePlay(move))
+	})
 }
 
 func TestDaifugo_trySolveEndgame(t *testing.T) {
@@ -1037,7 +1301,7 @@ func TestDaifugo_trySolveEndgame(t *testing.T) {
 		assert.NotNil(t, result)
 	})
 
-	t.Run("returns nil when table is sequence", func(t *testing.T) {
+	t.Run("solves when table is sequence with SequenceEnabled", func(t *testing.T) {
 		tc := NewTrumpCards(0)
 		players := []*DaifugoPlayer{
 			NewDaifugoPlayer(true),
@@ -1045,12 +1309,55 @@ func TestDaifugo_trySolveEndgame(t *testing.T) {
 			NewDaifugoPlayer(false),
 			NewDaifugoPlayer(false),
 		}
-		cfg := DaifugoConfig{CpuDifficulty: DaifugoDifficultyHard}
+		cfg := DaifugoConfig{
+			CpuDifficulty:   DaifugoDifficultyHard,
+			SequenceEnabled: true,
+		}
 		d := NewDaifugo(tc, players, cfg)
-		players[1].AddCard(NewCard(CardDesignSpade, 2, false))
-		players[0].AddCard(NewCard(CardDesignSpade, 3, false))
-		players[2].AddCard(NewCard(CardDesignHeart, 3, false))
-		players[3].AddCard(NewCard(CardDesignDiamond, 3, false))
+		// CPU (player 1): 8♠, 9♠, 10♠ — can beat the table sequence 3♠-4♠-5♠
+		players[1].AddCard(NewCard(CardDesignSpade, 8, false))
+		players[1].AddCard(NewCard(CardDesignSpade, 9, false))
+		players[1].AddCard(NewCard(CardDesignSpade, 10, false))
+		// Opponents: weaker cards
+		players[0].AddCard(NewCard(CardDesignHeart, 3, false))
+		players[2].AddCard(NewCard(CardDesignDiamond, 3, false))
+		players[3].AddCard(NewCard(CardDesignClover, 3, false))
+		// Set table as sequence 3♠-4♠-5♠
+		d.SetTableCards([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignSpade, 4, false),
+			NewCard(CardDesignSpade, 5, false),
+		})
+		d.SetTableIsSequence(true)
+		result := d.trySolveEndgame(players[1])
+		assert.NotNil(t, result)
+		assert.Equal(t, 3, len(result))
+	})
+
+	t.Run("returns nil when table is sequence but SequenceEnabled is false", func(t *testing.T) {
+		tc := NewTrumpCards(0)
+		players := []*DaifugoPlayer{
+			NewDaifugoPlayer(true),
+			NewDaifugoPlayer(false),
+			NewDaifugoPlayer(false),
+			NewDaifugoPlayer(false),
+		}
+		cfg := DaifugoConfig{
+			CpuDifficulty:   DaifugoDifficultyHard,
+			SequenceEnabled: false,
+		}
+		d := NewDaifugo(tc, players, cfg)
+		players[1].AddCard(NewCard(CardDesignSpade, 8, false))
+		players[1].AddCard(NewCard(CardDesignSpade, 9, false))
+		players[1].AddCard(NewCard(CardDesignSpade, 10, false))
+		players[0].AddCard(NewCard(CardDesignHeart, 3, false))
+		players[2].AddCard(NewCard(CardDesignDiamond, 3, false))
+		players[3].AddCard(NewCard(CardDesignClover, 3, false))
+		d.SetTableCards([]*Card{
+			NewCard(CardDesignSpade, 3, false),
+			NewCard(CardDesignSpade, 4, false),
+			NewCard(CardDesignSpade, 5, false),
+		})
 		d.SetTableIsSequence(true)
 		result := d.trySolveEndgame(players[1])
 		assert.Nil(t, result)
