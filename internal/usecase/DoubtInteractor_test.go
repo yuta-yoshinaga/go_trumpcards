@@ -67,7 +67,7 @@ func TestDoubtInteractor_ResetWithConfig(t *testing.T) {
 		gameMock.On("Reset").Return()
 
 		di := usecase.NewDoubtInteractor(gameMock, dpMock)
-		result := di.ResetWithConfig(cfg)
+		result := di.ResetWithConfig(cfg, nil)
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "SetConfig", cfg)
 		gameMock.AssertCalled(t, "Reset")
@@ -82,7 +82,7 @@ func TestDoubtInteractor_ResetWithConfig(t *testing.T) {
 		gameMock.On("Reset").Return()
 
 		di := usecase.NewDoubtInteractor(gameMock, dpMock)
-		result := di.ResetWithConfig(cfg)
+		result := di.ResetWithConfig(cfg, nil)
 		assert.Equal(t, mockOutput, result)
 	})
 
@@ -92,7 +92,7 @@ func TestDoubtInteractor_ResetWithConfig(t *testing.T) {
 		game := newTestDoubt()
 		di := usecase.NewDoubtInteractor(game, dpMock)
 		cfg := domain.DoubtConfig{DoubtWindowSec: 5, CpuMemoryLevel: domain.DoubtMemoryLevelEasy}
-		result := di.ResetWithConfig(cfg)
+		result := di.ResetWithConfig(cfg, nil)
 		assert.Equal(t, mockOutput, result)
 		assert.Equal(t, 5, game.GetConfig().DoubtWindowSec)
 		assert.Equal(t, domain.DoubtMemoryLevelEasy, game.GetConfig().CpuMemoryLevel)

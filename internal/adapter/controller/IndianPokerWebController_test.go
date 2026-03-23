@@ -6,6 +6,7 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ant0ine/go-json-rest/rest/test"
+	"github.com/stretchr/testify/mock"
 
 	mockUsecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -31,7 +32,7 @@ func TestIndianPokerWebController_Reset(t *testing.T) {
 	defer iwc.Stop()
 
 	cfg := domain.DefaultIndianPokerConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1,"message":""}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1,"message":""}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/indianpoker/exec",
@@ -54,7 +55,7 @@ func TestIndianPokerWebController_Reset_WithConfig(t *testing.T) {
 	cfg.Ante = ante
 	cfg.BettingLimit = domain.BettingLimitPotLimit
 	cfg.CpuMetaAI = cpuMeta
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1,"message":""}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1,"message":""}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/indianpoker/exec",
@@ -198,7 +199,7 @@ func TestIndianPokerWebController_Unknown(t *testing.T) {
 	defer iwc.Stop()
 	// Must have a session first
 	cfg := domain.DefaultIndianPokerConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 	test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/indianpoker/exec",
 			map[string]interface{}{"command": "reset", "sessionId": "s1"}))
@@ -244,7 +245,7 @@ func TestIndianPokerWebController_ShortCommands(t *testing.T) {
 	defer iwc.Stop()
 
 	cfg := domain.DefaultIndianPokerConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 	mi.On("Action", domain.IndianPokerActionFold, 0, 0).Return(`{"phase":1}`)
 	mi.On("Action", domain.IndianPokerActionCheck, 0, 0).Return(`{"phase":1}`)
 	mi.On("Action", domain.IndianPokerActionCall, 0, 0).Return(`{"phase":1}`)
@@ -282,7 +283,7 @@ func TestIndianPokerWebController_Reset_AnteOnly(t *testing.T) {
 	ante := 50
 	cfg := domain.DefaultIndianPokerConfig()
 	cfg.Ante = ante
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/indianpoker/exec",
@@ -301,7 +302,7 @@ func TestIndianPokerWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
 
 	cfg := domain.DefaultIndianPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitPotLimit
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/indianpoker/exec",
@@ -320,7 +321,7 @@ func TestIndianPokerWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) 
 
 	cfg := domain.DefaultIndianPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitNoLimit // clamped from 5 to 2
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/indianpoker/exec",
@@ -339,7 +340,7 @@ func TestIndianPokerWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) 
 
 	cfg := domain.DefaultIndianPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitFixed // clamped from -1 to 0
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/indianpoker/exec",
@@ -358,7 +359,7 @@ func TestIndianPokerWebController_Reset_InvalidAnte(t *testing.T) {
 
 	// ante=0 should be ignored (below threshold), use default
 	cfg := domain.DefaultIndianPokerConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/indianpoker/exec",
@@ -377,7 +378,7 @@ func TestIndianPokerWebController_Reset_CpuMetaAI(t *testing.T) {
 
 	cfg := domain.DefaultIndianPokerConfig()
 	cfg.CpuMetaAI = false
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	metaAI := false
 	recorded := test.RunRequest(t, api.MakeHandler(),

@@ -36,7 +36,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 		command,
 		func(_ []string) string {
 			cfg := c.di.GetConfig()
-			return c.di.ResetWithConfig(cfg)
+			return c.di.ResetWithConfig(cfg, nil)
 		},
 		[]string{
 			"p", "play", "d", "doubt", "s", "skip", "sw", "setwindow",
@@ -61,19 +61,19 @@ func (c *DoubtCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Doubt window seconds is required (1-60).", "Invalid doubt window: %s. Please enter 1-60.", 1, 60, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.DoubtWindowSec = v
-					return c.di.ResetWithConfig(cfg)
+					return c.di.ResetWithConfig(cfg, nil)
 				})
 			case "sm", "setmemory":
 				return cuiutil.WithParsedInt(args, "CPU memory level is required (0=Easy, 1=Normal, 2=Hard).", "Invalid CPU memory level: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuMemoryLevel = domain.DoubtMemoryLevel(v)
-					return c.di.ResetWithConfig(cfg)
+					return c.di.ResetWithConfig(cfg, nil)
 				})
 			case "smetaai", "smai":
 				return cuiutil.WithParsedInt(args, "Meta-AI flag is required (0=OFF, 1=ON).", "Invalid meta-AI flag: %s. Please enter 0-1.", 0, 1, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.CpuMetaAI = v == 1
-					return c.di.ResetWithConfig(cfg)
+					return c.di.ResetWithConfig(cfg, nil)
 				})
 			case "rp", "resetprofile":
 				return c.di.ResetProfile(), true
@@ -81,7 +81,7 @@ func (c *DoubtCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Penalty draw limit is required (0=unlimited, >0=limit).", "Invalid penalty draw limit: %s. Please enter 0 or more.", 0, math.MaxInt, func(v int) string {
 					cfg := c.di.GetConfig()
 					cfg.PenaltyDrawLimit = v
-					return c.di.ResetWithConfig(cfg)
+					return c.di.ResetWithConfig(cfg, nil)
 				})
 			}
 			return "", false

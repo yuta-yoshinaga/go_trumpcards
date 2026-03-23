@@ -69,7 +69,7 @@ func TestIndianPokerInteractor_ResetWithConfig(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("reset with config output")
 
-	result := ipi.ResetWithConfig(cfg)
+	result := ipi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "reset with config output", result)
 	mg.AssertCalled(t, "SetConfig", cfg)
 	mg.AssertCalled(t, "Reset")
@@ -86,7 +86,7 @@ func TestIndianPokerInteractor_ResetWithConfig_Error(t *testing.T) {
 	mg.On("Reset").Return(err)
 	mp.On("Output", mg, err).Return("error output")
 
-	result := ipi.ResetWithConfig(cfg)
+	result := ipi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "error output", result)
 }
 
@@ -97,7 +97,7 @@ func TestIndianPokerInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 
 	mp.On("Output", mg, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
 	cfg := domain.IndianPokerConfig{Ante: 0, InitChips: 1000, BettingLimit: domain.BettingLimitNoLimit}
-	result := ipi.ResetWithConfig(cfg)
+	result := ipi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "validation error", result)
 	mg.AssertNotCalled(t, "SetConfig", mock.Anything)
 }

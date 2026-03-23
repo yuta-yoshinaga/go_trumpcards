@@ -75,6 +75,14 @@ type OmahaGame interface {
 	ShowHand() error
 	// IsMuckAvailable マックが可能かを返す
 	IsMuckAvailable() bool
+	// GetHumanProfile メタAIプロファイルを取得する
+	GetHumanProfile() *domain.BettingHumanProfile
+	// ResetProfile メタAIプロファイルをリセットする
+	ResetProfile()
+	// ExportProfile メタAIプロファイルをエクスポートする
+	ExportProfile() interface{}
+	// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+	ImportProfile(data []byte) error
 	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
 	// GetEquity エクイティ計算結果を取得する

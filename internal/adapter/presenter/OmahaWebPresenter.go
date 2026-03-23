@@ -76,6 +76,19 @@ func (owp *OmahaWebPresenter) buildOutput(o interfaces.OmahaGame, lastErr error)
 
 	resObj.Message, resObj.MessageCode = owp.buildMessage(o, lastErr)
 
+	// メタAI情報
+	if profile := o.GetHumanProfile(); profile != nil {
+		resObj.MetaAI = &controller.HoldemWebOutputMetaAI{
+			Enabled:        true,
+			GamesPlayed:    profile.GamesPlayed,
+			BluffRate:      profile.BluffRate(1),
+			FoldRate:       profile.FoldRate(),
+			HesitationMean: profile.HesitationMean,
+		}
+		d := profile.Export()
+		resObj.Profile = &d
+	}
+
 	return resObj
 }
 

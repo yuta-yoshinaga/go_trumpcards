@@ -47,6 +47,14 @@ type IndianPokerGame interface {
 	GetActedFlags() []bool
 	// GetHandCount ハンド数を取得する
 	GetHandCount() int
+	// GetHumanProfile メタAIプロファイルを取得する
+	GetHumanProfile() *domain.IndianPokerHumanProfile
+	// ResetProfile メタAIプロファイルをリセットする
+	ResetProfile()
+	// ExportProfile メタAIプロファイルをエクスポートする
+	ExportProfile() interface{}
+	// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+	ImportProfile(data []byte) error
 	// GetActionLog 棋譜を取得する
 	GetActionLog() []*domain.ActionLogEntry
 }

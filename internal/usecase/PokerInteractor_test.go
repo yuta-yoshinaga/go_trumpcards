@@ -83,7 +83,7 @@ func TestPokerInteractor_ResetWithConfig(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("reset with config output")
 
-	result := pi.ResetWithConfig(cfg)
+	result := pi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "reset with config output", result)
 	mg.AssertCalled(t, "SetConfig", cfg)
 	mg.AssertCalled(t, "Reset")
@@ -100,7 +100,7 @@ func TestPokerInteractor_ResetWithConfig_Error(t *testing.T) {
 	mg.On("Reset").Return(err)
 	mp.On("Output", mg, err).Return("error output")
 
-	result := pi.ResetWithConfig(cfg)
+	result := pi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "error output", result)
 }
 
@@ -234,7 +234,7 @@ func TestPokerInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 	pi := usecase.NewPokerInteractor(gameMock, ppMock)
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 0
-	result := pi.ResetWithConfig(cfg)
+	result := pi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "validation error", result)
 	gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
 }

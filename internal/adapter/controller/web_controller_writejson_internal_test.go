@@ -97,8 +97,8 @@ func TestBlackJackWebController_WriteJsonErrors(t *testing.T) {
 type mockPokerIF struct{ mock.Mock }
 
 func (m *mockPokerIF) Reset() string { return m.Called().String(0) }
-func (m *mockPokerIF) ResetWithConfig(cfg domain.PokerConfig) string {
-	return m.Called(cfg).String(0)
+func (m *mockPokerIF) ResetWithConfig(cfg domain.PokerConfig, profileData []byte) string {
+	return m.Called(cfg, profileData).String(0)
 }
 func (m *mockPokerIF) Action(action int, amount int, humanPlayMs int) string {
 	return m.Called(action, amount, humanPlayMs).String(0)
@@ -154,7 +154,9 @@ func TestPokerWebController_WriteJsonErrors(t *testing.T) {
 
 type mockOldMaidIF struct{ mock.Mock }
 
-func (m *mockOldMaidIF) Reset(cfg domain.OldMaidConfig) string { return m.Called(cfg).String(0) }
+func (m *mockOldMaidIF) Reset(cfg domain.OldMaidConfig, profileData []byte) string {
+	return m.Called(cfg, profileData).String(0)
+}
 func (m *mockOldMaidIF) GetConfig() domain.OldMaidConfig {
 	return m.Called().Get(0).(domain.OldMaidConfig)
 }
@@ -318,11 +320,13 @@ func TestSevensWebController_WriteJsonErrors(t *testing.T) {
 
 type mockDoubtIF struct{ mock.Mock }
 
-func (m *mockDoubtIF) Reset() string                                 { return m.Called().String(0) }
-func (m *mockDoubtIF) ResetWithConfig(cfg domain.DoubtConfig) string { return m.Called(cfg).String(0) }
-func (m *mockDoubtIF) Play(i []int, v int, ms int) string            { return m.Called(i, v, ms).String(0) }
-func (m *mockDoubtIF) ResolveDoubt(idx []int) string                 { return m.Called(idx).String(0) }
-func (m *mockDoubtIF) SkipDoubt() string                             { return m.Called().String(0) }
+func (m *mockDoubtIF) Reset() string { return m.Called().String(0) }
+func (m *mockDoubtIF) ResetWithConfig(cfg domain.DoubtConfig, profileData []byte) string {
+	return m.Called(cfg, profileData).String(0)
+}
+func (m *mockDoubtIF) Play(i []int, v int, ms int) string { return m.Called(i, v, ms).String(0) }
+func (m *mockDoubtIF) ResolveDoubt(idx []int) string      { return m.Called(idx).String(0) }
+func (m *mockDoubtIF) SkipDoubt() string                  { return m.Called().String(0) }
 func (m *mockDoubtIF) GetCpuDoubters() []int {
 	ret := m.Called()
 	if val, ok := ret.Get(0).([]int); ok {
@@ -380,8 +384,8 @@ func TestDoubtWebController_WriteJsonErrors(t *testing.T) {
 type mockHoldemIF struct{ mock.Mock }
 
 func (m *mockHoldemIF) Reset() string { return m.Called().String(0) }
-func (m *mockHoldemIF) ResetWithConfig(cfg domain.HoldemConfig) string {
-	return m.Called(cfg).String(0)
+func (m *mockHoldemIF) ResetWithConfig(cfg domain.HoldemConfig, profileData []byte) string {
+	return m.Called(cfg, profileData).String(0)
 }
 func (m *mockHoldemIF) Action(action int, amount int, humanPlayMs int) string {
 	return m.Called(action, amount, humanPlayMs).String(0)

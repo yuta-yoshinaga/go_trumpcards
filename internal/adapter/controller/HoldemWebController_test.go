@@ -6,6 +6,7 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/ant0ine/go-json-rest/rest/test"
+	"github.com/stretchr/testify/mock"
 
 	mockUsecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -31,7 +32,7 @@ func TestHoldemWebController_Reset(t *testing.T) {
 	defer hwc.Stop()
 
 	cfg := domain.DefaultHoldemConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1,"message":""}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1,"message":""}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -52,7 +53,7 @@ func TestHoldemWebController_Reset_WithConfig(t *testing.T) {
 	cfg := domain.DefaultHoldemConfig()
 	cfg.SmallBlind = sb
 	cfg.BigBlind = bb
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1,"message":""}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1,"message":""}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -162,7 +163,7 @@ func TestHoldemWebController_Unknown(t *testing.T) {
 	defer hwc.Stop()
 	// Must have a session first
 	cfg := domain.DefaultHoldemConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 	test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
 			map[string]interface{}{"command": "reset", "sessionId": "s1"}))
@@ -208,7 +209,7 @@ func TestHoldemWebController_ShortCommands(t *testing.T) {
 	defer hwc.Stop()
 
 	cfg := domain.DefaultHoldemConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 	mi.On("Action", domain.HoldemActionFold, 0, 0).Return(`{"phase":1}`)
 	mi.On("Action", domain.HoldemActionCheck, 0, 0).Return(`{"phase":1}`)
 	mi.On("Action", domain.HoldemActionCall, 0, 0).Return(`{"phase":1}`)
@@ -246,7 +247,7 @@ func TestHoldemWebController_Reset_SmallBlindOnly(t *testing.T) {
 	sb := 3
 	cfg := domain.DefaultHoldemConfig()
 	cfg.SmallBlind = sb
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -267,7 +268,7 @@ func TestHoldemWebController_Reset_BigBlindOnly(t *testing.T) {
 	cfg := domain.DefaultHoldemConfig()
 	cfg.SmallBlind = bb / 2 // 自動調整: 15
 	cfg.BigBlind = bb
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -289,7 +290,7 @@ func TestHoldemWebController_Reset_SmallBlindOnly_AutoAdjust(t *testing.T) {
 	cfg := domain.DefaultHoldemConfig()
 	cfg.SmallBlind = sb
 	cfg.BigBlind = sb * 2 // 自動調整: 40
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -311,7 +312,7 @@ func TestHoldemWebController_Reset_BigBlindOnly_AutoAdjust(t *testing.T) {
 	cfg := domain.DefaultHoldemConfig()
 	cfg.SmallBlind = bb / 2 // 自動調整: 2
 	cfg.BigBlind = bb
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -357,7 +358,7 @@ func TestHoldemWebController_Reset_InvalidBlinds(t *testing.T) {
 	defer hwc.Stop()
 
 	cfg := domain.DefaultHoldemConfig() // defaults unchanged when values < 1
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -382,7 +383,7 @@ func TestHoldemWebController_Reset_TournamentMode(t *testing.T) {
 	cfg.TournamentMode = true
 	cfg.BlindLevelHands = 5
 	cfg.BlindMultiplier = 200
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -404,7 +405,7 @@ func TestHoldemWebController_Reset_TournamentMode_InvalidValues(t *testing.T) {
 	// blindLevelHands=0 and blindMultiplier=100 should be ignored (below threshold)
 	cfg := domain.DefaultHoldemConfig()
 	cfg.TournamentMode = true
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -425,7 +426,7 @@ func TestHoldemWebController_Reset_TournamentMode_Nil(t *testing.T) {
 
 	// No tournament params → default config
 	cfg := domain.DefaultHoldemConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -454,7 +455,7 @@ func TestHoldemWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
 
 	cfg := domain.DefaultHoldemConfig()
 	cfg.BettingLimit = domain.BettingLimitPotLimit
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -473,7 +474,7 @@ func TestHoldemWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) {
 
 	cfg := domain.DefaultHoldemConfig()
 	cfg.BettingLimit = domain.BettingLimitNoLimit // clamped from 5 to 2
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -494,7 +495,7 @@ func TestHoldemWebController_Reset_WithTableSize_Valid(t *testing.T) {
 
 	cfg := domain.DefaultHoldemConfig()
 	cfg.TableSize = domain.HoldemTableSize6
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -513,7 +514,7 @@ func TestHoldemWebController_Reset_WithTableSize_9max(t *testing.T) {
 
 	cfg := domain.DefaultHoldemConfig()
 	cfg.TableSize = domain.HoldemTableSize9
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -657,7 +658,7 @@ func TestHoldemWebController_Reset_WithRebuyConfig(t *testing.T) {
 	cfg.RebuyMaxCount = 5
 	cfg.RebuyChips = 2000
 	cfg.RebuyPeriodHands = 30
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -681,7 +682,7 @@ func TestHoldemWebController_Reset_WithAddonConfig(t *testing.T) {
 	cfg.AddonEnabled = true
 	cfg.AddonChips = 3000
 	cfg.AddonAfterHand = 25
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -704,7 +705,7 @@ func TestHoldemWebController_Reset_WithRebuyAddonConfig_InvalidValues(t *testing
 	cfg := domain.DefaultHoldemConfig()
 	cfg.RebuyEnabled = true
 	cfg.AddonEnabled = true
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",
@@ -775,7 +776,7 @@ func TestHoldemWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 
 	cfg := domain.DefaultHoldemConfig()
 	cfg.BettingLimit = domain.BettingLimitFixed // clamped from -1 to 0
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/holdem/exec",

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -13,23 +14,24 @@ import (
 // HoldemWebInput テキサスホールデムWebインプット
 type HoldemWebInput struct {
 	BaseWebInput
-	Amount           int   `json:"amount,omitempty"`
-	HumanPlayMs      int   `json:"humanPlayMs,omitempty"`
-	SmallBlind       *int  `json:"smallBlind,omitempty"`
-	BigBlind         *int  `json:"bigBlind,omitempty"`
-	TournamentMode   *bool `json:"tournamentMode,omitempty"`
-	BlindLevelHands  *int  `json:"blindLevelHands,omitempty"`
-	BlindMultiplier  *int  `json:"blindMultiplier,omitempty"`
-	BettingLimit     *int  `json:"bettingLimit,omitempty"`
-	TableSize        *int  `json:"tableSize,omitempty"`
-	RebuyEnabled     *bool `json:"rebuyEnabled,omitempty"`
-	RebuyMaxCount    *int  `json:"rebuyMaxCount,omitempty"`
-	RebuyChips       *int  `json:"rebuyChips,omitempty"`
-	RebuyPeriodHands *int  `json:"rebuyPeriodHands,omitempty"`
-	AddonEnabled     *bool `json:"addonEnabled,omitempty"`
-	AddonChips       *int  `json:"addonChips,omitempty"`
-	AddonAfterHand   *int  `json:"addonAfterHand,omitempty"`
-	CpuMetaAI        bool  `json:"cpuMetaAI,omitempty"`
+	Amount           int             `json:"amount,omitempty"`
+	HumanPlayMs      int             `json:"humanPlayMs,omitempty"`
+	SmallBlind       *int            `json:"smallBlind,omitempty"`
+	BigBlind         *int            `json:"bigBlind,omitempty"`
+	TournamentMode   *bool           `json:"tournamentMode,omitempty"`
+	BlindLevelHands  *int            `json:"blindLevelHands,omitempty"`
+	BlindMultiplier  *int            `json:"blindMultiplier,omitempty"`
+	BettingLimit     *int            `json:"bettingLimit,omitempty"`
+	TableSize        *int            `json:"tableSize,omitempty"`
+	RebuyEnabled     *bool           `json:"rebuyEnabled,omitempty"`
+	RebuyMaxCount    *int            `json:"rebuyMaxCount,omitempty"`
+	RebuyChips       *int            `json:"rebuyChips,omitempty"`
+	RebuyPeriodHands *int            `json:"rebuyPeriodHands,omitempty"`
+	AddonEnabled     *bool           `json:"addonEnabled,omitempty"`
+	AddonChips       *int            `json:"addonChips,omitempty"`
+	AddonAfterHand   *int            `json:"addonAfterHand,omitempty"`
+	CpuMetaAI        bool            `json:"cpuMetaAI,omitempty"`
+	Profile          json.RawMessage `json:"profile,omitempty"`
 }
 
 // HoldemWebOutputPlayer テキサスホールデムWebアウトプットプレイヤー
@@ -89,45 +91,56 @@ type HoldemWebOutputHandOdds struct {
 	Probability float64 `json:"probability"`
 }
 
+// HoldemWebOutputMetaAI メタAI情報
+type HoldemWebOutputMetaAI struct {
+	Enabled        bool    `json:"enabled"`
+	GamesPlayed    int     `json:"gamesPlayed"`
+	BluffRate      float64 `json:"bluffRate"`
+	FoldRate       float64 `json:"foldRate"`
+	HesitationMean float64 `json:"hesitationMean"`
+}
+
 // HoldemWebOutput テキサスホールデムWebアウトプット
 type HoldemWebOutput struct {
-	Players          []*HoldemWebOutputPlayer    `json:"players"`
-	CommunityCards   []*WebOutputCard            `json:"communityCards"`
-	Pot              int                         `json:"pot"`
-	SidePots         []*HoldemWebOutputSidePot   `json:"sidePots"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	CurrentTurn      int                         `json:"currentTurn"`
-	Phase            int                         `json:"phase"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	LastBet          int                         `json:"lastBet"`
-	MinRaise         int                         `json:"minRaise"`
-	BettingLimit     int                         `json:"bettingLimit"`
-	RaiseCount       int                         `json:"raiseCount"`
-	MaxBetAmount     int                         `json:"maxBetAmount"`
-	RoundResults     []*HoldemWebOutputResult    `json:"roundResults"`
-	CpuActions       []*HoldemWebOutputCpuAction `json:"cpuActions"`
-	HandCount        int                         `json:"handCount"`
-	SmallBlind       int                         `json:"smallBlind"`
-	BigBlind         int                         `json:"bigBlind"`
-	TournamentMode   bool                        `json:"tournamentMode"`
-	BlindLevelHands  int                         `json:"blindLevelHands"`
-	BlindMultiplier  int                         `json:"blindMultiplier"`
-	TableSize        int                         `json:"tableSize"`
-	RebuyAvailable   bool                        `json:"rebuyAvailable"`
-	AddonAvailable   bool                        `json:"addonAvailable"`
-	RebuyCounts      []int                       `json:"rebuyCounts"`
-	AddonUsed        []bool                      `json:"addonUsed"`
-	RebuyEnabled     bool                        `json:"rebuyEnabled"`
-	AddonEnabled     bool                        `json:"addonEnabled"`
-	RebuyMaxCount    int                         `json:"rebuyMaxCount"`
-	RebuyChips       int                         `json:"rebuyChips"`
-	AddonChips       int                         `json:"addonChips"`
-	RebuyPeriodHands int                         `json:"rebuyPeriodHands"`
-	AddonAfterHand   int                         `json:"addonAfterHand"`
-	RebuyPhaseType   int                         `json:"rebuyPhaseType"`
-	MuckAvailable    bool                        `json:"muckAvailable"`
-	Equity           *HoldemWebOutputEquity      `json:"equity,omitempty"`
-	PotOdds          *float64                    `json:"potOdds,omitempty"`
+	Players          []*HoldemWebOutputPlayer        `json:"players"`
+	CommunityCards   []*WebOutputCard                `json:"communityCards"`
+	Pot              int                             `json:"pot"`
+	SidePots         []*HoldemWebOutputSidePot       `json:"sidePots"`
+	DealerIdx        int                             `json:"dealerIdx"`
+	CurrentTurn      int                             `json:"currentTurn"`
+	Phase            int                             `json:"phase"`
+	GameEndFlag      bool                            `json:"gameEndFlag"`
+	LastBet          int                             `json:"lastBet"`
+	MinRaise         int                             `json:"minRaise"`
+	BettingLimit     int                             `json:"bettingLimit"`
+	RaiseCount       int                             `json:"raiseCount"`
+	MaxBetAmount     int                             `json:"maxBetAmount"`
+	RoundResults     []*HoldemWebOutputResult        `json:"roundResults"`
+	CpuActions       []*HoldemWebOutputCpuAction     `json:"cpuActions"`
+	HandCount        int                             `json:"handCount"`
+	SmallBlind       int                             `json:"smallBlind"`
+	BigBlind         int                             `json:"bigBlind"`
+	TournamentMode   bool                            `json:"tournamentMode"`
+	BlindLevelHands  int                             `json:"blindLevelHands"`
+	BlindMultiplier  int                             `json:"blindMultiplier"`
+	TableSize        int                             `json:"tableSize"`
+	RebuyAvailable   bool                            `json:"rebuyAvailable"`
+	AddonAvailable   bool                            `json:"addonAvailable"`
+	RebuyCounts      []int                           `json:"rebuyCounts"`
+	AddonUsed        []bool                          `json:"addonUsed"`
+	RebuyEnabled     bool                            `json:"rebuyEnabled"`
+	AddonEnabled     bool                            `json:"addonEnabled"`
+	RebuyMaxCount    int                             `json:"rebuyMaxCount"`
+	RebuyChips       int                             `json:"rebuyChips"`
+	AddonChips       int                             `json:"addonChips"`
+	RebuyPeriodHands int                             `json:"rebuyPeriodHands"`
+	AddonAfterHand   int                             `json:"addonAfterHand"`
+	RebuyPhaseType   int                             `json:"rebuyPhaseType"`
+	MuckAvailable    bool                            `json:"muckAvailable"`
+	Equity           *HoldemWebOutputEquity          `json:"equity,omitempty"`
+	PotOdds          *float64                        `json:"potOdds,omitempty"`
+	MetaAI           *HoldemWebOutputMetaAI          `json:"metaAI,omitempty"`
+	Profile          *domain.BettingHumanProfileData `json:"profile,omitempty"`
 	WebOutputBase
 }
 
@@ -232,7 +245,7 @@ func holdemDispatch(bc *baseController, w rest.ResponseWriter, hgi usecase.Holde
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault(err.Error()))
 			return true
 		}
-		bc.writePresenterResponse(w, hgi.ResetWithConfig(cfg))
+		bc.writePresenterResponse(w, hgi.ResetWithConfig(cfg, param.Profile))
 	case "f", "fold":
 		bc.writePresenterResponse(w, hgi.Action(domain.HoldemActionFold, 0, param.HumanPlayMs))
 	case "ck", "check":

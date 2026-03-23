@@ -96,6 +96,8 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			GamesPlayed:  profile.GamesPlayed,
 			EdgePickRate: profile.PickRate(0) + profile.PickRate(2),
 		}
+		pd := profile.Export()
+		resObj.Profile = &pd
 	}
 
 	// エラーメッセージ

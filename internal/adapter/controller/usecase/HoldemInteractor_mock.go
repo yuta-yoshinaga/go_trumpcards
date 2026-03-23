@@ -18,8 +18,8 @@ func (_m *MockHoldemInteractor) Reset() string {
 }
 
 // ResetWithConfig モック
-func (_m *MockHoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
-	ret := _m.Called(cfg)
+func (_m *MockHoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig, profileData []byte) string {
+	ret := _m.Called(cfg, profileData)
 	return ret.Get(0).(string)
 }
 

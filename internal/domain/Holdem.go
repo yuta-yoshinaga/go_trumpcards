@@ -680,6 +680,29 @@ func (h *Holdem) GetHumanProfile() *BettingHumanProfile { return h.humanProfile 
 // ResetProfile メタAIプロファイルをリセットする
 func (h *Holdem) ResetProfile() { h.humanProfile = nil }
 
+// ExportProfile メタAIプロファイルをエクスポートする (プロファイルがない場合はnil)
+func (h *Holdem) ExportProfile() interface{} {
+	if h.humanProfile == nil {
+		return nil
+	}
+	d := h.humanProfile.Export()
+	return &d
+}
+
+// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+func (h *Holdem) ImportProfile(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	d, err := ImportBettingHumanProfileJSON(data)
+	if err != nil {
+		return err
+	}
+	h.humanProfile = &BettingHumanProfile{}
+	h.humanProfile.Import(d)
+	return nil
+}
+
 // GetConfig 設定取得
 func (h *Holdem) GetConfig() HoldemConfig { return h.config }
 

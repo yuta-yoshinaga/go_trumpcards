@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -121,7 +122,7 @@ func TestIndianPokerCuiController_BettingLimit_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultIndianPokerConfig())
 	cfg := domain.DefaultIndianPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitNoLimit
-	mi.On("ResetWithConfig", cfg).Return("bl ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("bl ok")
 	assert.Equal(t, "bl ok", c.Exec("bl 2"))
 }
 
@@ -131,7 +132,7 @@ func TestIndianPokerCuiController_BettingLimit_LongCommand(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultIndianPokerConfig())
 	cfg := domain.DefaultIndianPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitPotLimit
-	mi.On("ResetWithConfig", cfg).Return("bl ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("bl ok")
 	assert.Equal(t, "bl ok", c.Exec("bettinglimit 1"))
 }
 
@@ -155,7 +156,7 @@ func TestIndianPokerCuiController_MetaAI_On(t *testing.T) {
 	mi.On("GetConfig").Return(cfg)
 	expected := domain.DefaultIndianPokerConfig()
 	expected.CpuMetaAI = true
-	mi.On("ResetWithConfig", expected).Return("mai ok")
+	mi.On("ResetWithConfig", expected, mock.Anything).Return("mai ok")
 	assert.Equal(t, "mai ok", c.Exec("mai 1"))
 }
 
@@ -166,7 +167,7 @@ func TestIndianPokerCuiController_MetaAI_Off(t *testing.T) {
 	mi.On("GetConfig").Return(cfg)
 	expected := domain.DefaultIndianPokerConfig()
 	expected.CpuMetaAI = false
-	mi.On("ResetWithConfig", expected).Return("mai off")
+	mi.On("ResetWithConfig", expected, mock.Anything).Return("mai off")
 	assert.Equal(t, "mai off", c.Exec("metaai 0"))
 }
 
@@ -195,7 +196,7 @@ func TestIndianPokerCuiController_Ante_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultIndianPokerConfig())
 	cfg := domain.DefaultIndianPokerConfig()
 	cfg.Ante = 50
-	mi.On("ResetWithConfig", cfg).Return("ante ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("ante ok")
 	assert.Equal(t, "ante ok", c.Exec("an 50"))
 	assert.Equal(t, "ante ok", c.Exec("ante 50"))
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	mockUsecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -243,7 +244,7 @@ func TestPokerCuiController_BettingLimit_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitPotLimit
-	mi.On("ResetWithConfig", cfg).Return("bl ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("bl ok")
 	assert.Equal(t, "bl ok", c.Exec("bl 1"))
 }
 
@@ -253,7 +254,7 @@ func TestPokerCuiController_BettingLimit_LongCommand(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitNoLimit
-	mi.On("ResetWithConfig", cfg).Return("bl ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("bl ok")
 	assert.Equal(t, "bl ok", c.Exec("bettinglimit 2"))
 }
 
@@ -282,7 +283,7 @@ func TestPokerCuiController_Lowball(t *testing.T) {
 	mi.On("GetConfig").Return(cfg)
 	expectedCfg := domain.DefaultPokerConfig()
 	expectedCfg.IsLowball = true
-	mi.On("ResetWithConfig", expectedCfg).Return("lw ok")
+	mi.On("ResetWithConfig", expectedCfg, mock.Anything).Return("lw ok")
 	assert.Equal(t, "lw ok", c.Exec("lw"))
 	mi.AssertCalled(t, "GetConfig")
 	mi.AssertCalled(t, "ResetWithConfig", expectedCfg)
@@ -296,7 +297,7 @@ func TestPokerCuiController_SetCpuCount_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 2
-	mi.On("ResetWithConfig", cfg).Return("scc ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("scc ok")
 	assert.Equal(t, "scc ok", c.Exec("scc 2"))
 }
 
@@ -306,7 +307,7 @@ func TestPokerCuiController_SetCpuCount_LongCommand(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 1
-	mi.On("ResetWithConfig", cfg).Return("scc ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("scc ok")
 	assert.Equal(t, "scc ok", c.Exec("setcpucount 1"))
 }
 
@@ -316,7 +317,7 @@ func TestPokerCuiController_SetCpuCount_MaxValue(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 3
-	mi.On("ResetWithConfig", cfg).Return("scc ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("scc ok")
 	assert.Equal(t, "scc ok", c.Exec("scc 3"))
 }
 
@@ -345,7 +346,7 @@ func TestPokerCuiController_SetJokerCount_Valid(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.JokerCount = 1
-	mi.On("ResetWithConfig", cfg).Return("sjc ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("sjc ok")
 	assert.Equal(t, "sjc ok", c.Exec("sjc 1"))
 }
 
@@ -355,7 +356,7 @@ func TestPokerCuiController_SetJokerCount_LongCommand(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.JokerCount = 2
-	mi.On("ResetWithConfig", cfg).Return("sjc ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("sjc ok")
 	assert.Equal(t, "sjc ok", c.Exec("setjokercount 2"))
 }
 
@@ -365,7 +366,7 @@ func TestPokerCuiController_SetJokerCount_MinValue(t *testing.T) {
 	mi.On("GetConfig").Return(domain.DefaultPokerConfig())
 	cfg := domain.DefaultPokerConfig()
 	cfg.JokerCount = 0
-	mi.On("ResetWithConfig", cfg).Return("sjc ok")
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return("sjc ok")
 	assert.Equal(t, "sjc ok", c.Exec("sjc 0"))
 }
 
@@ -444,7 +445,7 @@ func TestPokerCuiController_MetaAI_On(t *testing.T) {
 	mi.On("GetConfig").Return(cfg)
 	expected := domain.DefaultPokerConfig()
 	expected.CpuMetaAI = true
-	mi.On("ResetWithConfig", expected).Return("mai ok")
+	mi.On("ResetWithConfig", expected, mock.Anything).Return("mai ok")
 	assert.Equal(t, "mai ok", c.Exec("mai 1"))
 }
 
@@ -455,7 +456,7 @@ func TestPokerCuiController_MetaAI_Off(t *testing.T) {
 	mi.On("GetConfig").Return(cfg)
 	expected := domain.DefaultPokerConfig()
 	expected.CpuMetaAI = false
-	mi.On("ResetWithConfig", expected).Return("mai off")
+	mi.On("ResetWithConfig", expected, mock.Anything).Return("mai off")
 	assert.Equal(t, "mai off", c.Exec("metaai 0"))
 }
 

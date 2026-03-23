@@ -10,8 +10,8 @@ import (
 type IndianPokerInteractorIF interface {
 	// Reset ゲーム初期化
 	Reset() string
-	// ResetWithConfig 設定を変更してゲーム初期化
-	ResetWithConfig(cfg domain.IndianPokerConfig) string
+	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
+	ResetWithConfig(cfg domain.IndianPokerConfig, profileData []byte) string
 	// Action プレイヤーアクション実行
 	Action(action int, amount int, humanPlayMs int) string
 	// GetConfig 現在の設定を取得
@@ -38,8 +38,16 @@ func (ipi *IndianPokerInteractor) Reset() string {
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
-func (ipi *IndianPokerInteractor) ResetWithConfig(cfg domain.IndianPokerConfig) string {
-	return resetWithValidatedConfig(ipi.ip, ipi.ipp, cfg, ipi.ip.SetConfig, ipi.Reset)
+func (ipi *IndianPokerInteractor) ResetWithConfig(cfg domain.IndianPokerConfig, profileData []byte) string {
+	if err := cfg.Validate(); err != nil {
+		return ipi.ipp.Output(ipi.ip, err)
+	}
+	ipi.ip.SetConfig(cfg)
+	err := ipi.ip.Reset()
+	if len(profileData) > 0 {
+		_ = ipi.ip.ImportProfile(profileData)
+	}
+	return ipi.ipp.Output(ipi.ip, err)
 }
 
 // Action プレイヤーアクション実行

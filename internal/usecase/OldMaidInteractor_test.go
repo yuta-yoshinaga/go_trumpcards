@@ -43,11 +43,11 @@ func TestOldMaidInteractor_Method(t *testing.T) {
 	toi := usecase.NewOldMaidInteractor(newTestOldMaid(), ompMock)
 
 	t.Run("success Reset with DefaultOldMaidConfig", func(t *testing.T) {
-		assert.Equal(t, mockOutput, toi.Reset(domain.DefaultOldMaidConfig()))
+		assert.Equal(t, mockOutput, toi.Reset(domain.DefaultOldMaidConfig(), nil))
 	})
 	t.Run("success Reset with JijiNuki config", func(t *testing.T) {
 		cfg := domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki, CpuPlacementStrategy: false}
-		assert.Equal(t, mockOutput, toi.Reset(cfg))
+		assert.Equal(t, mockOutput, toi.Reset(cfg, nil))
 	})
 	t.Run("success Draw", func(t *testing.T) {
 		assert.Equal(t, mockOutput, toi.Draw(-1))
@@ -70,7 +70,7 @@ func TestOldMaidInteractor_MockGame(t *testing.T) {
 	oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
 
 	t.Run("Reset calls SetConfig and game.Reset and ArrangeTargetForHumanDraw", func(t *testing.T) {
-		result := oi.Reset(domain.DefaultOldMaidConfig())
+		result := oi.Reset(domain.DefaultOldMaidConfig(), nil)
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "SetConfig", mock.Anything)
 		gameMock.AssertCalled(t, "Reset")
@@ -242,7 +242,7 @@ func TestOldMaidInteractor_Reset_ValidationError(t *testing.T) {
 
 	oi := usecase.NewOldMaidInteractor(omMock, ompMock)
 	cfg := domain.OldMaidConfig{Mode: domain.OldMaidMode(99)}
-	result := oi.Reset(cfg)
+	result := oi.Reset(cfg, nil)
 	assert.Equal(t, "validation error", result)
 	omMock.AssertNotCalled(t, "SetConfig", mock.Anything)
 }

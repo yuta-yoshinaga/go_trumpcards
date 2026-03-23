@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -15,15 +16,16 @@ import (
 // DoubtWebInput ダウトWebインプット
 type DoubtWebInput struct {
 	BaseWebInput
-	CardIndices          []int `json:"cardIndices,omitempty"`
-	ClaimedValue         int   `json:"claimedValue,omitempty"`
-	DoubterIndices       []int `json:"doubterIndices,omitempty"`
-	HumanPlayMs          int   `json:"humanPlayMs,omitempty"`
-	DoubtWindowSec       *int  `json:"doubtWindowSec,omitempty"`
-	CpuMemoryLevel       *int  `json:"cpuMemoryLevel,omitempty"`
-	PenaltyDrawLimit     *int  `json:"penaltyDrawLimit,omitempty"`
-	CpuHesitationEnabled bool  `json:"cpuHesitationEnabled,omitempty"`
-	CpuMetaAI            bool  `json:"cpuMetaAI,omitempty"`
+	CardIndices          []int           `json:"cardIndices,omitempty"`
+	ClaimedValue         int             `json:"claimedValue,omitempty"`
+	DoubterIndices       []int           `json:"doubterIndices,omitempty"`
+	HumanPlayMs          int             `json:"humanPlayMs,omitempty"`
+	DoubtWindowSec       *int            `json:"doubtWindowSec,omitempty"`
+	CpuMemoryLevel       *int            `json:"cpuMemoryLevel,omitempty"`
+	PenaltyDrawLimit     *int            `json:"penaltyDrawLimit,omitempty"`
+	CpuHesitationEnabled bool            `json:"cpuHesitationEnabled,omitempty"`
+	CpuMetaAI            bool            `json:"cpuMetaAI,omitempty"`
+	Profile              json.RawMessage `json:"profile,omitempty"`
 }
 
 // DoubtWebOutputPlayer ダウトWebアウトプットプレイヤー
@@ -58,20 +60,21 @@ type DoubtWebOutputDoubtResult struct {
 
 // DoubtWebOutput ダウトWebアウトプット
 type DoubtWebOutput struct {
-	Players          []*DoubtWebOutputPlayer    `json:"players"`
-	CurrentTurn      int                        `json:"currentTurn"`
-	Phase            int                        `json:"phase"`
-	TableCardCount   int                        `json:"tableCardCount"`
-	LastAction       *DoubtWebOutputAction      `json:"lastAction"`
-	CpuDoubters      []int                      `json:"cpuDoubters"`
-	CpuActions       []*DoubtWebOutputAction    `json:"cpuActions"`
-	HumanAction      *DoubtWebOutputAction      `json:"humanAction"`
-	LastDoubtResult  *DoubtWebOutputDoubtResult `json:"lastDoubtResult"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	DoubtWindowSec   int                        `json:"doubtWindowSec"`
-	PenaltyDrawLimit int                        `json:"penaltyDrawLimit"`
-	MetaAI           *DoubtWebOutputMetaAI      `json:"metaAI,omitempty"`
+	Players          []*DoubtWebOutputPlayer       `json:"players"`
+	CurrentTurn      int                           `json:"currentTurn"`
+	Phase            int                           `json:"phase"`
+	TableCardCount   int                           `json:"tableCardCount"`
+	LastAction       *DoubtWebOutputAction         `json:"lastAction"`
+	CpuDoubters      []int                         `json:"cpuDoubters"`
+	CpuActions       []*DoubtWebOutputAction       `json:"cpuActions"`
+	HumanAction      *DoubtWebOutputAction         `json:"humanAction"`
+	LastDoubtResult  *DoubtWebOutputDoubtResult    `json:"lastDoubtResult"`
+	GameEndFlag      bool                          `json:"gameEndFlag"`
+	WinnerIdx        int                           `json:"winnerIdx"`
+	DoubtWindowSec   int                           `json:"doubtWindowSec"`
+	PenaltyDrawLimit int                           `json:"penaltyDrawLimit"`
+	MetaAI           *DoubtWebOutputMetaAI         `json:"metaAI,omitempty"`
+	Profile          *domain.DoubtHumanProfileData `json:"profile,omitempty"`
 	WebOutputBase
 }
 
@@ -119,7 +122,7 @@ func newDoubtDefaultOutput(msg string) *DoubtWebOutput {
 func doubtDispatch(bc *baseController, w rest.ResponseWriter, dgi usecase.DoubtInteractorIF, param DoubtWebInput, newDefault func(string) *DoubtWebOutput) bool {
 	switch param.Command {
 	case "r", "reset":
-		bc.writePresenterResponse(w, dgi.ResetWithConfig(param.ToConfig()))
+		bc.writePresenterResponse(w, dgi.ResetWithConfig(param.ToConfig(), param.Profile))
 	case "p", "play":
 		if len(param.CardIndices) > MaxCardIndices {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error."))

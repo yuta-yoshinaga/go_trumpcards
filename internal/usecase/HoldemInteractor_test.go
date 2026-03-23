@@ -70,7 +70,7 @@ func TestHoldemInteractor_ResetWithConfig_Error(t *testing.T) {
 	mg.On("Reset").Return(err)
 	mp.On("Output", mg, err).Return("error output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "error output", result)
 }
 
@@ -84,7 +84,7 @@ func TestHoldemInteractor_ResetWithConfig(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("reset with config output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "reset with config output", result)
 	mg.AssertCalled(t, "SetConfig", cfg)
 	mg.AssertCalled(t, "Reset")
@@ -97,7 +97,7 @@ func TestHoldemInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 
 	mp.On("Output", mg, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
 	cfg := domain.HoldemConfig{SmallBlind: 0, BigBlind: 10, BlindLevelHands: 10}
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "validation error", result)
 	mg.AssertNotCalled(t, "SetConfig", mock.Anything)
 }
@@ -143,7 +143,7 @@ func TestHoldemInteractor_ResetWithConfig_TableSizeChange(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("resize output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "resize output", result)
 	mg.AssertCalled(t, "Resize", mock.Anything)
 }
@@ -160,7 +160,7 @@ func TestHoldemInteractor_ResetWithConfig_SameTableSize(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("no resize output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "no resize output", result)
 	mg.AssertNotCalled(t, "Resize", mock.Anything)
 }
@@ -176,7 +176,7 @@ func TestHoldemInteractor_ResetWithConfig_TableSizeZero(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("zero output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "zero output", result)
 	mg.AssertNotCalled(t, "Resize", mock.Anything)
 }

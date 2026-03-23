@@ -1068,6 +1068,29 @@ func (p *Poker) GetHumanProfile() *BettingHumanProfile { return p.humanProfile }
 // ResetProfile メタAIプロファイルをリセットする
 func (p *Poker) ResetProfile() { p.humanProfile = nil }
 
+// ExportProfile メタAIプロファイルをエクスポートする (プロファイルがない場合はnil)
+func (p *Poker) ExportProfile() interface{} {
+	if p.humanProfile == nil {
+		return nil
+	}
+	d := p.humanProfile.Export()
+	return &d
+}
+
+// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+func (p *Poker) ImportProfile(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	d, err := ImportBettingHumanProfileJSON(data)
+	if err != nil {
+		return err
+	}
+	p.humanProfile = &BettingHumanProfile{}
+	p.humanProfile.Import(d)
+	return nil
+}
+
 // GetActionLog 棋譜を取得する
 func (p *Poker) GetActionLog() []*ActionLogEntry { return p.actionLog }
 

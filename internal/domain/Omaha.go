@@ -1229,6 +1229,29 @@ func (o *Omaha) GetHumanProfile() *BettingHumanProfile { return o.humanProfile }
 // ResetProfile メタAIプロファイルをリセットする
 func (o *Omaha) ResetProfile() { o.humanProfile = nil }
 
+// ExportProfile メタAIプロファイルをエクスポートする (プロファイルがない場合はnil)
+func (o *Omaha) ExportProfile() interface{} {
+	if o.humanProfile == nil {
+		return nil
+	}
+	d := o.humanProfile.Export()
+	return &d
+}
+
+// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+func (o *Omaha) ImportProfile(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	d, err := ImportBettingHumanProfileJSON(data)
+	if err != nil {
+		return err
+	}
+	o.humanProfile = &BettingHumanProfile{}
+	o.humanProfile.Import(d)
+	return nil
+}
+
 // GetConfig 設定取得
 func (o *Omaha) GetConfig() OmahaConfig { return o.config }
 

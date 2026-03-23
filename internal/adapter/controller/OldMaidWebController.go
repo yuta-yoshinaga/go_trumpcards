@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -13,13 +14,14 @@ import (
 // OldMaidWebInput ババ抜きWebインプット
 type OldMaidWebInput struct {
 	BaseWebInput
-	DrawIdx              *int  `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
-	ReorderIndices       []int `json:"reorderIndices"`
-	Mode                 int   `json:"mode"`
-	CpuPlacementStrategy bool  `json:"cpuPlacementStrategy"`
-	CpuMemoryAI          bool  `json:"cpuMemoryAI"`
-	CpuHesitationEnabled bool  `json:"cpuHesitationEnabled"`
-	CpuMetaAI            bool  `json:"cpuMetaAI"`
+	DrawIdx              *int            `json:"drawIdx"` // 引くカードのインデックス。nil の場合はランダム選択。
+	ReorderIndices       []int           `json:"reorderIndices"`
+	Mode                 int             `json:"mode"`
+	CpuPlacementStrategy bool            `json:"cpuPlacementStrategy"`
+	CpuMemoryAI          bool            `json:"cpuMemoryAI"`
+	CpuHesitationEnabled bool            `json:"cpuHesitationEnabled"`
+	CpuMetaAI            bool            `json:"cpuMetaAI"`
+	Profile              json.RawMessage `json:"profile,omitempty"`
 }
 
 // OldMaidWebOutputPlayer ババ抜きWebアウトプットプレイヤー
@@ -70,7 +72,8 @@ type OldMaidWebOutput struct {
 	RemovedCard           *WebOutputCard                      `json:"removedCard"`
 	Mode                  int                                 `json:"mode"`
 	WebOutputBase
-	MetaAI *OldMaidWebOutputMetaAI `json:"metaAI,omitempty"`
+	MetaAI  *OldMaidWebOutputMetaAI         `json:"metaAI,omitempty"`
+	Profile *domain.OldMaidHumanProfileData `json:"profile,omitempty"`
 }
 
 // OldMaidWebOutputMetaAI メタAI情報
@@ -121,7 +124,7 @@ func oldMaidDispatch(bc *baseController, w rest.ResponseWriter, omi usecase.OldM
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault(err.Error()))
 			return true
 		}
-		bc.writePresenterResponse(w, omi.Reset(cfg))
+		bc.writePresenterResponse(w, omi.Reset(cfg, param.Profile))
 	case "rp", "reset-profile":
 		bc.writePresenterResponse(w, omi.ResetProfile())
 	case "d", "draw":

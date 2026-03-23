@@ -10,8 +10,8 @@ import (
 type DoubtInteractorIF interface {
 	// Reset ゲーム初期化
 	Reset() string
-	// ResetWithConfig 設定を変更してゲーム初期化
-	ResetWithConfig(cfg domain.DoubtConfig) string
+	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
+	ResetWithConfig(cfg domain.DoubtConfig, profileData []byte) string
 	// Play 人間プレイヤーがカードを出す
 	Play(cardIndices []int, claimedValue int, humanPlayMs int) string
 	// ResolveDoubt ダウト解決
@@ -46,9 +46,12 @@ func (di *DoubtInteractor) Reset() string {
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
-func (di *DoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig) string {
+func (di *DoubtInteractor) ResetWithConfig(cfg domain.DoubtConfig, profileData []byte) string {
 	di.d.SetConfig(cfg)
 	di.d.Reset()
+	if len(profileData) > 0 {
+		_ = di.d.ImportProfile(profileData)
+	}
 	return di.dp.Output(di.d, nil)
 }
 
