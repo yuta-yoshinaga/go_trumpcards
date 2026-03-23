@@ -11,18 +11,20 @@ const DaifugoSolverMaxCards = 8
 // It searches for a guaranteed winning sequence of plays, where each intermediate
 // play is either an 8-cut or unbeatable by all opponents.
 type daifugoSolver struct {
-	oppHands   [][]*Card     // Each active opponent's hand
-	revolution bool          // Current revolution state
-	elevenBack bool          // Current eleven back state
-	config     DaifugoConfig // Game config (for local rules)
+	oppHands       [][]*Card     // Each active opponent's hand
+	revolution     bool          // Current revolution state
+	elevenBack     bool          // Current eleven back state
+	sequenceLocked bool          // Only sequence plays allowed
+	config         DaifugoConfig // Game config (for local rules)
 }
 
 func newDaifugoSolver(d *Daifugo, oppHands [][]*Card) *daifugoSolver {
 	return &daifugoSolver{
-		oppHands:   oppHands,
-		revolution: d.revolutionActive,
-		elevenBack: d.elevenBackActive,
-		config:     d.config,
+		oppHands:       oppHands,
+		revolution:     d.revolutionActive,
+		elevenBack:     d.elevenBackActive,
+		sequenceLocked: d.sequenceLocked,
+		config:         d.config,
 	}
 }
 
@@ -39,6 +41,7 @@ type solverPlay struct {
 	cards              []*Card
 	is8Cut             bool
 	isSpadeThreeReturn bool // spade-3 counter: CPU gets another turn with this card on table
+	isSequence         bool // true when this play is a sequence (階段)
 }
 
 // solve finds a guaranteed winning first play from the CPU's hand.
@@ -90,7 +93,7 @@ func (s *daifugoSolver) solve(hand []*Card, tableCards []*Card, tableIsSeq bool,
 		}
 
 		// Non-8-cut: check if unbeatable by all opponents
-		if s.isUnbeatable(move.cards) {
+		if s.isUnbeatablePlay(move) {
 			if s.trySolveWithClearTable(remaining, move.cards, savedRev, savedEB) {
 				return move.cards
 			}
@@ -117,40 +120,50 @@ func (s *daifugoSolver) trySolveWithClearTable(remaining []*Card, moveCards []*C
 // generateOpeningMoves generates all valid plays from a clear table
 func (s *daifugoSolver) generateOpeningMoves(hand []*Card) []solverPlay {
 	var moves []solverPlay
-	groups := s.groupByValue(hand)
-	jokers := s.getJokers(hand)
 
-	// Sorted values for deterministic order (strongest first for better pruning)
-	values := s.sortedValuesByStrength(groups)
+	// When sequenceLocked, only sequence plays are allowed
+	if !s.sequenceLocked {
+		groups := s.groupByValue(hand)
+		jokers := s.getJokers(hand)
 
-	for _, v := range values {
-		group := groups[v]
-		// Generate plays of size 1..len(group)
-		for size := 1; size <= len(group); size++ {
-			play := make([]*Card, size)
-			copy(play, group[:size])
-			moves = append(moves, solverPlay{cards: play})
-		}
-		// Augment with jokers for larger groups
-		if len(jokers) > 0 {
-			maxAug := len(group) + len(jokers)
-			for augSize := len(group) + 1; augSize <= maxAug; augSize++ {
-				jokersNeeded := augSize - len(group)
-				play := make([]*Card, augSize)
-				copy(play, group)
-				for ji := 0; ji < jokersNeeded; ji++ {
-					play[len(group)+ji] = jokers[ji]
-				}
+		// Sorted values for deterministic order (strongest first for better pruning)
+		values := s.sortedValuesByStrength(groups)
+
+		for _, v := range values {
+			group := groups[v]
+			// Generate plays of size 1..len(group)
+			for size := 1; size <= len(group); size++ {
+				play := make([]*Card, size)
+				copy(play, group[:size])
 				moves = append(moves, solverPlay{cards: play})
 			}
+			// Augment with jokers for larger groups
+			if len(jokers) > 0 {
+				maxAug := len(group) + len(jokers)
+				for augSize := len(group) + 1; augSize <= maxAug; augSize++ {
+					jokersNeeded := augSize - len(group)
+					play := make([]*Card, augSize)
+					copy(play, group)
+					for ji := 0; ji < jokersNeeded; ji++ {
+						play[len(group)+ji] = jokers[ji]
+					}
+					moves = append(moves, solverPlay{cards: play})
+				}
+			}
+		}
+
+		// Pure joker plays
+		for i := 1; i <= len(jokers); i++ {
+			play := make([]*Card, i)
+			copy(play, jokers[:i])
+			moves = append(moves, solverPlay{cards: play})
 		}
 	}
 
-	// Pure joker plays
-	for i := 1; i <= len(jokers); i++ {
-		play := make([]*Card, i)
-		copy(play, jokers[:i])
-		moves = append(moves, solverPlay{cards: play})
+	// Sequence plays (階段)
+	if s.config.SequenceEnabled {
+		seqMoves := s.generateSequencePlays(hand)
+		moves = append(moves, seqMoves...)
 	}
 
 	// Mark 8-cut plays
@@ -171,8 +184,21 @@ func (s *daifugoSolver) generateResponseMoves(hand []*Card, tableCards []*Card,
 	var moves []solverPlay
 	needed := len(tableCards)
 
-	// Sequence response: not implemented in solver (falls back to heuristic)
+	// Sequence response: generate valid sequence plays that beat the table sequence
 	if tableIsSeq {
+		if s.config.SequenceEnabled {
+			tableMinStr := s.sequenceMinStrength(tableCards)
+			seqMoves := s.generateSequenceResponsePlays(hand, needed, tableMinStr)
+			moves = append(moves, seqMoves...)
+		}
+		// Mark 8-cut plays in sequence responses
+		if s.config.EightCutEnabled {
+			for i := range moves {
+				if s.containsNonJokerValue(moves[i].cards, 8) {
+					moves[i].is8Cut = true
+				}
+			}
+		}
 		return moves
 	}
 
@@ -305,6 +331,239 @@ func (s *daifugoSolver) selectCardsForSuitLock(group []*Card, needed int,
 	play := make([]*Card, needed)
 	copy(play, group[:needed])
 	return play
+}
+
+// isUnbeatablePlay checks if a solverPlay cannot be beaten by any single opponent.
+// It dispatches to sequence or group unbeatability checks.
+func (s *daifugoSolver) isUnbeatablePlay(move solverPlay) bool {
+	if move.isSequence {
+		return s.isUnbeatableSequence(move.cards)
+	}
+	return s.isUnbeatable(move.cards)
+}
+
+// isUnbeatableSequence checks if a sequence play cannot be beaten by any opponent.
+// An opponent can beat a sequence by having a same-length sequence of the same suit
+// (or different suit) with higher min strength. We conservatively check all suits.
+func (s *daifugoSolver) isUnbeatableSequence(play []*Card) bool {
+	needed := len(play)
+	playMinStr := s.sequenceMinStrength(play)
+
+	for _, oppHand := range s.oppHands {
+		if s.canBeatSequence(oppHand, needed, playMinStr) {
+			return false
+		}
+	}
+	return true
+}
+
+// canBeatSequence checks if an opponent's hand can form a sequence of `needed` cards
+// with a higher min strength than `playMinStr`.
+func (s *daifugoSolver) canBeatSequence(oppHand []*Card, needed int, playMinStr int) bool {
+	// Group non-joker cards by suit and sort by strength
+	suitGroups := make(map[int][]int) // suit -> sorted strengths
+	jokerCount := 0
+	for _, c := range oppHand {
+		if IsJoker(c) {
+			jokerCount++
+			continue
+		}
+		suit := c.GetDesign()
+		str := s.cardStrength(c.GetValue())
+		suitGroups[suit] = append(suitGroups[suit], str)
+	}
+
+	for _, strengths := range suitGroups {
+		sort.Ints(strengths)
+		// Try to build a sequence of `needed` starting from each position
+		for si := 0; si < len(strengths); si++ {
+			if s.canFormSequenceFromStrengths(strengths, si, jokerCount, needed, playMinStr) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// canFormSequenceFromStrengths checks if we can form a consecutive sequence of `needed` cards
+// starting from strengths[si], filling gaps with jokers, such that the minimum strength > playMinStr.
+func (s *daifugoSolver) canFormSequenceFromStrengths(strengths []int, si int, jokerCount int, needed int, playMinStr int) bool {
+	count := 1
+	lastStr := strengths[si]
+	jokersUsed := 0
+	sci := si + 1
+
+	for count < needed {
+		targetStr := lastStr + 1
+		if sci < len(strengths) && strengths[sci] == targetStr {
+			count++
+			lastStr = targetStr
+			sci++
+		} else if sci < len(strengths) && strengths[sci] == lastStr {
+			// Duplicate strength, skip
+			sci++
+			continue
+		} else if jokersUsed < jokerCount {
+			jokersUsed++
+			count++
+			lastStr = targetStr
+		} else {
+			return false
+		}
+	}
+
+	// Check that the minimum strength of this sequence beats the play
+	minStr := strengths[si]
+	return minStr > playMinStr
+}
+
+// sequenceMinStrength returns the minimum card strength in a sequence play.
+// Jokers may represent cards below the minimum real card, so the true minimum
+// is computed by deducting leftover jokers (after filling interior gaps) from
+// the minimum real card strength.
+func (s *daifugoSolver) sequenceMinStrength(cards []*Card) int {
+	var realStrengths []int
+	jokerCount := 0
+	for _, c := range cards {
+		if IsJoker(c) {
+			jokerCount++
+		} else {
+			realStrengths = append(realStrengths, s.cardStrength(c.GetValue()))
+		}
+	}
+	if len(realStrengths) == 0 {
+		return DaifugoJokerStrength
+	}
+	sort.Ints(realStrengths)
+	minReal := realStrengths[0]
+	maxReal := realStrengths[len(realStrengths)-1]
+	// Interior gaps that jokers fill between real cards
+	interiorGaps := (maxReal - minReal + 1) - len(realStrengths)
+	if interiorGaps < 0 {
+		interiorGaps = 0
+	}
+	// Remaining jokers extend the sequence below the minimum real card
+	extendBelow := jokerCount - interiorGaps
+	if extendBelow < 0 {
+		extendBelow = 0
+	}
+	return minReal - extendBelow
+}
+
+// generateSequencePlays generates all valid sequence plays (3+ cards, same suit, consecutive)
+// from the given hand for opening (clear table).
+func (s *daifugoSolver) generateSequencePlays(hand []*Card) []solverPlay {
+	var moves []solverPlay
+
+	// Group non-joker cards by suit
+	suitCards := make(map[int][]*Card) // suit -> cards
+	var jokers []*Card
+	for _, c := range hand {
+		if IsJoker(c) {
+			jokers = append(jokers, c)
+			continue
+		}
+		suit := c.GetDesign()
+		suitCards[suit] = append(suitCards[suit], c)
+	}
+
+	for _, cards := range suitCards {
+		// Sort by strength
+		sort.Slice(cards, func(i, j int) bool {
+			return s.cardStrength(cards[i].GetValue()) < s.cardStrength(cards[j].GetValue())
+		})
+		seqs := s.findAllSequences(cards, jokers, 3)
+		for _, seq := range seqs {
+			moves = append(moves, solverPlay{cards: seq, isSequence: true})
+		}
+	}
+
+	return moves
+}
+
+// generateSequenceResponsePlays generates valid sequence plays that beat the table sequence.
+func (s *daifugoSolver) generateSequenceResponsePlays(hand []*Card, needed int, tableMinStr int) []solverPlay {
+	var moves []solverPlay
+
+	// Group non-joker cards by suit
+	suitCards := make(map[int][]*Card)
+	var jokers []*Card
+	for _, c := range hand {
+		if IsJoker(c) {
+			jokers = append(jokers, c)
+			continue
+		}
+		suit := c.GetDesign()
+		suitCards[suit] = append(suitCards[suit], c)
+	}
+
+	for _, cards := range suitCards {
+		sort.Slice(cards, func(i, j int) bool {
+			return s.cardStrength(cards[i].GetValue()) < s.cardStrength(cards[j].GetValue())
+		})
+		// Build exact-length sequences directly (no need for findAllSequences)
+		for si := range cards {
+			seq := s.tryBuildSolverSequence(cards, si, jokers, needed)
+			if seq != nil && s.sequenceMinStrength(seq) > tableMinStr {
+				moves = append(moves, solverPlay{cards: seq, isSequence: true})
+			}
+		}
+	}
+
+	return moves
+}
+
+// findAllSequences finds all valid sequences of exactly `minLen` or more from sorted same-suit cards,
+// using jokers to fill gaps.
+func (s *daifugoSolver) findAllSequences(sortedCards []*Card, jokers []*Card, minLen int) [][]*Card {
+	var results [][]*Card
+
+	n := len(sortedCards)
+	for si := 0; si < n; si++ {
+		// Try building sequences of different lengths starting from sortedCards[si]
+		for targetLen := minLen; targetLen <= n+len(jokers); targetLen++ {
+			seq := s.tryBuildSolverSequence(sortedCards, si, jokers, targetLen)
+			if seq != nil {
+				results = append(results, seq)
+			} else {
+				break // Can't build longer sequence if this fails
+			}
+		}
+	}
+
+	return results
+}
+
+// tryBuildSolverSequence attempts to build a sequence of `needed` cards starting from
+// sortedCards[si], filling gaps with jokers.
+func (s *daifugoSolver) tryBuildSolverSequence(sortedCards []*Card, si int, jokers []*Card, needed int) []*Card {
+	seq := []*Card{sortedCards[si]}
+	lastStr := s.cardStrength(sortedCards[si].GetValue())
+	jokersUsed := 0
+	sci := si + 1
+
+	for len(seq) < needed {
+		targetStr := lastStr + 1
+
+		if sci < len(sortedCards) && s.cardStrength(sortedCards[sci].GetValue()) == targetStr {
+			seq = append(seq, sortedCards[sci])
+			lastStr = targetStr
+			sci++
+		} else if sci < len(sortedCards) && s.cardStrength(sortedCards[sci].GetValue()) == lastStr {
+			// Duplicate strength, skip
+			sci++
+			continue
+		} else if jokersUsed < len(jokers) {
+			seq = append(seq, jokers[jokersUsed])
+			jokersUsed++
+			lastStr = targetStr
+		} else {
+			return nil
+		}
+	}
+
+	return seq
 }
 
 // isUnbeatable checks if a play cannot be beaten by any single opponent
@@ -467,11 +726,6 @@ func (s *daifugoSolver) removeCards(hand []*Card, toRemove []*Card) []*Card {
 // Returns the first play as hand indices, or nil if no guaranteed win exists.
 func (d *Daifugo) trySolveEndgame(player *DaifugoPlayer) []int {
 	if player.GetCardsSize() > DaifugoSolverMaxCards || player.GetCardsSize() == 0 {
-		return nil
-	}
-
-	// Solver doesn't support sequence plays; fall back to heuristic
-	if d.tableIsSequence {
 		return nil
 	}
 
