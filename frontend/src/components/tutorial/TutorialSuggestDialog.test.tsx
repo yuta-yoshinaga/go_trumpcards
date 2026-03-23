@@ -75,4 +75,34 @@ describe('TutorialSuggestDialog', () => {
     fireEvent.click(screen.getByRole('alertdialog'));
     expect(onSkip).not.toHaveBeenCalled();
   });
+
+  it('traps focus: Tab from last element wraps to first', () => {
+    render(<TutorialSuggestDialog {...defaultProps} />);
+    const dialog = screen.getByRole('alertdialog');
+    const focusable = Array.from(
+      dialog.querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+    ).filter((el) => !el.hasAttribute('disabled'));
+    const last = focusable[focusable.length - 1];
+    last.focus();
+    fireEvent.keyDown(dialog, { key: 'Tab' });
+    expect(document.activeElement).toBe(focusable[0]);
+  });
+
+  it('traps focus: Shift+Tab from first element wraps to last', () => {
+    render(<TutorialSuggestDialog {...defaultProps} />);
+    const dialog = screen.getByRole('alertdialog');
+    const focusable = Array.from(
+      dialog.querySelectorAll<HTMLElement>('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+    ).filter((el) => !el.hasAttribute('disabled'));
+    focusable[0].focus();
+    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(focusable[focusable.length - 1]);
+  });
+
+  it('has aria-describedby pointing to message paragraph', () => {
+    render(<TutorialSuggestDialog {...defaultProps} />);
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toHaveAttribute('aria-describedby', 'suggest-dialog-desc');
+    expect(document.getElementById('suggest-dialog-desc')).toBeInTheDocument();
+  });
 });

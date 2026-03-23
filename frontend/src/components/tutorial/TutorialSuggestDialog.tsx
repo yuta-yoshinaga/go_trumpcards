@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { btnPrimary, btnSecondary } from '../../styles/buttonStyles';
-import { getFocusableElements } from '../ConfirmDialog';
+import { getFocusableElements } from '../../utils/dom';
 
 /** Props for the TutorialSuggestDialog component. */
 export interface TutorialSuggestDialogProps {
