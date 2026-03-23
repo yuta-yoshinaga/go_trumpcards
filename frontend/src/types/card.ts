@@ -1113,3 +1113,19 @@ export interface IndianPokerResponse {
   metaAI?: IndianPokerMetaAI;
   profile?: IndianPokerHumanProfileData;
 }
+
+/** Full Video Poker game state returned from the API. */
+export interface VideoPokerResponse {
+  hand: Card[];
+  phase: number;
+  chips: number;
+  betAmount: number;
+  result: number;
+  payout: number;
+  handRank: number;
+  handName: string;
+  heldIndices: boolean[];
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}

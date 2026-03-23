@@ -16,6 +16,7 @@
   - [2.1 ゲームアクション実行フロー](#21-ゲームアクション実行フロー)
   - [2.2 CPUリプレイアニメーションフロー](#22-cpuリプレイアニメーションフロー)
   - [2.3 ゲーム初期化フロー](#23-ゲーム初期化フロー)
+  - [2.4 VideoPokerPage フェーズ別レンダリングフロー](#24-videopokerpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -102,7 +103,7 @@ classDiagram
 
     TutorialConfig --> TutorialStep : contains
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全19ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全20ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -216,6 +217,13 @@ classDiagram
         END = 4
     }
 
+    class VideoPokerPhase {
+        <<enumeration>>
+        BET = 0
+        DRAW = 1
+        RESULT = 2
+    }
+
     note for KlondikePhase "FreeCellPhase, SpiderPhase も\n同一の値を持つ別定数として存在"
 ```
 
@@ -248,7 +256,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全18ゲーム()
+        ...全20ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -258,7 +266,7 @@ classDiagram
     actionLogApi --> gameApi : uses gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全18ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, hearts,\nmemory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon)"
+    note for BlackJackApi "全20ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, hearts,\nmemory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -443,7 +451,7 @@ classDiagram
     useDoubtGame --> useGameApi : uses
     useDoubtGame --> useCardSelection : uses
 
-    note for useBlackJackGame "全18ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全20ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -619,6 +627,14 @@ classDiagram
         +ショーダウン結果表示
     }
 
+    class VideoPokerPage {
+        +配当表表示
+        +コインセレクター (1-5)
+        +5枚カード表示
+        +カードクリックでホールド選択
+        +役名・配当表示
+    }
+
     BlackJackPage --|> GamePage : follows pattern
     HeartsPage --|> GamePage : follows pattern
     KlondikePage --|> GamePage : follows pattern
@@ -626,6 +642,7 @@ classDiagram
     DoubtPage --|> GamePage : follows pattern
     NapoleonPage --|> GamePage : follows pattern
     IndianPokerPage --|> GamePage : follows pattern
+    VideoPokerPage --|> GamePage : follows pattern
 
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
@@ -635,7 +652,7 @@ classDiagram
     GamePage --> ConfirmDialog : renders
     GamePage --> ErrorAlert : renders
 
-    note for GamePage "全19ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全20ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -658,11 +675,11 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (19ゲーム)
+        +Routes (20ゲーム)
     }
 
     class gameCategories {
-        +table: [BlackJack, Baccarat]
+        +table: [BlackJack, Baccarat, VideoPoker]
         +poker: [Poker, Holdem, Omaha, IndianPoker]
         +trickTaking: [Hearts, Spades, Napoleon]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights]
@@ -681,11 +698,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 18 pages
+    App --> GamePage : routes to 20 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "20名前空間: common + 18ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "22名前空間: common + 20ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -779,6 +796,41 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング
 
     Page-->>Browser: ゲーム画面表示
+```
+
+### 2.4 VideoPokerPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as VideoPokerPage
+    participant Hook as useVideoPokerGame
+    participant API as gameApi
+
+    Note over User,API: ベットフェーズ (phase=0)
+    User->>Page: コインセレクターで数量選択
+    User->>Page: ベットボタンクリック
+    Page->>Hook: handleBet(amount)
+    Hook->>API: gameExec("bet", {amount})
+    API-->>Hook: VideoPokerResponse (phase=1, hand=5枚)
+    Hook-->>Page: 再レンダリング → ドローフェーズUI
+
+    Note over User,API: ドローフェーズ (phase=1)
+    User->>Page: カードをクリックしてホールド選択
+    Page->>Page: ホールド状態をトグル表示
+    User->>Page: ドローボタンクリック
+    Page->>Hook: handleHold(indices)
+    Hook->>API: gameExec("hold", {indices})
+    API-->>Hook: VideoPokerResponse (phase=2, handRank, payout)
+    Hook-->>Page: 再レンダリング → 結果フェーズUI
+
+    Note over User,API: 結果フェーズ (phase=2)
+    Page-->>User: 役名・配当表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: VideoPokerResponse (phase=0)
+    Hook-->>Page: 再レンダリング → ベットフェーズUI
 ```
 
 ---

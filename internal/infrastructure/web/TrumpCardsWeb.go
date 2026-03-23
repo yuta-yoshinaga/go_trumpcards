@@ -42,6 +42,7 @@ type TrumpCardsWeb struct {
 	sdc *controller.SpiderWebController
 	npc *controller.NapoleonWebController
 	ipc *controller.IndianPokerWebController
+	vpc *controller.VideoPokerWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -201,6 +202,12 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
 			return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
 		}),
+		vpc: controller.NewVideoPokerWebController(func() usecase.VideoPokerInteractorIF {
+			return usecase.NewVideoPokerInteractor(
+				domain.NewDefaultVideoPoker(),
+				new(presenter.VideoPokerWebPresenter),
+			)
+		}),
 	}
 }
 
@@ -258,6 +265,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/spider/exec", web.sdc.Exec},
 		{"/napoleon/exec", web.npc.Exec},
 		{"/indianpoker/exec", web.ipc.Exec},
+		{"/videopoker/exec", web.vpc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -341,6 +349,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.sdc.Stop()
 	web.npc.Stop()
 	web.ipc.Stop()
+	web.vpc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

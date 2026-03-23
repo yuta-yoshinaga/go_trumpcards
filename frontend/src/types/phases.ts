@@ -177,3 +177,10 @@ export const IndianPokerPhase = {
   SHOWDOWN: 3,
   END: 4,
 } as const;
+
+/** Video Poker phase constants (sync: internal/domain/VideoPoker.go). */
+export const VideoPokerPhase = {
+  BET: 1,
+  DRAW: 2,
+  RESULT: 3,
+} as const;

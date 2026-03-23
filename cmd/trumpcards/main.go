@@ -52,6 +52,7 @@ GAMES:
   ginrummy     Gin Rummy (ジンラミー)
   spider       Spider Solitaire (スパイダーソリティア)
   napoleon     Napoleon (ナポレオン)
+  videopoker   Video Poker Jacks or Better (ビデオポーカー)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -143,6 +144,7 @@ ENVIRONMENT VARIABLES:
 		"spider":      func() int { ui.NewSpiderCui().Exec(); return 0 },
 		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
 		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },
+		"videopoker":  func() int { ui.NewVideoPokerCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {
