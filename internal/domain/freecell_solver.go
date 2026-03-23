@@ -1,17 +1,59 @@
 package domain
 
+import "container/heap"
+
 // FreeCellSolverMaxIterations is the maximum number of states the solver explores.
 // Keeps runtime under ~50ms and memory under ~10MB.
 const FreeCellSolverMaxIterations = 100000
 
-// freeCellSolver performs DFS with memoization to determine if a FreeCell board is solvable.
+// freeCellState represents a board state in the A* search.
+type freeCellState struct {
+	tableau    [FreeCellTableauCnt][]*Card
+	freeCells  [FreeCellCellCnt]*Card
+	foundation [FreeCellFoundationCnt]int // count per suit
+	g          int                        // moves made so far
+	h          int                        // heuristic estimate of remaining moves
+	index      int                        // index in heap (maintained by container/heap)
+}
+
+// freeCellPQ implements heap.Interface for A* priority queue.
+type freeCellPQ []*freeCellState
+
+func (pq freeCellPQ) Len() int { return len(pq) }
+
+func (pq freeCellPQ) Less(i, j int) bool {
+	return (pq[i].g + pq[i].h) < (pq[j].g + pq[j].h)
+}
+
+func (pq freeCellPQ) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+	pq[i].index = i
+	pq[j].index = j
+}
+
+func (pq *freeCellPQ) Push(x any) {
+	n := len(*pq)
+	item := x.(*freeCellState)
+	item.index = n
+	*pq = append(*pq, item)
+}
+
+func (pq *freeCellPQ) Pop() any {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	old[n-1] = nil
+	item.index = -1
+	*pq = old[:n-1]
+	return item
+}
+
+// freeCellSolver performs A* search with memoization to determine if a FreeCell board is solvable.
 type freeCellSolver struct {
-	tableau       [FreeCellTableauCnt][]*Card
-	freeCells     [FreeCellCellCnt]*Card
-	foundation    [FreeCellFoundationCnt]int // track only count per suit (cards are ordered)
 	visited       map[[52]uint16]struct{}
 	iterations    int
 	maxIterations int
+	initialState  *freeCellState
 }
 
 func newFreeCellSolver(f *FreeCell) *freeCellSolver {
@@ -19,202 +61,244 @@ func newFreeCellSolver(f *FreeCell) *freeCellSolver {
 		visited:       make(map[[52]uint16]struct{}),
 		maxIterations: FreeCellSolverMaxIterations,
 	}
+	state := &freeCellState{}
 	// Deep copy tableau
-	for i := 0; i < FreeCellTableauCnt; i++ {
-		s.tableau[i] = make([]*Card, len(f.tableau[i]))
-		copy(s.tableau[i], f.tableau[i])
+	for i := range FreeCellTableauCnt {
+		state.tableau[i] = make([]*Card, len(f.tableau[i]))
+		copy(state.tableau[i], f.tableau[i])
 	}
 	// Copy freeCells
-	s.freeCells = f.freeCells
+	state.freeCells = f.freeCells
 	// Foundation: only need count per suit
-	for i := 0; i < FreeCellFoundationCnt; i++ {
-		s.foundation[i] = len(f.foundation[i])
+	for i := range FreeCellFoundationCnt {
+		state.foundation[i] = len(f.foundation[i])
 	}
+	state.g = 0
+	state.h = heuristic(state)
+	s.initialState = state
 	return s
+}
+
+// heuristic returns an admissible estimate of remaining moves.
+// It counts cards not yet on foundation (each needs at least 1 move).
+func heuristic(st *freeCellState) int {
+	total := 0
+	for i := range FreeCellFoundationCnt {
+		total += st.foundation[i]
+	}
+	return 52 - total
 }
 
 // isSolvable returns true if the board can be solved, false if proven unsolvable.
 // If the iteration limit is exceeded, returns true (unknown = not stalemate).
 func (s *freeCellSolver) isSolvable() bool {
-	return s.dfs()
+	return s.astar()
 }
 
-func (s *freeCellSolver) dfs() bool {
-	// Check if solved
-	if s.isSolved() {
+func (s *freeCellSolver) astar() bool {
+	// Check if already solved
+	if isSolvedState(s.initialState) {
 		return true
 	}
 
-	// Iteration limit
-	s.iterations++
-	if s.iterations > s.maxIterations {
-		return true // unknown = not stalemate
-	}
+	pq := &freeCellPQ{}
+	heap.Init(pq)
+	heap.Push(pq, s.initialState)
 
-	// Memoization
-	key := s.stateKey()
-	if _, ok := s.visited[key]; ok {
-		return false
-	}
+	key := stateKeyFromState(s.initialState)
 	s.visited[key] = struct{}{}
 
-	// Try all moves in priority order
-
-	// 1. Tableau -> Foundation
-	for col := 0; col < FreeCellTableauCnt; col++ {
-		if len(s.tableau[col]) == 0 {
-			continue
+	for pq.Len() > 0 {
+		s.iterations++
+		if s.iterations > s.maxIterations {
+			return true // unknown = not stalemate
 		}
-		card := s.tableau[col][len(s.tableau[col])-1]
-		fIdx := card.GetDesign() - 1
-		if fIdx >= 0 && fIdx < FreeCellFoundationCnt && s.canPlaceOnFoundation(card, fIdx) {
-			s.tableau[col] = s.tableau[col][:len(s.tableau[col])-1]
-			s.foundation[fIdx]++
-			solved := s.dfs()
-			s.foundation[fIdx]--
-			s.tableau[col] = append(s.tableau[col], card)
-			if solved {
+
+		current := heap.Pop(pq).(*freeCellState)
+
+		// Generate all successor states
+		successors := s.generateSuccessors(current)
+		for _, next := range successors {
+			if isSolvedState(next) {
 				return true
 			}
+			sk := stateKeyFromState(next)
+			if _, ok := s.visited[sk]; ok {
+				continue
+			}
+			s.visited[sk] = struct{}{}
+			heap.Push(pq, next)
+		}
+	}
+
+	return false // exhausted all states, no solution
+}
+
+// generateSuccessors generates all valid successor states from the current state.
+func (s *freeCellSolver) generateSuccessors(st *freeCellState) []*freeCellState {
+	var successors []*freeCellState
+
+	// 1. Tableau -> Foundation
+	for col := range FreeCellTableauCnt {
+		if len(st.tableau[col]) == 0 {
+			continue
+		}
+		card := st.tableau[col][len(st.tableau[col])-1]
+		fIdx := card.GetDesign() - 1
+		if fIdx >= 0 && fIdx < FreeCellFoundationCnt && canPlaceOnFoundation(card, fIdx, st.foundation) {
+			next := copyState(st)
+			next.tableau[col] = next.tableau[col][:len(next.tableau[col])-1]
+			next.foundation[fIdx]++
+			next.g = st.g + 1
+			next.h = heuristic(next)
+			successors = append(successors, next)
 		}
 	}
 
 	// 2. FreeCell -> Foundation
-	for cell := 0; cell < FreeCellCellCnt; cell++ {
-		if s.freeCells[cell] == nil {
+	for cell := range FreeCellCellCnt {
+		if st.freeCells[cell] == nil {
 			continue
 		}
-		card := s.freeCells[cell]
+		card := st.freeCells[cell]
 		fIdx := card.GetDesign() - 1
-		if fIdx >= 0 && fIdx < FreeCellFoundationCnt && s.canPlaceOnFoundation(card, fIdx) {
-			s.freeCells[cell] = nil
-			s.foundation[fIdx]++
-			solved := s.dfs()
-			s.foundation[fIdx]--
-			s.freeCells[cell] = card
-			if solved {
-				return true
-			}
+		if fIdx >= 0 && fIdx < FreeCellFoundationCnt && canPlaceOnFoundation(card, fIdx, st.foundation) {
+			next := copyState(st)
+			next.freeCells[cell] = nil
+			next.foundation[fIdx]++
+			next.g = st.g + 1
+			next.h = heuristic(next)
+			successors = append(successors, next)
 		}
 	}
 
 	// 3. Tableau -> Tableau (single card only for solver efficiency)
-	for fromCol := 0; fromCol < FreeCellTableauCnt; fromCol++ {
-		if len(s.tableau[fromCol]) == 0 {
+	for fromCol := range FreeCellTableauCnt {
+		if len(st.tableau[fromCol]) == 0 {
 			continue
 		}
-		card := s.tableau[fromCol][len(s.tableau[fromCol])-1]
-		for toCol := 0; toCol < FreeCellTableauCnt; toCol++ {
+		card := st.tableau[fromCol][len(st.tableau[fromCol])-1]
+		for toCol := range FreeCellTableauCnt {
 			if toCol == fromCol {
 				continue
 			}
-			if len(s.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
+			if len(st.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
 				continue
 			}
-			if s.canPlaceOnTableau(card, toCol) {
-				s.tableau[fromCol] = s.tableau[fromCol][:len(s.tableau[fromCol])-1]
-				s.tableau[toCol] = append(s.tableau[toCol], card)
-				solved := s.dfs()
-				s.tableau[toCol] = s.tableau[toCol][:len(s.tableau[toCol])-1]
-				s.tableau[fromCol] = append(s.tableau[fromCol], card)
-				if solved {
-					return true
-				}
+			if canPlaceOnTableau(card, toCol, st.tableau) {
+				next := copyState(st)
+				next.tableau[fromCol] = next.tableau[fromCol][:len(next.tableau[fromCol])-1]
+				next.tableau[toCol] = append(next.tableau[toCol], card)
+				next.g = st.g + 1
+				next.h = heuristic(next)
+				successors = append(successors, next)
 			}
 		}
 	}
 
 	// 4. FreeCell -> Tableau
-	for cell := 0; cell < FreeCellCellCnt; cell++ {
-		if s.freeCells[cell] == nil {
+	for cell := range FreeCellCellCnt {
+		if st.freeCells[cell] == nil {
 			continue
 		}
-		card := s.freeCells[cell]
-		for toCol := 0; toCol < FreeCellTableauCnt; toCol++ {
-			if len(s.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
+		card := st.freeCells[cell]
+		for toCol := range FreeCellTableauCnt {
+			if len(st.tableau[toCol]) == 0 && card.GetValue() != CardValueMax {
 				continue
 			}
-			if s.canPlaceOnTableau(card, toCol) {
-				s.freeCells[cell] = nil
-				s.tableau[toCol] = append(s.tableau[toCol], card)
-				solved := s.dfs()
-				s.tableau[toCol] = s.tableau[toCol][:len(s.tableau[toCol])-1]
-				s.freeCells[cell] = card
-				if solved {
-					return true
-				}
+			if canPlaceOnTableau(card, toCol, st.tableau) {
+				next := copyState(st)
+				next.freeCells[cell] = nil
+				next.tableau[toCol] = append(next.tableau[toCol], card)
+				next.g = st.g + 1
+				next.h = heuristic(next)
+				successors = append(successors, next)
 			}
 		}
 	}
 
 	// 5. Tableau -> FreeCell
-	for col := 0; col < FreeCellTableauCnt; col++ {
-		if len(s.tableau[col]) == 0 {
+	for col := range FreeCellTableauCnt {
+		if len(st.tableau[col]) == 0 {
 			continue
 		}
-		card := s.tableau[col][len(s.tableau[col])-1]
-		for cell := 0; cell < FreeCellCellCnt; cell++ {
-			if s.freeCells[cell] == nil {
-				s.tableau[col] = s.tableau[col][:len(s.tableau[col])-1]
-				s.freeCells[cell] = card
-				solved := s.dfs()
-				s.freeCells[cell] = nil
-				s.tableau[col] = append(s.tableau[col], card)
-				if solved {
-					return true
-				}
+		card := st.tableau[col][len(st.tableau[col])-1]
+		for cell := range FreeCellCellCnt {
+			if st.freeCells[cell] == nil {
+				next := copyState(st)
+				next.tableau[col] = next.tableau[col][:len(next.tableau[col])-1]
+				next.freeCells[cell] = card
+				next.g = st.g + 1
+				next.h = heuristic(next)
+				successors = append(successors, next)
 				break // Only try one empty free cell (equivalent moves)
 			}
 		}
 	}
 
-	return false
+	return successors
 }
 
-func (s *freeCellSolver) isSolved() bool {
-	for i := 0; i < FreeCellFoundationCnt; i++ {
-		if s.foundation[i] != CardValueMax {
+// copyState creates a deep copy of a freeCellState.
+func copyState(st *freeCellState) *freeCellState {
+	next := &freeCellState{}
+	for i := range FreeCellTableauCnt {
+		next.tableau[i] = make([]*Card, len(st.tableau[i]))
+		copy(next.tableau[i], st.tableau[i])
+	}
+	next.freeCells = st.freeCells
+	next.foundation = st.foundation
+	return next
+}
+
+func isSolvedState(st *freeCellState) bool {
+	for i := range FreeCellFoundationCnt {
+		if st.foundation[i] != CardValueMax {
 			return false
 		}
 	}
 	return true
 }
 
-func (s *freeCellSolver) canPlaceOnTableau(card *Card, col int) bool {
-	colCards := s.tableau[col]
+func canPlaceOnTableau(card *Card, col int, tableau [FreeCellTableauCnt][]*Card) bool {
+	colCards := tableau[col]
 	if len(colCards) == 0 {
 		return card.GetValue() == CardValueMax
 	}
 	topCard := colCards[len(colCards)-1]
-	return s.isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
+	return isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
 }
 
-func (s *freeCellSolver) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	count := s.foundation[fIdx]
+func canPlaceOnFoundation(card *Card, fIdx int, foundation [FreeCellFoundationCnt]int) bool {
+	count := foundation[fIdx]
 	if count == 0 {
 		return card.GetValue() == 1
 	}
-	// The top card value on foundation[fIdx] is count (since cards go 1,2,3...)
 	return card.GetValue() == count+1
 }
 
-func (s *freeCellSolver) isAlternateColor(card1, card2 *Card) bool {
-	return s.isBlack(card1) != s.isBlack(card2)
+func isAlternateColor(card1, card2 *Card) bool {
+	return isBlack(card1) != isBlack(card2)
 }
 
-func (s *freeCellSolver) isBlack(card *Card) bool {
+func isBlack(card *Card) bool {
 	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
-// stateKey encodes the board state into a compact key for memoization.
+// stateKey returns the state key for the solver's initial state (used in tests).
+func (s *freeCellSolver) stateKey() [52]uint16 {
+	return stateKeyFromState(s.initialState)
+}
+
+// stateKeyFromState encodes the board state into a compact key for memoization.
 // Each card (identified by (design-1)*13+value-1) maps to a uint16 location.
 // Tableau: col*64 + pos + 1 (supports up to 63 cards per column).
 // FreeCell: 512 + cell. Foundation: 0 (default).
 // Jokers (design=0) are skipped since FreeCell uses only 52 standard cards.
-func (s *freeCellSolver) stateKey() [52]uint16 {
+func stateKeyFromState(st *freeCellState) [52]uint16 {
 	var key [52]uint16
-	for col := 0; col < FreeCellTableauCnt; col++ {
-		for pos, card := range s.tableau[col] {
+	for col := range FreeCellTableauCnt {
+		for pos, card := range st.tableau[col] {
 			if card.GetDesign() < 1 || card.GetValue() < 1 {
 				continue
 			}
@@ -224,9 +308,9 @@ func (s *freeCellSolver) stateKey() [52]uint16 {
 			}
 		}
 	}
-	for cell := 0; cell < FreeCellCellCnt; cell++ {
-		if s.freeCells[cell] != nil {
-			card := s.freeCells[cell]
+	for cell := range FreeCellCellCnt {
+		if st.freeCells[cell] != nil {
+			card := st.freeCells[cell]
 			if card.GetDesign() < 1 || card.GetValue() < 1 {
 				continue
 			}
