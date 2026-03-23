@@ -39,6 +39,7 @@ func ParseIntArg(args []string, missingMsg, invalidMsg string, min, max int) (in
 
 // WithParsedInt はParseIntArgの結果を処理するヘルパー。
 // パース失敗時は (errMsg, true) を返し、成功時は fn(value) の結果を (result, true) で返す。
+// 戻り値の bool は常に true（コマンドが処理済みであることを示す）。
 func WithParsedInt(args []string, missingMsg, invalidMsg string, min, max int, fn func(int) string) (string, bool) {
 	v, errMsg, ok := ParseIntArg(args, missingMsg, invalidMsg, min, max)
 	if !ok {

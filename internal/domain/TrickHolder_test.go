@@ -27,3 +27,13 @@ func TestTrickHolder_AddTrick(t *testing.T) {
 	assert.Equal(t, 2, h.GetTrickCount())
 	assert.Equal(t, cards2, h.GetTricksTaken()[1])
 }
+
+func TestTrickHolder_ResetTricks(t *testing.T) {
+	h := &TrickHolder{}
+	h.AddTrick([]*Card{NewCard(CardDesignSpade, 1, false)})
+	assert.Equal(t, 1, h.GetTrickCount())
+
+	h.ResetTricks()
+	assert.Nil(t, h.GetTricksTaken())
+	assert.Equal(t, 0, h.GetTrickCount())
+}

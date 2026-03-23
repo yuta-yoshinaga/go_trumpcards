@@ -15,7 +15,7 @@ func NewCrazyEightsPlayer(isHuman bool) *CrazyEightsPlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・終了状態を初期化）
 func (p *CrazyEightsPlayer) ResetRound() {
-	p.roundScore = 0
+	p.SetRoundScore(0)
 	p.Reset()
 	p.SetIsFinished(false)
 }

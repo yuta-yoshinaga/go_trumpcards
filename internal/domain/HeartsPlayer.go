@@ -16,8 +16,8 @@ func NewHeartsPlayer(isHuman bool) *HeartsPlayer {
 
 // ResetRound ラウンドをリセット（スコア・トリック・手札・終了状態を初期化）
 func (p *HeartsPlayer) ResetRound() {
-	p.roundScore = 0
-	p.tricksTaken = nil
+	p.SetRoundScore(0)
+	p.ResetTricks()
 	p.Reset()
 	p.SetIsFinished(false)
 }

@@ -32,8 +32,8 @@ func (p *SpadesPlayer) SetBags(bags int) { p.bags = bags }
 // ResetRound ラウンドをリセット（ビッド・トリック・手札・終了状態を初期化）
 func (p *SpadesPlayer) ResetRound() {
 	p.bid = -1
-	p.roundScore = 0
-	p.tricksTaken = nil
+	p.SetRoundScore(0)
+	p.ResetTricks()
 	p.Reset()
 	p.SetIsFinished(false)
 }

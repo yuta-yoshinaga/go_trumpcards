@@ -15,7 +15,7 @@ func NewGinRummyPlayer(isHuman bool) *GinRummyPlayer {
 
 // ResetRound ラウンドをリセット（手札・スコア・終了状態を初期化）
 func (p *GinRummyPlayer) ResetRound() {
-	p.roundScore = 0
+	p.SetRoundScore(0)
 	p.Reset()
 	p.SetIsFinished(false)
 }

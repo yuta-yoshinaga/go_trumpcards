@@ -57,8 +57,8 @@ func (p *NapoleonPlayer) ResetRound() {
 	p.isAdjutant = false
 	p.adjutantRevealed = false
 	p.pictureCards = 0
-	p.roundScore = 0
-	p.tricksTaken = nil
+	p.SetRoundScore(0)
+	p.ResetTricks()
 	p.Reset()
 	p.SetIsFinished(false)
 }

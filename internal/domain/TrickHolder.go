@@ -15,3 +15,8 @@ func (h *TrickHolder) GetTrickCount() int { return len(h.tricksTaken) }
 func (h *TrickHolder) AddTrick(cards []*Card) {
 	h.tricksTaken = append(h.tricksTaken, cards)
 }
+
+// ResetTricks トリックをリセット
+func (h *TrickHolder) ResetTricks() {
+	h.tricksTaken = nil
+}
