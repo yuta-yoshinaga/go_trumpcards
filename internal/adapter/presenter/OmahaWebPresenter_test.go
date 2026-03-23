@@ -423,6 +423,7 @@ func TestOmahaWebPresenter_Output(t *testing.T) {
 		gameMock.On("IsMuckAvailable").Return(false)
 		gameMock.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
 		gameMock.On("GetPotOdds").Return(0.0)
+		gameMock.On("GetHumanProfile").Return((*domain.BettingHumanProfile)(nil))
 
 		player := domain.NewOmahaPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(99) // out of range
@@ -460,6 +461,7 @@ func TestOmahaWebPresenter_Output(t *testing.T) {
 		gameMock.On("IsMuckAvailable").Return(false)
 		gameMock.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
 		gameMock.On("GetPotOdds").Return(0.0)
+		gameMock.On("GetHumanProfile").Return((*domain.BettingHumanProfile)(nil))
 
 		player := domain.NewOmahaPlayer(false, domain.HoldemStyleTAG)
 		player.SetHandRank(-1) // negative
