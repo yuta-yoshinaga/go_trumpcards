@@ -55,5 +55,16 @@
     "scoreTable": "各プレイヤーのスコアが表示されます。ハートと♠Qがペナルティポイントです。",
     "penaltyInfo": "ハート（各1点）とスペードのクイーン（13点）がペナルティです。シュートザムーンも狙えます。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "hint": {
+    "passQueenOfSpades": "スペードのクイーンをパスすることを推奨",
+    "passHighHearts": "高いハートカードをパスすることを推奨",
+    "passHighCards": "高いカードをパスすることを推奨",
+    "leadNonHeart": "ハート以外のカードでリード推奨",
+    "leadLowest": "最も低いカードでリード推奨",
+    "followSuit": "リードされたスートに従ってプレイ推奨",
+    "dumpQueenOfSpades": "スペードのクイーンを捨てるチャンス",
+    "dumpHearts": "ハートカードを捨てるチャンス",
+    "playHighest": "最も高いカードをプレイ推奨"
   }
 }

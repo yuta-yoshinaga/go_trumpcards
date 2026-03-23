@@ -2,5 +2,24 @@
   "next": "Next",
   "skip": "Skip",
   "complete": "Complete",
-  "tutorialButton": "Tutorial"
+  "tutorialButton": "Tutorial",
+  "resume": "Resume",
+  "restart": "Start over",
+  "resumePrompt": "Resume from where you left off?",
+  "hint": {
+    "toggle": "Show hints",
+    "label": "Recommended action"
+  },
+  "progress": {
+    "title": "Tutorial Progress",
+    "completed": "Completed",
+    "summary": "{{count}}/{{total}} games completed"
+  },
+  "firstVisit": {
+    "title": "Tutorial",
+    "message": "First time playing this game? Learn how to play with the tutorial.",
+    "start": "Start tutorial",
+    "skip": "Skip",
+    "dontShowAgain": "Don't show again"
+  }
 }

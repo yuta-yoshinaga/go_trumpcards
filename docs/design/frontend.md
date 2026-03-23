@@ -343,14 +343,40 @@ classDiagram
         +TutorialStep currentStep
         +number totalSteps
         +boolean isCompleted
+        +boolean canResume
         +Function start
+        +Function restart
         +Function next
         +Function skip
+    }
+
+    class useFirstVisit {
+        +boolean shouldShowDialog
+        +Function dismiss
+        +Function dismissPermanently
+    }
+
+    class useGameHint {
+        +boolean hintEnabled
+        +Function setHintEnabled
+        +HintResult hint
+    }
+
+    class useTutorialProgress {
+        +GameProgress[] games
+        +number completedCount
+        +number totalCount
+    }
+
+    class useLocalStorageToggle {
+        +boolean value
+        +Function setValue
     }
 
     useGamePageSetup --> useActionLog : composes
     useGamePageSetup --> useConfirmDialog : composes
     useTutorial ..> useReducedMotion : optional
+    useGameHint --> useLocalStorageToggle : uses
 ```
 
 ### 1.4 Hook 層 (ゲーム固有Hook)

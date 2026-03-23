@@ -6,12 +6,14 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GameResetDialog } from '../components/GameResetDialog';
+import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { WinCelebration } from '../components/motion/WinCelebration';
 import { PhaseIndicator } from '../components/PhaseIndicator';
 import { HeartsSkeleton } from '../components/skeleton/HeartsSkeleton';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
+import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHeartsGame } from '../hooks/useHeartsGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -136,6 +138,11 @@ function HeartsPageContent() {
     hintLoading,
     handleHint,
   } = useHeartsGame();
+  const {
+    hint: frontendHint,
+    hintEnabled: frontendHintEnabled,
+    setHintEnabled: setFrontendHintEnabled,
+  } = useGameHint('hearts', state);
   const { cardWidth } = useCardDimensions();
 
   const isPassPhaseForKbd = state?.phase === HeartsPhase.PASS;
@@ -209,6 +216,13 @@ function HeartsPageContent() {
                 label: t('settings.omnibusJD'),
                 checked: heartsConfig.omnibusJD,
                 onToggle: (v) => handleToggle('omnibusJD', v),
+              },
+              {
+                type: 'checkbox',
+                id: 'frontendHint',
+                label: tc('hint.toggle', { ns: 'tutorial' }),
+                checked: frontendHintEnabled,
+                onToggle: setFrontendHintEnabled,
               },
             ],
           },
@@ -337,6 +351,9 @@ function HeartsPageContent() {
           <div className="text-yellow-300 text-sm mb-2">
             {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} ({t(`hintReason.${hint.reason}`)})
           </div>
+        )}
+        {frontendHintEnabled && frontendHint && (
+          <HintTooltip reason={t(frontendHint.reason)} confidence={frontendHint.confidence} />
         )}
 
         <div className="flex gap-2 items-center" data-tutorial="ht-play-button">

@@ -1,14 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { btnDanger, btnSecondary } from '../styles/buttonStyles';
+import { getFocusableElements } from '../utils/dom';
 
-/** Returns all focusable elements within the given container. */
-export function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((el) => !el.hasAttribute('disabled'));
-}
+// Re-export for backward compatibility with existing imports
+export { getFocusableElements } from '../utils/dom';
 
 /** Props for the ConfirmDialog component. */
 export interface ConfirmDialogProps {
