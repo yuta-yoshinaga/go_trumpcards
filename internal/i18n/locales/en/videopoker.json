@@ -1,0 +1,5 @@
+{
+  "helpTitle": "Video Poker (Jacks or Better)",
+  "helpBet": "  b <coins>            bet 1-5 coins and deal",
+  "helpHold": "  h [0 1 2 3 4]       hold cards at indices (empty = hold all)"
+}

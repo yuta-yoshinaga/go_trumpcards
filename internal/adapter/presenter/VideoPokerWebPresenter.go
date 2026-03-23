@@ -1,0 +1,52 @@
+package presenter
+
+import (
+	"strconv"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+)
+
+// VideoPokerWebPresenter ビデオポーカーWebプレゼンタークラス
+type VideoPokerWebPresenter struct {
+}
+
+// Output ゲーム状態を出力
+func (vpp *VideoPokerWebPresenter) Output(vp interfaces.VideoPokerGame, lastErr error) string {
+	resObj := new(controller.VideoPokerWebOutput)
+
+	resObj.Hand = cardsToOutputOrEmpty(vp.GetHand())
+	resObj.Phase = vp.GetPhase()
+	resObj.Chips = vp.GetChips()
+	resObj.BetAmount = vp.GetBetAmount()
+	resObj.Result = int(vp.GetResult())
+	resObj.Payout = vp.GetPayout()
+	resObj.HandRank = vp.GetHandRank()
+	resObj.HandName = vp.GetHandName()
+	resObj.HeldIndices = vp.GetHeldIndices()
+
+	if lastErr != nil {
+		resObj.Message = lastErr.Error()
+	} else if vp.GetGameEndFlag() {
+		switch vp.GetResult() {
+		case domain.GameResultWin:
+			resObj.Message = vp.GetHandName() + "! You win!"
+			resObj.MessageCode = "videopoker.result.win"
+			resObj.MessageParams = map[string]string{
+				"handName": vp.GetHandName(),
+				"payout":   strconv.Itoa(vp.GetPayout()),
+			}
+		default:
+			resObj.Message = "No winning hand."
+			resObj.MessageCode = "videopoker.result.lose"
+		}
+	}
+
+	return marshalOrError(resObj)
+}
+
+// ActionLogOutput 棋譜をJSON出力
+func (vpp *VideoPokerWebPresenter) ActionLogOutput(vp interfaces.VideoPokerGame) string {
+	return actionLogOutputJSON(vp)
+}

@@ -21,6 +21,7 @@ import type {
   SevensResponse,
   SpadesResponse,
   SpiderResponse,
+  VideoPokerResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -546,6 +547,12 @@ export const indianpokerApi = {
     }),
 };
 
+/** API client for the Video Poker /videopoker/exec endpoint. */
+export const videopokerApi = {
+  exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
+    gameExec<VideoPokerResponse>('videopoker', { command, amount, indices }),
+};
+
 const games = [
   'blackjack',
   'poker',
@@ -566,6 +573,7 @@ const games = [
   'ginrummy',
   'spider',
   'indianpoker',
+  'videopoker',
 ] as const;
 type Game = (typeof games)[number];
 

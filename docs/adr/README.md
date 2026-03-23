@@ -43,3 +43,4 @@ Each ADR follows the format:
 | [ADR-0024](0024-fluid-tactile-ui-redesign.md) | Fluid & Tactile UIリデザイン | Accepted | 2026-03-21 |
 | [ADR-0025](0025-tutorial-system.md) | インタラクティブチュートリアルシステム | Accepted | 2026-03-23 |
 | [ADR-0026](0026-relax-coverage-target.md) | ブランチカバレッジ基準を100%から80%に緩和 | Accepted | 2026-03-23 |
+| [ADR-0027](0027-video-poker.md) | Video Poker (Jacks or Better) の追加 | Accepted | 2026-03-24 |

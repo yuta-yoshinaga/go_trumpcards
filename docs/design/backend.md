@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全18ゲーム)](#12-ゲームドメイン-全18ゲーム)
+  - [1.2 ゲームドメイン (全20ゲーム)](#12-ゲームドメイン-全20ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -14,6 +14,7 @@
   - [2.1 CUIゲーム実行フロー](#21-cuiゲーム実行フロー)
   - [2.2 Web APIゲーム実行フロー](#22-web-apiゲーム実行フロー)
   - [2.3 セッション管理フロー](#23-セッション管理フロー)
+  - [2.4 VideoPoker ベット・ホールドフロー](#24-videopoker-ベットホールドフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 BlackJack フェーズ遷移](#31-blackjack-フェーズ遷移)
   - [3.2 Poker フェーズ遷移](#32-poker-フェーズ遷移)
@@ -28,6 +29,7 @@
   - [3.11 Baccarat フェーズ遷移](#311-baccarat-フェーズ遷移)
   - [3.12 Napoleon フェーズ遷移](#312-napoleon-フェーズ遷移)
   - [3.13 IndianPoker フェーズ遷移](#313-indianpoker-フェーズ遷移)
+  - [3.14 VideoPoker フェーズ遷移](#314-videopoker-フェーズ遷移)
 
 ---
 
@@ -95,7 +97,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全19ゲーム)
+### 1.2 ゲームドメイン (全20ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -165,6 +167,22 @@ classDiagram
         +Phase() int
     }
 
+    class VideoPoker {
+        -trumpCards *TrumpCards
+        -hand []*Card
+        -heldIndices []int
+        -phase int
+        -betAmount int
+        -handRank int
+        -handName string
+        -payout int
+        +Reset()
+        +PlayerBet(amount int) error
+        +PlayerHold(indices []int) error
+        +Phase() int
+        +ActionLog() []*ActionLogEntry
+    }
+
     BlackJack --> "*" BlackJackPlayer
     BlackJack --> "1" BlackJackConfig
     BlackJackPlayer --|> GamePlayer
@@ -172,6 +190,8 @@ classDiagram
     BlackJackPlayer --> "1" ChipHolder
     Poker --> "*" PokerPlayer
     Baccarat --> "1" TrumpCards
+    VideoPoker --> "1" TrumpCards
+    VideoPoker --> "1" ChipHolder
 ```
 
 #### トリックテイキング系ゲーム
@@ -614,7 +634,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全18ゲーム共通)**
+**Interactor パターン (全20ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -686,8 +706,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "18ゲーム × CUI/Web = 34 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "18ゲーム × CUI/Web = 34 Presenter 実装"
+    note for GameCuiController "20ゲーム × CUI/Web = 40 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "20ゲーム × CUI/Web = 40 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -714,6 +734,7 @@ classDiagram
         -spider *SpiderWebController
         -napoleon *NapoleonWebController
         -indianpoker *IndianPokerWebController
+        -videopoker *VideoPokerWebController
         +Exec()
     }
 
@@ -735,8 +756,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 18 controllers
-    GameManager --> "*" CuiExecer : holds 18 games
+    TrumpCardsWeb --> "*" GameWebController : holds 20 controllers
+    GameManager --> "*" CuiExecer : holds 20 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -841,6 +862,39 @@ sequenceDiagram
     WebCtrl-->>C2: レスポンス
 
     Note over Store: 各セッションは独立した<br/>ゲーム状態を保持
+```
+
+### 2.4 VideoPoker ベット・ホールドフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Ctrl as Controller
+    participant Interactor as VideoPokerInteractor
+    participant Domain as VideoPoker
+    participant Eval as evalFiveCardHand
+    participant Pres as Presenter
+
+    Note over User,Pres: ベットフロー
+    User->>Ctrl: bet 3
+    Ctrl->>Interactor: Bet(3)
+    Interactor->>Domain: PlayerBet(3)
+    Domain->>Domain: チップ減算 → 5枚配布 → phase=Draw
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 手札5枚表示
+
+    Note over User,Pres: ホールドフロー
+    User->>Ctrl: hold 0 2 4
+    Ctrl->>Interactor: Hold([0,2,4])
+    Interactor->>Domain: PlayerHold([0,2,4])
+    Domain->>Domain: 非ホールドカードを交換
+    Domain->>Eval: evalFiveCardHand(hand)
+    Eval-->>Domain: handRank, handName
+    Domain->>Domain: 配当計算 → phase=Result
+    Domain-->>Interactor: nil
+    Interactor->>Pres: Output(game, nil)
+    Pres-->>User: 最終手札・役名・配当表示
 ```
 
 ---
@@ -1039,6 +1093,21 @@ stateDiagram-v2
     Showdown --> Ante : 次ハンド開始
     Showdown --> End : プレイヤーのチップが0
     End --> [*]
+```
+
+### 3.14 VideoPoker フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Bet : Reset()
+    Bet --> Draw : ベット(1-5コイン)
+    Draw --> Result : ホールド選択 → カード交換 → 役判定
+    Result --> Bet : 次ラウンド (Reset)
+    Result --> [*] : チップ0 (ゲーム終了)
+
+    note right of Bet : VideoPokerPhaseBet = 0
+    note right of Draw : VideoPokerPhaseDraw = 1
+    note right of Result : VideoPokerPhaseResult = 2
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

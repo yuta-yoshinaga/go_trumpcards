@@ -52,6 +52,8 @@ tags:
     description: Napoleon (ナポレオン) game
   - name: indianpoker
     description: Indian Poker (インディアンポーカー) game
+  - name: videopoker
+    description: "Video Poker (Jacks or Better)"
 
 paths:
   /blackjack/exec:
@@ -1851,6 +1853,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IndianPokerResponse'
+
+  /videopoker/exec:
+    post:
+      tags:
+        - videopoker
+      summary: Execute a Video Poker game command
+      description: |
+        Send a command to advance the Video Poker (Jacks or Better) game session
+        identified by `sessionId`.  Video Poker is a single-player casino card game
+        using a standard 52-card deck.  The player bets 1-5 coins, receives 5 cards,
+        chooses which cards to hold, then draws replacements.  The final hand is
+        evaluated and paid according to the Jacks or Better pay table.
+
+        The game proceeds through these phases:
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Bet     | `0`   | Place a bet (1-5 coins) |
+        | Draw    | `1`   | Choose cards to hold, then draw replacements |
+        | Result  | `2`   | Final hand evaluated; payout displayed |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place a bet (requires `amount`: 1-5) |
+        | `hold`  | `h`     | Hold cards and draw (requires `indices`: array of card positions 0-4) |
+        | `log`   | `l`     | View action log |
+      operationId: videoPokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 3 coins
+                value:
+                  command: bet
+                  amount: 3
+                  sessionId: my-session-001
+              hold:
+                summary: Hold cards at positions 0, 2, and 4
+                value:
+                  command: hold
+                  indices: [0, 2, 4]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoPokerResponse'
 
 components:
   schemas:
@@ -6163,6 +6230,96 @@ components:
                 type: integer
               amount:
                 type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    VideoPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
+            `hold` (`h`), `log` (`l`).
+          enum: [reset, r, bet, b, hold, h, log, l]
+          example: reset
+        amount:
+          type: integer
+          description: Bet amount (1-5 coins).  Required for `bet` command.
+          minimum: 1
+          maximum: 5
+          example: 1
+        indices:
+          type: array
+          description: Card positions to hold (0-4).  Required for `hold` command.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          example: [0, 2, 4]
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    VideoPokerResponse:
+      type: object
+      description: Current state of the Video Poker game
+      properties:
+        hand:
+          type: array
+          description: The player's 5-card hand
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Bet, 1 = Draw, 2 = Result"
+          enum: [0, 1, 2]
+          example: 0
+        chips:
+          type: integer
+          description: Current chip count
+          example: 100
+        betAmount:
+          type: integer
+          description: Current bet amount (1-5 coins)
+          example: 1
+        result:
+          type: integer
+          description: "Round result: 1 = win, 0 = loss/push, -1 = not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        payout:
+          type: integer
+          description: Payout amount for the current round
+          example: 0
+        handRank:
+          type: integer
+          description: "Hand rank code (0 = no qualifying hand, higher = better hand)"
+          example: 0
+        handName:
+          type: string
+          description: Human-readable name of the evaluated hand rank
+          example: ""
+        heldIndices:
+          type: array
+          description: Indices of held cards (0-4)
+          items:
+            type: integer
+          example: []
         message:
           type: string
           description: Game status message

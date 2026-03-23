@@ -1,0 +1,5 @@
+{
+  "helpTitle": "Video Poker (ビデオポーカー)",
+  "helpBet": "  b <coins>            1〜5コインを賭けてディール",
+  "helpHold": "  h [0 1 2 3 4]       ホールドするカードのインデックス (空 = 全てホールド)"
+}
