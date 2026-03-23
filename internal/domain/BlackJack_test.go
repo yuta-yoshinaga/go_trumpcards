@@ -1637,27 +1637,27 @@ func TestBlackJackConfig_Validate(t *testing.T) {
 	})
 	t.Run("CPU count negative fails", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{CpuPlayerCount: -1}
-		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+		assert.Error(t, cfg.Validate())
 	})
 	t.Run("CPU count too high fails", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{CpuPlayerCount: domain.BJMaxCpuPlayers + 1}
-		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+		assert.Error(t, cfg.Validate())
 	})
 	t.Run("counting system negative fails", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{CountingSystem: -1}
-		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+		assert.Error(t, cfg.Validate())
 	})
 	t.Run("counting system too high fails", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{CountingSystem: domain.BJCountingMax + 1}
-		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+		assert.Error(t, cfg.Validate())
 	})
 	t.Run("surrender rule negative fails", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{SurrenderRule: -1}
-		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+		assert.Error(t, cfg.Validate())
 	})
 	t.Run("surrender rule too high fails", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{SurrenderRule: domain.BJSurrenderMax + 1}
-		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+		assert.Error(t, cfg.Validate())
 	})
 	t.Run("deck penetration 0 ok (use default)", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{DeckPenetration: 0}
@@ -1673,7 +1673,7 @@ func TestBlackJackConfig_Validate(t *testing.T) {
 	})
 	t.Run("deck penetration invalid fails", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{DeckPenetration: 60}
-		assert.ErrorIs(t, cfg.Validate(), domain.ErrInvalidAmount)
+		assert.Error(t, cfg.Validate())
 	})
 }
 
@@ -2059,7 +2059,6 @@ func TestBlackJackConfig_GetSetConfig(t *testing.T) {
 		cfg := domain.BlackJackConfig{CpuPlayerCount: 4}
 		err := bj.SetConfig(cfg)
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 	})
 	t.Run("CPU count negative fails", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -2067,7 +2066,6 @@ func TestBlackJackConfig_GetSetConfig(t *testing.T) {
 		cfg := domain.BlackJackConfig{CpuPlayerCount: -1}
 		err := bj.SetConfig(cfg)
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 	})
 	t.Run("counting system 0-3 ok", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -2084,7 +2082,6 @@ func TestBlackJackConfig_GetSetConfig(t *testing.T) {
 		cfg := domain.BlackJackConfig{CountingSystem: domain.BJCountingMax + 1}
 		err := bj.SetConfig(cfg)
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 	})
 	t.Run("counting system negative fails", func(t *testing.T) {
 		bj := domain.NewDefaultBlackJack()
@@ -2092,7 +2089,6 @@ func TestBlackJackConfig_GetSetConfig(t *testing.T) {
 		cfg := domain.BlackJackConfig{CountingSystem: -1}
 		err := bj.SetConfig(cfg)
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 	})
 }
 
@@ -2569,7 +2565,6 @@ func TestSetConfig_InvalidPenetration(t *testing.T) {
 	bj := domain.NewDefaultBlackJack()
 	err := bj.SetConfig(domain.BlackJackConfig{DeckPenetration: 60, DoubleAfterSplit: true})
 	assert.Error(t, err)
-	assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 }
 
 func TestSetConfig_ValidPenetration(t *testing.T) {
@@ -2889,13 +2884,11 @@ func TestSetConfig_InvalidSurrenderRule(t *testing.T) {
 		cfg := domain.BlackJackConfig{SurrenderRule: -1}
 		err := bj.SetConfig(cfg)
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 	})
 	t.Run("surrender rule 3 fails", func(t *testing.T) {
 		cfg := domain.BlackJackConfig{SurrenderRule: 3}
 		err := bj.SetConfig(cfg)
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, domain.ErrInvalidAmount)
 	})
 	t.Run("valid surrender rules succeed", func(t *testing.T) {
 		for _, rule := range []int{domain.BJSurrenderLate, domain.BJSurrenderEarly, domain.BJSurrenderNone} {

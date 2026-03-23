@@ -51,11 +51,7 @@ func (ci *GinRummyInteractor) Reset() string {
 
 // ResetWithConfig 設定を変更してゲーム初期化
 func (ci *GinRummyInteractor) ResetWithConfig(cfg domain.GinRummyConfig) string {
-	if err := cfg.Validate(); err != nil {
-		return ci.gp.Output(ci.g, err)
-	}
-	ci.g.SetConfig(cfg)
-	return ci.Reset()
+	return resetWithValidatedConfig(ci.g, ci.gp, cfg, ci.g.SetConfig, ci.Reset)
 }
 
 // DrawFromStock 山札からカードを引く

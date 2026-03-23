@@ -108,6 +108,32 @@ func TestParseIntArg_NoBoundsNegativeMath(t *testing.T) {
 	assert.Equal(t, -1, v)
 }
 
+// --- WithParsedInt ---
+
+func TestWithParsedInt_ParseFails(t *testing.T) {
+	result, cont := cuiutil.WithParsedInt([]string{}, "missing", "invalid", 0, 10, func(v int) string {
+		return "should not be called"
+	})
+	assert.True(t, cont)
+	assert.Equal(t, "missing", result)
+}
+
+func TestWithParsedInt_ParseSuccess(t *testing.T) {
+	result, cont := cuiutil.WithParsedInt([]string{"5"}, "missing", "invalid", 0, 10, func(v int) string {
+		return "ok"
+	})
+	assert.True(t, cont)
+	assert.Equal(t, "ok", result)
+}
+
+func TestWithParsedInt_OutOfRange(t *testing.T) {
+	result, cont := cuiutil.WithParsedInt([]string{"11"}, "missing", "Invalid: %s.", 0, 10, func(v int) string {
+		return "should not be called"
+	})
+	assert.True(t, cont)
+	assert.Equal(t, "Invalid: 11.", result)
+}
+
 // --- ParseOptionalInt ---
 
 func TestParseOptionalInt_AbsentIdx(t *testing.T) {

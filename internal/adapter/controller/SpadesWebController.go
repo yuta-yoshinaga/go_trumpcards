@@ -90,10 +90,7 @@ func (c *SpadesWebConfig) ToConfig() domain.SpadesConfig {
 
 // ToConfig builds a SpadesConfig from the web input.
 func (p SpadesWebInput) ToConfig() domain.SpadesConfig {
-	if p.Config != nil {
-		return p.Config.ToConfig()
-	}
-	return domain.DefaultSpadesConfig()
+	return configOrDefault(p.Config, (*SpadesWebConfig).ToConfig, domain.DefaultSpadesConfig())
 }
 
 // SpadesWebController スペードWebコントローラークラス

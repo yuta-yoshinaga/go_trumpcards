@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // IndianPokerConfig インディアンポーカー設定
 type IndianPokerConfig struct {
 	Ante         int              // アンティ
@@ -22,14 +20,14 @@ func DefaultIndianPokerConfig() IndianPokerConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c IndianPokerConfig) Validate() error {
-	if c.Ante < 1 {
-		return fmt.Errorf("ante must be >= 1, got %d", c.Ante)
+	if err := ValidateMin("ante", c.Ante, 1); err != nil {
+		return err
 	}
-	if c.InitChips < 1 {
-		return fmt.Errorf("init chips must be >= 1, got %d", c.InitChips)
+	if err := ValidateMin("init chips", c.InitChips, 1); err != nil {
+		return err
 	}
-	if c.BettingLimit < BettingLimitFixed || c.BettingLimit > BettingLimitNoLimit {
-		return fmt.Errorf("betting limit must be %d-%d, got %d", int(BettingLimitFixed), int(BettingLimitNoLimit), int(c.BettingLimit))
+	if err := ValidateRange("betting limit", int(c.BettingLimit), int(BettingLimitFixed), int(BettingLimitNoLimit)); err != nil {
+		return err
 	}
 	return nil
 }

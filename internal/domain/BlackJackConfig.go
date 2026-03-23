@@ -1,5 +1,7 @@
 package domain
 
+import "fmt"
+
 // カウンティングシステム定数
 const (
 	BJCountingHiLo    = 0 // Hi-Lo
@@ -50,14 +52,14 @@ func DefaultBlackJackConfig() BlackJackConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c BlackJackConfig) Validate() error {
-	if c.CpuPlayerCount < 0 || c.CpuPlayerCount > BJMaxCpuPlayers {
-		return NewDomainError(ErrInvalidAmount, "CPU player count must be 0-3.")
+	if err := ValidateRange("CPU player count", c.CpuPlayerCount, 0, BJMaxCpuPlayers); err != nil {
+		return err
 	}
-	if c.CountingSystem < 0 || c.CountingSystem > BJCountingMax {
-		return NewDomainError(ErrInvalidAmount, "Invalid counting system.")
+	if err := ValidateRange("counting system", c.CountingSystem, 0, BJCountingMax); err != nil {
+		return err
 	}
-	if c.SurrenderRule < 0 || c.SurrenderRule > BJSurrenderMax {
-		return NewDomainError(ErrInvalidAmount, "Invalid surrender rule.")
+	if err := ValidateRange("surrender rule", c.SurrenderRule, 0, BJSurrenderMax); err != nil {
+		return err
 	}
 	if c.DeckPenetration != 0 {
 		validPen := false
@@ -68,7 +70,7 @@ func (c BlackJackConfig) Validate() error {
 			}
 		}
 		if !validPen {
-			return NewDomainError(ErrInvalidAmount, "Invalid deck penetration. Use 50 or 75.")
+			return fmt.Errorf("deck penetration must be 50 or 75, got %d", c.DeckPenetration)
 		}
 	}
 	return nil

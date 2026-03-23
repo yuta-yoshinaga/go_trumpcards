@@ -44,6 +44,42 @@ func TestRunAndPresent(t *testing.T) {
 	})
 }
 
+func TestResetWithValidatedConfig(t *testing.T) {
+	t.Run("validation error returns error output", func(t *testing.T) {
+		g := &mockGameEndChecker{}
+		p := &recordingPresenter[*mockGameEndChecker]{}
+		cfg := &mockValidatableConfig{err: errors.New("bad config")}
+		resetCalled := false
+		out := resetWithValidatedConfig(g, p, cfg, func(_ *mockValidatableConfig) {}, func() string {
+			resetCalled = true
+			return "reset"
+		})
+		assert.False(t, resetCalled)
+		assert.Equal(t, "bad config", out)
+		assert.Error(t, p.lastErr)
+	})
+
+	t.Run("valid config calls setConfig and resetAndPresent", func(t *testing.T) {
+		g := &mockGameEndChecker{}
+		p := &recordingPresenter[*mockGameEndChecker]{successOutput: "ok"}
+		cfg := &mockValidatableConfig{}
+		configSet := false
+		out := resetWithValidatedConfig(g, p, cfg, func(c *mockValidatableConfig) {
+			configSet = true
+		}, func() string {
+			return "reset-output"
+		})
+		assert.True(t, configSet)
+		assert.Equal(t, "reset-output", out)
+	})
+}
+
+type mockValidatableConfig struct {
+	err error
+}
+
+func (c *mockValidatableConfig) Validate() error { return c.err }
+
 // recordingPresenter records the last error passed to Output.
 type recordingPresenter[G any] struct {
 	lastErr       error

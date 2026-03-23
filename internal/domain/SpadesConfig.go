@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 // SpadesCpuDifficulty CPU の難易度レベル
 type SpadesCpuDifficulty int
 
@@ -35,17 +33,17 @@ func DefaultSpadesConfig() SpadesConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c SpadesConfig) Validate() error {
-	if c.CpuDifficulty < SpadesCpuDifficultyEasy || c.CpuDifficulty > SpadesCpuDifficultyHard {
-		return fmt.Errorf("CPU difficulty must be %d-%d, got %d", int(SpadesCpuDifficultyEasy), int(SpadesCpuDifficultyHard), int(c.CpuDifficulty))
+	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty), int(SpadesCpuDifficultyEasy), int(SpadesCpuDifficultyHard)); err != nil {
+		return err
 	}
-	if c.PointLimit < 1 {
-		return fmt.Errorf("point limit must be >= 1, got %d", c.PointLimit)
+	if err := ValidateMin("point limit", c.PointLimit, 1); err != nil {
+		return err
 	}
-	if c.NilBonus < 0 {
-		return fmt.Errorf("nil bonus must be >= 0, got %d", c.NilBonus)
+	if err := ValidateMin("nil bonus", c.NilBonus, 0); err != nil {
+		return err
 	}
-	if c.BagPenaltyThreshold < 1 {
-		return fmt.Errorf("bag penalty threshold must be >= 1, got %d", c.BagPenaltyThreshold)
+	if err := ValidateMin("bag penalty threshold", c.BagPenaltyThreshold, 1); err != nil {
+		return err
 	}
 	return nil
 }

@@ -66,10 +66,7 @@ func (c *MemoryWebConfig) ToConfig() domain.MemoryConfig {
 
 // ToConfig builds a MemoryConfig from the web input.
 func (p MemoryWebInput) ToConfig() domain.MemoryConfig {
-	if p.Config != nil {
-		return p.Config.ToConfig()
-	}
-	return domain.DefaultMemoryConfig()
+	return configOrDefault(p.Config, (*MemoryWebConfig).ToConfig, domain.DefaultMemoryConfig())
 }
 
 // MemoryWebController 神経衰弱Webコントローラークラス
