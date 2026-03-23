@@ -16,7 +16,7 @@ func newMockVideoPokerInteractor() *usecase.MockVideoPokerInteractor {
 	m.On("Reset").Return("reset result")
 	m.On("Bet", 3).Return("bet result")
 	m.On("Hold", []int{0, 2, 4}).Return("hold result")
-	m.On("Hold", []int{0, 1, 2, 3, 4}).Return("hold all result")
+	m.On("Hold", []int{}).Return("hold none result")
 	m.On("ActionLog").Return("action log result")
 	return m
 }
@@ -78,8 +78,8 @@ func TestVideoPokerCuiController_Hold(t *testing.T) {
 		assert.Equal(t, "hold result", c.Exec("h 0 2 4"))
 	})
 
-	t.Run("hold all (no args)", func(t *testing.T) {
-		assert.Equal(t, "hold all result", c.Exec("h"))
+	t.Run("hold none (no args)", func(t *testing.T) {
+		assert.Equal(t, "hold none result", c.Exec("h"))
 	})
 
 	t.Run("hold long form", func(t *testing.T) {

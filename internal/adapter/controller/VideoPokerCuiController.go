@@ -50,10 +50,10 @@ func (vpc *VideoPokerCuiController) Exec(command string) string {
 }
 
 // parseHoldIndices parses hold indices from command args.
-// Empty args means hold all cards (returns [0,1,2,3,4]).
+// Empty args means hold no cards (returns []).
 func parseHoldIndices(args []string) ([]int, string) {
 	if len(args) == 0 {
-		return []int{0, 1, 2, 3, 4}, ""
+		return []int{}, ""
 	}
 	indices := make([]int, 0, len(args))
 	for _, arg := range args {

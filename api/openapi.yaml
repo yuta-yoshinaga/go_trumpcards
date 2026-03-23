@@ -1870,9 +1870,9 @@ paths:
 
         | Phase   | Value | Description |
         |---------|-------|-------------|
-        | Bet     | `0`   | Place a bet (1-5 coins) |
-        | Draw    | `1`   | Choose cards to hold, then draw replacements |
-        | Result  | `2`   | Final hand evaluated; payout displayed |
+        | Bet     | `1`   | Place a bet (1-5 coins) |
+        | Draw    | `2`   | Choose cards to hold, then draw replacements |
+        | Result  | `3`   | Final hand evaluated; payout displayed |
 
         | Command | Aliases | Description |
         |---------|---------|-------------|
@@ -6286,9 +6286,9 @@ components:
             $ref: '#/components/schemas/Card'
         phase:
           type: integer
-          description: "Game phase: 0 = Bet, 1 = Draw, 2 = Result"
-          enum: [0, 1, 2]
-          example: 0
+          description: "Game phase: 1 = Bet, 2 = Draw, 3 = Result"
+          enum: [1, 2, 3]
+          example: 1
         chips:
           type: integer
           description: Current chip count
