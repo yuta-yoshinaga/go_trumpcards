@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Pyramid",
+  "helpDraw": "  d                        draw from stock",
+  "helpRemoveKing": "  rm <row> <col>            remove king",
+  "helpRemovePair": "  rm <r1> <c1> <r2> <c2>    remove pair (sum to 13)",
+  "helpRemoveWaste": "  rm w <row> <col>          remove waste + pyramid pair",
+  "helpRemoveWasteKing": "  rm w                      remove waste king",
+  "helpGiveUp": "  g                        give up",
+  "helpHint": "  h                        hint"
+}

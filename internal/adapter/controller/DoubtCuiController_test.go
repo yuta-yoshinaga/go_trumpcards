@@ -17,7 +17,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 	newMock := func() *mockUsecases.MockDoubtInteractor {
 		m := new(mockUsecases.MockDoubtInteractor)
 		m.On("GetConfig").Return(domain.DefaultDoubtConfig())
-		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
+		m.On("ResetWithConfig", mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("Play", mock.Anything, mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("ResolveDoubt", mock.Anything).Return(mockOutput)
 		m.On("SkipDoubt").Return(mockOutput)
@@ -40,7 +40,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		result := c.Exec("r")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "GetConfig")
-		m.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig())
+		m.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig(), mock.Anything)
 	})
 
 	t.Run("reset command reset preserves config", func(t *testing.T) {
@@ -49,7 +49,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		result := c.Exec("reset")
 		assert.Equal(t, mockOutput, result)
 		m.AssertCalled(t, "GetConfig")
-		m.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig())
+		m.AssertCalled(t, "ResetWithConfig", domain.DefaultDoubtConfig(), mock.Anything)
 	})
 
 	t.Run("play command p with value and indices", func(t *testing.T) {
@@ -132,7 +132,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		expected := domain.DefaultDoubtConfig()
 		expected.DoubtWindowSec = 30
-		m.AssertCalled(t, "ResetWithConfig", expected)
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("setwindow long form", func(t *testing.T) {
@@ -142,7 +142,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		expected := domain.DefaultDoubtConfig()
 		expected.DoubtWindowSec = 5
-		m.AssertCalled(t, "ResetWithConfig", expected)
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("setwindow no args", func(t *testing.T) {
@@ -177,7 +177,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		expected := domain.DefaultDoubtConfig()
 		expected.CpuMemoryLevel = domain.DoubtMemoryLevelHard
-		m.AssertCalled(t, "ResetWithConfig", expected)
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("setmemory long form", func(t *testing.T) {
@@ -187,7 +187,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		expected := domain.DefaultDoubtConfig()
 		expected.CpuMemoryLevel = domain.DoubtMemoryLevelEasy
-		m.AssertCalled(t, "ResetWithConfig", expected)
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("setmemory no args", func(t *testing.T) {
@@ -222,7 +222,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		expected := domain.DefaultDoubtConfig()
 		expected.PenaltyDrawLimit = 5
-		m.AssertCalled(t, "ResetWithConfig", expected)
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("setpenalty long form", func(t *testing.T) {
@@ -232,7 +232,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		expected := domain.DefaultDoubtConfig()
 		expected.PenaltyDrawLimit = 0
-		m.AssertCalled(t, "ResetWithConfig", expected)
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("setpenalty no args", func(t *testing.T) {
@@ -261,7 +261,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		expected := domain.DefaultDoubtConfig()
 		expected.CpuMetaAI = true
-		m.AssertCalled(t, "ResetWithConfig", expected)
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("smai valid OFF", func(t *testing.T) {
@@ -271,7 +271,7 @@ func TestDoubtCuiController_Exec(t *testing.T) {
 		assert.Equal(t, mockOutput, result)
 		expected := domain.DefaultDoubtConfig()
 		expected.CpuMetaAI = false
-		m.AssertCalled(t, "ResetWithConfig", expected)
+		m.AssertCalled(t, "ResetWithConfig", expected, mock.Anything)
 	})
 
 	t.Run("smetaai no args", func(t *testing.T) {

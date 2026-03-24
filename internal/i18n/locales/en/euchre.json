@@ -1,0 +1,14 @@
+{
+  "euchre.helpTitle": "Euchre",
+  "euchre.helpOrderUp": "  o                    order up",
+  "euchre.helpOrderUpAlone": "  oa                   order up & go alone",
+  "euchre.helpPass": "  pa                   pass",
+  "euchre.helpCall": "  c <suit>             call trump (1=S,2=C,3=H,4=D)",
+  "euchre.helpCallAlone": "  ca <suit>            call trump & go alone",
+  "euchre.helpDiscard": "  d <idx>              discard a card",
+  "euchre.helpPlay": "  p <idx>              play a card",
+  "euchre.helpNext": "  n                    next trick",
+  "euchre.helpNextRound": "  nr                   next round",
+  "euchre.helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "euchre.helpSetLimit": "  sl <n>               point limit"
+}

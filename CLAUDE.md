@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Omaha Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat, Spades, Crazy Eights, Gin Rummy, Napoleon, Indian Poker. Clean Architecture with CLI and Web GUI (React + Go REST API).
+Go trump card game algorithms -- BlackJack, Poker, Old Maid, Daifugo, Sevens, Doubt, Texas Hold'em, Omaha Hold'em, Short Deck Hold'em, Hearts, Memory, Klondike, FreeCell, Baccarat, Spades, Crazy Eights, Gin Rummy, Napoleon, Indian Poker, Video Poker, Euchre, Pyramid, Cribbage. Clean Architecture with CLI and Web GUI (React + Go REST API).
 
 ## Requirements
 
@@ -61,6 +61,7 @@ go run ./cmd/trumpcards sevens     # Sevens (7並べ) CLI
 go run ./cmd/trumpcards doubt      # Doubt (ダウト) CLI
 go run ./cmd/trumpcards holdem     # Texas Hold'em CLI
 go run ./cmd/trumpcards omaha      # Omaha Hold'em CLI
+go run ./cmd/trumpcards shortdeck   # Short Deck (ショートデック) CLI
 go run ./cmd/trumpcards hearts     # Hearts CLI
 go run ./cmd/trumpcards memory     # Memory (神経衰弱) CLI
 go run ./cmd/trumpcards klondike   # Klondike (ソリティア) CLI
@@ -72,6 +73,10 @@ go run ./cmd/trumpcards ginrummy   # Gin Rummy (ジンラミー) CLI
 go run ./cmd/trumpcards spider     # Spider Solitaire (スパイダーソリティア) CLI
 go run ./cmd/trumpcards napoleon   # Napoleon (ナポレオン) CLI
 go run ./cmd/trumpcards indianpoker   # Indian Poker (インディアンポーカー) CLI
+go run ./cmd/trumpcards videopoker   # Video Poker (ビデオポーカー) CLI
+go run ./cmd/trumpcards euchre     # Euchre (ユーカー) CLI
+go run ./cmd/trumpcards pyramid    # Pyramid (ピラミッド) CLI
+go run ./cmd/trumpcards cribbage   # Cribbage (クリベッジ) CLI
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards web        # Start REST API + web GUI server (via CLI)
 go run ./cmd/server         # Start REST API + web GUI server (direct)

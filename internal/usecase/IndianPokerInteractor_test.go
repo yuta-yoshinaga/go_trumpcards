@@ -69,7 +69,7 @@ func TestIndianPokerInteractor_ResetWithConfig(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("reset with config output")
 
-	result := ipi.ResetWithConfig(cfg)
+	result := ipi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "reset with config output", result)
 	mg.AssertCalled(t, "SetConfig", cfg)
 	mg.AssertCalled(t, "Reset")
@@ -86,7 +86,7 @@ func TestIndianPokerInteractor_ResetWithConfig_Error(t *testing.T) {
 	mg.On("Reset").Return(err)
 	mp.On("Output", mg, err).Return("error output")
 
-	result := ipi.ResetWithConfig(cfg)
+	result := ipi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "error output", result)
 }
 
@@ -97,9 +97,26 @@ func TestIndianPokerInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 
 	mp.On("Output", mg, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
 	cfg := domain.IndianPokerConfig{Ante: 0, InitChips: 1000, BettingLimit: domain.BettingLimitNoLimit}
-	result := ipi.ResetWithConfig(cfg)
+	result := ipi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "validation error", result)
 	mg.AssertNotCalled(t, "SetConfig", mock.Anything)
+}
+
+func TestIndianPokerInteractor_ResetWithConfig_WithProfile(t *testing.T) {
+	mg := new(interfaces.MockIndianPokerGame)
+	mp := new(presenter.MockIndianPokerPresenter)
+	ipi := NewIndianPokerInteractor(mg, mp)
+
+	cfg := domain.DefaultIndianPokerConfig()
+	profileData := []byte(`{"gamesPlayed":3}`)
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(nil)
+	mg.On("ImportProfile", profileData).Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("with profile output")
+
+	result := ipi.ResetWithConfig(cfg, profileData)
+	assert.Equal(t, "with profile output", result)
+	mg.AssertCalled(t, "ImportProfile", profileData)
 }
 
 func TestIndianPokerInteractor_Action(t *testing.T) {

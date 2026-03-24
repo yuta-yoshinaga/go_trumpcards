@@ -22,7 +22,7 @@ func NewOldMaidCuiController(omi usecase.OldMaidInteractorIF) *OldMaidCuiControl
 func (c *OldMaidCuiController) Exec(command string) string {
 	return execCuiCommand(
 		command,
-		func(_ []string) string { return c.omi.Reset(c.omi.GetConfig()) },
+		func(_ []string) string { return c.omi.Reset(c.omi.GetConfig(), nil) },
 		[]string{
 			"d", "draw", "s", "shuffle", "ro", "reorder", "sm", "setmode",
 			"sps", "setplacementstrategy", "smetaai", "smai",
@@ -41,19 +41,19 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Game mode is required (0=Normal, 1=JijiNuki).", "Invalid game mode: %s. Please enter 0-1.", 0, 1, func(v int) string {
 					cfg := c.omi.GetConfig()
 					cfg.Mode = domain.OldMaidMode(v)
-					return c.omi.Reset(cfg)
+					return c.omi.Reset(cfg, nil)
 				})
 			case "sps", "setplacementstrategy":
 				return cuiutil.WithParsedInt(args, "CPU placement strategy flag is required (0=OFF, 1=ON).", "Invalid CPU placement strategy flag: %s. Please enter 0-1.", 0, 1, func(v int) string {
 					cfg := c.omi.GetConfig()
 					cfg.CpuPlacementStrategy = v == 1
-					return c.omi.Reset(cfg)
+					return c.omi.Reset(cfg, nil)
 				})
 			case "smetaai", "smai":
 				return cuiutil.WithParsedInt(args, "Meta-AI flag is required (0=OFF, 1=ON).", "Invalid meta-AI flag: %s. Please enter 0-1.", 0, 1, func(v int) string {
 					cfg := c.omi.GetConfig()
 					cfg.CpuMetaAI = v == 1
-					return c.omi.Reset(cfg)
+					return c.omi.Reset(cfg, nil)
 				})
 			case "rp", "resetprofile":
 				return c.omi.ResetProfile(), true
@@ -61,7 +61,7 @@ func (c *OldMaidCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "CPU memory AI flag is required (0=OFF, 1=ON).", "Invalid CPU memory AI flag: %s. Please enter 0-1.", 0, 1, func(v int) string {
 					cfg := c.omi.GetConfig()
 					cfg.CpuMemoryAI = v == 1
-					return c.omi.Reset(cfg)
+					return c.omi.Reset(cfg, nil)
 				})
 			}
 			return "", false

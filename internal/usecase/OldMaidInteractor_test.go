@@ -43,11 +43,11 @@ func TestOldMaidInteractor_Method(t *testing.T) {
 	toi := usecase.NewOldMaidInteractor(newTestOldMaid(), ompMock)
 
 	t.Run("success Reset with DefaultOldMaidConfig", func(t *testing.T) {
-		assert.Equal(t, mockOutput, toi.Reset(domain.DefaultOldMaidConfig()))
+		assert.Equal(t, mockOutput, toi.Reset(domain.DefaultOldMaidConfig(), nil))
 	})
 	t.Run("success Reset with JijiNuki config", func(t *testing.T) {
 		cfg := domain.OldMaidConfig{Mode: domain.OldMaidModeJijiNuki, CpuPlacementStrategy: false}
-		assert.Equal(t, mockOutput, toi.Reset(cfg))
+		assert.Equal(t, mockOutput, toi.Reset(cfg, nil))
 	})
 	t.Run("success Draw", func(t *testing.T) {
 		assert.Equal(t, mockOutput, toi.Draw(-1))
@@ -70,7 +70,7 @@ func TestOldMaidInteractor_MockGame(t *testing.T) {
 	oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
 
 	t.Run("Reset calls SetConfig and game.Reset and ArrangeTargetForHumanDraw", func(t *testing.T) {
-		result := oi.Reset(domain.DefaultOldMaidConfig())
+		result := oi.Reset(domain.DefaultOldMaidConfig(), nil)
 		assert.Equal(t, mockOutput, result)
 		gameMock.AssertCalled(t, "SetConfig", mock.Anything)
 		gameMock.AssertCalled(t, "Reset")
@@ -82,6 +82,25 @@ func TestOldMaidInteractor_MockGame(t *testing.T) {
 		gameMock.AssertCalled(t, "PlayerDraw", 0)
 		gameMock.AssertCalled(t, "ArrangeTargetForHumanDraw")
 	})
+}
+
+func TestOldMaidInteractor_Reset_WithProfile(t *testing.T) {
+	mockOutput := `{"players":[]}`
+	ompMock := new(presenter.MockOldMaidPresenter)
+	ompMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
+	gameMock := new(interfaces.MockOldMaidGame)
+	profileData := []byte(`{"gamesPlayed":4}`)
+	gameMock.On("SetConfig", mock.Anything).Return()
+	gameMock.On("Reset").Return()
+	gameMock.On("ImportProfile", profileData).Return(nil)
+	gameMock.On("GetGameEndFlag").Return(false)
+	gameMock.On("IsHumanTurn").Return(true)
+	gameMock.On("ArrangeTargetForHumanDraw").Return()
+
+	oi := usecase.NewOldMaidInteractor(gameMock, ompMock)
+	result := oi.Reset(domain.DefaultOldMaidConfig(), profileData)
+	assert.Equal(t, mockOutput, result)
+	gameMock.AssertCalled(t, "ImportProfile", profileData)
 }
 
 func TestOldMaidInteractor_Draw_GameEnded(t *testing.T) {
@@ -242,7 +261,7 @@ func TestOldMaidInteractor_Reset_ValidationError(t *testing.T) {
 
 	oi := usecase.NewOldMaidInteractor(omMock, ompMock)
 	cfg := domain.OldMaidConfig{Mode: domain.OldMaidMode(99)}
-	result := oi.Reset(cfg)
+	result := oi.Reset(cfg, nil)
 	assert.Equal(t, "validation error", result)
 	omMock.AssertNotCalled(t, "SetConfig", mock.Anything)
 }

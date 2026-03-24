@@ -70,7 +70,7 @@ func TestHoldemInteractor_ResetWithConfig_Error(t *testing.T) {
 	mg.On("Reset").Return(err)
 	mp.On("Output", mg, err).Return("error output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "error output", result)
 }
 
@@ -84,7 +84,7 @@ func TestHoldemInteractor_ResetWithConfig(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("reset with config output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "reset with config output", result)
 	mg.AssertCalled(t, "SetConfig", cfg)
 	mg.AssertCalled(t, "Reset")
@@ -97,7 +97,7 @@ func TestHoldemInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 
 	mp.On("Output", mg, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
 	cfg := domain.HoldemConfig{SmallBlind: 0, BigBlind: 10, BlindLevelHands: 10}
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "validation error", result)
 	mg.AssertNotCalled(t, "SetConfig", mock.Anything)
 }
@@ -143,7 +143,7 @@ func TestHoldemInteractor_ResetWithConfig_TableSizeChange(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("resize output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "resize output", result)
 	mg.AssertCalled(t, "Resize", mock.Anything)
 }
@@ -160,7 +160,7 @@ func TestHoldemInteractor_ResetWithConfig_SameTableSize(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("no resize output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "no resize output", result)
 	mg.AssertNotCalled(t, "Resize", mock.Anything)
 }
@@ -176,9 +176,26 @@ func TestHoldemInteractor_ResetWithConfig_TableSizeZero(t *testing.T) {
 	mg.On("Reset").Return(nil)
 	mp.On("Output", mg, mock.Anything).Return("zero output")
 
-	result := hi.ResetWithConfig(cfg)
+	result := hi.ResetWithConfig(cfg, nil)
 	assert.Equal(t, "zero output", result)
 	mg.AssertNotCalled(t, "Resize", mock.Anything)
+}
+
+func TestHoldemInteractor_ResetWithConfig_WithProfile(t *testing.T) {
+	mg := new(interfaces.MockHoldemGame)
+	mp := new(presenter.MockHoldemPresenter)
+	hi := NewHoldemInteractor(mg, mp)
+
+	cfg := domain.HoldemConfig{SmallBlind: 10, BigBlind: 20, InitChips: 2000, BlindLevelHands: 10}
+	profileData := []byte(`{"gamesPlayed":3}`)
+	mg.On("SetConfig", cfg).Return()
+	mg.On("Reset").Return(nil)
+	mg.On("ImportProfile", profileData).Return(nil)
+	mp.On("Output", mg, mock.Anything).Return("with profile output")
+
+	result := hi.ResetWithConfig(cfg, profileData)
+	assert.Equal(t, "with profile output", result)
+	mg.AssertCalled(t, "ImportProfile", profileData)
 }
 
 func TestHoldemInteractor_ActionLog(t *testing.T) {

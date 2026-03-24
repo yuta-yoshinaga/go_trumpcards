@@ -6,8 +6,10 @@ import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
 import enCommon from './locales/en/common.json';
 import enCrazyeights from './locales/en/crazyeights.json';
+import enCribbage from './locales/en/cribbage.json';
 import enDaifugo from './locales/en/daifugo.json';
 import enDoubt from './locales/en/doubt.json';
+import enEuchre from './locales/en/euchre.json';
 import enFreecell from './locales/en/freecell.json';
 import enGinrummy from './locales/en/ginrummy.json';
 import enHearts from './locales/en/hearts.json';
@@ -19,16 +21,21 @@ import enNapoleon from './locales/en/napoleon.json';
 import enOldmaid from './locales/en/oldmaid.json';
 import enOmaha from './locales/en/omaha.json';
 import enPoker from './locales/en/poker.json';
+import enPyramid from './locales/en/pyramid.json';
 import enSevens from './locales/en/sevens.json';
+import enShortdeck from './locales/en/shortdeck.json';
 import enSpades from './locales/en/spades.json';
 import enSpider from './locales/en/spider.json';
 import enTutorial from './locales/en/tutorial.json';
+import enVideopoker from './locales/en/videopoker.json';
 import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
 import jaCrazyeights from './locales/ja/crazyeights.json';
+import jaCribbage from './locales/ja/cribbage.json';
 import jaDaifugo from './locales/ja/daifugo.json';
 import jaDoubt from './locales/ja/doubt.json';
+import jaEuchre from './locales/ja/euchre.json';
 import jaFreecell from './locales/ja/freecell.json';
 import jaGinrummy from './locales/ja/ginrummy.json';
 import jaHearts from './locales/ja/hearts.json';
@@ -40,10 +47,13 @@ import jaNapoleon from './locales/ja/napoleon.json';
 import jaOldmaid from './locales/ja/oldmaid.json';
 import jaOmaha from './locales/ja/omaha.json';
 import jaPoker from './locales/ja/poker.json';
+import jaPyramid from './locales/ja/pyramid.json';
 import jaSevens from './locales/ja/sevens.json';
+import jaShortdeck from './locales/ja/shortdeck.json';
 import jaSpades from './locales/ja/spades.json';
 import jaSpider from './locales/ja/spider.json';
 import jaTutorial from './locales/ja/tutorial.json';
+import jaVideopoker from './locales/ja/videopoker.json';
 
 i18n
   .use(LanguageDetector)
@@ -58,8 +68,10 @@ i18n
         daifugo: jaDaifugo,
         sevens: jaSevens,
         doubt: jaDoubt,
+        euchre: jaEuchre,
         holdem: jaHoldem,
         omaha: jaOmaha,
+        shortdeck: jaShortdeck,
         hearts: jaHearts,
         spades: jaSpades,
         napoleon: jaNapoleon,
@@ -69,8 +81,11 @@ i18n
         baccarat: jaBaccarat,
         crazyeights: jaCrazyeights,
         ginrummy: jaGinrummy,
+        cribbage: jaCribbage,
         spider: jaSpider,
         indianpoker: jaIndianpoker,
+        pyramid: jaPyramid,
+        videopoker: jaVideopoker,
         tutorial: jaTutorial,
       },
       en: {
@@ -81,8 +96,10 @@ i18n
         daifugo: enDaifugo,
         sevens: enSevens,
         doubt: enDoubt,
+        euchre: enEuchre,
         holdem: enHoldem,
         omaha: enOmaha,
+        shortdeck: enShortdeck,
         hearts: enHearts,
         spades: enSpades,
         napoleon: enNapoleon,
@@ -92,8 +109,11 @@ i18n
         baccarat: enBaccarat,
         crazyeights: enCrazyeights,
         ginrummy: enGinrummy,
+        cribbage: enCribbage,
         spider: enSpider,
         indianpoker: enIndianpoker,
+        pyramid: enPyramid,
+        videopoker: enVideopoker,
         tutorial: enTutorial,
       },
     },
@@ -107,8 +127,10 @@ i18n
       'daifugo',
       'sevens',
       'doubt',
+      'euchre',
       'holdem',
       'omaha',
+      'shortdeck',
       'hearts',
       'spades',
       'napoleon',
@@ -118,8 +140,11 @@ i18n
       'baccarat',
       'crazyeights',
       'ginrummy',
+      'cribbage',
       'spider',
       'indianpoker',
+      'pyramid',
+      'videopoker',
       'tutorial',
     ],
     detection: {

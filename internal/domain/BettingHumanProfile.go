@@ -1,6 +1,67 @@
 package domain
 
-import "math"
+import (
+	"encoding/json"
+	"math"
+)
+
+// BettingHumanProfileBracketData はブラケット別アグレッシブ行動のJSON出力形式
+type BettingHumanProfileBracketData struct {
+	Aggressive int `json:"aggressive"`
+	Total      int `json:"total"`
+}
+
+// BettingHumanProfileData はBettingHumanProfileのJSON永続化形式
+type BettingHumanProfileData struct {
+	AggressiveByBracket [3]BettingHumanProfileBracketData `json:"aggressiveByBracket"`
+	FoldToBetCount      int                               `json:"foldToBetCount"`
+	FoldToBetTotal      int                               `json:"foldToBetTotal"`
+	GamesPlayed         int                               `json:"gamesPlayed"`
+	HesitationCount     int                               `json:"hesitationCount"`
+	HesitationMean      float64                           `json:"hesitationMean"`
+	HesitationM2        float64                           `json:"hesitationM2"`
+}
+
+// Export プロファイルデータをJSON永続化形式でエクスポートする
+func (p *BettingHumanProfile) Export() BettingHumanProfileData {
+	var brackets [3]BettingHumanProfileBracketData
+	for i := 0; i < 3; i++ {
+		brackets[i] = BettingHumanProfileBracketData{
+			Aggressive: p.AggressiveByBracket[i].Aggressive,
+			Total:      p.AggressiveByBracket[i].Total,
+		}
+	}
+	return BettingHumanProfileData{
+		AggressiveByBracket: brackets,
+		FoldToBetCount:      p.FoldToBetCount,
+		FoldToBetTotal:      p.FoldToBetTotal,
+		GamesPlayed:         p.GamesPlayed,
+		HesitationCount:     p.HesitationCount,
+		HesitationMean:      p.HesitationMean,
+		HesitationM2:        p.HesitationM2,
+	}
+}
+
+// Import JSON永続化形式のデータからプロファイルを復元する
+func (p *BettingHumanProfile) Import(data BettingHumanProfileData) {
+	for i := 0; i < 3; i++ {
+		p.AggressiveByBracket[i].Aggressive = data.AggressiveByBracket[i].Aggressive
+		p.AggressiveByBracket[i].Total = data.AggressiveByBracket[i].Total
+	}
+	p.FoldToBetCount = data.FoldToBetCount
+	p.FoldToBetTotal = data.FoldToBetTotal
+	p.GamesPlayed = data.GamesPlayed
+	p.HesitationCount = data.HesitationCount
+	p.HesitationMean = data.HesitationMean
+	p.HesitationM2 = data.HesitationM2
+}
+
+// ImportBettingHumanProfileJSON JSONバイトからBettingHumanProfileDataをデコードする
+func ImportBettingHumanProfileJSON(data []byte) (BettingHumanProfileData, error) {
+	var d BettingHumanProfileData
+	err := json.Unmarshal(data, &d)
+	return d, err
+}
 
 // BettingHumanProfile セッション内でベッティングゲーム(Poker/Holdem)における人間プレイヤーの行動を学習するプロファイル
 type BettingHumanProfile struct {

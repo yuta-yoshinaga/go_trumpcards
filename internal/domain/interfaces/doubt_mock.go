@@ -167,6 +167,18 @@ func (_m *MockDoubtGame) ResetProfile() {
 	_m.Called()
 }
 
+// ExportProfile モック
+func (_m *MockDoubtGame) ExportProfile() interface{} {
+	ret := _m.Called()
+	return ret.Get(0)
+}
+
+// ImportProfile モック
+func (_m *MockDoubtGame) ImportProfile(data []byte) error {
+	ret := _m.Called(data)
+	return ret.Error(0)
+}
+
 // GetActionLog モック
 func (_m *MockDoubtGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()

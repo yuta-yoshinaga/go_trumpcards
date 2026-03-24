@@ -30,6 +30,8 @@ tags:
     description: Texas Hold'em game
   - name: omaha
     description: Omaha Hold'em game
+  - name: shortdeck
+    description: Short Deck (6+ Hold'em) game
   - name: hearts
     description: Hearts game
   - name: memory
@@ -52,6 +54,14 @@ tags:
     description: Napoleon (ナポレオン) game
   - name: indianpoker
     description: Indian Poker (インディアンポーカー) game
+  - name: videopoker
+    description: "Video Poker (Jacks or Better)"
+  - name: euchre
+    description: Euchre (ユーカー) game
+  - name: pyramid
+    description: Pyramid (ピラミッド) game
+  - name: cribbage
+    description: Cribbage (クリベッジ) game
 
 paths:
   /blackjack/exec:
@@ -915,6 +925,51 @@ paths:
         The game uses the same phases, commands, and configuration options as
         Texas Hold'em.  See the `/holdem/exec` endpoint for full documentation.
       operationId: omahaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HoldemRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              fold:
+                summary: Fold
+                value:
+                  command: fold
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldemResponse'
+
+  /shortdeck/exec:
+    post:
+      tags:
+        - shortdeck
+      summary: Execute a Short Deck (6+ Hold'em) game command
+      description: |
+        Send a command to advance the Short Deck Hold'em game session identified by
+        `sessionId`.  Short Deck (6+ Hold'em) is a variant of Texas Hold'em that uses
+        a 36-card deck (2–5 of each suit removed).  Flush beats Full House, and
+        the lowest straight is A-6-7-8-9.
+
+        The game uses the same phases, commands, and configuration options as
+        Texas Hold'em.  See the `/holdem/exec` endpoint for full documentation.
+      operationId: shortdeckExec
       requestBody:
         required: true
         content:
@@ -1851,6 +1906,355 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IndianPokerResponse'
+
+  /videopoker/exec:
+    post:
+      tags:
+        - videopoker
+      summary: Execute a Video Poker game command
+      description: |
+        Send a command to advance the Video Poker (Jacks or Better) game session
+        identified by `sessionId`.  Video Poker is a single-player casino card game
+        using a standard 52-card deck.  The player bets 1-5 coins, receives 5 cards,
+        chooses which cards to hold, then draws replacements.  The final hand is
+        evaluated and paid according to the Jacks or Better pay table.
+
+        The game proceeds through these phases:
+
+        | Phase   | Value | Description |
+        |---------|-------|-------------|
+        | Bet     | `1`   | Place a bet (1-5 coins) |
+        | Draw    | `2`   | Choose cards to hold, then draw replacements |
+        | Result  | `3`   | Final hand evaluated; payout displayed |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset` | `r`     | Start / restart a game |
+        | `bet`   | `b`     | Place a bet (requires `amount`: 1-5) |
+        | `hold`  | `h`     | Hold cards and draw (requires `indices`: array of card positions 0-4) |
+        | `log`   | `l`     | View action log |
+      operationId: videoPokerExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VideoPokerRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Bet 3 coins
+                value:
+                  command: bet
+                  amount: 3
+                  sessionId: my-session-001
+              hold:
+                summary: Hold cards at positions 0, 2, and 4
+                value:
+                  command: hold
+                  indices: [0, 2, 4]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoPokerResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoPokerResponse'
+
+  /euchre/exec:
+    post:
+      tags:
+        - euchre
+      summary: Execute a Euchre game command
+      description: |
+        Send a command to advance the Euchre (ユーカー) game session identified by
+        `sessionId`.  Euchre is a 4-player, 2-team trick-taking game with a 24-card
+        deck (9-A).  Features Right Bower (Jack of trump) and Left Bower (Jack of
+        same-color suit) as highest trump cards.  Trump suit determined via bidding.
+        "Going alone" option for bonus points.  First team to 10 points wins.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | PickUp    | `0`   | Decide whether to order up the turned-up card |
+        | CallTrump | `1`   | Call a trump suit (after all pass in PickUp) |
+        | Discard   | `2`   | Dealer discards a card after picking up |
+        | Play      | `3`   | Trick play (follow suit; bower hierarchy) |
+        | TrickEnd  | `4`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `5`   | All 5 tricks played; advance with `nextround` |
+        | GameEnd   | `6`   | A team reached 10 points |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `orderup`   | `o`     | Order up the turned-up card |
+        | `orderupalone` | `oa` | Order up and go alone |
+        | `pass`      | `pa`    | Pass on ordering up / calling trump |
+        | `calltrump` | `c`     | Call a trump suit (requires `suit`: 1-4) |
+        | `calltrumpalone` | `ca` | Call a trump suit and go alone |
+        | `discard`   | `d`     | Discard a card (requires `cardIndex`) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `hint`      | `h`     | Get a play/bid hint |
+        | `log`       | `l`     | View action log |
+      operationId: euchreExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EuchreRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              orderup:
+                summary: Order up the turned-up card
+                value:
+                  command: orderup
+                  sessionId: my-session-001
+              pass:
+                summary: Pass on ordering up
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              calltrump:
+                summary: Call hearts as trump
+                value:
+                  command: calltrump
+                  suit: 3
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EuchreResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EuchreResponse'
+
+  /pyramid/exec:
+    post:
+      tags:
+        - pyramid
+      summary: Execute a Pyramid game command
+      description: |
+        Send a command to advance the Pyramid (ピラミッド) game session identified by
+        `sessionId`.  Pyramid is a single-player solitaire card game using a
+        standard 52-card deck.  28 cards are dealt face-up in a 7-row pyramid.
+        Remove exposed pairs of cards that sum to 13; Kings (value 13) are
+        removed alone.  Remaining 24 cards form the stock pile.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All pyramid cards removed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Draw a card from stock to waste |
+        | `remove`       | `rm` | Remove card(s) (pair summing to 13, king, or waste pair) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `undo`         | `u`  | Undo the last action |
+        | `log`          | `l`  | View action log |
+      operationId: pyramidExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PyramidRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              removePair:
+                summary: Remove a pair from pyramid
+                value:
+                  command: remove
+                  card1:
+                    zone: pyramid
+                    row: 6
+                    col: 0
+                  card2:
+                    zone: pyramid
+                    row: 6
+                    col: 1
+                  sessionId: my-session-001
+              removeKing:
+                summary: Remove a King from pyramid
+                value:
+                  command: remove
+                  card1:
+                    zone: pyramid
+                    row: 6
+                    col: 3
+                  sessionId: my-session-001
+              removeWithWaste:
+                summary: Remove waste top + pyramid card
+                value:
+                  command: remove
+                  card1:
+                    zone: waste
+                  card2:
+                    zone: pyramid
+                    row: 5
+                    col: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PyramidResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PyramidResponse'
+              examples:
+                paramError:
+                  value:
+                    pyramid: []
+                    stockCount: 0
+                    waste: []
+                    phase: 0
+                    moveCount: 0
+                    message: param error.
+
+  /cribbage/exec:
+    post:
+      tags:
+        - cribbage
+      summary: Execute a Cribbage game command
+      description: |
+        Send a command to advance the Cribbage (クリベッジ) game session identified by
+        `sessionId`.  Cribbage is a classic 2-player pegging and scoring card game
+        using a standard 52-card deck.  Each player is dealt 6 cards and discards 2
+        to the crib.  A starter card is cut.  Players alternate playing cards in the
+        pegging phase (target 31), then score hands and crib.  First to 121 points wins.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Discard    | `0`   | Each player discards 2 cards to the crib |
+        | Cut        | `1`   | Starter card revealed |
+        | Pegging    | `2`   | Alternate playing cards toward 31 |
+        | Show       | `3`   | Score hands and crib |
+        | RoundEnd   | `4`   | Round summary |
+        | GameEnd    | `5`   | Game over; winner determined |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`          | `r`   | Start / restart a game |
+        | `discard`        | `d`   | Discard cards to the crib (indices) |
+        | `peg`            | `p`   | Play a card during pegging (index) |
+        | `go`             |       | Declare "Go" when unable to play |
+        | `shownext`       | `sn`  | Advance to next show step |
+        | `nextround`      | `nr`  | Start the next round |
+        | `setdifficulty`  | `sd`  | Set CPU difficulty (0=Easy, 1=Normal, 2=Hard) |
+        | `setlimit`       | `sl`  | Set point limit |
+        | `log`            | `l`   | View action log |
+      operationId: cribbageExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CribbageRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              discard:
+                summary: Discard two cards to crib
+                value:
+                  command: discard
+                  cardIndices: [4, 5]
+                  sessionId: my-session-001
+              peg:
+                summary: Play a card during pegging
+                value:
+                  command: peg
+                  cardIndex: 0
+                  sessionId: my-session-001
+              go:
+                summary: Declare Go
+                value:
+                  command: go
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CribbageResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CribbageResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    phase: 0
+                    roundNumber: 0
+                    currentPlayerIdx: 0
+                    dealerIdx: 0
+                    crib: []
+                    pegCount: 0
+                    pegPlayedCards: []
+                    showPhaseStep: 0
+                    handScoreDetails: [null, null, null]
+                    gameEndFlag: false
+                    winnerIdx: -1
+                    message: param error.
 
 components:
   schemas:
@@ -6175,3 +6579,597 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    VideoPokerRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `bet` (`b`),
+            `hold` (`h`), `log` (`l`).
+          enum: [reset, r, bet, b, hold, h, log, l]
+          example: reset
+        amount:
+          type: integer
+          description: Bet amount (1-5 coins).  Required for `bet` command.
+          minimum: 1
+          maximum: 5
+          example: 1
+        indices:
+          type: array
+          description: Card positions to hold (0-4).  Required for `hold` command.
+          items:
+            type: integer
+            minimum: 0
+            maximum: 4
+          example: [0, 2, 4]
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    VideoPokerResponse:
+      type: object
+      description: Current state of the Video Poker game
+      properties:
+        hand:
+          type: array
+          description: The player's 5-card hand
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 1 = Bet, 2 = Draw, 3 = Result"
+          enum: [1, 2, 3]
+          example: 1
+        chips:
+          type: integer
+          description: Current chip count
+          example: 100
+        betAmount:
+          type: integer
+          description: Current bet amount (1-5 coins)
+          example: 1
+        result:
+          type: integer
+          description: "Round result: 1 = win, 0 = loss/push, -1 = not resolved"
+          enum: [-1, 0, 1]
+          example: 0
+        payout:
+          type: integer
+          description: Payout amount for the current round
+          example: 0
+        handRank:
+          type: integer
+          description: "Hand rank code (0 = no qualifying hand, higher = better hand)"
+          example: 0
+        handName:
+          type: string
+          description: Human-readable name of the evaluated hand rank
+          example: ""
+        heldIndices:
+          type: array
+          description: Indices of held cards (0-4)
+          items:
+            type: integer
+          example: []
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Euchre
+    # -------------------------------------------------------------------------
+    EuchreRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `orderup` (`o`),
+            `orderupalone` (`oa`), `pass` (`pa`), `calltrump` (`c`),
+            `calltrumpalone` (`ca`), `discard` (`d`), `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, orderup, o, orderupalone, oa, pass, pa, calltrump, c, calltrumpalone, ca, discard, d, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to play or discard.  Required for `play` and `discard` commands.
+          example: 2
+        suit:
+          type: integer
+          description: "Trump suit to call (1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND).  Required for `calltrump` and `calltrumpalone` commands."
+          minimum: 1
+          maximum: 4
+          example: 3
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    EuchreResponse:
+      type: object
+      description: Current state of the Euchre game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              isDealer:
+                type: boolean
+              isAlone:
+                type: boolean
+              trickCount:
+                type: integer
+        teams:
+          type: array
+          description: Array of team objects (2 teams)
+          items:
+            type: object
+            properties:
+              score:
+                type: integer
+              roundScore:
+                type: integer
+              isMaker:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = PickUp, 1 = CallTrump, 2 = Discard, 3 = Play, 4 = TrickEnd, 5 = RoundEnd, 6 = GameEnd"
+          enum: [0, 1, 2, 3, 4, 5, 6]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        trickNumber:
+          type: integer
+          description: Current trick number within the round
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        dealerIdx:
+          type: integer
+          description: Index of the dealer
+        turnedUpCard:
+          $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Trump suit (1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND, 0=not yet decided)"
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerTeamIdx:
+          type: integer
+          description: Index of the winning team (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Pyramid
+    # -------------------------------------------------------------------------
+    PyramidCard:
+      type: object
+      description: A card position in the Pyramid layout
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: pyramid or waste"
+          enum: [pyramid, waste]
+          example: pyramid
+        row:
+          type: integer
+          description: Row index (0-based, required for pyramid zone)
+          example: 6
+        col:
+          type: integer
+          description: Column index (0-based, required for pyramid zone)
+          example: 0
+
+    PyramidRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
+            `remove` (`rm`), `giveup` (`g`), `hint` (`h`), `undo` (`u`),
+            `log` (`l`).
+          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+          example: remove
+        card1:
+          description: First card for a remove command
+          $ref: '#/components/schemas/PyramidCard'
+        card2:
+          description: Second card for a remove command (pair removal)
+          $ref: '#/components/schemas/PyramidCard'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PyramidOutputCard:
+      type: object
+      description: A card in the Pyramid layout with its state
+      properties:
+        card:
+          description: Card details (null when removed)
+          $ref: '#/components/schemas/Card'
+        removed:
+          type: boolean
+          description: Whether the card has been removed
+          example: false
+        exposed:
+          type: boolean
+          description: Whether the card is exposed (can be selected)
+          example: true
+
+    PyramidResponse:
+      type: object
+      description: Current state of the Pyramid game
+      required:
+        - pyramid
+        - stockCount
+        - waste
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        pyramid:
+          type: array
+          description: The 7 pyramid rows, each containing an array of cards (row i has i+1 cards)
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/PyramidOutputCard'
+        stockCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+          example: 24
+        waste:
+          type: array
+          description: Cards in the waste pile (top card is the last element)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            type:
+              type: string
+              description: "Hint type: pair, king, waste_pair, waste_king"
+              enum: [pair, king, waste_pair, waste_king]
+            row1:
+              type: integer
+              description: Row of first card (-1 for waste operations)
+            col1:
+              type: integer
+              description: Column of first card (-1 for waste operations)
+            row2:
+              type: integer
+              description: Row of second card (-1 for king/waste operations)
+            col2:
+              type: integer
+              description: Column of second card (-1 for king/waste operations)
+
+    CribbageRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `discard` (`d`),
+            `peg` (`p`), `go`, `shownext` (`sn`), `nextround` (`nr`),
+            `setdifficulty` (`sd`), `setlimit` (`sl`), `log` (`l`).
+          enum: [reset, r, discard, d, peg, p, go, shownext, sn, nextround, nr, setdifficulty, sd, setlimit, sl, log, l]
+          example: discard
+        cardIndex:
+          type: integer
+          description: Card index for peg command
+          example: 0
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Card indices for discard command (exactly 2 indices)
+          example: [4, 5]
+        config:
+          type: object
+          description: Game configuration (applied on reset)
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: "CPU difficulty: 0 = Easy, 1 = Normal, 2 = Hard"
+              enum: [0, 1, 2]
+              example: 1
+            pointLimit:
+              type: integer
+              description: Point limit to win (default 121)
+              example: 121
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CribbagePlayer:
+      type: object
+      description: A player in the Cribbage game
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - roundScore
+        - cumulativeScore
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this player is human
+          example: true
+        cardCount:
+          type: integer
+          description: Number of cards in hand
+          example: 6
+        cards:
+          type: array
+          description: Player's hand cards (visible to human player; hidden for CPU)
+          items:
+            $ref: '#/components/schemas/Card'
+        roundScore:
+          type: integer
+          description: Points scored in the current round
+          example: 0
+        cumulativeScore:
+          type: integer
+          description: Cumulative score across all rounds
+          example: 0
+
+    CribbageScoreDetail:
+      type: object
+      description: Breakdown of a hand/crib score
+      properties:
+        fifteens:
+          type: integer
+          description: Points from combinations summing to 15
+          example: 4
+        pairs:
+          type: integer
+          description: Points from pairs
+          example: 2
+        runs:
+          type: integer
+          description: Points from runs
+          example: 3
+        flush:
+          type: integer
+          description: Points from flush
+          example: 0
+        nobs:
+          type: integer
+          description: Points from nobs (Jack of starter suit)
+          example: 1
+        total:
+          type: integer
+          description: Total points for this hand/crib
+          example: 10
+
+    CribbageResponse:
+      type: object
+      description: Current state of the Cribbage game
+      required:
+        - players
+        - phase
+        - roundNumber
+        - currentPlayerIdx
+        - dealerIdx
+        - crib
+        - pegCount
+        - pegPlayedCards
+        - showPhaseStep
+        - handScoreDetails
+        - gameEndFlag
+        - winnerIdx
+        - message
+      properties:
+        players:
+          type: array
+          description: Array of 2 players (index 0 = human, index 1 = CPU)
+          items:
+            $ref: '#/components/schemas/CribbagePlayer'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Discard, 1 = Cut, 2 = Pegging, 3 = Show, 4 = RoundEnd, 5 = GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+          example: 1
+        currentPlayerIdx:
+          type: integer
+          description: Index of the current player
+          example: 0
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for this round
+          example: 1
+        crib:
+          type: array
+          description: Cards in the crib (visible only during Show/RoundEnd/GameEnd phases)
+          items:
+            $ref: '#/components/schemas/Card'
+        starter:
+          description: The starter (cut) card (null before cut phase)
+          $ref: '#/components/schemas/Card'
+        pegCount:
+          type: integer
+          description: Current pegging count (0-31)
+          example: 0
+        pegPlayedCards:
+          type: array
+          description: Cards played in the current pegging sequence
+          items:
+            $ref: '#/components/schemas/Card'
+        showPhaseStep:
+          type: integer
+          description: "Show phase step: 0 = non-dealer hand, 1 = dealer hand, 2 = crib"
+          enum: [0, 1, 2]
+          example: 0
+        handScoreDetails:
+          type: array
+          description: Score details for show phase [non-dealer hand, dealer hand, crib]
+          items:
+            $ref: '#/components/schemas/CribbageScoreDetail'
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+          example: false
+        winnerIdx:
+          type: integer
+          description: Index of the winner (-1 if game not ended)
+          example: -1
+        message:
+          type: string
+          description: Game status or result message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        config:
+          type: object
+          description: Current game configuration
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: "CPU difficulty: 0 = Easy, 1 = Normal, 2 = Hard"
+              example: 1
+            pointLimit:
+              type: integer
+              description: Point limit to win
+              example: 121

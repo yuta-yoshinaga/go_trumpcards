@@ -40,7 +40,7 @@ func omahaDispatch(bc *baseController, w rest.ResponseWriter, ogi usecase.OmahaI
 			bc.writeJsonResponse(w, 400, newDefault(err.Error()))
 			return true
 		}
-		bc.writePresenterResponse(w, ogi.ResetWithConfig(cfg))
+		bc.writePresenterResponse(w, ogi.ResetWithConfig(cfg, param.Profile))
 	case "f", "fold":
 		bc.writePresenterResponse(w, ogi.Action(domain.OmahaActionFold, 0, param.HumanPlayMs))
 	case "ck", "check":

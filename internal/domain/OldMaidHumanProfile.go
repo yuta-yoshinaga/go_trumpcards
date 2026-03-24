@@ -1,6 +1,45 @@
 package domain
 
-import "math/rand"
+import (
+	"encoding/json"
+	"math/rand"
+)
+
+// OldMaidHumanProfileData はOldMaidHumanProfileのJSON永続化形式
+type OldMaidHumanProfileData struct {
+	PositionBuckets [3]int `json:"positionBuckets"`
+	TotalPicks      int    `json:"totalPicks"`
+	ShuffleCount    int    `json:"shuffleCount"`
+	DrawCount       int    `json:"drawCount"`
+	GamesPlayed     int    `json:"gamesPlayed"`
+}
+
+// Export プロファイルデータをJSON永続化形式でエクスポートする
+func (p *OldMaidHumanProfile) Export() OldMaidHumanProfileData {
+	return OldMaidHumanProfileData{
+		PositionBuckets: p.PositionBuckets,
+		TotalPicks:      p.TotalPicks,
+		ShuffleCount:    p.ShuffleCount,
+		DrawCount:       p.DrawCount,
+		GamesPlayed:     p.GamesPlayed,
+	}
+}
+
+// Import JSON永続化形式のデータからプロファイルを復元する
+func (p *OldMaidHumanProfile) Import(data OldMaidHumanProfileData) {
+	p.PositionBuckets = data.PositionBuckets
+	p.TotalPicks = data.TotalPicks
+	p.ShuffleCount = data.ShuffleCount
+	p.DrawCount = data.DrawCount
+	p.GamesPlayed = data.GamesPlayed
+}
+
+// ImportOldMaidHumanProfileJSON JSONバイトからOldMaidHumanProfileDataをデコードする
+func ImportOldMaidHumanProfileJSON(data []byte) (OldMaidHumanProfileData, error) {
+	var d OldMaidHumanProfileData
+	err := json.Unmarshal(data, &d)
+	return d, err
+}
 
 // metaAIMinAdaptForPlacement はメタAIの適応強度がこの閾値以上のとき戦略的配置を使用する
 const metaAIMinAdaptForPlacement = 0.08

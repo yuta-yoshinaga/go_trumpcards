@@ -154,6 +154,32 @@ func (_m *MockIndianPokerGame) GetHandCount() int {
 	return ret.Int(0)
 }
 
+// GetHumanProfile モック
+func (_m *MockIndianPokerGame) GetHumanProfile() *domain.IndianPokerHumanProfile {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.IndianPokerHumanProfile); ok {
+		return val
+	}
+	return nil
+}
+
+// ResetProfile モック
+func (_m *MockIndianPokerGame) ResetProfile() {
+	_m.Called()
+}
+
+// ExportProfile モック
+func (_m *MockIndianPokerGame) ExportProfile() interface{} {
+	ret := _m.Called()
+	return ret.Get(0)
+}
+
+// ImportProfile モック
+func (_m *MockIndianPokerGame) ImportProfile(data []byte) error {
+	ret := _m.Called(data)
+	return ret.Error(0)
+}
+
 // GetActionLog モック
 func (_m *MockIndianPokerGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()

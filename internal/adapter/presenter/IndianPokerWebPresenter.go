@@ -40,6 +40,19 @@ func (iwp *IndianPokerWebPresenter) buildOutput(ip interfaces.IndianPokerGame, l
 
 	resObj.Message, resObj.MessageCode = iwp.buildMessage(ip, lastErr)
 
+	// メタAI情報
+	if profile := ip.GetHumanProfile(); profile != nil {
+		resObj.MetaAI = &controller.IndianPokerWebOutputMetaAI{
+			Enabled:        true,
+			GamesPlayed:    profile.GamesPlayed,
+			BluffRate:      profile.BluffRate(1),
+			FoldRate:       profile.FoldRate(),
+			HesitationMean: profile.HesitationMean,
+		}
+		d := profile.Export()
+		resObj.Profile = &d
+	}
+
 	return resObj
 }
 

@@ -1,0 +1,71 @@
+package controller
+
+import (
+	"strconv"
+	"strings"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// VideoPokerCuiController ビデオポーカーCUIコントローラークラス
+type VideoPokerCuiController struct {
+	vi usecase.VideoPokerInteractorIF
+}
+
+// NewVideoPokerCuiController コンストラクタ
+func NewVideoPokerCuiController(vi usecase.VideoPokerInteractorIF) *VideoPokerCuiController {
+	return &VideoPokerCuiController{
+		vi: vi,
+	}
+}
+
+// Exec ゲーム実行
+// コマンド例: "r", "b 3", "h 0 1 4", "log", "q"
+func (vpc *VideoPokerCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string { return vpc.vi.Reset() },
+		[]string{"b", "bet", "h", "hold", "log", "l"},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "b", "bet":
+				amount, errMsg, ok := cuiutil.ParseIntArg(args, "Bet amount is required (1-5).", "Invalid bet amount.", 1, 5)
+				if !ok {
+					return errMsg, true
+				}
+				return vpc.vi.Bet(amount), true
+			case "h", "hold":
+				indices, errMsg := parseHoldIndices(args)
+				if errMsg != "" {
+					return errMsg, true
+				}
+				return vpc.vi.Hold(indices), true
+			case "log", "l":
+				return vpc.vi.ActionLog(), true
+			}
+			return "", false
+		},
+	)
+}
+
+// parseHoldIndices parses hold indices from command args.
+// Empty args means hold no cards (returns []).
+func parseHoldIndices(args []string) ([]int, string) {
+	if len(args) == 0 {
+		return []int{}, ""
+	}
+	indices := make([]int, 0, len(args))
+	for _, arg := range args {
+		arg = strings.TrimSpace(arg)
+		if arg == "" {
+			continue
+		}
+		idx, err := strconv.Atoi(arg)
+		if err != nil || idx < 0 || idx > 4 {
+			return nil, "Invalid card index. Use 0-4."
+		}
+		indices = append(indices, idx)
+	}
+	return indices, ""
+}

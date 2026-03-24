@@ -42,6 +42,7 @@ GAMES:
   doubt        Doubt (ダウト)
   holdem       Texas Hold'em (テキサスホールデム)
   omaha        Omaha Hold'em (オマハホールデム)
+  shortdeck    Short Deck (6+ Hold'em) (ショートデック)
   hearts       Hearts (ハーツ)
   memory       Memory / Concentration (神経衰弱)
   klondike     Klondike Solitaire (ソリティア)
@@ -52,6 +53,10 @@ GAMES:
   ginrummy     Gin Rummy (ジンラミー)
   spider       Spider Solitaire (スパイダーソリティア)
   napoleon     Napoleon (ナポレオン)
+  videopoker   Video Poker Jacks or Better (ビデオポーカー)
+  euchre       Euchre (ユーカー)
+  pyramid      Pyramid (ピラミッド)
+  cribbage     Cribbage (クリベッジ)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -132,6 +137,7 @@ ENVIRONMENT VARIABLES:
 		"doubt":       func() int { ui.NewDoubtCui().Exec(); return 0 },
 		"holdem":      func() int { ui.NewHoldemCui().Exec(); return 0 },
 		"omaha":       func() int { ui.NewOmahaCui().Exec(); return 0 },
+		"shortdeck":   func() int { ui.NewShortDeckCui().Exec(); return 0 },
 		"hearts":      func() int { ui.NewHeartsCui().Exec(); return 0 },
 		"memory":      func() int { ui.NewMemoryCui().Exec(); return 0 },
 		"klondike":    func() int { ui.NewKlondikeCui().Exec(); return 0 },
@@ -143,6 +149,10 @@ ENVIRONMENT VARIABLES:
 		"spider":      func() int { ui.NewSpiderCui().Exec(); return 0 },
 		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
 		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },
+		"videopoker":  func() int { ui.NewVideoPokerCui().Exec(); return 0 },
+		"euchre":      func() int { ui.NewEuchreCui().Exec(); return 0 },
+		"pyramid":     func() int { ui.NewPyramidCui().Exec(); return 0 },
+		"cribbage":    func() int { ui.NewCribbageCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

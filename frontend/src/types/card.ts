@@ -7,6 +7,84 @@ export interface Card {
   value: number;
 }
 
+/** Bracket data for betting profile export. */
+export interface BettingProfileBracketData {
+  aggressive: number;
+  total: number;
+}
+
+/** Exported betting human profile data (Poker/Holdem/Omaha). */
+export interface BettingHumanProfileData {
+  aggressiveByBracket: [BettingProfileBracketData, BettingProfileBracketData, BettingProfileBracketData];
+  foldToBetCount: number;
+  foldToBetTotal: number;
+  gamesPlayed: number;
+  hesitationCount: number;
+  hesitationMean: number;
+  hesitationM2: number;
+}
+
+/** Bracket data for doubt profile export. */
+export interface DoubtProfileBracketData {
+  bluffs: number;
+  total: number;
+}
+
+/** Exported doubt human profile data. */
+export interface DoubtHumanProfileData {
+  bluffsByBracket: [DoubtProfileBracketData, DoubtProfileBracketData, DoubtProfileBracketData];
+  doubtCorrect: number;
+  doubtTotal: number;
+  gamesPlayed: number;
+  hesitationCount: number;
+  hesitationMean: number;
+  hesitationM2: number;
+}
+
+/** Exported old maid human profile data. */
+export interface OldMaidHumanProfileData {
+  positionBuckets: [number, number, number];
+  totalPicks: number;
+  shuffleCount: number;
+  drawCount: number;
+  gamesPlayed: number;
+}
+
+/** Bracket data for Indian Poker profile export. */
+export interface IndianPokerProfileBracketData {
+  aggressive: number;
+  total: number;
+}
+
+/** Exported Indian Poker human profile data. */
+export interface IndianPokerHumanProfileData {
+  aggressiveByBracket: [IndianPokerProfileBracketData, IndianPokerProfileBracketData, IndianPokerProfileBracketData];
+  foldToBetCount: number;
+  foldToBetTotal: number;
+  gamesPlayed: number;
+  hesitationCount: number;
+  hesitationMean: number;
+  hesitationM2: number;
+}
+
+/** Meta-AI statistics for betting games (Poker/Holdem/Omaha). */
+export interface BettingMetaAI {
+  enabled: boolean;
+  gamesPlayed: number;
+  bluffRate: number;
+  foldRate: number;
+  hesitationMean: number;
+}
+
+/** Meta-AI statistics for Indian Poker CPU adaptation. */
+export interface IndianPokerMetaAI {
+  enabled: boolean;
+  gamesPlayed: number;
+  bluffRate: number;
+  foldRate: number;
+  hesitationMean: number;
+}
+
 /** A single entry in the game action log. */
 export interface ActionLogEntry {
   turnNumber: number;
@@ -171,6 +249,8 @@ export interface PokerResponse {
   message: string;
   messageCode?: string;
   messageParams?: Record<string, string>;
+  metaAI?: BettingMetaAI;
+  profile?: BettingHumanProfileData;
 }
 
 /** Old Maid player data with hand and finish status. */
@@ -230,6 +310,7 @@ export interface OldMaidResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   metaAI?: OldMaidMetaAI;
+  profile?: OldMaidHumanProfileData;
 }
 
 /** Daifugo player data with rank and card count. */
@@ -422,6 +503,7 @@ export interface DoubtResponse {
   doubtWindowSec: number;
   penaltyDrawLimit: number;
   metaAI?: DoubtMetaAI;
+  profile?: DoubtHumanProfileData;
 }
 
 /** Meta-AI statistics for Doubt CPU adaptation. */
@@ -519,6 +601,8 @@ export interface HoldemResponse {
   muckAvailable: boolean;
   equity?: HoldemEquity;
   potOdds?: number;
+  metaAI?: BettingMetaAI;
+  profile?: BettingHumanProfileData;
 }
 
 /** Equity calculation result for Hold'em hand. */
@@ -550,6 +634,19 @@ export type OmahaEquity = HoldemEquity;
 export type OmahaHandOdds = HoldemHandOdds;
 /** Omaha response (same structure as Hold'em). */
 export type OmahaResponse = HoldemResponse;
+
+// --- Short Deck Hold'em ---
+
+/** Short Deck Hold'em player data (same structure as Hold'em). */
+export type ShortDeckPlayerData = HoldemPlayerData;
+/** Short Deck Hold'em side pot (same structure as Hold'em). */
+export type ShortDeckSidePot = HoldemSidePot;
+/** Short Deck Hold'em equity (same structure as Hold'em). */
+export type ShortDeckEquity = HoldemEquity;
+/** Short Deck Hold'em hand odds (same structure as Hold'em). */
+export type ShortDeckHandOdds = HoldemHandOdds;
+/** Short Deck Hold'em response (same structure as Hold'em). */
+export type ShortDeckResponse = HoldemResponse;
 
 // --- Hearts ---
 
@@ -1026,4 +1123,163 @@ export interface IndianPokerResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
   actionLog?: ActionLogEntry[];
+  metaAI?: IndianPokerMetaAI;
+  profile?: IndianPokerHumanProfileData;
+}
+
+// --- Euchre (ユーカー) ---
+
+/** Euchre player data with team, trick count, and hand. */
+export interface EuchrePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  team: number;
+  trickCount: number;
+}
+
+/** A card played in a Euchre trick. */
+export interface EuchreTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Euchre game configuration. */
+export interface EuchreConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Euchre. */
+export interface EuchreHint {
+  cardIndex?: number;
+  orderUp?: boolean;
+  suit?: number;
+  goAlone?: boolean;
+  reason: string;
+}
+
+/** Full Euchre game state returned from the API. */
+export interface EuchreResponse {
+  players: EuchrePlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  trumpSuit: number;
+  faceUpCard: Card | null;
+  makerTeam: number;
+  goingAlone: boolean;
+  goingAlonePlayerIdx: number;
+  currentTrick: EuchreTrickCard[];
+  teamScores: number[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: EuchreConfig;
+  hint?: EuchreHint;
+}
+
+// --- Pyramid Solitaire (ピラミッド) ---
+
+/** A card in the pyramid with removal and exposure status. */
+export interface PyramidCard {
+  card: Card | null;
+  removed: boolean;
+  exposed: boolean;
+}
+
+/** A suggested pair/king removal hint in Pyramid. */
+export interface PyramidHint {
+  type: string;
+  row1: number;
+  col1: number;
+  row2: number;
+  col2: number;
+}
+
+/** Full Pyramid game state returned from the API. */
+export interface PyramidResponse {
+  pyramid: PyramidCard[][];
+  stockCount: number;
+  waste: Card[];
+  phase: number;
+  moveCount: number;
+  canUndo: boolean;
+  isStalemate: boolean;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  hint?: PyramidHint;
+}
+
+/** Full Video Poker game state returned from the API. */
+export interface VideoPokerResponse {
+  hand: Card[];
+  phase: number;
+  chips: number;
+  betAmount: number;
+  result: number;
+  payout: number;
+  handRank: number;
+  handName: string;
+  heldIndices: boolean[];
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+}
+
+// --- Cribbage (クリベッジ) ---
+
+/** Cribbage player data with scores. */
+export interface CribbagePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+/** Cribbage score detail breakdown. */
+export interface CribbageScoreDetail {
+  fifteens: number;
+  pairs: number;
+  runs: number;
+  flush: number;
+  nobs: number;
+  total: number;
+}
+
+/** Cribbage game configuration. */
+export interface CribbageConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Full Cribbage game state returned from the API. */
+export interface CribbageResponse {
+  players: CribbagePlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  dealerIdx: number;
+  crib: Card[];
+  starter: Card | null;
+  pegCount: number;
+  pegPlayedCards: Card[];
+  showPhaseStep: number;
+  handScoreDetails: (CribbageScoreDetail | null)[];
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: CribbageConfig;
 }

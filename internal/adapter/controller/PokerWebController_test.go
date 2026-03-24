@@ -34,7 +34,7 @@ func TestPokerWebController_Reset_Default(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1,"message":""}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1,"message":""}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -51,7 +51,7 @@ func TestPokerWebController_Reset_ShortCommand(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1,"message":""}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1,"message":""}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -69,7 +69,7 @@ func TestPokerWebController_Reset_WithCpuCount_Valid(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 2
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -88,7 +88,7 @@ func TestPokerWebController_Reset_WithCpuCount_BelowMin(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (CpuCount=3)
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -107,7 +107,7 @@ func TestPokerWebController_Reset_WithCpuCount_AboveMax(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (CpuCount=3)
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -126,7 +126,7 @@ func TestPokerWebController_Reset_WithJokerCount_Valid(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	cfg.JokerCount = 1
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -145,7 +145,7 @@ func TestPokerWebController_Reset_WithJokerCount_BelowMin(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (JokerCount=0)
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -164,7 +164,7 @@ func TestPokerWebController_Reset_WithJokerCount_AboveMax(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (JokerCount=0)
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -184,7 +184,7 @@ func TestPokerWebController_Reset_WithBothCpuAndJoker(t *testing.T) {
 	cfg := domain.DefaultPokerConfig()
 	cfg.CpuCount = 2
 	cfg.JokerCount = 2
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -652,7 +652,7 @@ func TestPokerWebController_UnknownCommand(t *testing.T) {
 
 	// Must create session first
 	cfg := domain.DefaultPokerConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 	test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
 			map[string]interface{}{"command": "reset", "sessionId": "s1"}))
@@ -765,8 +765,8 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 
 	cfgA := domain.DefaultPokerConfig()
 	cfgB := domain.DefaultPokerConfig()
-	mockA.On("ResetWithConfig", cfgA).Return(`{"phase":1}`)
-	mockB.On("ResetWithConfig", cfgB).Return(`{"phase":1}`)
+	mockA.On("ResetWithConfig", cfgA, mock.Anything).Return(`{"phase":1}`)
+	mockB.On("ResetWithConfig", cfgB, mock.Anything).Return(`{"phase":1}`)
 	mockA.On("Stand").Return(`{"phase":3}`)
 
 	callCount := 0
@@ -791,14 +791,14 @@ func TestPokerWebController_SessionIsolation(t *testing.T) {
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
 			map[string]interface{}{"command": "reset", "sessionId": "session-A"}))
 	recorded.CodeIs(200)
-	mockA.AssertCalled(t, "ResetWithConfig", cfgA)
+	mockA.AssertCalled(t, "ResetWithConfig", cfgA, mock.Anything)
 
 	// session-B creates mockB
 	recorded = test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
 			map[string]interface{}{"command": "reset", "sessionId": "session-B"}))
 	recorded.CodeIs(200)
-	mockB.AssertCalled(t, "ResetWithConfig", cfgB)
+	mockB.AssertCalled(t, "ResetWithConfig", cfgB, mock.Anything)
 
 	// session-A reuses mockA (no new factory call)
 	recorded = test.RunRequest(t, api.MakeHandler(),
@@ -819,7 +819,7 @@ func TestPokerWebController_AllShortCommands(t *testing.T) {
 	defer pwc.Stop()
 
 	cfg := domain.DefaultPokerConfig()
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 	mi.On("Exchange", mock.Anything).Return(`{"phase":2}`)
 	mi.On("Stand").Return(`{"phase":3}`)
 	mi.On("Action", domain.PokerActionFold, 0, 0).Return(`{"phase":1}`)
@@ -846,7 +846,7 @@ func TestPokerWebController_Reset_IsLowball(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	cfg.IsLowball = true
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -856,7 +856,7 @@ func TestPokerWebController_Reset_IsLowball(t *testing.T) {
 				"isLowball": true,
 			}))
 	recorded.CodeIs(200)
-	mi.AssertCalled(t, "ResetWithConfig", cfg)
+	mi.AssertCalled(t, "ResetWithConfig", cfg, mock.Anything)
 }
 
 func TestPokerWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
@@ -866,7 +866,7 @@ func TestPokerWebController_Reset_WithBettingLimit_Valid(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	cfg.BettingLimit = domain.BettingLimitPotLimit
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -885,7 +885,7 @@ func TestPokerWebController_Reset_WithBettingLimit_AboveMax(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (BettingLimit=0)
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",
@@ -904,7 +904,7 @@ func TestPokerWebController_Reset_WithBettingLimit_BelowMin(t *testing.T) {
 
 	cfg := domain.DefaultPokerConfig()
 	// out-of-range → default (BettingLimit=0)
-	mi.On("ResetWithConfig", cfg).Return(`{"phase":1}`)
+	mi.On("ResetWithConfig", cfg, mock.Anything).Return(`{"phase":1}`)
 
 	recorded := test.RunRequest(t, api.MakeHandler(),
 		test.MakeSimpleRequest("POST", "http://localhost/poker/exec",

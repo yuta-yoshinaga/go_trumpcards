@@ -246,6 +246,32 @@ func (_m *MockHoldemGame) IsMuckAvailable() bool {
 	return ret.Bool(0)
 }
 
+// GetHumanProfile モック
+func (_m *MockHoldemGame) GetHumanProfile() *domain.BettingHumanProfile {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.BettingHumanProfile); ok {
+		return val
+	}
+	return nil
+}
+
+// ResetProfile モック
+func (_m *MockHoldemGame) ResetProfile() {
+	_m.Called()
+}
+
+// ExportProfile モック
+func (_m *MockHoldemGame) ExportProfile() interface{} {
+	ret := _m.Called()
+	return ret.Get(0)
+}
+
+// ImportProfile モック
+func (_m *MockHoldemGame) ImportProfile(data []byte) error {
+	ret := _m.Called(data)
+	return ret.Error(0)
+}
+
 // GetActionLog モック
 func (_m *MockHoldemGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()

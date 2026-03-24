@@ -1,6 +1,67 @@
 package domain
 
-import "math"
+import (
+	"encoding/json"
+	"math"
+)
+
+// DoubtHumanProfileBracketData はブラケット別ブラフ行動のJSON出力形式
+type DoubtHumanProfileBracketData struct {
+	Bluffs int `json:"bluffs"`
+	Total  int `json:"total"`
+}
+
+// DoubtHumanProfileData はDoubtHumanProfileのJSON永続化形式
+type DoubtHumanProfileData struct {
+	BluffsByBracket [3]DoubtHumanProfileBracketData `json:"bluffsByBracket"`
+	DoubtCorrect    int                             `json:"doubtCorrect"`
+	DoubtTotal      int                             `json:"doubtTotal"`
+	GamesPlayed     int                             `json:"gamesPlayed"`
+	HesitationCount int                             `json:"hesitationCount"`
+	HesitationMean  float64                         `json:"hesitationMean"`
+	HesitationM2    float64                         `json:"hesitationM2"`
+}
+
+// Export プロファイルデータをJSON永続化形式でエクスポートする
+func (p *DoubtHumanProfile) Export() DoubtHumanProfileData {
+	var brackets [3]DoubtHumanProfileBracketData
+	for i := 0; i < 3; i++ {
+		brackets[i] = DoubtHumanProfileBracketData{
+			Bluffs: p.BluffsByBracket[i].Bluffs,
+			Total:  p.BluffsByBracket[i].Total,
+		}
+	}
+	return DoubtHumanProfileData{
+		BluffsByBracket: brackets,
+		DoubtCorrect:    p.DoubtCorrect,
+		DoubtTotal:      p.DoubtTotal,
+		GamesPlayed:     p.GamesPlayed,
+		HesitationCount: p.HesitationCount,
+		HesitationMean:  p.HesitationMean,
+		HesitationM2:    p.HesitationM2,
+	}
+}
+
+// Import JSON永続化形式のデータからプロファイルを復元する
+func (p *DoubtHumanProfile) Import(data DoubtHumanProfileData) {
+	for i := 0; i < 3; i++ {
+		p.BluffsByBracket[i].Bluffs = data.BluffsByBracket[i].Bluffs
+		p.BluffsByBracket[i].Total = data.BluffsByBracket[i].Total
+	}
+	p.DoubtCorrect = data.DoubtCorrect
+	p.DoubtTotal = data.DoubtTotal
+	p.GamesPlayed = data.GamesPlayed
+	p.HesitationCount = data.HesitationCount
+	p.HesitationMean = data.HesitationMean
+	p.HesitationM2 = data.HesitationM2
+}
+
+// ImportDoubtHumanProfileJSON JSONバイトからDoubtHumanProfileDataをデコードする
+func ImportDoubtHumanProfileJSON(data []byte) (DoubtHumanProfileData, error) {
+	var d DoubtHumanProfileData
+	err := json.Unmarshal(data, &d)
+	return d, err
+}
 
 // DoubtHumanProfile セッション内で人間プレイヤーの行動を学習するプロファイル
 type DoubtHumanProfile struct {

@@ -31,6 +31,7 @@ type TrumpCardsWeb struct {
 	dwc *controller.DoubtWebController
 	hmc *controller.HoldemWebController
 	ohc *controller.OmahaWebController
+	skc *controller.ShortDeckWebController
 	htc *controller.HeartsWebController
 	myc *controller.MemoryWebController
 	klc *controller.KlondikeWebController
@@ -42,6 +43,10 @@ type TrumpCardsWeb struct {
 	sdc *controller.SpiderWebController
 	npc *controller.NapoleonWebController
 	ipc *controller.IndianPokerWebController
+	vpc *controller.VideoPokerWebController
+	euc *controller.EuchreWebController
+	pyc *controller.PyramidWebController
+	cbc *controller.CribbageWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -115,6 +120,11 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			cfg := domain.DefaultOmahaConfig()
 			omaha := domain.NewOmaha(domain.NewTrumpCards(0), domain.NewOmahaPlayersForTable(cfg.TableSize), cfg)
 			return usecase.NewOmahaInteractor(omaha, new(presenter.OmahaWebPresenter))
+		}),
+		skc: controller.NewShortDeckWebController(func() usecase.ShortDeckInteractorIF {
+			cfg := domain.DefaultShortDeckConfig()
+			sd := domain.NewShortDeck(domain.NewTrumpCardsShortDeck(), domain.NewShortDeckPlayersForTable(cfg.TableSize), cfg)
+			return usecase.NewShortDeckInteractor(sd, new(presenter.ShortDeckWebPresenter))
 		}),
 		htc: controller.NewHeartsWebController(func() usecase.HeartsInteractorIF {
 			config := domain.DefaultHeartsConfig()
@@ -201,6 +211,36 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			ip := domain.NewIndianPoker(domain.NewTrumpCards(0), domain.NewIndianPokerPlayers(), cfg)
 			return usecase.NewIndianPokerInteractor(ip, new(presenter.IndianPokerWebPresenter))
 		}),
+		vpc: controller.NewVideoPokerWebController(func() usecase.VideoPokerInteractorIF {
+			return usecase.NewVideoPokerInteractor(
+				domain.NewDefaultVideoPoker(),
+				new(presenter.VideoPokerWebPresenter),
+			)
+		}),
+		euc: controller.NewEuchreWebController(func() usecase.EuchreInteractorIF {
+			config := domain.DefaultEuchreConfig()
+			players := []*domain.EuchrePlayer{
+				domain.NewEuchrePlayer(true, 0),
+				domain.NewEuchrePlayer(false, 1),
+				domain.NewEuchrePlayer(false, 0),
+				domain.NewEuchrePlayer(false, 1),
+			}
+			euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
+			return usecase.NewEuchreInteractor(euchre, new(presenter.EuchreWebPresenter))
+		}),
+		pyc: controller.NewPyramidWebController(func() usecase.PyramidInteractorIF {
+			pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
+			return usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidWebPresenter))
+		}),
+		cbc: controller.NewCribbageWebController(func() usecase.CribbageInteractorIF {
+			config := domain.DefaultCribbageConfig()
+			players := []*domain.CribbagePlayer{
+				domain.NewCribbagePlayer(true),
+				domain.NewCribbagePlayer(false),
+			}
+			cribbage := domain.NewCribbage(domain.NewTrumpCards(0), players, config)
+			return usecase.NewCribbageInteractor(cribbage, new(presenter.CribbageWebPresenter))
+		}),
 	}
 }
 
@@ -247,6 +287,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/doubt/exec", web.dwc.Exec},
 		{"/holdem/exec", web.hmc.Exec},
 		{"/omaha/exec", web.ohc.Exec},
+		{"/shortdeck/exec", web.skc.Exec},
 		{"/hearts/exec", web.htc.Exec},
 		{"/memory/exec", web.myc.Exec},
 		{"/klondike/exec", web.klc.Exec},
@@ -258,6 +299,10 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/spider/exec", web.sdc.Exec},
 		{"/napoleon/exec", web.npc.Exec},
 		{"/indianpoker/exec", web.ipc.Exec},
+		{"/videopoker/exec", web.vpc.Exec},
+		{"/euchre/exec", web.euc.Exec},
+		{"/pyramid/exec", web.pyc.Exec},
+		{"/cribbage/exec", web.cbc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -330,6 +375,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.dwc.Stop()
 	web.hmc.Stop()
 	web.ohc.Stop()
+	web.skc.Stop()
 	web.htc.Stop()
 	web.myc.Stop()
 	web.klc.Stop()
@@ -341,6 +387,8 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.sdc.Stop()
 	web.npc.Stop()
 	web.ipc.Stop()
+	web.vpc.Stop()
+	web.euc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr

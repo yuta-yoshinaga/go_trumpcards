@@ -1,6 +1,67 @@
 package domain
 
-import "math"
+import (
+	"encoding/json"
+	"math"
+)
+
+// IndianPokerHumanProfileBracketData はブラケット別アグレッシブ行動のJSON出力形式
+type IndianPokerHumanProfileBracketData struct {
+	Aggressive int `json:"aggressive"`
+	Total      int `json:"total"`
+}
+
+// IndianPokerHumanProfileData はIndianPokerHumanProfileのJSON永続化形式
+type IndianPokerHumanProfileData struct {
+	AggressiveByBracket [3]IndianPokerHumanProfileBracketData `json:"aggressiveByBracket"`
+	FoldToBetCount      int                                   `json:"foldToBetCount"`
+	FoldToBetTotal      int                                   `json:"foldToBetTotal"`
+	GamesPlayed         int                                   `json:"gamesPlayed"`
+	HesitationCount     int                                   `json:"hesitationCount"`
+	HesitationMean      float64                               `json:"hesitationMean"`
+	HesitationM2        float64                               `json:"hesitationM2"`
+}
+
+// Export プロファイルデータをJSON永続化形式でエクスポートする
+func (p *IndianPokerHumanProfile) Export() IndianPokerHumanProfileData {
+	var brackets [3]IndianPokerHumanProfileBracketData
+	for i := 0; i < 3; i++ {
+		brackets[i] = IndianPokerHumanProfileBracketData{
+			Aggressive: p.AggressiveByBracket[i].Aggressive,
+			Total:      p.AggressiveByBracket[i].Total,
+		}
+	}
+	return IndianPokerHumanProfileData{
+		AggressiveByBracket: brackets,
+		FoldToBetCount:      p.FoldToBetCount,
+		FoldToBetTotal:      p.FoldToBetTotal,
+		GamesPlayed:         p.GamesPlayed,
+		HesitationCount:     p.HesitationCount,
+		HesitationMean:      p.HesitationMean,
+		HesitationM2:        p.HesitationM2,
+	}
+}
+
+// Import JSON永続化形式のデータからプロファイルを復元する
+func (p *IndianPokerHumanProfile) Import(data IndianPokerHumanProfileData) {
+	for i := 0; i < 3; i++ {
+		p.AggressiveByBracket[i].Aggressive = data.AggressiveByBracket[i].Aggressive
+		p.AggressiveByBracket[i].Total = data.AggressiveByBracket[i].Total
+	}
+	p.FoldToBetCount = data.FoldToBetCount
+	p.FoldToBetTotal = data.FoldToBetTotal
+	p.GamesPlayed = data.GamesPlayed
+	p.HesitationCount = data.HesitationCount
+	p.HesitationMean = data.HesitationMean
+	p.HesitationM2 = data.HesitationM2
+}
+
+// ImportIndianPokerHumanProfileJSON JSONバイトからIndianPokerHumanProfileDataをデコードする
+func ImportIndianPokerHumanProfileJSON(data []byte) (IndianPokerHumanProfileData, error) {
+	var d IndianPokerHumanProfileData
+	err := json.Unmarshal(data, &d)
+	return d, err
+}
 
 // IndianPokerHumanProfile セッション内でインディアンポーカーにおける人間プレイヤーの行動を学習するプロファイル
 // CPUは人間のカードが見えるため、人間のカード強度ブラケット別にアグレッシブ行動を追跡する

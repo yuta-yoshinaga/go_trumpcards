@@ -18,8 +18,8 @@ func (_m *MockIndianPokerInteractor) Reset() string {
 }
 
 // ResetWithConfig モック
-func (_m *MockIndianPokerInteractor) ResetWithConfig(cfg domain.IndianPokerConfig) string {
-	ret := _m.Called(cfg)
+func (_m *MockIndianPokerInteractor) ResetWithConfig(cfg domain.IndianPokerConfig, profileData []byte) string {
+	ret := _m.Called(cfg, profileData)
 	return ret.Get(0).(string)
 }
 

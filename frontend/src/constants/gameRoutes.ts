@@ -25,7 +25,9 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/poker', labelKey: 'nav.poker' },
       { path: '/holdem', labelKey: 'nav.holdem' },
       { path: '/omaha', labelKey: 'nav.omaha' },
+      { path: '/shortdeck', labelKey: 'nav.shortdeck' },
       { path: '/indianpoker', labelKey: 'nav.indianpoker' },
+      { path: '/videopoker', labelKey: 'nav.videopoker' },
     ],
   },
   {
@@ -33,6 +35,7 @@ export const gameCategories: readonly GameCategory[] = [
     routes: [
       { path: '/hearts', labelKey: 'nav.hearts' },
       { path: '/spades', labelKey: 'nav.spades' },
+      { path: '/euchre', labelKey: 'nav.euchre' },
       { path: '/napoleon', labelKey: 'nav.napoleon' },
     ],
   },
@@ -52,12 +55,16 @@ export const gameCategories: readonly GameCategory[] = [
       { path: '/klondike', labelKey: 'nav.klondike' },
       { path: '/freecell', labelKey: 'nav.freecell' },
       { path: '/spider', labelKey: 'nav.spider' },
+      { path: '/pyramid', labelKey: 'nav.pyramid' },
       { path: '/memory', labelKey: 'nav.memory' },
     ],
   },
   {
     labelKey: 'nav.category.rummy',
-    routes: [{ path: '/ginrummy', labelKey: 'nav.ginrummy' }],
+    routes: [
+      { path: '/ginrummy', labelKey: 'nav.ginrummy' },
+      { path: '/cribbage', labelKey: 'nav.cribbage' },
+    ],
   },
 ] as const;
 

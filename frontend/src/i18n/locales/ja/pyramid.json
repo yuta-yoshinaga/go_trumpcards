@@ -1,0 +1,35 @@
+{
+  "phase": {
+    "playing": "プレイ中",
+    "gameClear": "ゲームクリア",
+    "gameOver": "ゲームオーバー"
+  },
+  "title": "ピラミッド",
+  "stock": "山札",
+  "waste": "ウェイスト",
+  "moveCount": "手数",
+  "draw": "引く",
+  "giveup": "ギブアップ",
+  "hint": "ヒント",
+  "undo": "元に戻す",
+  "empty": "空",
+  "playing": "プレイ中",
+  "stalemate": "手詰まりです",
+  "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
+  "gameOver": "ゲームオーバー",
+  "noHint": "ヒントはありません",
+  "hintAvailable": "ヒントがあります",
+  "hintType": {
+    "pair": "ピラミッドのペアを除去",
+    "king": "ピラミッドのキングを除去",
+    "waste_pair": "ウェイスト＋ピラミッドのペアを除去",
+    "waste_king": "ウェイストのキングを除去"
+  },
+  "tutorial": {
+    "pyramid": "ピラミッドです。露出したカードをクリックして選択します。",
+    "stockWaste": "山札をクリックしてカードを引きます。",
+    "controls": "操作ボタンです。",
+    "hintDisplay": "ヒントボタンを押すとヒントが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  }
+}

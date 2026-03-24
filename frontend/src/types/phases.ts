@@ -12,6 +12,9 @@
  *   - CrazyEights: internal/domain/CrazyEights.go (CrazyEightsPhasePlay, CrazyEightsPhaseChooseSuit, CrazyEightsPhaseRoundEnd, CrazyEightsPhaseGameEnd)
  *   - GinRummy:  internal/domain/GinRummy.go   (GinRummyPhaseDraw, GinRummyPhaseDiscard, GinRummyPhaseLayoff, GinRummyPhaseRoundEnd, GinRummyPhaseGameEnd)
  *   - Baccarat:   internal/domain/Baccarat.go  (BaccaratPhaseBet, BaccaratPhaseEnd)
+ *   - Euchre:     internal/domain/Euchre.go    (EuchrePhasePickUp, EuchrePhaseCallTrump, EuchrePhaseDiscard, EuchrePhasePlay, EuchrePhaseTrickEnd, EuchrePhaseRoundEnd, EuchrePhaseGameEnd)
+ *   - Pyramid:    internal/domain/Pyramid.go  (PyramidPhasePlaying, PyramidPhaseGameClear, PyramidPhaseGameOver)
+ *   - Cribbage:   internal/domain/Cribbage.go (CribbagePhaseDiscard, CribbagePhaseCut, CribbagePhasePegging, CribbagePhaseShow, CribbagePhaseRoundEnd, CribbagePhaseGameEnd)
  */
 
 /** BlackJack phase constants (sync: internal/domain/BlackJack.go). */
@@ -66,6 +69,11 @@ export const HoldemRebuyPhaseType = {
 export const OmahaPhase = HoldemPhase;
 /** Omaha Hold'em rebuy phase type constants (same as Holdem). */
 export const OmahaRebuyPhaseType = HoldemRebuyPhaseType;
+
+/** Short Deck Hold'em phase constants (same as Holdem). */
+export const ShortDeckPhase = HoldemPhase;
+/** Short Deck Hold'em rebuy phase type constants (same as Holdem). */
+export const ShortDeckRebuyPhaseType = HoldemRebuyPhaseType;
 
 /** Hearts phase constants (sync: internal/domain/Hearts.go). */
 export const HeartsPhase = {
@@ -176,4 +184,39 @@ export const IndianPokerPhase = {
   BETTING: 2,
   SHOWDOWN: 3,
   END: 4,
+} as const;
+
+/** Video Poker phase constants (sync: internal/domain/VideoPoker.go). */
+export const VideoPokerPhase = {
+  BET: 1,
+  DRAW: 2,
+  RESULT: 3,
+} as const;
+
+/** Pyramid phase constants (sync: internal/domain/Pyramid.go). */
+export const PyramidPhase = {
+  PLAYING: 0,
+  GAME_CLEAR: 1,
+  GAME_OVER: 2,
+} as const;
+
+/** Cribbage phase constants (sync: internal/domain/Cribbage.go). */
+export const CribbagePhase = {
+  DISCARD: 0,
+  CUT: 1,
+  PEGGING: 2,
+  SHOW: 3,
+  ROUND_END: 4,
+  GAME_END: 5,
+} as const;
+
+/** Euchre phase constants (sync: internal/domain/Euchre.go). */
+export const EuchrePhase = {
+  PICK_UP: 0,
+  CALL_TRUMP: 1,
+  DISCARD: 2,
+  PLAY: 3,
+  TRICK_END: 4,
+  ROUND_END: 5,
+  GAME_END: 6,
 } as const;

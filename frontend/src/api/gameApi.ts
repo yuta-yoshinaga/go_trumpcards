@@ -3,10 +3,12 @@ import type {
   BaccaratResponse,
   BlackJackResponse,
   CrazyEightsResponse,
+  CribbageResponse,
   DaifugoConfigInput,
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  EuchreResponse,
   FreeCellResponse,
   GinRummyResponse,
   HeartsResponse,
@@ -18,9 +20,12 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   PokerResponse,
+  PyramidResponse,
   SevensResponse,
+  ShortDeckResponse,
   SpadesResponse,
   SpiderResponse,
+  VideoPokerResponse,
 } from '../types/card';
 
 /** Unique session identifier for correlating API requests. */
@@ -105,7 +110,8 @@ export const pokerApi = {
     amount?: number,
     config?: PokerConfigInput,
     humanPlayMs?: number,
-  ) => gameExec<PokerResponse>('poker', { command, indices, amount, humanPlayMs, ...config }),
+    profile?: unknown,
+  ) => gameExec<PokerResponse>('poker', { command, indices, amount, humanPlayMs, profile, ...config }),
 };
 
 /** API client for the Old Maid /oldmaid/exec endpoint. */
@@ -119,6 +125,7 @@ export const oldmaidApi = {
     cpuMemoryAI?: boolean,
     cpuHesitationEnabled?: boolean,
     cpuMetaAI?: boolean,
+    profile?: unknown,
   ) =>
     gameExec<OldMaidResponse>('oldmaid', {
       command,
@@ -129,6 +136,7 @@ export const oldmaidApi = {
       cpuMemoryAI,
       cpuHesitationEnabled,
       cpuMetaAI,
+      profile,
     }),
 };
 
@@ -147,6 +155,7 @@ export const doubtApi = {
     doubterIndices?: number[],
     config?: DoubtConfig,
     humanPlayMs?: number,
+    profile?: unknown,
   ) =>
     gameExec<DoubtResponse>('doubt', {
       command,
@@ -154,6 +163,7 @@ export const doubtApi = {
       claimedValue,
       doubterIndices,
       humanPlayMs,
+      profile,
       doubtWindowSec: config?.doubtWindowSec,
       cpuMemoryLevel: config?.cpuMemoryLevel,
       penaltyDrawLimit: config?.penaltyDrawLimit,
@@ -232,11 +242,13 @@ export const holdemApi = {
     amount?: number,
     config?: HoldemConfigInput,
     humanPlayMs?: number,
+    profile?: unknown,
   ) =>
     gameExec<HoldemResponse>('holdem', {
       command,
       amount,
       humanPlayMs,
+      profile,
       ...config,
     }),
 };
@@ -264,11 +276,47 @@ export const omahaApi = {
     amount?: number,
     config?: OmahaConfigInput,
     humanPlayMs?: number,
+    profile?: unknown,
   ) =>
     gameExec<OmahaResponse>('omaha', {
       command,
       amount,
       humanPlayMs,
+      profile,
+      ...config,
+    }),
+};
+
+/** Configuration options for Short Deck Hold'em (same as Hold'em). */
+export type ShortDeckConfigInput = HoldemConfigInput;
+
+/** API client for the Short Deck Hold'em /shortdeck/exec endpoint. */
+export const shortdeckApi = {
+  exec: (
+    command:
+      | 'reset'
+      | 'fold'
+      | 'check'
+      | 'call'
+      | 'bet'
+      | 'raise'
+      | 'allin'
+      | 'rebuy'
+      | 'skiprebuy'
+      | 'addon'
+      | 'skipaddon'
+      | 'muck'
+      | 'show',
+    amount?: number,
+    config?: ShortDeckConfigInput,
+    humanPlayMs?: number,
+    profile?: unknown,
+  ) =>
+    gameExec<ShortDeckResponse>('shortdeck', {
+      command,
+      amount,
+      humanPlayMs,
+      profile,
       ...config,
     }),
 };
@@ -430,6 +478,28 @@ export const ginrummyApi = {
     }),
 };
 
+/** Configuration options for Cribbage game settings. */
+export interface CribbageConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Cribbage /cribbage/exec endpoint. */
+export const cribbageApi = {
+  exec: (
+    command: 'reset' | 'discard' | 'peg' | 'go' | 'shownext' | 'nextround' | 'log',
+    cardIndex?: number,
+    cardIndices?: number[],
+    config?: CribbageConfigInput,
+  ) =>
+    gameExec<CribbageResponse>('cribbage', {
+      command,
+      cardIndex,
+      cardIndices,
+      config,
+    }),
+};
+
 /** API client for the Baccarat /baccarat/exec endpoint. */
 export const baccaratApi = {
   exec: (
@@ -526,13 +596,61 @@ export const indianpokerApi = {
     amount?: number,
     config?: IndianPokerConfigInput,
     humanPlayMs?: number,
+    profile?: unknown,
   ) =>
     gameExec<IndianPokerResponse>('indianpoker', {
       command,
       amount,
       humanPlayMs,
+      profile,
       ...config,
     }),
+};
+
+/** Configuration options for Euchre game settings. */
+export interface EuchreConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Euchre /euchre/exec endpoint. */
+export const euchreApi = {
+  exec: (
+    command: 'reset' | 'orderup' | 'pass' | 'calltrump' | 'discard' | 'play' | 'next' | 'nextround' | 'hint',
+    cardIndex?: number,
+    suit?: number,
+    goAlone?: boolean,
+    config?: EuchreConfigInput,
+  ) =>
+    gameExec<EuchreResponse>('euchre', {
+      command,
+      cardIndex,
+      suit,
+      goAlone,
+      config,
+    }),
+};
+
+/** Source card for a Pyramid remove action. */
+export interface PyramidRemoveCard {
+  zone: string;
+  row?: number;
+  col?: number;
+}
+
+/** API client for the Pyramid /pyramid/exec endpoint. */
+export const pyramidApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo',
+    card1?: PyramidRemoveCard,
+    card2?: PyramidRemoveCard,
+  ) => gameExec<PyramidResponse>('pyramid', { command, card1, card2 }),
+};
+
+/** API client for the Video Poker /videopoker/exec endpoint. */
+export const videopokerApi = {
+  exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
+    gameExec<VideoPokerResponse>('videopoker', { command, amount, indices }),
 };
 
 const games = [
@@ -544,6 +662,7 @@ const games = [
   'doubt',
   'holdem',
   'omaha',
+  'shortdeck',
   'hearts',
   'spades',
   'napoleon',
@@ -555,6 +674,10 @@ const games = [
   'ginrummy',
   'spider',
   'indianpoker',
+  'videopoker',
+  'euchre',
+  'pyramid',
+  'cribbage',
 ] as const;
 type Game = (typeof games)[number];
 

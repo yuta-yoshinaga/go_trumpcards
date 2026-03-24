@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"container/heap"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -166,7 +167,7 @@ func TestFreeCellSolver_FreeCellToFoundation(t *testing.T) {
 	assert.True(t, solver.isSolvable())
 }
 
-func TestFreeCellSolver_FreeCellToTableau(t *testing.T) {
+func TestFreeCellSolver_FreeCellKingToFoundation(t *testing.T) {
 	f := NewFreeCell(NewTrumpCards(0))
 	f.Reset()
 
@@ -313,4 +314,92 @@ func TestFreeCellSolver_MemoizationPreventsRevisit(t *testing.T) {
 	assert.False(t, result)
 	// Verify visited map was populated
 	assert.Greater(t, len(solver.visited), 0)
+}
+
+func TestFreeCellSolver_AStarHeuristicAdmissible(t *testing.T) {
+	// Verify heuristic returns correct value: 52 - sum(foundation counts)
+	st := &freeCellState{}
+	st.foundation[0] = 5
+	st.foundation[1] = 3
+	st.foundation[2] = 10
+	st.foundation[3] = 2
+	h := heuristic(st)
+	assert.Equal(t, 52-(5+3+10+2), h)
+}
+
+func TestFreeCellSolver_AStarSolvableBoard(t *testing.T) {
+	// Set up a moderately complex solvable board:
+	// Foundation has A-10 for all suits, remaining cards (J, Q, K) arranged
+	// in solvable order on tableau (alternating color, descending)
+	f := NewFreeCell(NewTrumpCards(0))
+	f.Reset()
+
+	var foundation [FreeCellFoundationCnt][]*Card
+	for i := 0; i < FreeCellFoundationCnt; i++ {
+		foundation[i] = make([]*Card, 0)
+		for v := 1; v <= 10; v++ {
+			foundation[i] = append(foundation[i], NewCard(i+1, v, false))
+		}
+	}
+	f.SetFoundation(foundation)
+
+	// Place J, Q, K for each suit on tableau in solvable arrangements
+	// Column 0: Spade K (13), Heart Q (12), Clover J (11) — alternating color, descending
+	// Column 1: Heart K (13), Spade Q (12), Diamond J (11) — alternating color, descending
+	// Column 2: Clover K (13), Diamond Q (12), Spade J (11) — alternating color, descending
+	// Column 3: Diamond K (13), Clover Q (12), Heart J (11) — alternating color, descending
+	var tableau [FreeCellTableauCnt][]*Card
+	tableau[0] = []*Card{
+		NewCard(CardDesignSpade, 13, false),
+		NewCard(CardDesignHeart, 12, false),
+		NewCard(CardDesignClover, 11, false),
+	}
+	tableau[1] = []*Card{
+		NewCard(CardDesignHeart, 13, false),
+		NewCard(CardDesignSpade, 12, false),
+		NewCard(CardDesignDiamond, 11, false),
+	}
+	tableau[2] = []*Card{
+		NewCard(CardDesignClover, 13, false),
+		NewCard(CardDesignDiamond, 12, false),
+		NewCard(CardDesignSpade, 11, false),
+	}
+	tableau[3] = []*Card{
+		NewCard(CardDesignDiamond, 13, false),
+		NewCard(CardDesignClover, 12, false),
+		NewCard(CardDesignHeart, 11, false),
+	}
+	f.SetTableau(tableau)
+
+	var cells [FreeCellCellCnt]*Card
+	f.SetFreeCells(cells)
+
+	solver := newFreeCellSolver(f)
+	assert.True(t, solver.isSolvable())
+	// A* with heuristic should solve this efficiently (far fewer iterations than 100k limit)
+	assert.Less(t, solver.iterations, 1000)
+}
+
+func TestFreeCellSolver_AStarPriorityQueueOrder(t *testing.T) {
+	// Verify the priority queue orders by f = g + h (lowest first)
+	pq := &freeCellPQ{}
+	heap.Init(pq)
+
+	s1 := &freeCellState{g: 5, h: 10} // f=15
+	s2 := &freeCellState{g: 2, h: 3}  // f=5
+	s3 := &freeCellState{g: 8, h: 1}  // f=9
+
+	heap.Push(pq, s1)
+	heap.Push(pq, s2)
+	heap.Push(pq, s3)
+
+	// Should dequeue in order: s2 (f=5), s3 (f=9), s1 (f=15)
+	first := heap.Pop(pq).(*freeCellState)
+	assert.Equal(t, 5, first.g+first.h)
+
+	second := heap.Pop(pq).(*freeCellState)
+	assert.Equal(t, 9, second.g+second.h)
+
+	third := heap.Pop(pq).(*freeCellState)
+	assert.Equal(t, 15, third.g+third.h)
 }

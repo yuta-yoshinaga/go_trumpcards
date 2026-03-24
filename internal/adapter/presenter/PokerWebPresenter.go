@@ -62,6 +62,19 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 	resObj.RoundResults = pwp.buildRoundResultsOutput(p)
 	resObj.Message, resObj.MessageCode = pwp.buildMessage(p, lastErr)
 
+	// メタAI情報
+	if profile := p.GetHumanProfile(); profile != nil {
+		resObj.MetaAI = &controller.PokerWebOutputMetaAI{
+			Enabled:        true,
+			GamesPlayed:    profile.GamesPlayed,
+			BluffRate:      profile.BluffRate(1), // medium bracket as representative
+			FoldRate:       profile.FoldRate(),
+			HesitationMean: profile.HesitationMean,
+		}
+		d := profile.Export()
+		resObj.Profile = &d
+	}
+
 	return resObj
 }
 

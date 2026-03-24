@@ -68,19 +68,19 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				return cuiutil.WithParsedInt(args, "Betting limit type is required (0=Fixed, 1=PotLimit, 2=NoLimit).", "Invalid betting limit: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := pcc.pi.GetConfig()
 					cfg.BettingLimit = domain.BettingLimitType(v)
-					return pcc.pi.ResetWithConfig(cfg)
+					return pcc.pi.ResetWithConfig(cfg, nil)
 				})
 			case "scc", "setcpucount":
 				return cuiutil.WithParsedInt(args, "CPU player count is required.", "Invalid CPU player count: %s. Please enter 1-3.", 1, 3, func(v int) string {
 					cfg := pcc.pi.GetConfig()
 					cfg.CpuCount = v
-					return pcc.pi.ResetWithConfig(cfg)
+					return pcc.pi.ResetWithConfig(cfg, nil)
 				})
 			case "sjc", "setjokercount":
 				return cuiutil.WithParsedInt(args, "Joker count is required.", "Invalid joker count: %s. Please enter 0-2.", 0, 2, func(v int) string {
 					cfg := pcc.pi.GetConfig()
 					cfg.JokerCount = v
-					return pcc.pi.ResetWithConfig(cfg)
+					return pcc.pi.ResetWithConfig(cfg, nil)
 				})
 			case "o", "odds":
 				indices, skipped := cuiutil.ParseBoundedIntSlice(args, 0, 4)
@@ -88,7 +88,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 			case "lw", "lowball":
 				cfg := pcc.pi.GetConfig()
 				cfg.IsLowball = !cfg.IsLowball
-				return pcc.pi.ResetWithConfig(cfg), true
+				return pcc.pi.ResetWithConfig(cfg, nil), true
 			case "mai", "metaai":
 				if len(args) < 1 {
 					return i18n.T("metaAIRequired"), true
@@ -99,7 +99,7 @@ func (pcc *PokerCuiController) Exec(command string) string {
 				}
 				cfg := pcc.pi.GetConfig()
 				cfg.CpuMetaAI = v == 1
-				return pcc.pi.ResetWithConfig(cfg), true
+				return pcc.pi.ResetWithConfig(cfg, nil), true
 			}
 			return "", false
 		},

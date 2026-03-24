@@ -112,6 +112,29 @@ func (o *OldMaid) GetHumanProfile() *OldMaidHumanProfile { return o.humanProfile
 // ResetProfile メタAIプロファイルをリセットする
 func (o *OldMaid) ResetProfile() { o.humanProfile = nil }
 
+// ExportProfile メタAIプロファイルをエクスポートする (プロファイルがない場合はnil)
+func (o *OldMaid) ExportProfile() interface{} {
+	if o.humanProfile == nil {
+		return nil
+	}
+	d := o.humanProfile.Export()
+	return &d
+}
+
+// ImportProfile JSONバイトからメタAIプロファイルをインポートする
+func (o *OldMaid) ImportProfile(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	d, err := ImportOldMaidHumanProfileJSON(data)
+	if err != nil {
+		return err
+	}
+	o.humanProfile = &OldMaidHumanProfile{}
+	o.humanProfile.Import(d)
+	return nil
+}
+
 // Reset ゲーム初期化
 func (o *OldMaid) Reset() {
 	o.gameEndFlag = false

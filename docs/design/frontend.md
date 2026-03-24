@@ -16,6 +16,7 @@
   - [2.1 ゲームアクション実行フロー](#21-ゲームアクション実行フロー)
   - [2.2 CPUリプレイアニメーションフロー](#22-cpuリプレイアニメーションフロー)
   - [2.3 ゲーム初期化フロー](#23-ゲーム初期化フロー)
+  - [2.4 VideoPokerPage フェーズ別レンダリングフロー](#24-videopokerpage-フェーズ別レンダリングフロー)
 - [3. ステートマシン図](#3-ステートマシン図)
   - [3.1 ゲームページ表示状態](#31-ゲームページ表示状態)
   - [3.2 カード選択状態 (useCardSelection)](#32-カード選択状態-usecardselection)
@@ -102,7 +103,40 @@ classDiagram
 
     TutorialConfig --> TutorialStep : contains
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全19ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    class PyramidResponse {
+        +object[][] pyramid
+        +Card[] waste
+        +number stockCount
+        +number phase
+        +number moveCount
+        +boolean canUndo
+        +boolean isStalemate
+        +string message
+        +string messageCode
+        +object messageParams
+    }
+
+    class CribbageResponse {
+        +object[] players
+        +number phase
+        +number roundNumber
+        +number currentPlayerIdx
+        +number dealerIdx
+        +Card[] crib
+        +Card starter
+        +number pegCount
+        +Card[] pegPlayedCards
+        +number showPhaseStep
+        +object[] handScoreDetails
+        +boolean gameEndFlag
+        +number winnerIdx
+        +string message
+        +string messageCode
+        +object messageParams
+        +object config
+    }
+
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全24ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -216,7 +250,42 @@ classDiagram
         END = 4
     }
 
-    note for KlondikePhase "FreeCellPhase, SpiderPhase も\n同一の値を持つ別定数として存在"
+    class VideoPokerPhase {
+        <<enumeration>>
+        BET = 0
+        DRAW = 1
+        RESULT = 2
+    }
+
+    class EuchrePhase {
+        <<enumeration>>
+        PICK_UP = 0
+        CALL_TRUMP = 1
+        DISCARD = 2
+        PLAY = 3
+        TRICK_END = 4
+        ROUND_END = 5
+        GAME_END = 6
+    }
+
+    class PyramidPhase {
+        <<enumeration>>
+        PLAYING = 0
+        GAME_CLEAR = 1
+        GAME_OVER = 2
+    }
+
+    class CribbagePhase {
+        <<enumeration>>
+        DISCARD = 0
+        CUT = 1
+        PEGGING = 2
+        SHOW = 3
+        ROUND_END = 4
+        GAME_END = 5
+    }
+
+    note for KlondikePhase "FreeCellPhase, SpiderPhase, PyramidPhase も\n同一の値を持つ別定数として存在"
 ```
 
 ### 1.2 API クライアント層
@@ -245,20 +314,30 @@ classDiagram
         +exec(cmd, args?, config?) Promise~KlondikeResponse~
     }
 
+    class PyramidApi {
+        +run(cmd, card1?, card2?) Promise~PyramidResponse~
+    }
+
+    class CribbageApi {
+        +run(cmd, args?, config?) Promise~CribbageResponse~
+    }
+
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全18ゲーム()
+        ...全24ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
     PokerApi --> gameApi : uses postJson/gameExec
     HeartsApi --> gameApi : uses postJson/gameExec
     KlondikeApi --> gameApi : uses postJson/gameExec
+    PyramidApi --> gameApi : uses postJson/gameExec
+    CribbageApi --> gameApi : uses postJson/gameExec
     actionLogApi --> gameApi : uses gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全18ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, hearts,\nmemory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon)"
+    note for BlackJackApi "全24ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, shortdeck,\nhearts, memory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, euchre,\npyramid, cribbage)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -438,12 +517,33 @@ classDiagram
     useBlackJackGame --> useGameApi : uses
     useHeartsGame --> useGameApi : uses
     useHeartsGame --> useCardSelection : uses
+    class usePyramidGame {
+        +PyramidResponse state
+        +Function handleDraw
+        +Function handleRemove
+        +Function handleHint
+        +Function handleUndo
+        +Function handleReset
+    }
+
+    class useCribbageGame {
+        +CribbageResponse state
+        +Function handleDiscard
+        +Function handlePeg
+        +Function handleGo
+        +Function handleShowNext
+        +Function handleNextRound
+        +Function handleReset
+    }
+
     useKlondikeGame --> useGameApi : uses
+    usePyramidGame --> useGameApi : uses
+    useCribbageGame --> useGameApi : uses
     useMemoryGame --> useGameApi : uses
     useDoubtGame --> useGameApi : uses
     useDoubtGame --> useCardSelection : uses
 
-    note for useBlackJackGame "全18ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全24ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -619,6 +719,38 @@ classDiagram
         +ショーダウン結果表示
     }
 
+    class VideoPokerPage {
+        +配当表表示
+        +コインセレクター (1-5)
+        +5枚カード表示
+        +カードクリックでホールド選択
+        +役名・配当表示
+    }
+
+    class EuchrePage {
+        +チーム別スコア表示
+        +ビッドUI (オーダーアップ/パス/コール)
+        +トリック表示エリア
+        +切り札・ターンアップカード表示
+        +ゴーイングアローン選択
+        +ヒントシステム
+    }
+
+    class PyramidPage {
+        +ピラミッド表示 (7段)
+        +ストック/ウェイスト
+        +カード選択・ペア除去
+        +Undo/ヒント
+    }
+
+    class CribbagePage {
+        +プレイヤー情報・スコア表示
+        +スターターカード
+        +ペギングエリア
+        +ディスカード/ペグ操作
+        +ショーフェーズスコア詳細
+    }
+
     BlackJackPage --|> GamePage : follows pattern
     HeartsPage --|> GamePage : follows pattern
     KlondikePage --|> GamePage : follows pattern
@@ -626,6 +758,19 @@ classDiagram
     DoubtPage --|> GamePage : follows pattern
     NapoleonPage --|> GamePage : follows pattern
     IndianPokerPage --|> GamePage : follows pattern
+    VideoPokerPage --|> GamePage : follows pattern
+    EuchrePage --|> GamePage : follows pattern
+    PyramidPage --|> GamePage : follows pattern
+    class ShortDeckPage {
+        +ホールデム系共通UI
+        +36枚デッキ表示
+        +フラッシュ>フルハウス役順
+        +コミュニティカード表示
+        +ベッティングアクションボタン
+    }
+
+    ShortDeckPage --|> GamePage : follows pattern
+    CribbagePage --|> GamePage : follows pattern
 
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
@@ -635,7 +780,7 @@ classDiagram
     GamePage --> ConfirmDialog : renders
     GamePage --> ErrorAlert : renders
 
-    note for GamePage "全19ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全24ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -658,16 +803,16 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (19ゲーム)
+        +Routes (24ゲーム)
     }
 
     class gameCategories {
-        +table: [BlackJack, Baccarat]
-        +poker: [Poker, Holdem, Omaha, IndianPoker]
-        +trickTaking: [Hearts, Spades, Napoleon]
+        +table: [BlackJack, Baccarat, VideoPoker]
+        +poker: [Poker, Holdem, Omaha, ShortDeck, IndianPoker]
+        +trickTaking: [Hearts, Spades, Napoleon, Euchre]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights]
-        +solitaire: [Klondike, FreeCell, Spider, Memory]
-        +rummy: [GinRummy]
+        +solitaire: [Klondike, FreeCell, Spider, Pyramid, Memory]
+        +rummy: [GinRummy, Cribbage]
     }
 
     class TutorialProvider {
@@ -681,11 +826,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 18 pages
+    App --> GamePage : routes to 24 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "20名前空間: common + 18ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "26名前空間: common + 24ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---
@@ -779,6 +924,41 @@ sequenceDiagram
     Hook-->>Page: 再レンダリング
 
     Page-->>Browser: ゲーム画面表示
+```
+
+### 2.4 VideoPokerPage フェーズ別レンダリングフロー
+
+```mermaid
+sequenceDiagram
+    participant User as ユーザー
+    participant Page as VideoPokerPage
+    participant Hook as useVideoPokerGame
+    participant API as gameApi
+
+    Note over User,API: ベットフェーズ (phase=0)
+    User->>Page: コインセレクターで数量選択
+    User->>Page: ベットボタンクリック
+    Page->>Hook: handleBet(amount)
+    Hook->>API: gameExec("bet", {amount})
+    API-->>Hook: VideoPokerResponse (phase=1, hand=5枚)
+    Hook-->>Page: 再レンダリング → ドローフェーズUI
+
+    Note over User,API: ドローフェーズ (phase=1)
+    User->>Page: カードをクリックしてホールド選択
+    Page->>Page: ホールド状態をトグル表示
+    User->>Page: ドローボタンクリック
+    Page->>Hook: handleHold(indices)
+    Hook->>API: gameExec("hold", {indices})
+    API-->>Hook: VideoPokerResponse (phase=2, handRank, payout)
+    Hook-->>Page: 再レンダリング → 結果フェーズUI
+
+    Note over User,API: 結果フェーズ (phase=2)
+    Page-->>User: 役名・配当表示
+    User->>Page: リセットボタンクリック
+    Page->>Hook: handleReset()
+    Hook->>API: gameExec("reset")
+    API-->>Hook: VideoPokerResponse (phase=0)
+    Hook-->>Page: 再レンダリング → ベットフェーズUI
 ```
 
 ---

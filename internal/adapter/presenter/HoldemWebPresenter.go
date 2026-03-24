@@ -77,6 +77,19 @@ func (hwp *HoldemWebPresenter) buildOutput(h interfaces.HoldemGame, lastErr erro
 
 	resObj.Message, resObj.MessageCode = hwp.buildMessage(h, lastErr)
 
+	// メタAI情報
+	if profile := h.GetHumanProfile(); profile != nil {
+		resObj.MetaAI = &controller.HoldemWebOutputMetaAI{
+			Enabled:        true,
+			GamesPlayed:    profile.GamesPlayed,
+			BluffRate:      profile.BluffRate(1),
+			FoldRate:       profile.FoldRate(),
+			HesitationMean: profile.HesitationMean,
+		}
+		d := profile.Export()
+		resObj.Profile = &d
+	}
+
 	return resObj
 }
 

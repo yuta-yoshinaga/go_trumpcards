@@ -130,6 +130,32 @@ func (_m *MockPokerGame) SetConfig(cfg domain.PokerConfig) {
 	_m.Called(cfg)
 }
 
+// GetHumanProfile モック
+func (_m *MockPokerGame) GetHumanProfile() *domain.BettingHumanProfile {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.BettingHumanProfile); ok {
+		return val
+	}
+	return nil
+}
+
+// ResetProfile モック
+func (_m *MockPokerGame) ResetProfile() {
+	_m.Called()
+}
+
+// ExportProfile モック
+func (_m *MockPokerGame) ExportProfile() interface{} {
+	ret := _m.Called()
+	return ret.Get(0)
+}
+
+// ImportProfile モック
+func (_m *MockPokerGame) ImportProfile(data []byte) error {
+	ret := _m.Called(data)
+	return ret.Error(0)
+}
+
 // GetActionLog モック
 func (_m *MockPokerGame) GetActionLog() []*domain.ActionLogEntry {
 	ret := _m.Called()

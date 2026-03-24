@@ -10,8 +10,8 @@ import (
 type HoldemInteractorIF interface {
 	// Reset ゲーム初期化
 	Reset() string
-	// ResetWithConfig 設定を変更してゲーム初期化
-	ResetWithConfig(cfg domain.HoldemConfig) string
+	// ResetWithConfig 設定を変更してゲーム初期化 (profileData: JSONプロファイル、nilなら無視)
+	ResetWithConfig(cfg domain.HoldemConfig, profileData []byte) string
 	// Action プレイヤーアクション実行
 	Action(action int, amount int, humanPlayMs int) string
 	// GetConfig 現在の設定を取得
@@ -50,7 +50,7 @@ func (hi *HoldemInteractor) Reset() string {
 }
 
 // ResetWithConfig 設定を変更してゲーム初期化
-func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
+func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig, profileData []byte) string {
 	if err := cfg.Validate(); err != nil {
 		return hi.hp.Output(hi.h, err)
 	}
@@ -60,6 +60,9 @@ func (hi *HoldemInteractor) ResetWithConfig(cfg domain.HoldemConfig) string {
 	}
 	hi.h.SetConfig(cfg)
 	err := hi.h.Reset()
+	if len(profileData) > 0 {
+		_ = hi.h.ImportProfile(profileData)
+	}
 	return hi.hp.Output(hi.h, err)
 }
 
