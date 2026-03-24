@@ -58,6 +58,8 @@ tags:
     description: Euchre (ユーカー) game
   - name: pyramid
     description: Pyramid (ピラミッド) game
+  - name: cribbage
+    description: Cribbage (クリベッジ) game
 
 paths:
   /blackjack/exec:
@@ -2111,6 +2113,100 @@ paths:
                     waste: []
                     phase: 0
                     moveCount: 0
+                    message: param error.
+
+  /cribbage/exec:
+    post:
+      tags:
+        - cribbage
+      summary: Execute a Cribbage game command
+      description: |
+        Send a command to advance the Cribbage (クリベッジ) game session identified by
+        `sessionId`.  Cribbage is a classic 2-player pegging and scoring card game
+        using a standard 52-card deck.  Each player is dealt 6 cards and discards 2
+        to the crib.  A starter card is cut.  Players alternate playing cards in the
+        pegging phase (target 31), then score hands and crib.  First to 121 points wins.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Discard    | `0`   | Each player discards 2 cards to the crib |
+        | Cut        | `1`   | Starter card revealed |
+        | Pegging    | `2`   | Alternate playing cards toward 31 |
+        | Show       | `3`   | Score hands and crib |
+        | RoundEnd   | `4`   | Round summary |
+        | GameEnd    | `5`   | Game over; winner determined |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`          | `r`   | Start / restart a game |
+        | `discard`        | `d`   | Discard cards to the crib (indices) |
+        | `peg`            | `p`   | Play a card during pegging (index) |
+        | `go`             |       | Declare "Go" when unable to play |
+        | `shownext`       | `sn`  | Advance to next show step |
+        | `nextround`      | `nr`  | Start the next round |
+        | `setdifficulty`  | `sd`  | Set CPU difficulty (0=Easy, 1=Normal, 2=Hard) |
+        | `setlimit`       | `sl`  | Set point limit |
+        | `log`            | `l`   | View action log |
+      operationId: cribbageExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CribbageRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              discard:
+                summary: Discard two cards to crib
+                value:
+                  command: discard
+                  cardIndices: [4, 5]
+                  sessionId: my-session-001
+              peg:
+                summary: Play a card during pegging
+                value:
+                  command: peg
+                  cardIndex: 0
+                  sessionId: my-session-001
+              go:
+                summary: Declare Go
+                value:
+                  command: go
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CribbageResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CribbageResponse'
+              examples:
+                paramError:
+                  value:
+                    players: []
+                    phase: 0
+                    roundNumber: 0
+                    currentPlayerIdx: 0
+                    dealerIdx: 0
+                    crib: []
+                    pegCount: 0
+                    pegPlayedCards: []
+                    showPhaseStep: 0
+                    handScoreDetails: [null, null, null]
+                    gameEndFlag: false
+                    winnerIdx: -1
                     message: param error.
 
 components:
@@ -6822,3 +6918,211 @@ components:
             col2:
               type: integer
               description: Column of second card (-1 for king/waste operations)
+
+    CribbageRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `discard` (`d`),
+            `peg` (`p`), `go`, `shownext` (`sn`), `nextround` (`nr`),
+            `setdifficulty` (`sd`), `setlimit` (`sl`), `log` (`l`).
+          enum: [reset, r, discard, d, peg, p, go, shownext, sn, nextround, nr, setdifficulty, sd, setlimit, sl, log, l]
+          example: discard
+        cardIndex:
+          type: integer
+          description: Card index for peg command
+          example: 0
+        cardIndices:
+          type: array
+          items:
+            type: integer
+          description: Card indices for discard command (exactly 2 indices)
+          example: [4, 5]
+        config:
+          type: object
+          description: Game configuration (applied on reset)
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: "CPU difficulty: 0 = Easy, 1 = Normal, 2 = Hard"
+              enum: [0, 1, 2]
+              example: 1
+            pointLimit:
+              type: integer
+              description: Point limit to win (default 121)
+              example: 121
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    CribbagePlayer:
+      type: object
+      description: A player in the Cribbage game
+      required:
+        - id
+        - isHuman
+        - cardCount
+        - cards
+        - roundScore
+        - cumulativeScore
+      properties:
+        id:
+          type: integer
+          description: Player index (0 = human, 1 = CPU)
+          example: 0
+        isHuman:
+          type: boolean
+          description: Whether this player is human
+          example: true
+        cardCount:
+          type: integer
+          description: Number of cards in hand
+          example: 6
+        cards:
+          type: array
+          description: Player's hand cards (visible to human player; hidden for CPU)
+          items:
+            $ref: '#/components/schemas/Card'
+        roundScore:
+          type: integer
+          description: Points scored in the current round
+          example: 0
+        cumulativeScore:
+          type: integer
+          description: Cumulative score across all rounds
+          example: 0
+
+    CribbageScoreDetail:
+      type: object
+      description: Breakdown of a hand/crib score
+      properties:
+        fifteens:
+          type: integer
+          description: Points from combinations summing to 15
+          example: 4
+        pairs:
+          type: integer
+          description: Points from pairs
+          example: 2
+        runs:
+          type: integer
+          description: Points from runs
+          example: 3
+        flush:
+          type: integer
+          description: Points from flush
+          example: 0
+        nobs:
+          type: integer
+          description: Points from nobs (Jack of starter suit)
+          example: 1
+        total:
+          type: integer
+          description: Total points for this hand/crib
+          example: 10
+
+    CribbageResponse:
+      type: object
+      description: Current state of the Cribbage game
+      required:
+        - players
+        - phase
+        - roundNumber
+        - currentPlayerIdx
+        - dealerIdx
+        - crib
+        - pegCount
+        - pegPlayedCards
+        - showPhaseStep
+        - handScoreDetails
+        - gameEndFlag
+        - winnerIdx
+        - message
+      properties:
+        players:
+          type: array
+          description: Array of 2 players (index 0 = human, index 1 = CPU)
+          items:
+            $ref: '#/components/schemas/CribbagePlayer'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Discard, 1 = Cut, 2 = Pegging, 3 = Show, 4 = RoundEnd, 5 = GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+          example: 1
+        currentPlayerIdx:
+          type: integer
+          description: Index of the current player
+          example: 0
+        dealerIdx:
+          type: integer
+          description: Index of the dealer for this round
+          example: 1
+        crib:
+          type: array
+          description: Cards in the crib (visible only during Show/RoundEnd/GameEnd phases)
+          items:
+            $ref: '#/components/schemas/Card'
+        starter:
+          description: The starter (cut) card (null before cut phase)
+          $ref: '#/components/schemas/Card'
+        pegCount:
+          type: integer
+          description: Current pegging count (0-31)
+          example: 0
+        pegPlayedCards:
+          type: array
+          description: Cards played in the current pegging sequence
+          items:
+            $ref: '#/components/schemas/Card'
+        showPhaseStep:
+          type: integer
+          description: "Show phase step: 0 = non-dealer hand, 1 = dealer hand, 2 = crib"
+          enum: [0, 1, 2]
+          example: 0
+        handScoreDetails:
+          type: array
+          description: Score details for show phase [non-dealer hand, dealer hand, crib]
+          items:
+            $ref: '#/components/schemas/CribbageScoreDetail'
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+          example: false
+        winnerIdx:
+          type: integer
+          description: Index of the winner (-1 if game not ended)
+          example: -1
+        message:
+          type: string
+          description: Game status or result message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        config:
+          type: object
+          description: Current game configuration
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: "CPU difficulty: 0 = Easy, 1 = Normal, 2 = Hard"
+              example: 1
+            pointLimit:
+              type: integer
+              description: Point limit to win
+              example: 121

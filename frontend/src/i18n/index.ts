@@ -6,6 +6,7 @@ import enBaccarat from './locales/en/baccarat.json';
 import enBlackjack from './locales/en/blackjack.json';
 import enCommon from './locales/en/common.json';
 import enCrazyeights from './locales/en/crazyeights.json';
+import enCribbage from './locales/en/cribbage.json';
 import enDaifugo from './locales/en/daifugo.json';
 import enDoubt from './locales/en/doubt.json';
 import enEuchre from './locales/en/euchre.json';
@@ -30,6 +31,7 @@ import jaBaccarat from './locales/ja/baccarat.json';
 import jaBlackjack from './locales/ja/blackjack.json';
 import jaCommon from './locales/ja/common.json';
 import jaCrazyeights from './locales/ja/crazyeights.json';
+import jaCribbage from './locales/ja/cribbage.json';
 import jaDaifugo from './locales/ja/daifugo.json';
 import jaDoubt from './locales/ja/doubt.json';
 import jaEuchre from './locales/ja/euchre.json';
@@ -76,6 +78,7 @@ i18n
         baccarat: jaBaccarat,
         crazyeights: jaCrazyeights,
         ginrummy: jaGinrummy,
+        cribbage: jaCribbage,
         spider: jaSpider,
         indianpoker: jaIndianpoker,
         pyramid: jaPyramid,
@@ -102,6 +105,7 @@ i18n
         baccarat: enBaccarat,
         crazyeights: enCrazyeights,
         ginrummy: enGinrummy,
+        cribbage: enCribbage,
         spider: enSpider,
         indianpoker: enIndianpoker,
         pyramid: enPyramid,
@@ -131,6 +135,7 @@ i18n
       'baccarat',
       'crazyeights',
       'ginrummy',
+      'cribbage',
       'spider',
       'indianpoker',
       'pyramid',

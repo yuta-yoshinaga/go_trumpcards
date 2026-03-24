@@ -60,7 +60,10 @@ export const gameCategories: readonly GameCategory[] = [
   },
   {
     labelKey: 'nav.category.rummy',
-    routes: [{ path: '/ginrummy', labelKey: 'nav.ginrummy' }],
+    routes: [
+      { path: '/ginrummy', labelKey: 'nav.ginrummy' },
+      { path: '/cribbage', labelKey: 'nav.cribbage' },
+    ],
   },
 ] as const;
 

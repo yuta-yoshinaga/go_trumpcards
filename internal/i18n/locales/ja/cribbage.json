@@ -1,0 +1,10 @@
+{
+  "helpTitle": "Cribbage (クリベッジ)",
+  "helpDiscard": "  d <idx,idx>          クリブに2枚捨てる",
+  "helpPeg": "  p <idx>              ペギングでカードを出す",
+  "helpGo": "  go                   Goを宣言する",
+  "helpShowNext": "  sn                   次のスコア計算",
+  "helpNextRound": "  nr                   次のラウンドへ",
+  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "helpSetLimit": "  sl <n>               ポイント上限"
+}

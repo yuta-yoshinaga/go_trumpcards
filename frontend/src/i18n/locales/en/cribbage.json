@@ -1,0 +1,66 @@
+{
+  "phase": {
+    "discard": "Discard",
+    "cut": "Cut",
+    "pegging": "Pegging",
+    "show": "Show",
+    "roundEnd": "Round End",
+    "gameEnd": "Game End"
+  },
+  "settings": {
+    "title": "Settings",
+    "cpuDifficulty": "CPU Difficulty",
+    "pointLimit": "Point Limit",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "Round {{n}}",
+  "dealer": "Dealer: {{name}}",
+  "pegCount": "Peg count: {{count}}/31",
+  "discardButton": "Discard to Crib",
+  "pegButton": "Play Card",
+  "goButton": "Go",
+  "showNextButton": "Show Next",
+  "nextRound": "Next Round",
+  "discardPhase": "Select 2 cards to discard to the crib",
+  "peggingPhase": "Select a card to play",
+  "showPhase": "Scoring hands",
+  "roundEnd": "Round over",
+  "starter": "Starter",
+  "crib": "Crib",
+  "pegPlayedCards": "Pegging Area",
+  "scores": "Scores",
+  "scoresPlayer": "Player",
+  "scoresRound": "Round",
+  "scoresTotal": "Total",
+  "cards": "{{count}} cards",
+  "cumulativeScore": "Total: {{score}}",
+  "roundScore": "Round: {{score}}",
+  "pegBoard": "Peg Board",
+  "score": "Score",
+  "scoreDetail": {
+    "fifteens": "15s",
+    "pairs": "Pairs",
+    "runs": "Runs",
+    "flush": "Flush",
+    "nobs": "Nobs",
+    "total": "Total"
+  },
+  "handScoreLabels": {
+    "you": "Your Hand",
+    "cpu": "CPU Hand",
+    "crib": "Crib"
+  },
+  "result": {
+    "humanWin": "You win!",
+    "cpuWin": "CPU {{cpuId}} wins!"
+  },
+  "tutorial": {
+    "playerHand": "This is your hand. Select 2 cards to discard to the crib.",
+    "discardButton": "Discard 2 selected cards to the crib.",
+    "peggingArea": "Take turns playing cards to reach 31.",
+    "pegBoard": "Player scores are shown here.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}

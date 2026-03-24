@@ -45,6 +45,7 @@ type TrumpCardsWeb struct {
 	vpc *controller.VideoPokerWebController
 	euc *controller.EuchreWebController
 	pyc *controller.PyramidWebController
+	cbc *controller.CribbageWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -225,6 +226,15 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
 			return usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidWebPresenter))
 		}),
+		cbc: controller.NewCribbageWebController(func() usecase.CribbageInteractorIF {
+			config := domain.DefaultCribbageConfig()
+			players := []*domain.CribbagePlayer{
+				domain.NewCribbagePlayer(true),
+				domain.NewCribbagePlayer(false),
+			}
+			cribbage := domain.NewCribbage(domain.NewTrumpCards(0), players, config)
+			return usecase.NewCribbageInteractor(cribbage, new(presenter.CribbageWebPresenter))
+		}),
 	}
 }
 
@@ -285,6 +295,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/videopoker/exec", web.vpc.Exec},
 		{"/euchre/exec", web.euc.Exec},
 		{"/pyramid/exec", web.pyc.Exec},
+		{"/cribbage/exec", web.cbc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {

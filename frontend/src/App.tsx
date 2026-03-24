@@ -8,6 +8,7 @@ import { gameRoutes } from './constants/gameRoutes';
 import { BaccaratPage } from './pages/BaccaratPage';
 import { BlackJackPage } from './pages/BlackJackPage';
 import { CrazyEightsPage } from './pages/CrazyEightsPage';
+import { CribbagePage } from './pages/CribbagePage';
 import { DaifugoPage } from './pages/DaifugoPage';
 import { DoubtPage } from './pages/DoubtPage';
 import { EuchrePage } from './pages/EuchrePage';
@@ -48,6 +49,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/baccarat': <BaccaratPage />,
   '/crazyeights': <CrazyEightsPage />,
   '/ginrummy': <GinRummyPage />,
+  '/cribbage': <CribbagePage />,
   '/spider': <SpiderPage />,
   '/pyramid': <PyramidPage />,
   '/indianpoker': <IndianPokerPage />,

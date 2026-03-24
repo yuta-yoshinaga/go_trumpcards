@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全22ゲーム)](#12-ゲームドメイン-全22ゲーム)
+  - [1.2 ゲームドメイン (全23ゲーム)](#12-ゲームドメイン-全23ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -32,6 +32,7 @@
   - [3.14 VideoPoker フェーズ遷移](#314-videopoker-フェーズ遷移)
   - [3.15 Euchre フェーズ遷移](#315-euchre-フェーズ遷移)
   - [3.16 Pyramid フェーズ遷移](#316-pyramid-フェーズ遷移)
+  - [3.17 Cribbage フェーズ遷移](#317-cribbage-フェーズ遷移)
 
 ---
 
@@ -99,7 +100,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全22ゲーム)
+### 1.2 ゲームドメイン (全23ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -597,6 +598,24 @@ classDiagram
         +Phase() PyramidPhase
     }
 
+    class Cribbage {
+        -trumpCards *TrumpCards
+        -players []*CribbagePlayer
+        -config CribbageConfig
+        -phase CribbagePhase
+        -crib []*Card
+        -starter *Card
+        -pegCount int
+        -pegPlayedCards []*Card
+        +Reset()
+        +Discard(indices []int) error
+        +Peg(cardIdx int) error
+        +Go() error
+        +ShowNext() error
+        +NextRound() error
+        +Phase() CribbagePhase
+    }
+
     class Memory {
         -trumpCards *TrumpCards
         -board []*MemoryBoardCard
@@ -634,6 +653,7 @@ classDiagram
     FreeCell --> "*" Card
     Spider --> "*" SpiderTableauCard
     Pyramid --> "*" PyramidCard
+    Cribbage --> "*" CribbagePlayer
     Memory --> "*" MemoryBoardCard
     Memory --> "*" MemoryPlayer
     MemoryPlayer --|> GamePlayer
@@ -690,7 +710,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全22ゲーム共通)**
+**Interactor パターン (全23ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -762,8 +782,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "21ゲーム × CUI/Web = 42 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
-    note for GameCuiPresenter "21ゲーム × CUI/Web = 42 Presenter 実装"
+    note for GameCuiController "23ゲーム × CUI/Web = 46 Controller\nGameCuiController / GameWebController は\n各ゲーム毎に具体的な実装が存在"
+    note for GameCuiPresenter "23ゲーム × CUI/Web = 46 Presenter 実装"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -793,6 +813,7 @@ classDiagram
         -videopoker *VideoPokerWebController
         -euchre *EuchreWebController
         -pyramid *PyramidWebController
+        -cribbage *CribbageWebController
         +Exec()
     }
 
@@ -814,8 +835,8 @@ classDiagram
         +Exec(input string) string
     }
 
-    TrumpCardsWeb --> "*" GameWebController : holds 21 controllers
-    GameManager --> "*" CuiExecer : holds 21 games
+    TrumpCardsWeb --> "*" GameWebController : holds 23 controllers
+    GameManager --> "*" CuiExecer : holds 23 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1206,6 +1227,30 @@ stateDiagram-v2
     note right of Playing : PyramidPhasePlaying = 0
     note right of GameClear : PyramidPhaseGameClear = 1
     note right of GameOver : PyramidPhaseGameOver = 2
+```
+
+### 3.17 Cribbage フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Discard : Reset()
+    Discard --> Cut : 両プレイヤーが2枚ずつクリブに捨てる
+    Cut --> Pegging : スターターカード公開
+    Pegging --> Pegging : Peg / Go (ペギング継続)
+    Pegging --> Show : 全カード使用済み
+    Show --> Show : ShowNext (次のスコア表示)
+    Show --> RoundEnd : 全スコア表示完了
+    RoundEnd --> Discard : NextRound (次のラウンド)
+    RoundEnd --> GameEnd : 121点到達
+    Pegging --> GameEnd : ペギング中に121点到達
+    Show --> GameEnd : ショー中に121点到達
+
+    note right of Discard : CribbagePhaseDiscard = 0
+    note right of Cut : CribbagePhaseCut = 1
+    note right of Pegging : CribbagePhasePegging = 2
+    note right of Show : CribbagePhaseShow = 3
+    note right of RoundEnd : CribbagePhaseRoundEnd = 4
+    note right of GameEnd : CribbagePhaseGameEnd = 5
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

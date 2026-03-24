@@ -1221,3 +1221,52 @@ export interface VideoPokerResponse {
   messageCode?: string;
   messageParams?: Record<string, string>;
 }
+
+// --- Cribbage (クリベッジ) ---
+
+/** Cribbage player data with scores. */
+export interface CribbagePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  roundScore: number;
+  cumulativeScore: number;
+}
+
+/** Cribbage score detail breakdown. */
+export interface CribbageScoreDetail {
+  fifteens: number;
+  pairs: number;
+  runs: number;
+  flush: number;
+  nobs: number;
+  total: number;
+}
+
+/** Cribbage game configuration. */
+export interface CribbageConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** Full Cribbage game state returned from the API. */
+export interface CribbageResponse {
+  players: CribbagePlayerData[];
+  phase: number;
+  roundNumber: number;
+  currentPlayerIdx: number;
+  dealerIdx: number;
+  crib: Card[];
+  starter: Card | null;
+  pegCount: number;
+  pegPlayedCards: Card[];
+  showPhaseStep: number;
+  handScoreDetails: (CribbageScoreDetail | null)[];
+  gameEndFlag: boolean;
+  winnerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: CribbageConfig;
+}
