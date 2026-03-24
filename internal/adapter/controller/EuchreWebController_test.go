@@ -42,7 +42,7 @@ func TestEuchreWebController_Method(t *testing.T) {
 	eiMock.On("PickUp", true, true).Return(mockOutput)
 	eiMock.On("CallTrump", 2, false).Return(mockOutput)
 	eiMock.On("CallTrump", 2, true).Return(mockOutput)
-	eiMock.On("PassCall").Return(mockOutput)
+	eiMock.On("Pass").Return(mockOutput)
 	eiMock.On("Discard", 3).Return(mockOutput)
 	eiMock.On("Play", 3).Return(mockOutput)
 	eiMock.On("NextTrick").Return(mockOutput)

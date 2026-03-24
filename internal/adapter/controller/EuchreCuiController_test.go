@@ -22,7 +22,7 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 		m.On("ResetWithConfig", mock.Anything).Return(mockOutput)
 		m.On("PickUp", mock.Anything, mock.Anything).Return(mockOutput)
 		m.On("CallTrump", mock.Anything, mock.Anything).Return(mockOutput)
-		m.On("PassCall").Return(mockOutput)
+		m.On("Pass").Return(mockOutput)
 		m.On("Discard", mock.Anything).Return(mockOutput)
 		m.On("Play", mock.Anything).Return(mockOutput)
 		m.On("NextTrick").Return(mockOutput)
@@ -102,7 +102,7 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 		c := controller.NewEuchreCuiController(m)
 		result := c.Exec("pa")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "PickUp", false, false)
+		m.AssertCalled(t, "Pass")
 	})
 
 	t.Run("pass command pass", func(t *testing.T) {
@@ -110,7 +110,7 @@ func TestEuchreCuiController_Exec(t *testing.T) {
 		c := controller.NewEuchreCuiController(m)
 		result := c.Exec("pass")
 		assert.Equal(t, mockOutput, result)
-		m.AssertCalled(t, "PickUp", false, false)
+		m.AssertCalled(t, "Pass")
 	})
 
 	// call

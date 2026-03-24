@@ -140,6 +140,34 @@ func TestEuchreInteractor_PassCall(t *testing.T) {
 	})
 }
 
+func TestEuchreInteractor_Pass(t *testing.T) {
+	t.Run("pickup phase delegates to PickUp", func(t *testing.T) {
+		gameMock, epMock := setupEuchreInteractorMocks(domain.EuchrePhasePickUp)
+		gameMock.On("PlayerPickUp", false, false).Return(nil)
+
+		ei := usecase.NewEuchreInteractor(gameMock, epMock)
+		result := ei.Pass()
+		assert.Contains(t, result, "phase")
+	})
+
+	t.Run("call trump phase delegates to PassCall", func(t *testing.T) {
+		gameMock, epMock := setupEuchreInteractorMocks(domain.EuchrePhaseCallTrump)
+		gameMock.On("PlayerPassCall").Return(nil)
+
+		ei := usecase.NewEuchreInteractor(gameMock, epMock)
+		result := ei.Pass()
+		assert.Contains(t, result, "phase")
+	})
+
+	t.Run("wrong phase returns error", func(t *testing.T) {
+		gameMock, epMock := setupEuchreInteractorMocks(domain.EuchrePhasePlay)
+
+		ei := usecase.NewEuchreInteractor(gameMock, epMock)
+		result := ei.Pass()
+		assert.Contains(t, result, "phase")
+	})
+}
+
 func TestEuchreInteractor_Discard(t *testing.T) {
 	t.Run("successful discard", func(t *testing.T) {
 		gameMock, epMock := setupEuchreInteractorMocks(domain.EuchrePhasePlay)
@@ -173,11 +201,13 @@ func TestEuchreInteractor_Play(t *testing.T) {
 
 func TestEuchreInteractor_NextTrick(t *testing.T) {
 	gameMock, epMock := setupEuchreInteractorMocks(domain.EuchrePhasePlay)
+	gameMock.On("ResolveTrick").Return()
 	gameMock.On("NextTrick").Return()
 
 	ei := usecase.NewEuchreInteractor(gameMock, epMock)
 	result := ei.NextTrick()
 	assert.Contains(t, result, "phase")
+	gameMock.AssertCalled(t, "ResolveTrick")
 	gameMock.AssertCalled(t, "NextTrick")
 }
 

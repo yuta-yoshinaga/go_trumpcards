@@ -826,62 +826,38 @@ func (e *Euchre) playerHasEffectiveSuit(playerIdx int, suit int) bool {
 }
 
 // trickWinner トリックの勝者を決定する
+// 切り札が出ていれば最強の切り札が勝ち、なければリードスートの最強が勝つ
 func (e *Euchre) trickWinner() int {
 	if len(e.currentTrick) == 0 {
 		return 0
 	}
+
 	winnerIdx := e.currentTrick[0].PlayerIdx
 	winnerRank := e.cardRank(e.currentTrick[0].Card)
-	leadSuit := e.effectiveSuit(e.currentTrick[0].Card)
+	winnerSuit := e.effectiveSuit(e.currentTrick[0].Card)
+	leadSuit := winnerSuit
 
 	for _, tc := range e.currentTrick[1:] {
 		rank := e.cardRank(tc.Card)
 		effSuit := e.effectiveSuit(tc.Card)
 
-		// 切り札は常にリードスート(非切り札)に勝つ
-		if effSuit == e.trumpSuit && e.effectiveSuit(e.currentTrick[0].Card) != e.trumpSuit {
-			// このカードは切り札
-			if e.effectiveSuit(e.currentTrick[0].Card) != e.trumpSuit {
-				// 現在の勝者が切り札でない場合のみ考慮
-				winnerIsAlsoTrump := e.effectiveSuit(getCardByPlayerIdx(e.currentTrick, winnerIdx).Card) == e.trumpSuit
-				if !winnerIsAlsoTrump || rank > winnerRank {
-					winnerIdx = tc.PlayerIdx
-					winnerRank = rank
-				}
-				continue
-			}
-		}
-
-		// 同じ実効スート比較 (切り札同士 or リードスート同士)
-		if effSuit == e.effectiveSuit(getCardByPlayerIdx(e.currentTrick, winnerIdx).Card) {
-			if rank > winnerRank {
-				winnerIdx = tc.PlayerIdx
-				winnerRank = rank
-			}
-		} else if effSuit == e.trumpSuit {
+		if effSuit == e.trumpSuit && winnerSuit != e.trumpSuit {
 			// 切り札が非切り札の勝者に勝つ
 			winnerIdx = tc.PlayerIdx
 			winnerRank = rank
-		} else if effSuit == leadSuit {
-			// リードスートがそれ以外に勝つ (ただし切り札には負ける)
-			winnerEffSuit := e.effectiveSuit(getCardByPlayerIdx(e.currentTrick, winnerIdx).Card)
-			if winnerEffSuit != e.trumpSuit && rank > winnerRank {
-				winnerIdx = tc.PlayerIdx
-				winnerRank = rank
-			}
+			winnerSuit = effSuit
+		} else if effSuit == winnerSuit && rank > winnerRank {
+			// 同じスート同士: 高ランクが勝つ
+			winnerIdx = tc.PlayerIdx
+			winnerRank = rank
+		} else if effSuit == leadSuit && winnerSuit != e.trumpSuit && winnerSuit != leadSuit && rank > winnerRank {
+			// リードスートが非リード・非切り札の勝者に勝つ
+			winnerIdx = tc.PlayerIdx
+			winnerRank = rank
+			winnerSuit = effSuit
 		}
 	}
 	return winnerIdx
-}
-
-// getCardByPlayerIdx トリック内の指定プレイヤーのカードを取得
-func getCardByPlayerIdx(trick []*EuchreTrickCard, playerIdx int) *EuchreTrickCard {
-	for _, tc := range trick {
-		if tc.PlayerIdx == playerIdx {
-			return tc
-		}
-	}
-	return trick[0]
 }
 
 // checkGameEnd ゲーム終了判定

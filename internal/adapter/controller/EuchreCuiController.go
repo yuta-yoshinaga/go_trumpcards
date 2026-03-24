@@ -59,11 +59,7 @@ func (c *EuchreCuiController) Exec(command string) string {
 			case "oa", "orderupalone":
 				return c.ei.PickUp(true, true), true
 			case "pa", "pass":
-				// パスは PickUp フェーズでも CallTrump フェーズでも使える
-				// PickUp フェーズ: PickUp(false, false)
-				// CallTrump フェーズ: PassCall()
-				// CUI ではフェーズの判断はインタラクターに委ねる
-				return c.ei.PickUp(false, false), true
+				return c.ei.Pass(), true
 			case "c", "call":
 				return cuiutil.WithParsedInt(args, "Suit is required (1-4).", "Invalid suit: %s.", 1, 4, func(suit int) string {
 					return c.ei.CallTrump(suit, false)

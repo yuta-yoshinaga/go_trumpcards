@@ -411,7 +411,14 @@ function EuchrePageContent() {
           {isHumanBidTurn && isCallTrumpPhase && (
             <>
               {[1, 2, 3, 4]
-                .filter((s) => state.faceUpCard == null || s !== state.faceUpCard.design.length)
+                .filter(
+                  (s) =>
+                    state.faceUpCard == null ||
+                    s !==
+                      ({ SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4, JOKER: 0 } as Record<string, number>)[
+                        state.faceUpCard.design
+                      ],
+                )
                 .map((s) => (
                   <button
                     key={s}

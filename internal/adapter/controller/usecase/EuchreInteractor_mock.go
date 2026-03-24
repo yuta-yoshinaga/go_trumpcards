@@ -35,6 +35,12 @@ func (_m *MockEuchreInteractor) CallTrump(suit int, goAlone bool) string {
 	return ret.Get(0).(string)
 }
 
+// Pass モック
+func (_m *MockEuchreInteractor) Pass() string {
+	ret := _m.Called()
+	return ret.Get(0).(string)
+}
+
 // PassCall モック
 func (_m *MockEuchreInteractor) PassCall() string {
 	ret := _m.Called()

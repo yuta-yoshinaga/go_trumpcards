@@ -16,6 +16,8 @@ type EuchreInteractorIF interface {
 	PickUp(orderUp bool, goAlone bool) string
 	// CallTrump スートを指名する
 	CallTrump(suit int, goAlone bool) string
+	// Pass 現在のフェーズに応じてパスする (PickUp or CallTrump)
+	Pass() string
 	// PassCall コールフェーズでパスする
 	PassCall() string
 	// Discard カードを捨てる
@@ -88,6 +90,22 @@ func (ei *EuchreInteractor) CallTrump(suit int, goAlone bool) string {
 	return ei.ep.Output(ei.e, nil)
 }
 
+// Pass 現在のフェーズに応じてパスする (PickUp → PickUp(false,false), CallTrump → PassCall)
+func (ei *EuchreInteractor) Pass() string {
+	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+		return out
+	}
+	phase := ei.e.GetPhase()
+	switch phase {
+	case domain.EuchrePhasePickUp:
+		return ei.PickUp(false, false)
+	case domain.EuchrePhaseCallTrump:
+		return ei.PassCall()
+	default:
+		return ei.ep.Output(ei.e, domain.ErrWrongPhase)
+	}
+}
+
 // PassCall コールフェーズでパスする
 func (ei *EuchreInteractor) PassCall() string {
 	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
@@ -129,8 +147,12 @@ func (ei *EuchreInteractor) Play(cardIndex int) string {
 	return ei.ep.Output(ei.e, nil)
 }
 
-// NextTrick 次のトリックへ進む
+// NextTrick トリックを解決して次のトリックへ進む
 func (ei *EuchreInteractor) NextTrick() string {
+	ei.e.ResolveTrick()
+	if out, blocked := guardGameEnd(ei.e, ei.ep); blocked {
+		return out
+	}
 	ei.e.NextTrick()
 	ei.runCpuTurns()
 	return ei.ep.Output(ei.e, nil)

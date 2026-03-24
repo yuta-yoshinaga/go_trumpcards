@@ -126,7 +126,7 @@ func euchreDispatch(bc *baseController, w rest.ResponseWriter, ei usecase.Euchre
 		goAlone := param.GoAlone != nil && *param.GoAlone
 		bc.writePresenterResponse(w, ei.CallTrump(*param.Suit, goAlone))
 	case "pa", "pass":
-		bc.writePresenterResponse(w, ei.PassCall())
+		bc.writePresenterResponse(w, ei.Pass())
 	case "d", "discard":
 		if param.CardIndex == nil {
 			bc.writeJsonResponse(w, http.StatusBadRequest, newDefault("param error: cardIndex is required."))
