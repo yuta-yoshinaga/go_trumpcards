@@ -233,8 +233,8 @@ classDiagram
     class NapoleonPhase {
         <<enumeration>>
         BID = 0
-        TRUMP = 1
-        EXCHANGE = 2
+        TRUMP_DECLARATION = 1
+        KITTY_EXCHANGE = 2
         PLAY = 3
         TRICK_END = 4
         ROUND_END = 5
@@ -252,9 +252,9 @@ classDiagram
 
     class VideoPokerPhase {
         <<enumeration>>
-        BET = 0
-        DRAW = 1
-        RESULT = 2
+        BET = 1
+        DRAW = 2
+        RESULT = 3
     }
 
     class EuchrePhase {
