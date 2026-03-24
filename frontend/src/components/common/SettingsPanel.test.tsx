@@ -199,8 +199,8 @@ describe('SettingsPanel', () => {
     expect(screen.getByText('G2')).toBeInTheDocument();
   });
 
-  it('renders tooltip on checkbox hover', () => {
-    render(
+  it('renders tooltip on checkbox hover with aria-describedby', () => {
+    const { container } = render(
       <SettingsPanel
         title="Settings"
         groups={[
@@ -210,10 +210,15 @@ describe('SettingsPanel', () => {
         ]}
       />,
     );
-    expect(screen.getByText('Help text')).toBeInTheDocument();
+    const tooltip = screen.getByText('Help text');
+    expect(tooltip).toBeInTheDocument();
+    expect(tooltip).toHaveAttribute('id', 'cb1-tooltip');
+    expect(tooltip).toHaveAttribute('role', 'tooltip');
+    const checkbox = container.querySelector('#cb1') as HTMLInputElement;
+    expect(checkbox).toHaveAttribute('aria-describedby', 'cb1-tooltip');
   });
 
-  it('renders tooltip on select hover', () => {
+  it('renders tooltip on select hover with aria-describedby', () => {
     render(
       <SettingsPanel
         title="Settings"
@@ -233,7 +238,38 @@ describe('SettingsPanel', () => {
         ]}
       />,
     );
-    expect(screen.getByText('Select help')).toBeInTheDocument();
+    const tooltip = screen.getByText('Select help');
+    expect(tooltip).toBeInTheDocument();
+    expect(tooltip).toHaveAttribute('id', 'sel1-tooltip');
+    expect(tooltip).toHaveAttribute('role', 'tooltip');
+    const select = screen.getByLabelText('Sel');
+    expect(select).toHaveAttribute('aria-describedby', 'sel1-tooltip');
+  });
+
+  it('does not set aria-describedby when no tooltip on checkbox', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[{ items: [{ type: 'checkbox', id: 'cb1', label: 'No tip', checked: false }] }]}
+      />,
+    );
+    expect(screen.getByLabelText('No tip')).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('does not set aria-describedby when no tooltip on select', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [
+              { type: 'select', id: 'sel1', label: 'No tip', value: '1', options: [{ value: '1', label: 'One' }] },
+            ],
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByLabelText('No tip')).not.toHaveAttribute('aria-describedby');
   });
 
   it('does not render tooltip when not provided on checkbox', () => {

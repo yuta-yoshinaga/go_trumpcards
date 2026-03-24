@@ -65,6 +65,13 @@ describe('DaifugoRulesBadges', () => {
     expect(screen.getByText('革命中')).toBeInTheDocument();
   });
 
+  it('shows tooltip description on revolution badge', () => {
+    render(<DaifugoRulesBadges state={makeState({ revolutionActive: true })} />);
+    const badge = screen.getByLabelText(/革命中/);
+    expect(badge).toHaveAttribute('aria-label', expect.stringContaining('カードの強さが逆転しています'));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('カードの強さが逆転しています');
+  });
+
   it('shows elevenBack badge when elevenBackActive is true', () => {
     render(<DaifugoRulesBadges state={makeState({ elevenBackActive: true })} />);
     expect(screen.getByText('11バック')).toBeInTheDocument();
@@ -110,7 +117,7 @@ describe('DaifugoRulesBadges', () => {
     expect(screen.getByText('階段縛り')).toBeInTheDocument();
   });
 
-  it('shows multiple badges simultaneously', () => {
+  it('shows multiple badges simultaneously with tooltips', () => {
     render(
       <DaifugoRulesBadges
         state={makeState({
@@ -123,5 +130,14 @@ describe('DaifugoRulesBadges', () => {
     expect(screen.getByText('革命中')).toBeInTheDocument();
     expect(screen.getByText('11バック')).toBeInTheDocument();
     expect(screen.getByText('階段')).toBeInTheDocument();
+    const tooltips = screen.getAllByRole('tooltip');
+    expect(tooltips).toHaveLength(3);
+  });
+
+  it('badges have aria-label with description for screen readers', () => {
+    render(<DaifugoRulesBadges state={makeState({ numberLocked: true })} />);
+    const badge = screen.getByLabelText(/数縛り/);
+    expect(badge).toHaveAttribute('aria-label', expect.stringContaining('同じ数字のカードしか出せません'));
+    expect(badge).toHaveClass('cursor-help');
   });
 });

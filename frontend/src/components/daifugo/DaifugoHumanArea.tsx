@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useCardDimensions } from '../../hooks/useCardDimensions';
-import { selectedCardStyle } from '../../styles/cardStyles';
+import { focusRingCard, selectedCardStyle } from '../../styles/cardStyles';
 import type { DaifugoPlayerData } from '../../types/card';
 import { playerName } from '../../utils/playerUtils';
 import { CardImage } from '../CardImage';
@@ -56,6 +56,7 @@ export function DaifugoHumanArea({
             aria-pressed={selectedIndices.includes(i)}
             disabled={!isCurrentTurn}
             draggable={isCurrentTurn}
+            className={focusRingCard}
             onClick={() => onToggle(i)}
             onDragStart={(e) => {
               e.dataTransfer.setData('cardIndex', String(i));

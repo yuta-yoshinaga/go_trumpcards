@@ -19,7 +19,11 @@ export function GameMessageBox({ message, messageCode, messageParams, alwaysVisi
   }
   if (!alwaysVisible && !displayMessage) return null;
   return (
-    <div className="glass-panel rounded-lg text-white text-center px-4 py-2 text-lg font-bold mb-2">
+    <div
+      role="status"
+      aria-live="polite"
+      className="glass-panel rounded-lg text-white text-center px-4 py-2 text-lg font-bold mb-2"
+    >
       {displayMessage}
     </div>
   );
