@@ -22,6 +22,7 @@ import { NapoleonPage } from './pages/NapoleonPage';
 import { OldMaidPage } from './pages/OldMaidPage';
 import { OmahaPage } from './pages/OmahaPage';
 import { PokerPage } from './pages/PokerPage';
+import { PyramidPage } from './pages/PyramidPage';
 import { SevensPage } from './pages/SevensPage';
 import { SpadesPage } from './pages/SpadesPage';
 import { SpiderPage } from './pages/SpiderPage';
@@ -48,6 +49,7 @@ const pageByPath: Record<GamePath, ReactNode> = {
   '/crazyeights': <CrazyEightsPage />,
   '/ginrummy': <GinRummyPage />,
   '/spider': <SpiderPage />,
+  '/pyramid': <PyramidPage />,
   '/indianpoker': <IndianPokerPage />,
   '/videopoker': <VideoPokerPage />,
 };

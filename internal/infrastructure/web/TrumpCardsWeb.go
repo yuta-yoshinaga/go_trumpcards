@@ -44,6 +44,7 @@ type TrumpCardsWeb struct {
 	ipc *controller.IndianPokerWebController
 	vpc *controller.VideoPokerWebController
 	euc *controller.EuchreWebController
+	pyc *controller.PyramidWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -220,6 +221,10 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 			euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
 			return usecase.NewEuchreInteractor(euchre, new(presenter.EuchreWebPresenter))
 		}),
+		pyc: controller.NewPyramidWebController(func() usecase.PyramidInteractorIF {
+			pyramid := domain.NewPyramid(domain.NewTrumpCards(0))
+			return usecase.NewPyramidInteractor(pyramid, new(presenter.PyramidWebPresenter))
+		}),
 	}
 }
 
@@ -279,6 +284,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/indianpoker/exec", web.ipc.Exec},
 		{"/videopoker/exec", web.vpc.Exec},
 		{"/euchre/exec", web.euc.Exec},
+		{"/pyramid/exec", web.pyc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {

@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全21ゲーム)](#12-ゲームドメイン-全21ゲーム)
+  - [1.2 ゲームドメイン (全22ゲーム)](#12-ゲームドメイン-全22ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -31,6 +31,7 @@
   - [3.13 IndianPoker フェーズ遷移](#313-indianpoker-フェーズ遷移)
   - [3.14 VideoPoker フェーズ遷移](#314-videopoker-フェーズ遷移)
   - [3.15 Euchre フェーズ遷移](#315-euchre-フェーズ遷移)
+  - [3.16 Pyramid フェーズ遷移](#316-pyramid-フェーズ遷移)
 
 ---
 
@@ -98,7 +99,7 @@ classDiagram
     GamePlayer *-- ChipHolder : mixin
 ```
 
-### 1.2 ゲームドメイン (全21ゲーム)
+### 1.2 ゲームドメイン (全22ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -577,6 +578,25 @@ classDiagram
         +Phase() SpiderPhase
     }
 
+    class Pyramid {
+        -trumpCards *TrumpCards
+        -pyramid [7][]*PyramidCard
+        -stock []*Card
+        -waste []*Card
+        -phase PyramidPhase
+        -history []*pyramidSnapshot
+        +Reset()
+        +Draw() error
+        +RemovePair(row1 int, col1 int, row2 int, col2 int) error
+        +RemoveKing(row int, col int) error
+        +RemoveWithWaste(row int, col int) error
+        +RemoveWasteKing() error
+        +GetHint() *PyramidHint
+        +Undo() error
+        +GiveUp()
+        +Phase() PyramidPhase
+    }
+
     class Memory {
         -trumpCards *TrumpCards
         -board []*MemoryBoardCard
@@ -599,6 +619,11 @@ classDiagram
         +bool FaceUp
     }
 
+    class PyramidCard {
+        +*Card Card
+        +bool Removed
+    }
+
     class MemoryBoardCard {
         +*Card Card
         +bool FaceUp
@@ -608,6 +633,7 @@ classDiagram
     Klondike --> "*" KlondikeTableauCard
     FreeCell --> "*" Card
     Spider --> "*" SpiderTableauCard
+    Pyramid --> "*" PyramidCard
     Memory --> "*" MemoryBoardCard
     Memory --> "*" MemoryPlayer
     MemoryPlayer --|> GamePlayer
@@ -664,7 +690,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全20ゲーム共通)**
+**Interactor パターン (全22ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -766,6 +792,7 @@ classDiagram
         -indianpoker *IndianPokerWebController
         -videopoker *VideoPokerWebController
         -euchre *EuchreWebController
+        -pyramid *PyramidWebController
         +Exec()
     }
 
@@ -1042,15 +1069,15 @@ stateDiagram-v2
     note right of Result : MemoryPhaseResult = 2
 ```
 
-### 3.8 Klondike / FreeCell / Spider フェーズ遷移
+### 3.8 Klondike / FreeCell / Spider / Pyramid フェーズ遷移
 
-3つのソリティア系ゲームは共通のフェーズ構造を持ちます。
+4つのソリティア系ゲームは共通のフェーズ構造を持ちます。
 
 ```mermaid
 stateDiagram-v2
     [*] --> Playing : Reset()
-    Playing --> Playing : Move / Draw / Deal / Undo
-    Playing --> GameClear : 全カードをFoundationに配置
+    Playing --> Playing : Move / Draw / Deal / Remove / Undo
+    Playing --> GameClear : 全カードをFoundation/Pyramid除去完了
     Playing --> GameClear : Autocomplete成功
     Playing --> GameOver : GiveUp
     GameClear --> [*]
@@ -1165,6 +1192,20 @@ stateDiagram-v2
     note right of TrickEnd : EuchrePhaseTrickEnd = 4
     note right of RoundEnd : EuchrePhaseRoundEnd = 5
     note right of GameEnd : EuchrePhaseGameEnd = 6
+```
+
+### 3.16 Pyramid フェーズ遷移
+
+```mermaid
+stateDiagram-v2
+    [*] --> Playing : Reset()
+    Playing --> Playing : Draw / RemovePair / RemoveKing / RemoveWithWaste / RemoveWasteKing / Undo
+    Playing --> GameClear : ピラミッドの28枚全除去
+    Playing --> GameOver : GiveUp
+
+    note right of Playing : PyramidPhasePlaying = 0
+    note right of GameClear : PyramidPhaseGameClear = 1
+    note right of GameOver : PyramidPhaseGameOver = 2
 ```
 
 **注:** OldMaid・Daifugo・Sevens は明示的なフェーズ定数を持たず、ターン制で進行します (currentTurn が巡回し、全プレイヤーの手札が0枚またはランク確定で終了)。

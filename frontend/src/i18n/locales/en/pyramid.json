@@ -1,0 +1,29 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "title": "Pyramid",
+  "stock": "Stock",
+  "waste": "Waste",
+  "moveCount": "Moves",
+  "draw": "Draw",
+  "giveup": "Give Up",
+  "hint": "Hint",
+  "undo": "Undo",
+  "empty": "Empty",
+  "playing": "Playing",
+  "stalemate": "No more moves available",
+  "gameClear": "Game Clear! Moves: {{moveCount}}",
+  "gameOver": "Game Over",
+  "noHint": "No hint available",
+  "hintAvailable": "Hint available",
+  "tutorial": {
+    "pyramid": "This is the pyramid. Click exposed cards to select them.",
+    "stockWaste": "Click the stock pile to draw cards.",
+    "controls": "Control buttons.",
+    "hintDisplay": "Press the Hint button to see available moves.",
+    "resetButton": "Press the reset button to start a new game."
+  }
+}

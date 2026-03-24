@@ -54,6 +54,7 @@ GAMES:
   napoleon     Napoleon (ナポレオン)
   videopoker   Video Poker Jacks or Better (ビデオポーカー)
   euchre       Euchre (ユーカー)
+  pyramid      Pyramid (ピラミッド)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -147,6 +148,7 @@ ENVIRONMENT VARIABLES:
 		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },
 		"videopoker":  func() int { ui.NewVideoPokerCui().Exec(); return 0 },
 		"euchre":      func() int { ui.NewEuchreCui().Exec(); return 0 },
+		"pyramid":     func() int { ui.NewPyramidCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

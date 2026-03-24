@@ -56,6 +56,8 @@ tags:
     description: "Video Poker (Jacks or Better)"
   - name: euchre
     description: Euchre (ユーカー) game
+  - name: pyramid
+    description: Pyramid (ピラミッド) game
 
 paths:
   /blackjack/exec:
@@ -2007,6 +2009,109 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EuchreResponse'
+
+  /pyramid/exec:
+    post:
+      tags:
+        - pyramid
+      summary: Execute a Pyramid game command
+      description: |
+        Send a command to advance the Pyramid (ピラミッド) game session identified by
+        `sessionId`.  Pyramid is a single-player solitaire card game using a
+        standard 52-card deck.  28 cards are dealt face-up in a 7-row pyramid.
+        Remove exposed pairs of cards that sum to 13; Kings (value 13) are
+        removed alone.  Remaining 24 cards form the stock pile.
+
+        The game proceeds through these phases:
+
+        | Phase      | Value | Description |
+        |------------|-------|-------------|
+        | Playing    | `0`   | Game in progress |
+        | GameClear  | `1`   | All pyramid cards removed; player wins |
+        | GameOver   | `2`   | No more moves available; game over |
+
+        | Command | Aliases | Description |
+        |---------|---------|-------------|
+        | `reset`        | `r`  | Start / restart a game |
+        | `draw`         | `d`  | Draw a card from stock to waste |
+        | `remove`       | `rm` | Remove card(s) (pair summing to 13, king, or waste pair) |
+        | `giveup`       | `g`  | Give up the current game |
+        | `hint`         | `h`  | Get a hint for the next move |
+        | `undo`         | `u`  | Undo the last action |
+        | `log`          | `l`  | View action log |
+      operationId: pyramidExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PyramidRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              draw:
+                summary: Draw from stock
+                value:
+                  command: draw
+                  sessionId: my-session-001
+              removePair:
+                summary: Remove a pair from pyramid
+                value:
+                  command: remove
+                  card1:
+                    zone: pyramid
+                    row: 6
+                    col: 0
+                  card2:
+                    zone: pyramid
+                    row: 6
+                    col: 1
+                  sessionId: my-session-001
+              removeKing:
+                summary: Remove a King from pyramid
+                value:
+                  command: remove
+                  card1:
+                    zone: pyramid
+                    row: 6
+                    col: 3
+                  sessionId: my-session-001
+              removeWithWaste:
+                summary: Remove waste top + pyramid card
+                value:
+                  command: remove
+                  card1:
+                    zone: waste
+                  card2:
+                    zone: pyramid
+                    row: 5
+                    col: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PyramidResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PyramidResponse'
+              examples:
+                paramError:
+                  value:
+                    pyramid: []
+                    stockCount: 0
+                    waste: []
+                    phase: 0
+                    moveCount: 0
+                    message: param error.
 
 components:
   schemas:
@@ -6574,3 +6679,146 @@ components:
             reason:
               type: string
               description: Machine-readable reason key for the hint
+
+    # -------------------------------------------------------------------------
+    # Pyramid
+    # -------------------------------------------------------------------------
+    PyramidCard:
+      type: object
+      description: A card position in the Pyramid layout
+      required:
+        - zone
+      properties:
+        zone:
+          type: string
+          description: "Zone name: pyramid or waste"
+          enum: [pyramid, waste]
+          example: pyramid
+        row:
+          type: integer
+          description: Row index (0-based, required for pyramid zone)
+          example: 6
+        col:
+          type: integer
+          description: Column index (0-based, required for pyramid zone)
+          example: 0
+
+    PyramidRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `draw` (`d`),
+            `remove` (`rm`), `giveup` (`g`), `hint` (`h`), `undo` (`u`),
+            `log` (`l`).
+          enum: [reset, r, draw, d, remove, rm, giveup, g, hint, h, undo, u, log, l]
+          example: remove
+        card1:
+          description: First card for a remove command
+          $ref: '#/components/schemas/PyramidCard'
+        card2:
+          description: Second card for a remove command (pair removal)
+          $ref: '#/components/schemas/PyramidCard'
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    PyramidOutputCard:
+      type: object
+      description: A card in the Pyramid layout with its state
+      properties:
+        card:
+          description: Card details (null when removed)
+          $ref: '#/components/schemas/Card'
+        removed:
+          type: boolean
+          description: Whether the card has been removed
+          example: false
+        exposed:
+          type: boolean
+          description: Whether the card is exposed (can be selected)
+          example: true
+
+    PyramidResponse:
+      type: object
+      description: Current state of the Pyramid game
+      required:
+        - pyramid
+        - stockCount
+        - waste
+        - phase
+        - moveCount
+        - canUndo
+        - isStalemate
+        - message
+      properties:
+        pyramid:
+          type: array
+          description: The 7 pyramid rows, each containing an array of cards (row i has i+1 cards)
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/PyramidOutputCard'
+        stockCount:
+          type: integer
+          description: Number of cards remaining in the stock pile
+          example: 24
+        waste:
+          type: array
+          description: Cards in the waste pile (top card is the last element)
+          items:
+            $ref: '#/components/schemas/Card'
+        phase:
+          type: integer
+          description: "Game phase: 0 = Playing, 1 = GameClear, 2 = GameOver"
+          enum: [0, 1, 2]
+          example: 0
+        moveCount:
+          type: integer
+          description: Total number of moves made in the current game
+          example: 0
+        canUndo:
+          type: boolean
+          description: Whether the undo action is available
+          example: false
+        isStalemate:
+          type: boolean
+          description: Whether the game is in a stalemate (no moves can lead to a win)
+          example: false
+        message:
+          type: string
+          description: Game result or status message. Empty while the game is in progress.
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          description: Hint for the next available move (only present when hint command is used)
+          properties:
+            type:
+              type: string
+              description: "Hint type: pair, king, waste_pair, waste_king"
+              enum: [pair, king, waste_pair, waste_king]
+            row1:
+              type: integer
+              description: Row of first card (-1 for waste operations)
+            col1:
+              type: integer
+              description: Column of first card (-1 for waste operations)
+            row2:
+              type: integer
+              description: Row of second card (-1 for king/waste operations)
+            col2:
+              type: integer
+              description: Column of second card (-1 for king/waste operations)

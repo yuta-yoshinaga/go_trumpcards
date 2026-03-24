@@ -1,0 +1,110 @@
+package controller
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
+)
+
+// PyramidCuiController ピラミッドCUIコントローラークラス
+type PyramidCuiController struct {
+	pi usecase.PyramidInteractorIF
+}
+
+// NewPyramidCuiController コンストラクタ
+func NewPyramidCuiController(pi usecase.PyramidInteractorIF) *PyramidCuiController {
+	return &PyramidCuiController{pi: pi}
+}
+
+// Exec コマンド実行
+func (c *PyramidCuiController) Exec(command string) string {
+	return execCuiCommand(
+		command,
+		func(_ []string) string {
+			return c.pi.Reset()
+		},
+		[]string{"d", "draw", "rm", "remove", "g", "giveup", "h", "hint", "log", "l", "u", "undo"},
+		func(cmd string, args []string) (string, bool) {
+			switch cmd {
+			case "d", "draw":
+				return c.pi.Draw(), true
+			case "rm", "remove":
+				return c.handleRemove(args), true
+			case "g", "giveup":
+				return c.pi.GiveUp(), true
+			case "h", "hint":
+				return c.pi.Hint(), true
+			case "log", "l":
+				return c.pi.ActionLog(), true
+			case "u", "undo":
+				return c.pi.Undo(), true
+			}
+			return "", false
+		},
+	)
+}
+
+// handleRemove 除去コマンドを処理
+func (c *PyramidCuiController) handleRemove(args []string) string {
+	if len(args) == 0 {
+		return "Usage: rm <row> <col> | rm <r1> <c1> <r2> <c2> | rm w <row> <col> | rm w"
+	}
+
+	// rm w ... → ウェイスト関連
+	if args[0] == "w" {
+		if len(args) == 1 {
+			// rm w → ウェイストのキング除去
+			return c.pi.RemoveWasteKing()
+		}
+		if len(args) == 3 {
+			// rm w <row> <col> → ウェイスト+ピラミッド
+			row, err := strconv.Atoi(args[1])
+			if err != nil {
+				return fmt.Sprintf("Invalid row: %s.", args[1])
+			}
+			col, err := strconv.Atoi(args[2])
+			if err != nil {
+				return fmt.Sprintf("Invalid col: %s.", args[2])
+			}
+			return c.pi.RemoveWithWaste(row, col)
+		}
+		return "Usage: rm w | rm w <row> <col>"
+	}
+
+	// rm <row> <col> → キング除去
+	if len(args) == 2 {
+		row, err := strconv.Atoi(args[0])
+		if err != nil {
+			return fmt.Sprintf("Invalid row: %s.", args[0])
+		}
+		col, err := strconv.Atoi(args[1])
+		if err != nil {
+			return fmt.Sprintf("Invalid col: %s.", args[1])
+		}
+		return c.pi.RemoveKing(row, col)
+	}
+
+	// rm <r1> <c1> <r2> <c2> → ペア除去
+	if len(args) == 4 {
+		r1, err := strconv.Atoi(args[0])
+		if err != nil {
+			return fmt.Sprintf("Invalid row1: %s.", args[0])
+		}
+		c1, err := strconv.Atoi(args[1])
+		if err != nil {
+			return fmt.Sprintf("Invalid col1: %s.", args[1])
+		}
+		r2, err := strconv.Atoi(args[2])
+		if err != nil {
+			return fmt.Sprintf("Invalid row2: %s.", args[2])
+		}
+		c2, err := strconv.Atoi(args[3])
+		if err != nil {
+			return fmt.Sprintf("Invalid col2: %s.", args[3])
+		}
+		return c.pi.RemovePair(r1, c1, r2, c2)
+	}
+
+	return "Usage: rm <row> <col> | rm <r1> <c1> <r2> <c2> | rm w <row> <col> | rm w"
+}

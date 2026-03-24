@@ -31,7 +31,8 @@
     "napoleon": "Napoleon",
     "indianpoker": "Indian Poker",
     "videopoker": "Video Poker",
-    "euchre": "Euchre"
+    "euchre": "Euchre",
+    "pyramid": "Pyramid"
   },
   "sound": {
     "mute": "Mute sound",
@@ -171,6 +172,12 @@
     "freecell.gameOver": "Game Over",
     "freecell.hintAvailable": "Hint available",
     "freecell.noHint": "No hint available",
-    "freecell.stalemate": "No moves can lead to a win. Please undo or give up."
+    "freecell.stalemate": "No moves can lead to a win. Please undo or give up.",
+    "pyramid.playing": "Playing",
+    "pyramid.gameClear": "Game Clear! Moves: {{moveCount}}",
+    "pyramid.gameOver": "Game Over",
+    "pyramid.hintAvailable": "Hint available",
+    "pyramid.noHint": "No hint available",
+    "pyramid.stalemate": "No moves can lead to a win. Please undo or give up."
   }
 }

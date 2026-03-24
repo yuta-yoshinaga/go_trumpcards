@@ -19,6 +19,7 @@ import type {
   OldMaidResponse,
   OmahaResponse,
   PokerResponse,
+  PyramidResponse,
   SevensResponse,
   SpadesResponse,
   SpiderResponse,
@@ -572,6 +573,22 @@ export const euchreApi = {
     }),
 };
 
+/** Source card for a Pyramid remove action. */
+export interface PyramidRemoveCard {
+  zone: string;
+  row?: number;
+  col?: number;
+}
+
+/** API client for the Pyramid /pyramid/exec endpoint. */
+export const pyramidApi = {
+  exec: (
+    command: 'reset' | 'draw' | 'remove' | 'giveup' | 'hint' | 'log' | 'undo',
+    card1?: PyramidRemoveCard,
+    card2?: PyramidRemoveCard,
+  ) => gameExec<PyramidResponse>('pyramid', { command, card1, card2 }),
+};
+
 /** API client for the Video Poker /videopoker/exec endpoint. */
 export const videopokerApi = {
   exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
@@ -600,6 +617,7 @@ const games = [
   'indianpoker',
   'videopoker',
   'euchre',
+  'pyramid',
 ] as const;
 type Game = (typeof games)[number];
 
