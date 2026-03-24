@@ -61,7 +61,7 @@ func TestOldMaidCuiController_Method(t *testing.T) {
 		assert.Equal(t, "コマンドが不明です: other", tomc.Exec("other"))
 	})
 	t.Run("success Exec empty", func(t *testing.T) {
-		assert.Equal(t, "コマンドが不明です: ", tomc.Exec(""))
+		assert.Equal(t, "'help' でコマンド一覧を表示します。", tomc.Exec(""))
 	})
 }
 

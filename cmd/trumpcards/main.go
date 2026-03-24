@@ -173,13 +173,16 @@ ENVIRONMENT VARIABLES:
 
 	arg := strings.ToLower(flag.Arg(0))
 	if handler, ok := commands[arg]; ok {
+		if flag.NArg() > 1 {
+			fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(flag.Args()[1:], " ")))
+		}
 		return handler()
 	}
 
 	if arg != "" {
 		fmt.Fprintln(os.Stderr, i18n.Tf("cliUnknownGame", "name", arg))
 		if suggestion := cuiutil.SuggestCommand(arg, mapKeys(commands), 2); suggestion != "" {
-			fmt.Fprintln(os.Stderr, i18n.Tf("cliDidYouMean", "name", suggestion))
+			fmt.Fprintf(os.Stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 		}
 		fmt.Fprintln(os.Stderr)
 		flag.Usage()

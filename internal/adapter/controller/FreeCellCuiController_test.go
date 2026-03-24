@@ -164,5 +164,5 @@ func TestFreeCellCuiController_UnknownCommand(t *testing.T) {
 	c := NewFreeCellCuiController(m)
 
 	assert.Contains(t, c.Exec("xyz"), "コマンドが不明です")
-	assert.Contains(t, c.Exec(""), "コマンドが不明です")
+	assert.Contains(t, c.Exec(""), "'help' でコマンド一覧を表示します。")
 }
