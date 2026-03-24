@@ -105,7 +105,7 @@ func (m *GameManager) switchGame(name string) string {
 	if _, ok := m.games[name]; !ok {
 		msg := i18n.Tf("unknownGame", "name", name)
 		if suggestion := cuiutil.SuggestCommand(name, m.gameOrder, 2); suggestion != "" {
-			msg += "\n" + i18n.Tf("cliDidYouMean", "name", suggestion)
+			msg += "\n  " + i18n.Tf("didYouMean", "name", suggestion)
 		}
 		return msg
 	}

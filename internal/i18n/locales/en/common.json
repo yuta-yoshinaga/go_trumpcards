@@ -30,7 +30,7 @@
   "updateApplyError": "Failed to apply update: {{error}}",
   "inputReadError": "Error reading input: {{error}}",
   "cliUnknownGame": "Error: unknown game \"{{name}}\"",
-  "cliDidYouMean": "\n  Did you mean \"{{name}}\"?",
+  "didYouMean": "Did you mean \"{{name}}\"?",
   "cliUnsupportedLang": "Warning: unsupported language \"{{lang}}\", defaulting to ja",
   "emptyInputHint": "Type 'help' for available commands.",
   "cliExtraArgsWarning": "Warning: extra arguments ignored: {{args}}",

@@ -30,7 +30,7 @@
   "updateApplyError": "アップデートの適用に失敗しました: {{error}}",
   "inputReadError": "入力の読み取り中にエラーが発生しました: {{error}}",
   "cliUnknownGame": "エラー: 不明なゲーム「{{name}}」",
-  "cliDidYouMean": "\n  もしかして「{{name}}」ですか？",
+  "didYouMean": "もしかして「{{name}}」ですか？",
   "cliUnsupportedLang": "警告: サポートされていない言語「{{lang}}」です。ja をデフォルトとして使用します",
   "emptyInputHint": "'help' でコマンド一覧を表示します。",
   "cliExtraArgsWarning": "警告: 余分な引数は無視されました: {{args}}",
