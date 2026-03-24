@@ -30,7 +30,8 @@
     "spider": "Spider",
     "napoleon": "Napoleon",
     "indianpoker": "Indian Poker",
-    "videopoker": "Video Poker"
+    "videopoker": "Video Poker",
+    "euchre": "Euchre"
   },
   "sound": {
     "mute": "Mute sound",

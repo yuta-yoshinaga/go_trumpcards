@@ -103,7 +103,7 @@ classDiagram
 
     TutorialConfig --> TutorialStep : contains
 
-    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全20ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
+    note for BlackJackResponse "各ゲームが固有のResponse型を持つ\n(全21ゲーム分存在)\n共通フィールド: message, messageCode, messageParams"
 ```
 
 **フェーズ定数 (全ゲーム)**
@@ -224,6 +224,17 @@ classDiagram
         RESULT = 2
     }
 
+    class EuchrePhase {
+        <<enumeration>>
+        PICK_UP = 0
+        CALL_TRUMP = 1
+        DISCARD = 2
+        PLAY = 3
+        TRICK_END = 4
+        ROUND_END = 5
+        GAME_END = 6
+    }
+
     note for KlondikePhase "FreeCellPhase, SpiderPhase も\n同一の値を持つ別定数として存在"
 ```
 
@@ -256,7 +267,7 @@ classDiagram
     class actionLogApi {
         +blackjack() Promise~ActionLogResponse~
         +poker() Promise~ActionLogResponse~
-        ...全20ゲーム()
+        ...全21ゲーム()
     }
 
     BlackJackApi --> gameApi : uses postJson/gameExec
@@ -266,7 +277,7 @@ classDiagram
     actionLogApi --> gameApi : uses gameExec
 
     note for gameApi "全APIリクエストにsessionIdを自動付与\n各ゲームAPIは cmd ベースの統一形式"
-    note for BlackJackApi "全20ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, hearts,\nmemory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker)"
+    note for BlackJackApi "全21ゲーム分のAPI Objectが存在\n(blackjack, poker, oldmaid, daifugo,\nsevens, doubt, holdem, omaha, hearts,\nmemory, klondike, freecell, baccarat,\nspades, crazyeights, ginrummy, spider,\nnapoleon, indianpoker, videopoker, euchre)"
 ```
 
 ### 1.3 Hook 層 (共通Hook)
@@ -451,7 +462,7 @@ classDiagram
     useDoubtGame --> useGameApi : uses
     useDoubtGame --> useCardSelection : uses
 
-    note for useBlackJackGame "全20ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
+    note for useBlackJackGame "全21ゲーム分の固有Hookが存在\n各HookはuseGameApiで統一的にAPI呼出し\n必要に応じてuseCardSelectionを合成"
 ```
 
 ### 1.5 コンポーネント層
@@ -635,6 +646,15 @@ classDiagram
         +役名・配当表示
     }
 
+    class EuchrePage {
+        +チーム別スコア表示
+        +ビッドUI (オーダーアップ/パス/コール)
+        +トリック表示エリア
+        +切り札・ターンアップカード表示
+        +ゴーイングアローン選択
+        +ヒントシステム
+    }
+
     BlackJackPage --|> GamePage : follows pattern
     HeartsPage --|> GamePage : follows pattern
     KlondikePage --|> GamePage : follows pattern
@@ -643,6 +663,7 @@ classDiagram
     NapoleonPage --|> GamePage : follows pattern
     IndianPokerPage --|> GamePage : follows pattern
     VideoPokerPage --|> GamePage : follows pattern
+    EuchrePage --|> GamePage : follows pattern
 
     GamePage --> PhaseIndicator : renders
     GamePage --> SettingsPanel : renders
@@ -652,7 +673,7 @@ classDiagram
     GamePage --> ConfirmDialog : renders
     GamePage --> ErrorAlert : renders
 
-    note for GamePage "全20ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
+    note for GamePage "全21ゲームページが同一パターンで構成\nuseGamePageSetup → ゲーム固有Hook → 描画"
 ```
 
 ### 1.7 i18n・プロバイダー・ルーティング
@@ -675,13 +696,13 @@ classDiagram
         +HashRouter
         +ErrorBoundary
         +NavBar
-        +Routes (20ゲーム)
+        +Routes (21ゲーム)
     }
 
     class gameCategories {
         +table: [BlackJack, Baccarat, VideoPoker]
         +poker: [Poker, Holdem, Omaha, IndianPoker]
-        +trickTaking: [Hearts, Spades, Napoleon]
+        +trickTaking: [Hearts, Spades, Napoleon, Euchre]
         +matching: [OldMaid, Doubt, Daifugo, Sevens, CrazyEights]
         +solitaire: [Klondike, FreeCell, Spider, Memory]
         +rummy: [GinRummy]
@@ -698,11 +719,11 @@ classDiagram
     App --> i18n : initializes
     App --> gameCategories : routes from
     App --> NavBar : renders
-    App --> GamePage : routes to 20 pages
+    App --> GamePage : routes to 21 pages
     GamePage --> TutorialProvider : wraps (per-game)
     TutorialProvider --> TutorialOverlay : renders when active
 
-    note for i18n "22名前空間: common + 20ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
+    note for i18n "23名前空間: common + 21ゲーム固有 + tutorial\n翻訳ファイル: locales/{ja,en}/game.json"
 ```
 
 ---

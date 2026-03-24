@@ -7,6 +7,7 @@ import type {
   DaifugoResponse,
   DoubtConfig,
   DoubtResponse,
+  EuchreResponse,
   FreeCellResponse,
   GinRummyResponse,
   HeartsResponse,
@@ -547,6 +548,30 @@ export const indianpokerApi = {
     }),
 };
 
+/** Configuration options for Euchre game settings. */
+export interface EuchreConfigInput {
+  cpuDifficulty?: number;
+  pointLimit?: number;
+}
+
+/** API client for the Euchre /euchre/exec endpoint. */
+export const euchreApi = {
+  exec: (
+    command: 'reset' | 'orderup' | 'pass' | 'calltrump' | 'discard' | 'play' | 'next' | 'nextround' | 'hint',
+    cardIndex?: number,
+    suit?: number,
+    goAlone?: boolean,
+    config?: EuchreConfigInput,
+  ) =>
+    gameExec<EuchreResponse>('euchre', {
+      command,
+      cardIndex,
+      suit,
+      goAlone,
+      config,
+    }),
+};
+
 /** API client for the Video Poker /videopoker/exec endpoint. */
 export const videopokerApi = {
   exec: (command: 'reset' | 'bet' | 'hold' | 'log', amount?: number, indices?: number[]) =>
@@ -574,6 +599,7 @@ const games = [
   'spider',
   'indianpoker',
   'videopoker',
+  'euchre',
 ] as const;
 type Game = (typeof games)[number];
 

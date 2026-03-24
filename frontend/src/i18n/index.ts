@@ -8,6 +8,7 @@ import enCommon from './locales/en/common.json';
 import enCrazyeights from './locales/en/crazyeights.json';
 import enDaifugo from './locales/en/daifugo.json';
 import enDoubt from './locales/en/doubt.json';
+import enEuchre from './locales/en/euchre.json';
 import enFreecell from './locales/en/freecell.json';
 import enGinrummy from './locales/en/ginrummy.json';
 import enHearts from './locales/en/hearts.json';
@@ -30,6 +31,7 @@ import jaCommon from './locales/ja/common.json';
 import jaCrazyeights from './locales/ja/crazyeights.json';
 import jaDaifugo from './locales/ja/daifugo.json';
 import jaDoubt from './locales/ja/doubt.json';
+import jaEuchre from './locales/ja/euchre.json';
 import jaFreecell from './locales/ja/freecell.json';
 import jaGinrummy from './locales/ja/ginrummy.json';
 import jaHearts from './locales/ja/hearts.json';
@@ -60,6 +62,7 @@ i18n
         daifugo: jaDaifugo,
         sevens: jaSevens,
         doubt: jaDoubt,
+        euchre: jaEuchre,
         holdem: jaHoldem,
         omaha: jaOmaha,
         hearts: jaHearts,
@@ -84,6 +87,7 @@ i18n
         daifugo: enDaifugo,
         sevens: enSevens,
         doubt: enDoubt,
+        euchre: enEuchre,
         holdem: enHoldem,
         omaha: enOmaha,
         hearts: enHearts,
@@ -111,6 +115,7 @@ i18n
       'daifugo',
       'sevens',
       'doubt',
+      'euchre',
       'holdem',
       'omaha',
       'hearts',

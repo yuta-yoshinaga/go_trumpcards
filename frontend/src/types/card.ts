@@ -1114,6 +1114,65 @@ export interface IndianPokerResponse {
   profile?: IndianPokerHumanProfileData;
 }
 
+// --- Euchre (ユーカー) ---
+
+/** Euchre player data with team, trick count, and hand. */
+export interface EuchrePlayerData {
+  id: number;
+  isHuman: boolean;
+  cardCount: number;
+  cards: Card[];
+  team: number;
+  trickCount: number;
+}
+
+/** A card played in a Euchre trick. */
+export interface EuchreTrickCard {
+  playerIdx: number;
+  card: Card;
+}
+
+/** Euchre game configuration. */
+export interface EuchreConfig {
+  cpuDifficulty: number;
+  pointLimit: number;
+}
+
+/** A suggested hint for Euchre. */
+export interface EuchreHint {
+  cardIndex?: number;
+  orderUp?: boolean;
+  suit?: number;
+  goAlone?: boolean;
+  reason: string;
+}
+
+/** Full Euchre game state returned from the API. */
+export interface EuchreResponse {
+  players: EuchrePlayerData[];
+  phase: number;
+  roundNumber: number;
+  trickNumber: number;
+  currentPlayerIdx: number;
+  bidPlayerIdx: number;
+  dealerIdx: number;
+  trumpSuit: number;
+  faceUpCard: Card | null;
+  makerTeam: number;
+  goingAlone: boolean;
+  goingAlonePlayerIdx: number;
+  currentTrick: EuchreTrickCard[];
+  teamScores: number[];
+  gameEndFlag: boolean;
+  winnerTeam: number;
+  leadPlayerIdx: number;
+  message: string;
+  messageCode?: string;
+  messageParams?: Record<string, string>;
+  config: EuchreConfig;
+  hint?: EuchreHint;
+}
+
 /** Full Video Poker game state returned from the API. */
 export interface VideoPokerResponse {
   hand: Card[];

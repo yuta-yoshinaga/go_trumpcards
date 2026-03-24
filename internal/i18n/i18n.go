@@ -49,7 +49,7 @@ func Tf(key string, params ...string) string {
 
 func loadTranslations(fsys fs.FS, lang string) map[string]string {
 	result := map[string]string{}
-	games := []string{"common", "blackjack", "poker", "oldmaid", "daifugo", "sevens", "doubt", "holdem", "omaha", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker"}
+	games := []string{"common", "blackjack", "poker", "oldmaid", "daifugo", "sevens", "doubt", "holdem", "omaha", "hearts", "memory", "klondike", "freecell", "baccarat", "spades", "crazyeights", "ginrummy", "spider", "napoleon", "indianpoker", "videopoker", "euchre"}
 	for _, game := range games {
 		path := "locales/" + lang + "/" + game + ".json"
 		data, err := fs.ReadFile(fsys, path)

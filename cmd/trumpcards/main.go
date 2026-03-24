@@ -53,6 +53,7 @@ GAMES:
   spider       Spider Solitaire (スパイダーソリティア)
   napoleon     Napoleon (ナポレオン)
   videopoker   Video Poker Jacks or Better (ビデオポーカー)
+  euchre       Euchre (ユーカー)
   update       Self-update to the latest version
   web          Start REST API + web GUI server
 
@@ -145,6 +146,7 @@ ENVIRONMENT VARIABLES:
 		"napoleon":    func() int { ui.NewNapoleonCui().Exec(); return 0 },
 		"indianpoker": func() int { ui.NewIndianPokerCui().Exec(); return 0 },
 		"videopoker":  func() int { ui.NewVideoPokerCui().Exec(); return 0 },
+		"euchre":      func() int { ui.NewEuchreCui().Exec(); return 0 },
 		"update": func() int {
 			updater := update.NewUpdater(version, os.Stdin, os.Stdout, os.Stderr)
 			if err := updater.Exec(); err != nil {

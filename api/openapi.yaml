@@ -54,6 +54,8 @@ tags:
     description: Indian Poker (インディアンポーカー) game
   - name: videopoker
     description: "Video Poker (Jacks or Better)"
+  - name: euchre
+    description: Euchre (ユーカー) game
 
 paths:
   /blackjack/exec:
@@ -1918,6 +1920,93 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VideoPokerResponse'
+
+  /euchre/exec:
+    post:
+      tags:
+        - euchre
+      summary: Execute a Euchre game command
+      description: |
+        Send a command to advance the Euchre (ユーカー) game session identified by
+        `sessionId`.  Euchre is a 4-player, 2-team trick-taking game with a 24-card
+        deck (9-A).  Features Right Bower (Jack of trump) and Left Bower (Jack of
+        same-color suit) as highest trump cards.  Trump suit determined via bidding.
+        "Going alone" option for bonus points.  First team to 10 points wins.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | PickUp    | `0`   | Decide whether to order up the turned-up card |
+        | CallTrump | `1`   | Call a trump suit (after all pass in PickUp) |
+        | Discard   | `2`   | Dealer discards a card after picking up |
+        | Play      | `3`   | Trick play (follow suit; bower hierarchy) |
+        | TrickEnd  | `4`   | Trick resolved; advance with `next` |
+        | RoundEnd  | `5`   | All 5 tricks played; advance with `nextround` |
+        | GameEnd   | `6`   | A team reached 10 points |
+
+        | Command     | Aliases | Description |
+        |-------------|---------|-------------|
+        | `reset`     | `r`     | Start / restart a game |
+        | `orderup`   | `o`     | Order up the turned-up card |
+        | `orderupalone` | `oa` | Order up and go alone |
+        | `pass`      | `pa`    | Pass on ordering up / calling trump |
+        | `calltrump` | `c`     | Call a trump suit (requires `suit`: 1-4) |
+        | `calltrumpalone` | `ca` | Call a trump suit and go alone |
+        | `discard`   | `d`     | Discard a card (requires `cardIndex`) |
+        | `play`      | `p`     | Play a card (requires `cardIndex`) |
+        | `next`      | `n`     | Advance to the next trick |
+        | `nextround` | `nr`    | Score the round and start the next |
+        | `hint`      | `h`     | Get a play/bid hint |
+        | `log`       | `l`     | View action log |
+      operationId: euchreExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EuchreRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              orderup:
+                summary: Order up the turned-up card
+                value:
+                  command: orderup
+                  sessionId: my-session-001
+              pass:
+                summary: Pass on ordering up
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              calltrump:
+                summary: Call hearts as trump
+                value:
+                  command: calltrump
+                  suit: 3
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EuchreResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EuchreResponse'
 
 components:
   schemas:
@@ -6332,3 +6421,156 @@ components:
           additionalProperties:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
+
+    # -------------------------------------------------------------------------
+    # Euchre
+    # -------------------------------------------------------------------------
+    EuchreRequest:
+      type: object
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: |
+            Game command.  Accepted values: `reset` (`r`), `orderup` (`o`),
+            `orderupalone` (`oa`), `pass` (`pa`), `calltrump` (`c`),
+            `calltrumpalone` (`ca`), `discard` (`d`), `play` (`p`),
+            `next` (`n`), `nextround` (`nr`), `hint` (`h`), `log` (`l`).
+          enum: [reset, r, orderup, o, orderupalone, oa, pass, pa, calltrump, c, calltrumpalone, ca, discard, d, play, p, next, n, nextround, nr, hint, h, log, l]
+          example: reset
+        cardIndex:
+          type: integer
+          description: Index of the card to play or discard.  Required for `play` and `discard` commands.
+          example: 2
+        suit:
+          type: integer
+          description: "Trump suit to call (1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND).  Required for `calltrump` and `calltrumpalone` commands."
+          minimum: 1
+          maximum: 4
+          example: 3
+        config:
+          type: object
+          description: Optional game configuration (only used with `reset`).
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 100
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    EuchreResponse:
+      type: object
+      description: Current state of the Euchre game
+      properties:
+        players:
+          type: array
+          description: Array of player objects
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              isDealer:
+                type: boolean
+              isAlone:
+                type: boolean
+              trickCount:
+                type: integer
+        teams:
+          type: array
+          description: Array of team objects (2 teams)
+          items:
+            type: object
+            properties:
+              score:
+                type: integer
+              roundScore:
+                type: integer
+              isMaker:
+                type: boolean
+        phase:
+          type: integer
+          description: "Game phase: 0 = PickUp, 1 = CallTrump, 2 = Discard, 3 = Play, 4 = TrickEnd, 5 = RoundEnd, 6 = GameEnd"
+          enum: [0, 1, 2, 3, 4, 5, 6]
+          example: 0
+        roundNumber:
+          type: integer
+          description: Current round number
+        trickNumber:
+          type: integer
+          description: Current trick number within the round
+        currentPlayerIdx:
+          type: integer
+          description: Index of the player whose turn it is
+        dealerIdx:
+          type: integer
+          description: Index of the dealer
+        turnedUpCard:
+          $ref: '#/components/schemas/Card'
+        trumpSuit:
+          type: integer
+          description: "Trump suit (1=SPADE, 2=CLOVER, 3=HEART, 4=DIAMOND, 0=not yet decided)"
+        currentTrick:
+          type: array
+          description: Cards played in the current trick
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+          description: Whether the game has ended
+        winnerTeamIdx:
+          type: integer
+          description: Index of the winning team (-1 if not ended)
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        message:
+          type: string
+          description: Game status message
+          example: ""
+        messageCode:
+          type: string
+          description: Machine-readable message code corresponding to the message field.
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+          description: Interpolation parameters for the message template keyed by placeholder name.
+        hint:
+          type: object
+          nullable: true
+          description: Recommended play hint (only present when hint command is used)
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+              description: Recommended card index
+            reason:
+              type: string
+              description: Machine-readable reason key for the hint

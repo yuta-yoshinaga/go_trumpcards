@@ -43,6 +43,7 @@ type TrumpCardsWeb struct {
 	npc *controller.NapoleonWebController
 	ipc *controller.IndianPokerWebController
 	vpc *controller.VideoPokerWebController
+	euc *controller.EuchreWebController
 }
 
 // NewTrumpCardsWeb コンストラクタ
@@ -208,6 +209,17 @@ func NewTrumpCardsWeb() *TrumpCardsWeb {
 				new(presenter.VideoPokerWebPresenter),
 			)
 		}),
+		euc: controller.NewEuchreWebController(func() usecase.EuchreInteractorIF {
+			config := domain.DefaultEuchreConfig()
+			players := []*domain.EuchrePlayer{
+				domain.NewEuchrePlayer(true, 0),
+				domain.NewEuchrePlayer(false, 1),
+				domain.NewEuchrePlayer(false, 0),
+				domain.NewEuchrePlayer(false, 1),
+			}
+			euchre := domain.NewEuchre(domain.NewTrumpCardsEuchre(), players, config)
+			return usecase.NewEuchreInteractor(euchre, new(presenter.EuchreWebPresenter))
+		}),
 	}
 }
 
@@ -266,6 +278,7 @@ func (web *TrumpCardsWeb) Exec() error {
 		{"/napoleon/exec", web.npc.Exec},
 		{"/indianpoker/exec", web.ipc.Exec},
 		{"/videopoker/exec", web.vpc.Exec},
+		{"/euchre/exec", web.euc.Exec},
 	}
 	restRoutes := make([]*rest.Route, len(routes))
 	for i, r := range routes {
@@ -350,6 +363,7 @@ func (web *TrumpCardsWeb) Exec() error {
 	web.npc.Stop()
 	web.ipc.Stop()
 	web.vpc.Stop()
+	web.euc.Stop()
 	fmt.Println("Server stopped.")
 	slog.Info("server stopped")
 	return runErr
